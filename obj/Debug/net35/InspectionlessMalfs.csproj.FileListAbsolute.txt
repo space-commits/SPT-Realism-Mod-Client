@@ -1,0 +1,6 @@
+D:\SP EFT\Realism Mod\module mods\InspectionlessMalfs\InspectionlessMalfs\obj\Debug\net35\InspectionlessMalfs.csproj.AssemblyReference.cache
+D:\SP EFT\Realism Mod\module mods\InspectionlessMalfs\InspectionlessMalfs\obj\Debug\net35\PluginInfo.cs
+D:\SP EFT\Realism Mod\module mods\InspectionlessMalfs\InspectionlessMalfs\obj\Debug\net35\InspectionlessMalfs.GeneratedMSBuildEditorConfig.editorconfig
+D:\SP EFT\Realism Mod\module mods\InspectionlessMalfs\InspectionlessMalfs\obj\Debug\net35\InspectionlessMalfs.AssemblyInfoInputs.cache
+D:\SP EFT\Realism Mod\module mods\InspectionlessMalfs\InspectionlessMalfs\obj\Debug\net35\InspectionlessMalfs.AssemblyInfo.cs
+D:\SP EFT\Realism Mod\module mods\InspectionlessMalfs\InspectionlessMalfs\obj\Debug\net35\InspectionlessMalfs.csproj.CoreCompileInputs.cache
