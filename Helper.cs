@@ -41,6 +41,31 @@ namespace RealismMod
 
     public static class Helper
     {
+        public static bool isReloading = false;
+
+        public static bool IsInReloadOperation = false;
+
+
+        public static bool isReady()
+        {
+            var gameWorld = Singleton<GameWorld>.Instance;
+            var sessionResultPanel = Singleton<SessionResultPanel>.Instance;
+
+            if (gameWorld == null || gameWorld.AllPlayers == null || gameWorld.AllPlayers.Count <= 0 || sessionResultPanel != null)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public static void SafelyAddAttributeToList(GClass2197 itemAttribute, Mod __instance)
+        {
+            if (itemAttribute.Base() != 0f)
+            {
+                __instance.Attributes.Add(itemAttribute);
+            }
+        }
+
 
         public static bool isNotStock(Mod mod)
         {
@@ -143,117 +168,5 @@ namespace RealismMod
             return (mod is TacticalCombo);
         }
 
-
-
-        public static string getModPosition(Mod mod, string weapType, string opType)
-        {
-            if (opType == "p90" || opType == "tubefed")
-            {
-                if (isStock(mod))
-                {
-                    return "rear";
-                }
-                if (isMagazine(mod) || isHandguard(mod) || isGasblock(mod) || isFlashHider(mod) || isForegrip(mod) || isMuzzleCombo(mod) || isSilencer(mod) || isTacticalCombo(mod) || isFlashlight(mod) || isBipod(mod) || isBarrel(mod))
-                {
-                    return "front";
-                }
-                else
-                {
-                    return "neutral";
-                }
-            }
-            else if (weapType == "pistol" || weapType == "bullpup")
-            {
-                if (isStock(mod) || isMagazine(mod))
-                {
-                    return "rear";
-                }
-                if (isHandguard(mod) || isGasblock(mod) || isFlashHider(mod) || isForegrip(mod) || isMuzzleCombo(mod) || isSilencer(mod) || isTacticalCombo(mod) || isFlashlight(mod) || isBipod(mod) || isBarrel(mod))
-                {
-                    return "front";
-                }
-                else
-                {
-                    return "neutral";
-                }
-            }
-            else
-            {
-                if (isStock(mod))
-                {
-                    return "rear";
-                }
-                if (isTacticalCombo(mod) || isFlashlight(mod) || isBipod(mod) || isHandguard(mod) || isGasblock(mod) || isForegrip(mod) || isMuzzleCombo(mod) || isFlashHider(mod) || isSilencer(mod) || isBarrel(mod))
-                {
-                    return "front";
-                }
-                else
-                {
-                    return "neutral";
-                }
-            }
-        }
-
-
-        public static bool isReloading = false;
-
-        public static bool IsInReloadOperation = false;
-
-
-        public static bool isReady()
-        {
-            var gameWorld = Singleton<GameWorld>.Instance;
-            var sessionResultPanel = Singleton<SessionResultPanel>.Instance;
-
-            if (gameWorld == null
-             || gameWorld.AllPlayers == null
-             || gameWorld.AllPlayers.Count <= 0
-             || sessionResultPanel != null)
-            {
-                return false;
-            }
-            return true;
-        }
-
-        public static float weightStatCalc(float statFactor, float itemWeight)
-        {
-            return itemWeight * statFactor * -1;
-        }
-
-        public static float factoredWeight(float modWeight)
-        {
-            return Mathf.Clamp((float)Math.Pow(modWeight * 1.5, 1.1) / 1.1f, 0.001f, 5f);
-        }
-
-        public static void SafelyAddAttributeToList(GClass2197 itemAttribute, Mod __instance)
-        {
-            if (itemAttribute.Base() != 0f)
-            {
-                __instance.Attributes.Add(itemAttribute);
-            }
-        }
-
-        public static float torqueCalc(float distance, float weight)
-        {
-            return (distance - 0) * weight;
-        }
-
-        public static float getTorque(string position, float weight, float currentTorque)
-        {
-            float torque = 0;
-            switch (position)
-            {
-                case "front":
-                    torque = torqueCalc(-10, weight);
-                    break;
-                case "rear":
-                    torque = torqueCalc(10, weight);
-                    break;
-                default:
-                    torque = 0;
-                    break;
-            }
-            return torque;
-        }
     }
 }

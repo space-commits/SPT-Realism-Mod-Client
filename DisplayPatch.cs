@@ -51,9 +51,9 @@ namespace RealismMod
                 case ENewItemAttributeId.MalfunctionChance:
                     return "MALFUNCTION CHANCE";
                 case ENewItemAttributeId.AutoROF:
-                    return "AUTO FIRERATE";
+                    return "AUTO FIRE RATE";
                 case ENewItemAttributeId.SemiROF:
-                    return "SEMI FIRERATE";
+                    return "SEMI FIRE RATE";
                 case ENewItemAttributeId.RecoilAngle:
                     return "RECOIL ANGLE";
                 case ENewItemAttributeId.ReloadSpeed:
@@ -262,7 +262,7 @@ namespace RealismMod
             camRecoilAtt.Delta = () => CamRecoilDelta(__instance);
             camRecoilAtt.StringValue = () => DisplayWeaponProperties.CamRecoil.ToString();
             camRecoilAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
-            camRecoilAttList.Add(camRecoilAtt);
+            camRecoilAttList.Add(camRecoilAtt);*/
 
             List<GClass2197> recoilAngleAttList = __instance.Attributes;
             GClass2199 recoilAngleAtt = new GClass2199((EItemAttributeId)ENewItemAttributeId.RecoilAngle);
@@ -270,7 +270,7 @@ namespace RealismMod
             recoilAngleAtt.Base = () => DisplayWeaponProperties.RecoilAngle;
             recoilAngleAtt.StringValue = () => DisplayWeaponProperties.RecoilAngle.ToString();
             recoilAngleAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            recoilAngleAttList.Add(recoilAngleAtt);*/
+            recoilAngleAttList.Add(recoilAngleAtt);
 
             List<GClass2197> semiROFAttList = __instance.Attributes;
             GClass2199 semiROFAtt = new GClass2199((EItemAttributeId)ENewItemAttributeId.SemiROF);
@@ -546,7 +546,7 @@ namespace RealismMod
                 {
                     modWeight = __instance.Mods[i].GetSingleItemTotalWeight(); 
                 }
-                float modWeightFactored = Helper.factoredWeight(modWeight);
+                float modWeightFactored = StatCalc.factoredWeight(modWeight);
                 float modErgo = __instance.Mods[i].Ergonomics;
                 float modVRecoil = AttatchmentProperties.VerticalRecoil(__instance.Mods[i]);
                 float modHRecoil = AttatchmentProperties.HorizontalRecoil(__instance.Mods[i]);
@@ -560,7 +560,7 @@ namespace RealismMod
                 float modAim = AttatchmentProperties.AimSpeed(__instance.Mods[i]);
                 float modFix = AttatchmentProperties.FixSpeed(__instance.Mods[i]);
                 string modType = AttatchmentProperties.ModType(__instance.Mods[i]);
-                string position = Helper.getModPosition(__instance.Mods[i], weapType, weapOpType);
+                string position = StatCalc.getModPosition(__instance.Mods[i], weapType, weapOpType);
 
                 StatCalc.modTypeStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position);
                 StatCalc.modStatCalc(modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil);
@@ -582,7 +582,7 @@ namespace RealismMod
             float totalVRecoilDelta = 0;
             float totalHRecoilDelta = 0;
 
-            StatCalc.weaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref totalRecoilDamping, ref totalRecoilHandDamping, false);
+            StatCalc.weaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref totalRecoilDamping, ref totalRecoilHandDamping);
 
             float totalCOI = 0;
             float totalCOIDelta = 0;

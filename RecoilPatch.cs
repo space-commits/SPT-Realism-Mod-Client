@@ -10,8 +10,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using static RealismMod.Helper;
-using static EFT.Player;
 using Random = UnityEngine.Random;
 
 namespace RealismMod
@@ -24,6 +22,13 @@ namespace RealismMod
             return typeof(ShotEffector).GetMethod("OnWeaponParametersChanged", BindingFlags.Instance | BindingFlags.Public);
         }
 
+        public GClass1162.GClass1204 GlobalsAiming
+        {
+            get
+            {
+                return Singleton<GClass1162>.Instance.Aiming;
+            }
+        }
 
         [PatchPrefix]
         private static bool Prefix(ref ShotEffector __instance)
@@ -85,69 +90,7 @@ namespace RealismMod
                 return true;
             }
         }
-
-        public GClass1162.GClass1204 GlobalsAiming
-        {
-            get
-            {
-                return Singleton<GClass1162>.Instance.Aiming;
-            }
-        }
     }
-
-    public class UpdateWeaponVariablesPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("UpdateWeaponVariables", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance, ref float ___float_7, ref Player.ValueBlender ___valueBlender_0)
-        {
-            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
-
-            if (firearmController != null)
-            {
-                if (firearmController.Item.Owner.ID.StartsWith("pmc"))
-                {
-                    Player.ValueBlender valueBlended = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "valueBlender_0").GetValue(__instance);
-                    float _aimsSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_7").GetValue(__instance);
-                    __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.startingConvergence * __instance.Aiming.RecoilConvergenceMult;
-                    __instance.HandsContainer.Recoil.Damping = WeaponProperties.TotalRecoilDamping;
-                    __instance.HandsContainer.HandsPosition.Damping = WeaponProperties.TotalRecoilHandDamping;
-                    float aimSpeed = _aimsSpeed * (1f + WeaponProperties.AimSpeedModifier);
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_7").SetValue(__instance, aimSpeed);
-                }
-            }
-        }
-    }
-
-    public class SyncWithCharacterSkillsPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(EFT.Player.FirearmController).GetMethod("SyncWithCharacterSkills", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(ref EFT.Player.FirearmController __instance)
-        {
-            if (__instance.Item.Owner.ID.StartsWith("pmc"))
-            {
-                SkillsClass.GClass1546 skillsClass = (SkillsClass.GClass1546)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1546_0").GetValue(__instance);
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
-                SkillsClass.GClass1546 weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
-
-                skillsClass.ReloadSpeed = weaponInfo.ReloadSpeed * (1 + WeaponProperties.ReloadSpeedModifier);
-                skillsClass.FixSpeed = weaponInfo.FixSpeed * (1 + WeaponProperties.FixSpeedModifier);
-                skillsClass.AimMovementSpeed = weaponInfo.AimMovementSpeed + WeaponProperties.AimMoveSpeedModifier;
-
-            }
-
-        }
-    }
-
 
     public class UpdateSensitivityPatch : ModulePatch
     {
