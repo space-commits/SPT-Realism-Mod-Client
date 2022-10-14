@@ -73,49 +73,83 @@ namespace RealismMod
 
         public static string WeaponType(Weapon weapon)
         {
-
-            return weapon.ConflictingItems[0];
-
+            if (Helper.nullCheck(weapon.ConflictingItems))
+            {
+                return "";
+            }
+            return weapon.ConflictingItems[1];
         }
 
         public static float BaseTorqueDistance(Weapon weapon)
         {
-            return float.Parse(weapon.ConflictingItems[1]);
+            if (Helper.nullCheck(weapon.ConflictingItems))
+            {
+                return 0;
+            }
+            return float.Parse(weapon.ConflictingItems[2]);
         }
 
         public static bool WepHasShoulderContact(Weapon weapon)
         {
-            return bool.Parse(weapon.ConflictingItems[2]);
+            if (Helper.nullCheck(weapon.ConflictingItems))
+            {
+                return false;
+            }
+            return bool.Parse(weapon.ConflictingItems[3]);
         }
 
         public static string InstanceID(Weapon weapon)
         {
-            return weapon.ConflictingItems[3];
+            if (Helper.nullCheck(weapon.ConflictingItems))
+            {
+                return "";
+            }
+            return weapon.ConflictingItems[4];
         }
 
         public static string OperationType(Weapon weapon)
         {
-            return weapon.ConflictingItems[4];
+            if (Helper.nullCheck(weapon.ConflictingItems))
+            {
+                return "";
+            }
+            return weapon.ConflictingItems[5];
         }
 
         public static float WeaponAccuracy(Weapon weapon)
         {
-            return float.Parse(weapon.ConflictingItems[5]);
+            if (Helper.nullCheck(weapon.ConflictingItems))
+            {
+                return 0;
+            }
+            return float.Parse(weapon.ConflictingItems[6]);
         }
 
         public static float RecoilDamping(Weapon weapon)
         {
-            return float.Parse(weapon.ConflictingItems[6]);
+            if (Helper.nullCheck(weapon.ConflictingItems))
+            {
+                return 0.7f;
+            }
+            return float.Parse(weapon.ConflictingItems[7]);
         }
 
         public static float RecoilHandDamping(Weapon weapon)
         {
-            return float.Parse(weapon.ConflictingItems[7]);
+            if (Helper.nullCheck(weapon.ConflictingItems))
+            {
+                return 0.65f;
+            }
+            return float.Parse(weapon.ConflictingItems[8]);
         }
 
         public static bool WeaponAllowsADS(Weapon weapon)
         {
-            return bool.Parse(weapon.ConflictingItems[8]);
+            if (Helper.nullCheck(weapon.ConflictingItems))
+            {
+                return false;
+            }
+            return bool.Parse(weapon.ConflictingItems[9]);
         }
 
         public static float AdapterPistolGripBonusVRecoil = -1;

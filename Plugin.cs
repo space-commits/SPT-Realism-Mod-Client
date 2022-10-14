@@ -76,15 +76,22 @@ namespace RealismMod
             new ReloadMagPatch().Enable();
             new ErgoWeightPatch().Enable();
             new SyncWithCharacterSkillsPatch().Enable();
-            new OnWeaponParametersChangedPatch().Enable();
             new UpdateWeaponVariablesPatch().Enable();
-            new AimingSensitivityPatch().Enable();
+            new method_17Patch().Enable();
+            new UpdateSwayFactorsPatch().Enable();
+
+            new OnWeaponParametersChangedPatch().Enable();
             new UpdateSensitivityPatch().Enable();
+            new AimingSensitivityPatch().Enable();
             new ProcessPatch().Enable();
             new ShootPatch().Enable();
+
+
             new IsAimingPatch().Enable();
             new IsKnownMalfTypePatch().Enable();
+
             new ModConstructorPatch().Enable();
+            new WeaponConstructorPatch().Enable();
             new HRecoilDisplayValuePatch().Enable();
             new HRecoilDisplayDeltaPatch().Enable();
             new VRecoilDisplayValuePatch().Enable();
@@ -95,10 +102,11 @@ namespace RealismMod
             new ErgoDisplayValuePatch().Enable();
             new COIDisplayDeltaPatch().Enable();
             new COIDisplayValuePatch().Enable();
+
             new FireRateDisplayStringPatch().Enable();
-            new FireRateDisplayStringPatch().Enable();
-            new method_17Patch().Enable();
-            new UpdateSwayFactorsPatch().Enable();
+            new FireRateDisplayValuePatch().Enable();
+
+
         }
 
         void Update()

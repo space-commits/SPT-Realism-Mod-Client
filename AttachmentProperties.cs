@@ -23,87 +23,155 @@ namespace RealismMod
 
         public static string ModType(Mod mod)
         {
-            return mod.ConflictingItems[0];
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return "";
+            }
+            return mod.ConflictingItems[1];
         }
 
         public static float VerticalRecoil(Mod mod)
         {
-            return float.Parse(mod.ConflictingItems[1]);
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return mod.Recoil;
+            }
+            return float.Parse(mod.ConflictingItems[2]);
         }
 
         public static float HorizontalRecoil(Mod mod)
         {
-            return float.Parse(mod.ConflictingItems[2]);
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return mod.Recoil;
+            }
+            return float.Parse(mod.ConflictingItems[3]);
         }
 
         public static float Dispersion(Mod mod)
         {
-            return float.Parse(mod.ConflictingItems[3]);
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return 0;
+            }
+            return float.Parse(mod.ConflictingItems[4]);
         }
 
         public static float CameraRecoil(Mod mod)
         {
-            return float.Parse(mod.ConflictingItems[4]);
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return 0;
+            }
+            return float.Parse(mod.ConflictingItems[5]);
         }
 
         public static float AutoROF(Mod mod)
         {
-            return float.Parse(mod.ConflictingItems[5]);
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return 0;
+            }
+            return float.Parse(mod.ConflictingItems[6]);
         }
 
         public static float SemiROF(Mod mod)
         {
-            return float.Parse(mod.ConflictingItems[6]);
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return 0;
+            }
+            return float.Parse(mod.ConflictingItems[7]);
         }
 
         public static float ModMalfunctionChance(Mod mod)
         {
-            return float.Parse(mod.ConflictingItems[7]);
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return 0;
+            }
+            return float.Parse(mod.ConflictingItems[8]);
         }
 
         public static float ReloadSpeed(Mod mod)
         {
-            return float.Parse(mod.ConflictingItems[8]);
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return 0;
+            }
+            return float.Parse(mod.ConflictingItems[9]);
         }
 
         public static float AimSpeed(Mod mod)
         {
-            return float.Parse(mod.ConflictingItems[9]);
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return 0;
+            }
+            return float.Parse(mod.ConflictingItems[10]);
         }
 
         public static float DrawSpeed(Mod mod)
         {
-            return float.Parse(mod.ConflictingItems[10]);
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return 0;
+            }
+            return float.Parse(mod.ConflictingItems[11]);
         }
 
         public static float Length(Mod mod)
         {
-            return float.Parse(mod.ConflictingItems[11]);
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return 0;
+            }
+            return float.Parse(mod.ConflictingItems[12]);
         }
 
         public static bool CanCylceSubs(Mod mod)
         {
-            return bool.Parse(mod.ConflictingItems[12]);
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return false;
+            }
+            return bool.Parse(mod.ConflictingItems[13]);
         }
 
         public static float RecoilAngle(Mod mod)
         {
-            return float.Parse(mod.ConflictingItems[13]);
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return 0;
+            }
+            return float.Parse(mod.ConflictingItems[14]);
         }
 
         public static bool StockAllowADS(Mod mod)
         {
-            return bool.Parse(mod.ConflictingItems[14]);
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return false;
+            }
+            return bool.Parse(mod.ConflictingItems[15]);
         }
 
         public static float FixSpeed(Mod mod)
         {
-            return float.Parse(mod.ConflictingItems[15]);
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return 0;
+            }
+            return float.Parse(mod.ConflictingItems[16]);
         }
 
         public static float ModShotDispersion(Mod mod)
         {
-            return float.Parse(mod.ConflictingItems[16]);
+            if (Helper.nullCheck(mod.ConflictingItems))
+            {
+                return 0;
+            }
+            return float.Parse(mod.ConflictingItems[17]);
         }
     }
 }

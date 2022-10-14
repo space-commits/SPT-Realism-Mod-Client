@@ -129,22 +129,30 @@ namespace RealismMod
             {
                 ErgoDeltaPatch p = new ErgoDeltaPatch();
                 string newInstanceID = __instance.Id + __instance.GetSingleItemTotalWeight().ToString();
+                Logger.LogWarning("newInstanceID = " + newInstanceID);
                 if (__instance.Folded != WeaponProperties.Folded)
                 {
+                    Logger.LogWarning("Folded Delta (full delta)");
+
                     p.StatDelta(ref __instance);
                     __result = p.MagDelta(ref __instance);
                 }
                 else if (WeaponProperties.SavedInstanceID != WeaponProperties.InstanceID(__instance) || newInstanceID != WeaponProperties.InstanceID(__instance) || WeaponProperties.InstanceID(__instance) == "")
                 {
+                    Logger.LogWarning("/////////////////");
+                    Logger.LogWarning("Changed ID Delta");
                     if (Helper.isReloading)
                     {
+                        Logger.LogWarning("Mag Delta");
                         __result = p.MagDelta(ref __instance);
                     }
                     else
                     {
+                        Logger.LogWarning("Full Delta");
                         p.StatDelta(ref __instance);
                         __result = p.MagDelta(ref __instance);
                     }
+                    Logger.LogWarning("/////////////////");
                 }
                 else
                 {
@@ -166,9 +174,12 @@ namespace RealismMod
             string weapOpType = WeaponProperties.OperationType(__instance);
 
             string instanceID = __instance.Id + totalWeight.ToString();
-            __instance.ConflictingItems[3] = instanceID;
+            __instance.ConflictingItems[4] = instanceID;
             WeaponProperties.SavedInstanceID = instanceID;
 
+            Logger.LogWarning("===========================");
+            Logger.LogWarning("instanceID = " + instanceID);
+            Logger.LogWarning("===========================");
             Mod magazine = __instance.GetCurrentMagazine();
             float magErgo = 0;
             float magWeight = 0;

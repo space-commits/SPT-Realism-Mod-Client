@@ -45,6 +45,27 @@ namespace RealismMod
 
         public static bool IsInReloadOperation = false;
 
+        private static System.Random random = new System.Random();
+
+        public static string genderateID()
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, 5)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+
+        public static bool nullCheck(string[] confItemArray)
+        {
+            if (confItemArray != null && confItemArray.Length > 0)
+            {
+                if (confItemArray[0] == "SPTRM")
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
 
         public static bool isReady()
         {

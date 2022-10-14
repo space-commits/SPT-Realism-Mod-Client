@@ -65,8 +65,8 @@ namespace RealismMod
 
         public static void ergoWeightCalc(float totalWeight, float totalErgoDelta, ref float ergonomicWeight)
         {
-            float factoredWeight = totalWeight * (1 - (totalErgoDelta * 0.5f));
-            ergonomicWeight = Mathf.Clamp((float)(Math.Pow(factoredWeight * 1.1, 4.9) + 1) / 400, 1f, 60f);
+            float factoredWeight = totalWeight * (1 - (totalErgoDelta * 0.2f));
+            ergonomicWeight = Mathf.Clamp((float)(Math.Pow(factoredWeight * 1.57, 4) + 1) / 300, 1f, 200f);
         }
 
         public static void proceduralIntensityCalc()

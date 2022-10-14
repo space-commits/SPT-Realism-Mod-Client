@@ -20,7 +20,13 @@ namespace RealismMod
     {
         public static bool AllowsADS(Item fs)
         {
-            return bool.Parse(fs.ConflictingItems[0]);
+
+            if (Helper.nullCheck(fs.ConflictingItems))
+            {
+                return true;
+            }
+
+            return bool.Parse(fs.ConflictingItems[1]);
         }
     }
 }
