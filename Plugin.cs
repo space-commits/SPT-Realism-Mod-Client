@@ -97,7 +97,8 @@ namespace RealismMod
             new COIDisplayValuePatch().Enable();
             new FireRateDisplayStringPatch().Enable();
             new FireRateDisplayStringPatch().Enable();
-            new WeaponConstructorPatch().Enable();
+            new method_17Patch().Enable();
+            new UpdateSwayFactorsPatch().Enable();
         }
 
         void Update()

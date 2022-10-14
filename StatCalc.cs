@@ -69,6 +69,11 @@ namespace RealismMod
             ergonomicWeight = Mathf.Clamp((float)(Math.Pow(factoredWeight * 1.1, 4.9) + 1) / 400, 1f, 60f);
         }
 
+        public static void proceduralIntensityCalc()
+        {
+
+        }
+
         public static void speedStatCalc(float totalWeight, float currentReloadSpeed, float currentFixSpeed, float totalTorque, float weapWeightLessMagFactor, float weapTorqueLessMagFactor, ref float totalReloadSpeed, ref float totalFixSpeed, ref float totalAimMoveSpeedModifier)
         {
             float reloadSpeedWeightFactor = StatCalc.weightStatCalc(StatCalc.ReloadSpeedWeightMult, totalWeight) / 100;

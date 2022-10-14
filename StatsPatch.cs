@@ -498,4 +498,62 @@ namespace RealismMod
             }
         }
     }
+
+    public class method_17Patch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("method_17", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
+        {
+            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
+            if (firearmController != null)
+            {
+                if (firearmController.Item.Owner.ID.StartsWith("pmc"))
+                {
+
+                    float breathIntensity = __instance.IntensityByAiming;
+                    float handsIntensity = __instance.IntensityByAiming;
+
+                    __instance.Breath.Intensity = breathIntensity; //both aim sway and up and down breathing
+                    __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = handsIntensity * handsIntensity); //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down.
+                }
+            }
+        }
+    }
+
+    public class UpdateSwayFactorsPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("UpdateSwayFactors", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
+        {
+            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
+            if (firearmController != null)
+            {
+                if (firearmController.Item.Owner.ID.StartsWith("pmc"))
+                {
+                    float float_17 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_17").GetValue(__instance); //ergoweight
+                    float float_18 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_18").GetValue(__instance);
+
+           /*         float _float_18 = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(float_17 * (1f + __instance.Overweight));
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_18").SetValue(__instance, 100);*/
+
+                    __instance.MotionReact.SwayFactors = new Vector3(float_18, __instance.IsAiming ? (float_18 * 0.3f) : float_18, float_18) * __instance.IntensityByAiming; // the diving/tiling animation as you move weapon side to side.
+
+                    float _float_19 = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate(float_17 * (1f + __instance.Overweight));//delay from moving mouse to the weapon moving to center of screen.
+
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, _float_19);
+
+                }
+            }
+        }
+    }
 }
