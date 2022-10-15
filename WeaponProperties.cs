@@ -98,7 +98,7 @@ namespace RealismMod
             return bool.Parse(weapon.ConflictingItems[3]);
         }
 
-        public static string InstanceID(Weapon weapon)
+        public static string Unused(Weapon weapon)
         {
             if (Helper.nullCheck(weapon.ConflictingItems))
             {
@@ -228,7 +228,7 @@ namespace RealismMod
 
         public static string Placement = "";
 
-        public static float ErgnomicWeight = 0;
+        public static float ErgonomicWeight = 0;
 
         public static float ADSDelta = 0;
 

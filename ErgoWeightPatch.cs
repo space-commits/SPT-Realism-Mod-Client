@@ -25,7 +25,7 @@ namespace RealismMod
         {
             if (__instance?.Item?.Owner?.ID != null && __instance.Item.Owner.ID.StartsWith("pmc"))
             {
-                __result = WeaponProperties.ErgnomicWeight;
+                __result = WeaponProperties.ErgonomicWeight;
                 return false;
             }
             else

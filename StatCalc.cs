@@ -17,8 +17,8 @@ namespace RealismMod
     {
 
         public static float ErgoWeightMult = 13f;
-        public static float ErgoTorqueMult = 0.7f;
-        public static float ErgoDeltaMult = 1;
+        public static float ErgoTorqueMult = 0.8f;
+        public static float ErgoDeltaMult = 0.8f;
 
         public static float VRecoilWeightMult = 2f;
         public static float VRecoilTorqueMult = 0.6f;
@@ -57,6 +57,8 @@ namespace RealismMod
         public static float AimMoveSpeedMult = 0.3f;//
 
 
+
+
         public static void accuracyStatAssignment(Weapon weap, float currentCOI, float baseCOI, ref float totalCOI, ref float totalCOIDelta)
         {
             totalCOI = currentCOI + (currentCOI * (WeaponProperties.WeaponAccuracy(weap)));
@@ -66,12 +68,21 @@ namespace RealismMod
         public static void ergoWeightCalc(float totalWeight, float totalErgoDelta, ref float ergonomicWeight)
         {
             float factoredWeight = totalWeight * (1 - (totalErgoDelta * 0.2f));
-            ergonomicWeight = Mathf.Clamp((float)(Math.Pow(factoredWeight * 1.57, 4) + 1) / 300, 1f, 200f);
+            ergonomicWeight = Mathf.Clamp((float)(Math.Pow(factoredWeight * 1.78, 3.8) + 1) / 200, 1f, 100);
         }
 
-        public static void proceduralIntensityCalc()
+        public static float proceduralIntensityFactorCalc(float weapWeight, float idealWeapWeight)
         {
+            float weightFactor = 1f;
 
+            //get percentage differenecne between weapon weight and a chosen minimum/threshold weight. Apply that % difference as a multiplier 
+
+            if (weapWeight >= idealWeapWeight)
+            {
+                weightFactor = ((weapWeight - idealWeapWeight) / Math.Abs(idealWeapWeight)) + 1f;
+            }
+
+            return weightFactor;
         }
 
         public static void speedStatCalc(float totalWeight, float currentReloadSpeed, float currentFixSpeed, float totalTorque, float weapWeightLessMagFactor, float weapTorqueLessMagFactor, ref float totalReloadSpeed, ref float totalFixSpeed, ref float totalAimMoveSpeedModifier)
@@ -110,7 +121,7 @@ namespace RealismMod
             float totalTorqueFactor = totalTorque / 100f;
             float totalTorqueFactorInverse = totalTorque / 100f * -1f;
 
-            totalErgo = currentErgo + (currentErgo * (ergoWeapBaseWeightFactor + (totalTorqueFactor * StatCalc.ErgoTorqueMult)));
+            totalErgo = currentErgo + (currentErgo * ((ergoWeapBaseWeightFactor + (totalTorqueFactor * StatCalc.ErgoTorqueMult)) * StatCalc.ErgoDeltaMult));
             totalVRecoil = currentVRecoil + (currentVRecoil * (vRecoilWeapBaseWeightFactor + (totalTorqueFactor * StatCalc.VRecoilTorqueMult)));
             totalHRecoil = currentHRecoil + (currentHRecoil * (hRecoilWeapBaseWeightFactor + (totalTorqueFactorInverse * StatCalc.HRecoilTorqueMult)));
             totalCamRecoil = currentCamRecoil + (currentCamRecoil * (camRecoilWeapBaseWeightFactor + (totalTorqueFactorInverse * StatCalc.CamTorqueMult)));

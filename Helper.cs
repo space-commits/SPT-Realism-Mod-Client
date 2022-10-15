@@ -47,6 +47,8 @@ namespace RealismMod
 
         private static System.Random random = new System.Random();
 
+        public static string testID = "";
+
         public static string genderateID()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
