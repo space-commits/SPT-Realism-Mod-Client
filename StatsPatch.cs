@@ -523,7 +523,7 @@ namespace RealismMod
                     */
                     float ergoWeight = WeaponProperties.ErgonomicWeight;
                     float weightFactor = StatCalc.proceduralIntensityFactorCalc(ergoWeight, 4);
-                    float aimIntensity = __instance.IntensityByAiming * 0.6f;
+                    float aimIntensity = __instance.IntensityByAiming * 0.7f;
 
                     float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight * (1f + __instance.Overweight));
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_18").SetValue(__instance, swayStrength);

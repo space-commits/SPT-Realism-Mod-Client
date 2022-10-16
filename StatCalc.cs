@@ -17,8 +17,8 @@ namespace RealismMod
     {
 
         public static float ErgoWeightMult = 13f;
-        public static float ErgoTorqueMult = 0.8f;
-        public static float ErgoDeltaMult = 0.8f;
+        public static float ErgoTorqueMult = 0.9f;
+        public static float ErgoDeltaMult = 0.78f;
 
         public static float VRecoilWeightMult = 2f;
         public static float VRecoilTorqueMult = 0.6f;
@@ -38,11 +38,15 @@ namespace RealismMod
         public static float DampingTorqueMult = 0.1f;// needs tweaking
         public static float DampingMin = 0.65f;
         public static float DampingMax = 0.77f;
+        public static float DampingPistolMin = 0.5f;
+        public static float DampingPistolMax = 0.7f;
 
         public static float HandDampingWeightMult = 0.06f;//
         public static float HandDampinTorqueMult = 0.1f;// needs tweaking
         public static float HandDampingMin = 0.65f;
         public static float HandDampingMax = 0.77f;
+        public static float HandDampingPistolMin = 0.5f;
+        public static float HandDampingPistolMax = 0.7f;
 
         public static float ReloadSpeedWeightMult = 1f;//
         public static float ReloadSpeedTorqueMult = 1f;// needs tweaking
@@ -93,7 +97,7 @@ namespace RealismMod
 
 
             float torqueFactor = totalTorque / 100f;
-            float torqueFactorInverse = totalTorque / 100f * -1f;
+         /*   float torqueFactorInverse = totalTorque / 100f * -1f;*/
 
             totalReloadSpeed = (currentReloadSpeed / 100f) + ((reloadSpeedWeightFactor + (torqueFactor * StatCalc.ReloadSpeedTorqueMult)) * StatCalc.ReloadSpeedMult);
             totalFixSpeed = (currentFixSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * StatCalc.FixSpeedTorqueMult)) * StatCalc.FixSpeedMult);
@@ -128,8 +132,17 @@ namespace RealismMod
             totalDispersion = currentDispersion + (currentDispersion * (dispersionWeapBaseWeightFactor + (totalTorqueFactor * StatCalc.DispersionTorqueMult)));
 
             totalRecoilAngle = currentRecoilAngle + (currentRecoilAngle * (totalTorqueFactor * StatCalc.AngleTorqueMult));
-            totalRecoilDamping = Mathf.Clamp(recoilDamping + (recoilDamping * (dampingTotalWeightFactor + (totalTorqueFactor * StatCalc.DampingTorqueMult))), StatCalc.DampingMin, StatCalc.DampingMax);
-            totalRecoilHandDamping = Mathf.Clamp(recoilHandDamping + (recoilHandDamping * (handDampingTotalWeightFactor + (totalTorqueFactorInverse * StatCalc.HandDampinTorqueMult))), StatCalc.HandDampingMin, StatCalc.HandDampingMax);
+
+            if (weap.WeapClass == "pistol")
+            {
+                totalRecoilDamping = Mathf.Clamp(recoilDamping + (recoilDamping * (dampingTotalWeightFactor + (totalTorqueFactor * StatCalc.DampingTorqueMult))), StatCalc.DampingPistolMin, StatCalc.DampingPistolMax);
+                totalRecoilHandDamping = Mathf.Clamp(recoilHandDamping + (recoilHandDamping * (handDampingTotalWeightFactor + (totalTorqueFactorInverse * StatCalc.HandDampinTorqueMult))), StatCalc.HandDampingPistolMin, StatCalc.HandDampingPistolMax);
+            }
+            else
+            {
+                totalRecoilDamping = Mathf.Clamp(recoilDamping + (recoilDamping * (dampingTotalWeightFactor + (totalTorqueFactor * StatCalc.DampingTorqueMult))), StatCalc.DampingMin, StatCalc.DampingMax);
+                totalRecoilHandDamping = Mathf.Clamp(recoilHandDamping + (recoilHandDamping * (handDampingTotalWeightFactor + (totalTorqueFactorInverse * StatCalc.HandDampinTorqueMult))), StatCalc.HandDampingMin, StatCalc.HandDampingMax);
+            }
 
             totalErgoDelta = (baseErgo - totalErgo) / (baseErgo * -1f);
             totalVRecoilDelta = (baseVRecoil - totalVRecoil) / (baseVRecoil * -1f);
