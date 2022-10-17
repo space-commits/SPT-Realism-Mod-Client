@@ -489,16 +489,12 @@ namespace RealismMod
             {
                 if (firearmController.Item.Owner.ID.StartsWith("pmc"))
                 {
-                    float ergoWeightFactor = (WeaponProperties.ErgonomicWeight / 200) + 1f;
-                    float aimIntensity = 0.7f;
+                    float ergoWeightFactor = (WeaponProperties.ErgonomicWeight / 250) + 1f;
+                    float aimIntensity = 0.67f;
                     float swayIntensity = Mathf.Min(aimIntensity * ergoWeightFactor, 1.15f);
 
                     __instance.Breath.Intensity = swayIntensity; //both aim sway and up and down breathing
                     __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = swayIntensity * swayIntensity); //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down.
-                    Logger.LogWarning("===============");
-                    Logger.LogWarning("Ergo Weight Factor = " + ergoWeightFactor);
-                    Logger.LogWarning("Sway Intensity = " + swayIntensity);
-                    Logger.LogWarning("===============");
                 }
             }
         }
@@ -532,13 +528,6 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, weapDisplacement);
 
                     __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * (Mathf.Clamp(aimIntensity * (weightFactor * 0.1f), aimIntensity, 2f)); // the diving/tiling animation as you move weapon side to side.
-
-
-                    Logger.LogWarning("===============");
-                    Logger.LogWarning("Ergo Weight = " + ergoWeight);
-                    Logger.LogWarning("SwayFactors = " + __instance.MotionReact.SwayFactors);
-                    Logger.LogWarning("weapDisplacement = " + weapDisplacement);
-                    Logger.LogWarning("===============");
                 }
             }
         }
