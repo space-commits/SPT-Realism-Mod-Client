@@ -454,6 +454,38 @@ namespace RealismMod
         }
     }
 
+    public class FireRateDisplayValuePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Weapon).GetMethod("method_33", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+
+        [PatchPrefix]
+        private static bool Prefix(ref Weapon __instance, ref float __result)
+        {
+            __result = DisplayWeaponProperties.AutoFireRate;
+            return false;
+        }
+    }
+
+    public class FireRateDisplayStringPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Weapon).GetMethod("method_34", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+
+        [PatchPrefix]
+        private static bool Prefix(ref Weapon __instance, ref string __result)
+        {
+            __result = DisplayWeaponProperties.AutoFireRate.ToString() + " " + "RPM".Localized(null);
+            return false;
+        }
+    }
+
     public static class StatDeltaDisplay
     {
         public static void DisplayDelta(Weapon __instance)

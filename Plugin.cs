@@ -102,6 +102,8 @@ namespace RealismMod
             new ErgoDisplayValuePatch().Enable();
             new COIDisplayDeltaPatch().Enable();
             new COIDisplayValuePatch().Enable();
+            new FireRateDisplayStringPatch().Enable();
+            new FireRateDisplayStringPatch().Enable();
         }
 
         void Update()
