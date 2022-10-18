@@ -33,6 +33,11 @@ namespace RealismMod
         public static ConfigEntry<float> sensChangeRate { get; set; }
         public static ConfigEntry<float> sensResetRate { get; set; }
         public static ConfigEntry<float> sensLimit { get; set; }
+        public static ConfigEntry<bool> showBalance { get; set; }
+        public static ConfigEntry<bool> showCamRecoil { get; set; }
+        public static ConfigEntry<bool> showDispersion { get; set; }
+        public static ConfigEntry<bool> showRecoilAngle { get; set; }
+        public static ConfigEntry<bool> showSemiROF { get; set; }
 
 
         public static float timer = 0.0f;
@@ -72,11 +77,20 @@ namespace RealismMod
 
         void Awake()
         {
-            string RealismMod = "Realism Mod";
+            string RecoilSettings= "Recoil Settings";
+            string WeapStatSettings = "Weapon Stat Settings";
 
-            sensLimit = Config.Bind<float>(RealismMod, "Sensitivity Limit", 0.5f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 3 }));
-            sensResetRate = Config.Bind<float>(RealismMod, "Senisitivity Reset Rate", 1.07f, new ConfigDescription("Rate At Which Sensitivity Recovers After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 2 }));
-            sensChangeRate = Config.Bind<float>(RealismMod, "Sensitivity Change Rate", 0.85f, new ConfigDescription("Rate At Which Sensitivity Is Reduced While Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 1 }));
+
+            sensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Limit", 0.5f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 3 }));
+            sensResetRate = Config.Bind<float>(RecoilSettings, "Senisitivity Reset Rate", 1.07f, new ConfigDescription("Rate At Which Sensitivity Recovers After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 2 }));
+            sensChangeRate = Config.Bind<float>(RecoilSettings, "Sensitivity Change Rate", 0.85f, new ConfigDescription("Rate At Which Sensitivity Is Reduced While Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 1 }));
+
+            showBalance = Config.Bind<bool>(WeapStatSettings, "Show Balance Stat", true, new ConfigDescription("Requiures Restart. Warning: showing too many stats on weapons with lots of slots makes the inspect menu UI difficult to use.", null, new ConfigurationManagerAttributes { Order = 5 }));
+            showCamRecoil = Config.Bind<bool>(WeapStatSettings, "Show Camera Recoil Stat", false, new ConfigDescription("Requiures Restart. Warning: showing too many stats on weapons with lots of slots makes the inspect menu UI difficult to use.", null, new ConfigurationManagerAttributes { Order = 4 }));
+            showDispersion = Config.Bind<bool>(WeapStatSettings, "Show Dispersion Stat", false, new ConfigDescription("Requiures Restart. Warning: showing too many stats on weapons with lots of slots makes the inspect menu UI difficult to use.", null, new ConfigurationManagerAttributes { Order = 3 }));
+            showRecoilAngle = Config.Bind<bool>(WeapStatSettings, "Show Recoil Angle Stat", true, new ConfigDescription("Requiures Restart. Warning: showing too many stats on weapons with lots of slots makes the inspect menu UI difficult to use.", null, new ConfigurationManagerAttributes { Order = 2 }));
+            showSemiROF = Config.Bind<bool>(WeapStatSettings, "Show Semi Auto ROF Stat", true, new ConfigDescription("Requiures Restart. Warning: showing too many stats on weapons with lots of slots makes the inspect menu UI difficult to use.", null, new ConfigurationManagerAttributes { Order = 1 }));
+
 
             new COIDeltaPatch().Enable();
             new GetDurabilityLossOnShotPatch().Enable();

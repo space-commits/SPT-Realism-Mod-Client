@@ -231,54 +231,70 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Weapon __instance, string id, WeaponTemplate template)
         {
-            List<GClass2197> balanceAttList = __instance.Attributes;
-            GClass2199 balanceAtt = new GClass2199((EItemAttributeId)ENewItemAttributeId.Balance);
-            balanceAtt.Name = ENewItemAttributeId.Balance.GetName();
-            balanceAtt.Range = new Vector2(100f, 200f);
-            balanceAtt.LessIsGood = false;
-            balanceAtt.Base = () => 150;
-            balanceAtt.Delta = () => BalanceDelta();
-            balanceAtt.StringValue = () => DisplayWeaponProperties.Balance.ToString();
-            balanceAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
-            balanceAttList.Add(balanceAtt);
 
-/*            List<GClass2197> dispersionAttList = __instance.Attributes;
-            GClass2199 dispersionAtt = new GClass2199((EItemAttributeId)ENewItemAttributeId.Dispersion);
-            dispersionAtt.Name = ENewItemAttributeId.Dispersion.GetName();
-            dispersionAtt.Range = new Vector2(0f, 50f);
-            dispersionAtt.LessIsGood = true;
-            dispersionAtt.Base = () => __instance.Template.RecolDispersion;
-            dispersionAtt.Delta = () => DispersionDelta(__instance);
-            dispersionAtt.StringValue = () => DisplayWeaponProperties.Dispersion.ToString();
-            dispersionAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
-            dispersionAttList.Add(dispersionAtt);
+            if (Plugin.showBalance.Value == true)
+            {
+                List<GClass2197> balanceAttList = __instance.Attributes;
+                GClass2199 balanceAtt = new GClass2199((EItemAttributeId)ENewItemAttributeId.Balance);
+                balanceAtt.Name = ENewItemAttributeId.Balance.GetName();
+                balanceAtt.Range = new Vector2(100f, 200f);
+                balanceAtt.LessIsGood = false;
+                balanceAtt.Base = () => 150;
+                balanceAtt.Delta = () => BalanceDelta();
+                balanceAtt.StringValue = () => DisplayWeaponProperties.Balance.ToString();
+                balanceAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
+                balanceAttList.Add(balanceAtt);
+            }
 
-            List<GClass2197> camRecoilAttList = __instance.Attributes;
-            GClass2199 camRecoilAtt = new GClass2199((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
-            camRecoilAtt.Name = ENewItemAttributeId.CameraRecoil.GetName();
-            camRecoilAtt.Range = new Vector2(0f, 0.25f);
-            camRecoilAtt.LessIsGood = true;
-            camRecoilAtt.Base = () => __instance.Template.CameraRecoil;
-            camRecoilAtt.Delta = () => CamRecoilDelta(__instance);
-            camRecoilAtt.StringValue = () => DisplayWeaponProperties.CamRecoil.ToString();
-            camRecoilAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
-            camRecoilAttList.Add(camRecoilAtt);*/
+            if (Plugin.showDispersion.Value == true)
+            {
+                List<GClass2197> dispersionAttList = __instance.Attributes;
+                GClass2199 dispersionAtt = new GClass2199((EItemAttributeId)ENewItemAttributeId.Dispersion);
+                dispersionAtt.Name = ENewItemAttributeId.Dispersion.GetName();
+                dispersionAtt.Range = new Vector2(0f, 50f);
+                dispersionAtt.LessIsGood = true;
+                dispersionAtt.Base = () => __instance.Template.RecolDispersion;
+                dispersionAtt.Delta = () => DispersionDelta(__instance);
+                dispersionAtt.StringValue = () => DisplayWeaponProperties.Dispersion.ToString();
+                dispersionAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
+                dispersionAttList.Add(dispersionAtt);
+            }
 
-            List<GClass2197> recoilAngleAttList = __instance.Attributes;
-            GClass2199 recoilAngleAtt = new GClass2199((EItemAttributeId)ENewItemAttributeId.RecoilAngle);
-            recoilAngleAtt.Name = ENewItemAttributeId.RecoilAngle.GetName();
-            recoilAngleAtt.Base = () => DisplayWeaponProperties.RecoilAngle;
-            recoilAngleAtt.StringValue = () => DisplayWeaponProperties.RecoilAngle.ToString();
-            recoilAngleAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            recoilAngleAttList.Add(recoilAngleAtt);
+            if (Plugin.showCamRecoil.Value == true)
+            {
+                List<GClass2197> camRecoilAttList = __instance.Attributes;
+                GClass2199 camRecoilAtt = new GClass2199((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
+                camRecoilAtt.Name = ENewItemAttributeId.CameraRecoil.GetName();
+                camRecoilAtt.Range = new Vector2(0f, 0.25f);
+                camRecoilAtt.LessIsGood = true;
+                camRecoilAtt.Base = () => __instance.Template.CameraRecoil;
+                camRecoilAtt.Delta = () => CamRecoilDelta(__instance);
+                camRecoilAtt.StringValue = () => DisplayWeaponProperties.CamRecoil.ToString();
+                camRecoilAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
+                camRecoilAttList.Add(camRecoilAtt);
+            }
 
-            List<GClass2197> semiROFAttList = __instance.Attributes;
-            GClass2199 semiROFAtt = new GClass2199((EItemAttributeId)ENewItemAttributeId.SemiROF);
-            semiROFAtt.Name = ENewItemAttributeId.SemiROF.GetName();
-            semiROFAtt.Base = () => DisplayWeaponProperties.SemiFireRate;
-            semiROFAtt.StringValue = () => DisplayWeaponProperties.SemiFireRate.ToString() + " " + "RPM".Localized(null);
-            semiROFAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            semiROFAttList.Add(semiROFAtt);
+            if (Plugin.showRecoilAngle.Value == true)
+            {
+                List<GClass2197> recoilAngleAttList = __instance.Attributes;
+                GClass2199 recoilAngleAtt = new GClass2199((EItemAttributeId)ENewItemAttributeId.RecoilAngle);
+                recoilAngleAtt.Name = ENewItemAttributeId.RecoilAngle.GetName();
+                recoilAngleAtt.Base = () => DisplayWeaponProperties.RecoilAngle;
+                recoilAngleAtt.StringValue = () => DisplayWeaponProperties.RecoilAngle.ToString();
+                recoilAngleAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                recoilAngleAttList.Add(recoilAngleAtt);
+            }
+
+            if (Plugin.showSemiROF.Value == true)
+            {
+                List<GClass2197> semiROFAttList = __instance.Attributes;
+                GClass2199 semiROFAtt = new GClass2199((EItemAttributeId)ENewItemAttributeId.SemiROF);
+                semiROFAtt.Name = ENewItemAttributeId.SemiROF.GetName();
+                semiROFAtt.Base = () => DisplayWeaponProperties.SemiFireRate;
+                semiROFAtt.StringValue = () => DisplayWeaponProperties.SemiFireRate.ToString() + " " + "RPM".Localized(null);
+                semiROFAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                semiROFAttList.Add(semiROFAtt);
+            }
         }
 
         public static float BalanceDelta()
