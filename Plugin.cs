@@ -22,12 +22,18 @@ using Aki.Common.Utils;
 using System.IO;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using BepInEx.Configuration;
 
 namespace RealismMod
 {
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class Plugin : BaseUnityPlugin
     {
+
+        public static ConfigEntry<float> sensChangeRate { get; set; }
+        public static ConfigEntry<float> sensResetRate { get; set; }
+        public static ConfigEntry<float> sensLimit { get; set; }
+
 
         public static float timer = 0.0f;
 
@@ -66,6 +72,12 @@ namespace RealismMod
 
         void Awake()
         {
+            string RealismMod = "Realism Mod";
+
+            sensLimit = Config.Bind<float>(RealismMod, "Sensitivity Limit", 0.5f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 3 }));
+            sensResetRate = Config.Bind<float>(RealismMod, "Senisitivity Reset Rate", 1.07f, new ConfigDescription("Rate At Which Sensitivity Recovers After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 2 }));
+            sensChangeRate = Config.Bind<float>(RealismMod, "Sensitivity Change Rate", 0.85f, new ConfigDescription("Rate At Which Sensitivity Is Reduced While Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 1 }));
+
             new COIDeltaPatch().Enable();
             new GetDurabilityLossOnShotPatch().Enable();
             new AutoFireRatePatch().Enable();
@@ -104,7 +116,9 @@ namespace RealismMod
             new COIDisplayValuePatch().Enable();
             new FireRateDisplayStringPatch().Enable();
             new FireRateDisplayStringPatch().Enable();
+
         }
+
 
         void Update()
         {
@@ -241,9 +255,11 @@ namespace RealismMod
                             }
                         }
 
-                        if (currentSens > startingSens * WeaponProperties.sensLimit)
+
+
+                        if (currentSens > startingSens * sensLimit.Value)
                         {
-                            currentSens *= WeaponProperties.sensChangeRate;
+                            currentSens *= sensChangeRate.Value;
                         }
                         if (currentCamRecoilX > startingCamRecoilX * WeaponProperties.camRecoilLimit)
                         {
@@ -283,11 +299,11 @@ namespace RealismMod
                 {
                     if (startingSens > currentSens)
                     {
-                        currentSens *= WeaponProperties.sensResetRate;
+                        currentSens *= sensResetRate.Value;
                     }
                     if (startingSens > currentSens)
                     {
-                        currentSens *= WeaponProperties.sensResetRate;
+                        currentSens *= sensResetRate.Value;
                     }
                     if (startingConvergence > currentConvergence)
                     {

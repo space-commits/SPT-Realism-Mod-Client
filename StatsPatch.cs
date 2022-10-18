@@ -400,14 +400,25 @@ namespace RealismMod
             if (__instance?.Owner?.ID != null && __instance.Owner.ID.StartsWith("pmc"))
             {
                 modsBurnRatio = 1f;
+                string weapOpType = WeaponProperties.OperationType(__instance);
                 foreach (Mod mod in __instance.Mods)
                 {
-                    if (AttatchmentProperties.ModType(mod) == "buffer")
+                    if (Helper.isStock(mod) == true)
                     {
-                        modsBurnRatio = 0;
+                        string modType = AttatchmentProperties.ModType(mod);
+                        if (weapOpType != "buffer" && (modType == "buffer" || modType == "buffer_stock"))
+                        {
+                            modsBurnRatio *= 1;
+                        }
+                        else
+                        {
+                            modsBurnRatio *= mod.DurabilityBurnModificator;
+                        }
+
                     }
                     else
                     {
+
                         modsBurnRatio *= mod.DurabilityBurnModificator;
                     }
                 }

@@ -252,9 +252,6 @@ namespace RealismMod
 
         public static float AimSpeedModifier = 0f;
 
-        public static float sensChangeRate = 0.83f;
-        public static float sensResetRate = 1.07f;
-        public static float sensLimit = 0.5f;
 
         public static float convergenceChangeRate = 0.98f;
         public static float convergenceResetRate = 1.16f;

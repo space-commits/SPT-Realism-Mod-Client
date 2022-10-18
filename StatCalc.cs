@@ -227,14 +227,28 @@ namespace RealismMod
                         stockAllowsFSADS = AttatchmentProperties.StockAllowADS(mod);
                     }
 
-                    if (weapOpType != "buffer" && (modType == "buffer" || modType == "buffer_stock"))
+                    if (weapOpType != "buffer")
                     {
-                        modVRecoil = 0;
-                        modHRecoil = 0;
-                        modDispersion = 0;
-                        modCamRecoil = 0;
-                        modAutoROF = 0;
-                        modSemiROF = 0;
+                        if (modType == "buffer")
+                        {
+
+                            modVRecoil = 0;
+                            modHRecoil = 0;
+                            modDispersion = 0;
+                            modCamRecoil = 0;
+                            modAutoROF = 0;
+                            modSemiROF = 0;
+                            //duraburn = 0 
+                            //malfhance = 0
+                        }
+                        if (modType == "buffer_stock")
+                        {
+                            modAutoROF = 0;
+                            modSemiROF = 0;
+                            //duraburn = 0 
+                            //malfhance = 0
+                        }
+
                     }
 
                     if (modType == "hydraulic_buffer" && (weap.WeapClass != "shotgun" || weap.WeapClass != "sniperRifle" || weap.WeapClass != "assaultCarbine") || weapOpType == "buffer")
