@@ -8,65 +8,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using UnityEngine;
 using static RealismMod.Attributes;
+using UnityEngine;
 using System.Runtime.CompilerServices;
 using System.Collections;
 
 namespace RealismMod
 {
-
-    public static class Attributes
-    {
-        public enum ENewItemAttributeId
-        {
-            HorizontalRecoil,
-            VerticalRecoil,
-            Balance,
-            Dispersion,
-            CameraRecoil,
-            MalfunctionChance,
-            AutoROF,
-            SemiROF,
-            RecoilAngle,
-            ReloadSpeed,
-            FixSpeed,
-            AimSpeed
-        }
-
-        public static string GetName(this ENewItemAttributeId id)
-        {
-            switch (id)
-            {
-                case ENewItemAttributeId.HorizontalRecoil:
-                    return "HORIZONTAL RECOIL";
-                case ENewItemAttributeId.VerticalRecoil:
-                    return "VERTICAL RECOIL";
-                case ENewItemAttributeId.Balance:
-                    return "BALANCE";
-                case ENewItemAttributeId.Dispersion:
-                    return "DISPERSION";
-                case ENewItemAttributeId.CameraRecoil:
-                    return "CAMERA RECOIL";
-                case ENewItemAttributeId.MalfunctionChance:
-                    return "MALFUNCTION CHANCE";
-                case ENewItemAttributeId.AutoROF:
-                    return "AUTO FIRE RATE";
-                case ENewItemAttributeId.SemiROF:
-                    return "SEMI FIRE RATE";
-                case ENewItemAttributeId.RecoilAngle:
-                    return "RECOIL ANGLE";
-                case ENewItemAttributeId.ReloadSpeed:
-                    return "RELOAD SPEED";
-                case ENewItemAttributeId.FixSpeed:
-                    return "FIX SPEED";
-                case ENewItemAttributeId.AimSpeed:
-                    return "AIM SPEED";
-                default:
-                    return id.ToString();
-            }
-        }
-    }
 
     public class ModVRecoilStatDisplayPatch : ModulePatch
     {
@@ -128,7 +76,7 @@ namespace RealismMod
             float fixSpeed = AttatchmentProperties.FixSpeed(__instance);
             float aimSpeed = AttatchmentProperties.AimSpeed(__instance);
 
-            GClass2197 hRecoilAtt = new GClass2197(ENewItemAttributeId.HorizontalRecoil);
+            GClass2197 hRecoilAtt = new GClass2197(Attributes.ENewItemAttributeId.HorizontalRecoil);
             hRecoilAtt.Name = ENewItemAttributeId.HorizontalRecoil.GetName();
             hRecoilAtt.Base = () => hRecoil;
             hRecoilAtt.StringValue = () => $"{hRecoil}%";
@@ -234,6 +182,7 @@ namespace RealismMod
 
             if (Plugin.showBalance.Value == true)
             {
+
                 List<GClass2197> balanceAttList = __instance.Attributes;
                 GClass2199 balanceAtt = new GClass2199((EItemAttributeId)ENewItemAttributeId.Balance);
                 balanceAtt.Name = ENewItemAttributeId.Balance.GetName();
@@ -244,6 +193,7 @@ namespace RealismMod
                 balanceAtt.StringValue = () => DisplayWeaponProperties.Balance.ToString();
                 balanceAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
                 balanceAttList.Add(balanceAtt);
+
             }
 
             if (Plugin.showDispersion.Value == true)
@@ -277,7 +227,7 @@ namespace RealismMod
             if (Plugin.showRecoilAngle.Value == true)
             {
                 List<GClass2197> recoilAngleAttList = __instance.Attributes;
-                GClass2199 recoilAngleAtt = new GClass2199((EItemAttributeId)ENewItemAttributeId.RecoilAngle);
+                GClass2197 recoilAngleAtt = new GClass2197(ENewItemAttributeId.RecoilAngle);
                 recoilAngleAtt.Name = ENewItemAttributeId.RecoilAngle.GetName();
                 recoilAngleAtt.Base = () => DisplayWeaponProperties.RecoilAngle;
                 recoilAngleAtt.StringValue = () => DisplayWeaponProperties.RecoilAngle.ToString();
@@ -288,7 +238,7 @@ namespace RealismMod
             if (Plugin.showSemiROF.Value == true)
             {
                 List<GClass2197> semiROFAttList = __instance.Attributes;
-                GClass2199 semiROFAtt = new GClass2199((EItemAttributeId)ENewItemAttributeId.SemiROF);
+                GClass2197 semiROFAtt = new GClass2197(ENewItemAttributeId.SemiROF);
                 semiROFAtt.Name = ENewItemAttributeId.SemiROF.GetName();
                 semiROFAtt.Base = () => DisplayWeaponProperties.SemiFireRate;
                 semiROFAtt.StringValue = () => DisplayWeaponProperties.SemiFireRate.ToString() + " " + "RPM".Localized(null);

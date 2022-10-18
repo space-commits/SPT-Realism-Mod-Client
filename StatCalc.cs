@@ -16,9 +16,8 @@ namespace RealismMod
     public static class StatCalc
     {
 
-        public static float ErgoWeightMult = 13f;
-        public static float ErgoTorqueMult = 0.9f;
-        public static float ErgoDeltaMult = 0.78f;
+        public static float ErgoWeightMult = 12f;
+        public static float ErgoTorqueMult = 0.75f;
 
         public static float VRecoilWeightMult = 2f;
         public static float VRecoilTorqueMult = 0.6f;
@@ -32,7 +31,7 @@ namespace RealismMod
         public static float CamWeightMult = 3f;
         public static float CamTorqueMult = 0.25f;
 
-        public static float AngleTorqueMult = 0.2f;
+        public static float AngleTorqueMult = 1f;
 
         public static float DampingWeightMult = 0.06f;//
         public static float DampingTorqueMult = 0.1f;// needs tweaking
@@ -125,13 +124,13 @@ namespace RealismMod
             float totalTorqueFactor = totalTorque / 100f;
             float totalTorqueFactorInverse = totalTorque / 100f * -1f;
 
-            totalErgo = currentErgo + (currentErgo * ((ergoWeapBaseWeightFactor + (totalTorqueFactor * StatCalc.ErgoTorqueMult)) * StatCalc.ErgoDeltaMult));
+            totalErgo = currentErgo + (currentErgo * (ergoWeapBaseWeightFactor + (totalTorqueFactor * StatCalc.ErgoTorqueMult)));
             totalVRecoil = currentVRecoil + (currentVRecoil * (vRecoilWeapBaseWeightFactor + (totalTorqueFactor * StatCalc.VRecoilTorqueMult)));
             totalHRecoil = currentHRecoil + (currentHRecoil * (hRecoilWeapBaseWeightFactor + (totalTorqueFactorInverse * StatCalc.HRecoilTorqueMult)));
             totalCamRecoil = currentCamRecoil + (currentCamRecoil * (camRecoilWeapBaseWeightFactor + (totalTorqueFactorInverse * StatCalc.CamTorqueMult)));
             totalDispersion = currentDispersion + (currentDispersion * (dispersionWeapBaseWeightFactor + (totalTorqueFactor * StatCalc.DispersionTorqueMult)));
 
-            totalRecoilAngle = currentRecoilAngle + (currentRecoilAngle * (totalTorqueFactor * StatCalc.AngleTorqueMult));
+            totalRecoilAngle = currentRecoilAngle + (currentRecoilAngle * (totalTorqueFactorInverse * StatCalc.AngleTorqueMult));
 
             if (weap.WeapClass == "pistol")
             {

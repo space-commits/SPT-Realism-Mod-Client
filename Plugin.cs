@@ -23,6 +23,9 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using BepInEx.Configuration;
+using static RealismMod.Attributes;
+using System.Threading.Tasks;
+using UnityEngine.Networking;
 
 namespace RealismMod
 {
@@ -75,11 +78,56 @@ namespace RealismMod
         public static float currentVRecoilX;
         public static float currentVRecoilY;
 
+
+        public static Dictionary<Enum, Sprite> iconCache = new Dictionary<Enum, Sprite>();
+        public static string modPath;
+        public static void CacheIcons()
+        {
+            iconCache.Add(ENewItemAttributeId.VerticalRecoil, Resources.Load<Sprite>("characteristics/icons/Ergonomics"));
+            iconCache.Add(ENewItemAttributeId.HorizontalRecoil, Resources.Load<Sprite>("characteristics/icons/Recoil Back"));
+            iconCache.Add(ENewItemAttributeId.Dispersion, Resources.Load<Sprite>("characteristics/icons/Velocity"));
+            iconCache.Add(ENewItemAttributeId.CameraRecoil, Resources.Load<Sprite>("characteristics/icons/SightingRange"));
+            iconCache.Add(ENewItemAttributeId.AutoROF, Resources.Load<Sprite>("characteristics/icons/bFirerate"));
+            iconCache.Add(ENewItemAttributeId.SemiROF, Resources.Load<Sprite>("characteristics/icons/bFirerate"));
+            iconCache.Add(ENewItemAttributeId.RecoilAngle, Resources.Load<Sprite>("characteristics/icons/icon_info_resize"));
+            iconCache.Add(ENewItemAttributeId.ReloadSpeed, Resources.Load<Sprite>("characteristics/icons/weapFireType"));
+            iconCache.Add(ENewItemAttributeId.FixSpeed, Resources.Load<Sprite>("characteristics/icons/icon_info_raidmoddable"));
+            iconCache.Add(ENewItemAttributeId.AimSpeed, Resources.Load<Sprite>("characteristics/icons/SightingRange"));
+            _ = LoadTexture(ENewItemAttributeId.Balance, Path.Combine(modPath, "res\\balance.png"));
+        }
+
+        private void GetPath()
+        {
+            var mod = RequestHandler.GetJson($"/RealismMod/GetInfo");
+            modPath = Json.Deserialize<string>(mod);
+        }
+
+        public static async Task LoadTexture(Enum id, string path)
+        {
+            using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(path))
+            {
+                uwr.SendWebRequest();
+
+                while (!uwr.isDone)
+                    await Task.Delay(5);
+
+                if (uwr.responseCode != 200)
+                {
+                }
+                else
+                {
+                    // Get downloaded asset bundle
+                    //Log.Info($"[{modName}] Retrieved texture! {id.ToString()} from {path}");
+                    Texture2D cachedTexture = DownloadHandlerTexture.GetContent(uwr);
+                    iconCache.Add(id, Sprite.Create(cachedTexture, new Rect(0, 0, cachedTexture.width, cachedTexture.height), new Vector2(0, 0)));
+                }
+            }
+        }
+
         void Awake()
         {
             string RecoilSettings= "Recoil Settings";
             string WeapStatSettings = "Weapon Stat Settings";
-
 
             sensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Limit", 0.5f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 3 }));
             sensResetRate = Config.Bind<float>(RecoilSettings, "Senisitivity Reset Rate", 1.07f, new ConfigDescription("Rate At Which Sensitivity Recovers After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 2 }));
@@ -91,6 +139,8 @@ namespace RealismMod
             showRecoilAngle = Config.Bind<bool>(WeapStatSettings, "Show Recoil Angle Stat", true, new ConfigDescription("Requiures Restart. Warning: showing too many stats on weapons with lots of slots makes the inspect menu UI difficult to use.", null, new ConfigurationManagerAttributes { Order = 2 }));
             showSemiROF = Config.Bind<bool>(WeapStatSettings, "Show Semi Auto ROF Stat", true, new ConfigDescription("Requiures Restart. Warning: showing too many stats on weapons with lots of slots makes the inspect menu UI difficult to use.", null, new ConfigurationManagerAttributes { Order = 1 }));
 
+            GetPath();
+            CacheIcons();
 
             new COIDeltaPatch().Enable();
             new GetDurabilityLossOnShotPatch().Enable();
@@ -112,7 +162,6 @@ namespace RealismMod
             new ProcessPatch().Enable();
             new ShootPatch().Enable();
 
-
             new IsAimingPatch().Enable();
             new IsKnownMalfTypePatch().Enable();
 
@@ -130,6 +179,8 @@ namespace RealismMod
             new COIDisplayValuePatch().Enable();
             new FireRateDisplayStringPatch().Enable();
             new FireRateDisplayStringPatch().Enable();
+
+            new GetAttributeIconPatches().Enable();
 
         }
 

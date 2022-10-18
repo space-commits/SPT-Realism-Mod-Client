@@ -22,3 +22,6 @@ D:\SP EFT\Realism Mod\Client Mods\SPT-Realism-Overhaul\bin\Debug\netstandard2.0\
 D:\SP EFT\Realism Mod\Client Mods\SPT-Realism-Overhaul\obj\Debug\netstandard2.0\RealismMod.csproj.CopyComplete
 D:\SP EFT\Realism Mod\Client Mods\SPT-Realism-Overhaul\obj\Debug\netstandard2.0\RealismMod.dll
 D:\SP EFT\Realism Mod\Client Mods\SPT-Realism-Overhaul\obj\Debug\netstandard2.0\RealismMod.pdb
+D:\SP EFT\Realism Mod\Client Mods\SPT-Realism-Overhaul\bin\Debug\netstandard2.0\UnityEngine.UnityWebRequestModule.dll
+D:\SP EFT\Realism Mod\Client Mods\SPT-Realism-Overhaul\bin\Debug\netstandard2.0\UnityEngine.UnityWebRequestTextureModule.dll
+D:\SP EFT\Realism Mod\Client Mods\SPT-Realism-Overhaul\bin\Debug\netstandard2.0\UnityEngine.UnityWebRequestWWWModule.dll

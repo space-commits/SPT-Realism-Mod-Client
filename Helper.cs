@@ -89,7 +89,6 @@ namespace RealismMod
             }
         }
 
-
         public static bool isNotStock(Mod mod)
         {
             return !(mod is Stock);
