@@ -22,13 +22,6 @@ namespace RealismMod
         private static bool PatchPrefix(ref Sprite __result, Enum id)
         {
 
-            if (id.Equals(Attributes.ENewItemAttributeId.Balance))
-            {
-                Logger.LogWarning("========2=======");
-                Logger.LogWarning("RecoilAngle Enum Found 1");
-                Logger.LogWarning("===============");
-            }
-
             if (id == null || !Plugin.iconCache.ContainsKey(id))
             {
                 return true;
@@ -36,18 +29,8 @@ namespace RealismMod
 
             Sprite sprite = Plugin.iconCache[id];
 
-
-
-            if (id.Equals(Attributes.ENewItemAttributeId.Balance))
-            {
-                Logger.LogWarning("========1=======");
-                Logger.LogWarning("RecoilAngle Enum Found 2");
-                Logger.LogWarning("===============");
-            }
-
             if (sprite != null)
             {
-                Logger.LogWarning("Sprite Found");
                 __result = sprite;
                 return false;
             }
@@ -63,8 +46,8 @@ namespace RealismMod
             HorizontalRecoil,
             VerticalRecoil,
             Balance = 11,
-            CameraRecoil = 41,
-            Dispersion = 42,
+            CameraRecoil,
+            Dispersion,
             MalfunctionChance,
             AutoROF,
             SemiROF,

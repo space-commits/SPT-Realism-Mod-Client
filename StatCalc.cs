@@ -16,32 +16,32 @@ namespace RealismMod
     public static class StatCalc
     {
 
-        public static float ErgoWeightMult = 12f;
-        public static float ErgoTorqueMult = 0.75f;
+        public static float ErgoWeightMult = 11.5f;
+        public static float ErgoTorqueMult = 0.9f;
 
-        public static float VRecoilWeightMult = 2f;
+        public static float VRecoilWeightMult = 2.1f;
         public static float VRecoilTorqueMult = 0.6f;
 
-        public static float HRecoilWeightMult = 3f;
+        public static float HRecoilWeightMult = 3.15f;
         public static float HRecoilTorqueMult = 0.75f;
 
         public static float DispersionWeightMult = 1.5f;
-        public static float DispersionTorqueMult = 1.2f;
+        public static float DispersionTorqueMult = 1.25f;
 
-        public static float CamWeightMult = 3f;
+        public static float CamWeightMult = 3.15f;
         public static float CamTorqueMult = 0.25f;
 
-        public static float AngleTorqueMult = 1f;
+        public static float AngleTorqueMult = 0.25f;
 
-        public static float DampingWeightMult = 0.06f;//
-        public static float DampingTorqueMult = 0.1f;// needs tweaking
+        public static float DampingWeightMult = 0.055f;//
+        public static float DampingTorqueMult = 0.095f;// needs tweaking
         public static float DampingMin = 0.65f;
         public static float DampingMax = 0.77f;
         public static float DampingPistolMin = 0.5f;
         public static float DampingPistolMax = 0.7f;
 
-        public static float HandDampingWeightMult = 0.06f;//
-        public static float HandDampinTorqueMult = 0.1f;// needs tweaking
+        public static float HandDampingWeightMult = 0.055f;//
+        public static float HandDampinTorqueMult = 0.095f;// needs tweaking
         public static float HandDampingMin = 0.65f;
         public static float HandDampingMax = 0.77f;
         public static float HandDampingPistolMin = 0.5f;
@@ -130,7 +130,7 @@ namespace RealismMod
             totalCamRecoil = currentCamRecoil + (currentCamRecoil * (camRecoilWeapBaseWeightFactor + (totalTorqueFactorInverse * StatCalc.CamTorqueMult)));
             totalDispersion = currentDispersion + (currentDispersion * (dispersionWeapBaseWeightFactor + (totalTorqueFactor * StatCalc.DispersionTorqueMult)));
 
-            totalRecoilAngle = currentRecoilAngle + (currentRecoilAngle * (totalTorqueFactorInverse * StatCalc.AngleTorqueMult));
+            totalRecoilAngle = currentRecoilAngle + (currentRecoilAngle * (totalTorqueFactor * StatCalc.AngleTorqueMult));
 
             if (weap.WeapClass == "pistol")
             {
