@@ -420,22 +420,6 @@ namespace RealismMod
         }
     }
 
-    public class FireRateDisplayValuePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Weapon).GetMethod("method_33", BindingFlags.Instance | BindingFlags.NonPublic);
-        }
-
-
-        [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref float __result)
-        {
-            __result = DisplayWeaponProperties.AutoFireRate;
-            return false;
-        }
-    }
-
     public class FireRateDisplayStringPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

@@ -538,7 +538,7 @@ namespace RealismMod
                     float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate((ergoWeight * (weightFactor * 0.3f)) * (1f + __instance.Overweight));//delay from moving mouse to the weapon moving to center of screen.
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, weapDisplacement);
 
-                    __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * (Mathf.Clamp(aimIntensity * (weightFactor * 0.1f), aimIntensity, 2f)); // the diving/tiling animation as you move weapon side to side.
+                    __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * (Mathf.Clamp(aimIntensity * (weightFactor * 0.1f), aimIntensity, 1.3f)); // the diving/tiling animation as you move weapon side to side.
                 }
             }
         }

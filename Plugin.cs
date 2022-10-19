@@ -89,11 +89,11 @@ namespace RealismMod
             iconCache.Add(ENewItemAttributeId.CameraRecoil, Resources.Load<Sprite>("characteristics/icons/SightingRange"));
             iconCache.Add(ENewItemAttributeId.AutoROF, Resources.Load<Sprite>("characteristics/icons/bFirerate"));
             iconCache.Add(ENewItemAttributeId.SemiROF, Resources.Load<Sprite>("characteristics/icons/bFirerate"));
-            iconCache.Add(ENewItemAttributeId.RecoilAngle, Resources.Load<Sprite>("characteristics/icons/icon_info_resize"));
             iconCache.Add(ENewItemAttributeId.ReloadSpeed, Resources.Load<Sprite>("characteristics/icons/weapFireType"));
             iconCache.Add(ENewItemAttributeId.FixSpeed, Resources.Load<Sprite>("characteristics/icons/icon_info_raidmoddable"));
             iconCache.Add(ENewItemAttributeId.AimSpeed, Resources.Load<Sprite>("characteristics/icons/SightingRange"));
             _ = LoadTexture(ENewItemAttributeId.Balance, Path.Combine(modPath, "res\\balance.png"));
+            _ = LoadTexture(ENewItemAttributeId.RecoilAngle, Path.Combine(modPath, "res\\recoilAngle.png"));
         }
 
         private void GetPath()
@@ -129,7 +129,7 @@ namespace RealismMod
             string RecoilSettings= "Recoil Settings";
             string WeapStatSettings = "Weapon Stat Settings";
 
-            sensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Limit", 0.2f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 3 }));
+            sensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Limit", 0.25f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 3 }));
             sensResetRate = Config.Bind<float>(RecoilSettings, "Senisitivity Reset Rate", 1.12f, new ConfigDescription("Rate At Which Sensitivity Recovers After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 2 }));
             sensChangeRate = Config.Bind<float>(RecoilSettings, "Sensitivity Change Rate", 0.7f, new ConfigDescription("Rate At Which Sensitivity Is Reduced While Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 1 }));
 
