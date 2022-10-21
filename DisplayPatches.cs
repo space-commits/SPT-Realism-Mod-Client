@@ -15,7 +15,6 @@ using System.Collections;
 
 namespace RealismMod
 {
-
     public class ModVRecoilStatDisplayPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

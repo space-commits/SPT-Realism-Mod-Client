@@ -68,6 +68,20 @@ namespace RealismMod
             totalCOIDelta = (baseCOI - totalCOI) / (baseCOI * -1f);
         }
 
+        public static void stockContactStatCalc(bool hasShoulderContact, Weapon weap, ref float currentErgo, ref float currentVRecoil, ref float currentHRecoil, ref float currentCOI, ref float currentCamRecoil, ref float currentDispersion, ref float currentRecoilAngle)
+        {
+            if (!hasShoulderContact && weap.WeapClass != "pistol")
+            {
+                currentErgo *= WeaponProperties.FoldedErgoFactor;
+                currentVRecoil *= WeaponProperties.FoldedVRecoilFactor;
+                currentHRecoil *= WeaponProperties.FoldedHRecoilFactor;
+                currentCOI *= WeaponProperties.FoldedCOIFactor;
+                currentCamRecoil *= WeaponProperties.FoldedCamRecoilFactor;
+                currentDispersion *= WeaponProperties.FoldedDispersionFactor;
+                currentRecoilAngle *= WeaponProperties.FoldedRecoilAngleFactor;
+            }
+        }
+
         public static void ergoWeightCalc(float totalWeight, float totalErgoDelta, ref float ergonomicWeight)
         {
             float factoredWeight = totalWeight * (1 - (totalErgoDelta * 0.2f));
@@ -186,19 +200,6 @@ namespace RealismMod
 
         }
 
-        public static void stockContactStatCalc(bool hasShoulderContact, Weapon weap, ref float currentErgo, ref float currentVRecoil, ref float currentHRecoil, ref float currentCOI, ref float currentCamRecoil, ref float currentDispersion, ref float currentRecoilAngle)
-        {
-            if (!hasShoulderContact && weap.WeapClass != "pistol")
-            {
-                currentErgo *= WeaponProperties.FoldedErgoFactor;
-                currentVRecoil *= WeaponProperties.FoldedVRecoilFactor;
-                currentHRecoil *= WeaponProperties.FoldedHRecoilFactor;
-                currentCOI *= WeaponProperties.FoldedCOIFactor;
-                currentCamRecoil *= WeaponProperties.FoldedCamRecoilFactor;
-                currentDispersion *= WeaponProperties.FoldedDispersionFactor;
-                currentRecoilAngle *= WeaponProperties.FoldedRecoilAngleFactor;
-            }
-        }
 
         public static void modTypeStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, ref string position)
         {
@@ -348,7 +349,7 @@ namespace RealismMod
 
         public static string getModPosition(Mod mod, string weapType, string opType)
         {
-            if (opType == "p90" || opType == "tubefed")
+            if (opType == "p90" || opType == "tubefed" || opType == "magForward")
             {
                 if (isStock(mod))
                 {

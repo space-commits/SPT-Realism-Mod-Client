@@ -41,6 +41,10 @@ namespace RealismMod
 
     public static class Helper
     {
+
+
+        public static bool isAllowedAim = true;
+
         public static bool isReloading = false;
 
         public static bool IsInReloadOperation = false;

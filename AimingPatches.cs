@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace RealismMod
 {
-    public class IsAimingPatch : ModulePatch
+    public class AimingPatches : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -31,9 +31,43 @@ namespace RealismMod
                 bool isOn = component != null && (component.Togglable == null || component.Togglable.On);
                 if (isOn && !WeaponProperties.WeaponCanFSADS && !FaceShieldProperties.AllowsADS(component.Item))
                 {
-                    ____isAiming = false;
+                    Helper.isAllowedAim = false;
+                }
+                else
+                {
+                    Helper.isAllowedAim = true;
                 }
                 Plugin.isAiming = ____isAiming;
+            }
+        }
+    }
+
+
+    public class ToggleAimPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Player.FirearmController).GetMethod("ToggleAim", BindingFlags.Public | BindingFlags.Instance);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(ref EFT.Player.FirearmController __instance)
+        {
+
+            if (Plugin.enableFSPatch.Value == true)
+            {
+                if (Helper.isAllowedAim)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return true;
             }
         }
     }
