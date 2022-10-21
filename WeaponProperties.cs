@@ -166,15 +166,15 @@ namespace RealismMod
 
         public static float FoldedHRecoilFactor = 1.15f;
 
-        public static float FoldedVRecoilFactor = 1.35f;
+        public static float FoldedVRecoilFactor = 1.55f;
 
-        public static float FoldedCOIFactor = 0.1f;
+        public static float FoldedCOIFactor = 0.025f;
 
         public static float FoldedCamRecoilFactor = 0.35f;
 
-        public static float FoldedDispersionFactor = 1.4f;
+        public static float FoldedDispersionFactor = 1.55f;
 
-        public static float FoldedRecoilAngleFactor = 1.25f;
+        public static float FoldedRecoilAngleFactor = 1.35f;
 
         public static float ErgoStatFactor = 7f;
 
@@ -221,6 +221,8 @@ namespace RealismMod
         public static float SDDispersion = 0;
 
         public static float SDRecoilAngle = 0;
+
+        public static float SDTotalCOI = 0;
 
         public static string SavedInstanceID = "";
 

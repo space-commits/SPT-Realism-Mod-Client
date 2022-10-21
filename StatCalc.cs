@@ -60,28 +60,6 @@ namespace RealismMod
         public static float AimMoveSpeedMult = 0.3f;//
 
 
-
-
-        public static void accuracyStatAssignment(Weapon weap, float currentCOI, float baseCOI, ref float totalCOI, ref float totalCOIDelta)
-        {
-            totalCOI = currentCOI + (currentCOI * (WeaponProperties.WeaponAccuracy(weap)));
-            totalCOIDelta = (baseCOI - totalCOI) / (baseCOI * -1f);
-        }
-
-        public static void stockContactStatCalc(bool hasShoulderContact, Weapon weap, ref float currentErgo, ref float currentVRecoil, ref float currentHRecoil, ref float currentCOI, ref float currentCamRecoil, ref float currentDispersion, ref float currentRecoilAngle)
-        {
-            if (!hasShoulderContact && weap.WeapClass != "pistol")
-            {
-                currentErgo *= WeaponProperties.FoldedErgoFactor;
-                currentVRecoil *= WeaponProperties.FoldedVRecoilFactor;
-                currentHRecoil *= WeaponProperties.FoldedHRecoilFactor;
-                currentCOI *= WeaponProperties.FoldedCOIFactor;
-                currentCamRecoil *= WeaponProperties.FoldedCamRecoilFactor;
-                currentDispersion *= WeaponProperties.FoldedDispersionFactor;
-                currentRecoilAngle *= WeaponProperties.FoldedRecoilAngleFactor;
-            }
-        }
-
         public static void ergoWeightCalc(float totalWeight, float totalErgoDelta, ref float ergonomicWeight)
         {
             float factoredWeight = totalWeight * (1 - (totalErgoDelta * 0.2f));
@@ -117,7 +95,7 @@ namespace RealismMod
             totalAimMoveSpeedModifier = (aimMoveSpeedWeightFactor + (torqueFactor * StatCalc.AimMoveSpeedTorqueMult)) * StatCalc.AimMoveSpeedMult;
         }
 
-        public static void weaponStatCalc(Weapon weap, float currentTorque, ref float totalTorque, float currentErgo, float currentVRecoil, float currentHRecoil, float currentDispersion, float currentCamRecoil, float currentRecoilAngle, float baseErgo, float baseVRecoil, float baseHRecoil, ref float totalErgo, ref float totalVRecoil, ref float totalHRecoil, ref float totalDispersion, ref float totalCamRecoil, ref float totalRecoilAngle, ref float totalRecoilDamping, ref float totalRecoilHandDamping, ref float totalErgoDelta, ref float totalVRecoilDelta, ref float totalHRecoilDelta, ref float recoilDamping, ref float recoilHandDamping)
+        public static void weaponStatCalc(Weapon weap, float currentTorque, ref float totalTorque, float currentErgo, float currentVRecoil, float currentHRecoil, float currentDispersion, float currentCamRecoil, float currentRecoilAngle, float baseErgo, float baseVRecoil, float baseHRecoil, ref float totalErgo, ref float totalVRecoil, ref float totalHRecoil, ref float totalDispersion, ref float totalCamRecoil, ref float totalRecoilAngle, ref float totalRecoilDamping, ref float totalRecoilHandDamping, ref float totalErgoDelta, ref float totalVRecoilDelta, ref float totalHRecoilDelta, ref float recoilDamping, ref float recoilHandDamping, float currentCOI, bool hasShoulderContact, ref float totalCOI, ref float totalCOIDelta, float baseCOI)
         {
             float weaponBaseWeight = weap.Weight;
             float weaponBaseWeightFactored = factoredWeight(weaponBaseWeight);
@@ -138,6 +116,17 @@ namespace RealismMod
             float totalTorqueFactor = totalTorque / 100f;
             float totalTorqueFactorInverse = totalTorque / 100f * -1f;
 
+            if (!hasShoulderContact && weap.WeapClass != "pistol")
+            {
+                currentErgo *= WeaponProperties.FoldedErgoFactor;
+                currentVRecoil *= WeaponProperties.FoldedVRecoilFactor;
+                currentHRecoil *= WeaponProperties.FoldedHRecoilFactor;
+                currentCOI *= WeaponProperties.FoldedCOIFactor;
+                currentCamRecoil *= WeaponProperties.FoldedCamRecoilFactor;
+                currentDispersion *= WeaponProperties.FoldedDispersionFactor;
+                currentRecoilAngle *= WeaponProperties.FoldedRecoilAngleFactor;
+            }
+
             totalErgo = currentErgo + (currentErgo * (ergoWeapBaseWeightFactor + (totalTorqueFactor * StatCalc.ErgoTorqueMult)));
             totalVRecoil = currentVRecoil + (currentVRecoil * (vRecoilWeapBaseWeightFactor + (totalTorqueFactor * StatCalc.VRecoilTorqueMult)));
             totalHRecoil = currentHRecoil + (currentHRecoil * (hRecoilWeapBaseWeightFactor + (totalTorqueFactorInverse * StatCalc.HRecoilTorqueMult)));
@@ -145,6 +134,9 @@ namespace RealismMod
             totalDispersion = currentDispersion + (currentDispersion * (dispersionWeapBaseWeightFactor + (totalTorqueFactor * StatCalc.DispersionTorqueMult)));
 
             totalRecoilAngle = currentRecoilAngle + (currentRecoilAngle * (totalTorqueFactor * StatCalc.AngleTorqueMult));
+
+            totalCOI = currentCOI + (currentCOI * (WeaponProperties.WeaponAccuracy(weap) / 100));
+            totalCOIDelta = (baseCOI - totalCOI) / (baseCOI * -1f);
 
             if (weap.WeapClass == "pistol")
             {
