@@ -132,7 +132,7 @@ namespace RealismMod
             string WeapStatSettings = "Weapon Stat Settings";
             string MiscSettings = "Misc. Settigns";
 
-            sensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Limit", 0.25f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 3 }));
+            sensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Limit", 0.4f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 3 }));
             sensResetRate = Config.Bind<float>(RecoilSettings, "Senisitivity Reset Rate", 1.12f, new ConfigDescription("Rate At Which Sensitivity Recovers After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 2 }));
             sensChangeRate = Config.Bind<float>(RecoilSettings, "Sensitivity Change Rate", 0.7f, new ConfigDescription("Rate At Which Sensitivity Is Reduced While Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 1 }));
 
@@ -143,7 +143,7 @@ namespace RealismMod
             showSemiROF = Config.Bind<bool>(WeapStatSettings, "Show Semi Auto ROF Stat", true, new ConfigDescription("Requiures Restart. Warning: showing too many stats on weapons with lots of slots makes the inspect menu UI difficult to use.", null, new ConfigurationManagerAttributes { Order = 1 }));
 
             enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields block ADS unless the specfic Stock/Weapon/Faceshield allows it.", null, new ConfigurationManagerAttributes { Order = 1 }));
-            enableMalfPatch = Config.Bind<bool>(MiscSettings, "Enable Malfuction Patch", true, new ConfigDescription("Requires Restat. You don't need to inspect a Malfunction in order to clear it..", null, new ConfigurationManagerAttributes { Order = 2 }));
+            enableMalfPatch = Config.Bind<bool>(MiscSettings, "Enable Malfuction Patch", true, new ConfigDescription("Requires Restart. You don't need to inspect a Malfunction in order to clear it.", null, new ConfigurationManagerAttributes { Order = 2 }));
 
             GetPath();
             CacheIcons();

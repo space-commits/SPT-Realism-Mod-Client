@@ -509,6 +509,11 @@ namespace RealismMod
                         breathIntensity = Mathf.Min(1f * ergoWeightFactor, 1.25f);
                         handsIntensity = Mathf.Min(1f * ergoWeightFactor, 1.25f);
                     }
+                    if (firearmController.Item.WeapClass == "pistol")
+                    {
+                        breathIntensity = Mathf.Min(0.75f * ergoWeightFactor, 1.25f);
+                        handsIntensity = Mathf.Min(0.7f * ergoWeightFactor, 1.25f);
+                    }
 
                     __instance.Breath.Intensity = breathIntensity; //both aim sway and up and down breathing
                     __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = handsIntensity * handsIntensity); //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down.
@@ -538,9 +543,13 @@ namespace RealismMod
                     float weightFactor = StatCalc.proceduralIntensityFactorCalc(ergoWeight, 5f);
                     float aimIntensity = __instance.IntensityByAiming * 0.67f;
 
-                    if (WeaponProperties.HasShoulderContact == false)
+                    if (WeaponProperties.HasShoulderContact == false && firearmController.Item.WeapClass != "pistol")
                     {
                         aimIntensity = __instance.IntensityByAiming;
+                    }
+                    if (firearmController.Item.WeapClass == "pistol")
+                    {
+                        aimIntensity = __instance.IntensityByAiming * 0.5f;
                     }
 
                     float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight * (1f + __instance.Overweight));
