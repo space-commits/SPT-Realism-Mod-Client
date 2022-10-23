@@ -27,7 +27,7 @@ namespace RealismMod
         {
             if (__instance.Item.Owner.ID.StartsWith("pmc"))
             {
-                Helper.isReloading = true;
+                Helper.IsReloading = true;
             }
         }
     }
@@ -45,7 +45,7 @@ namespace RealismMod
         {
             if (__instance.Item.Owner.ID.StartsWith("pmc"))
             {
-                Helper.isReloading = true;
+                Helper.IsReloading = true;
             }
         }
     }
@@ -63,7 +63,7 @@ namespace RealismMod
         {
             if (__instance.Item.Owner.ID.StartsWith("pmc"))
             {
-                Helper.isReloading = false;
+                Helper.IsReloading = false;
             }
         }
     }
@@ -128,7 +128,7 @@ namespace RealismMod
             if (__instance?.Owner?.ID != null && __instance.Owner.ID.StartsWith("pmc"))
             {
                 ErgoDeltaPatch p = new ErgoDeltaPatch();
-                if (Helper.isReloading)
+                if (Helper.IsReloading)
                 {
                     __result = p.MagDelta(ref __instance);
                 }
@@ -151,10 +151,6 @@ namespace RealismMod
             float totalWeight = __instance.GetSingleItemTotalWeight();
             string weapType = WeaponProperties.WeaponType(__instance);
             string weapOpType = WeaponProperties.OperationType(__instance);
-
-            string instanceID = __instance.Id + totalWeight.ToString();
-            __instance.ConflictingItems[4] = instanceID;
-            WeaponProperties.SavedInstanceID = instanceID;
 
             Mod magazine = __instance.GetCurrentMagazine();
             float magErgo = 0;
@@ -220,7 +216,7 @@ namespace RealismMod
             float totalCOIDelta = 0;
 
 
-            StatCalc.weaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref totalRecoilDamping, ref totalRecoilHandDamping, WeaponProperties.SDTotalCOI, WeaponProperties.HasShoulderContact, ref totalCOI, ref totalCOIDelta, __instance.CenterOfImpactBase);
+            StatCalc.weaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref recoilDamping, ref recoilHandDamping, WeaponProperties.SDTotalCOI, WeaponProperties.HasShoulderContact, ref totalCOI, ref totalCOIDelta, __instance.CenterOfImpactBase);
 
             float totalReloadSpeedMod = 0;
             float totalFixSpeedMod = 0;
@@ -473,9 +469,9 @@ namespace RealismMod
         {
             if (__instance.Item.Owner.ID.StartsWith("pmc"))
             {
-                SkillsClass.GClass1546 skillsClass = (SkillsClass.GClass1546)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1546_0").GetValue(__instance);
+                SkillsClass.GClass1552 skillsClass = (SkillsClass.GClass1552)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1552_0").GetValue(__instance);
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
-                SkillsClass.GClass1546 weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
+                SkillsClass.GClass1552 weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
 
                 skillsClass.ReloadSpeed = weaponInfo.ReloadSpeed * (1 + WeaponProperties.ReloadSpeedModifier);
                 skillsClass.FixSpeed = weaponInfo.FixSpeed * (1 + WeaponProperties.FixSpeedModifier);

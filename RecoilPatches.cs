@@ -22,11 +22,11 @@ namespace RealismMod
             return typeof(ShotEffector).GetMethod("OnWeaponParametersChanged", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        public GClass1162.GClass1204 GlobalsAiming
+        public GClass1168.GClass1210 GlobalsAiming
         {
             get
             {
-                return Singleton<GClass1162>.Instance.Aiming;
+                return Singleton<GClass1168>.Instance.Aiming;
             }
         }
 
@@ -38,7 +38,7 @@ namespace RealismMod
             {
 
                 OnWeaponParametersChangedPatch p = new OnWeaponParametersChangedPatch();
-                SkillsClass.GClass1546 buffInfo = (SkillsClass.GClass1546)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
+                SkillsClass.GClass1552 buffInfo = (SkillsClass.GClass1552)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
                 WeaponTemplate template = wep.Template;
 
                 float vRecoilDelta = WeaponProperties.VRecoilDelta;

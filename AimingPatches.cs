@@ -31,11 +31,11 @@ namespace RealismMod
                 bool isOn = component != null && (component.Togglable == null || component.Togglable.On);
                 if (isOn && !WeaponProperties.WeaponCanFSADS && !FaceShieldProperties.AllowsADS(component.Item))
                 {
-                    Helper.isAllowedAim = false;
+                    Helper.IsAllowedAim = false;
                 }
                 else
                 {
-                    Helper.isAllowedAim = true;
+                    Helper.IsAllowedAim = true;
                 }
                 Plugin.isAiming = ____isAiming;
             }
@@ -56,7 +56,7 @@ namespace RealismMod
 
             if (Plugin.enableFSPatch.Value == true)
             {
-                if (Helper.isAllowedAim)
+                if (Helper.IsAllowedAim)
                 {
                     return true;
                 }

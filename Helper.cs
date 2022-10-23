@@ -11,29 +11,29 @@ using System.Reflection;
 using UnityEngine;
 
 
-using Silencer = GClass2106;
-using FlashHider = GClass2103;
-using MuzzleCombo = GClass2104;
-using Barrel = GClass2126;
-using Mount = GClass2122;
-using Receiver = GClass2129;
-using Stock = GClass2124;
-using Charge = GClass2117;
-using CompactCollimator = GClass2110;
-using Collimator = GClass2109;
-using AssaultScope = GClass2108;
-using Scope = GClass2112;
-using IronSight = GClass2111;
-using SpecialScope = GClass2113;
+using Silencer = GClass2112;
+using FlashHider = GClass2109;
+using MuzzleCombo = GClass2110;
+using Barrel = GClass2132;
+using Mount = GClass2128;
+using Receiver = GClass2135;
+using Stock = GClass2130;
+using Charge = GClass2123;
+using CompactCollimator = GClass2116;
+using Collimator = GClass2115;
+using AssaultScope = GClass2114;
+using Scope = GClass2118;
+using IronSight = GClass2117;
+using SpecialScope = GClass2119;
 using Magazine = MagazineClass;
-using AuxiliaryMod = GClass2092;
-using Foregrip = GClass2096;
-using PistolGrip = GClass2128;
-using Gasblock = GClass2097;
-using Handguard = GClass2127;
-using Bipod = GClass2094;
-using Flashlight = GClass2095;
-using TacticalCombo = GClass2100;
+using AuxiliaryMod = GClass2098;
+using Foregrip = GClass2102;
+using PistolGrip = GClass2134;
+using Gasblock = GClass2103;
+using Handguard = GClass2133;
+using Bipod = GClass2100;
+using Flashlight = GClass2101;
+using TacticalCombo = GClass2106;
 using System.Collections;
 
 namespace RealismMod
@@ -43,23 +43,9 @@ namespace RealismMod
     {
 
 
-        public static bool isAllowedAim = true;
+        public static bool IsAllowedAim = true;
 
-        public static bool isReloading = false;
-
-        public static bool IsInReloadOperation = false;
-
-        private static System.Random random = new System.Random();
-
-        public static string testID = "";
-
-        public static string genderateID()
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return new string(Enumerable.Repeat(chars, 5)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
-        }
-
+        public static bool IsReloading = false;
 
         public static bool nullCheck(string[] confItemArray)
         {
@@ -85,17 +71,12 @@ namespace RealismMod
             return true;
         }
 
-        public static void SafelyAddAttributeToList(GClass2197 itemAttribute, Mod __instance)
+        public static void SafelyAddAttributeToList(GClass2203 itemAttribute, Mod __instance)
         {
             if (itemAttribute.Base() != 0f)
             {
                 __instance.Attributes.Add(itemAttribute);
             }
-        }
-
-        public static bool isNotStock(Mod mod)
-        {
-            return !(mod is Stock);
         }
 
         public static bool isStock(Mod mod)
