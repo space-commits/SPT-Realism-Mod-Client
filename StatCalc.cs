@@ -209,6 +209,7 @@ namespace RealismMod
                     modType = "folded_stock";
                     position = "neutral";
                     hasShoulderContact = false;
+                    return;
                 }
 
                 if (!folded)
@@ -231,27 +232,21 @@ namespace RealismMod
                             modAutoROF = 0;
                             modSemiROF = 0;
                             //duraburn = 0 
-                            //malfhance = 0
+                            //malfchance = 0
+                            return;
                         }
                         if (modType == "buffer_stock")
                         {
                             modAutoROF = 0;
                             modSemiROF = 0;
                             //duraburn = 0 
-                            //malfhance = 0
+                            //malfchance = 0
+                            return;
                         }
 
                     }
 
-                    if (modType == "hydraulic_buffer" && (weap.WeapClass != "shotgun" || weap.WeapClass != "sniperRifle" || weap.WeapClass != "assaultCarbine") || weapOpType == "buffer")
-                    {
-                        modVRecoil = 0;
-                        modHRecoil = 0;
-                        modDispersion = 0;
-                        modCamRecoil = 0;
-                    }
-
-                    if (modType == "buffer_adapter")
+                    if (modType == "buffer_adapter" || modType == "stock_adapter")
                     {
                         bool adapterContainsStock = false;
                         if (mod.Slots[0].ContainedItem != null)
@@ -281,9 +276,45 @@ namespace RealismMod
                             modDispersion += WeaponProperties.AdapterPistolGripBonusDispersion;
                             modErgo += WeaponProperties.AdapterPistolGripBonusErgo;
                         }
+                        return;
+                    }
+
+                    if (modType == "hydraulic_buffer" && (weap.WeapClass != "shotgun" || weap.WeapClass != "sniperRifle" || weap.WeapClass != "assaultCarbine") || weapOpType == "buffer")
+                    {
+                        modVRecoil = 0;
+                        modHRecoil = 0;
+                        modDispersion = 0;
+                        modCamRecoil = 0;
+                        return;
                     }
                 }
             }
+
+            if (modType == "grip_stock_adapter")
+            {
+                bool adapterContainsStock = false;
+                if (mod.Slots[0].ContainedItem != null)
+                {
+                    Mod containedMod = mod.Slots[0].ContainedItem as Mod;
+                    if (AttatchmentProperties.ModType(containedMod) == "stock")
+                    {
+                        adapterContainsStock = true;
+                    }
+                    if (containedMod.Slots.Length > 0 && containedMod.Slots[0].ContainedItem != null)
+                    {
+                        adapterContainsStock = true;
+                    }
+                }
+                if (adapterContainsStock == false)
+                {
+                    modVRecoil = 0;
+                    modHRecoil = 0;
+                    modDispersion = 0;
+                    modCamRecoil = 0;
+                }
+                return;
+            }
+
 
             if (modType == "muzzle_supp_adapter" && mod.Slots[0].ContainedItem != null)
             {
@@ -296,6 +327,7 @@ namespace RealismMod
                     modDispersion = 0;
                     modAngle = 0;
                 }
+                return;
             }
 
             if (modType == "sig_taper_brake")
@@ -312,17 +344,20 @@ namespace RealismMod
                         modAngle = 0;
                     }
                 }
+                return;
             }
 
             if (modType == "booster" && weapType != "short_AK")
             {
-                modAutoROF = 0;
-                modSemiROF = 0;
+                modAutoROF *= 0.5f;
+                modSemiROF *= 0.5f;
+                return;
             }
 
             if (modType == "foregrip_adapter" && mod.Slots[0].ContainedItem != null)
             {
                 modErgo = 0f;
+                return;
             }
 
             /*                    if (modType == "shot_pump_grip_adapt" && mod.Slots[0].ContainedItem != null)

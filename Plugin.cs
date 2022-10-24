@@ -132,7 +132,7 @@ namespace RealismMod
             string WeapStatSettings = "Weapon Stat Settings";
             string MiscSettings = "Misc. Settigns";
 
-            sensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Limit", 0.4f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 3 }));
+            sensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Limit", 0.3f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 3 }));
             sensResetRate = Config.Bind<float>(RecoilSettings, "Senisitivity Reset Rate", 1.12f, new ConfigDescription("Rate At Which Sensitivity Recovers After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 2 }));
             sensChangeRate = Config.Bind<float>(RecoilSettings, "Sensitivity Change Rate", 0.7f, new ConfigDescription("Rate At Which Sensitivity Is Reduced While Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 1 }));
 
@@ -195,7 +195,7 @@ namespace RealismMod
         }
 
 
-        void Update()
+        void FixedUpdate()
         {
             if (Helper.isReady())
             {
