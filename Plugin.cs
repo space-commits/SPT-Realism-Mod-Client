@@ -178,20 +178,12 @@ namespace RealismMod
             new ReloadMagPatch().Enable();
 
             new SetMagTypeCurrentPatch().Enable();
+            new SetMagTypeNewPatch().Enable();
             new SetMagInWeaponPatch().Enable();
 
             new CanStartReloadPatch().Enable();
 
-            new SetMagTypeNewPatch().Enable();
 
-
-            new SetSpeedReloadPatch().Enable();
-            /*
-                        new SetSpeedReloadPatch().Enable();
-                        new SetMagTypeNewPatch().Enable();
-                        new InsertMagInInventoryModePatch().Enable();
-                        new PullOutMagInInventoryModePatch().Enable();
-                        new ResetInsertMagInInventoryModePatch().Enable();*/
 
             new ModConstructorPatch().Enable();
             new WeaponConstructorPatch().Enable();

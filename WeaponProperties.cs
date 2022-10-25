@@ -257,6 +257,7 @@ namespace RealismMod
         public static float currentMagReloadSpeedMulti = 1f;
         public static float newMagReloadSpeedMulti = 1f;
 
+        public static float totalWeapReloadSpeedLessMag = 1f;
 
         public static float convergenceChangeRate = 0.98f;
         public static float convergenceResetRate = 1.16f;

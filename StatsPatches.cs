@@ -14,253 +14,6 @@ using UnityEngine;
 namespace RealismMod
 {
 
-    public class SetSpeedReloadPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(GClass644).GetMethod("SetSpeedReload", BindingFlags.Static | BindingFlags.Public);
-
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix()
-        {
-            Logger.LogError("=====================================SetSpeedReload===================================");
-
-        }
-    }
-
-
-    public class SetMagFullPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(FirearmsAnimator).GetMethod("SetMagFull", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance)
-        {
-            Logger.LogWarning("=====================================SetMagFull===================================");
-
-        }
-    }
-
-
-    public class InsertMagInInventoryModePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(FirearmsAnimator).GetMethod("InsertMagInInventoryMode", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance)
-        {
-            Logger.LogWarning("=====================================InsertMagInInventoryMode===================================");
-
-        }
-    }
-
-    public class PullOutMagInInventoryModePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(FirearmsAnimator).GetMethod("PullOutMagInInventoryMode", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance)
-        {
-            Logger.LogWarning("=====================================PullOutMagInInventoryMode===================================");
-
-        }
-    }
-
-    public class ResetInsertMagInInventoryModePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(FirearmsAnimator).GetMethod("ResetInsertMagInInventoryMode", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance)
-        {
-            Logger.LogWarning("=====================================ResetInsertMagInInventoryMode===================================");
-
-        }
-    }
-    public class SetMagTypeNewPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(FirearmsAnimator).GetMethod("SetMagTypeNew", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance, int magType)
-        {
-            Logger.LogWarning("=====================================SetMagTypeNew===================================");
-            Logger.LogWarning("Current Mag Reload Speed = " + WeaponProperties.currentMagReloadSpeedMulti);
-            Logger.LogWarning("======================================================================================");
-            __instance.SetAnimationSpeed(WeaponProperties.currentMagReloadSpeedMulti);
-        }
-    }
-
-    public class SetMagTypeCurrentPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(FirearmsAnimator).GetMethod("SetMagTypeCurrent", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance, int magType)
-        {
-            Logger.LogWarning("=====================================SetMagTypeCurrent===================================");
-            Logger.LogWarning("Current Mag Reload Speed = " + WeaponProperties.currentMagReloadSpeedMulti);
-            Logger.LogWarning("======================================================================================");
-            __instance.SetAnimationSpeed(WeaponProperties.currentMagReloadSpeedMulti);
-        }
-    }
-
-    public class SetMagInWeaponPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(FirearmsAnimator).GetMethod("SetMagInWeapon", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance)
-        {
-            Logger.LogWarning("=====================================SetMagInWeapon===================================");
-            Logger.LogWarning("New Mag reload Speed = " + WeaponProperties.newMagReloadSpeedMulti);
-            Logger.LogWarning("======================================================================================");
-            __instance.SetAnimationSpeed(WeaponProperties.newMagReloadSpeedMulti);
-        }
-    }
-
-    public class CanStartReloadPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player.FirearmController).GetMethod("CanStartReload", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance)
-        {
-
-            if (__instance.Item.Owner.ID.StartsWith("pmc"))
-            {
-
-                Logger.LogWarning("=====================================CanStartReloadPatch===================================");
-                Logger.LogWarning("Current Magazine = " + __instance.Item.GetCurrentMagazine());
-                if (__instance.Item.GetCurrentMagazine() == null)
-                {
-                    Logger.LogWarning("Magazine is Null");
-                    Helper.noMagazineReload = true;
-                }
-                else
-                {
-                    Helper.noMagazineReload = false;
-                }
-                Logger.LogWarning("======================================================================================");
-            }
-
-        }
-    }
-
-    public class ReloadMagPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player.FirearmController).GetMethod("ReloadMag", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance, MagazineClass magazine)
-        {
-
-            if (__instance.Item.Owner.ID.StartsWith("pmc"))
-            {
-                Helper.IsReloading = true;
-                Logger.LogInfo("=====================================Reload Mag===================================");
-                if (Helper.noMagazineReload == true)
-                {
-                    Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
-                    Logger.LogInfo("No Mag In Gun ");
-                    StatCalc.magReloadSpeedModifier(magazine, false, true);
-                    player.HandsAnimator.SetAnimationSpeed(WeaponProperties.currentMagReloadSpeedMulti);
-                    Logger.LogWarning("Current Mag Reload Speed = " + WeaponProperties.currentMagReloadSpeedMulti);
-                    Logger.LogWarning("New Reload Speed = " + WeaponProperties.newMagReloadSpeedMulti);
-                }
-                else
-                {
-                    Logger.LogInfo("Mag In Gun ");
-                    StatCalc.magReloadSpeedModifier(magazine, true, false);
-                    Logger.LogWarning("New Reload Speed = " + WeaponProperties.newMagReloadSpeedMulti);
-                }
-                Logger.LogInfo("Magazine = " + magazine);
-                Logger.LogInfo("==================================================================================");
-        
-            }
-
-
-        }
-    }
-
-    public class QuickReloadMagPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player.FirearmController).GetMethod("QuickReloadMag", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance)
-        {
-            if (__instance.Item.Owner.ID.StartsWith("pmc"))
-            {
-                Helper.IsReloading = true;
-            }
-        }
-    }
-
-    public class OnMagInsertedPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player.FirearmController).GetMethod("method_43", BindingFlags.Instance | BindingFlags.NonPublic);
-
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(ref Player.FirearmController __instance)
-        {
-            if (__instance.Item.Owner.ID.StartsWith("pmc"))
-            {
-                Helper.IsReloading = false;
-                WeaponProperties.newMagReloadSpeedMulti = 1;
-                WeaponProperties.currentMagReloadSpeedMulti = 1;
-            }
-
-            Logger.LogInfo("=================Magazine Inserted======================");
-        }
-    }
-
     public class SingleFireRatePatch : ModulePatch
     {
 
@@ -358,11 +111,9 @@ namespace RealismMod
                 magErgo = magazine.Ergonomics;
                 currentTorque = StatCalc.getTorque(position, magWeightFactored, WeaponProperties.Balance);
                 StatCalc.magReloadSpeedModifier((MagazineClass)magazine, false, false);
-                Logger.LogInfo("Mag Delta Mag Speed = " + WeaponProperties.currentMagReloadSpeedMulti);
             }
 
-
-            float weapWeightLessMagFactor = ((totalWeight - magWeight) / 100f) * -1f;
+            float weapWeightLessMag = totalWeight - magWeight;
             float weapTorqueLessMagFactor = WeaponProperties.SDBalance / 100f;
 
             float currentReloadSpeed = WeaponProperties.SDReloadSpeedModifier;
@@ -417,7 +168,7 @@ namespace RealismMod
             float totalFixSpeedMod = 0;
             float totalAimMoveSpeedMod = 0;
 
-            StatCalc.speedStatCalc(totalWeight, currentReloadSpeed, currentFixSpeed, totalTorque, weapWeightLessMagFactor, weapTorqueLessMagFactor, ref totalReloadSpeedMod, ref totalFixSpeedMod, ref totalAimMoveSpeedMod);
+            StatCalc.speedStatCalc(totalWeight, weapWeightLessMag, currentReloadSpeed, currentFixSpeed, totalTorque, weapTorqueLessMagFactor, ref totalReloadSpeedMod, ref totalFixSpeedMod, ref totalAimMoveSpeedMod);
 
             float ergonomicWeight = 0;
             StatCalc.ergoWeightCalc(totalWeight, totalErgoDelta, ref ergonomicWeight);
@@ -517,9 +268,6 @@ namespace RealismMod
                     float modFix = AttachmentProperties.FixSpeed(__instance.Mods[i]);
                     string modType = AttachmentProperties.ModType(__instance.Mods[i]);
                     string position = StatCalc.getModPosition(__instance.Mods[i], weapType, weapOpType);
-                    string templID = mod.TemplateId;
-
-                    Logger.LogInfo("Mod is = " + mod.LocalizedName());
 
                     StatCalc.modTypeStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position);
                     StatCalc.modStatCalc(modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil);
@@ -671,6 +419,7 @@ namespace RealismMod
                 SkillsClass.GClass1552 weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
 
                 skillsClass.ReloadSpeed = weaponInfo.ReloadSpeed * (1 + WeaponProperties.ReloadSpeedModifier);
+                WeaponProperties.totalWeapReloadSpeedLessMag = skillsClass.ReloadSpeed;
                 skillsClass.FixSpeed = weaponInfo.FixSpeed * (1 + WeaponProperties.FixSpeedModifier);
                 skillsClass.AimMovementSpeed = weaponInfo.AimMovementSpeed + WeaponProperties.AimMoveSpeedModifier;
 
@@ -734,6 +483,7 @@ namespace RealismMod
                     */
                     float ergoWeight = WeaponProperties.ErgonomicWeight;
                     float weightFactor = StatCalc.proceduralIntensityFactorCalc(ergoWeight, 5f);
+                    float weightFactorModifier = 0.35f;
                     float aimIntensity = __instance.IntensityByAiming * 0.67f;
 
                     if (WeaponProperties.HasShoulderContact == false && firearmController.Item.WeapClass != "pistol")
@@ -742,13 +492,15 @@ namespace RealismMod
                     }
                     if (firearmController.Item.WeapClass == "pistol")
                     {
+                        Logger.LogInfo("Weapon Sawy for Pistol");
                         aimIntensity = __instance.IntensityByAiming * 0.5f;
+                        weightFactorModifier = 100f;
                     }
 
                     float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight * (1f + __instance.Overweight));
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_18").SetValue(__instance, swayStrength);
 
-                    float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate((ergoWeight * (weightFactor * 0.35f)) * (1f + __instance.Overweight));//delay from moving mouse to the weapon moving to center of screen.
+                    float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate((ergoWeight * (weightFactor * weightFactorModifier)) * (1f + __instance.Overweight));//delay from moving mouse to the weapon moving to center of screen.
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, weapDisplacement);
 
                     __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * (Mathf.Clamp(aimIntensity * (weightFactor * 0.1f), aimIntensity, 1.18f)); // the diving/tiling animation as you move weapon side to side.

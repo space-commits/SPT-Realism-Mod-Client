@@ -59,37 +59,34 @@ namespace RealismMod
         public static float AimMoveSpeedTorqueMult = 1f;// needs tweaking
         public static float AimMoveSpeedMult = 0.3f;//
 
+        public static float magWeightMult = 10f;
+
         public static void magReloadSpeedModifier(MagazineClass magazine, bool isNewMag, bool reloadFromNoMag)
         {
-            float magWeight = magazine.GetSingleItemTotalWeight();
+            float magWeight = magazine.GetSingleItemTotalWeight() * magWeightMult;
+            float magWeightFactor = ((magWeight / 100) * -1f) + 1;
             float magSpeed = AttachmentProperties.ReloadSpeed(magazine);
-
+            float totalWeapReloadSpeedLessMag = WeaponProperties.totalWeapReloadSpeedLessMag;
 
             float magSpeedMulti = (magSpeed / 100) + 1;
+            float totalReloadSpeed = (magSpeedMulti * magWeightFactor) * totalWeapReloadSpeedLessMag;
 
             if (reloadFromNoMag == true)
             {
-                WeaponProperties.newMagReloadSpeedMulti = magSpeedMulti;
-                WeaponProperties.currentMagReloadSpeedMulti = magSpeedMulti;
+                WeaponProperties.newMagReloadSpeedMulti = totalReloadSpeed;
+                WeaponProperties.currentMagReloadSpeedMulti = totalReloadSpeed;
             }
             else
             {
                 if (isNewMag == true)
                 {
-                    WeaponProperties.newMagReloadSpeedMulti = magSpeedMulti;
+                    WeaponProperties.newMagReloadSpeedMulti = totalReloadSpeed;
                 }
                 else
                 {
-                    WeaponProperties.currentMagReloadSpeedMulti = magSpeedMulti;
+                    WeaponProperties.currentMagReloadSpeedMulti = totalReloadSpeed;
                 }
             }
-
-            //get magazine's reload speed stat, and its total weight incl. ammo
-            //call this method twice, once by mag delta, and once by reloadmag() for the mag being reloaded to
-            //set two static floats, currenMagSpeedMulti and newMagSpeedMulti. 
-            //ReloadMag() sets currenMagSpeedMulti and SetMagInWeapon() sets new mag reload speed. Easy.
-            //it needs to set a % modifier, which is then applied to whatever animation speed happens to be. Which means I need to somehow figure out what the animation speed
-            //is suppsed to be set to, otherwise things like blacked arms won't affect it, I think?
         }
 
 
@@ -113,9 +110,9 @@ namespace RealismMod
             return weightFactor;
         }
 
-        public static void speedStatCalc(float totalWeight, float currentReloadSpeed, float currentFixSpeed, float totalTorque, float weapWeightLessMagFactor, float weapTorqueLessMagFactor, ref float totalReloadSpeed, ref float totalFixSpeed, ref float totalAimMoveSpeedModifier)
+        public static void speedStatCalc(float totalWeight, float weapWeightLessMag, float currentReloadSpeed, float currentFixSpeed, float totalTorque,float weapTorqueLessMagFactor, ref float totalReloadSpeed, ref float totalFixSpeed, ref float totalAimMoveSpeedModifier)
         {
-            float reloadSpeedWeightFactor = StatCalc.weightStatCalc(StatCalc.ReloadSpeedWeightMult, totalWeight) / 100;
+            float reloadSpeedWeightFactor = StatCalc.weightStatCalc(StatCalc.ReloadSpeedWeightMult, weapWeightLessMag) / 100;
             float fixSpeedWeightFactor = StatCalc.weightStatCalc(StatCalc.FixSpeedWeightMult, totalWeight) / 100;
             float aimMoveSpeedWeightFactor = StatCalc.weightStatCalc(StatCalc.AimMoveSpeedWeightMult, totalWeight) / 100;
 
@@ -123,7 +120,7 @@ namespace RealismMod
             float torqueFactor = totalTorque / 100f;
          /*   float torqueFactorInverse = totalTorque / 100f * -1f;*/
 
-            totalReloadSpeed = (currentReloadSpeed / 100f) + ((reloadSpeedWeightFactor + (torqueFactor * StatCalc.ReloadSpeedTorqueMult)) * StatCalc.ReloadSpeedMult);
+            totalReloadSpeed = (currentReloadSpeed / 100f) + ((reloadSpeedWeightFactor + (weapTorqueLessMagFactor * StatCalc.ReloadSpeedTorqueMult)) * StatCalc.ReloadSpeedMult);
             totalFixSpeed = (currentFixSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * StatCalc.FixSpeedTorqueMult)) * StatCalc.FixSpeedMult);
             totalAimMoveSpeedModifier = (aimMoveSpeedWeightFactor + (torqueFactor * StatCalc.AimMoveSpeedTorqueMult)) * StatCalc.AimMoveSpeedMult;
         }
