@@ -14,6 +14,142 @@ using UnityEngine;
 namespace RealismMod
 {
 
+    public class SetSpeedReloadPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GClass644).GetMethod("SetSpeedReload", BindingFlags.Static | BindingFlags.Public);
+
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix()
+        {
+            Logger.LogWarning("=====================================SetSpeedReload===================================");
+
+        }
+    }
+
+
+    public class SetMagInWeaponPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetMagInWeapon", BindingFlags.Instance | BindingFlags.Public);
+
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(FirearmsAnimator __instance)
+        {
+            Logger.LogWarning("=====================================SetMagInWeapon===================================");
+            __instance.SetAnimationSpeed(1.5f);
+        }
+    }
+
+
+    public class SetMagFullPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetMagFull", BindingFlags.Instance | BindingFlags.Public);
+
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(FirearmsAnimator __instance)
+        {
+            Logger.LogWarning("=====================================SetMagFull===================================");
+
+        }
+    }
+
+
+    public class InsertMagInInventoryModePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("InsertMagInInventoryMode", BindingFlags.Instance | BindingFlags.Public);
+
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(FirearmsAnimator __instance)
+        {
+            Logger.LogWarning("=====================================InsertMagInInventoryMode===================================");
+
+        }
+    }
+
+    public class PullOutMagInInventoryModePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("PullOutMagInInventoryMode", BindingFlags.Instance | BindingFlags.Public);
+
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(FirearmsAnimator __instance)
+        {
+            Logger.LogWarning("=====================================PullOutMagInInventoryMode===================================");
+
+        }
+    }
+
+    public class ResetInsertMagInInventoryModePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("ResetInsertMagInInventoryMode", BindingFlags.Instance | BindingFlags.Public);
+
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(FirearmsAnimator __instance)
+        {
+            Logger.LogWarning("=====================================ResetInsertMagInInventoryMode===================================");
+
+        }
+    }
+
+
+
+    public class SetMagTypeCurrentPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetMagTypeCurrent", BindingFlags.Instance | BindingFlags.Public);
+
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(FirearmsAnimator __instance, int magType)
+        {
+            Logger.LogWarning("=====================================SetMagTypeCurrent===================================");
+            Logger.LogWarning("mag type = " + magType);
+            __instance.SetAnimationSpeed(1.5f);
+
+        }
+    }
+
+    public class SetMagTypeNewtPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetMagTypeNew", BindingFlags.Instance | BindingFlags.Public);
+
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(FirearmsAnimator __instance, int magType)
+        {
+            Logger.LogWarning("=====================================SetMagTypeNew===================================");
+            Logger.LogWarning("mag type = " + magType);
+            __instance.SetAnimationSpeed(0.5f);
+        }
+    }
+
     public class ReloadMagPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -23,12 +159,18 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance)
+        private static void PatchPostfix(Player.FirearmController __instance, MagazineClass magazine)
         {
+
             if (__instance.Item.Owner.ID.StartsWith("pmc"))
             {
                 Helper.IsReloading = true;
             }
+  /*          Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);*/
+
+     /*       player.HandsAnimator.SetAnimationSpeed(10);*/
+            Logger.LogInfo("=====================================Reload Mag===================================");
+            Logger.LogInfo("Magazine = " + magazine);
         }
     }
 
@@ -65,6 +207,8 @@ namespace RealismMod
             {
                 Helper.IsReloading = false;
             }
+
+            Logger.LogInfo("=================Magazine Inserted======================");
         }
     }
 

@@ -153,9 +153,6 @@ namespace RealismMod
             new AutoFireRatePatch().Enable();
             new SingleFireRatePatch().Enable();
             new ErgoDeltaPatch().Enable();
-            new OnMagInsertedPatch().Enable();
-            new QuickReloadMagPatch().Enable();
-            new ReloadMagPatch().Enable();
             new ErgoWeightPatch().Enable();
             new SyncWithCharacterSkillsPatch().Enable();
             new UpdateWeaponVariablesPatch().Enable();
@@ -175,6 +172,19 @@ namespace RealismMod
             {
                 new IsKnownMalfTypePatch().Enable();
             }
+
+            new OnMagInsertedPatch().Enable();
+            new QuickReloadMagPatch().Enable();
+            new ReloadMagPatch().Enable();
+
+            new SetMagTypeCurrentPatch().Enable();
+            new SetMagTypeNewtPatch().Enable();
+            new SetSpeedReloadPatch().Enable();
+            new SetMagInWeaponPatch().Enable();
+   /*         new SetMagFullPatch().Enable();*/
+            new InsertMagInInventoryModePatch().Enable();
+            new PullOutMagInInventoryModePatch().Enable();
+            new ResetInsertMagInInventoryModePatch().Enable();
 
             new ModConstructorPatch().Enable();
             new WeaponConstructorPatch().Enable();

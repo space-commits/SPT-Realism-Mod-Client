@@ -290,6 +290,51 @@ namespace RealismMod
                 }
             }
 
+            if (modType == "booster" && weapType != "short_AK")
+            {
+                modAutoROF *= 0.5f;
+                modSemiROF *= 0.5f;
+                return;
+            }
+
+            if (modType == "foregrip_adapter" && mod.Slots[0].ContainedItem != null)
+            {
+                modErgo = 0f;
+                return;
+            }
+
+            if (modType == "muzzle_supp_adapter" && mod.Slots[0].ContainedItem != null)
+            {
+                Mod containedMod = mod.Slots[0].ContainedItem as Mod;
+                if (Helper.isSilencer(containedMod))
+                {
+                    modVRecoil = 0;
+                    modHRecoil = 0;
+                    modCamRecoil = 0;
+                    modDispersion = 0;
+                    modAngle = 0;
+                }
+                return;
+            }
+
+
+            if (modType == "sig_taper_brake")
+            {
+                if (mod.Parent.Container != null)
+                {
+                    Mod parent = mod.Parent.Container.ParentItem as Mod;
+                    if (parent.Slots[1].ContainedItem != null)
+                    {
+                        modVRecoil = 0;
+                        modHRecoil = 0;
+                        modCamRecoil = 0;
+                        modDispersion = 0;
+                        modAngle = 0;
+                    }
+                }
+                return;
+            }
+
             if (modType == "grip_stock_adapter")
             {
                 bool adapterContainsStock = false;
@@ -315,50 +360,6 @@ namespace RealismMod
                 return;
             }
 
-
-            if (modType == "muzzle_supp_adapter" && mod.Slots[0].ContainedItem != null)
-            {
-                Mod containedMod = mod.Slots[0].ContainedItem as Mod;
-                if (Helper.isSilencer(containedMod))
-                {
-                    modVRecoil = 0;
-                    modHRecoil = 0;
-                    modCamRecoil = 0;
-                    modDispersion = 0;
-                    modAngle = 0;
-                }
-                return;
-            }
-
-            if (modType == "sig_taper_brake")
-            {
-                if (mod.Parent.Container != null)
-                {
-                    Mod parent = mod.Parent.Container.ParentItem as Mod;
-                    if (parent.Slots[1].ContainedItem != null)
-                    {
-                        modVRecoil = 0;
-                        modHRecoil = 0;
-                        modCamRecoil = 0;
-                        modDispersion = 0;
-                        modAngle = 0;
-                    }
-                }
-                return;
-            }
-
-            if (modType == "booster" && weapType != "short_AK")
-            {
-                modAutoROF *= 0.5f;
-                modSemiROF *= 0.5f;
-                return;
-            }
-
-            if (modType == "foregrip_adapter" && mod.Slots[0].ContainedItem != null)
-            {
-                modErgo = 0f;
-                return;
-            }
 
             /*                    if (modType == "shot_pump_grip_adapt" && mod.Slots[0].ContainedItem != null)
                                 {
