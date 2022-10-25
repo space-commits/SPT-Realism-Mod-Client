@@ -59,6 +59,39 @@ namespace RealismMod
         public static float AimMoveSpeedTorqueMult = 1f;// needs tweaking
         public static float AimMoveSpeedMult = 0.3f;//
 
+        public static void magReloadSpeedModifier(MagazineClass magazine, bool isNewMag, bool reloadFromNoMag)
+        {
+            float magWeight = magazine.GetSingleItemTotalWeight();
+            float magSpeed = AttachmentProperties.ReloadSpeed(magazine);
+
+
+            float magSpeedMulti = (magSpeed / 100) + 1;
+
+            if (reloadFromNoMag == true)
+            {
+                WeaponProperties.newMagReloadSpeedMulti = magSpeedMulti;
+                WeaponProperties.currentMagReloadSpeedMulti = magSpeedMulti;
+            }
+            else
+            {
+                if (isNewMag == true)
+                {
+                    WeaponProperties.newMagReloadSpeedMulti = magSpeedMulti;
+                }
+                else
+                {
+                    WeaponProperties.currentMagReloadSpeedMulti = magSpeedMulti;
+                }
+            }
+
+            //get magazine's reload speed stat, and its total weight incl. ammo
+            //call this method twice, once by mag delta, and once by reloadmag() for the mag being reloaded to
+            //set two static floats, currenMagSpeedMulti and newMagSpeedMulti. 
+            //ReloadMag() sets currenMagSpeedMulti and SetMagInWeapon() sets new mag reload speed. Easy.
+            //it needs to set a % modifier, which is then applied to whatever animation speed happens to be. Which means I need to somehow figure out what the animation speed
+            //is suppsed to be set to, otherwise things like blacked arms won't affect it, I think?
+        }
+
 
         public static void ergoWeightCalc(float totalWeight, float totalErgoDelta, ref float ergonomicWeight)
         {
@@ -217,7 +250,7 @@ namespace RealismMod
                     if (modType == "stock" || modType == "buffer_stock")
                     {
                         hasShoulderContact = mod.Template.HasShoulderContact;
-                        stockAllowsFSADS = AttatchmentProperties.StockAllowADS(mod);
+                        stockAllowsFSADS = AttachmentProperties.StockAllowADS(mod);
                     }
 
                     if (weapOpType != "buffer")
@@ -252,7 +285,7 @@ namespace RealismMod
                         if (mod.Slots[0].ContainedItem != null)
                         {
                             Mod containedMod = mod.Slots[0].ContainedItem as Mod;
-                            if (AttatchmentProperties.ModType(containedMod) != "buffer")
+                            if (AttachmentProperties.ModType(containedMod) != "buffer")
                             {
                                 adapterContainsStock = true;
                             }
@@ -341,7 +374,7 @@ namespace RealismMod
                 if (mod.Slots[0].ContainedItem != null)
                 {
                     Mod containedMod = mod.Slots[0].ContainedItem as Mod;
-                    if (AttatchmentProperties.ModType(containedMod) == "stock")
+                    if (AttachmentProperties.ModType(containedMod) == "stock")
                     {
                         adapterContainsStock = true;
                     }

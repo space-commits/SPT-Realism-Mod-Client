@@ -15,6 +15,7 @@
           "NETStandard.Library": "2.0.3",
           "Aki.Common": "1.0.0.0",
           "Aki.Reflection": "1.0.0.0",
+          "AnimationSystem.Types": "0.0.0.0",
           "Assembly-CSharp": "0.0.0.0",
           "Comfort": "1.0.0.4",
           "ItemComponent.Types": "0.0.0.0",
@@ -412,6 +413,14 @@
           }
         }
       },
+      "AnimationSystem.Types/0.0.0.0": {
+        "runtime": {
+          "AnimationSystem.Types.dll": {
+            "assemblyVersion": "0.0.0.0",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
       "Assembly-CSharp/0.0.0.0": {
         "runtime": {
           "Assembly-CSharp.dll": {
@@ -495,6 +504,14 @@
       "UnityEngine.UnityWebRequestWWWModule/0.0.0.0": {
         "runtime": {
           "UnityEngine.UnityWebRequestWWWModule.dll": {
+            "assemblyVersion": "0.0.0.0",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "UnityEngine.AnimationModule/0.0.0.0": {
+        "runtime": {
+          "UnityEngine.AnimationModule.dll": {
             "assemblyVersion": "0.0.0.0",
             "fileVersion": "0.0.0.0"
           }
@@ -800,6 +817,11 @@
       "serviceable": false,
       "sha512": ""
     },
+    "AnimationSystem.Types/0.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
     "Assembly-CSharp/0.0.0.0": {
       "type": "reference",
       "serviceable": false,
@@ -851,6 +873,11 @@
       "sha512": ""
     },
     "UnityEngine.UnityWebRequestWWWModule/0.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "UnityEngine.AnimationModule/0.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""

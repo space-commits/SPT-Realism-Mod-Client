@@ -18,7 +18,7 @@ using System.Collections;
 
 namespace RealismMod
 {
-    public static class AttatchmentProperties
+    public static class AttachmentProperties
     {
 
         public static string ModType(Mod mod)

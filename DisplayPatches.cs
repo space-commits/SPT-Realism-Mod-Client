@@ -63,17 +63,17 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Mod __instance, string id, ModTemplate template)
         {
-            float vRecoil = AttatchmentProperties.VerticalRecoil(__instance);
-            float hRecoil = AttatchmentProperties.HorizontalRecoil(__instance);
-            float disperion = AttatchmentProperties.Dispersion(__instance);
-            float cameraRecoil = AttatchmentProperties.CameraRecoil(__instance);
-            float autoROF = AttatchmentProperties.AutoROF(__instance);
-            float semiROF = AttatchmentProperties.SemiROF(__instance);
-            float malfChance = AttatchmentProperties.ModMalfunctionChance(__instance);
-            float angle = AttatchmentProperties.RecoilAngle(__instance);
-            float reloadSpeed = AttatchmentProperties.ReloadSpeed(__instance);
-            float fixSpeed = AttatchmentProperties.FixSpeed(__instance);
-            float aimSpeed = AttatchmentProperties.AimSpeed(__instance);
+            float vRecoil = AttachmentProperties.VerticalRecoil(__instance);
+            float hRecoil = AttachmentProperties.HorizontalRecoil(__instance);
+            float disperion = AttachmentProperties.Dispersion(__instance);
+            float cameraRecoil = AttachmentProperties.CameraRecoil(__instance);
+            float autoROF = AttachmentProperties.AutoROF(__instance);
+            float semiROF = AttachmentProperties.SemiROF(__instance);
+            float malfChance = AttachmentProperties.ModMalfunctionChance(__instance);
+            float angle = AttachmentProperties.RecoilAngle(__instance);
+            float reloadSpeed = AttachmentProperties.ReloadSpeed(__instance);
+            float fixSpeed = AttachmentProperties.FixSpeed(__instance);
+            float aimSpeed = AttachmentProperties.AimSpeed(__instance);
 
             GClass2203 hRecoilAtt = new GClass2203(Attributes.ENewItemAttributeId.HorizontalRecoil);
             hRecoilAtt.Name = ENewItemAttributeId.HorizontalRecoil.GetName();
@@ -497,18 +497,18 @@ namespace RealismMod
                 }
                 float modWeightFactored = StatCalc.factoredWeight(modWeight);
                 float modErgo = __instance.Mods[i].Ergonomics;
-                float modVRecoil = AttatchmentProperties.VerticalRecoil(__instance.Mods[i]);
-                float modHRecoil = AttatchmentProperties.HorizontalRecoil(__instance.Mods[i]);
-                float modAutoROF = AttatchmentProperties.AutoROF(__instance.Mods[i]);
-                float modSemiROF = AttatchmentProperties.SemiROF(__instance.Mods[i]);
-                float modCamRecoil = AttatchmentProperties.CameraRecoil(__instance.Mods[i]);
-                float modDispersion = AttatchmentProperties.Dispersion(__instance.Mods[i]);
-                float modAngle = AttatchmentProperties.RecoilAngle(__instance.Mods[i]);
+                float modVRecoil = AttachmentProperties.VerticalRecoil(__instance.Mods[i]);
+                float modHRecoil = AttachmentProperties.HorizontalRecoil(__instance.Mods[i]);
+                float modAutoROF = AttachmentProperties.AutoROF(__instance.Mods[i]);
+                float modSemiROF = AttachmentProperties.SemiROF(__instance.Mods[i]);
+                float modCamRecoil = AttachmentProperties.CameraRecoil(__instance.Mods[i]);
+                float modDispersion = AttachmentProperties.Dispersion(__instance.Mods[i]);
+                float modAngle = AttachmentProperties.RecoilAngle(__instance.Mods[i]);
                 float modAccuracy = __instance.Mods[i].Accuracy;
-                float modReload = AttatchmentProperties.ReloadSpeed(__instance.Mods[i]);
-                float modAim = AttatchmentProperties.AimSpeed(__instance.Mods[i]);
-                float modFix = AttatchmentProperties.FixSpeed(__instance.Mods[i]);
-                string modType = AttatchmentProperties.ModType(__instance.Mods[i]);
+                float modReload = AttachmentProperties.ReloadSpeed(__instance.Mods[i]);
+                float modAim = AttachmentProperties.AimSpeed(__instance.Mods[i]);
+                float modFix = AttachmentProperties.FixSpeed(__instance.Mods[i]);
+                string modType = AttachmentProperties.ModType(__instance.Mods[i]);
                 string position = StatCalc.getModPosition(__instance.Mods[i], weapType, weapOpType);
 
                 StatCalc.modTypeStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position);
