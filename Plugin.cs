@@ -154,8 +154,11 @@ namespace RealismMod
             new SingleFireRatePatch().Enable();
             new ErgoDeltaPatch().Enable();
             new ErgoWeightPatch().Enable();
+
             new SyncWithCharacterSkillsPatch().Enable();
             new UpdateWeaponVariablesPatch().Enable();
+            new SetAimingSlowdownPatch().Enable();
+
             new method_17Patch().Enable();
             new UpdateSwayFactorsPatch().Enable();
 

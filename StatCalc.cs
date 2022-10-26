@@ -48,7 +48,7 @@ namespace RealismMod
         public static float HandDampingPistolMax = 0.7f;
 
         public static float ReloadSpeedWeightMult = 1f;//
-        public static float ReloadSpeedTorqueMult = 1f;// needs tweaking
+        public static float ReloadSpeedTorqueMult = 0.7f;// needs tweaking
         public static float ReloadSpeedMult = 0.4f;//
 
         public static float FixSpeedWeightMult = 1;//
@@ -59,17 +59,22 @@ namespace RealismMod
         public static float AimMoveSpeedTorqueMult = 1f;// needs tweaking
         public static float AimMoveSpeedMult = 0.3f;//
 
-        public static float magWeightMult = 10f;
+        public static float magWeightMult = 11f;
 
         public static void magReloadSpeedModifier(MagazineClass magazine, bool isNewMag, bool reloadFromNoMag)
         {
             float magWeight = magazine.GetSingleItemTotalWeight() * magWeightMult;
             float magWeightFactor = ((magWeight / 100) * -1f) + 1;
             float magSpeed = AttachmentProperties.ReloadSpeed(magazine);
-            float totalWeapReloadSpeedLessMag = WeaponProperties.totalWeapReloadSpeedLessMag;
+            float reloadSpeedModiLessMag = WeaponProperties.ReloadSpeedModifier;
+
+            if (reloadSpeedModiLessMag < 1)
+            {
+                reloadSpeedModiLessMag = reloadSpeedModiLessMag + 1;
+            }
 
             float magSpeedMulti = (magSpeed / 100) + 1;
-            float totalReloadSpeed = (magSpeedMulti * magWeightFactor) * totalWeapReloadSpeedLessMag;
+            float totalReloadSpeed = (magSpeedMulti * magWeightFactor) * reloadSpeedModiLessMag;
 
             if (reloadFromNoMag == true)
             {
@@ -90,10 +95,10 @@ namespace RealismMod
         }
 
 
-        public static void ergoWeightCalc(float totalWeight, float totalErgoDelta, ref float ergonomicWeight)
+        public static float ergoWeightCalc(float totalWeight, float totalErgoDelta)
         {
             float factoredWeight = totalWeight * (1 - (totalErgoDelta * 0.2f));
-            ergonomicWeight = Mathf.Clamp((float)(Math.Pow(factoredWeight * 1.78, 3.8) + 1) / 200, 1f, 100);
+            return Mathf.Clamp((float)(Math.Pow(factoredWeight * 1.78, 3.8) + 1) / 200, 1f, 115f);
         }
 
         public static float proceduralIntensityFactorCalc(float weapWeight, float idealWeapWeight)
@@ -110,11 +115,13 @@ namespace RealismMod
             return weightFactor;
         }
 
-        public static void speedStatCalc(float totalWeight, float weapWeightLessMag, float currentReloadSpeed, float currentFixSpeed, float totalTorque,float weapTorqueLessMagFactor, ref float totalReloadSpeed, ref float totalFixSpeed, ref float totalAimMoveSpeedModifier)
+        public static void speedStatCalc(float totalWeight, float weapWeightLessMag, float currentReloadSpeed, float currentFixSpeed, float totalTorque,float weapTorqueLessMagFactor, ref float totalReloadSpeed, ref float totalFixSpeed, ref float totalAimMoveSpeedModifier, float ergoWeight)
         {
-            float reloadSpeedWeightFactor = StatCalc.weightStatCalc(StatCalc.ReloadSpeedWeightMult, weapWeightLessMag) / 100;
-            float fixSpeedWeightFactor = StatCalc.weightStatCalc(StatCalc.FixSpeedWeightMult, totalWeight) / 100;
-            float aimMoveSpeedWeightFactor = StatCalc.weightStatCalc(StatCalc.AimMoveSpeedWeightMult, totalWeight) / 100;
+            float exponWeightLessMag = ergoWeightCalc(weapWeightLessMag, 0);
+
+            float reloadSpeedWeightFactor = StatCalc.weightStatCalc(StatCalc.ReloadSpeedWeightMult, exponWeightLessMag) / 100;
+            float fixSpeedWeightFactor = StatCalc.weightStatCalc(StatCalc.FixSpeedWeightMult, exponWeightLessMag) / 100;
+            float aimMoveSpeedWeightFactor = StatCalc.weightStatCalc(StatCalc.AimMoveSpeedWeightMult, ergoWeight) / 100;
 
 
             float torqueFactor = totalTorque / 100f;
@@ -122,6 +129,7 @@ namespace RealismMod
 
             totalReloadSpeed = (currentReloadSpeed / 100f) + ((reloadSpeedWeightFactor + (weapTorqueLessMagFactor * StatCalc.ReloadSpeedTorqueMult)) * StatCalc.ReloadSpeedMult);
             totalFixSpeed = (currentFixSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * StatCalc.FixSpeedTorqueMult)) * StatCalc.FixSpeedMult);
+
             totalAimMoveSpeedModifier = (aimMoveSpeedWeightFactor + (torqueFactor * StatCalc.AimMoveSpeedTorqueMult)) * StatCalc.AimMoveSpeedMult;
         }
 
@@ -188,7 +196,7 @@ namespace RealismMod
         public static void modStatCalc(float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeed, float modReload, ref float currentReloadSpeed, float modFix, ref float currentFixSpeed, float modErgo, ref float currentErgo, float modVRecoil, ref float currentVRecoil, float modHRecoil, ref float currentHRecoil)
         {
 
-            float ergoWeightFactor = weightStatCalc(StatCalc.ErgoWeightMult, modWeight) / 100;
+            float ergoWeightFactor = weightStatCalc(StatCalc.ErgoWeightMult, modWeight) / 100f;
             float vRecoilWeightFactor = weightStatCalc(StatCalc.VRecoilWeightMult, modWeight) / 100f;
             float hRecoilWeightFactor = weightStatCalc(StatCalc.HRecoilWeightMult, modWeight) / 100f;
             float dispersionWeightFactor = weightStatCalc(StatCalc.DispersionWeightMult, modWeight) / 100f;

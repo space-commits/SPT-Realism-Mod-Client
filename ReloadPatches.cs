@@ -8,51 +8,6 @@ using System.Text;
 
 namespace RealismMod
 {
-    public class SetMagTypeNewPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(FirearmsAnimator).GetMethod("SetMagTypeNew", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance, int magType)
-        {
-            __instance.SetAnimationSpeed(WeaponProperties.currentMagReloadSpeedMulti);
-        }
-    }
-
-    public class SetMagTypeCurrentPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(FirearmsAnimator).GetMethod("SetMagTypeCurrent", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance, int magType)
-        {
-            __instance.SetAnimationSpeed(WeaponProperties.currentMagReloadSpeedMulti);
-        }
-    }
-
-    public class SetMagInWeaponPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(FirearmsAnimator).GetMethod("SetMagInWeapon", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance)
-        {
-            __instance.SetAnimationSpeed(WeaponProperties.newMagReloadSpeedMulti);
-        }
-    }
-
     public class CanStartReloadPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -138,6 +93,52 @@ namespace RealismMod
         }
     }
 
+    public class SetMagTypeNewPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetMagTypeNew", BindingFlags.Instance | BindingFlags.Public);
+
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(FirearmsAnimator __instance, int magType)
+        {
+            __instance.SetAnimationSpeed(WeaponProperties.currentMagReloadSpeedMulti);
+        }
+    }
+
+    public class SetMagTypeCurrentPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetMagTypeCurrent", BindingFlags.Instance | BindingFlags.Public);
+
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(FirearmsAnimator __instance, int magType)
+        {
+            __instance.SetAnimationSpeed(WeaponProperties.currentMagReloadSpeedMulti);
+        }
+    }
+
+    public class SetMagInWeaponPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetMagInWeapon", BindingFlags.Instance | BindingFlags.Public);
+
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(FirearmsAnimator __instance)
+        {
+            __instance.SetAnimationSpeed(WeaponProperties.newMagReloadSpeedMulti);
+        }
+    }
+
+
     public class OnMagInsertedPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -154,7 +155,6 @@ namespace RealismMod
                 Helper.IsReloading = false;
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 player.HandsAnimator.SetAnimationSpeed(1);
-
             }
         }
     }
