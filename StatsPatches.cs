@@ -106,8 +106,6 @@ namespace RealismMod
 
             if (hasMag == true)
             {
-                Logger.LogInfo("=======================================");
-                Logger.LogInfo("Has Mag");
                 magWeight = magazine.GetSingleItemTotalWeight();
                 float magWeightFactored = StatCalc.factoredWeight(magWeight);
                 string position = StatCalc.getModPosition(magazine, weapType, weapOpType);
@@ -179,15 +177,10 @@ namespace RealismMod
             WeaponProperties.FixSpeedModifier = totalFixSpeedMod;
             WeaponProperties.AimMoveSpeedModifier = totalAimMoveSpeedMod;
 
-            Logger.LogInfo("Reload Speed Modifier = " + WeaponProperties.ReloadSpeedModifier);
-
             if (hasMag == true)
             {
-                Logger.LogInfo("Has Mag 2");
                 StatCalc.magReloadSpeedModifier((MagazineClass)magazine, false, false);
-                Logger.LogInfo("Current Reload Speed = " + WeaponProperties.currentMagReloadSpeedMulti);
             }
-            Logger.LogInfo("=======================================");
             WeaponProperties.Dispersion = totalDispersion;
             WeaponProperties.CamRecoil = totalCamRecoil;
             WeaponProperties.RecoilAngle = totalRecoilAngle;
@@ -430,13 +423,13 @@ namespace RealismMod
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
                 SkillsClass.GClass1552 weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
 
-                skillsClass.FixSpeed = weaponInfo.FixSpeed * (1 + WeaponProperties.FixSpeedModifier);
- /*               Logger.LogInfo("=======================================");
+                /*skillsClass.FixSpeed = weaponInfo.FixSpeed * (1 + WeaponProperties.FixSpeedModifier);*/
+                Logger.LogInfo("=======================================");
                 Logger.LogInfo("WeaponProperties.AimMoveSpeedModifier = " + WeaponProperties.AimMoveSpeedModifier);
                 Logger.LogInfo("skillsClass.AimMovementSpeed = " + skillsClass.AimMovementSpeed);
                 Logger.LogInfo("skillsClass.ReloadSpeed = " + skillsClass.ReloadSpeed);
                 Logger.LogInfo("skillsClass.FixSpeed  = " + skillsClass.FixSpeed);
-                Logger.LogInfo("=======================================");*/
+                Logger.LogInfo("=======================================");
 
             }
         }
@@ -522,7 +515,7 @@ namespace RealismMod
                 if (firearmController.Item.Owner.ID.StartsWith("pmc"))
                 {
                     float ergoWeight = WeaponProperties.ErgonomicWeight;
-                    float weightFactor = StatCalc.proceduralIntensityFactorCalc(ergoWeight, 8f);
+                    float weightFactor = StatCalc.proceduralIntensityFactorCalc(ergoWeight, 9f);
                     float displacementModifier = 0.2f;//lower = less drag
                     float swayFactorsModifier = 0.005f;//lower = less aim tilt/dive
                     float aimIntensity = __instance.IntensityByAiming * 0.65f;
@@ -533,7 +526,7 @@ namespace RealismMod
                     }
                     if (firearmController.Item.WeapClass == "pistol")
                     {
-                        aimIntensity = __instance.IntensityByAiming * 0.57f;
+                        aimIntensity = __instance.IntensityByAiming * 0.6f;
                     }
 
                     float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight * (1f + __instance.Overweight));

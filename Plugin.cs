@@ -176,17 +176,37 @@ namespace RealismMod
                 new IsKnownMalfTypePatch().Enable();
             }
 
-            new OnMagInsertedPatch().Enable();
-            new QuickReloadMagPatch().Enable();
+            new CanStartReloadPatch().Enable();
             new ReloadMagPatch().Enable();
-
+            new QuickReloadMagPatch().Enable();
+            new OnMagInsertedPatch().Enable();
             new SetMagTypeCurrentPatch().Enable();
             new SetMagTypeNewPatch().Enable();
             new SetMagInWeaponPatch().Enable();
 
-            new CanStartReloadPatch().Enable();
-
-
+            new RechamberSpeedPatch().Enable();
+            new SetMalfRepairSpeedPatch().Enable();
+            new SetBoltActionReloadPatch().Enable();
+            new DischargePatch().Enable();
+            new CheckChamberPatch().Enable();
+            new ReloadPatch().Enable();
+            new ResetReloadPatch().Enable();
+            new SetFireModePatch().Enable();
+            new SetShellsInWeapon().Enable();
+            new SetAmmoInChamberPatch().Enable();
+            new SetSpeedParametersPatch().Enable();
+            new SetAnimatorAndProceduralValuesPatch().Enable();
+            new SetAmmoOnMagPatch().Enable();
+            new CheckAmmoPatch().Enable();
+            new SetChamberIndexWithShellPatch().Enable();
+            new SetHammerArmedPatch().Enable();
+            new SetShellsInWeaponPatch().Enable();
+            new SetPatronInWeaponVisiblePatch().Enable();
+            new SetAmmoCompatiblePatch().Enable();
+            new IsInReloadOperationPatch().Enable();
+            new ReloadBarrelsPatch().Enable();
+            new ReloadWithAmmoPatch().Enable();
+            new ReloadRevolverDrumPatch().Enable();
 
             new ModConstructorPatch().Enable();
             new WeaponConstructorPatch().Enable();

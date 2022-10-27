@@ -49,6 +49,9 @@ namespace RealismMod
 
         public static bool noMagazineReload = false;
 
+        public static bool chamberRoundWindow = false;
+
+
         public static bool nullCheck(string[] confItemArray)
         {
             if (confItemArray != null && confItemArray.Length > 0)
