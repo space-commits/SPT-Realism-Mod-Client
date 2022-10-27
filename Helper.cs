@@ -35,10 +35,11 @@ using Bipod = GClass2100;
 using Flashlight = GClass2101;
 using TacticalCombo = GClass2106;
 using System.Collections;
+using Aki.Reflection.Utils;
+using System.Threading.Tasks;
 
 namespace RealismMod
 {
-
     public static class Helper
     {
 
@@ -47,9 +48,13 @@ namespace RealismMod
 
         public static bool IsReloading = false;
 
+        public static bool IsMagReloading = false;
+
         public static bool noMagazineReload = false;
 
         public static bool chamberRoundWindow = false;
+
+        public static bool isReady = false;
 
 
         public static bool nullCheck(string[] confItemArray)
@@ -64,7 +69,7 @@ namespace RealismMod
             return true;
         }
 
-        public static bool isReady()
+        public static bool checkIsReady()
         {
             var gameWorld = Singleton<GameWorld>.Instance;
             var sessionResultPanel = Singleton<SessionResultPanel>.Instance;

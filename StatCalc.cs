@@ -51,8 +51,8 @@ namespace RealismMod
         public static float ReloadSpeedTorqueMult = 0.7f;// needs tweaking
         public static float ReloadSpeedMult = 0.4f;//
 
-        public static float FixSpeedWeightMult = 1;//
-        public static float FixSpeedTorqueMult = 1f;// needs tweaking
+        public static float FixSpeedWeightMult = 1f;//
+        public static float FixSpeedTorqueMult = 0.7f;// needs tweaking
         public static float FixSpeedMult = 0.4f;//
 
         public static float AimMoveSpeedWeightMult = 1f;//
@@ -68,28 +68,23 @@ namespace RealismMod
             float magSpeed = AttachmentProperties.ReloadSpeed(magazine);
             float reloadSpeedModiLessMag = WeaponProperties.ReloadSpeedModifier;
 
-            if (reloadSpeedModiLessMag < 1)
-            {
-                reloadSpeedModiLessMag = reloadSpeedModiLessMag + 1;
-            }
-
             float magSpeedMulti = (magSpeed / 100) + 1;
             float totalReloadSpeed = (magSpeedMulti * magWeightFactor) * reloadSpeedModiLessMag;
 
             if (reloadFromNoMag == true)
             {
-                WeaponProperties.newMagReloadSpeedMulti = totalReloadSpeed;
-                WeaponProperties.currentMagReloadSpeedMulti = totalReloadSpeed;
+                WeaponProperties.newMagReloadSpeed = totalReloadSpeed;
+                WeaponProperties.currentMagReloadSpeed = totalReloadSpeed;
             }
             else
             {
                 if (isNewMag == true)
                 {
-                    WeaponProperties.newMagReloadSpeedMulti = totalReloadSpeed;
+                    WeaponProperties.newMagReloadSpeed = totalReloadSpeed;
                 }
                 else
                 {
-                    WeaponProperties.currentMagReloadSpeedMulti = totalReloadSpeed;
+                    WeaponProperties.currentMagReloadSpeed = totalReloadSpeed;
                 }
             }
         }
@@ -115,20 +110,20 @@ namespace RealismMod
             return weightFactor;
         }
 
-        public static void speedStatCalc(float totalWeight, float weapWeightLessMag, float currentReloadSpeed, float currentFixSpeed, float totalTorque,float weapTorqueLessMagFactor, ref float totalReloadSpeed, ref float totalFixSpeed, ref float totalAimMoveSpeedModifier, float ergoWeight)
+        public static void speedStatCalc(float ergonomicWeightLessMag, float currentReloadSpeed, float currentFixSpeed, float totalTorque, float weapTorqueLessMag, ref float totalReloadSpeed, ref float totalFixSpeed, ref float totalAimMoveSpeedModifier, float ergoWeight, ref float totalChamberSpeed, float currentChamberSpeed)
         {
-            float exponWeightLessMag = ergoWeightCalc(weapWeightLessMag, 0);
 
-            float reloadSpeedWeightFactor = StatCalc.weightStatCalc(StatCalc.ReloadSpeedWeightMult, exponWeightLessMag) / 100;
-            float fixSpeedWeightFactor = StatCalc.weightStatCalc(StatCalc.FixSpeedWeightMult, exponWeightLessMag) / 100;
+            float reloadSpeedWeightFactor = StatCalc.weightStatCalc(StatCalc.ReloadSpeedWeightMult, ergonomicWeightLessMag) / 100;
+            float fixSpeedWeightFactor = StatCalc.weightStatCalc(StatCalc.FixSpeedWeightMult, ergoWeight) / 100;
             float aimMoveSpeedWeightFactor = StatCalc.weightStatCalc(StatCalc.AimMoveSpeedWeightMult, ergoWeight) / 100;
 
-
             float torqueFactor = totalTorque / 100f;
-         /*   float torqueFactorInverse = totalTorque / 100f * -1f;*/
+            float weapTorqueLessMagFactor = weapTorqueLessMag / 100f;
+            /*   float torqueFactorInverse = totalTorque / 100f * -1f;*/
 
             totalReloadSpeed = (currentReloadSpeed / 100f) + ((reloadSpeedWeightFactor + (weapTorqueLessMagFactor * StatCalc.ReloadSpeedTorqueMult)) * StatCalc.ReloadSpeedMult);
             totalFixSpeed = (currentFixSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * StatCalc.FixSpeedTorqueMult)) * StatCalc.FixSpeedMult);
+            totalChamberSpeed = (currentChamberSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * StatCalc.FixSpeedTorqueMult)) * StatCalc.FixSpeedMult);
 
             totalAimMoveSpeedModifier = (aimMoveSpeedWeightFactor + (torqueFactor * StatCalc.AimMoveSpeedTorqueMult)) * StatCalc.AimMoveSpeedMult;
         }
@@ -193,7 +188,7 @@ namespace RealismMod
         }
 
 
-        public static void modStatCalc(float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeed, float modReload, ref float currentReloadSpeed, float modFix, ref float currentFixSpeed, float modErgo, ref float currentErgo, float modVRecoil, ref float currentVRecoil, float modHRecoil, ref float currentHRecoil)
+        public static void modStatCalc(float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeed, float modReload, ref float currentReloadSpeed, float modFix, ref float currentFixSpeed, float modErgo, ref float currentErgo, float modVRecoil, ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeed, float modChamber)
         {
 
             float ergoWeightFactor = weightStatCalc(StatCalc.ErgoWeightMult, modWeight) / 100f;
@@ -221,6 +216,8 @@ namespace RealismMod
             currentAimSpeed = currentAimSpeed + modAim;
 
             currentReloadSpeed = currentReloadSpeed + modReload;
+
+            currentChamberSpeed = currentChamberSpeed + modChamber;
 
             currentFixSpeed = currentFixSpeed + modFix;
 

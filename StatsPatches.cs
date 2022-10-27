@@ -74,7 +74,7 @@ namespace RealismMod
             if (__instance?.Owner?.ID != null && __instance.Owner.ID.StartsWith("pmc"))
             {
                 ErgoDeltaPatch p = new ErgoDeltaPatch();
-                if (Helper.IsReloading)
+                if (Helper.IsMagReloading)
                 {
                     __result = p.MagDelta(ref __instance);
                 }
@@ -114,9 +114,10 @@ namespace RealismMod
             }
 
             float weapWeightLessMag = totalWeight - magWeight;
-            float weapTorqueLessMagFactor = WeaponProperties.SDBalance / 100f;
 
             float currentReloadSpeed = WeaponProperties.SDReloadSpeedModifier;
+
+            float currentChamberSpeed = WeaponProperties.SDChamberSpeedModifier;
 
             float currentFixSpeed = WeaponProperties.SDFixSpeedModifier;
 
@@ -141,8 +142,8 @@ namespace RealismMod
             float currentCamRecoil = WeaponProperties.SDCamRecoil;
             float currentRecoilAngle = WeaponProperties.SDRecoilAngle;
 
-            currentTorque = (WeaponProperties.SDBalance + currentTorque);
-
+            float magazineTorque = currentTorque;
+            currentTorque = WeaponProperties.SDBalance + currentTorque;
 
             float totalTorque = 0;
             float totalErgo = 0;
@@ -165,22 +166,41 @@ namespace RealismMod
             StatCalc.weaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref recoilDamping, ref recoilHandDamping, WeaponProperties.SDTotalCOI, WeaponProperties.HasShoulderContact, ref totalCOI, ref totalCOIDelta, __instance.CenterOfImpactBase);
 
             float ergonomicWeight = StatCalc.ergoWeightCalc(totalWeight, totalErgoDelta);
+            float ergonomicWeightLessMag = StatCalc.ergoWeightCalc(weapWeightLessMag, totalErgoDelta);
+
+            float weapTorqueLessMag = totalTorque - magazineTorque;
 
             float totalReloadSpeedMod = 0;
             float totalFixSpeedMod = 0;
             float totalAimMoveSpeedMod = 0;
+            float totalChamberSpeed = 0;
 
 
-            StatCalc.speedStatCalc(totalWeight, weapWeightLessMag, currentReloadSpeed, currentFixSpeed, totalTorque, weapTorqueLessMagFactor, ref totalReloadSpeedMod, ref totalFixSpeedMod, ref totalAimMoveSpeedMod, ergonomicWeight);
+            StatCalc.speedStatCalc(ergonomicWeightLessMag, currentReloadSpeed, currentFixSpeed, totalTorque, weapTorqueLessMag, ref totalReloadSpeedMod, ref totalFixSpeedMod, ref totalAimMoveSpeedMod, ergonomicWeight, ref totalChamberSpeed, currentChamberSpeed);
+
+            if (totalReloadSpeedMod < 1)
+            {
+                totalReloadSpeedMod = totalReloadSpeedMod + 1;
+            }
+            if (totalFixSpeedMod < 1)
+            {
+                totalFixSpeedMod = totalFixSpeedMod + 1;
+            }
+            if (totalChamberSpeed < 1)
+            {
+                totalChamberSpeed = totalChamberSpeed + 1;
+            }
 
             WeaponProperties.ReloadSpeedModifier = totalReloadSpeedMod;
             WeaponProperties.FixSpeedModifier = totalFixSpeedMod;
             WeaponProperties.AimMoveSpeedModifier = totalAimMoveSpeedMod;
+            WeaponProperties.ChamberSpeed = totalChamberSpeed;
 
             if (hasMag == true)
             {
                 StatCalc.magReloadSpeedModifier((MagazineClass)magazine, false, false);
             }
+
             WeaponProperties.Dispersion = totalDispersion;
             WeaponProperties.CamRecoil = totalCamRecoil;
             WeaponProperties.RecoilAngle = totalRecoilAngle;
@@ -195,6 +215,18 @@ namespace RealismMod
             WeaponProperties.TotalRecoilDamping = totalRecoilDamping;
             WeaponProperties.TotalRecoilHandDamping = totalRecoilHandDamping;
             DisplayWeaponProperties.COIDelta = totalCOIDelta * -1f;
+
+            Logger.LogWarning("Chamber speed = " + totalChamberSpeed);
+            Logger.LogWarning("Fix speed = " + totalFixSpeedMod);
+            Logger.LogWarning("Reload speed = " + totalReloadSpeedMod);
+            Logger.LogWarning("Total Weight = " + totalWeight);
+            Logger.LogWarning("weapWeightLessMag = " + weapWeightLessMag);
+            Logger.LogWarning("ergonomicWeight = " + ergonomicWeight);
+            Logger.LogWarning("ergonomicWeightLessMag = " + ergonomicWeightLessMag);
+            Logger.LogWarning("weapTorqueLessMag = " + weapTorqueLessMag);
+            Logger.LogWarning("currentTorque = " + currentTorque);
+            Logger.LogWarning("totalTorque = " + totalTorque);
+
 
             return totalErgoDelta;
         }
@@ -235,6 +267,8 @@ namespace RealismMod
 
             float currentFixSpeed = 0f;
 
+            float currentChamberSpeed = 0f;
+
             string weapOpType = WeaponProperties.OperationType(__instance);
             string weapType = WeaponProperties.WeaponType(__instance);
 
@@ -268,13 +302,14 @@ namespace RealismMod
                     float modAngle = AttachmentProperties.RecoilAngle(__instance.Mods[i]);
                     float modAccuracy = __instance.Mods[i].Accuracy;
                     float modReload = AttachmentProperties.ReloadSpeed(__instance.Mods[i]);
+                    float modChamber = AttachmentProperties.ChamberSpeed(__instance.Mods[i]);
                     float modAim = AttachmentProperties.AimSpeed(__instance.Mods[i]);
                     float modFix = AttachmentProperties.FixSpeed(__instance.Mods[i]);
                     string modType = AttachmentProperties.ModType(__instance.Mods[i]);
                     string position = StatCalc.getModPosition(__instance.Mods[i], weapType, weapOpType);
 
                     StatCalc.modTypeStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position);
-                    StatCalc.modStatCalc(modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil);
+                    StatCalc.modStatCalc(modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber);
                 }
             }
 
@@ -299,10 +334,13 @@ namespace RealismMod
             WeaponProperties.SDRecoilAngle = currentRecoilAngle;
             WeaponProperties.SDReloadSpeedModifier = currentReloadSpeed;
             WeaponProperties.SDFixSpeedModifier = currentFixSpeed;
+            WeaponProperties.SDChamberSpeedModifier = currentChamberSpeed;
             WeaponProperties.AimSpeedModifier = currentAimSpeed / 100f;
             WeaponProperties.AutoFireRate = Mathf.Max(300, (int)currentAutoROF);
             WeaponProperties.SemiFireRate = Mathf.Max(200, (int)currentSemiROF);
             WeaponProperties.SDTotalCOI = currentCOI;
+
+            Logger.LogWarning("Chamber Speed SD = " + currentChamberSpeed);
 
         }
     }
@@ -421,7 +459,6 @@ namespace RealismMod
             {
                 SkillsClass.GClass1552 skillsClass = (SkillsClass.GClass1552)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1552_0").GetValue(__instance);
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
-                SkillsClass.GClass1552 weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
 
                 /*skillsClass.FixSpeed = weaponInfo.FixSpeed * (1 + WeaponProperties.FixSpeedModifier);*/
                 Logger.LogInfo("=======================================");

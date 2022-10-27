@@ -93,6 +93,7 @@ namespace RealismMod
             iconCache.Add(ENewItemAttributeId.SemiROF, Resources.Load<Sprite>("characteristics/icons/bFirerate"));
             iconCache.Add(ENewItemAttributeId.ReloadSpeed, Resources.Load<Sprite>("characteristics/icons/weapFireType"));
             iconCache.Add(ENewItemAttributeId.FixSpeed, Resources.Load<Sprite>("characteristics/icons/icon_info_raidmoddable"));
+            iconCache.Add(ENewItemAttributeId.ChamberSpeed, Resources.Load<Sprite>("characteristics/icons/weapFireType"));
             iconCache.Add(ENewItemAttributeId.AimSpeed, Resources.Load<Sprite>("characteristics/icons/SightingRange"));
             _ = LoadTexture(ENewItemAttributeId.Balance, Path.Combine(modPath, "res\\balance.png"));
             _ = LoadTexture(ENewItemAttributeId.RecoilAngle, Path.Combine(modPath, "res\\recoilAngle.png"));
@@ -187,26 +188,10 @@ namespace RealismMod
             new RechamberSpeedPatch().Enable();
             new SetMalfRepairSpeedPatch().Enable();
             new SetBoltActionReloadPatch().Enable();
-            new DischargePatch().Enable();
             new CheckChamberPatch().Enable();
-            new ReloadPatch().Enable();
-            new ResetReloadPatch().Enable();
-            new SetFireModePatch().Enable();
-            new SetShellsInWeapon().Enable();
-            new SetAmmoInChamberPatch().Enable();
             new SetSpeedParametersPatch().Enable();
-            new SetAnimatorAndProceduralValuesPatch().Enable();
-            new SetAmmoOnMagPatch().Enable();
             new CheckAmmoPatch().Enable();
-            new SetChamberIndexWithShellPatch().Enable();
             new SetHammerArmedPatch().Enable();
-            new SetShellsInWeaponPatch().Enable();
-            new SetPatronInWeaponVisiblePatch().Enable();
-            new SetAmmoCompatiblePatch().Enable();
-            new IsInReloadOperationPatch().Enable();
-            new ReloadBarrelsPatch().Enable();
-            new ReloadWithAmmoPatch().Enable();
-            new ReloadRevolverDrumPatch().Enable();
 
             new ModConstructorPatch().Enable();
             new WeaponConstructorPatch().Enable();
@@ -229,8 +214,9 @@ namespace RealismMod
 
         void FixedUpdate()
         {
-            if (Helper.isReady())
+            if (Helper.checkIsReady())
             {
+                Helper.isReady = true;
                 if (isAiming == true)
                 {
                     if (shotCount > prevShotCount)
@@ -431,6 +417,10 @@ namespace RealismMod
                         currentVRecoilY *= WeaponProperties.vRecoilResetRate;
                     }
                 }
+            }
+            else
+            {
+                Helper.isReady = false;
             }
         }
     }

@@ -72,6 +72,7 @@ namespace RealismMod
             float malfChance = AttachmentProperties.ModMalfunctionChance(__instance);
             float angle = AttachmentProperties.RecoilAngle(__instance);
             float reloadSpeed = AttachmentProperties.ReloadSpeed(__instance);
+            float chamberSpeed = AttachmentProperties.ChamberSpeed(__instance);
             float fixSpeed = AttachmentProperties.FixSpeed(__instance);
             float aimSpeed = AttachmentProperties.AimSpeed(__instance);
 
@@ -146,6 +147,15 @@ namespace RealismMod
             reloadSpeedAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             reloadSpeedAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Helper.SafelyAddAttributeToList(reloadSpeedAtt, __instance);
+
+            GClass2203 chamberSpeedAtt = new GClass2203(ENewItemAttributeId.ChamberSpeed);
+            chamberSpeedAtt.Name = ENewItemAttributeId.ChamberSpeed.GetName();
+            chamberSpeedAtt.Base = () => chamberSpeed;
+            chamberSpeedAtt.StringValue = () => $"{chamberSpeed}%";
+            chamberSpeedAtt.LessIsGood = false;
+            chamberSpeedAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+            chamberSpeedAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
+            Helper.SafelyAddAttributeToList(chamberSpeedAtt, __instance);
 
             GClass2203 fixSpeedAtt = new GClass2203(ENewItemAttributeId.FixSpeed);
             fixSpeedAtt.Name = ENewItemAttributeId.FixSpeed.GetName();
@@ -473,6 +483,8 @@ namespace RealismMod
 
             float currentFixSpeed = 0f;
 
+            float currentChamberSpeed = 0f;
+
             string weapOpType = WeaponProperties.OperationType(__instance);
             string weapType = WeaponProperties.WeaponType(__instance);
 
@@ -505,14 +517,16 @@ namespace RealismMod
                 float modDispersion = AttachmentProperties.Dispersion(__instance.Mods[i]);
                 float modAngle = AttachmentProperties.RecoilAngle(__instance.Mods[i]);
                 float modAccuracy = __instance.Mods[i].Accuracy;
-                float modReload = AttachmentProperties.ReloadSpeed(__instance.Mods[i]);
-                float modAim = AttachmentProperties.AimSpeed(__instance.Mods[i]);
-                float modFix = AttachmentProperties.FixSpeed(__instance.Mods[i]);
+                float modReload = 0;
+                float modChamber = 0;
+                float modAim = 0;
+                float modFix = 0;
                 string modType = AttachmentProperties.ModType(__instance.Mods[i]);
                 string position = StatCalc.getModPosition(__instance.Mods[i], weapType, weapOpType);
 
+
                 StatCalc.modTypeStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position);
-                StatCalc.modStatCalc(modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil);
+                StatCalc.modStatCalc(modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber);
             }
 
 /*            StatCalc.stockContactStatCalc(hasShoulderContact, __instance, ref currentErgo, ref currentVRecoil, ref currentHRecoil, ref currentCOI, ref currentCamRecoil, ref currentDispersion, ref currentRecoilAngle);

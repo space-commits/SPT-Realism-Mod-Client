@@ -54,7 +54,8 @@ namespace RealismMod
             RecoilAngle,
             ReloadSpeed,
             FixSpeed,
-            AimSpeed
+            AimSpeed,
+            ChamberSpeed
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -85,6 +86,8 @@ namespace RealismMod
                     return "FIX SPEED";
                 case ENewItemAttributeId.AimSpeed:
                     return "AIM SPEED";
+                case ENewItemAttributeId.ChamberSpeed:
+                    return "CHAMBER SPEED";
                 default:
                     return id.ToString();
             }

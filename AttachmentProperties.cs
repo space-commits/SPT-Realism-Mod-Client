@@ -111,7 +111,7 @@ namespace RealismMod
             return float.Parse(mod.ConflictingItems[10]);
         }
 
-        public static float DrawSpeed(Mod mod)
+        public static float ChamberSpeed(Mod mod)
         {
             if (Helper.nullCheck(mod.ConflictingItems))
             {

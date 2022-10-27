@@ -248,14 +248,18 @@ namespace RealismMod
 
         public static float ReloadSpeedModifier = 0f;
 
+        public static float ChamberSpeed = 0f;
+
+        public static float SDChamberSpeedModifier = 0f;
+
         public static float FixSpeedModifier = 0f;
 
         public static float AimMoveSpeedModifier = 0f;
 
         public static float AimSpeedModifier = 0f;
 
-        public static float currentMagReloadSpeedMulti = 1f;
-        public static float newMagReloadSpeedMulti = 1f;
+        public static float currentMagReloadSpeed = 1f;
+        public static float newMagReloadSpeed = 1f;
 
         public static float skillFixSpeed = 0;
 
