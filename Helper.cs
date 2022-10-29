@@ -46,13 +46,14 @@ namespace RealismMod
 
         public static bool IsAllowedAim = true;
 
-        public static bool IsReloading = false;
+        public static bool IsAttemptingToReloadInternalMag = false;
+
 
         public static bool IsMagReloading = false;
 
-        public static bool noMagazineReload = false;
+        public static bool IsInReloadOpertation = false;
 
-        public static bool chamberRoundWindow = false;
+        public static bool noMagazineReload = false;
 
         public static bool isReady = false;
 

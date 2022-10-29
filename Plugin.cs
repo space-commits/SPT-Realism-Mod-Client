@@ -47,7 +47,7 @@ namespace RealismMod
 
         public static float timer = 0.0f;
 
-        public static bool isFiring;
+        public static bool isFiring = false;
         public static bool isAiming;
         public static bool statsReset;
         public static float shotCount = 0;
@@ -180,6 +180,11 @@ namespace RealismMod
             new CanStartReloadPatch().Enable();
             new ReloadMagPatch().Enable();
             new QuickReloadMagPatch().Enable();
+            new ReloadWithAmmoPatch().Enable();
+            new ReloadBarrelsPatch().Enable();
+            new ReloadRevolverDrumPatch().Enable();
+
+
             new OnMagInsertedPatch().Enable();
             new SetMagTypeCurrentPatch().Enable();
             new SetMagTypeNewPatch().Enable();
@@ -192,6 +197,11 @@ namespace RealismMod
             new SetSpeedParametersPatch().Enable();
             new CheckAmmoPatch().Enable();
             new SetHammerArmedPatch().Enable();
+
+            new ReloadPatch().Enable();
+            new SetShellsInWeapon().Enable();
+            new SetAmmoOnMagPatch().Enable();
+            new SetAmmoInChamberPatch().Enable();
 
             new ModConstructorPatch().Enable();
             new WeaponConstructorPatch().Enable();
@@ -363,6 +373,15 @@ namespace RealismMod
                         isFiring = true;
                     }
                 }
+                else
+                {
+                    if (shotCount > prevShotCount)
+                    {
+                        prevShotCount = shotCount;
+                        isFiring = true;
+                    }
+                }
+
 
                 if (shotCount == prevShotCount)
                 {

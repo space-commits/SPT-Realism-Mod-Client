@@ -198,6 +198,7 @@ namespace RealismMod
 
             if (hasMag == true)
             {
+                Logger.LogWarning("Has Magazine");
                 StatCalc.magReloadSpeedModifier((MagazineClass)magazine, false, false);
             }
 

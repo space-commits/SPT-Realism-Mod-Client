@@ -140,9 +140,11 @@ namespace RealismMod
 
             if (wep.Owner.ID.StartsWith("pmc"))
             {
+
                 Plugin.timer = 0f;
                 Plugin.isFiring = true;
                 Plugin.shotCount++;
+
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
