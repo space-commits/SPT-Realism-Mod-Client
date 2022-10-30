@@ -191,10 +191,10 @@ namespace RealismMod
                 totalChamberSpeed = totalChamberSpeed + 1;
             }
 
-            WeaponProperties.ReloadSpeedModifier = totalReloadSpeedMod;
-            WeaponProperties.FixSpeedModifier = totalFixSpeedMod;
-            WeaponProperties.AimMoveSpeedModifier = totalAimMoveSpeedMod;
-            WeaponProperties.ChamberSpeed = totalChamberSpeed;
+            WeaponProperties.ReloadSpeedModifier = Mathf.Max(totalReloadSpeedMod, 0.2f);
+            WeaponProperties.FixSpeedModifier = Mathf.Max(totalFixSpeedMod, 0.2f);
+            WeaponProperties.AimMoveSpeedModifier = Mathf.Max(totalAimMoveSpeedMod, 0.3f);
+            WeaponProperties.ChamberSpeed = Mathf.Max(totalChamberSpeed, 0.2f);
 
             if (hasMag == true)
             {
@@ -215,7 +215,7 @@ namespace RealismMod
             WeaponProperties.ErgonomicWeight = ergonomicWeight;
             WeaponProperties.TotalRecoilDamping = totalRecoilDamping;
             WeaponProperties.TotalRecoilHandDamping = totalRecoilHandDamping;
-            DisplayWeaponProperties.COIDelta = totalCOIDelta * -1f;
+            WeaponProperties.COIDelta = totalCOIDelta * -1f;
 
             Logger.LogWarning("Chamber speed = " + totalChamberSpeed);
             Logger.LogWarning("Fix speed = " + totalFixSpeedMod);
@@ -369,6 +369,33 @@ namespace RealismMod
         }
     }
 
+    public class TotalShotgunDispersionPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Weapon).GetMethod("get_TotalShotgunDispersion", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(ref Weapon __instance, ref float __result)
+        {
+            if (__instance?.Owner?.ID != null && __instance.Owner.ID.StartsWith("pmc"))
+            {
+                float shotDispLessAmmo = __instance.ShotgunDispersionBase * (1f + __instance.CenterOfImpactDelta);
+                AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
+                float totalShotDisp = shotDispLessAmmo * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
+
+                __result = totalShotDisp;
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+    }
+
+
     public class GetDurabilityLossOnShotPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -459,14 +486,13 @@ namespace RealismMod
             if (__instance.Item.Owner.ID.StartsWith("pmc"))
             {
                 SkillsClass.GClass1552 skillsClass = (SkillsClass.GClass1552)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1552_0").GetValue(__instance);
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
 
-                /*skillsClass.FixSpeed = weaponInfo.FixSpeed * (1 + WeaponProperties.FixSpeedModifier);*/
                 Logger.LogInfo("=======================================");
-                Logger.LogInfo("WeaponProperties.AimMoveSpeedModifier = " + WeaponProperties.AimMoveSpeedModifier);
                 Logger.LogInfo("skillsClass.AimMovementSpeed = " + skillsClass.AimMovementSpeed);
                 Logger.LogInfo("skillsClass.ReloadSpeed = " + skillsClass.ReloadSpeed);
                 Logger.LogInfo("skillsClass.FixSpeed  = " + skillsClass.FixSpeed);
+                PlayerProperties.ReloadSkillMulti = skillsClass.ReloadSpeed;
+                PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;
                 Logger.LogInfo("=======================================");
 
             }
@@ -480,23 +506,24 @@ namespace RealismMod
             return typeof(GClass1477).GetMethod("SetAimingSlowdown", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        [PatchPostfix]
-        private static void PatchPostfix(ref GClass1477 __instance, bool isAiming, float slow)
+        [PatchPrefix]
+        private static bool Prefix(ref GClass1477 __instance, bool isAiming, float slow)
         {
             Logger.LogInfo("slow = " + slow);
             Player player = (Player)AccessTools.Field(typeof(GClass1477), "player_0").GetValue(__instance);
-            Player.FirearmController firearmController = player.HandsController as Player.FirearmController;
-            if (firearmController.Item.Owner.ID.StartsWith("pmc"))
+            if (player.HandsController.Item.Owner.ID.StartsWith("pmc"))
             {
                 if (isAiming)
                 {
-                    __instance.AddStateSpeedLimit((slow + 0.6f) * (1 + WeaponProperties.AimMoveSpeedModifier), Player.ESpeedLimit.Aiming);
-                    Logger.LogInfo("AddStateSpeedLimit = " + (slow + 0.6f) * (1 + WeaponProperties.AimMoveSpeedModifier));
-                    return;
+                    Logger.LogInfo("slow  = " + slow);
+                    __instance.AddStateSpeedLimit((slow + 0.08f) + WeaponProperties.AimMoveSpeedModifier, Player.ESpeedLimit.Aiming);
+                    Logger.LogInfo("AddStateSpeedLimit = " + (slow + 0.08f) + WeaponProperties.AimMoveSpeedModifier);
+                    return true;
                 }
                 __instance.RemoveStateSpeedLimit(Player.ESpeedLimit.Aiming);
-
+                return true;
             }
+            return false;
         }
     }
 

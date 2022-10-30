@@ -20,18 +20,10 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            Logger.LogInfo("IsFiring = " + Plugin.isFiring);
-            Logger.LogInfo("IsInReloadOpertation = " + Helper.IsInReloadOpertation);
             if (Plugin.isFiring != true && Helper.IsInReloadOpertation)
             {
-                Logger.LogInfo("SetHammerArmed");
-                __instance.SetAnimationSpeed(WeaponProperties.ChamberSpeed);
+                __instance.SetAnimationSpeed(WeaponProperties.ChamberSpeed * PlayerProperties.ReloadSkillMulti);
             }
-            /*     if (Helper.chamberRoundWindow == true)
-                 {
-                     Logger.LogInfo("SetHammerArmed");
-                     __instance.SetAnimationSpeed(WeaponProperties.ChamberSpeed);
-                 }*/
         }
     }
 
@@ -45,8 +37,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            Logger.LogInfo("CheckAmmo");
-            __instance.SetAnimationSpeed(0.15f + WeaponProperties.currentMagReloadSpeed);
+            __instance.SetAnimationSpeed(0.2f + (WeaponProperties.currentMagReloadSpeed * PlayerProperties.ReloadSkillMulti));
         }
     }
 
@@ -60,8 +51,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            Logger.LogInfo("CheckChamber");
-            __instance.SetAnimationSpeed(0.15f + WeaponProperties.ChamberSpeed);
+            __instance.SetAnimationSpeed(0.25f + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti));
         }
     }
 
@@ -75,8 +65,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            Logger.LogInfo("SetBoltActionReload");
-            __instance.SetAnimationSpeed(WeaponProperties.ChamberSpeed);
+            __instance.SetAnimationSpeed(WeaponProperties.ChamberSpeed * PlayerProperties.ReloadSkillMulti);
         }
     }
 
@@ -90,8 +79,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance, float fix)
         {
-            Logger.LogInfo("SetMalfRepairSpeed");
-            GClass644.SetSpeedFix(__instance.Animator, fix * WeaponProperties.FixSpeedModifier);
+            GClass644.SetSpeedFix(__instance.Animator, fix * WeaponProperties.ChamberSpeed);
         }
     }
 
@@ -105,8 +93,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            Logger.LogInfo("Rechamber");
-            __instance.SetAnimationSpeed(WeaponProperties.ChamberSpeed);
+            __instance.SetAnimationSpeed(WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti);
         }
     }
 
@@ -128,14 +115,11 @@ namespace RealismMod
                     if (__instance.Item.GetCurrentMagazine() == null)
                     {
                         Helper.noMagazineReload = true;
-                        Logger.LogInfo("No Magazine");
                     }
                     else
                     {
                         Helper.noMagazineReload = false;
-                        Logger.LogInfo("Has Magazine");
                     }
-                    Logger.LogInfo("CanStartReloadPatch");
                 }
             }
         }
@@ -155,10 +139,6 @@ namespace RealismMod
             if (__instance.Item.Owner.ID.StartsWith("pmc"))
             {
                 StatCalc.setMagReloadSpeeds(__instance, magazine);
-                Logger.LogInfo("WeaponProperties.currentMagReloadSpeed " + WeaponProperties.currentMagReloadSpeed);
-                Logger.LogInfo("WeaponProperties.newMagReloadSpeed" + WeaponProperties.newMagReloadSpeed);
-
-                Logger.LogInfo("ReloadMagPatch");
             }
         }
     }
@@ -178,7 +158,6 @@ namespace RealismMod
             if (__instance.Item.Owner.ID.StartsWith("pmc"))
             {
                 StatCalc.setMagReloadSpeeds(__instance, magazine);
-                Logger.LogInfo("QuickReloadMagPatch");
             }
         }
     }
@@ -199,7 +178,6 @@ namespace RealismMod
             {
                 Helper.IsAttemptingToReloadInternalMag = true;
 
-                Logger.LogInfo("ReloadRevolverDrumPatch");
             }
         }
     }
@@ -218,7 +196,6 @@ namespace RealismMod
             if (__instance.Item.Owner.ID.StartsWith("pmc"))
             {
                 Helper.IsAttemptingToReloadInternalMag = true;
-                Logger.LogInfo("ReloadWithAmmoPatch");
             }
         }
     }
@@ -237,8 +214,6 @@ namespace RealismMod
             if (__instance.Item.Owner.ID.StartsWith("pmc"))
             {
                 Helper.IsAttemptingToReloadInternalMag = true;
-
-                Logger.LogInfo("ReloadBarrelsPatch");
             }
         }
     }
@@ -252,10 +227,9 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance, int magType)
+        private static void PatchPostfix(FirearmsAnimator __instance)
         {
             __instance.SetAnimationSpeed(WeaponProperties.currentMagReloadSpeed);
-            Logger.LogInfo("SetMagTypeNewPatch");
         }
     }
 
@@ -267,10 +241,9 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance, int magType)
+        private static void PatchPostfix(FirearmsAnimator __instance)
         {
             __instance.SetAnimationSpeed(WeaponProperties.currentMagReloadSpeed);
-            Logger.LogInfo("SetMagTypeCurrentPatch");
         }
     }
 
@@ -287,7 +260,6 @@ namespace RealismMod
             if (Helper.IsMagReloading == true)
             {
                 __instance.SetAnimationSpeed(WeaponProperties.newMagReloadSpeed);
-                Logger.LogInfo("SetMagInWeaponPatch");
             }
         }
     }
@@ -302,7 +274,6 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            Logger.LogInfo("SetSpeedParameters");
             __instance.SetAnimationSpeed(1);
         }
     }
@@ -323,7 +294,6 @@ namespace RealismMod
                 Helper.IsMagReloading = false;
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 player.HandsAnimator.SetAnimationSpeed(1);
-                Logger.LogInfo("OnMagInsertedPatch");
             }
 
         }
@@ -393,7 +363,7 @@ namespace RealismMod
 
     */
 
-    public class SetAmmoInChamberPatch : ModulePatch
+/*    public class SetAmmoInChamberPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -406,7 +376,7 @@ namespace RealismMod
             Logger.LogInfo("SetAmmoInChamber");
         }
     }
-
+*/
     /*    public class SetChamberIndexWithShellPatch : ModulePatch
         {
             protected override MethodBase GetTargetMethod()
@@ -421,7 +391,7 @@ namespace RealismMod
             }
         }
     */
-    public class SetShellsInWeapon : ModulePatch
+/*    public class SetShellsInWeapon : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -433,9 +403,9 @@ namespace RealismMod
         {
             Logger.LogInfo("SetShellsInWeapon");
         }
-    }
+    }*/
 
-    public class ReloadPatch : ModulePatch
+/*    public class ReloadPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -462,11 +432,11 @@ namespace RealismMod
         {
             if (Helper.IsAttemptingToReloadInternalMag == true && Helper.IsInReloadOpertation)
             {
-                __instance.SetAnimationSpeed(5);
+               *//* __instance.SetAnimationSpeed(5);*//*
                 Logger.LogInfo("SetAmmoOnMag");
             }
         }
-    }
+    }*/
 
     /*    public class ResetReloadPatch : ModulePatch
         {

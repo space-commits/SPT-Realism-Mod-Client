@@ -48,7 +48,6 @@ namespace RealismMod
 
         public static bool IsAttemptingToReloadInternalMag = false;
 
-
         public static bool IsMagReloading = false;
 
         public static bool IsInReloadOpertation = false;

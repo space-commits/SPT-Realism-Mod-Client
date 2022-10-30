@@ -93,7 +93,7 @@ namespace RealismMod
             iconCache.Add(ENewItemAttributeId.SemiROF, Resources.Load<Sprite>("characteristics/icons/bFirerate"));
             iconCache.Add(ENewItemAttributeId.ReloadSpeed, Resources.Load<Sprite>("characteristics/icons/weapFireType"));
             iconCache.Add(ENewItemAttributeId.FixSpeed, Resources.Load<Sprite>("characteristics/icons/icon_info_raidmoddable"));
-            iconCache.Add(ENewItemAttributeId.ChamberSpeed, Resources.Load<Sprite>("characteristics/icons/weapFireType"));
+            iconCache.Add(ENewItemAttributeId.ChamberSpeed, Resources.Load<Sprite>("characteristics/icons/icon_info_raidmoddable"));
             iconCache.Add(ENewItemAttributeId.AimSpeed, Resources.Load<Sprite>("characteristics/icons/SightingRange"));
             _ = LoadTexture(ENewItemAttributeId.Balance, Path.Combine(modPath, "res\\balance.png"));
             _ = LoadTexture(ENewItemAttributeId.RecoilAngle, Path.Combine(modPath, "res\\recoilAngle.png"));
@@ -149,7 +149,9 @@ namespace RealismMod
             GetPath();
             CacheIcons();
 
+            //Stat assignment patches
             new COIDeltaPatch().Enable();
+            new TotalShotgunDispersionPatch().Enable();
             new GetDurabilityLossOnShotPatch().Enable();
             new AutoFireRatePatch().Enable();
             new SingleFireRatePatch().Enable();
@@ -163,27 +165,30 @@ namespace RealismMod
             new method_17Patch().Enable();
             new UpdateSwayFactorsPatch().Enable();
 
+            //Recoil Patches
             new OnWeaponParametersChangedPatch().Enable();
             new UpdateSensitivityPatch().Enable();
             new AimingSensitivityPatch().Enable();
             new ProcessPatch().Enable();
             new ShootPatch().Enable();
 
+            //Aiming Patches + Reload Trigger
             new AimingPatches().Enable();
             new ToggleAimPatch().Enable();
 
+            //Malf Patches
             if (enableMalfPatch.Value == true)
             {
                 new IsKnownMalfTypePatch().Enable();
             }
 
+            //Reload Patches
             new CanStartReloadPatch().Enable();
             new ReloadMagPatch().Enable();
             new QuickReloadMagPatch().Enable();
             new ReloadWithAmmoPatch().Enable();
             new ReloadBarrelsPatch().Enable();
             new ReloadRevolverDrumPatch().Enable();
-
 
             new OnMagInsertedPatch().Enable();
             new SetMagTypeCurrentPatch().Enable();
@@ -198,11 +203,7 @@ namespace RealismMod
             new CheckAmmoPatch().Enable();
             new SetHammerArmedPatch().Enable();
 
-            new ReloadPatch().Enable();
-            new SetShellsInWeapon().Enable();
-            new SetAmmoOnMagPatch().Enable();
-            new SetAmmoInChamberPatch().Enable();
-
+            //Stat Display Patches
             new ModConstructorPatch().Enable();
             new WeaponConstructorPatch().Enable();
             new HRecoilDisplayValuePatch().Enable();
