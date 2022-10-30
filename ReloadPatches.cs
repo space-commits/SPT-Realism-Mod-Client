@@ -9,7 +9,6 @@ using System.Text;
 namespace RealismMod
 {
 
-
     public class SetHammerArmedPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -22,8 +21,30 @@ namespace RealismMod
         {
             if (Plugin.isFiring != true && Helper.IsInReloadOpertation)
             {
-                __instance.SetAnimationSpeed(WeaponProperties.ChamberSpeed * PlayerProperties.ReloadSkillMulti);
+                __instance.SetAnimationSpeed(0.3f + (WeaponProperties.ChamberSpeed * PlayerProperties.ReloadSkillMulti));
             }
+        }
+    }
+
+    public class SetWeaponLevelPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetWeaponLevel", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(FirearmsAnimator __instance, float weaponLevel)
+        {
+            if (WeaponProperties.weapClass == "shotgun")
+            {
+                if (weaponLevel < 3)
+                {
+                    weaponLevel += 1;
+                }
+                GClass644.SetWeaponLevel(__instance.Animator, weaponLevel);
+            }
+
         }
     }
 
@@ -51,7 +72,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            __instance.SetAnimationSpeed(0.25f + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti));
+            __instance.SetAnimationSpeed(0.3f + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti));
         }
     }
 
@@ -65,7 +86,12 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            __instance.SetAnimationSpeed(WeaponProperties.ChamberSpeed * PlayerProperties.ReloadSkillMulti);
+            float chamberSpeed = WeaponProperties.ChamberSpeed;
+            if (WeaponProperties.weapClass == "shotgun")
+            {
+                chamberSpeed -= 0.18f;
+            }
+            __instance.SetAnimationSpeed(chamberSpeed * PlayerProperties.ReloadSkillMulti);
         }
     }
 
@@ -93,7 +119,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            __instance.SetAnimationSpeed(WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti);
+            __instance.SetAnimationSpeed(0.17f + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti));
         }
     }
 
@@ -140,6 +166,8 @@ namespace RealismMod
             {
                 StatCalc.setMagReloadSpeeds(__instance, magazine);
             }
+            Logger.LogWarning("currentMagReloadSpeed = " + WeaponProperties.currentMagReloadSpeed);
+            Logger.LogWarning("newMagReloadSpeed = " + WeaponProperties.newMagReloadSpeed);
         }
     }
 
@@ -299,7 +327,21 @@ namespace RealismMod
         }
     }
 
+/*
+    public class GetBoltCatchPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("GetBoltCatch", BindingFlags.Instance | BindingFlags.Public);
+        }
 
+        [PatchPostfix]
+        private static void PatchPostfix(FirearmsAnimator __instance)
+        {
+
+        }
+    }
+*/
 
     /*    public class SetFireModePatch : ModulePatch
         {
@@ -363,20 +405,20 @@ namespace RealismMod
 
     */
 
-/*    public class SetAmmoInChamberPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
+    /*    public class SetAmmoInChamberPatch : ModulePatch
         {
-            return typeof(FirearmsAnimator).GetMethod("SetAmmoInChamber", BindingFlags.Instance | BindingFlags.Public);
-        }
+            protected override MethodBase GetTargetMethod()
+            {
+                return typeof(FirearmsAnimator).GetMethod("SetAmmoInChamber", BindingFlags.Instance | BindingFlags.Public);
+            }
 
-        [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance)
-        {
-            Logger.LogInfo("SetAmmoInChamber");
+            [PatchPostfix]
+            private static void PatchPostfix(FirearmsAnimator __instance)
+            {
+                Logger.LogInfo("SetAmmoInChamber");
+            }
         }
-    }
-*/
+    */
     /*    public class SetChamberIndexWithShellPatch : ModulePatch
         {
             protected override MethodBase GetTargetMethod()
@@ -391,52 +433,52 @@ namespace RealismMod
             }
         }
     */
-/*    public class SetShellsInWeapon : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
+    /*    public class SetShellsInWeapon : ModulePatch
         {
-            return typeof(FirearmsAnimator).GetMethod("SetShellsInWeapon", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance)
-        {
-            Logger.LogInfo("SetShellsInWeapon");
-        }
-    }*/
-
-/*    public class ReloadPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(FirearmsAnimator).GetMethod("Reload", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance)
-        {
-            Logger.LogInfo("Reload");
-
-        }
-    }
-
-    public class SetAmmoOnMagPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(FirearmsAnimator).GetMethod("SetAmmoOnMag", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance)
-        {
-            if (Helper.IsAttemptingToReloadInternalMag == true && Helper.IsInReloadOpertation)
+            protected override MethodBase GetTargetMethod()
             {
-               *//* __instance.SetAnimationSpeed(5);*//*
-                Logger.LogInfo("SetAmmoOnMag");
+                return typeof(FirearmsAnimator).GetMethod("SetShellsInWeapon", BindingFlags.Instance | BindingFlags.Public);
+            }
+
+            [PatchPostfix]
+            private static void PatchPostfix(FirearmsAnimator __instance)
+            {
+                Logger.LogInfo("SetShellsInWeapon");
+            }
+        }*/
+
+    /*    public class ReloadPatch : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                return typeof(FirearmsAnimator).GetMethod("Reload", BindingFlags.Instance | BindingFlags.Public);
+            }
+
+            [PatchPostfix]
+            private static void PatchPostfix(FirearmsAnimator __instance)
+            {
+                Logger.LogInfo("Reload");
+
             }
         }
-    }*/
+
+        public class SetAmmoOnMagPatch : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                return typeof(FirearmsAnimator).GetMethod("SetAmmoOnMag", BindingFlags.Instance | BindingFlags.Public);
+            }
+
+            [PatchPostfix]
+            private static void PatchPostfix(FirearmsAnimator __instance)
+            {
+                if (Helper.IsAttemptingToReloadInternalMag == true && Helper.IsInReloadOpertation)
+                {
+                   *//* __instance.SetAnimationSpeed(5);*//*
+                    Logger.LogInfo("SetAmmoOnMag");
+                }
+            }
+        }*/
 
     /*    public class ResetReloadPatch : ModulePatch
         {

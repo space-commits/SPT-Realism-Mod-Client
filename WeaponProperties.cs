@@ -152,6 +152,8 @@ namespace RealismMod
             return bool.Parse(weapon.ConflictingItems[9]);
         }
 
+        public static string weapClass = "";
+
         public static float AdapterPistolGripBonusVRecoil = -1;
 
         public static float AdapterPistolGripBonusHRecoil = -2;

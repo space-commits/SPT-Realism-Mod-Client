@@ -43,7 +43,7 @@ namespace RealismMod
         public static ConfigEntry<bool> showSemiROF { get; set; }
         public static ConfigEntry<bool> enableFSPatch { get; set; }
         public static ConfigEntry<bool> enableMalfPatch { get; set; }
-
+        public static ConfigEntry<bool> enableSGMastering { get; set; }
 
         public static float timer = 0.0f;
 
@@ -145,6 +145,7 @@ namespace RealismMod
 
             enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields block ADS unless the specfic Stock/Weapon/Faceshield allows it.", null, new ConfigurationManagerAttributes { Order = 1 }));
             enableMalfPatch = Config.Bind<bool>(MiscSettings, "Enable Malfuction Patch", true, new ConfigDescription("Requires Restart. You don't need to inspect a Malfunction in order to clear it.", null, new ConfigurationManagerAttributes { Order = 2 }));
+            enableSGMastering = Config.Bind<bool>(MiscSettings, "Enable Max Shotgun Mastery", true, new ConfigDescription("Requires Restart. Enables max mastery level for shotguns only, giving them better pump animations. ADS while reloading is unaffected.", null, new ConfigurationManagerAttributes { Order = 3 }));
 
             GetPath();
             CacheIcons();
@@ -202,6 +203,11 @@ namespace RealismMod
             new SetSpeedParametersPatch().Enable();
             new CheckAmmoPatch().Enable();
             new SetHammerArmedPatch().Enable();
+
+            if (enableSGMastering.Value == true)
+            {
+                new SetWeaponLevelPatch().Enable();
+            }
 
             //Stat Display Patches
             new ModConstructorPatch().Enable();

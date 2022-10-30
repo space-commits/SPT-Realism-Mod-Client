@@ -47,17 +47,17 @@ namespace RealismMod
         public static float HandDampingPistolMin = 0.5f;
         public static float HandDampingPistolMax = 0.7f;
 
-        public static float ReloadSpeedWeightMult = 0.8f;//
-        public static float ReloadSpeedTorqueMult = 0.7f;// needs tweaking
-        public static float ReloadSpeedMult = 0.3f;//
+        public static float ReloadSpeedWeightMult = 1f;//
+        public static float ReloadSpeedTorqueMult = 1.1f;// needs tweaking
+        public static float ReloadSpeedMult = 0.35f;//
 
-        public static float ChamberSpeedWeightMult = 0.5f;//
-        public static float ChamberSpeedTorqueMult = 0.5f;// needs tweaking
-        public static float ChamberSpeedMult = 0.3f;//
+        public static float ChamberSpeedWeightMult = 1f;//
+        public static float ChamberSpeedTorqueMult = 1.1f;// needs tweaking
+        public static float ChamberSpeedMult = 0.35f;//
 
-        public static float AimMoveSpeedWeightMult = 0.8f;//
-        public static float AimMoveSpeedTorqueMult = 0.8f;// needs tweaking
-        public static float AimMoveSpeedMult = 0.3f;//
+        public static float AimMoveSpeedWeightMult = 1f;//
+        public static float AimMoveSpeedTorqueMult = 1.1f;// needs tweaking
+        public static float AimMoveSpeedMult = 0.18f;//
 
         public static float magWeightMult = 11f;
 
@@ -85,7 +85,7 @@ namespace RealismMod
             float reloadSpeedModiLessMag = WeaponProperties.ReloadSpeedModifier;
 
             float magSpeedMulti = (magSpeed / 100) + 1;
-            float totalReloadSpeed = Mathf.Max(magSpeedMulti * magWeightFactor * reloadSpeedModiLessMag * PlayerProperties.ReloadSkillMulti, 0.2f);
+            float totalReloadSpeed = Mathf.Max(magSpeedMulti * magWeightFactor * reloadSpeedModiLessMag * PlayerProperties.ReloadSkillMulti, 0.65f);
 
             if (reloadFromNoMag == true)
             {
@@ -170,10 +170,14 @@ namespace RealismMod
                 currentErgo *= WeaponProperties.FoldedErgoFactor;
                 currentVRecoil *= WeaponProperties.FoldedVRecoilFactor;
                 currentHRecoil *= WeaponProperties.FoldedHRecoilFactor;
-                currentCOI *= WeaponProperties.FoldedCOIFactor;
                 currentCamRecoil *= WeaponProperties.FoldedCamRecoilFactor;
                 currentDispersion *= WeaponProperties.FoldedDispersionFactor;
                 currentRecoilAngle *= WeaponProperties.FoldedRecoilAngleFactor;
+
+                if (weap.WeapClass != "shotgun") 
+                {
+                    currentCOI *= WeaponProperties.FoldedCOIFactor; 
+                }
             }
 
             totalErgo = currentErgo + (currentErgo * (ergoWeapBaseWeightFactor + (totalTorqueFactor * StatCalc.ErgoTorqueMult)));
@@ -244,7 +248,7 @@ namespace RealismMod
         }
 
 
-        public static void modTypeStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, ref string position)
+        public static void modTypeStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, ref string position, ref float modChamber)
         {
             if (Helper.isStock(mod) == true)
             {
@@ -369,21 +373,17 @@ namespace RealismMod
             }
 
 
-            if (modType == "sig_taper_brake")
+            if (modType == "shot_pump_grip_adapt" && mod.Slots[0].ContainedItem != null)
             {
-                if (mod.Parent.Container != null)
+                Mod containedMod = mod.Slots[0].ContainedItem as Mod;
+                if (Helper.isForegrip(containedMod))
                 {
-                    Mod parent = mod.Parent.Container.ParentItem as Mod;
-                    if (parent.Slots[1].ContainedItem != null)
-                    {
-                        modVRecoil = 0;
-                        modHRecoil = 0;
-                        modCamRecoil = 0;
-                        modDispersion = 0;
-                        modAngle = 0;
-                    }
+                    modChamber += WeaponProperties.PumpGripReloadBonus;
                 }
-                return;
+                if (AttachmentProperties.ModType(containedMod) == "foregrip_adapter" && containedMod.Slots[0].ContainedItem != null)
+                {
+                    modChamber += WeaponProperties.PumpGripReloadBonus;
+                }
             }
 
             if (modType == "grip_stock_adapter")
@@ -411,19 +411,23 @@ namespace RealismMod
                 return;
             }
 
+            if (modType == "sig_taper_brake")
+            {
+                if (mod.Parent.Container != null)
+                {
+                    Mod parent = mod.Parent.Container.ParentItem as Mod;
+                    if (parent.Slots[1].ContainedItem != null)
+                    {
+                        modVRecoil = 0;
+                        modHRecoil = 0;
+                        modCamRecoil = 0;
+                        modDispersion = 0;
+                        modAngle = 0;
+                    }
+                }
+                return;
+            }
 
-            /*                    if (modType == "shot_pump_grip_adapt" && mod.Slots[0].ContainedItem != null)
-                                {
-                                    Mod containedMod = mod.Slots[0].ContainedItem as Mod;
-                                    if (isForegrip(containedMod))
-                                    {
-                                        modReload += WeaponProperties.PumpGripReloadBonus;
-                                    }
-                                    if (AttatchmentProperties.ModType(containedMod) == "foregrip_adapter" && containedMod.Slots[0].ContainedItem != null)
-                                    {
-                                        modReload += WeaponProperties.PumpGripReloadBonus;
-                                    }
-                                }*/
         }
 
         public static string getModPosition(Mod mod, string weapType, string opType)
