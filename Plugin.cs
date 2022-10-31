@@ -238,7 +238,7 @@ namespace RealismMod
                 {
                     if (shotCount > prevShotCount)
                     {
-                        if (shotCount >= 1 && shotCount <= 5)
+                        if (shotCount >= 2 && shotCount <= 5)
                         {
                             if (currentVRecoilX < startingVRecoilX * WeaponProperties.vRecoilLimit)
                             {

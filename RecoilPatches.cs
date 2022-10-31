@@ -145,15 +145,29 @@ namespace RealismMod
                 Plugin.isFiring = true;
                 Plugin.shotCount++;
 
-
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
                 float buffFactoredDispersion = Plugin.currentDispersion;
                 float angle = Plugin.startingRecoilAngle;
                 __instance.RecoilDegree = new Vector2(angle - buffFactoredDispersion, angle + buffFactoredDispersion);
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
-                __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX;
-                __instance.RecoilStrengthXy.y = Plugin.currentVRecoilY;
+
+                //instead of shot count, can check weapon firemode in here. Can also get weapon class/type.
+                //would be more efficient to have a static bool "getsSemiRecoilIncrease" and check the weap class in stat detla instead.
+                //1.5f recoil on pistols unironically felt good, even a lot of the rifles. Some got a bit too fucked by it some some rebalancing might be needed.
+                //wep.FireMode.FireMode == Weapon.EFireMode.single
+                if (Plugin.shotCount == 1 && WeaponProperties.ShouldGetSemiIncrease == true)
+                {
+                    __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX * 1.35f;
+                    __instance.RecoilStrengthXy.y = Plugin.currentVRecoilY * 1.35f;
+                }
+                else
+                {
+                    __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX;
+                    __instance.RecoilStrengthXy.y = Plugin.currentVRecoilY;
+                }
+
+
                 __instance.ShotVals[3].Intensity = Plugin.currentCamRecoilX;
                 __instance.ShotVals[4].Intensity = Plugin.currentCamRecoilY;
 

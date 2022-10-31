@@ -166,8 +166,6 @@ namespace RealismMod
             {
                 StatCalc.setMagReloadSpeeds(__instance, magazine);
             }
-            Logger.LogWarning("currentMagReloadSpeed = " + WeaponProperties.currentMagReloadSpeed);
-            Logger.LogWarning("newMagReloadSpeed = " + WeaponProperties.newMagReloadSpeed);
         }
     }
 
@@ -205,7 +203,7 @@ namespace RealismMod
             if (__instance.Item.Owner.ID.StartsWith("pmc"))
             {
                 Helper.IsAttemptingToReloadInternalMag = true;
-
+                Helper.isAttemptingRevolverReload = true;
             }
         }
     }
@@ -257,7 +255,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            __instance.SetAnimationSpeed(WeaponProperties.currentMagReloadSpeed);
+            __instance.SetAnimationSpeed(WeaponProperties.currentMagReloadSpeed * PlayerProperties.ReloadSkillMulti);
         }
     }
 
@@ -271,7 +269,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            __instance.SetAnimationSpeed(WeaponProperties.currentMagReloadSpeed);
+            __instance.SetAnimationSpeed(WeaponProperties.currentMagReloadSpeed * PlayerProperties.ReloadSkillMulti);
         }
     }
 
@@ -287,7 +285,7 @@ namespace RealismMod
         {
             if (Helper.IsMagReloading == true)
             {
-                __instance.SetAnimationSpeed(WeaponProperties.newMagReloadSpeed);
+                __instance.SetAnimationSpeed(WeaponProperties.newMagReloadSpeed * PlayerProperties.ReloadSkillMulti);
             }
         }
     }

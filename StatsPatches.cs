@@ -110,7 +110,7 @@ namespace RealismMod
                 float magWeightFactored = StatCalc.factoredWeight(magWeight);
                 string position = StatCalc.getModPosition(magazine, weapType, weapOpType);
                 magErgo = magazine.Ergonomics;
-                currentTorque = StatCalc.getTorque(position, magWeightFactored, WeaponProperties.Balance);
+                currentTorque = StatCalc.getTorque(position, magWeightFactored, WeaponProperties.IsPistol);
             }
 
             float weapWeightLessMag = totalWeight - magWeight;
@@ -163,7 +163,7 @@ namespace RealismMod
             float totalCOIDelta = 0;
 
 
-            StatCalc.weaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref recoilDamping, ref recoilHandDamping, WeaponProperties.SDTotalCOI, WeaponProperties.HasShoulderContact, ref totalCOI, ref totalCOIDelta, __instance.CenterOfImpactBase);
+            StatCalc.weaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref recoilDamping, ref recoilHandDamping, WeaponProperties.SDTotalCOI, WeaponProperties.HasShoulderContact, ref totalCOI, ref totalCOIDelta, __instance.CenterOfImpactBase, false, WeaponProperties.IsPistol);
 
             float ergonomicWeight = StatCalc.ergoWeightCalc(totalWeight, totalErgoDelta);
             float ergonomicWeightLessMag = StatCalc.ergoWeightCalc(weapWeightLessMag, totalErgoDelta);
@@ -197,10 +197,6 @@ namespace RealismMod
             WeaponProperties.AimMoveSpeedModifier = totalAimMoveSpeedMod;
 
 
-            Logger.LogInfo("Reload Speed Modifier = " + WeaponProperties.ReloadSpeedModifier);
-            Logger.LogInfo("Chamber Speed Modifier = " + WeaponProperties.ChamberSpeed);
-            Logger.LogInfo("AimMoveSpeedModifier = " + WeaponProperties.AimMoveSpeedModifier);
-
             if (hasMag == true)
             {
                 StatCalc.magReloadSpeedModifier((MagazineClass)magazine, false, false);
@@ -221,15 +217,24 @@ namespace RealismMod
             WeaponProperties.TotalRecoilHandDamping = totalRecoilHandDamping;
             WeaponProperties.COIDelta = totalCOIDelta * -1f;
 
-            Logger.LogWarning("===============MAG DELTA================");
-
-
             return totalErgoDelta;
         }
 
         public void StatDelta(ref Weapon __instance)
         {
             WeaponProperties.weapClass = __instance.WeapClass;
+
+            WeaponProperties.IsPistol = false;
+            if (WeaponProperties.weapClass == "pistol")
+            {
+                WeaponProperties.IsPistol = true;
+            }
+
+            WeaponProperties.ShouldGetSemiIncrease = false;
+            if (WeaponProperties.weapClass != "pistol" || WeaponProperties.weapClass != "shotgun" || WeaponProperties.weapClass != "sniperRifle" || WeaponProperties.weapClass != "smg")
+            {
+                WeaponProperties.ShouldGetSemiIncrease = true;
+            }
 
             float baseCOI = __instance.CenterOfImpactBase;
             float currentCOI = baseCOI;
@@ -307,12 +312,9 @@ namespace RealismMod
                     string position = StatCalc.getModPosition(__instance.Mods[i], weapType, weapOpType);
 
                     StatCalc.modTypeStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber);
-                    StatCalc.modStatCalc(modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber);
+                    StatCalc.modStatCalc(modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, false, WeaponProperties.IsPistol);
                 }
             }
-
-/*            StatCalc.stockContactStatCalc(hasShoulderContact, __instance, ref currentErgo, ref currentVRecoil, ref currentHRecoil, ref currentCOI, ref currentCamRecoil, ref currentDispersion, ref currentRecoilAngle);
-*/
             if (weaponAllowsFSADS == true || stockAllowsFSADS == true)
             {
                 WeaponProperties.WeaponCanFSADS = true;
@@ -337,9 +339,6 @@ namespace RealismMod
             WeaponProperties.AutoFireRate = Mathf.Max(300, (int)currentAutoROF);
             WeaponProperties.SemiFireRate = Mathf.Max(200, (int)currentSemiROF);
             WeaponProperties.SDTotalCOI = currentCOI;
-
-            Logger.LogWarning("ChamberSpeed = " + WeaponProperties.ChamberSpeed);
-            Logger.LogWarning("===============STAT DELTA================");
 
         }
     }
@@ -483,15 +482,11 @@ namespace RealismMod
             if (__instance.Item.Owner.ID.StartsWith("pmc"))
             {
                 SkillsClass.GClass1552 skillsClass = (SkillsClass.GClass1552)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1552_0").GetValue(__instance);
-                FirearmsAnimator firearmAnimator = (FirearmsAnimator)AccessTools.Field(typeof(EFT.Player.FirearmController), "firearmsAnimator_0").GetValue(__instance);
-
-                Logger.LogInfo("=======================================");
-                Logger.LogInfo("skillsClass.AimMovementSpeed = " + skillsClass.AimMovementSpeed);
-                Logger.LogInfo("skillsClass.ReloadSpeed = " + skillsClass.ReloadSpeed);
-                Logger.LogInfo("skillsClass.FixSpeed  = " + skillsClass.FixSpeed);
+/*                FirearmsAnimator firearmAnimator = (FirearmsAnimator)AccessTools.Field(typeof(EFT.Player.FirearmController), "firearmsAnimator_0").GetValue(__instance);
+*/
                 PlayerProperties.ReloadSkillMulti = skillsClass.ReloadSpeed;
                 PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;
-                Logger.LogInfo("=======================================");
+
 
             }
         }
@@ -505,18 +500,16 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref GClass1477 __instance, bool isAiming, float slow)
+        private static bool Prefix(ref GClass1477 __instance, bool isAiming)
         {
-            Logger.LogInfo("slow = " + slow);
+
             Player player = (Player)AccessTools.Field(typeof(GClass1477), "player_0").GetValue(__instance);
             if (player.HandsController.Item.Owner.ID.StartsWith("pmc"))
             {
                 if (isAiming)
                 {
-                    Logger.LogInfo("slow  = " + slow);
-                    slow = 0.33f;
-                    __instance.AddStateSpeedLimit(Math.Max((slow + 0.12f) + WeaponProperties.AimMoveSpeedModifier, 0.15f), Player.ESpeedLimit.Aiming);
-                    Logger.LogInfo("AddStateSpeedLimit = " + Math.Max((slow + 0.12f) + WeaponProperties.AimMoveSpeedModifier, 0.15f));
+                    float baseSpeed = 0.4f;
+                    __instance.AddStateSpeedLimit(Math.Max((baseSpeed) + WeaponProperties.AimMoveSpeedModifier, 0.15f), Player.ESpeedLimit.Aiming);
                     return true;
                 }
                 __instance.RemoveStateSpeedLimit(Player.ESpeedLimit.Aiming);

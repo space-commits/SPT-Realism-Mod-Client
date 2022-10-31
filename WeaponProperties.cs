@@ -64,6 +64,7 @@ namespace RealismMod
 
         public static float ErgnomicWeight = 0;
 
+        public static bool IsPistol = false;
 
     }
 
@@ -153,6 +154,10 @@ namespace RealismMod
         }
 
         public static string weapClass = "";
+
+        public static bool IsPistol = false;
+
+        public static bool ShouldGetSemiIncrease = false;
 
         public static float AdapterPistolGripBonusVRecoil = -1;
 
@@ -262,8 +267,6 @@ namespace RealismMod
 
         public static float currentMagReloadSpeed = 1f;
         public static float newMagReloadSpeed = 1f;
-
-        public static float skillFixSpeed = 0;
 
         public static float convergenceChangeRate = 0.98f;
         public static float convergenceResetRate = 1.16f;

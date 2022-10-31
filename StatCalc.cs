@@ -47,17 +47,17 @@ namespace RealismMod
         public static float HandDampingPistolMin = 0.5f;
         public static float HandDampingPistolMax = 0.7f;
 
-        public static float ReloadSpeedWeightMult = 1f;//
+        public static float ReloadSpeedWeightMult = 0.9f;//
         public static float ReloadSpeedTorqueMult = 1.1f;// needs tweaking
-        public static float ReloadSpeedMult = 0.35f;//
+        public static float ReloadSpeedMult = 0.3f;//
 
-        public static float ChamberSpeedWeightMult = 1f;//
+        public static float ChamberSpeedWeightMult = 0.9f;//
         public static float ChamberSpeedTorqueMult = 1.1f;// needs tweaking
-        public static float ChamberSpeedMult = 0.35f;//
+        public static float ChamberSpeedMult = 0.3f;//
 
-        public static float AimMoveSpeedWeightMult = 1f;//
+        public static float AimMoveSpeedWeightMult = 0.9f;//
         public static float AimMoveSpeedTorqueMult = 1.1f;// needs tweaking
-        public static float AimMoveSpeedMult = 0.18f;//
+        public static float AimMoveSpeedMult = 0.2f;//
 
         public static float magWeightMult = 11f;
 
@@ -85,7 +85,7 @@ namespace RealismMod
             float reloadSpeedModiLessMag = WeaponProperties.ReloadSpeedModifier;
 
             float magSpeedMulti = (magSpeed / 100) + 1;
-            float totalReloadSpeed = Mathf.Max(magSpeedMulti * magWeightFactor * reloadSpeedModiLessMag * PlayerProperties.ReloadSkillMulti, 0.65f);
+            float totalReloadSpeed = Mathf.Max(magSpeedMulti * magWeightFactor * reloadSpeedModiLessMag, 0.65f);
 
             if (reloadFromNoMag == true)
             {
@@ -144,11 +144,11 @@ namespace RealismMod
             totalAimMoveSpeedModifier = (aimMoveSpeedWeightFactor + (torqueFactor * StatCalc.AimMoveSpeedTorqueMult)) * StatCalc.AimMoveSpeedMult;
         }
 
-        public static void weaponStatCalc(Weapon weap, float currentTorque, ref float totalTorque, float currentErgo, float currentVRecoil, float currentHRecoil, float currentDispersion, float currentCamRecoil, float currentRecoilAngle, float baseErgo, float baseVRecoil, float baseHRecoil, ref float totalErgo, ref float totalVRecoil, ref float totalHRecoil, ref float totalDispersion, ref float totalCamRecoil, ref float totalRecoilAngle, ref float totalRecoilDamping, ref float totalRecoilHandDamping, ref float totalErgoDelta, ref float totalVRecoilDelta, ref float totalHRecoilDelta, ref float recoilDamping, ref float recoilHandDamping, float currentCOI, bool hasShoulderContact, ref float totalCOI, ref float totalCOIDelta, float baseCOI)
+        public static void weaponStatCalc(Weapon weap, float currentTorque, ref float totalTorque, float currentErgo, float currentVRecoil, float currentHRecoil, float currentDispersion, float currentCamRecoil, float currentRecoilAngle, float baseErgo, float baseVRecoil, float baseHRecoil, ref float totalErgo, ref float totalVRecoil, ref float totalHRecoil, ref float totalDispersion, ref float totalCamRecoil, ref float totalRecoilAngle, ref float totalRecoilDamping, ref float totalRecoilHandDamping, ref float totalErgoDelta, ref float totalVRecoilDelta, ref float totalHRecoilDelta, ref float recoilDamping, ref float recoilHandDamping, float currentCOI, bool hasShoulderContact, ref float totalCOI, ref float totalCOIDelta, float baseCOI, bool isDisplayDelta, bool isPistol)
         {
             float weaponBaseWeight = weap.Weight;
             float weaponBaseWeightFactored = factoredWeight(weaponBaseWeight);
-            float weaponBaseTorque = torqueCalc(WeaponProperties.BaseTorqueDistance(weap), weaponBaseWeightFactored);
+            float weaponBaseTorque = torqueCalc(WeaponProperties.BaseTorqueDistance(weap), weaponBaseWeightFactored, isPistol);
 
             float ergoWeapBaseWeightFactor = weightStatCalc(StatCalc.ErgoWeightMult, weaponBaseWeight) / 100;
             float vRecoilWeapBaseWeightFactor = weightStatCalc(StatCalc.VRecoilWeightMult, weaponBaseWeight) / 100f;
@@ -176,7 +176,7 @@ namespace RealismMod
 
                 if (weap.WeapClass != "shotgun") 
                 {
-                    currentCOI *= WeaponProperties.FoldedCOIFactor; 
+                    currentCOI *= WeaponProperties.FoldedCOIFactor;
                 }
             }
 
@@ -191,6 +191,16 @@ namespace RealismMod
             totalCOI = currentCOI + (currentCOI * (WeaponProperties.WeaponAccuracy(weap) / 100));
             totalCOIDelta = (baseCOI - totalCOI) / (baseCOI * -1f);
 
+            totalErgoDelta = (baseErgo - totalErgo) / (baseErgo * -1f);
+            totalVRecoilDelta = (baseVRecoil - totalVRecoil) / (baseVRecoil * -1f);
+            totalHRecoilDelta = (baseHRecoil - totalHRecoil) / (baseHRecoil * -1f);
+
+            if (isDisplayDelta == true)
+            {
+                return;
+            }
+
+
             if (weap.WeapClass == "pistol")
             {
                 totalRecoilDamping = Mathf.Clamp(recoilDamping + (recoilDamping * (dampingTotalWeightFactor + (totalTorqueFactor * StatCalc.DampingTorqueMult))), StatCalc.DampingPistolMin, StatCalc.DampingPistolMax);
@@ -201,14 +211,10 @@ namespace RealismMod
                 totalRecoilDamping = Mathf.Clamp(recoilDamping + (recoilDamping * (dampingTotalWeightFactor + (totalTorqueFactor * StatCalc.DampingTorqueMult))), StatCalc.DampingMin, StatCalc.DampingMax);
                 totalRecoilHandDamping = Mathf.Clamp(recoilHandDamping + (recoilHandDamping * (handDampingTotalWeightFactor + (totalTorqueFactorInverse * StatCalc.HandDampinTorqueMult))), StatCalc.HandDampingMin, StatCalc.HandDampingMax);
             }
-
-            totalErgoDelta = (baseErgo - totalErgo) / (baseErgo * -1f);
-            totalVRecoilDelta = (baseVRecoil - totalVRecoil) / (baseVRecoil * -1f);
-            totalHRecoilDelta = (baseHRecoil - totalHRecoil) / (baseHRecoil * -1f);
         }
 
 
-        public static void modStatCalc(float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeed, float modReload, ref float currentReloadSpeed, float modFix, ref float currentFixSpeed, float modErgo, ref float currentErgo, float modVRecoil, ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeed, float modChamber)
+        public static void modStatCalc(float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeed, float modReload, ref float currentReloadSpeed, float modFix, ref float currentFixSpeed, float modErgo, ref float currentErgo, float modVRecoil, ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeed, float modChamber, bool isDisplayDelta, bool isPistol)
         {
 
             float ergoWeightFactor = weightStatCalc(StatCalc.ErgoWeightMult, modWeight) / 100f;
@@ -223,7 +229,7 @@ namespace RealismMod
 
             currentHRecoil = currentHRecoil + (currentHRecoil * ((modHRecoil / 100f) + hRecoilWeightFactor));
 
-            currentTorque += getTorque(position, modWeightFactored, currentTorque);
+            currentTorque += getTorque(position, modWeightFactored, isPistol);
 
             currentCamRecoil = currentCamRecoil + (currentCamRecoil * ((modCamRecoil / 100f) + camRecoilWeightFactor));
 
@@ -233,6 +239,15 @@ namespace RealismMod
 
             currentCOI = currentCOI + (currentCOI * (modAccuracy / 100f));
 
+            currentAutoROF = currentAutoROF + (currentAutoROF * (modAutoROF / 100f));
+
+            currentSemiROF = currentSemiROF + (currentSemiROF * (modSemiROF / 100f));
+
+            if (isDisplayDelta == true)
+            {
+                return;
+            }
+
             currentAimSpeed = currentAimSpeed + modAim;
 
             currentReloadSpeed = currentReloadSpeed + modReload;
@@ -240,11 +255,6 @@ namespace RealismMod
             currentChamberSpeed = currentChamberSpeed + modChamber;
 
             currentFixSpeed = currentFixSpeed + modFix;
-
-            currentAutoROF = currentAutoROF + (currentAutoROF * (modAutoROF / 100f));
-
-            currentSemiROF = currentSemiROF + (currentSemiROF * (modSemiROF / 100f));
-
         }
 
 
@@ -432,13 +442,13 @@ namespace RealismMod
 
         public static string getModPosition(Mod mod, string weapType, string opType)
         {
-            if (opType == "p90" || opType == "tubefed" || opType == "magForward")
+            if (weapType == "pistol" || weapType == "bullpup")
             {
-                if (isStock(mod))
+                if (isStock(mod) || isMagazine(mod))
                 {
                     return "rear";
                 }
-                if (isMagazine(mod) || isHandguard(mod) || isGasblock(mod) || isFlashHider(mod) || isForegrip(mod) || isMuzzleCombo(mod) || isSilencer(mod) || isTacticalCombo(mod) || isFlashlight(mod) || isBipod(mod) || isBarrel(mod))
+                if (isHandguard(mod) || isGasblock(mod) || isFlashHider(mod) || isForegrip(mod) || isMuzzleCombo(mod) || isSilencer(mod) || isTacticalCombo(mod) || isFlashlight(mod) || isBipod(mod) || isBarrel(mod))
                 {
                     return "front";
                 }
@@ -447,13 +457,13 @@ namespace RealismMod
                     return "neutral";
                 }
             }
-            else if (weapType == "pistol" || weapType == "bullpup")
+            else if (opType == "p90" || opType == "tubefed" || opType == "magForward")
             {
-                if (isStock(mod) || isMagazine(mod))
+                if (isStock(mod))
                 {
                     return "rear";
                 }
-                if (isHandguard(mod) || isGasblock(mod) || isFlashHider(mod) || isForegrip(mod) || isMuzzleCombo(mod) || isSilencer(mod) || isTacticalCombo(mod) || isFlashlight(mod) || isBipod(mod) || isBarrel(mod))
+                if (isMagazine(mod) || isHandguard(mod) || isGasblock(mod) || isFlashHider(mod) || isForegrip(mod) || isMuzzleCombo(mod) || isSilencer(mod) || isTacticalCombo(mod) || isFlashlight(mod) || isBipod(mod) || isBarrel(mod))
                 {
                     return "front";
                 }
@@ -489,21 +499,25 @@ namespace RealismMod
             return Mathf.Clamp((float)Math.Pow(modWeight * 1.5, 1.1) / 1.1f, 0.001f, 5f);
         }
 
-        public static float torqueCalc(float distance, float weight)
+        public static float torqueCalc(float distance, float weight, bool isPistol)
         {
+            if (isPistol == true)
+            {
+                distance *= 3f;
+            }
             return (distance - 0) * weight;
         }
 
-        public static float getTorque(string position, float weight, float currentTorque)
+        public static float getTorque(string position, float weight, bool isPistol)
         {
             float torque = 0;
             switch (position)
             {
                 case "front":
-                    torque = torqueCalc(-10, weight);
+                    torque = torqueCalc(-10, weight, isPistol);
                     break;
                 case "rear":
-                    torque = torqueCalc(10, weight);
+                    torque = torqueCalc(10, weight, isPistol);
                     break;
                 default:
                     torque = 0;

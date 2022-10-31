@@ -52,12 +52,18 @@ namespace RealismMod
             {
                 if (Helper.IsAttemptingToReloadInternalMag == true)
                 {
-                    player.HandsAnimator.SetAnimationSpeed(WeaponProperties.currentMagReloadSpeed);
+                    float reloadBonus = 0.15f;
+/*                    if (Helper.isAttemptingRevolverReload == true)
+                    {
+                        reloadBonus += 0.05f;
+                    }*/
+                    player.HandsAnimator.SetAnimationSpeed(reloadBonus + (WeaponProperties.currentMagReloadSpeed * PlayerProperties.ReloadSkillMulti));
                 }
             }
             else
             {
                 Helper.IsAttemptingToReloadInternalMag = false;
+                Helper.isAttemptingRevolverReload = false;
             }
 
         }
