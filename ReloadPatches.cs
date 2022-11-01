@@ -72,7 +72,12 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            __instance.SetAnimationSpeed(0.3f + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti));
+            float baseSpeed = 0.35f;
+            if (WeaponProperties.IsPistol == true)
+            {
+                baseSpeed = 0.15f;
+            }
+            __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti));
         }
     }
 
@@ -119,7 +124,12 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            __instance.SetAnimationSpeed(0.17f + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti));
+            float baseSpeed = 0.18f;
+            if (WeaponProperties.IsPistol == true)
+            {
+                baseSpeed = 0.1f;
+            }
+            __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti));
         }
     }
 
@@ -325,18 +335,18 @@ namespace RealismMod
         }
     }
 
-/*
-    public class GetBoltCatchPatch : ModulePatch
+
+/*    public class SetBoltCatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(FirearmsAnimator).GetMethod("GetBoltCatch", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(FirearmsAnimator).GetMethod("SetBoltCatch", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-
+            Logger.LogWarning("SetBoltCatch");
         }
     }
 */

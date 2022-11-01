@@ -147,7 +147,7 @@ namespace RealismMod
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
-                float buffFactoredDispersion = Plugin.currentDispersion;
+                float buffFactoredDispersion = Plugin.currentDispersion * str;
                 float angle = Plugin.startingRecoilAngle;
                 __instance.RecoilDegree = new Vector2(angle - buffFactoredDispersion, angle + buffFactoredDispersion);
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
@@ -168,8 +168,8 @@ namespace RealismMod
                 }
 
 
-                __instance.ShotVals[3].Intensity = Plugin.currentCamRecoilX;
-                __instance.ShotVals[4].Intensity = Plugin.currentCamRecoilY;
+                __instance.ShotVals[3].Intensity = Plugin.currentCamRecoilX * str;
+                __instance.ShotVals[4].Intensity = Plugin.currentCamRecoilY * str;
 
                 float num = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
                 float num2 = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str;
