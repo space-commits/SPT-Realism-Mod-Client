@@ -91,6 +91,14 @@ namespace RealismMod
             }
         }
 
+        public static bool isSight(Mod mod)
+        {
+            if (mod is Scope || mod is AssaultScope || mod is Collimator || mod is CompactCollimator || mod is IronSight || mod is SpecialScope) {
+                return true;
+            }
+            return false;
+        }
+
         public static bool isStock(Mod mod)
         {
             return (mod is Stock);

@@ -73,8 +73,9 @@ namespace RealismMod
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
             float baseSpeed = 0.35f;
-            if (WeaponProperties.IsPistol == true)
+            if (WeaponProperties.weapClass == "pistol")
             {
+                Logger.LogInfo("Pistol Chamber Check");
                 baseSpeed = 0.15f;
             }
             __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti));
@@ -125,7 +126,7 @@ namespace RealismMod
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
             float baseSpeed = 0.18f;
-            if (WeaponProperties.IsPistol == true)
+            if (WeaponProperties.weapClass == "pistol")
             {
                 baseSpeed = 0.1f;
             }

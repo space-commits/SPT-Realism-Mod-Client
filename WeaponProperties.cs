@@ -50,22 +50,7 @@ namespace RealismMod
 
         public static float TotalErgo = 0;
 
-        public static float SDTotalErgo = 0;
-
-        public static float SDTotalVRecoil = 0;
-
-        public static float SDTotalHRecoil = 0;
-
-        public static float SDBalance = 0;
-
-        public static string SavedInstanceID = "";
-
-        public static float PureErgoDelta = 0;
-
         public static float ErgnomicWeight = 0;
-
-        public static bool IsPistol = false;
-
     }
 
 
@@ -155,8 +140,6 @@ namespace RealismMod
 
         public static string weapClass = "";
 
-        public static bool IsPistol = false;
-
         public static bool ShouldGetSemiIncrease = false;
 
         public static float AdapterPistolGripBonusVRecoil = -1;
@@ -233,6 +216,8 @@ namespace RealismMod
 
         public static string SavedInstanceID = "";
 
+        public static float SDPureErgo = 0;
+
         public static float PureErgoDelta = 0;
 
         public static string Placement = "";
@@ -264,6 +249,8 @@ namespace RealismMod
         public static float AimMoveSpeedModifier = 0f;
 
         public static float AimSpeedModifier = 0f;
+
+        public static float AimSpeed = 0f;
 
         public static float currentMagReloadSpeed = 1f;
         public static float newMagReloadSpeed = 1f;
