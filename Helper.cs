@@ -43,6 +43,7 @@ namespace RealismMod
     public static class Helper
     {
 
+        public static bool ProgramKEnabled = false;
 
         public static bool IsAllowedAim = true;
 

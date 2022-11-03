@@ -167,12 +167,12 @@ namespace RealismMod
 
             StatCalc.weaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref recoilDamping, ref recoilHandDamping, WeaponProperties.SDTotalCOI, WeaponProperties.HasShoulderContact, ref totalCOI, ref totalCOIDelta, __instance.CenterOfImpactBase, false);
 
-            float ergonomicWeight = StatCalc.altErgoWeightCalc(totalWeight, totalErgoDelta, pureErgoDelta);
-            float ergonomicWeightLessMag = StatCalc.altErgoWeightCalc(weapWeightLessMag, totalErgoDelta, pureErgoDelta);
+            float ergonomicWeight = StatCalc.altErgoWeightCalc(totalWeight, pureErgoDelta, totalErgoDelta);
+            float ergonomicWeightLessMag = StatCalc.altErgoWeightCalc(totalWeight, pureErgoDelta, totalErgoDelta);
 
             Logger.LogInfo("=====================Ergo weight===============");
             Logger.LogInfo("Ergo weight = " + ergonomicWeight);
-
+            Logger.LogInfo("Pure Ergo = " + pureErgoDelta);
             Logger.LogInfo("=====================================");
 
             float weapTorqueLessMag = totalTorque - magazineTorque;
@@ -226,8 +226,6 @@ namespace RealismMod
 
             return totalErgoDelta;
         }
-
-
 
         public void StatDelta(ref Weapon __instance)
         {
@@ -315,7 +313,7 @@ namespace RealismMod
                     string modType = AttachmentProperties.ModType(__instance.Mods[i]);
                     string position = StatCalc.getModPosition(__instance.Mods[i], weapType, weapOpType);
 
-                    StatCalc.modTypeStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber);
+                    StatCalc.modConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber);
                     StatCalc.modStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, false, __instance.WeapClass, ref pureErgo);
                 }
             }
@@ -518,12 +516,12 @@ namespace RealismMod
                 {
                     float baseSpeed = 0.4f;
                     __instance.AddStateSpeedLimit(Math.Max((baseSpeed) + WeaponProperties.AimMoveSpeedModifier, 0.15f), Player.ESpeedLimit.Aiming);
-                    return true;
+                    return false;
                 }
                 __instance.RemoveStateSpeedLimit(Player.ESpeedLimit.Aiming);
-                return true;
+                return false;
             }
-            return false;
+            return true;
         }
     }
 
@@ -583,8 +581,8 @@ namespace RealismMod
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("UpdateSwayFactors", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        [PatchPostfix]
-        private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
+        [PatchPrefix]
+        private static bool Prefix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
         {
             Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
             if (firearmController != null)
@@ -592,11 +590,9 @@ namespace RealismMod
                 if (firearmController.Item.Owner.ID.StartsWith("pmc"))
                 {
                     float ergoWeight = WeaponProperties.ErgonomicWeight;
-                    float weapWeight = firearmController.Item.GetSingleItemTotalWeight();
-                    float weightFactor = StatCalc.proceduralIntensityFactorCalc(weapWeight, 3.5f);
-                    float displacementModifier = 0.5f;//lower = less drag
-                    float swayFactorsModifier = 0.25f;//lower = less aim tilt/dive
-                    float aimIntensity = __instance.IntensityByAiming * 0.2f;
+                    float weightFactor = StatCalc.proceduralIntensityFactorCalc(ergoWeight, 20f);
+                    float displacementModifier = 0.55f;//lower = less drag
+                    float aimIntensity = __instance.IntensityByAiming * 0.45f;
 
                     if (WeaponProperties.HasShoulderContact == false && firearmController.Item.WeapClass != "pistol")
                     {
@@ -612,16 +608,25 @@ namespace RealismMod
                     Logger.LogInfo("weightFactor = " + weightFactor);
 
                     float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight * (1f + __instance.Overweight));
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_18").SetValue(__instance, swayStrength);
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_18").SetValue(__instance, 1);
 
                     float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate(ergoWeight * (1f + __instance.Overweight));//delay from moving mouse to the weapon moving to center of screen.
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, weapDisplacement * weightFactor * displacementModifier);
 
                     Logger.LogInfo("weapDisplacement = " + weapDisplacement * weightFactor * displacementModifier);
-                    Logger.LogInfo("swayStrength = " + Mathf.Clamp(aimIntensity * weightFactor * swayFactorsModifier, aimIntensity, 1.15f));
+                    Logger.LogInfo("SwayFactors = " + Mathf.Clamp(aimIntensity * weightFactor, aimIntensity, 1.15f));
                     Logger.LogInfo("=======================================");
-                    __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * Mathf.Clamp(aimIntensity * weightFactor * swayFactorsModifier, aimIntensity, 1.15f); // the diving/tiling animation as you move weapon side to side.
+                    __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * Mathf.Clamp(aimIntensity * weightFactor, aimIntensity, 1.15f); // the diving/tiling animation as you move weapon side to side.
+                    return false;
                 }
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                return true;
             }
         }
     }

@@ -106,16 +106,16 @@ namespace RealismMod
         }
 
 
-        public static float ergoWeightCalc(float totalWeight, float totalErgoDelta)
-        {
-            float factoredWeight = totalWeight * (1 - (totalErgoDelta * 0.2f));
-            return Mathf.Clamp((float)(Math.Pow(factoredWeight * 1.78, 3.5) + 1) / 200, 1f, 115f);
-        }
+        /*        public static float ergoWeightCalc(float totalWeight, float totalErgoDelta)
+                {
+                    float factoredWeight = totalWeight * (1 - (totalErgoDelta * 0.2f));
+                    return Mathf.Clamp((float)(Math.Pow(factoredWeight * 1.78, 3.5) + 1) / 200, 1f, 115f);
+                }*/
 
         public static float altErgoWeightCalc(float totalWeight, float pureErgoDelta, float totalTorque)
         {
             float totalTorqueFactorInverse = totalTorque / 100f * -1f;
-            float ergoFactoredWeight = totalWeight * (1 - (pureErgoDelta * 0.15f));
+            float ergoFactoredWeight = totalWeight * (1 - (pureErgoDelta * 0.32f));
             float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse + 0.3f));
             return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 1.78, 3.5) + 1) / 200, 1f, 115f);
         }
@@ -273,7 +273,7 @@ namespace RealismMod
         }
 
 
-        public static void modTypeStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, ref string position, ref float modChamber)
+        public static void modConditionalStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, ref string position, ref float modChamber)
         {
             if (Helper.isStock(mod) == true)
             {
@@ -326,29 +326,14 @@ namespace RealismMod
 
                     }
 
+                    if (Helper.ProgramKEnabled == true)
+                    {
+                        StatCalc.stockPositionChecker(mod, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
+                    }
+
                     if (modType == "buffer_adapter" || modType == "stock_adapter")
                     {
-                        bool adapterContainsStock = false;
-                        if (mod.Slots[0].ContainedItem != null)
-                        {
-                            Mod containedMod = mod.Slots[0].ContainedItem as Mod;
-                            if (AttachmentProperties.ModType(containedMod) != "buffer")
-                            {
-                                adapterContainsStock = true;
-                            }
-                            if (containedMod.Slots.Length > 0 && containedMod.Slots[0].ContainedItem != null)
-                            {
-                                adapterContainsStock = true;
-                            }
-                        }
-                        if (adapterContainsStock == false)
-                        {
-                            modVRecoil = 0;
-                            modHRecoil = 0;
-                            modDispersion = 0;
-                            modCamRecoil = 0;
-                            modErgo = 0;
-                        }
+
                         if (mod.Slots.Length > 1 && mod.Slots[1].ContainedItem != null)
                         {
                             modVRecoil += WeaponProperties.AdapterPistolGripBonusVRecoil;
@@ -356,10 +341,30 @@ namespace RealismMod
                             modDispersion += WeaponProperties.AdapterPistolGripBonusDispersion;
                             modErgo += WeaponProperties.AdapterPistolGripBonusErgo;
                         }
+                        if (mod.Slots[0].ContainedItem != null)
+                        {
+                            Mod containedMod = mod.Slots[0].ContainedItem as Mod;
+                            if (AttachmentProperties.ModType(containedMod) != "buffer")
+                            {
+                                return;
+                            }
+                            if (containedMod.Slots.Length > 0 && containedMod.Slots[0].ContainedItem != null)
+                            {
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            modVRecoil = 0;
+                            modHRecoil = 0;
+                            modDispersion = 0;
+                            modCamRecoil = 0;
+                            modErgo = 0;
+                        }
                         return;
                     }
 
-                    if (modType == "hydraulic_buffer" && (weap.WeapClass != "shotgun" || weap.WeapClass != "sniperRifle" || weap.WeapClass != "assaultCarbine") || weapOpType == "buffer")
+                    if (modType == "hydraulic_buffer" && (weap.WeapClass != "shotgun" || weap.WeapClass != "sniperRifle" || weap.WeapClass != "assaultCarbine" || weapOpType == "buffer"))
                     {
                         modVRecoil = 0;
                         modHRecoil = 0;
@@ -397,7 +402,6 @@ namespace RealismMod
                 return;
             }
 
-
             if (modType == "shot_pump_grip_adapt" && mod.Slots[0].ContainedItem != null)
             {
                 Mod containedMod = mod.Slots[0].ContainedItem as Mod;
@@ -413,20 +417,19 @@ namespace RealismMod
 
             if (modType == "grip_stock_adapter")
             {
-                bool adapterContainsStock = false;
                 if (mod.Slots[0].ContainedItem != null)
                 {
                     Mod containedMod = mod.Slots[0].ContainedItem as Mod;
                     if (AttachmentProperties.ModType(containedMod) == "stock")
                     {
-                        adapterContainsStock = true;
+                        return;
                     }
                     if (containedMod.Slots.Length > 0 && containedMod.Slots[0].ContainedItem != null)
                     {
-                        adapterContainsStock = true;
+                        return;
                     }
                 }
-                if (adapterContainsStock == false)
+                else
                 {
                     modVRecoil = 0;
                     modHRecoil = 0;
@@ -501,6 +504,70 @@ namespace RealismMod
                 {
                     return "neutral";
                 }
+            }
+        }
+
+
+        public static void stockPositionChecker(Mod mod, ref float modVRecoil, ref float modHRecoil, ref float modDispersion, ref float modCamRecoil, ref float modErgo)
+        {
+
+            if (mod.Parent.Container != null)
+            {
+                string parentType = AttachmentProperties.ModType(mod.Parent.Container.ParentItem);
+                if (parentType == "buffer" || parentType == "buffer_adapter")
+                {
+                    Mod parentMod = mod.Parent.Container.ParentItem as Mod;
+                    for (int i = 0; i < parentMod.Slots.Length; i++)
+                    {
+                        if (parentMod.Slots[i].ContainedItem != null)
+                        {
+                            StatCalc.bufferSlotModifier(i, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void bufferSlotModifier(int position, ref float modVRecoil, ref float modHRecoil, ref float modDispersion, ref float modCamRecoil, ref float modErgo)
+        {
+            switch (position)
+            {
+                case 0:
+                    modVRecoil *= 0.25f;
+                    modHRecoil *= 0.25f;
+                    modDispersion *= 0.25f;
+                    modCamRecoil *= 0.25f;
+                    modErgo *= 1.5f;
+                    break;
+                case 1:
+                    modVRecoil *= 0.75f;
+                    modHRecoil *= 0.75f;
+                    modDispersion *= 0.75f;
+                    modCamRecoil *= 0.75f;
+                    modErgo *= 1.25f;
+                    break;
+                case 2:
+                    modVRecoil *= 1f;
+                    modHRecoil *= 1f;
+                    modDispersion *= 1f;
+                    modCamRecoil *= 1f;
+                    modErgo *= 1f;
+                    break;
+                case 3:
+                    modVRecoil *= 1.25f;
+                    modHRecoil *= 1.25f;
+                    modDispersion *= 1.25f;
+                    modCamRecoil *= 1.25f;
+                    modErgo *= 0.75f;
+                    break;
+                default:
+                    modVRecoil *= 1;
+                    modHRecoil *= 1;
+                    modDispersion *= 1;
+                    modCamRecoil *= 1;
+                    modErgo *= 1;
+                    break;
             }
         }
 

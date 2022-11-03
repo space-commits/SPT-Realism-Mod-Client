@@ -80,7 +80,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref EFT.Player.FirearmController __instance)
+        private static bool Prefix()
         {
 
             if (Plugin.enableFSPatch.Value == true)

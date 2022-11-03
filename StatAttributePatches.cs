@@ -19,7 +19,7 @@ namespace RealismMod
             return typeof(StaticIcons).GetMethod("GetAttributeIcon", BindingFlags.Instance | BindingFlags.Public);
         }
         [PatchPrefix]
-        private static bool PatchPrefix(ref Sprite __result, Enum id)
+        private static bool Prefix(ref Sprite __result, Enum id)
         {
 
             if (id == null || !Plugin.iconCache.ContainsKey(id))

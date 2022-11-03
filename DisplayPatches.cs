@@ -309,11 +309,15 @@ namespace RealismMod
         {
             StatDeltaDisplay.DisplayDelta(__instance);
 
+            Logger.LogWarning("ErgoDisplayValuePatch");
+
             float ergoTotal = __instance.Template.Ergonomics * (1f + DisplayWeaponProperties.ErgoDelta);
             string result = Mathf.Clamp(ergoTotal, 0f, 100f).ToString("0.##");
             __result = result;
             return false;
         }
+
+    
     }
 
     public class HRecoilDisplayDeltaPatch : ModulePatch
@@ -506,7 +510,7 @@ namespace RealismMod
                 float modWeight = __instance.Mods[i].Weight;
                 if (Helper.isMagazine(__instance.Mods[i]) == true)
                 {
-                    modWeight = __instance.Mods[i].GetSingleItemTotalWeight(); 
+                    modWeight = __instance.Mods[i].GetSingleItemTotalWeight();
                 }
                 float modWeightFactored = StatCalc.factoredWeight(modWeight);
                 float modErgo = __instance.Mods[i].Ergonomics;
@@ -525,8 +529,12 @@ namespace RealismMod
                 string modType = AttachmentProperties.ModType(__instance.Mods[i]);
                 string position = StatCalc.getModPosition(__instance.Mods[i], weapType, weapOpType);
 
+                if (Helper.isStock(mod))
+                {
+                    StatCalc.stockPositionChecker(mod, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
+                }
 
-                StatCalc.modTypeStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber);
+                StatCalc.modConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber);
                 StatCalc.modStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, true, __instance.WeapClass, ref pureErgo);
             }
 

@@ -44,6 +44,7 @@ namespace RealismMod
         public static ConfigEntry<bool> enableFSPatch { get; set; }
         public static ConfigEntry<bool> enableMalfPatch { get; set; }
         public static ConfigEntry<bool> enableSGMastering { get; set; }
+        public static ConfigEntry<bool> enableProgramK { get; set; }
 
         public static float timer = 0.0f;
 
@@ -143,9 +144,16 @@ namespace RealismMod
             showRecoilAngle = Config.Bind<bool>(WeapStatSettings, "Show Recoil Angle Stat", true, new ConfigDescription("Requiures Restart. Warning: showing too many stats on weapons with lots of slots makes the inspect menu UI difficult to use.", null, new ConfigurationManagerAttributes { Order = 2 }));
             showSemiROF = Config.Bind<bool>(WeapStatSettings, "Show Semi Auto ROF Stat", true, new ConfigDescription("Requiures Restart. Warning: showing too many stats on weapons with lots of slots makes the inspect menu UI difficult to use.", null, new ConfigurationManagerAttributes { Order = 1 }));
 
-            enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields block ADS unless the specfic Stock/Weapon/Faceshield allows it.", null, new ConfigurationManagerAttributes { Order = 1 }));
+            enableProgramK = Config.Bind<bool>(MiscSettings, "Enable ProgramK Compatibility", false, new ConfigDescription("Requires Restart. Emables integration of some ProgramK features. This option currently accomdates multiple buffer tube stock slots, withc each position modifiying stock stats differently.", null, new ConfigurationManagerAttributes { Order = 4 }));
+            enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields block ADS unless the specfic Stock/Weapon/Faceshield allows it.", null, new ConfigurationManagerAttributes { Order = 3 }));
             enableMalfPatch = Config.Bind<bool>(MiscSettings, "Enable Malfuction Patch", true, new ConfigDescription("Requires Restart. You don't need to inspect a Malfunction in order to clear it.", null, new ConfigurationManagerAttributes { Order = 2 }));
-            enableSGMastering = Config.Bind<bool>(MiscSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns will get set to base lvl 2 mastery for reload animations, giving them better pump animations. ADS while reloading is unaffected.", null, new ConfigurationManagerAttributes { Order = 3 }));
+            enableSGMastering = Config.Bind<bool>(MiscSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns will get set to base lvl 2 mastery for reload animations, giving them better pump animations. ADS while reloading is unaffected.", null, new ConfigurationManagerAttributes { Order = 1 }));
+
+            if (enableProgramK.Value == true)
+            {
+                Helper.ProgramKEnabled = true;
+                Logger.LogInfo("Realism Mod: ProgramK Compatibiltiy Enabled!");
+            }
 
             GetPath();
             CacheIcons();

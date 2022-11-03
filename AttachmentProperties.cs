@@ -21,7 +21,7 @@ namespace RealismMod
     public static class AttachmentProperties
     {
 
-        public static string ModType(Mod mod)
+        public static string ModType(Item mod)
         {
             if (Helper.nullCheck(mod.ConflictingItems))
             {
