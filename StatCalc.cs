@@ -33,15 +33,15 @@ namespace RealismMod
 
         public static float AngleTorqueMult = 0.25f;
 
-        public static float DampingWeightMult = 0.055f;//
-        public static float DampingTorqueMult = 0.095f;// needs tweaking
+        public static float DampingWeightMult = 0.06f;//
+        public static float DampingTorqueMult = 0.1f;// needs tweaking
         public static float DampingMin = 0.65f;
         public static float DampingMax = 0.77f;
         public static float DampingPistolMin = 0.5f;
         public static float DampingPistolMax = 0.7f;
 
-        public static float HandDampingWeightMult = 0.055f;//
-        public static float HandDampinTorqueMult = 0.095f;// needs tweaking
+        public static float HandDampingWeightMult = 0.06f;//
+        public static float HandDampinTorqueMult = 0.1f;// needs tweaking
         public static float HandDampingMin = 0.65f;
         public static float HandDampingMax = 0.77f;
         public static float HandDampingPistolMin = 0.5f;
@@ -333,7 +333,6 @@ namespace RealismMod
 
                     if (modType == "buffer_adapter" || modType == "stock_adapter")
                     {
-
                         if (mod.Slots.Length > 1 && mod.Slots[1].ContainedItem != null)
                         {
                             modVRecoil += WeaponProperties.AdapterPistolGripBonusVRecoil;
@@ -348,6 +347,7 @@ namespace RealismMod
                             {
                                 return;
                             }
+                            //need to loop this if programK is enabled
                             if (containedMod.Slots.Length > 0 && containedMod.Slots[0].ContainedItem != null)
                             {
                                 return;

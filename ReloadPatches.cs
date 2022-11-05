@@ -76,7 +76,7 @@ namespace RealismMod
             if (WeaponProperties.weapClass == "pistol")
             {
                 Logger.LogInfo("Pistol Chamber Check");
-                baseSpeed = 0.15f;
+                baseSpeed = 0.1f;
             }
             __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti));
         }
@@ -125,7 +125,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            float baseSpeed = 0.18f;
+            float baseSpeed = 0.16f;
             if (WeaponProperties.weapClass == "pistol")
             {
                 baseSpeed = 0.1f;
@@ -266,7 +266,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            __instance.SetAnimationSpeed(WeaponProperties.currentMagReloadSpeed * PlayerProperties.ReloadSkillMulti);
+            __instance.SetAnimationSpeed(0.0f + (WeaponProperties.currentMagReloadSpeed * PlayerProperties.ReloadSkillMulti));
         }
     }
 
@@ -280,7 +280,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            __instance.SetAnimationSpeed(WeaponProperties.currentMagReloadSpeed * PlayerProperties.ReloadSkillMulti);
+            __instance.SetAnimationSpeed(0.0f + (WeaponProperties.currentMagReloadSpeed * PlayerProperties.ReloadSkillMulti));
         }
     }
 
@@ -296,7 +296,7 @@ namespace RealismMod
         {
             if (Helper.IsMagReloading == true)
             {
-                __instance.SetAnimationSpeed(WeaponProperties.newMagReloadSpeed * PlayerProperties.ReloadSkillMulti);
+                __instance.SetAnimationSpeed(0.0f + (WeaponProperties.newMagReloadSpeed * PlayerProperties.ReloadSkillMulti));
             }
         }
     }

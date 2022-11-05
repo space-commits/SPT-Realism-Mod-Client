@@ -32,7 +32,6 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class Plugin : BaseUnityPlugin
     {
-
         public static ConfigEntry<float> sensChangeRate { get; set; }
         public static ConfigEntry<float> sensResetRate { get; set; }
         public static ConfigEntry<float> sensLimit { get; set; }
@@ -47,7 +46,6 @@ namespace RealismMod
         public static ConfigEntry<bool> enableProgramK { get; set; }
 
         public static float timer = 0.0f;
-
         public static bool isFiring = false;
         public static bool isAiming;
         public static bool statsReset;
@@ -250,8 +248,8 @@ namespace RealismMod
                         {
                             if (currentVRecoilX < startingVRecoilX * WeaponProperties.vRecoilLimit)
                             {
-                                currentVRecoilX *= 1.12f;
-                                currentVRecoilY *= 1.12f;
+                                currentVRecoilX *= 1.125f;
+                                currentVRecoilY *= 1.125f;
                             }
                             if (currentConvergence > startingConvergence * WeaponProperties.convergenceLimit)
                             {
@@ -262,8 +260,8 @@ namespace RealismMod
                         {
                             if (currentVRecoilX < startingVRecoilX * WeaponProperties.vRecoilLimit)
                             {
-                                currentVRecoilX *= 1.07f;
-                                currentVRecoilY *= 1.07f;
+                                currentVRecoilX *= 1.075f;
+                                currentVRecoilY *= 1.075f;
                             }
                             if (currentConvergence > startingConvergence * WeaponProperties.convergenceLimit)
                             {

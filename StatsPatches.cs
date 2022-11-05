@@ -591,8 +591,8 @@ namespace RealismMod
                 {
                     float ergoWeight = WeaponProperties.ErgonomicWeight;
                     float weightFactor = StatCalc.proceduralIntensityFactorCalc(ergoWeight, 20f);
-                    float displacementModifier = 0.55f;//lower = less drag
-                    float aimIntensity = __instance.IntensityByAiming * 0.45f;
+                    float displacementModifier = 0.5f;//lower = less drag
+                    float aimIntensity = __instance.IntensityByAiming * 0.44f;
 
                     if (WeaponProperties.HasShoulderContact == false && firearmController.Item.WeapClass != "pistol")
                     {
@@ -608,15 +608,15 @@ namespace RealismMod
                     Logger.LogInfo("weightFactor = " + weightFactor);
 
                     float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight * (1f + __instance.Overweight));
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_18").SetValue(__instance, 1);
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_18").SetValue(__instance, swayStrength);
 
                     float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate(ergoWeight * (1f + __instance.Overweight));//delay from moving mouse to the weapon moving to center of screen.
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, weapDisplacement * weightFactor * displacementModifier);
 
                     Logger.LogInfo("weapDisplacement = " + weapDisplacement * weightFactor * displacementModifier);
-                    Logger.LogInfo("SwayFactors = " + Mathf.Clamp(aimIntensity * weightFactor, aimIntensity, 1.15f));
+                    Logger.LogInfo("SwayFactors = " + Mathf.Clamp(aimIntensity * weightFactor, aimIntensity, 1.1f));
                     Logger.LogInfo("=======================================");
-                    __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * Mathf.Clamp(aimIntensity * weightFactor, aimIntensity, 1.15f); // the diving/tiling animation as you move weapon side to side.
+                    __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * Mathf.Clamp(aimIntensity * weightFactor, aimIntensity, 1.1f); // the diving/tiling animation as you move weapon side to side.
                     return false;
                 }
                 else

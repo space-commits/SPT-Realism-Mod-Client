@@ -199,7 +199,7 @@ namespace RealismMod
                 balanceAtt.LessIsGood = false;
                 balanceAtt.Base = () => 150;
                 balanceAtt.Delta = () => BalanceDelta();
-                balanceAtt.StringValue = () => DisplayWeaponProperties.Balance.ToString();
+                balanceAtt.StringValue = () => Math.Round(DisplayWeaponProperties.Balance, 1).ToString();
                 balanceAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
                 balanceAttList.Add(balanceAtt);
 
@@ -214,7 +214,7 @@ namespace RealismMod
                 dispersionAtt.LessIsGood = true;
                 dispersionAtt.Base = () => __instance.Template.RecolDispersion;
                 dispersionAtt.Delta = () => DispersionDelta(__instance);
-                dispersionAtt.StringValue = () => DisplayWeaponProperties.Dispersion.ToString();
+                dispersionAtt.StringValue = () => Math.Round(DisplayWeaponProperties.Dispersion, 1).ToString();
                 dispersionAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
                 dispersionAttList.Add(dispersionAtt);
             }
@@ -228,7 +228,7 @@ namespace RealismMod
                 camRecoilAtt.LessIsGood = true;
                 camRecoilAtt.Base = () => __instance.Template.CameraRecoil;
                 camRecoilAtt.Delta = () => CamRecoilDelta(__instance);
-                camRecoilAtt.StringValue = () => DisplayWeaponProperties.CamRecoil.ToString();
+                camRecoilAtt.StringValue = () => Math.Round(DisplayWeaponProperties.CamRecoil, 4).ToString();
                 camRecoilAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
                 camRecoilAttList.Add(camRecoilAtt);
             }
@@ -239,7 +239,7 @@ namespace RealismMod
                 GClass2203 recoilAngleAtt = new GClass2203(ENewItemAttributeId.RecoilAngle);
                 recoilAngleAtt.Name = ENewItemAttributeId.RecoilAngle.GetName();
                 recoilAngleAtt.Base = () => DisplayWeaponProperties.RecoilAngle;
-                recoilAngleAtt.StringValue = () => DisplayWeaponProperties.RecoilAngle.ToString();
+                recoilAngleAtt.StringValue = () => Math.Round(DisplayWeaponProperties.RecoilAngle).ToString();
                 recoilAngleAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
                 recoilAngleAttList.Add(recoilAngleAtt);
             }
@@ -308,16 +308,11 @@ namespace RealismMod
         private static bool Prefix(ref Weapon __instance, ref string __result)
         {
             StatDeltaDisplay.DisplayDelta(__instance);
-
-            Logger.LogWarning("ErgoDisplayValuePatch");
-
             float ergoTotal = __instance.Template.Ergonomics * (1f + DisplayWeaponProperties.ErgoDelta);
             string result = Mathf.Clamp(ergoTotal, 0f, 100f).ToString("0.##");
             __result = result;
             return false;
         }
-
-    
     }
 
     public class HRecoilDisplayDeltaPatch : ModulePatch
@@ -347,7 +342,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref string __result)
         {
-            __result = Math.Round(__instance.Template.RecoilForceBack + __instance.Template.RecoilForceBack * DisplayWeaponProperties.HRecoilDelta, 2).ToString();
+            __result = Math.Round(__instance.Template.RecoilForceBack + __instance.Template.RecoilForceBack * DisplayWeaponProperties.HRecoilDelta, 1).ToString();
             return false;
         }
 
@@ -380,7 +375,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref string __result)
         {
-            __result = Math.Round(__instance.Template.RecoilForceUp + __instance.Template.RecoilForceUp * DisplayWeaponProperties.VRecoilDelta, 2).ToString();
+            __result = Math.Round(__instance.Template.RecoilForceUp + __instance.Template.RecoilForceUp * DisplayWeaponProperties.VRecoilDelta, 1).ToString();
             return false;
         }
 

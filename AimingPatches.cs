@@ -52,7 +52,7 @@ namespace RealismMod
             {
                 if (Helper.IsAttemptingToReloadInternalMag == true)
                 {
-                    float reloadBonus = 0.15f;
+                    float reloadBonus = 0.17f;
 /*                    if (Helper.isAttemptingRevolverReload == true)
                     {
                         reloadBonus += 0.05f;
