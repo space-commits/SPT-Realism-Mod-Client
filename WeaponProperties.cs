@@ -160,7 +160,7 @@ namespace RealismMod
 
         public static float FoldedCOIFactor = 0.025f;
 
-        public static float FoldedCamRecoilFactor = 0.35f;
+        public static float FoldedCamRecoilFactor = 0.5f;
 
         public static float FoldedDispersionFactor = 1.55f;
 

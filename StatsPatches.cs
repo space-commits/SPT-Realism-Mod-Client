@@ -167,8 +167,8 @@ namespace RealismMod
 
             StatCalc.weaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref recoilDamping, ref recoilHandDamping, WeaponProperties.SDTotalCOI, WeaponProperties.HasShoulderContact, ref totalCOI, ref totalCOIDelta, __instance.CenterOfImpactBase, false);
 
-            float ergonomicWeight = StatCalc.altErgoWeightCalc(totalWeight, pureErgoDelta, totalErgoDelta);
-            float ergonomicWeightLessMag = StatCalc.altErgoWeightCalc(totalWeight, pureErgoDelta, totalErgoDelta);
+            float ergonomicWeight = StatCalc.ErgoWeightCalc(totalWeight, pureErgoDelta, totalErgoDelta);
+            float ergonomicWeightLessMag = StatCalc.ErgoWeightCalc(totalWeight, pureErgoDelta, totalErgoDelta);
 
             Logger.LogInfo("=====================Ergo weight===============");
             Logger.LogInfo("Ergo weight = " + ergonomicWeight);
@@ -198,8 +198,8 @@ namespace RealismMod
             }
 
             WeaponProperties.ReloadSpeedModifier = totalReloadSpeedMod;
-            WeaponProperties.FixSpeedModifier = Mathf.Max(totalFixSpeedMod, 0.55f);
-            WeaponProperties.ChamberSpeed = Mathf.Max(totalChamberSpeed, 0.55f);
+            WeaponProperties.FixSpeedModifier = Mathf.Max(totalFixSpeedMod, 0.5f);
+            WeaponProperties.ChamberSpeed = Mathf.Max(totalChamberSpeed, 0.5f);
             WeaponProperties.AimMoveSpeedModifier = totalAimMoveSpeedMod;
 
 

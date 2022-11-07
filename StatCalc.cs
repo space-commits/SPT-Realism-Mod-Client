@@ -33,14 +33,14 @@ namespace RealismMod
 
         public static float AngleTorqueMult = 0.25f;
 
-        public static float DampingWeightMult = 0.06f;//
+        public static float DampingWeightMult = 0.05f;//
         public static float DampingTorqueMult = 0.1f;// needs tweaking
         public static float DampingMin = 0.65f;
         public static float DampingMax = 0.77f;
         public static float DampingPistolMin = 0.5f;
         public static float DampingPistolMax = 0.7f;
 
-        public static float HandDampingWeightMult = 0.06f;//
+        public static float HandDampingWeightMult = 0.05f;//
         public static float HandDampinTorqueMult = 0.1f;// needs tweaking
         public static float HandDampingMin = 0.65f;
         public static float HandDampingMax = 0.77f;
@@ -49,11 +49,11 @@ namespace RealismMod
 
         public static float ReloadSpeedWeightMult = 0.9f;//
         public static float ReloadSpeedTorqueMult = 1.1f;// needs tweaking
-        public static float ReloadSpeedMult = 0.3f;//
+        public static float ReloadSpeedMult = 0.35f;//
 
         public static float ChamberSpeedWeightMult = 0.9f;//
         public static float ChamberSpeedTorqueMult = 1.1f;// needs tweaking
-        public static float ChamberSpeedMult = 0.3f;//
+        public static float ChamberSpeedMult = 0.35f;//
 
         public static float AimMoveSpeedWeightMult = 0.9f;//
         public static float AimMoveSpeedTorqueMult = 1.1f;// needs tweaking
@@ -112,11 +112,11 @@ namespace RealismMod
                     return Mathf.Clamp((float)(Math.Pow(factoredWeight * 1.78, 3.5) + 1) / 200, 1f, 115f);
                 }*/
 
-        public static float altErgoWeightCalc(float totalWeight, float pureErgoDelta, float totalTorque)
+        public static float ErgoWeightCalc(float totalWeight, float pureErgoDelta, float totalTorque)
         {
             float totalTorqueFactorInverse = totalTorque / 100f * -1f;
             float ergoFactoredWeight = totalWeight * (1 - (pureErgoDelta * 0.32f));
-            float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse + 0.3f));
+            float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse + 0.25f));
             return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 1.78, 3.5) + 1) / 200, 1f, 115f);
         }
 

@@ -155,7 +155,7 @@ namespace RealismMod
                 //instead of shot count, can check weapon firemode in here. Can also get weapon class/type.
                 //would be more efficient to have a static bool "getsSemiRecoilIncrease" and check the weap class in stat detla instead.
                 //1.5f recoil on pistols unironically felt good, even a lot of the rifles. Some got a bit too fucked by it some some rebalancing might be needed.
-                //wep.FireMode.FireMode == Weapon.EFireMode.single
+                //wep.FireMode.FireMode == Weapon.EFireMode.single, problem with restrcting it to semi only is that then firing one shot in full auto is more controlalble than semi
                 if (Plugin.shotCount == 1 && WeaponProperties.ShouldGetSemiIncrease == true)
                 {
                     __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX * 1.35f;

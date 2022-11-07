@@ -48,6 +48,20 @@ namespace RealismMod
         public static void checkReloading(EFT.Player.FirearmController __instance, Player player)
         {
             Helper.IsInReloadOpertation = __instance.IsInReloadOperation();
+            bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
+            bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);
+            if (rightArmDamaged == true && leftArmDamaged == false)
+            {
+                PlayerProperties.InjuryMulti = 0.8f;
+            }
+            if (rightArmDamaged == false && leftArmDamaged == true)
+            {
+                PlayerProperties.InjuryMulti = 0.7f;
+            }
+            if (rightArmDamaged == true && leftArmDamaged == true)
+            {
+                PlayerProperties.InjuryMulti = 0.5f;
+            }
             if (Helper.IsInReloadOpertation == true)
             {
                 if (Helper.IsAttemptingToReloadInternalMag == true)

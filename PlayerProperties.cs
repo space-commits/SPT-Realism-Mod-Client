@@ -23,5 +23,7 @@ namespace RealismMod
         public static float FixSkillMulti = 1;
 
         public static float ReloadSkillMulti = 1;
+
+        public static float InjuryMulti = 1;
     }
 }
