@@ -53,14 +53,14 @@ namespace RealismMod
 
         public static bool IsInReloadOpertation = false;
 
-        public static bool noMagazineReload = false;
+        public static bool NoMagazineReload = false;
 
-        public static bool isAttemptingRevolverReload = false;
+        public static bool IsAttemptingRevolverReload = false;
 
-        public static bool isReady = false;
+        public static bool IsReady = false;
 
 
-        public static bool nullCheck(string[] confItemArray)
+        public static bool NullCheck(string[] confItemArray)
         {
             if (confItemArray != null && confItemArray.Length > 0)
             {
@@ -72,7 +72,7 @@ namespace RealismMod
             return true;
         }
 
-        public static bool checkIsReady()
+        public static bool CheckIsReady()
         {
             var gameWorld = Singleton<GameWorld>.Instance;
             var sessionResultPanel = Singleton<SessionResultPanel>.Instance;
@@ -92,7 +92,7 @@ namespace RealismMod
             }
         }
 
-        public static bool isSight(Mod mod)
+        public static bool IsSight(Mod mod)
         {
             if (mod is Scope || mod is AssaultScope || mod is Collimator || mod is CompactCollimator || mod is IronSight || mod is SpecialScope) {
                 return true;
@@ -100,98 +100,98 @@ namespace RealismMod
             return false;
         }
 
-        public static bool isStock(Mod mod)
+        public static bool IsStock(Mod mod)
         {
             return (mod is Stock);
         }
 
-        public static bool isSilencer(Mod mod)
+        public static bool IsSilencer(Mod mod)
         {
             return (mod is Silencer);
         }
 
-        public static bool isMagazine(Mod mod)
+        public static bool IsMagazine(Mod mod)
         {
             return (mod is MagazineClass);
         }
 
-        public static bool isFlashHider(Mod mod)
+        public static bool IsFlashHider(Mod mod)
         {
             return (mod is FlashHider);
         }
-        public static bool isMuzzleCombo(Mod mod)
+        public static bool IsMuzzleCombo(Mod mod)
         {
             return (mod is MuzzleCombo);
         }
-        public static bool isBarrel(Mod mod)
+        public static bool IsBarrel(Mod mod)
         {
             return (mod is Barrel);
         }
-        public static bool isMount(Mod mod)
+        public static bool IsMount(Mod mod)
         {
             return (mod is Mount);
         }
-        public static bool isReceiver(Mod mod)
+        public static bool IsReceiver(Mod mod)
         {
             return (mod is Receiver);
         }
-        public static bool isCharge(Mod mod)
+        public static bool IsCharge(Mod mod)
         {
             return (mod is Charge);
         }
-        public static bool isCompactCollimator(Mod mod)
+        public static bool IsCompactCollimator(Mod mod)
         {
             return (mod is CompactCollimator);
         }
-        public static bool isCollimator(Mod mod)
+        public static bool IsCollimator(Mod mod)
         {
             return (mod is Collimator);
         }
-        public static bool isAssaultScope(Mod mod)
+        public static bool IsAssaultScope(Mod mod)
         {
             return (mod is AssaultScope);
         }
-        public static bool isScope(Mod mod)
+        public static bool IsScope(Mod mod)
         {
             return (mod is Scope);
         }
-        public static bool isIronSight(Mod mod)
+        public static bool IsIronSight(Mod mod)
         {
             return (mod is IronSight);
         }
-        public static bool isSpecialScope(Mod mod)
+        public static bool IsSpecialScope(Mod mod)
         {
             return (mod is SpecialScope);
         }
-        public static bool isAuxiliaryMod(Mod mod)
+        public static bool IsAuxiliaryMod(Mod mod)
         {
             return (mod is AuxiliaryMod);
         }
-        public static bool isForegrip(Mod mod)
+        public static bool IsForegrip(Mod mod)
         {
             return (mod is Foregrip);
         }
-        public static bool isPistolGrip(Mod mod)
+        public static bool IsPistolGrip(Mod mod)
         {
             return (mod is PistolGrip);
         }
-        public static bool isGasblock(Mod mod)
+        public static bool IsGasblock(Mod mod)
         {
             return (mod is Gasblock);
         }
-        public static bool isHandguard(Mod mod)
+        public static bool IsHandguard(Mod mod)
         {
             return (mod is Handguard);
         }
-        public static bool isBipod(Mod mod)
+        public static bool IsBipod(Mod mod)
         {
             return (mod is Bipod);
         }
-        public static bool isFlashlight(Mod mod)
+        public static bool IsFlashlight(Mod mod)
         {
             return (mod is Flashlight);
         }
-        public static bool isTacticalCombo(Mod mod)
+        public static bool IsTacticalCombo(Mod mod)
         {
             return (mod is TacticalCombo);
         }

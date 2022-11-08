@@ -503,11 +503,11 @@ namespace RealismMod
             {
                 Mod mod = __instance.Mods[i];
                 float modWeight = __instance.Mods[i].Weight;
-                if (Helper.isMagazine(__instance.Mods[i]) == true)
+                if (Helper.IsMagazine(__instance.Mods[i]) == true)
                 {
                     modWeight = __instance.Mods[i].GetSingleItemTotalWeight();
                 }
-                float modWeightFactored = StatCalc.factoredWeight(modWeight);
+                float modWeightFactored = StatCalc.FactoredWeight(modWeight);
                 float modErgo = __instance.Mods[i].Ergonomics;
                 float modVRecoil = AttachmentProperties.VerticalRecoil(__instance.Mods[i]);
                 float modHRecoil = AttachmentProperties.HorizontalRecoil(__instance.Mods[i]);
@@ -522,15 +522,15 @@ namespace RealismMod
                 float modAim = 0;
                 float modFix = 0;
                 string modType = AttachmentProperties.ModType(__instance.Mods[i]);
-                string position = StatCalc.getModPosition(__instance.Mods[i], weapType, weapOpType);
+                string position = StatCalc.GetModPosition(__instance.Mods[i], weapType, weapOpType);
 
-                if (Helper.isStock(mod))
+                if (Helper.IsStock(mod))
                 {
-                    StatCalc.stockPositionChecker(mod, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
+                    StatCalc.StockPositionChecker(mod, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
                 }
 
-                StatCalc.modConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber);
-                StatCalc.modStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, true, __instance.WeapClass, ref pureErgo);
+                StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber);
+                StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, true, __instance.WeapClass, ref pureErgo);
             }
 
             float totalTorque = 0;
@@ -550,7 +550,7 @@ namespace RealismMod
             float totalCOI = 0;
             float totalCOIDelta = 0;
 
-            StatCalc.weaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref totalRecoilDamping, ref totalRecoilHandDamping, currentCOI, hasShoulderContact, ref totalCOI, ref totalCOIDelta, baseCOI, true);
+            StatCalc.WeaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref totalRecoilDamping, ref totalRecoilHandDamping, currentCOI, hasShoulderContact, ref totalCOI, ref totalCOIDelta, baseCOI, true);
 
             DisplayWeaponProperties.HasShoulderContact = hasShoulderContact;
             DisplayWeaponProperties.Dispersion = totalDispersion;

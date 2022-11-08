@@ -23,13 +23,13 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(ref EFT.Player.FirearmController __instance, ref bool ____isAiming)
         {
-            if (Helper.isReady == true)
+            if (Helper.IsReady == true)
             {
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
   
                 if (!player.IsAI)
                 {
-                    checkReloading(__instance, player);
+                    CheckReloading(__instance, player);
                     FaceShieldComponent component = player.FaceShieldObserver.Component;
                     bool isOn = component != null && (component.Togglable == null || component.Togglable.On);
                     if (isOn && !WeaponProperties.WeaponCanFSADS && !FaceShieldProperties.AllowsADS(component.Item))
@@ -45,22 +45,22 @@ namespace RealismMod
             }
         }
 
-        public static void checkReloading(EFT.Player.FirearmController __instance, Player player)
+        public static void CheckReloading(EFT.Player.FirearmController __instance, Player player)
         {
             Helper.IsInReloadOpertation = __instance.IsInReloadOperation();
             bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
             bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);
             if (rightArmDamaged == true && leftArmDamaged == false)
             {
-                PlayerProperties.InjuryMulti = 0.8f;
+                PlayerProperties.InjuryMulti = 0.75f;
             }
             if (rightArmDamaged == false && leftArmDamaged == true)
             {
-                PlayerProperties.InjuryMulti = 0.7f;
+                PlayerProperties.InjuryMulti = 0.65f;
             }
             if (rightArmDamaged == true && leftArmDamaged == true)
             {
-                PlayerProperties.InjuryMulti = 0.5f;
+                PlayerProperties.InjuryMulti = 0.45f;
             }
             if (Helper.IsInReloadOpertation == true)
             {
@@ -71,13 +71,13 @@ namespace RealismMod
                     {
                         reloadBonus += 0.05f;
                     }*/
-                    player.HandsAnimator.SetAnimationSpeed(reloadBonus + (WeaponProperties.currentMagReloadSpeed * PlayerProperties.ReloadSkillMulti));
+                    player.HandsAnimator.SetAnimationSpeed(reloadBonus + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti));
                 }
             }
             else
             {
                 Helper.IsAttemptingToReloadInternalMag = false;
-                Helper.isAttemptingRevolverReload = false;
+                Helper.IsAttemptingRevolverReload = false;
             }
 
         }

@@ -236,33 +236,33 @@ namespace RealismMod
 
         void Update()
         {
-            if (Helper.checkIsReady())
+            if (Helper.CheckIsReady())
             {
-                Helper.isReady = true;
+                Helper.IsReady = true;
                 if (isAiming == true)
                 {
                     if (shotCount > prevShotCount)
                     {
                         if (shotCount >= 2 && shotCount <= 5)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.vRecoilLimit)
+                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
                             {
                                 currentVRecoilX *= (float)Math.Round(1.125f, 2);
                                 currentVRecoilY *= (float)Math.Round(1.125f, 2);
                             }
-                            if (currentConvergence > startingConvergence * WeaponProperties.convergenceLimit)
+                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
                             {
                                 currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
                             }
                         }
                         if (shotCount > 5 && shotCount <= 10)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.vRecoilLimit)
+                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
                             {
                                 currentVRecoilX *= (float)Math.Round(1.075f, 2);
                                 currentVRecoilY *= (float)Math.Round(1.075f, 2);
                             }
-                            if (currentConvergence > startingConvergence * WeaponProperties.convergenceLimit)
+                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
                             {
                                 currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
                             }
@@ -270,16 +270,16 @@ namespace RealismMod
 
                         if (shotCount > 10 && shotCount <= 15)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.vRecoilLimit)
+                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
                             {
                                 currentVRecoilX *= (float)Math.Round(1.045f, 2);
                                 currentVRecoilY *= (float)Math.Round(1.045f, 2);
                             }
-                            if (currentConvergence > startingConvergence * WeaponProperties.convergenceLimit)
+                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
                             {
                                 currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
                             }
-                            if (currentDamping > startingDamping * WeaponProperties.dampingLimit)
+                            if (currentDamping > startingDamping * WeaponProperties.DampingLimit)
                             {
                                 currentDamping *= (float)Math.Round(0.98f, 4);
                             }
@@ -287,16 +287,16 @@ namespace RealismMod
 
                         if (shotCount > 15 && shotCount <= 20)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.vRecoilLimit)
+                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
                             {
                                 currentVRecoilX *= (float)Math.Round(1.025f, 2);
                                 currentVRecoilY *= (float)Math.Round(1.025f, 2);
                             }
-                            if (currentConvergence > startingConvergence * WeaponProperties.convergenceLimit)
+                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
                             {
                                 currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
                             }
-                            if (currentDamping > startingDamping * WeaponProperties.dampingLimit)
+                            if (currentDamping > startingDamping * WeaponProperties.DampingLimit)
                             {
                                 currentDamping *= (float)Math.Round(0.98f, 4);
                             }
@@ -304,16 +304,16 @@ namespace RealismMod
 
                         if (shotCount > 20 && shotCount <= 25)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.vRecoilLimit)
+                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
                             {
                                 currentVRecoilX *= (float)Math.Round(1.02f, 2);
                                 currentVRecoilY *= (float)Math.Round(1.02f, 2);
                             }
-                            if (currentConvergence > startingConvergence * WeaponProperties.convergenceLimit)
+                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
                             {
                                 currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
                             }
-                            if (currentDamping > startingDamping * WeaponProperties.dampingLimit)
+                            if (currentDamping > startingDamping * WeaponProperties.DampingLimit)
                             {
                                 currentDamping *= (float)Math.Round(0.99f, 4);
                             }
@@ -321,16 +321,16 @@ namespace RealismMod
 
                         if (shotCount > 25 && shotCount <= 30)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.vRecoilLimit)
+                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
                             {
                                 currentVRecoilX *= (float)Math.Round(1.02f, 2);
                                 currentVRecoilY *= (float)Math.Round(1.02f, 2);
                             }
-                            if (currentConvergence > startingConvergence * WeaponProperties.convergenceLimit)
+                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
                             {
                                 currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
                             }
-                            if (currentDamping > startingDamping * WeaponProperties.dampingLimit)
+                            if (currentDamping > startingDamping * WeaponProperties.DampingLimit)
                             {
                                 currentDamping *= (float)Math.Round(0.99f, 4);
                             }
@@ -338,16 +338,16 @@ namespace RealismMod
 
                         if (shotCount > 30 && shotCount <= 35)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.vRecoilLimit)
+                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
                             {
                                 currentVRecoilX *= (float)Math.Round(1.02f, 2);
                                 currentVRecoilY *= (float)Math.Round(1.02f, 2);
                             }
-                            if (currentConvergence > startingConvergence * WeaponProperties.convergenceLimit)
+                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
                             {
                                 currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
                             }
-                            if (currentDamping > startingDamping * WeaponProperties.dampingLimit)
+                            if (currentDamping > startingDamping * WeaponProperties.DampingLimit)
                             {
                                 currentDamping *= (float)Math.Round(0.99f, 4);
                             }
@@ -355,16 +355,16 @@ namespace RealismMod
 
                         if (shotCount > 35)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.vRecoilLimit)
+                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
                             {
                                 currentVRecoilX *= (float)Math.Round(1.02f, 2);
                                 currentVRecoilY *= (float)Math.Round(1.02f, 2);
                             }
-                            if (currentConvergence > startingConvergence * WeaponProperties.convergenceLimit)
+                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
                             {
                                 currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
                             }
-                            if (currentDamping > startingDamping * WeaponProperties.dampingLimit)
+                            if (currentDamping > startingDamping * WeaponProperties.DampingLimit)
                             {
                                 currentDamping *= (float)Math.Round(0.995f, 4);
                             }
@@ -378,10 +378,10 @@ namespace RealismMod
                             }
                         }
 
-                        if (currentCamRecoilX > startingCamRecoilX * WeaponProperties.camRecoilLimit)
+                        if (currentCamRecoilX > startingCamRecoilX * WeaponProperties.CamRecoilLimit)
                         {
-                            currentCamRecoilX *= (float)Math.Round(WeaponProperties.camRecoilChangeRate, 4);
-                            currentCamRecoilY *= (float)Math.Round(WeaponProperties.camRecoilChangeRate, 4);
+                            currentCamRecoilX *= (float)Math.Round(WeaponProperties.CamRecoilChangeRate, 4);
+                            currentCamRecoilY *= (float)Math.Round(WeaponProperties.CamRecoilChangeRate, 4);
                         }
                         prevShotCount = shotCount;
                         isFiring = true;
@@ -429,27 +429,27 @@ namespace RealismMod
                     }
                     if (startingConvergence > currentConvergence)
                     {
-                        currentConvergence *= (float)Math.Round(WeaponProperties.convergenceResetRate, 2);
+                        currentConvergence *= (float)Math.Round(WeaponProperties.ConvergenceResetRate, 2);
                     }
                     if (startingDamping > currentDamping)
                     {
-                        currentDamping *= (float)Math.Round(WeaponProperties.dampingResetRate, 4);
+                        currentDamping *= (float)Math.Round(WeaponProperties.DampingResetRate, 4);
                     }
                     if (startingCamRecoilX > currentCamRecoilX)
                     {
-                        currentCamRecoilX *= (float)Math.Round(WeaponProperties.camRecoilResetRate, 4);
-                        currentCamRecoilY *= (float)Math.Round(WeaponProperties.camRecoilResetRate, 4);
+                        currentCamRecoilX *= (float)Math.Round(WeaponProperties.CamRecoilResetRate, 4);
+                        currentCamRecoilY *= (float)Math.Round(WeaponProperties.CamRecoilResetRate, 4);
                     }
                     if (startingVRecoilX < currentVRecoilX)
                     {
-                        currentVRecoilX *= (float)Math.Round(WeaponProperties.vRecoilResetRate, 2);
-                        currentVRecoilY *= (float)Math.Round(WeaponProperties.vRecoilResetRate, 2);
+                        currentVRecoilX *= (float)Math.Round(WeaponProperties.VRecoilResetRate, 2);
+                        currentVRecoilY *= (float)Math.Round(WeaponProperties.VRecoilResetRate, 2);
                     }
                 }
             }
             else
             {
-                Helper.isReady = false;
+                Helper.IsReady = false;
             }
         }
     }

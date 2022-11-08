@@ -19,7 +19,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance, float weaponLevel)
         {
-            if (WeaponProperties.weapClass == "shotgun")
+            if (WeaponProperties._WeapClass == "shotgun")
             {
                 if (weaponLevel < 3)
                 {
@@ -59,11 +59,11 @@ namespace RealismMod
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
             float baseSpeed = 0.15f;
-            if (WeaponProperties.weapClass == "pistol")
+            if (WeaponProperties._WeapClass == "pistol")
             {
                 baseSpeed = 0.25f;
             }
-            __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.currentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.InjuryMulti));
+            __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.InjuryMulti));
         }
     }
 
@@ -78,7 +78,7 @@ namespace RealismMod
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
             float baseSpeed = 0.35f;
-            if (WeaponProperties.weapClass == "pistol")
+            if (WeaponProperties._WeapClass == "pistol")
             {
                 Logger.LogInfo("Pistol Chamber Check");
                 baseSpeed = 0.05f;
@@ -98,7 +98,7 @@ namespace RealismMod
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
             float chamberSpeed = WeaponProperties.ChamberSpeed;
-            if (WeaponProperties.weapClass == "shotgun")
+            if (WeaponProperties._WeapClass == "shotgun")
             {
                 chamberSpeed -= 0.18f;
             }
@@ -131,7 +131,7 @@ namespace RealismMod
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
             float baseSpeed = 0.16f;
-            if (WeaponProperties.weapClass == "pistol")
+            if (WeaponProperties._WeapClass == "pistol")
             {
                 baseSpeed = 0.05f;
             }
@@ -156,11 +156,11 @@ namespace RealismMod
                 {
                     if (__instance.Item.GetCurrentMagazine() == null)
                     {
-                        Helper.noMagazineReload = true;
+                        Helper.NoMagazineReload = true;
                     }
                     else
                     {
-                        Helper.noMagazineReload = false;
+                        Helper.NoMagazineReload = false;
                     }
                 }
             }
@@ -180,7 +180,7 @@ namespace RealismMod
 
             if (__instance.Item.Owner.ID.StartsWith("pmc"))
             {
-                StatCalc.setMagReloadSpeeds(__instance, magazine);
+                StatCalc.SetMagReloadSpeeds(__instance, magazine);
             }
         }
     }
@@ -199,7 +199,7 @@ namespace RealismMod
 
             if (__instance.Item.Owner.ID.StartsWith("pmc"))
             {
-                StatCalc.setMagReloadSpeeds(__instance, magazine);
+                StatCalc.SetMagReloadSpeeds(__instance, magazine);
             }
         }
     }
@@ -219,7 +219,7 @@ namespace RealismMod
             if (__instance.Item.Owner.ID.StartsWith("pmc"))
             {
                 Helper.IsAttemptingToReloadInternalMag = true;
-                Helper.isAttemptingRevolverReload = true;
+                Helper.IsAttemptingRevolverReload = true;
             }
         }
     }
@@ -271,7 +271,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            __instance.SetAnimationSpeed(0.0f + (WeaponProperties.currentMagReloadSpeed * PlayerProperties.ReloadSkillMulti));
+            __instance.SetAnimationSpeed(0.0f + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.InjuryMulti));
         }
     }
 
@@ -285,7 +285,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            __instance.SetAnimationSpeed(0.0f + (WeaponProperties.currentMagReloadSpeed * PlayerProperties.ReloadSkillMulti));
+            __instance.SetAnimationSpeed(0.0f + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.InjuryMulti));
         }
     }
 
@@ -301,7 +301,7 @@ namespace RealismMod
         {
             if (Helper.IsMagReloading == true)
             {
-                __instance.SetAnimationSpeed(0.0f + (WeaponProperties.newMagReloadSpeed * PlayerProperties.ReloadSkillMulti));
+                __instance.SetAnimationSpeed(0.0f + (WeaponProperties.NewMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.InjuryMulti));
             }
         }
     }

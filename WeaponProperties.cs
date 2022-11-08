@@ -59,7 +59,7 @@ namespace RealismMod
 
         public static string WeaponType(Weapon weapon)
         {
-            if (Helper.nullCheck(weapon.ConflictingItems))
+            if (Helper.NullCheck(weapon.ConflictingItems))
             {
                 return "";
             }
@@ -68,7 +68,7 @@ namespace RealismMod
 
         public static float BaseTorqueDistance(Weapon weapon)
         {
-            if (Helper.nullCheck(weapon.ConflictingItems))
+            if (Helper.NullCheck(weapon.ConflictingItems))
             {
                 return 0;
             }
@@ -77,7 +77,7 @@ namespace RealismMod
 
         public static bool WepHasShoulderContact(Weapon weapon)
         {
-            if (Helper.nullCheck(weapon.ConflictingItems))
+            if (Helper.NullCheck(weapon.ConflictingItems))
             {
                 return false;
             }
@@ -86,7 +86,7 @@ namespace RealismMod
 
         public static string Unused(Weapon weapon)
         {
-            if (Helper.nullCheck(weapon.ConflictingItems))
+            if (Helper.NullCheck(weapon.ConflictingItems))
             {
                 return "";
             }
@@ -95,7 +95,7 @@ namespace RealismMod
 
         public static string OperationType(Weapon weapon)
         {
-            if (Helper.nullCheck(weapon.ConflictingItems))
+            if (Helper.NullCheck(weapon.ConflictingItems))
             {
                 return "";
             }
@@ -104,7 +104,7 @@ namespace RealismMod
 
         public static float WeaponAccuracy(Weapon weapon)
         {
-            if (Helper.nullCheck(weapon.ConflictingItems))
+            if (Helper.NullCheck(weapon.ConflictingItems))
             {
                 return 0;
             }
@@ -113,7 +113,7 @@ namespace RealismMod
 
         public static float RecoilDamping(Weapon weapon)
         {
-            if (Helper.nullCheck(weapon.ConflictingItems))
+            if (Helper.NullCheck(weapon.ConflictingItems))
             {
                 return 0.7f;
             }
@@ -122,7 +122,7 @@ namespace RealismMod
 
         public static float RecoilHandDamping(Weapon weapon)
         {
-            if (Helper.nullCheck(weapon.ConflictingItems))
+            if (Helper.NullCheck(weapon.ConflictingItems))
             {
                 return 0.65f;
             }
@@ -131,14 +131,14 @@ namespace RealismMod
 
         public static bool WeaponAllowsADS(Weapon weapon)
         {
-            if (Helper.nullCheck(weapon.ConflictingItems))
+            if (Helper.NullCheck(weapon.ConflictingItems))
             {
                 return false;
             }
             return bool.Parse(weapon.ConflictingItems[9]);
         }
 
-        public static string weapClass = "";
+        public static string _WeapClass = "";
 
         public static bool ShouldGetSemiIncrease = false;
 
@@ -252,27 +252,27 @@ namespace RealismMod
 
         public static float AimSpeed = 0f;
 
-        public static float currentMagReloadSpeed = 1f;
-        public static float newMagReloadSpeed = 1f;
+        public static float CurrentMagReloadSpeed = 1f;
+        public static float NewMagReloadSpeed = 1f;
 
-        public static float convergenceChangeRate = 0.98f;
-        public static float convergenceResetRate = 1.16f;
-        public static float convergenceLimit = 0.3f;
+        public static float ConvergenceChangeRate = 0.98f;
+        public static float ConvergenceResetRate = 1.16f;
+        public static float ConvergenceLimit = 0.3f;
 
-        public static float camRecoilChangeRate = 0.987f;
-        public static float camRecoilResetRate = 1.17f;
-        public static float camRecoilLimit = 0.45f;
+        public static float CamRecoilChangeRate = 0.987f;
+        public static float CamRecoilResetRate = 1.17f;
+        public static float CamRecoilLimit = 0.45f;
 
-        public static float vRecoilChangeRate = 1.005f;
-        public static float vRecoilResetRate = 0.91f;
-        public static float vRecoilLimit = 10;
+        public static float VRecoilChangeRate = 1.005f;
+        public static float VRecoilResetRate = 0.91f;
+        public static float VRecoilLimit = 10;
 
-        public static float dampingChangeRate = 0.98f;
-        public static float dampingResetRate = 1.07f;
-        public static float dampingLimit = 0.5f;
+        public static float DampingChangeRate = 0.98f;
+        public static float DampingResetRate = 1.07f;
+        public static float DampingLimit = 0.5f;
 
-        public static float dispersionChangeRate = 0.95f;
-        public static float dispersionResetRate = 1.05f;
-        public static float dispersionLimit = 0.5f;
+        public static float DispersionChangeRate = 0.95f;
+        public static float DispersionResetRate = 1.05f;
+        public static float DispersionLimit = 0.5f;
     }
 }

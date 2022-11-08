@@ -21,7 +21,7 @@ namespace RealismMod
         public static bool AllowsADS(Item fs)
         {
 
-            if (Helper.nullCheck(fs.ConflictingItems))
+            if (Helper.NullCheck(fs.ConflictingItems))
             {
                 return true;
             }
