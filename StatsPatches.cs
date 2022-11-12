@@ -27,7 +27,8 @@ namespace RealismMod
         {
             if (__instance?.Owner?.ID != null && __instance.Owner.ID.StartsWith("pmc"))
             {
-                __result = WeaponProperties.SemiFireRate;
+                AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
+                __result = (currentAmmoTemplate != null) ? (int)(WeaponProperties.SemiFireRate * currentAmmoTemplate.casingMass) : WeaponProperties.SemiFireRate;
                 return false;
             }
             else
@@ -50,7 +51,8 @@ namespace RealismMod
         {
             if (__instance?.Owner?.ID != null && __instance.Owner.ID.StartsWith("pmc"))
             {
-                __result = WeaponProperties.AutoFireRate;
+                AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
+                __result = (currentAmmoTemplate != null) ? (int)(WeaponProperties.AutoFireRate * currentAmmoTemplate.casingMass) : WeaponProperties.AutoFireRate;
                 return false;
             }
             else
@@ -506,7 +508,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref GClass1477 __instance, bool isAiming)
+        private static bool Prefix(ref GClass1477 __instance, bool isAiming, float slow)
         {
 
             Player player = (Player)AccessTools.Field(typeof(GClass1477), "player_0").GetValue(__instance);
@@ -514,8 +516,9 @@ namespace RealismMod
             {
                 if (isAiming)
                 {
-                    float baseSpeed = 0.4f;
-                    __instance.AddStateSpeedLimit(Math.Max((baseSpeed) + WeaponProperties.AimMoveSpeedModifier, 0.15f), Player.ESpeedLimit.Aiming);
+                    //slow is hard set to 0.33 when called, 0.4-0.43 feels best.
+                    slow += 0.10f;
+                    __instance.AddStateSpeedLimit(Math.Max((slow) + WeaponProperties.AimMoveSpeedModifier, 0.15f), Player.ESpeedLimit.Aiming);
                     return false;
                 }
                 __instance.RemoveStateSpeedLimit(Player.ESpeedLimit.Aiming);

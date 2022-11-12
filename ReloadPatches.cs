@@ -83,6 +83,10 @@ namespace RealismMod
                 Logger.LogInfo("Pistol Chamber Check");
                 baseSpeed = 0.05f;
             }
+            Logger.LogInfo("ChamberSpeed  " + WeaponProperties.ChamberSpeed);
+            Logger.LogInfo("FixSkillMulti  " + PlayerProperties.FixSkillMulti);
+            Logger.LogInfo("InjuryMulti  " + PlayerProperties.InjuryMulti);
+            Logger.LogInfo("baseSpeed  " + baseSpeed);
             __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.InjuryMulti));
         }
     }
@@ -100,7 +104,7 @@ namespace RealismMod
             float chamberSpeed = WeaponProperties.ChamberSpeed;
             if (WeaponProperties._WeapClass == "shotgun")
             {
-                chamberSpeed -= 0.18f;
+                chamberSpeed -= 0.2f;
             }
             __instance.SetAnimationSpeed(chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.InjuryMulti);
         }

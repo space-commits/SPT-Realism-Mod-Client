@@ -52,15 +52,19 @@ namespace RealismMod
             bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);
             if (rightArmDamaged == true && leftArmDamaged == false)
             {
-                PlayerProperties.InjuryMulti = 0.75f;
+                PlayerProperties.InjuryMulti = 0.95f;
             }
-            if (rightArmDamaged == false && leftArmDamaged == true)
+            else if (rightArmDamaged == false && leftArmDamaged == true)
             {
-                PlayerProperties.InjuryMulti = 0.65f;
+                PlayerProperties.InjuryMulti = 0.9f;
             }
-            if (rightArmDamaged == true && leftArmDamaged == true)
+            else if (rightArmDamaged == true && leftArmDamaged == true)
             {
-                PlayerProperties.InjuryMulti = 0.45f;
+                PlayerProperties.InjuryMulti = 0.85f;
+            }
+            else
+            {
+                PlayerProperties.InjuryMulti = 1f;
             }
             if (Helper.IsInReloadOpertation == true)
             {
@@ -71,7 +75,7 @@ namespace RealismMod
                     {
                         reloadBonus += 0.05f;
                     }*/
-                    player.HandsAnimator.SetAnimationSpeed(reloadBonus + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti));
+                    player.HandsAnimator.SetAnimationSpeed(reloadBonus + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.InjuryMulti));
                 }
             }
             else
