@@ -1,10 +1,7 @@
 ﻿using Aki.Reflection.Patching;
 using EFT;
 using HarmonyLib;
-using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 
 namespace RealismMod
 {
@@ -25,7 +22,7 @@ namespace RealismMod
                 {
                     weaponLevel += 1;
                 }
-                GClass644.SetWeaponLevel(__instance.Animator, weaponLevel);
+                GClass648.SetWeaponLevel(__instance.Animator, weaponLevel);
             }
 
         }
@@ -43,7 +40,7 @@ namespace RealismMod
         {
             if (Plugin.isFiring != true && Helper.IsInReloadOpertation)
             {
-                __instance.SetAnimationSpeed(0.3f + (WeaponProperties.ChamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.InjuryMulti));
+                __instance.SetAnimationSpeed(0.3f + (WeaponProperties.ChamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
             }
         }
     }
@@ -63,7 +60,7 @@ namespace RealismMod
             {
                 baseSpeed = 0.25f;
             }
-            __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.InjuryMulti));
+            __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
         }
     }
 
@@ -80,14 +77,13 @@ namespace RealismMod
             float baseSpeed = 0.35f;
             if (WeaponProperties._WeapClass == "pistol")
             {
-                Logger.LogInfo("Pistol Chamber Check");
-                baseSpeed = 0.05f;
+                baseSpeed = 0f;
             }
-            Logger.LogInfo("ChamberSpeed  " + WeaponProperties.ChamberSpeed);
-            Logger.LogInfo("FixSkillMulti  " + PlayerProperties.FixSkillMulti);
-            Logger.LogInfo("InjuryMulti  " + PlayerProperties.InjuryMulti);
-            Logger.LogInfo("baseSpeed  " + baseSpeed);
-            __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.InjuryMulti));
+            if (WeaponProperties._WeapClass == "shotgun")
+            {
+                baseSpeed = 0.15f;
+            }
+            __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti));
         }
     }
 
@@ -104,9 +100,9 @@ namespace RealismMod
             float chamberSpeed = WeaponProperties.ChamberSpeed;
             if (WeaponProperties._WeapClass == "shotgun")
             {
-                chamberSpeed -= 0.2f;
+                chamberSpeed -= 0.25f;
             }
-            __instance.SetAnimationSpeed(chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.InjuryMulti);
+            __instance.SetAnimationSpeed(chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti);
         }
     }
 
@@ -120,7 +116,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance, float fix)
         {
-            GClass644.SetSpeedFix(__instance.Animator, fix * WeaponProperties.ChamberSpeed * PlayerProperties.InjuryMulti);
+            GClass648.SetSpeedFix(__instance.Animator, fix * WeaponProperties.ChamberSpeed * PlayerProperties.ReloadInjuryMulti);
         }
     }
 
@@ -139,7 +135,7 @@ namespace RealismMod
             {
                 baseSpeed = 0.05f;
             }
-            __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.InjuryMulti));
+            __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti));
         }
     }
 
@@ -275,7 +271,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            __instance.SetAnimationSpeed(0.0f + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.InjuryMulti));
+            __instance.SetAnimationSpeed(0.0f + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
         }
     }
 
@@ -289,7 +285,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            __instance.SetAnimationSpeed(0.0f + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.InjuryMulti));
+            __instance.SetAnimationSpeed(0.0f + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
         }
     }
 
@@ -305,7 +301,7 @@ namespace RealismMod
         {
             if (Helper.IsMagReloading == true)
             {
-                __instance.SetAnimationSpeed(0.0f + (WeaponProperties.NewMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.InjuryMulti));
+                __instance.SetAnimationSpeed(0.0f + (WeaponProperties.NewMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
             }
         }
     }
@@ -346,20 +342,20 @@ namespace RealismMod
     }
 
 
-/*    public class SetBoltCatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
+    /*    public class SetBoltCatch : ModulePatch
         {
-            return typeof(FirearmsAnimator).GetMethod("SetBoltCatch", BindingFlags.Instance | BindingFlags.Public);
-        }
+            protected override MethodBase GetTargetMethod()
+            {
+                return typeof(FirearmsAnimator).GetMethod("SetBoltCatch", BindingFlags.Instance | BindingFlags.Public);
+            }
 
-        [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance)
-        {
-            Logger.LogWarning("SetBoltCatch");
+            [PatchPostfix]
+            private static void PatchPostfix(FirearmsAnimator __instance)
+            {
+                Logger.LogWarning("SetBoltCatch");
+            }
         }
-    }
-*/
+    */
 
     /*    public class SetFireModePatch : ModulePatch
         {
@@ -530,7 +526,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass644).GetMethod("SetSpeedReload", BindingFlags.Static | BindingFlags.Public);
+            return typeof(GClass648).GetMethod("SetSpeedReload", BindingFlags.Static | BindingFlags.Public);
 
         }
 

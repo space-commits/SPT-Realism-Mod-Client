@@ -1,14 +1,9 @@
 ﻿using Aki.Reflection.Patching;
-using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Reflection;
-using UnityEngine;
+
 
 
 namespace RealismMod
@@ -52,19 +47,28 @@ namespace RealismMod
             bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);
             if (rightArmDamaged == true && leftArmDamaged == false)
             {
-                PlayerProperties.InjuryMulti = 0.95f;
+                PlayerProperties.AimMoveSpeedBase = 0.39f;
+                PlayerProperties.ErgoDeltaInjuryMulti = 2f;
+                PlayerProperties.ADSInjuryMulti = 0.8f;
+                PlayerProperties.ReloadInjuryMulti = 0.85f;
             }
             else if (rightArmDamaged == false && leftArmDamaged == true)
             {
-                PlayerProperties.InjuryMulti = 0.9f;
+                PlayerProperties.AimMoveSpeedBase = 0.35f;
+                PlayerProperties.ErgoDeltaInjuryMulti = 3.5f;
+                PlayerProperties.ADSInjuryMulti = 0.7f;
+                PlayerProperties.ReloadInjuryMulti = 0.8f;
             }
             else if (rightArmDamaged == true && leftArmDamaged == true)
             {
-                PlayerProperties.InjuryMulti = 0.85f;
+                PlayerProperties.AimMoveSpeedBase = 0.3f;
+                PlayerProperties.ErgoDeltaInjuryMulti = 5;
+                PlayerProperties.ADSInjuryMulti = 0.6f;
+                PlayerProperties.ReloadInjuryMulti = 0.75f;
             }
             else
             {
-                PlayerProperties.InjuryMulti = 1f;
+                PlayerProperties.ReloadInjuryMulti = 1f;
             }
             if (Helper.IsInReloadOpertation == true)
             {
@@ -75,7 +79,7 @@ namespace RealismMod
                     {
                         reloadBonus += 0.05f;
                     }*/
-                    player.HandsAnimator.SetAnimationSpeed(reloadBonus + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.InjuryMulti));
+                    player.HandsAnimator.SetAnimationSpeed(reloadBonus + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
                 }
             }
             else

@@ -1,26 +1,9 @@
 ﻿using BepInEx;
-using HarmonyLib;
-using Aki.Reflection.Patching;
-using Comfort.Common;
-using EFT;
-using EFT.InventoryLogic;
 using System;
-using System.Collections;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using UnityEngine;
-using EFT.InputSystem;
-using Aki.Reflection.Utils;
-using BepInEx.Logging;
-using EFT.Animations;
-using System.Runtime.InteropServices;
-using System.Drawing;
 using Aki.Common.Http;
 using Aki.Common.Utils;
 using System.IO;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using BepInEx.Configuration;
 using static RealismMod.Attributes;
@@ -163,6 +146,7 @@ namespace RealismMod
             new SingleFireRatePatch().Enable();
             new ErgoDeltaPatch().Enable();
             new ErgoWeightPatch().Enable();
+            new method_5Patch().Enable();
 
             new SyncWithCharacterSkillsPatch().Enable();
             new UpdateWeaponVariablesPatch().Enable();

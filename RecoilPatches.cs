@@ -1,13 +1,8 @@
 ﻿using Aki.Reflection.Patching;
 using Comfort.Common;
 using EFT;
-using EFT.Animations;
 using EFT.InventoryLogic;
 using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -22,11 +17,11 @@ namespace RealismMod
             return typeof(ShotEffector).GetMethod("OnWeaponParametersChanged", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        public GClass1168.GClass1210 GlobalsAiming
+        public GClass1173.GClass1215 GlobalsAiming
         {
             get
             {
-                return Singleton<GClass1168>.Instance.Aiming;
+                return Singleton<GClass1173>.Instance.Aiming;
             }
         }
 
@@ -38,7 +33,7 @@ namespace RealismMod
             {
 
                 OnWeaponParametersChangedPatch p = new OnWeaponParametersChangedPatch();
-                SkillsClass.GClass1552 buffInfo = (SkillsClass.GClass1552)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
+                SkillsClass.GClass1557 buffInfo = (SkillsClass.GClass1557)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
                 WeaponTemplate template = wep.Template;
 
                 float vRecoilDelta = WeaponProperties.VRecoilDelta;

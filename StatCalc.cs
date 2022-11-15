@@ -1,14 +1,7 @@
-﻿using Aki.Reflection.Patching;
-using Comfort.Common;
-using EFT;
+﻿using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
 using UnityEngine;
 using static RealismMod.Helper;
 namespace RealismMod
@@ -69,7 +62,7 @@ namespace RealismMod
             {
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 StatCalc.MagReloadSpeedModifier(magazine, false, true);
-                player.HandsAnimator.SetAnimationSpeed(WeaponProperties.CurrentMagReloadSpeed * WeaponProperties.ReloadSpeedModifier * PlayerProperties.InjuryMulti * PlayerProperties.ReloadSkillMulti);
+                player.HandsAnimator.SetAnimationSpeed(WeaponProperties.CurrentMagReloadSpeed * WeaponProperties.ReloadSpeedModifier * PlayerProperties.ReloadInjuryMulti * PlayerProperties.ReloadSkillMulti);
             }
             else
             {
@@ -347,10 +340,22 @@ namespace RealismMod
                             {
                                 return;
                             }
-                            //need to loop this if programK is enabled
-                            if (containedMod.Slots.Length > 0 && containedMod.Slots[0].ContainedItem != null)
+                            if (Helper.ProgramKEnabled == false)
                             {
-                                return;
+                                if (containedMod.Slots.Length > 0 && (containedMod.Slots[0].ContainedItem != null))
+                                {
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                for (int i = 0; i < containedMod.Slots.Length; i++)
+                                {
+                                    if (containedMod.Slots[i].ContainedItem != null)
+                                    {
+                                        return;
+                                    }
+                                }
                             }
                         }
                         else

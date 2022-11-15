@@ -1,22 +1,4 @@
-﻿using Aki.Reflection.Patching;
-using Comfort.Common;
-using EFT;
-using EFT.InventoryLogic;
-using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using UnityEngine;
-using static RealismMod.Helper;
-using Aki.Common.Http;
-using Aki.Common.Utils;
-using System.IO;
-using System.Collections;
-
-
-namespace RealismMod
+﻿namespace RealismMod
 {
     public static class PlayerProperties
     {
@@ -24,6 +6,12 @@ namespace RealismMod
 
         public static float ReloadSkillMulti = 1;
 
-        public static float InjuryMulti = 1;
+        public static float ReloadInjuryMulti = 1;
+
+        public static float ADSInjuryMulti = 1;
+
+        public static float AimMoveSpeedBase = 0.42f;
+
+        public static float ErgoDeltaInjuryMulti = 1;
     }
 }

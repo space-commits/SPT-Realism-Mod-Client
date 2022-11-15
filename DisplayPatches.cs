@@ -1,17 +1,11 @@
 ﻿using Aki.Reflection.Patching;
-using Comfort.Common;
-using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using static RealismMod.Attributes;
 using UnityEngine;
-using System.Runtime.CompilerServices;
-using System.Collections;
 
 namespace RealismMod
 {
@@ -76,7 +70,7 @@ namespace RealismMod
             float fixSpeed = AttachmentProperties.FixSpeed(__instance);
             float aimSpeed = AttachmentProperties.AimSpeed(__instance);
 
-            GClass2203 hRecoilAtt = new GClass2203(Attributes.ENewItemAttributeId.HorizontalRecoil);
+            GClass2210 hRecoilAtt = new GClass2210(Attributes.ENewItemAttributeId.HorizontalRecoil);
             hRecoilAtt.Name = ENewItemAttributeId.HorizontalRecoil.GetName();
             hRecoilAtt.Base = () => hRecoil;
             hRecoilAtt.StringValue = () => $"{hRecoil}%";
@@ -85,7 +79,7 @@ namespace RealismMod
             hRecoilAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Helper.SafelyAddAttributeToList(hRecoilAtt, __instance);
 
-            GClass2203 vRecoilAtt = new GClass2203(ENewItemAttributeId.VerticalRecoil);
+            GClass2210 vRecoilAtt = new GClass2210(ENewItemAttributeId.VerticalRecoil);
             vRecoilAtt.Name = ENewItemAttributeId.VerticalRecoil.GetName();
             vRecoilAtt.Base = () => vRecoil;
             vRecoilAtt.StringValue = () => $"{vRecoil}%";
@@ -94,7 +88,7 @@ namespace RealismMod
             vRecoilAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Helper.SafelyAddAttributeToList(vRecoilAtt, __instance);
 
-            GClass2203 dispersionAtt = new GClass2203(ENewItemAttributeId.Dispersion);
+            GClass2210 dispersionAtt = new GClass2210(ENewItemAttributeId.Dispersion);
             dispersionAtt.Name = ENewItemAttributeId.Dispersion.GetName();
             dispersionAtt.Base = () => disperion;
             dispersionAtt.StringValue = () => $"{disperion}%";
@@ -103,7 +97,7 @@ namespace RealismMod
             dispersionAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Helper.SafelyAddAttributeToList(dispersionAtt, __instance);
 
-            GClass2203 cameraRecAtt = new GClass2203(ENewItemAttributeId.CameraRecoil);
+            GClass2210 cameraRecAtt = new GClass2210(ENewItemAttributeId.CameraRecoil);
             cameraRecAtt.Name = ENewItemAttributeId.CameraRecoil.GetName();
             cameraRecAtt.Base = () => cameraRecoil;
             cameraRecAtt.StringValue = () => $"{cameraRecoil}%";
@@ -112,7 +106,7 @@ namespace RealismMod
             cameraRecAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Helper.SafelyAddAttributeToList(cameraRecAtt, __instance);
 
-            GClass2203 autoROFAtt = new GClass2203(ENewItemAttributeId.AutoROF);
+            GClass2210 autoROFAtt = new GClass2210(ENewItemAttributeId.AutoROF);
             autoROFAtt.Name = ENewItemAttributeId.AutoROF.GetName();
             autoROFAtt.Base = () => autoROF;
             autoROFAtt.StringValue = () => $"{autoROF}%";
@@ -121,7 +115,7 @@ namespace RealismMod
             autoROFAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Helper.SafelyAddAttributeToList(autoROFAtt, __instance);
 
-            GClass2203 semiROFAtt = new GClass2203(ENewItemAttributeId.SemiROF);
+            GClass2210 semiROFAtt = new GClass2210(ENewItemAttributeId.SemiROF);
             semiROFAtt.Name = ENewItemAttributeId.SemiROF.GetName();
             semiROFAtt.Base = () => semiROF;
             semiROFAtt.StringValue = () => $"{semiROF}%";
@@ -130,7 +124,7 @@ namespace RealismMod
             semiROFAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Helper.SafelyAddAttributeToList(semiROFAtt, __instance);
 
-            GClass2203 angleAtt = new GClass2203(ENewItemAttributeId.RecoilAngle);
+            GClass2210 angleAtt = new GClass2210(ENewItemAttributeId.RecoilAngle);
             angleAtt.Name = ENewItemAttributeId.RecoilAngle.GetName();
             angleAtt.Base = () => angle;
             angleAtt.StringValue = () => $"{angle}%";
@@ -139,7 +133,7 @@ namespace RealismMod
             angleAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Helper.SafelyAddAttributeToList(angleAtt, __instance);
 
-            GClass2203 reloadSpeedAtt = new GClass2203(ENewItemAttributeId.ReloadSpeed);
+            GClass2210 reloadSpeedAtt = new GClass2210(ENewItemAttributeId.ReloadSpeed);
             reloadSpeedAtt.Name = ENewItemAttributeId.ReloadSpeed.GetName();
             reloadSpeedAtt.Base = () => reloadSpeed;
             reloadSpeedAtt.StringValue = () => $"{reloadSpeed}%";
@@ -148,7 +142,7 @@ namespace RealismMod
             reloadSpeedAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Helper.SafelyAddAttributeToList(reloadSpeedAtt, __instance);
 
-            GClass2203 chamberSpeedAtt = new GClass2203(ENewItemAttributeId.ChamberSpeed);
+            GClass2210 chamberSpeedAtt = new GClass2210(ENewItemAttributeId.ChamberSpeed);
             chamberSpeedAtt.Name = ENewItemAttributeId.ChamberSpeed.GetName();
             chamberSpeedAtt.Base = () => chamberSpeed;
             chamberSpeedAtt.StringValue = () => $"{chamberSpeed}%";
@@ -157,7 +151,7 @@ namespace RealismMod
             chamberSpeedAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Helper.SafelyAddAttributeToList(chamberSpeedAtt, __instance);
 
-            GClass2203 fixSpeedAtt = new GClass2203(ENewItemAttributeId.FixSpeed);
+            GClass2210 fixSpeedAtt = new GClass2210(ENewItemAttributeId.FixSpeed);
             fixSpeedAtt.Name = ENewItemAttributeId.FixSpeed.GetName();
             fixSpeedAtt.Base = () => fixSpeed;
             fixSpeedAtt.StringValue = () => $"{fixSpeed}%";
@@ -166,7 +160,7 @@ namespace RealismMod
             fixSpeedAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Helper.SafelyAddAttributeToList(fixSpeedAtt, __instance);
 
-            GClass2203 aimSpeedAtt = new GClass2203(ENewItemAttributeId.AimSpeed);
+            GClass2210 aimSpeedAtt = new GClass2210(ENewItemAttributeId.AimSpeed);
             aimSpeedAtt.Name = ENewItemAttributeId.AimSpeed.GetName();
             aimSpeedAtt.Base = () => aimSpeed;
             aimSpeedAtt.StringValue = () => $"{aimSpeed}%";
@@ -192,8 +186,8 @@ namespace RealismMod
             if (Plugin.showBalance.Value == true)
             {
 
-                List<GClass2203> balanceAttList = __instance.Attributes;
-                GClass2205 balanceAtt = new GClass2205((EItemAttributeId)ENewItemAttributeId.Balance);
+                List<GClass2210> balanceAttList = __instance.Attributes;
+                GClass2212 balanceAtt = new GClass2212((EItemAttributeId)ENewItemAttributeId.Balance);
                 balanceAtt.Name = ENewItemAttributeId.Balance.GetName();
                 balanceAtt.Range = new Vector2(100f, 200f);
                 balanceAtt.LessIsGood = false;
@@ -207,8 +201,8 @@ namespace RealismMod
 
             if (Plugin.showDispersion.Value == true)
             {
-                List<GClass2203> dispersionAttList = __instance.Attributes;
-                GClass2205 dispersionAtt = new GClass2205((EItemAttributeId)ENewItemAttributeId.Dispersion);
+                List<GClass2210> dispersionAttList = __instance.Attributes;
+                GClass2212 dispersionAtt = new GClass2212((EItemAttributeId)ENewItemAttributeId.Dispersion);
                 dispersionAtt.Name = ENewItemAttributeId.Dispersion.GetName();
                 dispersionAtt.Range = new Vector2(0f, 50f);
                 dispersionAtt.LessIsGood = true;
@@ -221,8 +215,8 @@ namespace RealismMod
 
             if (Plugin.showCamRecoil.Value == true)
             {
-                List<GClass2203> camRecoilAttList = __instance.Attributes;
-                GClass2205 camRecoilAtt = new GClass2205((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
+                List<GClass2210> camRecoilAttList = __instance.Attributes;
+                GClass2212 camRecoilAtt = new GClass2212((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
                 camRecoilAtt.Name = ENewItemAttributeId.CameraRecoil.GetName();
                 camRecoilAtt.Range = new Vector2(0f, 0.25f);
                 camRecoilAtt.LessIsGood = true;
@@ -235,8 +229,8 @@ namespace RealismMod
 
             if (Plugin.showRecoilAngle.Value == true)
             {
-                List<GClass2203> recoilAngleAttList = __instance.Attributes;
-                GClass2203 recoilAngleAtt = new GClass2203(ENewItemAttributeId.RecoilAngle);
+                List<GClass2210> recoilAngleAttList = __instance.Attributes;
+                GClass2210 recoilAngleAtt = new GClass2210(ENewItemAttributeId.RecoilAngle);
                 recoilAngleAtt.Name = ENewItemAttributeId.RecoilAngle.GetName();
                 recoilAngleAtt.Base = () => DisplayWeaponProperties.RecoilAngle;
                 recoilAngleAtt.StringValue = () => Math.Round(DisplayWeaponProperties.RecoilAngle).ToString();
@@ -246,8 +240,8 @@ namespace RealismMod
 
             if (Plugin.showSemiROF.Value == true)
             {
-                List<GClass2203> semiROFAttList = __instance.Attributes;
-                GClass2203 semiROFAtt = new GClass2203(ENewItemAttributeId.SemiROF);
+                List<GClass2210> semiROFAttList = __instance.Attributes;
+                GClass2210 semiROFAtt = new GClass2210(ENewItemAttributeId.SemiROF);
                 semiROFAtt.Name = ENewItemAttributeId.SemiROF.GetName();
                 semiROFAtt.Base = () => DisplayWeaponProperties.SemiFireRate;
                 semiROFAtt.StringValue = () => DisplayWeaponProperties.SemiFireRate.ToString() + " " + "RPM".Localized(null);

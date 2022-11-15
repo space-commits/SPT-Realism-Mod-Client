@@ -1,19 +1,5 @@
-﻿using Aki.Reflection.Patching;
-using Comfort.Common;
-using EFT;
-using EFT.InventoryLogic;
-using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using UnityEngine;
-using static RealismMod.Helper;
-using Aki.Common.Http;
-using Aki.Common.Utils;
-using System.IO;
-using System.Collections;
+﻿using EFT.InventoryLogic;
+
 
 
 namespace RealismMod
@@ -150,7 +136,7 @@ namespace RealismMod
 
         public static float AdapterPistolGripBonusErgo = 2;
 
-        public static float PumpGripReloadBonus = 10f;
+        public static float PumpGripReloadBonus = 15f;
 
         public static float FoldedErgoFactor = 0.5f;
 
@@ -234,23 +220,23 @@ namespace RealismMod
 
         public static bool Folded = false;
 
-        public static float SDReloadSpeedModifier = 0f;
+        public static float SDReloadSpeedModifier = 1f;
 
-        public static float SDFixSpeedModifier = 0f;
+        public static float SDFixSpeedModifier = 1f;
 
-        public static float ReloadSpeedModifier = 0f;
+        public static float ReloadSpeedModifier = 1f;
 
-        public static float ChamberSpeed = 0f;
+        public static float ChamberSpeed = 1f;
 
-        public static float SDChamberSpeedModifier = 0f;
+        public static float SDChamberSpeedModifier = 1f;
 
-        public static float FixSpeedModifier = 0f;
+        public static float FixSpeedModifier = 1f;
 
-        public static float AimMoveSpeedModifier = 0f;
+        public static float AimMoveSpeedModifier = 1f;
 
-        public static float AimSpeedModifier = 0f;
+        public static float AimSpeedModifier = 1f;
 
-        public static float AimSpeed = 0f;
+        public static float AimSpeed = 1f;
 
         public static float CurrentMagReloadSpeed = 1f;
         public static float NewMagReloadSpeed = 1f;

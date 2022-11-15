@@ -1,42 +1,29 @@
-﻿using Aki.Reflection.Patching;
-using Comfort.Common;
+﻿using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
-using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using UnityEngine;
+using Silencer = GClass2118;
+using FlashHider = GClass2115;
+using MuzzleCombo = GClass2116;
+using Barrel = GClass2138;
+using Mount = GClass2134;
+using Receiver = GClass2141;
+using Stock = GClass2136;
+using Charge = GClass2129;
+using CompactCollimator = GClass2122;
+using Collimator = GClass2121;
+using AssaultScope = GClass2120;
+using Scope = GClass2124;
+using IronSight = GClass2123;
+using SpecialScope = GClass2125;
+using AuxiliaryMod = GClass2104;
+using Foregrip = GClass2108;
+using PistolGrip = GClass2140;
+using Gasblock = GClass2109;
+using Handguard = GClass2139;
+using Bipod = GClass2106;
+using Flashlight = GClass2107;
+using TacticalCombo = GClass2112;
 
-
-using Silencer = GClass2112;
-using FlashHider = GClass2109;
-using MuzzleCombo = GClass2110;
-using Barrel = GClass2132;
-using Mount = GClass2128;
-using Receiver = GClass2135;
-using Stock = GClass2130;
-using Charge = GClass2123;
-using CompactCollimator = GClass2116;
-using Collimator = GClass2115;
-using AssaultScope = GClass2114;
-using Scope = GClass2118;
-using IronSight = GClass2117;
-using SpecialScope = GClass2119;
-using Magazine = MagazineClass;
-using AuxiliaryMod = GClass2098;
-using Foregrip = GClass2102;
-using PistolGrip = GClass2134;
-using Gasblock = GClass2103;
-using Handguard = GClass2133;
-using Bipod = GClass2100;
-using Flashlight = GClass2101;
-using TacticalCombo = GClass2106;
-using System.Collections;
-using Aki.Reflection.Utils;
-using System.Threading.Tasks;
 
 namespace RealismMod
 {
@@ -84,7 +71,7 @@ namespace RealismMod
             return true;
         }
 
-        public static void SafelyAddAttributeToList(GClass2203 itemAttribute, Mod __instance)
+        public static void SafelyAddAttributeToList(GClass2210 itemAttribute, Mod __instance)
         {
             if (itemAttribute.Base() != 0f)
             {
