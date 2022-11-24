@@ -2,13 +2,102 @@
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using static RealismMod.Attributes;
 using UnityEngine;
+using EFT;
 
 namespace RealismMod
 {
+
+
+    public class GetCachedReadonlyQualitiesPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(AmmoTemplate).GetMethod("GetCachedReadonlyQualities", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+
+        [PatchPostfix]
+        private static void PatchPostFix(AmmoTemplate __instance, ref List<GClass2210> __result)
+        {
+
+            if (!__result.Any((GClass2210 a) => (ENewItemAttributeId)a.Id == ENewItemAttributeId.Damage))
+            {
+                AddCustomAttributes(__instance, ref __result);
+            }
+
+        }
+        public static void AddCustomAttributes(AmmoTemplate ammoTemplate, ref List<GClass2210> ammoAttributes)
+        {
+
+            if (Plugin.enableAmmoFirerateDisp.Value == true)
+            {
+                float fireRate = (float)Math.Round((ammoTemplate.casingMass - 1) * 100, 2);
+
+                if (fireRate != 0)
+                {
+                    GClass2210 fireRateAtt = new GClass2210(ENewItemAttributeId.Firerate);
+                    fireRateAtt.Name = ENewItemAttributeId.Firerate.GetName();
+                    fireRateAtt.Base = () => fireRate;
+                    fireRateAtt.StringValue = () => $"{fireRate} %";
+                    fireRateAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    fireRateAtt.LessIsGood = true;
+                    ammoAttributes.Add(fireRateAtt);
+                }
+            }
+
+            if (Plugin.enableAmmoDamageDisp.Value == true)
+            {
+                float totalDamage = ammoTemplate.Damage * ammoTemplate.ProjectileCount;
+                GClass2210 damageAtt = new GClass2210(ENewItemAttributeId.Damage);
+                damageAtt.Name = ENewItemAttributeId.Damage.GetName();
+                damageAtt.Base = () => totalDamage;
+                damageAtt.StringValue = () => $"{totalDamage}";
+                damageAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                ammoAttributes.Add(damageAtt);
+
+            }
+
+            if (Plugin.enableAmmoFragDisp.Value == true) 
+            {
+                float fragChance = ammoTemplate.FragmentationChance * 100;
+                if (fragChance > 0)
+                {
+                    GClass2210 fragAtt = new GClass2210(ENewItemAttributeId.FragmentationChance);
+                    fragAtt.Name = ENewItemAttributeId.FragmentationChance.GetName();
+                    fragAtt.Base = () => fragChance;
+                    fragAtt.StringValue = () => $"{fragChance} %";
+                    fragAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    ammoAttributes.Add(fragAtt);
+                }
+            }
+
+            if (Plugin.enableAmmoPenDisp.Value == true)
+            {
+                GClass2210 penAtt = new GClass2210(ENewItemAttributeId.Penetration);
+                penAtt.Name = ENewItemAttributeId.Penetration.GetName();
+                penAtt.Base = () => ammoTemplate.PenetrationPower;
+                penAtt.StringValue = () => $"{ammoTemplate.PenetrationPower}";
+                penAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                ammoAttributes.Add(penAtt);
+            }
+
+            if (Plugin.enableAmmoArmorDamageDisp.Value == true)
+            {
+                GClass2210 armorDamAtt = new GClass2210(ENewItemAttributeId.ArmorDamage);
+                armorDamAtt.Name = ENewItemAttributeId.ArmorDamage.GetName();
+                armorDamAtt.Base = () => ammoTemplate.ArmorDamage;
+                armorDamAtt.StringValue = () => $"{ammoTemplate.ArmorDamage}";
+                armorDamAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                ammoAttributes.Add(armorDamAtt);
+            }
+        }
+    }
+
     public class ModVRecoilStatDisplayPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

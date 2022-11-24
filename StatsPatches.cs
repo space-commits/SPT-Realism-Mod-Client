@@ -466,10 +466,13 @@ namespace RealismMod
             if (__instance.Item.Owner.ID.StartsWith("pmc"))
             {
                 SkillsClass.GClass1557 skillsClass = (SkillsClass.GClass1557)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1557_0").GetValue(__instance);
-                /*                FirearmsAnimator firearmAnimator = (FirearmsAnimator)AccessTools.Field(typeof(EFT.Player.FirearmController), "firearmsAnimator_0").GetValue(__instance);
-                */
+                Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
+                PlayerProperties.StrengthSkillAimBuff = 1 - player.Skills.StrengthBuffAimFatigue.Value;
                 PlayerProperties.ReloadSkillMulti = skillsClass.ReloadSpeed;
                 PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;
+
+                /*                FirearmsAnimator firearmAnimator = (FirearmsAnimator)AccessTools.Field(typeof(EFT.Player.FirearmController), "firearmsAnimator_0").GetValue(__instance);
+ */
             }
         }
     }
@@ -527,7 +530,7 @@ namespace RealismMod
                     float aimSpeed = _aimsSpeed * (1f + WeaponProperties.AimSpeedModifier);
                     WeaponProperties.AimSpeed = aimSpeed;
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_7").SetValue(__instance, aimSpeed);
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_17").SetValue(__instance, WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti);
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_17").SetValue(__instance, WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * PlayerProperties.StrengthSkillAimBuff);
                 }
             }
         }
@@ -556,7 +559,7 @@ namespace RealismMod
                     float newAimSpeed = baseAimSpeed * (1 + (sightSpeedModi / 100f));
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_7").SetValue(__instance, newAimSpeed);
 
-                    float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti;
+                    float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * PlayerProperties.StrengthSkillAimBuff;
                     float ergoWeightFactor = (ergoWeight / 250) + 1f;
                     float breathIntensity = Mathf.Min(0.64f * ergoWeightFactor, 1.15f);
                     float handsIntensity = Mathf.Min(0.59f * ergoWeightFactor, 1.15f);
@@ -594,7 +597,7 @@ namespace RealismMod
             {
                 if (firearmController.Item.Owner.ID.StartsWith("pmc"))
                 {
-                    float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti;
+                    float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * PlayerProperties.StrengthSkillAimBuff;
                     float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 20f);
                     float displacementModifier = 0.45f;//lower = less drag
                     float aimIntensity = __instance.IntensityByAiming * 0.42f;

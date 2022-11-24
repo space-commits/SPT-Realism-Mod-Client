@@ -50,7 +50,12 @@ namespace RealismMod
             ReloadSpeed,
             FixSpeed,
             AimSpeed,
-            ChamberSpeed
+            ChamberSpeed,
+            Firerate,
+            Damage,
+            Penetration,
+            ArmorDamage,
+            FragmentationChance
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -83,6 +88,16 @@ namespace RealismMod
                     return "AIM SPEED";
                 case ENewItemAttributeId.ChamberSpeed:
                     return "CHAMBER SPEED";
+                case ENewItemAttributeId.Firerate:
+                    return "FIRE RATE";
+                case ENewItemAttributeId.Damage:
+                    return "DAMAGE";
+                case ENewItemAttributeId.Penetration:
+                    return "PENETRATION";
+                case ENewItemAttributeId.ArmorDamage:
+                    return "ARMOR DAMAGE";
+                case ENewItemAttributeId.FragmentationChance:
+                    return "FRAGMENTATION CHANCE";
                 default:
                     return id.ToString();
             }
