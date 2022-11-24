@@ -287,7 +287,7 @@ namespace RealismMod
 
                 if (!folded)
                 {
-                    if (modType == "stock" || modType == "buffer_stock")
+                    if (modType.StartsWith("Stock") || modType == "buffer_stock")
                     {
                         hasShoulderContact = mod.Template.HasShoulderContact;
                         stockAllowsFSADS = AttachmentProperties.StockAllowADS(mod);
@@ -425,7 +425,7 @@ namespace RealismMod
                 if (mod.Slots[0].ContainedItem != null)
                 {
                     Mod containedMod = mod.Slots[0].ContainedItem as Mod;
-                    if (AttachmentProperties.ModType(containedMod) == "stock")
+                    if (AttachmentProperties.ModType(containedMod).StartsWith("Stock"))
                     {
                         return;
                     }
@@ -463,8 +463,21 @@ namespace RealismMod
 
         }
 
-        public static string GetModPosition(Mod mod, string weapType, string opType)
+        public static string GetModPosition(Mod mod, string weapType, string opType, string modType)
         {
+            if (modType == "StockN")
+            {
+                return "neutral";
+            }
+            if (modType == "StockF")
+            {
+                return "front";
+            }
+            if (modType == "StockR")
+            {
+                return "rear";
+            }
+
             if (weapType == "pistol" || weapType == "bullpup")
             {
                 if (IsStock(mod) || IsMagazine(mod))

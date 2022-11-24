@@ -45,7 +45,15 @@ namespace RealismMod
             Helper.IsInReloadOpertation = __instance.IsInReloadOperation();
             bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
             bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);
-            if (rightArmDamaged == true && leftArmDamaged == false)
+
+            if (rightArmDamaged == false && leftArmDamaged == false)
+            {
+                PlayerProperties.AimMoveSpeedBase = 0.42f;
+                PlayerProperties.ErgoDeltaInjuryMulti = 1f;
+                PlayerProperties.ADSInjuryMulti = 1f;
+                PlayerProperties.ReloadInjuryMulti = 1f;
+            }
+            else if (rightArmDamaged == true && leftArmDamaged == false)
             {
                 PlayerProperties.AimMoveSpeedBase = 0.39f;
                 PlayerProperties.ErgoDeltaInjuryMulti = 2f;
@@ -66,10 +74,7 @@ namespace RealismMod
                 PlayerProperties.ADSInjuryMulti = 0.6f;
                 PlayerProperties.ReloadInjuryMulti = 0.75f;
             }
-            else
-            {
-                PlayerProperties.ReloadInjuryMulti = 1f;
-            }
+
             if (Helper.IsInReloadOpertation == true)
             {
                 if (Helper.IsAttemptingToReloadInternalMag == true)

@@ -5,6 +5,7 @@ using HarmonyLib;
 using System;
 using System.Reflection;
 using UnityEngine;
+using static EFT.Player;
 
 namespace RealismMod
 {
@@ -120,7 +121,7 @@ namespace RealismMod
             {
                 magWeight = magazine.GetSingleItemTotalWeight();
                 float magWeightFactored = StatCalc.FactoredWeight(magWeight);
-                string position = StatCalc.GetModPosition(magazine, weapType, weapOpType);
+                string position = StatCalc.GetModPosition(magazine, weapType, weapOpType, "");
                 magErgo = magazine.Ergonomics;
                 currentTorque = StatCalc.GetTorque(position, magWeightFactored, __instance.WeapClass);
             }
@@ -319,7 +320,7 @@ namespace RealismMod
                     float modAim = AttachmentProperties.AimSpeed(__instance.Mods[i]);
                     float modFix = AttachmentProperties.FixSpeed(__instance.Mods[i]);
                     string modType = AttachmentProperties.ModType(__instance.Mods[i]);
-                    string position = StatCalc.GetModPosition(__instance.Mods[i], weapType, weapOpType);
+                    string position = StatCalc.GetModPosition(__instance.Mods[i], weapType, weapOpType, modType);
 
                     StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber);
                     StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, false, __instance.WeapClass, ref pureErgo);
@@ -452,36 +453,6 @@ namespace RealismMod
         }
     }
 
-    public class UpdateWeaponVariablesPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("UpdateWeaponVariables", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance, ref float ___float_7, ref Player.ValueBlender ___valueBlender_0)
-        {
-            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
-
-            if (firearmController != null)
-            {
-                if (firearmController.Item.Owner.ID.StartsWith("pmc"))
-                {
-
-                    float _aimsSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_7").GetValue(__instance);
-                    __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.startingConvergence * __instance.Aiming.RecoilConvergenceMult;
-                    __instance.HandsContainer.Recoil.Damping = WeaponProperties.TotalRecoilDamping;
-                    __instance.HandsContainer.HandsPosition.Damping = WeaponProperties.TotalRecoilHandDamping;
-                    float aimSpeed = _aimsSpeed * (1f + WeaponProperties.AimSpeedModifier);
-                    WeaponProperties.AimSpeed = aimSpeed;
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_7").SetValue(__instance, aimSpeed);
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_17").SetValue(__instance, WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti);
-                }
-            }
-        }
-    }
-
     public class SyncWithCharacterSkillsPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -532,6 +503,37 @@ namespace RealismMod
         }
     }
 
+    public class UpdateWeaponVariablesPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("UpdateWeaponVariables", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance, ref float ___float_7, ref Player.ValueBlender ___valueBlender_0)
+        {
+            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
+
+            if (firearmController != null)
+            {
+                if (firearmController.Item.Owner.ID.StartsWith("pmc"))
+                {
+
+                    float _aimsSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_7").GetValue(__instance);
+                    __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.startingConvergence * __instance.Aiming.RecoilConvergenceMult;
+                    __instance.HandsContainer.Recoil.Damping = WeaponProperties.TotalRecoilDamping;
+                    __instance.HandsContainer.HandsPosition.Damping = WeaponProperties.TotalRecoilHandDamping;
+                    float aimSpeed = _aimsSpeed * (1f + WeaponProperties.AimSpeedModifier);
+                    WeaponProperties.AimSpeed = aimSpeed;
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_7").SetValue(__instance, aimSpeed);
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_17").SetValue(__instance, WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti);
+                }
+            }
+        }
+    }
+
+
     public class method_17Patch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -570,7 +572,7 @@ namespace RealismMod
                         handsIntensity = Mathf.Min(0.73f * ergoWeightFactor, 1.25f);
                     }
 
-                    __instance.Breath.Intensity = breathIntensity; //both aim sway and up and down breathing
+                    __instance.Breath.Intensity = breathIntensity * __instance.IntensityByPoseLevel; //both aim sway and up and down breathing
                     __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = handsIntensity * handsIntensity); //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down.
                 }
             }
@@ -600,17 +602,17 @@ namespace RealismMod
                     if (WeaponProperties.HasShoulderContact == false && firearmController.Item.WeapClass != "pistol")
                     {
                         aimIntensity = __instance.IntensityByAiming * 1f;
-                    } 
-       /*             if (firearmController.Item.WeapClass == "pistol")
-                    {
-                        aimIntensity = __instance.IntensityByAiming * 0.45f;
-                    }*/
+                    }
+                    /*             if (firearmController.Item.WeapClass == "pistol")
+                                 {
+                                     aimIntensity = __instance.IntensityByAiming * 0.45f;
+                                 }*/
 
 
-                    float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight * (1f + __instance.Overweight));
+                    float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_18").SetValue(__instance, swayStrength);
 
-                    float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate(ergoWeight * (1f + __instance.Overweight));//delay from moving mouse to the weapon moving to center of screen.
+                    float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate(ergoWeight);//delay from moving mouse to the weapon moving to center of screen.
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, weapDisplacement * weightFactor * displacementModifier);
 
                     __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * Mathf.Clamp(aimIntensity * weightFactor, aimIntensity, 1.1f); // the diving/tiling animation as you move weapon side to side.

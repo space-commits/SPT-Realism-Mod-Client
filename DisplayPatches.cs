@@ -516,7 +516,7 @@ namespace RealismMod
                 float modAim = 0;
                 float modFix = 0;
                 string modType = AttachmentProperties.ModType(__instance.Mods[i]);
-                string position = StatCalc.GetModPosition(__instance.Mods[i], weapType, weapOpType);
+                string position = StatCalc.GetModPosition(__instance.Mods[i], weapType, weapOpType, modType);
 
                 if (Helper.IsStock(mod))
                 {
