@@ -42,3 +42,7 @@ obj/Debug/netstandard2.0/RealismMod.csproj.CoreCompileInputs.cache
 *.cache
 *.editorconfig
 *.cache
+obj
+bin
+libs
+.vs
