@@ -38,3 +38,5 @@ obj/Debug/netstandard2.0/RealismMod.csproj.CoreCompileInputs.cache
 *.vsidx
 *.vsidx
 .vs/RealismMod/FileContentIndex/7c92d891-bc67-4952-801f-4706ebfab471.vsidx
+*.editorconfig
+*.cache
