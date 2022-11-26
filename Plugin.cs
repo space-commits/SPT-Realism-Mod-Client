@@ -32,6 +32,8 @@ namespace RealismMod
         public static ConfigEntry<bool> enableAmmoPenDisp { get; set; }
         public static ConfigEntry<bool> enableAmmoArmorDamageDisp { get; set; }
         public static ConfigEntry<bool> enableAmmoFragDisp { get; set; }
+        public static ConfigEntry<bool> enableBarrelFactor { get; set; }
+        
 
         public static float timer = 0.0f;
         public static bool isFiring = false;
@@ -123,11 +125,7 @@ namespace RealismMod
             string RecoilSettings= "1. Recoil Settings";
             string WeapStatSettings = "2. Weapon Stat Settings";
             string MiscSettings = "3. Misc. Settigns";
-<<<<<<< HEAD
             string AmmoSettings = "4. Ammo Stat Settings";
-=======
-            string AmmoSettings = "4. Ammo Settigns";
->>>>>>> 2f3ac353ba08d6ac3d08a2d195deed6c415443ce
 
             enableAmmoFirerateDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 5 }));
             enableAmmoDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Damage", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 4 }));
@@ -135,14 +133,11 @@ namespace RealismMod
             enableAmmoPenDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Penetration", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 2 }));
             enableAmmoArmorDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Armor Damage", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 1 }));
 
-<<<<<<< HEAD
-            enableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 4 }));
-=======
-            enableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. This Option Currently Accomdates Multiple Buffer Tube Stock Slots, Witch Each Position Modifiying Stock Stats Differently.", null, new ConfigurationManagerAttributes { Order = 4 }));
->>>>>>> 2f3ac353ba08d6ac3d08a2d195deed6c415443ce
-            enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 3 }));
-            enableMalfPatch = Config.Bind<bool>(MiscSettings, "Enable Malfuction Patch", true, new ConfigDescription("Requires Restart. You Don't Need To Inspect A Malfunction In Order To Clear It.", null, new ConfigurationManagerAttributes { Order = 2 }));
-            enableSGMastering = Config.Bind<bool>(MiscSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 1 }));
+            enableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 1 }));
+            enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 2 }));
+            enableMalfPatch = Config.Bind<bool>(MiscSettings, "Enable Inspectionless Malfuctions Patch", true, new ConfigDescription("Requires Restart. You Don't Need To Inspect A Malfunction In Order To Clear It.", null, new ConfigurationManagerAttributes { Order = 3 }));
+            enableSGMastering = Config.Bind<bool>(MiscSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 4 }));
+            enableBarrelFactor = Config.Bind<bool>(MiscSettings, "Enable Barrel Factor", true, new ConfigDescription("Requires Restart. Barrel Length Modifies The Damage, Penetration, Velocity, Fragmentation Chance, And Ballistic Coeficient Of Projectiles.", null, new ConfigurationManagerAttributes { Order = 5 }));
 
             sensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Limit", 0.5f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction. 100% Means No Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 3 }));
             sensResetRate = Config.Bind<float>(RecoilSettings, "Senisitivity Reset Rate", 1.2f, new ConfigDescription("Rate At Which Sensitivity Recovers After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 2 }));
@@ -239,9 +234,15 @@ namespace RealismMod
             new COIDisplayDeltaPatch().Enable();
             new COIDisplayValuePatch().Enable();
             new FireRateDisplayStringPatch().Enable();
-            new GetCachedReadonlyQualitiesPatch().Enable(); 
+            new GetCachedReadonlyQualitiesPatch().Enable();
 
             new GetAttributeIconPatches().Enable();
+
+            //Ballistics
+            if (enableBarrelFactor.Value == true)
+            {
+                new CreateShotPatch().Enable();
+            }
 
         }
 
