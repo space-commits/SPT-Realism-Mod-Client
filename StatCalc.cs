@@ -13,7 +13,7 @@ namespace RealismMod
         public static float ErgoTorqueMult = 0.9f;
 
         public static float VRecoilWeightMult = 2.1f;
-        public static float VRecoilTorqueMult = 0.6f;
+        public static float VRecoilTorqueMult = 0.64f;
 
         public static float HRecoilWeightMult = 3.15f;
         public static float HRecoilTorqueMult = 0.75f;
