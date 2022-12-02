@@ -58,7 +58,7 @@ namespace RealismMod
             float baseSpeed = 0.15f;
             if (WeaponProperties._WeapClass == "pistol")
             {
-                baseSpeed = 0.25f;
+                baseSpeed = 0.3f;
             }
             __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
         }
@@ -77,7 +77,7 @@ namespace RealismMod
             float baseSpeed = 0.35f;
             if (WeaponProperties._WeapClass == "pistol")
             {
-                baseSpeed = 0f;
+                baseSpeed = 0.1f;
             }
             if (WeaponProperties._WeapClass == "shotgun")
             {
@@ -133,7 +133,7 @@ namespace RealismMod
             float baseSpeed = 0.16f;
             if (WeaponProperties._WeapClass == "pistol")
             {
-                baseSpeed = 0.05f;
+                baseSpeed = 0.1f;
             }
             __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti));
         }

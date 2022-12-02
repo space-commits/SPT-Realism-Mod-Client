@@ -96,9 +96,6 @@ namespace RealismMod
         }
     }
 
-
-
-
     public class ToggleAimPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

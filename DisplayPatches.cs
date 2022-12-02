@@ -25,7 +25,7 @@ namespace RealismMod
         private static void PatchPostFix(AmmoTemplate __instance, ref List<GClass2210> __result)
         {
 
-            if (!__result.Any((GClass2210 a) => (ENewItemAttributeId)a.Id == ENewItemAttributeId.Damage))
+            if (!__result.Any((GClass2210 a) => (ENewItemAttributeId)a.Id == ENewItemAttributeId.Firerate))
             {
                 AddCustomAttributes(__instance, ref __result);
             }
@@ -62,7 +62,7 @@ namespace RealismMod
 
             }
 
-            if (Plugin.enableAmmoFragDisp.Value == true) 
+            if (Plugin.enableAmmoFragDisp.Value == true)
             {
                 float fragChance = ammoTemplate.FragmentationChance * 100;
                 if (fragChance > 0)
@@ -257,6 +257,31 @@ namespace RealismMod
             aimSpeedAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             aimSpeedAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Helper.SafelyAddAttributeToList(aimSpeedAtt, __instance);
+        }
+    }
+
+    public class CenterOfImpactMOAPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GClass2138).GetMethod("get_CenterOfImpactMOA", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+
+        [PatchPrefix]
+        private static bool Prefix(ref GClass2138 __instance, ref float __result)
+        {
+            BarrelComponent itemComponent = __instance.GetItemComponent<BarrelComponent>();
+            if (itemComponent == null)
+            {
+                __result = 0f;
+            }
+            else
+            {
+                __result = (float)Math.Round((double)(100f * itemComponent.Template.CenterOfImpact / 2.9089f) * 2, 2);
+            }
+
+            return false;
         }
     }
 

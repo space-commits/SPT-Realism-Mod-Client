@@ -22,7 +22,7 @@
 	<Reference Include="UnityEngine.UnityWebRequestModule" />
     <Reference Include="UnityEngine.UnityWebRequestTextureModule" />
     <Reference Include="UnityEngine.UnityWebRequestWWWModule" />
-	    <Reference Include="AnimationSystem.Types" />
+	<Reference Include="AnimationSystem.Types" />
 	<Reference Include="Newtonsoft.Json" />
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />

@@ -128,10 +128,10 @@ namespace RealismMod
             string AmmoSettings = "4. Ammo Stat Settings";
 
             enableAmmoFirerateDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 5 }));
-            enableAmmoDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Damage", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 4 }));
-            enableAmmoFragDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Fragmentation Chance", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 3 }));
-            enableAmmoPenDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Penetration", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 2 }));
-            enableAmmoArmorDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Armor Damage", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 1 }));
+            enableAmmoDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 4 }));
+            enableAmmoFragDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Fragmentation Chance", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 3 }));
+            enableAmmoPenDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Penetration", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 2 }));
+            enableAmmoArmorDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Armor Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 1 }));
 
             enableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 1 }));
             enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 2 }));
@@ -235,15 +235,17 @@ namespace RealismMod
             new COIDisplayValuePatch().Enable();
             new FireRateDisplayStringPatch().Enable();
             new GetCachedReadonlyQualitiesPatch().Enable();
+            new CenterOfImpactMOAPatch().Enable();
 
             new GetAttributeIconPatches().Enable();
+
+
 
             //Ballistics
             if (enableBarrelFactor.Value == true)
             {
                 new CreateShotPatch().Enable();
             }
-
         }
 
 
