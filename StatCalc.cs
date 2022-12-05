@@ -108,8 +108,8 @@ namespace RealismMod
         public static float ErgoWeightCalc(float totalWeight, float pureErgoDelta, float totalTorque)
         {
             float totalTorqueFactorInverse = totalTorque / 100f * -1f;
-            float ergoFactoredWeight = totalWeight * (1 - (pureErgoDelta * 0.32f));
-            float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse + 0.25f));
+            float ergoFactoredWeight = (totalWeight * 0.92f) * (1 - (pureErgoDelta * 0.35f));
+            float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse + 0.3f));
             return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 1.78, 3.5) + 1) / 200, 1f, 115f);
         }
 

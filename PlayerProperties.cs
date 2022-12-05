@@ -14,6 +14,6 @@
 
         public static float ErgoDeltaInjuryMulti = 1;
 
-        public static float StrengthSkillAimBuff = 0;
+        public static float StrengthSkillAimBuff = 1;
     }
 }

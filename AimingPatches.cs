@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace RealismMod
 {
-    public class AimingPatches : ModulePatch
+    public class AimingPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {

@@ -25,7 +25,7 @@ namespace RealismMod
         private static void PatchPostFix(AmmoTemplate __instance, ref List<GClass2210> __result)
         {
 
-            if (!__result.Any((GClass2210 a) => (ENewItemAttributeId)a.Id == ENewItemAttributeId.Firerate))
+            if (!__result.Any((GClass2210 i) => (ENewItemAttributeId)i.Id == ENewItemAttributeId.Firerate))
             {
                 AddCustomAttributes(__instance, ref __result);
             }
@@ -50,7 +50,7 @@ namespace RealismMod
                 }
             }
 
-            if (Plugin.enableAmmoDamageDisp.Value == true)
+/*            if (Plugin.enableAmmoDamageDisp.Value == true)
             {
                 float totalDamage = ammoTemplate.Damage * ammoTemplate.ProjectileCount;
                 GClass2210 damageAtt = new GClass2210(ENewItemAttributeId.Damage);
@@ -94,7 +94,7 @@ namespace RealismMod
                 armorDamAtt.StringValue = () => $"{ammoTemplate.ArmorDamage}";
                 armorDamAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
                 ammoAttributes.Add(armorDamAtt);
-            }
+            }*/
         }
     }
 
