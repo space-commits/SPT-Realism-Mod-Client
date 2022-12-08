@@ -33,14 +33,13 @@ namespace RealismMod
         public static ConfigEntry<bool> enableAmmoArmorDamageDisp { get; set; }
         public static ConfigEntry<bool> enableAmmoFragDisp { get; set; }
         public static ConfigEntry<bool> enableBarrelFactor { get; set; }
-        
 
-        public static float timer = 0.0f;
         public static bool isFiring = false;
         public static bool isAiming;
-        public static bool statsAreReset;
+        public static float timer = 0.0f;
         public static float shotCount = 0;
-        public static float prevShotCount = shotCount;
+        private float prevShotCount = shotCount;
+        private bool statsAreReset;
 
         public static float startingRecoilAngle;
 
@@ -69,9 +68,10 @@ namespace RealismMod
         public static float currentVRecoilX;
         public static float currentVRecoilY;
 
-        public static Dictionary<Enum, Sprite> iconCache = new Dictionary<Enum, Sprite>();
-        public static string modPath;
-        public static void CacheIcons()
+        private static Dictionary<Enum, Sprite> iconCache = new Dictionary<Enum, Sprite>();
+        private string modPath;
+
+        private void CacheIcons()
         {
             iconCache.Add(ENewItemAttributeId.VerticalRecoil, Resources.Load<Sprite>("characteristics/icons/Ergonomics"));
             iconCache.Add(ENewItemAttributeId.HorizontalRecoil, Resources.Load<Sprite>("characteristics/icons/Recoil Back"));
@@ -98,7 +98,7 @@ namespace RealismMod
             modPath = Json.Deserialize<string>(mod);
         }
 
-        public static async Task LoadTexture(Enum id, string path)
+        private async Task LoadTexture(Enum id, string path)
         {
             using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(path))
             {
@@ -240,8 +240,6 @@ namespace RealismMod
             new CenterOfImpactMOAPatch().Enable();
 
             new GetAttributeIconPatches().Enable();
-
-
 
             //Ballistics
             if (enableBarrelFactor.Value == true)

@@ -358,15 +358,12 @@ namespace RealismMod
                                 }
                             }
                         }
-                        else
-                        {
-                            modVRecoil = 0;
-                            modHRecoil = 0;
-                            modDispersion = 0;
-                            modCamRecoil = 0;
-                            modErgo = 0;
-                        }
-                        return;
+
+                        modVRecoil = 0;
+                        modHRecoil = 0;
+                        modDispersion = 0;
+                        modCamRecoil = 0;
+                        modErgo = 0;
                     }
 
                     if (modType == "hydraulic_buffer" && (weap.WeapClass != "shotgun" || weap.WeapClass != "sniperRifle" || weap.WeapClass != "assaultCarbine" || weapOpType == "buffer"))
@@ -420,6 +417,7 @@ namespace RealismMod
                 }
             }
 
+
             if (modType == "grip_stock_adapter")
             {
                 if (mod.Slots[0].ContainedItem != null)
@@ -429,18 +427,15 @@ namespace RealismMod
                     {
                         return;
                     }
-                    if (containedMod.Slots.Length > 0 && containedMod.Slots[0].ContainedItem != null)
+                    else if (containedMod.Slots.Length > 0 && containedMod.Slots[0].ContainedItem != null)
                     {
                         return;
                     }
                 }
-                else
-                {
-                    modVRecoil = 0;
-                    modHRecoil = 0;
-                    modDispersion = 0;
-                    modCamRecoil = 0;
-                }
+                modVRecoil = 0;
+                modHRecoil = 0;
+                modDispersion = 0;
+                modCamRecoil = 0;
                 return;
             }
 
@@ -460,7 +455,6 @@ namespace RealismMod
                 }
                 return;
             }
-
         }
 
         public static string GetModPosition(Mod mod, string weapType, string opType, string modType)
@@ -526,7 +520,7 @@ namespace RealismMod
         }
 
 
-        public static void StockPositionChecker(Mod mod, ref float modVRecoil, ref float modHRecoil, ref float modDispersion, ref float modCamRecoil, ref float modErgo)
+        private static void StockPositionChecker(Mod mod, ref float modVRecoil, ref float modHRecoil, ref float modDispersion, ref float modCamRecoil, ref float modErgo)
         {
 
             if (mod.Parent.Container != null)
@@ -547,15 +541,15 @@ namespace RealismMod
             }
         }
 
-        public static void bufferSlotModifier(int position, ref float modVRecoil, ref float modHRecoil, ref float modDispersion, ref float modCamRecoil, ref float modErgo)
+        private static void bufferSlotModifier(int position, ref float modVRecoil, ref float modHRecoil, ref float modDispersion, ref float modCamRecoil, ref float modErgo)
         {
             switch (position)
             {
                 case 0:
-                    modVRecoil *= 0.25f;
-                    modHRecoil *= 0.25f;
-                    modDispersion *= 0.25f;
-                    modCamRecoil *= 0.25f;
+                    modVRecoil *= 0.5f;
+                    modHRecoil *= 0.5f;
+                    modDispersion *= 0.5f;
+                    modCamRecoil *= 0.5f;
                     modErgo *= 1.5f;
                     break;
                 case 1:
@@ -599,7 +593,7 @@ namespace RealismMod
             return Mathf.Clamp((float)Math.Pow(modWeight * 1.5, 1.1) / 1.1f, 0.001f, 5f);
         }
 
-        public static float TorqueCalc(float distance, float weight, string weapClass)
+        private static float TorqueCalc(float distance, float weight, string weapClass)
         {
             if (weapClass == "pistol")
             {

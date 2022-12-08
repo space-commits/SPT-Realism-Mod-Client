@@ -364,23 +364,23 @@ namespace RealismMod
             }
         }
 
-        public static float BalanceDelta()
+        private static float BalanceDelta()
         {
             float currentBalance = 150f - (DisplayWeaponProperties.Balance * -1f);
             return (150f - currentBalance) / (150f * -1f);
         }
 
-        public static float DispersionDelta(Weapon __instance)
+        private static float DispersionDelta(Weapon __instance)
         {
             return (__instance.Template.RecolDispersion - DisplayWeaponProperties.Dispersion) / (__instance.Template.RecolDispersion * -1f);
         }
 
-        public static float CamRecoilDelta(Weapon __instance)
+        private static float CamRecoilDelta(Weapon __instance)
         {
             return (__instance.Template.CameraRecoil - DisplayWeaponProperties.CamRecoil) / (__instance.Template.CameraRecoil * -1f);
         }
 
-        public static float RecoilAngleDelta(Weapon __instance)
+        private static float RecoilAngleDelta(Weapon __instance)
         {
             return (__instance.Template.RecoilAngle - DisplayWeaponProperties.RecoilAngle) / (__instance.Template.RecoilAngle * -1f);
         }
@@ -631,11 +631,6 @@ namespace RealismMod
                 float modFix = 0;
                 string modType = AttachmentProperties.ModType(__instance.Mods[i]);
                 string position = StatCalc.GetModPosition(__instance.Mods[i], weapType, weapOpType, modType);
-
-                if (Helper.IsStock(mod))
-                {
-                    StatCalc.StockPositionChecker(mod, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
-                }
 
                 StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber);
                 StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, true, __instance.WeapClass, ref pureErgo);
