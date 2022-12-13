@@ -68,9 +68,14 @@ namespace RealismMod
         public static float currentVRecoilX;
         public static float currentVRecoilY;
 
-        private static Dictionary<Enum, Sprite> iconCache = new Dictionary<Enum, Sprite>();
+        public static Dictionary<Enum, Sprite> iconCache = new Dictionary<Enum, Sprite>();
         private string modPath;
 
+        private void GetPath()
+        {
+            var mod = RequestHandler.GetJson($"/RealismMod/GetInfo");
+            modPath = Json.Deserialize<string>(mod);
+        }
         private void CacheIcons()
         {
             iconCache.Add(ENewItemAttributeId.VerticalRecoil, Resources.Load<Sprite>("characteristics/icons/Ergonomics"));
@@ -90,12 +95,6 @@ namespace RealismMod
             iconCache.Add(ENewItemAttributeId.FragmentationChance, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
             _ = LoadTexture(ENewItemAttributeId.Balance, Path.Combine(modPath, "res\\balance.png"));
             _ = LoadTexture(ENewItemAttributeId.RecoilAngle, Path.Combine(modPath, "res\\recoilAngle.png"));
-        }
-
-        private void GetPath()
-        {
-            var mod = RequestHandler.GetJson($"/RealismMod/GetInfo");
-            modPath = Json.Deserialize<string>(mod);
         }
 
         private async Task LoadTexture(Enum id, string path)
