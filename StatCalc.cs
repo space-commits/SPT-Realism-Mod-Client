@@ -379,8 +379,8 @@ namespace RealismMod
 
             if (modType == "booster" && weapType != "short_AK")
             {
-                modAutoROF *= 0.35f;
-                modSemiROF *= 0.35f;
+                modAutoROF *= 0.25f;
+                modSemiROF *= 0.25f;
                 return;
             }
 

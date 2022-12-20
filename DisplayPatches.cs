@@ -98,7 +98,7 @@ namespace RealismMod
         }
     }
 
-    public class ModVRecoilStatDisplayPatch : ModulePatch
+    public class ModVRecoilStatDisplayPatchFloat : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -107,20 +107,14 @@ namespace RealismMod
 
 
         [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref float __result)
+        private static bool Prefix(ref float __result)
         {
-            ModVRecoilStatDisplayPatch p = new ModVRecoilStatDisplayPatch();
-            __result = p.method_15P(ref __instance);
+            __result = 0;
             return false;
-        }
-
-        public float method_15P(ref Weapon __instance)
-        {
-            return 0;
         }
     }
 
-    public class ModVRecoilStatDisplayPatch2 : ModulePatch
+    public class ModVRecoilStatDisplayPatchString : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -128,9 +122,24 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref string __result)
+        private static bool Prefix(ref string __result)
         {
             __result = "";
+            return false;
+        }
+    }
+
+    public class ModErgoStatDisplayPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Mod).GetMethod("method_18", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(ref Mod __instance, ref string __result)
+        {
+            __result = __instance.Ergonomics + "%";
             return false;
         }
     }

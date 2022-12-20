@@ -24,7 +24,7 @@ namespace RealismMod
   
                 if (!player.IsAI)
                 {
-                    CheckReloading(__instance, player);
+                    PlayerUpdate(__instance, player);
                     FaceShieldComponent component = player.FaceShieldObserver.Component;
                     bool isOn = component != null && (component.Togglable == null || component.Togglable.On);
                     if (isOn && !WeaponProperties.WeaponCanFSADS && !FaceShieldProperties.AllowsADS(component.Item))
@@ -40,7 +40,7 @@ namespace RealismMod
             }
         }
 
-        public static void CheckReloading(EFT.Player.FirearmController __instance, Player player)
+        public static void PlayerUpdate(EFT.Player.FirearmController __instance, Player player)
         {
             Helper.IsInReloadOpertation = __instance.IsInReloadOperation();
             bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);

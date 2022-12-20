@@ -169,6 +169,7 @@ namespace RealismMod
             new ErgoWeightPatch().Enable();
             new method_5Patch().Enable();
 
+
             new SyncWithCharacterSkillsPatch().Enable();
             new UpdateWeaponVariablesPatch().Enable();
             new SetAimingSlowdownPatch().Enable();
@@ -228,8 +229,8 @@ namespace RealismMod
             new HRecoilDisplayDeltaPatch().Enable();
             new VRecoilDisplayValuePatch().Enable();
             new VRecoilDisplayDeltaPatch().Enable();
-            new ModVRecoilStatDisplayPatch().Enable();
-            new ModVRecoilStatDisplayPatch2().Enable();
+            new ModVRecoilStatDisplayPatchFloat().Enable();
+            new ModVRecoilStatDisplayPatchString().Enable();
             new ErgoDisplayDeltaPatch().Enable();
             new ErgoDisplayValuePatch().Enable();
             new COIDisplayDeltaPatch().Enable();
@@ -237,6 +238,7 @@ namespace RealismMod
             new FireRateDisplayStringPatch().Enable();
             new GetCachedReadonlyQualitiesPatch().Enable();
             new CenterOfImpactMOAPatch().Enable();
+            new ModErgoStatDisplayPatch().Enable();
 
             new GetAttributeIconPatches().Enable();
 
