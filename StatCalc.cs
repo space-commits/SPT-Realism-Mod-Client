@@ -12,28 +12,28 @@ namespace RealismMod
         public static float ErgoWeightMult = 11.5f;
         public static float ErgoTorqueMult = 0.9f;
 
-        public static float VRecoilWeightMult = 2.1f;
+        public static float VRecoilWeightMult = 2.2f;
         public static float VRecoilTorqueMult = 0.64f;
 
-        public static float HRecoilWeightMult = 3.15f;
+        public static float HRecoilWeightMult = 3.25f;
         public static float HRecoilTorqueMult = 0.75f;
 
-        public static float DispersionWeightMult = 1.5f;
+        public static float DispersionWeightMult = 1.45f;
         public static float DispersionTorqueMult = 1.25f;
 
-        public static float CamWeightMult = 3.15f;
+        public static float CamWeightMult = 3.2f;
         public static float CamTorqueMult = 0.25f;
 
         public static float AngleTorqueMult = 0.25f;
 
-        public static float DampingWeightMult = 0.05f;//
+        public static float DampingWeightMult = 0.07f;//
         public static float DampingTorqueMult = 0.1f;// needs tweaking
         public static float DampingMin = 0.65f;
         public static float DampingMax = 0.77f;
         public static float DampingPistolMin = 0.5f;
         public static float DampingPistolMax = 0.7f;
 
-        public static float HandDampingWeightMult = 0.05f;//
+        public static float HandDampingWeightMult = 0.07f;//
         public static float HandDampinTorqueMult = 0.1f;// needs tweaking
         public static float HandDampingMin = 0.65f;
         public static float HandDampingMax = 0.77f;

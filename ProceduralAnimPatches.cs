@@ -15,14 +15,14 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass1482).GetMethod("SetAimingSlowdown", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GClass1485).GetMethod("SetAimingSlowdown", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref GClass1482 __instance, bool isAiming)
+        private static bool Prefix(ref GClass1485 __instance, bool isAiming)
         {
 
-            Player player = (Player)AccessTools.Field(typeof(GClass1482), "player_0").GetValue(__instance);
+            Player player = (Player)AccessTools.Field(typeof(GClass1485), "player_0").GetValue(__instance);
             if (player.HandsController.Item.Owner.ID.StartsWith("pmc"))
             {
                 if (isAiming)
@@ -90,11 +90,9 @@ namespace RealismMod
                 if (firearmController.Item.Owner.ID.StartsWith("pmc"))
                 {
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_2").SetValue(__instance, 0);
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_8").SetValue(__instance, Mathf.Lerp(1f, Singleton<GClass1173>.Instance.Stamina.AimingSpeedMultiplier, 0));
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_8").SetValue(__instance, Mathf.Lerp(1f, Singleton<BackendConfigSettingsClass>.Instance.Stamina.AimingSpeedMultiplier, 0));
 
                     __result = 0;
-
-
                 }
             }
         }

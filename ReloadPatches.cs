@@ -22,7 +22,7 @@ namespace RealismMod
                 {
                     weaponLevel += 1;
                 }
-                GClass648.SetWeaponLevel(__instance.Animator, weaponLevel);
+                WeaponAnimationSpeedControllerClass.SetWeaponLevel(__instance.Animator, weaponLevel);
             }
 
         }
@@ -116,7 +116,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance, float fix)
         {
-            GClass648.SetSpeedFix(__instance.Animator, fix * WeaponProperties.ChamberSpeed * PlayerProperties.ReloadInjuryMulti);
+            WeaponAnimationSpeedControllerClass.SetSpeedFix(__instance.Animator, fix * WeaponProperties.ChamberSpeed * PlayerProperties.ReloadInjuryMulti);
         }
     }
 
@@ -526,7 +526,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass648).GetMethod("SetSpeedReload", BindingFlags.Static | BindingFlags.Public);
+            return typeof(WeaponAnimationSpeedControllerClass).GetMethod("SetSpeedReload", BindingFlags.Static | BindingFlags.Public);
 
         }
 
