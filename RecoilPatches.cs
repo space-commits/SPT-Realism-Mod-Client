@@ -5,6 +5,7 @@ using EFT.InventoryLogic;
 using HarmonyLib;
 using System.Reflection;
 using UnityEngine;
+using static EFT.Player;
 using Random = UnityEngine.Random;
 
 namespace RealismMod
@@ -29,9 +30,9 @@ namespace RealismMod
         private static bool Prefix(ref ShotEffector __instance)
         {
             Weapon wep = (Weapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
-            if (wep.Owner.ID.StartsWith("pmc"))
-            {
 
+            if (wep.Owner.ID.StartsWith("pmc") || wep.Owner.ID.StartsWith("scav"))
+            {
                 OnWeaponParametersChangedPatch p = new OnWeaponParametersChangedPatch();
                 SkillsClass.GClass1560 buffInfo = (SkillsClass.GClass1560)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
                 WeaponTemplate template = wep.Template;
@@ -97,7 +98,9 @@ namespace RealismMod
         [PatchPostfix]
         public static void PatchPostfix(ref Player.FirearmController __instance, ref bool ____isAiming, ref float ____aimingSens)
         {
-            if (__instance.Item.Owner.ID.StartsWith("pmc") && ____isAiming)
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+
+            if (!player.IsAI && ____isAiming)
             {
                 Plugin.startingSens = ____aimingSens;
                 Plugin.currentSens = ____aimingSens;
@@ -114,7 +117,8 @@ namespace RealismMod
         [PatchPostfix]
         public static void PatchPostfix(ref Player.FirearmController __instance, ref bool ____isAiming, ref float ____aimingSens)
         {
-            if (__instance.Item.Owner.ID.StartsWith("pmc") && ____isAiming)
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (!player.IsAI && ____isAiming)
             {
                 ____aimingSens = Plugin.currentSens;
             }
@@ -133,7 +137,7 @@ namespace RealismMod
 
             Weapon wep = (Weapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
 
-            if (wep.Owner.ID.StartsWith("pmc"))
+            if (wep.Owner.ID.StartsWith("pmc") || wep.Owner.ID.StartsWith("scav"))
             {
 
                 Plugin.timer = 0f;
@@ -203,7 +207,8 @@ namespace RealismMod
 
             if (firearmController != null)
             {
-                if (firearmController.Item.Owner.ID.StartsWith("pmc"))
+                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
+                if (!player.IsAI)
                 {
                     __instance.HandsContainer.Recoil.Damping = Plugin.currentDamping;
                     __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.currentConvergence;

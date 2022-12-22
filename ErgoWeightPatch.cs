@@ -23,7 +23,8 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Player.FirearmController __instance, ref float __result)
         {
-            if (__instance?.Item?.Owner?.ID != null && __instance.Item.Owner.ID.StartsWith("pmc"))
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (!player.IsAI)
             {
                 __result = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * PlayerProperties.StrengthSkillAimBuff;
                 return false;

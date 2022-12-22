@@ -22,13 +22,16 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref int __result)
         {
-            if (__instance?.Owner?.ID != null && __instance.Owner.ID.StartsWith("pmc"))
+            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
                 __result = (currentAmmoTemplate != null) ? (int)(WeaponProperties.SemiFireRate * currentAmmoTemplate.casingMass) : WeaponProperties.SemiFireRate;
                 return false;
             }
-            return true;
+            else
+            {
+                return true;
+            }
         }
     }
 
@@ -43,13 +46,16 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref int __result)
         {
-            if (__instance?.Owner?.ID != null && __instance.Owner.ID.StartsWith("pmc"))
+            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
                 __result = (currentAmmoTemplate != null) ? (int)(WeaponProperties.AutoFireRate * currentAmmoTemplate.casingMass) : WeaponProperties.AutoFireRate;
                 return false;
             }
-            return true;
+            else
+            {
+                return true;
+            }
         }
     }
 
@@ -64,15 +70,17 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Player.FirearmController __instance, ref float __result)
         {
-            if (__instance.Item.Owner.ID.StartsWith("pmc"))
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (!player.IsAI)
             {
-                Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 SkillsClass.GClass1560 skillsClass = (SkillsClass.GClass1560)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1560_0").GetValue(__instance);
-
                 __result = Mathf.Max(0f, __instance.Item.ErgonomicsTotal * (1f + skillsClass.DeltaErgonomics + player.ErgonomicsPenalty));
                 return false;
             }
-            return true;
+            else
+            {
+                return true;
+            }
         }
     }
 
@@ -89,7 +97,7 @@ namespace RealismMod
         private static bool Prefix(ref Weapon __instance, ref float __result)
         {
 
-            if (__instance?.Owner?.ID != null && __instance.Owner.ID.StartsWith("pmc"))
+            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 ErgoDeltaPatch p = new ErgoDeltaPatch();
                 if (Helper.IsInReloadOpertation)
@@ -103,7 +111,10 @@ namespace RealismMod
                 }
                 return false;
             }
-            return true;
+            else
+            {
+                return true;
+            }
         }
 
         public float MagDelta(ref Weapon __instance)
@@ -368,7 +379,7 @@ namespace RealismMod
         private static bool Prefix(ref Weapon __instance, ref float __result)
         {
 
-            if (__instance?.Owner?.ID != null && __instance.Owner.ID.StartsWith("pmc"))
+            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 __result = WeaponProperties.COIDelta;
                 return false;
@@ -390,7 +401,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref float __result)
         {
-            if (__instance?.Owner?.ID != null && __instance.Owner.ID.StartsWith("pmc"))
+            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 float shotDispLessAmmo = __instance.ShotgunDispersionBase * (1f + __instance.CenterOfImpactDelta);
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
@@ -419,7 +430,7 @@ namespace RealismMod
         private static bool Prefix(ref Weapon __instance, ref float __result, float ammoBurnRatio, float overheatFactor, float skillWeaponTreatmentFactor, out float modsBurnRatio)
         {
 
-            if (__instance?.Owner?.ID != null && __instance.Owner.ID.StartsWith("pmc"))
+            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 modsBurnRatio = 1f;
                 string weapOpType = WeaponProperties.OperationType(__instance);
@@ -465,10 +476,10 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(ref EFT.Player.FirearmController __instance)
         {
-            if (__instance.Item.Owner.ID.StartsWith("pmc"))
+            Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
+            if (!player.IsAI)
             {
                 SkillsClass.GClass1560 skillsClass = (SkillsClass.GClass1560)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1560_0").GetValue(__instance);
-                Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 PlayerProperties.StrengthSkillAimBuff = 1 - player.Skills.StrengthBuffAimFatigue.Value;
                 PlayerProperties.ReloadSkillMulti = skillsClass.ReloadSpeed;
                 PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;

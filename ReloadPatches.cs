@@ -2,6 +2,7 @@
 using EFT;
 using HarmonyLib;
 using System.Reflection;
+using static EFT.Player;
 
 namespace RealismMod
 {
@@ -149,8 +150,8 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance, bool __result)
         {
-
-            if (__instance.Item.Owner.ID.StartsWith("pmc"))
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (!player.IsAI)
             {
                 if (__result == true)
                 {
@@ -177,8 +178,8 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance, MagazineClass magazine)
         {
-
-            if (__instance.Item.Owner.ID.StartsWith("pmc"))
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (!player.IsAI)
             {
                 StatCalc.SetMagReloadSpeeds(__instance, magazine);
             }
@@ -196,8 +197,8 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance, MagazineClass magazine)
         {
-
-            if (__instance.Item.Owner.ID.StartsWith("pmc"))
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (!player.IsAI)
             {
                 StatCalc.SetMagReloadSpeeds(__instance, magazine);
             }
@@ -215,8 +216,8 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance)
         {
-
-            if (__instance.Item.Owner.ID.StartsWith("pmc"))
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (!player.IsAI)
             {
                 Helper.IsAttemptingToReloadInternalMag = true;
                 Helper.IsAttemptingRevolverReload = true;
@@ -234,8 +235,8 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance)
         {
-
-            if (__instance.Item.Owner.ID.StartsWith("pmc"))
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (!player.IsAI)
             {
                 Helper.IsAttemptingToReloadInternalMag = true;
             }
@@ -252,8 +253,8 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance)
         {
-
-            if (__instance.Item.Owner.ID.StartsWith("pmc"))
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (!player.IsAI)
             {
                 Helper.IsAttemptingToReloadInternalMag = true;
             }
@@ -331,10 +332,10 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(ref Player.FirearmController __instance)
         {
-            if (__instance.Item.Owner.ID.StartsWith("pmc"))
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (!player.IsAI)
             {
                 Helper.IsMagReloading = false;
-                Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 player.HandsAnimator.SetAnimationSpeed(1);
             }
 

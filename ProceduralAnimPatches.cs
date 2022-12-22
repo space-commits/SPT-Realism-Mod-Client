@@ -23,7 +23,7 @@ namespace RealismMod
         {
 
             Player player = (Player)AccessTools.Field(typeof(GClass1485), "player_0").GetValue(__instance);
-            if (player.HandsController.Item.Owner.ID.StartsWith("pmc"))
+            if (!player.IsAI)
             {
                 if (isAiming)
                 {
@@ -54,7 +54,8 @@ namespace RealismMod
 
             if (firearmController != null)
             {
-                if (firearmController.Item.Owner.ID.StartsWith("pmc"))
+                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
+                if (!player.IsAI)
                 {
 
                     float _aimsSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_7").GetValue(__instance);
@@ -87,7 +88,8 @@ namespace RealismMod
 
             if (firearmController != null)
             {
-                if (firearmController.Item.Owner.ID.StartsWith("pmc"))
+                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
+                if (!player.IsAI)
                 {
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_2").SetValue(__instance, 0);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_8").SetValue(__instance, Mathf.Lerp(1f, Singleton<BackendConfigSettingsClass>.Instance.Stamina.AimingSpeedMultiplier, 0));
@@ -111,11 +113,12 @@ namespace RealismMod
         private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
         {
             Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
+
             if (firearmController != null)
             {
-                if (firearmController.Item.Owner.ID.StartsWith("pmc"))
+                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
+                if (!player.IsAI)
                 {
-                    Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(firearmController);
                     float baseAimSpeed = WeaponProperties.AimSpeed * PlayerProperties.ADSInjuryMulti;
                     Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
                     float sightSpeedModi = (currentAimingMod != null) ? AttachmentProperties.AimSpeed(currentAimingMod) : 1;
@@ -156,26 +159,36 @@ namespace RealismMod
         private static bool Prefix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
         {
             Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
-            if (firearmController != null && firearmController.Item.Owner.ID.StartsWith("pmc"))
+
+            if (firearmController != null)
             {
-                float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * PlayerProperties.StrengthSkillAimBuff;
-                float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 25f);
-                float displacementModifier = 0.4f;//lower = less drag
-                float aimIntensity = __instance.IntensityByAiming * 0.4f;
+                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
 
-                if (WeaponProperties.HasShoulderContact == false && firearmController.Item.WeapClass != "pistol")
+                if (!player.IsAI)
                 {
-                    aimIntensity = __instance.IntensityByAiming * 1f;
+                    float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * PlayerProperties.StrengthSkillAimBuff;
+                    float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 25f);
+                    float displacementModifier = 0.4f;//lower = less drag
+                    float aimIntensity = __instance.IntensityByAiming * 0.4f;
+
+                    if (WeaponProperties.HasShoulderContact == false && firearmController.Item.WeapClass != "pistol")
+                    {
+                        aimIntensity = __instance.IntensityByAiming * 1f;
+                    }
+
+                    float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight);
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_18").SetValue(__instance, swayStrength);
+
+                    float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate(ergoWeight);//delay from moving mouse to the weapon moving to center of screen.
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, weapDisplacement * weightFactor * displacementModifier);
+
+                    __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * Mathf.Clamp(aimIntensity * weightFactor, aimIntensity, 1.1f); // the diving/tiling animation as you move weapon side to side.
+                    return false;
                 }
-
-                float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight);
-                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_18").SetValue(__instance, swayStrength);
-
-                float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate(ergoWeight);//delay from moving mouse to the weapon moving to center of screen.
-                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, weapDisplacement * weightFactor * displacementModifier);
-
-                __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * Mathf.Clamp(aimIntensity * weightFactor, aimIntensity, 1.1f); // the diving/tiling animation as you move weapon side to side.
-                return false;
+                else
+                {
+                    return true;
+                }
             }
             else
             {
