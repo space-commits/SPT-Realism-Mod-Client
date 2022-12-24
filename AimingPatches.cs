@@ -56,21 +56,21 @@ namespace RealismMod
             else if (rightArmDamaged == true && leftArmDamaged == false)
             {
                 PlayerProperties.AimMoveSpeedBase = 0.39f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 2f;
+                PlayerProperties.ErgoDeltaInjuryMulti = 1.5f;
                 PlayerProperties.ADSInjuryMulti = 0.8f;
                 PlayerProperties.ReloadInjuryMulti = 0.85f;
             }
             else if (rightArmDamaged == false && leftArmDamaged == true)
             {
                 PlayerProperties.AimMoveSpeedBase = 0.35f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 3.5f;
+                PlayerProperties.ErgoDeltaInjuryMulti = 2f;
                 PlayerProperties.ADSInjuryMulti = 0.7f;
                 PlayerProperties.ReloadInjuryMulti = 0.8f;
             }
             else if (rightArmDamaged == true && leftArmDamaged == true)
             {
                 PlayerProperties.AimMoveSpeedBase = 0.3f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 5;
+                PlayerProperties.ErgoDeltaInjuryMulti = 3.5f;
                 PlayerProperties.ADSInjuryMulti = 0.6f;
                 PlayerProperties.ReloadInjuryMulti = 0.75f;
             }
@@ -80,7 +80,7 @@ namespace RealismMod
                 if (Helper.IsAttemptingToReloadInternalMag == true)
                 {
                     float reloadBonus = 0.17f;
-/*                    if (Helper.isAttemptingRevolverReload == true)
+/*                 if (Helper.isAttemptingRevolverReload == true)
                     {
                         reloadBonus += 0.05f;
                     }*/
