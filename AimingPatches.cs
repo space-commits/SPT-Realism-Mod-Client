@@ -57,21 +57,21 @@ namespace RealismMod
             {
                 PlayerProperties.AimMoveSpeedBase = 0.39f;
                 PlayerProperties.ErgoDeltaInjuryMulti = 1.5f;
-                PlayerProperties.ADSInjuryMulti = 0.8f;
+                PlayerProperties.ADSInjuryMulti = 0.6f;
                 PlayerProperties.ReloadInjuryMulti = 0.85f;
             }
             else if (rightArmDamaged == false && leftArmDamaged == true)
             {
                 PlayerProperties.AimMoveSpeedBase = 0.35f;
                 PlayerProperties.ErgoDeltaInjuryMulti = 2f;
-                PlayerProperties.ADSInjuryMulti = 0.7f;
+                PlayerProperties.ADSInjuryMulti = 0.5f;
                 PlayerProperties.ReloadInjuryMulti = 0.8f;
             }
             else if (rightArmDamaged == true && leftArmDamaged == true)
             {
                 PlayerProperties.AimMoveSpeedBase = 0.3f;
                 PlayerProperties.ErgoDeltaInjuryMulti = 3.5f;
-                PlayerProperties.ADSInjuryMulti = 0.6f;
+                PlayerProperties.ADSInjuryMulti = 0.4f;
                 PlayerProperties.ReloadInjuryMulti = 0.75f;
             }
 

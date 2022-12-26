@@ -108,9 +108,9 @@ namespace RealismMod
         public static float ErgoWeightCalc(float totalWeight, float pureErgoDelta, float totalTorque)
         {
             float totalTorqueFactorInverse = totalTorque / 100f * -1f;
-            float ergoFactoredWeight = (totalWeight * 1f) * (1 - (pureErgoDelta * 0.3f));
-            float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse + 0.3f));
-            return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 1.78, 3.5) + 1) / 200, 1f, 115f);
+            float ergoFactoredWeight = (totalWeight * 1f) * (1f - (pureErgoDelta * 0.3f));
+            float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse + 0.25f));
+            return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 1.78f, 3.5f) + 1f) / 280, 1f, 115f);
         }
 
         public static float ProceduralIntensityFactorCalc(float weapWeight, float idealWeapWeight)
@@ -121,7 +121,7 @@ namespace RealismMod
 
             if (weapWeight >= idealWeapWeight)
             {
-                weightFactor = ((weapWeight - idealWeapWeight) / Math.Abs(idealWeapWeight)) + 1f;
+                weightFactor = Mathf.Max((((weapWeight - idealWeapWeight) / idealWeapWeight) * 0.1f) + 1f, 1f);
             }
 
             return weightFactor;
@@ -130,9 +130,9 @@ namespace RealismMod
         public static void SpeedStatCalc(float ergonomicWeightLessMag, float currentReloadSpeed, float currentFixSpeed, float totalTorque, float weapTorqueLessMag, ref float totalReloadSpeed, ref float totalFixSpeed, ref float totalAimMoveSpeedModifier, float ergoWeight, ref float totalChamberSpeed, float currentChamberSpeed)
         {
 
-            float reloadSpeedWeightFactor = StatCalc.WeightStatCalc(StatCalc.ReloadSpeedWeightMult, ergonomicWeightLessMag * PlayerProperties.StrengthSkillAimBuff) / 100;
-            float fixSpeedWeightFactor = StatCalc.WeightStatCalc(StatCalc.ChamberSpeedWeightMult, ergoWeight * PlayerProperties.StrengthSkillAimBuff) / 100;
-            float aimMoveSpeedWeightFactor = StatCalc.WeightStatCalc(StatCalc.AimMoveSpeedWeightMult, ergoWeight * PlayerProperties.StrengthSkillAimBuff) / 100;
+            float reloadSpeedWeightFactor = StatCalc.WeightStatCalc(StatCalc.ReloadSpeedWeightMult, ergonomicWeightLessMag * PlayerProperties.StrengthSkillAimBuff) / 100f;
+            float fixSpeedWeightFactor = StatCalc.WeightStatCalc(StatCalc.ChamberSpeedWeightMult, ergoWeight * PlayerProperties.StrengthSkillAimBuff) / 100f;
+            float aimMoveSpeedWeightFactor = StatCalc.WeightStatCalc(StatCalc.AimMoveSpeedWeightMult, ergoWeight * PlayerProperties.StrengthSkillAimBuff) / 100f;
 
             float torqueFactor = totalTorque / 100f;
             float weapTorqueLessMagFactor = weapTorqueLessMag / 100f;

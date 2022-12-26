@@ -166,9 +166,12 @@ namespace RealismMod
                 if (!player.IsAI)
                 {
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * PlayerProperties.StrengthSkillAimBuff;
-                    float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 25f);
+                    float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 7f);
                     float displacementModifier = 0.4f;//lower = less drag
                     float aimIntensity = __instance.IntensityByAiming * 0.4f;
+
+                    Logger.LogWarning(ergoWeight);
+                    Logger.LogWarning(weightFactor);
 
                     if (WeaponProperties.HasShoulderContact == false && firearmController.Item.WeapClass != "pistol")
                     {
