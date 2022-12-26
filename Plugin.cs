@@ -9,9 +9,16 @@ using BepInEx.Configuration;
 using static RealismMod.Attributes;
 using System.Threading.Tasks;
 using UnityEngine.Networking;
+using Newtonsoft.Json;
 
 namespace RealismMod
 {
+
+    public class ConfigTemplate
+    {
+        public bool recoil_attachment_overhaul { get; set; }
+    }
+
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class Plugin : BaseUnityPlugin
     {
@@ -68,33 +75,51 @@ namespace RealismMod
         public static float currentVRecoilX;
         public static float currentVRecoilY;
 
-        public static Dictionary<Enum, Sprite> iconCache = new Dictionary<Enum, Sprite>();
-        private string modPath;
+        public static Dictionary<Enum, Sprite> IconCache = new Dictionary<Enum, Sprite>();
 
-        private void GetPath()
+        private string ModPath;
+        private string ConfigFilePath;
+        private string ConfigJson;
+        private ConfigTemplate ModConfig;
+        private bool IsConfigCorrect = true;
+
+        private void GetPaths()
         {
             var mod = RequestHandler.GetJson($"/RealismMod/GetInfo");
-            modPath = Json.Deserialize<string>(mod);
+            ModPath = Json.Deserialize<string>(mod);
+            ConfigFilePath = Path.Combine(ModPath, @"config\config.json");
         }
+
+        private void ConfigCheck()
+        {
+            ConfigJson = File.ReadAllText(ConfigFilePath);
+            ModConfig = JsonConvert.DeserializeObject<ConfigTemplate>(ConfigJson);
+            if (ModConfig.recoil_attachment_overhaul == false)
+            {
+                IsConfigCorrect = false;
+                Logger.LogError("WARNING: 'Recoil, Ballistics and Attachment Overhaul' MUST be enabled in the config in order to use this plugin! Patches have been disabled.");
+            }
+        }
+
         private void CacheIcons()
         {
-            iconCache.Add(ENewItemAttributeId.VerticalRecoil, Resources.Load<Sprite>("characteristics/icons/Ergonomics"));
-            iconCache.Add(ENewItemAttributeId.HorizontalRecoil, Resources.Load<Sprite>("characteristics/icons/Recoil Back"));
-            iconCache.Add(ENewItemAttributeId.Dispersion, Resources.Load<Sprite>("characteristics/icons/Velocity"));
-            iconCache.Add(ENewItemAttributeId.CameraRecoil, Resources.Load<Sprite>("characteristics/icons/SightingRange"));
-            iconCache.Add(ENewItemAttributeId.AutoROF, Resources.Load<Sprite>("characteristics/icons/bFirerate"));
-            iconCache.Add(ENewItemAttributeId.SemiROF, Resources.Load<Sprite>("characteristics/icons/bFirerate"));
-            iconCache.Add(ENewItemAttributeId.ReloadSpeed, Resources.Load<Sprite>("characteristics/icons/weapFireType"));
-            iconCache.Add(ENewItemAttributeId.FixSpeed, Resources.Load<Sprite>("characteristics/icons/icon_info_raidmoddable"));
-            iconCache.Add(ENewItemAttributeId.ChamberSpeed, Resources.Load<Sprite>("characteristics/icons/icon_info_raidmoddable"));
-            iconCache.Add(ENewItemAttributeId.AimSpeed, Resources.Load<Sprite>("characteristics/icons/SightingRange"));
-            iconCache.Add(ENewItemAttributeId.Firerate, Resources.Load<Sprite>("characteristics/icons/bFirerate"));
-            iconCache.Add(ENewItemAttributeId.Damage, Resources.Load<Sprite>("characteristics/icons/icon_info_bulletspeed"));
-            iconCache.Add(ENewItemAttributeId.Penetration, Resources.Load<Sprite>("characteristics/icons/armorClass"));
-            iconCache.Add(ENewItemAttributeId.ArmorDamage, Resources.Load<Sprite>("characteristics/icons/armorMaterial"));
-            iconCache.Add(ENewItemAttributeId.FragmentationChance, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
-            _ = LoadTexture(ENewItemAttributeId.Balance, Path.Combine(modPath, "res\\balance.png"));
-            _ = LoadTexture(ENewItemAttributeId.RecoilAngle, Path.Combine(modPath, "res\\recoilAngle.png"));
+            IconCache.Add(ENewItemAttributeId.VerticalRecoil, Resources.Load<Sprite>("characteristics/icons/Ergonomics"));
+            IconCache.Add(ENewItemAttributeId.HorizontalRecoil, Resources.Load<Sprite>("characteristics/icons/Recoil Back"));
+            IconCache.Add(ENewItemAttributeId.Dispersion, Resources.Load<Sprite>("characteristics/icons/Velocity"));
+            IconCache.Add(ENewItemAttributeId.CameraRecoil, Resources.Load<Sprite>("characteristics/icons/SightingRange"));
+            IconCache.Add(ENewItemAttributeId.AutoROF, Resources.Load<Sprite>("characteristics/icons/bFirerate"));
+            IconCache.Add(ENewItemAttributeId.SemiROF, Resources.Load<Sprite>("characteristics/icons/bFirerate"));
+            IconCache.Add(ENewItemAttributeId.ReloadSpeed, Resources.Load<Sprite>("characteristics/icons/weapFireType"));
+            IconCache.Add(ENewItemAttributeId.FixSpeed, Resources.Load<Sprite>("characteristics/icons/icon_info_raidmoddable"));
+            IconCache.Add(ENewItemAttributeId.ChamberSpeed, Resources.Load<Sprite>("characteristics/icons/icon_info_raidmoddable"));
+            IconCache.Add(ENewItemAttributeId.AimSpeed, Resources.Load<Sprite>("characteristics/icons/SightingRange"));
+            IconCache.Add(ENewItemAttributeId.Firerate, Resources.Load<Sprite>("characteristics/icons/bFirerate"));
+            IconCache.Add(ENewItemAttributeId.Damage, Resources.Load<Sprite>("characteristics/icons/icon_info_bulletspeed"));
+            IconCache.Add(ENewItemAttributeId.Penetration, Resources.Load<Sprite>("characteristics/icons/armorClass"));
+            IconCache.Add(ENewItemAttributeId.ArmorDamage, Resources.Load<Sprite>("characteristics/icons/armorMaterial"));
+            IconCache.Add(ENewItemAttributeId.FragmentationChance, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
+            _ = LoadTexture(ENewItemAttributeId.Balance, Path.Combine(ModPath, "res\\balance.png"));
+            _ = LoadTexture(ENewItemAttributeId.RecoilAngle, Path.Combine(ModPath, "res\\recoilAngle.png"));
         }
 
         private async Task LoadTexture(Enum id, string path)
@@ -111,148 +136,148 @@ namespace RealismMod
                 }
                 else
                 {
-                    // Get downloaded asset bundle
-                    //Log.Info($"[{modName}] Retrieved texture! {id.ToString()} from {path}");
                     Texture2D cachedTexture = DownloadHandlerTexture.GetContent(uwr);
-                    iconCache.Add(id, Sprite.Create(cachedTexture, new Rect(0, 0, cachedTexture.width, cachedTexture.height), new Vector2(0, 0)));
+                    IconCache.Add(id, Sprite.Create(cachedTexture, new Rect(0, 0, cachedTexture.width, cachedTexture.height), new Vector2(0, 0)));
                 }
             }
         }
 
         void Awake()
         {
-            string RecoilSettings= "1. Recoil Settings";
-            string WeapStatSettings = "2. Weapon Stat Settings";
-            string MiscSettings = "3. Misc. Settigns";
-            string AmmoSettings = "4. Ammo Stat Settings";
 
-            enableAmmoFirerateDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 5 }));
-         /*   enableAmmoDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 4 }));
-            enableAmmoFragDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Fragmentation Chance", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 3 }));
-            enableAmmoPenDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Penetration", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 2 }));
-            enableAmmoArmorDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Armor Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 1 }));*/
-
-            enableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 1 }));
-            enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 2 }));
-            enableMalfPatch = Config.Bind<bool>(MiscSettings, "Enable Inspectionless Malfuctions Patch", true, new ConfigDescription("Requires Restart. You Don't Need To Inspect A Malfunction In Order To Clear It.", null, new ConfigurationManagerAttributes { Order = 3 }));
-            enableSGMastering = Config.Bind<bool>(MiscSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 4 }));
-            enableBarrelFactor = Config.Bind<bool>(MiscSettings, "Enable Barrel Factor", true, new ConfigDescription("Requires Restart. Barrel Length Modifies The Damage, Penetration, Velocity, Fragmentation Chance, And Ballistic Coeficient Of Projectiles.", null, new ConfigurationManagerAttributes { Order = 5 }));
-
-            sensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Limit", 0.5f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction. 100% Means No Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 3 }));
-            sensResetRate = Config.Bind<float>(RecoilSettings, "Senisitivity Reset Rate", 1.2f, new ConfigDescription("Rate At Which Sensitivity Recovers After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 2 }));
-            sensChangeRate = Config.Bind<float>(RecoilSettings, "Sensitivity Change Rate", 0.82f, new ConfigDescription("Rate At Which Sensitivity Is Reduced While Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 1 }));
-
-            showBalance = Config.Bind<bool>(WeapStatSettings, "Show Balance Stat", true, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 5 }));
-            showCamRecoil = Config.Bind<bool>(WeapStatSettings, "Show Camera Recoil Stat", false, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 4 }));
-            showDispersion = Config.Bind<bool>(WeapStatSettings, "Show Dispersion Stat", false, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 3 }));
-            showRecoilAngle = Config.Bind<bool>(WeapStatSettings, "Show Recoil Angle Stat", true, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use..", null, new ConfigurationManagerAttributes { Order = 2 }));
-            showSemiROF = Config.Bind<bool>(WeapStatSettings, "Show Semi Auto ROF Stat", true, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 1 }));
-
-
-
-            if (enableProgramK.Value == true)
-            {
-                Helper.ProgramKEnabled = true;
-                Logger.LogInfo("Realism Mod: ProgramK Compatibiltiy Enabled!");
-            }
-
-            GetPath();
+            GetPaths();
+            ConfigCheck();
             CacheIcons();
 
-            //Stat assignment patches
-            new COIDeltaPatch().Enable();
-            new TotalShotgunDispersionPatch().Enable();
-            new GetDurabilityLossOnShotPatch().Enable();
-            new AutoFireRatePatch().Enable();
-            new SingleFireRatePatch().Enable();
-            new ErgoDeltaPatch().Enable();
-            new ErgoWeightPatch().Enable();
-            new method_5Patch().Enable();
-
-
-            new SyncWithCharacterSkillsPatch().Enable();
-            new UpdateWeaponVariablesPatch().Enable();
-            new SetAimingSlowdownPatch().Enable();
-
-            //sway and aim inertia
-            new method_17Patch().Enable();
-            new UpdateSwayFactorsPatch().Enable();
-            new OverweightPatch().Enable();
-
-            //Recoil Patches
-            new OnWeaponParametersChangedPatch().Enable();
-            new UpdateSensitivityPatch().Enable();
-            new AimingSensitivityPatch().Enable();
-            new ProcessPatch().Enable();
-            new ShootPatch().Enable();
-
-            //Aiming Patches + Reload Trigger
-            new AimingPatch().Enable();
-            new ToggleAimPatch().Enable();
-
-            //Malf Patches
-            if (enableMalfPatch.Value == true)
+            if (IsConfigCorrect == true)
             {
-                new IsKnownMalfTypePatch().Enable();
-            }
+                string RecoilSettings = "1. Recoil Settings";
+                string WeapStatSettings = "2. Weapon Stat Settings";
+                string MiscSettings = "3. Misc. Settigns";
+                string AmmoSettings = "4. Ammo Stat Settings";
 
-            //Reload Patches
-            new CanStartReloadPatch().Enable();
-            new ReloadMagPatch().Enable();
-            new QuickReloadMagPatch().Enable();
-            new ReloadWithAmmoPatch().Enable();
-            new ReloadBarrelsPatch().Enable();
-            new ReloadRevolverDrumPatch().Enable();
+                enableAmmoFirerateDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 5 }));
+                /*   enableAmmoDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 4 }));
+                   enableAmmoFragDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Fragmentation Chance", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 3 }));
+                   enableAmmoPenDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Penetration", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 2 }));
+                   enableAmmoArmorDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Armor Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 1 }));*/
 
-            new OnMagInsertedPatch().Enable();
-            new SetMagTypeCurrentPatch().Enable();
-            new SetMagTypeNewPatch().Enable();
-            new SetMagInWeaponPatch().Enable();
+                enableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 1 }));
+                enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 2 }));
+                enableMalfPatch = Config.Bind<bool>(MiscSettings, "Enable Inspectionless Malfuctions Patch", true, new ConfigDescription("Requires Restart. You Don't Need To Inspect A Malfunction In Order To Clear It.", null, new ConfigurationManagerAttributes { Order = 3 }));
+                enableSGMastering = Config.Bind<bool>(MiscSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 4 }));
+                enableBarrelFactor = Config.Bind<bool>(MiscSettings, "Enable Barrel Factor", true, new ConfigDescription("Requires Restart. Barrel Length Modifies The Damage, Penetration, Velocity, Fragmentation Chance, And Ballistic Coeficient Of Projectiles.", null, new ConfigurationManagerAttributes { Order = 5 }));
 
-            new RechamberSpeedPatch().Enable();
-            new SetMalfRepairSpeedPatch().Enable();
-            new SetBoltActionReloadPatch().Enable();
-            new CheckChamberPatch().Enable();
-            new SetSpeedParametersPatch().Enable();
-            new CheckAmmoPatch().Enable();
-            new SetHammerArmedPatch().Enable();
+                sensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Limit", 0.5f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction. 100% Means No Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 3 }));
+                sensResetRate = Config.Bind<float>(RecoilSettings, "Senisitivity Reset Rate", 1.2f, new ConfigDescription("Rate At Which Sensitivity Recovers After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 2 }));
+                sensChangeRate = Config.Bind<float>(RecoilSettings, "Sensitivity Change Rate", 0.82f, new ConfigDescription("Rate At Which Sensitivity Is Reduced While Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 1 }));
 
-            if (enableSGMastering.Value == true)
-            {
-                new SetWeaponLevelPatch().Enable();
-            }
+                showBalance = Config.Bind<bool>(WeapStatSettings, "Show Balance Stat", true, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 5 }));
+                showCamRecoil = Config.Bind<bool>(WeapStatSettings, "Show Camera Recoil Stat", false, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 4 }));
+                showDispersion = Config.Bind<bool>(WeapStatSettings, "Show Dispersion Stat", false, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 3 }));
+                showRecoilAngle = Config.Bind<bool>(WeapStatSettings, "Show Recoil Angle Stat", true, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use..", null, new ConfigurationManagerAttributes { Order = 2 }));
+                showSemiROF = Config.Bind<bool>(WeapStatSettings, "Show Semi Auto ROF Stat", true, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 1 }));
 
-            //Stat Display Patches
-            new ModConstructorPatch().Enable();
-            new WeaponConstructorPatch().Enable();
-            new HRecoilDisplayValuePatch().Enable();
-            new HRecoilDisplayDeltaPatch().Enable();
-            new VRecoilDisplayValuePatch().Enable();
-            new VRecoilDisplayDeltaPatch().Enable();
-            new ModVRecoilStatDisplayPatchFloat().Enable();
-            new ModVRecoilStatDisplayPatchString().Enable();
-            new ErgoDisplayDeltaPatch().Enable();
-            new ErgoDisplayValuePatch().Enable();
-            new COIDisplayDeltaPatch().Enable();
-            new COIDisplayValuePatch().Enable();
-            new FireRateDisplayStringPatch().Enable();
-            new GetCachedReadonlyQualitiesPatch().Enable();
-            new CenterOfImpactMOAPatch().Enable();
-            new ModErgoStatDisplayPatch().Enable();
+                if (enableProgramK.Value == true)
+                {
+                    Helper.ProgramKEnabled = true;
+                    Logger.LogInfo("Realism Mod: ProgramK Compatibiltiy Enabled!");
+                }
 
-            new GetAttributeIconPatches().Enable();
+                //Stat assignment patches
+                new COIDeltaPatch().Enable();
+                new TotalShotgunDispersionPatch().Enable();
+                new GetDurabilityLossOnShotPatch().Enable();
+                new AutoFireRatePatch().Enable();
+                new SingleFireRatePatch().Enable();
+                new ErgoDeltaPatch().Enable();
+                new ErgoWeightPatch().Enable();
+                new method_5Patch().Enable();
 
-            //Ballistics
-            if (enableBarrelFactor.Value == true)
-            {
-                new CreateShotPatch().Enable();
+                new SyncWithCharacterSkillsPatch().Enable();
+                new UpdateWeaponVariablesPatch().Enable();
+                new SetAimingSlowdownPatch().Enable();
+
+                //sway and aim inertia
+                new method_17Patch().Enable();
+                new UpdateSwayFactorsPatch().Enable();
+                new OverweightPatch().Enable();
+
+                //Recoil Patches
+                new OnWeaponParametersChangedPatch().Enable();
+                new UpdateSensitivityPatch().Enable();
+                new AimingSensitivityPatch().Enable();
+                new ProcessPatch().Enable();
+                new ShootPatch().Enable();
+
+                //Aiming Patches + Reload Trigger
+                new AimingPatch().Enable();
+                new ToggleAimPatch().Enable();
+
+                //Malf Patches
+                if (enableMalfPatch.Value == true)
+                {
+                    new IsKnownMalfTypePatch().Enable();
+                }
+
+                //Reload Patches
+                new CanStartReloadPatch().Enable();
+                new ReloadMagPatch().Enable();
+                new QuickReloadMagPatch().Enable();
+                new ReloadWithAmmoPatch().Enable();
+                new ReloadBarrelsPatch().Enable();
+                new ReloadRevolverDrumPatch().Enable();
+
+                new OnMagInsertedPatch().Enable();
+                new SetMagTypeCurrentPatch().Enable();
+                new SetMagTypeNewPatch().Enable();
+                new SetMagInWeaponPatch().Enable();
+
+                new RechamberSpeedPatch().Enable();
+                new SetMalfRepairSpeedPatch().Enable();
+                new SetBoltActionReloadPatch().Enable();
+                new CheckChamberPatch().Enable();
+                new SetSpeedParametersPatch().Enable();
+                new CheckAmmoPatch().Enable();
+                new SetHammerArmedPatch().Enable();
+
+                if (enableSGMastering.Value == true)
+                {
+                    new SetWeaponLevelPatch().Enable();
+                }
+
+                //Stat Display Patches
+                new ModConstructorPatch().Enable();
+                new WeaponConstructorPatch().Enable();
+                new HRecoilDisplayValuePatch().Enable();
+                new HRecoilDisplayDeltaPatch().Enable();
+                new VRecoilDisplayValuePatch().Enable();
+                new VRecoilDisplayDeltaPatch().Enable();
+                new ModVRecoilStatDisplayPatchFloat().Enable();
+                new ModVRecoilStatDisplayPatchString().Enable();
+                new ErgoDisplayDeltaPatch().Enable();
+                new ErgoDisplayValuePatch().Enable();
+                new COIDisplayDeltaPatch().Enable();
+                new COIDisplayValuePatch().Enable();
+                new FireRateDisplayStringPatch().Enable();
+                new GetCachedReadonlyQualitiesPatch().Enable();
+                new CenterOfImpactMOAPatch().Enable();
+                new ModErgoStatDisplayPatch().Enable();
+
+                new GetAttributeIconPatches().Enable();
+
+                //Ballistics
+                if (enableBarrelFactor.Value == true)
+                {
+                    new CreateShotPatch().Enable();
+                }
             }
         }
 
 
         void Update()
         {
-            if (Helper.CheckIsReady())
+            if (Helper.CheckIsReady() && IsConfigCorrect == true)
             {
                 Helper.IsReady = true;
                 if (isAiming == true)

@@ -170,9 +170,6 @@ namespace RealismMod
                     float displacementModifier = 0.4f;//lower = less drag
                     float aimIntensity = __instance.IntensityByAiming * 0.4f;
 
-                    Logger.LogWarning(ergoWeight);
-                    Logger.LogWarning(weightFactor);
-
                     if (WeaponProperties.HasShoulderContact == false && firearmController.Item.WeapClass != "pistol")
                     {
                         aimIntensity = __instance.IntensityByAiming * 1f;

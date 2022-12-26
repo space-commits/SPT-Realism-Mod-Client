@@ -17,12 +17,12 @@ namespace RealismMod
         private static bool Prefix(ref Sprite __result, Enum id)
         {
 
-            if (id == null || !Plugin.iconCache.ContainsKey(id))
+            if (id == null || !Plugin.IconCache.ContainsKey(id))
             {
                 return true;
             }
 
-            Sprite sprite = Plugin.iconCache[id];
+            Sprite sprite = Plugin.IconCache[id];
 
             if (sprite != null)
             {
