@@ -160,6 +160,11 @@ namespace RealismMod
                     __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX * 1.35f;
                     __instance.RecoilStrengthXy.y = Plugin.currentVRecoilY * 1.35f;
                 }
+                else if (Plugin.shotCount > 1)
+                {
+                    __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX * 0.63f;
+                    __instance.RecoilStrengthXy.y = Plugin.currentVRecoilY * 0.63f;
+                }
                 else
                 {
                     __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX;
@@ -212,7 +217,15 @@ namespace RealismMod
                 {
                     __instance.HandsContainer.Recoil.Damping = Plugin.currentDamping;
                     __instance.HandsContainer.HandsPosition.Damping = WeaponProperties.TotalRecoilHandDamping;
-                    __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.currentConvergence;
+
+                    if (Plugin.shotCount > 1)
+                    {
+                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.currentConvergence * 0.6f;
+                    }
+                    else
+                    {
+                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.currentConvergence;
+                    }
                 }
             }
         }
