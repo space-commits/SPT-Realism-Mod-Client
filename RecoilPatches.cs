@@ -211,6 +211,7 @@ namespace RealismMod
                 if (!player.IsAI)
                 {
                     __instance.HandsContainer.Recoil.Damping = Plugin.currentDamping;
+                    __instance.HandsContainer.HandsPosition.Damping = WeaponProperties.TotalRecoilHandDamping;
                     __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.currentConvergence;
                 }
             }
