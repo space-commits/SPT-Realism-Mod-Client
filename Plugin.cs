@@ -10,6 +10,7 @@ using static RealismMod.Attributes;
 using System.Threading.Tasks;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
+using static RealismMod.ArmorPatches;
 
 namespace RealismMod
 {
@@ -40,6 +41,7 @@ namespace RealismMod
         public static ConfigEntry<bool> enableAmmoArmorDamageDisp { get; set; }
         public static ConfigEntry<bool> enableAmmoFragDisp { get; set; }
         public static ConfigEntry<bool> enableBarrelFactor { get; set; }
+        public static ConfigEntry<bool> enableRealArmorClass { get; set; }
 
         public static bool isFiring = false;
         public static bool isAiming;
@@ -167,6 +169,7 @@ namespace RealismMod
                 enableMalfPatch = Config.Bind<bool>(MiscSettings, "Enable Inspectionless Malfuctions Patch", true, new ConfigDescription("Requires Restart. You Don't Need To Inspect A Malfunction In Order To Clear It.", null, new ConfigurationManagerAttributes { Order = 3 }));
                 enableSGMastering = Config.Bind<bool>(MiscSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 4 }));
                 enableBarrelFactor = Config.Bind<bool>(MiscSettings, "Enable Barrel Factor", true, new ConfigDescription("Requires Restart. Barrel Length Modifies The Damage, Penetration, Velocity, Fragmentation Chance, And Ballistic Coeficient Of Projectiles.", null, new ConfigurationManagerAttributes { Order = 5 }));
+                enableRealArmorClass = Config.Bind<bool>(MiscSettings, "Show Real Armor Class", false, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 6 }));
 
                 sensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Limit", 0.5f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction. 100% Means No Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 3 }));
                 sensResetRate = Config.Bind<float>(RecoilSettings, "Senisitivity Reset Rate", 1.2f, new ConfigDescription("Rate At Which Sensitivity Recovers After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 2 }));
@@ -271,6 +274,18 @@ namespace RealismMod
                 {
                     new CreateShotPatch().Enable();
                 }
+
+                //Armor
+                if (enableRealArmorClass.Value == true)
+                {
+                    new ArmorClassDisplayPatch().Enable();
+                }
+                new ArmorComponentPatch().Enable(); 
+
+                //Player
+                new EnduranceSprintActionPatch().Enable();
+                new EnduranceMovementActionPatch().Enable();
+
             }
         }
 

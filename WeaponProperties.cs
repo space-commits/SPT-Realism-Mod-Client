@@ -236,7 +236,7 @@ namespace RealismMod
 
         public static float AimSpeedModifier = 1f;
 
-        public static float GlobalAimSpeedModifier = 0.8f;
+        public static float GlobalAimSpeedModifier = 0.87f;
 
         public static float AimSpeed = 1f;
 

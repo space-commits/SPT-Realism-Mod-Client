@@ -24,7 +24,7 @@ namespace RealismMod
   
                 if (!player.IsAI)
                 {
-                    PlayerUpdate(__instance, player);
+                    PlayerUpdate(__instance, player); 
                     FaceShieldComponent component = player.FaceShieldObserver.Component;
                     bool isOn = component != null && (component.Togglable == null || component.Togglable.On);
                     if (isOn && !WeaponProperties.WeaponCanFSADS && !FaceShieldProperties.AllowsADS(component.Item))
@@ -40,6 +40,7 @@ namespace RealismMod
             }
         }
 
+        //This is a bad place to put it, need to find another method that runs in update
         public static void PlayerUpdate(EFT.Player.FirearmController __instance, Player player)
         {
             Helper.IsInReloadOpertation = __instance.IsInReloadOperation();

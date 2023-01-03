@@ -13,7 +13,6 @@ namespace RealismMod
 
     public class SingleFireRatePatch : ModulePatch
     {
-
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Weapon).GetMethod("get_SingleFireRate", BindingFlags.Instance | BindingFlags.Public);
@@ -37,7 +36,6 @@ namespace RealismMod
 
     public class AutoFireRatePatch : ModulePatch
     {
-
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Weapon).GetMethod("get_FireRate", BindingFlags.Instance | BindingFlags.Public);
@@ -61,7 +59,6 @@ namespace RealismMod
 
     public class method_5Patch : ModulePatch
     {
-
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Player.FirearmController).GetMethod("method_5", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -87,7 +84,6 @@ namespace RealismMod
 
     public class ErgoDeltaPatch : ModulePatch
     {
-
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Weapon).GetMethod("get_ErgonomicsDelta", BindingFlags.Instance | BindingFlags.Public);
@@ -119,7 +115,6 @@ namespace RealismMod
 
         public float MagDelta(ref Weapon __instance)
         {
- 
             float totalWeight = __instance.GetSingleItemTotalWeight();
             string weapType = WeaponProperties.WeaponType(__instance);
             string weapOpType = WeaponProperties.OperationType(__instance);

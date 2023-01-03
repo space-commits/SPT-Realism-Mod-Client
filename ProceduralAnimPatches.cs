@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using Diz.Skinning;
 
 namespace RealismMod
 {
@@ -125,20 +126,28 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_7").SetValue(__instance, newAimSpeed);
 
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * PlayerProperties.StrengthSkillAimBuff;
-                    float ergoWeightFactor = (ergoWeight / 250) + 1f;
-                    float breathIntensity = Mathf.Min(0.64f * ergoWeightFactor, 1.15f);
-                    float handsIntensity = Mathf.Min(0.59f * ergoWeightFactor, 1.15f);
+                    float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 7f);
+                    float breathIntensity;
+                    float handsIntensity;
 
                     if (WeaponProperties.HasShoulderContact == false)
                     {
-                        breathIntensity = Mathf.Min(0.9f * ergoWeightFactor, 1.25f);
-                        handsIntensity = Mathf.Min(0.9f * ergoWeightFactor, 1.25f);
+                        breathIntensity = Mathf.Min(0.75f * ergoWeightFactor, 0.9f);
+                        handsIntensity = Mathf.Min(0.75f * ergoWeightFactor, 0.9f);
                     }
-                    if (firearmController.Item.WeapClass == "pistol" && WeaponProperties.HasShoulderContact != true)
+                    else if (firearmController.Item.WeapClass == "pistol" && WeaponProperties.HasShoulderContact != true)
                     {
-                        breathIntensity = Mathf.Min(0.78f * ergoWeightFactor, 1.25f);
-                        handsIntensity = Mathf.Min(0.73f * ergoWeightFactor, 1.25f);
+                        breathIntensity = Mathf.Min(0.58f * ergoWeightFactor, 0.75f);
+                        handsIntensity = Mathf.Min(0.56f * ergoWeightFactor, 0.75f);
                     }
+                    else
+                    {
+                        breathIntensity = Mathf.Min(0.55f * ergoWeightFactor, 0.85f);
+                        handsIntensity = Mathf.Min(0.50f * ergoWeightFactor, 0.85f);
+                    }
+
+                    Logger.LogWarning("breathIntensity" + breathIntensity);
+                    Logger.LogWarning("handsIntensity" + handsIntensity);
 
                     __instance.Breath.Intensity = breathIntensity * __instance.IntensityByPoseLevel; //both aim sway and up and down breathing
                     __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = handsIntensity * handsIntensity); //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down.
