@@ -146,9 +146,6 @@ namespace RealismMod
                         handsIntensity = Mathf.Min(0.50f * ergoWeightFactor, 0.85f);
                     }
 
-                    Logger.LogWarning("breathIntensity" + breathIntensity);
-                    Logger.LogWarning("handsIntensity" + handsIntensity);
-
                     __instance.Breath.Intensity = breathIntensity * __instance.IntensityByPoseLevel; //both aim sway and up and down breathing
                     __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = handsIntensity * handsIntensity); //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down.
                 }

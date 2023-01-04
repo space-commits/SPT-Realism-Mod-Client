@@ -105,6 +105,8 @@ namespace RealismMod
 
         private void CacheIcons()
         {
+            IconCache.Add(ENewItemAttributeId.ShotDispersion, Resources.Load<Sprite>("characteristics/icons/Velocity"));
+            IconCache.Add(ENewItemAttributeId.BluntThroughput, Resources.Load<Sprite>("characteristics/icons/armorMaterial"));
             IconCache.Add(ENewItemAttributeId.VerticalRecoil, Resources.Load<Sprite>("characteristics/icons/Ergonomics"));
             IconCache.Add(ENewItemAttributeId.HorizontalRecoil, Resources.Load<Sprite>("characteristics/icons/Recoil Back"));
             IconCache.Add(ENewItemAttributeId.Dispersion, Resources.Load<Sprite>("characteristics/icons/Velocity"));
@@ -208,7 +210,6 @@ namespace RealismMod
 
                 //Recoil Patches
                 new OnWeaponParametersChangedPatch().Enable();
-                new UpdateSensitivityPatch().Enable();
                 new AimingSensitivityPatch().Enable();
                 new ProcessPatch().Enable();
                 new ShootPatch().Enable();
@@ -280,7 +281,7 @@ namespace RealismMod
                 {
                     new ArmorClassDisplayPatch().Enable();
                 }
-                new ArmorComponentPatch().Enable(); 
+                new ArmorComponentPatch().Enable();
 
                 //Player
                 new EnduranceSprintActionPatch().Enable();

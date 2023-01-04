@@ -170,6 +170,8 @@ namespace RealismMod
 
         public static bool HasShoulderContact = true;
 
+        public static float ShotDispDelta = 0;
+
         public static float COIDelta = 0;
 
         public static float CamRecoil = 0;

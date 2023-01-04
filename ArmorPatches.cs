@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Linq;
 using EFT.InventoryLogic;
 using System.Collections.Generic;
+using static RealismMod.Attributes;
 
 namespace RealismMod
 {
@@ -61,9 +62,9 @@ namespace RealismMod
             private static void PatchPostfix(Item item, GInterface205 template, RepairableComponent repairable, ArmorComponent __instance)
             {
                 List<ItemAttributeClass> bluntAtt = __instance.Item.Attributes;
-                ItemAttributeClass bluntAttClass = new ItemAttributeClass(EItemAttributeId.ArmorMaterial);
-                bluntAttClass.Name = EItemAttributeId.ArmorMaterial.GetName();
-                bluntAttClass.StringValue = () => __instance.BluntThroughput.ToString();
+                ItemAttributeClass bluntAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.BluntThroughput);
+                bluntAttClass.Name = ENewItemAttributeId.BluntThroughput.GetName();
+                bluntAttClass.StringValue = () => Math.Round(__instance.BluntThroughput * 100).ToString() + " %";
                 bluntAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                 bluntAtt.Add(bluntAttClass);
             }

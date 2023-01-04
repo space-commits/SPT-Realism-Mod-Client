@@ -56,7 +56,8 @@ namespace RealismMod
             Penetration,
             ArmorDamage,
             FragmentationChance,
-            BluntThroughput
+            BluntThroughput,
+            ShotDispersion
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -101,6 +102,8 @@ namespace RealismMod
                     return "FRAGMENTATION CHANCE";
                 case ENewItemAttributeId.BluntThroughput:
                     return "BLUNT THROUGHPUT";
+                case ENewItemAttributeId.ShotDispersion:
+                    return "SHOT SPREAD REDUCTION";
                 default:
                     return id.ToString();
             }

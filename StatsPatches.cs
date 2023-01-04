@@ -238,7 +238,7 @@ namespace RealismMod
             WeaponProperties.ErgonomicWeight = ergonomicWeight;
             WeaponProperties.TotalRecoilDamping = totalRecoilDamping;
             WeaponProperties.TotalRecoilHandDamping = totalRecoilHandDamping;
-            WeaponProperties.COIDelta = totalCOIDelta * -1f;
+            WeaponProperties.COIDelta = totalCOIDelta;
             WeaponProperties.PureErgoDelta = pureErgoDelta;
 
             return totalErgoDelta;
@@ -280,6 +280,9 @@ namespace RealismMod
             float baseErgo = __instance.Template.Ergonomics;
             float currentErgo = baseErgo;
             float pureErgo = baseErgo;
+
+            float baseShotDisp = __instance.ShotgunDispersionBase;
+            float currentShotDisp = baseShotDisp;
 
             float currentTorque = 0f;
 
@@ -327,11 +330,12 @@ namespace RealismMod
                     float modChamber = AttachmentProperties.ChamberSpeed(__instance.Mods[i]);
                     float modAim = AttachmentProperties.AimSpeed(__instance.Mods[i]);
                     float modFix = AttachmentProperties.FixSpeed(__instance.Mods[i]);
+                    float modShotDisp = AttachmentProperties.ModShotDispersion(__instance.Mods[i]);
                     string modType = AttachmentProperties.ModType(__instance.Mods[i]);
                     string position = StatCalc.GetModPosition(__instance.Mods[i], weapType, weapOpType, modType);
 
                     StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber);
-                    StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, false, __instance.WeapClass, ref pureErgo);
+                    StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp);
                 }
             }
             if (weaponAllowsFSADS == true || stockAllowsFSADS == true)
@@ -359,6 +363,7 @@ namespace RealismMod
             WeaponProperties.SemiFireRate = Mathf.Max(200, (int)currentSemiROF);
             WeaponProperties.SDTotalCOI = currentCOI;
             WeaponProperties.SDPureErgo = pureErgo;
+            WeaponProperties.ShotDispDelta = (baseShotDisp - currentShotDisp) / (baseShotDisp * -1f);
 
         }
     }
@@ -386,6 +391,7 @@ namespace RealismMod
         }
     }
 
+
     public class TotalShotgunDispersionPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -398,7 +404,7 @@ namespace RealismMod
         {
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
-                float shotDispLessAmmo = __instance.ShotgunDispersionBase * (1f + __instance.CenterOfImpactDelta);
+                float shotDispLessAmmo = __instance.ShotgunDispersionBase * (1f + WeaponProperties.ShotDispDelta);
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
                 float totalShotDisp = shotDispLessAmmo * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
 
