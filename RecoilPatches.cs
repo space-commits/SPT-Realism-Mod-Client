@@ -5,8 +5,8 @@ using EFT.InventoryLogic;
 using HarmonyLib;
 using System.Reflection;
 using UnityEngine;
-using static EFT.Player;
 using Random = UnityEngine.Random;
+using System;
 
 namespace RealismMod
 {
@@ -55,29 +55,37 @@ namespace RealismMod
                 __instance.ShotVals[3].Intensity = cameraRecoil;
                 __instance.ShotVals[4].Intensity = -cameraRecoil;
 
-                Plugin.startingCamRecoilX = cameraRecoil;
-                Plugin.startingCamRecoilY = -cameraRecoil;
-                Plugin.currentCamRecoilX = cameraRecoil;
-                Plugin.currentCamRecoilY = -cameraRecoil;
+                Plugin.startingCamRecoilX = (float)Math.Round(cameraRecoil, 4);
+                Plugin.startingCamRecoilY = (float)Math.Round(-cameraRecoil, 4);
+                Plugin.currentCamRecoilX = Plugin.startingCamRecoilX;
+                Plugin.currentCamRecoilY = Plugin.startingCamRecoilY;
 
-                Plugin.startingVRecoilX = __instance.RecoilStrengthXy.x;
-                Plugin.startingVRecoilY = __instance.RecoilStrengthXy.y;
+                Plugin.startingVRecoilX = (float)Math.Round(__instance.RecoilStrengthXy.x, 3);
+                Plugin.startingVRecoilY = (float)Math.Round(__instance.RecoilStrengthXy.y, 3);
                 Plugin.currentVRecoilX = Plugin.startingVRecoilX;
                 Plugin.currentVRecoilY = Plugin.startingVRecoilY;
 
-                Plugin.startingConvergence = wep.Template.Convergence * p.GlobalsAiming.RecoilConvergenceMult;
+                Plugin.startingHRecoilX = (float)Math.Round(__instance.RecoilStrengthZ.x, 3);
+                Plugin.startingHRecoilY = (float)Math.Round(__instance.RecoilStrengthZ.y, 3);
+                Plugin.currentHRecoilX = Plugin.startingHRecoilX;
+                Plugin.currentHRecoilY = Plugin.startingHRecoilY;
+
+                Plugin.startingConvergence = (float)Math.Round(wep.Template.Convergence * p.GlobalsAiming.RecoilConvergenceMult, 2);
                 Plugin.currentConvergence = Plugin.startingConvergence;
-                Plugin.convergenceProporitonK = Plugin.startingConvergence * Plugin.startingVRecoilX;
+                Plugin.convergenceProporitonK = (float)Math.Round(Plugin.startingConvergence * Plugin.startingVRecoilX, 2);
 
-                Plugin.startingRecoilAngle = angle;
+                Plugin.startingRecoilAngle = (float)Math.Round(angle, 2);
 
-                Plugin.startingDispersion = buffFactoredDispersion;
+                Plugin.startingDispersion = (float)Math.Round(buffFactoredDispersion, 2);
                 Plugin.currentDispersion = Plugin.startingDispersion;
-                Plugin.dispersionProportionK = Plugin.startingDispersion * Plugin.startingVRecoilX;
-
-                Plugin.startingDamping = WeaponProperties.TotalRecoilDamping;
+/*                Plugin.dispersionProportionK = (float)Math.Round(Plugin.startingDispersion * Plugin.startingVRecoilX, 2);
+*/
+                Plugin.startingDamping = (float)Math.Round(WeaponProperties.TotalRecoilDamping, 3);
                 Plugin.currentDamping = Plugin.startingDamping;
-                Plugin.dampingProporitonK = Plugin.startingDamping * Plugin.startingVRecoilX;
+
+                Plugin.startingHandDamping = (float)Math.Round(WeaponProperties.TotalRecoilHandDamping, 3);
+                Plugin.currentHandDamping = Plugin.startingHandDamping;
+
 
                 return false;
             }
@@ -107,6 +115,8 @@ namespace RealismMod
                 Plugin.isFiring = true;
                 Plugin.shotCount++;
 
+                Logger.LogWarning("Shot Count: " + Plugin.shotCount);
+
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
                 float buffFactoredDispersion = Plugin.currentDispersion * str * PlayerProperties.RecoilInjuryMulti;
@@ -122,16 +132,22 @@ namespace RealismMod
                 {
                     __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX * 1.35f;
                     __instance.RecoilStrengthXy.y = Plugin.currentVRecoilY * 1.35f;
+                    __instance.RecoilStrengthZ.x = Plugin.currentHRecoilX * 1.35f;
+                    __instance.RecoilStrengthZ.y = Plugin.currentHRecoilY * 1.35f;
                 }
                 else if (Plugin.shotCount > 1)
                 {
                     __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX * 0.63f;
                     __instance.RecoilStrengthXy.y = Plugin.currentVRecoilY * 0.63f;
+                    __instance.RecoilStrengthZ.x = Plugin.currentHRecoilX * 0.6f;
+                    __instance.RecoilStrengthZ.y = Plugin.currentHRecoilY * 0.6f;
                 }
                 else
                 {
                     __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX;
                     __instance.RecoilStrengthXy.y = Plugin.currentVRecoilY;
+                    __instance.RecoilStrengthZ.x = Plugin.currentHRecoilX;
+                    __instance.RecoilStrengthZ.y = Plugin.currentHRecoilY;
                 }
 
                 __instance.ShotVals[3].Intensity = Plugin.currentCamRecoilX * str * PlayerProperties.RecoilInjuryMulti;
@@ -178,7 +194,7 @@ namespace RealismMod
                 if (!player.IsAI)
                 {
                     __instance.HandsContainer.Recoil.Damping = Plugin.currentDamping;
-                    __instance.HandsContainer.HandsPosition.Damping = WeaponProperties.TotalRecoilHandDamping;
+                    __instance.HandsContainer.HandsPosition.Damping = Plugin.currentHandDamping;
 
                     if (Plugin.shotCount > 1)
                     {

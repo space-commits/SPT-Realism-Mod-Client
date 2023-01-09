@@ -257,6 +257,10 @@ namespace RealismMod
         public static float VRecoilResetRate = 0.91f;
         public static float VRecoilLimit = 10;
 
+        public static float HRecoilChangeRate = 1.005f;
+        public static float HRecoilResetRate = 0.91f;
+        public static float HRecoilLimit = 10;
+
         public static float DampingChangeRate = 0.98f;
         public static float DampingResetRate = 1.07f;
         public static float DampingLimit = 0.5f;

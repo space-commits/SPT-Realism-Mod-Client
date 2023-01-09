@@ -152,6 +152,18 @@ namespace RealismMod
                     __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = handsIntensity * handsIntensity); //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down.
                 }
             }
+            else
+            {
+                if (__instance.PointOfView == EPointOfView.FirstPerson)
+                {
+                    int AimIndex = (int)AccessTools.Property(typeof(EFT.Animations.ProceduralWeaponAnimation), "AimIndex").GetValue(__instance);
+                    if (!__instance.Sprint && AimIndex < __instance.ScopeAimTransforms.Count)
+                    {
+                        __instance.Breath.Intensity = 0.5f * __instance.IntensityByPoseLevel; //both aim sway and up and down breathing
+                        __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = 0.5f * 0.5f);
+                    }
+                }
+            }
         }
     }
 

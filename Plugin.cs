@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
 using static RealismMod.ArmorPatches;
+using BepInEx.Bootstrap;
 
 namespace RealismMod
 {
@@ -43,9 +44,6 @@ namespace RealismMod
         public static ConfigEntry<bool> enableBarrelFactor { get; set; }
         public static ConfigEntry<bool> enableRealArmorClass { get; set; }
 
-        //exposed sens multi for bridge between this mod and Uniform Aim
-        public static float bridge_sens = 1f;
-
         public static bool isFiring = false;
         public static bool isAiming;
         public static float timer = 0.0f;
@@ -56,7 +54,7 @@ namespace RealismMod
         public static float startingRecoilAngle;
 
         public static float startingSens;
-        public static float currentSens;
+        public static float currentSens = startingSens;
 
         public static float startingDispersion;
         public static float currentDispersion;
@@ -64,7 +62,9 @@ namespace RealismMod
 
         public static float startingDamping;
         public static float currentDamping;
-        public static float dampingProporitonK;
+
+        public static float startingHandDamping;
+        public static float currentHandDamping;
 
         public static float startingConvergence;
         public static float currentConvergence;
@@ -80,6 +80,11 @@ namespace RealismMod
         public static float currentVRecoilX;
         public static float currentVRecoilY;
 
+        public static float startingHRecoilX;
+        public static float startingHRecoilY;
+        public static float currentHRecoilX;
+        public static float currentHRecoilY;
+
         public static Dictionary<Enum, Sprite> IconCache = new Dictionary<Enum, Sprite>();
 
         private string ModPath;
@@ -87,6 +92,8 @@ namespace RealismMod
         private string ConfigJson;
         private ConfigTemplate ModConfig;
         private bool IsConfigCorrect = true;
+
+        public static bool isUniformAimPresent = Chainloader.PluginInfos.ContainsKey("notGreg.UniformAim");
 
         private void GetPaths()
         {
@@ -213,10 +220,15 @@ namespace RealismMod
 
                 //Recoil Patches
                 new OnWeaponParametersChangedPatch().Enable();
-                new AimingSensitivityPatch().Enable();
                 new ProcessPatch().Enable();
                 new ShootPatch().Enable();
-                new UpdateSensitivityPatch().Enable();
+                new AimingSensitivityPatch().Enable();
+  
+
+                if (isUniformAimPresent == false)
+                {
+                    new UpdateSensitivityPatch().Enable();
+                }
 
                 //Aiming Patches + Reload Trigger
                 new AimingPatch().Enable();
@@ -308,167 +320,137 @@ namespace RealismMod
                     {
                         if (shotCount >= 1 && shotCount <= 3)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
-                            {
-                                currentVRecoilX *= (float)Math.Round(1.13f, 3);
-                                currentVRecoilY *= (float)Math.Round(1.13f, 3);
-                            }
-                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
-                            {
-                                currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
-                            }
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.13f, 3), currentVRecoilX, startingVRecoilX * WeaponProperties.VRecoilLimit);
+                            currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.13f, 3), currentVRecoilY, startingVRecoilY * WeaponProperties.VRecoilLimit);
+
+                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.12f, 3), currentHRecoilX, startingHRecoilX * WeaponProperties.HRecoilLimit);
+                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.13f, 3), currentHRecoilY, startingHRecoilY * WeaponProperties.HRecoilLimit);
+
+                            currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * WeaponProperties.ConvergenceLimit, currentConvergence);
+
                         }
                         if (shotCount >= 4 && shotCount <= 5)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
-                            {
-                                currentVRecoilX *= (float)Math.Round(1.125f, 3);
-                                currentVRecoilY *= (float)Math.Round(1.125f, 3);
-                            }
-                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
-                            {
-                                currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
-                            }
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.125f, 3), currentVRecoilX, startingVRecoilX * WeaponProperties.VRecoilLimit);
+                            currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.125f, 3), currentVRecoilY, startingVRecoilY * WeaponProperties.VRecoilLimit);
+
+                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.125f, 3), currentHRecoilX, startingHRecoilX * WeaponProperties.HRecoilLimit);
+                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.125f, 3), currentHRecoilY, startingHRecoilY * WeaponProperties.HRecoilLimit);
+
+                            currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * WeaponProperties.ConvergenceLimit, currentConvergence);
+
                         }
                         if (shotCount > 5 && shotCount <= 7)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
-                            {
-                                currentVRecoilX *= (float)Math.Round(1.1f, 3);
-                                currentVRecoilY *= (float)Math.Round(1.1f, 3);
-                            }
-                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
-                            {
-                                currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
-                            }
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.1f, 3), currentVRecoilX, startingVRecoilX * WeaponProperties.VRecoilLimit);
+                            currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.1f, 3), currentVRecoilY, startingVRecoilY * WeaponProperties.VRecoilLimit);
+
+                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.1f, 3), currentHRecoilX, startingHRecoilX * WeaponProperties.HRecoilLimit);
+                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.1f, 3), currentHRecoilY, startingHRecoilY * WeaponProperties.HRecoilLimit);
+
+                            currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * WeaponProperties.ConvergenceLimit, currentConvergence);
+
                         }
                         if (shotCount > 8 && shotCount <= 10)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
-                            {
-                                currentVRecoilX *= (float)Math.Round(1.08f, 3);
-                                currentVRecoilY *= (float)Math.Round(1.08f, 3);
-                            }
-                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
-                            {
-                                currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
-                            }
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.08f, 3), currentVRecoilX, startingVRecoilX * WeaponProperties.VRecoilLimit);
+                            currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.08f, 3), currentVRecoilY, startingVRecoilY * WeaponProperties.VRecoilLimit);
+
+                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.07f, 3), currentHRecoilX, startingHRecoilX * WeaponProperties.HRecoilLimit);
+                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.07f, 3), currentHRecoilY, startingHRecoilY * WeaponProperties.HRecoilLimit);
+
+                            currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * WeaponProperties.ConvergenceLimit, currentConvergence);
                         }
                         if (shotCount > 10 && shotCount <= 15)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
-                            {
-                                currentVRecoilX *= (float)Math.Round(1.05f, 3);
-                                currentVRecoilY *= (float)Math.Round(1.05f, 3);
-                            }
-                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
-                            {
-                                currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
-                            }
-                            if (currentDamping > startingDamping * WeaponProperties.DampingLimit)
-                            {
-                                currentDamping *= (float)Math.Round(0.98f, 3);
-                            }
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.05f, 3), currentVRecoilX, startingVRecoilX * WeaponProperties.VRecoilLimit);
+                            currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.05f, 3), currentVRecoilY, startingVRecoilY * WeaponProperties.VRecoilLimit);
+
+                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.04f, 3), currentHRecoilX, startingHRecoilX * WeaponProperties.HRecoilLimit);
+                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.04f, 3), currentHRecoilY, startingHRecoilY * WeaponProperties.HRecoilLimit);
+
+                            currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * WeaponProperties.ConvergenceLimit, currentConvergence);
+
+                            currentDamping = Mathf.Clamp((float)Math.Round(currentDamping * 0.98f, 3), startingDamping * WeaponProperties.DampingLimit, currentDamping);
+                            currentHandDamping = Mathf.Clamp((float)Math.Round(currentHandDamping * 0.98f, 3), startingHandDamping * WeaponProperties.DampingLimit, currentHandDamping);
+
                         }
 
                         if (shotCount > 15 && shotCount <= 20)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
-                            {
-                                currentVRecoilX *= (float)Math.Round(1.03f, 3);
-                                currentVRecoilY *= (float)Math.Round(1.03f, 3);
-                            }
-                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
-                            {
-                                currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
-                            }
-                            if (currentDamping > startingDamping * WeaponProperties.DampingLimit)
-                            {
-                                currentDamping *= (float)Math.Round(0.98f, 3);
-                            }
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.03f, 3), currentVRecoilX, startingVRecoilX * WeaponProperties.VRecoilLimit);
+                            currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.03f, 3), currentVRecoilY, startingVRecoilY * WeaponProperties.VRecoilLimit);
+
+                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.02f, 3), currentHRecoilX, startingHRecoilX * WeaponProperties.HRecoilLimit);
+                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.02f, 3), currentHRecoilY, startingHRecoilY * WeaponProperties.HRecoilLimit);
+
+                            currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * WeaponProperties.ConvergenceLimit, currentConvergence);
+
+                            currentDamping = Mathf.Clamp((float)Math.Round(currentDamping * 0.98f, 3), startingDamping * WeaponProperties.DampingLimit, currentDamping);
+                            currentHandDamping = Mathf.Clamp((float)Math.Round(currentHandDamping * 0.98f, 3), startingHandDamping * WeaponProperties.DampingLimit, currentHandDamping);
                         }
 
                         if (shotCount > 20 && shotCount <= 25)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
-                            {
-                                currentVRecoilX *= (float)Math.Round(1.03f, 3);
-                                currentVRecoilY *= (float)Math.Round(1.03f, 3);
-                            }
-                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
-                            {
-                                currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
-                            }
-                            if (currentDamping > startingDamping * WeaponProperties.DampingLimit)
-                            {
-                                currentDamping *= (float)Math.Round(0.98f, 3);
-                            }
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.03f, 3), currentVRecoilX, startingVRecoilX * WeaponProperties.VRecoilLimit);
+                            currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.03f, 3), currentVRecoilY, startingVRecoilY * WeaponProperties.VRecoilLimit);
+
+                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.01f, 3), currentHRecoilX, startingHRecoilX * WeaponProperties.HRecoilLimit);
+                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.01f, 3), currentHRecoilY, startingHRecoilY * WeaponProperties.HRecoilLimit);
+
+                            currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * WeaponProperties.ConvergenceLimit, currentConvergence);
+
+                            currentDamping = Mathf.Clamp((float)Math.Round(currentDamping * 0.98f, 3), startingDamping * WeaponProperties.DampingLimit, currentDamping);
+                            currentHandDamping = Mathf.Clamp((float)Math.Round(currentHandDamping * 0.98f, 3), startingHandDamping * WeaponProperties.DampingLimit, currentHandDamping);
                         }
 
                         if (shotCount > 25 && shotCount <= 30)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
-                            {
-                                currentVRecoilX *= (float)Math.Round(1.03f, 3);
-                                currentVRecoilY *= (float)Math.Round(1.03f, 3);
-                            }
-                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
-                            {
-                                currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
-                            }
-                            if (currentDamping > startingDamping * WeaponProperties.DampingLimit)
-                            {
-                                currentDamping *= (float)Math.Round(0.98f, 3);
-                            }
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.03f, 3), currentVRecoilX, startingVRecoilX * WeaponProperties.VRecoilLimit);
+                            currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.03f, 3), currentVRecoilY, startingVRecoilY * WeaponProperties.VRecoilLimit);
+
+                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.01f, 3), currentHRecoilX, startingHRecoilX * WeaponProperties.HRecoilLimit);
+                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.01f, 3), currentHRecoilY, startingHRecoilY * WeaponProperties.HRecoilLimit);
+
+                            currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * WeaponProperties.ConvergenceLimit, currentConvergence);
+
+                            currentDamping = Mathf.Clamp((float)Math.Round(currentDamping * 0.98f, 3), startingDamping * WeaponProperties.DampingLimit, currentDamping);
+                            currentHandDamping = Mathf.Clamp((float)Math.Round(currentHandDamping * 0.98f, 3), startingHandDamping * WeaponProperties.DampingLimit, currentHandDamping);
                         }
 
                         if (shotCount > 30 && shotCount <= 35)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
-                            {
-                                currentVRecoilX *= (float)Math.Round(1.03f, 3);
-                                currentVRecoilY *= (float)Math.Round(1.03f, 3);
-                            }
-                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
-                            {
-                                currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
-                            }
-                            if (currentDamping > startingDamping * WeaponProperties.DampingLimit)
-                            {
-                                currentDamping *= (float)Math.Round(0.99f, 3);
-                            }
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.03f, 3), currentVRecoilX, startingVRecoilX * WeaponProperties.VRecoilLimit);
+                            currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.03f, 3), currentVRecoilY, startingVRecoilY * WeaponProperties.VRecoilLimit);
+
+                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.01f, 3), currentHRecoilX, startingHRecoilX * WeaponProperties.HRecoilLimit);
+                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.01f, 3), currentHRecoilY, startingHRecoilY * WeaponProperties.HRecoilLimit);
+
+                            currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * WeaponProperties.ConvergenceLimit, currentConvergence);
+
+                            currentDamping = Mathf.Clamp((float)Math.Round(currentDamping * 0.98f, 3), startingDamping * WeaponProperties.DampingLimit, currentDamping);
+                            currentHandDamping = Mathf.Clamp((float)Math.Round(currentHandDamping * 0.98f, 3), startingHandDamping * WeaponProperties.DampingLimit, currentHandDamping);
                         }
 
                         if (shotCount > 35)
                         {
-                            if (currentVRecoilX < startingVRecoilX * WeaponProperties.VRecoilLimit)
-                            {
-                                currentVRecoilX *= (float)Math.Round(1.03f, 3);
-                                currentVRecoilY *= (float)Math.Round(1.03f, 3);
-                            }
-                            if (currentConvergence > startingConvergence * WeaponProperties.ConvergenceLimit)
-                            {
-                                currentConvergence = (float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2);
-                            }
-                            if (currentDamping > startingDamping * WeaponProperties.DampingLimit)
-                            {
-                                currentDamping *= (float)Math.Round(0.99f, 3);
-                            }
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.03f, 3), currentVRecoilX, startingVRecoilX * WeaponProperties.VRecoilLimit);
+                            currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.03f, 3), currentVRecoilY, startingVRecoilY * WeaponProperties.VRecoilLimit);
+
+                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.01f, 3), currentHRecoilX, startingHRecoilX * WeaponProperties.HRecoilLimit);
+                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.01f, 3), currentHRecoilY, startingHRecoilY * WeaponProperties.HRecoilLimit);
+
+                            currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * WeaponProperties.ConvergenceLimit, currentConvergence);
+
+                            currentDamping = Mathf.Clamp((float)Math.Round(currentDamping * 0.98f, 3), startingDamping * WeaponProperties.DampingLimit, currentDamping);
+                            currentHandDamping = Mathf.Clamp((float)Math.Round(currentHandDamping * 0.98f, 3), startingHandDamping * WeaponProperties.DampingLimit, currentHandDamping);
                         }
 
-                        if (isFiring == true)
-                        {
-                            if (currentSens > startingSens * sensLimit.Value)
-                            {
-                                currentSens *= (float)Math.Round(sensChangeRate.Value, 2);
-                            }
-                        }
+                        currentSens = Mathf.Clamp((float)Math.Round(currentSens * sensChangeRate.Value, 4), startingSens * sensLimit.Value, currentSens);
 
-                        if (currentCamRecoilX > startingCamRecoilX * WeaponProperties.CamRecoilLimit)
-                        {
-                            currentCamRecoilX *= (float)Math.Round(WeaponProperties.CamRecoilChangeRate, 4);
-                            currentCamRecoilY *= (float)Math.Round(WeaponProperties.CamRecoilChangeRate, 4);
-                        }
+                        currentCamRecoilX = Mathf.Clamp((float)Math.Round(currentCamRecoilX * WeaponProperties.CamRecoilChangeRate, 4), startingCamRecoilX * WeaponProperties.CamRecoilLimit, currentCamRecoilX);
+                        currentCamRecoilY = Mathf.Clamp((float)Math.Round(currentCamRecoilY * WeaponProperties.CamRecoilChangeRate, 4), startingCamRecoilY * WeaponProperties.CamRecoilLimit, currentCamRecoilY);
+
                         prevShotCount = shotCount;
                         isFiring = true;
                     }
@@ -509,28 +491,23 @@ namespace RealismMod
 
                 if (statsAreReset == false && isFiring == false)
                 {
-                    if (startingSens > currentSens)
-                    {
-                        currentSens *= (float)Math.Round(sensResetRate.Value, 2);
-                    }
-                    if (startingConvergence > currentConvergence)
-                    {
-                        currentConvergence *= (float)Math.Round(WeaponProperties.ConvergenceResetRate, 1);
-                    }
-                    if (startingDamping > currentDamping)
-                    {
-                        currentDamping *= (float)Math.Round(WeaponProperties.DampingResetRate, 2);
-                    }
-                    if (startingCamRecoilX > currentCamRecoilX)
-                    {
-                        currentCamRecoilX *= (float)Math.Round(WeaponProperties.CamRecoilResetRate, 3);
-                        currentCamRecoilY *= (float)Math.Round(WeaponProperties.CamRecoilResetRate, 3);
-                    }
-                    if (startingVRecoilX < currentVRecoilX)
-                    {
-                        currentVRecoilX *= (float)Math.Round(WeaponProperties.VRecoilResetRate, 2);
-                        currentVRecoilY *= (float)Math.Round(WeaponProperties.VRecoilResetRate, 2);
-                    }
+
+                    currentSens = Mathf.Clamp(currentSens * sensResetRate.Value, currentSens, startingSens);
+
+                    currentConvergence = Mathf.Clamp(currentConvergence * WeaponProperties.ConvergenceResetRate, currentConvergence, startingConvergence);
+
+                    currentDamping = Mathf.Clamp(currentDamping * WeaponProperties.DampingResetRate, currentDamping, startingDamping);
+                    currentHandDamping = Mathf.Clamp(currentHandDamping * WeaponProperties.DampingResetRate, currentHandDamping, startingHandDamping);
+
+                    currentCamRecoilX = Mathf.Clamp(currentCamRecoilX * WeaponProperties.CamRecoilResetRate, currentCamRecoilX, startingCamRecoilX);
+                    currentCamRecoilY = Mathf.Clamp(currentCamRecoilY * WeaponProperties.CamRecoilResetRate, currentCamRecoilY, startingCamRecoilY);
+
+                    currentVRecoilX = Mathf.Clamp(currentVRecoilX * WeaponProperties.VRecoilResetRate, startingVRecoilX, currentVRecoilX);
+                    currentVRecoilY = Mathf.Clamp(currentVRecoilY * WeaponProperties.VRecoilResetRate, startingVRecoilY, currentVRecoilY);
+
+                    currentHRecoilX = Mathf.Clamp(currentHRecoilX * WeaponProperties.HRecoilResetRate, startingHRecoilX, currentHRecoilX);
+                    currentHRecoilY = Mathf.Clamp(currentHRecoilY * WeaponProperties.HRecoilResetRate, startingHRecoilY, currentHRecoilY);
+
                 }
             }
             else

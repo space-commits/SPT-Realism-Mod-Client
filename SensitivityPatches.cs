@@ -19,8 +19,8 @@ namespace RealismMod
 
             if (!player.IsAI && ____isAiming)
             {
-                Plugin.startingSens = ____aimingSens * Plugin.bridge_sens;
-                Plugin.currentSens = ____aimingSens * Plugin.bridge_sens;
+                Plugin.startingSens = ____aimingSens;
+                Plugin.currentSens = ____aimingSens;
             }
         }
     }
