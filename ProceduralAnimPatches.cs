@@ -9,6 +9,8 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using Diz.Skinning;
+using EFT.CameraControl;
+using System.Collections;
 
 namespace RealismMod
 {

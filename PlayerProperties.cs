@@ -10,10 +10,14 @@
 
         public static float ADSInjuryMulti = 1;
 
+        public static float RecoilInjuryMulti = 1;
+
         public static float AimMoveSpeedBase = 0.42f;
 
         public static float ErgoDeltaInjuryMulti = 1;
 
         public static float StrengthSkillAimBuff = 1;
+
+
     }
 }

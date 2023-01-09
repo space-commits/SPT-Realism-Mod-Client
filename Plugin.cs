@@ -43,6 +43,9 @@ namespace RealismMod
         public static ConfigEntry<bool> enableBarrelFactor { get; set; }
         public static ConfigEntry<bool> enableRealArmorClass { get; set; }
 
+        //exposed sens multi for bridge between this mod and Uniform Aim
+        public static float bridge_sens = 1f;
+
         public static bool isFiring = false;
         public static bool isAiming;
         public static float timer = 0.0f;
@@ -213,6 +216,7 @@ namespace RealismMod
                 new AimingSensitivityPatch().Enable();
                 new ProcessPatch().Enable();
                 new ShootPatch().Enable();
+                new UpdateSensitivityPatch().Enable();
 
                 //Aiming Patches + Reload Trigger
                 new AimingPatch().Enable();
@@ -286,6 +290,8 @@ namespace RealismMod
                 //Player
                 new EnduranceSprintActionPatch().Enable();
                 new EnduranceMovementActionPatch().Enable();
+
+                //Tests
 
             }
         }

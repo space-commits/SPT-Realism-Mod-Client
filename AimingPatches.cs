@@ -53,13 +53,15 @@ namespace RealismMod
                 PlayerProperties.ErgoDeltaInjuryMulti = 1f;
                 PlayerProperties.ADSInjuryMulti = 1f;
                 PlayerProperties.ReloadInjuryMulti = 1f;
-            }
+                PlayerProperties.RecoilInjuryMulti = 1f;
+    }
             else if (rightArmDamaged == true && leftArmDamaged == false)
             {
                 PlayerProperties.AimMoveSpeedBase = 0.39f;
                 PlayerProperties.ErgoDeltaInjuryMulti = 1.5f;
                 PlayerProperties.ADSInjuryMulti = 0.8f;
                 PlayerProperties.ReloadInjuryMulti = 0.85f;
+                PlayerProperties.RecoilInjuryMulti = 1.05f;
             }
             else if (rightArmDamaged == false && leftArmDamaged == true)
             {
@@ -67,6 +69,7 @@ namespace RealismMod
                 PlayerProperties.ErgoDeltaInjuryMulti = 2f;
                 PlayerProperties.ADSInjuryMulti = 0.7f;
                 PlayerProperties.ReloadInjuryMulti = 0.8f;
+                PlayerProperties.RecoilInjuryMulti = 1.1f;
             }
             else if (rightArmDamaged == true && leftArmDamaged == true)
             {
@@ -74,6 +77,7 @@ namespace RealismMod
                 PlayerProperties.ErgoDeltaInjuryMulti = 3.5f;
                 PlayerProperties.ADSInjuryMulti = 0.6f;
                 PlayerProperties.ReloadInjuryMulti = 0.75f;
+                PlayerProperties.RecoilInjuryMulti = 1.15f;
             }
 
             if (Helper.IsInReloadOpertation == true)

@@ -88,43 +88,6 @@ namespace RealismMod
         }
     }
 
-    public class UpdateSensitivityPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player.FirearmController).GetMethod("UpdateSensitivity");
-        }
-
-        [PatchPostfix]
-        public static void PatchPostfix(ref Player.FirearmController __instance, ref bool ____isAiming, ref float ____aimingSens)
-        {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-
-            if (!player.IsAI && ____isAiming)
-            {
-                Plugin.startingSens = ____aimingSens;
-                Plugin.currentSens = ____aimingSens;
-            }
-        }
-    }
-
-    public class AimingSensitivityPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player.FirearmController).GetMethod("get_AimingSensitivity");
-        }
-        [PatchPostfix]
-        public static void PatchPostfix(ref Player.FirearmController __instance, ref bool ____isAiming, ref float ____aimingSens)
-        {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (!player.IsAI && ____isAiming)
-            {
-                ____aimingSens = Plugin.currentSens;
-            }
-        }
-    }
-
     public class ProcessPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -146,7 +109,7 @@ namespace RealismMod
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
-                float buffFactoredDispersion = Plugin.currentDispersion * str;
+                float buffFactoredDispersion = Plugin.currentDispersion * str * PlayerProperties.RecoilInjuryMulti;
                 float angle = Plugin.startingRecoilAngle;
                 __instance.RecoilDegree = new Vector2(angle - buffFactoredDispersion, angle + buffFactoredDispersion);
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
@@ -171,13 +134,12 @@ namespace RealismMod
                     __instance.RecoilStrengthXy.y = Plugin.currentVRecoilY;
                 }
 
-
-                __instance.ShotVals[3].Intensity = Plugin.currentCamRecoilX * str;
-                __instance.ShotVals[4].Intensity = Plugin.currentCamRecoilY * str;
+                __instance.ShotVals[3].Intensity = Plugin.currentCamRecoilX * str * PlayerProperties.RecoilInjuryMulti;
+                __instance.ShotVals[4].Intensity = Plugin.currentCamRecoilY * str * PlayerProperties.RecoilInjuryMulti;
 
                 float num = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
-                float num2 = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str;
-                float num3 = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str;
+                float num2 = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * PlayerProperties.RecoilInjuryMulti;
+                float num3 = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * PlayerProperties.RecoilInjuryMulti;
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(num) * num2 * _separateIntensityFactors.x, Mathf.Cos(num) * num2 * _separateIntensityFactors.y, num3 * _separateIntensityFactors.z) * __instance.Intensity;
                 Weapon weapon = wep;
                 Vector2 vector = (weapon != null) ? weapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
