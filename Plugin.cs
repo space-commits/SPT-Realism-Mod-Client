@@ -13,6 +13,8 @@ using Newtonsoft.Json;
 using static RealismMod.ArmorPatches;
 using BepInEx.Bootstrap;
 using Comfort.Common;
+using static Val;
+using UnityEngine.Rendering.PostProcessing;
 
 
 namespace RealismMod
@@ -113,6 +115,8 @@ namespace RealismMod
 
         public static float volume = 0f;
         public static float distortion = 0f;
+        public static CC_FastVignette vignette;
+        public static float vignetteDarkness = 0f;
 
         private void GetPaths()
         {
@@ -177,6 +181,8 @@ namespace RealismMod
 
         void Awake()
         {
+
+
 
             try
             {
@@ -342,13 +348,14 @@ namespace RealismMod
                 new EnduranceMovementActionPatch().Enable();
 
                 //Tests
-     
+                new VignettePatch().Enable();
+
             }
         }
 
-
         void Update()
         {
+
             if (checkedForUniformAim == false)
             {
 
@@ -359,6 +366,9 @@ namespace RealismMod
 
             if (Helper.CheckIsReady())
             {
+
+            
+
                 Helper.IsReady = true;
                 if (isAiming == true)
                 {
@@ -500,18 +510,6 @@ namespace RealismMod
 
                         currentSens = Mathf.Clamp((float)Math.Round(currentSens * Plugin.sensChangeRate.Value, 4), startingSens * Plugin.sensLimit.Value, currentSens);
 
-
-                        Plugin.volume = Mathf.Clamp(Plugin.volume -= 1.0f, -20.0f, 0.0f);
-                        Plugin.distortion = Mathf.Clamp(Plugin.distortion += 20.0f, 0.0f, 200.0f);
-                        Singleton<BetterAudio>.Instance.Master.SetFloat("MainVolume", Plugin.volume);
-                        Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", Plugin.volume);
-                        Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", Plugin.distortion);
-                        Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", Plugin.distortion);
-                        Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", Plugin.distortion);
-                        Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", Plugin.distortion);
-
-
-                        Logger.LogWarning(""+ Plugin.distortion);
                         prevShotCount = shotCount;
                         isFiring = true;
                     }
@@ -538,18 +536,29 @@ namespace RealismMod
                     }
                 }
 
+                if (isFiring == true)
+                {
+                    vignette.enabled = true;
+                    Plugin.vignetteDarkness = Mathf.Clamp(Plugin.vignetteDarkness += 0.15f, 0.0f, 100.0f);
+                    Plugin.volume = Mathf.Clamp(Plugin.volume -= 0.07f, -25.0f, 0.0f);
+                    Plugin.distortion = Mathf.Clamp(Plugin.distortion += 0.15f, 0.0f, 200.0f);
+                }
+
+                vignette.darkness = Plugin.vignetteDarkness;
+                Singleton<BetterAudio>.Instance.Master.SetFloat("MainVolume", Plugin.volume);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", Plugin.volume);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", Plugin.distortion);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", Plugin.distortion);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", Plugin.distortion);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", Plugin.distortion);
+
                 if (isFiring == false)
                 {
-                    Plugin.volume = Mathf.Clamp(Plugin.volume += 1.0f, -20.0f, 0.0f);
-                    Plugin.distortion = Mathf.Clamp(Plugin.distortion -= 5.0f, 0.0f, 200.0f);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("MainVolume", Plugin.volume);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", Plugin.volume);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", Plugin.distortion);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", Plugin.distortion);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", Plugin.distortion);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", Plugin.distortion);
+                    Plugin.vignetteDarkness = Mathf.Clamp(Plugin.vignetteDarkness -= 0.5f, 0.0f, 100.0f);
+                    Plugin.volume = Mathf.Clamp(Plugin.volume += 0.025f, -25.0f, 0.0f);
+                    Plugin.distortion = Mathf.Clamp(Plugin.distortion -= 0.15f, 0.0f, 200.0f);
 
-                    Logger.LogWarning("" + Plugin.distortion);
+
                     if (startingSens <= currentSens && startingConvergence <= currentConvergence && startingVRecoilX >= currentVRecoilX)
                     {
                         statsAreReset = true;

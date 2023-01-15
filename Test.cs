@@ -7,14 +7,16 @@ using System.Reflection;
 using EFT.InventoryLogic;
 using System.Threading.Tasks;
 using Aki.Reflection.Patching;
-
-
+using static Val;
+using HarmonyLib;
+using Aki.Reflection.Utils;
+using UnityEngine.Rendering.PostProcessing;
 
 namespace RealismMod
 {
-    internal struct PlayerInfo
+    public class PlayerState
     {
-        internal static GameWorld gameWorld
+        public static GameWorld Gameworld
         {
             get
             {
@@ -22,31 +24,81 @@ namespace RealismMod
             }
         }
 
-        internal static Player.FirearmController FC
+        public static Player.FirearmController FC
         {
             get
             {
-                return player.HandsController as Player.FirearmController;
+                return Player.HandsController as Player.FirearmController;
             }
         }
 
-        internal static Player player
+
+
+        public static Player Player
         {
             get
             {
-                return gameWorld.AllPlayers[0];
+                return Gameworld.AllPlayers[0];
             }
         }
 
-        internal static Player audio
+/*        public float calcEarProtection()
         {
-            get
+            float protection = 0;
+            float helmReduction = 0;
+            if (Player.Profile.Inventory.Equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem != null)
             {
-                return gameWorld.AllPlayers[0];
+                protection = float.Parse(Player.Profile.Inventory.Equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem.ConflictingItems[1]);
             }
+
+            if (Player.Profile.Inventory.Equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem != null)
+            {
+                var helmet = (ArmorComponent)Player.Profile.Inventory.Equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
+            }
+
+             (Player.Profile.Inventory.Equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass).Slots.Any(item => item.ContainedItem != null 
+             && item.ContainedItem.GetItemComponent<SlotBlockerComponent>() != null 
+             && !item.ContainedItem.GetItemComponent<SlotBlockerComponent>().ConflictingSlotNames.Contains("Earpiece")) 
+
+             || Player.Profile.Inventory.Equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem.GetItemComponent<SlotBlockerComponent>() != null 
+             && Player.Profile.Inventory.Equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem.GetItemComponent<SlotBlockerComponent>().ConflictingSlotNames.Contains("Earpiece");
+
+
+            return protection;
+
+        }
+*/
+
+
+        public bool CheckIsReady()
+        {
+
+            var sessionResultPanel = Singleton<SessionResultPanel>.Instance;
+
+            if (Gameworld == null || Gameworld.AllPlayers == null || Gameworld.AllPlayers.Count <= 0 || sessionResultPanel != null)
+            {
+                return false;
+            }
+            return true;
         }
 
-        internal static bool PlayerHasEarPro() => player.Profile.Inventory.Equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem != null || player.Profile.Inventory.Equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem != null && (player.Profile.Inventory.Equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass).Slots.Any(item => item.ContainedItem != null && item.ContainedItem.GetItemComponent<SlotBlockerComponent>() != null && !item.ContainedItem.GetItemComponent<SlotBlockerComponent>().ConflictingSlotNames.Contains("Earpiece")) || player.Profile.Inventory.Equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem != null && player.Profile.Inventory.Equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem.GetItemComponent<SlotBlockerComponent>() != null && player.Profile.Inventory.Equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem.GetItemComponent<SlotBlockerComponent>().ConflictingSlotNames.Contains("Earpiece");
+    }
+
+    public class VignettePatch : ModulePatch
+    {
+
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EffectsController).GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(EffectsController __instance)
+        {
+            CC_FastVignette vig = (CC_FastVignette)AccessTools.Field(typeof(EffectsController), "cc_FastVignette_0").GetValue(__instance);
+            Plugin.vignette = vig;
+        }
+
     }
 
 }
