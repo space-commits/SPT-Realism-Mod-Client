@@ -60,21 +60,21 @@ namespace RealismMod
                 Plugin.currentCamRecoilX = Plugin.startingCamRecoilX;
                 Plugin.currentCamRecoilY = Plugin.startingCamRecoilY;
 
-                Plugin.startingVRecoilX = (float)Math.Round(__instance.RecoilStrengthXy.x, 3);
+                Plugin.StartingVRecoilX = (float)Math.Round(__instance.RecoilStrengthXy.x, 3);
                 Plugin.startingVRecoilY = (float)Math.Round(__instance.RecoilStrengthXy.y, 3);
-                Plugin.currentVRecoilX = Plugin.startingVRecoilX;
+                Plugin.currentVRecoilX = Plugin.StartingVRecoilX;
                 Plugin.currentVRecoilY = Plugin.startingVRecoilY;
 
-                Plugin.startingHRecoilX = (float)Math.Round(__instance.RecoilStrengthZ.x, 3);
-                Plugin.startingHRecoilY = (float)Math.Round(__instance.RecoilStrengthZ.y, 3);
-                Plugin.currentHRecoilX = Plugin.startingHRecoilX;
-                Plugin.currentHRecoilY = Plugin.startingHRecoilY;
+                Plugin.StartingHRecoilX = (float)Math.Round(__instance.RecoilStrengthZ.x, 3);
+                Plugin.StartingHRecoilY = (float)Math.Round(__instance.RecoilStrengthZ.y, 3);
+                Plugin.CurrentHRecoilX = Plugin.StartingHRecoilX;
+                Plugin.CurrentHRecoilY = Plugin.StartingHRecoilY;
 
                 Plugin.startingConvergence = (float)Math.Round(wep.Template.Convergence * p.GlobalsAiming.RecoilConvergenceMult, 2);
                 Plugin.currentConvergence = Plugin.startingConvergence;
-                Plugin.convergenceProporitonK = (float)Math.Round(Plugin.startingConvergence * Plugin.startingVRecoilX, 2);
+                Plugin.convergenceProporitonK = (float)Math.Round(Plugin.startingConvergence * Plugin.StartingVRecoilX, 2);
 
-                Plugin.startingRecoilAngle = (float)Math.Round(angle, 2);
+                Plugin.StartingRecoilAngle = (float)Math.Round(angle, 2);
 
                 Plugin.startingDispersion = (float)Math.Round(buffFactoredDispersion, 2);
                 Plugin.currentDispersion = Plugin.startingDispersion;
@@ -111,14 +111,14 @@ namespace RealismMod
             if (wep.Owner.ID.StartsWith("pmc") || wep.Owner.ID.StartsWith("scav"))
             {
 
-                Plugin.timer = 0f;
-                Plugin.isFiring = true;
-                Plugin.shotCount++;
+                Plugin.Timer = 0f;
+                Plugin.IsFiring = true;
+                Plugin.ShotCount++;
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
                 float buffFactoredDispersion = Plugin.currentDispersion * str * PlayerProperties.RecoilInjuryMulti;
-                float angle = Plugin.startingRecoilAngle;
+                float angle = Plugin.StartingRecoilAngle;
                 __instance.RecoilDegree = new Vector2(angle - buffFactoredDispersion, angle + buffFactoredDispersion);
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
 
@@ -126,26 +126,26 @@ namespace RealismMod
                 //would be more efficient to have a static bool "getsSemiRecoilIncrease" and check the weap class in stat detla instead.
                 //1.5f recoil on pistols unironically felt good, even a lot of the rifles. Some got a bit too fucked by it some some rebalancing might be needed.
                 //wep.FireMode.FireMode == Weapon.EFireMode.single, problem with restrcting it to semi only is that then firing one shot in full auto is more controlalble than semi
-                if (Plugin.shotCount == 1 && WeaponProperties.ShouldGetSemiIncrease == true)
+                if (Plugin.ShotCount == 1 && WeaponProperties.ShouldGetSemiIncrease == true)
                 {
                     __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX * 1.35f;
                     __instance.RecoilStrengthXy.y = Plugin.currentVRecoilY * 1.35f;
-                    __instance.RecoilStrengthZ.x = Plugin.currentHRecoilX * 1.35f;
-                    __instance.RecoilStrengthZ.y = Plugin.currentHRecoilY * 1.35f;
+                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * 1.35f;
+                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * 1.35f;
                 }
-                else if (Plugin.shotCount > 1)
+                else if (Plugin.ShotCount > 1)
                 {
                     __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX * 0.63f;
                     __instance.RecoilStrengthXy.y = Plugin.currentVRecoilY * 0.63f;
-                    __instance.RecoilStrengthZ.x = Plugin.currentHRecoilX * 0.6f;
-                    __instance.RecoilStrengthZ.y = Plugin.currentHRecoilY * 0.6f;
+                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * 0.6f;
+                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * 0.6f;
                 }
                 else
                 {
                     __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX;
                     __instance.RecoilStrengthXy.y = Plugin.currentVRecoilY;
-                    __instance.RecoilStrengthZ.x = Plugin.currentHRecoilX;
-                    __instance.RecoilStrengthZ.y = Plugin.currentHRecoilY;
+                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX;
+                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY;
                 }
 
                 __instance.ShotVals[3].Intensity = Plugin.currentCamRecoilX * str * PlayerProperties.RecoilInjuryMulti;
@@ -194,7 +194,7 @@ namespace RealismMod
                     __instance.HandsContainer.Recoil.Damping = Plugin.currentDamping;
                     __instance.HandsContainer.HandsPosition.Damping = Plugin.currentHandDamping;
 
-                    if (Plugin.shotCount > 1)
+                    if (Plugin.ShotCount > 1)
                     {
                         __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.currentConvergence * 0.6f;
                     }

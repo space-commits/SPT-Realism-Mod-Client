@@ -35,7 +35,7 @@ namespace RealismMod
                     {
                         Helper.IsAllowedAim = true;
                     }
-                    Plugin.isAiming = ____isAiming;
+                    Plugin.IsAiming = ____isAiming;
                 }
             }
         }

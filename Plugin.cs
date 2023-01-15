@@ -1,20 +1,18 @@
-﻿using BepInEx;
-using System;
-using UnityEngine;
-using Aki.Common.Http;
+﻿using Aki.Common.Http;
 using Aki.Common.Utils;
-using System.IO;
-using System.Collections.Generic;
-using BepInEx.Configuration;
-using static RealismMod.Attributes;
-using System.Threading.Tasks;
-using UnityEngine.Networking;
-using Newtonsoft.Json;
-using static RealismMod.ArmorPatches;
+using BepInEx;
 using BepInEx.Bootstrap;
+using BepInEx.Configuration;
 using Comfort.Common;
-using static Val;
-using UnityEngine.Rendering.PostProcessing;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.Networking;
+using static RealismMod.ArmorPatches;
+using static RealismMod.Attributes;
 
 
 namespace RealismMod
@@ -60,14 +58,14 @@ namespace RealismMod
         public static ConfigEntry<bool> reduceCamRecoil { get; set; }
 
 
-        public static bool isFiring = false;
-        public static bool isAiming;
-        public static float timer = 0.0f;
-        public static float shotCount = 0;
-        private float prevShotCount = shotCount;
-        private bool statsAreReset;
+        public static bool IsFiring = false;
+        public static bool IsAiming;
+        public static float Timer = 0.0f;
+        public static float ShotCount = 0;
+        private float PrevShotCount = ShotCount;
+        private bool StatsAreReset;
 
-        public static float startingRecoilAngle;
+        public static float StartingRecoilAngle;
 
         public static float startingSens;
         public static float currentSens = startingSens;
@@ -91,15 +89,15 @@ namespace RealismMod
         public static float currentCamRecoilX;
         public static float currentCamRecoilY;
 
-        public static float startingVRecoilX;
+        public static float StartingVRecoilX;
         public static float startingVRecoilY;
         public static float currentVRecoilX;
         public static float currentVRecoilY;
 
-        public static float startingHRecoilX;
-        public static float startingHRecoilY;
-        public static float currentHRecoilX;
-        public static float currentHRecoilY;
+        public static float StartingHRecoilX;
+        public static float StartingHRecoilY;
+        public static float CurrentHRecoilX;
+        public static float CurrentHRecoilY;
 
         public static Dictionary<Enum, Sprite> IconCache = new Dictionary<Enum, Sprite>();
 
@@ -113,10 +111,18 @@ namespace RealismMod
         public static bool isBridgePresent = false;
         public static bool checkedForUniformAim = false;
 
-        public static float volume = 0f;
-        public static float distortion = 0f;
-        public static CC_FastVignette vignette;
-        public static float vignetteDarkness = 0f;
+        public static float EarProtectionFactor = 1f;
+        public static float Volume = 0f;
+        public static float Distortion = 0f;
+        public static CC_FastVignette Vignette;
+        public static float VignetteDarkness = 0f;
+
+        public static float MainVolume = 0f;
+        public static float GunsVolume = 0f;
+        public static float CompressorDistortion = 0f;
+        public static float CompressorResonance = 0f;
+        public static float CompressorLowpass = 0f;
+        public static float Compressor = 0f;
 
         private void GetPaths()
         {
@@ -181,8 +187,6 @@ namespace RealismMod
 
         void Awake()
         {
-
-
 
             try
             {
@@ -347,9 +351,9 @@ namespace RealismMod
                 new EnduranceSprintActionPatch().Enable();
                 new EnduranceMovementActionPatch().Enable();
 
-                //Tests
+                //Shot Effects
                 new VignettePatch().Enable();
-
+                new UpdatePhonesPatch().Enable();
             }
         }
 
@@ -358,7 +362,6 @@ namespace RealismMod
 
             if (checkedForUniformAim == false)
             {
-
                 isUniformAimPresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.UniformAim");
                 isBridgePresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.RealismModBridge");
                 checkedForUniformAim = true;
@@ -367,63 +370,61 @@ namespace RealismMod
             if (Helper.CheckIsReady())
             {
 
-            
-
                 Helper.IsReady = true;
-                if (isAiming == true)
+                if (IsAiming == true)
                 {
-                    if (shotCount > prevShotCount)
+                    if (ShotCount > PrevShotCount)
                     {
-                        if (shotCount >= 1 && shotCount <= 3)
+                        if (ShotCount >= 1 && ShotCount <= 3)
                         {
-                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.13f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, startingVRecoilX * Plugin.vRecoilLimit.Value);
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.13f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, StartingVRecoilX * Plugin.vRecoilLimit.Value);
                             currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.13f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilY, startingVRecoilY * Plugin.vRecoilLimit.Value);
 
-                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.12f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilX, startingHRecoilX * Plugin.hRecoilLimit.Value);
-                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.13f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilY, startingHRecoilY * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilX = Mathf.Clamp((float)Math.Round(CurrentHRecoilX * 1.12f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilX, StartingHRecoilX * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilY = Mathf.Clamp((float)Math.Round(CurrentHRecoilY * 1.13f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilY, StartingHRecoilY * Plugin.hRecoilLimit.Value);
 
                             currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * Plugin.convergenceLimit.Value, currentConvergence);
 
                         }
-                        if (shotCount >= 4 && shotCount <= 5)
+                        if (ShotCount >= 4 && ShotCount <= 5)
                         {
-                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.125f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, startingVRecoilX * Plugin.vRecoilLimit.Value);
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.125f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, StartingVRecoilX * Plugin.vRecoilLimit.Value);
                             currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.125f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilY, startingVRecoilY * Plugin.vRecoilLimit.Value);
 
-                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.125f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilX, startingHRecoilX * Plugin.hRecoilLimit.Value);
-                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.125f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilY, startingHRecoilY * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilX = Mathf.Clamp((float)Math.Round(CurrentHRecoilX * 1.125f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilX, StartingHRecoilX * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilY = Mathf.Clamp((float)Math.Round(CurrentHRecoilY * 1.125f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilY, StartingHRecoilY * Plugin.hRecoilLimit.Value);
 
                             currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * Plugin.convergenceLimit.Value, currentConvergence);
 
                         }
-                        if (shotCount > 5 && shotCount <= 7)
+                        if (ShotCount > 5 && ShotCount <= 7)
                         {
-                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.1f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, startingVRecoilX * Plugin.vRecoilLimit.Value);
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.1f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, StartingVRecoilX * Plugin.vRecoilLimit.Value);
                             currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.1f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilY, startingVRecoilY * Plugin.vRecoilLimit.Value);
 
-                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.1f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilX, startingHRecoilX * Plugin.hRecoilLimit.Value);
-                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.1f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilY, startingHRecoilY * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilX = Mathf.Clamp((float)Math.Round(CurrentHRecoilX * 1.1f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilX, StartingHRecoilX * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilY = Mathf.Clamp((float)Math.Round(CurrentHRecoilY * 1.1f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilY, StartingHRecoilY * Plugin.hRecoilLimit.Value);
 
                             currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * Plugin.convergenceLimit.Value, currentConvergence);
 
                         }
-                        if (shotCount > 8 && shotCount <= 10)
+                        if (ShotCount > 8 && ShotCount <= 10)
                         {
-                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.08f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, startingVRecoilX * Plugin.vRecoilLimit.Value);
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.08f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, StartingVRecoilX * Plugin.vRecoilLimit.Value);
                             currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.08f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilY, startingVRecoilY * Plugin.vRecoilLimit.Value);
 
-                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.07f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilX, startingHRecoilX * Plugin.hRecoilLimit.Value);
-                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.07f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilY, startingHRecoilY * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilX = Mathf.Clamp((float)Math.Round(CurrentHRecoilX * 1.07f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilX, StartingHRecoilX * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilY = Mathf.Clamp((float)Math.Round(CurrentHRecoilY * 1.07f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilY, StartingHRecoilY * Plugin.hRecoilLimit.Value);
 
                             currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * Plugin.convergenceLimit.Value, currentConvergence);
                         }
-                        if (shotCount > 10 && shotCount <= 15)
+                        if (ShotCount > 10 && ShotCount <= 15)
                         {
-                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.05f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, startingVRecoilX * Plugin.vRecoilLimit.Value);
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.05f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, StartingVRecoilX * Plugin.vRecoilLimit.Value);
                             currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.05f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilY, startingVRecoilY * Plugin.vRecoilLimit.Value);
 
-                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.04f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilX, startingHRecoilX * Plugin.hRecoilLimit.Value);
-                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.04f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilY, startingHRecoilY * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilX = Mathf.Clamp((float)Math.Round(CurrentHRecoilX * 1.04f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilX, StartingHRecoilX * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilY = Mathf.Clamp((float)Math.Round(CurrentHRecoilY * 1.04f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilY, StartingHRecoilY * Plugin.hRecoilLimit.Value);
 
                             currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * Plugin.convergenceLimit.Value, currentConvergence);
 
@@ -432,13 +433,13 @@ namespace RealismMod
 
                         }
 
-                        if (shotCount > 15 && shotCount <= 20)
+                        if (ShotCount > 15 && ShotCount <= 20)
                         {
-                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.03f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, startingVRecoilX * Plugin.vRecoilLimit.Value);
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.03f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, StartingVRecoilX * Plugin.vRecoilLimit.Value);
                             currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.03 * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilY, startingVRecoilY * Plugin.vRecoilLimit.Value);
 
-                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.02f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilX, startingHRecoilX * Plugin.hRecoilLimit.Value);
-                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.02f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilY, startingHRecoilY * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilX = Mathf.Clamp((float)Math.Round(CurrentHRecoilX * 1.02f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilX, StartingHRecoilX * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilY = Mathf.Clamp((float)Math.Round(CurrentHRecoilY * 1.02f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilY, StartingHRecoilY * Plugin.hRecoilLimit.Value);
 
                             currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * Plugin.convergenceLimit.Value, currentConvergence);
 
@@ -446,13 +447,13 @@ namespace RealismMod
                             currentHandDamping = Mathf.Clamp((float)Math.Round(currentHandDamping * 0.98f, 3), startingHandDamping * WeaponProperties.DampingLimit, currentHandDamping);
                         }
 
-                        if (shotCount > 20 && shotCount <= 25)
+                        if (ShotCount > 20 && ShotCount <= 25)
                         {
-                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.03f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, startingVRecoilX * Plugin.vRecoilLimit.Value);
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.03f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, StartingVRecoilX * Plugin.vRecoilLimit.Value);
                             currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.03f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilY, startingVRecoilY * Plugin.vRecoilLimit.Value);
 
-                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.01f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilX, startingHRecoilX * Plugin.hRecoilLimit.Value);
-                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.01f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilY, startingHRecoilY * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilX = Mathf.Clamp((float)Math.Round(CurrentHRecoilX * 1.01f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilX, StartingHRecoilX * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilY = Mathf.Clamp((float)Math.Round(CurrentHRecoilY * 1.01f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilY, StartingHRecoilY * Plugin.hRecoilLimit.Value);
 
                             currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * Plugin.convergenceLimit.Value, currentConvergence);
 
@@ -460,13 +461,13 @@ namespace RealismMod
                             currentHandDamping = Mathf.Clamp((float)Math.Round(currentHandDamping * 0.98f, 3), startingHandDamping * WeaponProperties.DampingLimit, currentHandDamping);
                         }
 
-                        if (shotCount > 25 && shotCount <= 30)
+                        if (ShotCount > 25 && ShotCount <= 30)
                         {
-                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.03f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, startingVRecoilX * Plugin.vRecoilLimit.Value);
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.03f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, StartingVRecoilX * Plugin.vRecoilLimit.Value);
                             currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.03f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilY, startingVRecoilY * Plugin.vRecoilLimit.Value);
 
-                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.01f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilX, startingHRecoilX * Plugin.hRecoilLimit.Value);
-                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.01f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilY, startingHRecoilY * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilX = Mathf.Clamp((float)Math.Round(CurrentHRecoilX * 1.01f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilX, StartingHRecoilX * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilY = Mathf.Clamp((float)Math.Round(CurrentHRecoilY * 1.01f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilY, StartingHRecoilY * Plugin.hRecoilLimit.Value);
 
                             currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * Plugin.convergenceLimit.Value, currentConvergence);
 
@@ -474,13 +475,13 @@ namespace RealismMod
                             currentHandDamping = Mathf.Clamp((float)Math.Round(currentHandDamping * 0.98f, 3), startingHandDamping * WeaponProperties.DampingLimit, currentHandDamping);
                         }
 
-                        if (shotCount > 30 && shotCount <= 35)
+                        if (ShotCount > 30 && ShotCount <= 35)
                         {
-                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.03f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, startingVRecoilX * Plugin.vRecoilLimit.Value);
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.03f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, StartingVRecoilX * Plugin.vRecoilLimit.Value);
                             currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.03f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilY, startingVRecoilY * Plugin.vRecoilLimit.Value);
 
-                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.01f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilX, startingHRecoilX * Plugin.hRecoilLimit.Value);
-                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.01f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilY, startingHRecoilY * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilX = Mathf.Clamp((float)Math.Round(CurrentHRecoilX * 1.01f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilX, StartingHRecoilX * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilY = Mathf.Clamp((float)Math.Round(CurrentHRecoilY * 1.01f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilY, StartingHRecoilY * Plugin.hRecoilLimit.Value);
 
                             currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * Plugin.convergenceLimit.Value, currentConvergence);
 
@@ -488,13 +489,13 @@ namespace RealismMod
                             currentHandDamping = Mathf.Clamp((float)Math.Round(currentHandDamping * 0.98f, 3), startingHandDamping * WeaponProperties.DampingLimit, currentHandDamping);
                         }
 
-                        if (shotCount > 35)
+                        if (ShotCount > 35)
                         {
-                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.03f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, startingVRecoilX * Plugin.vRecoilLimit.Value);
+                            currentVRecoilX = Mathf.Clamp((float)Math.Round(currentVRecoilX * 1.03f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilX, StartingVRecoilX * Plugin.vRecoilLimit.Value);
                             currentVRecoilY = Mathf.Clamp((float)Math.Round(currentVRecoilY * 1.03f * Plugin.vRecoilChangeMulti.Value, 3), currentVRecoilY, startingVRecoilY * Plugin.vRecoilLimit.Value);
 
-                            currentHRecoilX = Mathf.Clamp((float)Math.Round(currentHRecoilX * 1.01f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilX, startingHRecoilX * Plugin.hRecoilLimit.Value);
-                            currentHRecoilY = Mathf.Clamp((float)Math.Round(currentHRecoilY * 1.01f * Plugin.hRecoilChangeMulti.Value, 3), currentHRecoilY, startingHRecoilY * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilX = Mathf.Clamp((float)Math.Round(CurrentHRecoilX * 1.01f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilX, StartingHRecoilX * Plugin.hRecoilLimit.Value);
+                            CurrentHRecoilY = Mathf.Clamp((float)Math.Round(CurrentHRecoilY * 1.01f * Plugin.hRecoilChangeMulti.Value, 3), CurrentHRecoilY, StartingHRecoilY * Plugin.hRecoilLimit.Value);
 
                             currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((convergenceProporitonK / currentVRecoilX), currentConvergence), 2), startingConvergence * Plugin.convergenceLimit.Value, currentConvergence);
 
@@ -510,66 +511,68 @@ namespace RealismMod
 
                         currentSens = Mathf.Clamp((float)Math.Round(currentSens * Plugin.sensChangeRate.Value, 4), startingSens * Plugin.sensLimit.Value, currentSens);
 
-                        prevShotCount = shotCount;
-                        isFiring = true;
+                        PrevShotCount = ShotCount;
+                        IsFiring = true;
                     }
                 }
                 else
                 {
-                    if (shotCount > prevShotCount)
+                    if (ShotCount > PrevShotCount)
                     {
-                        prevShotCount = shotCount;
-                        isFiring = true;
+                        PrevShotCount = ShotCount;
+                        IsFiring = true;
                     }
                 }
 
 
-                if (shotCount == prevShotCount)
+                if (ShotCount == PrevShotCount)
                 {
-                    timer += Time.deltaTime;
-                    if (timer >= Plugin.resetTime.Value)
+                    Timer += Time.deltaTime;
+                    if (Timer >= Plugin.resetTime.Value)
                     {
-                        isFiring = false;
-                        shotCount = 0;
-                        prevShotCount = 0;
-                        timer = 0f;
+                        IsFiring = false;
+                        ShotCount = 0;
+                        PrevShotCount = 0;
+                        Timer = 0f;
                     }
                 }
 
-                if (isFiring == true)
+                if (IsFiring == true)
                 {
-                    vignette.enabled = true;
-                    Plugin.vignetteDarkness = Mathf.Clamp(Plugin.vignetteDarkness += 0.15f, 0.0f, 100.0f);
-                    Plugin.volume = Mathf.Clamp(Plugin.volume -= 0.07f, -25.0f, 0.0f);
-                    Plugin.distortion = Mathf.Clamp(Plugin.distortion += 0.15f, 0.0f, 200.0f);
+                    Vignette.enabled = true;
+                    Plugin.VignetteDarkness = Mathf.Clamp(Plugin.VignetteDarkness += 0.15f, 0.0f, 100.0f);
+                    Plugin.Volume = Mathf.Clamp(Plugin.Volume -= 0.07f, -25.0f, 0.0f);
+                    Plugin.Distortion = Mathf.Clamp(Plugin.Distortion += 0.15f, 0.0f, 200.0f);
                 }
 
-                vignette.darkness = Plugin.vignetteDarkness;
-                Singleton<BetterAudio>.Instance.Master.SetFloat("MainVolume", Plugin.volume);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", Plugin.volume);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", Plugin.distortion);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", Plugin.distortion);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", Plugin.distortion);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", Plugin.distortion);
+                Vignette.darkness = Plugin.VignetteDarkness;
+                Singleton<BetterAudio>.Instance.Master.SetFloat("MainVolume", Plugin.Volume);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", Plugin.Volume);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", Plugin.Distortion);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", Plugin.Distortion);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass",  Plugin.Distortion);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", Plugin.Distortion);
 
-                if (isFiring == false)
+                Logger.LogWarning("Volume = " + Plugin.Volume);
+                Logger.LogWarning("Compressor Volume = " + Plugin.Compressor);
+
+                if (IsFiring == false)
                 {
-                    Plugin.vignetteDarkness = Mathf.Clamp(Plugin.vignetteDarkness -= 0.5f, 0.0f, 100.0f);
-                    Plugin.volume = Mathf.Clamp(Plugin.volume += 0.025f, -25.0f, 0.0f);
-                    Plugin.distortion = Mathf.Clamp(Plugin.distortion -= 0.15f, 0.0f, 200.0f);
+                    Plugin.VignetteDarkness = Mathf.Clamp(Plugin.VignetteDarkness -= 0.5f, 0.0f, 100.0f);
+                    Plugin.Volume = Mathf.Clamp(Plugin.Volume += 0.05f, -25.0f, 0.0f);
+                    Plugin.Distortion = Mathf.Clamp(Plugin.Distortion -= 0.15f, 0.0f, 200.0f);
 
-
-                    if (startingSens <= currentSens && startingConvergence <= currentConvergence && startingVRecoilX >= currentVRecoilX)
+                    if (startingSens <= currentSens && startingConvergence <= currentConvergence && StartingVRecoilX >= currentVRecoilX)
                     {
-                        statsAreReset = true;
+                        StatsAreReset = true;
                     }
                     else
                     {
-                        statsAreReset = false;
+                        StatsAreReset = false;
                     }
                 }
 
-                if (statsAreReset == false && isFiring == false)
+                if (StatsAreReset == false && IsFiring == false)
                 {
 
                     currentSens = Mathf.Clamp(currentSens * sensResetRate.Value, currentSens, startingSens);
@@ -579,14 +582,14 @@ namespace RealismMod
                     currentDamping = Mathf.Clamp(currentDamping * WeaponProperties.DampingResetRate, currentDamping, startingDamping);
                     currentHandDamping = Mathf.Clamp(currentHandDamping * WeaponProperties.DampingResetRate, currentHandDamping, startingHandDamping);
 
-                    currentVRecoilX = Mathf.Clamp(currentVRecoilX * Plugin.vRecoilResetRate.Value, startingVRecoilX, currentVRecoilX);
+                    currentVRecoilX = Mathf.Clamp(currentVRecoilX * Plugin.vRecoilResetRate.Value, StartingVRecoilX, currentVRecoilX);
                     currentVRecoilY = Mathf.Clamp(currentVRecoilY * Plugin.vRecoilResetRate.Value, startingVRecoilY, currentVRecoilY);
 
-                    currentHRecoilX = Mathf.Clamp(currentHRecoilX * Plugin.hRecoilResetRate.Value, startingHRecoilX, currentHRecoilX);
-                    currentHRecoilY = Mathf.Clamp(currentHRecoilY * Plugin.hRecoilResetRate.Value, startingHRecoilY, currentHRecoilY);
+                    CurrentHRecoilX = Mathf.Clamp(CurrentHRecoilX * Plugin.hRecoilResetRate.Value, StartingHRecoilX, CurrentHRecoilX);
+                    CurrentHRecoilY = Mathf.Clamp(CurrentHRecoilY * Plugin.hRecoilResetRate.Value, StartingHRecoilY, CurrentHRecoilY);
 
                 }
-                if (statsAreReset == true && isFiring == false)
+                if (StatsAreReset == true && IsFiring == false)
                 {
                     Plugin.currentSens = Plugin.startingSens;
                 }

@@ -39,7 +39,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            if (Plugin.isFiring != true && Helper.IsInReloadOpertation)
+            if (Plugin.IsFiring != true && Helper.IsInReloadOpertation)
             {
                 __instance.SetAnimationSpeed(0.3f + (WeaponProperties.ChamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
             }
