@@ -12,6 +12,8 @@ using UnityEngine.Networking;
 using Newtonsoft.Json;
 using static RealismMod.ArmorPatches;
 using BepInEx.Bootstrap;
+using Comfort.Common;
+
 
 namespace RealismMod
 {
@@ -109,6 +111,9 @@ namespace RealismMod
         public static bool isBridgePresent = false;
         public static bool checkedForUniformAim = false;
 
+        public static float volume = 0f;
+        public static float distortion = 0f;
+
         private void GetPaths()
         {
             var mod = RequestHandler.GetJson($"/RealismMod/GetInfo");
@@ -173,14 +178,22 @@ namespace RealismMod
         void Awake()
         {
 
-            GetPaths();
-            ConfigCheck();
-            CacheIcons();
+            try
+            {
+                GetPaths();
+                ConfigCheck();
+                CacheIcons();
+            }
+            catch (Exception exception)
+            {
+                Logger.LogError(exception);
+            }
+
 
             if (IsConfigCorrect == true)
             {
  
-                string MiscSettings = "1. Misc. Settigns";
+                string MiscSettings = "1. Misc. Settings";
                 string WeapStatSettings = "2. Weapon Stat Settings";
                 string RecoilSettings = "3. Recoil Settings";
                 string AdvancedRecoilSettings = "4. Advanced Settings";
@@ -329,7 +342,7 @@ namespace RealismMod
                 new EnduranceMovementActionPatch().Enable();
 
                 //Tests
-
+     
             }
         }
 
@@ -487,6 +500,18 @@ namespace RealismMod
 
                         currentSens = Mathf.Clamp((float)Math.Round(currentSens * Plugin.sensChangeRate.Value, 4), startingSens * Plugin.sensLimit.Value, currentSens);
 
+
+                        Plugin.volume = Mathf.Clamp(Plugin.volume -= 1.0f, -20.0f, 0.0f);
+                        Plugin.distortion = Mathf.Clamp(Plugin.distortion += 20.0f, 0.0f, 200.0f);
+                        Singleton<BetterAudio>.Instance.Master.SetFloat("MainVolume", Plugin.volume);
+                        Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", Plugin.volume);
+                        Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", Plugin.distortion);
+                        Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", Plugin.distortion);
+                        Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", Plugin.distortion);
+                        Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", Plugin.distortion);
+
+
+                        Logger.LogWarning(""+ Plugin.distortion);
                         prevShotCount = shotCount;
                         isFiring = true;
                     }
@@ -515,6 +540,16 @@ namespace RealismMod
 
                 if (isFiring == false)
                 {
+                    Plugin.volume = Mathf.Clamp(Plugin.volume += 1.0f, -20.0f, 0.0f);
+                    Plugin.distortion = Mathf.Clamp(Plugin.distortion -= 5.0f, 0.0f, 200.0f);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("MainVolume", Plugin.volume);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", Plugin.volume);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", Plugin.distortion);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", Plugin.distortion);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", Plugin.distortion);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", Plugin.distortion);
+
+                    Logger.LogWarning("" + Plugin.distortion);
                     if (startingSens <= currentSens && startingConvergence <= currentConvergence && startingVRecoilX >= currentVRecoilX)
                     {
                         statsAreReset = true;

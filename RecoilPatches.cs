@@ -115,8 +115,6 @@ namespace RealismMod
                 Plugin.isFiring = true;
                 Plugin.shotCount++;
 
-                Logger.LogWarning("Shot Count: " + Plugin.shotCount);
-
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
                 float buffFactoredDispersion = Plugin.currentDispersion * str * PlayerProperties.RecoilInjuryMulti;
