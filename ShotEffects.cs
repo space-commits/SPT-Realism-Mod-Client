@@ -14,45 +14,6 @@ using UnityEngine.Rendering.PostProcessing;
 
 namespace RealismMod
 {
-    public class PlayerState
-    {
-        public static GameWorld Gameworld
-        {
-            get
-            {
-                return Singleton<GameWorld>.Instance;
-            }
-        }
-
-        public static Player.FirearmController FC
-        {
-            get
-            {
-                return Player.HandsController as Player.FirearmController;
-            }
-        }
-
-        public static Player Player
-        {
-            get
-            {
-                return Gameworld.AllPlayers[0];
-            }
-        }
-
-        public static bool CheckIsReady()
-        {
-            var sessionResultPanel = Singleton<SessionResultPanel>.Instance;
-
-            if (Gameworld == null || Gameworld.AllPlayers == null || Gameworld.AllPlayers.Count <= 0 || sessionResultPanel != null)
-            {
-                return false;
-            }
-            return true;
-        }
-
-    }
-
     public class VignettePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -103,7 +64,7 @@ namespace RealismMod
 
         private static float HeadsetDeafFactor(EquipmentClass equipment)
         {
-            float protectionFactor = 1f;
+            float protectionFactor;
 
             LootItemClass headwear = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;
             GClass2108 headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as GClass2108) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<GClass2108>().FirstOrDefault<GClass2108>() : null);
@@ -168,10 +129,12 @@ namespace RealismMod
 
             if (Plugin.IsFiring == true)
             {
+                float deafFactor = Plugin.EarProtectionFactor * Plugin.AmmoDeafFactor * Plugin.WeaponDeafFactor;
+
                 Plugin.Vignette.enabled = true;
-                VignetteDarkness = Mathf.Clamp(VignetteDarkness += VignetteDarknessIncreaseRate * Plugin.EarProtectionFactor, 0.0f, VignetteDarknessLimit);
-                Volume = Mathf.Clamp(Volume -= VolumeIncreaseRate * Plugin.EarProtectionFactor, VolumeLimit, 0.0f);
-                Distortion = Mathf.Clamp(Distortion += DistortionIncreaseRate * Plugin.EarProtectionFactor, 0.0f, DistortionLimit);
+                VignetteDarkness = Mathf.Clamp(VignetteDarkness += VignetteDarknessIncreaseRate * deafFactor, 0.0f, VignetteDarknessLimit);
+                Volume = Mathf.Clamp(Volume -= VolumeIncreaseRate * deafFactor, VolumeLimit, 0.0f);
+                Distortion = Mathf.Clamp(Distortion += DistortionIncreaseRate * deafFactor, 0.0f, DistortionLimit);
             }
             else
             {
@@ -189,23 +152,14 @@ namespace RealismMod
                 Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", Volume + Plugin.AmbientVolume);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", Volume + Plugin.AmbientOccluded);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", Distortion + Plugin.CompressorResonance);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", Distortion + Plugin.Compressor);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", Distortion + Plugin.CompressorDistortion);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", Distortion + Plugin.CompressorDistortion);
 
-                /*   if (Plugin.HasHeadSet == false)
-                   {
-
-                   }
-                   else
-                   {
-                       Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", Distortion + Plugin.CompressorLowpass);
-                   }*/
+                if (Plugin.HasHeadSet == false)
+                {
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", Distortion + Plugin.Compressor);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", Distortion + Plugin.CompressorDistortion);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", Distortion + Plugin.CompressorDistortion);
+                }
             }
-      /*      else
-            {
-                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", Plugin.CompressorLowpass);
-            }*/
         }
     }
 
@@ -219,7 +173,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(GClass2015 template)
         {
-            Logger.LogWarning("=====================6======================");
+            Logger.LogWarning("=====================7======================");
             Logger.LogWarning("SetCompressor");
             bool flag = template != null;
 
@@ -244,7 +198,7 @@ namespace RealismMod
             }
 
 
-            float GunsVolume;
+ /*           float GunsVolume;
             Singleton<BetterAudio>.Instance.Master.GetFloat("GunsVolume", out GunsVolume);
             Logger.LogWarning("GunsVolume " + GunsVolume);
 
@@ -308,7 +262,7 @@ namespace RealismMod
             Logger.LogWarning("CompressorDistortion " + Plugin.CompressorDistortion);
             Logger.LogWarning("CompressorResonance " + Plugin.CompressorResonance);
             Logger.LogWarning("CompressorLowpass " + Plugin.CompressorLowpass);
-            Logger.LogWarning("=================================");
+            Logger.LogWarning("=================================");*/
         }
     }
 

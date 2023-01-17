@@ -11,6 +11,35 @@ using static EFT.Player;
 namespace RealismMod
 {
 
+    public class SpeedFactorPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Weapon).GetMethod("get_SpeedFactor", BindingFlags.Instance | BindingFlags.Public);
+
+        }
+        [PatchPostfix]
+        private static void PatchPostfix(ref Weapon __instance, ref float __result)
+        {
+
+            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
+            {
+                AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
+
+                float ammoDeafFactor = Math.Min(((currentAmmoTemplate.casingMass - 1) * 2) + 1, 1.15f) * ((1f - (((__result - 1) * 2) + 1)) + 1f);
+
+                if (currentAmmoTemplate.InitialSpeed * __result <= 340)
+                {
+                    ammoDeafFactor *= 0.5f;
+                }
+
+                Plugin.AmmoDeafFactor = ammoDeafFactor == 0 ? 1 : ammoDeafFactor;
+
+                Logger.LogWarning("ammoDeafFactor = " + ammoDeafFactor);
+            }
+        }
+    }
+
     public class SingleFireRatePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -297,6 +326,9 @@ namespace RealismMod
             string weapOpType = WeaponProperties.OperationType(__instance);
             string weapType = WeaponProperties.WeaponType(__instance);
 
+            string calibre = __instance.Template.ammoCaliber;
+            float currentLoudness = 0;
+
             bool weaponAllowsFSADS = WeaponProperties.WeaponAllowsADS(__instance);
             bool stockAllowsFSADS = false;
 
@@ -333,9 +365,10 @@ namespace RealismMod
                     float modShotDisp = AttachmentProperties.ModShotDispersion(__instance.Mods[i]);
                     string modType = AttachmentProperties.ModType(__instance.Mods[i]);
                     string position = StatCalc.GetModPosition(__instance.Mods[i], weapType, weapOpType, modType);
+                    float modLoudness = __instance.Mods[i].Loudness;
 
-                    StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber);
-                    StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp);
+                    StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness);
+                    StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, modLoudness, ref currentLoudness);
                 }
             }
             if (weaponAllowsFSADS == true || stockAllowsFSADS == true)
@@ -347,6 +380,14 @@ namespace RealismMod
                 WeaponProperties.WeaponCanFSADS = !hasShoulderContact;
             }
 
+            float totalLoudness = ((currentLoudness / 100) + 1f) * StatCalc.CalibreLoudnessFactor(calibre);
+
+            Logger.LogWarning("weapon calibre = " + calibre);
+            Logger.LogWarning("weapon CalibreLoudnessFactor = " + StatCalc.CalibreLoudnessFactor(calibre));
+            Logger.LogWarning("weapon currentLoudness = " + currentLoudness);
+            Logger.LogWarning("weapon loudness = " + totalLoudness);
+
+            Plugin.WeaponDeafFactor = totalLoudness;
             WeaponProperties.HasShoulderContact = hasShoulderContact;
             WeaponProperties.SDTotalErgo = currentErgo;
             WeaponProperties.SDTotalVRecoil = currentVRecoil;

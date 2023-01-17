@@ -121,10 +121,14 @@ namespace RealismMod
         public static float CompressorLowpass = 0f;
         public static float Compressor = 0f;
 
+
+        public static float EarProtectionFactor;
+        public static float AmmoDeafFactor;
+        public static float WeaponDeafFactor;
+
         public static bool HasHeadSet = false;
-        public static float EarProtectionFactor = 1f;
         public static CC_FastVignette Vignette;
- 
+
 
         private void GetPaths()
         {
@@ -357,6 +361,7 @@ namespace RealismMod
                 new VignettePatch().Enable();
                 new UpdatePhonesPatch().Enable();
                 new SetCompressorPatch().Enable();
+                new SpeedFactorPatch().Enable();  
             }
         }
 

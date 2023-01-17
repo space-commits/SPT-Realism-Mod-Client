@@ -265,7 +265,7 @@ namespace RealismMod
         }
 
 
-        public static void ModStatCalc(Mod mod, float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeed, float modReload, ref float currentReloadSpeed, float modFix, ref float currentFixSpeed, float modErgo, ref float currentErgo, float modVRecoil, ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeed, float modChamber, bool isDisplayDelta, string weapClass, ref float pureErgo, float modShotDisp, ref float currentShotDisp)
+        public static void ModStatCalc(Mod mod, float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeed, float modReload, ref float currentReloadSpeed, float modFix, ref float currentFixSpeed, float modErgo, ref float currentErgo, float modVRecoil, ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeed, float modChamber, bool isDisplayDelta, string weapClass, ref float pureErgo, float modShotDisp, ref float currentShotDisp, float modloudness, ref float currentLoudness)
         {
 
             float ergoWeightFactor = WeightStatCalc(StatCalc.ErgoWeightMult, modWeight) / 100f;
@@ -313,10 +313,14 @@ namespace RealismMod
             currentChamberSpeed = currentChamberSpeed + modChamber;
 
             currentFixSpeed = currentFixSpeed + modFix;
+
+            currentLoudness = currentLoudness + modloudness;
+
+
         }
 
 
-        public static void ModConditionalStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, ref string position, ref float modChamber)
+        public static void ModConditionalStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, ref string position, ref float modChamber, ref float modLoudness)
         {
             if (Helper.IsStock(mod) == true)
             {
@@ -450,6 +454,7 @@ namespace RealismMod
                     modCamRecoil = 0;
                     modDispersion = 0;
                     modAngle = 0;
+                    modLoudness = 0;
                 }
                 return;
             }
@@ -501,6 +506,7 @@ namespace RealismMod
                         modCamRecoil = 0;
                         modDispersion = 0;
                         modAngle = 0;
+                        modLoudness = 0;
                     }
                 }
                 return;
@@ -630,6 +636,63 @@ namespace RealismMod
                     modCamRecoil *= 1;
                     modErgo *= 1;
                     break;
+            }
+        }
+
+        public static float CalibreLoudnessFactor(string calibre)
+        {
+            switch (calibre)
+            {
+                case "Caliber9x18PM":
+                    return 2f;
+                case "Caliber1143x23ACP":
+                    return 2.35f;
+                case "Caliber57x28":
+                    return 2.65f;
+                case "Caliber9x21":
+                    return 2.6f;
+                case "Caliber762x25TT":
+                    return 2.75f;
+                case "Caliber46x30":
+                    return 2.7f;
+                case "Caliber9x19PARA":
+                    return 2.7f;
+                case "Caliber9x33R":
+                    return 3.2f;
+                case "Caliber762x35":
+                    return 2f;
+                case "Caliber9x39":
+                    return 1.8f;
+                case "Caliber762x39":
+                    return 2.5f;
+                case "Caliber556x45NATO":
+                    return 2.8f;
+                case "Caliber545x39":
+                    return 2.65f;
+                case "Caliber762x51":
+                    return 3f;
+                case "Caliber762x54R":
+                    return 3f;
+                case "Caliber127x55":
+                    return 3.5f;
+                case "Caliber86x70":
+                    return 5f;
+                case "Caliber127x108":
+                    return 5f;
+                case "Caliber23x75":
+                    return 3.5f;
+                case "Caliber12g":
+                    return 3f;
+                case "Caliber20g":
+                    return 2.5f;
+                case "Caliber30x29":
+                    return 2f;
+                case "Caliber40x46":
+                    return 1.5f;
+                case "Caliber40x53":
+                    return 1.5f;
+                default:
+                    return 1f;
             }
         }
 
