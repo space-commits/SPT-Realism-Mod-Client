@@ -130,8 +130,8 @@ namespace RealismMod
                 {
                     __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX * 1.35f;
                     __instance.RecoilStrengthXy.y = Plugin.currentVRecoilY * 1.35f;
-                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * 1.35f;
-                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * 1.35f;
+                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * 1.4f;
+                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * 1.4f;
                 }
                 else if (Plugin.ShotCount > 1)
                 {

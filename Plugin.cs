@@ -111,18 +111,20 @@ namespace RealismMod
         public static bool isBridgePresent = false;
         public static bool checkedForUniformAim = false;
 
-        public static float EarProtectionFactor = 1f;
-        public static float Volume = 0f;
-        public static float Distortion = 0f;
-        public static CC_FastVignette Vignette;
-        public static float VignetteDarkness = 0f;
 
         public static float MainVolume = 0f;
         public static float GunsVolume = 0f;
+        public static float AmbientVolume = 0f;
+        public static float AmbientOccluded = 0f;
         public static float CompressorDistortion = 0f;
         public static float CompressorResonance = 0f;
         public static float CompressorLowpass = 0f;
         public static float Compressor = 0f;
+
+        public static bool HasHeadSet = false;
+        public static float EarProtectionFactor = 1f;
+        public static CC_FastVignette Vignette;
+ 
 
         private void GetPaths()
         {
@@ -228,7 +230,7 @@ namespace RealismMod
                 sensResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Senisitivity Reset Rate", 1.2f, new ConfigDescription("Rate At Which Sensitivity Recovers After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 9 }));
 
                 vRecoilLimit = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Upper Limit", 15.0f, new ConfigDescription("The Upper Limit For Vertical Recoil Increase As A Multiplier. E.g Value Of 10 Is A Limit Of 10x Starting Recoil.", new AcceptableValueRange<float>(1f, 50f), new ConfigurationManagerAttributes { Order = 8 }));
-                vRecoilChangeMulti = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Change Rate Multi", 1.015f, new ConfigDescription("A Multiplier For The Vertical Recoil Increase Per Shot.", new AcceptableValueRange<float>(0.9f, 1.1f), new ConfigurationManagerAttributes { Order = 7 }));
+                vRecoilChangeMulti = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Change Rate Multi", 1.01f, new ConfigDescription("A Multiplier For The Vertical Recoil Increase Per Shot.", new AcceptableValueRange<float>(0.9f, 1.1f), new ConfigurationManagerAttributes { Order = 7 }));
                 vRecoilResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Reset Rate", 0.91f, new ConfigDescription("The Rate At Which Vertical Recoil Resets Over Time After Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 0.99f), new ConfigurationManagerAttributes { Order = 6 }));
                 hRecoilLimit = Config.Bind<float>(AdvancedRecoilSettings, "Rearward Recoil Upper Limit", 2.0f, new ConfigDescription("The Upper Limit For Rearward Recoil Increase As A Multiplier. E.g Value Of 10 Is A Limit Of 10x Starting Recoil.", new AcceptableValueRange<float>(1f, 50f), new ConfigurationManagerAttributes { Order = 5 }));
                 hRecoilChangeMulti = Config.Bind<float>(AdvancedRecoilSettings, "Rearward Recoil Change Rate Multi", 1.0f, new ConfigDescription("A Multiplier For The Rearward Recoil Increase Per Shot.", new AcceptableValueRange<float>(0.9f, 1.1f), new ConfigurationManagerAttributes { Order = 4 }));
@@ -354,6 +356,7 @@ namespace RealismMod
                 //Shot Effects
                 new VignettePatch().Enable();
                 new UpdatePhonesPatch().Enable();
+                new SetCompressorPatch().Enable();
             }
         }
 
@@ -537,31 +540,12 @@ namespace RealismMod
                     }
                 }
 
-                if (IsFiring == true)
-                {
-                    Vignette.enabled = true;
-                    Plugin.VignetteDarkness = Mathf.Clamp(Plugin.VignetteDarkness += 0.15f, 0.0f, 100.0f);
-                    Plugin.Volume = Mathf.Clamp(Plugin.Volume -= 0.07f, -25.0f, 0.0f);
-                    Plugin.Distortion = Mathf.Clamp(Plugin.Distortion += 0.15f, 0.0f, 200.0f);
-                }
 
-                Vignette.darkness = Plugin.VignetteDarkness;
-                Singleton<BetterAudio>.Instance.Master.SetFloat("MainVolume", Plugin.Volume);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", Plugin.Volume);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", Plugin.Distortion);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", Plugin.Distortion);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass",  Plugin.Distortion);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", Plugin.Distortion);
+                Deafening.DoDeafening();
 
-                Logger.LogWarning("Volume = " + Plugin.Volume);
-                Logger.LogWarning("Compressor Volume = " + Plugin.Compressor);
 
                 if (IsFiring == false)
                 {
-                    Plugin.VignetteDarkness = Mathf.Clamp(Plugin.VignetteDarkness -= 0.5f, 0.0f, 100.0f);
-                    Plugin.Volume = Mathf.Clamp(Plugin.Volume += 0.05f, -25.0f, 0.0f);
-                    Plugin.Distortion = Mathf.Clamp(Plugin.Distortion -= 0.15f, 0.0f, 200.0f);
-
                     if (startingSens <= currentSens && startingConvergence <= currentConvergence && StartingVRecoilX >= currentVRecoilX)
                     {
                         StatsAreReset = true;
