@@ -49,7 +49,8 @@ namespace RealismMod
             float fragchanceFactored = Mathf.Max(ammo.FragmentationChance * speedFactor, 0);
             float penPowerFactored = EFT.Ballistics.BallisticsCalculator.GetAmmoPenetrationPower(ammo, randomNum, __instance.Randoms) * speedFactor;
             float bcFactored = Mathf.Max(ammo.BallisticCoeficient * speedFactor, 0.01f);
- 
+
+
             /*            float penPowerUnfactored = EFT.Ballistics.BallisticsCalculator.GetAmmoPenetrationPower(ammo, randomNum, __instance.Randoms);
             */
             /* Logger.LogWarning("========================AFTER SPEED FACTOR============================");

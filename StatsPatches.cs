@@ -11,35 +11,6 @@ using static EFT.Player;
 namespace RealismMod
 {
 
-    public class SpeedFactorPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Weapon).GetMethod("get_SpeedFactor", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-        [PatchPostfix]
-        private static void PatchPostfix(ref Weapon __instance, ref float __result)
-        {
-
-            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
-            {
-                AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
-
-                float ammoDeafFactor = Math.Min(((currentAmmoTemplate.casingMass - 1) * 2) + 1, 1.15f) * ((1f - (((__result - 1) * 2) + 1)) + 1f);
-
-                if (currentAmmoTemplate.InitialSpeed * __result <= 340)
-                {
-                    ammoDeafFactor *= 0.5f;
-                }
-
-                Plugin.AmmoDeafFactor = ammoDeafFactor == 0 ? 1 : ammoDeafFactor;
-
-                Logger.LogWarning("ammoDeafFactor = " + ammoDeafFactor);
-            }
-        }
-    }
-
     public class SingleFireRatePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -381,11 +352,6 @@ namespace RealismMod
             }
 
             float totalLoudness = ((currentLoudness / 100) + 1f) * StatCalc.CalibreLoudnessFactor(calibre);
-
-            Logger.LogWarning("weapon calibre = " + calibre);
-            Logger.LogWarning("weapon CalibreLoudnessFactor = " + StatCalc.CalibreLoudnessFactor(calibre));
-            Logger.LogWarning("weapon currentLoudness = " + currentLoudness);
-            Logger.LogWarning("weapon loudness = " + totalLoudness);
 
             Plugin.WeaponDeafFactor = totalLoudness;
             WeaponProperties.HasShoulderContact = hasShoulderContact;

@@ -644,31 +644,31 @@ namespace RealismMod
             switch (calibre)
             {
                 case "Caliber9x18PM":
-                    return 2f;
-                case "Caliber1143x23ACP":
-                    return 2.35f;
+                    return 2.1f;
                 case "Caliber57x28":
-                    return 2.65f;
-                case "Caliber9x21":
-                    return 2.6f;
-                case "Caliber762x25TT":
-                    return 2.75f;
+                    return 2.4f;
                 case "Caliber46x30":
-                    return 2.7f;
+                    return 2.3f;
+                case "Caliber9x21":
+                    return 2.4f;
+                case "Caliber762x25TT":
+                    return 2.5f;
+                case "Caliber1143x23ACP":
+                    return 2.3f;
                 case "Caliber9x19PARA":
-                    return 2.7f;
+                    return 2.2f;
                 case "Caliber9x33R":
-                    return 3.2f;
+                    return 3.3f;
                 case "Caliber762x35":
-                    return 2f;
+                    return 1.9f;
                 case "Caliber9x39":
                     return 1.8f;
                 case "Caliber762x39":
                     return 2.5f;
+                case "Caliber545x39":
+                    return 2.7f;
                 case "Caliber556x45NATO":
                     return 2.8f;
-                case "Caliber545x39":
-                    return 2.65f;
                 case "Caliber762x51":
                     return 3f;
                 case "Caliber762x54R":
@@ -676,9 +676,9 @@ namespace RealismMod
                 case "Caliber127x55":
                     return 3.5f;
                 case "Caliber86x70":
-                    return 5f;
+                    return 8f;
                 case "Caliber127x108":
-                    return 5f;
+                    return 10f;
                 case "Caliber23x75":
                     return 3.5f;
                 case "Caliber12g":

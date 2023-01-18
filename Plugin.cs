@@ -62,7 +62,7 @@ namespace RealismMod
         public static bool IsAiming;
         public static float Timer = 0.0f;
         public static float ShotCount = 0;
-        private float PrevShotCount = ShotCount;
+        public static float PrevShotCount = ShotCount;
         private bool StatsAreReset;
 
         public static float StartingRecoilAngle;
@@ -546,8 +546,7 @@ namespace RealismMod
                 }
 
 
-                Deafening.DoDeafening();
-
+                Deafening.DoDeafeningAlt();
 
                 if (IsFiring == false)
                 {
@@ -563,6 +562,12 @@ namespace RealismMod
 
                 if (StatsAreReset == false && IsFiring == false)
                 {
+                    Logger.LogWarning("=================================");
+                    Logger.LogWarning("AmmoDeafFactor: " + Plugin.AmmoDeafFactor);
+                    Logger.LogWarning("WeaponDeafFactor: " + Plugin.WeaponDeafFactor);
+                    Logger.LogWarning("EarProtectionFactor: " + Plugin.EarProtectionFactor);
+                    Logger.LogWarning("=================================");
+
 
                     currentSens = Mathf.Clamp(currentSens * sensResetRate.Value, currentSens, startingSens);
 
