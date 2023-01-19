@@ -30,14 +30,14 @@ namespace RealismMod
             {
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
 
-                float ammoDeafFactor = Math.Min(((currentAmmoTemplate.ammoRec / 100f) * 2) + 1, 2f) * ((1f - (((__result - 1f) * 3f) + 1f)) + 1f);
+                float ammoDeafFactor = Math.Min(((currentAmmoTemplate.ammoRec / 100f) * 2f) + 1f, 2f) * ((1f - (((__result - 1f) * 2f) + 1f)) + 1f);
 
-                if (currentAmmoTemplate.InitialSpeed <= 340)
+                if (currentAmmoTemplate.InitialSpeed <= 335f)
                 {
-                    ammoDeafFactor *= 0.8f;
+                    ammoDeafFactor *= 0.7f;
                 }
 
-                Plugin.AmmoDeafFactor = ammoDeafFactor == 0 ? 1 : ammoDeafFactor;
+                Plugin.AmmoDeafFactor = ammoDeafFactor == 0f ? 1f : ammoDeafFactor;
 
             }
         }
@@ -85,7 +85,7 @@ namespace RealismMod
                 case "Low":
                     return 0.95f;
                 case "High":
-                    return 0.85f;
+                    return 0.9f;
                 default:
                     return 1f;
             }
@@ -150,9 +150,9 @@ namespace RealismMod
         public static float DistortionIncreaseRate = 0.17f;
         public static float VignetteDarknessIncreaseRate = 0.45f;
 
-        public static float VolumeResetRate = 0.03f;
-        public static float DistortionResetRate = 0.77f;
-        public static float VignetteDarknessResetRate = 0.7f;
+        public static float VolumeResetRate = 0.02f;
+        public static float DistortionResetRate = 0.7f;
+        public static float VignetteDarknessResetRate = 0.5f;
 
         public static void DoDeafening()
         {
@@ -206,19 +206,20 @@ namespace RealismMod
             Logger.LogWarning("SetCompressor");
 
             bool hasHeadsetTemplate = template != null;
-            bool isHelmet = template?._id == null;
+            bool isNotHeadset = template?._id == null; //using both bools is redundant now.
 
-            Logger.LogWarning("isHelmet = " + isHelmet);
+            Logger.LogWarning("isNotHeadset = " + isNotHeadset);
+            Logger.LogWarning("hasHeadsetTemplate = " + hasHeadsetTemplate);
 
-            Plugin.MainVolume = hasHeadsetTemplate && !isHelmet ? template.DryVolume : 0f;
-            Plugin.Compressor = hasHeadsetTemplate && !isHelmet ? template.CompressorVolume : -80f;
-            Plugin.AmbientVolume = hasHeadsetTemplate && !isHelmet ? template.AmbientVolume : 0f;
-            Plugin.AmbientOccluded = hasHeadsetTemplate && !isHelmet ? (template.AmbientVolume - 15f) : -5f;
-            Plugin.GunsVolume = hasHeadsetTemplate && !isHelmet ? (template.DryVolume - 30f) : 0f;
+            Plugin.MainVolume = hasHeadsetTemplate && !isNotHeadset ? template.DryVolume : 0f;
+            Plugin.Compressor = hasHeadsetTemplate && !isNotHeadset ? template.CompressorVolume : -80f;
+            Plugin.AmbientVolume = hasHeadsetTemplate && !isNotHeadset ? template.AmbientVolume : 0f;
+            Plugin.AmbientOccluded = hasHeadsetTemplate && !isNotHeadset ? (template.AmbientVolume - 15f) : -5f;
+            Plugin.GunsVolume = hasHeadsetTemplate && !isNotHeadset ? (template.DryVolume - 30f) : 0f;
 
-            Plugin.CompressorDistortion = hasHeadsetTemplate && !isHelmet ? template.Distortion : 0.277f;
-            Plugin.CompressorResonance = hasHeadsetTemplate && !isHelmet ? template.Resonance : 2.47f;
-            Plugin.CompressorLowpass = hasHeadsetTemplate && !isHelmet ? template.LowpassFreq : 22000f;
+            Plugin.CompressorDistortion = hasHeadsetTemplate && !isNotHeadset ? template.Distortion : 0.277f;
+            Plugin.CompressorResonance = hasHeadsetTemplate && !isNotHeadset ? template.Resonance : 2.47f;
+            Plugin.CompressorLowpass = hasHeadsetTemplate && !isNotHeadset ? template.LowpassFreq : 22000f;
 
             __instance.Master.SetFloat("Compressor", Plugin.Compressor);
             __instance.Master.SetFloat("OcclusionVolume", Plugin.MainVolume);
@@ -227,13 +228,13 @@ namespace RealismMod
             __instance.Master.SetFloat("AmbientOccluded", Plugin.AmbientOccluded);
             __instance.Master.SetFloat("GunsVolume", Plugin.GunsVolume);
 
-            __instance.Master.SetFloat("CompressorAttack", hasHeadsetTemplate && !isHelmet ? template.CompressorAttack : 35f);
-            __instance.Master.SetFloat("CompressorMakeup", hasHeadsetTemplate && !isHelmet ? template.CompressorGain : 10f);
-            __instance.Master.SetFloat("CompressorRelease", hasHeadsetTemplate && !isHelmet ? template.CompressorRelease : 215f);
-            __instance.Master.SetFloat("CompressorTreshold", hasHeadsetTemplate && !isHelmet ? template.CompressorTreshold : -20f);
+            __instance.Master.SetFloat("CompressorAttack", hasHeadsetTemplate && !isNotHeadset ? template.CompressorAttack : 35f);
+            __instance.Master.SetFloat("CompressorMakeup", hasHeadsetTemplate && !isNotHeadset ? template.CompressorGain : 10f);
+            __instance.Master.SetFloat("CompressorRelease", hasHeadsetTemplate && !isNotHeadset ? template.CompressorRelease : 215f);
+            __instance.Master.SetFloat("CompressorTreshold", hasHeadsetTemplate && !isNotHeadset ? template.CompressorTreshold : -20f);
             __instance.Master.SetFloat("CompressorDistortion", Plugin.CompressorDistortion);
             __instance.Master.SetFloat("CompressorResonance", Plugin.CompressorResonance);
-            __instance.Master.SetFloat("CompressorCutoff", hasHeadsetTemplate && !isHelmet ? template.CutoffFreq : 245f);
+            __instance.Master.SetFloat("CompressorCutoff", hasHeadsetTemplate && !isNotHeadset ? template.CutoffFreq : 245f);
             __instance.Master.SetFloat("CompressorLowpass", Plugin.CompressorLowpass);
 
 
@@ -241,6 +242,64 @@ namespace RealismMod
 
         }
     }
+
+    public class RegisterShotPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player.FirearmController).GetMethod("RegisterShot", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        public static float externalDeafenFactor = 1f;
+
+        private static float getMuzzleLoudness(Mod[] mods)
+        {
+            float loudness = 0f;
+            for (int i = 0; i < mods.Length; i++)
+            {
+                if (mods[i].Slots.Length > 0 && mods[i].Slots[0].ContainedItem != null && Helper.IsSilencer((Mod)mods[i].Slots[0].ContainedItem))
+                {
+                    return 0;
+                }
+                else
+                {
+                    loudness += mods[i].Template.Loudness;
+                }
+            }
+            return (loudness / 100) + 1f;
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(Player.FirearmController __instance, Weapon weapon)
+        {
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (player.IsAI)
+            {
+                float distanceFromPlayer = Vector3.Distance(__instance.gameObject.transform.position, Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position);
+                if (distanceFromPlayer <= 40f)
+                {
+                    AmmoTemplate currentAmmoTemplate = weapon.CurrentAmmoTemplate;
+                    float muzzleLoudness = getMuzzleLoudness(weapon.Mods) * StatCalc.CalibreLoudnessFactor(weapon.AmmoCaliber) * ((1f - (((weapon.SpeedFactor - 1f) * 2f) + 1f)) + 1f) * Math.Min(((currentAmmoTemplate.ammoRec / 100f) * 2f) + 1f, 2f);
+                    externalDeafenFactor = muzzleLoudness;
+                    Logger.LogWarning("=========================");
+                    Logger.LogWarning("Muzzle Loudness = " + muzzleLoudness);
+                    Logger.LogWarning("=========================");
+                }
+
+                //get as much info about shot as possible (calibre, suppressed or not/muzzle device loudness)
+                //get distance to player, if over a certain distance then ignore, if within that limit then increase deafen factor closer to player
+                //apply the effect in void update somehow.
+
+
+            }
+        }
+
+        public void DoExternalDeafening()
+        {
+
+        }
+    }
+
 
 
 }

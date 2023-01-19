@@ -124,6 +124,8 @@ namespace RealismMod
             return bool.Parse(weapon.ConflictingItems[9]);
         }
 
+        public static bool CanCycleSubs = false;
+
         public static string _WeapClass = "";
 
         public static bool ShouldGetSemiIncrease = false;

@@ -290,6 +290,7 @@ namespace RealismMod
                 {
                     new IsKnownMalfTypePatch().Enable();
                 }
+                new GetTotalMalfunctionChancePatch().Enable();
 
                 //Reload Patches
                 if (Plugin.enableReloadPatches.Value == true)
@@ -361,7 +362,8 @@ namespace RealismMod
                 new VignettePatch().Enable();
                 new UpdatePhonesPatch().Enable();
                 new SetCompressorPatch().Enable();
-                new SpeedFactorPatch().Enable();  
+                new SpeedFactorPatch().Enable();
+                new RegisterShotPatch().Enable();
             }
         }
 

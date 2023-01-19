@@ -308,6 +308,8 @@ namespace RealismMod
 
             bool hasShoulderContact = false;
 
+            bool canCycleSubs = false;
+
             if (WeaponProperties.WepHasShoulderContact(__instance) == true && !folded)
             {
                 hasShoulderContact = true;
@@ -338,6 +340,12 @@ namespace RealismMod
                     string position = StatCalc.GetModPosition(__instance.Mods[i], weapType, weapOpType, modType);
                     float modLoudness = __instance.Mods[i].Loudness;
 
+                    if (AttachmentProperties.CanCylceSubs(__instance.Mods[i]) == true)
+                    {
+                        Logger.LogWarning("Can Cycle Subs");
+                        canCycleSubs = true;
+                    }
+
                     StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness);
                     StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, modLoudness, ref currentLoudness);
                 }
@@ -354,6 +362,7 @@ namespace RealismMod
             float totalLoudness = ((currentLoudness / 100) + 1f) * StatCalc.CalibreLoudnessFactor(calibre);
 
             Plugin.WeaponDeafFactor = totalLoudness;
+            WeaponProperties.CanCycleSubs = canCycleSubs;
             WeaponProperties.HasShoulderContact = hasShoulderContact;
             WeaponProperties.SDTotalErgo = currentErgo;
             WeaponProperties.SDTotalVRecoil = currentVRecoil;
@@ -449,7 +458,7 @@ namespace RealismMod
                         string modType = AttachmentProperties.ModType(mod);
                         if (weapOpType != "buffer" && (modType == "buffer" || modType == "buffer_stock"))
                         {
-                            modsBurnRatio *= 1;
+                            modsBurnRatio *= 1f;
                         }
                         else
                         {
