@@ -545,8 +545,7 @@ namespace RealismMod
                     }
                 }
 
-
-                Deafening.DoDeafeningAlt();
+                Deafening.DoDeafening();
 
                 if (IsFiring == false)
                 {
@@ -562,12 +561,6 @@ namespace RealismMod
 
                 if (StatsAreReset == false && IsFiring == false)
                 {
-                    Logger.LogWarning("=================================");
-                    Logger.LogWarning("AmmoDeafFactor: " + Plugin.AmmoDeafFactor);
-                    Logger.LogWarning("WeaponDeafFactor: " + Plugin.WeaponDeafFactor);
-                    Logger.LogWarning("EarProtectionFactor: " + Plugin.EarProtectionFactor);
-                    Logger.LogWarning("=================================");
-
 
                     currentSens = Mathf.Clamp(currentSens * sensResetRate.Value, currentSens, startingSens);
 

@@ -654,9 +654,9 @@ namespace RealismMod
                 case "Caliber762x25TT":
                     return 2.5f;
                 case "Caliber1143x23ACP":
-                    return 2.3f;
-                case "Caliber9x19PARA":
                     return 2.2f;
+                case "Caliber9x19PARA":
+                    return 2.3f;
                 case "Caliber9x33R":
                     return 3.3f;
                 case "Caliber762x35":
@@ -664,11 +664,11 @@ namespace RealismMod
                 case "Caliber9x39":
                     return 1.8f;
                 case "Caliber762x39":
-                    return 2.5f;
+                    return 2.55f;
                 case "Caliber545x39":
-                    return 2.7f;
+                    return 2.65f;
                 case "Caliber556x45NATO":
-                    return 2.8f;
+                    return 2.75f;
                 case "Caliber762x51":
                     return 3f;
                 case "Caliber762x54R":
@@ -678,7 +678,7 @@ namespace RealismMod
                 case "Caliber86x70":
                     return 8f;
                 case "Caliber127x108":
-                    return 10f;
+                    return 8f;
                 case "Caliber23x75":
                     return 3.5f;
                 case "Caliber12g":
