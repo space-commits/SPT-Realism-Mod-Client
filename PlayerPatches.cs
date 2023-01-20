@@ -1,13 +1,95 @@
 ﻿using Aki.Reflection.Patching;
 using Aki.Reflection.Utils;
+using EFT;
 using System;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 
 
 namespace RealismMod
 {
+    public class PlayerLateUpdatePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
 
+        [PatchPostfix]
+        private static void PatchPostfix(Player __instance)
+        {
+            if (Helper.CheckIsReady())
+            {
+                Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
+                PlayerInjuryStateCheck(__instance);
+                if (fc != null)
+                {
+                    ReloadStateCheck(__instance, fc);
+                }
+            }
+        }
+
+
+        public static void PlayerInjuryStateCheck(Player player)
+        {
+            bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
+            bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);
+
+            if (rightArmDamaged == false && leftArmDamaged == false)
+            {
+                PlayerProperties.AimMoveSpeedBase = 0.42f;
+                PlayerProperties.ErgoDeltaInjuryMulti = 1f;
+                PlayerProperties.ADSInjuryMulti = 1f;
+                PlayerProperties.ReloadInjuryMulti = 1f;
+                PlayerProperties.RecoilInjuryMulti = 1f;
+            }
+            else if (rightArmDamaged == true && leftArmDamaged == false)
+            {
+                PlayerProperties.AimMoveSpeedBase = 0.39f;
+                PlayerProperties.ErgoDeltaInjuryMulti = 1.5f;
+                PlayerProperties.ADSInjuryMulti = 0.8f;
+                PlayerProperties.ReloadInjuryMulti = 0.85f;
+                PlayerProperties.RecoilInjuryMulti = 1.05f;
+            }
+            else if (rightArmDamaged == false && leftArmDamaged == true)
+            {
+                PlayerProperties.AimMoveSpeedBase = 0.35f;
+                PlayerProperties.ErgoDeltaInjuryMulti = 2f;
+                PlayerProperties.ADSInjuryMulti = 0.7f;
+                PlayerProperties.ReloadInjuryMulti = 0.8f;
+                PlayerProperties.RecoilInjuryMulti = 1.1f;
+            }
+            else if (rightArmDamaged == true && leftArmDamaged == true)
+            {
+                PlayerProperties.AimMoveSpeedBase = 0.3f;
+                PlayerProperties.ErgoDeltaInjuryMulti = 3.5f;
+                PlayerProperties.ADSInjuryMulti = 0.6f;
+                PlayerProperties.ReloadInjuryMulti = 0.75f;
+                PlayerProperties.RecoilInjuryMulti = 1.15f;
+            }
+        }
+
+        public static void ReloadStateCheck(Player player, EFT.Player.FirearmController fc)
+        {
+            Helper.IsInReloadOpertation = fc.IsInReloadOperation();
+
+            if (Helper.IsInReloadOpertation == true)
+            {
+                if (Helper.IsAttemptingToReloadInternalMag == true)
+                {
+                    float reloadBonus = 0.17f;
+
+                    player.HandsAnimator.SetAnimationSpeed(reloadBonus + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
+                }
+            }
+            else
+            {
+                Helper.IsAttemptingToReloadInternalMag = false;
+                Helper.IsAttemptingRevolverReload = false;
+            }
+        }
+    }
     public class EnduranceSprintActionPatch : ModulePatch
     {
 

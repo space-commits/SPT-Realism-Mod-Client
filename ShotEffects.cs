@@ -12,6 +12,7 @@ using HarmonyLib;
 using Aki.Reflection.Utils;
 using UnityEngine.Rendering.PostProcessing;
 using notGreg.UniformAim;
+using static EFT.Interactive.BetterPropagationGroups;
 
 namespace RealismMod
 {
@@ -124,11 +125,8 @@ namespace RealismMod
         {
             if (__instance.IsYourPlayer)
             {
-                Logger.LogWarning("UpdatePhones");
                 EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
                 Plugin.EarProtectionFactor = HeadsetDeafFactor(equipment) * HelmDeafFactor(equipment);
-                Logger.LogWarning("Plugin.EarProtectionFactor = " + Plugin.EarProtectionFactor);
-                Logger.LogWarning("Plugin.HasHeadSet = " + Plugin.HasHeadSet);
             }
 
         }
@@ -137,28 +135,53 @@ namespace RealismMod
     public static class Deafening
     {
 
-        //alt
+        //player
         public static float Volume = 0f;
         public static float Distortion = 0f;
         public static float VignetteDarkness = 0f;
 
-        public static float VolumeLimit = -45f;
-        public static float DistortionLimit = 150f;
+        public static float VolumeLimit = -35f;
+        public static float DistortionLimit = 100f;
         public static float VignetteDarknessLimit = 12f;
 
-        public static float VolumeDecreaseRate = 0.025f;
+        public static float VolumeDecreaseRate = 0.015f;
         public static float DistortionIncreaseRate = 0.17f;
         public static float VignetteDarknessIncreaseRate = 0.45f;
 
-        public static float VolumeResetRate = 0.02f;
+        public static float VolumeResetRate = 0.03f;
         public static float DistortionResetRate = 0.7f;
         public static float VignetteDarknessResetRate = 0.5f;
 
-        public static void DoDeafening()
-        {
-            float deafFactor = Plugin.AmmoDeafFactor * Plugin.WeaponDeafFactor * Plugin.EarProtectionFactor;
+        //bot
+        public static float BotVolume = 0f;
+        public static float BotDistortion = 0f;
+        public static float BotVignetteDarkness = 0f;
 
-            if (Plugin.IsFiring)
+        //grenade
+        public static float GrenadeVolume = 0f;
+        public static float GrenadeDistortion = 0f;
+        public static float GrenadeVignetteDarkness = 0f;
+
+        public static float GrenadeVolumeLimit = -50f;
+        public static float GrenadeDistortionLimit = 100f;
+        public static float GrenadeVignetteDarknessLimit = 70f;
+
+        public static float GrenadeVolumeDecreaseRate = 0.1f;
+        public static float GrenadeDistortionIncreaseRate = 0.5f;
+        public static float GrenadeVignetteDarknessIncreaseRate = 1f;
+
+        public static float GrenadeVolumeResetRate = 0.01f;
+        public static float GrenadeDistortionResetRate = 0.1f;
+        public static float GrenadeVignetteDarknessResetRate = 0.1f;
+
+        public static void DoDeafening(BepInEx.Logging.ManualLogSource logger)
+        {
+
+            float deafFactor = Plugin.AmmoDeafFactor * Plugin.WeaponDeafFactor * Plugin.EarProtectionFactor;
+            float botDeafFactor = Plugin.BotDeafFactor * Plugin.EarProtectionFactor;
+            float grenadeDeafFactor = Plugin.GrenadeDeafFactor * Plugin.EarProtectionFactor;
+
+            if (Plugin.IsFiring == true)
             {
                 Plugin.Vignette.enabled = true;
                 VignetteDarkness = Mathf.Clamp(VignetteDarkness + (VignetteDarknessIncreaseRate * deafFactor), 0.0f, VignetteDarknessLimit * deafFactor);
@@ -173,21 +196,60 @@ namespace RealismMod
                 Distortion = Mathf.Clamp(Distortion - DistortionResetRate, 0.0f, DistortionLimit);
             }
 
-            if (Volume != 0 || Distortion != 0)
+
+            if (Plugin.IsBotFiring == true)
             {
-                Plugin.Vignette.darkness = VignetteDarkness;
-                Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", Volume + Plugin.GunsVolume);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("OcclusionVolume", Volume + Plugin.MainVolume);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", Volume + Plugin.MainVolume);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", Volume + Plugin.AmbientVolume);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", Volume + Plugin.AmbientOccluded);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", Distortion + Plugin.CompressorResonance);
+                Plugin.Vignette.enabled = true;
+                BotVignetteDarkness = Mathf.Clamp(BotVignetteDarkness + (VignetteDarknessIncreaseRate * botDeafFactor), 0.0f, VignetteDarknessLimit * botDeafFactor);
+                BotVolume = Mathf.Clamp(BotVolume - (VolumeDecreaseRate * botDeafFactor), VolumeLimit, 0.0f);
+                BotDistortion = Mathf.Clamp(BotDistortion + (DistortionIncreaseRate * botDeafFactor), 0.0f, DistortionLimit);
+            }
+            else
+            {
+
+                BotVignetteDarkness = Mathf.Clamp(BotVignetteDarkness - VignetteDarknessResetRate, 0.0f, VignetteDarknessLimit * botDeafFactor);
+                BotVolume = Mathf.Clamp(BotVolume + VolumeResetRate, VolumeLimit, 0.0f);
+                BotDistortion = Mathf.Clamp(BotDistortion - DistortionResetRate, 0.0f, DistortionLimit);
+            }
+
+            if (Plugin.GrenadeExploded == true)
+            {
+                Plugin.Vignette.enabled = true;
+                GrenadeVignetteDarkness = Mathf.Clamp(GrenadeVignetteDarkness + GrenadeVignetteDarknessIncreaseRate, 0.0f, GrenadeVignetteDarknessLimit);
+                GrenadeVolume = Mathf.Clamp(GrenadeVolume - (GrenadeVolumeDecreaseRate * grenadeDeafFactor), GrenadeVolumeLimit, 0.0f);
+                GrenadeDistortion = Mathf.Clamp(GrenadeDistortion + (GrenadeDistortionIncreaseRate * grenadeDeafFactor * 2f), 0.0f, GrenadeDistortionLimit);
+            }
+            else
+            {
+                GrenadeVignetteDarkness = Mathf.Clamp(GrenadeVignetteDarkness - GrenadeVignetteDarknessResetRate, 0.0f, GrenadeVignetteDarknessLimit);
+                GrenadeVolume = Mathf.Clamp(GrenadeVolume + GrenadeVolumeResetRate, GrenadeVolumeLimit, 0.0f);
+                GrenadeDistortion = Mathf.Clamp(GrenadeDistortion - GrenadeDistortionResetRate, 0.0f, GrenadeDistortionLimit);
+            }
+
+            if (Volume != 0 || Distortion != 0 || BotVolume != 0 || BotDistortion != 0 || GrenadeVolume != 0 || GrenadeDistortion != 0)
+            {
+                float totalVolume = (float)Math.Round(Volume + BotVolume + GrenadeVolume, 4);
+                float totalDistortion = (float)Math.Round(Distortion + BotDistortion + GrenadeDistortion, 4);
+
+                Plugin.Vignette.darkness = (float)Math.Round(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 4);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", totalVolume + Plugin.GunsVolume);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("OcclusionVolume", totalVolume + Plugin.MainVolume);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", totalVolume + Plugin.MainVolume);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", totalVolume + Plugin.AmbientVolume);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", totalVolume + Plugin.AmbientOccluded);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", totalDistortion + Plugin.CompressorResonance);
+
+                logger.LogWarning("==========================");
+                logger.LogWarning("Volume = " + totalVolume);
+                logger.LogWarning("Distorion = " + totalDistortion);
+                logger.LogWarning("Vignette = " + Plugin.Vignette.darkness);
+                logger.LogWarning("==========================");
 
                 if (Plugin.HasHeadSet == false)
                 {
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", Distortion + Plugin.Compressor);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", Distortion + Plugin.CompressorDistortion);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", Distortion + Plugin.CompressorDistortion);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", totalDistortion + Plugin.Compressor);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", totalDistortion + Plugin.CompressorDistortion);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", totalDistortion + Plugin.CompressorDistortion);
                 }
             }
         }
@@ -203,13 +265,9 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(GClass2015 template, BetterAudio __instance)
         {
-            Logger.LogWarning("SetCompressor");
 
             bool hasHeadsetTemplate = template != null;
             bool isNotHeadset = template?._id == null; //using both bools is redundant now.
-
-            Logger.LogWarning("isNotHeadset = " + isNotHeadset);
-            Logger.LogWarning("hasHeadsetTemplate = " + hasHeadsetTemplate);
 
             Plugin.MainVolume = hasHeadsetTemplate && !isNotHeadset ? template.DryVolume : 0f;
             Plugin.Compressor = hasHeadsetTemplate && !isNotHeadset ? template.CompressorVolume : -80f;
@@ -237,9 +295,7 @@ namespace RealismMod
             __instance.Master.SetFloat("CompressorCutoff", hasHeadsetTemplate && !isNotHeadset ? template.CutoffFreq : 245f);
             __instance.Master.SetFloat("CompressorLowpass", Plugin.CompressorLowpass);
 
-
             return false;
-
         }
     }
 
@@ -250,7 +306,6 @@ namespace RealismMod
             return typeof(Player.FirearmController).GetMethod("RegisterShot", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
-        public static float externalDeafenFactor = 1f;
 
         private static float getMuzzleLoudness(Mod[] mods)
         {
@@ -276,30 +331,44 @@ namespace RealismMod
             if (player.IsAI)
             {
                 float distanceFromPlayer = Vector3.Distance(__instance.gameObject.transform.position, Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position);
-                if (distanceFromPlayer <= 40f)
+                if (distanceFromPlayer <= 25f)
                 {
+                    Plugin.IsBotFiring = true;
                     AmmoTemplate currentAmmoTemplate = weapon.CurrentAmmoTemplate;
                     float muzzleLoudness = getMuzzleLoudness(weapon.Mods) * StatCalc.CalibreLoudnessFactor(weapon.AmmoCaliber) * ((1f - (((weapon.SpeedFactor - 1f) * 2f) + 1f)) + 1f) * Math.Min(((currentAmmoTemplate.ammoRec / 100f) * 2f) + 1f, 2f);
-                    externalDeafenFactor = muzzleLoudness;
-                    Logger.LogWarning("=========================");
-                    Logger.LogWarning("Muzzle Loudness = " + muzzleLoudness);
-                    Logger.LogWarning("=========================");
+                    Plugin.BotDeafFactor = (muzzleLoudness * 2f) * ((-distanceFromPlayer / 100f) + 1f);
+                    Logger.LogWarning("==============");
+                    Logger.LogWarning("Bot Shot");
+                    Logger.LogWarning("distance = " + distanceFromPlayer);
+                    Logger.LogWarning("BotDeafFactor = " + Plugin.BotDeafFactor);
+                    Logger.LogWarning("==============");
+
                 }
-
-                //get as much info about shot as possible (calibre, suppressed or not/muzzle device loudness)
-                //get distance to player, if over a certain distance then ignore, if within that limit then increase deafen factor closer to player
-                //apply the effect in void update somehow.
-
-
             }
-        }
-
-        public void DoExternalDeafening()
-        {
-
         }
     }
 
+    public class ExplosionPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Grenade).GetMethod("Explosion", BindingFlags.Static | BindingFlags.Public);
+        }
 
-
+        [PatchPrefix]
+        static void PreFix(GInterface113 grenadeItem, Vector3 grenadePosition)
+        {
+            float distanceFromPlayer = Vector3.Distance(grenadePosition, Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position);
+            if (distanceFromPlayer <= 25f)
+            {
+                Plugin.GrenadeExploded = true;
+                Plugin.GrenadeDeafFactor = grenadeItem.Contusion.z * ((-distanceFromPlayer / 100f) + 1f);
+                Logger.LogWarning("==============");
+                Logger.LogWarning("Explosion");
+                Logger.LogWarning("distance = " + distanceFromPlayer);
+                Logger.LogWarning("GrenadeDeafFactor = " + Plugin.GrenadeDeafFactor);
+                Logger.LogWarning("==============");
+            }
+        }
+    }
 }

@@ -108,12 +108,6 @@ namespace RealismMod
         }
 
 
-        /*        public static float ergoWeightCalc(float totalWeight, float totalErgoDelta)
-                {
-                    float factoredWeight = totalWeight * (1 - (totalErgoDelta * 0.2f));
-                    return Mathf.Clamp((float)(Math.Pow(factoredWeight * 1.78, 3.5) + 1) / 200, 1f, 115f);
-                }*/
-
         public static float ErgoWeightCalc(float totalWeight, float pureErgoDelta, float totalTorque)
         {
             float totalTorqueFactorInverse = totalTorque / 100f * -1f;
@@ -315,8 +309,6 @@ namespace RealismMod
             currentFixSpeed = currentFixSpeed + modFix;
 
             currentLoudness = currentLoudness + modloudness;
-
-
         }
 
 
@@ -680,11 +672,11 @@ namespace RealismMod
                 case "Caliber127x108":
                     return 8f;
                 case "Caliber23x75":
-                    return 3.5f;
+                    return 4f;
                 case "Caliber12g":
-                    return 3f;
+                    return 3.5f;
                 case "Caliber20g":
-                    return 2.5f;
+                    return 3f;
                 case "Caliber30x29":
                     return 2f;
                 case "Caliber40x46":

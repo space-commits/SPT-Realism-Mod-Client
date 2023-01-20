@@ -342,7 +342,6 @@ namespace RealismMod
 
                     if (AttachmentProperties.CanCylceSubs(__instance.Mods[i]) == true)
                     {
-                        Logger.LogWarning("Can Cycle Subs");
                         canCycleSubs = true;
                     }
 

@@ -23,13 +23,8 @@ namespace RealismMod
 
                 if (WeaponProperties.CanCycleSubs == false && ammoToFire.ammoHear == 1)
                 {
-                    Logger.LogWarning("Can't Cycle Subs");
-
                     __result = 0.9f;
                 }
-                Logger.LogWarning("Malf Chance = " + __result);
-                Logger.LogWarning("CanCycleSubs = " + WeaponProperties.CanCycleSubs);
-                Logger.LogWarning("ammoHear = " + ammoToFire.ammoHear);
             }
 
         }

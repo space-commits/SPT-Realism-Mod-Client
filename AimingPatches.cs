@@ -16,25 +16,13 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(ref EFT.Player.FirearmController __instance, ref bool ____isAiming)
+        private static void PatchPostfix(EFT.Player.FirearmController __instance, ref bool ____isAiming)
         {
             if (Helper.IsReady == true)
             {
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
-  
                 if (!player.IsAI)
                 {
-                    PlayerUpdate(__instance, player); 
-                    FaceShieldComponent component = player.FaceShieldObserver.Component;
-                    bool isOn = component != null && (component.Togglable == null || component.Togglable.On);
-                    if (isOn && !WeaponProperties.WeaponCanFSADS && !FaceShieldProperties.AllowsADS(component.Item))
-                    {
-                        Helper.IsAllowedAim = false;
-                    }
-                    else
-                    {
-                        Helper.IsAllowedAim = true;
-                    }
                     Plugin.IsAiming = ____isAiming;
                 }
             }
@@ -109,18 +97,21 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix()
+        private static bool Prefix(EFT.Player.FirearmController __instance)
         {
-
+            Logger.LogWarning("ToggleAim");
             if (Plugin.enableFSPatch.Value == true)
             {
-                if (Helper.IsAllowedAim)
+                Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
+                FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
+                bool isOn = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
+                if (isOn && !WeaponProperties.WeaponCanFSADS && !FaceShieldProperties.AllowsADS(fsComponent.Item))
                 {
-                    return true;
+                    return false;
                 }
                 else
                 {
-                    return false;
+                    return true;
                 }
             }
             else
