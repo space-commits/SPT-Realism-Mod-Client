@@ -146,7 +146,7 @@ namespace RealismMod
 
         public static float FoldedVRecoilFactor = 1.55f;
 
-        public static float FoldedCOIFactor = 0.025f;
+        public static float FoldedCOIFactor = 2f;
 
         public static float FoldedCamRecoilFactor = 0.5f;
 

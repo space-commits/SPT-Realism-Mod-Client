@@ -16,34 +16,6 @@ using static EFT.Interactive.BetterPropagationGroups;
 
 namespace RealismMod
 {
-    public class SpeedFactorPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Weapon).GetMethod("get_SpeedFactor", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-        [PatchPostfix]
-        private static void PatchPostfix(ref Weapon __instance, ref float __result)
-        {
-
-            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
-            {
-                AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
-
-                float ammoDeafFactor = Math.Min(((currentAmmoTemplate.ammoRec / 100f) * 2f) + 1f, 2f) * ((1f - (((__result - 1f) * 2f) + 1f)) + 1f);
-
-                if (currentAmmoTemplate.InitialSpeed <= 335f)
-                {
-                    ammoDeafFactor *= 0.7f;
-                }
-
-                Plugin.AmmoDeafFactor = ammoDeafFactor == 0f ? 1f : ammoDeafFactor;
-
-            }
-        }
-    }
-
     public class VignettePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -140,17 +112,17 @@ namespace RealismMod
         public static float Distortion = 0f;
         public static float VignetteDarkness = 0f;
 
-        public static float VolumeLimit = -35f;
-        public static float DistortionLimit = 100f;
-        public static float VignetteDarknessLimit = 12f;
+        public static float VolumeLimit = -40f;
+        public static float DistortionLimit = 70f;
+        public static float VignetteDarknessLimit = 14f;
 
-        public static float VolumeDecreaseRate = 0.015f;
+        public static float VolumeDecreaseRate = 0.02f;
         public static float DistortionIncreaseRate = 0.17f;
         public static float VignetteDarknessIncreaseRate = 0.45f;
 
-        public static float VolumeResetRate = 0.03f;
-        public static float DistortionResetRate = 0.7f;
-        public static float VignetteDarknessResetRate = 0.5f;
+        public static float VolumeResetRate = 0.025f;
+        public static float DistortionResetRate = 0.25f;
+        public static float VignetteDarknessResetRate = 0.6f;
 
         //bot
         public static float BotVolume = 0f;
@@ -162,17 +134,19 @@ namespace RealismMod
         public static float GrenadeDistortion = 0f;
         public static float GrenadeVignetteDarkness = 0f;
 
-        public static float GrenadeVolumeLimit = -50f;
-        public static float GrenadeDistortionLimit = 100f;
-        public static float GrenadeVignetteDarknessLimit = 70f;
+        public static float GrenadeVolumeLimit = -45f;
+        public static float GrenadeDistortionLimit = 50f;
+        public static float GrenadeVignetteDarknessLimit = 10f;
 
         public static float GrenadeVolumeDecreaseRate = 0.1f;
         public static float GrenadeDistortionIncreaseRate = 0.5f;
         public static float GrenadeVignetteDarknessIncreaseRate = 1f;
 
-        public static float GrenadeVolumeResetRate = 0.01f;
+        public static float GrenadeVolumeResetRate = 0.02f;
         public static float GrenadeDistortionResetRate = 0.1f;
         public static float GrenadeVignetteDarknessResetRate = 0.1f;
+
+        public static bool valuesAreReset = false;
 
         public static void DoDeafening(BepInEx.Logging.ManualLogSource logger)
         {
@@ -183,55 +157,41 @@ namespace RealismMod
 
             if (Plugin.IsFiring == true)
             {
-                Plugin.Vignette.enabled = true;
-                VignetteDarkness = Mathf.Clamp(VignetteDarkness + (VignetteDarknessIncreaseRate * deafFactor), 0.0f, VignetteDarknessLimit * deafFactor);
-                Volume = Mathf.Clamp(Volume - (VolumeDecreaseRate * deafFactor), VolumeLimit, 0.0f);
-                Distortion = Mathf.Clamp(Distortion + (DistortionIncreaseRate * deafFactor), 0.0f, DistortionLimit);
+                changeValue(deafFactor, ref VignetteDarkness, VignetteDarknessIncreaseRate, VignetteDarknessLimit, ref Volume, VolumeDecreaseRate, VolumeLimit, ref Distortion, DistortionIncreaseRate, DistortionLimit);
             }
-            else
+            else if (valuesAreReset == false)
             {
-
-                VignetteDarkness = Mathf.Clamp(VignetteDarkness - VignetteDarknessResetRate, 0.0f, VignetteDarknessLimit * deafFactor);
-                Volume = Mathf.Clamp(Volume + VolumeResetRate, VolumeLimit, 0.0f);
-                Distortion = Mathf.Clamp(Distortion - DistortionResetRate, 0.0f, DistortionLimit);
+                resetValue(deafFactor, ref VignetteDarkness, VignetteDarknessResetRate, VignetteDarknessLimit, ref Volume, VolumeResetRate, VolumeLimit, ref Distortion, DistortionResetRate, DistortionLimit);
             }
 
 
             if (Plugin.IsBotFiring == true)
             {
-                Plugin.Vignette.enabled = true;
-                BotVignetteDarkness = Mathf.Clamp(BotVignetteDarkness + (VignetteDarknessIncreaseRate * botDeafFactor), 0.0f, VignetteDarknessLimit * botDeafFactor);
-                BotVolume = Mathf.Clamp(BotVolume - (VolumeDecreaseRate * botDeafFactor), VolumeLimit, 0.0f);
-                BotDistortion = Mathf.Clamp(BotDistortion + (DistortionIncreaseRate * botDeafFactor), 0.0f, DistortionLimit);
+                changeValue(botDeafFactor, ref BotVignetteDarkness, VignetteDarknessIncreaseRate, VignetteDarknessLimit, ref BotVolume, VolumeDecreaseRate, VolumeLimit, ref BotDistortion, DistortionIncreaseRate, DistortionLimit);
             }
-            else
+            else if (valuesAreReset == false)
             {
-
-                BotVignetteDarkness = Mathf.Clamp(BotVignetteDarkness - VignetteDarknessResetRate, 0.0f, VignetteDarknessLimit * botDeafFactor);
-                BotVolume = Mathf.Clamp(BotVolume + VolumeResetRate, VolumeLimit, 0.0f);
-                BotDistortion = Mathf.Clamp(BotDistortion - DistortionResetRate, 0.0f, DistortionLimit);
+                resetValue(botDeafFactor, ref BotVignetteDarkness, VignetteDarknessResetRate, VignetteDarknessLimit, ref BotVolume, VolumeResetRate, VolumeLimit, ref BotDistortion, DistortionResetRate, DistortionLimit);
             }
 
             if (Plugin.GrenadeExploded == true)
             {
-                Plugin.Vignette.enabled = true;
-                GrenadeVignetteDarkness = Mathf.Clamp(GrenadeVignetteDarkness + GrenadeVignetteDarknessIncreaseRate, 0.0f, GrenadeVignetteDarknessLimit);
-                GrenadeVolume = Mathf.Clamp(GrenadeVolume - (GrenadeVolumeDecreaseRate * grenadeDeafFactor), GrenadeVolumeLimit, 0.0f);
-                GrenadeDistortion = Mathf.Clamp(GrenadeDistortion + (GrenadeDistortionIncreaseRate * grenadeDeafFactor * 2f), 0.0f, GrenadeDistortionLimit);
+                changeValue(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessIncreaseRate, GrenadeVignetteDarknessLimit, ref GrenadeVolume, GrenadeVolumeDecreaseRate, GrenadeVolumeLimit, ref GrenadeDistortion, GrenadeDistortionIncreaseRate, GrenadeDistortionLimit);
             }
-            else
+            else if (valuesAreReset == false)
             {
-                GrenadeVignetteDarkness = Mathf.Clamp(GrenadeVignetteDarkness - GrenadeVignetteDarknessResetRate, 0.0f, GrenadeVignetteDarknessLimit);
-                GrenadeVolume = Mathf.Clamp(GrenadeVolume + GrenadeVolumeResetRate, GrenadeVolumeLimit, 0.0f);
-                GrenadeDistortion = Mathf.Clamp(GrenadeDistortion - GrenadeDistortionResetRate, 0.0f, GrenadeDistortionLimit);
+                resetValue(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessResetRate, GrenadeVignetteDarknessLimit, ref GrenadeVolume, GrenadeVolumeResetRate, GrenadeVolumeLimit, ref GrenadeDistortion, GrenadeDistortionResetRate, GrenadeDistortionLimit);
             }
 
-            if (Volume != 0 || Distortion != 0 || BotVolume != 0 || BotDistortion != 0 || GrenadeVolume != 0 || GrenadeDistortion != 0)
-            {
-                float totalVolume = (float)Math.Round(Volume + BotVolume + GrenadeVolume, 4);
-                float totalDistortion = (float)Math.Round(Distortion + BotDistortion + GrenadeDistortion, 4);
 
-                Plugin.Vignette.darkness = (float)Math.Round(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 4);
+            float totalVolume = Mathf.Clamp(Volume + BotVolume + GrenadeVolume, -45.0f, 0.0f);
+            float totalDistortion = Mathf.Clamp(Distortion + BotDistortion + GrenadeDistortion, 0.0f, 70.0f);
+            float totalVignette = Mathf.Clamp(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 0.0f, 90.0f);
+
+            //for some reason this prevents the values from being fully reset to 0
+            if (totalVolume != 0.0f || totalDistortion != 0.0f || totalVignette != 0.0f)
+            {
+                Plugin.Vignette.darkness = totalVignette;
                 Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", totalVolume + Plugin.GunsVolume);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("OcclusionVolume", totalVolume + Plugin.MainVolume);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", totalVolume + Plugin.MainVolume);
@@ -239,11 +199,12 @@ namespace RealismMod
                 Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", totalVolume + Plugin.AmbientOccluded);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", totalDistortion + Plugin.CompressorResonance);
 
-                logger.LogWarning("==========================");
+/*                logger.LogWarning("==========================");
+                logger.LogWarning("Deaf Factor = " + deafFactor);
                 logger.LogWarning("Volume = " + totalVolume);
                 logger.LogWarning("Distorion = " + totalDistortion);
                 logger.LogWarning("Vignette = " + Plugin.Vignette.darkness);
-                logger.LogWarning("==========================");
+                logger.LogWarning("==========================");*/
 
                 if (Plugin.HasHeadSet == false)
                 {
@@ -251,7 +212,30 @@ namespace RealismMod
                     Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", totalDistortion + Plugin.CompressorDistortion);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", totalDistortion + Plugin.CompressorDistortion);
                 }
+                valuesAreReset = false;
             }
+            else
+            {
+                Plugin.Vignette.enabled = false;
+                valuesAreReset = true;
+            }
+        }
+
+        private static void changeValue(float deafFactor, ref float vigValue, float vigIncRate, float vigLimit, ref float volValue, float volDecRate, float volLimit, ref float distValue, float distIncRate, float distLimit)
+        {
+
+            Plugin.Vignette.enabled = true;
+            vigValue = Mathf.Clamp(vigValue + (vigIncRate * deafFactor), 0.0f, vigLimit * deafFactor);
+            volValue = Mathf.Clamp(volValue - (volDecRate * deafFactor), volLimit, 0.0f);
+            distValue = Mathf.Clamp(distValue + (distIncRate * deafFactor), 0.0f, distLimit);
+        }
+
+        private static void resetValue(float deafFactor, ref float vigValue, float vigResetRate, float vigLimit, ref float volValue, float volResetRate, float volLimit, ref float distValue, float distResetRate, float distLimit)
+        {
+
+            vigValue = Mathf.Clamp(vigValue - vigResetRate, 0.0f, vigLimit * deafFactor);
+            volValue = Mathf.Clamp(volValue + volResetRate, volLimit, 0.0f);
+            distValue = Mathf.Clamp(distValue - distResetRate, 0.0f, distLimit);
         }
     }
 
@@ -328,17 +312,45 @@ namespace RealismMod
         private static void PatchPostfix(Player.FirearmController __instance, Weapon weapon)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (player.IsAI)
+
+            if (!player.IsAI)
+            {
+                AmmoTemplate currentAmmoTemplate = weapon.CurrentAmmoTemplate;
+
+                float ammoFactor = Math.Min(((currentAmmoTemplate.ammoRec / 100f) * 2f) + 1f, 2f);
+                float velocityFactor = ((1f - (((weapon.SpeedFactor - 1f) * 3f) + 1f)) + 1f);
+                float ammoDeafFactor = ammoFactor * velocityFactor;
+
+                if (currentAmmoTemplate.InitialSpeed <= 335f)
+                {
+                    ammoDeafFactor *= 0.7f;
+                }
+
+                Plugin.AmmoDeafFactor = ammoDeafFactor == 0f ? 1f : ammoDeafFactor;
+                Logger.LogWarning("==============");
+                Logger.LogWarning("ammoDeafFactor = " + ammoDeafFactor);
+                Logger.LogWarning("speed factor = " + velocityFactor);
+                Logger.LogWarning("ammo factor = " + ammoFactor);
+                Logger.LogWarning("==============");
+            }
+            else
             {
                 float distanceFromPlayer = Vector3.Distance(__instance.gameObject.transform.position, Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position);
                 if (distanceFromPlayer <= 25f)
                 {
                     Plugin.IsBotFiring = true;
                     AmmoTemplate currentAmmoTemplate = weapon.CurrentAmmoTemplate;
-                    float muzzleLoudness = getMuzzleLoudness(weapon.Mods) * StatCalc.CalibreLoudnessFactor(weapon.AmmoCaliber) * ((1f - (((weapon.SpeedFactor - 1f) * 2f) + 1f)) + 1f) * Math.Min(((currentAmmoTemplate.ammoRec / 100f) * 2f) + 1f, 2f);
-                    Plugin.BotDeafFactor = (muzzleLoudness * 2f) * ((-distanceFromPlayer / 100f) + 1f);
+                    float velocityFactor = ((1f - (((weapon.SpeedFactor - 1f) * 3f) + 1f)) + 1f);
+                    float ammoFactor = Math.Min(((currentAmmoTemplate.ammoRec / 100f) * 2f) + 1f, 2f);
+                    float muzzleFactor = getMuzzleLoudness(weapon.Mods);
+                    float calFactor = StatCalc.CalibreLoudnessFactor(weapon.AmmoCaliber);
+                    float muzzleLoudness = muzzleFactor * calFactor * velocityFactor * ammoFactor;
+                    Plugin.BotDeafFactor = muzzleLoudness * ((-distanceFromPlayer / 100f) + 1f);
                     Logger.LogWarning("==============");
                     Logger.LogWarning("Bot Shot");
+                    Logger.LogWarning("Muzzle Factor = " + muzzleFactor);
+                    Logger.LogWarning("ammoFactor = " + ammoFactor);
+                    Logger.LogWarning("Bot Shot = " + calFactor);
                     Logger.LogWarning("distance = " + distanceFromPlayer);
                     Logger.LogWarning("BotDeafFactor = " + Plugin.BotDeafFactor);
                     Logger.LogWarning("==============");
