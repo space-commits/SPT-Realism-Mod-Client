@@ -34,7 +34,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon.GClass2208).GetMethod("IsKnownMalfType", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Weapon.MalfunctionState).GetMethod("IsKnownMalfType", BindingFlags.Instance | BindingFlags.Public);
         }
         [PatchPostfix]
         private static void PatchPostfix(ref bool __result)

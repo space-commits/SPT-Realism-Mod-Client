@@ -326,12 +326,13 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player.FirearmController).GetMethod("method_43", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Player.FirearmController).GetMethod("method_47", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(ref Player.FirearmController __instance)
         {
+            //to find this gain, look for private void method_47(){ this.CurrentOperation.OnMagInsertedToWeapon(); }
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (!player.IsAI)
             {

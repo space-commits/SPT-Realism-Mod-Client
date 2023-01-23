@@ -69,12 +69,12 @@ namespace RealismMod
             float protectionFactor;
 
             LootItemClass headwear = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;
-            GClass2108 headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as GClass2108) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<GClass2108>().FirstOrDefault<GClass2108>() : null);
+            GClass2284 headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as GClass2284) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<GClass2284>().FirstOrDefault<GClass2284>() : null);
 
             if (headset != null)
             {
                 Plugin.HasHeadSet = true;
-                GClass2015 headphone = headset.Template;
+                GClass2191 headphone = headset.Template;
                 protectionFactor = ((headphone.DryVolume / 100f) + 1f) * 1.3f;
             }
             else
@@ -247,7 +247,7 @@ namespace RealismMod
 
         }
         [PatchPrefix]
-        private static bool Prefix(GClass2015 template, BetterAudio __instance)
+        private static bool Prefix(GClass2191 template, BetterAudio __instance)
         {
 
             bool hasHeadsetTemplate = template != null;
@@ -368,7 +368,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        static void PreFix(GInterface113 grenadeItem, Vector3 grenadePosition)
+        static void PreFix(IExplosiveItem grenadeItem, Vector3 grenadePosition)
         {
             float distanceFromPlayer = Vector3.Distance(grenadePosition, Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position);
             if (distanceFromPlayer <= 25f)

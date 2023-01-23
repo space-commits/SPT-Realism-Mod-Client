@@ -270,14 +270,14 @@ namespace RealismMod
                 new SingleFireRatePatch().Enable();
                 new ErgoDeltaPatch().Enable();
                 new ErgoWeightPatch().Enable();
-                new method_5Patch().Enable();
+                new method_9Patch().Enable();
 
                 new SyncWithCharacterSkillsPatch().Enable();
                 new UpdateWeaponVariablesPatch().Enable();
                 new SetAimingSlowdownPatch().Enable();
 
                 //sway and aim inertia
-                new method_17Patch().Enable();
+                new method_20Patch().Enable();
                 new UpdateSwayFactorsPatch().Enable();
                 new OverweightPatch().Enable();
 
@@ -331,17 +331,17 @@ namespace RealismMod
                 //Stat Display Patches
                 new ModConstructorPatch().Enable();
                 new WeaponConstructorPatch().Enable();
-                new HRecoilDisplayValuePatch().Enable();
+                new HRecoilDisplayStringValuePatch().Enable();
                 new HRecoilDisplayDeltaPatch().Enable();
-                new VRecoilDisplayValuePatch().Enable();
+                new VRecoilDisplayStringValuePatch().Enable();
                 new VRecoilDisplayDeltaPatch().Enable();
                 new ModVRecoilStatDisplayPatchFloat().Enable();
                 new ModVRecoilStatDisplayPatchString().Enable();
                 new ErgoDisplayDeltaPatch().Enable();
-                new ErgoDisplayValuePatch().Enable();
+                new ErgoDisplayStringValuePatch().Enable();
                 new COIDisplayDeltaPatch().Enable();
-                new COIDisplayValuePatch().Enable();
-                new FireRateDisplayStringPatch().Enable();
+                new COIDisplayStringValuePatch().Enable();
+                new FireRateDisplayStringValuePatch().Enable();
                 new GetCachedReadonlyQualitiesPatch().Enable();
                 new CenterOfImpactMOAPatch().Enable();
                 new ModErgoStatDisplayPatch().Enable();
@@ -369,9 +369,11 @@ namespace RealismMod
                 new VignettePatch().Enable();
                 new UpdatePhonesPatch().Enable();
                 new SetCompressorPatch().Enable();
-    /*            new SpeedFactorPatch().Enable();*/
                 new RegisterShotPatch().Enable();
                 new ExplosionPatch().Enable();
+
+                //LateUpdate
+                new PlayerLateUpdatePatch().Enable();
 
                 //Fixed Update (strange behaviour)
               /*  new PlayerFixedUpdatePatch().Enable();*/

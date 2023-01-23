@@ -18,7 +18,7 @@ namespace RealismMod
             return typeof(ShotEffector).GetMethod("OnWeaponParametersChanged", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        public BackendConfigSettingsClass.GClass1221 GlobalsAiming
+        public BackendConfigSettingsClass.GClass1310 GlobalsAiming
         {
             get
             {
@@ -34,7 +34,7 @@ namespace RealismMod
             if (wep.Owner.ID.StartsWith("pmc") || wep.Owner.ID.StartsWith("scav"))
             {
                 OnWeaponParametersChangedPatch p = new OnWeaponParametersChangedPatch();
-                SkillsClass.GClass1560 buffInfo = (SkillsClass.GClass1560)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
+                SkillsClass.GClass1673 buffInfo = (SkillsClass.GClass1673)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
                 WeaponTemplate template = wep.Template;
 
                 float vRecoilDelta = WeaponProperties.VRecoilDelta;

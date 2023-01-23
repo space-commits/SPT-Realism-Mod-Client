@@ -54,12 +54,12 @@ namespace RealismMod
 
             protected override MethodBase GetTargetMethod()
             {
-                return typeof(EFT.InventoryLogic.ArmorComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface205), typeof(RepairableComponent) });
+                return typeof(EFT.InventoryLogic.ArmorComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface227), typeof(RepairableComponent), typeof(BuffComponent) });
             }
 
 
             [PatchPostfix]
-            private static void PatchPostfix(Item item, GInterface205 template, RepairableComponent repairable, ArmorComponent __instance)
+            private static void PatchPostfix(ArmorComponent __instance)
             {
                 List<ItemAttributeClass> bluntAtt = __instance.Item.Attributes;
                 ItemAttributeClass bluntAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.BluntThroughput);

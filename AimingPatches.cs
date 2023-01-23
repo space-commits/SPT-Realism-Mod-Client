@@ -27,66 +27,6 @@ namespace RealismMod
                 }
             }
         }
-
-        //This is a bad place to put it, need to find another method that runs in update
-        public static void PlayerUpdate(EFT.Player.FirearmController __instance, Player player)
-        {
-            Helper.IsInReloadOpertation = __instance.IsInReloadOperation();
-            bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
-            bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);
-
-            if (rightArmDamaged == false && leftArmDamaged == false)
-            {
-                PlayerProperties.AimMoveSpeedBase = 0.42f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 1f;
-                PlayerProperties.ADSInjuryMulti = 1f;
-                PlayerProperties.ReloadInjuryMulti = 1f;
-                PlayerProperties.RecoilInjuryMulti = 1f;
-    }
-            else if (rightArmDamaged == true && leftArmDamaged == false)
-            {
-                PlayerProperties.AimMoveSpeedBase = 0.39f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 1.5f;
-                PlayerProperties.ADSInjuryMulti = 0.8f;
-                PlayerProperties.ReloadInjuryMulti = 0.85f;
-                PlayerProperties.RecoilInjuryMulti = 1.05f;
-            }
-            else if (rightArmDamaged == false && leftArmDamaged == true)
-            {
-                PlayerProperties.AimMoveSpeedBase = 0.35f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 2f;
-                PlayerProperties.ADSInjuryMulti = 0.7f;
-                PlayerProperties.ReloadInjuryMulti = 0.8f;
-                PlayerProperties.RecoilInjuryMulti = 1.1f;
-            }
-            else if (rightArmDamaged == true && leftArmDamaged == true)
-            {
-                PlayerProperties.AimMoveSpeedBase = 0.3f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 3.5f;
-                PlayerProperties.ADSInjuryMulti = 0.6f;
-                PlayerProperties.ReloadInjuryMulti = 0.75f;
-                PlayerProperties.RecoilInjuryMulti = 1.15f;
-            }
-
-            if (Helper.IsInReloadOpertation == true)
-            {
-                if (Helper.IsAttemptingToReloadInternalMag == true)
-                {
-                    float reloadBonus = 0.17f;
-/*                 if (Helper.isAttemptingRevolverReload == true)
-                    {
-                        reloadBonus += 0.05f;
-                    }*/
-                    player.HandsAnimator.SetAnimationSpeed(reloadBonus + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
-                }
-            }
-            else
-            {
-                Helper.IsAttemptingToReloadInternalMag = false;
-                Helper.IsAttemptingRevolverReload = false;
-            }
-
-        }
     }
 
     public class ToggleAimPatch : ModulePatch

@@ -318,9 +318,8 @@ namespace RealismMod
 
             if (Plugin.showBalance.Value == true)
             {
-
                 List<ItemAttributeClass> balanceAttList = __instance.Attributes;
-                GClass2218 balanceAtt = new GClass2218((EItemAttributeId)ENewItemAttributeId.Balance);
+                GClass2395 balanceAtt = new GClass2395((EItemAttributeId)ENewItemAttributeId.Balance);
                 balanceAtt.Name = ENewItemAttributeId.Balance.GetName();
                 balanceAtt.Range = new Vector2(100f, 200f);
                 balanceAtt.LessIsGood = false;
@@ -335,7 +334,7 @@ namespace RealismMod
             if (Plugin.showDispersion.Value == true)
             {
                 List<ItemAttributeClass> dispersionAttList = __instance.Attributes;
-                GClass2218 dispersionAtt = new GClass2218((EItemAttributeId)ENewItemAttributeId.Dispersion);
+                GClass2395 dispersionAtt = new GClass2395((EItemAttributeId)ENewItemAttributeId.Dispersion);
                 dispersionAtt.Name = ENewItemAttributeId.Dispersion.GetName();
                 dispersionAtt.Range = new Vector2(0f, 50f);
                 dispersionAtt.LessIsGood = true;
@@ -349,7 +348,7 @@ namespace RealismMod
             if (Plugin.showCamRecoil.Value == true)
             {
                 List<ItemAttributeClass> camRecoilAttList = __instance.Attributes;
-                GClass2218 camRecoilAtt = new GClass2218((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
+                GClass2395 camRecoilAtt = new GClass2395((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
                 camRecoilAtt.Name = ENewItemAttributeId.CameraRecoil.GetName();
                 camRecoilAtt.Range = new Vector2(0f, 0.25f);
                 camRecoilAtt.LessIsGood = true;
@@ -381,6 +380,10 @@ namespace RealismMod
                 semiROFAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
                 semiROFAttList.Add(semiROFAtt);
             }
+
+            //just to see if it works, would then need to replace it with my own.
+/*            List<ItemAttributeClass> attList = __instance.Attributes;
+            attList.Remove(new ItemAttributeClass(EItemAttributeId.RecoilBack));*/
         }
 
         private static float BalanceDelta()
@@ -399,18 +402,13 @@ namespace RealismMod
             return (__instance.Template.CameraRecoil - DisplayWeaponProperties.CamRecoil) / (__instance.Template.CameraRecoil * -1f);
         }
 
-        private static float RecoilAngleDelta(Weapon __instance)
-        {
-            return (__instance.Template.RecoilAngle - DisplayWeaponProperties.RecoilAngle) / (__instance.Template.RecoilAngle * -1f);
-        }
-
     }
 
     public class ErgoDisplayDeltaPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_13", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_14", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
 
@@ -423,11 +421,11 @@ namespace RealismMod
         }
     }
 
-    public class ErgoDisplayValuePatch : ModulePatch
+    public class ErgoDisplayStringValuePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_14", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_15", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
 
@@ -446,7 +444,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_24", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_25", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
 
@@ -458,11 +456,11 @@ namespace RealismMod
         }
     }
 
-    public class HRecoilDisplayValuePatch : ModulePatch
+    public class HRecoilDisplayStringValuePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_25", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_26", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
 
@@ -472,14 +470,13 @@ namespace RealismMod
             __result = Math.Round(__instance.Template.RecoilForceBack + __instance.Template.RecoilForceBack * DisplayWeaponProperties.HRecoilDelta, 1).ToString();
             return false;
         }
-
     }
 
     public class VRecoilDisplayDeltaPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_21", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_22", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
 
@@ -491,11 +488,11 @@ namespace RealismMod
         }
     }
 
-    public class VRecoilDisplayValuePatch : ModulePatch
+    public class VRecoilDisplayStringValuePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_22", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_23", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
         [PatchPrefix]
@@ -511,7 +508,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_16", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_17", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
         [PatchPrefix]
@@ -527,11 +524,11 @@ namespace RealismMod
         }
     }
 
-    public class COIDisplayValuePatch : ModulePatch
+    public class COIDisplayStringValuePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_17", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_18", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
         [PatchPrefix]
@@ -554,11 +551,11 @@ namespace RealismMod
         }
     }
 
-    public class FireRateDisplayStringPatch : ModulePatch
+    public class FireRateDisplayStringValuePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_34", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_35", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
 
