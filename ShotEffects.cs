@@ -309,52 +309,60 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance, Weapon weapon)
+        private static void PatchPostfix(Player.FirearmController __instance, Item item)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
 
-            if (!player.IsAI)
+   
+            IWeapon wep = item as IWeapon;
+
+            if (wep.IsUnderbarrelWeapon) 
             {
-                AmmoTemplate currentAmmoTemplate = weapon.CurrentAmmoTemplate;
+                Weapon weapon = item as Weapon;
 
-                float ammoFactor = Math.Min(((currentAmmoTemplate.ammoRec / 100f) * 2f) + 1f, 2f);
-                float velocityFactor = ((1f - (((weapon.SpeedFactor - 1f) * 3f) + 1f)) + 1f);
-                float ammoDeafFactor = ammoFactor * velocityFactor;
-
-                if (currentAmmoTemplate.InitialSpeed <= 335f)
+                if (!player.IsAI)
                 {
-                    ammoDeafFactor *= 0.7f;
-                }
-
-                Plugin.AmmoDeafFactor = ammoDeafFactor == 0f ? 1f : ammoDeafFactor;
-/*                Logger.LogWarning("==============");
-                Logger.LogWarning("ammoDeafFactor = " + ammoDeafFactor);
-                Logger.LogWarning("speed factor = " + velocityFactor);
-                Logger.LogWarning("ammo factor = " + ammoFactor);
-                Logger.LogWarning("==============");*/
-            }
-            else
-            {
-                float distanceFromPlayer = Vector3.Distance(__instance.gameObject.transform.position, Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position);
-                if (distanceFromPlayer <= 25f)
-                {
-                    Plugin.IsBotFiring = true;
                     AmmoTemplate currentAmmoTemplate = weapon.CurrentAmmoTemplate;
-                    float velocityFactor = ((1f - (((weapon.SpeedFactor - 1f) * 3f) + 1f)) + 1f);
-                    float ammoFactor = Math.Min(((currentAmmoTemplate.ammoRec / 100f) * 2f) + 1f, 2f);
-                    float muzzleFactor = getMuzzleLoudness(weapon.Mods);
-                    float calFactor = StatCalc.CalibreLoudnessFactor(weapon.AmmoCaliber);
-                    float muzzleLoudness = muzzleFactor * calFactor * velocityFactor * ammoFactor;
-                    Plugin.BotDeafFactor = muzzleLoudness * ((-distanceFromPlayer / 100f) + 1f);
-                    Logger.LogWarning("==============");
-                    Logger.LogWarning("Bot Shot");
-                    Logger.LogWarning("Muzzle Factor = " + muzzleFactor);
-                    Logger.LogWarning("ammoFactor = " + ammoFactor);
-                    Logger.LogWarning("Bot Shot = " + calFactor);
-                    Logger.LogWarning("distance = " + distanceFromPlayer);
-                    Logger.LogWarning("BotDeafFactor = " + Plugin.BotDeafFactor);
-                    Logger.LogWarning("==============");
 
+                    float ammoFactor = Math.Min(((currentAmmoTemplate.ammoRec / 100f) * 2f) + 1f, 2f);
+                    float velocityFactor = ((1f - (((weapon.SpeedFactor - 1f) * 3f) + 1f)) + 1f);
+                    float ammoDeafFactor = ammoFactor * velocityFactor;
+
+                    if (currentAmmoTemplate.InitialSpeed <= 335f)
+                    {
+                        ammoDeafFactor *= 0.7f;
+                    }
+
+                    Plugin.AmmoDeafFactor = ammoDeafFactor == 0f ? 1f : ammoDeafFactor;
+                    /*                Logger.LogWarning("==============");
+                                    Logger.LogWarning("ammoDeafFactor = " + ammoDeafFactor);
+                                    Logger.LogWarning("speed factor = " + velocityFactor);
+                                    Logger.LogWarning("ammo factor = " + ammoFactor);
+                                    Logger.LogWarning("==============");*/
+                }
+                else
+                {
+                    float distanceFromPlayer = Vector3.Distance(__instance.gameObject.transform.position, Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position);
+                    if (distanceFromPlayer <= 25f)
+                    {
+                        Plugin.IsBotFiring = true;
+                        AmmoTemplate currentAmmoTemplate = weapon.CurrentAmmoTemplate;
+                        float velocityFactor = ((1f - (((weapon.SpeedFactor - 1f) * 3f) + 1f)) + 1f);
+                        float ammoFactor = Math.Min(((currentAmmoTemplate.ammoRec / 100f) * 2f) + 1f, 2f);
+                        float muzzleFactor = getMuzzleLoudness(weapon.Mods);
+                        float calFactor = StatCalc.CalibreLoudnessFactor(weapon.AmmoCaliber);
+                        float muzzleLoudness = muzzleFactor * calFactor * velocityFactor * ammoFactor;
+                        Plugin.BotDeafFactor = muzzleLoudness * ((-distanceFromPlayer / 100f) + 1f);
+                        Logger.LogWarning("==============");
+                        Logger.LogWarning("Bot Shot");
+                        Logger.LogWarning("Muzzle Factor = " + muzzleFactor);
+                        Logger.LogWarning("ammoFactor = " + ammoFactor);
+                        Logger.LogWarning("Bot Shot = " + calFactor);
+                        Logger.LogWarning("distance = " + distanceFromPlayer);
+                        Logger.LogWarning("BotDeafFactor = " + Plugin.BotDeafFactor);
+                        Logger.LogWarning("==============");
+
+                    }
                 }
             }
         }

@@ -528,7 +528,7 @@ namespace RealismMod
                 {
                     return "rear";
                 }
-                if (IsHandguard(mod) || IsGasblock(mod) || IsFlashHider(mod) || IsForegrip(mod) || IsMuzzleCombo(mod) || IsSilencer(mod) || IsTacticalCombo(mod) || IsFlashlight(mod) || IsBipod(mod) || IsBarrel(mod))
+                if (IsUBGL(mod) || IsHandguard(mod) || IsGasblock(mod) || IsFlashHider(mod) || IsForegrip(mod) || IsMuzzleCombo(mod) || IsSilencer(mod) || IsTacticalCombo(mod) || IsFlashlight(mod) || IsBipod(mod) || IsBarrel(mod))
                 {
                     return "front";
                 }
@@ -543,7 +543,7 @@ namespace RealismMod
                 {
                     return "rear";
                 }
-                if (IsMagazine(mod) || IsHandguard(mod) || IsGasblock(mod) || IsFlashHider(mod) || IsForegrip(mod) || IsMuzzleCombo(mod) || IsSilencer(mod) || IsTacticalCombo(mod) || IsFlashlight(mod) || IsBipod(mod) || IsBarrel(mod))
+                if (IsUBGL(mod) || IsMagazine(mod) || IsHandguard(mod) || IsGasblock(mod) || IsFlashHider(mod) || IsForegrip(mod) || IsMuzzleCombo(mod) || IsSilencer(mod) || IsTacticalCombo(mod) || IsFlashlight(mod) || IsBipod(mod) || IsBarrel(mod))
                 {
                     return "front";
                 }
@@ -558,7 +558,7 @@ namespace RealismMod
                 {
                     return "rear";
                 }
-                if (IsTacticalCombo(mod) || IsFlashlight(mod) || IsBipod(mod) || IsHandguard(mod) || IsGasblock(mod) || IsForegrip(mod) || IsMuzzleCombo(mod) || IsFlashHider(mod) || IsSilencer(mod) || IsBarrel(mod))
+                if (IsUBGL(mod) || IsTacticalCombo(mod) || IsFlashlight(mod) || IsBipod(mod) || IsHandguard(mod) || IsGasblock(mod) || IsForegrip(mod) || IsMuzzleCombo(mod) || IsFlashHider(mod) || IsSilencer(mod) || IsBarrel(mod))
                 {
                     return "front";
                 }

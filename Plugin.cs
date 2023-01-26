@@ -385,7 +385,7 @@ namespace RealismMod
                     new VignettePatch().Enable();
                     new UpdatePhonesPatch().Enable();
                     new SetCompressorPatch().Enable();
-                    new RegisterShotPatch().Enable();
+      /*              new RegisterShotPatch().Enable();*/
                     new ExplosionPatch().Enable();
                 }
 

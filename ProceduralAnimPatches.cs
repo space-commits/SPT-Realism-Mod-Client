@@ -142,20 +142,19 @@ namespace RealismMod
                     else if (firearmController.Item.WeapClass == "pistol" && WeaponProperties.HasShoulderContact != true)
                     {
                         breathIntensity = Mathf.Min(0.58f * ergoWeightFactor, 0.75f);
-                        handsIntensity = Mathf.Min(0.56f * ergoWeightFactor, 0.75f);
+                        handsIntensity = Mathf.Min(0.58f * ergoWeightFactor, 0.75f);
                     }
                     else
                     {
                         breathIntensity = Mathf.Min(0.55f * ergoWeightFactor, 0.85f);
-                        handsIntensity = Mathf.Min(0.50f * ergoWeightFactor, 0.85f);
+                        handsIntensity = Mathf.Min(0.55f * ergoWeightFactor, 0.9f);
                     }
 
                     breathIntensity *= __instance.IntensityByAiming;
                     handsIntensity *= __instance.IntensityByAiming;
 
-
                     __instance.Breath.Intensity = breathIntensity * __instance.IntensityByPoseLevel; //both aim sway and up and down breathing
-                    __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = handsIntensity * handsIntensity); //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down.
+                    __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = handsIntensity * handsIntensity); //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
                 }
             }
             else

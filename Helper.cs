@@ -68,6 +68,7 @@ namespace RealismMod
         public static string Bipod = "55818afb4bdc2dde698b456d";
         public static string Flashlight = "55818b084bdc2d5b648b4571";
         public static string TacticalCombo = "55818b164bdc2ddc698b456c";
+        public static string UBGL = "55818b014bdc2ddc698b456b";
 
 
         public static bool NullCheck(string[] confItemArray)
@@ -126,7 +127,6 @@ namespace RealismMod
         {
             return (mod is MagazineClass);
         }
-
         public static bool IsFlashHider(Mod mod)
         {
             return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[FlashHider] ? true : false;
@@ -207,6 +207,9 @@ namespace RealismMod
         {
             return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[TacticalCombo] ? true : false;
         }
-
+        public static bool IsUBGL(Mod mod)
+        {
+            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[UBGL] ? true : false;
+        }
     }
 }

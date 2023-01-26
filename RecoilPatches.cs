@@ -19,28 +19,35 @@ namespace RealismMod
             return typeof(ShotEffector).GetMethod("OnWeaponParametersChanged", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        public BackendConfigSettingsClass.GClass1310 GlobalsAiming
-        {
-            get
-            {
-                return Singleton<BackendConfigSettingsClass>.Instance.Aiming;
-            }
-        }
-
         [PatchPrefix]
         private static bool Prefix(ref ShotEffector __instance)
         {
-            Weapon wep = (Weapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
+            IWeapon _weapon = (IWeapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
 
-            if (wep.Owner.ID.StartsWith("pmc") || wep.Owner.ID.StartsWith("scav"))
+            if (_weapon.Item.Owner.ID.StartsWith("pmc") || _weapon.Item.Owner.ID.StartsWith("scav"))
             {
-                OnWeaponParametersChangedPatch p = new OnWeaponParametersChangedPatch();
                 SkillsClass.GClass1673 buffInfo = (SkillsClass.GClass1673)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
-                WeaponTemplate template = wep.Template;
+                WeaponTemplate template = _weapon.WeaponTemplate;
 
-                float vRecoilDelta = WeaponProperties.VRecoilDelta;
-                float hRecoilDelta = WeaponProperties.HRecoilDelta;
+                float vRecoilDelta;
+                float hRecoilDelta;
+                Logger.LogWarning("==========================");
+                Logger.LogWarning("OnWeaponParametersChanged");
+                if (_weapon.IsUnderbarrelWeapon)
+                {
+                    Logger.LogWarning("Is m203");
+                    Weapon _mainWeaponInHands = (Weapon)AccessTools.Field(typeof(ShotEffector), "_mainWeaponInHands").GetValue(__instance);
 
+                    vRecoilDelta = _mainWeaponInHands.StockRecoilDelta;
+                    hRecoilDelta = _mainWeaponInHands.StockRecoilDelta;
+                }
+                else
+                {
+                    Logger.LogWarning("Not m203");
+                    vRecoilDelta = WeaponProperties.VRecoilDelta;
+                    hRecoilDelta = WeaponProperties.HRecoilDelta;
+                }
+                Logger.LogWarning("==========================");
                 float totalVRecoilDelta = Mathf.Max(0f, (1f + vRecoilDelta) * (1f - buffInfo.RecoilSupression.x));
                 float totalHRecoilDelta = Mathf.Max(0f, (1f + hRecoilDelta) * (1f - buffInfo.RecoilSupression.x));
 
@@ -71,7 +78,7 @@ namespace RealismMod
                 Plugin.CurrentHRecoilX = Plugin.StartingHRecoilX;
                 Plugin.CurrentHRecoilY = Plugin.StartingHRecoilY;
 
-                Plugin.StartingConvergence = (float)Math.Round(wep.Template.Convergence * p.GlobalsAiming.RecoilConvergenceMult, 2);
+                Plugin.StartingConvergence = (float)Math.Round(_weapon.WeaponTemplate.Convergence * Singleton<BackendConfigSettingsClass>.Instance.Aiming.RecoilConvergenceMult, 2);
                 Plugin.CurrentConvergence = Plugin.StartingConvergence;
                 Plugin.ConvergenceProporitonK = (float)Math.Round(Plugin.StartingConvergence * Plugin.StartingVRecoilX, 2);
 
@@ -86,6 +93,15 @@ namespace RealismMod
 
                 Plugin.StartingHandDamping = (float)Math.Round(WeaponProperties.TotalRecoilHandDamping, 3);
                 Plugin.CurrentHandDamping = Plugin.StartingHandDamping;
+
+                Logger.LogWarning("StartingRecoilAngle = " + Plugin.StartingRecoilAngle);
+                Logger.LogWarning("Plugin.StartingConvergence = " + Plugin.StartingConvergence);
+                Logger.LogWarning("Plugin.StartingHRecoilV = " + Plugin.StartingVRecoilX);
+                Logger.LogWarning("Plugin.StartingHRecoilX = " + Plugin.StartingHRecoilX);
+                Logger.LogWarning("Plugin.StartingCamRecoilX = " + Plugin.StartingCamRecoilX);
+                Logger.LogWarning("vRecoilDelta = " + vRecoilDelta);
+                Logger.LogWarning("hRecoilDelta = " + hRecoilDelta);
+
 
                 return false;
             }
@@ -106,11 +122,10 @@ namespace RealismMod
         public static bool Prefix(ref ShotEffector __instance, float str = 1f)
         {
 
-            Weapon wep = (Weapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
+            IWeapon _weapon = (IWeapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
 
-            if (wep.Owner.ID.StartsWith("pmc") || wep.Owner.ID.StartsWith("scav"))
+            if (_weapon.Item.Owner.ID.StartsWith("pmc") || _weapon.Item.Owner.ID.StartsWith("scav"))
             {
-
                 Plugin.Timer = 0f;
                 Plugin.IsFiring = true;
                 Plugin.ShotCount++;
@@ -130,8 +145,8 @@ namespace RealismMod
                 {
                     __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * 1.35f;
                     __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * 1.35f;
-                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * 1.4f;
-                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * 1.4f;
+                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * 1.35f;
+                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * 1.35f;
                 }
                 else if (Plugin.ShotCount > 1)
                 {
@@ -142,22 +157,26 @@ namespace RealismMod
                 }
                 else
                 {
-                    __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX;
-                    __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY;
                     __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX;
                     __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY;
+                    __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX;
+                    __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY;
                 }
 
                 __instance.ShotVals[3].Intensity = Plugin.CurrentCamRecoilX * str * PlayerProperties.RecoilInjuryMulti;
                 __instance.ShotVals[4].Intensity = Plugin.CurrentCamRecoilY * str * PlayerProperties.RecoilInjuryMulti;
 
+                Logger.LogWarning("CurrentVRecoilX = " + Plugin.CurrentVRecoilX);
+                Logger.LogWarning("CurrentHRecoilX = " + Plugin.CurrentHRecoilX);
+ 
+
                 float num = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
                 float num2 = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * PlayerProperties.RecoilInjuryMulti;
                 float num3 = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * PlayerProperties.RecoilInjuryMulti;
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(num) * num2 * _separateIntensityFactors.x, Mathf.Cos(num) * num2 * _separateIntensityFactors.y, num3 * _separateIntensityFactors.z) * __instance.Intensity;
-                Weapon weapon = wep;
+                IWeapon weapon = _weapon;
                 Vector2 vector = (weapon != null) ? weapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
-                Weapon weapon2 = wep;
+                IWeapon weapon2 = _weapon;
                 float num4 = (weapon2 != null) ? weapon2.MalfState.OverheatBarrelMoveMult : 0f;
                 float num5 = (__instance.RecoilRadian.x + __instance.RecoilRadian.y) / 2f * ((__instance.RecoilStrengthXy.x + __instance.RecoilStrengthXy.y) / 2f) * num4;
                 __instance.RecoilDirection.x = __instance.RecoilDirection.x + vector.x * num5;
