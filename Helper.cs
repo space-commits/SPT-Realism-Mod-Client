@@ -89,8 +89,10 @@ namespace RealismMod
 
             if (gameWorld == null || gameWorld.AllPlayers == null || gameWorld.AllPlayers.Count <= 0 || sessionResultPanel != null)
             {
+                Helper.IsReady = false;
                 return false;
             }
+            Helper.IsReady = true;
             return true;
         }
 

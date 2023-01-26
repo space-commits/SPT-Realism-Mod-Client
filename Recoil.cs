@@ -5,122 +5,128 @@ using UnityEngine;
 
 namespace RealismMod
 {
-    public static class Recoil
+    public class Recoil
     {
-        public static void vRecoilClimb(float climbFactor)
+        private static void VRecoilClimb(float climbFactor)
         {
-            Plugin.currentVRecoilX = Mathf.Clamp((float)Math.Round(Plugin.currentVRecoilX * climbFactor * Plugin.vRecoilChangeMulti.Value, 3), Plugin.currentVRecoilX, Plugin.StartingVRecoilX * Plugin.vRecoilLimit.Value);
-            Plugin.currentVRecoilY = Mathf.Clamp((float)Math.Round(Plugin.currentVRecoilY * climbFactor * Plugin.vRecoilChangeMulti.Value, 3), Plugin.currentVRecoilY, Plugin.startingVRecoilY * Plugin.vRecoilLimit.Value);
+            Plugin.CurrentVRecoilX = Mathf.Clamp((float)Math.Round(Plugin.CurrentVRecoilX * climbFactor * Plugin.vRecoilChangeMulti.Value, 3), Plugin.CurrentVRecoilX, Plugin.StartingVRecoilX * Plugin.vRecoilLimit.Value);
+            Plugin.CurrentVRecoilY = Mathf.Clamp((float)Math.Round(Plugin.CurrentVRecoilY * climbFactor * Plugin.vRecoilChangeMulti.Value, 3), Plugin.CurrentVRecoilY, Plugin.StartingVRecoilY * Plugin.vRecoilLimit.Value);
         }
 
-        public static void hRecoilClimb(float climbFactor)
+        private static void HRecoilClimb(float climbFactor)
         {
             Plugin.CurrentHRecoilX = Mathf.Clamp((float)Math.Round(Plugin.CurrentHRecoilX * climbFactor * Plugin.hRecoilChangeMulti.Value, 3), Plugin.CurrentHRecoilX, Plugin.StartingHRecoilX * Plugin.hRecoilLimit.Value);
             Plugin.CurrentHRecoilY = Mathf.Clamp((float)Math.Round(Plugin.CurrentHRecoilY * climbFactor * Plugin.hRecoilChangeMulti.Value, 3), Plugin.CurrentHRecoilY, Plugin.StartingHRecoilY * Plugin.hRecoilLimit.Value);
         }
 
-        public static void convergenceClimb()
+        private static void ConvergenceClimb()
         {
-            Plugin.currentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((Plugin.convergenceProporitonK / Plugin.currentVRecoilX), Plugin.currentConvergence), 2), Plugin.startingConvergence * Plugin.convergenceLimit.Value, Plugin.currentConvergence);
+            Plugin.CurrentConvergence = Mathf.Clamp((float)Math.Round(Mathf.Min((Plugin.ConvergenceProporitonK / Plugin.CurrentVRecoilX), Plugin.CurrentConvergence), 2), Plugin.StartingConvergence * Plugin.convergenceLimit.Value, Plugin.CurrentConvergence);
         }
 
-        public static void dampingClimb(float climbFactor)
+        private static void DampingClimb(float climbFactor)
         {
-            Plugin.currentDamping = Mathf.Clamp((float)Math.Round(Plugin.currentDamping * climbFactor, 3), Plugin.startingDamping * WeaponProperties.DampingLimit, Plugin.currentDamping);
-            Plugin.currentHandDamping = Mathf.Clamp((float)Math.Round(Plugin.currentHandDamping * climbFactor, 3), Plugin.startingHandDamping * WeaponProperties.DampingLimit, Plugin.currentHandDamping);
+            Plugin.CurrentDamping = Mathf.Clamp((float)Math.Round(Plugin.CurrentDamping * climbFactor, 3), Plugin.StartingDamping * WeaponProperties.DampingLimit, Plugin.CurrentDamping);
+            Plugin.CurrentHandDamping = Mathf.Clamp((float)Math.Round(Plugin.CurrentHandDamping * climbFactor, 3), Plugin.StartingHandDamping * WeaponProperties.DampingLimit, Plugin.CurrentHandDamping);
         }
 
         public static void DoRecoilClimb()
         {
-            if (Plugin.IsAiming == true)
+
+            if (Plugin.ShotCount > Plugin.PrevShotCount)
             {
-                if (Plugin.ShotCount > Plugin.PrevShotCount)
+                if (Plugin.ShotCount >= 1 && Plugin.ShotCount <= 3)
                 {
-                    if (Plugin.ShotCount >= 1 && Plugin.ShotCount <= 3)
-                    {
-                        vRecoilClimb(1.13f);
-                        hRecoilClimb(1.13f);
-                        convergenceClimb();
+                    VRecoilClimb(1.13f);
+                    HRecoilClimb(1.13f);
+                    ConvergenceClimb();
 
-                    }
-                    if (Plugin.ShotCount >= 4 && Plugin.ShotCount <= 5)
-                    {
-                        vRecoilClimb(1.125f);
-                        hRecoilClimb(1.125f);
-                        convergenceClimb();
-                    }
-                    if (Plugin.ShotCount > 5 && Plugin.ShotCount <= 7)
-                    {
-                        vRecoilClimb(1.1f);
-                        hRecoilClimb(1.1f);
-                        convergenceClimb();
-                    }
-                    if (Plugin.ShotCount > 8 && Plugin.ShotCount <= 10)
-                    {
-                        vRecoilClimb(1.08f);
-                        hRecoilClimb(1.08f);
-                        convergenceClimb();
-                    }
-                    if (Plugin.ShotCount > 10 && Plugin.ShotCount <= 15)
-                    {
-                        vRecoilClimb(1.05f);
-                        hRecoilClimb(1.04f);
-                        convergenceClimb();
-                        dampingClimb(0.98f);
-
-                    }
-
-                    if (Plugin.ShotCount > 15 && Plugin.ShotCount <= 20)
-                    {
-                        vRecoilClimb(1.03f);
-                        hRecoilClimb(1.02f);
-                        convergenceClimb();
-                        dampingClimb(0.98f);
-                    }
-
-                    if (Plugin.ShotCount > 20 && Plugin.ShotCount <= 25)
-                    {
-                        vRecoilClimb(1.03f);
-                        hRecoilClimb(1.01f);
-                        convergenceClimb();
-                        dampingClimb(0.98f);
-                    }
-
-                    if (Plugin.ShotCount > 25 && Plugin.ShotCount <= 30)
-                    {
-                        vRecoilClimb(1.03f);
-                        hRecoilClimb(1.01f);
-                        convergenceClimb();
-                        dampingClimb(0.98f);
-                    }
-
-                    if (Plugin.ShotCount > 30 && Plugin.ShotCount <= 35)
-                    {
-                        vRecoilClimb(1.03f);
-                        hRecoilClimb(1.01f);
-                        convergenceClimb();
-                        dampingClimb(0.98f);
-                    }
-
-                    if (Plugin.ShotCount > 35)
-                    {
-                        vRecoilClimb(1.03f);
-                        hRecoilClimb(1.01f);
-                        convergenceClimb();
-                        dampingClimb(0.98f);
-                    }
-
-                    if (Plugin.reduceCamRecoil.Value == true)
-                    {
-                        Plugin.currentCamRecoilX = Mathf.Clamp((float)Math.Round(Plugin.currentCamRecoilX * WeaponProperties.CamRecoilChangeRate, 4), Plugin.startingCamRecoilX * WeaponProperties.CamRecoilLimit, Plugin.currentCamRecoilX);
-                        Plugin.currentCamRecoilY = Mathf.Clamp((float)Math.Round(Plugin.currentCamRecoilY * WeaponProperties.CamRecoilChangeRate, 4), Plugin.startingCamRecoilY * WeaponProperties.CamRecoilLimit, Plugin.currentCamRecoilY);
-                    }
-
-                    Plugin.currentSens = Mathf.Clamp((float)Math.Round(Plugin.currentSens * Plugin.sensChangeRate.Value, 4), Plugin.startingSens * Plugin.sensLimit.Value, Plugin.currentSens);
-
-                    Plugin.PrevShotCount = Plugin.ShotCount;
-                    Plugin.IsFiring = true;
                 }
+                if (Plugin.ShotCount >= 4 && Plugin.ShotCount <= 5)
+                {
+                    VRecoilClimb(1.125f);
+                    HRecoilClimb(1.125f);
+                    ConvergenceClimb();
+                }
+                if (Plugin.ShotCount > 5 && Plugin.ShotCount <= 7)
+                {
+                    VRecoilClimb(1.1f);
+                    HRecoilClimb(1.1f);
+                    ConvergenceClimb();
+                }
+                if (Plugin.ShotCount > 8 && Plugin.ShotCount <= 10)
+                {
+                    VRecoilClimb(1.08f);
+                    HRecoilClimb(1.08f);
+                    ConvergenceClimb();
+                }
+                if (Plugin.ShotCount > 10 && Plugin.ShotCount <= 15)
+                {
+                    VRecoilClimb(1.05f);
+                    HRecoilClimb(1.04f);
+                    ConvergenceClimb();
+                    DampingClimb(0.98f);
+
+                }
+
+                if (Plugin.ShotCount > 15 && Plugin.ShotCount <= 20)
+                {
+                    VRecoilClimb(1.03f);
+                    HRecoilClimb(1.02f);
+                    ConvergenceClimb();
+                    DampingClimb(0.98f);
+                }
+
+                if (Plugin.ShotCount > 20 && Plugin.ShotCount <= 25)
+                {
+                    VRecoilClimb(1.03f);
+                    HRecoilClimb(1.01f);
+                    ConvergenceClimb();
+                    DampingClimb(0.98f);
+                }
+
+                if (Plugin.ShotCount > 25 && Plugin.ShotCount <= 30)
+                {
+                    VRecoilClimb(1.03f);
+                    HRecoilClimb(1.01f);
+                    ConvergenceClimb();
+                    DampingClimb(0.98f);
+                }
+
+                if (Plugin.ShotCount > 30 && Plugin.ShotCount <= 35)
+                {
+                    VRecoilClimb(1.03f);
+                    HRecoilClimb(1.01f);
+                    ConvergenceClimb();
+                    DampingClimb(0.98f);
+                }
+
+                if (Plugin.ShotCount > 35)
+                {
+                    VRecoilClimb(1.03f);
+                    HRecoilClimb(1.01f);
+                    ConvergenceClimb();
+                    DampingClimb(0.98f);
+                }
+
+                if (Plugin.reduceCamRecoil.Value == true)
+                {
+                    Plugin.CurrentCamRecoilX = Mathf.Clamp((float)Math.Round(Plugin.CurrentCamRecoilX * WeaponProperties.CamRecoilChangeRate, 4), Plugin.StartingCamRecoilX * WeaponProperties.CamRecoilLimit, Plugin.CurrentCamRecoilX);
+                    Plugin.CurrentCamRecoilY = Mathf.Clamp((float)Math.Round(Plugin.CurrentCamRecoilY * WeaponProperties.CamRecoilChangeRate, 4), Plugin.StartingCamRecoilY * WeaponProperties.CamRecoilLimit, Plugin.CurrentCamRecoilY);
+                }
+
+                Plugin.CurrentAimSens = Mathf.Clamp((float)Math.Round(Plugin.CurrentAimSens * Plugin.SensChangeRate.Value, 4), Plugin.StartingAimSens * Plugin.SensLimit.Value, Plugin.CurrentAimSens);
+                Plugin.CurrentHipSens = Mathf.Clamp((float)Math.Round(Plugin.CurrentHipSens * Plugin.SensChangeRate.Value, 4), Plugin.StartingHipSens * Plugin.SensLimit.Value, Plugin.CurrentHipSens);
+
+
+                Plugin.PrevShotCount = Plugin.ShotCount;
+                Plugin.IsFiring = true;
+
+            }
+
+/*            if (Plugin.IsAiming == true)
+            {
+
             }
             else
             {
@@ -129,42 +135,34 @@ namespace RealismMod
                     Plugin.PrevShotCount = Plugin.ShotCount;
                     Plugin.IsFiring = true;
                 }
-            }
+            }*/
         }
 
         public static void ResetRecoil()
         {
-            if (Plugin.startingSens <= Plugin.currentSens && Plugin.startingConvergence <= Plugin.currentConvergence && Plugin.StartingVRecoilX >= Plugin.currentVRecoilX)
+            if (Plugin.StartingAimSens <= Plugin.CurrentAimSens && Plugin.StartingHipSens <= Plugin.CurrentHipSens && Plugin.StartingConvergence <= Plugin.CurrentConvergence && Plugin.StartingVRecoilX >= Plugin.CurrentVRecoilX && Plugin.StartingHRecoilX >= Plugin.CurrentHRecoilX)
             {
+                Plugin.CurrentAimSens = Plugin.StartingAimSens;
+                Plugin.CurrentHipSens = Plugin.StartingHipSens;
                 Plugin.StatsAreReset = true;
             }
             else
             {
-                Plugin.StatsAreReset = false;
-            }
+                Plugin.CurrentAimSens = Mathf.Clamp(Plugin.CurrentAimSens * Plugin.SensResetRate.Value, Plugin.CurrentAimSens, Plugin.StartingAimSens);
+                Plugin.CurrentHipSens = Mathf.Clamp(Plugin.CurrentHipSens * Plugin.SensResetRate.Value, Plugin.CurrentHipSens, Plugin.StartingHipSens);
 
-            if (Plugin.StatsAreReset == false)
-            {
+                Plugin.CurrentConvergence = Mathf.Clamp(Plugin.CurrentConvergence * Plugin.convergenceResetRate.Value, Plugin.CurrentConvergence, Plugin.StartingConvergence);
 
-                Plugin.currentSens = Mathf.Clamp(Plugin.currentSens * Plugin.sensResetRate.Value, Plugin.currentSens, Plugin.startingSens);
+                Plugin.CurrentDamping = Mathf.Clamp(Plugin.CurrentDamping * WeaponProperties.DampingResetRate, Plugin.CurrentDamping, Plugin.StartingDamping);
+                Plugin.CurrentHandDamping = Mathf.Clamp(Plugin.CurrentHandDamping * WeaponProperties.DampingResetRate, Plugin.CurrentHandDamping, Plugin.StartingHandDamping);
 
-                Plugin.currentConvergence = Mathf.Clamp(Plugin.currentConvergence * Plugin.convergenceResetRate.Value, Plugin.currentConvergence, Plugin.startingConvergence);
-
-                Plugin.currentDamping = Mathf.Clamp(Plugin.currentDamping * WeaponProperties.DampingResetRate, Plugin.currentDamping, Plugin.startingDamping);
-                Plugin.currentHandDamping = Mathf.Clamp(Plugin.currentHandDamping * WeaponProperties.DampingResetRate, Plugin.currentHandDamping, Plugin.startingHandDamping);
-
-                Plugin.currentVRecoilX = Mathf.Clamp(Plugin.currentVRecoilX * Plugin.vRecoilResetRate.Value, Plugin.StartingVRecoilX, Plugin.currentVRecoilX);
-                Plugin.currentVRecoilY = Mathf.Clamp(Plugin.currentVRecoilY * Plugin.vRecoilResetRate.Value, Plugin.startingVRecoilY, Plugin.currentVRecoilY);
+                Plugin.CurrentVRecoilX = Mathf.Clamp(Plugin.CurrentVRecoilX * Plugin.vRecoilResetRate.Value, Plugin.StartingVRecoilX, Plugin.CurrentVRecoilX);
+                Plugin.CurrentVRecoilY = Mathf.Clamp(Plugin.CurrentVRecoilY * Plugin.vRecoilResetRate.Value, Plugin.StartingVRecoilY, Plugin.CurrentVRecoilY);
 
                 Plugin.CurrentHRecoilX = Mathf.Clamp(Plugin.CurrentHRecoilX * Plugin.hRecoilResetRate.Value, Plugin.StartingHRecoilX, Plugin.CurrentHRecoilX);
                 Plugin.CurrentHRecoilY = Mathf.Clamp(Plugin.CurrentHRecoilY * Plugin.hRecoilResetRate.Value, Plugin.StartingHRecoilY, Plugin.CurrentHRecoilY);
-
+                Plugin.StatsAreReset = false;
             }
-            else
-            {
-                Plugin.currentSens = Plugin.startingSens;
-            }
-
         }
     }
 }

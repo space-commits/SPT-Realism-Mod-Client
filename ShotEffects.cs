@@ -148,7 +148,7 @@ namespace RealismMod
 
         public static bool valuesAreReset = false;
 
-        public static void DoDeafening(BepInEx.Logging.ManualLogSource logger)
+        public static void DoDeafening()
         {
 
             float deafFactor = Plugin.AmmoDeafFactor * Plugin.WeaponDeafFactor * Plugin.EarProtectionFactor;
@@ -327,11 +327,11 @@ namespace RealismMod
                 }
 
                 Plugin.AmmoDeafFactor = ammoDeafFactor == 0f ? 1f : ammoDeafFactor;
-                Logger.LogWarning("==============");
+/*                Logger.LogWarning("==============");
                 Logger.LogWarning("ammoDeafFactor = " + ammoDeafFactor);
                 Logger.LogWarning("speed factor = " + velocityFactor);
                 Logger.LogWarning("ammo factor = " + ammoFactor);
-                Logger.LogWarning("==============");
+                Logger.LogWarning("==============");*/
             }
             else
             {

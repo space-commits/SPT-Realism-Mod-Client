@@ -15,17 +15,17 @@ namespace RealismMod
         public static float PistolErgoTorqueMult = 1.0f;
 
         public static float VRecoilWeightMult = 2.21f;
-        public static float VRecoilTorqueMult = 0.69f;
+        public static float VRecoilTorqueMult = 0.7f;
         public static float PistolVRecoilWeightMult = 2.4f;
         public static float PistolVRecoilTorqueMult = 0.75f;
 
-        public static float HRecoilWeightMult = 3.3f;
+        public static float HRecoilWeightMult = 3.35f;
         public static float HRecoilTorqueMult = 0.7f;
         public static float PistolHRecoilWeightMult = 3.4f;
         public static float PistolHRecoilTorqueMult = 0.8f;
 
         public static float DispersionWeightMult = 1.5f;
-        public static float DispersionTorqueMult = 1.3f;
+        public static float DispersionTorqueMult = 1.32f;
         public static float PistolDispersionWeightMult = 1.6f;
         public static float PistolDispersionTorqueMult = 1.4f;
 
@@ -49,19 +49,19 @@ namespace RealismMod
         public static float HandDampingPistolMin = 0.5f;
         public static float HandDampingPistolMax = 0.7f;
 
-        public static float ReloadSpeedWeightMult = 0.9f;//
-        public static float ReloadSpeedTorqueMult = 1.1f;// needs tweaking
+        public static float ReloadSpeedWeightMult = 0.95f;//
+        public static float ReloadSpeedTorqueMult = 1.15f;// needs tweaking
         public static float ReloadSpeedMult = 0.35f;//
 
-        public static float ChamberSpeedWeightMult = 0.9f;//
-        public static float ChamberSpeedTorqueMult = 1.1f;// needs tweaking
+        public static float ChamberSpeedWeightMult = 0.95f;//
+        public static float ChamberSpeedTorqueMult = 1.15f;// needs tweaking
         public static float ChamberSpeedMult = 0.35f;//
 
-        public static float AimMoveSpeedWeightMult = 0.9f;//
-        public static float AimMoveSpeedTorqueMult = 1.1f;// needs tweaking
+        public static float AimMoveSpeedWeightMult = 0.95f;//
+        public static float AimMoveSpeedTorqueMult = 1.15f;// needs tweaking
         public static float AimMoveSpeedMult = 0.2f;//
 
-        public static float magWeightMult = 10f;
+        public static float magWeightMult = 11f;
 
 
         public static void SetMagReloadSpeeds(Player.FirearmController __instance, MagazineClass magazine)
@@ -704,7 +704,7 @@ namespace RealismMod
         {
             if (weapClass == "pistol")
             {
-                distance *= 1.95f;
+                distance *= 2.1f;
             }
             return (distance - 0) * weight;
         }

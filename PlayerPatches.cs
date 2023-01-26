@@ -9,6 +9,28 @@ using UnityEngine;
 
 namespace RealismMod
 {
+    public class ToggleHoldingBreathPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player).GetMethod("ToggleHoldingBreath", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(Player __instance)
+        {
+            if (__instance.IsAI != true)
+            {
+                if (Plugin.enableHoldBreath.Value == false)
+                {
+                    return false;
+                }
+                return true;
+            }
+            return true;
+        }
+    }
+
     public class PlayerLateUpdatePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

@@ -381,9 +381,6 @@ namespace RealismMod
                 semiROFAttList.Add(semiROFAtt);
             }
 
-            //just to see if it works, would then need to replace it with my own.
-/*            List<ItemAttributeClass> attList = __instance.Attributes;
-            attList.Remove(new ItemAttributeClass(EItemAttributeId.RecoilBack));*/
         }
 
         private static float BalanceDelta()

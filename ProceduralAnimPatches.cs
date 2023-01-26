@@ -63,7 +63,7 @@ namespace RealismMod
                     //to finf float_19 again, it's set to ErgnomicWeight in this method.
 
                     float _aimsSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance);
-                    __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.startingConvergence * __instance.Aiming.RecoilConvergenceMult;
+                    __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.StartingConvergence * __instance.Aiming.RecoilConvergenceMult;
                     __instance.HandsContainer.Recoil.Damping = WeaponProperties.TotalRecoilDamping;
                     __instance.HandsContainer.HandsPosition.Damping = WeaponProperties.TotalRecoilHandDamping;
                     float aimSpeed = _aimsSpeed * (1f + WeaponProperties.AimSpeedModifier) * WeaponProperties.GlobalAimSpeedModifier;
@@ -130,7 +130,7 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
 
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * PlayerProperties.StrengthSkillAimBuff;
-                    float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 7f);
+                    float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f);
                     float breathIntensity;
                     float handsIntensity;
 
@@ -152,6 +152,7 @@ namespace RealismMod
 
                     breathIntensity *= __instance.IntensityByAiming;
                     handsIntensity *= __instance.IntensityByAiming;
+
 
                     __instance.Breath.Intensity = breathIntensity * __instance.IntensityByPoseLevel; //both aim sway and up and down breathing
                     __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = handsIntensity * handsIntensity); //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down.
@@ -191,7 +192,7 @@ namespace RealismMod
                 if (!player.IsAI)
                 {
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * PlayerProperties.StrengthSkillAimBuff;
-                    float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 7f);
+                    float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f);
                     float displacementModifier = 0.4f;//lower = less drag
                     float aimIntensity = __instance.IntensityByAiming * 0.4f;
 
@@ -200,10 +201,10 @@ namespace RealismMod
                         aimIntensity = __instance.IntensityByAiming * 1f;
                     }
 
-                    float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight);
+                    float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight * weightFactor);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_20").SetValue(__instance, swayStrength);
 
-                    float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate(ergoWeight);//delay from moving mouse to the weapon moving to center of screen.
+                    float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate(ergoWeight * weightFactor);//delay from moving mouse to the weapon moving to center of screen.
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_21").SetValue(__instance, weapDisplacement * weightFactor * displacementModifier);
 
                     __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * Mathf.Clamp(aimIntensity * weightFactor, aimIntensity, 1.1f); // the diving/tiling animation as you move weapon side to side.

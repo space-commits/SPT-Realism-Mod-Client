@@ -35,9 +35,9 @@ namespace RealismMod
         public static ConfigEntry<float> vRecoilResetRate { get; set; }
         public static ConfigEntry<float> hRecoilChangeMulti { get; set; }
         public static ConfigEntry<float> hRecoilResetRate { get; set; }
-        public static ConfigEntry<float> sensChangeRate { get; set; }
-        public static ConfigEntry<float> sensResetRate { get; set; }
-        public static ConfigEntry<float> sensLimit { get; set; }
+        public static ConfigEntry<float> SensChangeRate { get; set; }
+        public static ConfigEntry<float> SensResetRate { get; set; }
+        public static ConfigEntry<float> SensLimit { get; set; }
         public static ConfigEntry<bool> showBalance { get; set; }
         public static ConfigEntry<bool> showCamRecoil { get; set; }
         public static ConfigEntry<bool> showDispersion { get; set; }
@@ -56,6 +56,9 @@ namespace RealismMod
         public static ConfigEntry<bool> enableReloadPatches { get; set; }
         public static ConfigEntry<bool> enableRealArmorClass { get; set; }
         public static ConfigEntry<bool> reduceCamRecoil { get; set; }
+        public static ConfigEntry<float> convergenceSpeedCurve { get; set; }
+        public static ConfigEntry<bool> enableDeafen { get; set; }
+        public static ConfigEntry<bool> enableHoldBreath { get; set; }
 
 
         public static bool IsFiring = false;
@@ -71,32 +74,35 @@ namespace RealismMod
 
         public static float StartingRecoilAngle;
 
-        public static float startingSens;
-        public static float currentSens = startingSens;
+        public static float StartingAimSens;
+        public static float CurrentAimSens = StartingAimSens;
+        public static float StartingHipSens;
+        public static float CurrentHipSens = StartingHipSens;
+        public static bool CheckedForSens = false;
 
-        public static float startingDispersion;
-        public static float currentDispersion;
-        public static float dispersionProportionK;
+        public static float StartingDispersion;
+        public static float CurrentDispersion;
+        public static float DispersionProportionK;
 
-        public static float startingDamping;
-        public static float currentDamping;
+        public static float StartingDamping;
+        public static float CurrentDamping;
 
-        public static float startingHandDamping;
-        public static float currentHandDamping;
+        public static float StartingHandDamping;
+        public static float CurrentHandDamping;
 
-        public static float startingConvergence;
-        public static float currentConvergence;
-        public static float convergenceProporitonK;
+        public static float StartingConvergence;
+        public static float CurrentConvergence;
+        public static float ConvergenceProporitonK;
 
-        public static float startingCamRecoilX;
-        public static float startingCamRecoilY;
-        public static float currentCamRecoilX;
-        public static float currentCamRecoilY;
+        public static float StartingCamRecoilX;
+        public static float StartingCamRecoilY;
+        public static float CurrentCamRecoilX;
+        public static float CurrentCamRecoilY;
 
         public static float StartingVRecoilX;
-        public static float startingVRecoilY;
-        public static float currentVRecoilX;
-        public static float currentVRecoilY;
+        public static float StartingVRecoilY;
+        public static float CurrentVRecoilX;
+        public static float CurrentVRecoilY;
 
         public static float StartingHRecoilX;
         public static float StartingHRecoilY;
@@ -226,29 +232,33 @@ namespace RealismMod
                    enableAmmoPenDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Penetration", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 2 }));
                    enableAmmoArmorDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Armor Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 1 }));*/
 
-                enableAmmoFirerateDisp = Config.Bind<bool>(MiscSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 5 }));
-                enableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 1 }));
-                enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 2 }));
-                enableMalfPatch = Config.Bind<bool>(MiscSettings, "Enable Inspectionless Malfuctions Patch", true, new ConfigDescription("Requires Restart. You Don't Need To Inspect A Malfunction In Order To Clear It.", null, new ConfigurationManagerAttributes { Order = 3 }));
-                enableSGMastering = Config.Bind<bool>(MiscSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 4 }));
-                enableBarrelFactor = Config.Bind<bool>(MiscSettings, "Enable Barrel Factor", true, new ConfigDescription("Requires Restart. Barrel Length Modifies The Damage, Penetration, Velocity, Fragmentation Chance, And Ballistic Coeficient Of Projectiles.", null, new ConfigurationManagerAttributes { Order = 5 }));
-                enableRealArmorClass = Config.Bind<bool>(MiscSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 6 }));
-                enableReloadPatches = Config.Bind<bool>(MiscSettings, "Enable Reload And Chamber Speed Changes", true, new ConfigDescription("Requires Restart. Weapon Weight, Magazine Weight, Attachment Reload And Chamber Speed Stat, Balance, Ergo And Arm Injury Affect Reload And Chamber Speed.", null, new ConfigurationManagerAttributes { Order = 7 }));
+                enableDeafen = Config.Bind<bool>(MiscSettings, "Enable Deafening", true, new ConfigDescription("Requiures Restart. Enables gunshots and explosions deafening the player.", null, new ConfigurationManagerAttributes { Order = 1 }));
+                enableAmmoFirerateDisp = Config.Bind<bool>(MiscSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 2 }));
+                enableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 3 }));
+                enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 4 }));
+                enableMalfPatch = Config.Bind<bool>(MiscSettings, "Enable Inspectionless Malfuctions Patch", true, new ConfigDescription("Requires Restart. You Don't Need To Inspect A Malfunction In Order To Clear It.", null, new ConfigurationManagerAttributes { Order = 5 }));
+                enableSGMastering = Config.Bind<bool>(MiscSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 6 }));
+                enableBarrelFactor = Config.Bind<bool>(MiscSettings, "Enable Barrel Factor", true, new ConfigDescription("Requires Restart. Barrel Length Modifies The Damage, Penetration, Velocity, Fragmentation Chance, And Ballistic Coeficient Of Projectiles.", null, new ConfigurationManagerAttributes { Order = 7 }));
+                enableRealArmorClass = Config.Bind<bool>(MiscSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 8 }));
+                enableReloadPatches = Config.Bind<bool>(MiscSettings, "Enable Reload And Chamber Speed Changes", true, new ConfigDescription("Requires Restart. Weapon Weight, Magazine Weight, Attachment Reload And Chamber Speed Stat, Balance, Ergo And Arm Injury Affect Reload And Chamber Speed.", null, new ConfigurationManagerAttributes { Order = 9 }));
+                enableHoldBreath = Config.Bind<bool>(MiscSettings, "Enable Hold Breath", false, new ConfigDescription("Enabled Hold Breath, Disabled By Default. The Mod Is Balanced Around Not Being Able To Hold Breath.", null, new ConfigurationManagerAttributes { Order = 9 }));
 
                 reduceCamRecoil = Config.Bind<bool>(RecoilSettings, "Reduce Camera Recoil Per Shot", false, new ConfigDescription("Reduces Camera Recoil Per Shot Instead Of It Increasing.", null, new ConfigurationManagerAttributes { Order = 3 }));
-                sensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Lower Limit", 0.4f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction. 100% Means No Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 2 }));
-                sensChangeRate = Config.Bind<float>(RecoilSettings, "Sensitivity Change Rate", 0.8f, new ConfigDescription("Rate At Which Sensitivity Is Reduced While Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 1 }));
-                sensResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Senisitivity Reset Rate", 1.2f, new ConfigDescription("Rate At Which Sensitivity Recovers After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 9 }));
+                SensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Lower Limit", 0.4f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction. 100% Means No Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 2 }));
 
-                vRecoilLimit = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Upper Limit", 15.0f, new ConfigDescription("The Upper Limit For Vertical Recoil Increase As A Multiplier. E.g Value Of 10 Is A Limit Of 10x Starting Recoil.", new AcceptableValueRange<float>(1f, 50f), new ConfigurationManagerAttributes { Order = 8 }));
-                vRecoilChangeMulti = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Change Rate Multi", 1.0f, new ConfigDescription("A Multiplier For The Vertical Recoil Increase Per Shot.", new AcceptableValueRange<float>(0.9f, 1.1f), new ConfigurationManagerAttributes { Order = 7 }));
-                vRecoilResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Reset Rate", 0.91f, new ConfigDescription("The Rate At Which Vertical Recoil Resets Over Time After Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 0.99f), new ConfigurationManagerAttributes { Order = 6 }));
-                hRecoilLimit = Config.Bind<float>(AdvancedRecoilSettings, "Rearward Recoil Upper Limit", 2.0f, new ConfigDescription("The Upper Limit For Rearward Recoil Increase As A Multiplier. E.g Value Of 10 Is A Limit Of 10x Starting Recoil.", new AcceptableValueRange<float>(1f, 50f), new ConfigurationManagerAttributes { Order = 5 }));
-                hRecoilChangeMulti = Config.Bind<float>(AdvancedRecoilSettings, "Rearward Recoil Change Rate Multi", 1.0f, new ConfigDescription("A Multiplier For The Rearward Recoil Increase Per Shot.", new AcceptableValueRange<float>(0.9f, 1.1f), new ConfigurationManagerAttributes { Order = 4 }));
-                hRecoilResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Rearward Recoil Reset Rate", 0.91f, new ConfigDescription("The Rate At Which Rearward Recoil Resets Over Time After Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 0.99f), new ConfigurationManagerAttributes { Order = 3 }));
-                convergenceResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Convergence Reset Rate", 1.16f, new ConfigDescription("The Rate At Which Convergence Resets Over Time After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 2 }));
-                convergenceLimit = Config.Bind<float>(AdvancedRecoilSettings, "Convergence Lower Limit", 0.3f, new ConfigDescription("The Lower Limit For Convergence. Convergence Is Kept In Proportion With Vertical Recoil While Firing, Down To The Set Limit. Value Of 0.3 Means Convegence Lower Limit Of 0.3 * Starting Convergance.", new AcceptableValueRange<float>(0.1f, 1.0f), new ConfigurationManagerAttributes { Order = 1 }));
+                SensChangeRate = Config.Bind<float>(AdvancedRecoilSettings, "Sensitivity Change Rate", 0.75f, new ConfigDescription("Rate At Which Sensitivity Is Reduced While Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 12 }));
+                SensResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Senisitivity Reset Rate", 1.2f, new ConfigDescription("Rate At Which Sensitivity Recovers After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 11 }));
+                convergenceSpeedCurve = Config.Bind<float>(AdvancedRecoilSettings, "Convergence Curve Multi", 0.85f, new ConfigDescription("The Convergence Curve. Lower Means More Recoil.", new AcceptableValueRange<float>(-2f, 2f), new ConfigurationManagerAttributes { Order = 10 }));
+                vRecoilLimit = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Upper Limit", 15.0f, new ConfigDescription("The Upper Limit For Vertical Recoil Increase As A Multiplier. E.g Value Of 10 Is A Limit Of 10x Starting Recoil.", new AcceptableValueRange<float>(1f, 50f), new ConfigurationManagerAttributes { Order = 9 }));
+                vRecoilChangeMulti = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Change Rate Multi", 1.01f, new ConfigDescription("A Multiplier For The Vertical Recoil Increase Per Shot.", new AcceptableValueRange<float>(0.9f, 1.1f), new ConfigurationManagerAttributes { Order = 8 }));
+                vRecoilResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Reset Rate", 0.91f, new ConfigDescription("The Rate At Which Vertical Recoil Resets Over Time After Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 0.99f), new ConfigurationManagerAttributes { Order = 7 }));
+                hRecoilLimit = Config.Bind<float>(AdvancedRecoilSettings, "Rearward Recoil Upper Limit", 10.0f, new ConfigDescription("The Upper Limit For Rearward Recoil Increase As A Multiplier. E.g Value Of 10 Is A Limit Of 10x Starting Recoil.", new AcceptableValueRange<float>(1f, 50f), new ConfigurationManagerAttributes { Order = 6 }));
+                hRecoilChangeMulti = Config.Bind<float>(AdvancedRecoilSettings, "Rearward Recoil Change Rate Multi", 1.0f, new ConfigDescription("A Multiplier For The Rearward Recoil Increase Per Shot.", new AcceptableValueRange<float>(0.9f, 1.1f), new ConfigurationManagerAttributes { Order = 5 }));
+                hRecoilResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Rearward Recoil Reset Rate", 0.91f, new ConfigDescription("The Rate At Which Rearward Recoil Resets Over Time After Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 0.99f), new ConfigurationManagerAttributes { Order = 4 }));
+                convergenceResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Convergence Reset Rate", 1.16f, new ConfigDescription("The Rate At Which Convergence Resets Over Time After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 3 }));
+                convergenceLimit = Config.Bind<float>(AdvancedRecoilSettings, "Convergence Lower Limit", 0.3f, new ConfigDescription("The Lower Limit For Convergence. Convergence Is Kept In Proportion With Vertical Recoil While Firing, Down To The Set Limit. Value Of 0.3 Means Convegence Lower Limit Of 0.3 * Starting Convergance.", new AcceptableValueRange<float>(0.1f, 1.0f), new ConfigurationManagerAttributes { Order = 2 }));
                 resetTime = Config.Bind<float>(AdvancedRecoilSettings, "Time Before Reset", 0.14f, new ConfigDescription("The Time In Seconds That Has To Be Elapsed Before Firing Is Considered Over, Stats Will Not Reset Until This Timer Is Done. Helps Prevent Spam Fire In Full Auto.", new AcceptableValueRange<float>(0.1f, 0.3f), new ConfigurationManagerAttributes { Order = 1 }));
+
 
                 showBalance = Config.Bind<bool>(WeapStatSettings, "Show Balance Stat", true, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 5 }));
                 showCamRecoil = Config.Bind<bool>(WeapStatSettings, "Show Camera Recoil Stat", false, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 4 }));
@@ -285,8 +295,12 @@ namespace RealismMod
                 new OnWeaponParametersChangedPatch().Enable();
                 new ProcessPatch().Enable();
                 new ShootPatch().Enable();
+                new SetCurveParametersPatch().Enable();
+
+                //Sensitivity Patches
                 new AimingSensitivityPatch().Enable();
                 new UpdateSensitivityPatch().Enable();
+                new GetRotationMultiplierPatch().Enable();
 
                 //Aiming Patches + Reload Trigger
                 new AimingPatch().Enable();
@@ -345,7 +359,6 @@ namespace RealismMod
                 new GetCachedReadonlyQualitiesPatch().Enable();
                 new CenterOfImpactMOAPatch().Enable();
                 new ModErgoStatDisplayPatch().Enable();
-
                 new GetAttributeIconPatches().Enable();
 
                 //Ballistics
@@ -364,20 +377,20 @@ namespace RealismMod
                 //Player
                 new EnduranceSprintActionPatch().Enable();
                 new EnduranceMovementActionPatch().Enable();
+                new ToggleHoldingBreathPatch().Enable();
 
                 //Shot Effects
-                new VignettePatch().Enable();
-                new UpdatePhonesPatch().Enable();
-                new SetCompressorPatch().Enable();
-                new RegisterShotPatch().Enable();
-                new ExplosionPatch().Enable();
+                if (enableDeafen.Value == true)
+                {
+                    new VignettePatch().Enable();
+                    new UpdatePhonesPatch().Enable();
+                    new SetCompressorPatch().Enable();
+                    new RegisterShotPatch().Enable();
+                    new ExplosionPatch().Enable();
+                }
 
                 //LateUpdate
-                new PlayerLateUpdatePatch().Enable();
-
-                //Fixed Update (strange behaviour)
-              /*  new PlayerFixedUpdatePatch().Enable();*/
-
+                new PlayerLateUpdatePatch().Enable(); Plugin.StatsAreReset = true;
             }
         }
 
@@ -393,9 +406,6 @@ namespace RealismMod
 
             if (Helper.CheckIsReady())
             {
-
-                Helper.IsReady = true;
-
                 Recoil.DoRecoilClimb();
 
                 if (Plugin.ShotCount == Plugin.PrevShotCount)
@@ -430,17 +440,15 @@ namespace RealismMod
                     }
                 }
 
-                Deafening.DoDeafening(Logger);
+                if (enableDeafen.Value == true)
+                {
+                    Deafening.DoDeafening();
+                }
 
                 if (Plugin.IsFiring == false)
                 {
                     Recoil.ResetRecoil();
                 }
-
-            }
-            else
-            {
-                Helper.IsReady = false;
             }
         }
     }
