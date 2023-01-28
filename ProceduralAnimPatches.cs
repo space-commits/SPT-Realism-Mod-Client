@@ -137,7 +137,7 @@ namespace RealismMod
                     if (WeaponProperties.HasShoulderContact == false)
                     {
                         breathIntensity = Mathf.Min(0.75f * ergoWeightFactor, 0.9f);
-                        handsIntensity = Mathf.Min(0.75f * ergoWeightFactor, 0.9f);
+                        handsIntensity = Mathf.Min(0.75f * ergoWeightFactor, 0.95f);
                     }
                     else if (firearmController.Item.WeapClass == "pistol" && WeaponProperties.HasShoulderContact != true)
                     {

@@ -668,7 +668,7 @@ namespace RealismMod
                 case "Caliber762x54R":
                     return 3f;
                 case "Caliber127x55":
-                    return 3.5f;
+                    return 4.2f;
                 case "Caliber86x70":
                     return 8f;
                 case "Caliber127x108":

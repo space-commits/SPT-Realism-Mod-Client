@@ -98,7 +98,6 @@ namespace RealismMod
         private static bool Prefix(ref Weapon __instance, ref float __result)
         {
 
-            Logger.LogWarning("Stat Delta");
 
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
