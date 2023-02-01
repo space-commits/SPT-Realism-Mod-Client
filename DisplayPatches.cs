@@ -50,51 +50,51 @@ namespace RealismMod
                 }
             }
 
-            /*            if (Plugin.enableAmmoDamageDisp.Value == true)
-                        {
-                            float totalDamage = ammoTemplate.Damage * ammoTemplate.ProjectileCount;
-                            ItemAttributeClass damageAtt = new ItemAttributeClass(ENewItemAttributeId.Damage);
-                            damageAtt.Name = ENewItemAttributeId.Damage.GetName();
-                            damageAtt.Base = () => totalDamage;
-                            damageAtt.StringValue = () => $"{totalDamage}";
-                            damageAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-                            ammoAttributes.Add(damageAtt);
+            if (Plugin.enableAmmoDamageDisp.Value == true)
+            {
+                float totalDamage = ammoTemplate.Damage * ammoTemplate.ProjectileCount;
+                ItemAttributeClass damageAtt = new ItemAttributeClass(ENewItemAttributeId.Damage);
+                damageAtt.Name = ENewItemAttributeId.Damage.GetName();
+                damageAtt.Base = () => totalDamage;
+                damageAtt.StringValue = () => $"{totalDamage}";
+                damageAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                ammoAttributes.Add(damageAtt);
 
-                        }
+            }
 
-                        if (Plugin.enableAmmoFragDisp.Value == true)
-                        {
-                            float fragChance = ammoTemplate.FragmentationChance * 100;
-                            if (fragChance > 0)
-                            {
-                                ItemAttributeClass fragAtt = new ItemAttributeClass(ENewItemAttributeId.FragmentationChance);
-                                fragAtt.Name = ENewItemAttributeId.FragmentationChance.GetName();
-                                fragAtt.Base = () => fragChance;
-                                fragAtt.StringValue = () => $"{fragChance} %";
-                                fragAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-                                ammoAttributes.Add(fragAtt);
-                            }
-                        }
+            if (Plugin.enableAmmoFragDisp.Value == true)
+            {
+                float fragChance = ammoTemplate.FragmentationChance * 100;
+                if (fragChance > 0)
+                {
+                    ItemAttributeClass fragAtt = new ItemAttributeClass(ENewItemAttributeId.FragmentationChance);
+                    fragAtt.Name = ENewItemAttributeId.FragmentationChance.GetName();
+                    fragAtt.Base = () => fragChance;
+                    fragAtt.StringValue = () => $"{fragChance} %";
+                    fragAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    ammoAttributes.Add(fragAtt);
+                }
+            }
 
-                        if (Plugin.enableAmmoPenDisp.Value == true)
-                        {
-                            ItemAttributeClass penAtt = new ItemAttributeClass(ENewItemAttributeId.Penetration);
-                            penAtt.Name = ENewItemAttributeId.Penetration.GetName();
-                            penAtt.Base = () => ammoTemplate.PenetrationPower;
-                            penAtt.StringValue = () => $"{ammoTemplate.PenetrationPower}";
-                            penAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-                            ammoAttributes.Add(penAtt);
-                        }
+            if (Plugin.enableAmmoPenDisp.Value == true)
+            {
+                ItemAttributeClass penAtt = new ItemAttributeClass(ENewItemAttributeId.Penetration);
+                penAtt.Name = ENewItemAttributeId.Penetration.GetName();
+                penAtt.Base = () => ammoTemplate.PenetrationPower;
+                penAtt.StringValue = () => $"{ammoTemplate.PenetrationPower}";
+                penAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                ammoAttributes.Add(penAtt);
+            }
 
-                        if (Plugin.enableAmmoArmorDamageDisp.Value == true)
-                        {
-                            ItemAttributeClass armorDamAtt = new ItemAttributeClass(ENewItemAttributeId.ArmorDamage);
-                            armorDamAtt.Name = ENewItemAttributeId.ArmorDamage.GetName();
-                            armorDamAtt.Base = () => ammoTemplate.ArmorDamage;
-                            armorDamAtt.StringValue = () => $"{ammoTemplate.ArmorDamage}";
-                            armorDamAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-                            ammoAttributes.Add(armorDamAtt);
-                        }*/
+            if (Plugin.enableAmmoArmorDamageDisp.Value == true)
+            {
+                ItemAttributeClass armorDamAtt = new ItemAttributeClass(ENewItemAttributeId.ArmorDamage);
+                armorDamAtt.Name = ENewItemAttributeId.ArmorDamage.GetName();
+                armorDamAtt.Base = () => ammoTemplate.ArmorDamage;
+                armorDamAtt.StringValue = () => $"{ammoTemplate.ArmorDamage}";
+                armorDamAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                ammoAttributes.Add(armorDamAtt);
+            }
         }
     }
 
@@ -168,6 +168,15 @@ namespace RealismMod
             float fixSpeed = AttachmentProperties.FixSpeed(__instance);
             float aimSpeed = AttachmentProperties.AimSpeed(__instance);
             float shotDisp = AttachmentProperties.ModShotDispersion(__instance);
+
+            ItemAttributeClass malfAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.MalfunctionChance);
+            malfAtt.Name = ENewItemAttributeId.MalfunctionChance.GetName();
+            malfAtt.Base = () => malfChance;
+            malfAtt.StringValue = () => $"{malfChance}%";
+            malfAtt.LessIsGood = true;
+            malfAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+            malfAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
+            Helper.SafelyAddAttributeToList(malfAtt, __instance);
 
             ItemAttributeClass hRecoilAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.HorizontalRecoil);
             hRecoilAtt.Name = ENewItemAttributeId.HorizontalRecoil.GetName();
@@ -542,9 +551,8 @@ namespace RealismMod
             {
                 return num;
             }
-            float num2 = num;
             AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
-            return num2 * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
+            return num * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
         }
     }
 
@@ -605,7 +613,9 @@ namespace RealismMod
 
             float currentChamberSpeed = 0f;
 
-            float currentShotDisp = 0;
+            float currentShotDisp = 0f;
+
+            float currentMalfChance = 0f;
 
             string weapOpType = WeaponProperties.OperationType(__instance);
             string weapType = WeaponProperties.WeaponType(__instance);
@@ -641,16 +651,18 @@ namespace RealismMod
                 float modDispersion = AttachmentProperties.Dispersion(__instance.Mods[i]);
                 float modAngle = AttachmentProperties.RecoilAngle(__instance.Mods[i]);
                 float modAccuracy = __instance.Mods[i].Accuracy;
-                float modReload = 0;
-                float modChamber = 0;
-                float modAim = 0;
-                float modFix = 0;
-                float modLoudness = 0;
+                float modReload = 0f;
+                float modChamber = 0f;
+                float modAim = 0f;
+                float modFix = 0f;
+                float modLoudness = 0f;
+                float modMalfChance = 0f;
+                float modDuraBurn = 0f;
                 string modType = AttachmentProperties.ModType(__instance.Mods[i]);
                 string position = StatCalc.GetModPosition(__instance.Mods[i], weapType, weapOpType, modType);
 
-                StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness);
-                StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, true, __instance.WeapClass, ref pureErgo, 0, ref currentShotDisp, modLoudness, ref currentLoudness);
+                StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, ref modMalfChance, ref modDuraBurn);
+                StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, true, __instance.WeapClass, ref pureErgo, 0, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance);
             }
 
             float totalTorque = 0;

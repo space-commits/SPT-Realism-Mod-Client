@@ -179,6 +179,7 @@ namespace RealismMod
             IconCache.Add(ENewItemAttributeId.Penetration, Resources.Load<Sprite>("characteristics/icons/armorClass"));
             IconCache.Add(ENewItemAttributeId.ArmorDamage, Resources.Load<Sprite>("characteristics/icons/armorMaterial"));
             IconCache.Add(ENewItemAttributeId.FragmentationChance, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
+            IconCache.Add(ENewItemAttributeId.MalfunctionChance, Resources.Load<Sprite>("characteristics/icons/icon_info_raidmoddable"));
             _ = LoadTexture(ENewItemAttributeId.Balance, Path.Combine(ModPath, "res\\balance.png"));
             _ = LoadTexture(ENewItemAttributeId.RecoilAngle, Path.Combine(ModPath, "res\\recoilAngle.png"));
         }
@@ -223,17 +224,19 @@ namespace RealismMod
             {
  
                 string MiscSettings = "1. Misc. Settings";
-                string WeapStatSettings = "2. Weapon Stat Settings";
-                string RecoilSettings = "3. Recoil Settings";
-                string AdvancedRecoilSettings = "4. Advanced Settings";
+                string RecoilSettings = "2. Recoil Settings";
+                string WeapStatSettings = "3. Weapon Stat Display Settings";
+                string AmmoSettings = "4. Ammo Stat Display Settings";
+                string AdvancedRecoilSettings = "5. Advanced Recoil Settings";
 
-                /*   enableAmmoDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 4 }));
-                   enableAmmoFragDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Fragmentation Chance", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 3 }));
-                   enableAmmoPenDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Penetration", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 2 }));
-                   enableAmmoArmorDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Armor Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 1 }));*/
+
+                enableAmmoDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 5 }));
+                enableAmmoFragDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Fragmentation Chance", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 4 }));
+                enableAmmoPenDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Penetration", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 3 }));
+                enableAmmoArmorDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Armor Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 2 }));
+                enableAmmoFirerateDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 1 }));
 
                 enableDeafen = Config.Bind<bool>(MiscSettings, "Enable Deafening", true, new ConfigDescription("Requiures Restart. Enables gunshots and explosions deafening the player.", null, new ConfigurationManagerAttributes { Order = 1 }));
-                enableAmmoFirerateDisp = Config.Bind<bool>(MiscSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 2 }));
                 enableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 3 }));
                 enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 4 }));
                 enableMalfPatch = Config.Bind<bool>(MiscSettings, "Enable Malfunctions Changes", true, new ConfigDescription("Requires Restart. You Don't Need To Inspect A Malfunction In Order To Clear It, Subsonic Ammo Needs Special Mods To Cycle, Only Magazines Have A Min Durabily Requirement For Malfunctions.", null, new ConfigurationManagerAttributes { Order = 5 }));
@@ -252,13 +255,12 @@ namespace RealismMod
                 vRecoilLimit = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Upper Limit", 15.0f, new ConfigDescription("The Upper Limit For Vertical Recoil Increase As A Multiplier. E.g Value Of 10 Is A Limit Of 10x Starting Recoil.", new AcceptableValueRange<float>(1f, 50f), new ConfigurationManagerAttributes { Order = 9 }));
                 vRecoilChangeMulti = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Change Rate Multi", 1.01f, new ConfigDescription("A Multiplier For The Vertical Recoil Increase Per Shot.", new AcceptableValueRange<float>(0.9f, 1.1f), new ConfigurationManagerAttributes { Order = 8 }));
                 vRecoilResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Reset Rate", 0.91f, new ConfigDescription("The Rate At Which Vertical Recoil Resets Over Time After Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 0.99f), new ConfigurationManagerAttributes { Order = 7 }));
-                hRecoilLimit = Config.Bind<float>(AdvancedRecoilSettings, "Rearward Recoil Upper Limit", 10.0f, new ConfigDescription("The Upper Limit For Rearward Recoil Increase As A Multiplier. E.g Value Of 10 Is A Limit Of 10x Starting Recoil.", new AcceptableValueRange<float>(1f, 50f), new ConfigurationManagerAttributes { Order = 6 }));
+                hRecoilLimit = Config.Bind<float>(AdvancedRecoilSettings, "Rearward Recoil Upper Limit", 2.5f, new ConfigDescription("The Upper Limit For Rearward Recoil Increase As A Multiplier. E.g Value Of 10 Is A Limit Of 10x Starting Recoil.", new AcceptableValueRange<float>(1f, 50f), new ConfigurationManagerAttributes { Order = 6 }));
                 hRecoilChangeMulti = Config.Bind<float>(AdvancedRecoilSettings, "Rearward Recoil Change Rate Multi", 1.0f, new ConfigDescription("A Multiplier For The Rearward Recoil Increase Per Shot.", new AcceptableValueRange<float>(0.9f, 1.1f), new ConfigurationManagerAttributes { Order = 5 }));
                 hRecoilResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Rearward Recoil Reset Rate", 0.91f, new ConfigDescription("The Rate At Which Rearward Recoil Resets Over Time After Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 0.99f), new ConfigurationManagerAttributes { Order = 4 }));
                 convergenceResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Convergence Reset Rate", 1.16f, new ConfigDescription("The Rate At Which Convergence Resets Over Time After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 3 }));
                 convergenceLimit = Config.Bind<float>(AdvancedRecoilSettings, "Convergence Lower Limit", 0.3f, new ConfigDescription("The Lower Limit For Convergence. Convergence Is Kept In Proportion With Vertical Recoil While Firing, Down To The Set Limit. Value Of 0.3 Means Convegence Lower Limit Of 0.3 * Starting Convergance.", new AcceptableValueRange<float>(0.1f, 1.0f), new ConfigurationManagerAttributes { Order = 2 }));
                 resetTime = Config.Bind<float>(AdvancedRecoilSettings, "Time Before Reset", 0.14f, new ConfigDescription("The Time In Seconds That Has To Be Elapsed Before Firing Is Considered Over, Stats Will Not Reset Until This Timer Is Done. Helps Prevent Spam Fire In Full Auto.", new AcceptableValueRange<float>(0.1f, 0.3f), new ConfigurationManagerAttributes { Order = 1 }));
-
 
                 showBalance = Config.Bind<bool>(WeapStatSettings, "Show Balance Stat", true, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 5 }));
                 showCamRecoil = Config.Bind<bool>(WeapStatSettings, "Show Camera Recoil Stat", false, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 4 }));
@@ -311,9 +313,8 @@ namespace RealismMod
                 {
                     new IsKnownMalfTypePatch().Enable();
                     new GetTotalMalfunctionChancePatch().Enable();
-                    new Single_1Patch().Enable();
-                    new RepairAmountPatch().Enable();
-              
+/*                    new Single_1Patch().Enable();
+                    new RepairAmountPatch().Enable();*/
                 }
 
 
@@ -365,6 +366,9 @@ namespace RealismMod
                 new ModErgoStatDisplayPatch().Enable();
                 new GetAttributeIconPatches().Enable();
 
+                //if increase innacuracy, enable this patch
+                new GetTotalCenterOfImpactPatch().Enable();
+
                 //Ballistics
                 if (enableBarrelFactor.Value == true)
                 {
@@ -400,58 +404,60 @@ namespace RealismMod
 
         void Update()
         {
-
-            if (checkedForUniformAim == false)
+            if (IsConfigCorrect == true)
             {
-                isUniformAimPresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.UniformAim");
-                isBridgePresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.RealismModBridge");
-                checkedForUniformAim = true;
-            }
-
-            if (Helper.CheckIsReady())
-            {
-                Recoil.DoRecoilClimb();
-
-                if (Plugin.ShotCount == Plugin.PrevShotCount)
+                if (checkedForUniformAim == false)
                 {
-                    Plugin.Timer += Time.deltaTime;
-                    if (Plugin.Timer >= Plugin.resetTime.Value)
+                    isUniformAimPresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.UniformAim");
+                    isBridgePresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.RealismModBridge");
+                    checkedForUniformAim = true;
+                }
+
+                if (Helper.CheckIsReady())
+                {
+                    Recoil.DoRecoilClimb();
+
+                    if (Plugin.ShotCount == Plugin.PrevShotCount)
                     {
-                        Plugin.IsFiring = false;
-                        Plugin.ShotCount = 0;
-                        Plugin.PrevShotCount = 0;
-                        Plugin.Timer = 0f;
+                        Plugin.Timer += Time.deltaTime;
+                        if (Plugin.Timer >= Plugin.resetTime.Value)
+                        {
+                            Plugin.IsFiring = false;
+                            Plugin.ShotCount = 0;
+                            Plugin.PrevShotCount = 0;
+                            Plugin.Timer = 0f;
+                        }
                     }
-                }
 
-                if (Plugin.IsBotFiring == true)
-                {
-                    Plugin.BotTimer += Time.deltaTime;
-                    if (Plugin.BotTimer >= 1f)
+                    if (Plugin.IsBotFiring == true)
                     {
-                        Plugin.IsBotFiring = false;
-                        Plugin.BotTimer = 0f;
+                        Plugin.BotTimer += Time.deltaTime;
+                        if (Plugin.BotTimer >= 1f)
+                        {
+                            Plugin.IsBotFiring = false;
+                            Plugin.BotTimer = 0f;
+                        }
                     }
-                }
 
-                if (Plugin.GrenadeExploded == true)
-                {
-                    Plugin.GrenadeTimer += Time.deltaTime;
-                    if (Plugin.GrenadeTimer >= 1f)
+                    if (Plugin.GrenadeExploded == true)
                     {
-                        Plugin.GrenadeExploded = false;
-                        Plugin.GrenadeTimer = 0f;
+                        Plugin.GrenadeTimer += Time.deltaTime;
+                        if (Plugin.GrenadeTimer >= 1f)
+                        {
+                            Plugin.GrenadeExploded = false;
+                            Plugin.GrenadeTimer = 0f;
+                        }
                     }
-                }
 
-                if (enableDeafen.Value == true)
-                {
-                    Deafening.DoDeafening();
-                }
+                    if (enableDeafen.Value == true)
+                    {
+                        Deafening.DoDeafening();
+                    }
 
-                if (Plugin.IsFiring == false)
-                {
-                    Recoil.ResetRecoil();
+                    if (Plugin.IsFiring == false)
+                    {
+                        Recoil.ResetRecoil();
+                    }
                 }
             }
         }

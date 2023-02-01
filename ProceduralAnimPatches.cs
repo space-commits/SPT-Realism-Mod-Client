@@ -142,7 +142,7 @@ namespace RealismMod
                     else if (firearmController.Item.WeapClass == "pistol" && WeaponProperties.HasShoulderContact != true)
                     {
                         breathIntensity = Mathf.Min(0.58f * ergoWeightFactor, 0.75f);
-                        handsIntensity = Mathf.Min(0.58f * ergoWeightFactor, 0.75f);
+                        handsIntensity = Mathf.Min(0.58f * ergoWeightFactor, 0.8f);
                     }
                     else
                     {

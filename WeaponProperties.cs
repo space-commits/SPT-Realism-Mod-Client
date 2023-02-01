@@ -124,6 +124,10 @@ namespace RealismMod
             return bool.Parse(weapon.ConflictingItems[9]);
         }
 
+        public static float TotalModDuraBurn = 0;
+
+        public static float TotalMalfChance = 0;
+
         public static bool CanCycleSubs = false;
 
         public static string _WeapClass = "";

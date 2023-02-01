@@ -116,8 +116,8 @@ namespace RealismMod
         public static float DistortionLimit = 70f;
         public static float VignetteDarknessLimit = 14f;
 
-        public static float VolumeDecreaseRate = 0.02f;
-        public static float DistortionIncreaseRate = 0.17f;
+        public static float VolumeDecreaseRate = 0.022f;
+        public static float DistortionIncreaseRate = 0.16f;
         public static float VignetteDarknessIncreaseRate = 0.45f;
 
         public static float VolumeResetRate = 0.025f;
@@ -340,17 +340,17 @@ namespace RealismMod
 
                     if (currentAmmoTemplate.InitialSpeed <= 335f)
                     {
-                        ammoDeafFactor *= 0.7f;
+                        ammoDeafFactor *= 0.65f;
                     }
 
                     Plugin.AmmoDeafFactor = ammoDeafFactor == 0f ? 1f : ammoDeafFactor;
 
-                    Logger.LogWarning("==============");
+/*                    Logger.LogWarning("==============");
                     Logger.LogWarning("Player Shot");
                     Logger.LogWarning("velocityFactor = " + velocityFactor);
                     Logger.LogWarning("ammoFactor = " + ammoFactor);
                     Logger.LogWarning("AmmoDeafFactor = " + Plugin.AmmoDeafFactor);
-                    Logger.LogWarning("==============");
+                    Logger.LogWarning("==============");*/
                 }
                 else
                 {

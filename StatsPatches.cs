@@ -300,6 +300,11 @@ namespace RealismMod
 
             float currentChamberSpeed = 0f;
 
+            float modBurnRatio = 1;
+
+            float baseMalfChance = __instance.BaseMalfunctionChance;
+            float currentMalfChance = baseMalfChance;
+
             string weapOpType = WeaponProperties.OperationType(__instance);
             string weapType = WeaponProperties.WeaponType(__instance);
 
@@ -345,14 +350,17 @@ namespace RealismMod
                     string modType = AttachmentProperties.ModType(__instance.Mods[i]);
                     string position = StatCalc.GetModPosition(__instance.Mods[i], weapType, weapOpType, modType);
                     float modLoudness = __instance.Mods[i].Loudness;
+                    float modMalfChance = AttachmentProperties.ModMalfunctionChance(__instance.Mods[i]);
+                    float modDuraBurn = __instance.Mods[i].DurabilityBurnModificator;
+
+                    StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, ref modMalfChance, ref modDuraBurn);
+                    StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance);
 
                     if (AttachmentProperties.CanCylceSubs(__instance.Mods[i]) == true)
                     {
                         canCycleSubs = true;
                     }
-
-                    StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness);
-                    StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, modLoudness, ref currentLoudness);
+                    modBurnRatio *= modDuraBurn;
                 }
             }
             if (weaponAllowsFSADS == true || stockAllowsFSADS == true)
@@ -366,6 +374,9 @@ namespace RealismMod
 
             float totalLoudness = ((currentLoudness / 100) + 1f) * StatCalc.CalibreLoudnessFactor(calibre);
 
+
+            WeaponProperties.TotalModDuraBurn = modBurnRatio;
+            WeaponProperties.TotalMalfChance = currentMalfChance;
             Plugin.WeaponDeafFactor = totalLoudness;
             WeaponProperties.CanCycleSubs = canCycleSubs;
             WeaponProperties.HasShoulderContact = hasShoulderContact;
@@ -386,6 +397,9 @@ namespace RealismMod
             WeaponProperties.SDPureErgo = pureErgo;
             WeaponProperties.ShotDispDelta = (baseShotDisp - currentShotDisp) / (baseShotDisp * -1f);
 
+            Logger.LogWarning("Base Malf Chance = " + __instance.BaseMalfunctionChance);
+            Logger.LogWarning("Total Malf Chance = " + WeaponProperties.TotalMalfChance);
+
         }
     }
 
@@ -403,6 +417,36 @@ namespace RealismMod
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 __result = WeaponProperties.COIDelta;
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+    }
+
+    public class GetTotalCenterOfImpactPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Weapon).GetMethod("GetTotalCenterOfImpact", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(ref Weapon __instance, ref float __result, bool includeAmmo)
+        {
+
+            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
+            {
+                float num = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta));
+                if (!includeAmmo)
+                {
+                    __result = num;
+                    return false;
+                }
+                AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
+                __result = num * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
                 return false;
             }
             else
@@ -454,29 +498,7 @@ namespace RealismMod
 
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
-                modsBurnRatio = 1f;
-                string weapOpType = WeaponProperties.OperationType(__instance);
-                foreach (Mod mod in __instance.Mods)
-                {
-                    if (Helper.IsStock(mod) == true)
-                    {
-                        string modType = AttachmentProperties.ModType(mod);
-                        if (weapOpType != "buffer" && (modType == "buffer" || modType == "buffer_stock"))
-                        {
-                            modsBurnRatio *= 1f;
-                        }
-                        else
-                        {
-                            modsBurnRatio *= mod.DurabilityBurnModificator;
-                        }
-
-                    }
-                    else
-                    {
-
-                        modsBurnRatio *= mod.DurabilityBurnModificator;
-                    }
-                }
+                modsBurnRatio = WeaponProperties.TotalModDuraBurn;
                 __result = (float)__instance.Repairable.TemplateDurability / __instance.Template.OperatingResource * __instance.DurabilityBurnRatio * (modsBurnRatio * ammoBurnRatio) * overheatFactor * (1f - skillWeaponTreatmentFactor); ;
                 return false;
             }

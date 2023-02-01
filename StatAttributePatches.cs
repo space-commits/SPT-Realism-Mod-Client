@@ -57,7 +57,7 @@ namespace RealismMod
             ArmorDamage,
             FragmentationChance,
             BluntThroughput,
-            ShotDispersion
+            ShotDispersion,
         }
 
         public static string GetName(this ENewItemAttributeId id)

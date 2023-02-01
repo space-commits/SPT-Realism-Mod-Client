@@ -41,7 +41,7 @@ namespace RealismMod
         {
             if (Plugin.IsFiring != true && Helper.IsInReloadOpertation)
             {
-                __instance.SetAnimationSpeed(0.3f + (WeaponProperties.ChamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
+                __instance.SetAnimationSpeed(0.33f + (WeaponProperties.ChamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
             }
         }
     }
@@ -56,10 +56,10 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            float baseSpeed = 0.15f;
+            float baseSpeed = 0.16f;
             if (WeaponProperties._WeapClass == "pistol")
             {
-                baseSpeed = 0.3f;
+                baseSpeed = 0.33f;
             }
             __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
         }
@@ -75,14 +75,14 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            float baseSpeed = 0.35f;
+            float baseSpeed = 0.38f;
             if (WeaponProperties._WeapClass == "pistol")
             {
-                baseSpeed = 0.1f;
+                baseSpeed = 0.11f;
             }
             if (WeaponProperties._WeapClass == "shotgun")
             {
-                baseSpeed = 0.15f;
+                baseSpeed = 0.16f;
             }
             __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti));
         }
@@ -131,10 +131,10 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            float baseSpeed = 0.16f;
+            float baseSpeed = 0.17f;
             if (WeaponProperties._WeapClass == "pistol")
             {
-                baseSpeed = 0.1f;
+                baseSpeed = 0.11f;
             }
             __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti));
         }

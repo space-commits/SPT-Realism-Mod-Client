@@ -15,9 +15,9 @@ namespace RealismMod
         public static float PistolErgoTorqueMult = 1.0f;
 
         public static float VRecoilWeightMult = 2.21f;
-        public static float VRecoilTorqueMult = 0.7f;
+        public static float VRecoilTorqueMult = 0.73f;
         public static float PistolVRecoilWeightMult = 2.4f;
-        public static float PistolVRecoilTorqueMult = 0.75f;
+        public static float PistolVRecoilTorqueMult = 0.77f;
 
         public static float HRecoilWeightMult = 3.35f;
         public static float HRecoilTorqueMult = 0.7f;
@@ -261,7 +261,7 @@ namespace RealismMod
         }
 
 
-        public static void ModStatCalc(Mod mod, float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeed, float modReload, ref float currentReloadSpeed, float modFix, ref float currentFixSpeed, float modErgo, ref float currentErgo, float modVRecoil, ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeed, float modChamber, bool isDisplayDelta, string weapClass, ref float pureErgo, float modShotDisp, ref float currentShotDisp, float modloudness, ref float currentLoudness)
+        public static void ModStatCalc(Mod mod, float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeed, float modReload, ref float currentReloadSpeed, float modFix, ref float currentFixSpeed, float modErgo, ref float currentErgo, float modVRecoil, ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeed, float modChamber, bool isDisplayDelta, string weapClass, ref float pureErgo, float modShotDisp, ref float currentShotDisp, float modloudness, ref float currentLoudness, ref float currentMalfChance, float modMalfChance)
         {
 
             float ergoWeightFactor = WeightStatCalc(StatCalc.ErgoWeightMult, modWeight) / 100f;
@@ -292,6 +292,8 @@ namespace RealismMod
 
             currentSemiROF = currentSemiROF + (currentSemiROF * (modSemiROF / 100f));
 
+            currentMalfChance = currentMalfChance + (currentMalfChance * (modMalfChance / 100f));
+
             if (isDisplayDelta == true)
             {
                 return;
@@ -314,7 +316,7 @@ namespace RealismMod
         }
 
 
-        public static void ModConditionalStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, ref string position, ref float modChamber, ref float modLoudness)
+        public static void ModConditionalStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, ref string position, ref float modChamber, ref float modLoudness, ref float modMalfChance, ref float modDuraBurn)
         {
             if (Helper.IsStock(mod) == true)
             {
@@ -352,16 +354,16 @@ namespace RealismMod
                             modCamRecoil = 0;
                             modAutoROF = 0;
                             modSemiROF = 0;
-                            //duraburn = 0 
-                            //malfchance = 0
+                            modDuraBurn = 0;
+                            modMalfChance = 0;
                             return;
                         }
                         if (modType == "buffer_stock")
                         {
                             modAutoROF = 0;
                             modSemiROF = 0;
-                            //duraburn = 0 
-                            //malfchance = 0
+                            modDuraBurn = 0;
+                            modMalfChance = 0;
                             return;
                         }
 
@@ -412,6 +414,7 @@ namespace RealismMod
                         modDispersion = 0;
                         modCamRecoil = 0;
                         modErgo = 0;
+                        return;
                     }
 
                     if (modType == "hydraulic_buffer" && (weap.WeapClass != "shotgun" || weap.WeapClass != "sniperRifle" || weap.WeapClass != "assaultCarbine" || weapOpType == "buffer"))
@@ -423,19 +426,28 @@ namespace RealismMod
                         return;
                     }
                 }
+                return;
             }
 
             if (modType == "booster" && weapType != "short_AK")
             {
                 modAutoROF *= 0.25f;
                 modSemiROF *= 0.25f;
+                modMalfChance *= 0.25f;
+                modDuraBurn *= 0.25f;
                 return;
             }
+
 
             if (modType == "foregrip_adapter" && mod.Slots[0].ContainedItem != null)
             {
                 modErgo = 0f;
                 return;
+            }
+
+            if ((Helper.IsSilencer(mod) == true || Helper.IsFlashHider(mod) || Helper.IsMuzzleCombo(mod)) && (weap.BoltAction == true || WeaponProperties.OperationType(weap) == "manual"))
+            {
+                modMalfChance = 0f;
             }
 
             if (modType == "muzzle_supp_adapter" && mod.Slots[0].ContainedItem != null)
@@ -456,14 +468,11 @@ namespace RealismMod
             if (modType == "shot_pump_grip_adapt" && mod.Slots[0].ContainedItem != null)
             {
                 Mod containedMod = mod.Slots[0].ContainedItem as Mod;
-                if (Helper.IsForegrip(containedMod))
+                if (Helper.IsForegrip(containedMod) || (AttachmentProperties.ModType(containedMod) == "foregrip_adapter" && containedMod.Slots[0].ContainedItem != null))
                 {
                     modChamber += WeaponProperties.PumpGripReloadBonus;
                 }
-                if (AttachmentProperties.ModType(containedMod) == "foregrip_adapter" && containedMod.Slots[0].ContainedItem != null)
-                {
-                    modChamber += WeaponProperties.PumpGripReloadBonus;
-                }
+                return;
             }
 
 
@@ -485,6 +494,50 @@ namespace RealismMod
                 modHRecoil = 0;
                 modDispersion = 0;
                 modCamRecoil = 0;
+                return;
+            }
+
+            if (modType == "gasblock_upgassed")
+            {
+                Mod parent = mod.Parent.Container.ParentItem as Mod;
+                if (AttachmentProperties.ModType(parent) == "short_barrel")
+                {
+                    modDuraBurn = 1.2f;
+                    modHRecoil = 20f;
+                    modCamRecoil = 20f;
+                    modSemiROF = 10f;
+                    modAutoROF = 6f;
+                }
+                return;
+            }
+
+            if (modType == "short_barrel")
+            {
+
+                if (mod.Slots.Length > 0 && mod.Slots[1].ContainedItem != null)
+                {
+                    Mod containedMod = mod.Slots[1].ContainedItem as Mod;
+                    if (AttachmentProperties.ModType(containedMod) == "gasblock_upgassed")
+                    {
+                        modMalfChance = 0;
+                    }
+                }
+
+                return;
+            }
+
+
+            if (modType == "gasblock_downgassed")
+            {
+                Mod parent = mod.Parent.Container.ParentItem as Mod;
+                if (AttachmentProperties.ModType(parent) == "short_barrel")
+                {
+                    modMalfChance *= 2f;
+                    modHRecoil *= 1.5f;
+                    modCamRecoil *= 1.5f;
+                    modSemiROF *= 1.5f;
+                    modAutoROF *= 1.5f;
+                }
                 return;
             }
 
@@ -658,27 +711,27 @@ namespace RealismMod
                 case "Caliber9x39":
                     return 1.8f;
                 case "Caliber762x39":
-                    return 2.6f;
-                case "Caliber545x39":
                     return 2.65f;
+                case "Caliber545x39":
+                    return 2.7f;
                 case "Caliber556x45NATO":
                     return 2.75f;
                 case "Caliber762x51":
-                    return 3f;
+                    return 3.1f;
                 case "Caliber762x54R":
-                    return 3f;
+                    return 3.1f;
                 case "Caliber127x55":
-                    return 4.2f;
+                    return 4.5f;
                 case "Caliber86x70":
                     return 8f;
                 case "Caliber127x108":
                     return 8f;
                 case "Caliber23x75":
-                    return 4f;
+                    return 4.5f;
                 case "Caliber12g":
-                    return 3.5f;
+                    return 3.8f;
                 case "Caliber20g":
-                    return 3f;
+                    return 3.5f;
                 case "Caliber30x29":
                     return 2f;
                 case "Caliber40x46":
