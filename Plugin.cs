@@ -21,6 +21,7 @@ namespace RealismMod
     public class ConfigTemplate
     {
         public bool recoil_attachment_overhaul { get; set; }
+        public bool malf_changes { get; set; }
     }
 
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
@@ -226,15 +227,15 @@ namespace RealismMod
                 string MiscSettings = "1. Misc. Settings";
                 string RecoilSettings = "2. Recoil Settings";
                 string WeapStatSettings = "3. Weapon Stat Display Settings";
-                string AmmoSettings = "4. Ammo Stat Display Settings";
-                string AdvancedRecoilSettings = "5. Advanced Recoil Settings";
+/*                string AmmoSettings = "4. Ammo Stat Display Settings";*/
+                string AdvancedRecoilSettings = "4. Advanced Recoil Settings";
 
 
-                enableAmmoDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 5 }));
+             /*   enableAmmoDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 5 }));
                 enableAmmoFragDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Fragmentation Chance", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 4 }));
                 enableAmmoPenDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Penetration", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 3 }));
-                enableAmmoArmorDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Armor Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 2 }));
-                enableAmmoFirerateDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 1 }));
+                enableAmmoArmorDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Armor Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 2 }));*/
+                enableAmmoFirerateDisp = Config.Bind<bool>(MiscSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 11 }));
 
                 enableDeafen = Config.Bind<bool>(MiscSettings, "Enable Deafening", true, new ConfigDescription("Requiures Restart. Enables gunshots and explosions deafening the player.", null, new ConfigurationManagerAttributes { Order = 1 }));
                 enableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 3 }));
@@ -244,7 +245,7 @@ namespace RealismMod
                 enableBarrelFactor = Config.Bind<bool>(MiscSettings, "Enable Barrel Factor", true, new ConfigDescription("Requires Restart. Barrel Length Modifies The Damage, Penetration, Velocity, Fragmentation Chance, And Ballistic Coeficient Of Projectiles.", null, new ConfigurationManagerAttributes { Order = 7 }));
                 enableRealArmorClass = Config.Bind<bool>(MiscSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 8 }));
                 enableReloadPatches = Config.Bind<bool>(MiscSettings, "Enable Reload And Chamber Speed Changes", true, new ConfigDescription("Requires Restart. Weapon Weight, Magazine Weight, Attachment Reload And Chamber Speed Stat, Balance, Ergo And Arm Injury Affect Reload And Chamber Speed.", null, new ConfigurationManagerAttributes { Order = 9 }));
-                enableHoldBreath = Config.Bind<bool>(MiscSettings, "Enable Hold Breath", false, new ConfigDescription("Enabled Hold Breath, Disabled By Default. The Mod Is Balanced Around Not Being Able To Hold Breath.", null, new ConfigurationManagerAttributes { Order = 9 }));
+                enableHoldBreath = Config.Bind<bool>(MiscSettings, "Enable Hold Breath", false, new ConfigDescription("Enabled Hold Breath, Disabled By Default. The Mod Is Balanced Around Not Being Able To Hold Breath.", null, new ConfigurationManagerAttributes { Order = 10 }));
 
                 reduceCamRecoil = Config.Bind<bool>(RecoilSettings, "Reduce Camera Recoil Per Shot", false, new ConfigDescription("Reduces Camera Recoil Per Shot Instead Of It Increasing.", null, new ConfigurationManagerAttributes { Order = 3 }));
                 SensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Lower Limit", 0.4f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction. 100% Means No Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 2 }));
@@ -309,7 +310,7 @@ namespace RealismMod
                 new ToggleAimPatch().Enable();
 
                 //Malf Patches
-                if (enableMalfPatch.Value == true)
+                if (enableMalfPatch.Value == true && ModConfig.malf_changes == true)
                 {
                     new IsKnownMalfTypePatch().Enable();
                     new GetTotalMalfunctionChancePatch().Enable();

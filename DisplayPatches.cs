@@ -50,7 +50,7 @@ namespace RealismMod
                 }
             }
 
-            if (Plugin.enableAmmoDamageDisp.Value == true)
+/*            if (Plugin.enableAmmoDamageDisp.Value == true)
             {
                 float totalDamage = ammoTemplate.Damage * ammoTemplate.ProjectileCount;
                 ItemAttributeClass damageAtt = new ItemAttributeClass(ENewItemAttributeId.Damage);
@@ -94,7 +94,7 @@ namespace RealismMod
                 armorDamAtt.StringValue = () => $"{ammoTemplate.ArmorDamage}";
                 armorDamAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
                 ammoAttributes.Add(armorDamAtt);
-            }
+            }*/
         }
     }
 
@@ -172,7 +172,7 @@ namespace RealismMod
             ItemAttributeClass malfAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.MalfunctionChance);
             malfAtt.Name = ENewItemAttributeId.MalfunctionChance.GetName();
             malfAtt.Base = () => malfChance;
-            malfAtt.StringValue = () => $"{malfChance}%";
+            malfAtt.StringValue = () => $"{getMalfOdds(malfChance)}";
             malfAtt.LessIsGood = true;
             malfAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             malfAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
@@ -285,6 +285,27 @@ namespace RealismMod
             shotDispAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             shotDispAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Helper.SafelyAddAttributeToList(shotDispAtt, __instance);
+        }
+
+        public static string getMalfOdds(float malfChance)
+        {
+            switch (malfChance)
+            {
+                case <= -1:
+                    return $"{malfChance}%";
+                case 0:
+                    return "No Change";
+                case <= 100:
+                    return "Small Increase";
+                case <= 500:
+                    return "Significant Increase";
+                case <= 1000:
+                    return "Large Increase";
+                case <= 5000:
+                    return "Critical Increase";
+                default:
+                    return "";
+            }
         }
     }
 

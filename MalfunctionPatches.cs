@@ -57,7 +57,7 @@ namespace RealismMod
             overheatMalfChance = 0f;
             weaponDurability = 0f;
 
-            Logger.LogWarning("Ammo hot factor = " + ammoHotnessFactor);
+            Logger.LogWarning("Ammo hot factors = " + ammoHotnessFactor);
 
             Logger.LogWarning("Factored malf = " + WeaponProperties.TotalMalfChance * ammoHotnessFactor);
 

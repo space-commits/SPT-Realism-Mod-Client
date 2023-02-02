@@ -426,14 +426,13 @@ namespace RealismMod
                         return;
                     }
                 }
-                return;
             }
 
             if (modType == "booster" && weapType != "short_AK")
             {
                 modAutoROF *= 0.25f;
                 modSemiROF *= 0.25f;
-                modMalfChance *= 0.25f;
+                modMalfChance *= 0.05f;
                 modDuraBurn *= 0.25f;
                 return;
             }
@@ -445,9 +444,16 @@ namespace RealismMod
                 return;
             }
 
-            if ((Helper.IsSilencer(mod) == true || Helper.IsFlashHider(mod) || Helper.IsMuzzleCombo(mod)) && (weap.BoltAction == true || WeaponProperties.OperationType(weap) == "manual"))
+            if (Helper.IsSilencer(mod) == true || Helper.IsFlashHider(mod) == true || Helper.IsMuzzleCombo(mod) == true)
             {
-                modMalfChance = 0f;
+                if (weap.BoltAction == true || WeaponProperties.OperationType(weap) == "manual")
+                {
+                    modMalfChance = 0f;
+                }
+                if (WeaponProperties.WeaponType(weap) == "DI")
+                {
+                    modDuraBurn *= 1.25f;
+                }
             }
 
             if (modType == "muzzle_supp_adapter" && mod.Slots[0].ContainedItem != null)
@@ -502,7 +508,7 @@ namespace RealismMod
                 Mod parent = mod.Parent.Container.ParentItem as Mod;
                 if (AttachmentProperties.ModType(parent) == "short_barrel")
                 {
-                    modDuraBurn = 1.2f;
+                    modDuraBurn = 1.3f;
                     modHRecoil = 20f;
                     modCamRecoil = 20f;
                     modSemiROF = 10f;
@@ -542,6 +548,24 @@ namespace RealismMod
             }
 
             if (modType == "sig_taper_brake")
+            {
+                if (mod.Parent.Container != null)
+                {
+                    Mod parent = mod.Parent.Container.ParentItem as Mod;
+                    if (parent.Slots[1].ContainedItem != null)
+                    {
+                        modVRecoil = 0;
+                        modHRecoil = 0;
+                        modCamRecoil = 0;
+                        modDispersion = 0;
+                        modAngle = 0;
+                        modLoudness = 0;
+                    }
+                }
+                return;
+            }
+
+            if (modType == "barrel_2slot")
             {
                 if (mod.Parent.Container != null)
                 {
