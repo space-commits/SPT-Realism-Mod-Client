@@ -49,7 +49,7 @@ namespace RealismMod
 
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
 
-            float ammoHotnessFactor = (1f - ammoToFire.casingMass) + 1f;
+            float ammoHotnessFactor = (1f - ((ammoToFire.ammoRec / 200f) + 1f)) + 1f;
 
             durabilityMalfChance = 0.0;
             magMalfChance = 0f;
@@ -90,7 +90,11 @@ namespace RealismMod
                     overheatMalfChance = Mathf.Lerp(overheat2.MinMalfChance, overheat2.MaxMalfChance, (overheat - overheat2.OverheatProblemsStart) / (overheat2.MaxOverheat - overheat2.OverheatProblemsStart));
                 }
                 overheatMalfChance *= (float)__instance.Item.Buff.MalfunctionProtections;
-                if (weaponDurability > 59f)
+                if (weaponDurability >= Plugin.DuraMalfThreshold.Value)
+                {
+                    durabilityMalfChance = 0.5f * ((Math.Pow((double)((WeaponProperties.TotalMalfChance + 1f) * ammoHotnessFactor), 3.0 + (double)(100f - weaponDurability) / (20.0 - 10.0 / Math.Pow((double)__instance.Item.FireRate / 10.0, 0.322))) - 1.0) / 1000.0);
+                }
+                else if (weaponDurability >= 60f)
                 {
                     durabilityMalfChance = (Math.Pow((double)((WeaponProperties.TotalMalfChance + 1f) * ammoHotnessFactor), 3.0 + (double)(100f - weaponDurability) / (20.0 - 10.0 / Math.Pow((double)__instance.Item.FireRate / 10.0, 0.322))) - 1.0) / 1000.0;
                 }
@@ -99,18 +103,6 @@ namespace RealismMod
                     durabilityMalfChance = (Math.Pow((double)((WeaponProperties.TotalMalfChance + 1f) * ammoHotnessFactor), Math.Log10(Math.Pow((double)(101f - weaponDurability), (50.0 - Math.Pow((double)weaponDurability, 1.286) / 4.8) / (Math.Pow((double)__instance.Item.FireRate, 0.17) / 2.9815 + 2.1)))) - 1.0) / 1000.0;
                 }
                 durabilityMalfChance *= (double)((float)__instance.Item.Buff.MalfunctionProtections);
-                if (__instance.Item.MalfState.HasMalfReduceChance(player.ProfileId, Weapon.EMalfunctionSource.Durability))
-                {
-                    durabilityMalfChance *= (double)troubleShooting.EliteDurabilityChanceReduceMult;
-                }
-                if (__instance.Item.MalfState.HasMalfReduceChance(player.ProfileId, Weapon.EMalfunctionSource.Magazine))
-                {
-                    magMalfChance *= troubleShooting.EliteMagChanceReduceMult;
-                }
-                if (__instance.Item.MalfState.HasMalfReduceChance(player.ProfileId, Weapon.EMalfunctionSource.Ammo))
-                {
-                    ammoMalfChance *= troubleShooting.EliteAmmoChanceReduceMult;
-                }
                 if (num >= malfunction.DurRangeToIgnoreMalfs.x && num <= malfunction.DurRangeToIgnoreMalfs.y)
                 {
                     magMalfChance = 0f;

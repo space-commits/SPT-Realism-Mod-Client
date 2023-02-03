@@ -373,6 +373,10 @@ namespace RealismMod
             }
 
             float totalLoudness = ((currentLoudness / 100) + 1f) * StatCalc.CalibreLoudnessFactor(calibre);
+            if (weapType == "bullpup")
+            {
+                totalLoudness *= 1.15f;
+            }
 
 
             WeaponProperties.TotalModDuraBurn = modBurnRatio;

@@ -200,7 +200,7 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (!player.IsAI)
             {
-                StatCalc.SetMagReloadSpeeds(__instance, magazine);
+                StatCalc.SetMagReloadSpeeds(__instance, magazine, true);
             }
         }
     }

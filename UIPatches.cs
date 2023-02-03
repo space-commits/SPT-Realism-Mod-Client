@@ -291,10 +291,12 @@ namespace RealismMod
         {
             switch (malfChance)
             {
-                case <= -1:
+                case < 0:
                     return $"{malfChance}%";
                 case 0:
                     return "No Change";
+                case <= 50:
+                    return $"{malfChance}%";
                 case <= 100:
                     return "Small Increase";
                 case <= 500:

@@ -64,7 +64,7 @@ namespace RealismMod
         public static float magWeightMult = 11f;
 
 
-        public static void SetMagReloadSpeeds(Player.FirearmController __instance, MagazineClass magazine)
+        public static void SetMagReloadSpeeds(Player.FirearmController __instance, MagazineClass magazine, bool isQuickReload = false)
         {
             Helper.IsMagReloading = true;
             if (Helper.NoMagazineReload == true)
@@ -75,11 +75,11 @@ namespace RealismMod
             }
             else
             {
-                StatCalc.MagReloadSpeedModifier(magazine, true, false);
+                StatCalc.MagReloadSpeedModifier(magazine, true, false, isQuickReload);
             }
         }
 
-        public static void MagReloadSpeedModifier(MagazineClass magazine, bool isNewMag, bool reloadFromNoMag)
+        public static void MagReloadSpeedModifier(MagazineClass magazine, bool isNewMag, bool reloadFromNoMag, bool isQuickReload = false)
         {
             float magWeight = magazine.GetSingleItemTotalWeight() * magWeightMult;
             float magWeightFactor = ((magWeight / 100) * -1f) + 1;
@@ -104,6 +104,12 @@ namespace RealismMod
                 {
                     WeaponProperties.CurrentMagReloadSpeed = totalReloadSpeed;
                 }
+            }
+
+            if (isQuickReload == true)
+            {
+                WeaponProperties.NewMagReloadSpeed *= 1.25f;
+                WeaponProperties.CurrentMagReloadSpeed *= 1.25f;
             }
         }
 

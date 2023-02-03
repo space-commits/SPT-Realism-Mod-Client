@@ -131,8 +131,8 @@ namespace RealismMod
                 //wep.FireMode.FireMode == Weapon.EFireMode.single, problem with restrcting it to semi only is that then firing one shot in full auto is more controlalble than semi
                 if (Plugin.ShotCount == 1 && WeaponProperties.ShouldGetSemiIncrease == true)
                 {
-                    __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * 1.37f;
-                    __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * 1.37f;
+                    __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * 1.35f;
+                    __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * 1.35f;
                     __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * 1.35f;
                     __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * 1.35f;
                 }
@@ -197,12 +197,15 @@ namespace RealismMod
                     __instance.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
                     __instance.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
 
+
                     if (Plugin.ShotCount > 1)
                     {
+                        Logger.LogWarning("Reduced Convergence ");
                         __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * 0.6f;
                     }
                     else
                     {
+                        Logger.LogWarning("Normal Convergence ");
                         __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence;
                     }
                 }

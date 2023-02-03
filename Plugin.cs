@@ -4,6 +4,7 @@ using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using Comfort.Common;
+using EFT;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -60,6 +61,7 @@ namespace RealismMod
         public static ConfigEntry<float> convergenceSpeedCurve { get; set; }
         public static ConfigEntry<bool> enableDeafen { get; set; }
         public static ConfigEntry<bool> enableHoldBreath { get; set; }
+        public static ConfigEntry<float> DuraMalfThreshold { get; set; }
 
 
         public static bool IsFiring = false;
@@ -238,9 +240,10 @@ namespace RealismMod
                 enableAmmoFirerateDisp = Config.Bind<bool>(MiscSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 11 }));
 
                 enableDeafen = Config.Bind<bool>(MiscSettings, "Enable Deafening", true, new ConfigDescription("Requiures Restart. Enables gunshots and explosions deafening the player.", null, new ConfigurationManagerAttributes { Order = 1 }));
-                enableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 3 }));
-                enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 4 }));
-                enableMalfPatch = Config.Bind<bool>(MiscSettings, "Enable Malfunctions Changes", true, new ConfigDescription("Requires Restart. You Don't Need To Inspect A Malfunction In Order To Clear It, Subsonic Ammo Needs Special Mods To Cycle, Only Magazines Have A Min Durabily Requirement For Malfunctions.", null, new ConfigurationManagerAttributes { Order = 5 }));
+                enableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 2 }));
+                enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 3 }));
+                enableMalfPatch = Config.Bind<bool>(MiscSettings, "Enable Malfunctions Changes", true, new ConfigDescription("Requires Restart. You Don't Need To Inspect A Malfunction In Order To Clear It, Subsonic Ammo Needs Special Mods To Cycle, Only Magazines Have A Min Durabily Requirement For Malfunctions.", null, new ConfigurationManagerAttributes { Order = 4 }));
+                DuraMalfThreshold = Config.Bind<float>(MiscSettings, "Malfunction Durability Threshold", 98f, new ConfigDescription("Malfunction Chance Is Reduced By Half Until This Durability Threshold Is Met.", new AcceptableValueRange<float>(80f, 100f), new ConfigurationManagerAttributes { Order = 5 }));
                 enableSGMastering = Config.Bind<bool>(MiscSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 6 }));
                 enableBarrelFactor = Config.Bind<bool>(MiscSettings, "Enable Barrel Factor", true, new ConfigDescription("Requires Restart. Barrel Length Modifies The Damage, Penetration, Velocity, Fragmentation Chance, And Ballistic Coeficient Of Projectiles.", null, new ConfigurationManagerAttributes { Order = 7 }));
                 enableRealArmorClass = Config.Bind<bool>(MiscSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 8 }));
@@ -314,8 +317,6 @@ namespace RealismMod
                 {
                     new IsKnownMalfTypePatch().Enable();
                     new GetTotalMalfunctionChancePatch().Enable();
-/*                    new Single_1Patch().Enable();
-                    new RepairAmountPatch().Enable();*/
                 }
 
 
@@ -416,6 +417,7 @@ namespace RealismMod
 
                 if (Helper.CheckIsReady())
                 {
+
                     Recoil.DoRecoilClimb();
 
                     if (Plugin.ShotCount == Plugin.PrevShotCount)

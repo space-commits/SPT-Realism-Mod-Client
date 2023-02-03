@@ -85,8 +85,8 @@ namespace RealismMod
 
         public static bool CheckIsReady()
         {
-            var gameWorld = Singleton<GameWorld>.Instance;
-            var sessionResultPanel = Singleton<SessionResultPanel>.Instance;
+            GameWorld gameWorld = Singleton<GameWorld>.Instance;
+            SessionResultPanel sessionResultPanel = Singleton<SessionResultPanel>.Instance;
 
             if (gameWorld == null || gameWorld.AllPlayers == null || gameWorld.AllPlayers.Count <= 0 || sessionResultPanel != null)
             {
