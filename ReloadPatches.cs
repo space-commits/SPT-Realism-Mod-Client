@@ -332,7 +332,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(ref Player.FirearmController __instance)
         {
-            //to find this gain, look for private void method_47(){ this.CurrentOperation.OnMagInsertedToWeapon(); }
+            //to find this again, look for private void method_47(){ this.CurrentOperation.OnMagInsertedToWeapon(); }
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (!player.IsAI)
             {

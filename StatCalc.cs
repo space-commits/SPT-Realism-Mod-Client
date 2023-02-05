@@ -49,13 +49,13 @@ namespace RealismMod
         public static float HandDampingPistolMin = 0.5f;
         public static float HandDampingPistolMax = 0.7f;
 
-        public static float ReloadSpeedWeightMult = 0.95f;//
-        public static float ReloadSpeedTorqueMult = 1.15f;// needs tweaking
-        public static float ReloadSpeedMult = 0.35f;//
+        public static float ReloadSpeedWeightMult = 2f;//
+        public static float ReloadSpeedTorqueMult = 2f;// needs tweaking
+        public static float ReloadSpeedMult = 0.5f;//
 
-        public static float ChamberSpeedWeightMult = 0.95f;//
-        public static float ChamberSpeedTorqueMult = 1.15f;// needs tweaking
-        public static float ChamberSpeedMult = 0.35f;//
+        public static float ChamberSpeedWeightMult = 2f;//
+        public static float ChamberSpeedTorqueMult = 2f;// needs tweaking
+        public static float ChamberSpeedMult = 0.5f;//
 
         public static float AimMoveSpeedWeightMult = 0.95f;//
         public static float AimMoveSpeedTorqueMult = 1.15f;// needs tweaking

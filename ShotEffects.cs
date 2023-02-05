@@ -323,10 +323,8 @@ namespace RealismMod
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
 
-
-   
             IWeapon iWeap = weapon as IWeapon;
-            if (!iWeap.IsUnderbarrelWeapon) 
+            if (!iWeap.IsUnderbarrelWeapon)
             {
                 Weapon weap = weapon as Weapon;
 

@@ -401,9 +401,6 @@ namespace RealismMod
             WeaponProperties.SDPureErgo = pureErgo;
             WeaponProperties.ShotDispDelta = (baseShotDisp - currentShotDisp) / (baseShotDisp * -1f);
 
-            Logger.LogWarning("Base Malf Chance = " + __instance.BaseMalfunctionChance);
-            Logger.LogWarning("Total Malf Chance = " + WeaponProperties.TotalMalfChance);
-
         }
     }
 

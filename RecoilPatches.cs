@@ -200,13 +200,11 @@ namespace RealismMod
 
                     if (Plugin.ShotCount > 1)
                     {
-                        Logger.LogWarning("Reduced Convergence ");
                         __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * 0.6f;
                     }
                     else
                     {
-                        Logger.LogWarning("Normal Convergence ");
-                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence;
+                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * 0.7f;
                     }
                 }
             }
