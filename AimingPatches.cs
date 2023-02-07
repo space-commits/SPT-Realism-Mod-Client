@@ -1,4 +1,5 @@
 ﻿using Aki.Reflection.Patching;
+using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
@@ -23,6 +24,19 @@ namespace RealismMod
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
                 if (!player.IsAI)
                 {
+                    FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
+                    bool isOn = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
+                    if (isOn && !WeaponProperties.WeaponCanFSADS && !FaceShieldProperties.AllowsADS(fsComponent.Item))
+                    {
+                        PlayerProperties.IsAlowedADS = false;
+                        player.MovementContext.SetAimingSlowdown(false, 0.33f);
+                        player.ProceduralWeaponAnimation.IsAiming = false;
+                    }
+                    else
+                    {
+                        PlayerProperties.IsAlowedADS = true;
+                    }
+
                     Plugin.IsAiming = ____isAiming;
                 }
             }
@@ -40,24 +54,12 @@ namespace RealismMod
         private static bool Prefix(EFT.Player.FirearmController __instance)
         {
             Logger.LogWarning("ToggleAim");
-            if (Plugin.enableFSPatch.Value == true)
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
+            if (Plugin.enableFSPatch.Value == true && !player.IsAI)
             {
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
-                FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
-                bool isOn = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
-                if (isOn && !WeaponProperties.WeaponCanFSADS && !FaceShieldProperties.AllowsADS(fsComponent.Item))
-                {
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
+                return PlayerProperties.IsAlowedADS;
             }
-            else
-            {
-                return true;
-            }
+            return true;
         }
     }
 }

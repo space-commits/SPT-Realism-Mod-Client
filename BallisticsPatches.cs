@@ -43,13 +43,13 @@ namespace RealismMod
             switch (part)
             {
                 case EBodyPart.Head:
-                    return 0.7f;
+                    return 0.4f;
                 case EBodyPart.LeftLeg:
                 case EBodyPart.RightLeg:
-                    return 0.8f;
+                    return 0.5f;
                 case EBodyPart.LeftArm:
                 case EBodyPart.RightArm:
-                    return 0.5f;
+                    return 0.25f;
                 default:
                     return 1;
             }
@@ -67,24 +67,15 @@ namespace RealismMod
             inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
             ArmorComponent armor = null;
 
-            Logger.LogWarning("Damage Info Armor " + damageInfo.BlockedBy);
-            Logger.LogWarning("Is Blunt " + damageInfo.Blunt);
 
             foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
             {
-                Logger.LogWarning("==logging armor comps==");
-                Logger.LogWarning("ID " + armorComponent.Item.Id);
-                Logger.LogWarning("name " + armorComponent.Item.LocalizedName());
-                Logger.LogWarning("====");
                 if (armorComponent.Item.Id == damageInfo.BlockedBy || armorComponent.Item.Id == damageInfo.DeflectedBy) 
                 {
                     Logger.LogWarning("Armor Match");
                     armor = armorComponent;
                 }
             }
-
-
-
 
             if (damageInfo.Blunt == true && armor != null && armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel)
             {
@@ -114,18 +105,22 @@ namespace RealismMod
                 float factoredSpallingDamage = maxSpallingDamage * (fragChance + 1) * (ricochetChance + 1);
 
                 int rnd = Math.Max(1, _randNum.Next(_bodyParts.Count));
-                float splitSpallingDmg = factoredSpallingDamage / rnd;
+                float splitSpallingDmg = factoredSpallingDamage / _bodyParts.Count;
 
-/*                _bodyParts.OrderBy(x => _randNum.Next()).Take(rnd);*/
+                /*                _bodyParts.OrderBy(x => _randNum.Next()).Take(rnd);*/
 
-                Logger.LogWarning("rnd = " + rnd);
+                Logger.LogWarning("maxPotentialDamage = " + maxPotentialDamage);;
+                Logger.LogWarning("maxSpallingDamage = " + maxSpallingDamage);
+                Logger.LogWarning("factoredSpallingDamage = " + factoredSpallingDamage);
                 Logger.LogWarning("splitSpallingDmg = " + splitSpallingDmg);
+                Logger.LogWarning("rnd = " + rnd);
 
                 foreach (EBodyPart part in _bodyParts.OrderBy(x => _randNum.Next()).Take(rnd))
                 {
                     float damage = splitSpallingDmg;
-                    damageInfo.HeavyBleedingDelta = heavyBleedChance * GetBleedChance(part);
-                    damageInfo.LightBleedingDelta = lightBleedChance * GetBleedChance(part);
+                    float bleedChance = GetBleedChance(part);
+                    damageInfo.HeavyBleedingDelta = heavyBleedChance * bleedChance;
+                    damageInfo.LightBleedingDelta = lightBleedChance * bleedChance;
 
                     if (part == EBodyPart.Head)
                     {
@@ -171,14 +166,14 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, GClass2609 shot)
         {
-            Logger.LogWarning("============DamageInfo=============");
+/*            Logger.LogWarning("============DamageInfo=============");
             Logger.LogInfo("Shot ID = " + shot.Ammo.Id);
             Logger.LogInfo("Shot Start Speed = " + shot.Speed);
             Logger.LogInfo("Shot Current Speed = " + shot.VelocityMagnitude);
             Logger.LogInfo("Shot Mass = " + shot.BulletMassGram);
             Logger.LogInfo("Kinetic Energy = " + (0.5f * shot.BulletMassGram * shot.VelocityMagnitude * shot.VelocityMagnitude) / 1000);
             Logger.LogInfo("Shot Damage = " + shot.Damage);
-            Logger.LogInfo("Shot Penetration = " + shot.PenetrationPower);
+            Logger.LogInfo("Shot Penetration = " + shot.PenetrationPower);*/
 
             __instance.DamageType = damageType;
             __instance.Damage = shot.Damage;
@@ -255,7 +250,7 @@ namespace RealismMod
             Logger.LogWarning("Current Speed = " + damageInfo.ArmorDamage);
             Logger.LogWarning("Speed Delta = " + ammo.GetBulletSpeed / damageInfo.ArmorDamage);
             Logger.LogWarning("Armor Damage = " + ammo.ArmorDamage);
-            Logger.LogInfo("Kinetic Energy = " + (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000);
+            Logger.LogWarning("Kinetic Energy = " + (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000);
 
             Logger.LogWarning("//////////New Armor Damage/////////////");
             EDamageType damageType = damageInfo.DamageType;
@@ -298,6 +293,13 @@ namespace RealismMod
             float throughputFacotredDamage = maxPotentialDamage * throughputDuraFactored;
             float durabilityLoss = (maxPotentialDamage / 100f) * armorDamage * Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
 
+            Logger.LogWarning("KE = " + KE);
+            Logger.LogWarning("armorFactor = " + armorFactor);
+            Logger.LogWarning("throughputDuraFactored = " + throughputDuraFactored);
+            Logger.LogWarning("penFactoredClass = " + penFactoredClass);
+            Logger.LogWarning("maxPotentialDamage = " + maxPotentialDamage);
+            Logger.LogWarning("throughputFacotredDamage = " + throughputFacotredDamage);
+
             if (!(damageInfo.BlockedBy == __instance.Item.Id) && !(damageInfo.DeflectedBy == __instance.Item.Id))
             {
                 Logger.LogWarning("=========Round Penetrated=======");
@@ -305,6 +307,7 @@ namespace RealismMod
                 durabilityLoss /= 2f;
                 damageInfo.Damage = maxPotentialDamage;
                 damageInfo.PenetrationPower = penPower * (1 - (armorFactor / 100f));
+                Logger.LogWarning("damageInfo.Damage = " + damageInfo.Damage);
                 Logger.LogWarning("================");
             }
             else
@@ -312,6 +315,7 @@ namespace RealismMod
                 Logger.LogWarning("=======Round Blocked=========");
                 damageInfo.Damage = throughputFacotredDamage;
                 damageInfo.StaminaBurnRate = throughputFacotredDamage / 100f;
+                Logger.LogWarning("damageInfo.Damage = " + damageInfo.Damage);
                 Logger.LogWarning("================");
             }
             durabilityLoss = Mathf.Max(0.01f, durabilityLoss);

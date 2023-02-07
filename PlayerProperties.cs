@@ -18,6 +18,7 @@
 
         public static float StrengthSkillAimBuff = 1;
 
+        public static bool IsAlowedADS = true;
 
     }
 }
