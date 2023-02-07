@@ -37,11 +37,12 @@ namespace RealismMod
         private static float HelmDeafFactor(EquipmentClass equipment)
         {
             string deafStrength = "None";
-            LootItemClass headwearItem = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;
+            /*           LootItemClass headwearItem = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;*/
+            ArmorClass helmet = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as ArmorClass;
 
-            if (headwearItem != null)
+            if (helmet != null)
             {
-                var helmet = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as ArmorClass;
+/*                ArmorClass helmet = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as ArmorClass;*/
                 if (helmet?.Armor?.Deaf != null)
                 {
                     deafStrength = helmet.Armor.Deaf.ToString();
@@ -114,7 +115,7 @@ namespace RealismMod
 
         public static float VolumeLimit = -40f;
         public static float DistortionLimit = 70f;
-        public static float VignetteDarknessLimit = 14f;
+        public static float VignetteDarknessLimit = 15f;
 
         public static float VolumeDecreaseRate = 0.022f;
         public static float DistortionIncreaseRate = 0.16f;
@@ -308,7 +309,7 @@ namespace RealismMod
             return (loudness / 100) + 1f;
         }
 
-        private static float CalcAmmoFactor(AmmoTemplate ammTemp) 
+        private static float CalcAmmoFactor(AmmoTemplate ammTemp)
         {
             return Math.Min(((ammTemp.ammoRec / 100f) * 2f) + 1f, 2f);
         }
@@ -338,7 +339,7 @@ namespace RealismMod
 
                     if (currentAmmoTemplate.InitialSpeed <= 335f)
                     {
-                        ammoDeafFactor *= 0.65f;
+                        ammoDeafFactor *= 0.55f;
                     }
 
                     Plugin.AmmoDeafFactor = ammoDeafFactor == 0f ? 1f : ammoDeafFactor;
@@ -361,7 +362,12 @@ namespace RealismMod
                         float ammoFactor = CalcAmmoFactor(currentAmmoTemplate);
                         float muzzleFactor = GetMuzzleLoudness(weap.Mods);
                         float calFactor = StatCalc.CalibreLoudnessFactor(weap.AmmoCaliber);
-                        float muzzleLoudness = muzzleFactor * calFactor * velocityFactor * ammoFactor;
+                        float ammoDeafFactor = ammoFactor * velocityFactor;
+                        if (currentAmmoTemplate.InitialSpeed <= 335f)
+                        {
+                            ammoDeafFactor *= 0.55f;
+                        }
+                        float muzzleLoudness = muzzleFactor * calFactor * ammoDeafFactor;
                         Plugin.BotDeafFactor = muzzleLoudness * ((-distanceFromPlayer / 100f) + 1f);
                         Logger.LogWarning("==============");
                         Logger.LogWarning("Bot Shot");

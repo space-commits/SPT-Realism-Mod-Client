@@ -6,9 +6,141 @@ using System.Reflection;
 using UnityEngine;
 using Comfort.Common;
 using System.Linq;
+using HarmonyLib;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace RealismMod
 {
+    public class ApplyDamageInfoPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player).GetMethod("ApplyDamageInfo", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+
+        private static float _armorClass;
+        private static float _currentDura;
+        private static float _maxDura;
+        private static float _bluntThroughput;
+
+        private static List<EBodyPart> _bodyParts = new List<EBodyPart> { EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.RightArm, EBodyPart.LeftLeg, EBodyPart.RightLeg, EBodyPart.Head };
+        private static System.Random _randNum = new System.Random();
+
+        private static bool ArmorChecker(ArmorClass armor)
+        {
+            if (armor != null && armor.Armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && armor.Armor.ArmorClass > 0 && (armor.Armor.Template.ArmorZone.Contains(EBodyPart.Chest) || armor.Armor.Template.ArmorZone.Contains(EBodyPart.Stomach)))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private static void SetArmorStats(ArmorClass armor)
+        {
+            if (armor != null && armor.Armor.ArmorClass > 0 && armor.Armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && (armor.Armor.Template.ArmorZone.Contains(EBodyPart.Chest) || armor.Armor.Template.ArmorZone.Contains(EBodyPart.Stomach)))
+            {
+                ArmorComponent armorComp = armor.Armor;
+                _bluntThroughput = armorComp.Template.BluntThroughput;
+                _armorClass = armorComp.ArmorClass * 10f;
+                _currentDura = armorComp.Repairable.Durability;
+                _maxDura = armorComp.Repairable.TemplateDurability;
+            }
+        }
+
+        private static float GetBleedChance(EBodyPart part)
+        {
+            switch (part)
+            {
+                case EBodyPart.Head:
+                    return 0.7f;
+                case EBodyPart.LeftLeg:
+                case EBodyPart.RightLeg:
+                    return 0.8f;
+                case EBodyPart.LeftArm:
+                case EBodyPart.RightArm:
+                    return 0.5f;
+                default:
+                    return 1;
+            }
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(Player __instance, DamageInfo damageInfo, EBodyPart bodyPartType, float absorbed, EHeadSegment? headSegment = null)
+        {
+            EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
+            ArmorClass armorVest = equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as ArmorClass;
+            ArmorClass tacticalVest = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as ArmorClass;
+
+            if (damageInfo.Blunt == true && (ArmorChecker(armorVest) || ArmorChecker(tacticalVest)))
+            {
+
+                AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
+                BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
+                SetArmorStats(armorVest);
+                SetArmorStats(tacticalVest);
+
+                float KE = ((0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000);
+                float bluntDamage = damageInfo.Damage;
+                float speedFactor = ammo.GetBulletSpeed / damageInfo.ArmorDamage;
+                float fragChance = ammo.FragmentationChance * speedFactor;
+                float lightBleedChance = damageInfo.LightBleedingDelta;
+                float heavyBleedChance = damageInfo.HeavyBleedingDelta;
+                damageInfo.BleedBlock = false;
+                float ricochetChance = ammo.RicochetChance * speedFactor;
+                float damageToKEFactor = 24f;
+
+                float duraPercent = _currentDura / _maxDura;
+                float armorFactor = _armorClass * (Mathf.Min(1f, duraPercent * 2f));
+                float penFactoredClass = Mathf.Max(1f, armorFactor - (damageInfo.PenetrationPower / 2.5f));
+                float maxPotentialDamage = (KE / Mathf.Max(1, (penFactoredClass / 40f)) / damageToKEFactor);
+
+                float maxSpallingDamage = maxPotentialDamage - bluntDamage;
+                float factoredSpallingDamage = maxSpallingDamage * (fragChance + 1) * (ricochetChance + 1);
+
+                int rnd = Math.Max(1, _randNum.Next(_bodyParts.Count));
+                float splitSpallingDmg = factoredSpallingDamage / rnd;
+
+                _bodyParts.OrderBy(x => _randNum.Next()).Take(rnd);
+
+                foreach (EBodyPart part in _bodyParts)
+                {
+                    float damage = splitSpallingDmg;
+                    damageInfo.HeavyBleedingDelta = heavyBleedChance * GetBleedChance(part);
+                    damageInfo.LightBleedingDelta = lightBleedChance * GetBleedChance(part);
+
+                    if (part == EBodyPart.Head)
+                    {
+                        damage = Mathf.Min(15, splitSpallingDmg);
+                    }
+
+                    Logger.LogWarning("Body Part = " + part);
+                    Logger.LogWarning("Damage = " + damage);
+                    Logger.LogWarning("Heavy Bleed Chance = " + damageInfo.HeavyBleedingDelta);
+
+                    __instance.ActiveHealthController.ApplyDamage(part, damage, damageInfo);
+                }
+
+            }
+
+            //need to detect which armor slot isn't empty and only use that armor going forward, also need to check BlockedBy status
+            //check if armor hit (is blint damage or not)
+            //check if worn body armor is steel
+            //get blunt damage, make sure it hasn't been facted by frag or ricochet yet
+            //factor it by frag and ricochet
+            //randomized amount of limbs hit (head, arms and legs can get hit by spalling)
+            //divide up damage between selected limbs
+            //set damageinfo.bleedblock to false
+            //set damageinfo light and heavy bleed delta (heavy bleed higher for legs and head, lower for arms), and/or divide up bleed chance of parent round 
+            //call ApplyDamage for each body part with respective damage
+
+        }
+    }
+
     public class DamageInfoPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -88,11 +220,10 @@ namespace RealismMod
 
         }
         [PatchPrefix]
-        private static bool Prefix(ref DamageInfo damageInfo, bool damageInfoIsLocal, EBodyPart bodyPartType, SkillsClass.GClass1676 lightVestsDamageReduction, SkillsClass.GClass1676 heavyVestsDamageReduction, ref ArmorComponent __instance, ref float __result)
+        private static bool Prefix(ref DamageInfo damageInfo, bool damageInfoIsLocal, ref ArmorComponent __instance, ref float __result)
         {
 
 
-            //can create new instance using damageInfo.sourceId, then get whatever stats I want...
             AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
             BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
 
@@ -111,8 +242,6 @@ namespace RealismMod
 
             float speedFactor = ammo.GetBulletSpeed / damageInfo.ArmorDamage;
             float armorDamage = ammo.ArmorDamage * speedFactor;
-            float fragChance = ammo.FragmentationChance * speedFactor;
-            float ricochetChance = ammo.RicochetChance * speedFactor;
 
             if (!damageType.IsWeaponInduced() && damageType != EDamageType.GrenadeFragment)
             {
@@ -155,22 +284,14 @@ namespace RealismMod
 
                 durabilityLoss /= 2f;
                 damageInfo.Damage = maxPotentialDamage;
-                damageInfo.PenetrationPower *= penPower *; // factor it by the armor class, and factor armor class by remaining durability
+                damageInfo.PenetrationPower = penPower * (1 - (armorFactor / 100f));
                 Logger.LogWarning("================");
             }
             else
             {
                 Logger.LogWarning("=======Round Blocked=========");
-                if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel)
-                {
-                    damageInfo.Damage = throughputFacotredDamage * Mathf.Max(1, 1 + ((fragChance - 1) * -1)) * Mathf.Max(1, (1 + ((ricochetChance - 1) * -1)));
-                }
-                else
-                {
-                    damageInfo.Damage = throughputFacotredDamage;
-                }
-
-                damageInfo.StaminaBurnRate *= ((bluntThrput > 0f) ? (3f / Mathf.Sqrt(bluntThrput)) : 1f);
+                damageInfo.Damage = throughputFacotredDamage;
+                damageInfo.StaminaBurnRate = throughputFacotredDamage / 100f;
                 Logger.LogWarning("================");
             }
             durabilityLoss = Mathf.Max(0.01f, durabilityLoss);
