@@ -16,7 +16,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player).GetMethod("ApplyDamageInfo", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Player).GetMethod("ApplyDamageInfo", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
@@ -25,31 +25,17 @@ namespace RealismMod
         private static float _maxDura;
         private static float _bluntThroughput;
 
-        private static List<EBodyPart> _bodyParts = new List<EBodyPart> { EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.RightArm, EBodyPart.LeftLeg, EBodyPart.RightLeg, EBodyPart.Head };
+        private static List<EBodyPart> _bodyParts = new List<EBodyPart> { EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.LeftLeg, EBodyPart.RightLeg, EBodyPart.Head };
         private static System.Random _randNum = new System.Random();
 
-        private static bool ArmorChecker(ArmorClass armor)
-        {
-            if (armor != null && armor.Armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && armor.Armor.ArmorClass > 0 && (armor.Armor.Template.ArmorZone.Contains(EBodyPart.Chest) || armor.Armor.Template.ArmorZone.Contains(EBodyPart.Stomach)))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        private static List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(10);
 
-        private static void SetArmorStats(ArmorClass armor)
+        private static void SetArmorStats(ArmorComponent armor)
         {
-            if (armor != null && armor.Armor.ArmorClass > 0 && armor.Armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && (armor.Armor.Template.ArmorZone.Contains(EBodyPart.Chest) || armor.Armor.Template.ArmorZone.Contains(EBodyPart.Stomach)))
-            {
-                ArmorComponent armorComp = armor.Armor;
-                _bluntThroughput = armorComp.Template.BluntThroughput;
-                _armorClass = armorComp.ArmorClass * 10f;
-                _currentDura = armorComp.Repairable.Durability;
-                _maxDura = armorComp.Repairable.TemplateDurability;
-            }
+            _bluntThroughput = armor.Template.BluntThroughput;
+            _armorClass = armor.ArmorClass * 10f;
+            _currentDura = armor.Repairable.Durability;
+            _maxDura = armor.Repairable.TemplateDurability;
         }
 
         private static float GetBleedChance(EBodyPart part)
@@ -72,17 +58,42 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player __instance, DamageInfo damageInfo, EBodyPart bodyPartType, float absorbed, EHeadSegment? headSegment = null)
         {
-            EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
-            ArmorClass armorVest = equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem as ArmorClass;
-            ArmorClass tacticalVest = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as ArmorClass;
 
-            if (damageInfo.Blunt == true && (ArmorChecker(armorVest) || ArmorChecker(tacticalVest)))
+            Logger.LogWarning("===============ApplyDamageInfo==============");
+
+            EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
+            InventoryClass inventory = (InventoryClass)AccessTools.Property(typeof(Player), "Inventory").GetValue(__instance);
+            preAllocatedArmorComponents.Clear();
+            inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
+            ArmorComponent armor = null;
+
+            Logger.LogWarning("Damage Info Armor " + damageInfo.BlockedBy);
+            Logger.LogWarning("Is Blunt " + damageInfo.Blunt);
+
+            foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
             {
+                Logger.LogWarning("==logging armor comps==");
+                Logger.LogWarning("ID " + armorComponent.Item.Id);
+                Logger.LogWarning("name " + armorComponent.Item.LocalizedName());
+                Logger.LogWarning("====");
+                if (armorComponent.Item.Id == damageInfo.BlockedBy || armorComponent.Item.Id == damageInfo.DeflectedBy) 
+                {
+                    Logger.LogWarning("Armor Match");
+                    armor = armorComponent;
+                }
+            }
+
+
+
+
+            if (damageInfo.Blunt == true && armor != null && armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel)
+            {
+
+                Logger.LogWarning("Armor Is Present and It's Steel");
 
                 AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
                 BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
-                SetArmorStats(armorVest);
-                SetArmorStats(tacticalVest);
+                SetArmorStats(armor);
 
                 float KE = ((0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000);
                 float bluntDamage = damageInfo.Damage;
@@ -105,9 +116,12 @@ namespace RealismMod
                 int rnd = Math.Max(1, _randNum.Next(_bodyParts.Count));
                 float splitSpallingDmg = factoredSpallingDamage / rnd;
 
-                _bodyParts.OrderBy(x => _randNum.Next()).Take(rnd);
+/*                _bodyParts.OrderBy(x => _randNum.Next()).Take(rnd);*/
 
-                foreach (EBodyPart part in _bodyParts)
+                Logger.LogWarning("rnd = " + rnd);
+                Logger.LogWarning("splitSpallingDmg = " + splitSpallingDmg);
+
+                foreach (EBodyPart part in _bodyParts.OrderBy(x => _randNum.Next()).Take(rnd))
                 {
                     float damage = splitSpallingDmg;
                     damageInfo.HeavyBleedingDelta = heavyBleedChance * GetBleedChance(part);
@@ -124,7 +138,7 @@ namespace RealismMod
 
                     __instance.ActiveHealthController.ApplyDamage(part, damage, damageInfo);
                 }
-
+                Logger.LogWarning("==================================");
             }
 
             //need to detect which armor slot isn't empty and only use that armor going forward, also need to check BlockedBy status
@@ -138,6 +152,12 @@ namespace RealismMod
             //set damageinfo light and heavy bleed delta (heavy bleed higher for legs and head, lower for arms), and/or divide up bleed chance of parent round 
             //call ApplyDamage for each body part with respective damage
 
+            //can apply frag damage to chest and stomach:
+            //check if damage is blunt damage
+            //check if armor is worn, reduce frag chance by some factor related to armor penetration, or reduce frag chance via ApplyDamage (better option)
+            //calc bonus damage by multiply damage by frag chance (so lower the frag chance, the more bonys damage is reduced
+            //apply bonus damage with bleed chance by calling ApplyDamage
+            //maybe have chance to injur another body part (maybe just between chest and stomach), maybe arms too?).
         }
     }
 

@@ -37,12 +37,11 @@ namespace RealismMod
         private static float HelmDeafFactor(EquipmentClass equipment)
         {
             string deafStrength = "None";
-            /*           LootItemClass headwearItem = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;*/
-            ArmorClass helmet = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as ArmorClass;
+            LootItemClass headwearItem = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;
 
-            if (helmet != null)
+            if (headwearItem != null)
             {
-/*                ArmorClass helmet = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as ArmorClass;*/
+                ArmorClass helmet = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as ArmorClass;
                 if (helmet?.Armor?.Deaf != null)
                 {
                     deafStrength = helmet.Armor.Deaf.ToString();
