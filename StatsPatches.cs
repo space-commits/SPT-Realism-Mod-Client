@@ -205,7 +205,7 @@ namespace RealismMod
             float totalAimMoveSpeed = 0;
             float totalChamberSpeed = 0;
 
-            StatCalc.SpeedStatCalc(ergonomicWeightLessMag, currentReloadSpeed, currentFixSpeed, totalTorque, weapTorqueLessMag, ref totalReloadSpeedMod, ref totalFixSpeedMod, ref totalAimMoveSpeed, ergonomicWeight, ref totalChamberSpeed, currentChamberSpeed);
+            StatCalc.SpeedStatCalc(__instance, ergonomicWeightLessMag, currentReloadSpeed, currentFixSpeed, totalTorque, weapTorqueLessMag, ref totalReloadSpeedMod, ref totalFixSpeedMod, ref totalAimMoveSpeed, ergonomicWeight, ref totalChamberSpeed, currentChamberSpeed);
 
             if (totalReloadSpeedMod < 1)
             {

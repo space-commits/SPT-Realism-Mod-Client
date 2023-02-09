@@ -124,6 +124,30 @@ namespace RealismMod
             return bool.Parse(weapon.ConflictingItems[9]);
         }
 
+        public static float InternalMagReloadBonus = 0.25f;
+
+        public static float QuickReloadSpeedMulti = 1.4f;
+
+        public static float ArmHammerSpeedBonus = 0.35f;
+
+        public static float CheckAmmoSpeedBonus = 0.2f;
+
+        public static float CheckAmmoPistolSpeedBonus = 0.22f;
+
+        public static float CheckChamberPistolSpeedBonus = 0.1f;
+
+        public static float CheckChamberShotgunSpeedBonus = 0.16f;
+
+        public static float CheckChamberSpeedBonus = 0.5f;
+
+        public static float ShotgunRackSpeedFactor = 1f;
+
+        public static float RechamberSpeedBonus = 0.2f;
+
+        public static float RechamberPistolSpeedBonus = 0.12f;
+
+        public static float GlobalReloadSpeedMulti = 1.15f;
+
         public static float TotalModDuraBurn = 0;
 
         public static float TotalMalfChance = 0;
@@ -244,7 +268,7 @@ namespace RealismMod
 
         public static float AimSpeedModifier = 1f;
 
-        public static float GlobalAimSpeedModifier = 0.87f;
+        public static float GlobalAimSpeedModifier = 1f;
 
         public static float AimSpeed = 1f;
 

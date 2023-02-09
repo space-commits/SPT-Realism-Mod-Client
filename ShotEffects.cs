@@ -112,15 +112,15 @@ namespace RealismMod
         public static float Distortion = 0f;
         public static float VignetteDarkness = 0f;
 
-        public static float VolumeLimit = -40f;
+        public static float VolumeLimit = -38f;
         public static float DistortionLimit = 70f;
         public static float VignetteDarknessLimit = 14f;
 
-        public static float VolumeDecreaseRate = 0.025f;
+        public static float VolumeDecreaseRate = 0.02f;
         public static float DistortionIncreaseRate = 0.16f;
         public static float VignetteDarknessIncreaseRate = 0.65f;
 
-        public static float VolumeResetRate = 0.05f;
+        public static float VolumeResetRate = 0.02f;
         public static float DistortionResetRate = 0.25f;
         public static float VignetteDarknessResetRate = 1f;
 

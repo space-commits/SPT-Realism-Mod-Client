@@ -12,7 +12,7 @@
 
         public static float RecoilInjuryMulti = 1;
 
-        public static float AimMoveSpeedBase = 0.42f;
+        public static float AimMoveSpeedBase = 0.43f;
 
         public static float ErgoDeltaInjuryMulti = 1;
 

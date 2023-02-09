@@ -14,20 +14,20 @@ namespace RealismMod
         public static float PistolErgoWeightMult = 12f;
         public static float PistolErgoTorqueMult = 1.0f;
 
-        public static float VRecoilWeightMult = 2.21f;
-        public static float VRecoilTorqueMult = 0.73f;
-        public static float PistolVRecoilWeightMult = 2.4f;
-        public static float PistolVRecoilTorqueMult = 0.77f;
+        public static float VRecoilWeightMult = 2f;
+        public static float VRecoilTorqueMult = 0.9f;
+        public static float PistolVRecoilWeightMult = 2.1f;
+        public static float PistolVRecoilTorqueMult = 1.1f;
 
         public static float HRecoilWeightMult = 3.35f;
         public static float HRecoilTorqueMult = 0.7f;
-        public static float PistolHRecoilWeightMult = 3.4f;
+        public static float PistolHRecoilWeightMult = 3.5f;
         public static float PistolHRecoilTorqueMult = 0.8f;
 
         public static float DispersionWeightMult = 1.5f;
         public static float DispersionTorqueMult = 1.32f;
-        public static float PistolDispersionWeightMult = 1.6f;
-        public static float PistolDispersionTorqueMult = 1.4f;
+        public static float PistolDispersionWeightMult = 1.5f;
+        public static float PistolDispersionTorqueMult = 1.5f;
 
         public static float CamWeightMult = 3.25f;
         public static float CamTorqueMult = 0.25f;
@@ -49,17 +49,17 @@ namespace RealismMod
         public static float HandDampingPistolMin = 0.5f;
         public static float HandDampingPistolMax = 0.7f;
 
-        public static float ReloadSpeedWeightMult = 2f;//
-        public static float ReloadSpeedTorqueMult = 2f;// needs tweaking
-        public static float ReloadSpeedMult = 0.5f;//
+        public static float ReloadSpeedWeightMult = 2.25f;//
+        public static float ReloadSpeedTorqueMult = 2.35f;// needs tweaking
+        public static float ReloadSpeedMult = 0.7f;//
 
-        public static float ChamberSpeedWeightMult = 2f;//
-        public static float ChamberSpeedTorqueMult = 2f;// needs tweaking
-        public static float ChamberSpeedMult = 0.5f;//
+        public static float ChamberSpeedWeightMult = 2.1f;//
+        public static float ChamberSpeedTorqueMult = 2.25f;// needs tweaking
+        public static float ChamberSpeedMult = 0.7f;//
 
-        public static float AimMoveSpeedWeightMult = 0.95f;//
-        public static float AimMoveSpeedTorqueMult = 1.15f;// needs tweaking
-        public static float AimMoveSpeedMult = 0.2f;//
+        public static float AimMoveSpeedWeightMult = 1f;//
+        public static float AimMoveSpeedTorqueMult = 1.25f;// needs tweaking
+        public static float AimMoveSpeedMult = 0.3f;//
 
         public static float magWeightMult = 11f;
 
@@ -108,9 +108,12 @@ namespace RealismMod
 
             if (isQuickReload == true)
             {
-                WeaponProperties.NewMagReloadSpeed *= 1.25f;
-                WeaponProperties.CurrentMagReloadSpeed *= 1.25f;
+                WeaponProperties.NewMagReloadSpeed *= WeaponProperties.QuickReloadSpeedMulti;
+                WeaponProperties.CurrentMagReloadSpeed *= WeaponProperties.QuickReloadSpeedMulti;
             }
+
+            WeaponProperties.NewMagReloadSpeed *= WeaponProperties.GlobalReloadSpeedMulti;
+            WeaponProperties.CurrentMagReloadSpeed *= WeaponProperties.GlobalReloadSpeedMulti;
         }
 
 
@@ -136,7 +139,7 @@ namespace RealismMod
             return weightFactor;
         }
 
-        public static void SpeedStatCalc(float ergonomicWeightLessMag, float currentReloadSpeed, float currentFixSpeed, float totalTorque, float weapTorqueLessMag, ref float totalReloadSpeed, ref float totalFixSpeed, ref float totalAimMoveSpeedModifier, float ergoWeight, ref float totalChamberSpeed, float currentChamberSpeed)
+        public static void SpeedStatCalc(Weapon weap, float ergonomicWeightLessMag, float currentReloadSpeed, float currentFixSpeed, float totalTorque, float weapTorqueLessMag, ref float totalReloadSpeed, ref float totalFixSpeed, ref float totalAimMoveSpeedModifier, float ergoWeight, ref float totalChamberSpeed, float currentChamberSpeed)
         {
 
             float reloadSpeedWeightFactor = StatCalc.WeightStatCalc(StatCalc.ReloadSpeedWeightMult, ergonomicWeightLessMag * PlayerProperties.StrengthSkillAimBuff) / 100f;
@@ -147,11 +150,27 @@ namespace RealismMod
             float weapTorqueLessMagFactor = weapTorqueLessMag / 100f;
             /*   float torqueFactorInverse = totalTorque / 100f * -1f;*/
 
-            totalReloadSpeed = (currentReloadSpeed / 100f) + ((reloadSpeedWeightFactor + (weapTorqueLessMagFactor * StatCalc.ReloadSpeedTorqueMult)) * StatCalc.ReloadSpeedMult);
-            totalFixSpeed = (currentFixSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * StatCalc.ChamberSpeedTorqueMult)) * StatCalc.ChamberSpeedMult);
-            totalChamberSpeed = (currentChamberSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * StatCalc.ChamberSpeedTorqueMult)) * StatCalc.ChamberSpeedMult);
+            float reloadSpeedTorqueMult = StatCalc.ReloadSpeedTorqueMult;
+            float chamberSpeedTorqueMult = StatCalc.ChamberSpeedTorqueMult;
+            float aimMoveSpeedTorqueMult = StatCalc.AimMoveSpeedTorqueMult;
 
-            totalAimMoveSpeedModifier = (aimMoveSpeedWeightFactor + (torqueFactor * StatCalc.AimMoveSpeedTorqueMult)) * StatCalc.AimMoveSpeedMult;
+            if (weap.WeapClass == "pistol")
+            {
+                if (torqueFactor > 0)
+                {
+                    torqueFactor *= -1f;
+                }
+                if (weapTorqueLessMagFactor > 0)
+                {
+                    weapTorqueLessMagFactor *= -1f;
+                }
+            }
+
+            totalReloadSpeed = (currentReloadSpeed / 100f) + ((reloadSpeedWeightFactor + (weapTorqueLessMagFactor * reloadSpeedTorqueMult)) * StatCalc.ReloadSpeedMult);
+            totalFixSpeed = (currentFixSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * chamberSpeedTorqueMult)) * StatCalc.ChamberSpeedMult);
+            totalChamberSpeed = (currentChamberSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * chamberSpeedTorqueMult)) * StatCalc.ChamberSpeedMult);
+
+            totalAimMoveSpeedModifier = (aimMoveSpeedWeightFactor + (torqueFactor * aimMoveSpeedTorqueMult)) * StatCalc.AimMoveSpeedMult;
         }
 
         public static void WeaponStatCalc(Weapon weap, float currentTorque, ref float totalTorque, float currentErgo, float currentVRecoil, float currentHRecoil, float currentDispersion, float currentCamRecoil, float currentRecoilAngle, float baseErgo, float baseVRecoil, float baseHRecoil, ref float totalErgo, ref float totalVRecoil, ref float totalHRecoil, ref float totalDispersion, ref float totalCamRecoil, ref float totalRecoilAngle, ref float totalRecoilDamping, ref float totalRecoilHandDamping, ref float totalErgoDelta, ref float totalVRecoilDelta, ref float totalHRecoilDelta, ref float recoilDamping, ref float recoilHandDamping, float currentCOI, bool hasShoulderContact, ref float totalCOI, ref float totalCOIDelta, float baseCOI, bool isDisplayDelta)
@@ -729,7 +748,7 @@ namespace RealismMod
                 case "Caliber9x21":
                     return 2.4f;
                 case "Caliber762x25TT":
-                    return 2.5f;
+                    return 2.55f;
                 case "Caliber1143x23ACP":
                     return 2.2f;
                 case "Caliber9x19PARA":

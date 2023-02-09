@@ -41,7 +41,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player __instance)
         {
-            if (Helper.CheckIsReady())
+            if (Helper.CheckIsReady() && !__instance.IsAI)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
                 PlayerInjuryStateCheck(__instance);
@@ -100,7 +100,7 @@ namespace RealismMod
             {
                 if (Helper.IsAttemptingToReloadInternalMag == true)
                 {
-                    float reloadBonus = 0.17f;
+                    float reloadBonus = WeaponProperties.InternalMagReloadBonus;
 
                     player.HandsAnimator.SetAnimationSpeed(reloadBonus + (WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
                 }

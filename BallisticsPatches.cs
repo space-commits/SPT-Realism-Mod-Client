@@ -82,17 +82,16 @@ namespace RealismMod
 
                 Logger.LogWarning("Armor Is Present and It's Steel");
 
+                SetArmorStats(armor);
                 AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
                 BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
-                SetArmorStats(armor);
-
+                damageInfo.BleedBlock = false;
                 float KE = ((0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000);
                 float bluntDamage = damageInfo.Damage;
                 float speedFactor = ammo.GetBulletSpeed / damageInfo.ArmorDamage;
                 float fragChance = ammo.FragmentationChance * speedFactor;
                 float lightBleedChance = damageInfo.LightBleedingDelta;
                 float heavyBleedChance = damageInfo.HeavyBleedingDelta;
-                damageInfo.BleedBlock = false;
                 float ricochetChance = ammo.RicochetChance * speedFactor;
                 float damageToKEFactor = 24f;
 
@@ -129,7 +128,6 @@ namespace RealismMod
 
                     Logger.LogWarning("Body Part = " + part);
                     Logger.LogWarning("Damage = " + damage);
-                    Logger.LogWarning("Heavy Bleed Chance = " + damageInfo.HeavyBleedingDelta);
 
                     __instance.ActiveHealthController.ApplyDamage(part, damage, damageInfo);
                 }
@@ -219,7 +217,6 @@ namespace RealismMod
             __instance.OverDamageFrom = null;
             __instance.BodyPartColliderType = EBodyPartColliderType.None;
             __instance.BleedBlock = false;
-            Logger.LogWarning("====================================");
             return false;
         }
     }
@@ -242,21 +239,24 @@ namespace RealismMod
             AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
             BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
 
+            Logger.LogWarning("//////////New Armor Damage/////////////");
 
             Logger.LogWarning("Name = " + ammo.Name);
             Logger.LogWarning("Localized Name = " + ammo.LocalizedName());
-            Logger.LogWarning("Penetration Power = " + ammo.PenetrationPower);
+            Logger.LogWarning("Penetration Power = " + damageInfo.PenetrationPower);
             Logger.LogWarning("Initial Speed = " + ammo.GetBulletSpeed);
             Logger.LogWarning("Current Speed = " + damageInfo.ArmorDamage);
             Logger.LogWarning("Speed Delta = " + ammo.GetBulletSpeed / damageInfo.ArmorDamage);
-            Logger.LogWarning("Armor Damage = " + ammo.ArmorDamage);
             Logger.LogWarning("Kinetic Energy = " + (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000);
 
-            Logger.LogWarning("//////////New Armor Damage/////////////");
+
             EDamageType damageType = damageInfo.DamageType;
 
             float speedFactor = ammo.GetBulletSpeed / damageInfo.ArmorDamage;
             float armorDamage = ammo.ArmorDamage * speedFactor;
+
+            Logger.LogWarning("Armor Damage = " + ammo.ArmorDamage * speedFactor);
+
 
             if (!damageType.IsWeaponInduced() && damageType != EDamageType.GrenadeFragment)
             {
@@ -293,12 +293,21 @@ namespace RealismMod
             float throughputFacotredDamage = maxPotentialDamage * throughputDuraFactored;
             float durabilityLoss = (maxPotentialDamage / 100f) * armorDamage * Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
 
+            Logger.LogWarning("==");
+            Logger.LogWarning("Armor Class = " + __instance.ArmorClass);
+            Logger.LogWarning("Armor Material = " + __instance.Template.ArmorMaterial);
+            Logger.LogWarning("Armor Destructibility = " + Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility);
+            Logger.LogWarning("Armor Throughput = " + bluntThrput);
+            Logger.LogWarning("Armor Current Dura = " + __instance.Repairable.Durability);
+            Logger.LogWarning("Armor Max Dura = " + (float)__instance.Repairable.TemplateDurability);
+            Logger.LogWarning("==");
             Logger.LogWarning("KE = " + KE);
             Logger.LogWarning("armorFactor = " + armorFactor);
             Logger.LogWarning("throughputDuraFactored = " + throughputDuraFactored);
             Logger.LogWarning("penFactoredClass = " + penFactoredClass);
             Logger.LogWarning("maxPotentialDamage = " + maxPotentialDamage);
             Logger.LogWarning("throughputFacotredDamage = " + throughputFacotredDamage);
+            Logger.LogWarning("==");
 
             if (!(damageInfo.BlockedBy == __instance.Item.Id) && !(damageInfo.DeflectedBy == __instance.Item.Id))
             {
