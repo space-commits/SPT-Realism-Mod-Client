@@ -38,7 +38,7 @@ namespace RealismMod
             _maxDura = armor.Repairable.TemplateDurability;
         }
 
-        private static float GetBleedChance(EBodyPart part)
+        private static float GetBleedFactor(EBodyPart part)
         {
             switch (part)
             {
@@ -59,7 +59,7 @@ namespace RealismMod
         private static void PatchPostfix(Player __instance, DamageInfo damageInfo, EBodyPart bodyPartType, float absorbed, EHeadSegment? headSegment = null)
         {
 
-            Logger.LogWarning("===============ApplyDamageInfo==============");
+            Logger.LogWarning("///////////////////////////////////ApplyDamageInfo///////////////////////////////////");
 
             EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
             InventoryClass inventory = (InventoryClass)AccessTools.Property(typeof(Player), "Inventory").GetValue(__instance);
@@ -70,14 +70,14 @@ namespace RealismMod
 
             foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
             {
-                if (armorComponent.Item.Id == damageInfo.BlockedBy || armorComponent.Item.Id == damageInfo.DeflectedBy) 
+                if (armorComponent.Item.Id == damageInfo.BlockedBy || armorComponent.Item.Id == damageInfo.DeflectedBy)
                 {
                     Logger.LogWarning("Armor Match");
                     armor = armorComponent;
                 }
             }
 
-            if (damageInfo.Blunt == true && armor != null && armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel)
+            if (damageInfo.Blunt == true && armor != null && ArmorProperties.CanSpall(armor.Item) == true)
             {
 
                 Logger.LogWarning("Armor Is Present and It's Steel");
@@ -88,28 +88,28 @@ namespace RealismMod
                 damageInfo.BleedBlock = false;
                 float KE = ((0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000);
                 float bluntDamage = damageInfo.Damage;
-                float speedFactor = ammo.GetBulletSpeed / damageInfo.ArmorDamage;
+                float speedFactor = damageInfo.ArmorDamage / ammo.GetBulletSpeed;
                 float fragChance = ammo.FragmentationChance * speedFactor;
                 float lightBleedChance = damageInfo.LightBleedingDelta;
                 float heavyBleedChance = damageInfo.HeavyBleedingDelta;
                 float ricochetChance = ammo.RicochetChance * speedFactor;
+                float spallReduction = ArmorProperties.SpallReduction(armor.Item);
                 float damageToKEFactor = 24f;
 
                 float duraPercent = _currentDura / _maxDura;
-                float armorFactor = _armorClass * (Mathf.Min(1f, duraPercent * 2f));
+                float armorFactor = _armorClass * (Mathf.Min(1, duraPercent * 1f)); //durability should be more important for steel plates, representing anti-spall coating. Lower the amount durapercent is factored by to increase importance
                 float penFactoredClass = Mathf.Max(1f, armorFactor - (damageInfo.PenetrationPower / 2.5f));
                 float maxPotentialDamage = (KE / Mathf.Max(1, (penFactoredClass / 40f)) / damageToKEFactor);
 
                 float maxSpallingDamage = maxPotentialDamage - bluntDamage;
-                float factoredSpallingDamage = maxSpallingDamage * (fragChance + 1) * (ricochetChance + 1);
+                float factoredSpallingDamage = maxSpallingDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction;
 
                 int rnd = Math.Max(1, _randNum.Next(_bodyParts.Count));
                 float splitSpallingDmg = factoredSpallingDamage / _bodyParts.Count;
 
-                /*                _bodyParts.OrderBy(x => _randNum.Next()).Take(rnd);*/
-
-                Logger.LogWarning("maxPotentialDamage = " + maxPotentialDamage);;
+                Logger.LogWarning("maxPotentialDamage = " + maxPotentialDamage);
                 Logger.LogWarning("maxSpallingDamage = " + maxSpallingDamage);
+                Logger.LogWarning("Spall reduction = " + spallReduction);
                 Logger.LogWarning("factoredSpallingDamage = " + factoredSpallingDamage);
                 Logger.LogWarning("splitSpallingDmg = " + splitSpallingDmg);
                 Logger.LogWarning("rnd = " + rnd);
@@ -117,9 +117,9 @@ namespace RealismMod
                 foreach (EBodyPart part in _bodyParts.OrderBy(x => _randNum.Next()).Take(rnd))
                 {
                     float damage = splitSpallingDmg;
-                    float bleedChance = GetBleedChance(part);
-                    damageInfo.HeavyBleedingDelta = heavyBleedChance * bleedChance;
-                    damageInfo.LightBleedingDelta = lightBleedChance * bleedChance;
+                    float bleedFactor = GetBleedFactor(part);
+                    damageInfo.HeavyBleedingDelta = heavyBleedChance * bleedFactor;
+                    damageInfo.LightBleedingDelta = lightBleedChance * bleedFactor;
 
                     if (part == EBodyPart.Head)
                     {
@@ -131,8 +131,8 @@ namespace RealismMod
 
                     __instance.ActiveHealthController.ApplyDamage(part, damage, damageInfo);
                 }
-                Logger.LogWarning("==================================");
             }
+            Logger.LogWarning("///////////////////////////////////");
 
             //need to detect which armor slot isn't empty and only use that armor going forward, also need to check BlockedBy status
             //check if armor hit (is blint damage or not)
@@ -300,6 +300,7 @@ namespace RealismMod
             Logger.LogWarning("Armor Throughput = " + bluntThrput);
             Logger.LogWarning("Armor Current Dura = " + __instance.Repairable.Durability);
             Logger.LogWarning("Armor Max Dura = " + (float)__instance.Repairable.TemplateDurability);
+            Logger.LogWarning("Armor Dura % = " + duraPercent);
             Logger.LogWarning("==");
             Logger.LogWarning("KE = " + KE);
             Logger.LogWarning("armorFactor = " + armorFactor);

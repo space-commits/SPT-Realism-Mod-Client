@@ -56,9 +56,9 @@ namespace RealismMod
             switch (deafStr)
             {
                 case "Low":
-                    return 0.95f;
-                case "High":
                     return 0.9f;
+                case "High":
+                    return 0.8f;
                 default:
                     return 1f;
             }
@@ -116,11 +116,11 @@ namespace RealismMod
         public static float DistortionLimit = 70f;
         public static float VignetteDarknessLimit = 14f;
 
-        public static float VolumeDecreaseRate = 0.02f;
+        public static float VolumeDecreaseRate = 0.025f;
         public static float DistortionIncreaseRate = 0.16f;
         public static float VignetteDarknessIncreaseRate = 0.65f;
 
-        public static float VolumeResetRate = 0.02f;
+        public static float VolumeResetRate = 0.04f;
         public static float DistortionResetRate = 0.25f;
         public static float VignetteDarknessResetRate = 1f;
 

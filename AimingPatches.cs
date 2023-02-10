@@ -26,7 +26,7 @@ namespace RealismMod
                 {
                     FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
                     bool isOn = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
-                    if (isOn && !WeaponProperties.WeaponCanFSADS && !FaceShieldProperties.AllowsADS(fsComponent.Item))
+                    if (isOn && !WeaponProperties.WeaponCanFSADS && !ArmorProperties.AllowsADS(fsComponent.Item))
                     {
                         PlayerProperties.IsAlowedADS = false;
                         player.MovementContext.SetAimingSlowdown(false, 0.33f);

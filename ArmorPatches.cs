@@ -37,14 +37,7 @@ namespace RealismMod
             private static bool Prefix(ref string __result, ref EFT.InventoryLogic.ArmorComponent ___armorComponent_0)
             {
 
-                if (___armorComponent_0.Item.ConflictingItems.Length < 1 || ___armorComponent_0.Item.ConflictingItems[0] != "SPTRM")
-                {
-                    __result = "Unclassified";
-                }
-                else
-                {
-                    __result = ___armorComponent_0.Item.ConflictingItems[2];
-                }
+                __result = ArmorProperties.ArmorClass(___armorComponent_0.Item);
 
                 return false;
             }
