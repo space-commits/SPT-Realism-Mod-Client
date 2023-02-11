@@ -351,7 +351,7 @@ namespace RealismMod
             if (Plugin.showBalance.Value == true)
             {
                 List<ItemAttributeClass> balanceAttList = __instance.Attributes;
-                GClass2395 balanceAtt = new GClass2395((EItemAttributeId)ENewItemAttributeId.Balance);
+                GClass2397 balanceAtt = new GClass2397((EItemAttributeId)ENewItemAttributeId.Balance);
                 balanceAtt.Name = ENewItemAttributeId.Balance.GetName();
                 balanceAtt.Range = new Vector2(100f, 200f);
                 balanceAtt.LessIsGood = false;
@@ -366,7 +366,7 @@ namespace RealismMod
             if (Plugin.showDispersion.Value == true)
             {
                 List<ItemAttributeClass> dispersionAttList = __instance.Attributes;
-                GClass2395 dispersionAtt = new GClass2395((EItemAttributeId)ENewItemAttributeId.Dispersion);
+                GClass2397 dispersionAtt = new GClass2397((EItemAttributeId)ENewItemAttributeId.Dispersion);
                 dispersionAtt.Name = ENewItemAttributeId.Dispersion.GetName();
                 dispersionAtt.Range = new Vector2(0f, 50f);
                 dispersionAtt.LessIsGood = true;
@@ -380,7 +380,7 @@ namespace RealismMod
             if (Plugin.showCamRecoil.Value == true)
             {
                 List<ItemAttributeClass> camRecoilAttList = __instance.Attributes;
-                GClass2395 camRecoilAtt = new GClass2395((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
+                GClass2397 camRecoilAtt = new GClass2397((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
                 camRecoilAtt.Name = ENewItemAttributeId.CameraRecoil.GetName();
                 camRecoilAtt.Range = new Vector2(0f, 0.25f);
                 camRecoilAtt.LessIsGood = true;
@@ -444,6 +444,10 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref float __result)
         {
+            if (Plugin.EnableStatsDelta.Value == true)
+            {
+                StatDeltaDisplay.DisplayDelta(__instance);
+            }
 
             __result = DisplayWeaponProperties.ErgoDelta;
             return false;

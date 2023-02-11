@@ -70,13 +70,13 @@ namespace RealismMod
             return bool.Parse(weapon.ConflictingItems[3]);
         }
 
-        public static string Unused(Weapon weapon)
+        public static float BaseReloadSpeedMulti(Weapon weapon)
         {
             if (Helper.NullCheck(weapon.ConflictingItems))
             {
-                return "";
+                return 1;
             }
-            return weapon.ConflictingItems[4];
+            return float.Parse(weapon.ConflictingItems[4]);
         }
 
         public static string OperationType(Weapon weapon)
@@ -124,13 +124,22 @@ namespace RealismMod
             return bool.Parse(weapon.ConflictingItems[9]);
         }
 
+        public static float BaseChamberSpeedMulti(Weapon weapon)
+        {
+            if (Helper.NullCheck(weapon.ConflictingItems))
+            {
+                return 1;
+            }
+            return float.Parse(weapon.ConflictingItems[10]);
+        }
+
         public static float InternalMagReloadBonus = 0.25f;
 
         public static float QuickReloadSpeedMulti = 1.4f;
 
         public static float ArmHammerSpeedBonus = 0.35f;
 
-        public static float CheckAmmoSpeedBonus = 0.2f;
+        public static float CheckAmmoSpeedBonus = 0.25f;
 
         public static float CheckAmmoPistolSpeedBonus = 0.22f;
 
@@ -138,7 +147,7 @@ namespace RealismMod
 
         public static float CheckChamberShotgunSpeedBonus = 0.16f;
 
-        public static float CheckChamberSpeedBonus = 0.5f;
+        public static float CheckChamberSpeedBonus = 0.65f;
 
         public static float ShotgunRackSpeedFactor = 1f;
 
@@ -146,7 +155,7 @@ namespace RealismMod
 
         public static float RechamberPistolSpeedBonus = 0.12f;
 
-        public static float GlobalReloadSpeedMulti = 1.15f;
+        public static float GlobalReloadSpeedMulti = 1.2f;
 
         public static float TotalModDuraBurn = 0;
 

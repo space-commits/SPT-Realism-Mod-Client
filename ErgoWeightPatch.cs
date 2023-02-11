@@ -24,7 +24,7 @@ namespace RealismMod
         private static bool Prefix(ref Player.FirearmController __instance, ref float __result)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (!player.IsAI)
+            if (player.IsYourPlayer == true)
             {
                 __result = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * PlayerProperties.StrengthSkillAimBuff;
                 return false;

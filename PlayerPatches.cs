@@ -1,7 +1,10 @@
 ﻿using Aki.Reflection.Patching;
 using Aki.Reflection.Utils;
 using EFT;
+using EFT.InventoryLogic;
+using HarmonyLib;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -9,6 +12,47 @@ using UnityEngine;
 
 namespace RealismMod
 {
+
+    public class PlayerInitPatch : ModulePatch
+    {
+
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player).GetMethod("Init", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(Player __instance)
+        {
+
+            if (__instance.IsYourPlayer == true)
+            {
+                Logger.LogWarning("Init");
+                StatCalc.SetGearParamaters(__instance);
+            }
+        }
+    }
+
+    //need to get non-armor chest rig reload multi, also check if any armor component should disable ADS
+    public class OnItemAddedOrRemovedPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player).GetMethod("OnItemAddedOrRemoved", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(Player __instance)
+        {
+
+            if (__instance.IsYourPlayer == true)
+            {
+                Logger.LogWarning("OnItemAddedOrRemoved");
+                StatCalc.SetGearParamaters(__instance);
+            }
+        }
+    }
+
     public class ToggleHoldingBreathPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -19,7 +63,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Player __instance)
         {
-            if (__instance.IsAI != true)
+            if (__instance.IsYourPlayer == true)
             {
                 if (Plugin.enableHoldBreath.Value == false)
                 {
@@ -41,7 +85,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player __instance)
         {
-            if (Helper.CheckIsReady() && !__instance.IsAI)
+            if (Helper.CheckIsReady() && __instance.IsYourPlayer == true)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
                 PlayerInjuryStateCheck(__instance);
@@ -185,7 +229,7 @@ namespace RealismMod
     {
         public static bool IsEnduraStrngthType(Type type)
         {
-            return type.GetField("skillsRelatedToHealth") != null && type.GetField("gclass1672_0") != null;
+            return type.GetField("skillsRelatedToHealth") != null && type.GetField("gclass1674_0") != null;
         }
     }
 }

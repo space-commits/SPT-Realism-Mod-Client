@@ -26,15 +26,15 @@ namespace RealismMod
                 {
                     FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
                     bool isOn = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
-                    if (isOn && !WeaponProperties.WeaponCanFSADS && !ArmorProperties.AllowsADS(fsComponent.Item))
+                    if ((isOn && !WeaponProperties.WeaponCanFSADS && !ArmorProperties.AllowsADS(fsComponent.Item)) || !PlayerProperties.GearAllowsADS && !WeaponProperties.WeaponCanFSADS)
                     {
-                        PlayerProperties.IsAlowedADS = false;
+                        PlayerProperties.IsAllowedADS = false;
                         player.MovementContext.SetAimingSlowdown(false, 0.33f);
                         player.ProceduralWeaponAnimation.IsAiming = false;
                     }
                     else
                     {
-                        PlayerProperties.IsAlowedADS = true;
+                        PlayerProperties.IsAllowedADS = true;
                     }
 
                     Plugin.IsAiming = ____isAiming;
@@ -57,7 +57,7 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
             if (Plugin.enableFSPatch.Value == true && !player.IsAI)
             {
-                return PlayerProperties.IsAlowedADS;
+                return PlayerProperties.IsAllowedADS;
             }
             return true;
         }

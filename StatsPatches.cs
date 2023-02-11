@@ -1,6 +1,7 @@
 using Aki.Reflection.Patching;
 using Comfort.Common;
 using EFT;
+using EFT.Interactive;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
@@ -73,9 +74,9 @@ namespace RealismMod
             //return Mathf.Max(0f, this.Item.ErgonomicsTotal * (1f + this.gclass1560_0.DeltaErgonomics + this._player.ErgonomicsPenalty));
 
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (!player.IsAI)
+            if (player.IsYourPlayer == true)
             {
-                SkillsClass.GClass1673 skillsClass = (SkillsClass.GClass1673)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1673_0").GetValue(__instance);
+                SkillsClass.GClass1675 skillsClass = (SkillsClass.GClass1675)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1675_0").GetValue(__instance);
                 __result = Mathf.Max(0f, __instance.Item.ErgonomicsTotal * (1f + skillsClass.DeltaErgonomics + player.ErgonomicsPenalty));
                 return false;
             }
@@ -522,9 +523,9 @@ namespace RealismMod
         private static void PatchPostfix(ref EFT.Player.FirearmController __instance)
         {
             Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
-            if (!player.IsAI)
+            if (player.IsYourPlayer == true)
             {
-                SkillsClass.GClass1673 skillsClass = (SkillsClass.GClass1673)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1673_0").GetValue(__instance);
+                SkillsClass.GClass1675 skillsClass = (SkillsClass.GClass1675)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1675_0").GetValue(__instance);
                 PlayerProperties.StrengthSkillAimBuff = 1 - player.Skills.StrengthBuffAimFatigue.Value;
                 PlayerProperties.ReloadSkillMulti = skillsClass.ReloadSpeed;
                 PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;

@@ -8,6 +8,7 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 using System;
 using static EFT.Player;
+using EFT.Interactive;
 
 namespace RealismMod
 {
@@ -26,7 +27,7 @@ namespace RealismMod
 
             if (_weapon.Item.Owner.ID.StartsWith("pmc") || _weapon.Item.Owner.ID.StartsWith("scav"))
             {
-                SkillsClass.GClass1673 buffInfo = (SkillsClass.GClass1673)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
+                SkillsClass.GClass1675 buffInfo = (SkillsClass.GClass1675)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
                 WeaponTemplate template = _weapon.WeaponTemplate;
 
                 float vRecoilDelta;
@@ -192,7 +193,7 @@ namespace RealismMod
             if (firearmController != null)
             {
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
-                if (!player.IsAI)
+                if (player.IsYourPlayer == true)
                 {
                     __instance.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
                     __instance.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;

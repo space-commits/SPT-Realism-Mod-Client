@@ -120,8 +120,6 @@ namespace RealismMod
 
 
                 Plugin.PrevShotCount = Plugin.ShotCount;
-                Plugin.IsFiring = true;
-
             }
         }
 

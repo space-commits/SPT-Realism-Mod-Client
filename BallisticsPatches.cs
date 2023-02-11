@@ -61,78 +61,80 @@ namespace RealismMod
 
             Logger.LogWarning("///////////////////////////////////ApplyDamageInfo///////////////////////////////////");
 
-            EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
-            InventoryClass inventory = (InventoryClass)AccessTools.Property(typeof(Player), "Inventory").GetValue(__instance);
-            preAllocatedArmorComponents.Clear();
-            inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
-            ArmorComponent armor = null;
-
-
-            foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
+            if (damageInfo.DamageType == EDamageType.Bullet)
             {
-                if (armorComponent.Item.Id == damageInfo.BlockedBy || armorComponent.Item.Id == damageInfo.DeflectedBy)
+                EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
+                InventoryClass inventory = (InventoryClass)AccessTools.Property(typeof(Player), "Inventory").GetValue(__instance);
+                preAllocatedArmorComponents.Clear();
+                inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
+                ArmorComponent armor = null;
+
+                foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
                 {
-                    Logger.LogWarning("Armor Match");
-                    armor = armorComponent;
-                }
-            }
-
-            if (damageInfo.Blunt == true && armor != null && ArmorProperties.CanSpall(armor.Item) == true)
-            {
-
-                Logger.LogWarning("Armor Is Present and It's Steel");
-
-                SetArmorStats(armor);
-                AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
-                BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
-                damageInfo.BleedBlock = false;
-                float KE = ((0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000);
-                float bluntDamage = damageInfo.Damage;
-                float speedFactor = damageInfo.ArmorDamage / ammo.GetBulletSpeed;
-                float fragChance = ammo.FragmentationChance * speedFactor;
-                float lightBleedChance = damageInfo.LightBleedingDelta;
-                float heavyBleedChance = damageInfo.HeavyBleedingDelta;
-                float ricochetChance = ammo.RicochetChance * speedFactor;
-                float spallReduction = ArmorProperties.SpallReduction(armor.Item);
-                float damageToKEFactor = 24f;
-
-                float duraPercent = _currentDura / _maxDura;
-                float armorFactor = _armorClass * (Mathf.Min(1, duraPercent * 1f)); //durability should be more important for steel plates, representing anti-spall coating. Lower the amount durapercent is factored by to increase importance
-                float penFactoredClass = Mathf.Max(1f, armorFactor - (damageInfo.PenetrationPower / 2.5f));
-                float maxPotentialDamage = (KE / Mathf.Max(1, (penFactoredClass / 40f)) / damageToKEFactor);
-
-                float maxSpallingDamage = maxPotentialDamage - bluntDamage;
-                float factoredSpallingDamage = maxSpallingDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction;
-
-                int rnd = Math.Max(1, _randNum.Next(_bodyParts.Count));
-                float splitSpallingDmg = factoredSpallingDamage / _bodyParts.Count;
-
-                Logger.LogWarning("maxPotentialDamage = " + maxPotentialDamage);
-                Logger.LogWarning("maxSpallingDamage = " + maxSpallingDamage);
-                Logger.LogWarning("Spall reduction = " + spallReduction);
-                Logger.LogWarning("factoredSpallingDamage = " + factoredSpallingDamage);
-                Logger.LogWarning("splitSpallingDmg = " + splitSpallingDmg);
-                Logger.LogWarning("rnd = " + rnd);
-
-                foreach (EBodyPart part in _bodyParts.OrderBy(x => _randNum.Next()).Take(rnd))
-                {
-                    float damage = splitSpallingDmg;
-                    float bleedFactor = GetBleedFactor(part);
-                    damageInfo.HeavyBleedingDelta = heavyBleedChance * bleedFactor;
-                    damageInfo.LightBleedingDelta = lightBleedChance * bleedFactor;
-
-                    if (part == EBodyPart.Head)
+                    if (armorComponent.Item.Id == damageInfo.BlockedBy || armorComponent.Item.Id == damageInfo.DeflectedBy)
                     {
-                        damage = Mathf.Min(15, splitSpallingDmg);
+                        Logger.LogWarning("Armor Match");
+                        armor = armorComponent;
                     }
-
-                    Logger.LogWarning("Body Part = " + part);
-                    Logger.LogWarning("Damage = " + damage);
-
-                    __instance.ActiveHealthController.ApplyDamage(part, damage, damageInfo);
                 }
+
+                if (damageInfo.Blunt == true && armor != null && ArmorProperties.CanSpall(armor.Item) == true)
+                {
+
+                    Logger.LogWarning("Armor Is Present and It's Steel");
+
+                    SetArmorStats(armor);
+                    AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
+                    BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
+                    damageInfo.BleedBlock = false;
+                    float KE = ((0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000);
+                    float bluntDamage = damageInfo.Damage;
+                    float speedFactor = damageInfo.ArmorDamage / ammo.GetBulletSpeed;
+                    float fragChance = ammo.FragmentationChance * speedFactor;
+                    float lightBleedChance = damageInfo.LightBleedingDelta;
+                    float heavyBleedChance = damageInfo.HeavyBleedingDelta;
+                    float ricochetChance = ammo.RicochetChance * speedFactor;
+                    float spallReduction = ArmorProperties.SpallReduction(armor.Item);
+                    float damageToKEFactor = 24f;
+
+                    float duraPercent = _currentDura / _maxDura;
+                    float armorFactor = _armorClass * (Mathf.Min(1, duraPercent * 1f)); //durability should be more important for steel plates, representing anti-spall coating. Lower the amount durapercent is factored by to increase importance
+                    float penFactoredClass = Mathf.Max(1f, armorFactor - (damageInfo.PenetrationPower / 2.5f));
+                    float maxPotentialDamage = (KE / Mathf.Max(1, (penFactoredClass / 40f)) / damageToKEFactor);
+
+                    float maxSpallingDamage = maxPotentialDamage - bluntDamage;
+                    float factoredSpallingDamage = maxSpallingDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction;
+
+                    int rnd = Math.Max(1, _randNum.Next(_bodyParts.Count));
+                    float splitSpallingDmg = factoredSpallingDamage / _bodyParts.Count;
+
+                    Logger.LogWarning("maxPotentialDamage = " + maxPotentialDamage);
+                    Logger.LogWarning("maxSpallingDamage = " + maxSpallingDamage);
+                    Logger.LogWarning("Spall reduction = " + spallReduction);
+                    Logger.LogWarning("factoredSpallingDamage = " + factoredSpallingDamage);
+                    Logger.LogWarning("splitSpallingDmg = " + splitSpallingDmg);
+                    Logger.LogWarning("rnd = " + rnd);
+
+                    foreach (EBodyPart part in _bodyParts.OrderBy(x => _randNum.Next()).Take(rnd))
+                    {
+                        float damage = splitSpallingDmg;
+                        float bleedFactor = GetBleedFactor(part);
+                        damageInfo.HeavyBleedingDelta = heavyBleedChance * bleedFactor;
+                        damageInfo.LightBleedingDelta = lightBleedChance * bleedFactor;
+
+                        if (part == EBodyPart.Head)
+                        {
+                            damage = Mathf.Min(15, splitSpallingDmg);
+                        }
+
+                        Logger.LogWarning("Body Part = " + part);
+                        Logger.LogWarning("Damage = " + damage);
+
+                        __instance.ActiveHealthController.ApplyDamage(part, damage, damageInfo);
+                    }
+                }
+                Logger.LogWarning("///////////////////////////////////");
             }
-            Logger.LogWarning("///////////////////////////////////");
 
             //need to detect which armor slot isn't empty and only use that armor going forward, also need to check BlockedBy status
             //check if armor hit (is blint damage or not)
@@ -158,11 +160,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(GClass2609) });
+            return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(GClass2611) });
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, GClass2609 shot)
+        private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, GClass2611 shot)
         {
 /*            Logger.LogWarning("============DamageInfo=============");
             Logger.LogInfo("Shot ID = " + shot.Ammo.Id);
@@ -234,7 +236,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref DamageInfo damageInfo, bool damageInfoIsLocal, ref ArmorComponent __instance, ref float __result)
         {
-
 
             AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
             BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
@@ -334,71 +335,6 @@ namespace RealismMod
             Logger.LogWarning("durabilityLoss " + durabilityLoss);
             Logger.LogWarning("///////////////////////");
             return false;
-
-
-           /* Logger.LogWarning("//////////Original Armor Damage/////////////");
-            EDamageType damageType = damageInfo.DamageType;
-            if (!damageType.IsWeaponInduced() && damageType != EDamageType.GrenadeFragment)
-            {
-                Logger.LogWarning("//////////Not Weapon Induced/////////////");
-                __result = 0f;
-                return false;
-            }
-            __instance.TryShatter(damageInfo.Player, damageInfoIsLocal);
-            if (__instance.Repairable.Durability <= 0f)
-            {
-                Logger.LogWarning("//////////Durability is 0/////////////");
-                __result = 0f;
-                return false;
-            }
-            if (damageInfo.DeflectedBy == __instance.Item.Id)
-            {
-                Logger.LogWarning("//////////Round Deflected/////////////");
-                damageInfo.Damage /= 2f;
-                damageInfo.ArmorDamage /= 2f;
-                damageInfo.PenetrationPower /= 2f;
-            }
-            float bluntThrput = __instance.Template.BluntThroughput;
-            float penetrationPower = damageInfo.PenetrationPower;
-            float duraPercent = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f;
-            float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
-            float armorDuraFactor = (121f - 5000f / (45f + duraPercent * 2f)) * armorResist * 0.01f;
-            float durabilityLoss;
-
-            Logger.LogWarning("bluntThrput " + bluntThrput);
-            Logger.LogWarning("penetrationPower " + penetrationPower);
-            Logger.LogWarning("duraPercent " + duraPercent);
-            Logger.LogWarning("armorResist " + armorResist);
-            Logger.LogWarning("armorDuraFactor " + armorDuraFactor);
-
-            if (!(damageInfo.BlockedBy == __instance.Item.Id) && !(damageInfo.DeflectedBy == __instance.Item.Id))
-            {
-                Logger.LogWarning("=========Round Penetrated=======");
-                durabilityLoss = damageInfo.PenetrationPower * ammo.ArmorDamagePortion * Mathf.Clamp(penetrationPower / armorResist, 0.5f, 0.9f) * Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
-                float armorPenFactor = Mathf.Clamp(penetrationPower / (armorDuraFactor + 12f), 0.6f, 1f);
-                damageInfo.Damage *= armorPenFactor;
-                damageInfo.PenetrationPower *= armorPenFactor;
-                Logger.LogWarning("armorPenFactor " + armorPenFactor);
-                Logger.LogWarning("damageInfo.PenetrationPower " + damageInfo.PenetrationPower);
-                Logger.LogWarning("damageInfo.Damage " + damageInfo.Damage);
-                Logger.LogWarning("================");
-            }
-            else
-            {
-                Logger.LogWarning("=======Round Blocked=========");
-                durabilityLoss = damageInfo.PenetrationPower * ammo.ArmorDamagePortion * Mathf.Clamp(penetrationPower / armorResist, 0.6f, 1.1f) * Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
-                damageInfo.Damage *= bluntThrput * Mathf.Clamp(1f - 0.03f * (armorDuraFactor - penetrationPower), 0.2f, 1f);
-                damageInfo.StaminaBurnRate *= ((bluntThrput > 0f) ? (3f / Mathf.Sqrt(bluntThrput)) : 1f);
-                Logger.LogWarning("damageInfo.Damage " + damageInfo.Damage);
-                Logger.LogWarning("damageInfo.StaminaBurnRate " + damageInfo.StaminaBurnRate);
-                Logger.LogWarning("================");
-            }
-            durabilityLoss = Mathf.Max(1f, durabilityLoss);
-            __instance.ApplyDurabilityDamage(durabilityLoss);
-            __result = durabilityLoss;
-            Logger.LogWarning("durabilityLoss " + durabilityLoss);
-            Logger.LogWarning("///////////////////////");
-            return false;*/
         }
 
     }
@@ -413,7 +349,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, Player player, Item weapon, ref GClass2609 __result, float speedFactor, int fragmentIndex = 0)
+        private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, Player player, Item weapon, ref GClass2611 __result, float speedFactor, int fragmentIndex = 0)
         {
             /*            Logger.LogWarning("!!!!!!!!!!! Shot Created!! !!!!!!!!!!!!!!");
             Logger.LogWarning("========================STARTING BULLET VALUES============================");
@@ -446,7 +382,7 @@ namespace RealismMod
              Logger.LogWarning("Round Factored BC = " + bcFactored);
              Logger.LogWarning("==============================================================");*/
 
-            __result = GClass2609.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
+            __result = GClass2611.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
             return false;
 
         }

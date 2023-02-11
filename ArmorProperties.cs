@@ -43,5 +43,14 @@ namespace RealismMod
             return float.Parse(armorItem.ConflictingItems[4]);
         }
 
+        public static float ReloadSpeedMulti(Item armorItem)
+        {
+            if (Helper.NullCheck(armorItem.ConflictingItems))
+            {
+                return 1;
+            }
+            return float.Parse(armorItem.ConflictingItems[5]);
+        }
+
     }
 }

@@ -11,31 +11,6 @@ using UnityEngine;
 namespace RealismMod
 {
 
-/*    public class RepairAmountPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(EFT.UI.RepairerParametersPanel).GetMethod("get_RepairAmount", BindingFlags.Instance | BindingFlags.Public);
-        }
-        [PatchPostfix]
-        private static void PatchPostfix(ref float __result)
-        {
-            Logger.LogWarning("RepairAmount = " + __result);
-        }
-    }
-
-    public class Single_1Patch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(EFT.UI.RepairerParametersPanel).GetMethod("get_Single_1", BindingFlags.Instance | BindingFlags.NonPublic);
-        }
-        [PatchPostfix]
-        private static void PatchPostfix(ref float __result)
-        {
-            Logger.LogWarning("RealCurrentDurability = " + __result);
-        }
-    }*/
 
     public class GetTotalMalfunctionChancePatch : ModulePatch
     {
@@ -49,7 +24,7 @@ namespace RealismMod
 
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
 
-            if (!player.IsAI)
+            if (player.IsYourPlayer == true)
             {
                 durabilityMalfChance = 0.0;
                 magMalfChance = 0f;
@@ -73,7 +48,6 @@ namespace RealismMod
                 BackendConfigSettingsClass instance = Singleton<BackendConfigSettingsClass>.Instance;
                 BackendConfigSettingsClass.GClass1321 malfunction = instance.Malfunction;
                 BackendConfigSettingsClass.GClass1322 overheat2 = instance.Overheat;
-                BackendConfigSettingsClass.GClass1295 troubleShooting = instance.SkillsSettings.TroubleShooting;
                 float ammoMalfChanceMult = malfunction.AmmoMalfChanceMult;
                 float magazineMalfChanceMult = malfunction.MagazineMalfChanceMult;
                 MagazineClass currentMagazine = __instance.Item.GetCurrentMagazine();

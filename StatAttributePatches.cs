@@ -58,6 +58,9 @@ namespace RealismMod
             FragmentationChance,
             BluntThroughput,
             ShotDispersion,
+            GearReloadSpeed,
+            CanSpall,
+            SpallReduction
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -101,9 +104,15 @@ namespace RealismMod
                 case ENewItemAttributeId.FragmentationChance:
                     return "FRAGMENTATION CHANCE";
                 case ENewItemAttributeId.BluntThroughput:
-                    return "BLUNT THROUGHPUT";
+                    return "BLUNT DAMAGE REDUCTION";
                 case ENewItemAttributeId.ShotDispersion:
                     return "SHOT SPREAD REDUCTION";
+                case ENewItemAttributeId.CanSpall:
+                    return "CAN SPALL";
+                case ENewItemAttributeId.SpallReduction:
+                    return "SPALLING REDUCTION";
+                case ENewItemAttributeId.GearReloadSpeed:
+                    return "RELOAD SPEED MULTI";
                 default:
                     return id.ToString();
             }

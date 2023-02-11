@@ -1,6 +1,9 @@
 ﻿using Aki.Reflection.Patching;
 using EFT;
+using EFT.Interactive;
+using EFT.InventoryLogic;
 using HarmonyLib;
+using System.Collections.Generic;
 using System.Reflection;
 using static EFT.Player;
 
@@ -151,7 +154,7 @@ namespace RealismMod
         private static void PatchPostfix(Player.FirearmController __instance, bool __result)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (!player.IsAI)
+            if (player.IsYourPlayer == true)
             {
                 if (__result == true)
                 {
@@ -179,7 +182,7 @@ namespace RealismMod
         private static void PatchPostfix(Player.FirearmController __instance, MagazineClass magazine)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (!player.IsAI)
+            if (player.IsYourPlayer == true)
             {
                 StatCalc.SetMagReloadSpeeds(__instance, magazine);
             }
@@ -198,7 +201,7 @@ namespace RealismMod
         private static void PatchPostfix(Player.FirearmController __instance, MagazineClass magazine)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (!player.IsAI)
+            if (player.IsYourPlayer == true)
             {
                 StatCalc.SetMagReloadSpeeds(__instance, magazine, true);
             }
@@ -217,7 +220,7 @@ namespace RealismMod
         private static void PatchPostfix(Player.FirearmController __instance)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (!player.IsAI)
+            if (player.IsYourPlayer == true)
             {
                 Helper.IsAttemptingToReloadInternalMag = true;
                 Helper.IsAttemptingRevolverReload = true;
@@ -236,7 +239,7 @@ namespace RealismMod
         private static void PatchPostfix(Player.FirearmController __instance)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (!player.IsAI)
+            if (player.IsYourPlayer == true)
             {
                 Helper.IsAttemptingToReloadInternalMag = true;
             }
@@ -254,7 +257,7 @@ namespace RealismMod
         private static void PatchPostfix(Player.FirearmController __instance)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (!player.IsAI)
+            if (player.IsYourPlayer == true)
             {
                 Helper.IsAttemptingToReloadInternalMag = true;
             }
@@ -302,7 +305,7 @@ namespace RealismMod
         {
             if (Helper.IsMagReloading == true)
             {
-                __instance.SetAnimationSpeed(WeaponProperties.NewMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti);
+                __instance.SetAnimationSpeed(WeaponProperties.NewMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * PlayerProperties.GearReloadMulti);
             }
         }
     }
@@ -334,7 +337,7 @@ namespace RealismMod
         {
             //to find this again, look for private void method_47(){ this.CurrentOperation.OnMagInsertedToWeapon(); }
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (!player.IsAI)
+            if (player.IsYourPlayer == true)
             {
                 Helper.IsMagReloading = false;
                 player.HandsAnimator.SetAnimationSpeed(1);

@@ -69,12 +69,12 @@ namespace RealismMod
             float protectionFactor;
 
             LootItemClass headwear = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;
-            GClass2284 headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as GClass2284) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<GClass2284>().FirstOrDefault<GClass2284>() : null);
+            GClass2286 headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as GClass2286) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<GClass2286>().FirstOrDefault<GClass2286>() : null);
 
             if (headset != null)
             {
                 Plugin.HasHeadSet = true;
-                GClass2191 headphone = headset.Template;
+                GClass2193 headphone = headset.Template;
                 protectionFactor = ((headphone.DryVolume / 100f) + 1f) * 1.3f;
             }
             else
@@ -112,9 +112,9 @@ namespace RealismMod
         public static float Distortion = 0f;
         public static float VignetteDarkness = 0f;
 
-        public static float VolumeLimit = -38f;
+        public static float VolumeLimit = -30f;
         public static float DistortionLimit = 70f;
-        public static float VignetteDarknessLimit = 14f;
+        public static float VignetteDarknessLimit = 12f;
 
         public static float VolumeDecreaseRate = 0.025f;
         public static float DistortionIncreaseRate = 0.16f;
@@ -186,7 +186,7 @@ namespace RealismMod
 
             float totalVolume = Mathf.Clamp(Volume + BotVolume + GrenadeVolume, -45.0f, 0.0f);
             float totalDistortion = Mathf.Clamp(Distortion + BotDistortion + GrenadeDistortion, 0.0f, 70.0f);
-            float totalVignette = Mathf.Clamp(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 0.0f, 90.0f);
+            float totalVignette = Mathf.Clamp(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 0.0f, 70.0f);
 
             //for some reason this prevents the values from being fully reset to 0
             if (totalVolume != 0.0f || totalDistortion != 0.0f || totalVignette != 0.0f)
@@ -212,10 +212,18 @@ namespace RealismMod
                     Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", totalDistortion + Plugin.CompressorDistortion);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", totalDistortion + Plugin.CompressorDistortion);
                 }
+                else
+                {
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", 0);
+                }
                 valuesAreReset = false;
             }
             else
             {
+                if (Plugin.HasHeadSet == true)
+                {
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.CompressorGain);
+                }
                 Plugin.Vignette.enabled = false;
                 valuesAreReset = true;
             }
@@ -247,7 +255,7 @@ namespace RealismMod
 
         }
         [PatchPrefix]
-        private static bool Prefix(GClass2191 template, BetterAudio __instance)
+        private static bool Prefix(GClass2193 template, BetterAudio __instance)
         {
 
             bool hasHeadsetTemplate = template != null;
@@ -257,11 +265,12 @@ namespace RealismMod
             Plugin.Compressor = hasHeadsetTemplate && !isNotHeadset ? template.CompressorVolume : -80f;
             Plugin.AmbientVolume = hasHeadsetTemplate && !isNotHeadset ? template.AmbientVolume : 0f;
             Plugin.AmbientOccluded = hasHeadsetTemplate && !isNotHeadset ? (template.AmbientVolume - 15f) : -5f;
-            Plugin.GunsVolume = hasHeadsetTemplate && !isNotHeadset ? (template.DryVolume - 30f) : 0f;
+            Plugin.GunsVolume = hasHeadsetTemplate && !isNotHeadset ? (template.DryVolume - 20f) : 0f;
 
             Plugin.CompressorDistortion = hasHeadsetTemplate && !isNotHeadset ? template.Distortion : 0.277f;
             Plugin.CompressorResonance = hasHeadsetTemplate && !isNotHeadset ? template.Resonance : 2.47f;
             Plugin.CompressorLowpass = hasHeadsetTemplate && !isNotHeadset ? template.LowpassFreq : 22000f;
+            Plugin.CompressorGain = hasHeadsetTemplate && !isNotHeadset ? template.CompressorGain : 10f;
 
             __instance.Master.SetFloat("Compressor", Plugin.Compressor);
             __instance.Master.SetFloat("OcclusionVolume", Plugin.MainVolume);
@@ -271,7 +280,7 @@ namespace RealismMod
             __instance.Master.SetFloat("GunsVolume", Plugin.GunsVolume);
 
             __instance.Master.SetFloat("CompressorAttack", hasHeadsetTemplate && !isNotHeadset ? template.CompressorAttack : 35f);
-            __instance.Master.SetFloat("CompressorMakeup", hasHeadsetTemplate && !isNotHeadset ? template.CompressorGain : 10f);
+            __instance.Master.SetFloat("CompressorMakeup", Plugin.CompressorGain);
             __instance.Master.SetFloat("CompressorRelease", hasHeadsetTemplate && !isNotHeadset ? template.CompressorRelease : 215f);
             __instance.Master.SetFloat("CompressorTreshold", hasHeadsetTemplate && !isNotHeadset ? template.CompressorTreshold : -20f);
             __instance.Master.SetFloat("CompressorDistortion", Plugin.CompressorDistortion);
@@ -315,7 +324,7 @@ namespace RealismMod
 
         private static float CalcVelocityFactor(Weapon weap)
         {
-           return ((1f - (((weap.SpeedFactor - 1f) * 3f) + 1f)) + 1f);
+           return ((weap.SpeedFactor - 1f) * -3f) + 1f;
         }
 
         [PatchPostfix]
@@ -328,7 +337,7 @@ namespace RealismMod
             {
                 Weapon weap = weapon as Weapon;
 
-                if (!player.IsAI)
+                if (player.IsYourPlayer == true)
                 {
                     AmmoTemplate currentAmmoTemplate = weap.CurrentAmmoTemplate;
 
@@ -336,9 +345,9 @@ namespace RealismMod
                     float velocityFactor = CalcVelocityFactor(weap);
                     float ammoDeafFactor = ammoFactor * velocityFactor;
 
-                    if (currentAmmoTemplate.InitialSpeed <= 335f)
+                    if (currentAmmoTemplate.InitialSpeed * weap.SpeedFactor <= 335f)
                     {
-                        ammoDeafFactor *= 0.55f;
+                        ammoDeafFactor *= 0.6f;
                     }
 
                     Plugin.AmmoDeafFactor = ammoDeafFactor == 0f ? 1f : ammoDeafFactor;
@@ -362,9 +371,9 @@ namespace RealismMod
                         float muzzleFactor = GetMuzzleLoudness(weap.Mods);
                         float calFactor = StatCalc.CalibreLoudnessFactor(weap.AmmoCaliber);
                         float ammoDeafFactor = ammoFactor * velocityFactor;
-                        if (currentAmmoTemplate.InitialSpeed <= 335f)
+                        if (currentAmmoTemplate.InitialSpeed * weap.SpeedFactor <= 335f)
                         {
-                            ammoDeafFactor *= 0.55f;
+                            ammoDeafFactor *= 0.6f;
                         }
                         float muzzleLoudness = muzzleFactor * calFactor * ammoDeafFactor;
                         Plugin.BotDeafFactor = muzzleLoudness * ((-distanceFromPlayer / 100f) + 1f);

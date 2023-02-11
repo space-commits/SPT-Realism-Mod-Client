@@ -2,6 +2,7 @@
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using static RealismMod.Helper;
 namespace RealismMod
@@ -50,12 +51,12 @@ namespace RealismMod
         public static float HandDampingPistolMax = 0.7f;
 
         public static float ReloadSpeedWeightMult = 2.25f;//
-        public static float ReloadSpeedTorqueMult = 2.35f;// needs tweaking
-        public static float ReloadSpeedMult = 0.7f;//
+        public static float ReloadSpeedTorqueMult = 2.15f;// needs tweaking
+        public static float ReloadSpeedMult = 0.8f;//
 
         public static float ChamberSpeedWeightMult = 2.1f;//
         public static float ChamberSpeedTorqueMult = 2.25f;// needs tweaking
-        public static float ChamberSpeedMult = 0.7f;//
+        public static float ChamberSpeedMult = 0.8f;//
 
         public static float AimMoveSpeedWeightMult = 1f;//
         public static float AimMoveSpeedTorqueMult = 1.25f;// needs tweaking
@@ -63,6 +64,46 @@ namespace RealismMod
 
         public static float magWeightMult = 11f;
 
+        private static List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(10);
+
+        public static void SetGearParamaters(Player player)
+        {
+            float reloadMulti = 1f;
+            bool allowADS = true;
+            InventoryClass inventory = (InventoryClass)AccessTools.Property(typeof(Player), "Inventory").GetValue(player);
+            preAllocatedArmorComponents.Clear();
+            inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
+
+            reloadMulti *= StatCalc.GetRigReloadSpeed(player);
+
+            foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
+            {
+                reloadMulti *= ArmorProperties.ReloadSpeedMulti(armorComponent.Item);
+
+                if (ArmorProperties.AllowsADS(armorComponent.Item) == false)
+                {
+                    allowADS = false;
+                }
+            }
+
+            PlayerProperties.GearReloadMulti = reloadMulti;
+            PlayerProperties.GearAllowsADS = allowADS;
+        }
+
+        public static float GetRigReloadSpeed(Player player)
+        {
+            EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(player);
+            LootItemClass tacVest = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as LootItemClass;
+
+            if (tacVest != null && !(tacVest is ArmorComponent))
+            {
+                return ArmorProperties.ReloadSpeedMulti(tacVest);
+            }
+            else
+            {
+                return 1;
+            }
+        }
 
         public static void SetMagReloadSpeeds(Player.FirearmController __instance, MagazineClass magazine, bool isQuickReload = false)
         {
@@ -71,7 +112,7 @@ namespace RealismMod
             {
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 StatCalc.MagReloadSpeedModifier(magazine, false, true);
-                player.HandsAnimator.SetAnimationSpeed(WeaponProperties.CurrentMagReloadSpeed * WeaponProperties.ReloadSpeedModifier * PlayerProperties.ReloadInjuryMulti * PlayerProperties.ReloadSkillMulti);
+                player.HandsAnimator.SetAnimationSpeed(WeaponProperties.CurrentMagReloadSpeed * WeaponProperties.ReloadSpeedModifier * PlayerProperties.ReloadInjuryMulti * PlayerProperties.ReloadSkillMulti * PlayerProperties.GearReloadMulti);
             }
             else
             {
@@ -166,9 +207,9 @@ namespace RealismMod
                 }
             }
 
-            totalReloadSpeed = (currentReloadSpeed / 100f) + ((reloadSpeedWeightFactor + (weapTorqueLessMagFactor * reloadSpeedTorqueMult)) * StatCalc.ReloadSpeedMult);
-            totalFixSpeed = (currentFixSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * chamberSpeedTorqueMult)) * StatCalc.ChamberSpeedMult);
-            totalChamberSpeed = (currentChamberSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * chamberSpeedTorqueMult)) * StatCalc.ChamberSpeedMult);
+            totalReloadSpeed = (currentReloadSpeed / 100f) + ((reloadSpeedWeightFactor + (weapTorqueLessMagFactor * reloadSpeedTorqueMult)) * StatCalc.ReloadSpeedMult) * WeaponProperties.BaseReloadSpeedMulti(weap);
+            totalFixSpeed = (currentFixSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * chamberSpeedTorqueMult)) * StatCalc.ChamberSpeedMult) * WeaponProperties.BaseChamberSpeedMulti(weap);
+            totalChamberSpeed = (currentChamberSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * chamberSpeedTorqueMult)) * StatCalc.ChamberSpeedMult) * WeaponProperties.BaseChamberSpeedMulti(weap);
 
             totalAimMoveSpeedModifier = (aimMoveSpeedWeightFactor + (torqueFactor * aimMoveSpeedTorqueMult)) * StatCalc.AimMoveSpeedMult;
         }
