@@ -116,11 +116,11 @@ namespace RealismMod
         public static float DistortionLimit = 70f;
         public static float VignetteDarknessLimit = 12f;
 
-        public static float VolumeDecreaseRate = 0.025f;
+        public static float VolumeDecreaseRate = 0.02f;
         public static float DistortionIncreaseRate = 0.16f;
         public static float VignetteDarknessIncreaseRate = 0.65f;
 
-        public static float VolumeResetRate = 0.04f;
+        public static float VolumeResetRate = 0.05f;
         public static float DistortionResetRate = 0.25f;
         public static float VignetteDarknessResetRate = 1f;
 
@@ -186,7 +186,7 @@ namespace RealismMod
 
             float totalVolume = Mathf.Clamp(Volume + BotVolume + GrenadeVolume, -45.0f, 0.0f);
             float totalDistortion = Mathf.Clamp(Distortion + BotDistortion + GrenadeDistortion, 0.0f, 70.0f);
-            float totalVignette = Mathf.Clamp(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 0.0f, 70.0f);
+            float totalVignette = Mathf.Clamp(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 0.0f, 60.0f);
 
             //for some reason this prevents the values from being fully reset to 0
             if (totalVolume != 0.0f || totalDistortion != 0.0f || totalVignette != 0.0f)

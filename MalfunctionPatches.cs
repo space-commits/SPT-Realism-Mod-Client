@@ -36,7 +36,17 @@ namespace RealismMod
 
                 if (WeaponProperties.CanCycleSubs == false && ammoToFire.ammoHear == 1)
                 {
-                    __result = 0.95f;
+                    float backPressureFactor = (((1f - WeaponProperties.SemiFireRate) * 2f) + 1f);
+
+                    if (ammoToFire.Caliber == "Caliber762x39")
+                    {
+                        __result = 0.2f * backPressureFactor;
+                    }
+                    else
+                    {
+                        __result = 0.4f * backPressureFactor;
+                    }
+
                     return false;
                 }
 

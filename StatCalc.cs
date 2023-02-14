@@ -52,11 +52,11 @@ namespace RealismMod
 
         public static float ReloadSpeedWeightMult = 2.25f;//
         public static float ReloadSpeedTorqueMult = 2.15f;// needs tweaking
-        public static float ReloadSpeedMult = 0.8f;//
+        public static float ReloadSpeedMult = 0.75f;//
 
         public static float ChamberSpeedWeightMult = 2.1f;//
         public static float ChamberSpeedTorqueMult = 2.25f;// needs tweaking
-        public static float ChamberSpeedMult = 0.8f;//
+        public static float ChamberSpeedMult = 0.75f;//
 
         public static float AimMoveSpeedWeightMult = 1f;//
         public static float AimMoveSpeedTorqueMult = 1.25f;// needs tweaking
@@ -207,9 +207,9 @@ namespace RealismMod
                 }
             }
 
-            totalReloadSpeed = (currentReloadSpeed / 100f) + ((reloadSpeedWeightFactor + (weapTorqueLessMagFactor * reloadSpeedTorqueMult)) * StatCalc.ReloadSpeedMult) * WeaponProperties.BaseReloadSpeedMulti(weap);
-            totalFixSpeed = (currentFixSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * chamberSpeedTorqueMult)) * StatCalc.ChamberSpeedMult) * WeaponProperties.BaseChamberSpeedMulti(weap);
-            totalChamberSpeed = (currentChamberSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * chamberSpeedTorqueMult)) * StatCalc.ChamberSpeedMult) * WeaponProperties.BaseChamberSpeedMulti(weap);
+            totalReloadSpeed = (currentReloadSpeed / 100f) + ((reloadSpeedWeightFactor + (weapTorqueLessMagFactor * reloadSpeedTorqueMult)) * StatCalc.ReloadSpeedMult);
+            totalFixSpeed = (currentFixSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * chamberSpeedTorqueMult)) * StatCalc.ChamberSpeedMult);
+            totalChamberSpeed = (currentChamberSpeed / 100f) + ((fixSpeedWeightFactor + (torqueFactor * chamberSpeedTorqueMult)) * StatCalc.ChamberSpeedMult);
 
             totalAimMoveSpeedModifier = (aimMoveSpeedWeightFactor + (torqueFactor * aimMoveSpeedTorqueMult)) * StatCalc.AimMoveSpeedMult;
         }

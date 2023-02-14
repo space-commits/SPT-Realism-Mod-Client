@@ -135,7 +135,7 @@ namespace RealismMod
 
         public static float InternalMagReloadBonus = 0.25f;
 
-        public static float QuickReloadSpeedMulti = 1.4f;
+        public static float QuickReloadSpeedMulti = 1.5f;
 
         public static float ArmHammerSpeedBonus = 0.35f;
 
@@ -155,7 +155,9 @@ namespace RealismMod
 
         public static float RechamberPistolSpeedBonus = 0.12f;
 
-        public static float GlobalReloadSpeedMulti = 1.2f;
+        public static float GlobalReloadSpeedMulti = 1.17f;
+
+        public static float GlobalFixSpeedMulti = 1.2f;
 
         public static float TotalModDuraBurn = 0;
 

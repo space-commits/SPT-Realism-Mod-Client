@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Comfort.Common;
 using static RealismMod.Attributes;
+using UnityEngine;
 
 namespace RealismMod
 {
@@ -22,14 +23,14 @@ namespace RealismMod
 
 
         [PatchPostfix]
-        private static void PatchPostfix(GClass2331 __instance, GClass2238 template)
+        private static void PatchPostfix(GClass2331 __instance)
         {
             Item item = __instance as Item;
 
             float gearReloadSpeed = ArmorProperties.ReloadSpeedMulti(item);
             float reloadSpeedPercent = 0;
 
-            reloadSpeedPercent = (gearReloadSpeed - 1) * 100f;
+            reloadSpeedPercent = (float)Math.Round((gearReloadSpeed - 1f) * 100f);
 
             if (gearReloadSpeed != 1)
             {
@@ -102,7 +103,17 @@ namespace RealismMod
             [PatchPostfix]
             private static void PatchPostfix(ArmorComponent __instance)
             {
-                bool CanSpall = ArmorProperties.CanSpall(__instance.Item);
+                bool canSpall = ArmorProperties.CanSpall(__instance.Item);
+                bool showADS = false;
+                EBodyPart[] zones = __instance.ArmorZone;
+
+                foreach (EBodyPart part in zones)
+                {
+                    if (part == EBodyPart.Head)
+                    {
+                        showADS = true;
+                    }
+                }
 
                 List<ItemAttributeClass> bluntAtt = __instance.Item.Attributes;
                 ItemAttributeClass bluntAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.BluntThroughput);
@@ -114,11 +125,21 @@ namespace RealismMod
                 List<ItemAttributeClass> canSpallAtt = __instance.Item.Attributes;
                 ItemAttributeClass canSpallAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanSpall);
                 canSpallAttClass.Name = ENewItemAttributeId.CanSpall.GetName();
-                canSpallAttClass.StringValue = () => CanSpall.ToString();
+                canSpallAttClass.StringValue = () => canSpall.ToString();
                 canSpallAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                 canSpallAtt.Add(canSpallAttClass);
 
-                if (CanSpall == true)
+                if (showADS == true)
+                {
+                    List<ItemAttributeClass> canADSAtt = __instance.Item.Attributes;
+                    ItemAttributeClass canADSAttAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanAds);
+                    canADSAttAttClass.Name = ENewItemAttributeId.CanAds.GetName();
+                    canADSAttAttClass.StringValue = () => ArmorProperties.AllowsADS(__instance.Item).ToString();
+                    canADSAttAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    canADSAtt.Add(canADSAttAttClass);
+                }
+
+                if (canSpall == true)
                 {
                     List<ItemAttributeClass> spallReductAtt = __instance.Item.Attributes;
                     ItemAttributeClass spallReductAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.SpallReduction);

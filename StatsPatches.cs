@@ -220,10 +220,9 @@ namespace RealismMod
             {
                 totalChamberSpeed = totalChamberSpeed + 1;
             }
-
-            WeaponProperties.ReloadSpeedModifier = totalReloadSpeedMod;
-            WeaponProperties.FixSpeedModifier = Mathf.Max(totalFixSpeedMod, 0.5f);
-            WeaponProperties.ChamberSpeed = Mathf.Max(totalChamberSpeed, 0.5f);
+            WeaponProperties.ReloadSpeedModifier = totalReloadSpeedMod * WeaponProperties.BaseReloadSpeedMulti(__instance);
+            WeaponProperties.FixSpeedModifier = Mathf.Max(totalFixSpeedMod, 0.5f) * WeaponProperties.BaseChamberSpeedMulti(__instance);
+            WeaponProperties.ChamberSpeed = Mathf.Max(totalChamberSpeed, 0.5f) * WeaponProperties.BaseChamberSpeedMulti(__instance);
             WeaponProperties.AimMoveSpeedModifier = totalAimMoveSpeed;
 
 
@@ -253,6 +252,9 @@ namespace RealismMod
 
         public void StatDelta(ref Weapon __instance)
         {
+
+            Logger.LogWarning("Reload Multi = " + WeaponProperties.BaseReloadSpeedMulti(__instance));
+
             WeaponProperties._WeapClass = __instance.WeapClass;
 
             WeaponProperties.ShouldGetSemiIncrease = false;

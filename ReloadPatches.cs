@@ -87,7 +87,7 @@ namespace RealismMod
             {
                 baseSpeed = WeaponProperties.CheckChamberShotgunSpeedBonus;
             }
-            __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti));
+            __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti * WeaponProperties.GlobalFixSpeedMulti));
         }
     }
 

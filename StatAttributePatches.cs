@@ -60,7 +60,8 @@ namespace RealismMod
             ShotDispersion,
             GearReloadSpeed,
             CanSpall,
-            SpallReduction
+            SpallReduction,
+            CanAds
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -112,7 +113,9 @@ namespace RealismMod
                 case ENewItemAttributeId.SpallReduction:
                     return "SPALLING REDUCTION";
                 case ENewItemAttributeId.GearReloadSpeed:
-                    return "RELOAD SPEED MULTI";
+                    return "RELOAD SPEED";
+                case ENewItemAttributeId.CanAds:
+                    return "ALLOWS ADS";
                 default:
                     return id.ToString();
             }

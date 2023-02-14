@@ -23,7 +23,6 @@ namespace RealismMod
         private static float _armorClass;
         private static float _currentDura;
         private static float _maxDura;
-        private static float _bluntThroughput;
 
         private static List<EBodyPart> _bodyParts = new List<EBodyPart> { EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.LeftLeg, EBodyPart.RightLeg, EBodyPart.Head };
         private static System.Random _randNum = new System.Random();
@@ -32,7 +31,6 @@ namespace RealismMod
 
         private static void SetArmorStats(ArmorComponent armor)
         {
-            _bluntThroughput = armor.Template.BluntThroughput;
             _armorClass = armor.ArmorClass * 10f;
             _currentDura = armor.Repairable.Durability;
             _maxDura = armor.Repairable.TemplateDurability;
@@ -222,6 +220,51 @@ namespace RealismMod
             return false;
         }
     }
+
+    public class SetPenetrationStatusPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            var result = typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.ApplyDamage), BindingFlags.Public | BindingFlags.Instance);
+
+            return result;
+
+        }
+        [PatchPrefix]
+        private static bool Prefix(GClass2611 shot, ref ArmorComponent __instance)
+        {
+            Logger.LogWarning("------SetPenetrationStatusPatch-------------");
+            if (__instance.Repairable.Durability <= 0f)
+            {
+                return false;
+            }
+            float penetrationPower = shot.PenetrationPower;
+            float armorDura = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f;
+            if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel)
+            {
+                armorDura = 100f;
+            }
+            if (__instance.Template.ArmorMaterial == EArmorMaterial.Titan)
+            {
+                armorDura = Mathf.Min(100f, armorDura * 2f);
+            }
+            float armorResis = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
+            float armorFactor = (121f - 5000f / (45f + armorDura * 2f)) * armorResis * 0.01f;
+            if (((armorFactor >= penetrationPower + 15f) ? 0f : ((armorFactor >= penetrationPower) ? (0.4f * (armorFactor - penetrationPower - 15f) * (armorFactor - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * armorFactor - penetrationPower)))) - shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f < 0f)
+            {
+                shot.BlockedBy = __instance.Item.Id;
+                Logger.LogWarning("ROUND PENETRATED!");
+                Debug.Log(">>> Shot blocked by armor piece");
+            }
+            else
+            {
+                Logger.LogWarning("ROUND STOPPED!");
+            }
+            Logger.LogWarning("---------------------------------------");
+            return false;
+        }
+    }
+
     public class ApplyDamagePatch : ModulePatch
     {
         public readonly RepairableComponent Repairable;
@@ -291,7 +334,17 @@ namespace RealismMod
             float throughputDuraFactored = Mathf.Min(1f, bluntThrput * (1f + ((duraPercent - 1f) * -1f)));
             float penFactoredClass = Mathf.Max(1f, armorFactor - (penPower / 2.5f));
             float maxPotentialDamage = (KE / Mathf.Max(1, (penFactoredClass / 40f)) / damageToKEFactor);
-            float throughputFacotredDamage = maxPotentialDamage * throughputDuraFactored;
+            float throughputFacotredDamage;
+            if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !__instance.Template.ArmorZone.Contains(EBodyPart.Head))
+            {
+                float steelPenFactoredClass = Mathf.Max(1f, armorResist - (penPower / 2.5f));
+                float steelMaxPotentialDamage = (KE / Mathf.Max(1, (steelPenFactoredClass / 40f)) / damageToKEFactor);
+                throughputFacotredDamage = steelMaxPotentialDamage * bluntThrput;
+            }
+            else
+            {
+                throughputFacotredDamage = maxPotentialDamage * throughputDuraFactored;
+            }
             float durabilityLoss = (maxPotentialDamage / 100f) * armorDamage * Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
 
             Logger.LogWarning("==");
