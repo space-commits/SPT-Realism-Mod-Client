@@ -159,6 +159,8 @@ namespace RealismMod
 
         public static float GlobalFixSpeedMulti = 1.2f;
 
+        public static float GlobalUBGLReloadMulti = 1.5f;
+
         public static float TotalModDuraBurn = 0;
 
         public static float TotalMalfChance = 0;
@@ -175,9 +177,11 @@ namespace RealismMod
 
         public static float AdapterPistolGripBonusDispersion = -1;
 
+        public static float AdapterPistolGripBonusChamber = 10;
+
         public static float AdapterPistolGripBonusErgo = 2;
 
-        public static float PumpGripReloadBonus = 15f;
+        public static float PumpGripReloadBonus = 20f;
 
         public static float FoldedErgoFactor = 0.5f;
 

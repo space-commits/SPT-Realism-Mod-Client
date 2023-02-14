@@ -142,9 +142,9 @@ namespace RealismMod
         public static float GrenadeDistortionIncreaseRate = 0.5f;
         public static float GrenadeVignetteDarknessIncreaseRate = 1f;
 
-        public static float GrenadeVolumeResetRate = 0.02f;
+        public static float GrenadeVolumeResetRate = 0.05f;
         public static float GrenadeDistortionResetRate = 0.1f;
-        public static float GrenadeVignetteDarknessResetRate = 0.1f;
+        public static float GrenadeVignetteDarknessResetRate = 0.05f;
 
         public static bool valuesAreReset = false;
 
@@ -163,7 +163,6 @@ namespace RealismMod
             {
                 resetValue(deafFactor, ref VignetteDarkness, VignetteDarknessResetRate, VignetteDarknessLimit, ref Volume, VolumeResetRate, VolumeLimit, ref Distortion, DistortionResetRate, DistortionLimit);
             }
-
 
             if (Plugin.IsBotFiring == true)
             {
@@ -377,7 +376,7 @@ namespace RealismMod
                         }
                         float muzzleLoudness = muzzleFactor * calFactor * ammoDeafFactor;
                         Plugin.BotDeafFactor = muzzleLoudness * ((-distanceFromPlayer / 100f) + 1f);
-                        Logger.LogWarning("==============");
+/*                        Logger.LogWarning("==============");
                         Logger.LogWarning("Bot Shot");
                         Logger.LogWarning("velocityFactor = " + velocityFactor);
                         Logger.LogWarning("Muzzle Factor = " + muzzleFactor);
@@ -385,7 +384,7 @@ namespace RealismMod
                         Logger.LogWarning("Bot Calibre = " + calFactor);
                         Logger.LogWarning("distance = " + distanceFromPlayer);
                         Logger.LogWarning("BotDeafFactor = " + Plugin.BotDeafFactor);
-                        Logger.LogWarning("==============");
+                        Logger.LogWarning("==============");*/
 
                     }
                 }

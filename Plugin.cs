@@ -14,6 +14,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using static RealismMod.ArmorPatches;
 using static RealismMod.Attributes;
+using static UnityEngine.Rendering.PostProcessing.HistogramMonitor;
 
 
 namespace RealismMod
@@ -115,6 +116,8 @@ namespace RealismMod
         public static float StartingHRecoilY;
         public static float CurrentHRecoilX;
         public static float CurrentHRecoilY;
+
+        public static bool LauncherIsActive = false;
 
         public static Dictionary<Enum, Sprite> IconCache = new Dictionary<Enum, Sprite>();
 
@@ -257,7 +260,7 @@ namespace RealismMod
 
                 reduceCamRecoil = Config.Bind<bool>(RecoilSettings, "Reduce Camera Recoil", false, new ConfigDescription("Reduces Camera Recoil Per Shot. If Disabled, Camera Recoil Becomes More Intense As Weapon Recoil Increases.", null, new ConfigurationManagerAttributes { Order = 3 }));
                 SensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Lower Limit", 0.4f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction. 100% Means No Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 2 }));
-                RecoilIntensity = Config.Bind<float>(RecoilSettings, "Recoil Intensity", 1f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 1 }));
+                RecoilIntensity = Config.Bind<float>(RecoilSettings, "Recoil Intensity", 1f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 1 }));
 
                 EnableRecoilClimb = Config.Bind<bool>(AdvancedRecoilSettings, "Enable Recoil Climb", true, new ConfigDescription("The Core Of The Recoil Overhaul. Recoil Increase Per Shot, Nullifying Recoil Auto-Compensation In Full Auto And Requiring A Constant Pull Of The Mouse To Control Recoil. If Diabled Weapons Will Be Completely Unbalanced Without Stat Changes.", null, new ConfigurationManagerAttributes { Order = 13 }));
                 SensChangeRate = Config.Bind<float>(AdvancedRecoilSettings, "Sensitivity Change Rate", 0.75f, new ConfigDescription("Rate At Which Sensitivity Is Reduced While Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 12 }));
@@ -283,8 +286,8 @@ namespace RealismMod
                 SwayIntensity = Config.Bind<float>(WeaponSettings, "Sway Intensity", 1f, new ConfigDescription("Changes The Intensity Of Aim Sway And Inertia.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1 }));
                 enableReloadPatches = Config.Bind<bool>(WeaponSettings, "Enable Reload And Chamber Speed Changes", true, new ConfigDescription("Requires Restart. Weapon Weight, Magazine Weight, Attachment Reload And Chamber Speed Stat, Balance, Ergo And Arm Injury Affect Reload And Chamber Speed.", null, new ConfigurationManagerAttributes { Order = 2 }));
                 enableBarrelFactor = Config.Bind<bool>(WeaponSettings, "Enable Barrel Muzzle Velocity Factor", true, new ConfigDescription("Requires Restart. Muzzle Velocity (Barrel Length) Modifies The Damage, Penetration, Velocity, Fragmentation Chance, And Ballistic Coeficient Of Projectiles.", null, new ConfigurationManagerAttributes { Order = 3 }));
-                enableMalfPatch = Config.Bind<bool>(WeaponSettings, "Enable Malfunctions Changes", true, new ConfigDescription("Requires Restart. You Don't Need To Inspect A Malfunction In Order To Clear It, Subsonic Ammo Needs Special Mods To Cycle, Only Magazines Have A Min Durabily Requirement For Malfunctions.", null, new ConfigurationManagerAttributes { Order = 4 }));
-                DuraMalfThreshold = Config.Bind<float>(WeaponSettings, "Malfunction Durability Threshold", 98f, new ConfigDescription("Malfunction Chance Is Reduced By Half Until This Durability Threshold Is Met.", new AcceptableValueRange<float>(80f, 100f), new ConfigurationManagerAttributes { Order = 5 }));
+                enableMalfPatch = Config.Bind<bool>(WeaponSettings, "Enable Malfunctions Changes", true, new ConfigDescription("Requires Restart. Malfunction Changes Must Be Enabled On The Server (Config App). You Don't Need To Inspect A Malfunction In Order To Clear It, Subsonic Ammo Needs Special Mods To Cycle, Malfunctions Can Happen At Any Durability But The Chance Is Halved If Above The Durability Threshold.", null, new ConfigurationManagerAttributes { Order = 4 }));
+                DuraMalfThreshold = Config.Bind<float>(WeaponSettings, "Malfunction Durability Threshold", 98f, new ConfigDescription("Malfunction Changes Must Be Enabled On The Server (Config App) And 'Enable Malfunctions Changes' Must Be True. Malfunction Chance Is Reduced By Half Until This Durability Threshold Is Met.", new AcceptableValueRange<float>(80f, 100f), new ConfigurationManagerAttributes { Order = 5 }));
                 enableSGMastering = Config.Bind<bool>(WeaponSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 6 }));
 
 
@@ -360,6 +363,9 @@ namespace RealismMod
                     new SetHammerArmedPatch().Enable();
 
                     new OnItemAddedOrRemovedPatch().Enable();
+
+                    new SetLauncherPatch().Enable();
+
                 }
 
                 if (enableSGMastering.Value == true)
@@ -395,10 +401,10 @@ namespace RealismMod
                     new CreateShotPatch().Enable();
                 }
 
-                new ApplyDamagePatch().Enable();
+/*                new ApplyDamagePatch().Enable();
                 new DamageInfoPatch().Enable();
                 new ApplyDamageInfoPatch().Enable();
-                new SetPenetrationStatusPatch().Enable();
+                new SetPenetrationStatusPatch().Enable();*/
 
                 //Armor
                 if (enableRealArmorClass.Value == true)
@@ -406,7 +412,7 @@ namespace RealismMod
                     new ArmorClassDisplayPatch().Enable();
                 }
                 new ArmorComponentPatch().Enable();
-                new GClass2331Patch().Enable();
+                new RigConstructorPatch().Enable();
 
                 //Player
                 new EnduranceSprintActionPatch().Enable();

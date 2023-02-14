@@ -225,7 +225,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            var result = typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.ApplyDamage), BindingFlags.Public | BindingFlags.Instance);
+            var result = typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.SetPenetrationStatus), BindingFlags.Public | BindingFlags.Instance);
 
             return result;
 

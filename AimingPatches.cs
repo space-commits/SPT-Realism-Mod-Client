@@ -53,7 +53,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(EFT.Player.FirearmController __instance)
         {
-            Logger.LogWarning("ToggleAim");
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
             if (Plugin.enableFSPatch.Value == true && !player.IsAI)
             {

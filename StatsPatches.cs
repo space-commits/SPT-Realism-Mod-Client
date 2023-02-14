@@ -253,8 +253,6 @@ namespace RealismMod
         public void StatDelta(ref Weapon __instance)
         {
 
-            Logger.LogWarning("Reload Multi = " + WeaponProperties.BaseReloadSpeedMulti(__instance));
-
             WeaponProperties._WeapClass = __instance.WeapClass;
 
             WeaponProperties.ShouldGetSemiIncrease = false;
@@ -378,7 +376,7 @@ namespace RealismMod
             float totalLoudness = ((currentLoudness / 100) + 1f) * StatCalc.CalibreLoudnessFactor(calibre);
             if (weapType == "bullpup")
             {
-                totalLoudness *= 1.15f;
+                totalLoudness *= 1.05f;
             }
 
 

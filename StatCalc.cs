@@ -448,6 +448,7 @@ namespace RealismMod
                             modHRecoil += WeaponProperties.AdapterPistolGripBonusHRecoil;
                             modDispersion += WeaponProperties.AdapterPistolGripBonusDispersion;
                             modErgo += WeaponProperties.AdapterPistolGripBonusErgo;
+                            modChamber += WeaponProperties.AdapterPistolGripBonusChamber;
                         }
                         if (mod.Slots[0].ContainedItem != null)
                         {
@@ -801,11 +802,11 @@ namespace RealismMod
                 case "Caliber9x39":
                     return 1.8f;
                 case "Caliber762x39":
-                    return 2.65f;
+                    return 2.68f;
                 case "Caliber545x39":
                     return 2.7f;
                 case "Caliber556x45NATO":
-                    return 2.75f;
+                    return 2.72f;
                 case "Caliber762x51":
                     return 3.3f;
                 case "Caliber762x54R":
@@ -819,9 +820,9 @@ namespace RealismMod
                 case "Caliber23x75":
                     return 4.5f;
                 case "Caliber12g":
-                    return 4f;
+                    return 4.5f;
                 case "Caliber20g":
-                    return 3.8f;
+                    return 4f;
                 case "Caliber30x29":
                     return 2f;
                 case "Caliber40x46":

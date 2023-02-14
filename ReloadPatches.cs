@@ -10,6 +10,20 @@ using static EFT.Player;
 namespace RealismMod
 {
 
+    public class SetLauncherPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetLauncher", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(bool isLauncherEnabled)
+        {
+            Plugin.LauncherIsActive = isLauncherEnabled;
+        }
+    }
+
     public class SetWeaponLevelPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -87,7 +101,7 @@ namespace RealismMod
             {
                 baseSpeed = WeaponProperties.CheckChamberShotgunSpeedBonus;
             }
-            __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti * WeaponProperties.GlobalFixSpeedMulti));
+            __instance.SetAnimationSpeed(baseSpeed + (WeaponProperties.ChamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti));
         }
     }
 
@@ -106,6 +120,10 @@ namespace RealismMod
             {
                 chamberSpeed *= WeaponProperties.ShotgunRackSpeedFactor;
             }
+            if (Plugin.LauncherIsActive == true)
+            {
+                chamberSpeed *= WeaponProperties.GlobalUBGLReloadMulti;
+            }
             __instance.SetAnimationSpeed(chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti);
         }
     }
@@ -120,7 +138,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance, float fix)
         {
-            WeaponAnimationSpeedControllerClass.SetSpeedFix(__instance.Animator, fix * WeaponProperties.ChamberSpeed * PlayerProperties.ReloadInjuryMulti);
+            WeaponAnimationSpeedControllerClass.SetSpeedFix(__instance.Animator, fix * WeaponProperties.ChamberSpeed * PlayerProperties.ReloadInjuryMulti * WeaponProperties.GlobalFixSpeedMulti);
         }
     }
 

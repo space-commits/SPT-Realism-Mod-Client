@@ -27,7 +27,6 @@ namespace RealismMod
 
             if (__instance.IsYourPlayer == true)
             {
-                Logger.LogWarning("Init");
                 StatCalc.SetGearParamaters(__instance);
             }
         }
@@ -47,7 +46,6 @@ namespace RealismMod
 
             if (__instance.IsYourPlayer == true)
             {
-                Logger.LogWarning("OnItemAddedOrRemoved");
                 StatCalc.SetGearParamaters(__instance);
             }
         }

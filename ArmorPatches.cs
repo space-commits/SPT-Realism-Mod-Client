@@ -14,7 +14,7 @@ using UnityEngine;
 namespace RealismMod
 {
 
-    public class GClass2331Patch : ModulePatch
+    public class RigConstructorPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
