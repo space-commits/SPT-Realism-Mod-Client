@@ -56,8 +56,10 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
+
             if (Plugin.IsFiring != true && Helper.IsInReloadOpertation)
             {
+                Logger.LogWarning("SetHammerArmed");
                 __instance.SetAnimationSpeed(WeaponProperties.ArmHammerSpeedBonus + (WeaponProperties.ChamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
             }
         }
@@ -73,6 +75,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
+            Logger.LogWarning("CheckAmmo");
             float baseSpeed = WeaponProperties.CheckAmmoSpeedBonus;
             if (WeaponProperties._WeapClass == "pistol")
             {
@@ -92,6 +95,8 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
+            Logger.LogWarning("CheckChamber");
+
             float baseSpeed = WeaponProperties.CheckChamberSpeedBonus;
             if (WeaponProperties._WeapClass == "pistol")
             {
@@ -105,15 +110,16 @@ namespace RealismMod
         }
     }
 
+
     public class SetBoltActionReloadPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(FirearmsAnimator).GetMethod("SetBoltActionReload", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(WeaponAnimationSpeedControllerClass).GetMethod("SetBoltActionReload", BindingFlags.Static | BindingFlags.Public);
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance)
+        private static void PatchPostfix(IAnimator animator)
         {
             float chamberSpeed = WeaponProperties.ChamberSpeed;
             if (WeaponProperties._WeapClass == "shotgun")
@@ -124,7 +130,7 @@ namespace RealismMod
             {
                 chamberSpeed *= WeaponProperties.GlobalUBGLReloadMulti;
             }
-            __instance.SetAnimationSpeed(chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti);
+            animator.speed = chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti;
         }
     }
 

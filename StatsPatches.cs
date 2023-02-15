@@ -441,14 +441,14 @@ namespace RealismMod
 
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
-                float num = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta));
+                float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta));
                 if (!includeAmmo)
                 {
-                    __result = num;
+                    __result = totalCoi;
                     return false;
                 }
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
-                __result = num * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
+                __result = totalCoi * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
                 return false;
             }
             else

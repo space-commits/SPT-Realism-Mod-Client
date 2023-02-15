@@ -66,10 +66,10 @@ namespace RealismMod
             {
                 if (!(__instance.HandsController != null) || !__instance.HandsController.IsAiming)
                 {
+                    float sens = Singleton<GClass1776>.Instance.Control.Settings.MouseSensitivity;
+                    Plugin.StartingHipSens = sens;
                     if (Plugin.CheckedForSens == false)
                     {
-                        float sens = Singleton<GClass1776>.Instance.Control.Settings.MouseAimingSensitivity;
-                        Plugin.StartingHipSens = sens;
                         Plugin.CurrentHipSens = sens;
                         Plugin.CheckedForSens = true;
                     }

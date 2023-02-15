@@ -169,14 +169,20 @@ namespace RealismMod
             float aimSpeed = AttachmentProperties.AimSpeed(__instance);
             float shotDisp = AttachmentProperties.ModShotDispersion(__instance);
 
-            ItemAttributeClass malfAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.MalfunctionChance);
-            malfAtt.Name = ENewItemAttributeId.MalfunctionChance.GetName();
-            malfAtt.Base = () => malfChance;
-            malfAtt.StringValue = () => $"{getMalfOdds(malfChance)}";
-            malfAtt.LessIsGood = true;
-            malfAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            malfAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Helper.SafelyAddAttributeToList(malfAtt, __instance);
+
+
+            if (Plugin.enableMalfPatch.Value == true && Plugin.ModConfig.malf_changes == true)
+            {
+                ItemAttributeClass malfAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.MalfunctionChance);
+                malfAtt.Name = ENewItemAttributeId.MalfunctionChance.GetName();
+                malfAtt.Base = () => malfChance;
+                malfAtt.StringValue = () => $"{getMalfOdds(malfChance)}";
+                malfAtt.LessIsGood = true;
+                malfAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                malfAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
+                Helper.SafelyAddAttributeToList(malfAtt, __instance);
+            }
+
 
             ItemAttributeClass hRecoilAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.HorizontalRecoil);
             hRecoilAtt.Name = ENewItemAttributeId.HorizontalRecoil.GetName();

@@ -147,11 +147,11 @@ namespace RealismMod
 
         public static float CheckChamberShotgunSpeedBonus = 0.16f;
 
-        public static float CheckChamberSpeedBonus = 0.65f;
+        public static float CheckChamberSpeedBonus = 0.25f;
 
-        public static float ShotgunRackSpeedFactor = 1f;
+        public static float ShotgunRackSpeedFactor = 0.9f;
 
-        public static float RechamberSpeedBonus = 0.2f;
+        public static float RechamberSpeedBonus = 0.25f;
 
         public static float RechamberPistolSpeedBonus = 0.12f;
 
@@ -181,7 +181,7 @@ namespace RealismMod
 
         public static float AdapterPistolGripBonusErgo = 2;
 
-        public static float PumpGripReloadBonus = 20f;
+        public static float PumpGripReloadBonus = 18f;
 
         public static float FoldedErgoFactor = 0.5f;
 

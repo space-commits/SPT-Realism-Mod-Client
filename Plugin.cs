@@ -12,6 +12,7 @@ using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
+using static GClass1643;
 using static RealismMod.ArmorPatches;
 using static RealismMod.Attributes;
 using static UnityEngine.Rendering.PostProcessing.HistogramMonitor;
@@ -60,13 +61,21 @@ namespace RealismMod
         public static ConfigEntry<bool> enableRealArmorClass { get; set; }
         public static ConfigEntry<bool> reduceCamRecoil { get; set; }
         public static ConfigEntry<float> convergenceSpeedCurve { get; set; }
-        public static ConfigEntry<bool> enableDeafen { get; set; }
+        public static ConfigEntry<bool> EnableDeafen { get; set; }
         public static ConfigEntry<bool> enableHoldBreath { get; set; }
         public static ConfigEntry<float> DuraMalfThreshold { get; set; }
         public static ConfigEntry<bool> EnableRecoilClimb { get; set; }
         public static ConfigEntry<float> SwayIntensity { get; set; }
         public static ConfigEntry<float> RecoilIntensity { get; set; }
         public static ConfigEntry<bool> EnableStatsDelta { get; set; }
+        public static ConfigEntry<bool> EnableHipfire { get; set; }
+        public static ConfigEntry<bool> IncreaseCOI { get; set; }
+        public static ConfigEntry<float> DeafRate { get; set; }
+        public static ConfigEntry<float> DeafReset { get; set; }
+        public static ConfigEntry<float> VigRate { get; set; }
+        public static ConfigEntry<float> VigReset { get; set; }
+        public static ConfigEntry<float> DistRate { get; set; }
+        public static ConfigEntry<float> DistReset { get; set; }
 
 
         public static bool IsFiring = false;
@@ -124,7 +133,7 @@ namespace RealismMod
         private string ModPath;
         private string ConfigFilePath;
         private string ConfigJson;
-        private ConfigTemplate ModConfig;
+        public static ConfigTemplate ModConfig;
         private bool IsConfigCorrect = true;
 
         public static bool isUniformAimPresent = false;
@@ -244,6 +253,8 @@ namespace RealismMod
 /*                string AmmoSettings = "4. Ammo Stat Display Settings";*/
                 string AdvancedRecoilSettings = "4. Advanced Recoil Settings";
                 string WeaponSettings = "5. Weapon Settings";
+                string DeafSettings = "6. Deafening and Audio";
+
 
 
                 /*   enableAmmoDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 5 }));
@@ -252,14 +263,14 @@ namespace RealismMod
                    enableAmmoArmorDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Armor Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 2 }));*/
                 enableAmmoFirerateDisp = Config.Bind<bool>(MiscSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 11 }));
 
-                enableDeafen = Config.Bind<bool>(MiscSettings, "Enable Deafening", true, new ConfigDescription("Requiures Restart. Enables gunshots and explosions deafening the player.", null, new ConfigurationManagerAttributes { Order = 1 }));
                 enableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 2 }));
                 enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 3 }));
                 enableRealArmorClass = Config.Bind<bool>(MiscSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 8 }));
                 enableHoldBreath = Config.Bind<bool>(MiscSettings, "Enable Hold Breath", false, new ConfigDescription("Enabled Hold Breath, Disabled By Default. The Mod Is Balanced Around Not Being Able To Hold Breath.", null, new ConfigurationManagerAttributes { Order = 10 }));
 
+                EnableHipfire = Config.Bind<bool>(RecoilSettings, "Enable Hipfire Recoil Climb", true, new ConfigDescription("Requires Restart. Enabled Recoil Climbing While Hipfiring", null, new ConfigurationManagerAttributes { Order = 4 }));
                 reduceCamRecoil = Config.Bind<bool>(RecoilSettings, "Reduce Camera Recoil", false, new ConfigDescription("Reduces Camera Recoil Per Shot. If Disabled, Camera Recoil Becomes More Intense As Weapon Recoil Increases.", null, new ConfigurationManagerAttributes { Order = 3 }));
-                SensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Lower Limit", 0.4f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction. 100% Means No Sensitivity Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { Order = 2 }));
+                SensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Lower Limit", 0.4f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction. 100% Means No Sensitivity Reduction.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 2 }));
                 RecoilIntensity = Config.Bind<float>(RecoilSettings, "Recoil Intensity", 1f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 1 }));
 
                 EnableRecoilClimb = Config.Bind<bool>(AdvancedRecoilSettings, "Enable Recoil Climb", true, new ConfigDescription("The Core Of The Recoil Overhaul. Recoil Increase Per Shot, Nullifying Recoil Auto-Compensation In Full Auto And Requiring A Constant Pull Of The Mouse To Control Recoil. If Diabled Weapons Will Be Completely Unbalanced Without Stat Changes.", null, new ConfigurationManagerAttributes { Order = 13 }));
@@ -274,7 +285,7 @@ namespace RealismMod
                 hRecoilResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Rearward Recoil Reset Rate", 0.91f, new ConfigDescription("The Rate At Which Rearward Recoil Resets Over Time After Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 0.99f), new ConfigurationManagerAttributes { Order = 4 }));
                 convergenceResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Convergence Reset Rate", 1.16f, new ConfigDescription("The Rate At Which Convergence Resets Over Time After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 3 }));
                 convergenceLimit = Config.Bind<float>(AdvancedRecoilSettings, "Convergence Lower Limit", 0.3f, new ConfigDescription("The Lower Limit For Convergence. Convergence Is Kept In Proportion With Vertical Recoil While Firing, Down To The Set Limit. Value Of 0.3 Means Convegence Lower Limit Of 0.3 * Starting Convergance.", new AcceptableValueRange<float>(0.1f, 1.0f), new ConfigurationManagerAttributes { Order = 2 }));
-                resetTime = Config.Bind<float>(AdvancedRecoilSettings, "Time Before Reset", 0.14f, new ConfigDescription("The Time In Seconds That Has To Be Elapsed Before Firing Is Considered Over, Stats Will Not Reset Until This Timer Is Done. Helps Prevent Spam Fire In Full Auto.", new AcceptableValueRange<float>(0.1f, 0.3f), new ConfigurationManagerAttributes { Order = 1 }));
+                resetTime = Config.Bind<float>(AdvancedRecoilSettings, "Time Before Reset", 0.14f, new ConfigDescription("The Time In Seconds That Has To Be Elapsed Before Firing Is Considered Over, Stats Will Not Reset Until This Timer Is Done. Helps Prevent Spam Fire In Full Auto.", new AcceptableValueRange<float>(0.1f, 0.5f), new ConfigurationManagerAttributes { Order = 1 }));
 
                 EnableStatsDelta = Config.Bind<bool>(WeapStatSettings, "Show Stats Delta Preview", false, new ConfigDescription("Requiures Restart. Shows A Preview Of The Difference To Stats Swapping/Removing Attachments Will Make. Warning: Will Degrade Performance Significantly When Moddig Weapons In Inspect Or Modding Screens.", null, new ConfigurationManagerAttributes { Order = 5 }));
                 showBalance = Config.Bind<bool>(WeapStatSettings, "Show Balance Stat", true, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 5 }));
@@ -289,7 +300,15 @@ namespace RealismMod
                 enableMalfPatch = Config.Bind<bool>(WeaponSettings, "Enable Malfunctions Changes", true, new ConfigDescription("Requires Restart. Malfunction Changes Must Be Enabled On The Server (Config App). You Don't Need To Inspect A Malfunction In Order To Clear It, Subsonic Ammo Needs Special Mods To Cycle, Malfunctions Can Happen At Any Durability But The Chance Is Halved If Above The Durability Threshold.", null, new ConfigurationManagerAttributes { Order = 4 }));
                 DuraMalfThreshold = Config.Bind<float>(WeaponSettings, "Malfunction Durability Threshold", 98f, new ConfigDescription("Malfunction Changes Must Be Enabled On The Server (Config App) And 'Enable Malfunctions Changes' Must Be True. Malfunction Chance Is Reduced By Half Until This Durability Threshold Is Met.", new AcceptableValueRange<float>(80f, 100f), new ConfigurationManagerAttributes { Order = 5 }));
                 enableSGMastering = Config.Bind<bool>(WeaponSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 6 }));
+                IncreaseCOI = Config.Bind<bool>(WeaponSettings, "Enable Increased Inaccuracy", true, new ConfigDescription("Requires Restart. Increases The Innacuracy Of All By All Weapons So That MOA/Accuracy Is A More Important Stat.", null, new ConfigurationManagerAttributes { Order = 6 }));
 
+                EnableDeafen = Config.Bind<bool>(DeafSettings, "Enable Deafening", true, new ConfigDescription("Requiures Restart. Enables gunshots and explosions deafening the player.", null, new ConfigurationManagerAttributes { Order = 1 }));
+                DeafRate = Config.Bind<float>(WeaponSettings, "Deafen Rate", 0.022f, new ConfigDescription("How Quickly Player Gets Deafened. Higher = Faster.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1 }));
+                DeafReset = Config.Bind<float>(WeaponSettings, "Deafen Reset Rate", 0.04f, new ConfigDescription("How Quickly Player Regains Hearing. Higher = Faster.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1 }));
+                VigRate = Config.Bind<float>(WeaponSettings, "Tunnel Effect Rate", 0.65f, new ConfigDescription("How Quickly Player Gets Tunnel Vission. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1 }));
+                VigReset = Config.Bind<float>(WeaponSettings, "Tunnel Effect Reset Rate", 1f, new ConfigDescription("How Quickly Player Recovers From Tunnel Vision. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1 }));
+                DistRate = Config.Bind<float>(WeaponSettings, "Distortion Rate", 0.16f, new ConfigDescription("How Quickly Player's Hearing Gets Distorted. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1 }));
+                DistReset = Config.Bind<float>(WeaponSettings, "Distortion Reset Rate", 0.25f, new ConfigDescription("How Quickly Player's Hearing Recovers From Distortion. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1 }));
 
                 if (enableProgramK.Value == true)
                 {
@@ -325,7 +344,10 @@ namespace RealismMod
                 //Sensitivity Patches
                 new AimingSensitivityPatch().Enable();
                 new UpdateSensitivityPatch().Enable();
-                new GetRotationMultiplierPatch().Enable();
+                if (Plugin.EnableHipfire.Value == true)
+                {
+                    new GetRotationMultiplierPatch().Enable();
+                }
 
                 //Aiming Patches + Reload Trigger
                 new AimingPatch().Enable();
@@ -334,6 +356,7 @@ namespace RealismMod
                 //Malf Patches
                 if (enableMalfPatch.Value == true && ModConfig.malf_changes == true)
                 {
+                    Logger.LogWarning("MALF ENABLED");
                     new IsKnownMalfTypePatch().Enable();
                     new GetTotalMalfunctionChancePatch().Enable();
                 }
@@ -363,7 +386,6 @@ namespace RealismMod
                     new SetHammerArmedPatch().Enable();
 
                     new OnItemAddedOrRemovedPatch().Enable();
-
                     new SetLauncherPatch().Enable();
 
                 }
@@ -392,8 +414,10 @@ namespace RealismMod
                 new ModErgoStatDisplayPatch().Enable();
                 new GetAttributeIconPatches().Enable();
 
-                //if increase innacuracy, enable this patch
-                new GetTotalCenterOfImpactPatch().Enable();
+                if (IncreaseCOI.Value == true)
+                {
+                    new GetTotalCenterOfImpactPatch().Enable();
+                }
 
                 //Ballistics
                 if (enableBarrelFactor.Value == true)
@@ -401,7 +425,7 @@ namespace RealismMod
                     new CreateShotPatch().Enable();
                 }
 
-/*                new ApplyDamagePatch().Enable();
+ /*               new ApplyDamagePatch().Enable();
                 new DamageInfoPatch().Enable();
                 new ApplyDamageInfoPatch().Enable();
                 new SetPenetrationStatusPatch().Enable();*/
@@ -421,7 +445,7 @@ namespace RealismMod
                 new PlayerInitPatch().Enable();
 
                 //Shot Effects
-                if (enableDeafen.Value == true)
+                if (EnableDeafen.Value == true)
                 {
                     new VignettePatch().Enable();
                     new UpdatePhonesPatch().Enable();
@@ -454,7 +478,7 @@ namespace RealismMod
                         Plugin.IsFiring = true;
                     }
 
-                    if (Plugin.EnableRecoilClimb.Value == true)
+                    if (Plugin.EnableRecoilClimb.Value == true && (Plugin.IsAiming == true || Plugin.EnableHipfire.Value == true))
                     {
                         Recoil.DoRecoilClimb();
                     }
@@ -491,7 +515,7 @@ namespace RealismMod
                         }
                     }
 
-                    if (enableDeafen.Value == true && EnableRecoilClimb.Value == true)
+                    if (EnableDeafen.Value == true)
                     {
                         Deafening.DoDeafening();
                     }

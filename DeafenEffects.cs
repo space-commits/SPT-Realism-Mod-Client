@@ -13,6 +13,7 @@ using Aki.Reflection.Utils;
 using UnityEngine.Rendering.PostProcessing;
 using notGreg.UniformAim;
 using static EFT.Interactive.BetterPropagationGroups;
+using BepInEx.Logging;
 
 namespace RealismMod
 {
@@ -116,13 +117,13 @@ namespace RealismMod
         public static float DistortionLimit = 70f;
         public static float VignetteDarknessLimit = 12f;
 
-        public static float VolumeDecreaseRate = 0.02f;
-        public static float DistortionIncreaseRate = 0.16f;
-        public static float VignetteDarknessIncreaseRate = 0.65f;
+        public static float VolumeDecreaseRate = Plugin.DeafRate.Value;
+        public static float DistortionIncreaseRate = Plugin.DistRate.Value;
+        public static float VignetteDarknessIncreaseRate = Plugin.VigRate.Value;
 
-        public static float VolumeResetRate = 0.05f;
-        public static float DistortionResetRate = 0.25f;
-        public static float VignetteDarknessResetRate = 1f;
+        public static float VolumeResetRate = Plugin.DeafReset.Value;
+        public static float DistortionResetRate = Plugin.DistReset.Value;
+        public static float VignetteDarknessResetRate = Plugin.VigReset.Value;
 
         //bot
         public static float BotVolume = 0f;
@@ -134,15 +135,15 @@ namespace RealismMod
         public static float GrenadeDistortion = 0f;
         public static float GrenadeVignetteDarkness = 0f;
 
-        public static float GrenadeVolumeLimit = -45f;
+        public static float GrenadeVolumeLimit = -35f;
         public static float GrenadeDistortionLimit = 50f;
         public static float GrenadeVignetteDarknessLimit = 10f;
 
-        public static float GrenadeVolumeDecreaseRate = 0.1f;
+        public static float GrenadeVolumeDecreaseRate = 0.05f;
         public static float GrenadeDistortionIncreaseRate = 0.5f;
         public static float GrenadeVignetteDarknessIncreaseRate = 1f;
 
-        public static float GrenadeVolumeResetRate = 0.05f;
+        public static float GrenadeVolumeResetRate = 0.03f;
         public static float GrenadeDistortionResetRate = 0.1f;
         public static float GrenadeVignetteDarknessResetRate = 0.05f;
 
@@ -183,7 +184,7 @@ namespace RealismMod
             }
 
 
-            float totalVolume = Mathf.Clamp(Volume + BotVolume + GrenadeVolume, -45.0f, 0.0f);
+            float totalVolume = Mathf.Clamp(Volume + BotVolume + GrenadeVolume, -40.0f, 0.0f);
             float totalDistortion = Mathf.Clamp(Distortion + BotDistortion + GrenadeDistortion, 0.0f, 70.0f);
             float totalVignette = Mathf.Clamp(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 0.0f, 60.0f);
 
@@ -196,7 +197,7 @@ namespace RealismMod
                 Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", totalVolume + Plugin.MainVolume);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", totalVolume + Plugin.AmbientVolume);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", totalVolume + Plugin.AmbientOccluded);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", totalDistortion + Plugin.CompressorResonance);
+
 
 /*                logger.LogWarning("==========================");
                 logger.LogWarning("Deaf Factor = " + deafFactor);
@@ -207,13 +208,14 @@ namespace RealismMod
 
                 if (Plugin.HasHeadSet == false)
                 {
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", totalDistortion + Plugin.CompressorResonance);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", totalDistortion + Plugin.Compressor);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", totalDistortion + Plugin.CompressorDistortion);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", totalDistortion + Plugin.CompressorDistortion);
                 }
                 else
                 {
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", 0);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.CompressorGain * 0.75f);
                 }
                 valuesAreReset = false;
             }
@@ -264,7 +266,7 @@ namespace RealismMod
             Plugin.Compressor = hasHeadsetTemplate && !isNotHeadset ? template.CompressorVolume : -80f;
             Plugin.AmbientVolume = hasHeadsetTemplate && !isNotHeadset ? template.AmbientVolume : 0f;
             Plugin.AmbientOccluded = hasHeadsetTemplate && !isNotHeadset ? (template.AmbientVolume - 15f) : -5f;
-            Plugin.GunsVolume = hasHeadsetTemplate && !isNotHeadset ? (template.DryVolume - 20f) : 0f;
+            Plugin.GunsVolume = hasHeadsetTemplate && !isNotHeadset ? (template.DryVolume) : -5f;
 
             Plugin.CompressorDistortion = hasHeadsetTemplate && !isNotHeadset ? template.Distortion : 0.277f;
             Plugin.CompressorResonance = hasHeadsetTemplate && !isNotHeadset ? template.Resonance : 2.47f;
@@ -327,7 +329,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance, Item weapon)
+        private static void PatchPostfix(Player.FirearmController __instance, Item weapon, GClass2611 shot)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
 
@@ -338,13 +340,15 @@ namespace RealismMod
 
                 if (player.IsYourPlayer == true)
                 {
-                    AmmoTemplate currentAmmoTemplate = weap.CurrentAmmoTemplate;
+
+                    BulletClass bullet = shot.Ammo as BulletClass;
+                    AmmoTemplate currentAmmoTemplate = bullet.Template as AmmoTemplate;
 
                     float ammoFactor = CalcAmmoFactor(currentAmmoTemplate);
                     float velocityFactor = CalcVelocityFactor(weap);
                     float ammoDeafFactor = ammoFactor * velocityFactor;
 
-                    if (currentAmmoTemplate.InitialSpeed * weap.SpeedFactor <= 335f)
+                    if (bullet.InitialSpeed * weap.SpeedFactor <= 335f)
                     {
                         ammoDeafFactor *= 0.6f;
                     }
@@ -364,13 +368,14 @@ namespace RealismMod
                     if (distanceFromPlayer <= 25f)
                     {
                         Plugin.IsBotFiring = true;
-                        AmmoTemplate currentAmmoTemplate = weap.CurrentAmmoTemplate;
+                        BulletClass bullet = shot.Ammo as BulletClass;
+                        AmmoTemplate currentAmmoTemplate = bullet.Template as AmmoTemplate;
                         float velocityFactor = CalcVelocityFactor(weap);
                         float ammoFactor = CalcAmmoFactor(currentAmmoTemplate);
                         float muzzleFactor = GetMuzzleLoudness(weap.Mods);
                         float calFactor = StatCalc.CalibreLoudnessFactor(weap.AmmoCaliber);
                         float ammoDeafFactor = ammoFactor * velocityFactor;
-                        if (currentAmmoTemplate.InitialSpeed * weap.SpeedFactor <= 335f)
+                        if (bullet.InitialSpeed * weap.SpeedFactor <= 335f)
                         {
                             ammoDeafFactor *= 0.6f;
                         }
@@ -407,11 +412,11 @@ namespace RealismMod
             {
                 Plugin.GrenadeExploded = true;
                 Plugin.GrenadeDeafFactor = grenadeItem.Contusion.z * ((-distanceFromPlayer / 100f) + 1f);
-                Logger.LogWarning("==============");
+/*                Logger.LogWarning("==============");
                 Logger.LogWarning("Explosion");
                 Logger.LogWarning("distance = " + distanceFromPlayer);
                 Logger.LogWarning("GrenadeDeafFactor = " + Plugin.GrenadeDeafFactor);
-                Logger.LogWarning("==============");
+                Logger.LogWarning("==============");*/
             }
         }
     }

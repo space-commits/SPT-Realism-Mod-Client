@@ -605,11 +605,11 @@ namespace RealismMod
                 Mod parent = mod.Parent.Container.ParentItem as Mod;
                 if (AttachmentProperties.ModType(parent) == "short_barrel")
                 {
-                    modMalfChance *= 2f;
-                    modHRecoil *= 1.5f;
-                    modCamRecoil *= 1.5f;
-                    modSemiROF *= 1.5f;
-                    modAutoROF *= 1.5f;
+                    modMalfChance *= 1.25f;
+                    modHRecoil *= 1.25f;
+                    modCamRecoil *= 1.25f;
+                    modSemiROF *= 1.25f;
+                    modAutoROF *= 1.25f;
                 }
                 return;
             }
