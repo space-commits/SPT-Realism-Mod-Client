@@ -117,13 +117,6 @@ namespace RealismMod
         public static float DistortionLimit = 70f;
         public static float VignetteDarknessLimit = 12f;
 
-        public static float VolumeDecreaseRate = Plugin.DeafRate.Value;
-        public static float DistortionIncreaseRate = Plugin.DistRate.Value;
-        public static float VignetteDarknessIncreaseRate = Plugin.VigRate.Value;
-
-        public static float VolumeResetRate = Plugin.DeafReset.Value;
-        public static float DistortionResetRate = Plugin.DistReset.Value;
-        public static float VignetteDarknessResetRate = Plugin.VigReset.Value;
 
         //bot
         public static float BotVolume = 0f;
@@ -158,20 +151,20 @@ namespace RealismMod
 
             if (Plugin.IsFiring == true)
             {
-                changeValue(deafFactor, ref VignetteDarkness, VignetteDarknessIncreaseRate, VignetteDarknessLimit, ref Volume, VolumeDecreaseRate, VolumeLimit, ref Distortion, DistortionIncreaseRate, DistortionLimit);
+                changeValue(deafFactor, ref VignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafRate.Value, VolumeLimit, ref Distortion, Plugin.DistRate.Value, DistortionLimit);
             }
             else if (valuesAreReset == false)
             {
-                resetValue(deafFactor, ref VignetteDarkness, VignetteDarknessResetRate, VignetteDarknessLimit, ref Volume, VolumeResetRate, VolumeLimit, ref Distortion, DistortionResetRate, DistortionLimit);
+                resetValue(deafFactor, ref VignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafReset.Value, VolumeLimit, ref Distortion, Plugin.DistReset.Value, DistortionLimit);
             }
 
             if (Plugin.IsBotFiring == true)
             {
-                changeValue(botDeafFactor, ref BotVignetteDarkness, VignetteDarknessIncreaseRate, VignetteDarknessLimit, ref BotVolume, VolumeDecreaseRate, VolumeLimit, ref BotDistortion, DistortionIncreaseRate, DistortionLimit);
+                changeValue(botDeafFactor, ref BotVignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafRate.Value, VolumeLimit, ref BotDistortion, Plugin.DistRate.Value, DistortionLimit);
             }
             else if (valuesAreReset == false)
             {
-                resetValue(botDeafFactor, ref BotVignetteDarkness, VignetteDarknessResetRate, VignetteDarknessLimit, ref BotVolume, VolumeResetRate, VolumeLimit, ref BotDistortion, DistortionResetRate, DistortionLimit);
+                resetValue(botDeafFactor, ref BotVignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafReset.Value, VolumeLimit, ref BotDistortion, Plugin.DistReset.Value, DistortionLimit);
             }
 
             if (Plugin.GrenadeExploded == true)
@@ -215,7 +208,7 @@ namespace RealismMod
                 }
                 else
                 {
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.CompressorGain * 0.75f);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value * Plugin.GainReduc.Value);
                 }
                 valuesAreReset = false;
             }
@@ -223,7 +216,7 @@ namespace RealismMod
             {
                 if (Plugin.HasHeadSet == true)
                 {
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.CompressorGain);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value);
                 }
                 Plugin.Vignette.enabled = false;
                 valuesAreReset = true;
@@ -271,7 +264,7 @@ namespace RealismMod
             Plugin.CompressorDistortion = hasHeadsetTemplate && !isNotHeadset ? template.Distortion : 0.277f;
             Plugin.CompressorResonance = hasHeadsetTemplate && !isNotHeadset ? template.Resonance : 2.47f;
             Plugin.CompressorLowpass = hasHeadsetTemplate && !isNotHeadset ? template.LowpassFreq : 22000f;
-            Plugin.CompressorGain = hasHeadsetTemplate && !isNotHeadset ? template.CompressorGain : 10f;
+            Plugin.CompressorGain = hasHeadsetTemplate && !isNotHeadset ? Plugin.RealTimeGain.Value : 10f;
 
             __instance.Master.SetFloat("Compressor", Plugin.Compressor);
             __instance.Master.SetFloat("OcclusionVolume", Plugin.MainVolume);

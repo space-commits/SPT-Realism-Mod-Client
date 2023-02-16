@@ -73,10 +73,10 @@ namespace RealismMod
                 {
                     durabilityMalfChance = 0.5f * ((Math.Pow((double)((WeaponProperties.TotalMalfChance + 1f) * ammoHotnessFactor), 3.0 + (double)(100f - weaponDurability) / (20.0 - 10.0 / Math.Pow((double)__instance.Item.FireRate / 10.0, 0.322))) - 1.0) / 1000.0);
                     magMalfChance *= 0.5f;
-/*                    Logger.LogWarning("magMalfChance = " + magMalfChance);
+                    Logger.LogWarning("magMalfChance = " + magMalfChance);
                     Logger.LogWarning("durabilityMalfChance = " + durabilityMalfChance);
                     Logger.LogWarning("ammoHotnessFactor = " + ammoHotnessFactor);
-                    Logger.LogWarning("ammoMalfChance = " + ammoMalfChance);*/
+                    Logger.LogWarning("ammoMalfChance = " + ammoMalfChance);
 
                 }
                 else if (weaponDurability >= 50f)
