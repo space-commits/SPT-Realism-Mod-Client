@@ -157,7 +157,7 @@ namespace RealismMod
 
         public static float GlobalReloadSpeedMulti = 1.17f;
 
-        public static float GlobalFixSpeedMulti = 1.2f;
+        public static float GlobalFixSpeedMulti = 0.7f;
 
         public static float GlobalUBGLReloadMulti = 1.5f;
 

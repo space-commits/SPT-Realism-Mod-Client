@@ -79,8 +79,9 @@ namespace RealismMod
             foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
             {
                 reloadMulti *= ArmorProperties.ReloadSpeedMulti(armorComponent.Item);
+                GClass2188 armorTemplate = armorComponent.Template as GClass2188;
 
-                if (ArmorProperties.AllowsADS(armorComponent.Item) == false)
+                if (ArmorProperties.AllowsADS(armorComponent.Item) == false && armorTemplate.HasHinge == false)
                 {
                     allowADS = false;
                 }

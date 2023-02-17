@@ -141,10 +141,11 @@ namespace RealismMod
             return typeof(FirearmsAnimator).GetMethod("SetMalfRepairSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
-        [PatchPostfix]
-        private static void PatchPostfix(FirearmsAnimator __instance, float fix)
+        [PatchPrefix]
+        private static void Prefix(FirearmsAnimator __instance, float fix)
         {
             WeaponAnimationSpeedControllerClass.SetSpeedFix(__instance.Animator, fix * WeaponProperties.ChamberSpeed * PlayerProperties.ReloadInjuryMulti * WeaponProperties.GlobalFixSpeedMulti);
+            __instance.SetAnimationSpeed(fix * WeaponProperties.ChamberSpeed * PlayerProperties.ReloadInjuryMulti * WeaponProperties.GlobalFixSpeedMulti);
         }
     }
 
