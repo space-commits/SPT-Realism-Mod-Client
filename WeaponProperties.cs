@@ -133,6 +133,36 @@ namespace RealismMod
             return float.Parse(weapon.ConflictingItems[10]);
         }
 
+        public static float MaxChamberSpeedMulti(Weapon weapon)
+        {
+            if (Helper.NullCheck(weapon.ConflictingItems))
+            {
+                return 1.5f;
+            }
+            return float.Parse(weapon.ConflictingItems[11]);
+        }
+
+
+        public static float MinChamberSpeedMulti(Weapon weapon)
+        {
+            if (Helper.NullCheck(weapon.ConflictingItems))
+            {
+                return 0.7f;
+            }
+            return float.Parse(weapon.ConflictingItems[12]);
+        }
+
+        public static bool IsManuallyOperated(Weapon weapon)
+        {
+            if (Helper.NullCheck(weapon.ConflictingItems))
+            {
+                return false;
+            }
+            return bool.Parse(weapon.ConflictingItems[13]);
+        }
+
+        public static bool _IsManuallyOperated = false;
+
         public static float InternalMagReloadBonus = 0.25f;
 
         public static float QuickReloadSpeedMulti = 1.5f;
@@ -159,7 +189,9 @@ namespace RealismMod
 
         public static float GlobalFixSpeedMulti = 0.7f;
 
-        public static float GlobalUBGLReloadMulti = 1.5f;
+        public static float GlobalUBGLReloadMulti = 1.3f;
+
+        public static float GlobalBoltSpeedMulti = 1f;
 
         public static float TotalModDuraBurn = 0;
 
@@ -276,8 +308,6 @@ namespace RealismMod
         public static float ChamberSpeed = 1f;
 
         public static float SDChamberSpeedModifier = 1f;
-
-        public static float FixSpeedModifier = 1f;
 
         public static float AimMoveSpeedModifier = 1f;
 

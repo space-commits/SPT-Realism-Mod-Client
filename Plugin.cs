@@ -361,7 +361,6 @@ namespace RealismMod
                 //Malf Patches
                 if (enableMalfPatch.Value == true && ModConfig.malf_changes == true)
                 {
-                    Logger.LogWarning("MALF ENABLED");
                     new IsKnownMalfTypePatch().Enable();
                     new GetTotalMalfunctionChancePatch().Enable();
                 }
@@ -384,7 +383,8 @@ namespace RealismMod
 
                     new RechamberSpeedPatch().Enable();
                     new SetMalfRepairSpeedPatch().Enable();
-                    new SetBoltActionReloadPatch().Enable();
+                    new FirearmsAnimatorBoltActionReloadPatch().Enable();
+
                     new CheckChamberPatch().Enable();
                     new SetSpeedParametersPatch().Enable();
                     new CheckAmmoPatch().Enable();

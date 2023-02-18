@@ -165,7 +165,6 @@ namespace RealismMod
             float angle = AttachmentProperties.RecoilAngle(__instance);
             float reloadSpeed = AttachmentProperties.ReloadSpeed(__instance);
             float chamberSpeed = AttachmentProperties.ChamberSpeed(__instance);
-            float fixSpeed = AttachmentProperties.FixSpeed(__instance);
             float aimSpeed = AttachmentProperties.AimSpeed(__instance);
             float shotDisp = AttachmentProperties.ModShotDispersion(__instance);
 
@@ -264,15 +263,6 @@ namespace RealismMod
             chamberSpeedAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             chamberSpeedAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Helper.SafelyAddAttributeToList(chamberSpeedAtt, __instance);
-
-            ItemAttributeClass fixSpeedAtt = new ItemAttributeClass(ENewItemAttributeId.FixSpeed);
-            fixSpeedAtt.Name = ENewItemAttributeId.FixSpeed.GetName();
-            fixSpeedAtt.Base = () => fixSpeed;
-            fixSpeedAtt.StringValue = () => $"{fixSpeed}%";
-            fixSpeedAtt.LessIsGood = false;
-            fixSpeedAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            fixSpeedAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Helper.SafelyAddAttributeToList(fixSpeedAtt, __instance);
 
             ItemAttributeClass aimSpeedAtt = new ItemAttributeClass(ENewItemAttributeId.AimSpeed);
             aimSpeedAtt.Name = ENewItemAttributeId.AimSpeed.GetName();
@@ -642,13 +632,13 @@ namespace RealismMod
 
             float currentAimSpeed = 0f;
 
-            float currentFixSpeed = 0f;
-
             float currentChamberSpeed = 0f;
 
             float currentShotDisp = 0f;
 
             float currentMalfChance = 0f;
+
+            float currentFixSpeed = 0f;
 
             string weapOpType = WeaponProperties.OperationType(__instance);
             string weapType = WeaponProperties.WeaponType(__instance);
@@ -687,10 +677,10 @@ namespace RealismMod
                 float modReload = 0f;
                 float modChamber = 0f;
                 float modAim = 0f;
-                float modFix = 0f;
                 float modLoudness = 0f;
                 float modMalfChance = 0f;
                 float modDuraBurn = 0f;
+                float modFix = 0f;
                 string modType = AttachmentProperties.ModType(__instance.Mods[i]);
                 string position = StatCalc.GetModPosition(__instance.Mods[i], weapType, weapOpType, modType);
 

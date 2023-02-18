@@ -54,8 +54,8 @@ namespace RealismMod
         public static float ReloadSpeedTorqueMult = 2.15f;// needs tweaking
         public static float ReloadSpeedMult = 0.75f;//
 
-        public static float ChamberSpeedWeightMult = 2.1f;//
-        public static float ChamberSpeedTorqueMult = 2.25f;// needs tweaking
+        public static float ChamberSpeedWeightMult = 3.5f;//
+        public static float ChamberSpeedTorqueMult = 1.85f;// needs tweaking
         public static float ChamberSpeedMult = 0.75f;//
 
         public static float AimMoveSpeedWeightMult = 1f;//
@@ -63,6 +63,7 @@ namespace RealismMod
         public static float AimMoveSpeedMult = 0.3f;//
 
         public static float magWeightMult = 11f;
+        public static float minReloadSpeed = 0.5f;
 
         private static List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(10);
 
@@ -129,7 +130,7 @@ namespace RealismMod
             float reloadSpeedModiLessMag = WeaponProperties.ReloadSpeedModifier;
 
             float magSpeedMulti = (magSpeed / 100) + 1;
-            float totalReloadSpeed = Mathf.Max(magSpeedMulti * magWeightFactor * reloadSpeedModiLessMag, 0.65f);
+            float totalReloadSpeed = magSpeedMulti * magWeightFactor * reloadSpeedModiLessMag;
 
             if (reloadFromNoMag == true)
             {
@@ -162,7 +163,7 @@ namespace RealismMod
         public static float ErgoWeightCalc(float totalWeight, float pureErgoDelta, float totalTorque)
         {
             float totalTorqueFactorInverse = totalTorque / 100f * -1f;
-            float ergoFactoredWeight = (totalWeight * 0.95f) * (1f - (pureErgoDelta * 0.3f));
+            float ergoFactoredWeight = (totalWeight * 0.95f) * (1f - (pureErgoDelta * 0.4f));
             float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse + 0.25f));
             return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 1.78f, 3.5f) + 1f) / 280, 1f, 115f);
         }
@@ -501,7 +502,7 @@ namespace RealismMod
                 modAutoROF *= 0.25f;
                 modSemiROF *= 0.25f;
                 modMalfChance *= 0.05f;
-                modDuraBurn *= 0.25f;
+                modDuraBurn = ((modDuraBurn - 1f) * 0.25f) + 1f;
                 return;
             }
 
@@ -514,13 +515,14 @@ namespace RealismMod
 
             if (Helper.IsSilencer(mod) == true || Helper.IsFlashHider(mod) == true || Helper.IsMuzzleCombo(mod) == true)
             {
-                if (weap.BoltAction == true || WeaponProperties.OperationType(weap) == "manual")
+                if (WeaponProperties._IsManuallyOperated == true)
                 {
                     modMalfChance = 0f;
+                    modDuraBurn = ((modDuraBurn - 1f) * 0.25f) + 1f;
                 }
                 if (WeaponProperties.WeaponType(weap) == "DI")
                 {
-                    modDuraBurn *= 1.25f;
+                    modDuraBurn = ((modDuraBurn - 1f) * 1.3f) + 1f;
                 }
             }
 
@@ -577,8 +579,8 @@ namespace RealismMod
                 if (AttachmentProperties.ModType(parent) == "short_barrel")
                 {
                     modDuraBurn = 1.3f;
-                    modHRecoil = 20f;
-                    modCamRecoil = 20f;
+                    modHRecoil = 15f;
+                    modCamRecoil = 15f;
                     modSemiROF = 10f;
                     modAutoROF = 6f;
                 }
@@ -664,7 +666,7 @@ namespace RealismMod
             }
             if (modType == "StockR")
             {
-                return "rear";
+                return "rearHalf";
             }
 
             if (weapType == "pistol" || weapType == "bullpup")
@@ -864,6 +866,9 @@ namespace RealismMod
                     break;
                 case "rear":
                     torque = TorqueCalc(10, weight, weapClass);
+                    break;
+                case "rearHalf":
+                    torque = TorqueCalc(5, weight, weapClass);
                     break;
                 default:
                     torque = 0;

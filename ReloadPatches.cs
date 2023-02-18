@@ -5,6 +5,7 @@ using EFT.InventoryLogic;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
+using UnityEngine;
 using static EFT.Player;
 
 namespace RealismMod
@@ -59,7 +60,6 @@ namespace RealismMod
 
             if (Plugin.IsFiring != true && Helper.IsInReloadOpertation)
             {
-                Logger.LogWarning("SetHammerArmed");
                 __instance.SetAnimationSpeed(WeaponProperties.ArmHammerSpeedBonus + (WeaponProperties.ChamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
             }
         }
@@ -75,7 +75,6 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            Logger.LogWarning("CheckAmmo");
             float baseSpeed = WeaponProperties.CheckAmmoSpeedBonus;
             if (WeaponProperties._WeapClass == "pistol")
             {
@@ -95,8 +94,6 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            Logger.LogWarning("CheckChamber");
-
             float baseSpeed = WeaponProperties.CheckChamberSpeedBonus;
             if (WeaponProperties._WeapClass == "pistol")
             {
@@ -110,27 +107,34 @@ namespace RealismMod
         }
     }
 
-
-    public class SetBoltActionReloadPatch : ModulePatch
+    public class FirearmsAnimatorBoltActionReloadPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(WeaponAnimationSpeedControllerClass).GetMethod("SetBoltActionReload", BindingFlags.Static | BindingFlags.Public);
+            return typeof(FirearmsAnimator).GetMethod("SetBoltActionReload", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(IAnimator animator)
+        private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            float chamberSpeed = WeaponProperties.ChamberSpeed;
-            if (WeaponProperties._WeapClass == "shotgun")
+
+            if (WeaponProperties._IsManuallyOperated == true || Plugin.LauncherIsActive == true)
             {
-                chamberSpeed *= WeaponProperties.ShotgunRackSpeedFactor;
+                float chamberSpeed = WeaponProperties.ChamberSpeed;
+                if (WeaponProperties._WeapClass == "shotgun")
+                {
+                    chamberSpeed *= WeaponProperties.ShotgunRackSpeedFactor;
+                }
+                if (Plugin.LauncherIsActive == true)
+                {
+                    chamberSpeed *= WeaponProperties.GlobalUBGLReloadMulti;
+                }
+                if (WeaponProperties._WeapClass == "sniperRifle")
+                {
+                    chamberSpeed *= WeaponProperties.GlobalBoltSpeedMulti;
+                }
+                __instance.SetAnimationSpeed(chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti);
             }
-            if (Plugin.LauncherIsActive == true)
-            {
-                chamberSpeed *= WeaponProperties.GlobalUBGLReloadMulti;
-            }
-            animator.speed = chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti;
         }
     }
 
