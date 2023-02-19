@@ -33,7 +33,7 @@ namespace RealismMod
                 {
                     //slow is hard set to 0.33 when called, 0.4-0.43 feels best.
                     float baseSpeed = PlayerProperties.AimMoveSpeedBase;
-                    __instance.AddStateSpeedLimit(Math.Max((baseSpeed) + WeaponProperties.AimMoveSpeedModifier, 0.15f), Player.ESpeedLimit.Aiming);
+                    __instance.AddStateSpeedLimit(Math.Max(baseSpeed * WeaponProperties.AimMoveSpeedModifier, 0.15f), Player.ESpeedLimit.Aiming);
 
                     return false;
                 }
@@ -64,11 +64,14 @@ namespace RealismMod
                     //to finf float_19 again, it's set to ErgnomicWeight in this method.
 
                     float _aimsSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance);
+                    SkillsClass.GClass1675 skillsClass = (SkillsClass.GClass1675)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "gclass1675_0").GetValue(__instance);
                     __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.StartingConvergence * __instance.Aiming.RecoilConvergenceMult;
                     __instance.HandsContainer.Recoil.Damping = WeaponProperties.TotalRecoilDamping;
                     __instance.HandsContainer.HandsPosition.Damping = WeaponProperties.TotalRecoilHandDamping;
-                    float aimSpeed = _aimsSpeed * (1f + WeaponProperties.AimSpeedModifier) * WeaponProperties.GlobalAimSpeedModifier;
+                    float aimSpeed = _aimsSpeed * (1f + WeaponProperties.AimSpeedModifier) * WeaponProperties.GlobalAimSpeedModifier; //*PlayerProperties.StrengthSkillAimBuff
                     WeaponProperties.AimSpeed = aimSpeed;
+                    Logger.LogWarning("base aim speed = " + _aimsSpeed);
+                    Logger.LogWarning("total aimSpeed = " + aimSpeed);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, aimSpeed);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, WeaponProperties.ErgonomicWeight * PlayerProperties.StrengthSkillAimBuff); //this is only called once, so can't do injury multi. It's probably uncessary to set the value here anyway, it's more just-in-case.
                 }
@@ -128,6 +131,7 @@ namespace RealismMod
                     Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
                     float sightSpeedModi = (currentAimingMod != null) ? AttachmentProperties.AimSpeed(currentAimingMod) : 1;
                     float newAimSpeed = baseAimSpeed * (1 + (sightSpeedModi / 100f));
+                    Logger.LogWarning("aimSpeed = " + newAimSpeed);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
 
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * PlayerProperties.StrengthSkillAimBuff;

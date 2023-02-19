@@ -307,7 +307,7 @@ namespace RealismMod
                 RealTimeGain = Config.Bind<float>(DeafSettings, "Headset Gain", 13f, new ConfigDescription("WARNING: DO NOT SET THIS TOO HIGH, IT MAY DAMAGE YOUR HEARING! Most EFT Headsets Are Set To 13 By Default, Don't Make It Much Higher. Adjusts The Gain Of Equipped Headsets In Real Time, Acts Just Like The Volume Control On IRL Ear Defenders.", new AcceptableValueRange<float>(0f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 8 }));
                 GainReduc = Config.Bind<float>(DeafSettings, "Headset Gain Cutoff Multi", 0.75f, new ConfigDescription("How Much Headset Gain Is Reduced While Firing. 0.75 = 25% Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7 }));
                 DeafRate = Config.Bind<float>(DeafSettings, "Deafen Rate", 0.022f, new ConfigDescription("How Quickly Player Gets Deafened. Higher = Faster.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6 }));
-                DeafReset = Config.Bind<float>(DeafSettings, "Deafen Reset Rate", 0.04f, new ConfigDescription("How Quickly Player Regains Hearing. Higher = Faster.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5 }));
+                DeafReset = Config.Bind<float>(DeafSettings, "Deafen Reset Rate", 0.035f, new ConfigDescription("How Quickly Player Regains Hearing. Higher = Faster.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5 }));
                 VigRate = Config.Bind<float>(DeafSettings, "Tunnel Effect Rate", 0.65f, new ConfigDescription("How Quickly Player Gets Tunnel Vission. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4 }));
                 VigReset = Config.Bind<float>(DeafSettings, "Tunnel Effect Reset Rate", 1f, new ConfigDescription("How Quickly Player Recovers From Tunnel Vision. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3 }));
                 DistRate = Config.Bind<float>(DeafSettings, "Distortion Rate", 0.16f, new ConfigDescription("How Quickly Player's Hearing Gets Distorted. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
@@ -383,7 +383,7 @@ namespace RealismMod
 
                     new RechamberSpeedPatch().Enable();
                     new SetMalfRepairSpeedPatch().Enable();
-                    new FirearmsAnimatorBoltActionReloadPatch().Enable();
+                    new SetBoltActionReloadPatch().Enable();
 
                     new CheckChamberPatch().Enable();
                     new SetSpeedParametersPatch().Enable();

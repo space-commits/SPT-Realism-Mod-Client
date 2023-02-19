@@ -70,7 +70,7 @@ namespace RealismMod
             return bool.Parse(weapon.ConflictingItems[3]);
         }
 
-        public static float BaseReloadSpeedMulti(Weapon weapon)
+        public static float BaseReloadSpeed(Weapon weapon)
         {
             if (Helper.NullCheck(weapon.ConflictingItems))
             {
@@ -124,7 +124,7 @@ namespace RealismMod
             return bool.Parse(weapon.ConflictingItems[9]);
         }
 
-        public static float BaseChamberSpeedMulti(Weapon weapon)
+        public static float BaseChamberSpeed(Weapon weapon)
         {
             if (Helper.NullCheck(weapon.ConflictingItems))
             {
@@ -133,17 +133,17 @@ namespace RealismMod
             return float.Parse(weapon.ConflictingItems[10]);
         }
 
-        public static float MaxChamberSpeedMulti(Weapon weapon)
+        public static float MaxChamberSpeed(Weapon weapon)
         {
             if (Helper.NullCheck(weapon.ConflictingItems))
             {
-                return 1.5f;
+                return 1.2f;
             }
             return float.Parse(weapon.ConflictingItems[11]);
         }
 
 
-        public static float MinChamberSpeedMulti(Weapon weapon)
+        public static float MinChamberSpeed(Weapon weapon)
         {
             if (Helper.NullCheck(weapon.ConflictingItems))
             {
@@ -161,39 +161,57 @@ namespace RealismMod
             return bool.Parse(weapon.ConflictingItems[13]);
         }
 
+        public static float MaxReloadSpeed(Weapon weapon)
+        {
+            if (Helper.NullCheck(weapon.ConflictingItems))
+            {
+                return 1.2f;
+            }
+            return float.Parse(weapon.ConflictingItems[14]);
+        }
+
+        public static float MinReloadSpeed(Weapon weapon)
+        {
+            if (Helper.NullCheck(weapon.ConflictingItems))
+            {
+                return 0.7f;
+            }
+            return float.Parse(weapon.ConflictingItems[15]);
+        }
+
         public static bool _IsManuallyOperated = false;
 
-        public static float InternalMagReloadBonus = 0.25f;
+        public static float InternalMagReloadMulti = 1f;
 
         public static float QuickReloadSpeedMulti = 1.5f;
 
-        public static float ArmHammerSpeedBonus = 0.35f;
+        public static float ArmHammerSpeedMulti = 1f;
 
-        public static float CheckAmmoSpeedBonus = 0.25f;
+        public static float CheckAmmoMulti = 1f;
 
-        public static float CheckAmmoPistolSpeedBonus = 0.22f;
+        public static float CheckAmmoPistolSpeedMulti = 1f;
 
-        public static float CheckChamberPistolSpeedBonus = 0.1f;
+        public static float CheckChamberPistolSpeedMulti = 1f;
 
-        public static float CheckChamberShotgunSpeedBonus = 0.16f;
+        public static float CheckChamberShotgunSpeedMulti = 1f;
 
-        public static float CheckChamberSpeedBonus = 0.25f;
+        public static float CheckChamberSpeedMulti = 1f;
 
-        public static float ShotgunRackSpeedFactor = 0.9f;
+        public static float ShotgunRackSpeedFactor = 1;
 
-        public static float RechamberSpeedBonus = 0.25f;
+        public static float RechamberSpeedMulti = 1f;
 
-        public static float RechamberPistolSpeedBonus = 0.12f;
+        public static float RechamberPistolSpeedMulti = 1f;
 
-        public static float GlobalReloadSpeedMulti = 1.17f;
+        public static float GlobalReloadSpeedMulti = 1f;
 
-        public static float GlobalFixSpeedMulti = 0.7f;
+        public static float GlobalFixSpeedMulti = 1f;
 
-        public static float GlobalUBGLReloadMulti = 1.3f;
+        public static float GlobalUBGLReloadMulti = 1f;
 
         public static float GlobalBoltSpeedMulti = 1f;
 
-        public static float TotalModDuraBurn = 0;
+        public static float TotalModDuraBurn = 1;
 
         public static float TotalMalfChance = 0;
 
@@ -287,7 +305,7 @@ namespace RealismMod
 
         public static string Placement = "";
 
-        public static float ErgonomicWeight = 0;
+        public static float ErgonomicWeight = 1;
 
         public static float ADSDelta = 0;
 
@@ -303,9 +321,9 @@ namespace RealismMod
 
         public static float SDFixSpeedModifier = 1f;
 
-        public static float ReloadSpeedModifier = 1f;
+        public static float TotalReloadSpeedLessMag = 1f;
 
-        public static float ChamberSpeed = 1f;
+        public static float TotalChamberSpeed = 1f;
 
         public static float SDChamberSpeedModifier = 1f;
 

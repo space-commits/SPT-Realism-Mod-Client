@@ -62,8 +62,8 @@ namespace RealismMod
                 MagazineClass currentMagazine = __instance.Item.GetCurrentMagazine();
                 magMalfChance = ((currentMagazine == null) ? 0f : (currentMagazine.MalfunctionChance * magazineMalfChanceMult));
                 ammoMalfChance = ((ammoToFire != null) ? ((ammoToFire.MalfMisfireChance + ammoToFire.MalfFeedChance) * ammoMalfChanceMult) : 0f);
-                float num = __instance.Item.Repairable.Durability / (float)__instance.Item.Repairable.TemplateDurability * 100f;
-                weaponDurability = Mathf.Floor(num);
+                float durability = __instance.Item.Repairable.Durability / (float)__instance.Item.Repairable.TemplateDurability * 100f;
+                weaponDurability = Mathf.Floor(durability);
                 float weaponMalfChance = WeaponProperties.TotalMalfChance;
                 if (overheat >= overheat2.OverheatProblemsStart)
                 {

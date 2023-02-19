@@ -138,7 +138,7 @@ namespace RealismMod
 
         public static float GrenadeVolumeResetRate = 0.03f;
         public static float GrenadeDistortionResetRate = 0.1f;
-        public static float GrenadeVignetteDarknessResetRate = 0.05f;
+        public static float GrenadeVignetteDarknessResetRate = 0.07f;
 
         public static bool valuesAreReset = false;
 
