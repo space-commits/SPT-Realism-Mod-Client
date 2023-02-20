@@ -132,9 +132,10 @@ namespace RealismMod
             {
                 Logger.LogWarning("///////////////////Bolt Action Reload////////////////");
                 float chamberSpeed = WeaponProperties.TotalChamberSpeed;
+                float recoilMulti = (1f + (-1f * WeaponProperties.PureRecoilDelta));
                 if (WeaponProperties._WeapClass == "shotgun")
                 {
-                    chamberSpeed *= WeaponProperties.ShotgunRackSpeedFactor;
+                    chamberSpeed *= WeaponProperties.ShotgunRackSpeedFactor * recoilMulti;
                 }
                 if (Plugin.LauncherIsActive == true)
                 {
@@ -142,14 +143,15 @@ namespace RealismMod
                 }
                 if (WeaponProperties._WeapClass == "sniperRifle")
                 {
-                    chamberSpeed *= WeaponProperties.GlobalBoltSpeedMulti;
+                    chamberSpeed *= WeaponProperties.GlobalBoltSpeedMulti * recoilMulti;
                 }
                 Logger.LogWarning("Injury Multi = " + PlayerProperties.ReloadInjuryMulti);
                 Logger.LogWarning("Reload Skill = " + PlayerProperties.ReloadSkillMulti);
+                Logger.LogWarning("recoilMulti = " + recoilMulti);
                 Logger.LogWarning("Base Chamber Speed = " + WeaponProperties.TotalChamberSpeed);
                 Logger.LogWarning("Total Chamber Speed = " + (chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
                 Logger.LogWarning("///////////////////////////////////");
-                __instance.SetAnimationSpeed(Mathf.Clamp(chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.5f));
+                __instance.SetAnimationSpeed(Mathf.Clamp(chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.3f));
             }
         }
     }

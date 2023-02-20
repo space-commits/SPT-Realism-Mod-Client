@@ -301,6 +301,8 @@ namespace RealismMod
 
         public static float SDPureErgo = 0;
 
+        public static float PureRecoilDelta = 0;
+
         public static float PureErgoDelta = 0;
 
         public static string Placement = "";

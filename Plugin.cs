@@ -5,6 +5,7 @@ using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using Comfort.Common;
 using EFT;
+using HarmonyLib;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -78,6 +79,18 @@ namespace RealismMod
         public static ConfigEntry<float> DistReset { get; set; }
         public static ConfigEntry<float> GainReduc { get; set; }
         public static ConfigEntry<float> RealTimeGain { get; set; }
+
+        public static ConfigEntry<float> camX { get; set; }
+        public static ConfigEntry<float> camY { get; set; }
+        public static ConfigEntry<float> camZ { get; set; }
+
+        public static ConfigEntry<float> rotationX { get; set; }
+        public static ConfigEntry<float> rotationY { get; set; }
+        public static ConfigEntry<float> rotationZ { get; set; }
+
+        public static ConfigEntry<float> offsetX { get; set; }
+        public static ConfigEntry<float> offsetY { get; set; }
+        public static ConfigEntry<float> offsetZ { get; set; }
 
         public static bool IsFiring = false;
         public static bool IsBotFiring = false;
@@ -161,7 +174,6 @@ namespace RealismMod
 
         public static bool HasHeadSet = false;
         public static CC_FastVignette Vignette;
-
 
         private void GetPaths()
         {
@@ -255,7 +267,7 @@ namespace RealismMod
                 string AdvancedRecoilSettings = "4. Advanced Recoil Settings";
                 string WeaponSettings = "5. Weapon Settings";
                 string DeafSettings = "6. Deafening and Audio";
-
+                string Testing = "7. Testing";
 
 
                 /*   enableAmmoDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 5 }));
@@ -313,7 +325,17 @@ namespace RealismMod
                 DistRate = Config.Bind<float>(DeafSettings, "Distortion Rate", 0.16f, new ConfigDescription("How Quickly Player's Hearing Gets Distorted. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
                 DistReset = Config.Bind<float>(DeafSettings, "Distortion Reset Rate", 0.25f, new ConfigDescription("How Quickly Player's Hearing Recovers From Distortion. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1 }));
 
+                rotationX = Config.Bind<float>(Testing, "rotationX", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1 }));
+                rotationY = Config.Bind<float>(Testing, "rotationY", 45.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
+                rotationZ = Config.Bind<float>(Testing, "rotationZ", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3 }));
 
+                offsetX = Config.Bind<float>(Testing, "offsetX", -0.045f, new ConfigDescription("", new AcceptableValueRange<float>(-500f, 500f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4 }));
+                offsetY = Config.Bind<float>(Testing, "offsetY", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-500f, 500f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5 }));
+                offsetZ = Config.Bind<float>(Testing, "offsetZ", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-500f, 500f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6 }));
+
+                camX = Config.Bind<float>(Testing, "camX", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7 }));
+                camY = Config.Bind<float>(Testing, "camY", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 8 }));
+                camZ = Config.Bind<float>(Testing, "camZ", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 9 }));
 
                 if (enableProgramK.Value == true)
                 {
@@ -460,7 +482,9 @@ namespace RealismMod
                 }
 
                 //LateUpdate
-                new PlayerLateUpdatePatch().Enable(); Plugin.StatsAreReset = true;
+                new PlayerLateUpdatePatch().Enable();
+                new ApplyComplexRotationPatch().Enable();
+
             }
         }
 

@@ -209,14 +209,12 @@ namespace RealismMod
             float totalAimMoveSpeedFactor = 0;
             float totalReloadSpeed = 0;
             float totalChamberSpeed = 0;
-            Logger.LogWarning("pre  SpeedStatCalc");
-            StatCalc.SpeedStatCalc(Logger, __instance, ergonomicWeight, ergonomicWeightLessMag, totalChamberSpeedMod, totalReloadSpeedMod, ref totalReloadSpeed, ref totalChamberSpeed, ref totalAimMoveSpeedFactor, isManual, totalVRecoilDelta, totalHRecoilDelta);
+            StatCalc.SpeedStatCalc(Logger, __instance, ergonomicWeight, ergonomicWeightLessMag, totalChamberSpeedMod, totalReloadSpeedMod, ref totalReloadSpeed, ref totalChamberSpeed, ref totalAimMoveSpeedFactor);
 
             Logger.LogWarning("total mod ChamberSpeed = " + totalChamberSpeedMod);
             Logger.LogWarning("AimMoveSpeedFactor = " + totalAimMoveSpeedFactor);
             Logger.LogWarning("totalReloadSpeed = " + totalReloadSpeed);
             Logger.LogWarning("totalChamberSpeed = " + totalChamberSpeed);
-            Logger.LogWarning("recoil chamber speed modifer= " + (1f + (-1f * ((totalHRecoilDelta + totalVRecoilDelta) / 2f))));
             Logger.LogWarning("=============");
 
             WeaponProperties.TotalReloadSpeedLessMag = totalReloadSpeed;
@@ -288,6 +286,8 @@ namespace RealismMod
             float currentErgo = baseErgo;
             float pureErgo = baseErgo;
 
+            float pureRecoil = baseVRecoil + baseHRecoil;
+
             float baseShotDisp = __instance.ShotgunDispersionBase;
             float currentShotDisp = baseShotDisp;
 
@@ -356,7 +356,7 @@ namespace RealismMod
                     float modFix = AttachmentProperties.FixSpeed(__instance.Mods[i]);
 
                     StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, ref modMalfChance, ref modDuraBurn);
-                    StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeedMod, modReload, ref currentReloadSpeedMod, modFix, ref currentFixSpeedMod, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeedMod, modChamber, false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance);
+                    StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeedMod, modReload, ref currentReloadSpeedMod, modFix, ref currentFixSpeedMod, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeedMod, modChamber, false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, ref pureRecoil);
                     if (AttachmentProperties.CanCylceSubs(__instance.Mods[i]) == true)
                     {
                         canCycleSubs = true;
@@ -379,7 +379,9 @@ namespace RealismMod
                 totalLoudness *= 1.05f;
             }
 
-
+    
+            float pureRecoilDelta = ((baseVRecoil + baseHRecoil) - pureRecoil) / ((baseVRecoil + baseHRecoil) * -1f);
+            Logger.LogWarning("pureRecoilDelta = " + pureRecoilDelta);
             WeaponProperties.TotalModDuraBurn = modBurnRatio;
             WeaponProperties.TotalMalfChance = currentMalfChance;
             Plugin.WeaponDeafFactor = totalLoudness;
@@ -400,6 +402,7 @@ namespace RealismMod
             WeaponProperties.SemiFireRate = Mathf.Max(200, (int)currentSemiROF);
             WeaponProperties.SDTotalCOI = currentCOI;
             WeaponProperties.SDPureErgo = pureErgo;
+            WeaponProperties.PureRecoilDelta = pureRecoilDelta;
             WeaponProperties.ShotDispDelta = (baseShotDisp - currentShotDisp) / (baseShotDisp * -1f);
             Logger.LogWarning("================");
 
