@@ -61,9 +61,15 @@ namespace RealismMod
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
                 if (player.IsYourPlayer == true)
                 {
+                    if (Plugin.GotStartPosition == false)
+                    {
+                        Plugin.WeapStartPosition = __instance.HandsContainer.TrackingTransform.localPosition;
+                        Logger.LogWarning("Plugin.WeapStartPosition" + Plugin.WeapStartPosition);
+                        Plugin.TargetPosition = Plugin.WeapStartPosition + new Vector3(Plugin.offsetX.Value, Plugin.offsetY.Value, Plugin.offsetZ.Value);
+                        Plugin.GotStartPosition = true;
+                    }
                     //to find float_9 on new client version, look for: public float AimingSpeed { get{ return this.float_9; } }
                     //to finf float_19 again, it's set to ErgnomicWeight in this method.
-
                     float _aimsSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance);
                     SkillsClass.GClass1675 skillsClass = (SkillsClass.GClass1675)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "gclass1675_0").GetValue(__instance);
                     __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.StartingConvergence * __instance.Aiming.RecoilConvergenceMult;
@@ -109,6 +115,23 @@ namespace RealismMod
         }
     }
 
+    public class InitTransformsPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("InitTransforms", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
+        {
+            Logger.LogWarning("InitTransforms");
+
+
+        }
+    }
+
+
     public class ApplyComplexRotationPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -116,33 +139,41 @@ namespace RealismMod
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("ApplyComplexRotation", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        [PatchPrefix]
-        private static bool Prefix(ref EFT.Animations.ProceduralWeaponAnimation __instance, float dt)
-        {
+     
 
-            Vector3 targetPosition = new Vector3(Plugin.offsetX.Value, Plugin.offsetY.Value, Plugin.offsetZ.Value);
+        [PatchPrefix]
+        private static bool Postfix(ref EFT.Animations.ProceduralWeaponAnimation __instance, float dt)
+        {
             Vector3 targetRotation = new Vector3(Plugin.rotationX.Value, Plugin.rotationY.Value, Plugin.rotationZ.Value);
             Quaternion targetQuaternion = Quaternion.Euler(targetRotation);
-
-            float float_14 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14").GetValue(__instance);
             float aimSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance);
             Quaternion currentRotation = (Quaternion)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").GetValue(__instance);
-            float Single_3 = (float)AccessTools.Property(typeof(EFT.Animations.ProceduralWeaponAnimation), "Single_3").GetValue(__instance);
 
-            AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.position);
-            AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_5").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.localRotation);
-            AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_6").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.rotation);
-
-            Quaternion quaternion_6 = (Quaternion)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_6").GetValue(__instance);
-            Vector3 vector3_4 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").GetValue(__instance);
-            Vector3 vector3_6 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_6").GetValue(__instance);
-
-            if (Input.GetKey(KeyCode.U))
+/*            __instance.HandsContainer.WeaponRoot.localPosition = Plugin.WeapStartPosition + new Vector3(Plugin.offsetX.Value, Plugin.offsetY.Value, Plugin.offsetZ.Value);
+*/
+            if (Plugin.IsCantedAiming == true)
             {
                 currentRotation = Quaternion.Lerp(currentRotation, targetQuaternion, __instance.CameraSmoothTime * aimSpeed * dt);
                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
-                __instance.HandsContainer.WeaponRoot.position = targetPosition;
+
+                if (__instance.HandsContainer.TrackingTransform.localPosition.x >= Plugin.TargetPosition.x)
+                {
+                    Logger.LogWarning("destination not reached");
+                    Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(-0.003f, 0, 0);
+                    __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
+                }
             }
+            else
+            {
+                if (__instance.HandsContainer.TrackingTransform.localPosition.x <= Plugin.WeapStartPosition.x)
+                {
+                    Logger.LogWarning("reseting");
+                    Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(0.004f, 0, 0);
+                    __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
+                }
+
+            }
+
             return true;
             /*           Vector3 targetPositiion = new Vector3(Plugin.offsetX.Value, Plugin.offsetY.Value, Plugin.offsetZ.Value);
                        Vector3 targetRotation = new Vector3(Plugin.rotationX.Value, Plugin.rotationY.Value, Plugin.rotationZ.Value);

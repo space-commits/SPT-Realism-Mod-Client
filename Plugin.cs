@@ -92,6 +92,11 @@ namespace RealismMod
         public static ConfigEntry<float> offsetY { get; set; }
         public static ConfigEntry<float> offsetZ { get; set; }
 
+        public static bool GotStartPosition = false;
+        public static Vector3 WeapStartPosition = new Vector3(0, 0, 0);
+        public static Vector3 TargetPosition = new Vector3(0, 0, 0);
+        public static bool IsCantedAiming = false;
+
         public static bool IsFiring = false;
         public static bool IsBotFiring = false;
         public static bool GrenadeExploded = false;
@@ -483,7 +488,9 @@ namespace RealismMod
 
                 //LateUpdate
                 new PlayerLateUpdatePatch().Enable();
+
                 new ApplyComplexRotationPatch().Enable();
+                new InitTransformsPatch().Enable();
 
             }
         }
@@ -553,6 +560,27 @@ namespace RealismMod
                     {
                         Recoil.ResetRecoil();
                     }
+
+                    if (Input.GetKeyDown(KeyCode.U))
+                    {
+                        Plugin.IsCantedAiming = true;
+                    }
+                    if (Input.GetKeyUp(KeyCode.U))
+                    {
+                        Plugin.IsCantedAiming = false;
+                    }
+
+           /*         GameWorld gameWorld = Singleton<GameWorld>.Instance;
+                    Player player = gameWorld.RegisteredPlayers[0];
+
+                    if (Input.GetKeyDown(KeyCode.I))
+                    {
+                        player.ProceduralWeaponAnimation.
+                    }
+                    if (Input.GetKeyUp(KeyCode.I))
+                    {
+                       
+                    }*/
                 }
             }
         }
