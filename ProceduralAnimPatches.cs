@@ -166,10 +166,10 @@ namespace RealismMod
                 {
                     Vector3 targetRotation = new Vector3(Plugin.rotationX.Value, Plugin.rotationY.Value, Plugin.rotationZ.Value);
                     //x = up/down, y = tilt, z = pivot out
-                    Vector3 inverseRotation = new Vector3(5.0f, 25.0f, 5.0f);
+                    Vector3 revertRotation = new Vector3(Plugin.ResetRotationX.Value, Plugin.ResetRotationY.Value, Plugin.ResetRotationZ.Value);
                     Quaternion targetQuaternion = Quaternion.Euler(targetRotation);
-                    Quaternion miniTargetQuaternion = Quaternion.Euler(new Vector3(5.0f, -90.0f, -5.0f));
-                    Quaternion inverseQuaternion = Quaternion.Euler(inverseRotation);
+                    Quaternion miniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.AdditionalRotationX.Value, Plugin.AdditionalRotationY.Value, Plugin.AdditionalRotationZ.Value));
+                    Quaternion revertQuaternion = Quaternion.Euler(revertRotation);
                     float aimSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance);
                     Quaternion currentRotation = (Quaternion)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").GetValue(__instance);
 
@@ -178,18 +178,17 @@ namespace RealismMod
 
                     if (Plugin.IsPassiveAiming == true)
                     {
-                        currentRotation = Quaternion.Lerp(currentRotation, targetQuaternion, __instance.CameraSmoothTime * aimSpeed * dt * Plugin.rotationMulti.Value);
+                        currentRotation = Quaternion.Lerp(currentRotation, targetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.rotationMulti.Value);
                         AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
                         if (__instance.HandsContainer.TrackingTransform.localPosition.x > Plugin.TransformTargetPosition.x)
                         {
-                            currentRotation = Quaternion.Lerp(currentRotation, miniTargetQuaternion, __instance.CameraSmoothTime * aimSpeed * dt * Plugin.rotationMulti.Value * 1.2f);
+                            currentRotation = Quaternion.Lerp(currentRotation, miniTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.rotationMulti.Value * 1.2f);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
                             Logger.LogWarning("changeSpeedMulti = " + changeSpeedMulti);
                             changeSpeedMulti += Plugin.changeTimeIncrease.Value;
-                            Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(-0.01f * changeSpeedMulti * aimSpeed, 0.0f, 0.0f);
+                            Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(Plugin.BasePosChangeRate.Value * changeSpeedMulti * Plugin.SightlessADSSpeed, 0.0f, 0.0f);
                             __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
-
                         }
                     }
                     else
@@ -197,12 +196,12 @@ namespace RealismMod
 
                         if (__instance.HandsContainer.TrackingTransform.localPosition.x != Plugin.TransformStartPosition.x)
                         {
-                            currentRotation = Quaternion.Lerp(currentRotation, inverseQuaternion, __instance.CameraSmoothTime * aimSpeed * dt * Plugin.rotationMulti.Value * 1.2f);
+                            currentRotation = Quaternion.Lerp(currentRotation, revertQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.rotationMulti.Value * 1.2f);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
                             Logger.LogWarning("reseting");
                             changeSpeedMulti = Plugin.changeTimeMult.Value;
                             resetSpeedMulti += Plugin.restTimeIncrease.Value;
-                            Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(0.01f * resetSpeedMulti * aimSpeed, 0.0f, 0.0f);
+                            Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(Plugin.BaseResetChangeRate.Value * resetSpeedMulti * Plugin.SightlessADSSpeed, 0.0f, 0.0f);
                             __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
                         }
                         if (__instance.HandsContainer.TrackingTransform.localPosition.x > Plugin.TransformStartPosition.x)
@@ -303,11 +302,12 @@ namespace RealismMod
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
                 if (player.IsYourPlayer == true)
                 {
+        /*            Logger.LogWarning("method_20");*/
                     float baseAimSpeed = WeaponProperties.AimSpeed * PlayerProperties.ADSInjuryMulti;
+                    Plugin.SightlessADSSpeed = baseAimSpeed;
                     Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
                     float sightSpeedModi = (currentAimingMod != null) ? AttachmentProperties.AimSpeed(currentAimingMod) : 1;
                     float newAimSpeed = baseAimSpeed * (1 + (sightSpeedModi / 100f));
-                    Logger.LogWarning("aimSpeed = " + newAimSpeed);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
 
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * PlayerProperties.StrengthSkillAimBuff;

@@ -89,7 +89,18 @@ namespace RealismMod
         {
             GameWorld gameWorld = Singleton<GameWorld>.Instance;
             SessionResultPanel sessionResultPanel = Singleton<SessionResultPanel>.Instance;
-            Player player = gameWorld.RegisteredPlayers[0];
+
+            if (gameWorld?.AllPlayers.Count > 0)
+            {
+                Player player = gameWorld.AllPlayers[0];
+                if (player != null && player?.HandsController != null)
+                {
+                    if (player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon)
+                    {
+                        Helper.WeaponReady = true;
+                    }
+                }
+            }
 
             if (gameWorld == null || gameWorld.AllPlayers == null || gameWorld.AllPlayers.Count <= 0 || sessionResultPanel != null)
             {
@@ -97,13 +108,7 @@ namespace RealismMod
                 return false;
             }
             Helper.IsReady = true;
-            if (player != null && player.HandsController.Item != null)
-            {
-                if (player.HandsController.Item is Weapon)
-                {
-                    Helper.WeaponReady = true;
-                }
-            }
+
             return true;
         }
 

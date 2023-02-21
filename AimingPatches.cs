@@ -4,6 +4,7 @@ using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System.Reflection;
+using UnityEngine;
 
 
 
@@ -31,6 +32,14 @@ namespace RealismMod
                         PlayerProperties.IsAllowedADS = false;
                         player.MovementContext.SetAimingSlowdown(false, 0.33f);
                         player.ProceduralWeaponAnimation.IsAiming = false;
+                        if (Input.GetKeyDown(KeyCode.Mouse1))
+                        {
+                            Plugin.IsPassiveAiming = true;
+                        }
+                        if (Input.GetKeyUp(KeyCode.Mouse1))
+                        {
+                            Plugin.IsPassiveAiming = false;
+                        }
                     }
                     else
                     {

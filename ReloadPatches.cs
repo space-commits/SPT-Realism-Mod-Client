@@ -156,20 +156,22 @@ namespace RealismMod
         }
     }
 
-    public class SetMalfRepairSpeedPatch : ModulePatch
+    public class SetSpeedFixPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(FirearmsAnimator).GetMethod("SetMalfRepairSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(WeaponAnimationSpeedControllerClass).GetMethod("SetSpeedFix", BindingFlags.Static | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static void Prefix(FirearmsAnimator __instance, float fix)
+        private static void Prefix(IAnimator animator, float speedFix)
         {
-            Logger.LogWarning("Fix Speed = " + fix);
-            Logger.LogWarning("Total Fix Speed = " + (fix + WeaponProperties.TotalChamberSpeed) * (PlayerProperties.ReloadInjuryMulti * WeaponProperties.GlobalFixSpeedMulti));
-            WeaponAnimationSpeedControllerClass.SetSpeedFix(__instance.Animator, (fix + WeaponProperties.TotalChamberSpeed) * (PlayerProperties.ReloadInjuryMulti * WeaponProperties.GlobalFixSpeedMulti));
-            __instance.SetAnimationSpeed(Mathf.Clamp((fix + WeaponProperties.TotalChamberSpeed) * (PlayerProperties.ReloadInjuryMulti * WeaponProperties.GlobalFixSpeedMulti), 0.5f, 1.5f));
+
+            float totalFixSpeed = Mathf.Clamp((speedFix + WeaponProperties.TotalChamberSpeed) * (PlayerProperties.ReloadInjuryMulti * WeaponProperties.GlobalFixSpeedMulti), 0.5f, 1.5f);
+            animator.SetFloat(WeaponAnimationSpeedControllerClass.FLOAT_SPEEDFIX, totalFixSpeed);
+            Logger.LogWarning("Fix Speed = " + speedFix);
+            Logger.LogWarning("Total Fix Speed = " + totalFixSpeed);
+
         }
     }
 
@@ -353,6 +355,7 @@ namespace RealismMod
             Logger.LogWarning("Total Reload speed = + " + WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti);
             Logger.LogWarning("///////////////////////////");
             __instance.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.5f));
+
         }
     }
 
