@@ -249,8 +249,6 @@ namespace RealismMod
         {
             Logger.LogWarning("======StatDelta=======");
 
-            Plugin.GotStartPosition = false;
-
             WeaponProperties._WeapClass = __instance.WeapClass;
             bool isManual = WeaponProperties.IsManuallyOperated(__instance);
             WeaponProperties._IsManuallyOperated = isManual;

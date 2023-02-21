@@ -61,13 +61,6 @@ namespace RealismMod
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
                 if (player.IsYourPlayer == true)
                 {
-                    if (Plugin.GotStartPosition == false)
-                    {
-                        Plugin.WeapStartPosition = __instance.HandsContainer.TrackingTransform.localPosition;
-                        Logger.LogWarning("Plugin.WeapStartPosition" + Plugin.WeapStartPosition);
-                        Plugin.TargetPosition = Plugin.WeapStartPosition + new Vector3(Plugin.offsetX.Value, Plugin.offsetY.Value, Plugin.offsetZ.Value);
-                        Plugin.GotStartPosition = true;
-                    }
                     //to find float_9 on new client version, look for: public float AimingSpeed { get{ return this.float_9; } }
                     //to finf float_19 again, it's set to ErgnomicWeight in this method.
                     float _aimsSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance);
@@ -125,9 +118,13 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
+
             Logger.LogWarning("InitTransforms");
+            __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.camX.Value, Plugin.camY.Value, Plugin.camZ.Value);
+            Plugin.WeapStartPosition = new Vector3(0.0f, 0.0f, 0.0f);
+            Plugin.TargetPosition = Plugin.WeapStartPosition + new Vector3(Plugin.offsetX.Value, Plugin.offsetY.Value, Plugin.offsetZ.Value);
 
-
+            Logger.LogWarning("Plugin.WeapStartPosition" + Plugin.WeapStartPosition);
         }
     }
 
@@ -139,37 +136,59 @@ namespace RealismMod
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("ApplyComplexRotation", BindingFlags.Instance | BindingFlags.Public);
         }
 
-     
+        public static float changeSpeedMulti = Plugin.changeTimeMult.Value;
+        public static float resetSpeedMulti = Plugin.resetTimeMult.Value;
+
 
         [PatchPrefix]
         private static bool Postfix(ref EFT.Animations.ProceduralWeaponAnimation __instance, float dt)
         {
             Vector3 targetRotation = new Vector3(Plugin.rotationX.Value, Plugin.rotationY.Value, Plugin.rotationZ.Value);
+            //x = up/down, y = tilt, z = pivot out
+            Vector3 inverseRotation = new Vector3(5.0f, 25.0f, 5.0f);
             Quaternion targetQuaternion = Quaternion.Euler(targetRotation);
+            Quaternion miniTargetQuaternion = Quaternion.Euler(new Vector3(5.0f, -90.0f, -5.0f));
+            Quaternion inverseQuaternion = Quaternion.Euler(inverseRotation);
             float aimSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance);
             Quaternion currentRotation = (Quaternion)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").GetValue(__instance);
 
-/*            __instance.HandsContainer.WeaponRoot.localPosition = Plugin.WeapStartPosition + new Vector3(Plugin.offsetX.Value, Plugin.offsetY.Value, Plugin.offsetZ.Value);
-*/
+            //for setting baseline position
+            /*            __instance.HandsContainer.WeaponRoot.localPosition = Plugin.WeapStartPosition + new Vector3(Plugin.offsetX.Value, Plugin.offsetY.Value, Plugin.offsetZ.Value);
+            */
             if (Plugin.IsCantedAiming == true)
             {
-                currentRotation = Quaternion.Lerp(currentRotation, targetQuaternion, __instance.CameraSmoothTime * aimSpeed * dt);
+                currentRotation = Quaternion.Lerp(currentRotation, targetQuaternion, __instance.CameraSmoothTime * aimSpeed * dt * Plugin.rotationMulti.Value);
                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
-                if (__instance.HandsContainer.TrackingTransform.localPosition.x >= Plugin.TargetPosition.x)
+                if (__instance.HandsContainer.TrackingTransform.localPosition.x > Plugin.TargetPosition.x)
                 {
-                    Logger.LogWarning("destination not reached");
-                    Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(-0.003f, 0, 0);
+                    currentRotation = Quaternion.Lerp(currentRotation, miniTargetQuaternion, __instance.CameraSmoothTime * aimSpeed * dt * Plugin.rotationMulti.Value * 1.2f);
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
+                    Logger.LogWarning("changeSpeedMulti = " + changeSpeedMulti);
+                    changeSpeedMulti += Plugin.changeTimeIncrease.Value;
+                    Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(-0.01f * changeSpeedMulti * aimSpeed, 0.0f, 0.0f);
                     __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
+
                 }
             }
             else
             {
-                if (__instance.HandsContainer.TrackingTransform.localPosition.x <= Plugin.WeapStartPosition.x)
+
+                if (__instance.HandsContainer.TrackingTransform.localPosition.x != Plugin.WeapStartPosition.x)
                 {
+                    currentRotation = Quaternion.Lerp(currentRotation, inverseQuaternion, __instance.CameraSmoothTime * aimSpeed * dt * Plugin.rotationMulti.Value);
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
                     Logger.LogWarning("reseting");
-                    Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(0.004f, 0, 0);
+                    changeSpeedMulti = Plugin.changeTimeMult.Value;
+                    resetSpeedMulti += Plugin.restTimeIncrease.Value;
+                    Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(0.01f * resetSpeedMulti * aimSpeed, 0.0f, 0.0f);
                     __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
+                }
+                if (__instance.HandsContainer.TrackingTransform.localPosition.x > Plugin.WeapStartPosition.x)
+                {
+                    Logger.LogWarning("final reset");
+                    resetSpeedMulti = Plugin.resetTimeMult.Value;
+                    __instance.HandsContainer.TrackingTransform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
                 }
 
             }
@@ -245,140 +264,6 @@ namespace RealismMod
         }
     }
 
-
-    public class ZeroAdjustmentsPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("ZeroAdjustments", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
-        {
-  
-            Logger.LogWarning("ZeroAdjustments");
-        }
-    }
-
-    /* public class AlignCollimatorPatch : ModulePatch
-     {
-         protected override MethodBase GetTargetMethod()
-         {
-             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("method_12", BindingFlags.Instance | BindingFlags.NonPublic);
-         }
-
-         [PatchPrefix]
-         private static bool Prefix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
-         {
-
-             Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
-             bool bool_6 = (bool)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "bool_6").GetValue(__instance);
-             Vector3 vector3_8 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_8").GetValue(__instance);
-             float float_5 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_5").GetValue(__instance);
-             var method_3 = AccessTools.Method(typeof(Weapon), "method_3");
-
-             if (!bool_6)
-             {
-                 return false;
-             }
-             ProceduralWeaponAnimation.GClass2064 currentScope = __instance.CurrentScope;
-             if (currentScope == null || currentScope.IsOptic || currentScope.ScopePrefabCache == null || !currentScope.ScopePrefabCache.HasCollimators)
-             {
-                 return false;
-             }
-             Transform lensCenter = currentScope.ScopePrefabCache.GetLensCenter();
-             Vector3 position = (Vector3)method_3.Invoke(__instance, new object[] { vector3_8 });
-             Transform weaponTransform = __instance.HandsContainer.Weapon;
-             Vector3 lenseCenterVector = weaponTransform.InverseTransformPoint(lensCenter.position);
-             Vector3 vector2 = weaponTransform.InverseTransformPoint(position);
-             Vector3 vector3 = weaponTransform.InverseTransformPoint(currentScope.Bone.position);
-             Vector2 vector4 = new Vector2(-lenseCenterVector.y, lenseCenterVector.z);
-             Vector2 vector5 = new Vector2(-vector2.y, vector2.z);
-             Vector2 vector6 = new Vector2(-vector3.y, vector3.z);
-             float num = vector5.y - vector4.y;
-             float num2 = vector5.x - vector4.x;
-             float num3 = Mathf.Atan(num / num2);
-             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_5").SetValue(__instance, num3 * 57.29578f);
-
-             if (__instance.PointOfView != EPointOfView.FirstPerson)
-             {
-                 return false;
-             }
-             Vector2 normalized = (vector4 - vector5).normalized;
-             float d = vector4.x - vector6.x;
-             Vector2 cameraShiftToLineOfSight = vector4 + normalized * d - vector6;
-             __instance._cameraShiftToLineOfSight = cameraShiftToLineOfSight;
-             return false;
-         }
-     }
-
-     public class LerpCameraPatch : ModulePatch
-     {
-         protected override MethodBase GetTargetMethod()
-         {
-             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("LerpCamera", BindingFlags.Instance | BindingFlags.Public);
-         }
-
-         [PatchPrefix]
-         private static bool Prefix(ref EFT.Animations.ProceduralWeaponAnimation __instance, float dt)
-         {
-
-             Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
-             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
-             if (player.IsYourPlayer == true)
-             {
-                 Vector3 _vCameraTarget = (Vector3)AccessTools.Field(typeof(EFT.Player.FirearmController), "_vCameraTarget").GetValue(__instance);
-                 float float_10 = (float)AccessTools.Field(typeof(EFT.Player.FirearmController), "float_10").GetValue(__instance);
-                 float float_9 = (float)AccessTools.Field(typeof(EFT.Player.FirearmController), "float_9").GetValue(__instance);
-                 float float_16 = (float)AccessTools.Field(typeof(EFT.Player.FirearmController), "float_16").GetValue(__instance);
-                 Player.ValueBlender valueBlender_0 = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Player.FirearmController), "valueBlender_0").GetValue(__instance);
-                 Player.ValueBlenderDelay valueBlenderDelay_0 = (Player.ValueBlenderDelay)AccessTools.Field(typeof(EFT.Player.FirearmController), "valueBlenderDelay_0").GetValue(__instance);
-                 float Single_1 = (float)AccessTools.Field(typeof(EFT.Player.FirearmController), "Single_1").GetValue(__instance);
-                 Quaternion quaternion_3 = (Quaternion)AccessTools.Field(typeof(EFT.Player.FirearmController), "quaternion_3").GetValue(__instance);
-                 Quaternion quaternion_4 = (Quaternion)AccessTools.Field(typeof(EFT.Player.FirearmController), "quaternion_4").GetValue(__instance);
-                 Vector3 vector3_2 = (Vector3)AccessTools.Field(typeof(EFT.Player.FirearmController), "vector3_2").GetValue(__instance);
-                 Vector3 vector3_7 = (Vector3)AccessTools.Field(typeof(EFT.Player.FirearmController), "vector3_7").GetValue(__instance);
-
-                 Vector3 localPosition = __instance.HandsContainer.CameraTransform.localPosition;
-                 Vector2 a = new Vector2(localPosition.x, localPosition.y);
-                 Vector2 b = new Vector2(_vCameraTarget.x, _vCameraTarget.y);
-                 float num = __instance.IsAiming ? (float_9 * __instance.CameraSmoothBlender.Value * float_10) : __instance.CameraSmoothOut;
-                 Vector2 vector = Vector2.Lerp(a, b, dt * num);
-                 float num2 = localPosition.z;
-                 float num3 = __instance.CameraSmoothTime * dt;
-                 float num4 = __instance.IsAiming ? (1f + __instance.HandsContainer.HandsPosition.GetRelative().y * 100f + __instance.TurnAway.Position.y * 10f) : __instance.CameraSmoothOut;
-                 num2 = Mathf.Lerp(num2, _vCameraTarget.z, num3 * num4);
-                 Vector3 localPosition2 = new Vector3(vector.x, vector.y, num2) + __instance.HandsContainer.CameraPosition.GetRelative();
-                 if (float_16 > 0f)
-                 {
-                     float value = valueBlender_0.Value;
-                     if (__instance.IsAiming && value > 0f)
-                     {
-                         __instance.HandsContainer.SwaySpring.ApplyVelocity(vector3_2 * value);
-                     }
-                 }
-                 __instance.HandsContainer.CameraTransform.localPosition = localPosition2;
-                 Quaternion b2 = __instance.HandsContainer.CameraAnimatedFP.localRotation * __instance.HandsContainer.CameraAnimatedTP.localRotation;
-                 __instance.HandsContainer.CameraTransform.localRotation = Quaternion.Lerp(quaternion_3, b2, Single_1 * (1f - valueBlenderDelay_0.Value)) * Quaternion.Euler(__instance.HandsContainer.CameraRotation.Get() + vector3_7) * quaternion_4;
-                 Logger.LogWarning("====localPosition.=====");
-                 Logger.LogWarning("x" + localPosition2.x);
-                 Logger.LogWarning("y" + localPosition2.y);
-                 Logger.LogWarning("z" + localPosition2.z);
-                 Logger.LogWarning("========================");
-                 Logger.LogWarning("====localRotation=====");
-                 Logger.LogWarning("w" + __instance.HandsContainer.CameraTransform.localRotation.w);
-                 Logger.LogWarning("x" + __instance.HandsContainer.CameraTransform.localRotation.x);
-                 Logger.LogWarning("y" + __instance.HandsContainer.CameraTransform.localRotation.y);
-                 Logger.LogWarning("z" + __instance.HandsContainer.CameraTransform.localRotation.z);
-                 Logger.LogWarning("========================");
-
-                 return false;
-             }
-             return true;
-         }
-     }
- */
     public class method_20Patch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

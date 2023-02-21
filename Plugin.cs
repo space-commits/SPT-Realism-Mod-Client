@@ -92,9 +92,14 @@ namespace RealismMod
         public static ConfigEntry<float> offsetY { get; set; }
         public static ConfigEntry<float> offsetZ { get; set; }
 
-        public static bool GotStartPosition = false;
-        public static Vector3 WeapStartPosition = new Vector3(0, 0, 0);
-        public static Vector3 TargetPosition = new Vector3(0, 0, 0);
+        public static ConfigEntry<float> changeTimeMult { get; set; }
+        public static ConfigEntry<float> changeTimeIncrease { get; set; }
+        public static ConfigEntry<float> resetTimeMult { get; set; }
+        public static ConfigEntry<float> restTimeIncrease { get; set; }
+        public static ConfigEntry<float> rotationMulti { get; set; }
+
+        public static Vector3 WeapStartPosition = new Vector3(0.0f, 0.0f, 0.0f);
+        public static Vector3 TargetPosition = new Vector3(0.0f, 0.0f, 0.0f);
         public static bool IsCantedAiming = false;
 
         public static bool IsFiring = false;
@@ -330,17 +335,23 @@ namespace RealismMod
                 DistRate = Config.Bind<float>(DeafSettings, "Distortion Rate", 0.16f, new ConfigDescription("How Quickly Player's Hearing Gets Distorted. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
                 DistReset = Config.Bind<float>(DeafSettings, "Distortion Reset Rate", 0.25f, new ConfigDescription("How Quickly Player's Hearing Recovers From Distortion. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1 }));
 
-                rotationX = Config.Bind<float>(Testing, "rotationX", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1 }));
-                rotationY = Config.Bind<float>(Testing, "rotationY", 45.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
-                rotationZ = Config.Bind<float>(Testing, "rotationZ", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3 }));
+                rotationX = Config.Bind<float>(Testing, "rotationX", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1 }));
+                rotationY = Config.Bind<float>(Testing, "rotationY", 45.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
+                rotationZ = Config.Bind<float>(Testing, "rotationZ", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3 }));
 
-                offsetX = Config.Bind<float>(Testing, "offsetX", -0.045f, new ConfigDescription("", new AcceptableValueRange<float>(-500f, 500f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4 }));
-                offsetY = Config.Bind<float>(Testing, "offsetY", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-500f, 500f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5 }));
-                offsetZ = Config.Bind<float>(Testing, "offsetZ", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-500f, 500f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6 }));
+                offsetX = Config.Bind<float>(Testing, "offsetX", -0.045f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4 }));
+                offsetY = Config.Bind<float>(Testing, "offsetY", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5 }));
+                offsetZ = Config.Bind<float>(Testing, "offsetZ", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6 }));
 
-                camX = Config.Bind<float>(Testing, "camX", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7 }));
-                camY = Config.Bind<float>(Testing, "camY", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 8 }));
-                camZ = Config.Bind<float>(Testing, "camZ", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 9 }));
+                camX = Config.Bind<float>(Testing, "camX", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7 }));
+                camY = Config.Bind<float>(Testing, "camY", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 8 }));
+                camZ = Config.Bind<float>(Testing, "camZ", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 9 }));
+
+                changeTimeMult = Config.Bind<float>(Testing, "changeTimeMult", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10 }));
+                changeTimeIncrease = Config.Bind<float>(Testing, "changeTimeIncrease", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11 }));
+                resetTimeMult = Config.Bind<float>(Testing, "resetTimeMult", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12 }));
+                restTimeIncrease = Config.Bind<float>(Testing, "restTimeIncrease", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13 }));
+                rotationMulti = Config.Bind<float>(Testing, "rotationMulti", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14 }));
 
                 if (enableProgramK.Value == true)
                 {
@@ -569,18 +580,6 @@ namespace RealismMod
                     {
                         Plugin.IsCantedAiming = false;
                     }
-
-           /*         GameWorld gameWorld = Singleton<GameWorld>.Instance;
-                    Player player = gameWorld.RegisteredPlayers[0];
-
-                    if (Input.GetKeyDown(KeyCode.I))
-                    {
-                        player.ProceduralWeaponAnimation.
-                    }
-                    if (Input.GetKeyUp(KeyCode.I))
-                    {
-                       
-                    }*/
                 }
             }
         }
