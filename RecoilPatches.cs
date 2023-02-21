@@ -119,6 +119,9 @@ namespace RealismMod
                 Plugin.IsFiring = true;
                 Plugin.ShotCount++;
 
+                Logger.LogWarning("passive aiming = " + Plugin.IsPassiveAiming);
+                float passiveAimingBonus = Plugin.IsPassiveAiming == true ? 0.9f : 1f;
+
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
                 float buffFactoredDispersion = Plugin.CurrentDispersion * str * PlayerProperties.RecoilInjuryMulti;
@@ -156,7 +159,7 @@ namespace RealismMod
                 __instance.ShotVals[4].Intensity = Plugin.CurrentCamRecoilY * str * PlayerProperties.RecoilInjuryMulti;
 
                 float num = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
-                float num2 = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * PlayerProperties.RecoilInjuryMulti;
+                float num2 = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * PlayerProperties.RecoilInjuryMulti * passiveAimingBonus;
                 float num3 = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * PlayerProperties.RecoilInjuryMulti;
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(num) * num2 * _separateIntensityFactors.x, Mathf.Cos(num) * num2 * _separateIntensityFactors.y, num3 * _separateIntensityFactors.z) * __instance.Intensity;
                 IWeapon weapon = _weapon;

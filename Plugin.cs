@@ -98,9 +98,11 @@ namespace RealismMod
         public static ConfigEntry<float> restTimeIncrease { get; set; }
         public static ConfigEntry<float> rotationMulti { get; set; }
 
+        public static ConfigEntry<KeyboardShortcut> PassiveAimKeybind { get; set; }
+
         public static Vector3 WeapStartPosition = new Vector3(0.0f, 0.0f, 0.0f);
         public static Vector3 TargetPosition = new Vector3(0.0f, 0.0f, 0.0f);
-        public static bool IsCantedAiming = false;
+        public static bool IsPassiveAiming = false;
 
         public static bool IsFiring = false;
         public static bool IsBotFiring = false;
@@ -353,6 +355,8 @@ namespace RealismMod
                 restTimeIncrease = Config.Bind<float>(Testing, "restTimeIncrease", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13 }));
                 rotationMulti = Config.Bind<float>(Testing, "rotationMulti", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14 }));
 
+                PassiveAimKeybind = Config.Bind(Testing, "", new KeyboardShortcut(KeyCode.X), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 15 }));
+
                 if (enableProgramK.Value == true)
                 {
                     Helper.ProgramKEnabled = true;
@@ -572,13 +576,13 @@ namespace RealismMod
                         Recoil.ResetRecoil();
                     }
 
-                    if (Input.GetKeyDown(KeyCode.U))
+                    if (Input.GetKeyDown(PassiveAimKeybind.Value.MainKey))
                     {
-                        Plugin.IsCantedAiming = true;
+                        Plugin.IsPassiveAiming = true;
                     }
-                    if (Input.GetKeyUp(KeyCode.U))
+                    if (Input.GetKeyUp(PassiveAimKeybind.Value.MainKey))
                     {
-                        Plugin.IsCantedAiming = false;
+                        Plugin.IsPassiveAiming = false;
                     }
                 }
             }

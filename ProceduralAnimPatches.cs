@@ -155,7 +155,7 @@ namespace RealismMod
             //for setting baseline position
             /*            __instance.HandsContainer.WeaponRoot.localPosition = Plugin.WeapStartPosition + new Vector3(Plugin.offsetX.Value, Plugin.offsetY.Value, Plugin.offsetZ.Value);
             */
-            if (Plugin.IsCantedAiming == true)
+            if (Plugin.IsPassiveAiming == true)
             {
                 currentRotation = Quaternion.Lerp(currentRotation, targetQuaternion, __instance.CameraSmoothTime * aimSpeed * dt * Plugin.rotationMulti.Value);
                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
@@ -176,7 +176,7 @@ namespace RealismMod
 
                 if (__instance.HandsContainer.TrackingTransform.localPosition.x != Plugin.WeapStartPosition.x)
                 {
-                    currentRotation = Quaternion.Lerp(currentRotation, inverseQuaternion, __instance.CameraSmoothTime * aimSpeed * dt * Plugin.rotationMulti.Value);
+                    currentRotation = Quaternion.Lerp(currentRotation, inverseQuaternion, __instance.CameraSmoothTime * aimSpeed * dt * Plugin.rotationMulti.Value * 1.2f);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
                     Logger.LogWarning("reseting");
                     changeSpeedMulti = Plugin.changeTimeMult.Value;
