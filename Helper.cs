@@ -46,6 +46,8 @@ namespace RealismMod
 
         public static bool IsReady = false;
 
+        public static bool WeaponReady = false;
+
         public static string Silencer = "550aa4cd4bdc2dd8348b456c";
         public static string FlashHider = "550aa4bf4bdc2dd6348b456b";
         public static string MuzzleCombo = "550aa4dd4bdc2dc9348b4569";
@@ -87,6 +89,7 @@ namespace RealismMod
         {
             GameWorld gameWorld = Singleton<GameWorld>.Instance;
             SessionResultPanel sessionResultPanel = Singleton<SessionResultPanel>.Instance;
+            Player player = gameWorld.RegisteredPlayers[0];
 
             if (gameWorld == null || gameWorld.AllPlayers == null || gameWorld.AllPlayers.Count <= 0 || sessionResultPanel != null)
             {
@@ -94,8 +97,16 @@ namespace RealismMod
                 return false;
             }
             Helper.IsReady = true;
+            if (player != null && player.HandsController.Item != null)
+            {
+                if (player.HandsController.Item is Weapon)
+                {
+                    Helper.WeaponReady = true;
+                }
+            }
             return true;
         }
+
 
         public static void SafelyAddAttributeToList(ItemAttributeClass itemAttribute, Mod __instance)
         {

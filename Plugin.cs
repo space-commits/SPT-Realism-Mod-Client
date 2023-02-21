@@ -100,8 +100,10 @@ namespace RealismMod
 
         public static ConfigEntry<KeyboardShortcut> PassiveAimKeybind { get; set; }
 
-        public static Vector3 WeapStartPosition = new Vector3(0.0f, 0.0f, 0.0f);
-        public static Vector3 TargetPosition = new Vector3(0.0f, 0.0f, 0.0f);
+        public static Vector3 WeaponStartPosition;
+        public static Vector3 WeaponTargetPosition;
+        public static Vector3 TransformStartPosition = new Vector3(0.0f, 0.0f, 0.0f);
+        public static Vector3 TransformTargetPosition = new Vector3(0.0f, 0.0f, 0.0f);
         public static bool IsPassiveAiming = false;
 
         public static bool IsFiring = false;
@@ -338,10 +340,10 @@ namespace RealismMod
                 DistReset = Config.Bind<float>(DeafSettings, "Distortion Reset Rate", 0.25f, new ConfigDescription("How Quickly Player's Hearing Recovers From Distortion. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1 }));
 
                 rotationX = Config.Bind<float>(Testing, "rotationX", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1 }));
-                rotationY = Config.Bind<float>(Testing, "rotationY", 45.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
+                rotationY = Config.Bind<float>(Testing, "rotationY", -90.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
                 rotationZ = Config.Bind<float>(Testing, "rotationZ", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3 }));
 
-                offsetX = Config.Bind<float>(Testing, "offsetX", -0.045f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4 }));
+                offsetX = Config.Bind<float>(Testing, "offsetX", -0.1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4 }));
                 offsetY = Config.Bind<float>(Testing, "offsetY", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5 }));
                 offsetZ = Config.Bind<float>(Testing, "offsetZ", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6 }));
 
@@ -349,11 +351,11 @@ namespace RealismMod
                 camY = Config.Bind<float>(Testing, "camY", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 8 }));
                 camZ = Config.Bind<float>(Testing, "camZ", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 9 }));
 
-                changeTimeMult = Config.Bind<float>(Testing, "changeTimeMult", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10 }));
-                changeTimeIncrease = Config.Bind<float>(Testing, "changeTimeIncrease", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11 }));
-                resetTimeMult = Config.Bind<float>(Testing, "resetTimeMult", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12 }));
-                restTimeIncrease = Config.Bind<float>(Testing, "restTimeIncrease", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13 }));
-                rotationMulti = Config.Bind<float>(Testing, "rotationMulti", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14 }));
+                changeTimeMult = Config.Bind<float>(Testing, "changeTimeMult", 0.01f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10 }));
+                changeTimeIncrease = Config.Bind<float>(Testing, "changeTimeIncrease", 0.04f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11 }));
+                resetTimeMult = Config.Bind<float>(Testing, "resetTimeMult", 0.01f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12 }));
+                restTimeIncrease = Config.Bind<float>(Testing, "restTimeIncrease", 0.02f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13 }));
+                rotationMulti = Config.Bind<float>(Testing, "rotationMulti", 1.2f, new ConfigDescription("", new AcceptableValueRange<float>(-100f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14 }));
 
                 PassiveAimKeybind = Config.Bind(Testing, "", new KeyboardShortcut(KeyCode.X), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 15 }));
 
@@ -575,15 +577,18 @@ namespace RealismMod
                     {
                         Recoil.ResetRecoil();
                     }
+                    if (Helper.WeaponReady)
+                    {
+                        if (Input.GetKeyDown(PassiveAimKeybind.Value.MainKey))
+                        {
+                            Plugin.IsPassiveAiming = true;
+                        }
+                        if (Input.GetKeyUp(PassiveAimKeybind.Value.MainKey))
+                        {
+                            Plugin.IsPassiveAiming = false;
+                        }
+                    }
 
-                    if (Input.GetKeyDown(PassiveAimKeybind.Value.MainKey))
-                    {
-                        Plugin.IsPassiveAiming = true;
-                    }
-                    if (Input.GetKeyUp(PassiveAimKeybind.Value.MainKey))
-                    {
-                        Plugin.IsPassiveAiming = false;
-                    }
                 }
             }
         }
