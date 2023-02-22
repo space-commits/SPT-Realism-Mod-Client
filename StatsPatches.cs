@@ -203,9 +203,6 @@ namespace RealismMod
             float ergonomicWeightLessMag = StatCalc.ErgoWeightCalc(weapWeightLessMag, pureErgoDelta, totalErgoDelta);
             Logger.LogWarning("ergoweight = " + ergonomicWeight);
 
-
-            float weapTorqueLessMag = totalTorque - magazineTorque;//?
-
             float totalAimMoveSpeedFactor = 0;
             float totalReloadSpeed = 0;
             float totalChamberSpeed = 0;

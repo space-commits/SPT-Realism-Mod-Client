@@ -26,8 +26,10 @@ namespace RealismMod
                 if (!player.IsAI)
                 {
                     FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
-                    bool isOn = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
-                    if (Plugin.IsPassiveAiming == true || (Plugin.enableFSPatch.Value == true && ((isOn && !WeaponProperties.WeaponCanFSADS && !ArmorProperties.AllowsADS(fsComponent.Item)) || (!PlayerProperties.GearAllowsADS && !WeaponProperties.WeaponCanFSADS))))
+                    NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
+                    bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
+                    bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
+                    if ((nvgIsOn == true && Plugin.HasOptic) || (Plugin.enableFSPatch.Value == true && ((fsIsON && !WeaponProperties.WeaponCanFSADS && !ArmorProperties.AllowsADS(fsComponent.Item)) || (!PlayerProperties.GearAllowsADS && !WeaponProperties.WeaponCanFSADS))))
                     {
                         PlayerProperties.IsAllowedADS = false;
                         player.MovementContext.SetAimingSlowdown(false, 0.33f);
@@ -44,6 +46,14 @@ namespace RealismMod
                     else
                     {
                         PlayerProperties.IsAllowedADS = true;
+                    }
+
+                    if (Plugin.IsPassiveAiming == true)
+                    {
+                        PlayerProperties.IsAllowedADS = false;
+                        player.ProceduralWeaponAnimation.IsAiming = false;
+                        player.MovementContext.SetAimingSlowdown(true, 0.33f);
+
                     }
 
                     Plugin.IsAiming = ____isAiming;

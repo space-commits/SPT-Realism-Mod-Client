@@ -253,12 +253,12 @@ namespace RealismMod
             if (((armorFactor >= penetrationPower + 15f) ? 0f : ((armorFactor >= penetrationPower) ? (0.4f * (armorFactor - penetrationPower - 15f) * (armorFactor - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * armorFactor - penetrationPower)))) - shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f < 0f)
             {
                 shot.BlockedBy = __instance.Item.Id;
-                Logger.LogWarning("ROUND PENETRATED!");
+                Logger.LogWarning("ROUND STOPPED!");
                 Debug.Log(">>> Shot blocked by armor piece");
             }
             else
             {
-                Logger.LogWarning("ROUND STOPPED!");
+                Logger.LogWarning("ROUND PENETRATED!");
             }
             Logger.LogWarning("---------------------------------------");
             return false;
@@ -345,8 +345,7 @@ namespace RealismMod
             {
                 throughputFacotredDamage = maxPotentialDamage * throughputDuraFactored;
             }
-            float durabilityLoss = (maxPotentialDamage / 100f) * armorDamage * Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
-
+            float durabilityLoss = (maxPotentialDamage / penPower) * (ammo.BulletDiameterMilimeters / 10f) * armorDamage * Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
             Logger.LogWarning("==");
             Logger.LogWarning("Armor Class = " + __instance.ArmorClass);
             Logger.LogWarning("Armor Material = " + __instance.Template.ArmorMaterial);

@@ -60,7 +60,7 @@ namespace RealismMod
 
             if (Plugin.IsFiring != true && Helper.IsInReloadOpertation)
             {
-                __instance.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.TotalChamberSpeed * WeaponProperties.ArmHammerSpeedMulti * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.5f));
+                __instance.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.TotalChamberSpeed * WeaponProperties.ArmHammerSpeedMulti * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.3f));
             }
         }
     }
@@ -80,7 +80,7 @@ namespace RealismMod
             {
                 bonus = WeaponProperties.CheckAmmoPistolSpeedMulti;
             }
-            __instance.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * bonus * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.5f));
+            __instance.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * bonus * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.3f));
         }
     }
 
@@ -113,7 +113,7 @@ namespace RealismMod
             Logger.LogWarning("total chamber speed = " + chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti);
             Logger.LogWarning("///////////////////Check Chamber///////////////");
 
-            __instance.SetAnimationSpeed(Mathf.Clamp(chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.5f));
+            __instance.SetAnimationSpeed(Mathf.Clamp(chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.3f));
         }
     }
 
@@ -167,9 +167,12 @@ namespace RealismMod
         private static void Prefix(IAnimator animator, float speedFix)
         {
 
-            float totalFixSpeed = Mathf.Clamp((speedFix + WeaponProperties.TotalChamberSpeed) * (PlayerProperties.ReloadInjuryMulti * WeaponProperties.GlobalFixSpeedMulti), 0.5f, 1.5f);
+            float totalFixSpeed = Mathf.Clamp(speedFix * WeaponProperties.TotalChamberSpeed * PlayerProperties.ReloadInjuryMulti * WeaponProperties.GlobalFixSpeedMulti, 0.5f, 1.3f);
             animator.SetFloat(WeaponAnimationSpeedControllerClass.FLOAT_SPEEDFIX, totalFixSpeed);
-            Logger.LogWarning("Fix Speed = " + speedFix);
+            animator.speed = totalFixSpeed;
+            Logger.LogWarning("Total Chamber Speed = " + WeaponProperties.TotalChamberSpeed);
+            Logger.LogWarning("ReloadInjuryMulti = " + PlayerProperties.ReloadInjuryMulti);
+            Logger.LogWarning("Skill Fix Speed = " + speedFix);
             Logger.LogWarning("Total Fix Speed = " + totalFixSpeed);
 
         }
@@ -195,7 +198,7 @@ namespace RealismMod
             {
                 chamberSpeed *= WeaponProperties.RechamberSpeedMulti;
             }
-            __instance.SetAnimationSpeed(Mathf.Clamp(chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.5f));
+            __instance.SetAnimationSpeed(Mathf.Clamp(chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.3f));
         }
     }
 

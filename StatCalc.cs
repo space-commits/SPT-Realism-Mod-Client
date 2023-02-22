@@ -18,7 +18,7 @@ namespace RealismMod
         public static float PistolErgoTorqueMult = 1.0f;
 
         public static float VRecoilWeightMult = 1.95f;
-        public static float VRecoilTorqueMult = 0.95f;
+        public static float VRecoilTorqueMult = 0.85f;
         public static float PistolVRecoilWeightMult = 2.1f;
         public static float PistolVRecoilTorqueMult = 1.1f;
 
@@ -28,25 +28,25 @@ namespace RealismMod
         public static float PistolHRecoilTorqueMult = 0.8f;
 
         public static float DispersionWeightMult = 1.5f;
-        public static float DispersionTorqueMult = 1.32f;
+        public static float DispersionTorqueMult = 1.25f;
         public static float PistolDispersionWeightMult = 1.5f;
         public static float PistolDispersionTorqueMult = 1.5f;
 
         public static float CamWeightMult = 3.25f;
         public static float CamTorqueMult = 0.25f;
 
-        public static float AngleTorqueMult = 1.0f;//needs tweaking
+        public static float AngleTorqueMult = 0.9f;//needs tweaking
         public static float PistolAngleTorqueMult = 0.3f;
 
         public static float DampingWeightMult = 0.07f;
-        public static float DampingTorqueMult = 0.1f;
+        public static float DampingTorqueMult = 0.09f;
         public static float DampingMin = 0.65f;
         public static float DampingMax = 0.77f;
         public static float DampingPistolMin = 0.5f;
         public static float DampingPistolMax = 0.7f;
 
-        public static float HandDampingWeightMult = 0.07f;//
-        public static float HandDampinTorqueMult = 0.1f;// needs tweaking
+        public static float HandDampingWeightMult = 0.1f;//
+        public static float HandDampingTorqueMult = 0.07f;// needs tweaking
         public static float HandDampingMin = 0.65f;
         public static float HandDampingMax = 0.77f;
         public static float HandDampingPistolMin = 0.5f;
@@ -103,7 +103,7 @@ namespace RealismMod
             {
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 StatCalc.MagReloadSpeedModifier(logger, magazine, false, true);
-                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadInjuryMulti * PlayerProperties.ReloadSkillMulti * PlayerProperties.GearReloadMulti, 0.5f, 1.5f));
+                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadInjuryMulti * PlayerProperties.ReloadSkillMulti * PlayerProperties.GearReloadMulti, 0.5f, 1.3f));
             }
             else
             {
@@ -196,12 +196,14 @@ namespace RealismMod
             totalReloadSpeed = Mathf.Clamp(baseReloadSpeed * (1f - (ergonomicWeightLessMag / 100f)) * reloadSpeedMod, WeaponProperties.MinReloadSpeed(weap), WeaponProperties.MaxReloadSpeed(weap));
             totalAimMoveSpeedFactor = 1f - (ergoWeight / 100f);
 
+            logger.LogWarning("ergoWeightMulti = " + ergoWeightMulti);
             logger.LogWarning("ergonomicWeightLessMag = " + ergonomicWeightLessMag);
             logger.LogWarning("baseReloadSpeed = " + baseReloadSpeed);
             logger.LogWarning("reloadSpeedMod = " + reloadSpeedMod);
             logger.LogWarning("min reload = " + WeaponProperties.MinReloadSpeed(weap));
             logger.LogWarning("max reload = " + WeaponProperties.MaxReloadSpeed(weap));
             logger.LogWarning("----");
+            logger.LogWarning("baseChamberSpeed = " + baseChamberSpeed);
             logger.LogWarning("chamberSpeedMod = " + chamberSpeedMod);
             logger.LogWarning("min chamberspeed = " + WeaponProperties.MinChamberSpeed(weap));
             logger.LogWarning("max chamberspeed = " + WeaponProperties.MaxChamberSpeed(weap));
@@ -312,12 +314,12 @@ namespace RealismMod
             if (weap.WeapClass == "pistol")
             {
                 totalRecoilDamping = Mathf.Clamp(recoilDamping + (recoilDamping * (dampingTotalWeightFactor + (totalTorqueFactor * StatCalc.DampingTorqueMult))), StatCalc.DampingPistolMin, StatCalc.DampingPistolMax);
-                totalRecoilHandDamping = Mathf.Clamp(recoilHandDamping + (recoilHandDamping * (handDampingTotalWeightFactor + (totalTorqueFactorInverse * StatCalc.HandDampinTorqueMult))), StatCalc.HandDampingPistolMin, StatCalc.HandDampingPistolMax);
+                totalRecoilHandDamping = Mathf.Clamp(recoilHandDamping + (recoilHandDamping * (handDampingTotalWeightFactor + (totalTorqueFactorInverse * StatCalc.HandDampingTorqueMult))), StatCalc.HandDampingPistolMin, StatCalc.HandDampingPistolMax);
             }
             else
             {
                 totalRecoilDamping = Mathf.Clamp(recoilDamping + (recoilDamping * (dampingTotalWeightFactor + (totalTorqueFactor * StatCalc.DampingTorqueMult))), StatCalc.DampingMin, StatCalc.DampingMax);
-                totalRecoilHandDamping = Mathf.Clamp(recoilHandDamping + (recoilHandDamping * (handDampingTotalWeightFactor + (totalTorqueFactorInverse * StatCalc.HandDampinTorqueMult))), StatCalc.HandDampingMin, StatCalc.HandDampingMax);
+                totalRecoilHandDamping = Mathf.Clamp(recoilHandDamping + (recoilHandDamping * (handDampingTotalWeightFactor + (totalTorqueFactorInverse * StatCalc.HandDampingTorqueMult))), StatCalc.HandDampingMin, StatCalc.HandDampingMax);
             }
         }
 

@@ -200,7 +200,7 @@ namespace RealismMod
 
         public static float SightlessADSSpeed = 1f;
 
-        public static bool CanADSNVG = true;
+        public static bool HasOptic = false;
 
         private void GetPaths()
         {
@@ -353,7 +353,7 @@ namespace RealismMod
                 DistReset = Config.Bind<float>(DeafSettings, "Distortion Reset Rate", 0.25f, new ConfigDescription("How Quickly Player's Hearing Recovers From Distortion. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1 }));
 
                 rotationX = Config.Bind<float>(Testing, "rotationX", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1 }));
-                rotationY = Config.Bind<float>(Testing, "rotationY", -90.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
+                rotationY = Config.Bind<float>(Testing, "rotationY", -160.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
                 rotationZ = Config.Bind<float>(Testing, "rotationZ", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3 }));
 
                 offsetX = Config.Bind<float>(Testing, "offsetX", -0.1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4 }));
@@ -368,20 +368,20 @@ namespace RealismMod
                 changeTimeIncrease = Config.Bind<float>(Testing, "changeTimeIncrease", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11 }));
                 resetTimeMult = Config.Bind<float>(Testing, "resetTimeMult", 0.01f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12 }));
                 restTimeIncrease = Config.Bind<float>(Testing, "restTimeIncrease", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13 }));
-                rotationMulti = Config.Bind<float>(Testing, "rotationMulti", 1.2f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14 }));
+                rotationMulti = Config.Bind<float>(Testing, "rotationMulti", 0.4f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14 }));
 
                 BasePosChangeRate = Config.Bind<float>(Testing, "BasePosChangeRate", -0.4f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15 }));
                 BaseResetChangeRate = Config.Bind<float>(Testing, "BaseResetChangeRate", 0.35f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16 }));
 
                 PassiveAimKeybind = Config.Bind(Testing, "", new KeyboardShortcut(KeyCode.X), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 17 }));
 
-                AdditionalRotationX = Config.Bind<float>(Testing, "AdditionalRotationX", 5f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 18 }));
-                AdditionalRotationY = Config.Bind<float>(Testing, "AdditionalRotationY", -120f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 18 }));
-                AdditionalRotationZ = Config.Bind<float>(Testing, "AdditionalRotationZ", -5f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 18 }));
+                AdditionalRotationX = Config.Bind<float>(Testing, "AdditionalRotationX", -10f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 18 }));
+                AdditionalRotationY = Config.Bind<float>(Testing, "AdditionalRotationY", -120f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 19 }));
+                AdditionalRotationZ = Config.Bind<float>(Testing, "AdditionalRotationZ", -5f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20 }));
 
-                ResetRotationX = Config.Bind<float>(Testing, "ResetRotationX", 4f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 18 }));
-                ResetRotationY = Config.Bind<float>(Testing, "ResetRotationY", 27f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 18 }));
-                ResetRotationZ = Config.Bind<float>(Testing, "ResetRotationZ", 4f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 18 }));
+                ResetRotationX = Config.Bind<float>(Testing, "ResetRotationX", 5f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 21 }));
+                ResetRotationY = Config.Bind<float>(Testing, "ResetRotationY", 120f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 22 }));
+                ResetRotationZ = Config.Bind<float>(Testing, "ResetRotationZ", 4f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 23 }));
 
 
                 if (enableProgramK.Value == true)
@@ -498,12 +498,12 @@ namespace RealismMod
                 {
                     new CreateShotPatch().Enable();
                 }
-/*
+
                 new ApplyDamagePatch().Enable();
                 new DamageInfoPatch().Enable();
                 new ApplyDamageInfoPatch().Enable();
                 new SetPenetrationStatusPatch().Enable();
-*/
+
                 //Armor
                 if (enableRealArmorClass.Value == true)
                 {
