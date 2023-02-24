@@ -179,37 +179,27 @@ namespace RealismMod
             return float.Parse(weapon.ConflictingItems[15]);
         }
 
+        public static float BaseChamberCheckSpeed(Weapon weapon)
+        {
+            if (Helper.NullCheck(weapon.ConflictingItems))
+            {
+                return 1f;
+            }
+            return float.Parse(weapon.ConflictingItems[16]);
+        }
+
+        public static float BaseFixSpeed(Weapon weapon)
+        {
+            if (Helper.NullCheck(weapon.ConflictingItems))
+            {
+                return 1f;
+            }
+            return float.Parse(weapon.ConflictingItems[17]);
+        }
+
+        public static float TotalChamberCheckSpeed = 1;
+
         public static bool _IsManuallyOperated = false;
-
-        public static float InternalMagReloadMulti = 1f;
-
-        public static float QuickReloadSpeedMulti = 1.5f;
-
-        public static float ArmHammerSpeedMulti = 1f;
-
-        public static float CheckAmmoMulti = 1f;
-
-        public static float CheckAmmoPistolSpeedMulti = 1f;
-
-        public static float CheckChamberPistolSpeedMulti = 1f;
-
-        public static float CheckChamberShotgunSpeedMulti = 1f;
-
-        public static float CheckChamberSpeedMulti = 1f;
-
-        public static float ShotgunRackSpeedFactor = 1;
-
-        public static float RechamberSpeedMulti = 1f;
-
-        public static float RechamberPistolSpeedMulti = 1f;
-
-        public static float GlobalReloadSpeedMulti = 1f;
-
-        public static float GlobalFixSpeedMulti = 1f;
-
-        public static float GlobalUBGLReloadMulti = 1f;
-
-        public static float GlobalBoltSpeedMulti = 1f;
 
         public static float TotalModDuraBurn = 1;
 
@@ -327,15 +317,19 @@ namespace RealismMod
 
         public static float TotalChamberSpeed = 1f;
 
+        public static float TotalFixSpeed = 1f;
+
+        public static float TotalFiringChamberSpeed = 1f;
+
         public static float SDChamberSpeedModifier = 1f;
 
         public static float AimMoveSpeedModifier = 1f;
 
-        public static float AimSpeedModifier = 1f;
+        public static float ModAimSpeedModifier = 1f;
 
         public static float GlobalAimSpeedModifier = 1f;
 
-        public static float AimSpeed = 1f;
+        public static float SightlessAimSpeed = 1f;
 
         public static float CurrentMagReloadSpeed = 1f;
         public static float NewMagReloadSpeed = 1f;

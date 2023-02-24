@@ -53,7 +53,10 @@ namespace RealismMod
                         PlayerProperties.IsAllowedADS = false;
                         player.ProceduralWeaponAnimation.IsAiming = false;
                         player.MovementContext.SetAimingSlowdown(true, 0.33f);
-
+                    }
+                    if (Plugin.IsPassiveAiming == false && ____isAiming == false)
+                    {
+                        player.MovementContext.SetAimingSlowdown(false, 0.33f);
                     }
 
                     Plugin.IsAiming = ____isAiming;

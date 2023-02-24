@@ -130,15 +130,15 @@ namespace RealismMod
 
         public static float GrenadeVolumeLimit = -35f;
         public static float GrenadeDistortionLimit = 50f;
-        public static float GrenadeVignetteDarknessLimit = 10f;
+        public static float GrenadeVignetteDarknessLimit = 8f;
 
-        public static float GrenadeVolumeDecreaseRate = 0.05f;
+        public static float GrenadeVolumeDecreaseRate = 0.04f;
         public static float GrenadeDistortionIncreaseRate = 0.5f;
-        public static float GrenadeVignetteDarknessIncreaseRate = 1f;
+        public static float GrenadeVignetteDarknessIncreaseRate = 0.9f;
 
-        public static float GrenadeVolumeResetRate = 0.03f;
+        public static float GrenadeVolumeResetRate = 0.04f;
         public static float GrenadeDistortionResetRate = 0.1f;
-        public static float GrenadeVignetteDarknessResetRate = 0.07f;
+        public static float GrenadeVignetteDarknessResetRate = 0.08f;
 
         public static bool valuesAreReset = false;
 

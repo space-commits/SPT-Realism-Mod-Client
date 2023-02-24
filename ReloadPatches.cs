@@ -47,6 +47,7 @@ namespace RealismMod
         }
     }
 
+
     public class SetHammerArmedPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -60,7 +61,10 @@ namespace RealismMod
 
             if (Plugin.IsFiring != true && Helper.IsInReloadOpertation)
             {
-                __instance.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.TotalChamberSpeed * WeaponProperties.ArmHammerSpeedMulti * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.3f));
+                __instance.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.TotalChamberSpeed * Plugin.GlobalArmHammerSpeedMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.3f));
+                Logger.LogWarning("///////////////////SetHammerArmed///////////////");
+                Logger.LogWarning("SetHammerArmed= " + Mathf.Clamp(WeaponProperties.TotalChamberSpeed * Plugin.GlobalArmHammerSpeedMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.3f));
+                Logger.LogWarning("//////////////////////////////////");
             }
         }
     }
@@ -75,11 +79,14 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            float bonus = WeaponProperties.CheckAmmoMulti;
+            float bonus = Plugin.GlobalCheckAmmoMulti.Value;
             if (WeaponProperties._WeapClass == "pistol")
             {
-                bonus = WeaponProperties.CheckAmmoPistolSpeedMulti;
+                bonus = Plugin.GlobalCheckAmmoPistolSpeedMulti.Value;
             }
+            Logger.LogWarning("///////////////////Check Ammo///////////////");
+            Logger.LogWarning("Check Ammo = " + Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * bonus * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.3f));
+            Logger.LogWarning("//////////////////////////////////");
             __instance.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * bonus * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.3f));
         }
     }
@@ -95,18 +102,18 @@ namespace RealismMod
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
             Logger.LogWarning("///////////////////Check Chamber///////////////");
-            float chamberSpeed = WeaponProperties.TotalChamberSpeed;
+            float chamberSpeed = WeaponProperties.TotalChamberCheckSpeed;
             if (WeaponProperties._WeapClass == "pistol")
             {
-                chamberSpeed *= WeaponProperties.CheckChamberPistolSpeedMulti;
+                chamberSpeed *= Plugin.GlobalCheckChamberPistolSpeedMulti.Value;
             }
             else if (WeaponProperties._WeapClass == "shotgun")
             {
-                chamberSpeed *= WeaponProperties.CheckChamberShotgunSpeedMulti;
+                chamberSpeed *= Plugin.GlobalCheckChamberShotgunSpeedMulti.Value;
             }
             else
             {
-                chamberSpeed *= WeaponProperties.CheckChamberSpeedMulti;
+                chamberSpeed *= Plugin.GlobalCheckChamberSpeedMulti.Value;
             }
 
             Logger.LogWarning("chamberSpeed = " + chamberSpeed);
@@ -131,49 +138,49 @@ namespace RealismMod
             if (WeaponProperties._IsManuallyOperated == true || Plugin.LauncherIsActive == true)
             {
                 Logger.LogWarning("///////////////////Bolt Action Reload////////////////");
-                float chamberSpeed = WeaponProperties.TotalChamberSpeed;
-                float recoilMulti = (1f + (-1f * WeaponProperties.PureRecoilDelta));
+                float chamberSpeed = WeaponProperties.TotalFiringChamberSpeed;
                 if (WeaponProperties._WeapClass == "shotgun")
                 {
-                    chamberSpeed *= WeaponProperties.ShotgunRackSpeedFactor * recoilMulti;
+                    chamberSpeed *= Plugin.GlobalShotgunRackSpeedFactor.Value;
                 }
                 if (Plugin.LauncherIsActive == true)
                 {
-                    chamberSpeed *= WeaponProperties.GlobalUBGLReloadMulti;
+                    chamberSpeed *= Plugin.GlobalUBGLReloadMulti.Value;
                 }
                 if (WeaponProperties._WeapClass == "sniperRifle")
                 {
-                    chamberSpeed *= WeaponProperties.GlobalBoltSpeedMulti * recoilMulti;
+                    chamberSpeed *= Plugin.GlobalBoltSpeedMulti.Value;
                 }
                 Logger.LogWarning("Injury Multi = " + PlayerProperties.ReloadInjuryMulti);
                 Logger.LogWarning("Reload Skill = " + PlayerProperties.ReloadSkillMulti);
-                Logger.LogWarning("recoilMulti = " + recoilMulti);
-                Logger.LogWarning("Base Chamber Speed = " + WeaponProperties.TotalChamberSpeed);
-                Logger.LogWarning("Total Chamber Speed = " + (chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));
+                Logger.LogWarning("Base Chamber Speed = " + WeaponProperties.TotalFiringChamberSpeed);
+                Logger.LogWarning("Total Chamber Speed = " + Mathf.Clamp(chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.3f));
                 Logger.LogWarning("///////////////////////////////////");
                 __instance.SetAnimationSpeed(Mathf.Clamp(chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.3f));
             }
         }
     }
 
-    public class SetSpeedFixPatch : ModulePatch
+    public class SetMalfRepairSpeedPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(WeaponAnimationSpeedControllerClass).GetMethod("SetSpeedFix", BindingFlags.Static | BindingFlags.Public);
+            return typeof(FirearmsAnimator).GetMethod("SetMalfRepairSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
         [PatchPrefix]
-        private static void Prefix(IAnimator animator, float speedFix)
+        private static void Prefix(FirearmsAnimator __instance, float fix)
         {
-
-            float totalFixSpeed = Mathf.Clamp(speedFix * WeaponProperties.TotalChamberSpeed * PlayerProperties.ReloadInjuryMulti * WeaponProperties.GlobalFixSpeedMulti, 0.5f, 1.3f);
-            animator.SetFloat(WeaponAnimationSpeedControllerClass.FLOAT_SPEEDFIX, totalFixSpeed);
-            animator.speed = totalFixSpeed;
-            Logger.LogWarning("Total Chamber Speed = " + WeaponProperties.TotalChamberSpeed);
+            Logger.LogWarning("=====================SetSpeedFix===============================");
+            float totalFixSpeed = Mathf.Clamp(fix * WeaponProperties.TotalFixSpeed * PlayerProperties.ReloadInjuryMulti * Plugin.GlobalFixSpeedMulti.Value, 0.5f, 1.3f);
+            WeaponAnimationSpeedControllerClass.SetSpeedFix(__instance.Animator, totalFixSpeed);
+            __instance.SetAnimationSpeed(totalFixSpeed);
+            Logger.LogWarning("totalFixSpeed = " + totalFixSpeed);
             Logger.LogWarning("ReloadInjuryMulti = " + PlayerProperties.ReloadInjuryMulti);
-            Logger.LogWarning("Skill Fix Speed = " + speedFix);
-            Logger.LogWarning("Total Fix Speed = " + totalFixSpeed);
+            Logger.LogWarning("Skill Fix Speed = " + fix);
+            Logger.LogWarning("Total Fix Speed = " + Mathf.Clamp(fix * WeaponProperties.TotalFixSpeed * PlayerProperties.ReloadInjuryMulti * Plugin.GlobalFixSpeedMulti.Value, 0.5f, 1.3f));
+            Logger.LogWarning("====================================================");
+
 
         }
     }
@@ -188,17 +195,21 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            float chamberSpeed = WeaponProperties.TotalChamberSpeed;
+            float chamberSpeed = WeaponProperties.TotalFixSpeed;
             if (WeaponProperties._WeapClass == "pistol")
             {
-                chamberSpeed *= WeaponProperties.RechamberPistolSpeedMulti;
+                chamberSpeed *= Plugin.RechamberPistolSpeedMulti.Value;
             }
 
             else
             {
-                chamberSpeed *= WeaponProperties.RechamberSpeedMulti;
+                chamberSpeed *= Plugin.GlobalRechamberSpeedMulti.Value;
             }
             __instance.SetAnimationSpeed(Mathf.Clamp(chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.3f));
+            Logger.LogWarning("=====================Rechamber===============================");
+
+            Logger.LogWarning("Total Rechamber Speed = " + Mathf.Clamp(chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.3f));
+            Logger.LogWarning("====================================================");
         }
     }
 
@@ -375,8 +386,8 @@ namespace RealismMod
             if (Helper.IsMagReloading == true)
             {
                 Logger.LogWarning("////////////////SetMagInWeapon///////////////");
-                Logger.LogWarning("CurrentMagReloadSpeed = + " + WeaponProperties.CurrentMagReloadSpeed);
-                Logger.LogWarning("Total Reload speed = + " + WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti);
+                Logger.LogWarning("CurrentMagReloadSpeed = + " + WeaponProperties.NewMagReloadSpeed);
+                Logger.LogWarning("Total Reload speed = + " + WeaponProperties.NewMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * PlayerProperties.GearReloadMulti);
                 Logger.LogWarning("///////////////////////////");
                 __instance.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.NewMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * PlayerProperties.GearReloadMulti, 0.5f, 1.5f));
             }
@@ -394,6 +405,7 @@ namespace RealismMod
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
             __instance.SetAnimationSpeed(1);
+            Logger.LogWarning("=====================================SetSpeedParameters SPEED REST=================================================");
         }
     }
 
@@ -414,6 +426,7 @@ namespace RealismMod
             {
                 Helper.IsMagReloading = false;
                 player.HandsAnimator.SetAnimationSpeed(1);
+                Logger.LogWarning("=====================================OnMagInsertedPatch SPEED REST=================================================");
             }
 
         }

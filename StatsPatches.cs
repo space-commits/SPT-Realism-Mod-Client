@@ -206,16 +206,24 @@ namespace RealismMod
             float totalAimMoveSpeedFactor = 0;
             float totalReloadSpeed = 0;
             float totalChamberSpeed = 0;
-            StatCalc.SpeedStatCalc(Logger, __instance, ergonomicWeight, ergonomicWeightLessMag, totalChamberSpeedMod, totalReloadSpeedMod, ref totalReloadSpeed, ref totalChamberSpeed, ref totalAimMoveSpeedFactor);
+            float totalFiringChamberSpeed = 0;
+            float totalChamberCheckSpeed = 0;
+            float totalFixSpeed = 0;
+
+            StatCalc.SpeedStatCalc(Logger, __instance, ergonomicWeight, ergonomicWeightLessMag, totalChamberSpeedMod, totalReloadSpeedMod, ref totalReloadSpeed, ref totalChamberSpeed, ref totalAimMoveSpeedFactor, ref totalFiringChamberSpeed, ref totalChamberCheckSpeed, ref totalFixSpeed);
 
             Logger.LogWarning("total mod ChamberSpeed = " + totalChamberSpeedMod);
             Logger.LogWarning("AimMoveSpeedFactor = " + totalAimMoveSpeedFactor);
             Logger.LogWarning("totalReloadSpeed = " + totalReloadSpeed);
             Logger.LogWarning("totalChamberSpeed = " + totalChamberSpeed);
+            Logger.LogWarning("totalFiringChamberSpeed = " + totalFiringChamberSpeed);
             Logger.LogWarning("=============");
 
+            WeaponProperties.TotalFixSpeed = totalFixSpeed;
+            WeaponProperties.TotalChamberCheckSpeed = totalChamberCheckSpeed;
             WeaponProperties.TotalReloadSpeedLessMag = totalReloadSpeed;
             WeaponProperties.TotalChamberSpeed = totalChamberSpeed;
+            WeaponProperties.TotalFiringChamberSpeed = totalFiringChamberSpeed;
             WeaponProperties.AimMoveSpeedModifier = totalAimMoveSpeedFactor;
 
             if (hasMag == true)
@@ -376,7 +384,6 @@ namespace RealismMod
                 totalLoudness *= 1.05f;
             }
 
-    
             float pureRecoilDelta = ((baseVRecoil + baseHRecoil) - pureRecoil) / ((baseVRecoil + baseHRecoil) * -1f);
             Logger.LogWarning("pureRecoilDelta = " + pureRecoilDelta);
             WeaponProperties.TotalModDuraBurn = modBurnRatio;
@@ -394,7 +401,7 @@ namespace RealismMod
             WeaponProperties.SDReloadSpeedModifier = currentReloadSpeedMod;
             WeaponProperties.SDChamberSpeedModifier = currentChamberSpeedMod;
             WeaponProperties.SDFixSpeedModifier = currentFixSpeedMod;
-            WeaponProperties.AimSpeedModifier = currentAimSpeedMod / 100f;
+            WeaponProperties.ModAimSpeedModifier = currentAimSpeedMod / 100f;
             WeaponProperties.AutoFireRate = Mathf.Max(300, (int)currentAutoROF);
             WeaponProperties.SemiFireRate = Mathf.Max(200, (int)currentSemiROF);
             WeaponProperties.SDTotalCOI = currentCOI;

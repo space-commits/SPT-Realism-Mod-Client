@@ -58,7 +58,7 @@ namespace RealismMod
         public static ConfigEntry<bool> enableAmmoArmorDamageDisp { get; set; }
         public static ConfigEntry<bool> enableAmmoFragDisp { get; set; }
         public static ConfigEntry<bool> enableBarrelFactor { get; set; }
-        public static ConfigEntry<bool> enableReloadPatches { get; set; }
+        public static ConfigEntry<bool> EnableReloadPatches { get; set; }
         public static ConfigEntry<bool> enableRealArmorClass { get; set; }
         public static ConfigEntry<bool> reduceCamRecoil { get; set; }
         public static ConfigEntry<float> convergenceSpeedCurve { get; set; }
@@ -108,6 +108,24 @@ namespace RealismMod
         public static ConfigEntry<float> ResetRotationX { get; set; }
         public static ConfigEntry<float> ResetRotationY { get; set; }
         public static ConfigEntry<float> ResetRotationZ { get; set; }
+
+        public static ConfigEntry<float> GlobalAimSpeedModifier { get; set; }
+        public static ConfigEntry<float> GlobalReloadSpeedMulti { get; set; }
+        public static ConfigEntry<float> GlobalFixSpeedMulti { get; set; }
+        public static ConfigEntry<float> GlobalUBGLReloadMulti { get; set; }
+        public static ConfigEntry<float> GlobalRechamberSpeedMulti { get; set; }
+        public static ConfigEntry<float> GlobalShotgunRackSpeedFactor { get; set; }
+        public static ConfigEntry<float> GlobalCheckChamberSpeedMulti { get; set; }
+        public static ConfigEntry<float> GlobalCheckChamberShotgunSpeedMulti { get; set; }
+        public static ConfigEntry<float> GlobalCheckChamberPistolSpeedMulti { get; set; }
+        public static ConfigEntry<float> GlobalCheckAmmoPistolSpeedMulti { get; set; }
+        public static ConfigEntry<float> GlobalCheckAmmoMulti { get; set; }
+        public static ConfigEntry<float> GlobalArmHammerSpeedMulti { get; set; }
+        public static ConfigEntry<float> QuickReloadSpeedMulti { get; set; }
+        public static ConfigEntry<float> InternalMagReloadMulti { get; set; }
+        public static ConfigEntry<float> GlobalBoltSpeedMulti { get; set; }
+        public static ConfigEntry<float> RechamberPistolSpeedMulti { get; set; }
+
 
         public static Vector3 WeaponStartPosition;
         public static Vector3 WeaponTargetPosition;
@@ -294,7 +312,8 @@ namespace RealismMod
                 string AdvancedRecoilSettings = "4. Advanced Recoil Settings";
                 string WeaponSettings = "5. Weapon Settings";
                 string DeafSettings = "6. Deafening and Audio";
-                string Testing = "7. Testing";
+                string Speed = "7. Weapon Speed Modifiers";
+                string Testing = "8. Testing";
 
 
                 /*   enableAmmoDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 5 }));
@@ -335,7 +354,6 @@ namespace RealismMod
                 showSemiROF = Config.Bind<bool>(WeapStatSettings, "Show Semi Auto ROF Stat", true, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 1 }));
 
                 SwayIntensity = Config.Bind<float>(WeaponSettings, "Sway Intensity", 1f, new ConfigDescription("Changes The Intensity Of Aim Sway And Inertia.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1 }));
-                enableReloadPatches = Config.Bind<bool>(WeaponSettings, "Enable Reload And Chamber Speed Changes", true, new ConfigDescription("Requires Restart. Weapon Weight, Magazine Weight, Attachment Reload And Chamber Speed Stat, Balance, Ergo And Arm Injury Affect Reload And Chamber Speed.", null, new ConfigurationManagerAttributes { Order = 2 }));
                 enableBarrelFactor = Config.Bind<bool>(WeaponSettings, "Enable Barrel Muzzle Velocity Factor", true, new ConfigDescription("Requires Restart. Muzzle Velocity (Barrel Length) Modifies The Damage, Penetration, Velocity, Fragmentation Chance, And Ballistic Coeficient Of Projectiles.", null, new ConfigurationManagerAttributes { Order = 3 }));
                 enableMalfPatch = Config.Bind<bool>(WeaponSettings, "Enable Malfunctions Changes", true, new ConfigDescription("Requires Restart. Malfunction Changes Must Be Enabled On The Server (Config App). You Don't Need To Inspect A Malfunction In Order To Clear It, Subsonic Ammo Needs Special Mods To Cycle, Malfunctions Can Happen At Any Durability But The Chance Is Halved If Above The Durability Threshold.", null, new ConfigurationManagerAttributes { Order = 4 }));
                 DuraMalfThreshold = Config.Bind<float>(WeaponSettings, "Malfunction Durability Threshold", 98f, new ConfigDescription("Malfunction Changes Must Be Enabled On The Server (Config App) And 'Enable Malfunctions Changes' Must Be True. Malfunction Chance Is Reduced By Half Until This Durability Threshold Is Met.", new AcceptableValueRange<float>(80f, 100f), new ConfigurationManagerAttributes { Order = 5 }));
@@ -352,11 +370,30 @@ namespace RealismMod
                 DistRate = Config.Bind<float>(DeafSettings, "Distortion Rate", 0.16f, new ConfigDescription("How Quickly Player's Hearing Gets Distorted. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
                 DistReset = Config.Bind<float>(DeafSettings, "Distortion Reset Rate", 0.25f, new ConfigDescription("How Quickly Player's Hearing Recovers From Distortion. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1 }));
 
+                EnableReloadPatches = Config.Bind<bool>(Speed, "Enable Reload And Chamber Speed Changes", true, new ConfigDescription("Requires Restart. Weapon Weight, Magazine Weight, Attachment Reload And Chamber Speed Stat, Balance, Ergo And Arm Injury Affect Reload And Chamber Speed.", null, new ConfigurationManagerAttributes { Order = 17 }));
+                GlobalAimSpeedModifier = Config.Bind<float>(Speed, "Aim Speed Multi", 0.9f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16 }));
+                GlobalReloadSpeedMulti = Config.Bind<float>(Speed, "Magazine Reload Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15 }));
+                GlobalFixSpeedMulti = Config.Bind<float>(Speed, "Malfunction Fix Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14 }));
+                GlobalUBGLReloadMulti = Config.Bind<float>(Speed, "UBGL Reload Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13 }));
+                RechamberPistolSpeedMulti = Config.Bind<float>(Speed, "Pistol Rechamber Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12 }));
+                GlobalRechamberSpeedMulti = Config.Bind<float>(Speed, "Rechamber Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11 }));
+                GlobalBoltSpeedMulti = Config.Bind<float>(Speed, "Bolt Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10 }));
+                GlobalShotgunRackSpeedFactor = Config.Bind<float>(Speed, "Shotgun Rack Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 9 }));
+                GlobalCheckChamberSpeedMulti = Config.Bind<float>(Speed, "Chamber Check Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 8 }));
+                GlobalCheckChamberShotgunSpeedMulti = Config.Bind<float>(Speed, "Shotgun Chamber Check Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7 }));
+                GlobalCheckChamberPistolSpeedMulti = Config.Bind<float>(Speed, "Pistol Chamber Check Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6 }));
+                GlobalCheckAmmoPistolSpeedMulti = Config.Bind<float>(Speed, "Chamber Check Ammo Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5 }));
+                GlobalCheckAmmoMulti = Config.Bind<float>(Speed, "Check Ammo Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4 }));
+                GlobalArmHammerSpeedMulti = Config.Bind<float>(Speed, "Arm Hammer, Bolt Release, Slide Release Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3 }));
+                QuickReloadSpeedMulti = Config.Bind<float>(Speed, "Quick Reload Multi", 1.4f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
+                InternalMagReloadMulti = Config.Bind<float>(Speed, "Internal Magazine Reload", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1 }));
+
+
                 rotationX = Config.Bind<float>(Testing, "rotationX", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1 }));
-                rotationY = Config.Bind<float>(Testing, "rotationY", -160.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
+                rotationY = Config.Bind<float>(Testing, "rotationY", -65.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
                 rotationZ = Config.Bind<float>(Testing, "rotationZ", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3 }));
 
-                offsetX = Config.Bind<float>(Testing, "offsetX", -0.1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4 }));
+                offsetX = Config.Bind<float>(Testing, "offsetX", -0.08f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4 }));
                 offsetY = Config.Bind<float>(Testing, "offsetY", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5 }));
                 offsetZ = Config.Bind<float>(Testing, "offsetZ", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6 }));
 
@@ -368,20 +405,22 @@ namespace RealismMod
                 changeTimeIncrease = Config.Bind<float>(Testing, "changeTimeIncrease", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11 }));
                 resetTimeMult = Config.Bind<float>(Testing, "resetTimeMult", 0.01f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12 }));
                 restTimeIncrease = Config.Bind<float>(Testing, "restTimeIncrease", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13 }));
-                rotationMulti = Config.Bind<float>(Testing, "rotationMulti", 0.4f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14 }));
+                rotationMulti = Config.Bind<float>(Testing, "rotationMulti", 1.2f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14 }));
 
-                BasePosChangeRate = Config.Bind<float>(Testing, "BasePosChangeRate", -0.4f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15 }));
+                BasePosChangeRate = Config.Bind<float>(Testing, "BasePosChangeRate", -0.9f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15 }));
                 BaseResetChangeRate = Config.Bind<float>(Testing, "BaseResetChangeRate", 0.35f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16 }));
 
                 PassiveAimKeybind = Config.Bind(Testing, "", new KeyboardShortcut(KeyCode.X), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 17 }));
 
-                AdditionalRotationX = Config.Bind<float>(Testing, "AdditionalRotationX", -10f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 18 }));
-                AdditionalRotationY = Config.Bind<float>(Testing, "AdditionalRotationY", -120f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 19 }));
-                AdditionalRotationZ = Config.Bind<float>(Testing, "AdditionalRotationZ", -5f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20 }));
+                AdditionalRotationX = Config.Bind<float>(Testing, "AdditionalRotationX", 5f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 18 }));
+                AdditionalRotationY = Config.Bind<float>(Testing, "AdditionalRotationY", -20f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 19 }));
+                AdditionalRotationZ = Config.Bind<float>(Testing, "AdditionalRotationZ", 2.5f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20 }));
 
-                ResetRotationX = Config.Bind<float>(Testing, "ResetRotationX", 5f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 21 }));
-                ResetRotationY = Config.Bind<float>(Testing, "ResetRotationY", 120f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 22 }));
-                ResetRotationZ = Config.Bind<float>(Testing, "ResetRotationZ", 4f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 23 }));
+                ResetRotationX = Config.Bind<float>(Testing, "ResetRotationX", 3.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 21 }));
+                ResetRotationY = Config.Bind<float>(Testing, "ResetRotationY", 20.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 22 }));
+                ResetRotationZ = Config.Bind<float>(Testing, "ResetRotationZ", -2.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 23 }));
+
+
 
 
                 if (enableProgramK.Value == true)
@@ -436,7 +475,7 @@ namespace RealismMod
 
 
                 //Reload Patches
-                if (Plugin.enableReloadPatches.Value == true)
+                if (Plugin.EnableReloadPatches.Value == true)
                 {
                     new CanStartReloadPatch().Enable();
                     new ReloadMagPatch().Enable();
@@ -451,7 +490,7 @@ namespace RealismMod
                     new SetMagInWeaponPatch().Enable();
 
                     new RechamberSpeedPatch().Enable();
-                    new SetSpeedFixPatch().Enable();
+                    new SetMalfRepairSpeedPatch().Enable();
                     new SetBoltActionReloadPatch().Enable();
 
                     new CheckChamberPatch().Enable();

@@ -46,6 +46,8 @@ namespace RealismMod
         }
     }
 
+    //to find float_9 on new client version, look for: public float AimingSpeed { get{ return this.float_9; } }
+    //to finf float_19 again, it's set to ErgnomicWeight in this method.
     public class UpdateWeaponVariablesPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -62,20 +64,36 @@ namespace RealismMod
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
                 if (player.IsYourPlayer == true)
                 {
-                    /*                    SkillsClass.GClass1675 skillsClass = (SkillsClass.GClass1675)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "gclass1675_0").GetValue(__instance);
-*/
-                    //to find float_9 on new client version, look for: public float AimingSpeed { get{ return this.float_9; } }
-                    //to finf float_19 again, it's set to ErgnomicWeight in this method.
-                    float _aimsSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance);
+
+                    SkillsClass.GClass1675 skillsClass = (SkillsClass.GClass1675)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "gclass1675_0").GetValue(__instance);
+                    Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "valueBlender_0").GetValue(__instance);
+
+                    float singleItemTotalWeight = firearmController.Item.GetSingleItemTotalWeight();
+                    float ergoWeight = WeaponProperties.ErgonomicWeight; // in future should decrease with skill buff
+                    float ergoDelta = WeaponProperties.ErgoDelta;
+
+                    float ergo = Mathf.Clamp01(WeaponProperties.TotalErgo / 100f);
+                    float t = Mathf.InverseLerp(0.6f, 9f, ergoWeight);
+                    float a = Mathf.Lerp(2f, 2.4f, t);
+                    float b = Mathf.Lerp(0.35f, 0.95f, t);
+                    float t2 = (ergo < 0.25f) ? (0.25f + 3f * ergo * ergo) : (2f * ergo - ergo * ergo);
+                    float aimSpeed = Mathf.Clamp(1f / Mathf.Lerp(a, b, t2) * (1f + skillsClass.AimSpeed) * (1f + WeaponProperties.ModAimSpeedModifier) * WeaponProperties.GlobalAimSpeedModifier, 0.3f, 1.3f);
+                    valueBlender.Speed = __instance.SwayFalloff / aimSpeed;
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_16").SetValue(__instance, Mathf.InverseLerp(3f, 8f, singleItemTotalWeight * (1f - ergo)));
+                    __instance.UpdateSwayFactors();
+
                     __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.StartingConvergence * __instance.Aiming.RecoilConvergenceMult;
                     __instance.HandsContainer.Recoil.Damping = WeaponProperties.TotalRecoilDamping;
                     __instance.HandsContainer.HandsPosition.Damping = WeaponProperties.TotalRecoilHandDamping;
-                    float aimSpeed = _aimsSpeed * (1f + WeaponProperties.AimSpeedModifier) * WeaponProperties.GlobalAimSpeedModifier; //*PlayerProperties.StrengthSkillAimBuff
-                    WeaponProperties.AimSpeed = aimSpeed;
-                    Logger.LogWarning("base aim speed = " + _aimsSpeed);
+                    WeaponProperties.SightlessAimSpeed = aimSpeed;
+                    Logger.LogWarning("================UpdateWeaponVariables===============");
+                    Logger.LogWarning("singleItemTotalWeight = " + singleItemTotalWeight);
+                    Logger.LogWarning("ergo = " + ergo);
                     Logger.LogWarning("total aimSpeed = " + aimSpeed);
+                    Logger.LogWarning("===============================");
+
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, aimSpeed);
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, WeaponProperties.ErgonomicWeight * PlayerProperties.StrengthSkillAimBuff); //this is only called once, so can't do injury multi. It's probably uncessary to set the value here anyway, it's more just-in-case.
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, ergoWeight * PlayerProperties.StrengthSkillAimBuff); //this is only called once, so can't do injury multi. It's probably uncessary to set the value here anyway, it's more just-in-case.
                 }
             }
         }
@@ -98,13 +116,15 @@ namespace RealismMod
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
                 if (player.IsYourPlayer == true)
                 {
-                    /*            Logger.LogWarning("method_20");*/
-                    float baseAimSpeed = WeaponProperties.AimSpeed * PlayerProperties.ADSInjuryMulti;
+                    float baseAimSpeed = WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti;
                     Plugin.SightlessADSSpeed = baseAimSpeed;
                     Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
                     float sightSpeedModi = (currentAimingMod != null) ? AttachmentProperties.AimSpeed(currentAimingMod) : 1;
                     float newAimSpeed = baseAimSpeed * (1 + (sightSpeedModi / 100f));
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
+
+                    Logger.LogWarning("baseaimspeed = " + baseAimSpeed);
+                    Logger.LogWarning("newAimSpeed = " + newAimSpeed);
 
                     Plugin.HasOptic = __instance.CurrentScope.IsOptic ? true : false;
 
@@ -293,7 +313,6 @@ namespace RealismMod
                     Quaternion targetQuaternion = Quaternion.Euler(targetRotation);
                     Quaternion miniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.AdditionalRotationX.Value, Plugin.AdditionalRotationY.Value, Plugin.AdditionalRotationZ.Value));
                     Quaternion revertQuaternion = Quaternion.Euler(revertRotation);
-                    float aimSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance);
                     Quaternion currentRotation = (Quaternion)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").GetValue(__instance);
 
                     //for setting baseline position

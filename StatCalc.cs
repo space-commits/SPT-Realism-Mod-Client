@@ -18,12 +18,12 @@ namespace RealismMod
         public static float PistolErgoTorqueMult = 1.0f;
 
         public static float VRecoilWeightMult = 1.95f;
-        public static float VRecoilTorqueMult = 0.85f;
+        public static float VRecoilTorqueMult = 0.9f;
         public static float PistolVRecoilWeightMult = 2.1f;
         public static float PistolVRecoilTorqueMult = 1.1f;
 
         public static float HRecoilWeightMult = 3.55f;
-        public static float HRecoilTorqueMult = 0.5f;
+        public static float HRecoilTorqueMult = 0.4f;
         public static float PistolHRecoilWeightMult = 3.5f;
         public static float PistolHRecoilTorqueMult = 0.8f;
 
@@ -103,7 +103,7 @@ namespace RealismMod
             {
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 StatCalc.MagReloadSpeedModifier(logger, magazine, false, true);
-                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadInjuryMulti * PlayerProperties.ReloadSkillMulti * PlayerProperties.GearReloadMulti, 0.5f, 1.3f));
+                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadInjuryMulti * PlayerProperties.ReloadSkillMulti * PlayerProperties.GearReloadMulti, 0.3f, 1.3f));
             }
             else
             {
@@ -143,12 +143,12 @@ namespace RealismMod
 
             if (isQuickReload == true)
             {
-                WeaponProperties.NewMagReloadSpeed *= WeaponProperties.QuickReloadSpeedMulti;
-                WeaponProperties.CurrentMagReloadSpeed *= WeaponProperties.QuickReloadSpeedMulti;
+                WeaponProperties.NewMagReloadSpeed *= Plugin.QuickReloadSpeedMulti.Value;
+                WeaponProperties.CurrentMagReloadSpeed *= Plugin.QuickReloadSpeedMulti.Value;
             }
 
-            WeaponProperties.NewMagReloadSpeed *= WeaponProperties.GlobalReloadSpeedMulti;
-            WeaponProperties.CurrentMagReloadSpeed *= WeaponProperties.GlobalReloadSpeedMulti;
+            WeaponProperties.NewMagReloadSpeed *= Plugin.GlobalReloadSpeedMulti.Value;
+            WeaponProperties.CurrentMagReloadSpeed *= Plugin.GlobalReloadSpeedMulti.Value;
         }
 
 
@@ -166,7 +166,7 @@ namespace RealismMod
             float ergoFactoredWeight = (totalWeight * 1f) * (1f - (pureErgoDelta * 0.4f));
             float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse + 0.5f));
   /*          return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 1.78f, 3.5f) + 1f) / 280, 1f, 115f);*/ //old standard
-            return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 2.1f, 3.7f) + 1f) / 750f, 1f, 115f);
+            return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 2.1f, 3.7f) + 1f) / 750f, 1f, 80f);
         }
 
         public static float ProceduralIntensityFactorCalc(float weapWeight, float idealWeapWeight)
@@ -183,16 +183,23 @@ namespace RealismMod
             return weightFactor;
         }
 
-        public static void SpeedStatCalc(ManualLogSource logger, Weapon weap, float ergoWeight, float ergonomicWeightLessMag, float chamberSpeedMod, float reloadSpeedMod, ref float totalReloadSpeed, ref float totalChamberSpeed, ref float totalAimMoveSpeedFactor)
+        public static void SpeedStatCalc(ManualLogSource logger, Weapon weap, float ergoWeight, float ergonomicWeightLessMag, float chamberSpeedMod, float reloadSpeedMod, ref float totalReloadSpeed, ref float totalChamberSpeed, ref float totalAimMoveSpeedFactor, ref float totalFiringChamberSpeed, ref float totalChamberCheckSpeed, ref float totalFixSpeed)
         {
             logger.LogWarning("-------------------");
             logger.LogWarning("SpeedStatCalc");
             chamberSpeedMod = 1f + (chamberSpeedMod / 100f);
             reloadSpeedMod = 1f + (reloadSpeedMod / 100f);
+            float baseFixSpeed = WeaponProperties.BaseFixSpeed(weap);
+            float baseChamberCheckSpeed = WeaponProperties.BaseChamberCheckSpeed(weap);
             float baseChamberSpeed = WeaponProperties.BaseChamberSpeed(weap);
             float baseReloadSpeed = WeaponProperties.BaseReloadSpeed(weap);
+            float recoilMulti = (1f + (-1f * WeaponProperties.PureRecoilDelta));
             float ergoWeightMulti = (1f - (ergoWeight / 100f));
+
+            totalFixSpeed = Mathf.Clamp(baseFixSpeed * ergoWeightMulti * chamberSpeedMod, WeaponProperties.MinChamberSpeed(weap), WeaponProperties.MaxChamberSpeed(weap));
+            totalFiringChamberSpeed = Mathf.Clamp(baseChamberSpeed * ergoWeightMulti * chamberSpeedMod * recoilMulti, WeaponProperties.MinChamberSpeed(weap), WeaponProperties.MaxChamberSpeed(weap));
             totalChamberSpeed = Mathf.Clamp(baseChamberSpeed * ergoWeightMulti * chamberSpeedMod, WeaponProperties.MinChamberSpeed(weap), WeaponProperties.MaxChamberSpeed(weap));
+            totalChamberCheckSpeed = Mathf.Clamp(baseChamberCheckSpeed * ergoWeightMulti * chamberSpeedMod, WeaponProperties.MinChamberSpeed(weap), WeaponProperties.MaxChamberSpeed(weap));
             totalReloadSpeed = Mathf.Clamp(baseReloadSpeed * (1f - (ergonomicWeightLessMag / 100f)) * reloadSpeedMod, WeaponProperties.MinReloadSpeed(weap), WeaponProperties.MaxReloadSpeed(weap));
             totalAimMoveSpeedFactor = 1f - (ergoWeight / 100f);
 
@@ -280,7 +287,7 @@ namespace RealismMod
             totalDispersion = currentDispersion + (currentDispersion * (dispersionWeapBaseWeightFactor + (totalTorqueFactor * dispersionTorqueMult)));
 
             totalRecoilAngle = currentRecoilAngle + (currentRecoilAngle * (totalTorqueFactor * angleTorqueMulti));
-            totalCOI = currentCOI + (currentCOI * (WeaponProperties.WeaponAccuracy(weap) / 100));
+            totalCOI = currentCOI + (currentCOI * ((-1f * WeaponProperties.WeaponAccuracy(weap)) / 100));
 
 
             if (!hasShoulderContact && weap.WeapClass != "pistol")
@@ -365,7 +372,15 @@ namespace RealismMod
 
             pureErgo = pureErgo + (pureErgo * (modErgo / 100f));
 
-            pureRecoil = pureRecoil + (pureRecoil * ((modVRecoil / 100f) + (modHRecoil / 100f) + (modCamRecoil / 100f)));
+            if (Helper.IsSilencer(mod) == true)
+            {
+                pureRecoil = pureRecoil + (pureRecoil * ((modHRecoil * 0.5f) / 100f) + ((modCamRecoil * 0.5f) / 100f));
+            }
+            else
+            {
+                pureRecoil = pureRecoil + (pureRecoil * ((modVRecoil / 100f) + (modHRecoil / 100f) + (modCamRecoil / 100f)));
+            }
+
 
             if (Helper.IsSight(mod) == false)
             {
