@@ -86,11 +86,6 @@ namespace RealismMod
                     __instance.HandsContainer.Recoil.Damping = WeaponProperties.TotalRecoilDamping;
                     __instance.HandsContainer.HandsPosition.Damping = WeaponProperties.TotalRecoilHandDamping;
                     WeaponProperties.SightlessAimSpeed = aimSpeed;
-                    Logger.LogWarning("================UpdateWeaponVariables===============");
-                    Logger.LogWarning("singleItemTotalWeight = " + singleItemTotalWeight);
-                    Logger.LogWarning("ergo = " + ergo);
-                    Logger.LogWarning("total aimSpeed = " + aimSpeed);
-                    Logger.LogWarning("===============================");
 
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, aimSpeed);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, ergoWeight * PlayerProperties.StrengthSkillAimBuff); //this is only called once, so can't do injury multi. It's probably uncessary to set the value here anyway, it's more just-in-case.
@@ -122,9 +117,6 @@ namespace RealismMod
                     float sightSpeedModi = (currentAimingMod != null) ? AttachmentProperties.AimSpeed(currentAimingMod) : 1;
                     float newAimSpeed = baseAimSpeed * (1 + (sightSpeedModi / 100f));
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
-
-                    Logger.LogWarning("baseaimspeed = " + baseAimSpeed);
-                    Logger.LogWarning("newAimSpeed = " + newAimSpeed);
 
                     Plugin.HasOptic = __instance.CurrentScope.IsOptic ? true : false;
 
@@ -165,7 +157,6 @@ namespace RealismMod
                     int AimIndex = (int)AccessTools.Property(typeof(EFT.Animations.ProceduralWeaponAnimation), "AimIndex").GetValue(__instance);
                     if (!__instance.Sprint && AimIndex < __instance.ScopeAimTransforms.Count)
                     {
-                        Logger.LogWarning("Range finder sway");
                         __instance.Breath.Intensity = 0.5f * __instance.IntensityByPoseLevel;
                         __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = 0.5f * 0.5f);
                     }
@@ -270,15 +261,11 @@ namespace RealismMod
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
                 if (player.IsYourPlayer == true)
                 {
-                    Logger.LogWarning("InitTransforms");
-                    Logger.LogWarning("WeaponStartPosition Before" + __instance.HandsContainer.WeaponRoot.localPosition);
                     Plugin.WeaponStartPosition = __instance.HandsContainer.WeaponRoot.localPosition;
-                    Plugin.WeaponTargetPosition = __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.camX.Value, Plugin.camY.Value, Plugin.camZ.Value);
-                    __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.camX.Value, Plugin.camY.Value, Plugin.camZ.Value);
-                    Logger.LogWarning("WeaponStartPosition After" + __instance.HandsContainer.WeaponRoot.localPosition);
+                    Plugin.WeaponTargetPosition = __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.weapOffsetX.Value, Plugin.weapOffsetY.Value, Plugin.weapOffsetZ.Value);
+                    __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.weapOffsetX.Value, Plugin.weapOffsetY.Value, Plugin.weapOffsetZ.Value);
                     Plugin.TransformStartPosition = new Vector3(0.0f, 0.0f, 0.0f);
-                    Plugin.TransformTargetPosition = Plugin.TransformStartPosition + new Vector3(Plugin.offsetX.Value, Plugin.offsetY.Value, Plugin.offsetZ.Value);
-                    Logger.LogWarning("Plugin.WeapStartPosition" + Plugin.TransformStartPosition);
+                    Plugin.TransformTargetPosition = Plugin.TransformStartPosition + new Vector3(Plugin.passiveAimOffsetX.Value, Plugin.passiveAimOffsetY.Value, Plugin.passiveAimOffsetZ.Value);
                 }
             }
         }
@@ -327,7 +314,6 @@ namespace RealismMod
                         {
                             currentRotation = Quaternion.Lerp(currentRotation, miniTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.rotationMulti.Value * 1.2f);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
-                            Logger.LogWarning("changeSpeedMulti = " + changeSpeedMulti);
                             changeSpeedMulti += Plugin.changeTimeIncrease.Value;
                             Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(Plugin.BasePosChangeRate.Value * changeSpeedMulti * Plugin.SightlessADSSpeed, 0.0f, 0.0f);
                             __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
@@ -340,7 +326,6 @@ namespace RealismMod
                         {
                             currentRotation = Quaternion.Lerp(currentRotation, revertQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.rotationMulti.Value * 1.2f);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
-                            Logger.LogWarning("reseting");
                             changeSpeedMulti = Plugin.changeTimeMult.Value;
                             resetSpeedMulti += Plugin.restTimeIncrease.Value;
                             Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(Plugin.BaseResetChangeRate.Value * resetSpeedMulti * Plugin.SightlessADSSpeed, 0.0f, 0.0f);
@@ -348,7 +333,6 @@ namespace RealismMod
                         }
                         if (__instance.HandsContainer.TrackingTransform.localPosition.x > Plugin.TransformStartPosition.x)
                         {
-                            Logger.LogWarning("final reset");
                             resetSpeedMulti = Plugin.resetTimeMult.Value;
                             __instance.HandsContainer.TrackingTransform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
                         }

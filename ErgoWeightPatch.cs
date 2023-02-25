@@ -27,7 +27,6 @@ namespace RealismMod
             if (player.IsYourPlayer == true)
             {
                 __result = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * PlayerProperties.StrengthSkillAimBuff;
-                Logger.LogWarning("Total Ergo Weight = " + __result);
                 return false;
             }
             else

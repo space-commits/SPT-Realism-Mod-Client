@@ -122,8 +122,6 @@ namespace RealismMod
 
         public float MagDelta(ref Weapon __instance)
         {
-            Logger.LogWarning("=============");
-            Logger.LogWarning("MagDelta");
             WeaponProperties._WeapClass = __instance.WeapClass;
             bool isManual = WeaponProperties.IsManuallyOperated(__instance);
             WeaponProperties._IsManuallyOperated = isManual;
@@ -201,7 +199,6 @@ namespace RealismMod
 
             float ergonomicWeight = StatCalc.ErgoWeightCalc(totalWeight, pureErgoDelta, totalErgoDelta);
             float ergonomicWeightLessMag = StatCalc.ErgoWeightCalc(weapWeightLessMag, pureErgoDelta, totalErgoDelta);
-            Logger.LogWarning("ergoweight = " + ergonomicWeight);
 
             float totalAimMoveSpeedFactor = 0;
             float totalReloadSpeed = 0;
@@ -210,14 +207,7 @@ namespace RealismMod
             float totalChamberCheckSpeed = 0;
             float totalFixSpeed = 0;
 
-            StatCalc.SpeedStatCalc(Logger, __instance, ergonomicWeight, ergonomicWeightLessMag, totalChamberSpeedMod, totalReloadSpeedMod, ref totalReloadSpeed, ref totalChamberSpeed, ref totalAimMoveSpeedFactor, ref totalFiringChamberSpeed, ref totalChamberCheckSpeed, ref totalFixSpeed);
-
-            Logger.LogWarning("total mod ChamberSpeed = " + totalChamberSpeedMod);
-            Logger.LogWarning("AimMoveSpeedFactor = " + totalAimMoveSpeedFactor);
-            Logger.LogWarning("totalReloadSpeed = " + totalReloadSpeed);
-            Logger.LogWarning("totalChamberSpeed = " + totalChamberSpeed);
-            Logger.LogWarning("totalFiringChamberSpeed = " + totalFiringChamberSpeed);
-            Logger.LogWarning("=============");
+            StatCalc.SpeedStatCalc(__instance, ergonomicWeight, ergonomicWeightLessMag, totalChamberSpeedMod, totalReloadSpeedMod, ref totalReloadSpeed, ref totalChamberSpeed, ref totalAimMoveSpeedFactor, ref totalFiringChamberSpeed, ref totalChamberCheckSpeed, ref totalFixSpeed, pureErgoDelta, totalWeight, totalTorque);
 
             WeaponProperties.TotalFixSpeed = totalFixSpeed;
             WeaponProperties.TotalChamberCheckSpeed = totalChamberCheckSpeed;
@@ -228,7 +218,7 @@ namespace RealismMod
 
             if (hasMag == true)
             {
-                StatCalc.MagReloadSpeedModifier(Logger, (MagazineClass)magazine, false, false);
+                StatCalc.MagReloadSpeedModifier((MagazineClass)magazine, false, false);
             }
 
             WeaponProperties.Dispersion = totalDispersion;
@@ -252,8 +242,6 @@ namespace RealismMod
 
         public void StatDelta(ref Weapon __instance)
         {
-            Logger.LogWarning("======StatDelta=======");
-
             WeaponProperties._WeapClass = __instance.WeapClass;
             bool isManual = WeaponProperties.IsManuallyOperated(__instance);
             WeaponProperties._IsManuallyOperated = isManual;
@@ -385,7 +373,6 @@ namespace RealismMod
             }
 
             float pureRecoilDelta = ((baseVRecoil + baseHRecoil) - pureRecoil) / ((baseVRecoil + baseHRecoil) * -1f);
-            Logger.LogWarning("pureRecoilDelta = " + pureRecoilDelta);
             WeaponProperties.TotalModDuraBurn = modBurnRatio;
             WeaponProperties.TotalMalfChance = currentMalfChance;
             Plugin.WeaponDeafFactor = totalLoudness;
@@ -408,8 +395,6 @@ namespace RealismMod
             WeaponProperties.SDPureErgo = pureErgo;
             WeaponProperties.PureRecoilDelta = pureRecoilDelta;
             WeaponProperties.ShotDispDelta = (baseShotDisp - currentShotDisp) / (baseShotDisp * -1f);
-            Logger.LogWarning("================");
-
         }
     }
 
@@ -537,12 +522,6 @@ namespace RealismMod
                 PlayerProperties.StrengthSkillAimBuff = 1 - player.Skills.StrengthBuffAimFatigue.Value;
                 PlayerProperties.ReloadSkillMulti = skillsClass.ReloadSpeed;
                 PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;
-
-                Logger.LogWarning("=====SyncWithCharacterSkills===");
-                Logger.LogWarning("StrengthSkillAimBuff " + PlayerProperties.StrengthSkillAimBuff);
-                Logger.LogWarning("ReloadSkillMulti " + PlayerProperties.ReloadSkillMulti);
-                Logger.LogWarning("FixSkillMulti " + PlayerProperties.FixSkillMulti);
-                Logger.LogWarning("==============");
 
                 /*                FirearmsAnimator firearmAnimator = (FirearmsAnimator)AccessTools.Field(typeof(EFT.Player.FirearmController), "firearmsAnimator_0").GetValue(__instance);
  */

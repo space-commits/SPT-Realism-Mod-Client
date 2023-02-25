@@ -119,7 +119,6 @@ namespace RealismMod
                 Plugin.IsFiring = true;
                 Plugin.ShotCount++;
 
-                Logger.LogWarning("passive aiming = " + Plugin.IsPassiveAiming);
                 float passiveAimingBonus = Plugin.IsPassiveAiming == true ? 0.9f : 1f;
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);

@@ -142,12 +142,7 @@ namespace RealismMod
             {
                 if (Helper.IsAttemptingToReloadInternalMag == true)
                 {
-
-                    Logger.LogWarning("////////////////SetMagInWeapon///////////////");
-                    Logger.LogWarning("CurrentMagReloadSpeed = + " + WeaponProperties.CurrentMagReloadSpeed);
-                    Logger.LogWarning("Total Reload speed = + " + (WeaponProperties.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti));;
-                    Logger.LogWarning("///////////////////////////");
-                    player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.3f, 1f));
+                    player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.6f, 1.2f));
                 }
             }
             else
