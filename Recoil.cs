@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EFT.InventoryLogic;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -35,7 +36,14 @@ namespace RealismMod
 
             if (Plugin.ShotCount > Plugin.PrevShotCount)
             {
-                if (Plugin.ShotCount >= 1 && Plugin.ShotCount <= 3)
+                if (Plugin.ShotCount == 1)
+                {
+                    VRecoilClimb(1.13f);
+                    HRecoilClimb(1.12f);
+                    ConvergenceClimb();
+
+                }
+                if (Plugin.ShotCount >= 2 && Plugin.ShotCount <= 3 && Plugin.CurrentlyEquipedWeapon.SelectedFireMode == Weapon.EFireMode.fullauto)
                 {
                     VRecoilClimb(1.13f);
                     HRecoilClimb(1.12f);
@@ -109,7 +117,7 @@ namespace RealismMod
                     DampingClimb(0.98f);
                 }
 
-                if (Plugin.reduceCamRecoil.Value == true)
+                if (Plugin.ReduceCamRecoil.Value == true)
                 {
                     Plugin.CurrentCamRecoilX = Mathf.Clamp((float)Math.Round(Plugin.CurrentCamRecoilX * WeaponProperties.CamRecoilChangeRate, 4), Plugin.StartingCamRecoilX * WeaponProperties.CamRecoilLimit, Plugin.CurrentCamRecoilX);
                     Plugin.CurrentCamRecoilY = Mathf.Clamp((float)Math.Round(Plugin.CurrentCamRecoilY * WeaponProperties.CamRecoilChangeRate, 4), Plugin.StartingCamRecoilY * WeaponProperties.CamRecoilLimit, Plugin.CurrentCamRecoilY);

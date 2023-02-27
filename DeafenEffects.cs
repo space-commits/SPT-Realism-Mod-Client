@@ -358,7 +358,7 @@ namespace RealismMod
                 else
                 {
                     float distanceFromPlayer = Vector3.Distance(__instance.gameObject.transform.position, Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position);
-                    if (distanceFromPlayer <= 25f)
+                    if (distanceFromPlayer <= 30f)
                     {
                         Plugin.IsBotFiring = true;
                         BulletClass bullet = shot.Ammo as BulletClass;
@@ -401,7 +401,7 @@ namespace RealismMod
         static void PreFix(IExplosiveItem grenadeItem, Vector3 grenadePosition)
         {
             float distanceFromPlayer = Vector3.Distance(grenadePosition, Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position);
-            if (distanceFromPlayer <= 30f)
+            if (distanceFromPlayer <= 50f)
             {
                 Plugin.GrenadeExploded = true;
                 Plugin.GrenadeDeafFactor = grenadeItem.Contusion.z * ((-distanceFromPlayer / 100f) + 1f);

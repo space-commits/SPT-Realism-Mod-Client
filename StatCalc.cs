@@ -103,7 +103,7 @@ namespace RealismMod
             {
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 StatCalc.MagReloadSpeedModifier(magazine, false, true);
-                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadInjuryMulti * PlayerProperties.ReloadSkillMulti * PlayerProperties.GearReloadMulti, 0.6f, 1.2f));
+                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadInjuryMulti * PlayerProperties.ReloadSkillMulti * PlayerProperties.GearReloadMulti, 0.6f, 1.25f));
             }
             else
             {
@@ -114,7 +114,7 @@ namespace RealismMod
         public static void MagReloadSpeedModifier(MagazineClass magazine, bool isNewMag, bool reloadFromNoMag, bool isQuickReload = false)
         {
             float magWeight = magazine.GetSingleItemTotalWeight() * StatCalc.MagWeightMult;
-            float magWeightFactor = ((magWeight / 100) * -1f) + 1;
+            float magWeightFactor = (magWeight / -100) + 1;
             float magSpeed = AttachmentProperties.ReloadSpeed(magazine);
             float reloadSpeedModiLessMag = WeaponProperties.TotalReloadSpeedLessMag;
 
@@ -151,14 +151,19 @@ namespace RealismMod
 
         public static float ErgoWeightCalc(float totalWeight, float pureErgoDelta, float totalTorque)
         {
-            if (WeaponProperties._WeapClass == "pistol" && totalTorque > 0)
+            if (WeaponProperties._WeapClass == "pistol")
             {
-                totalTorque *= -1f;
+                if (totalTorque > 0)
+                {
+                    totalTorque *= -1f;
+                }
+
+                totalWeight *= 3f;
             }
 
-            float totalTorqueFactorInverse = totalTorque / 100f * -1f; // put totaltorque / 100 in brackets
+            float totalTorqueFactorInverse = totalTorque / -100f; // put totaltorque / 100 in brackets
             float ergoFactoredWeight = (totalWeight * 1f) * (1f - (pureErgoDelta * 0.4f));
-            float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse + 0.5f)); //firstly shold have MULTIPLIED not added 0.5f, secondly I should be mutlying totalTorque, not totalTorqueFactorInverse!
+            float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse + 0.45f)); //firstly shold have MULTIPLIED not added 0.5f, secondly I should be mutlying totalTorque, not totalTorqueFactorInverse!
 
             float ergoWeight = Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 2.1f, 3.7f) + 1f) / 750f, 1f, 80f);
 
@@ -183,7 +188,7 @@ namespace RealismMod
 
         private static float PistolErgoWeightSpeedCalc(float weight, float totalTorque, float pureErgoDelta, float totalWeight)
         {
-            float totalTorqueFactorInverse = totalTorque > 0 ? totalTorque / 100f : (totalTorque / 100f) * -1f;
+            float totalTorqueFactorInverse = totalTorque > 0 ? totalTorque / 100f : totalTorque / -100f;
             float ergoFactoredWeight = (totalWeight * 1f) * (1f - (pureErgoDelta * 0.4f));
             float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse));
             return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 3.2f, 3.2f) + 1f) / 10f, 1f, 80f);

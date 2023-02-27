@@ -5,6 +5,7 @@ using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using Comfort.Common;
 using EFT;
+using EFT.InventoryLogic;
 using HarmonyLib;
 using Newtonsoft.Json;
 using System;
@@ -49,21 +50,22 @@ namespace RealismMod
         public static ConfigEntry<bool> showDispersion { get; set; }
         public static ConfigEntry<bool> showRecoilAngle { get; set; }
         public static ConfigEntry<bool> showSemiROF { get; set; }
-        public static ConfigEntry<bool> enableFSPatch { get; set; }
+        public static ConfigEntry<bool> EnableFSPatch { get; set; }
+        public static ConfigEntry<bool> EnableNVGPatch { get; set; }
         public static ConfigEntry<bool> enableMalfPatch { get; set; }
         public static ConfigEntry<bool> enableSGMastering { get; set; }
-        public static ConfigEntry<bool> enableProgramK { get; set; }
-        public static ConfigEntry<bool> enableAmmoFirerateDisp { get; set; }
+        public static ConfigEntry<bool> EnableProgramK { get; set; }
+        public static ConfigEntry<bool> EnableAmmoFirerateDisp { get; set; }
         public static ConfigEntry<bool> enableAmmoDamageDisp { get; set; }
         public static ConfigEntry<bool> enableAmmoPenDisp { get; set; }
         public static ConfigEntry<bool> enableAmmoArmorDamageDisp { get; set; }
         public static ConfigEntry<bool> enableAmmoFragDisp { get; set; }
         public static ConfigEntry<bool> EnableReloadPatches { get; set; }
-        public static ConfigEntry<bool> enableRealArmorClass { get; set; }
-        public static ConfigEntry<bool> reduceCamRecoil { get; set; }
-        public static ConfigEntry<float> convergenceSpeedCurve { get; set; }
+        public static ConfigEntry<bool> EnableRealArmorClass { get; set; }
+        public static ConfigEntry<bool> ReduceCamRecoil { get; set; }
+        public static ConfigEntry<float> ConvergenceSpeedCurve { get; set; }
         public static ConfigEntry<bool> EnableDeafen { get; set; }
-        public static ConfigEntry<bool> enableHoldBreath { get; set; }
+        public static ConfigEntry<bool> EnableHoldBreath { get; set; }
         public static ConfigEntry<float> DuraMalfThreshold { get; set; }
         public static ConfigEntry<bool> EnableRecoilClimb { get; set; }
         public static ConfigEntry<float> SwayIntensity { get; set; }
@@ -88,16 +90,16 @@ namespace RealismMod
         public static ConfigEntry<float> rotationY { get; set; }
         public static ConfigEntry<float> rotationZ { get; set; }
 
-        public static ConfigEntry<float> passiveAimOffsetX { get; set; }
-        public static ConfigEntry<float> passiveAimOffsetY { get; set; }
-        public static ConfigEntry<float> passiveAimOffsetZ { get; set; }
+        public static ConfigEntry<float> ActiveAimOffsetX { get; set; }
+        public static ConfigEntry<float> ActiveAimOffsetY { get; set; }
+        public static ConfigEntry<float> ActiveAimOffsetZ { get; set; }
 
         public static ConfigEntry<float> changeTimeMult { get; set; }
         public static ConfigEntry<float> changeTimeIncrease { get; set; }
         public static ConfigEntry<float> resetTimeMult { get; set; }
         public static ConfigEntry<float> restTimeIncrease { get; set; }
         public static ConfigEntry<float> rotationMulti { get; set; }
-        public static ConfigEntry<KeyboardShortcut> PassiveAimKeybind { get; set; }
+        public static ConfigEntry<KeyboardShortcut> ActiveAimKeybind { get; set; }
 
         public static ConfigEntry<float> BasePosChangeRate { get; set; }
         public static ConfigEntry<float> BaseResetChangeRate { get; set; }
@@ -126,12 +128,16 @@ namespace RealismMod
         public static ConfigEntry<float> GlobalBoltSpeedMulti { get; set; }
         public static ConfigEntry<float> RechamberPistolSpeedMulti { get; set; }
 
+        public static ConfigEntry<bool> EnableLogging { get; set; }
+
+
+        public static Weapon CurrentlyEquipedWeapon;
 
         public static Vector3 WeaponStartPosition;
         public static Vector3 WeaponTargetPosition;
         public static Vector3 TransformStartPosition = new Vector3(0.0f, 0.0f, 0.0f);
         public static Vector3 TransformTargetPosition = new Vector3(0.0f, 0.0f, 0.0f);
-        public static bool IsPassiveAiming = false;
+        public static bool IsActiveAiming = false;
 
         public static bool IsFiring = false;
         public static bool IsBotFiring = false;
@@ -313,29 +319,31 @@ namespace RealismMod
                 string WeaponSettings = "5. Weapon Settings";
                 string DeafSettings = "6. Deafening and Audio";
                 string Speed = "7. Weapon Speed Modifiers";
-                string WeapAimAndPos = "8. Weapon Position And Passive Aiming";
+                string WeapAimAndPos = "8. Weapon Position And Stances";
 
 
                 /*   enableAmmoDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 5 }));
                    enableAmmoFragDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Fragmentation Chance", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 4 }));
                    enableAmmoPenDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Penetration", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 3 }));
                    enableAmmoArmorDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Armor Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 2 }));*/
-                enableAmmoFirerateDisp = Config.Bind<bool>(MiscSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 11 }));
+                EnableAmmoFirerateDisp = Config.Bind<bool>(MiscSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 11 }));
 
-                enableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 2 }));
-                enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 3 }));
-                enableRealArmorClass = Config.Bind<bool>(MiscSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 8 }));
-                enableHoldBreath = Config.Bind<bool>(MiscSettings, "Enable Hold Breath", false, new ConfigDescription("Enabled Hold Breath, Disabled By Default. The Mod Is Balanced Around Not Being Able To Hold Breath.", null, new ConfigurationManagerAttributes { Order = 10 }));
+                EnableLogging = Config.Bind<bool>(MiscSettings, "Enable Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true }));
+                EnableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 2 }));
+                EnableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 3 }));
+                EnableNVGPatch = Config.Bind<bool>(MiscSettings, "Enable NVG ADS Patch", true, new ConfigDescription("Magnified Optics Block ADS When Using NVGs.", null, new ConfigurationManagerAttributes { Order = 4 }));
+                EnableRealArmorClass = Config.Bind<bool>(MiscSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 8 }));
+                EnableHoldBreath = Config.Bind<bool>(MiscSettings, "Enable Hold Breath", false, new ConfigDescription("Enabled Hold Breath, Disabled By Default. The Mod Is Balanced Around Not Being Able To Hold Breath.", null, new ConfigurationManagerAttributes { Order = 10 }));
 
                 EnableHipfire = Config.Bind<bool>(RecoilSettings, "Enable Hipfire Recoil Climb", true, new ConfigDescription("Requires Restart. Enabled Recoil Climbing While Hipfiring", null, new ConfigurationManagerAttributes { Order = 4 }));
-                reduceCamRecoil = Config.Bind<bool>(RecoilSettings, "Reduce Camera Recoil", false, new ConfigDescription("Reduces Camera Recoil Per Shot. If Disabled, Camera Recoil Becomes More Intense As Weapon Recoil Increases.", null, new ConfigurationManagerAttributes { Order = 3 }));
+                ReduceCamRecoil = Config.Bind<bool>(RecoilSettings, "Reduce Camera Recoil", false, new ConfigDescription("Reduces Camera Recoil Per Shot. If Disabled, Camera Recoil Becomes More Intense As Weapon Recoil Increases.", null, new ConfigurationManagerAttributes { Order = 3 }));
                 SensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Lower Limit", 0.4f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction. 100% Means No Sensitivity Reduction.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 2 }));
                 RecoilIntensity = Config.Bind<float>(RecoilSettings, "Recoil Intensity", 1f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 1 }));
 
                 EnableRecoilClimb = Config.Bind<bool>(AdvancedRecoilSettings, "Enable Recoil Climb", true, new ConfigDescription("The Core Of The Recoil Overhaul. Recoil Increase Per Shot, Nullifying Recoil Auto-Compensation In Full Auto And Requiring A Constant Pull Of The Mouse To Control Recoil. If Diabled Weapons Will Be Completely Unbalanced Without Stat Changes.", null, new ConfigurationManagerAttributes { Order = 13 }));
                 SensChangeRate = Config.Bind<float>(AdvancedRecoilSettings, "Sensitivity Change Rate", 0.75f, new ConfigDescription("Rate At Which Sensitivity Is Reduced While Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 12 }));
                 SensResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Senisitivity Reset Rate", 1.2f, new ConfigDescription("Rate At Which Sensitivity Recovers After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 11, IsAdvanced = true }));
-                convergenceSpeedCurve = Config.Bind<float>(AdvancedRecoilSettings, "Convergence Curve Multi", 1.0f, new ConfigDescription("The Convergence Curve. Lower Means More Recoil.", new AcceptableValueRange<float>(0.01f, 1.5f), new ConfigurationManagerAttributes { Order = 10 }));
+                ConvergenceSpeedCurve = Config.Bind<float>(AdvancedRecoilSettings, "Convergence Curve Multi", 1.0f, new ConfigDescription("The Convergence Curve. Lower Means More Recoil.", new AcceptableValueRange<float>(0.01f, 1.5f), new ConfigurationManagerAttributes { Order = 10 }));
                 vRecoilLimit = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Upper Limit", 15.0f, new ConfigDescription("The Upper Limit For Vertical Recoil Increase As A Multiplier. E.g Value Of 10 Is A Limit Of 10x Starting Recoil.", new AcceptableValueRange<float>(1f, 50f), new ConfigurationManagerAttributes { Order = 9 }));
                 vRecoilChangeMulti = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Change Rate Multi", 1.01f, new ConfigDescription("A Multiplier For The Verftical Recoil Increase Per Shot.", new AcceptableValueRange<float>(0.9f, 1.1f), new ConfigurationManagerAttributes { Order = 8 }));
                 vRecoilResetRate = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Reset Rate", 0.91f, new ConfigDescription("The Rate At Which Vertical Recoil Resets Over Time After Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 0.99f), new ConfigurationManagerAttributes { Order = 7, IsAdvanced = true }));
@@ -389,12 +397,12 @@ namespace RealismMod
 
 
                 rotationX = Config.Bind<float>(WeapAimAndPos, "rotationX", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, IsAdvanced = true }));
-                rotationY = Config.Bind<float>(WeapAimAndPos, "Passive Aim Rotation", -65.0f, new ConfigDescription("How Much The Weapon Rotates When Passive Aiming.", new AcceptableValueRange<float>(-150f, 150f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
+                rotationY = Config.Bind<float>(WeapAimAndPos, "Active Aim Rotation", -65.0f, new ConfigDescription("How Much The Weapon Rotates When Active Aiming.", new AcceptableValueRange<float>(-150f, 150f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
                 rotationZ = Config.Bind<float>(WeapAimAndPos, "rotationZ", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
 
-                passiveAimOffsetX = Config.Bind<float>(WeapAimAndPos, "Passive Aim Offset", -0.08f, new ConfigDescription("How Far To The Left The Weapon Moves When Passive Aiming.", new AcceptableValueRange<float>(-0.12f, 0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4 }));
-                passiveAimOffsetY = Config.Bind<float>(WeapAimAndPos, "Passive Aim Offset Y", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true }));
-                passiveAimOffsetZ = Config.Bind<float>(WeapAimAndPos, "Passive Aim Offset Z", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true }));
+                ActiveAimOffsetX = Config.Bind<float>(WeapAimAndPos, "Active Aim Offset", -0.08f, new ConfigDescription("How Far To The Left The Weapon Moves When Active Aiming.", new AcceptableValueRange<float>(-0.12f, 0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4 }));
+                ActiveAimOffsetY = Config.Bind<float>(WeapAimAndPos, "Active Aim Offset Y", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true }));
+                ActiveAimOffsetZ = Config.Bind<float>(WeapAimAndPos, "Active Aim Offset Z", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true }));
 
                 changeTimeMult = Config.Bind<float>(WeapAimAndPos, "changeTimeMult", 0.005f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true }));
                 changeTimeIncrease = Config.Bind<float>(WeapAimAndPos, "changeTimeIncrease", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, IsAdvanced = true }));
@@ -402,10 +410,10 @@ namespace RealismMod
                 restTimeIncrease = Config.Bind<float>(WeapAimAndPos, "restTimeIncrease", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13, IsAdvanced = true }));
                 rotationMulti = Config.Bind<float>(WeapAimAndPos, "Rotation Speed Multi", 1.3f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14 }));
 
-                BasePosChangeRate = Config.Bind<float>(WeapAimAndPos, "Passive Aim Speed", -0.95f, new ConfigDescription("How Far The Weapon Moves Along The X-Axis Over Time, Hence The Negative Number.", new AcceptableValueRange<float>(-2.0f, 0.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15 }));
-                BaseResetChangeRate = Config.Bind<float>(WeapAimAndPos, "Passive Aim Reset Speed", 0.4f, new ConfigDescription("How Far The Weapon Moves Along The X-Axis Back To Start Position, Hence The Positive Number.", new AcceptableValueRange<float>(0.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16 }));
+                BasePosChangeRate = Config.Bind<float>(WeapAimAndPos, "Active Aim Speed", -0.95f, new ConfigDescription("How Far The Weapon Moves Along The X-Axis Over Time, Hence The Negative Number.", new AcceptableValueRange<float>(-2.0f, 0.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15 }));
+                BaseResetChangeRate = Config.Bind<float>(WeapAimAndPos, "Active Aim Reset Speed", 0.4f, new ConfigDescription("How Far The Weapon Moves Along The X-Axis Back To Start Position, Hence The Positive Number.", new AcceptableValueRange<float>(0.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16 }));
 
-                PassiveAimKeybind = Config.Bind(WeapAimAndPos, "Passive Aim Keybind", new KeyboardShortcut(KeyCode.B), new ConfigDescription("The Keybind Has To Be Held.", null, new ConfigurationManagerAttributes { Order = 17 }));
+                ActiveAimKeybind = Config.Bind(WeapAimAndPos, "Active Aim Keybind", new KeyboardShortcut(KeyCode.B), new ConfigDescription("The Keybind Has To Be Held.", null, new ConfigurationManagerAttributes { Order = 17 }));
 
                 weapOffsetX = Config.Bind<float>(WeapAimAndPos, "Weapon Position X-Axis", 0.0f, new ConfigDescription("Adjusts The Starting Position Of The Weapon On Screen.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 18 }));
                 weapOffsetY = Config.Bind<float>(WeapAimAndPos, "Weapon Position Y-Axis", 0.0f, new ConfigDescription("Adjusts The Starting Position Of The Weapon On Screen.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 19 }));
@@ -416,13 +424,14 @@ namespace RealismMod
                 AdditionalRotationZ = Config.Bind<float>(WeapAimAndPos, "AdditionalRotationZ", 2.5f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 23, IsAdvanced = true }));
 
                 ResetRotationX = Config.Bind<float>(WeapAimAndPos, "ResetRotationX", 3.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 24, IsAdvanced = true }));
-                ResetRotationY = Config.Bind<float>(WeapAimAndPos, "ResetRotationY", 20.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 25, IsAdvanced = true }));
+                ResetRotationY = Config.Bind<float>(WeapAimAndPos, "ResetRotationY", 12.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 25, IsAdvanced = true }));
                 ResetRotationZ = Config.Bind<float>(WeapAimAndPos, "ResetRotationZ", -2.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 26, IsAdvanced = true }));
 
 
 
 
-                if (enableProgramK.Value == true)
+
+                if (EnableProgramK.Value == true)
                 {
                     Helper.ProgramKEnabled = true;
                     Logger.LogInfo("Realism Mod: ProgramK Compatibiltiy Enabled!");
@@ -542,7 +551,7 @@ namespace RealismMod
                 }
 
                 //Armor
-                if (enableRealArmorClass.Value == true)
+                if (EnableRealArmorClass.Value == true)
                 {
                     new ArmorClassDisplayPatch().Enable();
                 }
@@ -641,15 +650,15 @@ namespace RealismMod
                     }
                     if (Helper.WeaponReady == true)
                     {
-                        if (Input.GetKeyDown(PassiveAimKeybind.Value.MainKey))
+                        if (Input.GetKey(ActiveAimKeybind.Value.MainKey))
                         {
-                            Plugin.IsPassiveAiming = true;
+                            Plugin.IsActiveAiming = true;
+                        }
+                        else if (!Input.GetKey(KeyCode.Mouse1))
+                        {
+                            Plugin.IsActiveAiming = false;
                         }
 
-                        if (Input.GetKeyUp(PassiveAimKeybind.Value.MainKey))
-                        {
-                            Plugin.IsPassiveAiming = false;
-                        }
                     }
 
                 }

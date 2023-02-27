@@ -1,5 +1,6 @@
 ﻿using Aki.Reflection.Patching;
 using Aki.Reflection.Utils;
+using BepInEx.Logging;
 using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
@@ -63,7 +64,7 @@ namespace RealismMod
         {
             if (__instance.IsYourPlayer == true)
             {
-                if (Plugin.enableHoldBreath.Value == false)
+                if (Plugin.EnableHoldBreath.Value == false)
                 {
                     return false;
                 }
@@ -86,7 +87,7 @@ namespace RealismMod
             if (Helper.CheckIsReady() && __instance.IsYourPlayer == true)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
-                PlayerInjuryStateCheck(__instance);
+                PlayerInjuryStateCheck(__instance, Logger);
                 if (fc != null)
                 {
                     ReloadStateCheck(__instance, fc);
@@ -95,12 +96,13 @@ namespace RealismMod
         }
 
 
-        public static void PlayerInjuryStateCheck(Player player)
+        public static void PlayerInjuryStateCheck(Player player, ManualLogSource logger)
         {
             bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
             bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);
+            bool tremor = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.Tremor);
 
-            if (rightArmDamaged == false && leftArmDamaged == false)
+            if (rightArmDamaged == false && leftArmDamaged == false && tremor == false)
             {
                 PlayerProperties.AimMoveSpeedBase = 0.42f;
                 PlayerProperties.ErgoDeltaInjuryMulti = 1f;
@@ -108,27 +110,31 @@ namespace RealismMod
                 PlayerProperties.ReloadInjuryMulti = 1f;
                 PlayerProperties.RecoilInjuryMulti = 1f;
             }
-            else if (rightArmDamaged == true && leftArmDamaged == false)
+            else if ((rightArmDamaged == true && leftArmDamaged == false) || tremor == true)
             {
-                PlayerProperties.AimMoveSpeedBase = 0.39f;
+                PlayerProperties.AimMoveSpeedBase = 0.38f;
                 PlayerProperties.ErgoDeltaInjuryMulti = 1.5f;
-                PlayerProperties.ADSInjuryMulti = 0.8f;
+                PlayerProperties.ADSInjuryMulti = 0.65f;
                 PlayerProperties.ReloadInjuryMulti = 0.85f;
                 PlayerProperties.RecoilInjuryMulti = 1.05f;
             }
             else if (rightArmDamaged == false && leftArmDamaged == true)
             {
-                PlayerProperties.AimMoveSpeedBase = 0.35f;
+                PlayerProperties.AimMoveSpeedBase = 0.34f;
                 PlayerProperties.ErgoDeltaInjuryMulti = 2f;
-                PlayerProperties.ADSInjuryMulti = 0.7f;
+                PlayerProperties.ADSInjuryMulti = 0.75f;
                 PlayerProperties.ReloadInjuryMulti = 0.8f;
                 PlayerProperties.RecoilInjuryMulti = 1.1f;
             }
             else if (rightArmDamaged == true && leftArmDamaged == true)
             {
+                if (Plugin.EnableLogging.Value == true)
+                {
+                    logger.LogWarning("both arms damaged");
+                }
                 PlayerProperties.AimMoveSpeedBase = 0.3f;
                 PlayerProperties.ErgoDeltaInjuryMulti = 3.5f;
-                PlayerProperties.ADSInjuryMulti = 0.6f;
+                PlayerProperties.ADSInjuryMulti = 0.55f;
                 PlayerProperties.ReloadInjuryMulti = 0.75f;
                 PlayerProperties.RecoilInjuryMulti = 1.15f;
             }
@@ -142,7 +148,12 @@ namespace RealismMod
             {
                 if (Helper.IsAttemptingToReloadInternalMag == true)
                 {
-                    player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.6f, 1.2f));
+                    if (Plugin.EnableLogging.Value == true)
+                    {
+                        Logger.LogWarning("IsAttemptingToReloadInternalMag = " + Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.6f, 1.25f));
+
+                    }
+                    player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.6f, 1.25f));
                 }
             }
             else

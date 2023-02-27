@@ -111,22 +111,21 @@ namespace RealismMod
         public static bool Prefix(ref ShotEffector __instance, float str = 1f)
         {
 
-            IWeapon _weapon = (IWeapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
+            IWeapon iWeapon = (IWeapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
+            Weapon weaponClass = (Weapon)AccessTools.Field(typeof(ShotEffector), "_mainWeaponInHands").GetValue(__instance);
 
-            if (_weapon.Item.Owner.ID.StartsWith("pmc") || _weapon.Item.Owner.ID.StartsWith("scav"))
+            if (iWeapon.Item.Owner.ID.StartsWith("pmc") || iWeapon.Item.Owner.ID.StartsWith("scav"))
             {
+                Plugin.CurrentlyEquipedWeapon = weaponClass;
+
                 Plugin.Timer = 0f;
                 Plugin.IsFiring = true;
                 Plugin.ShotCount++;
 
-                float passiveAimingBonus = Plugin.IsPassiveAiming == true ? 0.9f : 1f;
+                float activeAimingBonus = Plugin.IsActiveAiming == true ? 0.95f : 1f;
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
-                float buffFactoredDispersion = Plugin.CurrentDispersion * str * PlayerProperties.RecoilInjuryMulti;
-                float angle = Plugin.StartingRecoilAngle;
-                __instance.RecoilDegree = new Vector2(angle - buffFactoredDispersion, angle + buffFactoredDispersion);
-                __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
 
                 //instead of shot count, can check weapon firemode in here. Can also get weapon class/type.
                 //would be more efficient to have a static bool "getsSemiRecoilIncrease" and check the weap class in stat detla instead.
@@ -139,7 +138,7 @@ namespace RealismMod
                     __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * 1.35f;
                     __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * 1.35f;
                 }
-                else if (Plugin.ShotCount > 1)
+                else if (Plugin.ShotCount > 1 && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
                 {
                     __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * 0.63f;
                     __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * 0.63f;
@@ -154,16 +153,31 @@ namespace RealismMod
                     __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY;
                 }
 
+                float buffFactoredDispersion = Plugin.CurrentDispersion * str * PlayerProperties.RecoilInjuryMulti;
+
+                if (weaponClass.WeapClass == "pistol" && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
+                {
+                    buffFactoredDispersion *= 0.80f;
+                    __instance.RecoilStrengthZ.x *= 0.5f;
+                    __instance.RecoilStrengthZ.y *= 0.5f;
+                    __instance.RecoilStrengthXy.x *= 0.3f;
+                    __instance.RecoilStrengthXy.y *= 0.3f;
+                }
+
+                float angle = Plugin.StartingRecoilAngle;
+                __instance.RecoilDegree = new Vector2(angle - buffFactoredDispersion, angle + buffFactoredDispersion);
+                __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
+
                 __instance.ShotVals[3].Intensity = Plugin.CurrentCamRecoilX * str * PlayerProperties.RecoilInjuryMulti;
                 __instance.ShotVals[4].Intensity = Plugin.CurrentCamRecoilY * str * PlayerProperties.RecoilInjuryMulti;
 
                 float num = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
-                float num2 = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * PlayerProperties.RecoilInjuryMulti * passiveAimingBonus;
+                float num2 = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus;
                 float num3 = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * PlayerProperties.RecoilInjuryMulti;
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(num) * num2 * _separateIntensityFactors.x, Mathf.Cos(num) * num2 * _separateIntensityFactors.y, num3 * _separateIntensityFactors.z) * __instance.Intensity;
-                IWeapon weapon = _weapon;
+                IWeapon weapon = iWeapon;
                 Vector2 vector = (weapon != null) ? weapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
-                IWeapon weapon2 = _weapon;
+                IWeapon weapon2 = iWeapon;
                 float num4 = (weapon2 != null) ? weapon2.MalfState.OverheatBarrelMoveMult : 0f;
                 float num5 = (__instance.RecoilRadian.x + __instance.RecoilRadian.y) / 2f * ((__instance.RecoilStrengthXy.x + __instance.RecoilStrengthXy.y) / 2f) * num4;
                 __instance.RecoilDirection.x = __instance.RecoilDirection.x + vector.x * num5;
@@ -203,11 +217,11 @@ namespace RealismMod
 
                     if (Plugin.ShotCount == 1 && WeaponProperties._WeapClass != "pistol")
                     {
-                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * 0.7f;
+                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * 0.69f;
                     }
                     if (Plugin.ShotCount > 1)
                     {
-                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * 0.6f;
+                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * 0.59f;
                     }
                 }
             }
@@ -229,7 +243,7 @@ namespace RealismMod
             for (int i = 1; i < _originalKeyValues.Length; i++)
             {
                 Keyframe key = __instance.ReturnSpeedCurve[i];
-                key.value = value + _originalKeyValues[i] * Plugin.convergenceSpeedCurve.Value;
+                key.value = value + _originalKeyValues[i] * Plugin.ConvergenceSpeedCurve.Value;
                 __instance.ReturnSpeedCurve.RemoveKey(i);
                 __instance.ReturnSpeedCurve.AddKey(key);
             }

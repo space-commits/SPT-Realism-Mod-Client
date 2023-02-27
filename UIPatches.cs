@@ -34,7 +34,7 @@ namespace RealismMod
         public static void AddCustomAttributes(AmmoTemplate ammoTemplate, ref List<ItemAttributeClass> ammoAttributes)
         {
 
-            if (Plugin.enableAmmoFirerateDisp.Value == true)
+            if (Plugin.EnableAmmoFirerateDisp.Value == true)
             {
                 float fireRate = (float)Math.Round((ammoTemplate.casingMass - 1) * 100, 2);
 

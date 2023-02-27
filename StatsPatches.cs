@@ -105,12 +105,12 @@ namespace RealismMod
                 ErgoDeltaPatch p = new ErgoDeltaPatch();
                 if (Helper.IsInReloadOpertation)
                 {
-                    __result = p.MagDelta(ref __instance);
+                    __result = p.FinalStatCalc(ref __instance);
                 }
                 else
                 {
-                    p.StatDelta(ref __instance);
-                    __result = p.MagDelta(ref __instance);
+                    p.InitialStaCalc(ref __instance);
+                    __result = p.FinalStatCalc(ref __instance);
                 }
                 return false;
             }
@@ -120,8 +120,9 @@ namespace RealismMod
             }
         }
 
-        public float MagDelta(ref Weapon __instance)
+        public float FinalStatCalc(ref Weapon __instance)
         {
+            Logger.LogWarning("MagDelta");
             WeaponProperties._WeapClass = __instance.WeapClass;
             bool isManual = WeaponProperties.IsManuallyOperated(__instance);
             WeaponProperties._IsManuallyOperated = isManual;
@@ -221,6 +222,14 @@ namespace RealismMod
                 StatCalc.MagReloadSpeedModifier((MagazineClass)magazine, false, false);
             }
 
+            if (Plugin.EnableLogging.Value == true)
+            {
+                Logger.LogWarning("Ergo weight = " + ergonomicWeight);
+                Logger.LogWarning("Pure Ergo D = " + pureErgoDelta);
+                Logger.LogWarning("Torque = " + totalTorque);
+            }
+
+
             WeaponProperties.Dispersion = totalDispersion;
             WeaponProperties.CamRecoil = totalCamRecoil;
             WeaponProperties.RecoilAngle = totalRecoilAngle;
@@ -240,7 +249,7 @@ namespace RealismMod
             return totalErgoDelta;
         }
 
-        public void StatDelta(ref Weapon __instance)
+        public void InitialStaCalc(ref Weapon __instance)
         {
             WeaponProperties._WeapClass = __instance.WeapClass;
             bool isManual = WeaponProperties.IsManuallyOperated(__instance);
@@ -518,6 +527,7 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
+                Logger.LogWarning("skill sync");
                 SkillsClass.GClass1675 skillsClass = (SkillsClass.GClass1675)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1675_0").GetValue(__instance);
                 PlayerProperties.StrengthSkillAimBuff = 1 - player.Skills.StrengthBuffAimFatigue.Value;
                 PlayerProperties.ReloadSkillMulti = skillsClass.ReloadSpeed;

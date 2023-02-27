@@ -34,7 +34,7 @@ namespace RealismMod
                 {
                     //slow is hard set to 0.33 when called, 0.4-0.43 feels best.
                     float baseSpeed = PlayerProperties.AimMoveSpeedBase * WeaponProperties.AimMoveSpeedModifier;
-                    float totalSpeed = Plugin.IsPassiveAiming ? baseSpeed * 1.25f : baseSpeed;
+                    float totalSpeed = Plugin.IsActiveAiming ? baseSpeed * 1.25f : baseSpeed;
                     __instance.AddStateSpeedLimit(Math.Max(totalSpeed, 0.15f), Player.ESpeedLimit.Aiming);
 
                     return false;
@@ -70,7 +70,6 @@ namespace RealismMod
 
                     float singleItemTotalWeight = firearmController.Item.GetSingleItemTotalWeight();
                     float ergoWeight = WeaponProperties.ErgonomicWeight; // in future should decrease with skill buff
-                    float ergoDelta = WeaponProperties.ErgoDelta;
 
                     float ergo = Mathf.Clamp01(WeaponProperties.TotalErgo / 100f);
                     float t = Mathf.InverseLerp(0.6f, 9f, ergoWeight);
@@ -112,11 +111,18 @@ namespace RealismMod
                 if (player.IsYourPlayer == true)
                 {
                     float baseAimSpeed = WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti;
+                    baseAimSpeed = firearmController.Item.WeapClass == "pistol" ? baseAimSpeed * 0.9f : baseAimSpeed;
                     Plugin.SightlessADSSpeed = baseAimSpeed;
                     Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
                     float sightSpeedModi = (currentAimingMod != null) ? AttachmentProperties.AimSpeed(currentAimingMod) : 1;
                     float newAimSpeed = baseAimSpeed * (1 + (sightSpeedModi / 100f));
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
+
+                    if (Plugin.EnableLogging.Value == true)
+                    {
+                        Logger.LogWarning("newAimSpeed = " + newAimSpeed);
+                        Logger.LogWarning("ADSInjuryMulti = " + PlayerProperties.ADSInjuryMulti);
+                    }
 
                     Plugin.HasOptic = __instance.CurrentScope.IsOptic ? true : false;
 
@@ -265,7 +271,7 @@ namespace RealismMod
                     Plugin.WeaponTargetPosition = __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.weapOffsetX.Value, Plugin.weapOffsetY.Value, Plugin.weapOffsetZ.Value);
                     __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.weapOffsetX.Value, Plugin.weapOffsetY.Value, Plugin.weapOffsetZ.Value);
                     Plugin.TransformStartPosition = new Vector3(0.0f, 0.0f, 0.0f);
-                    Plugin.TransformTargetPosition = Plugin.TransformStartPosition + new Vector3(Plugin.passiveAimOffsetX.Value, Plugin.passiveAimOffsetY.Value, Plugin.passiveAimOffsetZ.Value);
+                    Plugin.TransformTargetPosition = Plugin.TransformStartPosition + new Vector3(Plugin.ActiveAimOffsetX.Value, Plugin.ActiveAimOffsetY.Value, Plugin.ActiveAimOffsetZ.Value);
                 }
             }
         }
@@ -305,7 +311,7 @@ namespace RealismMod
                     //for setting baseline position
                     __instance.HandsContainer.WeaponRoot.localPosition = Plugin.WeaponTargetPosition;
 
-                    if (Plugin.IsPassiveAiming == true)
+                    if (Plugin.IsActiveAiming == true)
                     {
                         currentRotation = Quaternion.Lerp(currentRotation, targetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.rotationMulti.Value);
                         AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);

@@ -29,18 +29,18 @@ namespace RealismMod
                     NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
                     bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
                     bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
-                    if ((nvgIsOn == true && Plugin.HasOptic) || (Plugin.enableFSPatch.Value == true && ((fsIsON && !WeaponProperties.WeaponCanFSADS && !ArmorProperties.AllowsADS(fsComponent.Item)) || (!PlayerProperties.GearAllowsADS && !WeaponProperties.WeaponCanFSADS))))
+                    if ((Plugin.EnableNVGPatch.Value == true && nvgIsOn == true && Plugin.HasOptic) || (Plugin.EnableFSPatch.Value == true && ((fsIsON && !WeaponProperties.WeaponCanFSADS && !ArmorProperties.AllowsADS(fsComponent.Item)) || (!PlayerProperties.GearAllowsADS && !WeaponProperties.WeaponCanFSADS))))
                     {
                         PlayerProperties.IsAllowedADS = false;
                         player.MovementContext.SetAimingSlowdown(false, 0.33f);
                         player.ProceduralWeaponAnimation.IsAiming = false;
-                        if (Input.GetKeyDown(KeyCode.Mouse1))
+                        if (Input.GetKey(KeyCode.Mouse1))
                         {
-                            Plugin.IsPassiveAiming = true;
+                            Plugin.IsActiveAiming = true;
                         }
-                        if (Input.GetKeyUp(KeyCode.Mouse1))
+                        else if (!Input.GetKey(Plugin.ActiveAimKeybind.Value.MainKey))
                         {
-                            Plugin.IsPassiveAiming = false;
+                            Plugin.IsActiveAiming = false;
                         }
                     }
                     else
@@ -48,13 +48,13 @@ namespace RealismMod
                         PlayerProperties.IsAllowedADS = true;
                     }
 
-                    if (Plugin.IsPassiveAiming == true)
+                    if (Plugin.IsActiveAiming == true)
                     {
                         PlayerProperties.IsAllowedADS = false;
                         player.ProceduralWeaponAnimation.IsAiming = false;
                         player.MovementContext.SetAimingSlowdown(true, 0.33f);
                     }
-                    if (Plugin.IsPassiveAiming == false && ____isAiming == false)
+                    if (Plugin.IsActiveAiming == false && ____isAiming == false)
                     {
                         player.MovementContext.SetAimingSlowdown(false, 0.33f);
                     }
@@ -76,7 +76,7 @@ namespace RealismMod
         private static bool Prefix(EFT.Player.FirearmController __instance)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
-            if (Plugin.enableFSPatch.Value == true && !player.IsAI)
+            if (Plugin.EnableFSPatch.Value == true && !player.IsAI)
             {
                 return PlayerProperties.IsAllowedADS;
             }

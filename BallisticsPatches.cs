@@ -80,6 +80,7 @@ namespace RealismMod
                     AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
                     BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
                     damageInfo.BleedBlock = false;
+                    bool reduceDurability = armor.Template.ArmorMaterial != EArmorMaterial.ArmoredSteel || armor.Template.ArmorMaterial != EArmorMaterial.Titan ? true : false;
                     float KE = ((0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000);
                     float bluntDamage = damageInfo.Damage;
                     float speedFactor = damageInfo.ArmorDamage / ammo.GetBulletSpeed;
@@ -91,7 +92,7 @@ namespace RealismMod
                     float damageToKEFactor = 24f;
 
                     float duraPercent = _currentDura / _maxDura;
-                    float armorFactor = _armorClass * (Mathf.Min(1, duraPercent * 1f)); //durability should be more important for steel plates, representing anti-spall coating. Lower the amount durapercent is factored by to increase importance
+                    float armorFactor = reduceDurability == false ? _armorClass * (Mathf.Min(1, duraPercent * 1f)) : _armorClass * (Mathf.Min(1, duraPercent * 2f)); //durability should be more important for steel plates, representing anti-spall coating. Lower the amount durapercent is factored by to increase importance
                     float penFactoredClass = Mathf.Max(1f, armorFactor - (damageInfo.PenetrationPower / 2.5f));
                     float maxPotentialDamage = (KE / Mathf.Max(1, (penFactoredClass / 40f)) / damageToKEFactor);
 
