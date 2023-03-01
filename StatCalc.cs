@@ -28,7 +28,7 @@ namespace RealismMod
         public static float PistolHRecoilTorqueMult = 0.8f;
 
         public static float DispersionWeightMult = 1.5f;
-        public static float DispersionTorqueMult = 1.25f;
+        public static float DispersionTorqueMult = 1.2f;
         public static float PistolDispersionWeightMult = 1.5f;
         public static float PistolDispersionTorqueMult = 1.5f;
 
@@ -76,6 +76,7 @@ namespace RealismMod
                     allowADS = false;
                 }
             }
+
 
             PlayerProperties.GearReloadMulti = reloadMulti;
             PlayerProperties.GearAllowsADS = allowADS;

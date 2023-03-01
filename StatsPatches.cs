@@ -98,7 +98,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref float __result)
         {
-
+            Logger.LogWarning("get_ErgonomicsDelta");
 
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
@@ -122,7 +122,7 @@ namespace RealismMod
 
         public float FinalStatCalc(ref Weapon __instance)
         {
-            Logger.LogWarning("MagDelta");
+            Logger.LogWarning("FinalStatCalc");
             WeaponProperties._WeapClass = __instance.WeapClass;
             bool isManual = WeaponProperties.IsManuallyOperated(__instance);
             WeaponProperties._IsManuallyOperated = isManual;
@@ -251,6 +251,7 @@ namespace RealismMod
 
         public void InitialStaCalc(ref Weapon __instance)
         {
+            Logger.LogWarning("InitialStaCalc");
             WeaponProperties._WeapClass = __instance.WeapClass;
             bool isManual = WeaponProperties.IsManuallyOperated(__instance);
             WeaponProperties._IsManuallyOperated = isManual;

@@ -102,6 +102,17 @@ namespace RealismMod
                     int rnd = Math.Max(1, _randNum.Next(_bodyParts.Count));
                     float splitSpallingDmg = factoredSpallingDamage / _bodyParts.Count;
 
+                    if (Plugin.EnableLogging.Value == true)
+                    {
+                        Logger.LogWarning("===========SPALLING=============== ");
+                        Logger.LogWarning("Spall Reduction " + spallReduction);
+                        Logger.LogWarning("Dura Percent " + duraPercent);
+                        Logger.LogWarning("Max Potential Damage " + maxPotentialDamage);
+                        Logger.LogWarning("Max Spalling Damage " + maxSpallingDamage);
+                        Logger.LogWarning("Factored Spalling Damage " + factoredSpallingDamage);
+                        Logger.LogWarning("Split Spalling Dmg " + splitSpallingDmg);
+                    }
+
                     foreach (EBodyPart part in _bodyParts.OrderBy(x => _randNum.Next()).Take(rnd))
                     {
 
@@ -122,6 +133,14 @@ namespace RealismMod
                         if ((part == EBodyPart.LeftArm || part == EBodyPart.RightArm) && (armor.Template.ArmorZone.Contains(EBodyPart.LeftArm) || armor.Template.ArmorZone.Contains(EBodyPart.RightArm)))
                         {
                             damage *= 0.5f;
+                        }
+
+                        if (Plugin.EnableLogging.Value == true)
+                        {
+
+                            Logger.LogWarning("Part Hit " + part);
+                            Logger.LogWarning("Damage " + damage);
+                            Logger.LogWarning("========================== ");
                         }
 
                         __instance.ActiveHealthController.ApplyDamage(part, damage, damageInfo);
@@ -248,6 +267,21 @@ namespace RealismMod
             {
                 shot.BlockedBy = __instance.Item.Id;
                 Debug.Log(">>> Shot blocked by armor piece");
+                if (Plugin.EnableLogging.Value == true)
+                {
+                    Logger.LogWarning("===========PEN STATUS=============== ");
+                    Logger.LogWarning("Blocked");
+                    Logger.LogWarning("========================== ");
+                }
+            }
+            else
+            {
+                if (Plugin.EnableLogging.Value == true)
+                {
+                    Logger.LogWarning("============PEN STATUS============== ");
+                    Logger.LogWarning("Penetrated");
+                    Logger.LogWarning("========================== ");
+                }
             }
             return false;
         }
@@ -293,6 +327,7 @@ namespace RealismMod
             {
                 damageInfo.Damage /= 3f;
                 armorDamage /= 3f;
+                damageInfo.ArmorDamage /= 3;
                 damageInfo.PenetrationPower /= 3f;
             }
 
@@ -335,6 +370,22 @@ namespace RealismMod
             durabilityLoss = Mathf.Max(0.01f, durabilityLoss);
             __instance.ApplyDurabilityDamage(durabilityLoss);
             __result = durabilityLoss;
+
+
+            if (Plugin.EnableLogging.Value == true)
+            {
+                Logger.LogWarning("===========ARMOR DAMAGE=============== ");
+                Logger.LogWarning("KE " + KE);
+                Logger.LogWarning("Pen " + penPower);
+                Logger.LogWarning("Armor Damage " + armorDamage);
+                Logger.LogWarning("Class " + armorResist);
+                Logger.LogWarning("Throughput " + bluntThrput);
+                Logger.LogWarning("Dura percent " + duraPercent);
+                Logger.LogWarning("Max potential damage " + maxPotentialDamage);
+                Logger.LogWarning("Durability Loss " + durabilityLoss);
+                Logger.LogWarning("Throughput Facotred Damage " + throughputFacotredDamage);
+                Logger.LogWarning("========================== ");
+            }
             return false;
         }
 
