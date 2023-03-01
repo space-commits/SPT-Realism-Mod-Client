@@ -103,7 +103,7 @@ namespace RealismMod
             [PatchPostfix]
             private static void PatchPostfix(ArmorComponent __instance)
             {
-                bool canSpall = ArmorProperties.CanSpall(__instance.Item);
+
                 bool showADS = false;
                 EBodyPart[] zones = __instance.ArmorZone;
 
@@ -115,20 +115,6 @@ namespace RealismMod
                     }
                 }
 
-                List<ItemAttributeClass> bluntAtt = __instance.Item.Attributes;
-                ItemAttributeClass bluntAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.BluntThroughput);
-                bluntAttClass.Name = ENewItemAttributeId.BluntThroughput.GetName();
-                bluntAttClass.StringValue = () => ((1 - __instance.BluntThroughput) * 100).ToString() + " %";
-                bluntAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                bluntAtt.Add(bluntAttClass);
-
-                List<ItemAttributeClass> canSpallAtt = __instance.Item.Attributes;
-                ItemAttributeClass canSpallAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanSpall);
-                canSpallAttClass.Name = ENewItemAttributeId.CanSpall.GetName();
-                canSpallAttClass.StringValue = () => canSpall.ToString();
-                canSpallAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                canSpallAtt.Add(canSpallAttClass);
-
                 if (showADS == true)
                 {
                     List<ItemAttributeClass> canADSAtt = __instance.Item.Attributes;
@@ -139,14 +125,33 @@ namespace RealismMod
                     canADSAtt.Add(canADSAttAttClass);
                 }
 
-                if (canSpall == true)
+                if (Plugin.ModConfig.realistic_ballistics == true)
                 {
-                    List<ItemAttributeClass> spallReductAtt = __instance.Item.Attributes;
-                    ItemAttributeClass spallReductAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.SpallReduction);
-                    spallReductAttClass.Name = ENewItemAttributeId.SpallReduction.GetName();
-                    spallReductAttClass.StringValue = () => ((1 - ArmorProperties.SpallReduction(__instance.Item)) * 100).ToString() + " %";
-                    spallReductAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                    spallReductAtt.Add(spallReductAttClass);
+                    bool canSpall = ArmorProperties.CanSpall(__instance.Item);
+
+                    List<ItemAttributeClass> bluntAtt = __instance.Item.Attributes;
+                    ItemAttributeClass bluntAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.BluntThroughput);
+                    bluntAttClass.Name = ENewItemAttributeId.BluntThroughput.GetName();
+                    bluntAttClass.StringValue = () => ((1 - __instance.BluntThroughput) * 100).ToString() + " %";
+                    bluntAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    bluntAtt.Add(bluntAttClass);
+
+                    List<ItemAttributeClass> canSpallAtt = __instance.Item.Attributes;
+                    ItemAttributeClass canSpallAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanSpall);
+                    canSpallAttClass.Name = ENewItemAttributeId.CanSpall.GetName();
+                    canSpallAttClass.StringValue = () => canSpall.ToString();
+                    canSpallAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    canSpallAtt.Add(canSpallAttClass);
+
+                    if (canSpall == true)
+                    {
+                        List<ItemAttributeClass> spallReductAtt = __instance.Item.Attributes;
+                        ItemAttributeClass spallReductAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.SpallReduction);
+                        spallReductAttClass.Name = ENewItemAttributeId.SpallReduction.GetName();
+                        spallReductAttClass.StringValue = () => ((1 - ArmorProperties.SpallReduction(__instance.Item)) * 100).ToString() + " %";
+                        spallReductAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                        spallReductAtt.Add(spallReductAttClass);
+                    }
                 }
             }
         }

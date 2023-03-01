@@ -271,9 +271,9 @@ namespace RealismMod
                     Plugin.WeaponOffsetPosition = __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.weapOffsetX.Value, Plugin.weapOffsetY.Value, Plugin.weapOffsetZ.Value);
                     Plugin.PistolOffsetPostion = __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.pistolOffsetX.Value, __instance.HandsContainer.WeaponRoot.localPosition.y, __instance.HandsContainer.WeaponRoot.localPosition.z);
                     __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.weapOffsetX.Value, Plugin.weapOffsetY.Value, Plugin.weapOffsetZ.Value);
-                    Plugin.TransformStartPosition = new Vector3(0.0f, 0.0f, 0.0f);
-                    Plugin.TransformTargetPosition = Plugin.TransformStartPosition + new Vector3(Plugin.ActiveAimOffsetX.Value, Plugin.ActiveAimOffsetY.Value, Plugin.ActiveAimOffsetZ.Value);
-                    Plugin.PistolTransformTargetPosition = Plugin.TransformStartPosition + new Vector3(Plugin.pistolOffsetX.Value, Plugin.pistolOffsetY.Value, Plugin.pistolOffsetZ.Value);
+                    Plugin.TransformBaseStartPosition = new Vector3(0.0f, 0.0f, 0.0f);
+                    Plugin.ActiveAimTransformTargetPosition = Plugin.TransformBaseStartPosition + new Vector3(Plugin.ActiveAimOffsetX.Value, Plugin.ActiveAimOffsetY.Value, Plugin.ActiveAimOffsetZ.Value);
+                    Plugin.PistolTransformNewStartPosition = Plugin.TransformBaseStartPosition + new Vector3(Plugin.pistolOffsetX.Value, Plugin.pistolOffsetY.Value, Plugin.pistolOffsetZ.Value);
                 }
             }
         }
@@ -312,24 +312,24 @@ namespace RealismMod
                         Quaternion targetQuaternion = Quaternion.Euler(targetRotation);
                         float aimMulti = 1 - ((1f - Plugin.SightlessADSSpeed) * 0.5f);
 
-                        __instance.HandsContainer.WeaponRoot.localPosition = new Vector3(Plugin.PistolTransformTargetPosition.x, __instance.HandsContainer.TrackingTransform.localPosition.y, __instance.HandsContainer.TrackingTransform.localPosition.z);
+                        __instance.HandsContainer.WeaponRoot.localPosition = new Vector3(Plugin.PistolTransformNewStartPosition.x, __instance.HandsContainer.TrackingTransform.localPosition.y, __instance.HandsContainer.TrackingTransform.localPosition.z);
 
                         if (__instance.IsAiming == false)
                         {
                             currentRotation = Quaternion.Lerp(currentRotation, targetQuaternion, __instance.CameraSmoothTime * aimMulti * dt * Plugin.rotationMulti.Value);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.x > Plugin.PistolTransformTargetPosition.x)
+                            if (__instance.HandsContainer.TrackingTransform.localPosition.x > Plugin.PistolTransformNewStartPosition.x)
                             {
                                 Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(Plugin.PistolPosChangeRateX.Value * aimMulti, 0.0f, 0.0f);
                                 __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
                             }
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.y > Plugin.PistolTransformTargetPosition.y)
+                            if (__instance.HandsContainer.TrackingTransform.localPosition.y > Plugin.PistolTransformNewStartPosition.y)
                             {
                                 Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(0.0f, Plugin.PistolPosChangeRate.Value * aimMulti, 0.0f);
                                 __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
                             }
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.z > Plugin.PistolTransformTargetPosition.z)
+                            if (__instance.HandsContainer.TrackingTransform.localPosition.z > Plugin.PistolTransformNewStartPosition.z)
                             {
                                 Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(0.0f, 0.0f, Plugin.PistolPosChangeRate.Value * aimMulti);
                                 __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
@@ -341,17 +341,17 @@ namespace RealismMod
                             /*                    currentRotation = Quaternion.Lerp(currentRotation, revertQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.rotationMulti.Value);
                                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);*/
 
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.x < Plugin.TransformStartPosition.x)
+                            if (__instance.HandsContainer.TrackingTransform.localPosition.x < Plugin.TransformBaseStartPosition.x)
                             {
                                 Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(Plugin.PistolResetChangeRateX.Value * aimMulti, 0.0f, 0.0f);
                                 __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
                             }
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.y < Plugin.TransformStartPosition.y)
+                            if (__instance.HandsContainer.TrackingTransform.localPosition.y < Plugin.TransformBaseStartPosition.y)
                             {
                                 Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(0.0f, Plugin.PistolBaseResetChangeRate.Value * aimMulti, 0.0f);
                                 __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
                             }
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.z < Plugin.TransformStartPosition.z)
+                            if (__instance.HandsContainer.TrackingTransform.localPosition.z < Plugin.TransformBaseStartPosition.z)
                             {
                                 Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(0.0f, 0.0f, Plugin.PistolBaseResetChangeRate.Value * aimMulti);
                                 __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
@@ -375,7 +375,7 @@ namespace RealismMod
                             currentRotation = Quaternion.Lerp(currentRotation, targetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.rotationMulti.Value);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.x > Plugin.TransformTargetPosition.x)
+                            if (__instance.HandsContainer.TrackingTransform.localPosition.x > Plugin.ActiveAimTransformTargetPosition.x)
                             {
                                 currentRotation = Quaternion.Lerp(currentRotation, miniTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.rotationMulti.Value * 1.2f);
                                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
@@ -387,7 +387,7 @@ namespace RealismMod
                         else
                         {
 
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.x != Plugin.TransformStartPosition.x)
+                            if (__instance.HandsContainer.TrackingTransform.localPosition.x != Plugin.TransformBaseStartPosition.x)
                             {
                                 currentRotation = Quaternion.Lerp(currentRotation, revertQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.rotationMulti.Value * 1.2f);
                                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
@@ -396,7 +396,7 @@ namespace RealismMod
                                 Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(Plugin.BaseResetChangeRate.Value * resetSpeedMulti * Plugin.SightlessADSSpeed, 0.0f, 0.0f);
                                 __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
                             }
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.x > Plugin.TransformStartPosition.x)
+                            if (__instance.HandsContainer.TrackingTransform.localPosition.x > Plugin.TransformBaseStartPosition.x)
                             {
                                 resetSpeedMulti = Plugin.resetTimeMult.Value;
                                 __instance.HandsContainer.TrackingTransform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);

@@ -148,9 +148,10 @@ namespace RealismMod
         public static Vector3 WeaponStartPosition;
         public static Vector3 WeaponOffsetPosition;
         public static Vector3 PistolOffsetPostion;
-        public static Vector3 PistolTransformTargetPosition;
-        public static Vector3 TransformStartPosition = new Vector3(0.0f, 0.0f, 0.0f);
-        public static Vector3 TransformTargetPosition = new Vector3(0.0f, 0.0f, 0.0f);
+        public static Vector3 PistolTransformNewStartPosition;
+        public static Vector3 WeaponTransformNewStartPosition;
+        public static Vector3 TransformBaseStartPosition = new Vector3(0.0f, 0.0f, 0.0f);
+        public static Vector3 ActiveAimTransformTargetPosition = new Vector3(0.0f, 0.0f, 0.0f);
         public static bool IsActiveAiming = false;
 
         public static bool IsFiring = false;
@@ -419,7 +420,7 @@ namespace RealismMod
                 pistolRotationZ = Config.Bind<float>(WeapAimAndPos, "Pistol Rotation Z", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 60, IsAdvanced = true }));
 
 
-                ActiveAimOffsetX = Config.Bind<float>(WeapAimAndPos, "Active Aim Offset", -0.09f, new ConfigDescription("How Far To The Left The Weapon Moves When Active Aiming.", new AcceptableValueRange<float>(-0.12f, 0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 70 }));
+                ActiveAimOffsetX = Config.Bind<float>(WeapAimAndPos, "Active Aim Offset", -0.08f, new ConfigDescription("How Far To The Left The Weapon Moves When Active Aiming.", new AcceptableValueRange<float>(-0.12f, 0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 70 }));
                 ActiveAimOffsetY = Config.Bind<float>(WeapAimAndPos, "Active Aim Offset Y", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 80, IsAdvanced = true }));
                 ActiveAimOffsetZ = Config.Bind<float>(WeapAimAndPos, "Active Aim Offset Z", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 90, IsAdvanced = true }));
 
@@ -434,10 +435,10 @@ namespace RealismMod
                 BasePosChangeRate = Config.Bind<float>(WeapAimAndPos, "Active Aim Speed", -0.95f, new ConfigDescription("How Far The Weapon Moves Along The X-Axis Over Time, Hence The Negative Number.", new AcceptableValueRange<float>(-2.0f, 0.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 160 }));
                 BaseResetChangeRate = Config.Bind<float>(WeapAimAndPos, "Active Aim Reset Speed", 0.4f, new ConfigDescription("How Far The Weapon Moves Along The X-Axis Back To Start Position, Hence The Positive Number.", new AcceptableValueRange<float>(0.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 170 }));
 
-                PistolPosChangeRate = Config.Bind<float>(WeapAimAndPos, "Pistol Pos Speed", -0.0018f, new ConfigDescription("", new AcceptableValueRange<float>(-2.0f, 0.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 180 }));
-                PistolBaseResetChangeRate = Config.Bind<float>(WeapAimAndPos, "Pistol Pos Reset Speed", 0.0018f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 190 }));
-                PistolPosChangeRateX = Config.Bind<float>(WeapAimAndPos, "Pistol Pos Speed X", -0.0018f, new ConfigDescription("", new AcceptableValueRange<float>(-2.0f, 0.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 200 }));
-                PistolResetChangeRateX = Config.Bind<float>(WeapAimAndPos, "Pistol Pos Reset Speed X", 0.0018f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 210 }));
+                PistolPosChangeRate = Config.Bind<float>(WeapAimAndPos, "Pistol Pos Speed", -0.002f, new ConfigDescription("", new AcceptableValueRange<float>(-2.0f, 0.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 180 }));
+                PistolBaseResetChangeRate = Config.Bind<float>(WeapAimAndPos, "Pistol Pos Reset Speed", 0.002f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 190 }));
+                PistolPosChangeRateX = Config.Bind<float>(WeapAimAndPos, "Pistol Pos Speed X", -0.002f, new ConfigDescription("", new AcceptableValueRange<float>(-2.0f, 0.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 200 }));
+                PistolResetChangeRateX = Config.Bind<float>(WeapAimAndPos, "Pistol Pos Reset Speed X", 0.002f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 210 }));
 
 
                 ActiveAimKeybind = Config.Bind(WeapAimAndPos, "Active Aim Keybind", new KeyboardShortcut(KeyCode.B), new ConfigDescription("The Keybind Has To Be Held.", null, new ConfigurationManagerAttributes { Order = 220 }));
@@ -448,7 +449,7 @@ namespace RealismMod
 
                 pistolOffsetX = Config.Bind<float>(WeapAimAndPos, "Pistol Position X-Axis", 0.05f, new ConfigDescription("Adjusts The Starting Position Of Pistols On Screen.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 260 }));
                 pistolOffsetY = Config.Bind<float>(WeapAimAndPos, "Pistol Position Y-Axis", -0.04f, new ConfigDescription("Adjusts The Starting Position Of Pistols On Screen.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 270 }));
-                pistolOffsetZ = Config.Bind<float>(WeapAimAndPos, "Pistol Position Z-Axis", -0.025f, new ConfigDescription("Adjusts The Starting Position Of Pistols On Screen.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 280 }));
+                pistolOffsetZ = Config.Bind<float>(WeapAimAndPos, "Pistol Position Z-Axis", -0.03f, new ConfigDescription("Adjusts The Starting Position Of Pistols On Screen.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 280 }));
 
 
                 AdditionalRotationX = Config.Bind<float>(WeapAimAndPos, "AdditionalRotationX", 5f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 290, IsAdvanced = true }));
@@ -580,13 +581,14 @@ namespace RealismMod
                     new DamageInfoPatch().Enable();
                     new ApplyDamageInfoPatch().Enable();
                     new SetPenetrationStatusPatch().Enable();
+
+                    //Armor Class
+                    if (EnableRealArmorClass.Value == true)
+                    {
+                        new ArmorClassDisplayPatch().Enable();
+                    }
                 }
 
-                //Armor
-                if (EnableRealArmorClass.Value == true)
-                {
-                    new ArmorClassDisplayPatch().Enable();
-                }
                 new ArmorComponentPatch().Enable();
                 new RigConstructorPatch().Enable();
 
