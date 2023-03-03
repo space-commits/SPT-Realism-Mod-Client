@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using static EFT.Player;
 
 
 namespace RealismMod
@@ -88,9 +89,20 @@ namespace RealismMod
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
                 PlayerInjuryStateCheck(__instance, Logger);
+                Plugin.IsSprinting = __instance.IsSprintEnabled;
+
                 if (fc != null)
                 {
                     ReloadStateCheck(__instance, fc);
+
+                    if (Plugin.IsHighReady == true)
+                    {
+                        __instance.BodyAnimatorCommon.SetFloat(GClass1642.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
+                    }
+                    else
+                    {
+                        __instance.BodyAnimatorCommon.SetFloat(GClass1642.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
+                    }
                 }
             }
         }

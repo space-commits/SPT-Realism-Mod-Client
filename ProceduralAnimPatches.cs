@@ -290,8 +290,6 @@ namespace RealismMod
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("ApplyComplexRotation", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        public static float changeSpeedMulti = Plugin.changeTimeMult.Value;
-        public static float resetSpeedMulti = Plugin.resetTimeMult.Value;
         public static bool hasResetActiveAim = true;
         public static bool hasResetLowReady = true;
         public static bool hasResetHighReady = true;
@@ -314,7 +312,6 @@ namespace RealismMod
                     if (firearmController.Item.WeapClass == "pistol")
                     {
                         Vector3 targetRotation = new Vector3(Plugin.pistolRotationX.Value, Plugin.pistolRotationY.Value, Plugin.pistolRotationZ.Value);
-                        //x = up/down, y = tilt, z = pivot out
                         Quaternion targetQuaternion = Quaternion.Euler(targetRotation);
                         float aimMulti = 1 - ((1f - Plugin.SightlessADSSpeed) * 0.5f);
 
@@ -322,24 +319,10 @@ namespace RealismMod
 
                         if (__instance.IsAiming == false)
                         {
-                            currentRotation = Quaternion.Lerp(currentRotation, targetQuaternion, __instance.CameraSmoothTime * aimMulti * dt * Plugin.rotationMulti.Value);
+                            currentRotation = Quaternion.Lerp(currentRotation, targetQuaternion, __instance.CameraSmoothTime * aimMulti * dt * Plugin.ActiveAimRotationSpeedMulti.Value);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.x > Plugin.PistolTransformNewStartPosition.x)
-                            {
-                                Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(Plugin.PistolBaseResetChangeRate.Value * aimMulti, 0.0f, 0.0f);
-                                __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
-                            }
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.y > Plugin.PistolTransformNewStartPosition.y)
-                            {
-                                Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(0.0f, Plugin.PistolPosChangeRate.Value * aimMulti, 0.0f);
-                                __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
-                            }
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.z > Plugin.PistolTransformNewStartPosition.z)
-                            {
-                                Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(0.0f, 0.0f, Plugin.PistolPosChangeRate.Value * aimMulti);
-                                __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
-                            }
+                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.PistolTransformNewStartPosition, Plugin.PistolPosSpeedMulti.Value * aimMulti * dt);
 
                         }
                         else
@@ -347,27 +330,12 @@ namespace RealismMod
                             /*                    currentRotation = Quaternion.Lerp(currentRotation, revertQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.rotationMulti.Value);
                                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);*/
 
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.x < Plugin.TransformBaseStartPosition.x)
-                            {
-                                Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(Plugin.PistolBaseResetChangeRate.Value * aimMulti, 0.0f, 0.0f);
-                                __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
-                            }
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.y < Plugin.TransformBaseStartPosition.y)
-                            {
-                                Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(0.0f, Plugin.PistolBaseResetChangeRate.Value * aimMulti, 0.0f);
-                                __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
-                            }
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.z < Plugin.TransformBaseStartPosition.z)
-                            {
-                                Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(0.0f, 0.0f, Plugin.PistolBaseResetChangeRate.Value * aimMulti);
-                                __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
-                            }
+                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.TransformBaseStartPosition, Plugin.PistolPosResetSpeedMulti.Value * aimMulti * dt);
                         }
                     }
                     else
                     {
-                        Vector3 targetRotation = new Vector3(Plugin.rotationX.Value, Plugin.rotationY.Value, Plugin.rotationZ.Value);
-                        //x = up/down, y = tilt, z = pivot out
+                        Vector3 targetRotation = new Vector3(Plugin.ActiveAimRotationX.Value, Plugin.ActiveAimRotationY.Value, Plugin.ActiveAimRotationZ.Value);
                         Vector3 revertRotation = new Vector3(Plugin.ResetRotationX.Value, Plugin.ResetRotationY.Value, Plugin.ResetRotationZ.Value);
                         Quaternion targetQuaternion = Quaternion.Euler(targetRotation);
                         Quaternion miniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.AdditionalRotationX.Value, Plugin.AdditionalRotationY.Value, Plugin.AdditionalRotationZ.Value));
@@ -386,7 +354,7 @@ namespace RealismMod
 
                         if (Plugin.IsLowReady == true && Plugin.IsActiveAiming == false && Plugin.IsHighReady == false && __instance.IsAiming == false && hasResetActiveAim == true && hasResetHighReady == true)
                         {
-                            currentRotation = Quaternion.Lerp(currentRotation, lowReadyTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.rotationMulti.Value);
+                            currentRotation = Quaternion.Lerp(currentRotation, lowReadyTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.PistolRotationSpeedMulti.Value);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
                             __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, lowReadyTargetPosition, Plugin.SightlessADSSpeed * dt * Plugin.LowReadySpeedMulti.Value);
@@ -405,7 +373,7 @@ namespace RealismMod
 
                         if (Plugin.IsHighReady == true && Plugin.IsActiveAiming == false && Plugin.IsLowReady == false && __instance.IsAiming == false && hasResetActiveAim == true && hasResetLowReady == true)
                         {
-                            currentRotation = Quaternion.Lerp(currentRotation, highReadyTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.rotationMulti.Value);
+                            currentRotation = Quaternion.Lerp(currentRotation, highReadyTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.ActiveAimRotationSpeedMulti.Value);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
                             __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, highReadyTargetPosition, Plugin.SightlessADSSpeed * dt * Plugin.HighReadySpeedMulti.Value);
@@ -422,41 +390,34 @@ namespace RealismMod
                         }
 
 
-                        //add a check for ads and low/high ready here
                         if (Plugin.IsActiveAiming == true && __instance.IsAiming == false && Plugin.IsLowReady == false && Plugin.IsHighReady == false && hasResetHighReady == true && hasResetLowReady == true)
                         {
-                            currentRotation = Quaternion.Lerp(currentRotation, targetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.rotationMulti.Value);
+                            currentRotation = Quaternion.Lerp(currentRotation, targetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.ActiveAimRotationSpeedMulti.Value);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
+
+
+                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.ActiveAimTransformTargetPosition, Plugin.SightlessADSSpeed * dt * Plugin.ActiveAimSpeedMulti.Value);
+
 
                             if (__instance.HandsContainer.TrackingTransform.localPosition.x > Plugin.ActiveAimTransformTargetPosition.x)
                             {
-                                currentRotation = Quaternion.Lerp(currentRotation, miniTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.rotationMulti.Value * 1.2f);
+                                currentRotation = Quaternion.Lerp(currentRotation, miniTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.ActiveAimRotationSpeedMulti.Value * 1.2f);
                                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
-                                changeSpeedMulti += Plugin.changeTimeIncrease.Value;
-                                Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(Plugin.BasePosChangeRate.Value * changeSpeedMulti * Plugin.SightlessADSSpeed, 0.0f, 0.0f);
-                                __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
+
                             }
                             hasResetActiveAim = false;
                         }
-                        else
+                        else if (__instance.HandsContainer.TrackingTransform.localPosition != Plugin.TransformBaseStartPosition && hasResetActiveAim != true)
                         {
 
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.x != Plugin.TransformBaseStartPosition.x && hasResetActiveAim != true)
-                            {
-                                currentRotation = Quaternion.Lerp(currentRotation, revertQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.rotationMulti.Value * 1.2f);
-                                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
-                                changeSpeedMulti = Plugin.changeTimeMult.Value;
-                                resetSpeedMulti += Plugin.restTimeIncrease.Value;
-                                Vector3 currentPos = __instance.HandsContainer.TrackingTransform.localPosition + new Vector3(Plugin.BaseResetChangeRate.Value * resetSpeedMulti * Plugin.SightlessADSSpeed, 0.0f, 0.0f);
-                                __instance.HandsContainer.TrackingTransform.localPosition = currentPos;
-                            }
-                            if (__instance.HandsContainer.TrackingTransform.localPosition.x > Plugin.TransformBaseStartPosition.x && hasResetActiveAim != true)
-                            {
-                                resetSpeedMulti = Plugin.resetTimeMult.Value;
-                                __instance.HandsContainer.TrackingTransform.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
-                                hasResetActiveAim = true;
-                            }
+                            currentRotation = Quaternion.Lerp(currentRotation, revertQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.ActiveAimRotationSpeedMulti.Value * 1.2f);
+                            AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
+                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.TransformBaseStartPosition, Plugin.SightlessADSSpeed * dt * Plugin.ActiveAimResetSpeedMulti.Value);
+                        }
+                        else if (__instance.HandsContainer.TrackingTransform.localPosition == Plugin.TransformBaseStartPosition)
+                        {
+                            hasResetActiveAim = true;
                         }
                     }
                 }

@@ -34,14 +34,6 @@ namespace RealismMod
                         PlayerProperties.IsAllowedADS = false;
                         player.MovementContext.SetAimingSlowdown(false, 0.33f);
                         player.ProceduralWeaponAnimation.IsAiming = false;
-                        if (Input.GetKey(KeyCode.Mouse1))
-                        {
-                            Plugin.IsActiveAiming = true;
-                        }
-                        else if (!Input.GetKey(Plugin.ActiveAimKeybind.Value.MainKey))
-                        {
-                            Plugin.IsActiveAiming = false;
-                        }
                     }
                     else
                     {
