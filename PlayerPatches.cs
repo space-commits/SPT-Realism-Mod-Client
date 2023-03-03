@@ -104,18 +104,43 @@ namespace RealismMod
                         __instance.BodyAnimatorCommon.SetFloat(GClass1642.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
                     }
 
-                    if (!Plugin.IsHighReady && !Plugin.IsLowReady && !Plugin.IsAiming && fc.Item.WeapClass != "pistol")
+                    if (fc.Item.WeapClass != "pistol")
                     {
-                        __instance.Physical.Aim(WeaponProperties.ErgonomicWeight * 0.5f);
+                        if (!Plugin.IsHighReady && !Plugin.IsLowReady && !Plugin.IsAiming && !Plugin.IsActiveAiming)
+                        {
+                            __instance.Physical.Aim(!(__instance.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.5f);
+                        }
+                        if (Plugin.IsActiveAiming == true)
+                        {
+                            __instance.Physical.Aim(!(__instance.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.1f);
+                        }
+                        if ((Plugin.IsHighReady == true || Plugin.IsLowReady == true) && !Plugin.IsAiming)
+                        {
+                            __instance.Physical.Aim(0f);
+                            __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.025f), __instance.Physical.HandsStamina.TotalCapacity);
+                        }
+                        __instance.Physical.HandsStamina.Current = Mathf.Max(__instance.Physical.HandsStamina.Current, 1f);
                     }
-                    if (Plugin.IsActiveAiming == true && fc.Item.WeapClass != "pistol")
+                    else 
                     {
-                        __instance.Physical.Aim(WeaponProperties.ErgonomicWeight * 0.1f);
+                        if (!Plugin.IsAiming) 
+                        {
+                            __instance.Physical.Aim(0f);
+                            __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.025f), __instance.Physical.HandsStamina.TotalCapacity);
+                        }
                     }
-                    if (Plugin.IsHighReady == true || Plugin.IsLowReady == true && !Plugin.IsAiming)
+
+                    if (__instance.IsInventoryOpened == true)
                     {
-                        __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.12f), __instance.Physical.HandsStamina.TotalCapacity);
+                        __instance.Physical.Aim(0f);
                     }
+
+                }
+                else 
+                {
+                    __instance.Physical.Aim(0f);
+                    __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + 0.025f, __instance.Physical.HandsStamina.TotalCapacity);
+
                 }
             }
         }

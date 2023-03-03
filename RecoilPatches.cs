@@ -92,6 +92,13 @@ namespace RealismMod
                 Plugin.StartingHandDamping = (float)Math.Round(WeaponProperties.TotalRecoilHandDamping, 3);
                 Plugin.CurrentHandDamping = Plugin.StartingHandDamping;
 
+                if (WeaponProperties.WeapID != template._id) 
+                {
+                    Plugin.DidWeaponSwap = true;
+                }
+
+                WeaponProperties.WeapID = template._id;
+
                 return false;
             }
             else
