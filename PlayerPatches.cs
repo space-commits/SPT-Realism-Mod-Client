@@ -103,6 +103,19 @@ namespace RealismMod
                     {
                         __instance.BodyAnimatorCommon.SetFloat(GClass1642.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
                     }
+
+                    if (!Plugin.IsHighReady && !Plugin.IsLowReady && !Plugin.IsAiming && fc.Item.WeapClass != "pistol")
+                    {
+                        __instance.Physical.Aim(WeaponProperties.ErgonomicWeight * 0.5f);
+                    }
+                    if (Plugin.IsActiveAiming == true && fc.Item.WeapClass != "pistol")
+                    {
+                        __instance.Physical.Aim(WeaponProperties.ErgonomicWeight * 0.1f);
+                    }
+                    if (Plugin.IsHighReady == true || Plugin.IsLowReady == true && !Plugin.IsAiming)
+                    {
+                        __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.12f), __instance.Physical.HandsStamina.TotalCapacity);
+                    }
                 }
             }
         }

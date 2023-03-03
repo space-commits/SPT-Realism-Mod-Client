@@ -10,7 +10,28 @@ using UnityEngine;
 
 namespace RealismMod
 {
-    public class AimingPatch : ModulePatch
+
+
+
+    public class SetAimingPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Player.FirearmController).GetMethod("set_IsAiming", BindingFlags.NonPublic | BindingFlags.Instance);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(EFT.Player.FirearmController __instance, bool value, ref bool ____isAiming)
+        {
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
+            if (__instance.Item.WeapClass == "pistol")
+            {
+                player.Physical.Aim((!____isAiming || !(player.MovementContext.StationaryWeapon == null)) ? 0f : __instance.ErgonomicWeight * 0.2f);
+            }
+        }
+    }
+
+    public class GetAimingPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {

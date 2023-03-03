@@ -101,7 +101,6 @@ namespace RealismMod
         public static ConfigEntry<float> resetTimeIncrease { get; set; }
         public static ConfigEntry<float> ActiveAimRotationSpeedMulti { get; set; }
         public static ConfigEntry<float> PistolRotationSpeedMulti { get; set; }
-
         public static ConfigEntry<float> HighReadyRotationMulti { get; set; }
         public static ConfigEntry<float> LowReadyRotationMulti { get; set; }
 
@@ -566,7 +565,8 @@ namespace RealismMod
                 }
 
                 //Aiming Patches + Reload Trigger
-                new AimingPatch().Enable();
+                new GetAimingPatch().Enable();
+                new SetAimingPatch().Enable();
                 new ToggleAimPatch().Enable();
 
                 //Malf Patches
