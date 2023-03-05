@@ -67,7 +67,7 @@ namespace RealismMod
                         player.ProceduralWeaponAnimation.IsAiming = false;
                         player.MovementContext.SetAimingSlowdown(true, 0.33f);
                     }
-                    if (Plugin.IsActiveAiming == false && ____isAiming == false)
+                    if (!Plugin.IsActiveAiming && !____isAiming)
                     {
                         player.MovementContext.SetAimingSlowdown(false, 0.33f);
                     }

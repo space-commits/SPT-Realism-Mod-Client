@@ -30,6 +30,9 @@ namespace RealismMod
             if (__instance.IsYourPlayer == true)
             {
                 StatCalc.SetGearParamaters(__instance);
+                Plugin.IsLowReady = false;
+                Plugin.IsHighReady = false;
+                Plugin.IsActiveAiming = false;
             }
         }
     }
@@ -65,7 +68,7 @@ namespace RealismMod
         {
             if (__instance.IsYourPlayer == true)
             {
-                if (Plugin.EnableHoldBreath.Value == false)
+                if (!Plugin.EnableHoldBreath.Value)
                 {
                     return false;
                 }
@@ -112,9 +115,14 @@ namespace RealismMod
                         }
                         if (Plugin.IsActiveAiming == true)
                         {
-                            __instance.Physical.Aim(!(__instance.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.1f);
+                            __instance.Physical.Aim(!(__instance.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.25f);
                         }
-                        if ((Plugin.IsHighReady == true || Plugin.IsLowReady == true) && !Plugin.IsAiming)
+                        if (Plugin.IsHighReady == true && !Plugin.IsLowReady && !Plugin.IsAiming)
+                        {
+                            __instance.Physical.Aim(0f);
+                            __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.03f), __instance.Physical.HandsStamina.TotalCapacity);
+                        }
+                        if (Plugin.IsLowReady == true && !Plugin.IsHighReady && !Plugin.IsAiming)
                         {
                             __instance.Physical.Aim(0f);
                             __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.025f), __instance.Physical.HandsStamina.TotalCapacity);
@@ -152,7 +160,7 @@ namespace RealismMod
             bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);
             bool tremor = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.Tremor);
 
-            if (rightArmDamaged == false && leftArmDamaged == false && tremor == false)
+            if (!rightArmDamaged && !leftArmDamaged && !tremor)
             {
                 PlayerProperties.AimMoveSpeedBase = 0.42f;
                 PlayerProperties.ErgoDeltaInjuryMulti = 1f;
@@ -160,7 +168,7 @@ namespace RealismMod
                 PlayerProperties.ReloadInjuryMulti = 1f;
                 PlayerProperties.RecoilInjuryMulti = 1f;
             }
-            else if ((rightArmDamaged == true && leftArmDamaged == false) || tremor == true)
+            if ((rightArmDamaged == true && !leftArmDamaged) || tremor == true)
             {
                 PlayerProperties.AimMoveSpeedBase = 0.38f;
                 PlayerProperties.ErgoDeltaInjuryMulti = 1.5f;
@@ -168,7 +176,7 @@ namespace RealismMod
                 PlayerProperties.ReloadInjuryMulti = 0.85f;
                 PlayerProperties.RecoilInjuryMulti = 1.05f;
             }
-            else if (rightArmDamaged == false && leftArmDamaged == true)
+            if ((!rightArmDamaged && leftArmDamaged == true))
             {
                 PlayerProperties.AimMoveSpeedBase = 0.34f;
                 PlayerProperties.ErgoDeltaInjuryMulti = 2f;
@@ -176,7 +184,7 @@ namespace RealismMod
                 PlayerProperties.ReloadInjuryMulti = 0.8f;
                 PlayerProperties.RecoilInjuryMulti = 1.1f;
             }
-            else if (rightArmDamaged == true && leftArmDamaged == true)
+            if (rightArmDamaged == true && leftArmDamaged == true)
             {
                 if (Plugin.EnableLogging.Value == true)
                 {

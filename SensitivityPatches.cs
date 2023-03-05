@@ -23,7 +23,7 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                if (Plugin.isUniformAimPresent == false || Plugin.isBridgePresent == false)
+                if (!Plugin.isUniformAimPresent || !Plugin.isBridgePresent)
                 {
                     Plugin.StartingAimSens = ____aimingSens;
                     Plugin.CurrentAimSens = ____aimingSens;
@@ -68,7 +68,7 @@ namespace RealismMod
                 {
                     float sens = Singleton<GClass1776>.Instance.Control.Settings.MouseSensitivity;
                     Plugin.StartingHipSens = sens;
-                    if (Plugin.CheckedForSens == false)
+                    if (!Plugin.CheckedForSens)
                     {
                         Plugin.CurrentHipSens = sens;
                         Plugin.CheckedForSens = true;

@@ -128,17 +128,17 @@ namespace RealismMod
         public static float GrenadeDistortion = 0f;
         public static float GrenadeVignetteDarkness = 0f;
 
-        public static float GrenadeVolumeLimit = -35f;
+        public static float GrenadeVolumeLimit = -40f;
         public static float GrenadeDistortionLimit = 50f;
-        public static float GrenadeVignetteDarknessLimit = 8f;
+        public static float GrenadeVignetteDarknessLimit = 10f;
 
-        public static float GrenadeVolumeDecreaseRate = 0.025f;
+        public static float GrenadeVolumeDecreaseRate = 0.028f;
         public static float GrenadeDistortionIncreaseRate = 0.5f;
-        public static float GrenadeVignetteDarknessIncreaseRate = 0.7f;
+        public static float GrenadeVignetteDarknessIncreaseRate = 0.75f;
 
-        public static float GrenadeVolumeResetRate = 0.035f;
+        public static float GrenadeVolumeResetRate = 0.03f;
         public static float GrenadeDistortionResetRate = 0.1f;
-        public static float GrenadeVignetteDarknessResetRate = 0.5f;
+        public static float GrenadeVignetteDarknessResetRate = 0.45f;
 
         public static bool valuesAreReset = false;
 
@@ -151,29 +151,29 @@ namespace RealismMod
 
             if (Plugin.IsFiring == true)
             {
-                changeValue(deafFactor, ref VignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafRate.Value, VolumeLimit, ref Distortion, Plugin.DistRate.Value, DistortionLimit);
+                ChangeDeafValues(deafFactor, ref VignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafRate.Value, VolumeLimit, ref Distortion, Plugin.DistRate.Value, DistortionLimit);
             }
-            else if (valuesAreReset == false)
+            else if (!valuesAreReset)
             {
-                resetValue(deafFactor, ref VignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafReset.Value, VolumeLimit, ref Distortion, Plugin.DistReset.Value, DistortionLimit);
+                ReseDeaftValues(deafFactor, ref VignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafReset.Value, VolumeLimit, ref Distortion, Plugin.DistReset.Value, DistortionLimit);
             }
 
             if (Plugin.IsBotFiring == true)
             {
-                changeValue(botDeafFactor, ref BotVignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafRate.Value, VolumeLimit, ref BotDistortion, Plugin.DistRate.Value, DistortionLimit);
+                ChangeDeafValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafRate.Value, VolumeLimit, ref BotDistortion, Plugin.DistRate.Value, DistortionLimit);
             }
-            else if (valuesAreReset == false)
+            else if (!valuesAreReset)
             {
-                resetValue(botDeafFactor, ref BotVignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafReset.Value, VolumeLimit, ref BotDistortion, Plugin.DistReset.Value, DistortionLimit);
+                ReseDeaftValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafReset.Value, VolumeLimit, ref BotDistortion, Plugin.DistReset.Value, DistortionLimit);
             }
 
             if (Plugin.GrenadeExploded == true)
             {
-                changeValue(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessIncreaseRate, GrenadeVignetteDarknessLimit, ref GrenadeVolume, GrenadeVolumeDecreaseRate, GrenadeVolumeLimit, ref GrenadeDistortion, GrenadeDistortionIncreaseRate, GrenadeDistortionLimit);
+                ChangeDeafValues(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessIncreaseRate, GrenadeVignetteDarknessLimit, ref GrenadeVolume, GrenadeVolumeDecreaseRate, GrenadeVolumeLimit, ref GrenadeDistortion, GrenadeDistortionIncreaseRate, GrenadeDistortionLimit);
             }
-            else if (valuesAreReset == false)
+            else if (!valuesAreReset)
             {
-                resetValue(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessResetRate, GrenadeVignetteDarknessLimit, ref GrenadeVolume, GrenadeVolumeResetRate, GrenadeVolumeLimit, ref GrenadeDistortion, GrenadeDistortionResetRate, GrenadeDistortionLimit);
+                ReseDeaftValues(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessResetRate, GrenadeVignetteDarknessLimit, ref GrenadeVolume, GrenadeVolumeResetRate, GrenadeVolumeLimit, ref GrenadeDistortion, GrenadeDistortionResetRate, GrenadeDistortionLimit);
             }
 
 
@@ -199,7 +199,7 @@ namespace RealismMod
                 logger.LogWarning("Vignette = " + Plugin.Vignette.darkness);
                 logger.LogWarning("==========================");*/
 
-                if (Plugin.HasHeadSet == false)
+                if (!Plugin.HasHeadSet)
                 {
                     Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", totalDistortion + Plugin.CompressorResonance);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", totalDistortion + Plugin.Compressor);
@@ -223,7 +223,7 @@ namespace RealismMod
             }
         }
 
-        private static void changeValue(float deafFactor, ref float vigValue, float vigIncRate, float vigLimit, ref float volValue, float volDecRate, float volLimit, ref float distValue, float distIncRate, float distLimit)
+        private static void ChangeDeafValues(float deafFactor, ref float vigValue, float vigIncRate, float vigLimit, ref float volValue, float volDecRate, float volLimit, ref float distValue, float distIncRate, float distLimit)
         {
 
             Plugin.Vignette.enabled = true;
@@ -232,7 +232,7 @@ namespace RealismMod
             distValue = Mathf.Clamp(distValue + (distIncRate * deafFactor), 0.0f, distLimit);
         }
 
-        private static void resetValue(float deafFactor, ref float vigValue, float vigResetRate, float vigLimit, ref float volValue, float volResetRate, float volLimit, ref float distValue, float distResetRate, float distLimit)
+        private static void ReseDeaftValues(float deafFactor, ref float vigValue, float vigResetRate, float vigLimit, ref float volValue, float volResetRate, float volLimit, ref float distValue, float distResetRate, float distLimit)
         {
 
             vigValue = Mathf.Clamp(vigValue - vigResetRate, 0.0f, vigLimit * deafFactor);

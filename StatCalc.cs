@@ -71,7 +71,7 @@ namespace RealismMod
                 reloadMulti *= ArmorProperties.ReloadSpeedMulti(armorComponent.Item);
                 GClass2188 armorTemplate = armorComponent.Template as GClass2188;
 
-                if (ArmorProperties.AllowsADS(armorComponent.Item) == false && armorTemplate.HasHinge == false)
+                if (!ArmorProperties.AllowsADS(armorComponent.Item) && !armorTemplate.HasHinge)
                 {
                     allowADS = false;
                 }
@@ -383,7 +383,7 @@ namespace RealismMod
             }
 
 
-            if (Helper.IsSight(mod) == false)
+            if (!Helper.IsSight(mod))
             {
                 currentAimSpeedMod = currentAimSpeedMod + modAim;
             }
@@ -473,7 +473,7 @@ namespace RealismMod
                             {
                                 return;
                             }
-                            if (Helper.ProgramKEnabled == false)
+                            if (!Helper.ProgramKEnabled)
                             {
                                 if (containedMod.Slots.Length > 0 && (containedMod.Slots[0].ContainedItem != null))
                                 {

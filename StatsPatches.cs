@@ -334,7 +334,7 @@ namespace RealismMod
             for (int i = 0; i < __instance.Mods.Length; i++)
             {
                 Mod mod = __instance.Mods[i];
-                if (Helper.IsMagazine(mod) == false)
+                if (!Helper.IsMagazine(mod))
                 {
                     float modWeight = __instance.Mods[i].Weight;
                     float modWeightFactored = StatCalc.FactoredWeight(modWeight);
