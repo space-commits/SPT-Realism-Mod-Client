@@ -33,6 +33,8 @@ namespace RealismMod
                 Plugin.IsLowReady = false;
                 Plugin.IsHighReady = false;
                 Plugin.IsActiveAiming = false;
+                Plugin.WasHighReady = false;
+                Plugin.WasLowReady = false;
             }
         }
     }
@@ -101,6 +103,10 @@ namespace RealismMod
                     if (Plugin.IsHighReady == true)
                     {
                         __instance.BodyAnimatorCommon.SetFloat(GClass1642.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
+                        if (__instance.IsSprintEnabled == true) 
+                        {
+                            __instance.MovementContext.CurrentState.ChangeSpeed(2);
+                        }
                     }
                     else
                     {

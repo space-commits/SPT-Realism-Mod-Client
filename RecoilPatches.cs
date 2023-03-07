@@ -93,10 +93,9 @@ namespace RealismMod
                 Plugin.CurrentHandDamping = Plugin.StartingHandDamping;
 
                 if (WeaponProperties.WeapID != template._id) 
-                {
+                {  
                     Plugin.DidWeaponSwap = true;
                 }
-
                 WeaponProperties.WeapID = template._id;
 
                 return false;

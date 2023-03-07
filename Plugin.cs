@@ -211,7 +211,7 @@ namespace RealismMod
 
         public static bool DidWeaponSwap = false;
 
-        public static bool IsActiveAiming;
+        public static bool IsActiveAiming = false;
         public static bool IsHighReady = false;
         public static bool IsLowReady = false;
         public static bool WasHighReady;
@@ -804,7 +804,7 @@ namespace RealismMod
 
                         if (!Plugin.IsSprinting && WeaponProperties._WeapClass != "pistol")
                         {
-
+                            //active aim
                             if (!Plugin.ToggleActiveAim.Value)
                             {
                                 if (Input.GetKey(ActiveAimKeybind.Value.MainKey) || (Input.GetKey(KeyCode.Mouse1) && !PlayerProperties.IsAllowedADS))
@@ -835,6 +835,7 @@ namespace RealismMod
                                 }
                             }
 
+                            //high ready
                             if (!Plugin.ToggleHighReady.Value)
                             {
                                 if (Input.GetKey(HighReadyKeybind.Value.MainKey))
@@ -860,7 +861,7 @@ namespace RealismMod
                                 }
                             }
 
-
+                            //low ready
                             if (!Plugin.ToggleLowReady.Value)
                             {
                                 if (Input.GetKey(LowReadyKeybind.Value.MainKey))
@@ -892,6 +893,8 @@ namespace RealismMod
                             Plugin.IsLowReady = false;
                             Plugin.IsHighReady = false;
                             Plugin.IsActiveAiming = false;
+                            Plugin.WasHighReady = false;
+                            Plugin.WasLowReady = false;
                             Plugin.DidWeaponSwap = false;
                         }
                     }
