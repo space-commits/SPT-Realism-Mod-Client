@@ -35,6 +35,8 @@ namespace RealismMod
                 Plugin.IsActiveAiming = false;
                 Plugin.WasHighReady = false;
                 Plugin.WasLowReady = false;
+                Plugin.IsShortStock = false;
+
             }
         }
     }
@@ -103,58 +105,62 @@ namespace RealismMod
                     if (Plugin.IsHighReady == true)
                     {
                         __instance.BodyAnimatorCommon.SetFloat(GClass1642.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
-                        if (__instance.IsSprintEnabled == true) 
-                        {
-                            __instance.MovementContext.CurrentState.ChangeSpeed(2);
-                        }
+                            
                     }
                     else
                     {
                         __instance.BodyAnimatorCommon.SetFloat(GClass1642.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
                     }
 
-                    if (fc.Item.WeapClass != "pistol")
+                    if (Plugin.EnableStanceStamChanges.Value == true) 
                     {
-                        if (!Plugin.IsHighReady && !Plugin.IsLowReady && !Plugin.IsAiming && !Plugin.IsActiveAiming)
+                        if (fc.Item.WeapClass != "pistol")
                         {
-                            __instance.Physical.Aim(!(__instance.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.5f);
-                        }
-                        if (Plugin.IsActiveAiming == true)
-                        {
-                            __instance.Physical.Aim(!(__instance.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.25f);
-                        }
-                        if (Plugin.IsHighReady == true && !Plugin.IsLowReady && !Plugin.IsAiming)
-                        {
-                            __instance.Physical.Aim(0f);
-                            __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.03f), __instance.Physical.HandsStamina.TotalCapacity);
-                        }
-                        if (Plugin.IsLowReady == true && !Plugin.IsHighReady && !Plugin.IsAiming)
-                        {
-                            __instance.Physical.Aim(0f);
-                            __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.015f), __instance.Physical.HandsStamina.TotalCapacity);
-                        }
-                        __instance.Physical.HandsStamina.Current = Mathf.Max(__instance.Physical.HandsStamina.Current, 1f);
-                    }
-                    else 
-                    {
-                        if (!Plugin.IsAiming) 
-                        {
-                            __instance.Physical.Aim(0f);
-                            __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.025f), __instance.Physical.HandsStamina.TotalCapacity);
-                        }
-                    }
+                            if (!Plugin.IsHighReady && !Plugin.IsLowReady && !Plugin.IsAiming && !Plugin.IsActiveAiming && !Plugin.IsShortStock && Plugin.EnableIdleStamDrain.Value == true)
+                            {
+                                __instance.Physical.Aim(!(__instance.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.5f);
+                            }
+                            if (Plugin.IsActiveAiming == true)
+                            {
+                                __instance.Physical.Aim(!(__instance.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.25f);
+                            }
+                            if (Plugin.IsHighReady == true && !Plugin.IsLowReady && !Plugin.IsAiming && !Plugin.IsShortStock)
+                            {
+                                __instance.Physical.Aim(0f);
+                                __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.03f), __instance.Physical.HandsStamina.TotalCapacity);
+                            }
+                            if (Plugin.IsLowReady == true && !Plugin.IsHighReady && !Plugin.IsAiming && !Plugin.IsShortStock)
+                            {
+                                __instance.Physical.Aim(0f);
+                                __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.015f), __instance.Physical.HandsStamina.TotalCapacity);
+                            }
+                            if (Plugin.IsShortStock == true && !Plugin.IsHighReady && !Plugin.IsAiming && !Plugin.IsLowReady)
+                            {
+                                __instance.Physical.Aim(0f);
+                                __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.01f), __instance.Physical.HandsStamina.TotalCapacity);
+                            }
+                            __instance.Physical.HandsStamina.Current = Mathf.Max(__instance.Physical.HandsStamina.Current, 1f);
 
-                    if (__instance.IsInventoryOpened == true)
-                    {
-                        __instance.Physical.Aim(0f);
-                    }
+                        }
+                        else
+                        {
+                            if (!Plugin.IsAiming)
+                            {
+                                __instance.Physical.Aim(0f);
+                                __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.025f), __instance.Physical.HandsStamina.TotalCapacity);
+                            }
+                        }
 
+                        if (__instance.IsInventoryOpened == true)
+                        {
+                            __instance.Physical.Aim(0f);
+                        }
+                    }
                 }
-                else 
+                else if(Plugin.EnableStanceStamChanges.Value == true)
                 {
                     __instance.Physical.Aim(0f);
                     __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + 0.025f, __instance.Physical.HandsStamina.TotalCapacity);
-
                 }
             }
         }
@@ -225,82 +231,6 @@ namespace RealismMod
                 Helper.IsAttemptingToReloadInternalMag = false;
                 Helper.IsAttemptingRevolverReload = false;
             }
-        }
-    }
-    public class EnduranceSprintActionPatch : ModulePatch
-    {
-
-        private static Type _targetType;
-        private static MethodInfo _method_0;
-
-        public EnduranceSprintActionPatch()
-        {
-            _targetType = PatchConstants.EftTypes.Single(PlayerHelper.IsEnduraStrngthType);
-            _method_0 = _targetType.GetMethod("method_0", BindingFlags.FlattenHierarchy | BindingFlags.NonPublic | BindingFlags.Instance);
-        }
-
-        protected override MethodBase GetTargetMethod()
-        {
-            return _method_0;
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(ref float __result, SkillsClass.GStruct202 movement, SkillsClass __instance)
-        {
-            float xp = __instance.Settings.Endurance.SprintAction * (1f + __instance.Settings.Endurance.GainPerFatigueStack * movement.Fatigue);
-            if (movement.Overweight <= 0f)
-            {
-                __result = xp;
-            }
-            else
-            {
-                __result = xp * 0.5f;
-            }
-
-            return false;
-        }
-    }
-
-    public class EnduranceMovementActionPatch : ModulePatch
-    {
-
-        private static Type _targetType;
-        private static MethodInfo _method_1;
-
-        public EnduranceMovementActionPatch()
-        {
-            _targetType = PatchConstants.EftTypes.Single(PlayerHelper.IsEnduraStrngthType);
-            _method_1 = _targetType.GetMethod("method_1", BindingFlags.FlattenHierarchy | BindingFlags.NonPublic | BindingFlags.Instance);
-        }
-
-
-        protected override MethodBase GetTargetMethod()
-        {
-            return _method_1;
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(ref float __result, SkillsClass.GStruct202 movement, SkillsClass __instance)
-        {
-            float xp = __instance.Settings.Endurance.MovementAction * (1f + __instance.Settings.Endurance.GainPerFatigueStack * movement.Fatigue);
-            if (movement.Overweight <= 0f)
-            {
-                __result = xp;
-            }
-            else
-            {
-                __result = xp * 0.5f;
-            }
-
-            return false;
-        }
-    }
-
-    public static class PlayerHelper
-    {
-        public static bool IsEnduraStrngthType(Type type)
-        {
-            return type.GetField("skillsRelatedToHealth") != null && type.GetField("gclass1674_0") != null;
         }
     }
 }

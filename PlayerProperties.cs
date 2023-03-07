@@ -24,5 +24,7 @@
 
         public static float GearReloadMulti = 1f;
 
+        public static float BaseSprintSpeed = 1f;
+
     }
 }

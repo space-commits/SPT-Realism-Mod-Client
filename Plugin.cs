@@ -77,6 +77,20 @@ namespace RealismMod
         public static ConfigEntry<float> GainReduc { get; set; }
         public static ConfigEntry<float> RealTimeGain { get; set; }
 
+        public static ConfigEntry<KeyboardShortcut> ActiveAimKeybind { get; set; }
+        public static ConfigEntry<KeyboardShortcut> LowReadyKeybind { get; set; }
+        public static ConfigEntry<KeyboardShortcut> HighReadyKeybind { get; set; }
+        public static ConfigEntry<KeyboardShortcut> ShortStockKeybind { get; set; }
+
+        public static ConfigEntry<bool> ToggleActiveAim { get; set; }
+        public static ConfigEntry<bool> ToggleHighReady { get; set; }
+        public static ConfigEntry<bool> ToggleLowReady { get; set; }
+        public static ConfigEntry<bool> ToggleShortStock { get; set; }
+
+        public static ConfigEntry<bool> EnableAltPistol { get; set; }
+        public static ConfigEntry<bool> EnableIdleStamDrain { get; set; }
+        public static ConfigEntry<bool> EnableStanceStamChanges { get; set; }
+
         public static ConfigEntry<float> WeapOffsetX { get; set; }
         public static ConfigEntry<float> WeapOffsetY { get; set; }
         public static ConfigEntry<float> WeapOffsetZ { get; set; }
@@ -89,7 +103,6 @@ namespace RealismMod
         public static ConfigEntry<float> PistolRotationY { get; set; }
         public static ConfigEntry<float> PistolRotationZ { get; set; }
 
-
         public static ConfigEntry<float> ActiveAimSpeedMulti { get; set; }
         public static ConfigEntry<float> changeTimeIncrease { get; set; }
         public static ConfigEntry<float> ActiveAimResetSpeedMulti { get; set; }
@@ -98,31 +111,22 @@ namespace RealismMod
         public static ConfigEntry<float> PistolRotationSpeedMulti { get; set; }
         public static ConfigEntry<float> HighReadyRotationMulti { get; set; }
         public static ConfigEntry<float> LowReadyRotationMulti { get; set; }
+        public static ConfigEntry<float> ShortStockRotationSpeedMulti { get; set; }
 
         public static ConfigEntry<float> ActiveAimResetRotationSpeedMulti { get; set; }
         public static ConfigEntry<float> PistolResetRotationSpeedMulti { get; set; }
         public static ConfigEntry<float> HighReadyResetRotationMulti { get; set; }
         public static ConfigEntry<float> LowReadyResetRotationMulti { get; set; }
+        public static ConfigEntry<float> ShortStockResetRotationSpeedMulti { get; set; }
 
         public static ConfigEntry<float> HighReadySpeedMulti { get; set; }
         public static ConfigEntry<float> HighReadyResetSpeedMulti { get; set; }
         public static ConfigEntry<float> LowReadySpeedMulti { get; set; }
         public static ConfigEntry<float> LowReadyResetSpeedMulti { get; set; }
-
-        public static ConfigEntry<KeyboardShortcut> ActiveAimKeybind { get; set; }
-        public static ConfigEntry<KeyboardShortcut> LowReadyKeybind { get; set; }
-        public static ConfigEntry<KeyboardShortcut> HighReadyKeybind { get; set; }
-
-
-        public static ConfigEntry<bool> ToggleActiveAim { get; set; }
-        public static ConfigEntry<bool> ToggleHighReady { get; set; }
-        public static ConfigEntry<bool> ToggleLowReady { get; set; }
-
-
-        public static ConfigEntry<float> BasePosChangeRate { get; set; }
-        public static ConfigEntry<float> BaseResetChangeRate { get; set; }
         public static ConfigEntry<float> PistolPosSpeedMulti { get; set; }
         public static ConfigEntry<float> PistolPosResetSpeedMulti { get; set; }
+        public static ConfigEntry<float> ShortStockSpeedMulti { get; set; }
+        public static ConfigEntry<float> ShortStockResetSpeedMulti { get; set; }
 
         public static ConfigEntry<float> ActiveAimAdditionalRotationX { get; set; }
         public static ConfigEntry<float> ActiveAimAdditionalRotationY { get; set; }
@@ -152,6 +156,13 @@ namespace RealismMod
         public static ConfigEntry<float> PistolResetRotationY { get; set; }
         public static ConfigEntry<float> PistolResetRotationZ { get; set; }
 
+        public static ConfigEntry<float> ShortStockAdditionalRotationX { get; set; }
+        public static ConfigEntry<float> ShortStockAdditionalRotationY { get; set; }
+        public static ConfigEntry<float> ShortStockAdditionalRotationZ { get; set; }
+        public static ConfigEntry<float> ShortStockResetRotationX { get; set; }
+        public static ConfigEntry<float> ShortStockResetRotationY { get; set; }
+        public static ConfigEntry<float> ShortStockResetRotationZ { get; set; }
+
         public static ConfigEntry<float> PistolOffsetX { get; set; }
         public static ConfigEntry<float> PistolOffsetY { get; set; }
         public static ConfigEntry<float> PistolOffsetZ { get; set; }
@@ -176,6 +187,21 @@ namespace RealismMod
         public static ConfigEntry<float> HighReadyRotationY { get; set; }
         public static ConfigEntry<float> HighReadyRotationZ { get; set; }
 
+        public static ConfigEntry<float> ShortStockOffsetX { get; set; }
+        public static ConfigEntry<float> ShortStockOffsetY { get; set; }
+        public static ConfigEntry<float> ShortStockOffsetZ { get; set; }
+
+        public static ConfigEntry<float> ShortStockRotationX { get; set; }
+        public static ConfigEntry<float> ShortStockRotationY { get; set; }
+        public static ConfigEntry<float> ShortStockRotationZ { get; set; }
+
+        public static ConfigEntry<float> ShortStockReadyOffsetX { get; set; }
+        public static ConfigEntry<float> ShortStockReadyOffsetY { get; set; }
+        public static ConfigEntry<float> ShortStockReadyOffsetZ { get; set; }
+
+        public static ConfigEntry<float> ShortStockReadyRotationX { get; set; }
+        public static ConfigEntry<float> ShortStockReadyRotationY { get; set; }
+        public static ConfigEntry<float> ShortStockReadyRotationZ { get; set; }
 
         public static ConfigEntry<float> GlobalAimSpeedModifier { get; set; }
         public static ConfigEntry<float> GlobalReloadSpeedMulti { get; set; }
@@ -214,8 +240,11 @@ namespace RealismMod
         public static bool IsActiveAiming = false;
         public static bool IsHighReady = false;
         public static bool IsLowReady = false;
+        public static bool IsShortStock = false;
         public static bool WasHighReady;
         public static bool WasLowReady;
+
+        public static bool baseShouldMoveCloser;
 
         public static bool IsSprinting = false;
 
@@ -399,12 +428,12 @@ namespace RealismMod
                 string WeaponSettings = ".5. Weapon Settings";
                 string DeafSettings = ".6. Deafening and Audio";
                 string Speed = ".7. Weapon Speed Modifiers";
-                string WeapAimAndPos = ".8. Weapon Position And Stances";
+                string WeapAimAndPos = ".8. Weapon Stances And Position";
                 string ActiveAim = ".9. Active Aim";
                 string HighReady = "10. High Ready";
                 string LowReady = "11. Low Ready";
                 string Pistol = "12. Pistol Position And Stance";
-
+                string ShortStock = "13. Short-Stocking";
 
                 /*   enableAmmoDamageDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Damage", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 5 }));
                    enableAmmoFragDisp = Config.Bind<bool>(AmmoSettings, "Display Ammo Fragmentation Chance", false, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 4 }));
@@ -479,10 +508,16 @@ namespace RealismMod
                 QuickReloadSpeedMulti = Config.Bind<float>(Speed, "Quick Reload Multi", 1.4f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
                 InternalMagReloadMulti = Config.Bind<float>(Speed, "Internal Magazine Reload", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1 }));
 
-                ActiveAimKeybind = Config.Bind(WeapAimAndPos, "Active Aim Keybind", new KeyboardShortcut(KeyCode.H), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 173 }));
-                HighReadyKeybind = Config.Bind(WeapAimAndPos, "High Ready Aim Keybind", new KeyboardShortcut(KeyCode.J), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 172 }));
-                LowReadyKeybind = Config.Bind(WeapAimAndPos, "Low Ready Aim Keybind", new KeyboardShortcut(KeyCode.K), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 171 }));
+                EnableAltPistol = Config.Bind<bool>(WeapAimAndPos, "Enable Alternative Pistol Position And ADS", true, new ConfigDescription("Pistol Will Be Held Centered And In A Compressed Stance. ADS Will Be Animated.", null, new ConfigurationManagerAttributes { Order = 176 }));
+                EnableIdleStamDrain = Config.Bind<bool>(WeapAimAndPos, "Enable Idle Arm Stamina Drain", false, new ConfigDescription("Arm Stamina Will Drain When Not In A Stance (High And Low Ready, Short-Stocking).", null, new ConfigurationManagerAttributes { Order = 175 }));
+                EnableStanceStamChanges = Config.Bind<bool>(WeapAimAndPos, "Enable Stance Stamina And Movement Effects", true, new ConfigDescription("Enabled Stances To Affect Stamina And Movement Speed. High + Low Ready, Short-Stocking And Pistol Idle Will Regenerat Stamina Faster And Optionally Idle With Rifles Drains Stamina. High Ready Has Faster Sprint Speed And Sprint Acceleration, Low Ready Has Faster Spritn Accel. Arm Stamina Doesn't Start To Drain Regular Stamina.", null, new ConfigurationManagerAttributes { Order = 174 }));
 
+                ActiveAimKeybind = Config.Bind(WeapAimAndPos, "Active Aim Keybind", new KeyboardShortcut(KeyCode.H), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 173 }));
+                HighReadyKeybind = Config.Bind(WeapAimAndPos, "High Ready Keybind", new KeyboardShortcut(KeyCode.J), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 172 }));
+                LowReadyKeybind = Config.Bind(WeapAimAndPos, "Low Ready Keybind", new KeyboardShortcut(KeyCode.K), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 171 }));
+                ShortStockKeybind = Config.Bind(WeapAimAndPos, "Short-Stock Keybind", new KeyboardShortcut(KeyCode.L), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 170 }));
+
+                ToggleShortStock = Config.Bind<bool>(WeapAimAndPos, "Use Toggle For Short-Stocking", true, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 163 }));
                 ToggleActiveAim = Config.Bind<bool>(WeapAimAndPos, "Use Toggle For Active Aim", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 162 }));
                 ToggleHighReady = Config.Bind<bool>(WeapAimAndPos, "Use Toggle For High Ready", true, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 161 }));
                 ToggleLowReady = Config.Bind<bool>(WeapAimAndPos, "Use Toggle For Low Ready", true, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 160 }));
@@ -577,8 +612,26 @@ namespace RealismMod
                 PistolResetRotationY = Config.Bind<float>(Pistol, "Pistol Ready Reset Rotation Y", 2.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
                 PistolResetRotationZ = Config.Bind<float>(Pistol, "Pistol Ready Reset Rotation Z", 1.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, IsAdvanced = true }));
 
+                ShortStockResetRotationSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Reset Rotation Speed Multi", 1f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 34, IsAdvanced = true }));
+                ShortStockRotationSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Rotation Speed Multi", 1f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 33, IsAdvanced = true }));
+                ShortStockSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Position Speed Multi", 0.2f, new ConfigDescription("", new AcceptableValueRange<float>(-2.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 32, IsAdvanced = true }));
+                ShortStockResetSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Position Reset Speed Multi", 0.18f, new ConfigDescription("", new AcceptableValueRange<float>(-2.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true }));
 
+                ShortStockOffsetX = Config.Bind<float>(ShortStock, "Short-Stock Position X", 0.025f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 22, IsAdvanced = true }));
+                ShortStockOffsetY = Config.Bind<float>(ShortStock, "Short-Stock Position Y", -0.04f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 21, IsAdvanced = true }));
+                ShortStockOffsetZ = Config.Bind<float>(ShortStock, "Short-Stock Position Z", -0.03f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, IsAdvanced = true }));
 
+                ShortStockRotationX = Config.Bind<float>(ShortStock, "Short-Stock Rotation X", -2.5f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true }));
+                ShortStockRotationY = Config.Bind<float>(ShortStock, "Short-Stock Rotation Y", -20.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-150f, 150f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, IsAdvanced = true }));
+                ShortStockRotationZ = Config.Bind<float>(ShortStock, "Short-Stock Rotation Z", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true }));
+
+                ShortStockAdditionalRotationX = Config.Bind<float>(ShortStock, "Short-Stock Ready Additional Rotation X", 0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true }));
+                ShortStockAdditionalRotationY = Config.Bind<float>(ShortStock, "Short-Stock Ready Additional Rotation Y", 0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true }));
+                ShortStockAdditionalRotationZ = Config.Bind<float>(ShortStock, "Short-Stock Ready Additional Rotation Z", 0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true }));
+
+                ShortStockResetRotationX = Config.Bind<float>(ShortStock, "Short-Stock Ready Reset Rotation X", 2.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
+                ShortStockResetRotationY = Config.Bind<float>(ShortStock, "Short-Stock Ready Reset Rotation Y", 2.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
+                ShortStockResetRotationZ = Config.Bind<float>(ShortStock, "Short-Stock Ready Reset Rotation Z", 1.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, IsAdvanced = true }));
 
                 if (EnableProgramK.Value == true)
                 {
@@ -715,6 +768,9 @@ namespace RealismMod
                 new ToggleHoldingBreathPatch().Enable();
                 new PlayerInitPatch().Enable();
 
+                //movement
+                new SprintAccelerationPatch().Enable();
+
                 //Shot Effects
                 if (EnableDeafen.Value == true)
                 {
@@ -728,9 +784,9 @@ namespace RealismMod
                 //LateUpdate
                 new PlayerLateUpdatePatch().Enable();
 
+                //stances
                 new ApplyComplexRotationPatch().Enable();
                 new InitTransformsPatch().Enable();
-
             }
         }
 
@@ -810,6 +866,7 @@ namespace RealismMod
                                 if (Input.GetKey(ActiveAimKeybind.Value.MainKey) || (Input.GetKey(KeyCode.Mouse1) && !PlayerProperties.IsAllowedADS))
                                 {
                                     Plugin.IsActiveAiming = true;
+                                    Plugin.IsShortStock = false;
                                     Plugin.IsHighReady = false;
                                     Plugin.IsLowReady = false;
                                 }
@@ -825,6 +882,7 @@ namespace RealismMod
                                 if (Input.GetKeyDown(ActiveAimKeybind.Value.MainKey) || (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerProperties.IsAllowedADS))
                                 {
                                     Plugin.IsActiveAiming = !Plugin.IsActiveAiming;
+                                    Plugin.IsShortStock = false;
                                     Plugin.IsHighReady = false;
                                     Plugin.IsLowReady = false;
                                 }
@@ -832,6 +890,34 @@ namespace RealismMod
                                 {
                                     Plugin.IsHighReady = Plugin.WasHighReady;
                                     Plugin.IsLowReady = Plugin.WasLowReady;
+                                }
+                            }
+
+                            //short-stock
+                            if (!Plugin.ToggleShortStock.Value)
+                            {
+                                if (Input.GetKey(ShortStockKeybind.Value.MainKey))
+                                {
+                                    Plugin.IsShortStock = true;
+                                    Plugin.IsHighReady = false;
+                                    Plugin.IsLowReady = false;
+                                    Plugin.IsActiveAiming = false;
+                                }
+                                else
+                                {
+                                    Plugin.IsShortStock = false;
+                                }
+                            }
+                            else
+                            {
+                                if (Input.GetKeyDown(ShortStockKeybind.Value.MainKey))
+                                {
+                                    Plugin.IsShortStock = !Plugin.IsShortStock;
+                                    Plugin.IsHighReady = false;
+                                    Plugin.IsLowReady = false;
+                                    Plugin.IsActiveAiming = false;
+                                    Plugin.WasHighReady = Plugin.IsHighReady;
+                                    Plugin.WasLowReady = Plugin.IsLowReady;
                                 }
                             }
 
@@ -843,6 +929,7 @@ namespace RealismMod
                                     Plugin.IsHighReady = true;
                                     Plugin.IsLowReady = false;
                                     Plugin.IsActiveAiming = false;
+                                    Plugin.IsShortStock = false;
                                 }
                                 else
                                 {
@@ -854,6 +941,7 @@ namespace RealismMod
                                 if (Input.GetKeyDown(HighReadyKeybind.Value.MainKey))
                                 {
                                     Plugin.IsHighReady = !Plugin.IsHighReady;
+                                    Plugin.IsShortStock = false;
                                     Plugin.IsLowReady = false;
                                     Plugin.IsActiveAiming = false;
                                     Plugin.WasHighReady = Plugin.IsHighReady;
@@ -867,6 +955,7 @@ namespace RealismMod
                                 if (Input.GetKey(LowReadyKeybind.Value.MainKey))
                                 {
                                     Plugin.IsLowReady = true;
+                                    Plugin.IsShortStock = false;
                                     Plugin.IsHighReady = false;
                                     Plugin.IsActiveAiming = false;
                                 }
@@ -882,14 +971,16 @@ namespace RealismMod
                                     Plugin.IsLowReady = !Plugin.IsLowReady;
                                     Plugin.IsHighReady = false;
                                     Plugin.IsActiveAiming = false;
+                                    Plugin.IsShortStock = false;
                                     Plugin.WasHighReady = Plugin.IsHighReady;
                                     Plugin.WasLowReady = Plugin.IsLowReady;
                                 }
                             }
                         }
 
-                        if (Plugin.DidWeaponSwap == true) 
+                        if (Plugin.DidWeaponSwap == true || WeaponProperties._WeapClass == "pistol") 
                         {
+                            Plugin.IsShortStock = false;
                             Plugin.IsLowReady = false;
                             Plugin.IsHighReady = false;
                             Plugin.IsActiveAiming = false;
