@@ -125,7 +125,7 @@ namespace RealismMod
                         if (Plugin.IsLowReady == true && !Plugin.IsHighReady && !Plugin.IsAiming)
                         {
                             __instance.Physical.Aim(0f);
-                            __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.025f), __instance.Physical.HandsStamina.TotalCapacity);
+                            __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.015f), __instance.Physical.HandsStamina.TotalCapacity);
                         }
                         __instance.Physical.HandsStamina.Current = Mathf.Max(__instance.Physical.HandsStamina.Current, 1f);
                     }
