@@ -440,8 +440,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref float __result)
         {
-            Logger.LogWarning("ErgoDisplayDeltaPatch");
-
             if (Plugin.EnableStatsDelta.Value == true)
             {
                 StatDeltaDisplay.DisplayDelta(__instance);
@@ -463,7 +461,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref string __result)
         {
-            Logger.LogWarning("ErgoDisplayStringValuePatch");
             StatDeltaDisplay.DisplayDelta(__instance);
             float ergoTotal = __instance.Template.Ergonomics * (1f + DisplayWeaponProperties.ErgoDelta);
             string result = Mathf.Clamp(ergoTotal, 0f, 100f).ToString("0.##");

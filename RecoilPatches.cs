@@ -162,7 +162,7 @@ namespace RealismMod
 
                 float buffFactoredDispersion = Plugin.CurrentDispersion * str * PlayerProperties.RecoilInjuryMulti;
 
-                if (weaponClass.WeapClass == "pistol" && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
+                if (Plugin.ShotCount > 1 && weaponClass.WeapClass == "pistol" && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
                 {
                     buffFactoredDispersion *= 0.80f;
                     __instance.RecoilStrengthZ.x *= 0.5f;

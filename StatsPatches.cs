@@ -98,8 +98,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref float __result)
         {
-            Logger.LogWarning("get_ErgonomicsDelta");
-
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 ErgoDeltaPatch p = new ErgoDeltaPatch();
@@ -122,7 +120,6 @@ namespace RealismMod
 
         public float FinalStatCalc(ref Weapon __instance)
         {
-            Logger.LogWarning("FinalStatCalc");
             WeaponProperties._WeapClass = __instance.WeapClass;
             bool isManual = WeaponProperties.IsManuallyOperated(__instance);
             WeaponProperties._IsManuallyOperated = isManual;
@@ -251,7 +248,6 @@ namespace RealismMod
 
         public void InitialStaCalc(ref Weapon __instance)
         {
-            Logger.LogWarning("InitialStaCalc");
             WeaponProperties._WeapClass = __instance.WeapClass;
             bool isManual = WeaponProperties.IsManuallyOperated(__instance);
             WeaponProperties._IsManuallyOperated = isManual;
@@ -528,7 +524,6 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                Logger.LogWarning("skill sync");
                 SkillsClass.GClass1675 skillsClass = (SkillsClass.GClass1675)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1675_0").GetValue(__instance);
                 PlayerProperties.StrengthSkillAimBuff = 1 - player.Skills.StrengthBuffAimFatigue.Value;
                 PlayerProperties.ReloadSkillMulti = skillsClass.ReloadSpeed;
