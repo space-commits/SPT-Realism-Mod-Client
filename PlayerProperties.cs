@@ -26,5 +26,7 @@
 
         public static float BaseSprintSpeed = 1f;
 
+        public static EnvironmentType enviroType;
+
     }
 }

@@ -29,11 +29,12 @@ namespace RealismMod
             if (player.IsYourPlayer == true)
             {
                 GClass750 rotationFrameSpan = (GClass750)AccessTools.Field(typeof(GClass1598), "gclass750_0").GetValue(__instance);
-                float highReadySpeedBonus = Plugin.IsHighReady ? 1.15f : 1;
-                float highReadyAccelBonus = Plugin.IsHighReady ? 2f : 1;
-                float lowReadyAccelBonus = Plugin.IsLowReady ? 1.25f : 1;
+                float highReadySpeedBonus = Plugin.IsHighReady ? 1.15f : 1f;
+                float highReadyAccelBonus = Plugin.IsHighReady ? 2f : 1f;
+                float lowReadyAccelBonus = Plugin.IsLowReady ? 1.25f : 1f;
+                float shortStockPenalty = Plugin.IsShortStock ? 0.9f : 1f;
 
-                float sprintAccel = player.Physical.SprintAcceleration * deltaTime * lowReadyAccelBonus * highReadyAccelBonus;
+                float sprintAccel = player.Physical.SprintAcceleration * deltaTime * lowReadyAccelBonus * highReadyAccelBonus * shortStockPenalty;
                 float speed = (player.Physical.SprintSpeed * __instance.SprintingSpeed + 1f) * __instance.StateSprintSpeedLimit * highReadySpeedBonus;
                 float sprintInertia = Mathf.Max(EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(Mathf.Abs((float)rotationFrameSpan.Average)), EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(2.1474836E+09f) * (2f - player.Physical.Inertia));
                 speed = Mathf.Clamp(speed * sprintInertia, 0.1f, speed);

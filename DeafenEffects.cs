@@ -144,14 +144,14 @@ namespace RealismMod
 
         public static void DoDeafening()
         {
-
+            float enviroMulti = PlayerProperties.enviroType == EnvironmentType.Indoor ? 1.2f : 1f;
             float deafFactor = Plugin.AmmoDeafFactor * Plugin.WeaponDeafFactor * Plugin.EarProtectionFactor;
             float botDeafFactor = Plugin.BotDeafFactor * Plugin.EarProtectionFactor;
             float grenadeDeafFactor = Plugin.GrenadeDeafFactor * Plugin.EarProtectionFactor;
 
             if (Plugin.IsFiring == true)
             {
-                ChangeDeafValues(deafFactor, ref VignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafRate.Value, VolumeLimit, ref Distortion, Plugin.DistRate.Value, DistortionLimit);
+                ChangeDeafValues(deafFactor, ref VignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafRate.Value, VolumeLimit, ref Distortion, Plugin.DistRate.Value, DistortionLimit, enviroMulti);
             }
             else if (!valuesAreReset)
             {
@@ -160,7 +160,7 @@ namespace RealismMod
 
             if (Plugin.IsBotFiring == true)
             {
-                ChangeDeafValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafRate.Value, VolumeLimit, ref BotDistortion, Plugin.DistRate.Value, DistortionLimit);
+                ChangeDeafValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafRate.Value, VolumeLimit, ref BotDistortion, Plugin.DistRate.Value, DistortionLimit, enviroMulti);
             }
             else if (!valuesAreReset)
             {
@@ -169,7 +169,7 @@ namespace RealismMod
 
             if (Plugin.GrenadeExploded == true)
             {
-                ChangeDeafValues(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessIncreaseRate, GrenadeVignetteDarknessLimit, ref GrenadeVolume, GrenadeVolumeDecreaseRate, GrenadeVolumeLimit, ref GrenadeDistortion, GrenadeDistortionIncreaseRate, GrenadeDistortionLimit);
+                ChangeDeafValues(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessIncreaseRate, GrenadeVignetteDarknessLimit, ref GrenadeVolume, GrenadeVolumeDecreaseRate, GrenadeVolumeLimit, ref GrenadeDistortion, GrenadeDistortionIncreaseRate, GrenadeDistortionLimit, enviroMulti);
             }
             else if (!valuesAreReset)
             {
@@ -223,12 +223,12 @@ namespace RealismMod
             }
         }
 
-        private static void ChangeDeafValues(float deafFactor, ref float vigValue, float vigIncRate, float vigLimit, ref float volValue, float volDecRate, float volLimit, ref float distValue, float distIncRate, float distLimit)
+        private static void ChangeDeafValues(float deafFactor, ref float vigValue, float vigIncRate, float vigLimit, ref float volValue, float volDecRate, float volLimit, ref float distValue, float distIncRate, float distLimit, float enviroMulti)
         {
 
             Plugin.Vignette.enabled = true;
-            vigValue = Mathf.Clamp(vigValue + (vigIncRate * deafFactor), 0.0f, vigLimit * deafFactor);
-            volValue = Mathf.Clamp(volValue - (volDecRate * deafFactor), volLimit, 0.0f);
+            vigValue = Mathf.Clamp(vigValue + (vigIncRate * deafFactor * enviroMulti), 0.0f, vigLimit * deafFactor * enviroMulti);
+            volValue = Mathf.Clamp(volValue - (volDecRate * deafFactor * enviroMulti), volLimit, 0.0f);
             distValue = Mathf.Clamp(distValue + (distIncRate * deafFactor), 0.0f, distLimit);
         }
 
@@ -333,7 +333,6 @@ namespace RealismMod
 
                 if (player.IsYourPlayer == true)
                 {
-
                     BulletClass bullet = shot.Ammo as BulletClass;
                     AmmoTemplate currentAmmoTemplate = bullet.Template as AmmoTemplate;
 

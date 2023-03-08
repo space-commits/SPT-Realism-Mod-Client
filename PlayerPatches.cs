@@ -30,6 +30,7 @@ namespace RealismMod
             if (__instance.IsYourPlayer == true)
             {
                 StatCalc.SetGearParamaters(__instance);
+                Plugin.SelectedStance = 0;
                 Plugin.IsLowReady = false;
                 Plugin.IsHighReady = false;
                 Plugin.IsActiveAiming = false;
@@ -98,14 +99,15 @@ namespace RealismMod
                 PlayerInjuryStateCheck(__instance, Logger);
                 Plugin.IsSprinting = __instance.IsSprintEnabled;
 
+                PlayerProperties.enviroType = __instance.Environment;
+
                 if (fc != null)
                 {
                     ReloadStateCheck(__instance, fc);
 
-                    if (Plugin.IsHighReady == true)
+                    if (Plugin.IsHighReady == true || Plugin.WasHighReady == true)
                     {
                         __instance.BodyAnimatorCommon.SetFloat(GClass1642.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
-                            
                     }
                     else
                     {
