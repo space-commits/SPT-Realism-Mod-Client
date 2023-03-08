@@ -18,12 +18,12 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass2331).GetConstructor(new Type[] { typeof(string), typeof(GClass2238) });
+            return typeof(GClass2340).GetConstructor(new Type[] { typeof(string), typeof(GClass2247) });
         }
 
 
         [PatchPostfix]
-        private static void PatchPostfix(GClass2331 __instance)
+        private static void PatchPostfix(GClass2340 __instance)
         {
             Item item = __instance as Item;
 

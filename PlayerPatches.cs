@@ -107,11 +107,11 @@ namespace RealismMod
 
                     if (Plugin.IsHighReady == true || Plugin.WasHighReady == true)
                     {
-                        __instance.BodyAnimatorCommon.SetFloat(GClass1642.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
+                        __instance.BodyAnimatorCommon.SetFloat(GClass1645.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
                     }
                     else
                     {
-                        __instance.BodyAnimatorCommon.SetFloat(GClass1642.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
+                        __instance.BodyAnimatorCommon.SetFloat(GClass1645.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
                     }
 
                     if (Plugin.EnableStanceStamChanges.Value == true) 

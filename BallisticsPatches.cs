@@ -172,11 +172,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(GClass2611) });
+            return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(GClass2620) });
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, GClass2611 shot)
+        private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, GClass2620 shot)
         {
 /*            Logger.LogWarning("============DamageInfo=============");
             Logger.LogInfo("Shot ID = " + shot.Ammo.Id);
@@ -245,7 +245,7 @@ namespace RealismMod
 
         }
         [PatchPrefix]
-        private static bool Prefix(GClass2611 shot, ref ArmorComponent __instance)
+        private static bool Prefix(GClass2620 shot, ref ArmorComponent __instance)
         {
             if (__instance.Repairable.Durability <= 0f)
             {
@@ -401,7 +401,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, Player player, Item weapon, ref GClass2611 __result, float speedFactor, int fragmentIndex = 0)
+        private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, Player player, Item weapon, ref GClass2620 __result, float speedFactor, int fragmentIndex = 0)
         {
             /*            Logger.LogWarning("!!!!!!!!!!! Shot Created!! !!!!!!!!!!!!!!");
             Logger.LogWarning("========================STARTING BULLET VALUES============================");
@@ -434,7 +434,7 @@ namespace RealismMod
              Logger.LogWarning("Round Factored BC = " + bcFactored);
              Logger.LogWarning("==============================================================");*/
 
-            __result = GClass2611.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
+            __result = GClass2620.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
             return false;
 
         }

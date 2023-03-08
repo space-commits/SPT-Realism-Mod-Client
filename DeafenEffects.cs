@@ -70,12 +70,12 @@ namespace RealismMod
             float protectionFactor;
 
             LootItemClass headwear = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;
-            GClass2286 headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as GClass2286) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<GClass2286>().FirstOrDefault<GClass2286>() : null);
+            GClass2295 headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as GClass2295) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<GClass2295>().FirstOrDefault<GClass2295>() : null);
 
             if (headset != null)
             {
                 Plugin.HasHeadSet = true;
-                GClass2193 headphone = headset.Template;
+                GClass2202 headphone = headset.Template;
                 protectionFactor = ((headphone.DryVolume / 100f) + 1f) * 1.3f;
             }
             else
@@ -249,7 +249,7 @@ namespace RealismMod
 
         }
         [PatchPrefix]
-        private static bool Prefix(GClass2193 template, BetterAudio __instance)
+        private static bool Prefix(GClass2202 template, BetterAudio __instance)
         {
 
             bool hasHeadsetTemplate = template != null;
@@ -322,7 +322,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance, Item weapon, GClass2611 shot)
+        private static void PatchPostfix(Player.FirearmController __instance, Item weapon, GClass2620 shot)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
 

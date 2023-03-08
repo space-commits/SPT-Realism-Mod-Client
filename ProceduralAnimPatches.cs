@@ -20,14 +20,14 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass1598).GetMethod("SetAimingSlowdown", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GClass1601).GetMethod("SetAimingSlowdown", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref GClass1598 __instance, bool isAiming)
+        private static bool Prefix(ref GClass1601 __instance, bool isAiming)
         {
 
-            Player player = (Player)AccessTools.Field(typeof(GClass1598), "player_0").GetValue(__instance);
+            Player player = (Player)AccessTools.Field(typeof(GClass1601), "player_0").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 if (isAiming)
@@ -65,7 +65,7 @@ namespace RealismMod
                 if (player.IsYourPlayer == true)
                 {
 
-                    SkillsClass.GClass1675 skillsClass = (SkillsClass.GClass1675)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "gclass1675_0").GetValue(__instance);
+                    SkillsClass.GClass1678 skillsClass = (SkillsClass.GClass1678)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "gclass1678_0").GetValue(__instance);
                     Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "valueBlender_0").GetValue(__instance);
 
                     float singleItemTotalWeight = firearmController.Item.GetSingleItemTotalWeight();
