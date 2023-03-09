@@ -1,4 +1,6 @@
-﻿namespace RealismMod
+﻿using EFT;
+
+namespace RealismMod
 {
     public static class PlayerProperties
     {

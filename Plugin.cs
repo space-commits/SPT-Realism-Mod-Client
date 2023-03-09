@@ -4,6 +4,7 @@ using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using EFT.InventoryLogic;
+using EFT.UI;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -47,7 +48,8 @@ namespace RealismMod
         public static ConfigEntry<bool> showSemiROF { get; set; }
         public static ConfigEntry<bool> EnableFSPatch { get; set; }
         public static ConfigEntry<bool> EnableNVGPatch { get; set; }
-        public static ConfigEntry<bool> enableMalfPatch { get; set; }
+        public static ConfigEntry<bool> EnableMalfPatch { get; set; }
+        public static ConfigEntry<bool> InspectionlessMalfs { get; set; }
         public static ConfigEntry<bool> enableSGMastering { get; set; }
         public static ConfigEntry<bool> EnableProgramK { get; set; }
         public static ConfigEntry<bool> EnableAmmoFirerateDisp { get; set; }
@@ -102,9 +104,7 @@ namespace RealismMod
         public static ConfigEntry<float> PistolRotationZ { get; set; }
 
         public static ConfigEntry<float> ActiveAimSpeedMulti { get; set; }
-        public static ConfigEntry<float> changeTimeIncrease { get; set; }
         public static ConfigEntry<float> ActiveAimResetSpeedMulti { get; set; }
-        public static ConfigEntry<float> resetTimeIncrease { get; set; }
         public static ConfigEntry<float> ActiveAimRotationSpeedMulti { get; set; }
         public static ConfigEntry<float> PistolRotationSpeedMulti { get; set; }
         public static ConfigEntry<float> HighReadyRotationMulti { get; set; }
@@ -226,7 +226,6 @@ namespace RealismMod
 
         public static ConfigEntry<bool> EnableLogging { get; set; }
 
-
         public static Weapon CurrentlyEquipedWeapon;
 
         public static Vector3 WeaponStartPosition;
@@ -263,6 +262,10 @@ namespace RealismMod
         public static int ShotCount = 0;
         public static int PrevShotCount = ShotCount;
         public static bool StatsAreReset;
+
+        private float clickDelay = 0.2f;
+        private float doubleClickTime;
+        private bool clickTriggered = true;
 
         public static float StartingRecoilAngle;
 
@@ -336,7 +339,7 @@ namespace RealismMod
         public static bool HasHeadSet = false;
         public static CC_FastVignette Vignette;
 
-        public static float SightlessADSSpeed = 1f;
+        public static float SightlessTotalAimSpeed = 1f;
 
         public static bool HasOptic = false;
 
@@ -480,9 +483,10 @@ namespace RealismMod
                 showSemiROF = Config.Bind<bool>(WeapStatSettings, "Show Semi Auto ROF Stat", true, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 1 }));
 
                 SwayIntensity = Config.Bind<float>(WeaponSettings, "Sway Intensity", 1f, new ConfigDescription("Changes The Intensity Of Aim Sway And Inertia.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1 }));
-                enableMalfPatch = Config.Bind<bool>(WeaponSettings, "Enable Malfunctions Changes", true, new ConfigDescription("Requires Restart. Malfunction Changes Must Be Enabled On The Server (Config App). You Don't Need To Inspect A Malfunction In Order To Clear It, Subsonic Ammo Needs Special Mods To Cycle, Malfunctions Can Happen At Any Durability But The Chance Is Halved If Above The Durability Threshold.", null, new ConfigurationManagerAttributes { Order = 4 }));
-                DuraMalfThreshold = Config.Bind<float>(WeaponSettings, "Malfunction Durability Threshold", 98f, new ConfigDescription("Malfunction Changes Must Be Enabled On The Server (Config App) And 'Enable Malfunctions Changes' Must Be True. Malfunction Chance Is Reduced By Half Until This Durability Threshold Is Met.", new AcceptableValueRange<float>(80f, 100f), new ConfigurationManagerAttributes { Order = 5 }));
-                enableSGMastering = Config.Bind<bool>(WeaponSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 6 }));
+                EnableMalfPatch = Config.Bind<bool>(WeaponSettings, "Enable Malfunctions Changes", true, new ConfigDescription("Requires Restart. Malfunction Changes Must Be Enabled On The Server (Config App). Some Subsonic Ammo Needs Special Mods To Cycle, Malfunctions Can Happen At Any Durability But The Chance Is Halved If Above The Durability Threshold.", null, new ConfigurationManagerAttributes { Order = 2 }));
+                InspectionlessMalfs = Config.Bind<bool>(WeaponSettings, "Enable Inspectionless Malfunctions", true, new ConfigDescription("Requires Restart. You Don't Need To Inspect A Malfunction In Order To Clear It.", null, new ConfigurationManagerAttributes { Order = 3 }));
+                DuraMalfThreshold = Config.Bind<float>(WeaponSettings, "Malfunction Durability Threshold", 98f, new ConfigDescription("Malfunction Changes Must Be Enabled On The Server (Config App) And 'Enable Malfunctions Changes' Must Be True. Malfunction Chance Is Reduced By Half Until This Durability Threshold Is Met.", new AcceptableValueRange<float>(80f, 100f), new ConfigurationManagerAttributes { Order = 4 }));
+                enableSGMastering = Config.Bind<bool>(WeaponSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 5 }));
                 IncreaseCOI = Config.Bind<bool>(WeaponSettings, "Enable Increased Inaccuracy", true, new ConfigDescription("Requires Restart. Increases The Innacuracy Of All By All Weapons So That MOA/Accuracy Is A More Important Stat.", null, new ConfigurationManagerAttributes { Order = 6 }));
 
                 EnableDeafen = Config.Bind<bool>(DeafSettings, "Enable Deafening", true, new ConfigDescription("Requiures Restart. Enables Gunshots And Explosions Deafening The Player.", null, new ConfigurationManagerAttributes { Order = 9 }));
@@ -517,7 +521,7 @@ namespace RealismMod
                 EnableIdleStamDrain = Config.Bind<bool>(WeapAimAndPos, "Enable Idle Arm Stamina Drain", false, new ConfigDescription("Arm Stamina Will Drain When Not In A Stance (High And Low Ready, Short-Stocking).", null, new ConfigurationManagerAttributes { Order = 176 }));
                 EnableStanceStamChanges = Config.Bind<bool>(WeapAimAndPos, "Enable Stance Stamina And Movement Effects", true, new ConfigDescription("Enabled Stances To Affect Stamina And Movement Speed. High + Low Ready, Short-Stocking And Pistol Idle Will Regenerat Stamina Faster And Optionally Idle With Rifles Drains Stamina. High Ready Has Faster Sprint Speed And Sprint Acceleration, Low Ready Has Faster Spritn Accel. Arm Stamina Doesn't Start To Drain Regular Stamina.", null, new ConfigurationManagerAttributes { Order = 175 }));
 
-                CycleStancesKeybind = Config.Bind(WeapAimAndPos, "Cycle Stances Keybind", new KeyboardShortcut(KeyCode.J), new ConfigDescription("Cycles Between High, Low Ready and Short-Stocking", null, new ConfigurationManagerAttributes { Order = 174 }));
+                CycleStancesKeybind = Config.Bind(WeapAimAndPos, "Cycle Stances Keybind", new KeyboardShortcut(KeyCode.J), new ConfigDescription("Cycles Between High, Low Ready and Short-Stocking. Double Click Returns To Idle.", null, new ConfigurationManagerAttributes { Order = 174 }));
                 ActiveAimKeybind = Config.Bind(WeapAimAndPos, "Active Aim Keybind", new KeyboardShortcut(KeyCode.LeftArrow), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 173 }));
                 HighReadyKeybind = Config.Bind(WeapAimAndPos, "High Ready Keybind", new KeyboardShortcut(KeyCode.UpArrow), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 172 }));
                 LowReadyKeybind = Config.Bind(WeapAimAndPos, "Low Ready Keybind", new KeyboardShortcut(KeyCode.DownArrow), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 171 }));
@@ -530,28 +534,26 @@ namespace RealismMod
                 WeapOffsetZ = Config.Bind<float>(WeapAimAndPos, "Weapon Position Z", 0.0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 150 }));
 
                 ActiveAimAdditionalRotationSpeedMulti = Config.Bind<float>(ActiveAim, "Active Aim Additonal Rotation Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true }));
-                ActiveAimResetRotationSpeedMulti = Config.Bind<float>(ActiveAim, "Active Aim Reset Rotation Speed Multi", 1.2f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true }));
+                ActiveAimResetRotationSpeedMulti = Config.Bind<float>(ActiveAim, "Active Aim Reset Rotation Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true }));
                 ActiveAimRotationSpeedMulti = Config.Bind<float>(ActiveAim, "Active Aim Rotation Speed Multi", 0.48f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 144, IsAdvanced = true }));
                 ActiveAimSpeedMulti = Config.Bind<float>(ActiveAim, "Active Aim Speed Multi", 0.36f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 143, IsAdvanced = true }));
-                ActiveAimResetSpeedMulti = Config.Bind<float>(ActiveAim, "Active Aim Reset Speed Multi", 0.3f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 142, IsAdvanced = true }));
-                resetTimeIncrease = Config.Bind<float>(ActiveAim, "Active Aim Reset Time Increase", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 141, IsAdvanced = true }));
-                changeTimeIncrease = Config.Bind<float>(ActiveAim, "Active Aim Speed Increase", 0.0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 140, IsAdvanced = true }));
+                ActiveAimResetSpeedMulti = Config.Bind<float>(ActiveAim, "Active Aim Reset Speed Multi", 0.25f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 142, IsAdvanced = true }));
 
                 ActiveAimOffsetX = Config.Bind<float>(ActiveAim, "Active Aim Position X", -0.08f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.12f, 0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 132, IsAdvanced = true }));
-                ActiveAimOffsetY = Config.Bind<float>(ActiveAim, "Active Aim Position Y", -0.01f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 131, IsAdvanced = true }));
+                ActiveAimOffsetY = Config.Bind<float>(ActiveAim, "Active Aim Position Y", 0f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 131, IsAdvanced = true }));
                 ActiveAimOffsetZ = Config.Bind<float>(ActiveAim, "Active Aim Position Z", 0.0f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 130, IsAdvanced = true }));
 
                 ActiveAimRotationX = Config.Bind<float>(ActiveAim, "Active Aim Rotation X", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 122, IsAdvanced = true }));
-                ActiveAimRotationY = Config.Bind<float>(ActiveAim, "Active Aim Rotation Y", -130.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 121, IsAdvanced = true }));
+                ActiveAimRotationY = Config.Bind<float>(ActiveAim, "Active Aim Rotation Y", -120.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 121, IsAdvanced = true }));
                 ActiveAimRotationZ = Config.Bind<float>(ActiveAim, "Active Aim Rotation Z", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 120, IsAdvanced = true }));
 
-                ActiveAimAdditionalRotationX = Config.Bind<float>(ActiveAim, "Active Aiming Additional Rotation X", 10f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 111, IsAdvanced = true }));
-                ActiveAimAdditionalRotationY = Config.Bind<float>(ActiveAim, "Active Aiming Additional Rotation Y", -20f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true }));
-                ActiveAimAdditionalRotationZ = Config.Bind<float>(ActiveAim, "Active Aiming Additional Rotation Z", 15f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true }));
+                ActiveAimAdditionalRotationX = Config.Bind<float>(ActiveAim, "Active Aiming Additional Rotation X", 15f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 111, IsAdvanced = true }));
+                ActiveAimAdditionalRotationY = Config.Bind<float>(ActiveAim, "Active Aiming Additional Rotation Y", -5f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true }));
+                ActiveAimAdditionalRotationZ = Config.Bind<float>(ActiveAim, "Active Aiming Additional Rotation Z", 10f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true }));
 
-                ActiveAimResetRotationX = Config.Bind<float>(ActiveAim, "Active Aiming Reset Rotation X", 3.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 102, IsAdvanced = true }));
-                ActiveAimResetRotationY = Config.Bind<float>(ActiveAim, "Active Aiming Reset Rotation Y", 15.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 101, IsAdvanced = true }));
-                ActiveAimResetRotationZ = Config.Bind<float>(ActiveAim, "Active Aiming Reset Rotation Z", -2.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = true }));
+                ActiveAimResetRotationX = Config.Bind<float>(ActiveAim, "Active Aiming Reset Rotation X", 7.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 102, IsAdvanced = true }));
+                ActiveAimResetRotationY = Config.Bind<float>(ActiveAim, "Active Aiming Reset Rotation Y", 17.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 101, IsAdvanced = true }));
+                ActiveAimResetRotationZ = Config.Bind<float>(ActiveAim, "Active Aiming Reset Rotation Z", -3.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = true }));
 
                 HighReadyAdditionalRotationSpeedMulti = Config.Bind<float>(HighReady, "High Ready Additonal Rotation Speed Multi", 0.5f, new ConfigDescription("How Fast The Weapon Rotates Going Out Of Stance.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 94, IsAdvanced = true }));
                 HighReadyResetRotationMulti = Config.Bind<float>(HighReady, "High Ready Reset Rotation Speed Multi", 0.67f, new ConfigDescription("How Fast The Weapon Rotates Going Out Of Stance.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 93, IsAdvanced = true }));
@@ -563,11 +565,11 @@ namespace RealismMod
                 HighReadyOffsetY = Config.Bind<float>(HighReady, "High Ready Position Y", -0.06f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 81, IsAdvanced = true }));
                 HighReadyOffsetZ = Config.Bind<float>(HighReady, "High Ready Position Z", -0.03f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 80, IsAdvanced = true }));
 
-                HighReadyRotationX = Config.Bind<float>(HighReady, "High Ready Rotation X", 250.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 72, IsAdvanced = true }));
+                HighReadyRotationX = Config.Bind<float>(HighReady, "High Ready Rotation X", -70.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 72, IsAdvanced = true }));
                 HighReadyRotationY = Config.Bind<float>(HighReady, "High Ready Rotation Y", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 71, IsAdvanced = true }));
                 HighReadyRotationZ = Config.Bind<float>(HighReady, "High Ready Rotation Z", 30.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 70, IsAdvanced = true }));
 
-                HighReadyAdditionalRotationX = Config.Bind<float>(HighReady, "High Ready Additional Rotation X", -15.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 69, IsAdvanced = true }));
+                HighReadyAdditionalRotationX = Config.Bind<float>(HighReady, "High Ready Additional Rotation X", -10.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 69, IsAdvanced = true }));
                 HighReadyAdditionalRotationY = Config.Bind<float>(HighReady, "High Ready Additiona Rotation Y", 30.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 68, IsAdvanced = true }));
                 HighReadyAdditionalRotationZ = Config.Bind<float>(HighReady, "High Ready Additional Rotation Z", 5.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 67, IsAdvanced = true }));
 
@@ -585,7 +587,7 @@ namespace RealismMod
                 LowReadyOffsetY = Config.Bind<float>(LowReady, "Low Ready Position Y", 0.025f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 51, IsAdvanced = true }));
                 LowReadyOffsetZ = Config.Bind<float>(LowReady, "Low Ready Position Z", 0.04f, new ConfigDescription("Weapon Position When In Stance..", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 50, IsAdvanced = true }));
 
-                LowReadyRotationX = Config.Bind<float>(LowReady, "Low Ready Rotation X", 70.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 42, IsAdvanced = true }));
+                LowReadyRotationX = Config.Bind<float>(LowReady, "Low Ready Rotation X", 50.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 42, IsAdvanced = true }));
                 LowReadyRotationY = Config.Bind<float>(LowReady, "Low Ready Rotation Y", -35.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 41, IsAdvanced = true }));
                 LowReadyRotationZ = Config.Bind<float>(LowReady, "Low Ready Rotation Z", -10.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 40, IsAdvanced = true }));
 
@@ -622,15 +624,15 @@ namespace RealismMod
                 ShortStockAdditionalRotationSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Additional Rotation Speed Multi", 0.9f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 35, IsAdvanced = true }));
                 ShortStockResetRotationSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Reset Rotation Speed Multi", 1.0f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 34, IsAdvanced = true }));
                 ShortStockRotationSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Rotation Speed Multi", 0.6f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 33, IsAdvanced = true }));
-                ShortStockSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Position Speed Multi", 0.4f, new ConfigDescription("", new AcceptableValueRange<float>(-2.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 32, IsAdvanced = true }));
-                ShortStockResetSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Position Reset Speed Multi", 0.5f, new ConfigDescription("", new AcceptableValueRange<float>(-2.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true }));
+                ShortStockSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Position Speed Multi", 0.45f, new ConfigDescription("", new AcceptableValueRange<float>(-2.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 32, IsAdvanced = true }));
+                ShortStockResetSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Position Reset Speed Multi", 0.55f, new ConfigDescription("", new AcceptableValueRange<float>(-2.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true }));
 
                 ShortStockOffsetX = Config.Bind<float>(ShortStock, "Short-Stock Position X", 0.035f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 22, IsAdvanced = true }));
-                ShortStockOffsetY = Config.Bind<float>(ShortStock, "Short-Stock Position Y", 0.045f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 21, IsAdvanced = true }));
+                ShortStockOffsetY = Config.Bind<float>(ShortStock, "Short-Stock Position Y", -0.05f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 21, IsAdvanced = true }));
                 ShortStockOffsetZ = Config.Bind<float>(ShortStock, "Short-Stock Position Z", -0.1f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, IsAdvanced = true }));
 
                 ShortStockRotationX = Config.Bind<float>(ShortStock, "Short-Stock Rotation X", 0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true }));
-                ShortStockRotationY = Config.Bind<float>(ShortStock, "Short-Stock Rotation Y", -150.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, IsAdvanced = true }));
+                ShortStockRotationY = Config.Bind<float>(ShortStock, "Short-Stock Rotation Y", -100.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, IsAdvanced = true }));
                 ShortStockRotationZ = Config.Bind<float>(ShortStock, "Short-Stock Rotation Z", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true }));
 
                 ShortStockAdditionalRotationX = Config.Bind<float>(ShortStock, "Short-Stock Ready Additional Rotation X", -11.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true }));
@@ -643,7 +645,7 @@ namespace RealismMod
 
                 if (EnableProgramK.Value == true)
                 {
-                    Helper.ProgramKEnabled = true;
+                    Utils.ProgramKEnabled = true;
                     Logger.LogInfo("Realism Mod: ProgramK Compatibiltiy Enabled!");
                 }
 
@@ -686,12 +688,14 @@ namespace RealismMod
                 new ToggleAimPatch().Enable();
 
                 //Malf Patches
-                if (enableMalfPatch.Value == true && ModConfig.malf_changes == true)
+                if (Plugin.EnableMalfPatch.Value == true && ModConfig.malf_changes == true)
                 {
-                    new IsKnownMalfTypePatch().Enable();
                     new GetTotalMalfunctionChancePatch().Enable();
                 }
-
+                if (Plugin.InspectionlessMalfs.Value == true) 
+                {
+                    new IsKnownMalfTypePatch().Enable();
+                }
 
                 //Reload Patches
                 if (Plugin.EnableReloadPatches.Value == true)
@@ -795,6 +799,8 @@ namespace RealismMod
                 //stances
                 new ApplyComplexRotationPatch().Enable();
                 new InitTransformsPatch().Enable();
+
+                new LaserLateUpdatePatch().Enable();
             }
         }
 
@@ -809,7 +815,7 @@ namespace RealismMod
                     checkedForUniformAim = true;
                 }
 
-                if (Helper.CheckIsReady())
+                if (Utils.CheckIsReady())
                 {
 
                     if (Plugin.ShotCount > Plugin.PrevShotCount)
@@ -863,23 +869,49 @@ namespace RealismMod
                     {
                         Recoil.ResetRecoil();
                     }
-                    if (Helper.WeaponReady == true)
+                    if (Utils.WeaponReady == true)
                     {
 
                         if (!Plugin.IsSprinting && WeaponProperties._WeapClass != "pistol")
                         {
+
+
                             //cycle stances
-                            if(Input.GetKeyDown(CycleStancesKeybind.Value.MainKey))
+                            if (Input.GetKeyUp(CycleStancesKeybind.Value.MainKey))
                             {
-                                SelectedStance++;
-                                SelectedStance = SelectedStance > 3 ? 0 : SelectedStance;
-                                Plugin.IsLowReady = SelectedStance == 0 ? true : false;
-                                Plugin.IsHighReady = SelectedStance == 1 ? true : false;
-                                Plugin.IsShortStock = SelectedStance == 2 ? true : false;
-                                Plugin.IsActiveAiming = false;
-                                Plugin.WasHighReady = Plugin.IsHighReady;
-                                Plugin.WasLowReady = Plugin.IsLowReady;
-                                Plugin.WasShortStock = Plugin.IsShortStock;
+                                if (Time.time <= doubleClickTime)
+                                {
+                                    clickTriggered = true;
+                                    Plugin.SelectedStance = 0;
+                                    Plugin.IsHighReady = false;
+                                    Plugin.IsLowReady = false;
+                                    Plugin.IsShortStock = false;
+                                    Plugin.IsActiveAiming = false;
+                                    Plugin.WasHighReady = false;
+                                    Plugin.WasLowReady = false;
+                                    Plugin.WasShortStock = false;
+                                }
+                                else
+                                {           
+                                    clickTriggered = false;
+                                    doubleClickTime = Time.time + clickDelay;
+                                }
+                            }
+                            else if (clickTriggered == false)
+                            {
+                                if (Time.time > doubleClickTime)
+                                {
+                                    clickTriggered = true;
+                                    SelectedStance++;
+                                    SelectedStance = SelectedStance > 3 ? 1 : SelectedStance;
+                                    Plugin.IsHighReady = SelectedStance == 1 ? true : false;
+                                    Plugin.IsLowReady = SelectedStance == 2 ? true : false;
+                                    Plugin.IsShortStock = SelectedStance == 3 ? true : false;
+                                    Plugin.IsActiveAiming = false;
+                                    Plugin.WasHighReady = Plugin.IsHighReady;
+                                    Plugin.WasLowReady = Plugin.IsLowReady;
+                                    Plugin.WasShortStock = Plugin.IsShortStock;
+                                }
                             }
 
                             //active aim

@@ -7,7 +7,7 @@ namespace RealismMod
 
         public static string ModType(Item mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return "";
             }
@@ -16,7 +16,7 @@ namespace RealismMod
 
         public static float VerticalRecoil(Mod mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return mod.Recoil;
             }
@@ -25,7 +25,7 @@ namespace RealismMod
 
         public static float HorizontalRecoil(Mod mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return mod.Recoil;
             }
@@ -34,7 +34,7 @@ namespace RealismMod
 
         public static float Dispersion(Mod mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return 0;
             }
@@ -43,7 +43,7 @@ namespace RealismMod
 
         public static float CameraRecoil(Mod mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return 0;
             }
@@ -52,7 +52,7 @@ namespace RealismMod
 
         public static float AutoROF(Mod mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return 0;
             }
@@ -61,7 +61,7 @@ namespace RealismMod
 
         public static float SemiROF(Mod mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return 0;
             }
@@ -70,7 +70,7 @@ namespace RealismMod
 
         public static float ModMalfunctionChance(Mod mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return 0;
             }
@@ -79,7 +79,7 @@ namespace RealismMod
 
         public static float ReloadSpeed(Mod mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return 0;
             }
@@ -88,7 +88,7 @@ namespace RealismMod
 
         public static float AimSpeed(Mod mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return 0;
             }
@@ -97,7 +97,7 @@ namespace RealismMod
 
         public static float ChamberSpeed(Mod mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return 0;
             }
@@ -106,7 +106,7 @@ namespace RealismMod
 
         public static float Length(Mod mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return 0;
             }
@@ -115,7 +115,7 @@ namespace RealismMod
 
         public static bool CanCylceSubs(Mod mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return false;
             }
@@ -124,7 +124,7 @@ namespace RealismMod
 
         public static float RecoilAngle(Mod mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return 0;
             }
@@ -133,7 +133,7 @@ namespace RealismMod
 
         public static bool StockAllowADS(Mod mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return false;
             }
@@ -142,7 +142,7 @@ namespace RealismMod
 
         public static float FixSpeed(Mod mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return 0;
             }
@@ -151,7 +151,7 @@ namespace RealismMod
 
         public static float ModShotDispersion(Mod mod)
         {
-            if (Helper.NullCheck(mod.ConflictingItems))
+            if (Utils.NullCheck(mod.ConflictingItems))
             {
                 return 0;
             }

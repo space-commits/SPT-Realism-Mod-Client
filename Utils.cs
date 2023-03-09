@@ -27,9 +27,8 @@ using TacticalCombo = GClass2112;*/
 
 namespace RealismMod
 {
-    public static class Helper
+    public static class Utils
     {
-
         public static bool ProgramKEnabled = false;
 
         public static bool IsAllowedAim = true;
@@ -72,6 +71,25 @@ namespace RealismMod
         public static string TacticalCombo = "55818b164bdc2ddc698b456c";
         public static string UBGL = "55818b014bdc2ddc698b456b";
 
+        public static LightComponent GetLightComponent(LightComponent x)
+        {
+            return x;
+        }
+
+        public static string GetLightId(LightComponent x)
+        {
+            return x.Item.Id;
+        }
+
+        public static Item GetContainedItem(Slot slot)
+        {
+            return slot.ContainedItem;
+        }
+
+        public static bool IsIdle() 
+        {
+            return !Plugin.IsActiveAiming && !Plugin.IsHighReady && !Plugin.IsLowReady && !Plugin.IsShortStock && !Plugin.WasHighReady && !Plugin.WasLowReady && !Plugin.WasShortStock ? true : false;
+        }
 
         public static bool NullCheck(string[] confItemArray)
         {
@@ -97,17 +115,17 @@ namespace RealismMod
                 {
                     if (player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon)
                     {
-                        Helper.WeaponReady = true;
+                        Utils.WeaponReady = true;
                     }
                 }
             }
 
             if (gameWorld == null || gameWorld.AllPlayers == null || gameWorld.AllPlayers.Count <= 0 || sessionResultPanel != null)
             {
-                Helper.IsReady = false;
+                Utils.IsReady = false;
                 return false;
             }
-            Helper.IsReady = true;
+            Utils.IsReady = true;
 
             return true;
         }

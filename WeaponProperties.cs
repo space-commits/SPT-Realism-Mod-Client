@@ -1,6 +1,5 @@
 ﻿using EFT.InventoryLogic;
-
-
+using System.Collections.Generic;
 
 namespace RealismMod
 {
@@ -45,7 +44,7 @@ namespace RealismMod
 
         public static string WeaponType(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return "";
             }
@@ -54,7 +53,7 @@ namespace RealismMod
 
         public static float BaseTorqueDistance(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return 0;
             }
@@ -63,7 +62,7 @@ namespace RealismMod
 
         public static bool WepHasShoulderContact(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return false;
             }
@@ -72,7 +71,7 @@ namespace RealismMod
 
         public static float BaseReloadSpeed(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return 1;
             }
@@ -81,7 +80,7 @@ namespace RealismMod
 
         public static string OperationType(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return "";
             }
@@ -90,7 +89,7 @@ namespace RealismMod
 
         public static float WeaponAccuracy(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return 0;
             }
@@ -99,7 +98,7 @@ namespace RealismMod
 
         public static float RecoilDamping(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return 0.7f;
             }
@@ -108,7 +107,7 @@ namespace RealismMod
 
         public static float RecoilHandDamping(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return 0.65f;
             }
@@ -117,7 +116,7 @@ namespace RealismMod
 
         public static bool WeaponAllowsADS(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return false;
             }
@@ -126,7 +125,7 @@ namespace RealismMod
 
         public static float BaseChamberSpeed(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return 1;
             }
@@ -135,7 +134,7 @@ namespace RealismMod
 
         public static float MaxChamberSpeed(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return 1.2f;
             }
@@ -145,7 +144,7 @@ namespace RealismMod
 
         public static float MinChamberSpeed(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return 0.7f;
             }
@@ -154,7 +153,7 @@ namespace RealismMod
 
         public static bool IsManuallyOperated(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return false;
             }
@@ -163,7 +162,7 @@ namespace RealismMod
 
         public static float MaxReloadSpeed(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return 1.2f;
             }
@@ -172,7 +171,7 @@ namespace RealismMod
 
         public static float MinReloadSpeed(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return 0.7f;
             }
@@ -181,7 +180,7 @@ namespace RealismMod
 
         public static float BaseChamberCheckSpeed(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return 1f;
             }
@@ -190,7 +189,7 @@ namespace RealismMod
 
         public static float BaseFixSpeed(Weapon weapon)
         {
-            if (Helper.NullCheck(weapon.ConflictingItems))
+            if (Utils.NullCheck(weapon.ConflictingItems))
             {
                 return 1f;
             }

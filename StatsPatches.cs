@@ -101,7 +101,7 @@ namespace RealismMod
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 ErgoDeltaPatch p = new ErgoDeltaPatch();
-                if (Helper.IsInReloadOpertation)
+                if (Utils.IsInReloadOpertation)
                 {
                     __result = p.FinalStatCalc(ref __instance);
                 }
@@ -330,7 +330,7 @@ namespace RealismMod
             for (int i = 0; i < __instance.Mods.Length; i++)
             {
                 Mod mod = __instance.Mods[i];
-                if (!Helper.IsMagazine(mod))
+                if (!Utils.IsMagazine(mod))
                 {
                     float modWeight = __instance.Mods[i].Weight;
                     float modWeightFactored = StatCalc.FactoredWeight(modWeight);

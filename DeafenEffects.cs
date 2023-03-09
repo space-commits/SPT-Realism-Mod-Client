@@ -293,13 +293,12 @@ namespace RealismMod
             return typeof(Player.FirearmController).GetMethod("RegisterShot", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
-
         private static float GetMuzzleLoudness(Mod[] mods)
         {
             float loudness = 0f;
             for (int i = 0; i < mods.Length; i++)
             {
-                if (mods[i].Slots.Length > 0 && mods[i].Slots[0].ContainedItem != null && Helper.IsSilencer((Mod)mods[i].Slots[0].ContainedItem))
+                if (mods[i].Slots.Length > 0 && mods[i].Slots[0].ContainedItem != null && Utils.IsSilencer((Mod)mods[i].Slots[0].ContainedItem))
                 {
                     return 0.75f;
                 }
@@ -356,7 +355,9 @@ namespace RealismMod
                 }
                 else
                 {
-                    float distanceFromPlayer = Vector3.Distance(__instance.gameObject.transform.position, Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position);
+                    Vector3 playerPos = Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position;
+                    Vector3 shootePos = player.Transform.position;
+                    float distanceFromPlayer = Vector3.Distance(shootePos, playerPos);
                     if (distanceFromPlayer <= 30f)
                     {
                         Plugin.IsBotFiring = true;
@@ -399,8 +400,10 @@ namespace RealismMod
         [PatchPrefix]
         static void PreFix(IExplosiveItem grenadeItem, Vector3 grenadePosition)
         {
-            float distanceFromPlayer = Vector3.Distance(grenadePosition, Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position);
-            if (distanceFromPlayer <= 50f)
+            Player player = Singleton<GameWorld>.Instance.AllPlayers[0];
+            float distanceFromPlayer = Vector3.Distance(grenadePosition, player.Transform.position);
+
+            if (distanceFromPlayer <= 30f)
             {
                 Plugin.GrenadeExploded = true;
                 Plugin.GrenadeDeafFactor = grenadeItem.Contusion.z * ((-distanceFromPlayer / 100f) + 1f);

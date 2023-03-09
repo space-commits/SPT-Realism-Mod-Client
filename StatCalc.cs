@@ -6,7 +6,7 @@ using HarmonyLib.Tools;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static RealismMod.Helper;
+using static RealismMod.Utils;
 namespace RealismMod
 {
     public static class StatCalc
@@ -99,8 +99,8 @@ namespace RealismMod
 
         public static void SetMagReloadSpeeds(Player.FirearmController __instance, MagazineClass magazine, bool isQuickReload = false)
         {
-            Helper.IsMagReloading = true;
-            if (Helper.NoMagazineReload == true)
+            Utils.IsMagReloading = true;
+            if (Utils.NoMagazineReload == true)
             {
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 StatCalc.MagReloadSpeedModifier(magazine, false, true);
@@ -373,7 +373,7 @@ namespace RealismMod
 
             pureErgo = pureErgo + (pureErgo * (modErgo / 100f));
 
-            if (Helper.IsSilencer(mod) == true)
+            if (Utils.IsSilencer(mod) == true)
             {
                 pureRecoil = pureRecoil + (pureRecoil * ((modHRecoil * 0.5f) / 100f) + ((modCamRecoil * 0.5f) / 100f));
             }
@@ -383,7 +383,7 @@ namespace RealismMod
             }
 
 
-            if (!Helper.IsSight(mod))
+            if (!Utils.IsSight(mod))
             {
                 currentAimSpeedMod = currentAimSpeedMod + modAim;
             }
@@ -400,7 +400,7 @@ namespace RealismMod
 
         public static void ModConditionalStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, ref string position, ref float modChamber, ref float modLoudness, ref float modMalfChance, ref float modDuraBurn)
         {
-            if (Helper.IsStock(mod) == true)
+            if (Utils.IsStock(mod) == true)
             {
                 if (folded)
                 {
@@ -451,7 +451,7 @@ namespace RealismMod
 
                     }
 
-                    if (Helper.ProgramKEnabled == true)
+                    if (Utils.ProgramKEnabled == true)
                     {
                         StatCalc.StockPositionChecker(mod, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
                     }
@@ -473,7 +473,7 @@ namespace RealismMod
                             {
                                 return;
                             }
-                            if (!Helper.ProgramKEnabled)
+                            if (!Utils.ProgramKEnabled)
                             {
                                 if (containedMod.Slots.Length > 0 && (containedMod.Slots[0].ContainedItem != null))
                                 {
@@ -527,7 +527,7 @@ namespace RealismMod
                 return;
             }
 
-            if (Helper.IsSilencer(mod) == true || Helper.IsFlashHider(mod) == true || Helper.IsMuzzleCombo(mod) == true)
+            if (Utils.IsSilencer(mod) == true || Utils.IsFlashHider(mod) == true || Utils.IsMuzzleCombo(mod) == true)
             {
                 if (WeaponProperties._IsManuallyOperated == true)
                 {
@@ -543,7 +543,7 @@ namespace RealismMod
             if (modType == "muzzle_supp_adapter" && mod.Slots[0].ContainedItem != null)
             {
                 Mod containedMod = mod.Slots[0].ContainedItem as Mod;
-                if (Helper.IsSilencer(containedMod))
+                if (Utils.IsSilencer(containedMod))
                 {
                     modVRecoil = 0;
                     modHRecoil = 0;
@@ -558,7 +558,7 @@ namespace RealismMod
             if (modType == "shot_pump_grip_adapt" && mod.Slots[0].ContainedItem != null)
             {
                 Mod containedMod = mod.Slots[0].ContainedItem as Mod;
-                if (Helper.IsForegrip(containedMod) || (AttachmentProperties.ModType(containedMod) == "foregrip_adapter" && containedMod.Slots[0].ContainedItem != null))
+                if (Utils.IsForegrip(containedMod) || (AttachmentProperties.ModType(containedMod) == "foregrip_adapter" && containedMod.Slots[0].ContainedItem != null))
                 {
                     modChamber += WeaponProperties.PumpGripReloadBonus;
                 }

@@ -41,7 +41,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(EFT.Player.FirearmController __instance, ref bool ____isAiming)
         {
-            if (Helper.IsReady == true)
+            if (Utils.IsReady == true)
             {
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
                 if (!player.IsAI)

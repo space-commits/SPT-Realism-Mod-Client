@@ -59,7 +59,7 @@ namespace RealismMod
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
 
-            if (Plugin.IsFiring != true && Helper.IsInReloadOpertation)
+            if (Plugin.IsFiring != true && Utils.IsInReloadOpertation)
             {
                 __instance.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.TotalChamberSpeed * Plugin.GlobalArmHammerSpeedMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.35f));
                 if (Plugin.EnableLogging.Value == true)
@@ -243,11 +243,11 @@ namespace RealismMod
                 {
                     if (__instance.Item.GetCurrentMagazine() == null)
                     {
-                        Helper.NoMagazineReload = true;
+                        Utils.NoMagazineReload = true;
                     }
                     else
                     {
-                        Helper.NoMagazineReload = false;
+                        Utils.NoMagazineReload = false;
                     }
                 }
             }
@@ -321,8 +321,8 @@ namespace RealismMod
                     Logger.LogWarning("=============");
                 }
 
-                Helper.IsAttemptingToReloadInternalMag = true;
-                Helper.IsAttemptingRevolverReload = true;
+                Utils.IsAttemptingToReloadInternalMag = true;
+                Utils.IsAttemptingRevolverReload = true;
             }
         }
     }
@@ -346,7 +346,7 @@ namespace RealismMod
                     Logger.LogWarning("=============");
                 }
 
-                Helper.IsAttemptingToReloadInternalMag = true;
+                Utils.IsAttemptingToReloadInternalMag = true;
             }
         }
     }
@@ -370,7 +370,7 @@ namespace RealismMod
                     Logger.LogWarning("=============");
                 }
 
-                Helper.IsAttemptingToReloadInternalMag = true;
+                Utils.IsAttemptingToReloadInternalMag = true;
             }
         }
     }
@@ -429,7 +429,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            if (Helper.IsMagReloading == true)
+            if (Utils.IsMagReloading == true)
             {
                 if (Plugin.EnableLogging.Value == true)
                 {
@@ -483,7 +483,7 @@ namespace RealismMod
                     Logger.LogWarning("=============");
                 }
 
-                Helper.IsMagReloading = false;
+                Utils.IsMagReloading = false;
                 player.HandsAnimator.SetAnimationSpeed(1);
             }
 

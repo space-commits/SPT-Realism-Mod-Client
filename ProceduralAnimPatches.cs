@@ -13,6 +13,7 @@ using EFT.CameraControl;
 using System.Collections;
 using EFT.Interactive;
 using EFT.Animations;
+using System.Linq;
 
 namespace RealismMod
 {
@@ -110,12 +111,13 @@ namespace RealismMod
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
                 if (player.IsYourPlayer == true)
                 {
+                    float idleBonus = Utils.IsIdle() == true ? 1.1f : 1.0f;
                     float baseAimSpeed = WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti;
                     baseAimSpeed = firearmController.Item.WeapClass == "pistol" ? baseAimSpeed * 0.9f : baseAimSpeed;
-                    Plugin.SightlessADSSpeed = baseAimSpeed;
+                    Plugin.SightlessTotalAimSpeed = baseAimSpeed;
                     Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
                     float sightSpeedModi = (currentAimingMod != null) ? AttachmentProperties.AimSpeed(currentAimingMod) : 1;
-                    float newAimSpeed = baseAimSpeed * (1 + (sightSpeedModi / 100f));
+                    float newAimSpeed = baseAimSpeed * (1 + (sightSpeedModi / 100f)) * idleBonus;
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
 
                     if (Plugin.EnableLogging.Value == true)
@@ -248,6 +250,27 @@ namespace RealismMod
         }
     }
 
+    public class LaserLateUpdatePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(LaserBeam).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(LaserBeam __instance)
+        {
+            if (Plugin.IsHighReady == true || Plugin.IsLowReady)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+    }
+
     public class InitTransformsPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -311,9 +334,8 @@ namespace RealismMod
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
                 if (player.IsYourPlayer == true)
                 {
-
                     Quaternion currentRotation = (Quaternion)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").GetValue(__instance);
-                    
+
                     if (firearmController.Item.WeapClass == "pistol" && firearmController.Item.CalculateCellSize().X <= 2 && Plugin.EnableAltPistol.Value == true)
                     {
                         Vector3 pistolTargetRotation = new Vector3(Plugin.PistolRotationX.Value, Plugin.PistolRotationY.Value, Plugin.PistolRotationZ.Value);
@@ -321,7 +343,7 @@ namespace RealismMod
                         Quaternion pistolMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.PistolAdditionalRotationX.Value, Plugin.PistolAdditionalRotationY.Value, Plugin.PistolAdditionalRotationZ.Value));
                         Quaternion pistolRevertQuaternion = Quaternion.Euler(Plugin.PistolResetRotationX.Value, Plugin.PistolResetRotationY.Value, Plugin.PistolResetRotationZ.Value);
 
-                        float aimMulti = 1 - ((1f - Plugin.SightlessADSSpeed) * 0.5f);
+                        float aimMulti = 1 - ((1f - Plugin.SightlessTotalAimSpeed) * 0.5f);
 
                         __instance.HandsContainer.WeaponRoot.localPosition = new Vector3(Plugin.PistolTransformNewStartPosition.x, __instance.HandsContainer.TrackingTransform.localPosition.y, __instance.HandsContainer.TrackingTransform.localPosition.z);
 
@@ -335,7 +357,7 @@ namespace RealismMod
 
                             if (__instance.HandsContainer.TrackingTransform.localPosition != Plugin.PistolTransformNewStartPosition)
                             {
-                                currentRotation = Quaternion.Lerp(currentRotation, pistolMiniTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.PistolAdditionalRotationSpeedMulti.Value * Plugin.SightlessADSSpeed);
+                                currentRotation = Quaternion.Lerp(currentRotation, pistolMiniTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessTotalAimSpeed * dt * Plugin.PistolAdditionalRotationSpeedMulti.Value * Plugin.SightlessTotalAimSpeed);
                                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
                             }
                         }
@@ -396,29 +418,27 @@ namespace RealismMod
                             hasResetHighReady = true;
 /*                            __instance._shouldMoveWeaponCloser = true;
 */
-                            currentRotation = Quaternion.Lerp(currentRotation, shortStockTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.ShortStockRotationSpeedMulti.Value * Plugin.SightlessADSSpeed);
+                            currentRotation = Quaternion.Lerp(currentRotation, shortStockTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessTotalAimSpeed * dt * Plugin.ShortStockRotationSpeedMulti.Value * Plugin.SightlessTotalAimSpeed);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
-                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, shortStockTargetPosition, Plugin.SightlessADSSpeed * dt * Plugin.ShortStockSpeedMulti.Value);
+                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, shortStockTargetPosition, Plugin.SightlessTotalAimSpeed * dt * Plugin.ShortStockSpeedMulti.Value);
 
                             if (__instance.HandsContainer.TrackingTransform.localPosition != shortStockTargetPosition)
                             {
-                                currentRotation = Quaternion.Lerp(currentRotation, shortStockMiniTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.ShortStockAdditionalRotationSpeedMulti.Value * Plugin.SightlessADSSpeed);
+                                currentRotation = Quaternion.Lerp(currentRotation, shortStockMiniTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessTotalAimSpeed * dt * Plugin.ShortStockAdditionalRotationSpeedMulti.Value * Plugin.SightlessTotalAimSpeed);
                                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
                             }
                         }
                         else if (__instance.HandsContainer.TrackingTransform.localPosition != Plugin.TransformBaseStartPosition && !hasResetShortStock && !Plugin.IsLowReady && !Plugin.IsActiveAiming && !Plugin.IsHighReady && !isResettingActiveAim && !isResettingHighReady && !isResettingLowReady)
                         {
                             isResettingShortStock = true;
-                            currentRotation = Quaternion.Lerp(currentRotation, shortStockRevertQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.ShortStockResetRotationSpeedMulti.Value * Plugin.SightlessADSSpeed);
+                            currentRotation = Quaternion.Lerp(currentRotation, shortStockRevertQuaternion, __instance.CameraSmoothTime * Plugin.SightlessTotalAimSpeed * dt * Plugin.ShortStockResetRotationSpeedMulti.Value * Plugin.SightlessTotalAimSpeed);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
-                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.TransformBaseStartPosition, Plugin.SightlessADSSpeed * dt * Plugin.ShortStockResetSpeedMulti.Value);
+                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.TransformBaseStartPosition, Plugin.SightlessTotalAimSpeed * dt * Plugin.ShortStockResetSpeedMulti.Value);
                         }
                         else if (__instance.HandsContainer.TrackingTransform.localPosition == Plugin.TransformBaseStartPosition && !hasResetShortStock)
                         {
-                            Logger.LogWarning("reset");
-
                             isResettingShortStock = false;
                             hasResetShortStock = true;
                         }
@@ -432,14 +452,14 @@ namespace RealismMod
                             hasResetLowReady = true;
                             hasResetShortStock = true;
 
-                            currentRotation = Quaternion.Lerp(currentRotation, highReadyTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.HighReadyRotationMulti.Value * Plugin.SightlessADSSpeed);
+                            currentRotation = Quaternion.Lerp(currentRotation, highReadyTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessTotalAimSpeed * dt * Plugin.HighReadyRotationMulti.Value * Plugin.SightlessTotalAimSpeed);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
-                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, highReadyTargetPosition, Plugin.SightlessADSSpeed * dt * Plugin.HighReadySpeedMulti.Value);
+                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, highReadyTargetPosition, Plugin.SightlessTotalAimSpeed * dt * Plugin.HighReadySpeedMulti.Value);
 
                             if (__instance.HandsContainer.TrackingTransform.localPosition != highReadyTargetPosition)
                             {
-                                currentRotation = Quaternion.Lerp(currentRotation, highReadyMiniTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.HighReadyAdditionalRotationSpeedMulti.Value * Plugin.SightlessADSSpeed);
+                                currentRotation = Quaternion.Lerp(currentRotation, highReadyMiniTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessTotalAimSpeed * dt * Plugin.HighReadyAdditionalRotationSpeedMulti.Value * Plugin.SightlessTotalAimSpeed);
                                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
                             }
                         }
@@ -447,10 +467,10 @@ namespace RealismMod
                         {
                             isResettingHighReady = true;
 
-                            currentRotation = Quaternion.Lerp(currentRotation, highReadyRevertQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.HighReadyResetRotationMulti.Value * Plugin.SightlessADSSpeed);
+                            currentRotation = Quaternion.Lerp(currentRotation, highReadyRevertQuaternion, __instance.CameraSmoothTime * Plugin.SightlessTotalAimSpeed * dt * Plugin.HighReadyResetRotationMulti.Value * Plugin.SightlessTotalAimSpeed);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
-                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.TransformBaseStartPosition, Plugin.SightlessADSSpeed * dt * Plugin.HighReadyResetSpeedMulti.Value);
+                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.TransformBaseStartPosition, Plugin.SightlessTotalAimSpeed * dt * Plugin.HighReadyResetSpeedMulti.Value);
                         }
                         else if (__instance.HandsContainer.TrackingTransform.localPosition == Plugin.TransformBaseStartPosition && !hasResetHighReady)
                         {
@@ -468,14 +488,14 @@ namespace RealismMod
                             hasResetHighReady = true;
                             hasResetShortStock = true;
 
-                            currentRotation = Quaternion.Lerp(currentRotation, lowReadyTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.LowReadyRotationMulti.Value * Plugin.SightlessADSSpeed);
+                            currentRotation = Quaternion.Lerp(currentRotation, lowReadyTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessTotalAimSpeed * dt * Plugin.LowReadyRotationMulti.Value * Plugin.SightlessTotalAimSpeed);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
-                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, lowReadyTargetPosition, Plugin.SightlessADSSpeed * dt * Plugin.LowReadySpeedMulti.Value);
+                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, lowReadyTargetPosition, Plugin.SightlessTotalAimSpeed * dt * Plugin.LowReadySpeedMulti.Value);
 
                             if (__instance.HandsContainer.TrackingTransform.localPosition != lowReadyTargetPosition)
                             {
-                                currentRotation = Quaternion.Lerp(currentRotation, lowReadyMiniTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.LowReadyAdditionalRotationSpeedMulti.Value * Plugin.SightlessADSSpeed);
+                                currentRotation = Quaternion.Lerp(currentRotation, lowReadyMiniTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessTotalAimSpeed * dt * Plugin.LowReadyAdditionalRotationSpeedMulti.Value * Plugin.SightlessTotalAimSpeed);
                                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
                             }
                         }
@@ -483,10 +503,10 @@ namespace RealismMod
                         {
                             isResettingLowReady = true;
         
-                            currentRotation = Quaternion.Lerp(currentRotation, lowReadyRevertQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.LowReadyResetRotationMulti.Value * Plugin.SightlessADSSpeed);
+                            currentRotation = Quaternion.Lerp(currentRotation, lowReadyRevertQuaternion, __instance.CameraSmoothTime * Plugin.SightlessTotalAimSpeed * dt * Plugin.LowReadyResetRotationMulti.Value * Plugin.SightlessTotalAimSpeed);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
-                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.TransformBaseStartPosition, Plugin.SightlessADSSpeed * dt * Plugin.LowReadyResetSpeedMulti.Value);
+                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.TransformBaseStartPosition, Plugin.SightlessTotalAimSpeed * dt * Plugin.LowReadyResetSpeedMulti.Value);
                         }
                         else if (__instance.HandsContainer.TrackingTransform.localPosition == Plugin.TransformBaseStartPosition && !hasResetLowReady)
                         {
@@ -503,14 +523,14 @@ namespace RealismMod
                             hasResetHighReady = true;
                             hasResetShortStock = true;
 
-                            currentRotation = Quaternion.Lerp(currentRotation, activeAimTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.ActiveAimRotationSpeedMulti.Value * Plugin.SightlessADSSpeed);
+                            currentRotation = Quaternion.Lerp(currentRotation, activeAimTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessTotalAimSpeed * dt * Plugin.ActiveAimRotationSpeedMulti.Value * Plugin.SightlessTotalAimSpeed);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
-                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.ActiveAimTransformTargetPosition, Plugin.SightlessADSSpeed * dt * Plugin.ActiveAimSpeedMulti.Value);
+                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.ActiveAimTransformTargetPosition, Plugin.SightlessTotalAimSpeed * dt * Plugin.ActiveAimSpeedMulti.Value);
 
                             if (__instance.HandsContainer.TrackingTransform.localPosition != Plugin.ActiveAimTransformTargetPosition)
                             {
-                                currentRotation = Quaternion.Lerp(currentRotation, activeAimMiniTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.ActiveAimAdditionalRotationSpeedMulti.Value * Plugin.SightlessADSSpeed);
+                                currentRotation = Quaternion.Lerp(currentRotation, activeAimMiniTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessTotalAimSpeed * dt * Plugin.ActiveAimAdditionalRotationSpeedMulti.Value * Plugin.SightlessTotalAimSpeed);
                                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
                             }
                         }
@@ -518,8 +538,8 @@ namespace RealismMod
                         {
                             isResettingActiveAim = true;
 
-                            currentRotation = Quaternion.Lerp(currentRotation, activeAimRevertQuaternion, __instance.CameraSmoothTime * Plugin.SightlessADSSpeed * dt * Plugin.ActiveAimResetRotationSpeedMulti.Value * Plugin.SightlessADSSpeed);
-                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.TransformBaseStartPosition, Plugin.SightlessADSSpeed * dt * Plugin.ActiveAimResetSpeedMulti.Value);
+                            currentRotation = Quaternion.Lerp(currentRotation, activeAimRevertQuaternion, __instance.CameraSmoothTime * Plugin.SightlessTotalAimSpeed * dt * Plugin.ActiveAimResetRotationSpeedMulti.Value * Plugin.SightlessTotalAimSpeed);
+                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.TransformBaseStartPosition, Plugin.SightlessTotalAimSpeed * dt * Plugin.ActiveAimResetSpeedMulti.Value);
 
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 

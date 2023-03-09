@@ -9,7 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using static RealismMod.Helper;
+using static RealismMod.Utils;
 
 namespace RealismMod
 {

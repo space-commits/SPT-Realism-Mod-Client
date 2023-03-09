@@ -9,7 +9,7 @@ namespace RealismMod
     {
         public static bool AllowsADS(Item armorItem)
         {
-            if (Helper.NullCheck(armorItem.ConflictingItems))
+            if (Utils.NullCheck(armorItem.ConflictingItems))
             {
                 return true;
             }
@@ -18,7 +18,7 @@ namespace RealismMod
 
         public static string ArmorClass(Item armorItem)
         {
-            if (Helper.NullCheck(armorItem.ConflictingItems))
+            if (Utils.NullCheck(armorItem.ConflictingItems))
             {
                 return "Unclassified";
             }
@@ -27,7 +27,7 @@ namespace RealismMod
 
         public static bool CanSpall(Item armorItem)
         {
-            if (Helper.NullCheck(armorItem.ConflictingItems))
+            if (Utils.NullCheck(armorItem.ConflictingItems))
             {
                 return true;
             }
@@ -36,7 +36,7 @@ namespace RealismMod
 
         public static float SpallReduction(Item armorItem)
         {
-            if (Helper.NullCheck(armorItem.ConflictingItems))
+            if (Utils.NullCheck(armorItem.ConflictingItems))
             {
                 return 1;
             }
@@ -45,7 +45,7 @@ namespace RealismMod
 
         public static float ReloadSpeedMulti(Item armorItem)
         {
-            if (Helper.NullCheck(armorItem.ConflictingItems))
+            if (Utils.NullCheck(armorItem.ConflictingItems))
             {
                 return 1;
             }

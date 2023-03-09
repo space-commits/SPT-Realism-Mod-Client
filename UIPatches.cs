@@ -170,7 +170,7 @@ namespace RealismMod
 
 
 
-            if (Plugin.enableMalfPatch.Value == true && Plugin.ModConfig.malf_changes == true)
+            if (Plugin.EnableMalfPatch.Value == true && Plugin.ModConfig.malf_changes == true)
             {
                 ItemAttributeClass malfAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.MalfunctionChance);
                 malfAtt.Name = ENewItemAttributeId.MalfunctionChance.GetName();
@@ -179,7 +179,7 @@ namespace RealismMod
                 malfAtt.LessIsGood = true;
                 malfAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
                 malfAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-                Helper.SafelyAddAttributeToList(malfAtt, __instance);
+                Utils.SafelyAddAttributeToList(malfAtt, __instance);
             }
 
 
@@ -190,7 +190,7 @@ namespace RealismMod
             hRecoilAtt.LessIsGood = true;
             hRecoilAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             hRecoilAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Helper.SafelyAddAttributeToList(hRecoilAtt, __instance);
+            Utils.SafelyAddAttributeToList(hRecoilAtt, __instance);
 
             ItemAttributeClass vRecoilAtt = new ItemAttributeClass(ENewItemAttributeId.VerticalRecoil);
             vRecoilAtt.Name = ENewItemAttributeId.VerticalRecoil.GetName();
@@ -199,7 +199,7 @@ namespace RealismMod
             vRecoilAtt.LessIsGood = true;
             vRecoilAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             vRecoilAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Helper.SafelyAddAttributeToList(vRecoilAtt, __instance);
+            Utils.SafelyAddAttributeToList(vRecoilAtt, __instance);
 
             ItemAttributeClass dispersionAtt = new ItemAttributeClass(ENewItemAttributeId.Dispersion);
             dispersionAtt.Name = ENewItemAttributeId.Dispersion.GetName();
@@ -208,7 +208,7 @@ namespace RealismMod
             dispersionAtt.LessIsGood = true;
             dispersionAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             dispersionAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Helper.SafelyAddAttributeToList(dispersionAtt, __instance);
+            Utils.SafelyAddAttributeToList(dispersionAtt, __instance);
 
             ItemAttributeClass cameraRecAtt = new ItemAttributeClass(ENewItemAttributeId.CameraRecoil);
             cameraRecAtt.Name = ENewItemAttributeId.CameraRecoil.GetName();
@@ -217,7 +217,7 @@ namespace RealismMod
             cameraRecAtt.LessIsGood = true;
             cameraRecAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             cameraRecAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Helper.SafelyAddAttributeToList(cameraRecAtt, __instance);
+            Utils.SafelyAddAttributeToList(cameraRecAtt, __instance);
 
             ItemAttributeClass autoROFAtt = new ItemAttributeClass(ENewItemAttributeId.AutoROF);
             autoROFAtt.Name = ENewItemAttributeId.AutoROF.GetName();
@@ -226,7 +226,7 @@ namespace RealismMod
             autoROFAtt.LessIsGood = false;
             autoROFAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             autoROFAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Helper.SafelyAddAttributeToList(autoROFAtt, __instance);
+            Utils.SafelyAddAttributeToList(autoROFAtt, __instance);
 
             ItemAttributeClass semiROFAtt = new ItemAttributeClass(ENewItemAttributeId.SemiROF);
             semiROFAtt.Name = ENewItemAttributeId.SemiROF.GetName();
@@ -235,7 +235,7 @@ namespace RealismMod
             semiROFAtt.LessIsGood = false;
             semiROFAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             semiROFAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Helper.SafelyAddAttributeToList(semiROFAtt, __instance);
+            Utils.SafelyAddAttributeToList(semiROFAtt, __instance);
 
             ItemAttributeClass angleAtt = new ItemAttributeClass(ENewItemAttributeId.RecoilAngle);
             angleAtt.Name = ENewItemAttributeId.RecoilAngle.GetName();
@@ -244,7 +244,7 @@ namespace RealismMod
             angleAtt.LessIsGood = false;
             angleAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             angleAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Helper.SafelyAddAttributeToList(angleAtt, __instance);
+            Utils.SafelyAddAttributeToList(angleAtt, __instance);
 
             ItemAttributeClass reloadSpeedAtt = new ItemAttributeClass(ENewItemAttributeId.ReloadSpeed);
             reloadSpeedAtt.Name = ENewItemAttributeId.ReloadSpeed.GetName();
@@ -253,7 +253,7 @@ namespace RealismMod
             reloadSpeedAtt.LessIsGood = false;
             reloadSpeedAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             reloadSpeedAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Helper.SafelyAddAttributeToList(reloadSpeedAtt, __instance);
+            Utils.SafelyAddAttributeToList(reloadSpeedAtt, __instance);
 
             ItemAttributeClass chamberSpeedAtt = new ItemAttributeClass(ENewItemAttributeId.ChamberSpeed);
             chamberSpeedAtt.Name = ENewItemAttributeId.ChamberSpeed.GetName();
@@ -262,7 +262,7 @@ namespace RealismMod
             chamberSpeedAtt.LessIsGood = false;
             chamberSpeedAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             chamberSpeedAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Helper.SafelyAddAttributeToList(chamberSpeedAtt, __instance);
+            Utils.SafelyAddAttributeToList(chamberSpeedAtt, __instance);
 
             ItemAttributeClass aimSpeedAtt = new ItemAttributeClass(ENewItemAttributeId.AimSpeed);
             aimSpeedAtt.Name = ENewItemAttributeId.AimSpeed.GetName();
@@ -271,7 +271,7 @@ namespace RealismMod
             aimSpeedAtt.LessIsGood = false;
             aimSpeedAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             aimSpeedAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Helper.SafelyAddAttributeToList(aimSpeedAtt, __instance);
+            Utils.SafelyAddAttributeToList(aimSpeedAtt, __instance);
 
             ItemAttributeClass shotDispAtt = new ItemAttributeClass(ENewItemAttributeId.ShotDispersion);
             shotDispAtt.Name = ENewItemAttributeId.ShotDispersion.GetName();
@@ -280,7 +280,7 @@ namespace RealismMod
             shotDispAtt.LessIsGood = false;
             shotDispAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             shotDispAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Helper.SafelyAddAttributeToList(shotDispAtt, __instance);
+            Utils.SafelyAddAttributeToList(shotDispAtt, __instance);
         }
 
         public static string getMalfOdds(float malfChance)
@@ -661,7 +661,7 @@ namespace RealismMod
             {
                 Mod mod = __instance.Mods[i];
                 float modWeight = __instance.Mods[i].Weight;
-                if (Helper.IsMagazine(__instance.Mods[i]) == true)
+                if (Utils.IsMagazine(__instance.Mods[i]) == true)
                 {
                     modWeight = __instance.Mods[i].GetSingleItemTotalWeight();
                 }

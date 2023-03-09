@@ -93,7 +93,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player __instance)
         {
-            if (Helper.CheckIsReady() && __instance.IsYourPlayer == true)
+            if (Utils.CheckIsReady() && __instance.IsYourPlayer == true)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
                 PlayerInjuryStateCheck(__instance, Logger);
@@ -214,11 +214,11 @@ namespace RealismMod
 
         public static void ReloadStateCheck(Player player, EFT.Player.FirearmController fc)
         {
-            Helper.IsInReloadOpertation = fc.IsInReloadOperation();
+            Utils.IsInReloadOpertation = fc.IsInReloadOperation();
 
-            if (Helper.IsInReloadOpertation == true)
+            if (Utils.IsInReloadOpertation == true)
             {
-                if (Helper.IsAttemptingToReloadInternalMag == true)
+                if (Utils.IsAttemptingToReloadInternalMag == true)
                 {
                     if (Plugin.EnableLogging.Value == true)
                     {
@@ -230,8 +230,8 @@ namespace RealismMod
             }
             else
             {
-                Helper.IsAttemptingToReloadInternalMag = false;
-                Helper.IsAttemptingRevolverReload = false;
+                Utils.IsAttemptingToReloadInternalMag = false;
+                Utils.IsAttemptingRevolverReload = false;
             }
         }
     }
