@@ -93,7 +93,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player __instance)
         {
-            if (Utils.CheckIsReady() && __instance.IsYourPlayer == true)
+            if (Utils.CheckIsReady() == true && __instance.IsYourPlayer == true)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
                 PlayerInjuryStateCheck(__instance, Logger);
@@ -118,13 +118,13 @@ namespace RealismMod
                     {
                         if (fc.Item.WeapClass != "pistol")
                         {
-                            if (!Plugin.IsHighReady && !Plugin.IsLowReady && !Plugin.IsAiming && !Plugin.IsActiveAiming && !Plugin.IsShortStock && Plugin.EnableIdleStamDrain.Value == true)
+                            if (!Plugin.IsHighReady && !Plugin.IsLowReady && !Plugin.IsAiming && !Plugin.IsActiveAiming && !Plugin.IsShortStock && Plugin.EnableIdleStamDrain.Value == true && !__instance.IsInPronePose)
                             {
                                 __instance.Physical.Aim(!(__instance.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.5f);
                             }
                             if (Plugin.IsActiveAiming == true)
                             {
-                                __instance.Physical.Aim(!(__instance.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.25f);
+                                __instance.Physical.Aim(!(__instance.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.3f);
                             }
                             if (Plugin.IsHighReady == true && !Plugin.IsLowReady && !Plugin.IsAiming && !Plugin.IsShortStock)
                             {
@@ -153,7 +153,8 @@ namespace RealismMod
                             }
                         }
 
-                        if (__instance.IsInventoryOpened == true)
+
+                        if (__instance.IsInventoryOpened == true || (__instance.IsInPronePose && !Plugin.IsAiming))
                         {
                             __instance.Physical.Aim(0f);
                         }
