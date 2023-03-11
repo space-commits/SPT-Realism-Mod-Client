@@ -375,31 +375,36 @@ namespace RealismMod
                     }
                     else
                     {
-                        Vector3 activeAimTargetRotation = new Vector3(Plugin.ActiveAimRotationX.Value, Plugin.ActiveAimRotationY.Value, Plugin.ActiveAimRotationZ.Value);
-                        Vector3 activeAimRevertRotation = new Vector3(Plugin.ActiveAimResetRotationX.Value, Plugin.ActiveAimResetRotationY.Value, Plugin.ActiveAimResetRotationZ.Value);
+                        float aimMulti = Mathf.Clamp(Plugin.SightlessTotalAimSpeed, 0.2f, 0.9f);
+                        float resetAimMulti = (1f - aimMulti) + 1f;
+                        if (!Utils.IsIdle())
+                        {
+                            AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, aimMulti);
+                        }
+
+                        Vector3 activeAimTargetRotation = new Vector3(Plugin.ActiveAimRotationX.Value * aimMulti, Plugin.ActiveAimRotationY.Value * aimMulti, Plugin.ActiveAimRotationZ.Value * aimMulti);
+                        Vector3 activeAimRevertRotation = new Vector3(Plugin.ActiveAimResetRotationX.Value * resetAimMulti, Plugin.ActiveAimResetRotationY.Value * resetAimMulti, Plugin.ActiveAimResetRotationZ.Value * resetAimMulti);
                         Quaternion activeAimTargetQuaternion = Quaternion.Euler(activeAimTargetRotation);
-                        Quaternion activeAimMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.ActiveAimAdditionalRotationX.Value, Plugin.ActiveAimAdditionalRotationY.Value, Plugin.ActiveAimAdditionalRotationZ.Value));
+                        Quaternion activeAimMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.ActiveAimAdditionalRotationX.Value * resetAimMulti, Plugin.ActiveAimAdditionalRotationY.Value * resetAimMulti, Plugin.ActiveAimAdditionalRotationZ.Value * resetAimMulti));
                         Quaternion activeAimRevertQuaternion = Quaternion.Euler(activeAimRevertRotation);
 
-                        Vector3 lowReadyTargetRotation = new Vector3(Plugin.LowReadyRotationX.Value, Plugin.LowReadyRotationY.Value, Plugin.LowReadyRotationZ.Value);
+                        Vector3 lowReadyTargetRotation = new Vector3(Plugin.LowReadyRotationX.Value * aimMulti, Plugin.LowReadyRotationY.Value * aimMulti, Plugin.LowReadyRotationZ.Value * aimMulti);
                         Quaternion lowReadyTargetQuaternion = Quaternion.Euler(lowReadyTargetRotation);
-                        Quaternion lowReadyMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.LowReadyAdditionalRotationX.Value, Plugin.LowReadyAdditionalRotationY.Value, Plugin.LowReadyAdditionalRotationZ.Value));
-                        Quaternion lowReadyRevertQuaternion = Quaternion.Euler(Plugin.LowReadyResetRotationX.Value, Plugin.LowReadyResetRotationY.Value, Plugin.LowReadyResetRotationZ.Value);
+                        Quaternion lowReadyMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.LowReadyAdditionalRotationX.Value * resetAimMulti, Plugin.LowReadyAdditionalRotationY.Value * resetAimMulti, Plugin.LowReadyAdditionalRotationZ.Value * resetAimMulti));
+                        Quaternion lowReadyRevertQuaternion = Quaternion.Euler(Plugin.LowReadyResetRotationX.Value * resetAimMulti, Plugin.LowReadyResetRotationY.Value * resetAimMulti, Plugin.LowReadyResetRotationZ.Value * resetAimMulti);
                         Vector3 lowReadyTargetPosition = new Vector3(Plugin.LowReadyOffsetX.Value, Plugin.LowReadyOffsetY.Value, Plugin.LowReadyOffsetZ.Value);
 
-                        Vector3 highReadyTargetRotation = new Vector3(Plugin.HighReadyRotationX.Value, Plugin.HighReadyRotationY.Value, Plugin.HighReadyRotationZ.Value);
+                        Vector3 highReadyTargetRotation = new Vector3(Plugin.HighReadyRotationX.Value * aimMulti, Plugin.HighReadyRotationY.Value * aimMulti, Plugin.HighReadyRotationZ.Value * aimMulti);
                         Quaternion highReadyTargetQuaternion = Quaternion.Euler(highReadyTargetRotation);
-                        Quaternion highReadyMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.HighReadyAdditionalRotationX.Value, Plugin.HighReadyAdditionalRotationY.Value, Plugin.HighReadyAdditionalRotationZ.Value));
-                        Quaternion highReadyRevertQuaternion = Quaternion.Euler(Plugin.HighReadyResetRotationX.Value, Plugin.HighReadyResetRotationY.Value, Plugin.HighReadyResetRotationZ.Value);
+                        Quaternion highReadyMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.HighReadyAdditionalRotationX.Value * resetAimMulti, Plugin.HighReadyAdditionalRotationY.Value * resetAimMulti, Plugin.HighReadyAdditionalRotationZ.Value * resetAimMulti));
+                        Quaternion highReadyRevertQuaternion = Quaternion.Euler(Plugin.HighReadyResetRotationX.Value * resetAimMulti, Plugin.HighReadyResetRotationY.Value * resetAimMulti, Plugin.HighReadyResetRotationZ.Value * resetAimMulti);
                         Vector3 highReadyTargetPosition = new Vector3(Plugin.HighReadyOffsetX.Value, Plugin.HighReadyOffsetY.Value, Plugin.HighReadyOffsetZ.Value);
 
-                        Vector3 shortStockTargetRotation = new Vector3(Plugin.ShortStockRotationX.Value, Plugin.ShortStockRotationY.Value, Plugin.ShortStockRotationZ.Value);
+                        Vector3 shortStockTargetRotation = new Vector3(Plugin.ShortStockRotationX.Value * aimMulti, Plugin.ShortStockRotationY.Value * aimMulti, Plugin.ShortStockRotationZ.Value * aimMulti);
                         Quaternion shortStockTargetQuaternion = Quaternion.Euler(shortStockTargetRotation);
-                        Quaternion shortStockMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.ShortStockAdditionalRotationX.Value, Plugin.ShortStockAdditionalRotationY.Value, Plugin.ShortStockAdditionalRotationZ.Value));
-                        Quaternion shortStockRevertQuaternion = Quaternion.Euler(Plugin.ShortStockResetRotationX.Value, Plugin.ShortStockResetRotationY.Value, Plugin.ShortStockResetRotationZ.Value);
+                        Quaternion shortStockMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.ShortStockAdditionalRotationX.Value * resetAimMulti, Plugin.ShortStockAdditionalRotationY.Value * resetAimMulti, Plugin.ShortStockAdditionalRotationZ.Value * resetAimMulti));
+                        Quaternion shortStockRevertQuaternion = Quaternion.Euler(Plugin.ShortStockResetRotationX.Value * resetAimMulti, Plugin.ShortStockResetRotationY.Value * resetAimMulti, Plugin.ShortStockResetRotationZ.Value * resetAimMulti);
                         Vector3 shortStockTargetPosition = new Vector3(Plugin.ShortStockOffsetX.Value, Plugin.ShortStockOffsetY.Value, Plugin.ShortStockOffsetZ.Value);
-
-                        float aimMulti = Mathf.Clamp(Plugin.SightlessTotalAimSpeed, 0.6f, 0.9f);
 
                         //for setting baseline position
                         __instance.HandsContainer.WeaponRoot.localPosition = Plugin.WeaponOffsetPosition;
@@ -408,11 +413,6 @@ namespace RealismMod
                                                 {
                                                     __instance._shouldMoveWeaponCloser = Plugin.baseShouldMoveCloser;
                                                 }*/
-
-                        if (!Utils.IsIdle()) 
-                        {
-                            AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, Plugin.SightlessTotalAimSpeed);
-                        }
 
                         ////short-stock////
                         if (Plugin.IsShortStock == true && !Plugin.IsActiveAiming && !Plugin.IsHighReady && !Plugin.IsLowReady && !__instance.IsAiming)
@@ -452,16 +452,26 @@ namespace RealismMod
                         ////high ready////
                         if (Plugin.IsHighReady == true && !Plugin.IsActiveAiming && !Plugin.IsLowReady && !Plugin.IsShortStock && !__instance.IsAiming)
                         {
+                            float shortToHighMulti = 1f;
                             isResettingHighReady = false;
                             hasResetHighReady = false;
                             hasResetActiveAim = true;
                             hasResetLowReady = true;
-                            hasResetShortStock = true;
+
+                            if (!hasResetShortStock && __instance.HandsContainer.TrackingTransform.localPosition != highReadyTargetPosition)
+                            {
+                                shortToHighMulti = 0.8f;
+                            }
+                            if (__instance.HandsContainer.TrackingTransform.localPosition == highReadyTargetPosition)
+                            {
+                                hasResetShortStock = true;
+
+                            }
 
                             currentRotation = Quaternion.Lerp(currentRotation, highReadyTargetQuaternion, __instance.CameraSmoothTime * aimMulti * dt * Plugin.HighReadyRotationMulti.Value);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
-                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, highReadyTargetPosition, aimMulti * dt * Plugin.HighReadySpeedMulti.Value);
+                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, highReadyTargetPosition, aimMulti * dt * Plugin.HighReadySpeedMulti.Value * shortToHighMulti);
 
                             if (__instance.HandsContainer.TrackingTransform.localPosition != highReadyTargetPosition)
                             {
@@ -488,16 +498,25 @@ namespace RealismMod
                         ////low ready////
                         if (Plugin.IsLowReady == true && !Plugin.IsActiveAiming && !Plugin.IsHighReady && !Plugin.IsShortStock && !__instance.IsAiming)
                         {
+                            float resetToLowReadySpeedMulti = 1f;
                             isResettingLowReady = false;
                             hasResetLowReady = false;
-                            hasResetActiveAim = true;
-                            hasResetHighReady = true;
-                            hasResetShortStock = true;
+                     
+                            if ((!hasResetHighReady  || !hasResetShortStock || !hasResetActiveAim) && __instance.HandsContainer.TrackingTransform.localPosition != lowReadyTargetPosition)
+                            {
+                                resetToLowReadySpeedMulti = 1.5f;
+                            }
+                            if (__instance.HandsContainer.TrackingTransform.localPosition == lowReadyTargetPosition) 
+                            {
+                                hasResetHighReady = true;
+                                hasResetShortStock = true;
+                                hasResetActiveAim = true;
+                            }
 
                             currentRotation = Quaternion.Lerp(currentRotation, lowReadyTargetQuaternion, __instance.CameraSmoothTime * aimMulti * dt * Plugin.LowReadyRotationMulti.Value);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
-                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, lowReadyTargetPosition, aimMulti * dt * Plugin.LowReadySpeedMulti.Value);
+                            __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, lowReadyTargetPosition, aimMulti * dt * Plugin.LowReadySpeedMulti.Value * resetToLowReadySpeedMulti);
 
                             if (__instance.HandsContainer.TrackingTransform.localPosition != lowReadyTargetPosition)
                             {
