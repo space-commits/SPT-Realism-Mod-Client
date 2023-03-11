@@ -38,6 +38,9 @@ namespace RealismMod
             return typeof(EFT.Player.FirearmController).GetMethod("get_IsAiming", BindingFlags.Public | BindingFlags.Instance);
         }
 
+        private static bool SetCanAds = false;
+        private static bool SetActiveAimADS = false;
+
         [PatchPostfix]
         private static void PatchPostfix(EFT.Player.FirearmController __instance, ref bool ____isAiming)
         {
@@ -50,26 +53,37 @@ namespace RealismMod
                     NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
                     bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
                     bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
-                    if ((Plugin.EnableNVGPatch.Value == true && nvgIsOn == true && Plugin.HasOptic) || (Plugin.EnableFSPatch.Value == true && ((fsIsON && !WeaponProperties.WeaponCanFSADS && !ArmorProperties.AllowsADS(fsComponent.Item)) || (!PlayerProperties.GearAllowsADS && !WeaponProperties.WeaponCanFSADS))))
+                    if (((Plugin.EnableNVGPatch.Value == true && nvgIsOn == true && Plugin.HasOptic) || (Plugin.EnableFSPatch.Value == true && ((fsIsON && !WeaponProperties.WeaponCanFSADS && !ArmorProperties.AllowsADS(fsComponent.Item)) || (!PlayerProperties.GearAllowsADS && !WeaponProperties.WeaponCanFSADS)))))
                     {
-                        PlayerProperties.IsAllowedADS = false;
-                        player.MovementContext.SetAimingSlowdown(false, 0.33f);
-                        player.ProceduralWeaponAnimation.IsAiming = false;
+                        if (!SetCanAds)
+                        {
+                            PlayerProperties.IsAllowedADS = false;
+                            player.MovementContext.SetAimingSlowdown(false, 0.33f);
+                            player.ProceduralWeaponAnimation.IsAiming = false;
+                            SetCanAds = true;
+                        }
                     }
                     else
                     {
                         PlayerProperties.IsAllowedADS = true;
+                        SetCanAds = false;
                     }
 
                     if (Plugin.IsActiveAiming == true)
                     {
-                        PlayerProperties.IsAllowedADS = false;
-                        player.ProceduralWeaponAnimation.IsAiming = false;
-                        player.MovementContext.SetAimingSlowdown(true, 0.33f);
+                        if (!SetActiveAimADS) 
+                        {
+                            PlayerProperties.IsAllowedADS = false;
+                            player.ProceduralWeaponAnimation.IsAiming = false;
+                            player.MovementContext.SetAimingSlowdown(true, 0.33f);
+                            SetActiveAimADS = true;
+                        }
+          
                     }
                     if (!Plugin.IsActiveAiming && !____isAiming)
                     {
                         player.MovementContext.SetAimingSlowdown(false, 0.33f);
+                        SetActiveAimADS = false;
                     }
 
                     Plugin.IsAiming = ____isAiming;

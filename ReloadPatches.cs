@@ -59,7 +59,7 @@ namespace RealismMod
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
 
-            if (Plugin.IsFiring != true && Utils.IsInReloadOpertation)
+            if (Plugin.IsFiring != true && PlayerProperties.IsInReloadOpertation)
             {
                 __instance.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.TotalChamberSpeed * Plugin.GlobalArmHammerSpeedMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.5f, 1.35f));
                 if (Plugin.EnableLogging.Value == true)
@@ -95,6 +95,45 @@ namespace RealismMod
             }
 
             __instance.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * bonus * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.6f, 1.3f));
+        }
+    }
+
+    public class SetAnimatorAndProceduralValuesPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Player.FirearmController).GetMethod("SetAnimatorAndProceduralValues", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(EFT.Player.FirearmController __instance)
+        {
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (player.IsYourPlayer == true)
+            {
+                Logger.LogWarning("SetAnimatorAndProceduralValues");
+                PlayerProperties.IsManipulatingWeapon = false;
+            }
+        }
+    }
+
+    public class CheckAmmoFirearmControllerPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Player.FirearmController).GetMethod("CheckAmmo", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(EFT.Player.FirearmController __instance)
+        {
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (player.IsYourPlayer == true) 
+            {
+                Logger.LogWarning("CheckAmmo");
+                PlayerProperties.IsManipulatingWeapon = true;
+            }
+ 
         }
     }
 
@@ -223,6 +262,8 @@ namespace RealismMod
                 Logger.LogWarning("=============");
             }
 
+            PlayerProperties.IsManipulatingWeapon = true;
+
         }
     }
 
@@ -243,11 +284,11 @@ namespace RealismMod
                 {
                     if (__instance.Item.GetCurrentMagazine() == null)
                     {
-                        Utils.NoMagazineReload = true;
+                        PlayerProperties.NoMagazineReload = true;
                     }
                     else
                     {
-                        Utils.NoMagazineReload = false;
+                        PlayerProperties.NoMagazineReload = false;
                     }
                 }
             }
@@ -321,8 +362,8 @@ namespace RealismMod
                     Logger.LogWarning("=============");
                 }
 
-                Utils.IsAttemptingToReloadInternalMag = true;
-                Utils.IsAttemptingRevolverReload = true;
+                PlayerProperties.IsAttemptingToReloadInternalMag = true;
+                PlayerProperties.IsAttemptingRevolverReload = true;
             }
         }
     }
@@ -346,7 +387,7 @@ namespace RealismMod
                     Logger.LogWarning("=============");
                 }
 
-                Utils.IsAttemptingToReloadInternalMag = true;
+                PlayerProperties.IsAttemptingToReloadInternalMag = true;
             }
         }
     }
@@ -370,7 +411,7 @@ namespace RealismMod
                     Logger.LogWarning("=============");
                 }
 
-                Utils.IsAttemptingToReloadInternalMag = true;
+                PlayerProperties.IsAttemptingToReloadInternalMag = true;
             }
         }
     }
@@ -429,7 +470,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            if (Utils.IsMagReloading == true)
+            if (PlayerProperties.IsMagReloading == true)
             {
                 if (Plugin.EnableLogging.Value == true)
                 {
@@ -463,6 +504,7 @@ namespace RealismMod
     }
 
 
+
     public class OnMagInsertedPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -483,7 +525,7 @@ namespace RealismMod
                     Logger.LogWarning("=============");
                 }
 
-                Utils.IsMagReloading = false;
+                PlayerProperties.IsMagReloading = false;
                 player.HandsAnimator.SetAnimationSpeed(1);
             }
 

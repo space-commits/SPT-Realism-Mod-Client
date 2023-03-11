@@ -84,6 +84,7 @@ namespace RealismMod
         public static ConfigEntry<KeyboardShortcut> HighReadyKeybind { get; set; }
         public static ConfigEntry<KeyboardShortcut> ShortStockKeybind { get; set; }
         public static ConfigEntry<KeyboardShortcut> CycleStancesKeybind { get; set; }
+        public static ConfigEntry<KeyboardShortcut> DisableLaserKeybind { get; set; }
 
         public static ConfigEntry<bool> ToggleActiveAim { get; set; }
 
@@ -225,6 +226,8 @@ namespace RealismMod
         public static ConfigEntry<float> RechamberPistolSpeedMulti { get; set; }
 
         public static ConfigEntry<bool> EnableLogging { get; set; }
+
+
 
         public static Weapon CurrentlyEquipedWeapon;
 
@@ -724,6 +727,8 @@ namespace RealismMod
                     new OnItemAddedOrRemovedPatch().Enable();
                     new SetLauncherPatch().Enable();
 
+                    new CheckAmmoFirearmControllerPatch().Enable();
+                    new SetAnimatorAndProceduralValuesPatch().Enable();
                 }
 
                 if (enableSGMastering.Value == true)
@@ -874,7 +879,6 @@ namespace RealismMod
 
                         if (!Plugin.IsSprinting && WeaponProperties._WeapClass != "pistol")
                         {
-
 
                             //cycle stances
                             if (Input.GetKeyUp(CycleStancesKeybind.Value.MainKey))

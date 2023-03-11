@@ -99,8 +99,8 @@ namespace RealismMod
 
         public static void SetMagReloadSpeeds(Player.FirearmController __instance, MagazineClass magazine, bool isQuickReload = false)
         {
-            Utils.IsMagReloading = true;
-            if (Utils.NoMagazineReload == true)
+            PlayerProperties.IsMagReloading = true;
+            if (PlayerProperties.NoMagazineReload == true)
             {
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 StatCalc.MagReloadSpeedModifier(magazine, false, true);

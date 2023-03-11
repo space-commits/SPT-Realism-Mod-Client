@@ -101,7 +101,7 @@ namespace RealismMod
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 ErgoDeltaPatch p = new ErgoDeltaPatch();
-                if (Utils.IsInReloadOpertation)
+                if (PlayerProperties.IsInReloadOpertation)
                 {
                     __result = p.FinalStatCalc(ref __instance);
                 }
@@ -528,9 +528,7 @@ namespace RealismMod
                 PlayerProperties.StrengthSkillAimBuff = 1 - player.Skills.StrengthBuffAimFatigue.Value;
                 PlayerProperties.ReloadSkillMulti = skillsClass.ReloadSpeed;
                 PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;
-
-                /*                FirearmsAnimator firearmAnimator = (FirearmsAnimator)AccessTools.Field(typeof(EFT.Player.FirearmController), "firearmsAnimator_0").GetValue(__instance);
- */
+                PlayerProperties.WeaponSkillErgo = skillsClass.DeltaErgonomics;
             }
         }
     }

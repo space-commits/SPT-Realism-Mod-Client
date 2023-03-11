@@ -31,18 +31,6 @@ namespace RealismMod
     {
         public static bool ProgramKEnabled = false;
 
-        public static bool IsAllowedAim = true;
-
-        public static bool IsAttemptingToReloadInternalMag = false;
-
-        public static bool IsMagReloading = false;
-
-        public static bool IsInReloadOpertation = false;
-
-        public static bool NoMagazineReload = false;
-
-        public static bool IsAttemptingRevolverReload = false;
-
         public static bool IsReady = false;
 
         public static bool WeaponReady = false;

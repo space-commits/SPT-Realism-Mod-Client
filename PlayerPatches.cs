@@ -215,11 +215,11 @@ namespace RealismMod
 
         public static void ReloadStateCheck(Player player, EFT.Player.FirearmController fc)
         {
-            Utils.IsInReloadOpertation = fc.IsInReloadOperation();
+            PlayerProperties.IsInReloadOpertation = fc.IsInReloadOperation();
 
-            if (Utils.IsInReloadOpertation == true)
+            if (PlayerProperties.IsInReloadOpertation == true)
             {
-                if (Utils.IsAttemptingToReloadInternalMag == true)
+                if (PlayerProperties.IsAttemptingToReloadInternalMag == true)
                 {
                     if (Plugin.EnableLogging.Value == true)
                     {
@@ -231,8 +231,8 @@ namespace RealismMod
             }
             else
             {
-                Utils.IsAttemptingToReloadInternalMag = false;
-                Utils.IsAttemptingRevolverReload = false;
+                PlayerProperties.IsAttemptingToReloadInternalMag = false;
+                PlayerProperties.IsAttemptingRevolverReload = false;
             }
         }
     }

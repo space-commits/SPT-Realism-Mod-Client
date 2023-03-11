@@ -30,5 +30,24 @@ namespace RealismMod
 
         public static EnvironmentType enviroType;
 
+        public static bool IsClearingMalf;
+
+        public static bool IsManipulatingWeapon;
+
+        public static bool IsAllowedAim = true;
+
+        public static bool IsAttemptingToReloadInternalMag = false;
+
+        public static bool IsMagReloading = false;
+
+        public static bool IsInReloadOpertation = false;
+
+        public static bool NoMagazineReload = false;
+
+        public static bool IsAttemptingRevolverReload = false;
+
+        public static float TotalHandsIntensity = 1f;
+
+        public static float WeaponSkillErgo = 0f;
     }
 }
