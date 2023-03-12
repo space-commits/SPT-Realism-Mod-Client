@@ -65,12 +65,11 @@ namespace RealismMod
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
                 if (player.IsYourPlayer == true)
                 {
-
                     SkillsClass.GClass1678 skillsClass = (SkillsClass.GClass1678)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "gclass1678_0").GetValue(__instance);
                     Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "valueBlender_0").GetValue(__instance);
 
                     float singleItemTotalWeight = firearmController.Item.GetSingleItemTotalWeight();
-                    float ergoWeight = WeaponProperties.ErgonomicWeight; // in future should decrease with skill buff
+                    float ergoWeight = WeaponProperties.ErgonomicWeight; //maybe apply sterngth skill buff, but might be OP
 
                     float ergo = Mathf.Clamp01(WeaponProperties.TotalErgo / 100f);
                     float t = Mathf.InverseLerp(0.6f, 9f, ergoWeight);
@@ -85,10 +84,22 @@ namespace RealismMod
                     __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.StartingConvergence * __instance.Aiming.RecoilConvergenceMult;
                     __instance.HandsContainer.Recoil.Damping = WeaponProperties.TotalRecoilDamping;
                     __instance.HandsContainer.HandsPosition.Damping = WeaponProperties.TotalRecoilHandDamping;
-                    WeaponProperties.SightlessAimSpeed = aimSpeed;
+                    aimSpeed = firearmController.Item.WeapClass == "pistol" ? aimSpeed * 1.2f : aimSpeed;
+                    WeaponProperties.SightlessAimSpeed = firearmController.Item.WeapClass == "pistol" ? Mathf.Min(aimSpeed, 1.2f) : Mathf.Min(aimSpeed, 0.9f);
 
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, aimSpeed);
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, ergoWeight * PlayerProperties.StrengthSkillAimBuff); //this is only called once, so can't do injury multi. It's probably uncessary to set the value here anyway, it's more just-in-case.
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, WeaponProperties.ErgonomicWeight * (1f - PlayerProperties.StrengthSkillAimBuff) * PlayerProperties.ErgoDeltaInjuryMulti);
+
+
+                    if (Plugin.EnableLogging.Value == true)
+                    {
+                        Logger.LogWarning("UpdateWeaponVariables");
+                        Logger.LogWarning("total ergo = " + WeaponProperties.TotalErgo);
+                        Logger.LogWarning("total ergo clamped= " + ergo);
+                        Logger.LogWarning("aimSpeed = " + aimSpeed);
+                        Logger.LogWarning("base ergoWeight = " + ergoWeight);
+                        Logger.LogWarning("total ergoWeight = " + WeaponProperties.ErgonomicWeight * (1f - PlayerProperties.StrengthSkillAimBuff) * PlayerProperties.ErgoDeltaInjuryMulti);
+                    }
                 }
             }
         }
@@ -111,24 +122,25 @@ namespace RealismMod
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
                 if (player.IsYourPlayer == true)
                 {
-                    float idleBonus = Utils.IsIdle() == true ? 1.1f : 1.0f;
-                    float baseAimSpeed = WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti;
-                    baseAimSpeed = firearmController.Item.WeapClass == "pistol" ? baseAimSpeed * 1.2f : baseAimSpeed;
-                    Plugin.SightlessTotalAimSpeed = baseAimSpeed;
+                    float idleBonus = Utils.IsIdle() == true ? 1.1f : 1f;
+                    float totalSightlessAimSpeed = WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f));
                     Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
-                    float sightSpeedModi = (currentAimingMod != null) ? AttachmentProperties.AimSpeed(currentAimingMod) : 1;
-                    float newAimSpeed = baseAimSpeed * (1 + (sightSpeedModi / 100f)) * idleBonus;
+                    float sightSpeedModi = (currentAimingMod != null) ? AttachmentProperties.AimSpeed(currentAimingMod) : 1f;
+                    float newAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)) * idleBonus, 0.35f, 1f);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
 
                     if (Plugin.EnableLogging.Value == true)
                     {
+                        Logger.LogWarning("method_20");
                         Logger.LogWarning("newAimSpeed = " + newAimSpeed);
                         Logger.LogWarning("ADSInjuryMulti = " + PlayerProperties.ADSInjuryMulti);
+                        Logger.LogWarning("remaining stam percentage = " + PlayerProperties.RemainingArmStamPercentage);
+                        Logger.LogWarning("strength = " + PlayerProperties.StrengthSkillAimBuff);
                     }
 
                     Plugin.HasOptic = __instance.CurrentScope.IsOptic ? true : false;
 
-                    float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * PlayerProperties.StrengthSkillAimBuff;
+                    float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - PlayerProperties.StrengthSkillAimBuff);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, ergoWeight); 
                     float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f);
                     float breathIntensity;
@@ -193,7 +205,7 @@ namespace RealismMod
 
                 if (player.IsYourPlayer == true)
                 {
-                    float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * PlayerProperties.StrengthSkillAimBuff;
+                    float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - PlayerProperties.StrengthSkillAimBuff);
                     float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f);
                     float displacementModifier = 0.4f;//lower = less drag
                     float aimIntensity = Plugin.SwayIntensity.Value * 0.4f;
@@ -210,6 +222,17 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_21").SetValue(__instance, weapDisplacement * weightFactor * displacementModifier);
 
                     __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * Mathf.Clamp(aimIntensity * weightFactor, aimIntensity, 1.1f); // the diving/tiling animation as you move weapon side to side.
+
+
+                    if (Plugin.EnableLogging.Value == true)
+                    {
+                        Logger.LogWarning("UpdateSwayFactors");
+                        Logger.LogWarning("ergoWeight = " + ergoWeight);
+                        Logger.LogWarning("weightFactor = " + weightFactor);
+                        Logger.LogWarning("swayStrength = " + swayStrength);
+                        Logger.LogWarning("weapDisplacement = " + weapDisplacement);
+                        Logger.LogWarning("Sway Factors = " + __instance.MotionReact.SwayFactors);
+                    }
 
                     return false;
                 }
@@ -340,17 +363,20 @@ namespace RealismMod
 
                     if (firearmController.Item.WeapClass == "pistol" && WeaponProperties.HasShoulderContact == false && Plugin.EnableAltPistol.Value == true)
                     {
+                        float aimMulti = Mathf.Clamp(WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f)), 0.5f, 1.3f);
+                        float resetAimMulti = (1f - aimMulti) + 1f;
+                        float intensity = Mathf.Max(3f * (1f - PlayerProperties.WeaponSkillErgo) * resetAimMulti, 1f);
+                        float balanceFactor = 1f + (WeaponProperties.Balance / 100f);
+                        balanceFactor = WeaponProperties.Balance > 0f ? balanceFactor  * - 1f : balanceFactor;
+
                         Vector3 pistolTargetRotation = new Vector3(Plugin.PistolRotationX.Value, Plugin.PistolRotationY.Value, Plugin.PistolRotationZ.Value);
                         Quaternion pistolTargetQuaternion = Quaternion.Euler(pistolTargetRotation);
                         Quaternion pistolMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.PistolAdditionalRotationX.Value, Plugin.PistolAdditionalRotationY.Value, Plugin.PistolAdditionalRotationZ.Value));
-                        Quaternion pistolRevertQuaternion = Quaternion.Euler(Plugin.PistolResetRotationX.Value, Plugin.PistolResetRotationY.Value, Plugin.PistolResetRotationZ.Value);
-                        float aimMulti = 1 - ((1f - Plugin.SightlessTotalAimSpeed) * 0.6f);
-                        float resetAimMulti = (1f - aimMulti) + 1f;
-                        float intensity = 4f * (1 + PlayerProperties.WeaponSkillErgo) * resetAimMulti;
+                        Quaternion pistolRevertQuaternion = Quaternion.Euler(Plugin.PistolResetRotationX.Value * balanceFactor, Plugin.PistolResetRotationY.Value, Plugin.PistolResetRotationZ.Value);
 
                         __instance.HandsContainer.WeaponRoot.localPosition = new Vector3(Plugin.PistolTransformNewStartPosition.x, __instance.HandsContainer.TrackingTransform.localPosition.y, __instance.HandsContainer.TrackingTransform.localPosition.z);
 
-                        if (!__instance.IsAiming && !PlayerProperties.IsInReloadOpertation && !PlayerProperties.IsManipulatingWeapon)
+                        if (!__instance.IsAiming && !PlayerProperties.IsInReloadOpertation && !PlayerProperties.IsManipulatingWeapon && !Plugin.IsHighReady)
                         {
                             currentRotation = Quaternion.Lerp(currentRotation, pistolTargetQuaternion, __instance.CameraSmoothTime * aimMulti * dt * Plugin.PistolRotationSpeedMulti.Value * aimMulti);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
@@ -360,7 +386,7 @@ namespace RealismMod
 
                             if (__instance.HandsContainer.TrackingTransform.localPosition != Plugin.PistolTransformNewStartPosition)
                             {
-                                currentRotation = Quaternion.Lerp(currentRotation, pistolMiniTargetQuaternion, __instance.CameraSmoothTime * Plugin.SightlessTotalAimSpeed * dt * Plugin.PistolAdditionalRotationSpeedMulti.Value * Plugin.SightlessTotalAimSpeed);
+                                currentRotation = Quaternion.Lerp(currentRotation, pistolMiniTargetQuaternion, __instance.CameraSmoothTime * aimMulti * dt * Plugin.PistolAdditionalRotationSpeedMulti.Value * aimMulti);
                                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
                             }
                         }
@@ -381,9 +407,9 @@ namespace RealismMod
                     }
                     else
                     {
-                        float aimMulti = Mathf.Clamp(Plugin.SightlessTotalAimSpeed, 0.2f, 0.9f);
+                        float aimMulti = Mathf.Clamp(WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.55f)), 0.45f, 0.85f);
                         float resetAimMulti = (1f - aimMulti) + 1f;
-                        float intensity = 2f * (1 + PlayerProperties.WeaponSkillErgo) * resetAimMulti;
+                        float intensity = Mathf.Max(3f * (1f - PlayerProperties.AimSkillADSBuff) * resetAimMulti, 1f);
 
                         if (!Utils.IsIdle())
                         {
@@ -423,7 +449,7 @@ namespace RealismMod
                                                 }*/
 
                         ////short-stock////
-                        if (Plugin.IsShortStock == true && !Plugin.IsActiveAiming && !Plugin.IsHighReady && !Plugin.IsLowReady && !__instance.IsAiming)
+                        if (Plugin.IsShortStock == true && !Plugin.IsActiveAiming && !Plugin.IsHighReady && !Plugin.IsLowReady && !__instance.IsAiming && !Plugin.IsSprinting)
                         {
                             isResettingShortStock = false;
                             hasResetShortStock = false;
@@ -509,7 +535,7 @@ namespace RealismMod
                         }
 
                         ////low ready////
-                        if (Plugin.IsLowReady == true && !Plugin.IsActiveAiming && !Plugin.IsHighReady && !Plugin.IsShortStock && !__instance.IsAiming)
+                        if (Plugin.IsLowReady == true && !Plugin.IsActiveAiming && !Plugin.IsHighReady && !Plugin.IsShortStock && !__instance.IsAiming && !Plugin.IsSprinting)
                         {
                             float resetToLowReadySpeedMulti = 1f;
                             isResettingLowReady = false;
@@ -556,7 +582,7 @@ namespace RealismMod
                         }
 
                         ////active aiming////
-                        if (Plugin.IsActiveAiming == true && !__instance.IsAiming && !Plugin.IsLowReady && !Plugin.IsShortStock && !Plugin.IsHighReady)
+                        if (Plugin.IsActiveAiming == true && !__instance.IsAiming && !Plugin.IsLowReady && !Plugin.IsShortStock && !Plugin.IsHighReady && !Plugin.IsSprinting)
                         {
                             isResettingActiveAim = false;
                             hasResetActiveAim = false;

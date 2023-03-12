@@ -111,7 +111,11 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                Logger.LogWarning("SetAnimatorAndProceduralValues");
+                if (Plugin.EnableLogging.Value == true)
+                {
+                    Logger.LogWarning("SetAnimatorAndProceduralValues");
+                }
+  
                 PlayerProperties.IsManipulatingWeapon = false;
             }
         }
@@ -130,7 +134,11 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true) 
             {
-                Logger.LogWarning("CheckAmmo");
+                if (Plugin.EnableLogging.Value == true)
+                {
+                    Logger.LogWarning("CheckAmmo");
+                }
+
                 PlayerProperties.IsManipulatingWeapon = true;
             }
  

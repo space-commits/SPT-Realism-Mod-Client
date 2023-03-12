@@ -18,7 +18,7 @@ namespace RealismMod
 
         public static float ErgoDeltaInjuryMulti = 1f;
 
-        public static float StrengthSkillAimBuff = 1f;
+        public static float StrengthSkillAimBuff = 0f;
 
         public static bool IsAllowedADS = true;
 
@@ -49,5 +49,9 @@ namespace RealismMod
         public static float TotalHandsIntensity = 1f;
 
         public static float WeaponSkillErgo = 0f;
+
+        public static float RemainingArmStamPercentage = 1f;
+
+        public static float AimSkillADSBuff = 0f;
     }
 }

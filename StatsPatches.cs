@@ -197,6 +197,7 @@ namespace RealismMod
 
             float ergonomicWeight = StatCalc.ErgoWeightCalc(totalWeight, pureErgoDelta, totalErgoDelta);
             float ergonomicWeightLessMag = StatCalc.ErgoWeightCalc(weapWeightLessMag, pureErgoDelta, totalErgoDelta);
+            Utils.HasRunErgoWeightCalc = true;
 
             float totalAimMoveSpeedFactor = 0;
             float totalReloadSpeed = 0;
@@ -525,10 +526,48 @@ namespace RealismMod
             if (player.IsYourPlayer == true)
             {
                 SkillsClass.GClass1678 skillsClass = (SkillsClass.GClass1678)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1678_0").GetValue(__instance);
-                PlayerProperties.StrengthSkillAimBuff = 1 - player.Skills.StrengthBuffAimFatigue.Value;
+                PlayerProperties.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
                 PlayerProperties.ReloadSkillMulti = skillsClass.ReloadSpeed;
                 PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;
                 PlayerProperties.WeaponSkillErgo = skillsClass.DeltaErgonomics;
+                PlayerProperties.AimSkillADSBuff = skillsClass.AimSpeed;
+            }
+        }
+    }
+
+    public class ErgoWeightPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player.FirearmController).GetMethod("get_ErgonomicWeight", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(ref Player.FirearmController __instance, ref float __result)
+        {
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (player.IsYourPlayer == true)
+            {
+                __result = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - PlayerProperties.StrengthSkillAimBuff);
+
+                if (!Utils.HasRunErgoWeightCalc) 
+                {
+                    __result = 0;
+                    return false;
+                }
+
+                if (Plugin.EnableLogging.Value == true)
+                {
+                    Logger.LogWarning("ErgonomicWeight");
+                    Logger.LogWarning("total ergo weight = " + __result);
+                    Logger.LogWarning("base ergo weight = " + WeaponProperties.ErgonomicWeight);
+                }
+
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
     }

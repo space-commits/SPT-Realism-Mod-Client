@@ -242,65 +242,65 @@ namespace RealismMod
 
         public static float RecoilStatFactor = 3.5f;
 
-        public static float ErgoDelta = 0;
+        public static float ErgoDelta = 0f;
 
         public static int AutoFireRate = 0;
 
         public static int SemiFireRate = 0;
 
-        public static float Balance = 0;
+        public static float Balance = 0f;
 
-        public static float VRecoilDelta = 0;
+        public static float VRecoilDelta = 0f;
 
-        public static float HRecoilDelta = 0;
+        public static float HRecoilDelta = 0f;
 
         public static bool HasShoulderContact = true;
 
-        public static float ShotDispDelta = 0;
+        public static float ShotDispDelta = 0f;
 
-        public static float COIDelta = 0;
+        public static float COIDelta = 0f;
 
-        public static float CamRecoil = 0;
+        public static float CamRecoil = 0f;
 
-        public static float Dispersion = 0;
+        public static float Dispersion = 0f;
 
-        public static float RecoilAngle = 0;
+        public static float RecoilAngle = 0f;
 
-        public static float TotalVRecoil = 0;
+        public static float TotalVRecoil = 0f;
 
-        public static float TotalHRecoil = 0;
+        public static float TotalHRecoil = 0f;
 
-        public static float TotalErgo = 0;
+        public static float TotalErgo = 0f;
 
-        public static float SDTotalErgo = 0;
+        public static float SDTotalErgo = 0f;
 
-        public static float SDTotalVRecoil = 0;
+        public static float SDTotalVRecoil = 0f;
 
-        public static float SDTotalHRecoil = 0;
+        public static float SDTotalHRecoil = 0f;
 
-        public static float SDBalance = 0;
+        public static float SDBalance = 0f;
 
-        public static float SDCamRecoil = 0;
+        public static float SDCamRecoil = 0f;
 
-        public static float SDDispersion = 0;
+        public static float SDDispersion = 0f;
 
-        public static float SDRecoilAngle = 0;
+        public static float SDRecoilAngle = 0f;
 
-        public static float SDTotalCOI = 0;
+        public static float SDTotalCOI = 0f;
 
         public static string SavedInstanceID = "";
 
-        public static float SDPureErgo = 0;
+        public static float SDPureErgo = 0f;
 
-        public static float PureRecoilDelta = 0;
+        public static float PureRecoilDelta = 0f;
 
-        public static float PureErgoDelta = 0;
+        public static float PureErgoDelta = 0f;
 
         public static string Placement = "";
 
-        public static float ErgonomicWeight = 1;
+        public static float ErgonomicWeight = 1f;
 
-        public static float ADSDelta = 0;
+        public static float ADSDelta = 0f;
 
         public static float TotalRecoilDamping;
 

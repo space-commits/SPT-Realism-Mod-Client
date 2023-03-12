@@ -68,7 +68,7 @@ namespace RealismMod
         public static ConfigEntry<float> SwayIntensity { get; set; }
         public static ConfigEntry<float> RecoilIntensity { get; set; }
         public static ConfigEntry<bool> EnableStatsDelta { get; set; }
-        public static ConfigEntry<bool> EnableHipfire { get; set; }
+        public static ConfigEntry<bool> EnableHipfireRecoilClimb { get; set; }
         public static ConfigEntry<bool> IncreaseCOI { get; set; }
         public static ConfigEntry<float> DeafRate { get; set; }
         public static ConfigEntry<float> DeafReset { get; set; }
@@ -342,8 +342,6 @@ namespace RealismMod
         public static bool HasHeadSet = false;
         public static CC_FastVignette Vignette;
 
-        public static float SightlessTotalAimSpeed = 1f;
-
         public static bool HasOptic = false;
 
         private void GetPaths()
@@ -459,7 +457,7 @@ namespace RealismMod
                 EnableRealArmorClass = Config.Bind<bool>(MiscSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 8 }));
                 EnableHoldBreath = Config.Bind<bool>(MiscSettings, "Enable Hold Breath", false, new ConfigDescription("Enabled Hold Breath, Disabled By Default. The Mod Is Balanced Around Not Being Able To Hold Breath.", null, new ConfigurationManagerAttributes { Order = 10 }));
 
-                EnableHipfire = Config.Bind<bool>(RecoilSettings, "Enable Hipfire Recoil Climb", true, new ConfigDescription("Requires Restart. Enabled Recoil Climbing While Hipfiring", null, new ConfigurationManagerAttributes { Order = 4 }));
+                EnableHipfireRecoilClimb = Config.Bind<bool>(RecoilSettings, "Enable Hipfire Recoil Climb", true, new ConfigDescription("Requires Restart. Enabled Recoil Climbing While Hipfiring", null, new ConfigurationManagerAttributes { Order = 4 }));
                 ReduceCamRecoil = Config.Bind<bool>(RecoilSettings, "Reduce Camera Recoil", false, new ConfigDescription("Reduces Camera Recoil Per Shot. If Disabled, Camera Recoil Becomes More Intense As Weapon Recoil Increases.", null, new ConfigurationManagerAttributes { Order = 3 }));
                 SensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Lower Limit", 0.4f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction. 100% Means No Sensitivity Reduction.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 2 }));
                 RecoilIntensity = Config.Bind<float>(RecoilSettings, "Recoil Multi", 1.15f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 1 }));
@@ -620,7 +618,7 @@ namespace RealismMod
                 PistolAdditionalRotationY = Config.Bind<float>(Pistol, "Pistol Ready Additional Rotation Y", 8.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true }));
                 PistolAdditionalRotationZ = Config.Bind<float>(Pistol, "Pistol Ready Additional Rotation Z", 2.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true }));
 
-                PistolResetRotationX = Config.Bind<float>(Pistol, "Pistol Ready Reset Rotation X", 1.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
+                PistolResetRotationX = Config.Bind<float>(Pistol, "Pistol Ready Reset Rotation X", 2f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
                 PistolResetRotationY = Config.Bind<float>(Pistol, "Pistol Ready Reset Rotation Y", 2.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
                 PistolResetRotationZ = Config.Bind<float>(Pistol, "Pistol Ready Reset Rotation Z", -1.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, IsAdvanced = true }));
 
@@ -680,7 +678,7 @@ namespace RealismMod
                 //Sensitivity Patches
                 new AimingSensitivityPatch().Enable();
                 new UpdateSensitivityPatch().Enable();
-                if (Plugin.EnableHipfire.Value == true)
+                if (Plugin.EnableHipfireRecoilClimb.Value == true)
                 {
                     new GetRotationMultiplierPatch().Enable();
                 }
@@ -828,7 +826,7 @@ namespace RealismMod
                         Plugin.IsFiring = true;
                     }
 
-                    if (Plugin.EnableRecoilClimb.Value == true && (Plugin.IsAiming == true || Plugin.EnableHipfire.Value == true))
+                    if (Plugin.EnableRecoilClimb.Value == true && (Plugin.IsAiming == true || Plugin.EnableHipfireRecoilClimb.Value == true))
                     {
                         Recoil.DoRecoilClimb();
                     }
@@ -848,7 +846,7 @@ namespace RealismMod
                     if (Plugin.IsBotFiring == true)
                     {
                         Plugin.BotTimer += Time.deltaTime;
-                        if (Plugin.BotTimer >= 1f)
+                        if (Plugin.BotTimer >= 0.8f)
                         {
                             Plugin.IsBotFiring = false;
                             Plugin.BotTimer = 0f;
@@ -858,7 +856,7 @@ namespace RealismMod
                     if (Plugin.GrenadeExploded == true)
                     {
                         Plugin.GrenadeTimer += Time.deltaTime;
-                        if (Plugin.GrenadeTimer >= 1f)
+                        if (Plugin.GrenadeTimer >= 0.8f)
                         {
                             Plugin.GrenadeExploded = false;
                             Plugin.GrenadeTimer = 0f;

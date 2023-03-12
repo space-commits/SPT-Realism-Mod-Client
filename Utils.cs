@@ -35,6 +35,8 @@ namespace RealismMod
 
         public static bool WeaponReady = false;
 
+        public static bool HasRunErgoWeightCalc = false;
+
         public static string Silencer = "550aa4cd4bdc2dd8348b456c";
         public static string FlashHider = "550aa4bf4bdc2dd6348b456b";
         public static string MuzzleCombo = "550aa4dd4bdc2dc9348b4569";
