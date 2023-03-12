@@ -154,7 +154,7 @@ namespace RealismMod
         {
             if (WeaponProperties._WeapClass == "pistol")
             {
-                if (totalTorque > 0)
+                if (totalTorque > 3)
                 {
                     totalTorque *= -1f;
                 }

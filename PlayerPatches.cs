@@ -126,6 +126,10 @@ namespace RealismMod
                             {
                                 __instance.Physical.Aim(!(__instance.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.3f);
                             }
+                            else if(!Plugin.IsAiming && !Plugin.EnableIdleStamDrain.Value)
+                            {
+                                __instance.Physical.Aim(0f);
+                            }
                             if (Plugin.IsHighReady == true && !Plugin.IsLowReady && !Plugin.IsAiming && !Plugin.IsShortStock)
                             {
                                 __instance.Physical.Aim(0f);
