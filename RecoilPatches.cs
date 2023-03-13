@@ -126,7 +126,9 @@ namespace RealismMod
                 Plugin.CurrentlyEquipedWeapon = weaponClass;
 
                 Plugin.Timer = 0f;
+                Plugin.StanceShotTimer = 0f;
                 Plugin.IsFiring = true;
+                Plugin.IsFiringFromStance = true;
                 Plugin.ShotCount++;
 
                 float activeAimingBonus = Plugin.IsActiveAiming == true ? 0.95f : 1f;

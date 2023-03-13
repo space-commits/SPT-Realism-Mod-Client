@@ -40,6 +40,9 @@ namespace RealismMod
 
         private static bool SetCanAds = false;
         private static bool SetActiveAimADS = false;
+        private static bool SetRunAnim = false;
+        private static bool ResetRunAnim = false;
+
 
         [PatchPostfix]
         private static void PatchPostfix(EFT.Player.FirearmController __instance, ref bool ____isAiming)
@@ -87,6 +90,27 @@ namespace RealismMod
                     }
 
                     Plugin.IsAiming = ____isAiming;
+
+                    if (Plugin.IsHighReady == true || Plugin.WasHighReady == true)
+                    {
+                        if (!SetRunAnim) 
+                        {
+                            player.BodyAnimatorCommon.SetFloat(GClass1645.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
+                            SetRunAnim = true;
+                            ResetRunAnim = false;
+                        }
+                   
+                    }
+                    else
+                    {
+                        if (!ResetRunAnim) 
+                        {
+                            player.BodyAnimatorCommon.SetFloat(GClass1645.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)__instance.Item.CalculateCellSize().X);
+                            ResetRunAnim = true;
+                            SetRunAnim = false;
+                        }
+         
+                    }
                 }
             }
         }

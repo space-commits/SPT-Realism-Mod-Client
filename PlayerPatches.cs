@@ -105,15 +105,7 @@ namespace RealismMod
                 {
                     ReloadStateCheck(__instance, fc);
 
-                    if (Plugin.IsHighReady == true || Plugin.WasHighReady == true)
-                    {
-                        __instance.BodyAnimatorCommon.SetFloat(GClass1645.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
-                    }
-                    else
-                    {
-                        __instance.BodyAnimatorCommon.SetFloat(GClass1645.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
-                    }
-
+        
                     if (Plugin.EnableStanceStamChanges.Value == true) 
                     {
                         if (fc.Item.WeapClass != "pistol")

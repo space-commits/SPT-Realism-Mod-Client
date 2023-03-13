@@ -99,7 +99,7 @@ namespace RealismMod
             if (__instance.IsYourPlayer)
             {
                 EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
-                Plugin.EarProtectionFactor = HeadsetDeafFactor(equipment) * HelmDeafFactor(equipment);
+                Deafening.EarProtectionFactor = HeadsetDeafFactor(equipment) * HelmDeafFactor(equipment);
             }
 
         }
@@ -107,6 +107,11 @@ namespace RealismMod
 
     public static class Deafening
     {
+        public static float EarProtectionFactor;
+        public static float AmmoDeafFactor;
+        public static float WeaponDeafFactor;
+        public static float BotDeafFactor;
+        public static float GrenadeDeafFactor;
 
         //player
         public static float Volume = 0f;
@@ -141,12 +146,12 @@ namespace RealismMod
 
         public static bool valuesAreReset = false;
 
-        public static void DoDeafening()
+        public static void DoDeafening() 
         {
             float enviroMulti = PlayerProperties.enviroType == EnvironmentType.Indoor ? 1.2f : 1f;
-            float deafFactor = Plugin.AmmoDeafFactor * Plugin.WeaponDeafFactor * Plugin.EarProtectionFactor;
-            float botDeafFactor = Plugin.BotDeafFactor * Plugin.EarProtectionFactor;
-            float grenadeDeafFactor = Plugin.GrenadeDeafFactor * Plugin.EarProtectionFactor;
+            float deafFactor = AmmoDeafFactor * WeaponDeafFactor * EarProtectionFactor;
+            float botDeafFactor = BotDeafFactor * EarProtectionFactor;
+            float grenadeDeafFactor = GrenadeDeafFactor * EarProtectionFactor;
 
             if (Plugin.IsFiring == true)
             {
@@ -343,7 +348,7 @@ namespace RealismMod
                         ammoDeafFactor *= 0.6f;
                     }
 
-                    Plugin.AmmoDeafFactor = ammoDeafFactor == 0f ? 1f : ammoDeafFactor;
+                    Deafening.AmmoDeafFactor = ammoDeafFactor == 0f ? 1f : ammoDeafFactor;
 
 /*                    Logger.LogWarning("==============");
                     Logger.LogWarning("Player Shot");
@@ -357,7 +362,7 @@ namespace RealismMod
                     Vector3 playerPos = Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position;
                     Vector3 shootePos = player.Transform.position;
                     float distanceFromPlayer = Vector3.Distance(shootePos, playerPos);
-                    if (distanceFromPlayer <= 30f)
+                    if (distanceFromPlayer <= 15f)
                     {
                         Plugin.IsBotFiring = true;
                         BulletClass bullet = shot.Ammo as BulletClass;
@@ -372,7 +377,7 @@ namespace RealismMod
                             ammoDeafFactor *= 0.6f;
                         }
                         float muzzleLoudness = muzzleFactor * calFactor * ammoDeafFactor;
-                        Plugin.BotDeafFactor = muzzleLoudness * ((-distanceFromPlayer / 100f) + 1f);
+                        Deafening.BotDeafFactor = muzzleLoudness * ((-distanceFromPlayer / 100f) + 1f) * 1.15f;
 /*                        Logger.LogWarning("==============");
                         Logger.LogWarning("Bot Shot");
                         Logger.LogWarning("velocityFactor = " + velocityFactor);
@@ -402,16 +407,41 @@ namespace RealismMod
             Player player = Singleton<GameWorld>.Instance.AllPlayers[0];
             float distanceFromPlayer = Vector3.Distance(grenadePosition, player.Transform.position);
 
-            if (distanceFromPlayer <= 30f)
+            if (distanceFromPlayer <= 10f)
             {
                 Plugin.GrenadeExploded = true;
-                Plugin.GrenadeDeafFactor = grenadeItem.Contusion.z * ((-distanceFromPlayer / 100f) + 1f);
-/*                Logger.LogWarning("==============");
-                Logger.LogWarning("Explosion");
-                Logger.LogWarning("distance = " + distanceFromPlayer);
-                Logger.LogWarning("GrenadeDeafFactor = " + Plugin.GrenadeDeafFactor);
-                Logger.LogWarning("==============");*/
+
+                Deafening.GrenadeDeafFactor = grenadeItem.Contusion.z * ((-distanceFromPlayer / 100f) + 1f);
+                /*                Logger.LogWarning("==============");
+                                Logger.LogWarning("Explosion");
+                                Logger.LogWarning("distance = " + distanceFromPlayer);
+                                Logger.LogWarning("GrenadeDeafFactor = " + Plugin.GrenadeDeafFactor);
+                                Logger.LogWarning("==============");*/
             }
         }
     }
+
+    public class GrenadeClassContusionPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GrenadeClass).GetMethod("get_Contusion");
+        }
+
+        [PatchPrefix]
+        static bool PreFix(GrenadeClass __instance, ref Vector3 __result)
+        {
+            ThrowableWeaponClass grenade = __instance.Template as ThrowableWeaponClass;
+            Vector3 contusionVect = grenade.Contusion;
+            float intensity = contusionVect.z * (1f - ((1f - Deafening.EarProtectionFactor) * 1.3f));
+            float distance = contusionVect.y * 2f * Deafening.EarProtectionFactor;
+            intensity = PlayerProperties.enviroType == EnvironmentType.Indoor ? intensity * 1.5f : intensity;
+            distance = PlayerProperties.enviroType == EnvironmentType.Indoor ? distance * 1.5f : distance;
+            __result = new Vector3(contusionVect.x, distance, intensity);
+            return false;
+        }
+    }
+
+
+
 }

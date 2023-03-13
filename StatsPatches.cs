@@ -382,7 +382,7 @@ namespace RealismMod
             float pureRecoilDelta = ((baseVRecoil + baseHRecoil) - pureRecoil) / ((baseVRecoil + baseHRecoil) * -1f);
             WeaponProperties.TotalModDuraBurn = modBurnRatio;
             WeaponProperties.TotalMalfChance = currentMalfChance;
-            Plugin.WeaponDeafFactor = totalLoudness;
+            Deafening.WeaponDeafFactor = totalLoudness;
             WeaponProperties.CanCycleSubs = canCycleSubs;
             WeaponProperties.HasShoulderContact = hasShoulderContact;
             WeaponProperties.SDTotalErgo = currentErgo;
@@ -548,7 +548,7 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                __result = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - PlayerProperties.StrengthSkillAimBuff);
+                __result = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - PlayerProperties.StrengthSkillAimBuff * 1.5f);
 
                 if (!Utils.HasRunErgoWeightCalc) 
                 {

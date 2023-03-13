@@ -256,12 +256,15 @@ namespace RealismMod
         public static bool IsSprinting = false;
 
         public static bool IsFiring = false;
+        public static bool IsFiringFromStance = false;
         public static bool IsBotFiring = false;
         public static bool GrenadeExploded = false;
         public static bool IsAiming;
         public static float Timer = 0.0f;
+        public static float StanceShotTimer = 0.0f;
         public static float BotTimer = 0.0f;
         public static float GrenadeTimer = 0.0f;
+
         public static int ShotCount = 0;
         public static int PrevShotCount = ShotCount;
         public static bool StatsAreReset;
@@ -331,13 +334,6 @@ namespace RealismMod
         public static float CompressorLowpass = 0f;
         public static float Compressor = 0f;
         public static float CompressorGain = 0f;
-
-
-        public static float EarProtectionFactor;
-        public static float AmmoDeafFactor;
-        public static float WeaponDeafFactor;
-        public static float BotDeafFactor;
-        public static float GrenadeDeafFactor;
 
         public static bool HasHeadSet = false;
         public static CC_FastVignette Vignette;
@@ -530,9 +526,9 @@ namespace RealismMod
 
                 ToggleActiveAim = Config.Bind<bool>(WeapAimAndPos, "Use Toggle For Active Aim", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 162 }));
 
-                WeapOffsetX = Config.Bind<float>(WeapAimAndPos, "Weapon Position X", 0.0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 152 }));
-                WeapOffsetY = Config.Bind<float>(WeapAimAndPos, "Weapon Position Y", 0.0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 151 }));
-                WeapOffsetZ = Config.Bind<float>(WeapAimAndPos, "Weapon Position Z", 0.0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 150 }));
+                WeapOffsetX = Config.Bind<float>(WeapAimAndPos, "Weapon Position X-Axis", 0.0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 152 }));
+                WeapOffsetY = Config.Bind<float>(WeapAimAndPos, "Weapon Position Y-Axis", 0.0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 151 }));
+                WeapOffsetZ = Config.Bind<float>(WeapAimAndPos, "Weapon Position Z-Axis", 0.0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 150 }));
 
                 ActiveAimAdditionalRotationSpeedMulti = Config.Bind<float>(ActiveAim, "Active Aim Additonal Rotation Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true }));
                 ActiveAimResetRotationSpeedMulti = Config.Bind<float>(ActiveAim, "Active Aim Reset Rotation Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true }));
@@ -540,21 +536,21 @@ namespace RealismMod
                 ActiveAimSpeedMulti = Config.Bind<float>(ActiveAim, "Active Aim Speed Multi", 0.36f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 143, IsAdvanced = true }));
                 ActiveAimResetSpeedMulti = Config.Bind<float>(ActiveAim, "Active Aim Reset Speed Multi", 0.25f, new ConfigDescription("", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 142, IsAdvanced = true }));
 
-                ActiveAimOffsetX = Config.Bind<float>(ActiveAim, "Active Aim Position X", -0.08f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.12f, 0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 132, IsAdvanced = true }));
-                ActiveAimOffsetY = Config.Bind<float>(ActiveAim, "Active Aim Position Y", -0.01f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 131, IsAdvanced = true }));
-                ActiveAimOffsetZ = Config.Bind<float>(ActiveAim, "Active Aim Position Z", 0.01f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 130, IsAdvanced = true }));
+                ActiveAimOffsetX = Config.Bind<float>(ActiveAim, "Active Aim Position X-Axis", -0.08f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.12f, 0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 132, IsAdvanced = true }));
+                ActiveAimOffsetY = Config.Bind<float>(ActiveAim, "Active Aim Position Y-Axis", -0.01f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 131, IsAdvanced = true }));
+                ActiveAimOffsetZ = Config.Bind<float>(ActiveAim, "Active Aim Position Z-Axis", 0.01f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 130, IsAdvanced = true }));
 
-                ActiveAimRotationX = Config.Bind<float>(ActiveAim, "Active Aim Rotation X", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 122, IsAdvanced = true }));
-                ActiveAimRotationY = Config.Bind<float>(ActiveAim, "Active Aim Rotation Y", -120.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 121, IsAdvanced = true }));
-                ActiveAimRotationZ = Config.Bind<float>(ActiveAim, "Active Aim Rotation Z", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 120, IsAdvanced = true }));
+                ActiveAimRotationX = Config.Bind<float>(ActiveAim, "Active Aim Rotation X-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 122, IsAdvanced = true }));
+                ActiveAimRotationY = Config.Bind<float>(ActiveAim, "Active Aim Rotation Y-Axis", -150.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 121, IsAdvanced = true }));
+                ActiveAimRotationZ = Config.Bind<float>(ActiveAim, "Active Aim Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 120, IsAdvanced = true }));
 
-                ActiveAimAdditionalRotationX = Config.Bind<float>(ActiveAim, "Active Aiming Additional Rotation X", 10f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 111, IsAdvanced = true }));
-                ActiveAimAdditionalRotationY = Config.Bind<float>(ActiveAim, "Active Aiming Additional Rotation Y", -5f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true }));
-                ActiveAimAdditionalRotationZ = Config.Bind<float>(ActiveAim, "Active Aiming Additional Rotation Z", 10f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true }));
+                ActiveAimAdditionalRotationX = Config.Bind<float>(ActiveAim, "Active Aiming Additional Rotation X-Axis", 10f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 111, IsAdvanced = true }));
+                ActiveAimAdditionalRotationY = Config.Bind<float>(ActiveAim, "Active Aiming Additional Rotation Y-Axis", -5f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true }));
+                ActiveAimAdditionalRotationZ = Config.Bind<float>(ActiveAim, "Active Aiming Additional Rotation Z-Axis", 10f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true }));
 
-                ActiveAimResetRotationX = Config.Bind<float>(ActiveAim, "Active Aiming Reset Rotation X", 5.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 102, IsAdvanced = true }));
-                ActiveAimResetRotationY = Config.Bind<float>(ActiveAim, "Active Aiming Reset Rotation Y", 15.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 101, IsAdvanced = true }));
-                ActiveAimResetRotationZ = Config.Bind<float>(ActiveAim, "Active Aiming Reset Rotation Z", -3.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = true }));
+                ActiveAimResetRotationX = Config.Bind<float>(ActiveAim, "Active Aiming Reset Rotation X-Axis", 5.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 102, IsAdvanced = true }));
+                ActiveAimResetRotationY = Config.Bind<float>(ActiveAim, "Active Aiming Reset Rotation Y-Axis", 15.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 101, IsAdvanced = true }));
+                ActiveAimResetRotationZ = Config.Bind<float>(ActiveAim, "Active Aiming Reset Rotation Z-Axis", -3.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = true }));
 
                 HighReadyAdditionalRotationSpeedMulti = Config.Bind<float>(HighReady, "High Ready Additonal Rotation Speed Multi", 0.5f, new ConfigDescription("How Fast The Weapon Rotates Going Out Of Stance.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 94, IsAdvanced = true }));
                 HighReadyResetRotationMulti = Config.Bind<float>(HighReady, "High Ready Reset Rotation Speed Multi", 0.67f, new ConfigDescription("How Fast The Weapon Rotates Going Out Of Stance.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 93, IsAdvanced = true }));
@@ -562,21 +558,21 @@ namespace RealismMod
                 HighReadyResetSpeedMulti = Config.Bind<float>(HighReady, "High Ready Reset Speed Multi", 0.25f, new ConfigDescription("How Fast The Weapon Moves Going Out Of Stance", new AcceptableValueRange<float>(0.000001f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 91, IsAdvanced = true }));
                 HighReadySpeedMulti = Config.Bind<float>(HighReady, "High Ready Speed Multi", 0.25f, new ConfigDescription("How Fast The Weapon Moves Going Into Stance", new AcceptableValueRange<float>(0.000001f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 90, IsAdvanced = true }));
 
-                HighReadyOffsetX = Config.Bind<float>(HighReady, "High Ready Position X", 0.0f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 82, IsAdvanced = true }));
-                HighReadyOffsetY = Config.Bind<float>(HighReady, "High Ready Position Y", -0.06f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 81, IsAdvanced = true }));
-                HighReadyOffsetZ = Config.Bind<float>(HighReady, "High Ready Position Z", -0.03f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 80, IsAdvanced = true }));
+                HighReadyOffsetX = Config.Bind<float>(HighReady, "High Ready Position X-Axis", 0.0f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 82, IsAdvanced = true }));
+                HighReadyOffsetY = Config.Bind<float>(HighReady, "High Ready Position Y-Axis", -0.06f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 81, IsAdvanced = true }));
+                HighReadyOffsetZ = Config.Bind<float>(HighReady, "High Ready Position Z-Axis", -0.03f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 80, IsAdvanced = true }));
 
-                HighReadyRotationX = Config.Bind<float>(HighReady, "High Ready Rotation X", -70.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 72, IsAdvanced = true }));
-                HighReadyRotationY = Config.Bind<float>(HighReady, "High Ready Rotation Y", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 71, IsAdvanced = true }));
-                HighReadyRotationZ = Config.Bind<float>(HighReady, "High Ready Rotation Z", 30.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 70, IsAdvanced = true }));
+                HighReadyRotationX = Config.Bind<float>(HighReady, "High Ready Rotation X-Axis", -70.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 72, IsAdvanced = true }));
+                HighReadyRotationY = Config.Bind<float>(HighReady, "High Ready Rotation Y-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 71, IsAdvanced = true }));
+                HighReadyRotationZ = Config.Bind<float>(HighReady, "High Ready Rotation Z-Axis", 30.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 70, IsAdvanced = true }));
 
-                HighReadyAdditionalRotationX = Config.Bind<float>(HighReady, "High Ready Additional Rotation X", -10.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 69, IsAdvanced = true }));
-                HighReadyAdditionalRotationY = Config.Bind<float>(HighReady, "High Ready Additiona Rotation Y", 30.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 68, IsAdvanced = true }));
-                HighReadyAdditionalRotationZ = Config.Bind<float>(HighReady, "High Ready Additional Rotation Z", 5.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 67, IsAdvanced = true }));
+                HighReadyAdditionalRotationX = Config.Bind<float>(HighReady, "High Ready Additional Rotation X-Axis", -10.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 69, IsAdvanced = true }));
+                HighReadyAdditionalRotationY = Config.Bind<float>(HighReady, "High Ready Additiona Rotation Y-Axis", 30.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 68, IsAdvanced = true }));
+                HighReadyAdditionalRotationZ = Config.Bind<float>(HighReady, "High Ready Additional Rotation Z-Axis", 5.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 67, IsAdvanced = true }));
 
-                HighReadyResetRotationX = Config.Bind<float>(HighReady, "High Ready Reset Rotation X", 11.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 66, IsAdvanced = true }));
-                HighReadyResetRotationY = Config.Bind<float>(HighReady, "High Ready Reset Rotation Y", -15.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 65, IsAdvanced = true }));
-                HighReadyResetRotationZ = Config.Bind<float>(HighReady, "High Ready Reset Rotation Z", -5.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 64, IsAdvanced = true }));
+                HighReadyResetRotationX = Config.Bind<float>(HighReady, "High Ready Reset Rotation X-Axis", 8.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 66, IsAdvanced = true }));
+                HighReadyResetRotationY = Config.Bind<float>(HighReady, "High Ready Reset Rotation Y-Axis", -15.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 65, IsAdvanced = true }));
+                HighReadyResetRotationZ = Config.Bind<float>(HighReady, "High Ready Reset Rotation Z-Axis", -4.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 64, IsAdvanced = true }));
 
                 LowReadyAdditionalRotationSpeedMulti = Config.Bind<float>(LowReady, "Low Ready Additonal Rotation Speed Multi", 0.8f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 64, IsAdvanced = true }));
                 LowReadyResetRotationMulti = Config.Bind<float>(LowReady, "Low Ready Reset Rotation Speed Multi", 0.8f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 63, IsAdvanced = true }));
@@ -584,21 +580,21 @@ namespace RealismMod
                 LowReadySpeedMulti = Config.Bind<float>(LowReady, "Low Ready Speed Multi", 0.2f, new ConfigDescription("", new AcceptableValueRange<float>(0.01f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 61, IsAdvanced = true }));
                 LowReadyResetSpeedMulti = Config.Bind<float>(LowReady, "Low Ready Reset Speed Multi", 0.2f, new ConfigDescription("", new AcceptableValueRange<float>(0.01f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 60, IsAdvanced = true }));
 
-                LowReadyOffsetX = Config.Bind<float>(LowReady, "Low Ready Position X", -0.01f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 52, IsAdvanced = true }));
-                LowReadyOffsetY = Config.Bind<float>(LowReady, "Low Ready Position Y", 0.025f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 51, IsAdvanced = true }));
-                LowReadyOffsetZ = Config.Bind<float>(LowReady, "Low Ready Position Z", 0.04f, new ConfigDescription("Weapon Position When In Stance..", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 50, IsAdvanced = true }));
+                LowReadyOffsetX = Config.Bind<float>(LowReady, "Low Ready Position X-Axis", -0.01f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 52, IsAdvanced = true }));
+                LowReadyOffsetY = Config.Bind<float>(LowReady, "Low Ready Position Y-Axis", 0.025f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 51, IsAdvanced = true }));
+                LowReadyOffsetZ = Config.Bind<float>(LowReady, "Low Ready Position Z-Axis", 0.04f, new ConfigDescription("Weapon Position When In Stance..", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 50, IsAdvanced = true }));
 
-                LowReadyRotationX = Config.Bind<float>(LowReady, "Low Ready Rotation X", 50.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 42, IsAdvanced = true }));
-                LowReadyRotationY = Config.Bind<float>(LowReady, "Low Ready Rotation Y", 5.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 41, IsAdvanced = true }));
-                LowReadyRotationZ = Config.Bind<float>(LowReady, "Low Ready Rotation Z", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 40, IsAdvanced = true }));
+                LowReadyRotationX = Config.Bind<float>(LowReady, "Low Ready Rotation X-Axis", 50.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 42, IsAdvanced = true }));
+                LowReadyRotationY = Config.Bind<float>(LowReady, "Low Ready Rotation Y-Axis", 5.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 41, IsAdvanced = true }));
+                LowReadyRotationZ = Config.Bind<float>(LowReady, "Low Ready Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 40, IsAdvanced = true }));
 
-                LowReadyAdditionalRotationX = Config.Bind<float>(LowReady, "Low Ready Additional Rotation X", 20.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 39, IsAdvanced = true }));
-                LowReadyAdditionalRotationY = Config.Bind<float>(LowReady, "Low Ready Additional Rotation Y", 5.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 38, IsAdvanced = true }));
-                LowReadyAdditionalRotationZ = Config.Bind<float>(LowReady, "Low Ready Additional Rotation Z", -2.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 37, IsAdvanced = true }));
+                LowReadyAdditionalRotationX = Config.Bind<float>(LowReady, "Low Ready Additional Rotation X-Axis", 20.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 39, IsAdvanced = true }));
+                LowReadyAdditionalRotationY = Config.Bind<float>(LowReady, "Low Ready Additional Rotation Y-Axis", 5.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 38, IsAdvanced = true }));
+                LowReadyAdditionalRotationZ = Config.Bind<float>(LowReady, "Low Ready Additional Rotation Z-Axis", -2.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 37, IsAdvanced = true }));
 
-                LowReadyResetRotationX = Config.Bind<float>(LowReady, "Low Ready Reset Rotation X", -9.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 36, IsAdvanced = true }));
-                LowReadyResetRotationY = Config.Bind<float>(LowReady, "Low Ready Reset Rotation Y", -5.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 35, IsAdvanced = true }));
-                LowReadyResetRotationZ = Config.Bind<float>(LowReady, "Low Ready Reset Rotation Z", -1.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 34, IsAdvanced = true }));
+                LowReadyResetRotationX = Config.Bind<float>(LowReady, "Low Ready Reset Rotation X-Axis", -8.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 36, IsAdvanced = true }));
+                LowReadyResetRotationY = Config.Bind<float>(LowReady, "Low Ready Reset Rotation Y-Axis", -5.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 35, IsAdvanced = true }));
+                LowReadyResetRotationZ = Config.Bind<float>(LowReady, "Low Ready Reset Rotation Z-Axis", -1.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 34, IsAdvanced = true }));
 
                 PistolAdditionalRotationSpeedMulti = Config.Bind<float>(Pistol, "Pistol Additional Rotation Speed Multi", 1f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 35, IsAdvanced = true }));
                 PistolResetRotationSpeedMulti = Config.Bind<float>(Pistol, "Pistol Reset Rotation Speed Multi", 1f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 34, IsAdvanced = true }));
@@ -606,43 +602,43 @@ namespace RealismMod
                 PistolPosSpeedMulti = Config.Bind<float>(Pistol, "Pistol Position Speed Multi", 0.2f, new ConfigDescription("", new AcceptableValueRange<float>(-2.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 32, IsAdvanced = true }));
                 PistolPosResetSpeedMulti = Config.Bind<float>(Pistol, "Pistol Position Reset Speed Multi", 0.18f, new ConfigDescription("", new AcceptableValueRange<float>(-2.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true }));
 
-                PistolOffsetX = Config.Bind<float>(Pistol, "Pistol Position X", 0.03f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 22, IsAdvanced = true }));
-                PistolOffsetY = Config.Bind<float>(Pistol, "Pistol Position Y", -0.04f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 21, IsAdvanced = true }));
-                PistolOffsetZ = Config.Bind<float>(Pistol, "Pistol Position Z", -0.03f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, IsAdvanced = true }));
+                PistolOffsetX = Config.Bind<float>(Pistol, "Pistol Position X-Axis", 0.03f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 22, IsAdvanced = true }));
+                PistolOffsetY = Config.Bind<float>(Pistol, "Pistol Position Y-Axis", -0.04f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 21, IsAdvanced = true }));
+                PistolOffsetZ = Config.Bind<float>(Pistol, "Pistol Position Z-Axis", -0.03f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, IsAdvanced = true }));
 
-                PistolRotationX = Config.Bind<float>(Pistol, "Pistol Rotation X", -2.5f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true }));
-                PistolRotationY = Config.Bind<float>(Pistol, "Pistol Rotation Y", -20f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, IsAdvanced = true }));
-                PistolRotationZ = Config.Bind<float>(Pistol, "Pistol Rotation Z", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true }));
+                PistolRotationX = Config.Bind<float>(Pistol, "Pistol Rotation X-Axis", -2.5f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true }));
+                PistolRotationY = Config.Bind<float>(Pistol, "Pistol Rotation Y-Axis", -20f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, IsAdvanced = true }));
+                PistolRotationZ = Config.Bind<float>(Pistol, "Pistol Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true }));
 
-                PistolAdditionalRotationX = Config.Bind<float>(Pistol, "Pistol Ready Additional Rotation X", 2.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true }));
-                PistolAdditionalRotationY = Config.Bind<float>(Pistol, "Pistol Ready Additional Rotation Y", 8.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true }));
-                PistolAdditionalRotationZ = Config.Bind<float>(Pistol, "Pistol Ready Additional Rotation Z", 2.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true }));
+                PistolAdditionalRotationX = Config.Bind<float>(Pistol, "Pistol Ready Additional Rotation X-Axis", 2.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true }));
+                PistolAdditionalRotationY = Config.Bind<float>(Pistol, "Pistol Ready Additional Rotation Y-Axis", 8.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true }));
+                PistolAdditionalRotationZ = Config.Bind<float>(Pistol, "Pistol Ready Additional Rotation Z-Axis", 2.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true }));
 
-                PistolResetRotationX = Config.Bind<float>(Pistol, "Pistol Ready Reset Rotation X", 2f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
-                PistolResetRotationY = Config.Bind<float>(Pistol, "Pistol Ready Reset Rotation Y", 2.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
-                PistolResetRotationZ = Config.Bind<float>(Pistol, "Pistol Ready Reset Rotation Z", -1.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, IsAdvanced = true }));
+                PistolResetRotationX = Config.Bind<float>(Pistol, "Pistol Ready Reset Rotation X-Axis", 2f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
+                PistolResetRotationY = Config.Bind<float>(Pistol, "Pistol Ready Reset Rotation Y-Axis", 2.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
+                PistolResetRotationZ = Config.Bind<float>(Pistol, "Pistol Ready Reset Rotation Z-Axis", -1.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, IsAdvanced = true }));
 
                 ShortStockAdditionalRotationSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Additional Rotation Speed Multi", 0.9f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 35, IsAdvanced = true }));
                 ShortStockResetRotationSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Reset Rotation Speed Multi", 0.9f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 34, IsAdvanced = true }));
                 ShortStockRotationSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Rotation Speed Multi", 0.7f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 33, IsAdvanced = true }));
                 ShortStockSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Position Speed Multi", 0.45f, new ConfigDescription("", new AcceptableValueRange<float>(-2.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 32, IsAdvanced = true }));
-                ShortStockResetSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Position Reset Speed Multi", 0.4f, new ConfigDescription("", new AcceptableValueRange<float>(-2.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true }));
+                ShortStockResetSpeedMulti = Config.Bind<float>(ShortStock, "Short-Stock Position Reset Speed Mult", 0.35f, new ConfigDescription("", new AcceptableValueRange<float>(-2.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true }));
 
-                ShortStockOffsetX = Config.Bind<float>(ShortStock, "Short-Stock Position X", 0.035f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 22, IsAdvanced = true }));
-                ShortStockOffsetY = Config.Bind<float>(ShortStock, "Short-Stock Position Y", -0.05f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 21, IsAdvanced = true }));
-                ShortStockOffsetZ = Config.Bind<float>(ShortStock, "Short-Stock Position Z", -0.1f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, IsAdvanced = true }));
+                ShortStockOffsetX = Config.Bind<float>(ShortStock, "Short-Stock Position X-Axis", 0.035f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 22, IsAdvanced = true }));
+                ShortStockOffsetY = Config.Bind<float>(ShortStock, "Short-Stock Position Y-Axis", -0.05f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 21, IsAdvanced = true }));
+                ShortStockOffsetZ = Config.Bind<float>(ShortStock, "Short-Stock Position Z-Axis", -0.1f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, IsAdvanced = true }));
 
-                ShortStockRotationX = Config.Bind<float>(ShortStock, "Short-Stock Rotation X", 0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true }));
-                ShortStockRotationY = Config.Bind<float>(ShortStock, "Short-Stock Rotation Y", -100.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, IsAdvanced = true }));
-                ShortStockRotationZ = Config.Bind<float>(ShortStock, "Short-Stock Rotation Z", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true }));
+                ShortStockRotationX = Config.Bind<float>(ShortStock, "Short-Stock Rotation X-Axis", 0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true }));
+                ShortStockRotationY = Config.Bind<float>(ShortStock, "Short-Stock Rotation Y-Axis", -100.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, IsAdvanced = true }));
+                ShortStockRotationZ = Config.Bind<float>(ShortStock, "Short-Stock Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true }));
 
-                ShortStockAdditionalRotationX = Config.Bind<float>(ShortStock, "Short-Stock Ready Additional Rotation X", -11.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true }));
-                ShortStockAdditionalRotationY = Config.Bind<float>(ShortStock, "Short-Stock Ready Additional Rotation Y", 0.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true }));
-                ShortStockAdditionalRotationZ = Config.Bind<float>(ShortStock, "Short-Stock Ready Additional Rotation Z", 11.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true }));
+                ShortStockAdditionalRotationX = Config.Bind<float>(ShortStock, "Short-Stock Ready Additional Rotation X-Axis", -11.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true }));
+                ShortStockAdditionalRotationY = Config.Bind<float>(ShortStock, "Short-Stock Ready Additional Rotation Y-Axis", 0.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true }));
+                ShortStockAdditionalRotationZ = Config.Bind<float>(ShortStock, "Short-Stock Ready Additional Rotation Z-Axis", 11.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true }));
 
-                ShortStockResetRotationX = Config.Bind<float>(ShortStock, "Short-Stock Ready Reset Rotation X", -5.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
-                ShortStockResetRotationY = Config.Bind<float>(ShortStock, "Short-Stock Ready Reset Rotation Y", 10.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
-                ShortStockResetRotationZ = Config.Bind<float>(ShortStock, "Short-Stock Ready Reset Rotation Z", -2.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, IsAdvanced = true }));
+                ShortStockResetRotationX = Config.Bind<float>(ShortStock, "Short-Stock Ready Reset Rotation X-Axis", -5.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
+                ShortStockResetRotationY = Config.Bind<float>(ShortStock, "Short-Stock Ready Reset Rotation Y-Axis", 10.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
+                ShortStockResetRotationZ = Config.Bind<float>(ShortStock, "Short-Stock Ready Reset Rotation Z-Axis", -2.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, IsAdvanced = true }));
 
                 if (EnableProgramK.Value == true)
                 {
@@ -794,6 +790,7 @@ namespace RealismMod
                     new SetCompressorPatch().Enable();
                     new RegisterShotPatch().Enable();
                     new ExplosionPatch().Enable();
+                    new GrenadeClassContusionPatch().Enable();
                 }
 
                 //LateUpdate
@@ -802,7 +799,6 @@ namespace RealismMod
                 //stances
                 new ApplyComplexRotationPatch().Enable();
                 new InitTransformsPatch().Enable();
-
                 new LaserLateUpdatePatch().Enable();
             }
         }
@@ -824,6 +820,7 @@ namespace RealismMod
                     if (Plugin.ShotCount > Plugin.PrevShotCount)
                     {
                         Plugin.IsFiring = true;
+                        Plugin.IsFiringFromStance = true;
                     }
 
                     if (Plugin.EnableRecoilClimb.Value == true && (Plugin.IsAiming == true || Plugin.EnableHipfireRecoilClimb.Value == true))
@@ -834,6 +831,7 @@ namespace RealismMod
                     if (Plugin.ShotCount == Plugin.PrevShotCount)
                     {
                         Plugin.Timer += Time.deltaTime;
+                        Plugin.StanceShotTimer += Time.deltaTime;
                         if (Plugin.Timer >= Plugin.resetTime.Value)
                         {
                             Plugin.IsFiring = false;
@@ -841,12 +839,17 @@ namespace RealismMod
                             Plugin.PrevShotCount = 0;
                             Plugin.Timer = 0f;
                         }
+                        if (Plugin.StanceShotTimer >= 1f)
+                        {
+                            Plugin.IsFiringFromStance = false;
+                            Plugin.StanceShotTimer = 0f;
+                        }
                     }
 
                     if (Plugin.IsBotFiring == true)
                     {
                         Plugin.BotTimer += Time.deltaTime;
-                        if (Plugin.BotTimer >= 0.8f)
+                        if (Plugin.BotTimer >= 0.5f)
                         {
                             Plugin.IsBotFiring = false;
                             Plugin.BotTimer = 0f;
@@ -856,7 +859,7 @@ namespace RealismMod
                     if (Plugin.GrenadeExploded == true)
                     {
                         Plugin.GrenadeTimer += Time.deltaTime;
-                        if (Plugin.GrenadeTimer >= 0.8f)
+                        if (Plugin.GrenadeTimer >= 0.7f)
                         {
                             Plugin.GrenadeExploded = false;
                             Plugin.GrenadeTimer = 0f;
