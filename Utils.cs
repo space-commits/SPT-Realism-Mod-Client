@@ -76,10 +76,6 @@ namespace RealismMod
             return slot.ContainedItem;
         }
 
-        public static bool IsIdle() 
-        {
-            return !Plugin.IsActiveAiming && !Plugin.IsHighReady && !Plugin.IsLowReady && !Plugin.IsShortStock && !Plugin.WasHighReady && !Plugin.WasLowReady && !Plugin.WasShortStock ? true : false;
-        }
 
         public static bool NullCheck(string[] confItemArray)
         {

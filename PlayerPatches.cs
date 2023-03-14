@@ -30,13 +30,13 @@ namespace RealismMod
             if (__instance.IsYourPlayer == true)
             {
                 StatCalc.SetGearParamaters(__instance);
-                Plugin.SelectedStance = 0;
-                Plugin.IsLowReady = false;
-                Plugin.IsHighReady = false;
-                Plugin.IsActiveAiming = false;
-                Plugin.WasHighReady = false;
-                Plugin.WasLowReady = false;
-                Plugin.IsShortStock = false;
+                StanceController.SelectedStance = 0;
+                StanceController.IsLowReady = false;
+                StanceController.IsHighReady = false;
+                StanceController.IsActiveAiming = false;
+                StanceController.WasHighReady = false;
+                StanceController.WasLowReady = false;
+                StanceController.IsShortStock = false;
 
             }
         }
@@ -105,63 +105,16 @@ namespace RealismMod
                 {
                     ReloadStateCheck(__instance, fc);
 
-        
                     if (Plugin.EnableStanceStamChanges.Value == true) 
                     {
-                        if (fc.Item.WeapClass != "pistol")
-                        {
-                            if (!Plugin.IsHighReady && !Plugin.IsLowReady && !Plugin.IsAiming && !Plugin.IsActiveAiming && !Plugin.IsShortStock && Plugin.EnableIdleStamDrain.Value == true && !__instance.IsInPronePose)
-                            {
-                                __instance.Physical.Aim(!(__instance.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.5f);
-                            }
-                            if (Plugin.IsActiveAiming == true)
-                            {
-                                __instance.Physical.Aim(!(__instance.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.3f);
-                            }
-                            else if(!Plugin.IsAiming && !Plugin.EnableIdleStamDrain.Value)
-                            {
-                                __instance.Physical.Aim(0f);
-                            }
-                            if (Plugin.IsHighReady == true && !Plugin.IsLowReady && !Plugin.IsAiming && !Plugin.IsShortStock)
-                            {
-                                __instance.Physical.Aim(0f);
-                                __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.03f), __instance.Physical.HandsStamina.TotalCapacity);
-                            }
-                            if (Plugin.IsLowReady == true && !Plugin.IsHighReady && !Plugin.IsAiming && !Plugin.IsShortStock)
-                            {
-                                __instance.Physical.Aim(0f);
-                                __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.015f), __instance.Physical.HandsStamina.TotalCapacity);
-                            }
-                            if (Plugin.IsShortStock == true && !Plugin.IsHighReady && !Plugin.IsAiming && !Plugin.IsLowReady)
-                            {
-                                __instance.Physical.Aim(0f);
-                                __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.01f), __instance.Physical.HandsStamina.TotalCapacity);
-                            }
-                            __instance.Physical.HandsStamina.Current = Mathf.Max(__instance.Physical.HandsStamina.Current, 1f);
-
-                        }
-                        else
-                        {
-                            if (!Plugin.IsAiming)
-                            {
-                                __instance.Physical.Aim(0f);
-                                __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.025f), __instance.Physical.HandsStamina.TotalCapacity);
-                            }
-                        }
-
-
-                        if (__instance.IsInventoryOpened == true || (__instance.IsInPronePose && !Plugin.IsAiming))
-                        {
-                            __instance.Physical.Aim(0f);
-                        }
+                        StanceController.SetStanceStamina(__instance, fc);
                     }
 
                     PlayerProperties.RemainingArmStamPercentage = Mathf.Min(__instance.Physical.HandsStamina.Current * 1.5f, __instance.Physical.HandsStamina.TotalCapacity) / __instance.Physical.HandsStamina.TotalCapacity;
                 }
                 else if(Plugin.EnableStanceStamChanges.Value == true)
                 {
-                    __instance.Physical.Aim(0f);
-                    __instance.Physical.HandsStamina.Current = Mathf.Min(__instance.Physical.HandsStamina.Current + 0.025f, __instance.Physical.HandsStamina.TotalCapacity);
+                    StanceController.ResetStanceStamina(__instance);
                 }
             }
         }
@@ -181,7 +134,15 @@ namespace RealismMod
                 PlayerProperties.ReloadInjuryMulti = 1f;
                 PlayerProperties.RecoilInjuryMulti = 1f;
             }
-            if ((rightArmDamaged == true && !leftArmDamaged) || tremor == true)
+            if (tremor == true)
+            {
+                PlayerProperties.AimMoveSpeedBase = 0.4f;
+                PlayerProperties.ErgoDeltaInjuryMulti = 1.15f;
+                PlayerProperties.ADSInjuryMulti = 0.85f;
+                PlayerProperties.ReloadInjuryMulti = 0.9f;
+                PlayerProperties.RecoilInjuryMulti = 1.025f;
+            }
+            if ((rightArmDamaged == true && !leftArmDamaged))
             {
                 PlayerProperties.AimMoveSpeedBase = 0.38f;
                 PlayerProperties.ErgoDeltaInjuryMulti = 1.5f;
@@ -221,10 +182,10 @@ namespace RealismMod
                 {
                     if (Plugin.EnableLogging.Value == true)
                     {
-                        Logger.LogWarning("IsAttemptingToReloadInternalMag = " + Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.6f, 1.25f));
+                        Logger.LogWarning("IsAttemptingToReloadInternalMag = " + Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f)), 0.6f, 1.25f));
 
                     }
-                    player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti, 0.6f, 1.25f));
+                    player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f)), 0.6f, 1.25f));
                 }
             }
             else

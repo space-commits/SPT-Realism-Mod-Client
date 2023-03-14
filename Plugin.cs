@@ -242,36 +242,20 @@ namespace RealismMod
         public static Vector3 ActiveAimTransformTargetPosition = new Vector3(0.0f, 0.0f, 0.0f);
 
         public static bool DidWeaponSwap = false;
-
-        public static bool IsActiveAiming = false;
-        public static bool IsHighReady = false;
-        public static bool IsLowReady = false;
-        public static bool IsShortStock = false;
-        public static bool WasHighReady;
-        public static bool WasLowReady;
-        public static bool WasShortStock;
-
-        public static int SelectedStance = 0;
-
         public static bool IsSprinting = false;
 
         public static bool IsFiring = false;
-        public static bool IsFiringFromStance = false;
+
         public static bool IsBotFiring = false;
         public static bool GrenadeExploded = false;
         public static bool IsAiming;
         public static float Timer = 0.0f;
-        public static float StanceShotTimer = 0.0f;
         public static float BotTimer = 0.0f;
         public static float GrenadeTimer = 0.0f;
 
         public static int ShotCount = 0;
         public static int PrevShotCount = ShotCount;
         public static bool StatsAreReset;
-
-        private float clickDelay = 0.2f;
-        private float doubleClickTime;
-        private bool clickTriggered = true;
 
         public static float StartingRecoilAngle;
 
@@ -800,6 +784,8 @@ namespace RealismMod
                 new ApplyComplexRotationPatch().Enable();
                 new InitTransformsPatch().Enable();
                 new LaserLateUpdatePatch().Enable();
+                new WeaponOverlappingPatch().Enable();
+                new WeaponLengthPatch().Enable();
             }
         }
 
@@ -820,7 +806,7 @@ namespace RealismMod
                     if (Plugin.ShotCount > Plugin.PrevShotCount)
                     {
                         Plugin.IsFiring = true;
-                        Plugin.IsFiringFromStance = true;
+                        StanceController.IsFiringFromStance = true;
                     }
 
                     if (Plugin.EnableRecoilClimb.Value == true && (Plugin.IsAiming == true || Plugin.EnableHipfireRecoilClimb.Value == true))
@@ -831,7 +817,7 @@ namespace RealismMod
                     if (Plugin.ShotCount == Plugin.PrevShotCount)
                     {
                         Plugin.Timer += Time.deltaTime;
-                        Plugin.StanceShotTimer += Time.deltaTime;
+                 
                         if (Plugin.Timer >= Plugin.resetTime.Value)
                         {
                             Plugin.IsFiring = false;
@@ -839,170 +825,41 @@ namespace RealismMod
                             Plugin.PrevShotCount = 0;
                             Plugin.Timer = 0f;
                         }
-                        if (Plugin.StanceShotTimer >= 1f)
-                        {
-                            Plugin.IsFiringFromStance = false;
-                            Plugin.StanceShotTimer = 0f;
-                        }
-                    }
 
-                    if (Plugin.IsBotFiring == true)
-                    {
-                        Plugin.BotTimer += Time.deltaTime;
-                        if (Plugin.BotTimer >= 0.5f)
-                        {
-                            Plugin.IsBotFiring = false;
-                            Plugin.BotTimer = 0f;
-                        }
-                    }
-
-                    if (Plugin.GrenadeExploded == true)
-                    {
-                        Plugin.GrenadeTimer += Time.deltaTime;
-                        if (Plugin.GrenadeTimer >= 0.7f)
-                        {
-                            Plugin.GrenadeExploded = false;
-                            Plugin.GrenadeTimer = 0f;
-                        }
+                        StanceController.StanceShotTimer();
                     }
 
                     if (EnableDeafen.Value == true)
                     {
                         Deafening.DoDeafening();
+
+                        if (Plugin.IsBotFiring == true)
+                        {
+                            Plugin.BotTimer += Time.deltaTime;
+                            if (Plugin.BotTimer >= 0.5f)
+                            {
+                                Plugin.IsBotFiring = false;
+                                Plugin.BotTimer = 0f;
+                            }
+                        }
+
+                        if (Plugin.GrenadeExploded == true)
+                        {
+                            Plugin.GrenadeTimer += Time.deltaTime;
+                            if (Plugin.GrenadeTimer >= 0.7f)
+                            {
+                                Plugin.GrenadeExploded = false;
+                                Plugin.GrenadeTimer = 0f;
+                            }
+                        }
                     }
 
                     if (!Plugin.IsFiring)
                     {
                         Recoil.ResetRecoil();
                     }
-                    if (Utils.WeaponReady == true)
-                    {
 
-                        if (!Plugin.IsSprinting && WeaponProperties._WeapClass != "pistol")
-                        {
-
-                            //cycle stances
-                            if (Input.GetKeyUp(CycleStancesKeybind.Value.MainKey))
-                            {
-                                if (Time.time <= doubleClickTime)
-                                {
-                                    clickTriggered = true;
-                                    Plugin.SelectedStance = 0;
-                                    Plugin.IsHighReady = false;
-                                    Plugin.IsLowReady = false;
-                                    Plugin.IsShortStock = false;
-                                    Plugin.IsActiveAiming = false;
-                                    Plugin.WasHighReady = false;
-                                    Plugin.WasLowReady = false;
-                                    Plugin.WasShortStock = false;
-                                }
-                                else
-                                {           
-                                    clickTriggered = false;
-                                    doubleClickTime = Time.time + clickDelay;
-                                }
-                            }
-                            else if (clickTriggered == false)
-                            {
-                                if (Time.time > doubleClickTime)
-                                {
-                                    clickTriggered = true;
-                                    SelectedStance++;
-                                    SelectedStance = SelectedStance > 3 ? 1 : SelectedStance;
-                                    Plugin.IsHighReady = SelectedStance == 1 ? true : false;
-                                    Plugin.IsLowReady = SelectedStance == 2 ? true : false;
-                                    Plugin.IsShortStock = SelectedStance == 3 ? true : false;
-                                    Plugin.IsActiveAiming = false;
-                                    Plugin.WasHighReady = Plugin.IsHighReady;
-                                    Plugin.WasLowReady = Plugin.IsLowReady;
-                                    Plugin.WasShortStock = Plugin.IsShortStock;
-                                }
-                            }
-
-                            //active aim
-                            if (!Plugin.ToggleActiveAim.Value)
-                            {
-                                if (Input.GetKey(ActiveAimKeybind.Value.MainKey) || (Input.GetKey(KeyCode.Mouse1) && !PlayerProperties.IsAllowedADS))
-                                {
-                                    Plugin.IsActiveAiming = true;
-                                    Plugin.IsShortStock = false;
-                                    Plugin.IsHighReady = false;
-                                    Plugin.IsLowReady = false;
-                                }
-                                else
-                                {
-                                    Plugin.IsActiveAiming = false;
-                                    Plugin.IsHighReady = Plugin.WasHighReady;
-                                    Plugin.IsLowReady = Plugin.WasLowReady;
-                                    Plugin.IsShortStock = Plugin.WasShortStock;
-                                }
-                            }
-                            else
-                            {
-                                if (Input.GetKeyDown(ActiveAimKeybind.Value.MainKey) || (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerProperties.IsAllowedADS))
-                                {
-                                    Plugin.IsActiveAiming = !Plugin.IsActiveAiming;
-                                    Plugin.IsShortStock = false;
-                                    Plugin.IsHighReady = false;
-                                    Plugin.IsLowReady = false;
-                                }
-            /*                    if (Input.GetKeyUp(ActiveAimKeybind.Value.MainKey) || (Input.GetKeyUp(KeyCode.Mouse1) && !PlayerProperties.IsAllowedADS))
-                                {
-                                    Plugin.IsHighReady = Plugin.WasHighReady;
-                                    Plugin.IsLowReady = Plugin.WasLowReady;
-                                }*/
-                            }
-
-                            //short-stock
-                            if (Input.GetKeyDown(ShortStockKeybind.Value.MainKey))
-                            {
-                                Plugin.IsShortStock = !Plugin.IsShortStock;
-                                Plugin.IsHighReady = false;
-                                Plugin.IsLowReady = false;
-                                Plugin.IsActiveAiming = false;
-                                Plugin.WasHighReady = Plugin.IsHighReady;
-                                Plugin.WasLowReady = Plugin.IsLowReady;
-                                Plugin.WasShortStock = Plugin.IsShortStock;
-                            }
-
-                            //high ready
-                            if (Input.GetKeyDown(HighReadyKeybind.Value.MainKey))
-                            {
-                                Plugin.IsHighReady = !Plugin.IsHighReady;
-                                Plugin.IsShortStock = false;
-                                Plugin.IsLowReady = false;
-                                Plugin.IsActiveAiming = false;
-                                Plugin.WasHighReady = Plugin.IsHighReady;
-                                Plugin.WasLowReady = Plugin.IsLowReady;
-                                Plugin.WasShortStock = Plugin.IsShortStock;
-                            }
-
-                            //low ready
-                            if (Input.GetKeyDown(LowReadyKeybind.Value.MainKey))
-                            {
-                                Plugin.IsLowReady = !Plugin.IsLowReady;
-                                Plugin.IsHighReady = false;
-                                Plugin.IsActiveAiming = false;
-                                Plugin.IsShortStock = false;
-                                Plugin.WasHighReady = Plugin.IsHighReady;
-                                Plugin.WasLowReady = Plugin.IsLowReady;
-                                Plugin.WasShortStock = Plugin.IsShortStock;
-                            }
-                        }
-
-                        if (Plugin.DidWeaponSwap == true || WeaponProperties._WeapClass == "pistol") 
-                        {
-                            Plugin.SelectedStance = 0;
-                            Plugin.IsShortStock = false;
-                            Plugin.IsLowReady = false;
-                            Plugin.IsHighReady = false;
-                            Plugin.IsActiveAiming = false;
-                            Plugin.WasHighReady = false;
-                            Plugin.WasLowReady = false;
-                            Plugin.WasShortStock = false;
-                            Plugin.DidWeaponSwap = false;
-                        }
-                    }
+                    StanceController.StanceState();
 
                 }
             }

@@ -126,12 +126,15 @@ namespace RealismMod
                 Plugin.CurrentlyEquipedWeapon = weaponClass;
 
                 Plugin.Timer = 0f;
-                Plugin.StanceShotTimer = 0f;
+                StanceController.StanceShotTime = 0f;
                 Plugin.IsFiring = true;
-                Plugin.IsFiringFromStance = true;
+                StanceController.IsFiringFromStance = true;
                 Plugin.ShotCount++;
 
-                float activeAimingBonus = Plugin.IsActiveAiming == true ? 0.95f : 1f;
+                float activeAimingBonus = StanceController.IsActiveAiming == true ? 0.95f : 1f;
+                float aimCamRecoilBonus = StanceController.IsActiveAiming == true || !Plugin.IsAiming ? 0.9f : 1f;
+                float shortStockingDebuff = StanceController.IsShortStock == true ? 1.15f : 1f;
+                float shortStockingCamBonus = StanceController.IsShortStock == true ? 0.85f : 1f;
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
@@ -162,7 +165,7 @@ namespace RealismMod
                     __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY;
                 }
 
-                float buffFactoredDispersion = Plugin.CurrentDispersion * str * PlayerProperties.RecoilInjuryMulti;
+                float buffFactoredDispersion = Plugin.CurrentDispersion * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff;
 
                 if (Plugin.ShotCount > 1 && weaponClass.WeapClass == "pistol" && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
                 {
@@ -177,12 +180,12 @@ namespace RealismMod
                 __instance.RecoilDegree = new Vector2(angle - buffFactoredDispersion, angle + buffFactoredDispersion);
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
 
-                __instance.ShotVals[3].Intensity = Plugin.CurrentCamRecoilX * str * PlayerProperties.RecoilInjuryMulti;
-                __instance.ShotVals[4].Intensity = Plugin.CurrentCamRecoilY * str * PlayerProperties.RecoilInjuryMulti;
+                __instance.ShotVals[3].Intensity = Plugin.CurrentCamRecoilX * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus;
+                __instance.ShotVals[4].Intensity = Plugin.CurrentCamRecoilY * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus;
 
                 float num = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
-                float num2 = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus;
-                float num3 = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * PlayerProperties.RecoilInjuryMulti;
+                float num2 = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff;
+                float num3 = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff;
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(num) * num2 * _separateIntensityFactors.x, Mathf.Cos(num) * num2 * _separateIntensityFactors.y, num3 * _separateIntensityFactors.z) * __instance.Intensity;
                 IWeapon weapon = iWeapon;
                 Vector2 vector = (weapon != null) ? weapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;

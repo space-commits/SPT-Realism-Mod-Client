@@ -196,6 +196,9 @@ namespace RealismMod
             return float.Parse(weapon.ConflictingItems[17]);
         }
 
+        public static float BaseWeaponLength = 0f;
+        public static float NewWeaponLength = 0f;
+
         public static string WeapID = "";
 
         public static float TotalChamberCheckSpeed = 1;

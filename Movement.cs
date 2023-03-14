@@ -14,6 +14,37 @@ using static EFT.Player;
 
 namespace RealismMod
 {
+
+    public class SetAimingSlowdownPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GClass1601).GetMethod("SetAimingSlowdown", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(ref GClass1601 __instance, bool isAiming)
+        {
+
+            Player player = (Player)AccessTools.Field(typeof(GClass1601), "player_0").GetValue(__instance);
+            if (player.IsYourPlayer == true)
+            {
+                if (isAiming)
+                {
+                    //slow is hard set to 0.33 when called, 0.4-0.43 feels best.
+                    float baseSpeed = PlayerProperties.AimMoveSpeedBase * WeaponProperties.AimMoveSpeedModifier;
+                    float totalSpeed = StanceController.IsActiveAiming ? baseSpeed * 1.25f : baseSpeed;
+                    __instance.AddStateSpeedLimit(Math.Max(totalSpeed, 0.15f), Player.ESpeedLimit.Aiming);
+
+                    return false;
+                }
+                __instance.RemoveStateSpeedLimit(Player.ESpeedLimit.Aiming);
+                return false;
+            }
+            return true;
+        }
+    }
+
     public class SprintAccelerationPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -29,10 +60,10 @@ namespace RealismMod
             if (player.IsYourPlayer == true)
             {
                 GClass753 rotationFrameSpan = (GClass753)AccessTools.Field(typeof(GClass1601), "gclass753_0").GetValue(__instance);
-                float highReadySpeedBonus = Plugin.IsHighReady ? 1.15f : 1f;
-                float highReadyAccelBonus = Plugin.IsHighReady ? 2f : 1f;
-                float lowReadyAccelBonus = Plugin.IsLowReady ? 1.25f : 1f;
-                float shortStockPenalty = Plugin.IsShortStock ? 0.9f : 1f;
+                float highReadySpeedBonus = StanceController.IsHighReady ? 1.15f : 1f;
+                float highReadyAccelBonus = StanceController.IsHighReady ? 2f : 1f;
+                float lowReadyAccelBonus = StanceController.IsLowReady ? 1.25f : 1f;
+                float shortStockPenalty = StanceController.IsShortStock ? 0.9f : 1f;
 
                 float sprintAccel = player.Physical.SprintAcceleration * deltaTime * lowReadyAccelBonus * highReadyAccelBonus * shortStockPenalty;
                 float speed = (player.Physical.SprintSpeed * __instance.SprintingSpeed + 1f) * __instance.StateSprintSpeedLimit * highReadySpeedBonus;

@@ -72,7 +72,7 @@ namespace RealismMod
                         SetCanAds = false;
                     }
 
-                    if (Plugin.IsActiveAiming == true)
+                    if (StanceController.IsActiveAiming == true)
                     {
                         if (!SetActiveAimADS) 
                         {
@@ -83,7 +83,7 @@ namespace RealismMod
                         }
           
                     }
-                    if (!Plugin.IsActiveAiming && !____isAiming)
+                    if (!StanceController.IsActiveAiming && !____isAiming)
                     {
                         player.MovementContext.SetAimingSlowdown(false, 0.33f);
                         SetActiveAimADS = false;
@@ -91,7 +91,7 @@ namespace RealismMod
 
                     Plugin.IsAiming = ____isAiming;
 
-                    if (Plugin.IsHighReady == true || Plugin.WasHighReady == true)
+                    if (StanceController.IsHighReady == true || StanceController.WasHighReady == true)
                     {
                         if (!SetRunAnim) 
                         {
