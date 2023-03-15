@@ -42,14 +42,14 @@ namespace RealismMod
         private static bool SetActiveAimADS = false;
         private static bool SetRunAnim = false;
         private static bool ResetRunAnim = false;
-
+        private static bool ToggledADS;
 
         [PatchPostfix]
         private static void PatchPostfix(EFT.Player.FirearmController __instance, ref bool ____isAiming)
         {
             if (Utils.IsReady == true)
             {
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
+                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
                 if (!player.IsAI)
                 {
                     FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
@@ -74,14 +74,14 @@ namespace RealismMod
 
                     if (StanceController.IsActiveAiming == true)
                     {
-                        if (!SetActiveAimADS) 
+                        if (!SetActiveAimADS)
                         {
                             PlayerProperties.IsAllowedADS = false;
                             player.ProceduralWeaponAnimation.IsAiming = false;
                             player.MovementContext.SetAimingSlowdown(true, 0.33f);
                             SetActiveAimADS = true;
                         }
-          
+
                     }
                     if (!StanceController.IsActiveAiming && !____isAiming)
                     {
@@ -89,28 +89,58 @@ namespace RealismMod
                         SetActiveAimADS = false;
                     }
 
-                    Plugin.IsAiming = ____isAiming;
+
 
                     if (StanceController.IsHighReady == true || StanceController.WasHighReady == true)
                     {
-                        if (!SetRunAnim) 
+                        if (!SetRunAnim)
                         {
                             player.BodyAnimatorCommon.SetFloat(GClass1645.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
                             SetRunAnim = true;
                             ResetRunAnim = false;
                         }
-                   
+
                     }
                     else
                     {
-                        if (!ResetRunAnim) 
+                        if (!ResetRunAnim)
                         {
                             player.BodyAnimatorCommon.SetFloat(GClass1645.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)__instance.Item.CalculateCellSize().X);
                             ResetRunAnim = true;
                             SetRunAnim = false;
                         }
-         
+
                     }
+
+      /*              if (!StanceController.CanADSFromStance && ____isAiming == true)
+                    {
+                        PlayerProperties.IsAllowedADS = false;
+                        player.MovementContext.SetAimingSlowdown(false, 0.33f);
+                        player.ProceduralWeaponAnimation.IsAiming = false;
+                        ToggledADS = true;
+
+                        Logger.LogWarning("CAN'T AIM!");
+                    }
+                    if (StanceController.CanADSFromStance && ToggledADS == true)
+                    {
+                        PlayerProperties.IsAllowedADS = true;
+                        player.MovementContext.SetAimingSlowdown(true, 0.33f);
+                        player.ProceduralWeaponAnimation.IsAiming = true;
+
+                        Logger.LogWarning("CAN AIM!");
+
+                        ToggledADS = false;
+                    }*/
+
+
+
+                    Logger.LogWarning("IsAiming = " + Plugin.IsAiming);
+                    if (player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire) 
+                    {
+                        Logger.LogWarning("not colliding");
+                        Plugin.IsAiming = ____isAiming;
+                    }
+                   
                 }
             }
         }

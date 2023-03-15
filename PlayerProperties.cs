@@ -53,5 +53,6 @@ namespace RealismMod
         public static float RemainingArmStamPercentage = 1f;
 
         public static float AimSkillADSBuff = 0f;
+
     }
 }

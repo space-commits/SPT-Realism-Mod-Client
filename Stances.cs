@@ -33,6 +33,10 @@ namespace RealismMod
         public static bool IsFiringFromStance = false;
         public static float StanceShotTime = 0.0f;
 
+        public static float StanceADSResetTimer = 0.0f;
+        public static bool CanADSFromStance = false;
+        public static bool CanReturnToStance = false;
+
         public static void SetStanceStamina(Player player, Player.FirearmController fc) 
         {
             if (fc.Item.WeapClass != "pistol")
@@ -64,8 +68,6 @@ namespace RealismMod
                     player.Physical.Aim(0f);
                     player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.01f), player.Physical.HandsStamina.TotalCapacity);
                 }
-                player.Physical.HandsStamina.Current = Mathf.Max(player.Physical.HandsStamina.Current, 1f);
-
             }
             else
             {
@@ -221,6 +223,23 @@ namespace RealismMod
                         WasLowReady = IsLowReady;
                         WasShortStock = IsShortStock;
                     }
+
+                    if (Plugin.IsAiming == true)
+                    {
+                        WasHighReady = IsHighReady;
+                        WasLowReady = IsLowReady;
+                        WasShortStock = IsShortStock;
+                        IsLowReady = false;
+                        IsHighReady = false;
+                        IsShortStock = false;
+                        IsActiveAiming = false;
+                    }
+                    else
+                    {
+                        IsLowReady = WasLowReady;
+                        IsHighReady = WasHighReady;
+                        IsShortStock = WasShortStock;
+                    }
                 }
 
                 if (Plugin.DidWeaponSwap == true || WeaponProperties._WeapClass == "pistol")
@@ -302,21 +321,38 @@ namespace RealismMod
         private static void Prefix(Player.FirearmController __instance)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            float length = (float)AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").GetValue(__instance);
 
             if (player.IsYourPlayer == true)
             {
-                if ((StanceController.IsHighReady == true || StanceController.IsLowReady == true) || (__instance.Item.WeapClass == "pistol" && StanceController.PistolIsCompressed == true))
+
+                if ((StanceController.IsHighReady == true || StanceController.IsLowReady == true || StanceController.IsShortStock == true) || (__instance.Item.WeapClass == "pistol" && StanceController.PistolIsCompressed == true))
                 {
                     AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength * 0.8f);
                     return;
                 }
-                if (StanceController.IsShortStock == true)
-                {
-                    AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength * 0.7f);
-                    return;
-                }
                 AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength);
+                return;
+            }
+        }
+    }
+
+    public class WeaponOverlapViewPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player.FirearmController).GetMethod("WeaponOverlapView", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(Player.FirearmController __instance)
+        {
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            float float_0 = (float)AccessTools.Field(typeof(EFT.Player.FirearmController), "float_0").GetValue(__instance);
+
+            if (float_0 > EFTHardSettings.Instance.STOP_AIMING_AT && __instance.IsAiming)
+            {
+                Plugin.IsAiming = true;
+                Logger.LogWarning("aiming set");
                 return;
             }
         }
@@ -446,11 +482,27 @@ namespace RealismMod
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, aimMulti);
                         }
 
-                        bool moveCloser = __instance._shouldMoveWeaponCloser;
-                        float collisionRotationFactor = moveCloser == true ? 1.25f : 1f;
-                        float collisionPositionFactor = moveCloser == true ? 1.25f : 1f;
+                        bool isColliding = !__instance.OverlappingAllowsBlindfire;
+                        float collisionRotationFactor = isColliding ? 2f : 1f;
+                        float collisionPositionFactor = isColliding ? 2f : 1f;
 
-                        //high/low rotate x axis, short stock pos z axis
+
+
+                        /*                       if (isColliding == true)
+                                               {
+                                                   StanceController.StanceADSResetTimer = 0.0f;
+                                                   StanceController.CanADSFromStance = false;
+                                               }
+                                               else
+                                               {
+                                                   StanceController.StanceADSResetTimer += Time.deltaTime;
+                                                   if (StanceController.StanceADSResetTimer >= 0.5f)
+                                                   {
+                                                       StanceController.CanADSFromStance = true;
+                                                       StanceController.StanceADSResetTimer = 0.0f;
+                                                   }
+                                               }*/
+
 
                         Vector3 activeAimTargetRotation = new Vector3(Plugin.ActiveAimRotationX.Value * aimMulti, Plugin.ActiveAimRotationY.Value * aimMulti, Plugin.ActiveAimRotationZ.Value * aimMulti);
                         Vector3 activeAimRevertRotation = new Vector3(Plugin.ActiveAimResetRotationX.Value * resetAimMulti, Plugin.ActiveAimResetRotationY.Value * resetAimMulti, Plugin.ActiveAimResetRotationZ.Value * resetAimMulti);
@@ -474,12 +526,11 @@ namespace RealismMod
                         Quaternion shortStockTargetQuaternion = Quaternion.Euler(shortStockTargetRotation);
                         Quaternion shortStockMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.ShortStockAdditionalRotationX.Value * resetAimMulti, Plugin.ShortStockAdditionalRotationY.Value * resetAimMulti, Plugin.ShortStockAdditionalRotationZ.Value * resetAimMulti));
                         Quaternion shortStockRevertQuaternion = Quaternion.Euler(Plugin.ShortStockResetRotationX.Value * resetAimMulti, Plugin.ShortStockResetRotationY.Value * resetAimMulti, Plugin.ShortStockResetRotationZ.Value * resetAimMulti);
-                        Vector3 shortStockTargetPosition = new Vector3(Plugin.ShortStockOffsetX.Value, Plugin.ShortStockOffsetY.Value, Plugin.ShortStockOffsetZ.Value * collisionPositionFactor);
+                        Vector3 shortStockTargetPosition = new Vector3(Plugin.ShortStockOffsetX.Value, Plugin.ShortStockOffsetY.Value, Plugin.ShortStockOffsetZ.Value);
 
                         //for setting baseline position
                         __instance.HandsContainer.WeaponRoot.localPosition = Plugin.WeaponOffsetPosition;
 
-                        Logger.LogWarning("Should Move Weapon Closer = " + moveCloser);
 
                         ////short-stock////
                         if (StanceController.IsShortStock == true && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsLowReady && !__instance.IsAiming && !Plugin.IsSprinting)
@@ -500,7 +551,7 @@ namespace RealismMod
                                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
                             }
                         }
-                        else if (__instance.HandsContainer.TrackingTransform.localPosition != Plugin.TransformBaseStartPosition && !hasResetShortStock && !StanceController.IsLowReady && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !isResettingActiveAim && !isResettingHighReady && !isResettingLowReady)
+                        else if (__instance.HandsContainer.TrackingTransform.localPosition != Plugin.TransformBaseStartPosition && !hasResetShortStock && !StanceController.IsLowReady && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !isResettingActiveAim && !isResettingHighReady && !isResettingLowReady) 
                         {
                             __instance.HandsContainer.HandsRotation.InputIntensity = intensity;
 

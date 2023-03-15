@@ -110,12 +110,14 @@ namespace RealismMod
                         StanceController.SetStanceStamina(__instance, fc);
                     }
 
-                    PlayerProperties.RemainingArmStamPercentage = Mathf.Min(__instance.Physical.HandsStamina.Current * 1.5f, __instance.Physical.HandsStamina.TotalCapacity) / __instance.Physical.HandsStamina.TotalCapacity;
+                    PlayerProperties.RemainingArmStamPercentage = Mathf.Min(__instance.Physical.HandsStamina.Current * 1.75f, __instance.Physical.HandsStamina.TotalCapacity) / __instance.Physical.HandsStamina.TotalCapacity;
                 }
                 else if(Plugin.EnableStanceStamChanges.Value == true)
                 {
                     StanceController.ResetStanceStamina(__instance);
                 }
+
+                __instance.Physical.HandsStamina.Current = Mathf.Max(__instance.Physical.HandsStamina.Current, 1f);
             }
         }
 
