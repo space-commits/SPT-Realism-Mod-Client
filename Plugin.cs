@@ -861,6 +861,7 @@ namespace RealismMod
                     }
 
                     StanceController.StanceState();
+
                 }
             }
         }

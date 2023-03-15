@@ -163,7 +163,7 @@ namespace RealismMod
             }
 
             float totalTorqueFactorInverse = totalTorque / -100f; // put totaltorque / 100 in brackets
-            float ergoFactoredWeight = (totalWeight * 1f) * (1f - (pureErgoDelta * 0.4f));
+            float ergoFactoredWeight = (totalWeight) * (1f - (pureErgoDelta * 0.5f));
             float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse + 0.45f)); //firstly shold have MULTIPLIED not added 0.5f, secondly I should be mutlying totalTorque, not totalTorqueFactorInverse!
 
             float ergoWeight = Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 2.1f, 3.7f) + 1f) / 750f, 1f, 80f);

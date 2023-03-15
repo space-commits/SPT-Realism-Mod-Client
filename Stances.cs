@@ -29,6 +29,7 @@ namespace RealismMod
         public static bool WasHighReady;
         public static bool WasLowReady;
         public static bool WasShortStock;
+        public static bool WasActiveAim;
 
         public static bool IsFiringFromStance = false;
         public static float StanceShotTime = 0.0f;
@@ -36,6 +37,9 @@ namespace RealismMod
         public static float StanceADSResetTimer = 0.0f;
         public static bool CanADSFromStance = false;
         public static bool CanReturnToStance = false;
+
+        public static bool SetAiming = false;
+        public static bool SetActiveAiming = false;
 
         public static void SetStanceStamina(Player player, Player.FirearmController fc) 
         {
@@ -163,13 +167,17 @@ namespace RealismMod
                             IsShortStock = false;
                             IsHighReady = false;
                             IsLowReady = false;
+                            WasActiveAim = IsActiveAiming;
+                            SetActiveAiming = true;
                         }
-                        else
+                        else if(SetActiveAiming == true)
                         {
                             IsActiveAiming = false;
                             IsHighReady = WasHighReady;
                             IsLowReady = WasLowReady;
                             IsShortStock = WasShortStock;
+                            WasActiveAim = IsActiveAiming;
+                            SetActiveAiming = false;
                         }
                     }
                     else
@@ -180,12 +188,14 @@ namespace RealismMod
                             IsShortStock = false;
                             IsHighReady = false;
                             IsLowReady = false;
+                            WasActiveAim = IsActiveAiming;
+                            if (IsActiveAiming == false) 
+                            {
+                                IsHighReady = WasHighReady;
+                                IsLowReady = WasLowReady;
+                                IsShortStock = WasShortStock;
+                            }
                         }
-                        /*                    if (Input.GetKeyUp(ActiveAimKeybind.Value.MainKey) || (Input.GetKeyUp(KeyCode.Mouse1) && !PlayerProperties.IsAllowedADS))
-                                            {
-                                                Plugin.IsHighReady = Plugin.WasHighReady;
-                                                Plugin.IsLowReady = Plugin.WasLowReady;
-                                            }*/
                     }
 
                     //short-stock
@@ -195,6 +205,7 @@ namespace RealismMod
                         IsHighReady = false;
                         IsLowReady = false;
                         IsActiveAiming = false;
+                        WasActiveAim = IsActiveAiming;
                         WasHighReady = IsHighReady;
                         WasLowReady = IsLowReady;
                         WasShortStock = IsShortStock;
@@ -207,6 +218,7 @@ namespace RealismMod
                         IsShortStock = false;
                         IsLowReady = false;
                         IsActiveAiming = false;
+                        WasActiveAim = IsActiveAiming;
                         WasHighReady = IsHighReady;
                         WasLowReady = IsLowReady;
                         WasShortStock = IsShortStock;
@@ -219,6 +231,7 @@ namespace RealismMod
                         IsHighReady = false;
                         IsActiveAiming = false;
                         IsShortStock = false;
+                        WasActiveAim = IsActiveAiming;
                         WasHighReady = IsHighReady;
                         WasLowReady = IsLowReady;
                         WasShortStock = IsShortStock;
@@ -226,19 +239,25 @@ namespace RealismMod
 
                     if (Plugin.IsAiming == true)
                     {
-                        WasHighReady = IsHighReady;
-                        WasLowReady = IsLowReady;
-                        WasShortStock = IsShortStock;
+                        if (IsActiveAiming == true || WasActiveAim == true) 
+                        {
+                            WasHighReady = false;
+                            WasLowReady = false;
+                            WasShortStock = false;
+                        }
                         IsLowReady = false;
                         IsHighReady = false;
                         IsShortStock = false;
                         IsActiveAiming = false;
+                        SetAiming = true;
                     }
-                    else
+                    else if (SetAiming == true)
                     {
                         IsLowReady = WasLowReady;
                         IsHighReady = WasHighReady;
                         IsShortStock = WasShortStock;
+                        IsActiveAiming = WasActiveAim;
+                        SetAiming = false;
                     }
                 }
 
@@ -254,6 +273,7 @@ namespace RealismMod
                     WasShortStock = false;
                     Plugin.DidWeaponSwap = false;
                 }
+
             }
         }
     }
@@ -305,7 +325,7 @@ namespace RealismMod
             if (player.IsYourPlayer == true)
             {
                 WeaponProperties.BaseWeaponLength = length;
-                WeaponProperties.NewWeaponLength = length >= 0.88f ? length * 1.15f : length;
+                WeaponProperties.NewWeaponLength = length >= 0.9f ? length * 1.15f : length;
             }
         }
     }
@@ -328,6 +348,11 @@ namespace RealismMod
                 if ((StanceController.IsHighReady == true || StanceController.IsLowReady == true || StanceController.IsShortStock == true) || (__instance.Item.WeapClass == "pistol" && StanceController.PistolIsCompressed == true))
                 {
                     AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength * 0.8f);
+                    return;
+                }
+                if (StanceController.WasShortStock == true && Plugin.IsAiming)
+                {
+                    AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength * 0.7f);
                     return;
                 }
                 AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength);

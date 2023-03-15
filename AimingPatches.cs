@@ -132,12 +132,8 @@ namespace RealismMod
                         ToggledADS = false;
                     }*/
 
-
-
-                    Logger.LogWarning("IsAiming = " + Plugin.IsAiming);
                     if (player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire) 
                     {
-                        Logger.LogWarning("not colliding");
                         Plugin.IsAiming = ____isAiming;
                     }
                    
