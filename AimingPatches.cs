@@ -42,7 +42,6 @@ namespace RealismMod
         private static bool SetActiveAimADS = false;
         private static bool SetRunAnim = false;
         private static bool ResetRunAnim = false;
-        private static bool ToggledADS;
 
         [PatchPostfix]
         private static void PatchPostfix(EFT.Player.FirearmController __instance, ref bool ____isAiming)
@@ -91,7 +90,7 @@ namespace RealismMod
 
 
 
-                    if (StanceController.IsHighReady == true || StanceController.WasHighReady == true)
+                    if (StanceController.IsHighReady == true || StanceController.WasHighReady == true && !PlayerProperties.RightArmBlacked)
                     {
                         if (!SetRunAnim)
                         {
@@ -111,26 +110,6 @@ namespace RealismMod
                         }
 
                     }
-
-      /*              if (!StanceController.CanADSFromStance && ____isAiming == true)
-                    {
-                        PlayerProperties.IsAllowedADS = false;
-                        player.MovementContext.SetAimingSlowdown(false, 0.33f);
-                        player.ProceduralWeaponAnimation.IsAiming = false;
-                        ToggledADS = true;
-
-                        Logger.LogWarning("CAN'T AIM!");
-                    }
-                    if (StanceController.CanADSFromStance && ToggledADS == true)
-                    {
-                        PlayerProperties.IsAllowedADS = true;
-                        player.MovementContext.SetAimingSlowdown(true, 0.33f);
-                        player.ProceduralWeaponAnimation.IsAiming = true;
-
-                        Logger.LogWarning("CAN AIM!");
-
-                        ToggledADS = false;
-                    }*/
 
                     if (player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire) 
                     {

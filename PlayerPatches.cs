@@ -128,6 +128,9 @@ namespace RealismMod
             bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);
             bool tremor = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.Tremor);
 
+            PlayerProperties.RightArmBlacked = rightArmDamaged;
+            PlayerProperties.LeftArmBlacked = leftArmDamaged;
+
             if (!rightArmDamaged && !leftArmDamaged && !tremor)
             {
                 PlayerProperties.AimMoveSpeedBase = 0.42f;

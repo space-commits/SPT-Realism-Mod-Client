@@ -54,5 +54,9 @@ namespace RealismMod
 
         public static float AimSkillADSBuff = 0f;
 
+        public static bool RightArmBlacked = false;
+
+        public static bool LeftArmBlacked = false;
+
     }
 }
