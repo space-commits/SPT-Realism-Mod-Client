@@ -32,8 +32,6 @@ namespace RealismMod
 
         public static bool IsClearingMalf;
 
-        public static bool IsManipulatingWeapon;
-
         public static bool IsAllowedAim = true;
 
         public static bool IsAttemptingToReloadInternalMag = false;
@@ -42,7 +40,7 @@ namespace RealismMod
 
         public static bool IsInReloadOpertation = false;
 
-        public static bool NoMagazineReload = false;
+        public static bool NoCurrentMagazineReload = false;
 
         public static bool IsAttemptingRevolverReload = false;
 

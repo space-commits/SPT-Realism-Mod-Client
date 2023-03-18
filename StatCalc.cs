@@ -68,6 +68,10 @@ namespace RealismMod
 
             foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
             {
+                if (armorComponent.Item.Template._parent == "5448e5284bdc2dcb718b4567") 
+                {
+                    return;
+                }
                 reloadMulti *= ArmorProperties.ReloadSpeedMulti(armorComponent.Item);
                 GClass2197 armorTemplate = armorComponent.Template as GClass2197;
 
@@ -87,7 +91,7 @@ namespace RealismMod
             EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(player);
             LootItemClass tacVest = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as LootItemClass;
 
-            if (tacVest != null && !(tacVest is ArmorComponent))
+            if (tacVest != null)
             {
                 return ArmorProperties.ReloadSpeedMulti(tacVest);
             }
@@ -100,11 +104,13 @@ namespace RealismMod
         public static void SetMagReloadSpeeds(Player.FirearmController __instance, MagazineClass magazine, bool isQuickReload = false)
         {
             PlayerProperties.IsMagReloading = true;
-            if (PlayerProperties.NoMagazineReload == true)
+            StanceController.CancelLowReady = true;
+
+            if (PlayerProperties.NoCurrentMagazineReload == true)
             {
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 StatCalc.MagReloadSpeedModifier(magazine, false, true);
-                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadInjuryMulti * PlayerProperties.ReloadSkillMulti * PlayerProperties.GearReloadMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f)), 0.6f, 1.25f));
+                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadInjuryMulti * PlayerProperties.ReloadSkillMulti * PlayerProperties.GearReloadMulti * StanceController.HighReadyManipBuff * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.6f, 1.25f));
             }
             else
             {

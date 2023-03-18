@@ -31,14 +31,30 @@ namespace RealismMod
         public static bool WasShortStock;
         public static bool WasActiveAim;
 
+
+
         public static bool IsFiringFromStance = false;
         public static float StanceShotTime = 0.0f;
+        public static float ManipTime = 0.0f;
 
         public static float HighReadyBlackedArmTime = 0.0f;
         public static bool DoHighReadyInjuredAnim = false;
 
         public static bool SetAiming = false;
         public static bool SetActiveAiming = false;
+
+        public static float HighReadyManipBuff = 1f;
+        public static float HighReadyManipDebuff = 1f;
+        public static float ActiveAimManipDebuff = 1f;
+        public static float LowReadyManipBuff = 1f;
+
+        public static bool CancelPistolStance = false;
+        public static bool CancelHighReady = false;
+        public static bool CancelLowReady = false;
+        public static bool CancelShortStock = false;
+        public static bool CancelActiveAim = false;
+        public static bool ResetStances = false;
+
 
         public static void SetStanceStamina(Player player, Player.FirearmController fc) 
         {
@@ -97,6 +113,23 @@ namespace RealismMod
         public static bool IsIdle()
         {
             return !IsActiveAiming && !IsHighReady && !IsLowReady && !IsShortStock && !WasHighReady && !WasLowReady && !WasShortStock ? true : false;
+        }
+
+
+        public static void StanceManipCancelTimer()
+        {
+            ManipTime += Time.deltaTime;
+
+            if (ManipTime >= 0.35f)
+            {
+                CancelHighReady = false;
+                CancelLowReady = false;
+                CancelShortStock = false;
+                CancelPistolStance = false;
+                CancelActiveAim = false;
+                ResetStances = false;
+                ManipTime = 0f;
+            }
         }
 
 
@@ -273,7 +306,7 @@ namespace RealismMod
                 if(DoHighReadyInjuredAnim == true)
                 {
                     HighReadyBlackedArmTime += Time.deltaTime;
-                    if (HighReadyBlackedArmTime >= 0.35f)
+                    if (HighReadyBlackedArmTime >= 0.4f)
                     {
                         DoHighReadyInjuredAnim = false;
                         IsLowReady = true;
@@ -282,6 +315,17 @@ namespace RealismMod
                         WasHighReady = false;
                         HighReadyBlackedArmTime = 0f;
                     }
+                }
+
+                HighReadyManipBuff = IsHighReady == true ? 1.25f : 1f;
+                HighReadyManipDebuff = IsHighReady == true ? 0.8f : 1f;
+                ActiveAimManipDebuff = IsActiveAiming == true ? 0.8f : 1f;
+                LowReadyManipBuff = IsLowReady == true ? 1.25f : 1f;
+
+
+                if (ResetStances == true) 
+                {
+                    StanceManipCancelTimer();
                 }
 
                 if (Plugin.DidWeaponSwap == true || WeaponProperties._WeapClass == "pistol")
@@ -300,6 +344,24 @@ namespace RealismMod
 
         }
 
+    }
+
+
+    public class OnWeaponDrawPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(SkillsClass).GetMethod("OnWeaponDraw", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(SkillsClass __instance, Item item)
+        {
+            if (item?.Owner?.ID != null && (item.Owner.ID.StartsWith("pmc") || item.Owner.ID.StartsWith("scav")))
+            {
+                Plugin.DidWeaponSwap = true;
+            }
+        }
     }
 
     public class LaserLateUpdatePatch : ModulePatch
@@ -486,7 +548,7 @@ namespace RealismMod
 
                         __instance.HandsContainer.WeaponRoot.localPosition = new Vector3(Plugin.PistolTransformNewStartPosition.x, __instance.HandsContainer.TrackingTransform.localPosition.y, __instance.HandsContainer.TrackingTransform.localPosition.z);
 
-                        if (!__instance.IsAiming && !PlayerProperties.IsInReloadOpertation && !PlayerProperties.IsManipulatingWeapon && !StanceController.IsHighReady)
+                        if (!__instance.IsAiming && !StanceController.CancelPistolStance)
                         {
                             StanceController.PistolIsCompressed = true;
 
@@ -563,7 +625,7 @@ namespace RealismMod
 
 
                         ////short-stock////
-                        if (StanceController.IsShortStock == true && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsLowReady && !__instance.IsAiming && !Plugin.IsSprinting)
+                        if (StanceController.IsShortStock == true && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsLowReady && !__instance.IsAiming && !Plugin.IsSprinting && !StanceController.CancelShortStock)
                         {
                             float activeToShortMulti = 1f;
                             float highToShort = 1f;
@@ -614,7 +676,7 @@ namespace RealismMod
                         }
 
                         ////high ready////
-                        if (StanceController.IsHighReady == true && !StanceController.IsActiveAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !__instance.IsAiming && !StanceController.IsFiringFromStance)
+                        if (StanceController.IsHighReady == true && !StanceController.IsActiveAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !__instance.IsAiming && !StanceController.IsFiringFromStance && !StanceController.CancelHighReady)
                         {
                             float shortToHighMulti = 1f;
                             isResettingHighReady = false;
@@ -674,7 +736,7 @@ namespace RealismMod
                         }
 
                         ////low ready////
-                        if (StanceController.IsLowReady == true && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsShortStock && !__instance.IsAiming && !Plugin.IsSprinting && !StanceController.IsFiringFromStance)
+                        if (StanceController.IsLowReady == true && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsShortStock && !__instance.IsAiming && !Plugin.IsSprinting && !StanceController.IsFiringFromStance && !StanceController.CancelLowReady)
                         {
                             float resetToLowReadySpeedMulti = 1f;
                             isResettingLowReady = false;
@@ -719,7 +781,7 @@ namespace RealismMod
                         }
 
                         ////active aiming////
-                        if (StanceController.IsActiveAiming == true && !__instance.IsAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !StanceController.IsHighReady && !Plugin.IsSprinting)
+                        if (StanceController.IsActiveAiming == true && !__instance.IsAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !StanceController.IsHighReady && !Plugin.IsSprinting && !StanceController.CancelActiveAim)
                         {
                             float shortToActiveMulti = 1f;
                             isResettingActiveAim = false;

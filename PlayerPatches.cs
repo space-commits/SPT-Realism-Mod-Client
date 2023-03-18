@@ -110,7 +110,7 @@ namespace RealismMod
                         StanceController.SetStanceStamina(__instance, fc);
                     }
 
-                    PlayerProperties.RemainingArmStamPercentage = Mathf.Min(__instance.Physical.HandsStamina.Current * 1.75f, __instance.Physical.HandsStamina.TotalCapacity) / __instance.Physical.HandsStamina.TotalCapacity;
+                    PlayerProperties.RemainingArmStamPercentage = Mathf.Min(__instance.Physical.HandsStamina.Current * 1.65f, __instance.Physical.HandsStamina.TotalCapacity) / __instance.Physical.HandsStamina.TotalCapacity;
                 }
                 else if(Plugin.EnableStanceStamChanges.Value == true)
                 {
@@ -183,14 +183,25 @@ namespace RealismMod
 
             if (PlayerProperties.IsInReloadOpertation == true)
             {
+                StanceController.CancelShortStock = true;
+                StanceController.CancelPistolStance = true;
+                StanceController.CancelActiveAim = true;
+
                 if (PlayerProperties.IsAttemptingToReloadInternalMag == true)
                 {
+                    StanceController.CancelHighReady = fc.Item.WeapClass != "shotgun" ? true : false;
+                    StanceController.CancelLowReady = fc.Item.WeapClass == "shotgun" || fc.Item.WeapClass == "pistol" ? true : false;
+
+                    float highReadyBonus = WeaponProperties._WeapClass == "shotgun" && StanceController.IsHighReady == true ? StanceController.HighReadyManipBuff : 1f;
+                    float lowReadyBonus = WeaponProperties._WeapClass != "shotgun" && StanceController.IsLowReady == true ? StanceController.LowReadyManipBuff : 1f;
+
+                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.6f, 1.35f);
+                    player.HandsAnimator.SetAnimationSpeed(IntenralMagReloadSpeed);
+
                     if (Plugin.EnableLogging.Value == true)
                     {
-                        Logger.LogWarning("IsAttemptingToReloadInternalMag = " + Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f)), 0.6f, 1.25f));
-
+                        Logger.LogWarning("IsAttemptingToReloadInternalMag = " + IntenralMagReloadSpeed);
                     }
-                    player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f)), 0.6f, 1.25f));
                 }
             }
             else

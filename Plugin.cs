@@ -587,7 +587,7 @@ namespace RealismMod
                 PistolPosResetSpeedMulti = Config.Bind<float>(Pistol, "Pistol Position Reset Speed Multi", 0.18f, new ConfigDescription("", new AcceptableValueRange<float>(-2.0f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true }));
 
                 PistolOffsetX = Config.Bind<float>(Pistol, "Pistol Position X-Axis", 0.03f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 22, IsAdvanced = true }));
-                PistolOffsetY = Config.Bind<float>(Pistol, "Pistol Position Y-Axis", -0.04f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 21, IsAdvanced = true }));
+                PistolOffsetY = Config.Bind<float>(Pistol, "Pistol Position Y-Axis", -0.05f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 21, IsAdvanced = true }));
                 PistolOffsetZ = Config.Bind<float>(Pistol, "Pistol Position Z-Axis", -0.03f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, IsAdvanced = true }));
 
                 PistolRotationX = Config.Bind<float>(Pistol, "Pistol Rotation X-Axis", -2.5f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true }));
@@ -701,13 +701,15 @@ namespace RealismMod
                     new SetSpeedParametersPatch().Enable();
                     new CheckAmmoPatch().Enable();
                     new SetHammerArmedPatch().Enable();
-
-                    new OnItemAddedOrRemovedPatch().Enable();
                     new SetLauncherPatch().Enable();
-
-                    new CheckAmmoFirearmControllerPatch().Enable();
-                    new SetAnimatorAndProceduralValuesPatch().Enable();
                 }
+
+                new CheckAmmoFirearmControllerPatch().Enable();
+                new CheckChamberFirearmControllerPatch().Enable();
+
+                new SetAnimatorAndProceduralValuesPatch().Enable();
+                new OnItemAddedOrRemovedPatch().Enable();
+
 
                 if (enableSGMastering.Value == true)
                 {
@@ -787,6 +789,7 @@ namespace RealismMod
                 new WeaponOverlappingPatch().Enable();
                 new WeaponLengthPatch().Enable();
                 new WeaponOverlappingPatch().Enable();
+                new OnWeaponDrawPatch().Enable();
             }
         }
 
@@ -830,6 +833,8 @@ namespace RealismMod
                         StanceController.StanceShotTimer();
                     }
 
+
+
                     if (EnableDeafen.Value == true)
                     {
                         Deafening.DoDeafening();
@@ -861,8 +866,6 @@ namespace RealismMod
                     }
 
                     StanceController.StanceState();
-
-                    Logger.LogWarning("is aiming " + Plugin.IsAiming);
 
                 }
             }
