@@ -90,12 +90,11 @@ namespace RealismMod
                     float heavyBleedChance = damageInfo.HeavyBleedingDelta;
                     float ricochetChance = ammo.RicochetChance * speedFactor;
                     float spallReduction = ArmorProperties.SpallReduction(armor.Item);
-                    float damageToKEFactor = 24f;
 
                     float duraPercent = _currentDura / _maxDura;
                     float armorFactor = !reduceDurability? _armorClass * (Mathf.Min(1, duraPercent * 1f)) : _armorClass * (Mathf.Min(1, duraPercent * 2f)); //durability should be more important for steel plates, representing anti-spall coating. Lower the amount durapercent is factored by to increase importance
                     float penFactoredClass = Mathf.Max(1f, armorFactor - (damageInfo.PenetrationPower / 2.5f));
-                    float maxPotentialDamage = (KE / Mathf.Max(1, (penFactoredClass / 40f)) / damageToKEFactor);
+                    float maxPotentialDamage = (KE / penFactoredClass);
 
                     float maxSpallingDamage = maxPotentialDamage - bluntDamage;
                     float factoredSpallingDamage = maxSpallingDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction;
@@ -236,7 +235,7 @@ namespace RealismMod
         }
     }
 
-    public class SetPenetrationStatusPatch : ModulePatch
+    public class AltSetPenetrationStatusPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -245,9 +244,51 @@ namespace RealismMod
             return result;
 
         }
+
+        private static void GetMaterialRandomFactor(EArmorMaterial armorMat, ref float min, ref float max)
+        {
+            switch (armorMat)
+            {
+                case EArmorMaterial.UHMWPE:
+                    min = 0.97f;
+                    max = 1.03f;
+                    break;
+                case EArmorMaterial.ArmoredSteel:
+                    min = 1f;
+                    max = 1f;
+                    break;
+                case EArmorMaterial.Titan:
+                    min = 0.99f;
+                    max = 1.01f;
+                    break;
+                case EArmorMaterial.Aluminium:
+                    min = 0.98f;
+                    max = 1.02f;
+                    break;
+                case EArmorMaterial.Glass:
+                    min = 1f;
+                    max = 1f;
+                    break;
+                case EArmorMaterial.Ceramic:
+                    min = 0.99f;
+                    max = 1.01f;
+                    break;
+                case EArmorMaterial.Combined:
+                    min = 0.98f;
+                    max = 1.02f;
+                    break;
+                case EArmorMaterial.Aramid:
+                    min = 0.96f;
+                    max = 1.04f;
+                    break;
+
+            }
+        }
+
         [PatchPrefix]
         private static bool Prefix(GClass2620 shot, ref ArmorComponent __instance)
         {
+
             string hitPart = shot.HittedBallisticCollider.name;
             bool isArmArmor = false;
             if ((__instance.Template.ArmorZone.Contains(EBodyPart.LeftArm) || __instance.Template.ArmorZone.Contains(EBodyPart.RightArm)))
@@ -256,7 +297,7 @@ namespace RealismMod
                 {
                     isArmArmor = true;
                 }
-                if ((hitPart == "Base HumanRForearm1" || hitPart == "Human LForearm1"))
+                if ((hitPart == "Base HumanRForearm1" || hitPart == "Base HumanLForearm1"))
                 {
                     return false;
                 }
@@ -266,16 +307,122 @@ namespace RealismMod
             {
                 return false;
             }
+
+            float penetrationPower = shot.PenetrationPower;
+            float armorDura = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability;
+            float armorDuraFactor = armorDura;
+            float velocity = shot.VelocityMagnitude;
+            float KE = (0.5f * shot.BulletMassGram * velocity * velocity) / 1000f;
+
+            if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel)
+            {
+                armorDuraFactor = 1f;
+            }
+            else if (__instance.Template.ArmorMaterial == EArmorMaterial.Titan)
+            {
+                armorDuraFactor = Mathf.Min(1f, armorDuraFactor * 2f);
+            }
+            else
+            {
+                armorDuraFactor = Mathf.Min(1f, armorDuraFactor * 1.25f);
+            }
+
+            float minRand = 1f;
+            float maxRand = 1f;
+            GetMaterialRandomFactor(__instance.Template.ArmorMaterial, ref minRand, ref maxRand);
+            float randomFactor = UnityEngine.Random.Range(minRand * armorDura, maxRand * armorDura);
+
+            //need an arm armor proxy or default values
+            float minVel = ArmorProperties.MinVelocity(__instance.Item) * armorDuraFactor * randomFactor;
+            float minKE = ArmorProperties.MinKE(__instance.Item) * armorDuraFactor * randomFactor;
+            float minPen = ArmorProperties.MinPen(__instance.Item) * armorDuraFactor * randomFactor;
+
+            if (isArmArmor == true)
+            {
+                minVel = 290f * armorDuraFactor * randomFactor;
+                minKE = 160f * ArmorProperties.MinKE(__instance.Item) * armorDuraFactor * randomFactor;
+                minPen = 40f * ArmorProperties.MinPen(__instance.Item) * armorDuraFactor * randomFactor;
+            }
+
+            Logger.LogWarning("===========PEN STATUS=============== ");
+            if (KE < minKE || penetrationPower < minPen || penetrationPower < minPen)
+            {
+                shot.BlockedBy = __instance.Item.Id;
+                Debug.Log(">>> Shot blocked by armor piece");
+                if (Plugin.EnableLogging.Value == true)
+                {
+                    Logger.LogWarning("Blocked");
+                }
+            }
+            else
+            {
+                if (Plugin.EnableLogging.Value == true)
+                {
+                    Logger.LogWarning("Penetrated");
+                }
+            }
+
+            Logger.LogWarning("min vel = " + minVel);
+            Logger.LogWarning("min pen = " + minPen);
+            Logger.LogWarning("min KE = " + minKE);
+            Logger.LogWarning("======= ");
+            Logger.LogWarning("vel = " + velocity);
+            Logger.LogWarning("pen = " + penetrationPower);
+            Logger.LogWarning("ke = " + KE);
+            Logger.LogWarning("========================== ");
+
+            return false;
+        }
+    }
+
+
+    public class SetPenetrationStatusPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            var result = typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.SetPenetrationStatus), BindingFlags.Public | BindingFlags.Instance);
+
+            return result;
+
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(GClass2620 shot, ref ArmorComponent __instance)
+        {
+
+            string hitPart = shot.HittedBallisticCollider.name;
+            bool isArmArmor = false;
+
+            if ((__instance.Template.ArmorZone.Contains(EBodyPart.LeftArm) || __instance.Template.ArmorZone.Contains(EBodyPart.RightArm)))
+            {
+                if ((hitPart == "Base HumanRUpperarm" || hitPart == "Base HumanLUpperarm"))
+                {
+                    isArmArmor = true;
+                }
+                if ((hitPart == "Base HumanRForearm1" || hitPart == "Base HumanLForearm1"))
+                {
+                   return false;
+                }
+            }
+
+            if (__instance.Repairable.Durability <= 0f)
+            {
+                return false;
+            }
+
             float penetrationPower = shot.PenetrationPower;
             float armorDura = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f;
+
             if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel)
             {
                 armorDura = 100f;
             }
+
             if (__instance.Template.ArmorMaterial == EArmorMaterial.Titan)
             {
                 armorDura = Mathf.Min(100f, armorDura * 2f);
             }
+
             float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
             armorResist = isArmArmor == true ? armorResist = 40f : armorResist;
             float armorFactor = (121f - 5000f / (45f + armorDura * 2f)) * armorResist * 0.01f;
@@ -299,6 +446,7 @@ namespace RealismMod
                     Logger.LogWarning("========================== ");
                 }
             }
+
             return false;
         }
     }
@@ -357,18 +505,17 @@ namespace RealismMod
             }
    
             float KE = (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000;
-            float keToDamageFactor = 24f;
-            float bluntThrput = isArmor == true ? 1f :__instance.Template.BluntThroughput;
+            float bluntThrput = !isArmor ? 1f : isArmArmor == true ? __instance.Template.BluntThroughput * 1.5f : __instance.Template.BluntThroughput;
             float penPower = damageInfo.PenetrationPower;
             float duraPercent = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability;
             float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
             armorResist = isArmArmor == true ? armorResist = 30f : !isArmor ? armorResist = 0f : armorResist;
             float armorDestructibility = Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
 
-            float armorFactor = armorResist * (Mathf.Min(1f, duraPercent * 2f));
+            float armorFactor = armorResist * (Mathf.Min(1f, duraPercent * 1.25f));
             float throughputDuraFactored = Mathf.Min(1f, bluntThrput * (1f + ((duraPercent - 1f) * -1f)));
             float penFactoredClass = Mathf.Max(1f, armorFactor - (penPower / 1.8f));
-            float maxPotentialDamage = (KE / Mathf.Max(1, (penFactoredClass / 40f)) / keToDamageFactor);
+            float maxPotentialDamage = KE / penFactoredClass;
             float throughputFacotredDamage = maxPotentialDamage * throughputDuraFactored;
 
             float armorStatReductionFactor = Mathf.Max((1 - (penFactoredClass / 100f)), 0.1f);
@@ -384,7 +531,7 @@ namespace RealismMod
             if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !__instance.Template.ArmorZone.Contains(EBodyPart.Head))
             {
                 float steelPenFactoredClass = Mathf.Max(1f, armorResist - (penPower / 1.8f));
-                float steelMaxPotentialDamage = (KE / Mathf.Max(1, (steelPenFactoredClass / 40f)) / keToDamageFactor);
+                float steelMaxPotentialDamage = (KE / steelPenFactoredClass);
                 throughputFacotredDamage = steelMaxPotentialDamage * bluntThrput;
             }
             if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && __instance.Template.ArmorZone.Contains(EBodyPart.Head))

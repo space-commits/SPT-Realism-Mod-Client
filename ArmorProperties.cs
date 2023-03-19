@@ -38,7 +38,7 @@ namespace RealismMod
         {
             if (Utils.NullCheck(armorItem.ConflictingItems))
             {
-                return 1;
+                return 1f;
             }
             return float.Parse(armorItem.ConflictingItems[4]);
         }
@@ -47,9 +47,39 @@ namespace RealismMod
         {
             if (Utils.NullCheck(armorItem.ConflictingItems))
             {
-                return 1;
+                return 1f;
             }
             return float.Parse(armorItem.ConflictingItems[5]);
+        }
+
+
+        public static float MinVelocity(Item armorItem)
+        {
+            if (Utils.NullCheck(armorItem.ConflictingItems))
+            {
+                return 1f;
+            }
+            return float.Parse(armorItem.ConflictingItems[6]);
+        }
+
+
+        public static float MinKE(Item armorItem)
+        {
+            if (Utils.NullCheck(armorItem.ConflictingItems))
+            {
+                return 1f;
+            }
+            return float.Parse(armorItem.ConflictingItems[7]);
+        }
+
+
+        public static float MinPen(Item armorItem)
+        {
+            if (Utils.NullCheck(armorItem.ConflictingItems))
+            {
+                return 1f;
+            }
+            return float.Parse(armorItem.ConflictingItems[8]);
         }
 
     }
