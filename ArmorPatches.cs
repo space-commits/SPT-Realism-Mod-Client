@@ -49,6 +49,119 @@ namespace RealismMod
 
     public class ArmorPatches
     {
+
+        public class ArmorZoneBaseDisplayPatch : ModulePatch
+        {
+
+            private static Type _targetType;
+            private static MethodInfo _method_0;
+
+            public ArmorZoneBaseDisplayPatch()
+            {
+                _targetType = PatchConstants.EftTypes.Single(IsType);
+                _method_0 = _targetType.GetMethod("method_0", BindingFlags.FlattenHierarchy | BindingFlags.NonPublic | BindingFlags.Instance);
+            }
+
+            protected override MethodBase GetTargetMethod()
+            {
+                return _method_0;
+            }
+
+            private static bool IsType(Type type)
+            {
+                return type.GetField("armorComponent_0") != null && type.GetField("item") != null;
+            }
+
+            private static string GetItemClass(CompositeArmorComponent x)
+            {
+                return x.Item.ShortName.Localized(null) + ": " + ArmorProperties.ArmorClass(x.Item);
+            }
+
+            [PatchPrefix]
+            private static bool Prefix(ref float __result, ref EFT.InventoryLogic.ArmorComponent ___armorComponent_0)
+            {
+                float armorElementsToAdd = 0;
+                if (ArmorProperties.HasNeckArmor(___armorComponent_0.Item) == true) 
+                {
+                    armorElementsToAdd += 1;
+                }
+                if (ArmorProperties.HasSideArmor(___armorComponent_0.Item) == true)
+                {
+                    armorElementsToAdd += 1;
+                }
+                if (ArmorProperties.HasStomachArmor(___armorComponent_0.Item) == true)
+                {
+                    armorElementsToAdd += 1;
+                }
+                __result = ___armorComponent_0.ArmorZone.Contains(EBodyPart.Stomach) ? (float)___armorComponent_0.ArmorZone.Length + armorElementsToAdd - 1f : (float)___armorComponent_0.ArmorZone.Length + armorElementsToAdd;
+                return false;
+            }
+        }
+
+        public class ArmorZoneSringValueDisplayPatch : ModulePatch
+        {
+
+            private static Type _targetType;
+            private static MethodInfo _method_1;
+
+            public ArmorZoneSringValueDisplayPatch()
+            {
+                _targetType = PatchConstants.EftTypes.Single(IsType);
+                _method_1 = _targetType.GetMethod("method_1", BindingFlags.FlattenHierarchy | BindingFlags.NonPublic | BindingFlags.Instance);
+            }
+
+            protected override MethodBase GetTargetMethod()
+            {
+                return _method_1;
+            }
+
+            private static bool IsType(Type type)
+            {
+                return type.GetField("armorComponent_0") != null && type.GetField("item") != null;
+            }
+
+            private static string GetItemClass(CompositeArmorComponent x)
+            {
+                return x.Item.ShortName.Localized(null) + ": " + ArmorProperties.ArmorClass(x.Item);
+            }
+
+            [PatchPrefix]
+            private static bool Prefix(ref string __result, ref EFT.InventoryLogic.ArmorComponent ___armorComponent_0)
+            {
+                if (___armorComponent_0.ArmorZone.Contains(EBodyPart.Head)) 
+                {
+                    return true;
+                }
+
+                List<string> parts = new List<string>();
+
+                foreach (EBodyPart e in ___armorComponent_0.ArmorZone) 
+                {
+                    if (e != EBodyPart.Stomach) 
+                    {
+                        parts.Add(e.ToString());
+                    }
+    
+                }
+                if (ArmorProperties.HasNeckArmor(___armorComponent_0.Item) == true)
+                {
+                    parts.Add("NECK");
+                }
+                if (ArmorProperties.HasSideArmor(___armorComponent_0.Item) == true)
+                {
+                    parts.Add("SIDES");
+                }
+                if (ArmorProperties.HasStomachArmor(___armorComponent_0.Item) == true)
+                {
+                    parts.Add("STOMACH");
+                }
+
+                __result =  Enumerable.Cast<object>(parts).CastToStringValue("\n", true);
+                return false;
+            }
+        }
+
+
         public class ArmorClassDisplayPatch : ModulePatch
         {
 
@@ -91,6 +204,8 @@ namespace RealismMod
                 return false;
             }
         }
+
+
         public class ArmorComponentPatch : ModulePatch
         {
 

@@ -75,6 +75,11 @@ namespace RealismMod
                     }
                 }
 
+                if (damageInfo.Blunt == false) 
+                {
+
+                }
+
                 if (damageInfo.Blunt == true && armor != null && ArmorProperties.CanSpall(armor.Item) == true)
                 {
                     SetArmorStats(armor);
@@ -178,14 +183,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, GClass2620 shot)
         {
-            /*            Logger.LogWarning("============DamageInfo=============");
-                        Logger.LogInfo("Shot ID = " + shot.Ammo.Id);
-                        Logger.LogInfo("Shot Start Speed = " + shot.Speed);
-                        Logger.LogInfo("Shot Current Speed = " + shot.VelocityMagnitude);
-                        Logger.LogInfo("Shot Mass = " + shot.BulletMassGram);
-                        Logger.LogInfo("Kinetic Energy = " + (0.5f * shot.BulletMassGram * shot.VelocityMagnitude * shot.VelocityMagnitude) / 1000);
-                        Logger.LogInfo("Shot Damage = " + shot.Damage);
-                        Logger.LogInfo("Shot Penetration = " + shot.PenetrationPower);*/
 
             __instance.DamageType = damageType;
             __instance.Damage = shot.Damage;
@@ -450,17 +447,14 @@ namespace RealismMod
                     hasBypassedArmor = true;
                 }
 
-                if (!hasSideArmor)
+                if (normalizedPoint.z < -0.7f || normalizedPoint.z > 0.7f)
                 {
-                    if (normalizedPoint.z < -0.7f || normalizedPoint.z > 0.7f)
+                    if (Plugin.EnableLogging.Value == true)
                     {
-                        if (Plugin.EnableLogging.Value == true)
-                        {
-                            Logger.LogWarning("ARMOR BYPASSED: UPPER SIDES");
-                        }
-                        hasBypassedArmor = true;
+                        Logger.LogWarning("ARMOR BYPASSED: UPPER SIDES");
                     }
-                }    
+                    hasBypassedArmor = true;
+                }
             }
 
             if (hitPart == "Base HumanSpine2")
@@ -478,7 +472,7 @@ namespace RealismMod
                 }
                 else 
                 {
-                    if (normalizedPoint.x < -0.6)
+                    if (normalizedPoint.x < -0.6 && (normalizedPoint.z < -0.6f || normalizedPoint.z > 0.6f))
                     {
                         if (Plugin.EnableLogging.Value == true)
                         {
@@ -520,17 +514,6 @@ namespace RealismMod
                         if (Plugin.EnableLogging.Value == true)
                         {
                             Logger.LogWarning("ARMOR BYPASSED: STOMACH SIDES");
-                        }
-                        hasBypassedArmor = true;
-                    }
-                }
-                else 
-                {
-                    if (normalizedPoint.x > -0.7)
-                    {
-                        if (Plugin.EnableLogging.Value == true)
-                        {
-                            Logger.LogWarning("ARMOR BYPASSED: STOMACH SIDES WITH SIDE ARMOR");
                         }
                         hasBypassedArmor = true;
                     }
@@ -636,6 +619,10 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref DamageInfo damageInfo, bool damageInfoIsLocal, ref ArmorComponent __instance, ref float __result)
         {
+
+            Collider col = damageInfo.HitCollider;
+            Vector3 localPoint = col.transform.InverseTransformPoint(damageInfo.HitPoint);
+            Vector3 normalizedPoint = localPoint.normalized;
 
             string hitPart = damageInfo.HittedBallisticCollider.name;
             bool hasHitSecondaryArmor = ArmorProperties.HasHitSecondaryArmor(__instance.Item);

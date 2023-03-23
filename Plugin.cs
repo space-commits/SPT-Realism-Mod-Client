@@ -754,6 +754,10 @@ namespace RealismMod
                     {
                         new ArmorClassDisplayPatch().Enable();
                     }
+
+                    new ArmorZoneBaseDisplayPatch().Enable();
+                    new ArmorZoneSringValueDisplayPatch().Enable();
+
                 }
 
                 new ArmorComponentPatch().Enable();

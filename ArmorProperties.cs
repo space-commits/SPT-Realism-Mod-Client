@@ -118,7 +118,7 @@ namespace RealismMod
             return bool.Parse(armorItem.ConflictingItems[12]);
         }
 
-        public static bool HasNeckProtection(Item armorItem)
+        public static bool HasNeckArmor(Item armorItem)
         {
             if (Utils.NullCheck(armorItem.ConflictingItems))
             {
