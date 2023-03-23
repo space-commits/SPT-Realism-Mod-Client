@@ -327,7 +327,6 @@ namespace RealismMod
             {
                 chamberSpeed *= Plugin.RechamberPistolSpeedMulti.Value;
             }
-
             else
             {
                 chamberSpeed *= Plugin.GlobalRechamberSpeedMulti.Value;

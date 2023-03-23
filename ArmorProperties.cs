@@ -82,5 +82,14 @@ namespace RealismMod
             return float.Parse(armorItem.ConflictingItems[8]);
         }
 
+        public static bool HasBypassedArmor(Item armorItem)
+        {
+            if (Utils.NullCheck(armorItem.ConflictingItems))
+            {
+                return false;
+            }
+            return bool.Parse(armorItem.ConflictingItems[9]);
+        }
+
     }
 }

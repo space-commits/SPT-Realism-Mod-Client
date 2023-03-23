@@ -88,13 +88,14 @@ namespace RealismMod
                         SetActiveAimADS = false;
                     }
 
-
-
-                    if (StanceController.IsHighReady == true || StanceController.WasHighReady == true && !PlayerProperties.RightArmBlacked)
+/*                    Logger.LogWarning("sprint = " + player.BodyAnimatorCommon.GetFloat(GClass1645.WEAPON_SIZE_MODIFIER_PARAM_HASH));
+*/
+                    if ((StanceController.IsHighReady == true || StanceController.WasHighReady == true) && !PlayerProperties.RightArmBlacked)
                     {
                         if (!SetRunAnim)
                         {
                             player.BodyAnimatorCommon.SetFloat(GClass1645.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
+        
                             SetRunAnim = true;
                             ResetRunAnim = false;
                         }
@@ -111,9 +112,14 @@ namespace RealismMod
 
                     }
 
-                    if (player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire) 
+                    if (player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire == true) 
                     {
                         Plugin.IsAiming = ____isAiming;
+                        StanceController.PistolIsColliding = false;
+                    }
+                    else if(__instance.Item.WeapClass == "pistol")
+                    {
+                        StanceController.PistolIsColliding = true;
                     }
                    
                 }

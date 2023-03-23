@@ -525,7 +525,7 @@ namespace RealismMod
                 ActiveAimOffsetZ = Config.Bind<float>(ActiveAim, "Active Aim Position Z-Axis", 0.01f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 130, IsAdvanced = true }));
 
                 ActiveAimRotationX = Config.Bind<float>(ActiveAim, "Active Aim Rotation X-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 122, IsAdvanced = true }));
-                ActiveAimRotationY = Config.Bind<float>(ActiveAim, "Active Aim Rotation Y-Axis", -130.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 121, IsAdvanced = true }));
+                ActiveAimRotationY = Config.Bind<float>(ActiveAim, "Active Aim Rotation Y-Axis", -160.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 121, IsAdvanced = true }));
                 ActiveAimRotationZ = Config.Bind<float>(ActiveAim, "Active Aim Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 120, IsAdvanced = true }));
 
                 ActiveAimAdditionalRotationX = Config.Bind<float>(ActiveAim, "Active Aiming Additional Rotation X-Axis", 10f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 111, IsAdvanced = true }));
@@ -621,7 +621,7 @@ namespace RealismMod
                 ShortStockAdditionalRotationZ = Config.Bind<float>(ShortStock, "Short-Stock Ready Additional Rotation Z-Axis", 11.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true }));
 
                 ShortStockResetRotationX = Config.Bind<float>(ShortStock, "Short-Stock Ready Reset Rotation X-Axis", -5.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
-                ShortStockResetRotationY = Config.Bind<float>(ShortStock, "Short-Stock Ready Reset Rotation Y-Axis", 10.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
+                ShortStockResetRotationY = Config.Bind<float>(ShortStock, "Short-Stock Ready Reset Rotation Y-Axis", -2.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
                 ShortStockResetRotationZ = Config.Bind<float>(ShortStock, "Short-Stock Ready Reset Rotation Z-Axis", -2.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, IsAdvanced = true }));
 
                 if (EnableProgramK.Value == true)
@@ -790,6 +790,7 @@ namespace RealismMod
                 new WeaponLengthPatch().Enable();
                 new WeaponOverlappingPatch().Enable();
                 new OnWeaponDrawPatch().Enable();
+
             }
         }
 
@@ -811,12 +812,15 @@ namespace RealismMod
                     {
                         Plugin.IsFiring = true;
                         StanceController.IsFiringFromStance = true;
+
+                        if (Plugin.EnableRecoilClimb.Value == true && (Plugin.IsAiming == true || Plugin.EnableHipfireRecoilClimb.Value == true))
+                        {
+                            Recoil.DoRecoilClimb();
+                        }
+
+                        Plugin.PrevShotCount = Plugin.ShotCount;
                     }
 
-                    if (Plugin.EnableRecoilClimb.Value == true && (Plugin.IsAiming == true || Plugin.EnableHipfireRecoilClimb.Value == true))
-                    {
-                        Recoil.DoRecoilClimb();
-                    }
 
                     if (Plugin.ShotCount == Plugin.PrevShotCount)
                     {
@@ -832,8 +836,6 @@ namespace RealismMod
 
                         StanceController.StanceShotTimer();
                     }
-
-
 
                     if (EnableDeafen.Value == true)
                     {

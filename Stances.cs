@@ -49,6 +49,7 @@ namespace RealismMod
         public static float LowReadyManipBuff = 1f;
 
         public static bool CancelPistolStance = false;
+        public static bool PistolIsColliding = false;
         public static bool CancelHighReady = false;
         public static bool CancelLowReady = false;
         public static bool CancelShortStock = false;
@@ -431,7 +432,7 @@ namespace RealismMod
             if (player.IsYourPlayer == true)
             {
 
-                if ((StanceController.IsHighReady == true || StanceController.IsLowReady == true || StanceController.IsShortStock == true) || (__instance.Item.WeapClass == "pistol" && StanceController.PistolIsCompressed == true))
+                if ((StanceController.IsHighReady == true || StanceController.IsLowReady == true || StanceController.IsShortStock == true))
                 {
                     AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength * 0.8f);
                     return;
@@ -439,6 +440,18 @@ namespace RealismMod
                 if (StanceController.WasShortStock == true && Plugin.IsAiming)
                 {
                     AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength * 0.7f);
+                    return;
+                }
+                if (__instance.Item.WeapClass == "pistol")
+                {
+                    if (StanceController.PistolIsCompressed == true)
+                    {
+                        AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength * 0.7f);
+                    }
+                    else 
+                    {
+                        AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength * 0.9f);
+                    }
                     return;
                 }
                 AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength);
@@ -548,8 +561,10 @@ namespace RealismMod
 
                         __instance.HandsContainer.WeaponRoot.localPosition = new Vector3(Plugin.PistolTransformNewStartPosition.x, __instance.HandsContainer.TrackingTransform.localPosition.y, __instance.HandsContainer.TrackingTransform.localPosition.z);
 
-                        if (!__instance.IsAiming && !StanceController.CancelPistolStance)
+                        if (!__instance.IsAiming && !StanceController.CancelPistolStance && !StanceController.PistolIsColliding)
                         {
+                            __instance.CameraSmoothTime = 4f;
+
                             StanceController.PistolIsCompressed = true;
 
                             currentRotation = Quaternion.Lerp(currentRotation, pistolTargetQuaternion, __instance.CameraSmoothTime * aimMulti * dt * Plugin.PistolRotationSpeedMulti.Value * aimMulti);
@@ -566,6 +581,8 @@ namespace RealismMod
                         }
                         else if (__instance.HandsContainer.TrackingTransform.localPosition != Plugin.TransformBaseStartPosition && hasResetPistolPos != true)
                         {
+                            __instance.CameraSmoothTime = 4f;
+
                             __instance.HandsContainer.HandsRotation.InputIntensity = intensity;
 
                             currentRotation = Quaternion.Lerp(currentRotation, pistolRevertQuaternion, __instance.CameraSmoothTime * aimMulti * dt * Plugin.PistolResetRotationSpeedMulti.Value * aimMulti);
@@ -575,6 +592,8 @@ namespace RealismMod
                         }
                         else if (__instance.HandsContainer.TrackingTransform.localPosition == Plugin.TransformBaseStartPosition)
                         {
+                            __instance.CameraSmoothTime = 8f;
+
                             StanceController.PistolIsCompressed = false;
 
                             __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity;
@@ -627,6 +646,8 @@ namespace RealismMod
                         ////short-stock////
                         if (StanceController.IsShortStock == true && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsLowReady && !__instance.IsAiming && !Plugin.IsSprinting && !StanceController.CancelShortStock)
                         {
+                            __instance.CameraSmoothTime = 4f;
+
                             float activeToShortMulti = 1f;
                             float highToShort = 1f;
                             isResettingShortStock = false;
@@ -661,6 +682,8 @@ namespace RealismMod
                         }
                         else if (__instance.HandsContainer.TrackingTransform.localPosition != Plugin.TransformBaseStartPosition && !hasResetShortStock && !StanceController.IsLowReady && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !isResettingActiveAim && !isResettingHighReady && !isResettingLowReady) 
                         {
+                            __instance.CameraSmoothTime = 4f;
+
                             __instance.HandsContainer.HandsRotation.InputIntensity = intensity;
 
                             isResettingShortStock = true;
@@ -670,6 +693,8 @@ namespace RealismMod
                         }
                         else if (__instance.HandsContainer.TrackingTransform.localPosition == Plugin.TransformBaseStartPosition && !hasResetShortStock)
                         {
+                            __instance.CameraSmoothTime = 8f;
+
                             __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity;
                             isResettingShortStock = false;
                             hasResetShortStock = true;
@@ -678,6 +703,8 @@ namespace RealismMod
                         ////high ready////
                         if (StanceController.IsHighReady == true && !StanceController.IsActiveAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !__instance.IsAiming && !StanceController.IsFiringFromStance && !StanceController.CancelHighReady)
                         {
+                            __instance.CameraSmoothTime = 4f;
+
                             float shortToHighMulti = 1f;
                             isResettingHighReady = false;
                             hasResetHighReady = false;
@@ -720,6 +747,9 @@ namespace RealismMod
                         }
                         else if (__instance.HandsContainer.TrackingTransform.localPosition != Plugin.TransformBaseStartPosition && !hasResetHighReady && !StanceController.IsLowReady && !StanceController.IsActiveAiming && !StanceController.IsShortStock && !isResettingActiveAim && !isResettingLowReady && !isResettingShortStock)
                         {
+                            __instance.CameraSmoothTime = 4f;
+
+
                             __instance.HandsContainer.HandsRotation.InputIntensity = intensity;
 
                             isResettingHighReady = true;
@@ -730,6 +760,9 @@ namespace RealismMod
                         }
                         else if (__instance.HandsContainer.TrackingTransform.localPosition == Plugin.TransformBaseStartPosition && !hasResetHighReady)
                         {
+                            __instance.CameraSmoothTime = 8f;
+
+
                             __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity;
                             isResettingHighReady = false;
                             hasResetHighReady = true;
@@ -738,6 +771,8 @@ namespace RealismMod
                         ////low ready////
                         if (StanceController.IsLowReady == true && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsShortStock && !__instance.IsAiming && !Plugin.IsSprinting && !StanceController.IsFiringFromStance && !StanceController.CancelLowReady)
                         {
+                            __instance.CameraSmoothTime = 4f;
+
                             float resetToLowReadySpeedMulti = 1f;
                             isResettingLowReady = false;
                             hasResetLowReady = false;
@@ -764,6 +799,8 @@ namespace RealismMod
                         }
                         else if (__instance.HandsContainer.TrackingTransform.localPosition != Plugin.TransformBaseStartPosition && !hasResetLowReady && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsShortStock && !isResettingActiveAim && !isResettingHighReady && !isResettingShortStock)
                         {
+                            __instance.CameraSmoothTime = 4f;
+
                             __instance.HandsContainer.HandsRotation.InputIntensity = intensity;
 
                             isResettingLowReady = true;
@@ -775,6 +812,8 @@ namespace RealismMod
                         }
                         else if (__instance.HandsContainer.TrackingTransform.localPosition == Plugin.TransformBaseStartPosition && !hasResetLowReady)
                         {
+                            __instance.CameraSmoothTime = 8f;
+
                             __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity;
                             isResettingLowReady = false;
                             hasResetLowReady = true;
@@ -783,6 +822,8 @@ namespace RealismMod
                         ////active aiming////
                         if (StanceController.IsActiveAiming == true && !__instance.IsAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !StanceController.IsHighReady && !Plugin.IsSprinting && !StanceController.CancelActiveAim)
                         {
+                            __instance.CameraSmoothTime = 4f;
+
                             float shortToActiveMulti = 1f;
                             isResettingActiveAim = false;
                             hasResetActiveAim = false;
@@ -809,6 +850,8 @@ namespace RealismMod
                         }
                         else if (__instance.HandsContainer.TrackingTransform.localPosition != Plugin.TransformBaseStartPosition && !hasResetActiveAim && !StanceController.IsLowReady && !StanceController.IsHighReady && !StanceController.IsShortStock && !isResettingLowReady && !isResettingHighReady && !isResettingShortStock)
                         {
+                            __instance.CameraSmoothTime = 4f;
+
                             __instance.HandsContainer.HandsRotation.InputIntensity = intensity;
 
                             isResettingActiveAim = true;
@@ -821,6 +864,8 @@ namespace RealismMod
                         }
                         else if (__instance.HandsContainer.TrackingTransform.localPosition == Plugin.TransformBaseStartPosition && hasResetActiveAim == false)
                         {
+                            __instance.CameraSmoothTime = 8f;
+
                             __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity;
                             isResettingActiveAim = false;
                             hasResetActiveAim = true;

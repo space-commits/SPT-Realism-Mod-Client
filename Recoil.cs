@@ -34,101 +34,95 @@ namespace RealismMod
         public static void DoRecoilClimb()
         {
 
-            if (Plugin.ShotCount > Plugin.PrevShotCount)
+            if (Plugin.ShotCount == 1)
             {
-                if (Plugin.ShotCount == 1)
-                {
-                    VRecoilClimb(1.13f);
-                    HRecoilClimb(1.12f);
-                    ConvergenceClimb();
+                VRecoilClimb(1.13f);
+                HRecoilClimb(1.12f);
+                ConvergenceClimb();
 
-                }
-                if (Plugin.ShotCount >= 2 && Plugin.ShotCount <= 3 && Plugin.CurrentlyEquipedWeapon.SelectedFireMode == Weapon.EFireMode.fullauto)
-                {
-                    VRecoilClimb(1.13f);
-                    HRecoilClimb(1.12f);
-                    ConvergenceClimb();
-
-                }
-                if (Plugin.ShotCount >= 4 && Plugin.ShotCount <= 5)
-                {
-                    VRecoilClimb(1.125f);
-                    HRecoilClimb(1.11f);
-                    ConvergenceClimb();
-                }
-                if (Plugin.ShotCount > 5 && Plugin.ShotCount <= 7)
-                {
-                    VRecoilClimb(1.1f);
-                    HRecoilClimb(1.09f);
-                    ConvergenceClimb();
-                }
-                if (Plugin.ShotCount > 8 && Plugin.ShotCount <= 10)
-                {
-                    VRecoilClimb(1.08f);
-                    HRecoilClimb(1.07f);
-                    ConvergenceClimb();
-                }
-                if (Plugin.ShotCount > 10 && Plugin.ShotCount <= 15)
-                {
-                    VRecoilClimb(1.05f);
-                    HRecoilClimb(1.045f);
-                    ConvergenceClimb();
-                    DampingClimb(0.98f);
-
-                }
-
-                if (Plugin.ShotCount > 15 && Plugin.ShotCount <= 20)
-                {
-                    VRecoilClimb(1.03f);
-                    HRecoilClimb(1.027f);
-                    ConvergenceClimb();
-                    DampingClimb(0.98f);
-                }
-
-                if (Plugin.ShotCount > 20 && Plugin.ShotCount <= 25)
-                {
-                    VRecoilClimb(1.03f);
-                    HRecoilClimb(1.02f);
-                    ConvergenceClimb();
-                    DampingClimb(0.98f);
-                }
-
-                if (Plugin.ShotCount > 25 && Plugin.ShotCount <= 30)
-                {
-                    VRecoilClimb(1.03f);
-                    HRecoilClimb(1.015f);
-                    ConvergenceClimb();
-                    DampingClimb(0.98f);
-                }
-
-                if (Plugin.ShotCount > 30 && Plugin.ShotCount <= 35)
-                {
-                    VRecoilClimb(1.03f);
-                    HRecoilClimb(1.01f);
-                    ConvergenceClimb();
-                    DampingClimb(0.98f);
-                }
-
-                if (Plugin.ShotCount > 35)
-                {
-                    VRecoilClimb(1.03f);
-                    HRecoilClimb(1.01f);
-                    ConvergenceClimb();
-                    DampingClimb(0.98f);
-                }
-
-                if (Plugin.ReduceCamRecoil.Value == true)
-                {
-                    Plugin.CurrentCamRecoilX = Mathf.Clamp((float)Math.Round(Plugin.CurrentCamRecoilX * WeaponProperties.CamRecoilChangeRate, 4), Plugin.StartingCamRecoilX * WeaponProperties.CamRecoilLimit, Plugin.CurrentCamRecoilX);
-                    Plugin.CurrentCamRecoilY = Mathf.Clamp((float)Math.Round(Plugin.CurrentCamRecoilY * WeaponProperties.CamRecoilChangeRate, 4), Plugin.StartingCamRecoilY * WeaponProperties.CamRecoilLimit, Plugin.CurrentCamRecoilY);
-                }
-
-                Plugin.CurrentAimSens = Mathf.Clamp((float)Math.Round(Plugin.CurrentAimSens * Plugin.SensChangeRate.Value, 4), Plugin.StartingAimSens * Plugin.SensLimit.Value, Plugin.CurrentAimSens);
-                Plugin.CurrentHipSens = Mathf.Clamp((float)Math.Round(Plugin.CurrentHipSens * Plugin.SensChangeRate.Value, 4), Plugin.StartingHipSens * Plugin.SensLimit.Value, Plugin.CurrentHipSens);
-
-
-                Plugin.PrevShotCount = Plugin.ShotCount;
             }
+            if (Plugin.ShotCount >= 2 && Plugin.ShotCount <= 3 && Plugin.CurrentlyEquipedWeapon.SelectedFireMode == Weapon.EFireMode.fullauto)
+            {
+                VRecoilClimb(1.13f);
+                HRecoilClimb(1.12f);
+                ConvergenceClimb();
+
+            }
+            if (Plugin.ShotCount >= 4 && Plugin.ShotCount <= 5)
+            {
+                VRecoilClimb(1.125f);
+                HRecoilClimb(1.11f);
+                ConvergenceClimb();
+            }
+            if (Plugin.ShotCount > 5 && Plugin.ShotCount <= 7)
+            {
+                VRecoilClimb(1.1f);
+                HRecoilClimb(1.09f);
+                ConvergenceClimb();
+            }
+            if (Plugin.ShotCount > 8 && Plugin.ShotCount <= 10)
+            {
+                VRecoilClimb(1.08f);
+                HRecoilClimb(1.07f);
+                ConvergenceClimb();
+            }
+            if (Plugin.ShotCount > 10 && Plugin.ShotCount <= 15)
+            {
+                VRecoilClimb(1.05f);
+                HRecoilClimb(1.045f);
+                ConvergenceClimb();
+                DampingClimb(0.98f);
+
+            }
+
+            if (Plugin.ShotCount > 15 && Plugin.ShotCount <= 20)
+            {
+                VRecoilClimb(1.03f);
+                HRecoilClimb(1.027f);
+                ConvergenceClimb();
+                DampingClimb(0.98f);
+            }
+
+            if (Plugin.ShotCount > 20 && Plugin.ShotCount <= 25)
+            {
+                VRecoilClimb(1.03f);
+                HRecoilClimb(1.02f);
+                ConvergenceClimb();
+                DampingClimb(0.98f);
+            }
+
+            if (Plugin.ShotCount > 25 && Plugin.ShotCount <= 30)
+            {
+                VRecoilClimb(1.03f);
+                HRecoilClimb(1.015f);
+                ConvergenceClimb();
+                DampingClimb(0.98f);
+            }
+
+            if (Plugin.ShotCount > 30 && Plugin.ShotCount <= 35)
+            {
+                VRecoilClimb(1.03f);
+                HRecoilClimb(1.01f);
+                ConvergenceClimb();
+                DampingClimb(0.98f);
+            }
+
+            if (Plugin.ShotCount > 35)
+            {
+                VRecoilClimb(1.03f);
+                HRecoilClimb(1.01f);
+                ConvergenceClimb();
+                DampingClimb(0.98f);
+            }
+
+            if (Plugin.ReduceCamRecoil.Value == true)
+            {
+                Plugin.CurrentCamRecoilX = Mathf.Clamp((float)Math.Round(Plugin.CurrentCamRecoilX * WeaponProperties.CamRecoilChangeRate, 4), Plugin.StartingCamRecoilX * WeaponProperties.CamRecoilLimit, Plugin.CurrentCamRecoilX);
+                Plugin.CurrentCamRecoilY = Mathf.Clamp((float)Math.Round(Plugin.CurrentCamRecoilY * WeaponProperties.CamRecoilChangeRate, 4), Plugin.StartingCamRecoilY * WeaponProperties.CamRecoilLimit, Plugin.CurrentCamRecoilY);
+            }
+
+            Plugin.CurrentAimSens = Mathf.Clamp((float)Math.Round(Plugin.CurrentAimSens * Plugin.SensChangeRate.Value, 4), Plugin.StartingAimSens * Plugin.SensLimit.Value, Plugin.CurrentAimSens);
+            Plugin.CurrentHipSens = Mathf.Clamp((float)Math.Round(Plugin.CurrentHipSens * Plugin.SensChangeRate.Value, 4), Plugin.StartingHipSens * Plugin.SensLimit.Value, Plugin.CurrentHipSens);
         }
 
         public static void ResetRecoil()
