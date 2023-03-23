@@ -187,9 +187,6 @@ namespace RealismMod
                         Logger.LogInfo("Shot Damage = " + shot.Damage);
                         Logger.LogInfo("Shot Penetration = " + shot.PenetrationPower);*/
 
-
-
-            Logger.LogWarning("============================");
             __instance.DamageType = damageType;
             __instance.Damage = shot.Damage;
             __instance.PenetrationPower = shot.PenetrationPower;
@@ -434,14 +431,17 @@ namespace RealismMod
             RaycastHit raycast = (RaycastHit)AccessTools.Field(typeof(GClass2620), "raycastHit_0").GetValue(shot);
             Collider col = raycast.collider;
             Vector3 localPoint = col.transform.InverseTransformPoint(raycast.point);
-            Vector3 localDir = localPoint.normalized;
+            Vector3 normalizedPoint = localPoint.normalized;
             string hitPart = shot.HittedBallisticCollider.name;
-            bool isArmArmor = false;
+            bool hitSecondaryArmor = false;
             bool hasBypassedArmor = false;
+            bool hasSideArmor = ArmorProperties.HasSideArmor(__instance.Item);
+            bool hasStomachArmor = ArmorProperties.HasStomachArmor(__instance.Item);
+
 
             if (hitPart == "Base HumanSpine3")
             {
-                if (localDir.x < -0.8f && localDir.y > -0.4f)
+                if (normalizedPoint.x < -0.7f)
                 {
                     if (Plugin.EnableLogging.Value == true)
                     {
@@ -449,25 +449,91 @@ namespace RealismMod
                     }
                     hasBypassedArmor = true;
                 }
-                if (localDir.z < -0.7f || localDir.z > 0.7f)
-                {
-                    if (Plugin.EnableLogging.Value == true)
-                    {
-                        Logger.LogWarning("ARMOR BYPASSED: UPPER SIDES");
-                    }
-                    hasBypassedArmor = true;
 
-                }
+                if (!hasSideArmor)
+                {
+                    if (normalizedPoint.z < -0.7f || normalizedPoint.z > 0.7f)
+                    {
+                        if (Plugin.EnableLogging.Value == true)
+                        {
+                            Logger.LogWarning("ARMOR BYPASSED: UPPER SIDES");
+                        }
+                        hasBypassedArmor = true;
+                    }
+                }    
             }
+
             if (hitPart == "Base HumanSpine2")
             {
-                if (localDir.z < -0.6f || localDir.z > 0.6f)
+                if (!hasSideArmor)
+                {
+                    if (normalizedPoint.z < -0.6f || normalizedPoint.z > 0.6f)
+                    {
+                        if (Plugin.EnableLogging.Value == true)
+                        {
+                            Logger.LogWarning("ARMOR BYPASSED: LOWER SIDES");
+                        }
+                        hasBypassedArmor = true;
+                    }
+                }
+                else 
+                {
+                    if (normalizedPoint.x < -0.6)
+                    {
+                        if (Plugin.EnableLogging.Value == true)
+                        {
+                            Logger.LogWarning("ARMOR BYPASSED: LOWER SIDES WITH SIDE ARMOR");
+                        }
+                        hasBypassedArmor = true;
+                    }
+                }
+
+            }
+
+
+            if (hitPart == "Base HumanPelvis")
+            {
+                if (!hasStomachArmor)
+                {
+                    if (normalizedPoint.x > -0.6f)
+                    {
+                        if (Plugin.EnableLogging.Value == true)
+                        {
+                            Logger.LogWarning("ARMOR BYPASSED: BELOW PLATE, STOMACH");
+                        }
+                        hasBypassedArmor = true;
+                    }
+                }
+                if(hasStomachArmor == true && normalizedPoint.x >= -0.6f && (normalizedPoint.z < -0.5f || normalizedPoint.z > 0.5f))
                 {
                     if (Plugin.EnableLogging.Value == true)
                     {
-                        Logger.LogWarning("ARMOR BYPASSED: LOWER SIDES");
+                        Logger.LogWarning("STOMACH ARMOR HIT");
                     }
-                    hasBypassedArmor = true;
+                    hitSecondaryArmor = true;
+                }
+
+                if (!hasSideArmor)
+                {
+                    if (normalizedPoint.z < -0.5f || normalizedPoint.z > 0.5f)
+                    {
+                        if (Plugin.EnableLogging.Value == true)
+                        {
+                            Logger.LogWarning("ARMOR BYPASSED: STOMACH SIDES");
+                        }
+                        hasBypassedArmor = true;
+                    }
+                }
+                else 
+                {
+                    if (normalizedPoint.x > -0.7)
+                    {
+                        if (Plugin.EnableLogging.Value == true)
+                        {
+                            Logger.LogWarning("ARMOR BYPASSED: STOMACH SIDES WITH SIDE ARMOR");
+                        }
+                        hasBypassedArmor = true;
+                    }
                 }
             }
 
@@ -475,7 +541,11 @@ namespace RealismMod
             {
                 if ((hitPart == "Base HumanRUpperarm" || hitPart == "Base HumanLUpperarm"))
                 {
-                    isArmArmor = true;
+                    if (Plugin.EnableLogging.Value == true)
+                    {
+                        Logger.LogWarning("ARM ARMOR HIT");
+                    }
+                    hitSecondaryArmor = true;
                 }
                 if ((hitPart == "Base HumanRForearm1" || hitPart == "Base HumanLForearm1"))
                 {
@@ -488,14 +558,18 @@ namespace RealismMod
             }
 
             __instance.Item.ConflictingItems[9] = hasBypassedArmor.ToString();
+            __instance.Item.ConflictingItems[12] = hitSecondaryArmor.ToString();
 
             if (Plugin.EnableLogging.Value == true) 
             {
                 Logger.LogWarning("============================");
-                Logger.LogWarning("has bypassed armor = " + hasBypassedArmor);
                 Logger.LogWarning("collider = " + shot.HittedBallisticCollider);
-                Logger.LogWarning("raycast normalized local point = " + localDir);
+                Logger.LogWarning("has bypassed armor = " + hasBypassedArmor);
+                Logger.LogWarning("has secondary armor = " + hitSecondaryArmor);
+                Logger.LogWarning("raycast normalized local point = " + normalizedPoint);
+                Logger.LogWarning("============================");
             }
+
 
             if (hasBypassedArmor == true) 
             {
@@ -521,7 +595,7 @@ namespace RealismMod
             }
 
             float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
-            armorResist = isArmArmor == true ? armorResist = 40f : armorResist;
+            armorResist = hitSecondaryArmor == true ? armorResist = 40f : armorResist;
             float armorFactor = (121f - 5000f / (45f + armorDura * 2f)) * armorResist * 0.01f;
             if (((armorFactor >= penetrationPower + 15f) ? 0f : ((armorFactor >= penetrationPower) ? (0.4f * (armorFactor - penetrationPower - 15f) * (armorFactor - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * armorFactor - penetrationPower)))) - shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f < 0f)
             {
@@ -564,7 +638,7 @@ namespace RealismMod
         {
 
             string hitPart = damageInfo.HittedBallisticCollider.name;
-            bool isArmArmor = false;
+            bool hasHitSecondaryArmor = ArmorProperties.HasHitSecondaryArmor(__instance.Item);
             bool hasBypassedArmor = ArmorProperties.HasBypassedArmor(__instance.Item);
             __instance.Item.ConflictingItems[9] = "false";
 
@@ -572,16 +646,10 @@ namespace RealismMod
             {
                 Logger.LogWarning("============ApplyDamagePatch============== ");
                 Logger.LogWarning("Has Bypassed Armor = " + hasBypassedArmor);
+                Logger.LogWarning("Has Hit Secondary Armor = " + hasHitSecondaryArmor);
                 Logger.LogWarning("========================== ");
             }
 
-            if ((__instance.Template.ArmorZone.Contains(EBodyPart.LeftArm) || __instance.Template.ArmorZone.Contains(EBodyPart.RightArm)))
-            {
-                if ((hitPart == "Base HumanRUpperarm" || hitPart == "Base HumanLUpperarm")) 
-                {
-                    isArmArmor = true;
-                }
-            }
 
             AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
             BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
@@ -589,7 +657,7 @@ namespace RealismMod
             EDamageType damageType = damageInfo.DamageType;
 
             float speedFactor = ammo.GetBulletSpeed / damageInfo.ArmorDamage;
-            float armorDamage = ammo.ArmorDamage * speedFactor;
+            float armorDamageActual = ammo.ArmorDamage * speedFactor;
 
 
             if (!damageType.IsWeaponInduced() && damageType != EDamageType.GrenadeFragment)
@@ -605,11 +673,11 @@ namespace RealismMod
             }
    
             float KE = (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000;
-            float bluntThrput = hasBypassedArmor == true ? 1f : isArmArmor == true ? __instance.Template.BluntThroughput * 1.5f : __instance.Template.BluntThroughput;
+            float bluntThrput = hasBypassedArmor == true ? 1f : hasHitSecondaryArmor == true ? __instance.Template.BluntThroughput * 1.5f : __instance.Template.BluntThroughput;
             float penPower = damageInfo.PenetrationPower;
             float duraPercent = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability;
             float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
-            armorResist = isArmArmor == true ? armorResist = 30f : hasBypassedArmor == true ? armorResist = 0f : armorResist;
+            armorResist = hasHitSecondaryArmor == true ? armorResist = 30f : hasBypassedArmor == true ? armorResist = 0f : armorResist;
             float armorDestructibility = Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
 
             float armorFactor = armorResist * (Mathf.Min(1f, duraPercent * 1.25f));
@@ -623,7 +691,7 @@ namespace RealismMod
             if (damageInfo.DeflectedBy == __instance.Item.Id)
             {
                 damageInfo.Damage *= 0.5f * armorStatReductionFactor;
-                armorDamage *= 0.5f * armorStatReductionFactor;
+                armorDamageActual *= 0.5f * armorStatReductionFactor;
                 damageInfo.ArmorDamage *= 0.5f * armorStatReductionFactor;
                 damageInfo.PenetrationPower *= 0.5f * armorStatReductionFactor;
             }
@@ -638,7 +706,7 @@ namespace RealismMod
             {
                 armorDestructibility = 0.05f;
             }
-            float durabilityLoss = (maxPotentialDamage / penPower) * Mathf.Clamp(ammo.BulletDiameterMilimeters / 7.62f, 1f, 1.3f) * armorDamage * armorDestructibility; //blunt damage shouldn't come into it.
+            float durabilityLoss = (maxPotentialDamage / penPower) * Mathf.Clamp(ammo.BulletDiameterMilimeters / 7.62f, 1f, 1.25f) * armorDamageActual * armorDestructibility; //blunt damage shouldn't come into it.
 
             if (!(damageInfo.BlockedBy == __instance.Item.Id) && !(damageInfo.DeflectedBy == __instance.Item.Id) && !hasBypassedArmor)
             {
@@ -651,7 +719,7 @@ namespace RealismMod
                 damageInfo.Damage = throughputFacotredDamage;
                 damageInfo.StaminaBurnRate = throughputFacotredDamage / 100f;
             }
-            durabilityLoss = isArmArmor == true ? durabilityLoss * 0.25f : hasBypassedArmor == true ? durabilityLoss = 0f : durabilityLoss;
+            durabilityLoss = hasHitSecondaryArmor == true ? durabilityLoss * 0.25f : hasBypassedArmor == true ? durabilityLoss = 0f : durabilityLoss;
             durabilityLoss = Mathf.Max(0.01f, durabilityLoss);
             __instance.ApplyDurabilityDamage(durabilityLoss);
             __result = durabilityLoss;
@@ -661,7 +729,7 @@ namespace RealismMod
                 Logger.LogWarning("===========ARMOR DAMAGE=============== ");
                 Logger.LogWarning("KE " + KE);
                 Logger.LogWarning("Pen " + penPower);
-                Logger.LogWarning("Armor Damage " + armorDamage);
+                Logger.LogWarning("Armor Damage " + armorDamageActual);
                 Logger.LogWarning("Class " + armorResist);
                 Logger.LogWarning("Throughput " + bluntThrput);
                 Logger.LogWarning("Dura percent " + duraPercent);

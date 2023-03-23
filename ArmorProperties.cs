@@ -91,5 +91,41 @@ namespace RealismMod
             return bool.Parse(armorItem.ConflictingItems[9]);
         }
 
+        public static bool HasSideArmor(Item armorItem)
+        {
+            if (Utils.NullCheck(armorItem.ConflictingItems))
+            {
+                return false;
+            }
+            return bool.Parse(armorItem.ConflictingItems[10]);
+        }
+
+        public static bool HasStomachArmor(Item armorItem)
+        {
+            if (Utils.NullCheck(armorItem.ConflictingItems))
+            {
+                return false;
+            }
+            return bool.Parse(armorItem.ConflictingItems[11]);
+        }
+
+        public static bool HasHitSecondaryArmor(Item armorItem)
+        {
+            if (Utils.NullCheck(armorItem.ConflictingItems))
+            {
+                return false;
+            }
+            return bool.Parse(armorItem.ConflictingItems[12]);
+        }
+
+        public static bool HasNeckProtection(Item armorItem)
+        {
+            if (Utils.NullCheck(armorItem.ConflictingItems))
+            {
+                return false;
+            }
+            return bool.Parse(armorItem.ConflictingItems[13]);
+        }
+
     }
 }
