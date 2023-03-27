@@ -103,6 +103,10 @@ namespace RealismMod
                     {
                         Utils.WeaponReady = true;
                     }
+                    else 
+                    {
+                        Utils.WeaponReady = false;
+                    }
                 }
             }
 

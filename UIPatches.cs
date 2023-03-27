@@ -344,7 +344,7 @@ namespace RealismMod
         private static void PatchPostfix(Weapon __instance, string id, WeaponTemplate template)
         {
 
-            if (Plugin.showBalance.Value == true)
+            if (Plugin.ShowBalance.Value == true)
             {
                 List<ItemAttributeClass> balanceAttList = __instance.Attributes;
                 GClass2406 balanceAtt = new GClass2406((EItemAttributeId)ENewItemAttributeId.Balance);
@@ -359,7 +359,7 @@ namespace RealismMod
 
             }
 
-            if (Plugin.showDispersion.Value == true)
+            if (Plugin.ShowDispersion.Value == true)
             {
                 List<ItemAttributeClass> dispersionAttList = __instance.Attributes;
                 GClass2406 dispersionAtt = new GClass2406((EItemAttributeId)ENewItemAttributeId.Dispersion);
@@ -373,7 +373,7 @@ namespace RealismMod
                 dispersionAttList.Add(dispersionAtt);
             }
 
-            if (Plugin.showCamRecoil.Value == true)
+            if (Plugin.ShowCamRecoil.Value == true)
             {
                 List<ItemAttributeClass> camRecoilAttList = __instance.Attributes;
                 GClass2406 camRecoilAtt = new GClass2406((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
@@ -387,7 +387,7 @@ namespace RealismMod
                 camRecoilAttList.Add(camRecoilAtt);
             }
 
-            if (Plugin.showRecoilAngle.Value == true)
+            if (Plugin.ShowRecoilAngle.Value == true)
             {
                 List<ItemAttributeClass> recoilAngleAttList = __instance.Attributes;
                 ItemAttributeClass recoilAngleAtt = new ItemAttributeClass(ENewItemAttributeId.RecoilAngle);
@@ -398,7 +398,7 @@ namespace RealismMod
                 recoilAngleAttList.Add(recoilAngleAtt);
             }
 
-            if (Plugin.showSemiROF.Value == true)
+            if (Plugin.ShowSemiROF.Value == true)
             {
                 List<ItemAttributeClass> semiROFAttList = __instance.Attributes;
                 ItemAttributeClass semiROFAtt = new ItemAttributeClass(ENewItemAttributeId.SemiROF);

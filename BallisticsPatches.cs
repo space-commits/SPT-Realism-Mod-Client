@@ -10,9 +10,80 @@ using HarmonyLib;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using EFT.Ballistics;
+using System.Drawing;
 
 namespace RealismMod
 {
+
+    public enum EHitArmorOrientation 
+    {
+        FrontHit = 0,
+        RearHit = 1,
+        BackHit = 2,
+        LeftSideHit = 3,
+        RightSideHit = 4,
+        TopHit = 5,
+        BottomHit = 6,
+        UnknownOrientation = 7
+    }
+
+    public class DamageInfoPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(GClass2620) });
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, GClass2620 shot)
+        {
+            __instance.DamageType = damageType;
+            __instance.Damage = shot.Damage;
+            __instance.PenetrationPower = shot.PenetrationPower;
+            __instance.HitCollider = shot.HitCollider;
+            __instance.Direction = shot.Direction;
+            __instance.HitPoint = shot.HitPoint;
+            __instance.HitNormal = shot.HitNormal;
+            __instance.HittedBallisticCollider = shot.HittedBallisticCollider;
+            __instance.Player = shot.Player;
+            __instance.Weapon = shot.Weapon;
+            __instance.FireIndex = shot.FireIndex;
+            __instance.ArmorDamage = shot.VelocityMagnitude;
+            __instance.DeflectedBy = shot.DeflectedBy;
+            __instance.BlockedBy = shot.BlockedBy;
+            __instance.MasterOrigin = shot.MasterOrigin;
+            __instance.IsForwardHit = shot.IsForwardHit;
+            __instance.SourceId = shot.Ammo.TemplateId;
+            BulletClass bulletClass;
+            if ((bulletClass = (shot.Ammo as BulletClass)) != null)
+            {
+                __instance.StaminaBurnRate = bulletClass.StaminaBurnRate;
+                __instance.HeavyBleedingDelta = bulletClass.HeavyBleedingDelta;
+                __instance.LightBleedingDelta = bulletClass.LightBleedingDelta;
+            }
+            else
+            {
+                float lightBleedingDelta = 0f;
+                float num = 0f;
+                __instance.LightBleedingDelta = lightBleedingDelta;
+                float heavyBleedingDelta = num;
+                num = 0f;
+                __instance.HeavyBleedingDelta = heavyBleedingDelta;
+                __instance.StaminaBurnRate = num;
+                KnifeClass knifeClass;
+                if ((knifeClass = (__instance.Weapon as KnifeClass)) != null)
+                {
+                    __instance.StaminaBurnRate = knifeClass.KnifeComponent.Template.StaminaBurnRate;
+                }
+            }
+            __instance.DidBodyDamage = 0f;
+            __instance.DidArmorDamage = 0f;
+            __instance.OverDamageFrom = null;
+            __instance.BodyPartColliderType = EBodyPartColliderType.None;
+            __instance.BleedBlock = false;
+            return false;
+        }
+    }
 
     public class ApplyDamageInfoPatch : ModulePatch
     {
@@ -173,242 +244,15 @@ namespace RealismMod
         }
     }
 
-    public class DamageInfoPatch : ModulePatch
+  
+    public static class BallisticCalculations
     {
-        protected override MethodBase GetTargetMethod()
+
+        public static void CheckHitZones()
         {
-            return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(GClass2620) });
         }
 
-        [PatchPrefix]
-        private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, GClass2620 shot)
-        {
-
-            __instance.DamageType = damageType;
-            __instance.Damage = shot.Damage;
-            __instance.PenetrationPower = shot.PenetrationPower;
-            __instance.HitCollider = shot.HitCollider;
-            __instance.Direction = shot.Direction;
-            __instance.HitPoint = shot.HitPoint;
-            __instance.HitNormal = shot.HitNormal;
-            __instance.HittedBallisticCollider = shot.HittedBallisticCollider;
-            __instance.Player = shot.Player;
-            __instance.Weapon = shot.Weapon;
-            __instance.FireIndex = shot.FireIndex;
-            __instance.ArmorDamage = shot.VelocityMagnitude;
-            __instance.DeflectedBy = shot.DeflectedBy;
-            __instance.BlockedBy = shot.BlockedBy;
-            __instance.MasterOrigin = shot.MasterOrigin;
-            __instance.IsForwardHit = shot.IsForwardHit;
-            __instance.SourceId = shot.Ammo.TemplateId;
-            BulletClass bulletClass;
-            if ((bulletClass = (shot.Ammo as BulletClass)) != null)
-            {
-                __instance.StaminaBurnRate = bulletClass.StaminaBurnRate;
-                __instance.HeavyBleedingDelta = bulletClass.HeavyBleedingDelta;
-                __instance.LightBleedingDelta = bulletClass.LightBleedingDelta;
-            }
-            else
-            {
-                float lightBleedingDelta = 0f;
-                float num = 0f;
-                __instance.LightBleedingDelta = lightBleedingDelta;
-                float heavyBleedingDelta = num;
-                num = 0f;
-                __instance.HeavyBleedingDelta = heavyBleedingDelta;
-                __instance.StaminaBurnRate = num;
-                KnifeClass knifeClass;
-                if ((knifeClass = (__instance.Weapon as KnifeClass)) != null)
-                {
-                    __instance.StaminaBurnRate = knifeClass.KnifeComponent.Template.StaminaBurnRate;
-                }
-            }
-            __instance.DidBodyDamage = 0f;
-            __instance.DidArmorDamage = 0f;
-            __instance.OverDamageFrom = null;
-            __instance.BodyPartColliderType = EBodyPartColliderType.None;
-            __instance.BleedBlock = false;
-            return false;
-        }
     }
-
-/*    public class AltSetPenetrationStatusPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            var result = typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.SetPenetrationStatus), BindingFlags.Public | BindingFlags.Instance);
-
-            return result;
-
-        }
-
-        private static void GetMaterialRandomFactor(EArmorMaterial armorMat, ref float min, ref float max)
-        {
-            switch (armorMat)
-            {
-                case EArmorMaterial.UHMWPE:
-                    min = 0.97f;
-                    max = 1.03f;
-                    break;
-                case EArmorMaterial.ArmoredSteel:
-                    min = 1f;
-                    max = 1f;
-                    break;
-                case EArmorMaterial.Titan:
-                    min = 0.99f;
-                    max = 1.01f;
-                    break;
-                case EArmorMaterial.Aluminium:
-                    min = 0.98f;
-                    max = 1.02f;
-                    break;
-                case EArmorMaterial.Glass:
-                    min = 1f;
-                    max = 1f;
-                    break;
-                case EArmorMaterial.Ceramic:
-                    min = 0.99f;
-                    max = 1.01f;
-                    break;
-                case EArmorMaterial.Combined:
-                    min = 0.98f;
-                    max = 1.02f;
-                    break;
-                case EArmorMaterial.Aramid:
-                    min = 0.96f;
-                    max = 1.04f;
-                    break;
-
-            }
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(GClass2620 shot, ref ArmorComponent __instance)
-        {
-
-            RaycastHit raycast = (RaycastHit)AccessTools.Field(typeof(GClass2620), "raycastHit_0").GetValue(shot);
-            Collider col = raycast.collider;
-            Vector3 localPoint = col.transform.InverseTransformPoint(raycast.point);
-            Vector3 localDir = localPoint.normalized;
-            string hitPart = shot.HittedBallisticCollider.name;
-            bool isArmArmor = false;
-
-            if (hitPart == "Base HumanSpine3") 
-            {
-                if (localDir.x < -0.8f && localDir.y > -0.4f) 
-                {
-                    Logger.LogWarning("ARMOR BYPASSED: NECK");
-                    return false;
-                }
-                if (localDir.z < -0.7f || localDir.z > 0.7f)
-                {
-                    Logger.LogWarning("ARMOR BYPASSED: UPPER SIDES");
-                    return false;
-                }
-            }
-            if (hitPart == "Base HumanSpine2") 
-            {
-                if (localDir.z < -0.6f || localDir.z > 0.6f)
-                {
-                    Logger.LogWarning("ARMOR BYPASSED: LOWER SIDES");
-                    return false;
-                }
-            }
-
-            if ((__instance.Template.ArmorZone.Contains(EBodyPart.LeftArm) || __instance.Template.ArmorZone.Contains(EBodyPart.RightArm)))
-            {
-                if ((hitPart == "Base HumanRUpperarm" || hitPart == "Base HumanLUpperarm"))
-                {
-                    isArmArmor = true;
-                }
-                if ((hitPart == "Base HumanRForearm1" || hitPart == "Base HumanLForearm1"))
-                {
-                    Logger.LogWarning("ARMOR BYPASSED: FOREARM");
-                    return false;
-                }
-            }
-
-
-
-            //for applyarmordamage I can use DamageInfo, as I just need the raycast's hit point, so damageinfo.hitpoint.
-            Logger.LogWarning("============================");
-            Logger.LogWarning("collider = " + shot.HittedBallisticCollider);
-            Logger.LogWarning("raycast point = " + shot.HitPoint);
-            Logger.LogWarning("raycast local point = " + localPoint);
-            Logger.LogWarning("raycast normalized local point = " + localDir);
-
-
-            if (__instance.Repairable.Durability <= 0f)
-            {
-                return false;
-            }
-
-            float penetrationPower = shot.PenetrationPower;
-            float armorDura = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability;
-            float armorDuraFactor = armorDura;
-            float velocity = shot.VelocityMagnitude;
-            float KE = (0.5f * shot.BulletMassGram * velocity * velocity) / 1000f;
-
-            if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel)
-            {
-                armorDuraFactor = 1f;
-            }
-            else if (__instance.Template.ArmorMaterial == EArmorMaterial.Titan)
-            {
-                armorDuraFactor = Mathf.Min(1f, armorDuraFactor * 2f);
-            }
-            else
-            {
-                armorDuraFactor = Mathf.Min(1f, armorDuraFactor * 1.25f);
-            }
-
-            float minRand = 1f;
-            float maxRand = 1f;
-            GetMaterialRandomFactor(__instance.Template.ArmorMaterial, ref minRand, ref maxRand);
-            float randomFactor = UnityEngine.Random.Range(minRand * armorDura, maxRand * armorDura);
-
-            //need an arm armor proxy or default values
-            float minVel = ArmorProperties.MinVelocity(__instance.Item) * armorDuraFactor * randomFactor;
-            float minKE = ArmorProperties.MinKE(__instance.Item) * armorDuraFactor * randomFactor;
-            float minPen = ArmorProperties.MinPen(__instance.Item) * armorDuraFactor * randomFactor;
-
-            if (isArmArmor == true)
-            {
-                minVel = 290f * armorDuraFactor * randomFactor;
-                minKE = 160f * ArmorProperties.MinKE(__instance.Item) * armorDuraFactor * randomFactor;
-                minPen = 40f * ArmorProperties.MinPen(__instance.Item) * armorDuraFactor * randomFactor;
-            }
-
-            Logger.LogWarning("===========PEN STATUS=============== ");
-            if (KE < minKE || penetrationPower < minPen || penetrationPower < minPen)
-            {
-                shot.BlockedBy = __instance.Item.Id;
-                Debug.Log(">>> Shot blocked by armor piece");
-                if (Plugin.EnableLogging.Value == true)
-                {
-                    Logger.LogWarning("Blocked");
-                }
-            }
-            else
-            {
-                if (Plugin.EnableLogging.Value == true)
-                {
-                    Logger.LogWarning("Penetrated");
-                }
-            }
-
-            Logger.LogWarning("min vel = " + minVel);
-            Logger.LogWarning("min pen = " + minPen);
-            Logger.LogWarning("min KE = " + minKE);
-            Logger.LogWarning("======= ");
-            Logger.LogWarning("vel = " + velocity);
-            Logger.LogWarning("pen = " + penetrationPower);
-            Logger.LogWarning("ke = " + KE);
-            Logger.LogWarning("========================== ");
-
-            return false;
-        }
-    }*/
 
 
     public class SetPenetrationStatusPatch : ModulePatch
@@ -421,6 +265,49 @@ namespace RealismMod
 
         }
 
+        private static EHitArmorOrientation GetArmorOrientation(string hitPart, Vector3 hitNormal) 
+        {
+            if (Mathf.Abs(hitNormal.y) > Mathf.Abs(hitNormal.x) && Mathf.Abs(hitNormal.y) > Mathf.Abs(hitNormal.z))
+            {
+                if (hitNormal.y > 0)
+                {
+                    return EHitArmorOrientation.TopHit;
+                    /*               Logger.LogWarning("hit top side of the box collider");*/
+                }
+                else
+                {
+                    return EHitArmorOrientation.BottomHit;
+                    /*                       Logger.LogWarning("hit bottom side of the box collider");*/
+                }
+            }
+            else if (Mathf.Abs(hitNormal.x) > Mathf.Abs(hitNormal.y) && Mathf.Abs(hitNormal.x) > Mathf.Abs(hitNormal.z))
+            {
+                if (hitNormal.x > 0)
+                {
+                    return EHitArmorOrientation.RightSideHit;
+                    /*                        Logger.LogWarning("hit right side of the box collider");*/
+                }
+                else
+                {
+                    return EHitArmorOrientation.LeftSideHit;
+                    /*        Logger.LogWarning("hit left side of the box collider");*/
+                }
+            }
+            else
+            {
+                if (hitNormal.z > 0)
+                {
+                    return EHitArmorOrientation.FrontHit;
+                    /*            Logger.LogWarning("hit front side of the box collider");*/
+                }
+                else
+                {
+                    return EHitArmorOrientation.BackHit;
+                    /*                   Logger.LogWarning("hit back side of the box collider");*/
+                }
+            }
+        }
+
         [PatchPrefix]
         private static bool Prefix(GClass2620 shot, ref ArmorComponent __instance)
         {
@@ -429,16 +316,28 @@ namespace RealismMod
             Collider col = raycast.collider;
             Vector3 localPoint = col.transform.InverseTransformPoint(raycast.point);
             Vector3 normalizedPoint = localPoint.normalized;
+            Vector3 hitNormal = raycast.normal;
             string hitPart = shot.HittedBallisticCollider.name;
             bool hitSecondaryArmor = false;
             bool hasBypassedArmor = false;
             bool hasSideArmor = ArmorProperties.HasSideArmor(__instance.Item);
             bool hasStomachArmor = ArmorProperties.HasStomachArmor(__instance.Item);
+            EHitArmorOrientation hitOrientation = EHitArmorOrientation.UnknownOrientation;
 
+            if (hitPart == "Base HumanSpine3" || hitPart == "Base HumanSpine2" || hitPart == "Base HumanPelvis")
+            {
+                hitOrientation = GetArmorOrientation(hitPart, hitNormal);
+            }
+
+            float bottomOfPlate = hitOrientation == EHitArmorOrientation.BackHit ? -0.9f : -0.6f;
+            float topOfPlate = hitOrientation == EHitArmorOrientation.BackHit ? -0.8f : -0.7f;
+            float upperSides = hitOrientation == EHitArmorOrientation.BackHit ? 0.7f : 0.6f;
+            float midSides = hitOrientation == EHitArmorOrientation.BackHit ? 0.6f : 0.5f;
+            float lowerSides = hitOrientation == EHitArmorOrientation.BackHit ? 0.6f : 0.5f;
 
             if (hitPart == "Base HumanSpine3")
             {
-                if (normalizedPoint.x < -0.7f)
+                if (normalizedPoint.x < topOfPlate)
                 {
                     if (Plugin.EnableLogging.Value == true)
                     {
@@ -447,7 +346,7 @@ namespace RealismMod
                     hasBypassedArmor = true;
                 }
 
-                if (normalizedPoint.z < -0.7f || normalizedPoint.z > 0.7f)
+                if (normalizedPoint.z < -upperSides || normalizedPoint.z > upperSides)
                 {
                     if (Plugin.EnableLogging.Value == true)
                     {
@@ -461,7 +360,7 @@ namespace RealismMod
             {
                 if (!hasSideArmor)
                 {
-                    if (normalizedPoint.z < -0.6f || normalizedPoint.z > 0.6f)
+                    if (normalizedPoint.z < -midSides || normalizedPoint.z > midSides)
                     {
                         if (Plugin.EnableLogging.Value == true)
                         {
@@ -472,7 +371,7 @@ namespace RealismMod
                 }
                 else 
                 {
-                    if (normalizedPoint.x < -0.6 && (normalizedPoint.z < -0.6f || normalizedPoint.z > 0.6f))
+                    if (normalizedPoint.x < -0.6 && (normalizedPoint.z < -midSides || normalizedPoint.z > midSides))
                     {
                         if (Plugin.EnableLogging.Value == true)
                         {
@@ -481,15 +380,13 @@ namespace RealismMod
                         hasBypassedArmor = true;
                     }
                 }
-
             }
-
 
             if (hitPart == "Base HumanPelvis")
             {
                 if (!hasStomachArmor)
                 {
-                    if (normalizedPoint.x > -0.6f)
+                    if (normalizedPoint.x > bottomOfPlate)
                     {
                         if (Plugin.EnableLogging.Value == true)
                         {
@@ -498,7 +395,7 @@ namespace RealismMod
                         hasBypassedArmor = true;
                     }
                 }
-                if(hasStomachArmor == true && normalizedPoint.x >= -0.6f && (normalizedPoint.z < -0.5f || normalizedPoint.z > 0.5f))
+                if(hasStomachArmor == true && normalizedPoint.x >= bottomOfPlate && (normalizedPoint.z < -lowerSides || normalizedPoint.z > lowerSides))
                 {
                     if (Plugin.EnableLogging.Value == true)
                     {
@@ -509,7 +406,7 @@ namespace RealismMod
 
                 if (!hasSideArmor)
                 {
-                    if (normalizedPoint.z < -0.5f || normalizedPoint.z > 0.5f)
+                    if (normalizedPoint.z < -lowerSides || normalizedPoint.z > lowerSides)
                     {
                         if (Plugin.EnableLogging.Value == true)
                         {
@@ -779,4 +676,183 @@ namespace RealismMod
 
         }
     }
+
+
+    /*    public class AltSetPenetrationStatusPatch : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                var result = typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.SetPenetrationStatus), BindingFlags.Public | BindingFlags.Instance);
+
+                return result;
+
+            }
+
+            private static void GetMaterialRandomFactor(EArmorMaterial armorMat, ref float min, ref float max)
+            {
+                switch (armorMat)
+                {
+                    case EArmorMaterial.UHMWPE:
+                        min = 0.97f;
+                        max = 1.03f;
+                        break;
+                    case EArmorMaterial.ArmoredSteel:
+                        min = 1f;
+                        max = 1f;
+                        break;
+                    case EArmorMaterial.Titan:
+                        min = 0.99f;
+                        max = 1.01f;
+                        break;
+                    case EArmorMaterial.Aluminium:
+                        min = 0.98f;
+                        max = 1.02f;
+                        break;
+                    case EArmorMaterial.Glass:
+                        min = 1f;
+                        max = 1f;
+                        break;
+                    case EArmorMaterial.Ceramic:
+                        min = 0.99f;
+                        max = 1.01f;
+                        break;
+                    case EArmorMaterial.Combined:
+                        min = 0.98f;
+                        max = 1.02f;
+                        break;
+                    case EArmorMaterial.Aramid:
+                        min = 0.96f;
+                        max = 1.04f;
+                        break;
+
+                }
+            }
+
+            [PatchPrefix]
+            private static bool Prefix(GClass2620 shot, ref ArmorComponent __instance)
+            {
+
+                RaycastHit raycast = (RaycastHit)AccessTools.Field(typeof(GClass2620), "raycastHit_0").GetValue(shot);
+                Collider col = raycast.collider;
+                Vector3 localPoint = col.transform.InverseTransformPoint(raycast.point);
+                Vector3 localDir = localPoint.normalized;
+                string hitPart = shot.HittedBallisticCollider.name;
+                bool isArmArmor = false;
+
+                if (hitPart == "Base HumanSpine3") 
+                {
+                    if (localDir.x < -0.8f && localDir.y > -0.4f) 
+                    {
+                        Logger.LogWarning("ARMOR BYPASSED: NECK");
+                        return false;
+                    }
+                    if (localDir.z < -0.7f || localDir.z > 0.7f)
+                    {
+                        Logger.LogWarning("ARMOR BYPASSED: UPPER SIDES");
+                        return false;
+                    }
+                }
+                if (hitPart == "Base HumanSpine2") 
+                {
+                    if (localDir.z < -0.6f || localDir.z > 0.6f)
+                    {
+                        Logger.LogWarning("ARMOR BYPASSED: LOWER SIDES");
+                        return false;
+                    }
+                }
+
+                if ((__instance.Template.ArmorZone.Contains(EBodyPart.LeftArm) || __instance.Template.ArmorZone.Contains(EBodyPart.RightArm)))
+                {
+                    if ((hitPart == "Base HumanRUpperarm" || hitPart == "Base HumanLUpperarm"))
+                    {
+                        isArmArmor = true;
+                    }
+                    if ((hitPart == "Base HumanRForearm1" || hitPart == "Base HumanLForearm1"))
+                    {
+                        Logger.LogWarning("ARMOR BYPASSED: FOREARM");
+                        return false;
+                    }
+                }
+
+
+
+                //for applyarmordamage I can use DamageInfo, as I just need the raycast's hit point, so damageinfo.hitpoint.
+                Logger.LogWarning("============================");
+                Logger.LogWarning("collider = " + shot.HittedBallisticCollider);
+                Logger.LogWarning("raycast point = " + shot.HitPoint);
+                Logger.LogWarning("raycast local point = " + localPoint);
+                Logger.LogWarning("raycast normalized local point = " + localDir);
+
+
+                if (__instance.Repairable.Durability <= 0f)
+                {
+                    return false;
+                }
+
+                float penetrationPower = shot.PenetrationPower;
+                float armorDura = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability;
+                float armorDuraFactor = armorDura;
+                float velocity = shot.VelocityMagnitude;
+                float KE = (0.5f * shot.BulletMassGram * velocity * velocity) / 1000f;
+
+                if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel)
+                {
+                    armorDuraFactor = 1f;
+                }
+                else if (__instance.Template.ArmorMaterial == EArmorMaterial.Titan)
+                {
+                    armorDuraFactor = Mathf.Min(1f, armorDuraFactor * 2f);
+                }
+                else
+                {
+                    armorDuraFactor = Mathf.Min(1f, armorDuraFactor * 1.25f);
+                }
+
+                float minRand = 1f;
+                float maxRand = 1f;
+                GetMaterialRandomFactor(__instance.Template.ArmorMaterial, ref minRand, ref maxRand);
+                float randomFactor = UnityEngine.Random.Range(minRand * armorDura, maxRand * armorDura);
+
+                //need an arm armor proxy or default values
+                float minVel = ArmorProperties.MinVelocity(__instance.Item) * armorDuraFactor * randomFactor;
+                float minKE = ArmorProperties.MinKE(__instance.Item) * armorDuraFactor * randomFactor;
+                float minPen = ArmorProperties.MinPen(__instance.Item) * armorDuraFactor * randomFactor;
+
+                if (isArmArmor == true)
+                {
+                    minVel = 290f * armorDuraFactor * randomFactor;
+                    minKE = 160f * ArmorProperties.MinKE(__instance.Item) * armorDuraFactor * randomFactor;
+                    minPen = 40f * ArmorProperties.MinPen(__instance.Item) * armorDuraFactor * randomFactor;
+                }
+
+                Logger.LogWarning("===========PEN STATUS=============== ");
+                if (KE < minKE || penetrationPower < minPen || penetrationPower < minPen)
+                {
+                    shot.BlockedBy = __instance.Item.Id;
+                    Debug.Log(">>> Shot blocked by armor piece");
+                    if (Plugin.EnableLogging.Value == true)
+                    {
+                        Logger.LogWarning("Blocked");
+                    }
+                }
+                else
+                {
+                    if (Plugin.EnableLogging.Value == true)
+                    {
+                        Logger.LogWarning("Penetrated");
+                    }
+                }
+
+                Logger.LogWarning("min vel = " + minVel);
+                Logger.LogWarning("min pen = " + minPen);
+                Logger.LogWarning("min KE = " + minKE);
+                Logger.LogWarning("======= ");
+                Logger.LogWarning("vel = " + velocity);
+                Logger.LogWarning("pen = " + penetrationPower);
+                Logger.LogWarning("ke = " + KE);
+                Logger.LogWarning("========================== ");
+
+                return false;
+            }
+        }*/
 }

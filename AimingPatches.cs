@@ -49,7 +49,7 @@ namespace RealismMod
             if (Utils.IsReady == true)
             {
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-                if (!player.IsAI)
+                if (!player.IsAI && __instance.Item != null)
                 {
                     FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
                     NightVisionComponent nvgComponent = player.NightVisionObserver.Component;

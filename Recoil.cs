@@ -41,7 +41,7 @@ namespace RealismMod
                 ConvergenceClimb();
 
             }
-            if (Plugin.ShotCount >= 2 && Plugin.ShotCount <= 3 && Plugin.CurrentlyEquipedWeapon.SelectedFireMode == Weapon.EFireMode.fullauto)
+            if (Plugin.ShotCount >= 2 && Plugin.ShotCount <= 3 && Plugin.CurrentlyShootingWeapon.SelectedFireMode == Weapon.EFireMode.fullauto)
             {
                 VRecoilClimb(1.13f);
                 HRecoilClimb(1.12f);
@@ -138,7 +138,7 @@ namespace RealismMod
                 Plugin.CurrentAimSens = Mathf.Clamp(Plugin.CurrentAimSens * Plugin.SensResetRate.Value, Plugin.CurrentAimSens, Plugin.StartingAimSens);
                 Plugin.CurrentHipSens = Mathf.Clamp(Plugin.CurrentHipSens * Plugin.SensResetRate.Value, Plugin.CurrentHipSens, Plugin.StartingHipSens);
 
-                Plugin.CurrentConvergence = Mathf.Clamp(Plugin.CurrentConvergence * Plugin.convergenceResetRate.Value, Plugin.CurrentConvergence, Plugin.StartingConvergence);
+                Plugin.CurrentConvergence = Mathf.Clamp(Plugin.CurrentConvergence * Plugin.ConvergenceResetRate.Value, Plugin.CurrentConvergence, Plugin.StartingConvergence);
 
                 Plugin.CurrentDamping = Mathf.Clamp(Plugin.CurrentDamping * WeaponProperties.DampingResetRate, Plugin.CurrentDamping, Plugin.StartingDamping);
                 Plugin.CurrentHandDamping = Mathf.Clamp(Plugin.CurrentHandDamping * WeaponProperties.DampingResetRate, Plugin.CurrentHandDamping, Plugin.StartingHandDamping);

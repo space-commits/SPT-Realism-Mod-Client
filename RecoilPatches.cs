@@ -123,7 +123,7 @@ namespace RealismMod
 
             if (iWeapon.Item.Owner.ID.StartsWith("pmc") || iWeapon.Item.Owner.ID.StartsWith("scav"))
             {
-                Plugin.CurrentlyEquipedWeapon = weaponClass;
+                Plugin.CurrentlyShootingWeapon = weaponClass;
 
                 Plugin.Timer = 0f;
                 StanceController.StanceShotTime = 0f;
