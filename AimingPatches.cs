@@ -66,7 +66,7 @@ namespace RealismMod
                 {
                     wasToggled = true;
                 }
-                if (wasToggled == true && (!fsIsON || !nvgIsOn))
+                if (wasToggled == true && (!fsIsON && !nvgIsOn))
                 {
                     StanceController.WasActiveAim = false;
                     if (Plugin.ToggleActiveAim.Value == true)
