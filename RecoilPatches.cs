@@ -13,7 +13,6 @@ using System.Linq;
 
 namespace RealismMod
 {
-
     public class OnWeaponParametersChangedPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

@@ -42,7 +42,6 @@ namespace RealismMod
         }
     }
 
-    //need to get non-armor chest rig reload multi, also check if any armor component should disable ADS
     public class OnItemAddedOrRemovedPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -93,7 +92,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player __instance)
         {
-            if (Utils.CheckIsReady() == true && __instance.IsYourPlayer == true)
+            if (Utils.IsReady == true && __instance.IsYourPlayer == true)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
                 PlayerInjuryStateCheck(__instance, Logger);
@@ -103,16 +102,17 @@ namespace RealismMod
 
                 if (fc != null)
                 {
-                    ReloadStateCheck(__instance, fc);
+                    ReloadController.ReloadStateCheck(__instance, fc, Logger);
+                    AimController.ADSCheck(__instance, fc);
 
-                    if (Plugin.EnableStanceStamChanges.Value == true) 
+                    if (Plugin.EnableStanceStamChanges.Value == true)
                     {
                         StanceController.SetStanceStamina(__instance, fc);
                     }
 
                     PlayerProperties.RemainingArmStamPercentage = Mathf.Min(__instance.Physical.HandsStamina.Current * 1.65f, __instance.Physical.HandsStamina.TotalCapacity) / __instance.Physical.HandsStamina.TotalCapacity;
                 }
-                else if(Plugin.EnableStanceStamChanges.Value == true)
+                else if (Plugin.EnableStanceStamChanges.Value == true)
                 {
                     StanceController.ResetStanceStamina(__instance);
                 }
@@ -121,8 +121,7 @@ namespace RealismMod
             }
         }
 
-
-        public static void PlayerInjuryStateCheck(Player player, ManualLogSource logger)
+        private static void PlayerInjuryStateCheck(Player player, ManualLogSource logger)
         {
             bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
             bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);
@@ -177,39 +176,6 @@ namespace RealismMod
             }
         }
 
-        public static void ReloadStateCheck(Player player, EFT.Player.FirearmController fc)
-        {
-            PlayerProperties.IsInReloadOpertation = fc.IsInReloadOperation();
-
-            if (PlayerProperties.IsInReloadOpertation == true)
-            {
-                StanceController.CancelShortStock = true;
-                StanceController.CancelPistolStance = true;
-                StanceController.CancelActiveAim = true;
-
-                if (PlayerProperties.IsAttemptingToReloadInternalMag == true)
-                {
-                    StanceController.CancelHighReady = fc.Item.WeapClass != "shotgun" ? true : false;
-                    StanceController.CancelLowReady = fc.Item.WeapClass == "shotgun" || fc.Item.WeapClass == "pistol" ? true : false;
-
-                    float highReadyBonus = WeaponProperties._WeapClass == "shotgun" && StanceController.IsHighReady == true ? StanceController.HighReadyManipBuff : 1f;
-                    float lowReadyBonus = WeaponProperties._WeapClass != "shotgun" && StanceController.IsLowReady == true ? StanceController.LowReadyManipBuff : 1f;
-
-                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.6f, 1.35f);
-                    player.HandsAnimator.SetAnimationSpeed(IntenralMagReloadSpeed);
-
-                    if (Plugin.EnableLogging.Value == true)
-                    {
-                        Logger.LogWarning("IsAttemptingToReloadInternalMag = " + IntenralMagReloadSpeed);
-                    }
-                }
-            }
-            else
-            {
-                PlayerProperties.IsAttemptingToReloadInternalMag = false;
-                PlayerProperties.IsAttemptingRevolverReload = false;
-            }
-        }
     }
 }
 

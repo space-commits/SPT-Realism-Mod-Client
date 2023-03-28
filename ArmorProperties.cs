@@ -82,7 +82,7 @@ namespace RealismMod
             return float.Parse(armorItem.ConflictingItems[8]);
         }
 
-        public static bool HasBypassedArmor(Item armorItem)
+        public static bool HasBypassedArmorr_DEPRICATED(Item armorItem)
         {
             if (Utils.NullCheck(armorItem.ConflictingItems))
             {
@@ -109,7 +109,7 @@ namespace RealismMod
             return bool.Parse(armorItem.ConflictingItems[11]);
         }
 
-        public static bool HasHitSecondaryArmor(Item armorItem)
+        public static bool HasHitSecondaryArmor_DEPRICATED(Item armorItem)
         {
             if (Utils.NullCheck(armorItem.ConflictingItems))
             {

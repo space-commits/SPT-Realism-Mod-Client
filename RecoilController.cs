@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace RealismMod
 {
-    public class Recoil
+    public class RecoilController
     {
         private static void VRecoilClimb(float climbFactor)
         {
