@@ -253,6 +253,8 @@ namespace RealismMod
         public static ConfigEntry<float> RechamberPistolSpeedMulti { get; set; }
 
         public static ConfigEntry<bool> EnableLogging { get; set; }
+        public static ConfigEntry<bool> EnableBallisticsLogging { get; set; }
+
 
         public static Weapon CurrentlyShootingWeapon;
 
@@ -710,10 +712,11 @@ namespace RealismMod
 
             EnableAmmoFirerateDisp = Config.Bind<bool>(MiscSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 11 }));
 
-            EnableLogging = Config.Bind<bool>(MiscSettings, "Enable Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true }));
-            EnableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 2 }));
-            EnableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 3 }));
-            EnableNVGPatch = Config.Bind<bool>(MiscSettings, "Enable NVG ADS Patch", true, new ConfigDescription("Magnified Optics Block ADS When Using NVGs.", null, new ConfigurationManagerAttributes { Order = 4 }));
+            EnableBallisticsLogging = Config.Bind<bool>(MiscSettings, "Enable Ballistics Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true }));
+            EnableLogging = Config.Bind<bool>(MiscSettings, "Enable Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 2, IsAdvanced = true }));
+            EnableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 3 }));
+            EnableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 4 }));
+            EnableNVGPatch = Config.Bind<bool>(MiscSettings, "Enable NVG ADS Patch", true, new ConfigDescription("Magnified Optics Block ADS When Using NVGs.", null, new ConfigurationManagerAttributes { Order = 5 }));
             EnableRealArmorClass = Config.Bind<bool>(MiscSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 8 }));
             EnableHoldBreath = Config.Bind<bool>(MiscSettings, "Enable Hold Breath", false, new ConfigDescription("Enabled Hold Breath, Disabled By Default. The Mod Is Balanced Around Not Being Able To Hold Breath.", null, new ConfigurationManagerAttributes { Order = 10 }));
 

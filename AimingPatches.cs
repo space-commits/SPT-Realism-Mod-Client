@@ -127,7 +127,6 @@ namespace RealismMod
             {
                 player.Physical.Aim((!____isAiming || !(player.MovementContext.StationaryWeapon == null)) ? 0f : __instance.ErgonomicWeight * 0.2f);
             }
-            Logger.LogWarning("set_IsAiming");
         }
     }
 
