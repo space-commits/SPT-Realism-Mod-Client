@@ -571,6 +571,8 @@ namespace RealismMod
 
                     new ArmorZoneBaseDisplayPatch().Enable();
                     new ArmorZoneSringValueDisplayPatch().Enable();
+                    new IsPenetratedPatch().Enable();
+                    new IsShotDeflectedByHeavyArmorPatch().Enable();
 
                 }
 
