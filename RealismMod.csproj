@@ -23,6 +23,7 @@
 	<Reference Include="UnityEngine.UnityWebRequestModule" />
     <Reference Include="UnityEngine.UnityWebRequestTextureModule" />
     <Reference Include="UnityEngine.UnityWebRequestWWWModule" />
+	<Reference Include="UnityEngine.UnityWebRequestAudioModule" />
 	<Reference Include="AnimationSystem.Types" />
 	<Reference Include="Newtonsoft.Json" />
     <Reference Include="notGreg.UniformAim" />

@@ -77,12 +77,12 @@ namespace RealismMod
                 if (IsHighReady == true && !IsLowReady && !Plugin.IsAiming && !IsShortStock)
                 {
                     player.Physical.Aim(0f);
-                    player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.03f), player.Physical.HandsStamina.TotalCapacity);
+                    player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.01f), player.Physical.HandsStamina.TotalCapacity);
                 }
                 if (IsLowReady == true && !IsHighReady && !Plugin.IsAiming && !IsShortStock)
                 {
                     player.Physical.Aim(0f);
-                    player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.015f), player.Physical.HandsStamina.TotalCapacity);
+                    player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.03f), player.Physical.HandsStamina.TotalCapacity);
                 }
                 if (IsShortStock == true && !IsHighReady && !Plugin.IsAiming && !IsLowReady)
                 {

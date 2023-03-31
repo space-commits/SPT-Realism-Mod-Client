@@ -30,6 +30,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class Plugin : BaseUnityPlugin
     {
+
         public static ConfigEntry<float> resetTime { get; set; }
         public static ConfigEntry<float> vRecoilLimit { get; set; }
         public static ConfigEntry<float> hRecoilLimit { get; set; }
@@ -252,6 +253,12 @@ namespace RealismMod
         public static ConfigEntry<float> GlobalBoltSpeedMulti { get; set; }
         public static ConfigEntry<float> RechamberPistolSpeedMulti { get; set; }
 
+        public static ConfigEntry<bool> EnableArmorHitZones { get; set; }
+        public static ConfigEntry<bool> EnableBodyHitZones { get; set; }
+        public static ConfigEntry<bool> EnablePlayerArmorZones { get; set; }
+        public static ConfigEntry<bool> EnableArmPen { get; set; }
+        public static ConfigEntry<bool> EnableHitSounds { get; set; }
+
         public static ConfigEntry<bool> EnableLogging { get; set; }
         public static ConfigEntry<bool> EnableBallisticsLogging { get; set; }
 
@@ -418,14 +425,56 @@ namespace RealismMod
             }
         }
 
+        public static Dictionary<string, AudioClip> LoadedAudioClips = new Dictionary<string, AudioClip>();
+
+        async static void LoadAudioClip(string path)
+        {
+            LoadedAudioClips[Path.GetFileName(path)] = await RequestAudioClip(path);
+        }
+
+        async static Task<AudioClip> RequestAudioClip(string path)
+        {
+            string extension = Path.GetExtension(path);
+            AudioType audioType = AudioType.WAV;
+            switch (extension)
+            {
+                case ".wav":
+                    audioType = AudioType.WAV;
+                    break;
+                case ".ogg":
+                    audioType = AudioType.OGGVORBIS;
+                    break;
+            }
+            UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(path, audioType);
+            var SendWeb = www.SendWebRequest();
+
+            while (!SendWeb.isDone)
+                await Task.Yield();
+
+            if (www.isNetworkError || www.isHttpError)
+            {
+                return null;
+            }
+            else
+            {
+                AudioClip audioclip = DownloadHandlerAudioClip.GetContent(www);
+                return audioclip;
+            }
+        }
+
         void Awake()
         {
-
             try
             {
                 GetPaths();
                 ConfigCheck();
                 CacheIcons();
+
+                string[] AudioFiles = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "/BepInEx/plugins/Realism/sounds/");
+                foreach (string File in AudioFiles)
+                {
+                    LoadAudioClip(File);
+                }
             }
             catch (Exception exception)
             {
@@ -569,10 +618,19 @@ namespace RealismMod
                         new ArmorClassDisplayPatch().Enable();
                     }
 
-                    new ArmorZoneBaseDisplayPatch().Enable();
-                    new ArmorZoneSringValueDisplayPatch().Enable();
-                    new IsPenetratedPatch().Enable();
+                    if (Plugin.EnableArmorHitZones.Value) 
+                    {
+                        new ArmorZoneBaseDisplayPatch().Enable();
+                        new ArmorZoneSringValueDisplayPatch().Enable();
+                    }
+
                     new IsShotDeflectedByHeavyArmorPatch().Enable();
+
+                    if (Plugin.EnableArmPen.Value) 
+                    {
+                        new IsPenetratedPatch().Enable();
+                    }
+             
 
                 }
 
@@ -698,19 +756,20 @@ namespace RealismMod
         public void InitConfigs()
         {
             string MiscSettings = ".1. Misc. Settings";
-            string RecoilSettings = ".2. Recoil Settings";
-            string AdvancedRecoilSettings = ".3. Advanced Recoil Settings";
-            string WeapStatSettings = ".4. Weapon Stat Display Settings";
+            string BallSettings = ".2. Ballistics Settings";
+            string RecoilSettings = ".3. Recoil Settings";
+            string AdvancedRecoilSettings = ".4. Advanced Recoil Settings";
+            string WeapStatSettings = ".5. Weapon Stat Display Settings";
             /*                string AmmoSettings = "4. Ammo Stat Display Settings";*/
-            string WeaponSettings = ".5. Weapon Settings";
-            string DeafSettings = ".6. Deafening and Audio";
-            string Speed = ".7. Weapon Speed Modifiers";
-            string WeapAimAndPos = ".8. Weapon Stances And Position";
-            string ActiveAim = ".9. Active Aim";
-            string HighReady = "10. High Ready";
-            string LowReady = "11. Low Ready";
-            string Pistol = "12. Pistol Position And Stance";
-            string ShortStock = "13. Short-Stocking";
+            string WeaponSettings = ".6. Weapon Settings";
+            string DeafSettings = ".7. Deafening and Audio";
+            string Speed = ".8. Weapon Speed Modifiers";
+            string WeapAimAndPos = ".9. Weapon Stances And Position";
+            string ActiveAim = "10. Active Aim";
+            string HighReady = "11. High Ready";
+            string LowReady = "12. Low Ready";
+            string Pistol = "13. Pistol Position And Stance";
+            string ShortStock = "14. Short-Stocking";
 
             EnableAmmoFirerateDisp = Config.Bind<bool>(MiscSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 11 }));
 
@@ -719,8 +778,14 @@ namespace RealismMod
             EnableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 3 }));
             EnableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 4 }));
             EnableNVGPatch = Config.Bind<bool>(MiscSettings, "Enable NVG ADS Patch", true, new ConfigDescription("Magnified Optics Block ADS When Using NVGs.", null, new ConfigurationManagerAttributes { Order = 5 }));
-            EnableRealArmorClass = Config.Bind<bool>(MiscSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 8 }));
             EnableHoldBreath = Config.Bind<bool>(MiscSettings, "Enable Hold Breath", false, new ConfigDescription("Enabled Hold Breath, Disabled By Default. The Mod Is Balanced Around Not Being Able To Hold Breath.", null, new ConfigurationManagerAttributes { Order = 10 }));
+
+            EnableArmorHitZones = Config.Bind<bool>(BallSettings, "Enable Armor Hit Zones", true, new ConfigDescription("Armor Protection Is Limited To Wear Plates Would Be, Adds Neck And Side Armor Zones. Arm And Stomach Armor Has Limited Protection.", null, new ConfigurationManagerAttributes { Order = 1 }));
+            EnableBodyHitZones = Config.Bind<bool>(BallSettings, "Enable Body Hit Zones", true, new ConfigDescription("Divides Body Into A, C and D Hit Zones Like On IPSC Targets. In Addtion, There Are Upper Arm, Forearm, Thigh, Calf, Neck, Spine And Heart Hit Zones. Each Zone Modified Damage And Bleed Chance. ", null, new ConfigurationManagerAttributes { Order = 10 }));
+            EnablePlayerArmorZones = Config.Bind<bool>(BallSettings, "Enable Armor Hit Zones For Player.", true, new ConfigDescription("Enables Player To Use New Hit Zones.", null, new ConfigurationManagerAttributes { Order = 20 }));
+            EnableArmPen = Config.Bind<bool>(BallSettings, "Enable Increased Arm Penetration", false, new ConfigDescription("Arm 'Armor' Is Reduced to Lvl 1, And Reduces Pen Of Bullets That Pass Through Them By A Lot Less. Arms Soak Up A Lot Less Damage Therefore Damage To Chest Is Increased.", null, new ConfigurationManagerAttributes { Order = 40 }));
+            EnableHitSounds = Config.Bind<bool>(BallSettings, "Enable Hit Sounds", true, new ConfigDescription("Enables Additional Sounds To Be Played When Hitting The New Body Zones And Armor Hit Sounds By Material.", null, new ConfigurationManagerAttributes { Order = 50 }));
+            EnableRealArmorClass = Config.Bind<bool>(BallSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 60 }));
 
             EnableHipfireRecoilClimb = Config.Bind<bool>(RecoilSettings, "Enable Hipfire Recoil Climb", true, new ConfigDescription("Requires Restart. Enabled Recoil Climbing While Hipfiring", null, new ConfigurationManagerAttributes { Order = 4 }));
             ReduceCamRecoil = Config.Bind<bool>(RecoilSettings, "Reduce Camera Recoil", false, new ConfigDescription("Reduces Camera Recoil Per Shot. If Disabled, Camera Recoil Becomes More Intense As Weapon Recoil Increases.", null, new ConfigurationManagerAttributes { Order = 3 }));
