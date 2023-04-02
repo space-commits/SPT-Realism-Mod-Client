@@ -544,7 +544,7 @@ namespace RealismMod
         private static bool Prefix(ref Weapon __instance, ref float __result)
         {
             float Single_0 = (float)AccessTools.Property(typeof(Weapon), "Single_0").GetValue(__instance);
-            var method_9 = AccessTools.Method(typeof(Weapon), "method_9");
+            MethodInfo method_9 = AccessTools.Method(typeof(Weapon), "method_9");
 
             float num = (float)method_9.Invoke(__instance, new object[] { __instance.Repairable.TemplateDurability });
             float num2 = (__instance.GetBarrelDeviation() - num) / (Single_0 - num);

@@ -2,6 +2,7 @@
 using Aki.Reflection.Utils;
 using BepInEx.Logging;
 using EFT;
+using EFT.Animations;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
@@ -14,7 +15,6 @@ using static EFT.Player;
 
 namespace RealismMod
 {
-
     public class PlayerInitPatch : ModulePatch
     {
 
@@ -37,7 +37,6 @@ namespace RealismMod
                 StanceController.WasHighReady = false;
                 StanceController.WasLowReady = false;
                 StanceController.IsShortStock = false;
-
             }
         }
     }
@@ -57,28 +56,6 @@ namespace RealismMod
             {
                 StatCalc.SetGearParamaters(__instance);
             }
-        }
-    }
-
-    public class ToggleHoldingBreathPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player).GetMethod("ToggleHoldingBreath", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(Player __instance)
-        {
-            if (__instance.IsYourPlayer == true)
-            {
-                if (!Plugin.EnableHoldBreath.Value)
-                {
-                    return false;
-                }
-                return true;
-            }
-            return true;
         }
     }
 

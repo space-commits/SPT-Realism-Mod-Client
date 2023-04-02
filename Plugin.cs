@@ -640,8 +640,12 @@ namespace RealismMod
                 //Player
                 new EnduranceSprintActionPatch().Enable();
                 new EnduranceMovementActionPatch().Enable();
-                new ToggleHoldingBreathPatch().Enable();
                 new PlayerInitPatch().Enable();
+
+                if (Plugin.EnableHoldBreath.Value) 
+                {
+                    new ToggleHoldingBreathPatch().Enable();
+                }
 
                 //movement
                 new SprintAccelerationPatch().Enable();
@@ -778,7 +782,7 @@ namespace RealismMod
             EnableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 3 }));
             EnableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 4 }));
             EnableNVGPatch = Config.Bind<bool>(MiscSettings, "Enable NVG ADS Patch", true, new ConfigDescription("Magnified Optics Block ADS When Using NVGs.", null, new ConfigurationManagerAttributes { Order = 5 }));
-            EnableHoldBreath = Config.Bind<bool>(MiscSettings, "Enable Hold Breath", false, new ConfigDescription("Enabled Hold Breath, Disabled By Default. The Mod Is Balanced Around Not Being Able To Hold Breath.", null, new ConfigurationManagerAttributes { Order = 10 }));
+            EnableHoldBreath = Config.Bind<bool>(MiscSettings, "Enable Hold Breath", false, new ConfigDescription("Re-Enabled Hold Breath. This Mod Is Balanced Around Not Being Able To Hold Breath.", null, new ConfigurationManagerAttributes { Order = 10 }));
 
             EnableArmorHitZones = Config.Bind<bool>(BallSettings, "Enable Armor Hit Zones", true, new ConfigDescription("Armor Protection Is Limited To Wear Plates Would Be, Adds Neck And Side Armor Zones. Arm And Stomach Armor Has Limited Protection.", null, new ConfigurationManagerAttributes { Order = 1 }));
             EnableBodyHitZones = Config.Bind<bool>(BallSettings, "Enable Body Hit Zones", true, new ConfigDescription("Divides Body Into A, C and D Hit Zones Like On IPSC Targets. In Addtion, There Are Upper Arm, Forearm, Thigh, Calf, Neck, Spine And Heart Hit Zones. Each Zone Modified Damage And Bleed Chance. ", null, new ConfigurationManagerAttributes { Order = 10 }));
