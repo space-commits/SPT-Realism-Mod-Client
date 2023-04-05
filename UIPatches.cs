@@ -45,6 +45,7 @@ namespace RealismMod
                     fireRateAtt.Base = () => fireRate;
                     fireRateAtt.StringValue = () => $"{fireRate} %";
                     fireRateAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    fireRateAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
                     fireRateAtt.LessIsGood = true;
                     ammoAttributes.Add(fireRateAtt);
                 }
@@ -95,6 +96,115 @@ namespace RealismMod
                 armorDamAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
                 ammoAttributes.Add(armorDamAtt);
             }*/
+        }
+    }
+
+    public class HeadsetConstructorPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GClass2295).GetConstructor(new Type[] {typeof(string), typeof(GClass2202)});
+        }
+
+
+        [PatchPostfix]
+        private static void PatchPostfix(GClass2295 __instance)
+        {
+            Item item = __instance as Item;
+
+            float dB = GearProperties.DbLevel(item);
+
+            if (dB > 0) 
+            {
+                List<ItemAttributeClass> dbAtt = item.Attributes;
+                ItemAttributeClass dbAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.NoiseReduction);
+                dbAttClass.Name = ENewItemAttributeId.NoiseReduction.GetName();
+                dbAttClass.Base = () => dB;
+                dbAttClass.StringValue = () => dB.ToString() + " NRR";
+                dbAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                dbAtt.Add(dbAttClass);
+            }
+        }
+    }
+
+    public class AmmoMalfChanceDisplayPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(AmmoTemplate).GetMethod("method_12", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+
+        [PatchPrefix]
+        private static bool Prefix(AmmoTemplate __instance, ref string __result)
+        {
+            float malfChance = __instance.MalfMisfireChance;
+
+            Logger.LogWarning("malfChance " + malfChance);
+
+            switch (malfChance)
+            {
+                case <= 0f:
+                    __result = "NONE";
+                    break;
+                case <= 0.15f:
+                    __result = "VERY LOW";
+                    break;
+                case <= 0.25f:
+                    __result = "LOW";
+                    break;
+                case <= 0.45f:
+                    __result = "MODERATE";
+                    break;
+                case <= 0.65f:
+                    __result = "SIGNIFICANT";
+                    break;
+                case <= 1.1f:
+                    __result = "HIGH";
+                    break;
+                case <= 10:
+                    __result = "VERY HIGH";
+                    break;
+            }
+            return false;
+        }
+    }
+
+    public class AmmoDuraBurnDisplayPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(AmmoTemplate).GetMethod("method_16", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+
+        [PatchPrefix]
+        private static bool Prefix(AmmoTemplate __instance, ref string __result)
+        {
+            float duraBurn = __instance.DurabilityBurnModificator - 1f;
+
+            Logger.LogWarning("duraBurn " + duraBurn);
+
+            switch (duraBurn) 
+            {
+                //560 = 5.6
+                case <= 1f:
+                    __result = duraBurn.ToString("P1");
+                    break;
+                case <= 6f:
+                    __result = "SIGNIFICANT INCREASE";
+                    break;
+                case <= 10f:
+                    __result = "LARGE INCREASE";
+                    break;
+                case <= 15f:
+                    __result = "VERY LARGE INCREASE";
+                    break;
+                case <= 100f:
+                    __result = "HUGE INCREASE";
+                    break;
+            }
+            return false;
         }
     }
 

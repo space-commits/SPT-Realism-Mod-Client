@@ -72,10 +72,10 @@ namespace RealismMod
                 {
                     return;
                 }
-                reloadMulti *= ArmorProperties.ReloadSpeedMulti(armorComponent.Item);
+                reloadMulti *= GearProperties.ReloadSpeedMulti(armorComponent.Item);
                 GClass2197 armorTemplate = armorComponent.Template as GClass2197;
 
-                if (!ArmorProperties.AllowsADS(armorComponent.Item) && !armorTemplate.HasHinge)
+                if (!GearProperties.AllowsADS(armorComponent.Item) && !armorTemplate.HasHinge)
                 {
                     allowADS = false;
                 }
@@ -93,7 +93,7 @@ namespace RealismMod
 
             if (tacVest != null)
             {
-                return ArmorProperties.ReloadSpeedMulti(tacVest);
+                return GearProperties.ReloadSpeedMulti(tacVest);
             }
             else
             {
@@ -691,6 +691,10 @@ namespace RealismMod
             if (modType == "StockR")
             {
                 return "rearHalf";
+            }
+            if (modType == "counter_weight") 
+            {
+                return "front";
             }
 
             if (weapType == "pistol" || weapType == "bullpup")

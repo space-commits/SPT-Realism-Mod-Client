@@ -27,7 +27,7 @@ namespace RealismMod
         {
             Item item = __instance as Item;
 
-            float gearReloadSpeed = ArmorProperties.ReloadSpeedMulti(item);
+            float gearReloadSpeed = GearProperties.ReloadSpeedMulti(item);
             float reloadSpeedPercent = 0;
 
             reloadSpeedPercent = (float)Math.Round((gearReloadSpeed - 1f) * 100f);
@@ -74,22 +74,22 @@ namespace RealismMod
 
             private static string GetItemClass(CompositeArmorComponent x)
             {
-                return x.Item.ShortName.Localized(null) + ": " + ArmorProperties.ArmorClass(x.Item);
+                return x.Item.ShortName.Localized(null) + ": " + GearProperties.ArmorClass(x.Item);
             }
 
             [PatchPrefix]
             private static bool Prefix(ref float __result, ref EFT.InventoryLogic.ArmorComponent ___armorComponent_0)
             {
                 float armorElementsToAdd = 0;
-                if (ArmorProperties.HasNeckArmor(___armorComponent_0.Item) == true) 
+                if (GearProperties.HasNeckArmor(___armorComponent_0.Item) == true) 
                 {
                     armorElementsToAdd += 1;
                 }
-                if (ArmorProperties.HasSideArmor(___armorComponent_0.Item) == true)
+                if (GearProperties.HasSideArmor(___armorComponent_0.Item) == true)
                 {
                     armorElementsToAdd += 1;
                 }
-                if (ArmorProperties.HasStomachArmor(___armorComponent_0.Item) == true)
+                if (GearProperties.HasStomachArmor(___armorComponent_0.Item) == true)
                 {
                     armorElementsToAdd += 1;
                 }
@@ -122,7 +122,7 @@ namespace RealismMod
 
             private static string GetItemClass(CompositeArmorComponent x)
             {
-                return x.Item.ShortName.Localized(null) + ": " + ArmorProperties.ArmorClass(x.Item);
+                return x.Item.ShortName.Localized(null) + ": " + GearProperties.ArmorClass(x.Item);
             }
 
             [PatchPrefix]
@@ -143,15 +143,15 @@ namespace RealismMod
                     }
     
                 }
-                if (ArmorProperties.HasNeckArmor(___armorComponent_0.Item) == true)
+                if (GearProperties.HasNeckArmor(___armorComponent_0.Item) == true)
                 {
                     parts.Add("NECK");
                 }
-                if (ArmorProperties.HasSideArmor(___armorComponent_0.Item) == true)
+                if (GearProperties.HasSideArmor(___armorComponent_0.Item) == true)
                 {
                     parts.Add("SIDES");
                 }
-                if (ArmorProperties.HasStomachArmor(___armorComponent_0.Item) == true)
+                if (GearProperties.HasStomachArmor(___armorComponent_0.Item) == true)
                 {
                     parts.Add("STOMACH");
                 }
@@ -186,7 +186,7 @@ namespace RealismMod
 
             private static string GetItemClass(CompositeArmorComponent x)
             {
-                return x.Item.ShortName.Localized(null) + ": " + ArmorProperties.ArmorClass(x.Item);
+                return x.Item.ShortName.Localized(null) + ": " + GearProperties.ArmorClass(x.Item);
             }
 
             [PatchPrefix]
@@ -200,7 +200,7 @@ namespace RealismMod
                     return false;
                 }
 
-                __result = ArmorProperties.ArmorClass(___armorComponent_0.Item);
+                __result = GearProperties.ArmorClass(___armorComponent_0.Item);
                 return false;
             }
         }
@@ -235,14 +235,14 @@ namespace RealismMod
                     List<ItemAttributeClass> canADSAtt = __instance.Item.Attributes;
                     ItemAttributeClass canADSAttAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanAds);
                     canADSAttAttClass.Name = ENewItemAttributeId.CanAds.GetName();
-                    canADSAttAttClass.StringValue = () => ArmorProperties.AllowsADS(__instance.Item).ToString();
+                    canADSAttAttClass.StringValue = () => GearProperties.AllowsADS(__instance.Item).ToString();
                     canADSAttAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                     canADSAtt.Add(canADSAttAttClass);
                 }
 
                 if (Plugin.ModConfig.realistic_ballistics == true)
                 {
-                    bool canSpall = ArmorProperties.CanSpall(__instance.Item);
+                    bool canSpall = GearProperties.CanSpall(__instance.Item);
 
                     List<ItemAttributeClass> bluntAtt = __instance.Item.Attributes;
                     ItemAttributeClass bluntAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.BluntThroughput);
@@ -263,7 +263,7 @@ namespace RealismMod
                         List<ItemAttributeClass> spallReductAtt = __instance.Item.Attributes;
                         ItemAttributeClass spallReductAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.SpallReduction);
                         spallReductAttClass.Name = ENewItemAttributeId.SpallReduction.GetName();
-                        spallReductAttClass.StringValue = () => ((1 - ArmorProperties.SpallReduction(__instance.Item)) * 100).ToString() + " %";
+                        spallReductAttClass.StringValue = () => ((1 - GearProperties.SpallReduction(__instance.Item)) * 100).ToString() + " %";
                         spallReductAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                         spallReductAtt.Add(spallReductAttClass);
                     }

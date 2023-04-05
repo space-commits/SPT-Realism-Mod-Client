@@ -125,13 +125,13 @@ namespace RealismMod
                     }
                     else if (firearmController.Item.WeapClass == "pistol" && WeaponProperties.HasShoulderContact != true)
                     {
-                        breathIntensity = Mathf.Min(0.58f * ergoWeightFactor, 0.75f);
-                        handsIntensity = Mathf.Min(0.58f * ergoWeightFactor, 0.8f);
+                        breathIntensity = Mathf.Min(0.56f * ergoWeightFactor, 0.71f);
+                        handsIntensity = Mathf.Min(0.56f * ergoWeightFactor, 0.76f);
                     }
                     else
                     {
-                        breathIntensity = Mathf.Min(0.55f * ergoWeightFactor, 0.85f);
-                        handsIntensity = Mathf.Min(0.55f * ergoWeightFactor, 0.9f);
+                        breathIntensity = Mathf.Min(0.55f * ergoWeightFactor, 0.81f);
+                        handsIntensity = Mathf.Min(0.55f * ergoWeightFactor, 0.86f);
                     }
 
                     breathIntensity *= Plugin.SwayIntensity.Value;
@@ -184,7 +184,7 @@ namespace RealismMod
 
                     if (!WeaponProperties.HasShoulderContact && firearmController.Item.WeapClass != "pistol")
                     {
-                        aimIntensity = Plugin.SwayIntensity.Value * 1.1f;
+                        aimIntensity = Plugin.SwayIntensity.Value * 0.9f;
                     }
 
                     float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight * weightFactor);

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace RealismMod
 {
-    public static class ArmorProperties
+    public static class GearProperties
     {
         public static bool AllowsADS(Item armorItem)
         {
@@ -125,6 +125,15 @@ namespace RealismMod
                 return false;
             }
             return bool.Parse(armorItem.ConflictingItems[13]);
+        }
+
+        public static float DbLevel(Item armorItem)
+        {
+            if (Utils.NullCheck(armorItem.ConflictingItems))
+            {
+                return 0;
+            }
+            return float.Parse(armorItem.ConflictingItems[14]);
         }
 
     }

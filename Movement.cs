@@ -33,8 +33,9 @@ namespace RealismMod
                 {
                     //slow is hard set to 0.33 when called, 0.4-0.43 feels best.
                     float baseSpeed = PlayerProperties.AimMoveSpeedBase * WeaponProperties.AimMoveSpeedModifier;
-                    float totalSpeed = StanceController.IsActiveAiming ? baseSpeed * 1.3f : baseSpeed;
-                    __instance.AddStateSpeedLimit(Math.Max(totalSpeed, 0.15f), Player.ESpeedLimit.Aiming);
+                    float totalSpeed = StanceController.IsActiveAiming ? baseSpeed * 1.35f : baseSpeed;
+                    totalSpeed = WeaponProperties._WeapClass == "pistol" ? totalSpeed + 0.15f : totalSpeed;
+                    __instance.AddStateSpeedLimit(Mathf.Clamp(totalSpeed, 0.15f, 0.9f), Player.ESpeedLimit.Aiming);
 
                     return false;
                 }

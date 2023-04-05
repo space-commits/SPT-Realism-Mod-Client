@@ -17,6 +17,7 @@ using EFT.Quests;
 using System.IO;
 using static EFT.Interactive.BetterPropagationGroups;
 using HarmonyLib.Tools;
+using System.Collections;
 
 namespace RealismMod
 {
@@ -663,24 +664,36 @@ namespace RealismMod
 
         private static void playBodyHitSound(EHitZone hitZone, Vector3 pos) 
         {
+            float dist = CameraClass.Instance.Distance(pos);
+
             if (hitZone == EHitZone.Spine)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["spine_impact.wav"], CameraClass.Instance.Distance(pos), BetterAudio.AudioSourceGroupType.Impacts, 100, 1.5f, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["spine.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, 2.5f, EOcclusionTest.Continuous);
 
             }
             else if (hitZone == EHitZone.Heart)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["heart_impact.wav"], CameraClass.Instance.Distance(pos), BetterAudio.AudioSourceGroupType.Impacts, 100, 1.5f, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["heart.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, 2.5f, EOcclusionTest.Continuous);
             }
             else if(hitZone == EHitZone.AssZone)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["ass_impact.wav"], CameraClass.Instance.Distance(pos), BetterAudio.AudioSourceGroupType.Impacts, 100, 0.75f, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["ass_impact.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, 1.0f, EOcclusionTest.Continuous);
             }
             else
             {
-                string audioClip = playCounter == 0 ? "flesh_impact.wav" : playCounter == 1 ? "flesh_impact2.wav" : "flesh_impact3.wav";
+                string audioClip = "flesh_dist_1.wav";
+                if (dist >= 40)
+                {
+                    audioClip = playCounter == 0 ? "flesh_dist_1.wav" : playCounter == 1 ? "flesh_dist_2.wav" : "flesh_dist_2.wav";
+                }
+                else 
+                {
+                    audioClip = playCounter == 0 ? "flesh_1.wav" : playCounter == 1 ? "flesh_2.wav" : "flesh_3.wav";
+                }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], CameraClass.Instance.Distance(pos), BetterAudio.AudioSourceGroupType.Impacts, 100, 1.15f, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200,  dist >= 40 ? 4.0f : 2.75f, EOcclusionTest.Continuous);
+
+
             }
         }
 
@@ -898,9 +911,9 @@ namespace RealismMod
                 {
                     bool hitSecondaryArmor = false;
                     bool hasBypassedArmor = false;
-                    bool hasSideArmor = ArmorProperties.HasSideArmor(armor.Item);
-                    bool hasStomachArmor = ArmorProperties.HasStomachArmor(armor.Item);
-                    bool hasNeckArmor = ArmorProperties.HasNeckArmor(armor.Item);
+                    bool hasSideArmor = GearProperties.HasSideArmor(armor.Item);
+                    bool hasStomachArmor = GearProperties.HasStomachArmor(armor.Item);
+                    bool hasNeckArmor = GearProperties.HasNeckArmor(armor.Item);
                     bool hasArmArmor = armor.Template.ArmorZone.Contains(EBodyPart.LeftArm) || armor.Template.ArmorZone.Contains(EBodyPart.RightArm);
 
                     if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis || hitPart == HitBox.LeftForearm || hitPart == HitBox.RightForearm || hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightUpperArm)
@@ -922,7 +935,7 @@ namespace RealismMod
                         Logger.LogWarning("=========================");
                     }
 
-                    if (damageInfo.Blunt && ArmorProperties.CanSpall(armor.Item) && (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso) && !hasBypassedArmor && !hitSecondaryArmor)
+                    if (damageInfo.Blunt && GearProperties.CanSpall(armor.Item) && (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso) && !hasBypassedArmor && !hitSecondaryArmor)
                     {
                         SetArmorStats(armor);
                         AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
@@ -936,7 +949,7 @@ namespace RealismMod
                         float lightBleedChance = damageInfo.LightBleedingDelta;
                         float heavyBleedChance = damageInfo.HeavyBleedingDelta;
                         float ricochetChance = ammo.RicochetChance * speedFactor;
-                        float spallReduction = ArmorProperties.SpallReduction(armor.Item);
+                        float spallReduction = GearProperties.SpallReduction(armor.Item);
 
                         float duraPercent = _currentDura / _maxDura;
                         float armorFactor = !reduceDurability ? _armorClass * (Mathf.Min(1, duraPercent * 1.15f)) : _armorClass * (Mathf.Min(1, duraPercent * 2f)); //durability should be more important for steel plates, representing anti-spall coating. Lower the amount durapercent is factored by to increase importance
@@ -1016,11 +1029,99 @@ namespace RealismMod
 
         private static int playCounter = 0;
 
-        private static void playArmorHitSound(EArmorMaterial mat, Vector3 pos)
+        private static void playArmorHitSound(EArmorMaterial mat, Vector3 pos, bool isHelm)
         {
-            string audioClip = playCounter == 0 ? "impact.wav" : playCounter == 1 ? "impact2.wav" : "impact3.wav";
+            float dist = CameraClass.Instance.Distance(pos);
 
-            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], CameraClass.Instance.Distance(pos), BetterAudio.AudioSourceGroupType.Impacts, 100, 1.35f, EOcclusionTest.Regular);
+            if (mat == EArmorMaterial.Aramid)
+            {
+                string audioClip = "aramid_1.wav";
+                if (dist >= 40)
+                {
+                    audioClip = playCounter == 0 ? "impact_dist_1.wav" : playCounter == 1 ? "impact_dist_2.wav" : "impact_dist_3.wav";
+                }
+                else
+                {
+                    if (!isHelm)
+                    {
+                        audioClip = playCounter == 0 ? "aramid_1.wav" : playCounter == 1 ? "aramid_2.wav" : "aramid_3.wav";
+                    }
+                    else 
+                    {
+                        audioClip = playCounter == 0 ? "uhmwpe_1.wav" : playCounter == 1 ? "uhmwpe_2.wav" : "uhmwpe_3.wav";
+                    }
+                }
+
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? 4.5f : 3.5f, EOcclusionTest.Continuous);
+            }
+            else if (mat == EArmorMaterial.Ceramic)
+            {
+                string audioClip = "ceramic_1.wav";
+                if (dist >= 40) 
+                {
+                    audioClip = playCounter == 0 ? "ceramic_dist_1.wav" : playCounter == 1 ? "ceramic_dist_2.wav" : "ceramic_dist_3.wav";
+                }
+                else 
+                {
+                    audioClip = playCounter == 0 ? "ceramic_1.wav" : playCounter == 1 ? "ceramic_2.wav" : "ceramic_3.wav";
+                }
+
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? 4.5f : 3.5f, EOcclusionTest.Continuous);
+            }
+            else if (mat == EArmorMaterial.UHMWPE || mat == EArmorMaterial.Combined)
+            {
+                string audioClip = "uhmwpe_1.wav";
+                if (dist >= 40)
+                {
+                    audioClip = playCounter == 0 ? "impact_dist_1.wav" : playCounter == 1 ? "impact_dist_2.wav" : "impact_dist_4.wav";
+                }
+                else
+                {
+                    audioClip = playCounter == 0 ? "uhmwpe_1.wav" : playCounter == 1 ? "uhmwpe_2.wav" : "uhmwpe_3.wav";
+                }
+
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? 4.5f : 3.5f, EOcclusionTest.Continuous);
+            }
+            else if (mat == EArmorMaterial.Titan || mat == EArmorMaterial.ArmoredSteel)
+            {
+                string audioClip = "metal_1.wav";
+                if (dist >= 40)
+                {
+                    audioClip = playCounter == 0 ? "metal_dist_1.wav" : playCounter == 1 ? "metal_dist_2.wav" : "metal_dist_3.wav";
+                }
+                else
+                {
+                    audioClip = playCounter == 0 ? "metal_1.wav" : playCounter == 1 ? "metal_2.wav" : "metal_3.wav";
+                }
+
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? 4.0f : 2.25f, EOcclusionTest.Continuous);
+            }
+            else if (mat == EArmorMaterial.Glass)
+            {
+                string audioClip = "glass_1.wav";
+                if (dist >= 40)
+                {
+                    audioClip = playCounter == 0 ? "impact_dist_3.wav" : playCounter == 1 ? "impact_dist_4.wav" : "impact_dist_2.wav";
+                }
+                else
+                {
+                    audioClip = playCounter == 0 ? "glass_1.wav" : playCounter == 1 ? "glass_2.wav" : "glass_3.wav";
+                }
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? 3.5f : 2.25f, EOcclusionTest.Continuous);
+            }
+            else 
+            {
+                string audioClip = "impact_1.wav";
+                if (dist >= 40)
+                {
+                    audioClip = playCounter == 0 ? "impact_dist_4.wav" : playCounter == 1 ? "impact_dist_1.wav" : "impact_dist_3.wav";
+                }
+                else
+                {
+                    audioClip = playCounter == 0 ? "impact_1.wav" : playCounter == 1 ? "impact_2.wav" : "impact_3.wav";
+                }
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? 4.5f : 3.5f, EOcclusionTest.Continuous);
+            }
         }
 
         [PatchPrefix]
@@ -1033,9 +1134,9 @@ namespace RealismMod
 
             bool hitSecondaryArmor = false;
             bool hasBypassedArmor = false;
-            bool hasSideArmor = ArmorProperties.HasSideArmor(__instance.Item);
-            bool hasStomachArmor = ArmorProperties.HasStomachArmor(__instance.Item);
-            bool hasNeckArmor = ArmorProperties.HasNeckArmor(__instance.Item);
+            bool hasSideArmor = GearProperties.HasSideArmor(__instance.Item);
+            bool hasStomachArmor = GearProperties.HasStomachArmor(__instance.Item);
+            bool hasNeckArmor = GearProperties.HasNeckArmor(__instance.Item);
 
             bool isPlayer = __instance.Item.Owner.ID.StartsWith("pmc") || __instance.Item.Owner.ID.StartsWith("scav");
 
@@ -1113,9 +1214,9 @@ namespace RealismMod
                 {
                     return false;
                 }
-                else if (Plugin.EnableHitSounds.Value)
+                else 
                 {
-                    playArmorHitSound(__instance.Template.ArmorMaterial, col.transform.position);
+                    playArmorHitSound(__instance.Template.ArmorMaterial, col.transform.position, __instance.Template.ArmorZone.Contains(EBodyPart.Head));
                     playCounter++;
                     playCounter = playCounter > 2 ? 0 : playCounter;
                 }
@@ -1175,6 +1276,16 @@ namespace RealismMod
             return result;
         }
 
+        private static int playCounter = 0;
+
+        private static void playRicochetSound(Vector3 pos)
+        {
+            float dist = CameraClass.Instance.Distance(pos);
+            string audioClip = playCounter == 0 ? "ric_1.wav" : playCounter == 1 ? "ric_2.wav" : "ric_3.wav";
+
+            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, 3.0f, EOcclusionTest.Continuous);
+        }
+
         [PatchPrefix]
         private static bool Prefix(ref DamageInfo damageInfo, bool damageInfoIsLocal, ref ArmorComponent __instance, ref float __result)
         {
@@ -1185,7 +1296,9 @@ namespace RealismMod
                 __result = 0f;
                 return false;
             }
+
             __instance.TryShatter(damageInfo.Player, damageInfoIsLocal);
+
             if (__instance.Repairable.Durability <= 0f)
             {
                 __result = 0f;
@@ -1203,9 +1316,9 @@ namespace RealismMod
       /*          Vector3 normalizedPoint = localPoint.normalized;*/
                 Vector3 hitNormal = damageInfo.HitNormal;
 
-                bool hasSideArmor = ArmorProperties.HasSideArmor(__instance.Item);
-                bool hasStomachArmor = ArmorProperties.HasStomachArmor(__instance.Item);
-                bool hasNeckArmor = ArmorProperties.HasNeckArmor(__instance.Item);
+                bool hasSideArmor = GearProperties.HasSideArmor(__instance.Item);
+                bool hasStomachArmor = GearProperties.HasStomachArmor(__instance.Item);
+                bool hasNeckArmor = GearProperties.HasNeckArmor(__instance.Item);
                 EHitOrientation hitOrientation = EHitOrientation.UnknownOrientation;
 
                 if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis)
@@ -1216,6 +1329,13 @@ namespace RealismMod
                 if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis || hitPart == HitBox.LeftForearm || hitPart == HitBox.RightForearm || hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightUpperArm)
                 {
                     BallisticsController.GetHitArmorZone(Logger, __instance, hitPart, localPoint, hitOrientation, hasSideArmor, hasStomachArmor, hasNeckArmor, ref hasBypassedArmor, ref hitSecondaryArmor);
+                }
+
+                if (damageInfo.DeflectedBy == __instance.Item.Id) 
+                {
+                    playRicochetSound(col.transform.position);
+                    playCounter++;
+                    playCounter = playCounter > 2 ? 0 : playCounter;
                 }
 
                 if (Plugin.EnableBallisticsLogging.Value)

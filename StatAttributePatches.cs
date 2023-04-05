@@ -61,7 +61,8 @@ namespace RealismMod
             GearReloadSpeed,
             CanSpall,
             SpallReduction,
-            CanAds
+            CanAds,
+            NoiseReduction
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -116,6 +117,8 @@ namespace RealismMod
                     return "RELOAD SPEED";
                 case ENewItemAttributeId.CanAds:
                     return "ALLOWS ADS";
+                case ENewItemAttributeId.NoiseReduction:
+                    return "NOISE REDUCTION RATING";
                 default:
                     return id.ToString();
             }
