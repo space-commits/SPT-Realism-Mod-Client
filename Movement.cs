@@ -19,14 +19,14 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass1601).GetMethod("SetAimingSlowdown", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GClass1604).GetMethod("SetAimingSlowdown", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref GClass1601 __instance, bool isAiming)
+        private static bool Prefix(ref GClass1604 __instance, bool isAiming)
         {
-
-            Player player = (Player)AccessTools.Field(typeof(GClass1601), "player_0").GetValue(__instance);
+            
+            Player player = (Player)AccessTools.Field(typeof(GClass1604), "player_0").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 if (isAiming)
@@ -36,7 +36,6 @@ namespace RealismMod
                     float totalSpeed = StanceController.IsActiveAiming ? baseSpeed * 1.35f : baseSpeed;
                     totalSpeed = WeaponProperties._WeapClass == "pistol" ? totalSpeed + 0.15f : totalSpeed;
                     __instance.AddStateSpeedLimit(Mathf.Clamp(totalSpeed, 0.15f, 0.9f), Player.ESpeedLimit.Aiming);
-
                     return false;
                 }
                 __instance.RemoveStateSpeedLimit(Player.ESpeedLimit.Aiming);
@@ -50,17 +49,17 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass1601).GetMethod("SprintAcceleration", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GClass1604).GetMethod("SprintAcceleration", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(GClass1601 __instance, float deltaTime)
+        private static bool Prefix(GClass1604 __instance, float deltaTime)
         {
-            Player player = (Player)AccessTools.Field(typeof(GClass1601), "player_0").GetValue(__instance);
+            Player player = (Player)AccessTools.Field(typeof(GClass1604), "player_0").GetValue(__instance);
 
             if (player.IsYourPlayer == true)
             {
-                GClass753 rotationFrameSpan = (GClass753)AccessTools.Field(typeof(GClass1601), "gclass753_0").GetValue(__instance);
+                GClass755 rotationFrameSpan = (GClass755)AccessTools.Field(typeof(GClass1604), "gclass755_0").GetValue(__instance);
                 float highReadySpeedBonus = StanceController.IsHighReady ? 1.15f : 1f;
                 float highReadyAccelBonus = StanceController.IsHighReady ? 2f : 1f;
                 float lowReadyAccelBonus = StanceController.IsLowReady ? 1.25f : 1f;
@@ -154,7 +153,7 @@ namespace RealismMod
     {
         public static bool IsEnduraStrngthType(Type type)
         {
-            return type.GetField("skillsRelatedToHealth") != null && type.GetField("gclass1677_0") != null;
+            return type.GetField("skillsRelatedToHealth") != null && type.GetField("gclass1680_0") != null;
         }
     }
 }

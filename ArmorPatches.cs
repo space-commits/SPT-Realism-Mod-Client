@@ -18,12 +18,12 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass2340).GetConstructor(new Type[] { typeof(string), typeof(GClass2247) });
+            return typeof(GClass2343).GetConstructor(new Type[] { typeof(string), typeof(GClass2250) });
         }
 
 
         [PatchPostfix]
-        private static void PatchPostfix(GClass2340 __instance)
+        private static void PatchPostfix(GClass2343 __instance)
         {
             Item item = __instance as Item;
 
@@ -211,7 +211,7 @@ namespace RealismMod
 
             protected override MethodBase GetTargetMethod()
             {
-                return typeof(EFT.InventoryLogic.ArmorComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface227), typeof(RepairableComponent), typeof(BuffComponent) });
+                return typeof(EFT.InventoryLogic.ArmorComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface228), typeof(RepairableComponent), typeof(BuffComponent) });
             }
 
 

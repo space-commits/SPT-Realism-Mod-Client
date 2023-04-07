@@ -1,4 +1,5 @@
 ﻿using Aki.Reflection.Patching;
+using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
@@ -19,7 +20,7 @@ namespace RealismMod
 
         private static bool wasToggled = false;
 
-        public static void ADSCheck(Player player, EFT.Player.FirearmController fc)
+        public static void ADSCheck(Player player, EFT.Player.FirearmController fc, ManualLogSource logger)
         {
             if (!player.IsAI && fc.Item != null)
             {
@@ -28,7 +29,7 @@ namespace RealismMod
                 NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
                 bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
                 bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
-                if (((Plugin.EnableNVGPatch.Value == true && nvgIsOn == true && Plugin.HasOptic) || (Plugin.EnableFSPatch.Value == true && ((fsIsON && !WeaponProperties.WeaponCanFSADS && !GearProperties.AllowsADS(fsComponent.Item)) || (!PlayerProperties.GearAllowsADS && !WeaponProperties.WeaponCanFSADS)))))
+                if ((Plugin.EnableNVGPatch.Value && nvgIsOn && Plugin.HasOptic) || (Plugin.EnableFSPatch.Value && fsIsON && (!WeaponProperties.WeaponCanFSADS && !GearProperties.AllowsADS(fsComponent.Item)) || (!PlayerProperties.GearAllowsADS && !WeaponProperties.WeaponCanFSADS)))
                 {
                     if (!SetCanAds)
                     {
@@ -44,7 +45,7 @@ namespace RealismMod
                     SetCanAds = false;
                 }
 
-                if (StanceController.IsActiveAiming == true)
+                if (StanceController.IsActiveAiming && !isAiming)
                 {
                     if (!SetActiveAimADS)
                     {
@@ -56,29 +57,34 @@ namespace RealismMod
                     }
 
                 }
-                if (!StanceController.IsActiveAiming && !isAiming)
+                if (!StanceController.IsActiveAiming && SetActiveAimADS)
                 {
                     player.MovementContext.SetAimingSlowdown(false, 0.33f);
                     SetActiveAimADS = false;
                 }
 
-                if (!wasToggled && (fsIsON == true || nvgIsOn == true)) 
+                if (isAiming)
+                {
+                    player.MovementContext.SetAimingSlowdown(true, 0.33f);
+                }
+
+                if (!wasToggled && (fsIsON || nvgIsOn)) 
                 {
                     wasToggled = true;
                 }
                 if (wasToggled == true && (!fsIsON && !nvgIsOn))
                 {
                     StanceController.WasActiveAim = false;
-                    if (Plugin.ToggleActiveAim.Value == true)
+                    if (Plugin.ToggleActiveAim.Value)
                     {
                         StanceController.IsActiveAiming = false;
                     }
                     wasToggled = false;
                 }
 
-                if ((StanceController.IsHighReady == true || StanceController.WasHighReady == true) && !PlayerProperties.RightArmBlacked)
+                if ((StanceController.IsHighReady || StanceController.WasHighReady) && !PlayerProperties.RightArmBlacked)
                 {
-                    player.BodyAnimatorCommon.SetFloat(GClass1645.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
+                    player.BodyAnimatorCommon.SetFloat(GClass1648.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
                     if (!SetRunAnim)
                     {
                         SetRunAnim = true;
@@ -89,14 +95,14 @@ namespace RealismMod
                 {
                     if (!ResetRunAnim)
                     {
-                        player.BodyAnimatorCommon.SetFloat(GClass1645.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
+                        player.BodyAnimatorCommon.SetFloat(GClass1648.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
                         ResetRunAnim = true;
                         SetRunAnim = false;
                     }
 
                 }
 
-                if (player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire == true)
+                if (player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire)
                 {
                     Plugin.IsAiming = isAiming;
                     StanceController.PistolIsColliding = false;
@@ -161,7 +167,7 @@ namespace RealismMod
         private static bool Prefix(EFT.Player.FirearmController __instance)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
-            if (Plugin.EnableFSPatch.Value == true && !player.IsAI)
+            if ((Plugin.EnableFSPatch.Value == true || Plugin.EnableNVGPatch.Value == true) && !player.IsAI)
             {
                 return PlayerProperties.IsAllowedADS;
             }

@@ -37,7 +37,7 @@ namespace RealismMod
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
                 if (player.IsYourPlayer == true)
                 {
-                    SkillsClass.GClass1678 skillsClass = (SkillsClass.GClass1678)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "gclass1678_0").GetValue(__instance);
+                    SkillsClass.GClass1681 skillsClass = (SkillsClass.GClass1681)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "gclass1681_0").GetValue(__instance);
                     Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "valueBlender_0").GetValue(__instance);
 
                     float singleItemTotalWeight = firearmController.Item.GetSingleItemTotalWeight();

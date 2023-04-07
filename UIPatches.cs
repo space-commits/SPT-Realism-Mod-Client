@@ -457,7 +457,7 @@ namespace RealismMod
             if (Plugin.ShowBalance.Value == true)
             {
                 List<ItemAttributeClass> balanceAttList = __instance.Attributes;
-                GClass2406 balanceAtt = new GClass2406((EItemAttributeId)ENewItemAttributeId.Balance);
+                GClass2409 balanceAtt = new GClass2409((EItemAttributeId)ENewItemAttributeId.Balance);
                 balanceAtt.Name = ENewItemAttributeId.Balance.GetName();
                 balanceAtt.Range = new Vector2(100f, 200f);
                 balanceAtt.LessIsGood = false;
@@ -472,7 +472,7 @@ namespace RealismMod
             if (Plugin.ShowDispersion.Value == true)
             {
                 List<ItemAttributeClass> dispersionAttList = __instance.Attributes;
-                GClass2406 dispersionAtt = new GClass2406((EItemAttributeId)ENewItemAttributeId.Dispersion);
+                GClass2409 dispersionAtt = new GClass2409((EItemAttributeId)ENewItemAttributeId.Dispersion);
                 dispersionAtt.Name = ENewItemAttributeId.Dispersion.GetName();
                 dispersionAtt.Range = new Vector2(0f, 50f);
                 dispersionAtt.LessIsGood = true;
@@ -486,7 +486,7 @@ namespace RealismMod
             if (Plugin.ShowCamRecoil.Value == true)
             {
                 List<ItemAttributeClass> camRecoilAttList = __instance.Attributes;
-                GClass2406 camRecoilAtt = new GClass2406((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
+                GClass2409 camRecoilAtt = new GClass2409((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
                 camRecoilAtt.Name = ENewItemAttributeId.CameraRecoil.GetName();
                 camRecoilAtt.Range = new Vector2(0f, 0.25f);
                 camRecoilAtt.LessIsGood = true;

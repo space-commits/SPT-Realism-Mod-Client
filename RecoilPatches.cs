@@ -27,7 +27,7 @@ namespace RealismMod
 
             if (_weapon.Item.Owner.ID.StartsWith("pmc") || _weapon.Item.Owner.ID.StartsWith("scav"))
             {
-                SkillsClass.GClass1678 buffInfo = (SkillsClass.GClass1678)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
+                SkillsClass.GClass1681 buffInfo = (SkillsClass.GClass1681)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
                 WeaponTemplate template = _weapon.WeaponTemplate;
 
                 float vRecoilDelta;

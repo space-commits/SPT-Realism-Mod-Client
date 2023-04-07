@@ -80,7 +80,7 @@ namespace RealismMod
                 if (fc != null)
                 {
                     ReloadController.ReloadStateCheck(__instance, fc, Logger);
-                    AimController.ADSCheck(__instance, fc);
+                    AimController.ADSCheck(__instance, fc, Logger);
 
                     if (Plugin.EnableStanceStamChanges.Value == true)
                     {
