@@ -419,6 +419,7 @@ namespace RealismMod
             IconCache.Add(ENewItemAttributeId.GearReloadSpeed, Resources.Load<Sprite>("characteristics/icons/weapFireType"));
             IconCache.Add(ENewItemAttributeId.CanAds, Resources.Load<Sprite>("characteristics/icons/SightingRange"));
             IconCache.Add(ENewItemAttributeId.NoiseReduction, Resources.Load<Sprite>("characteristics/icons/icon_info_loudness"));
+            IconCache.Add(ENewItemAttributeId.ProjectileCount, Resources.Load<Sprite>("characteristics/icons/icon_info_bulletspeed"));
             _ = LoadTexture(ENewItemAttributeId.Balance, Path.Combine(ModPath, "res\\balance.png"));
             _ = LoadTexture(ENewItemAttributeId.RecoilAngle, Path.Combine(ModPath, "res\\recoilAngle.png"));
         }
@@ -618,6 +619,7 @@ namespace RealismMod
                 new HeadsetConstructorPatch().Enable();
                 new AmmoDuraBurnDisplayPatch().Enable();
                 new AmmoMalfChanceDisplayPatch().Enable();
+                new BarrelModClassPatch().Enable();
 
 
                 if (Plugin.IncreaseCOI.Value == true)

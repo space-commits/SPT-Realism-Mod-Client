@@ -62,7 +62,8 @@ namespace RealismMod
             CanSpall,
             SpallReduction,
             CanAds,
-            NoiseReduction
+            NoiseReduction,
+            ProjectileCount
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -119,6 +120,8 @@ namespace RealismMod
                     return "ALLOWS ADS";
                 case ENewItemAttributeId.NoiseReduction:
                     return "NOISE REDUCTION RATING";
+                case ENewItemAttributeId.ProjectileCount:
+                    return "PROJECTILES";
                 default:
                     return id.ToString();
             }
