@@ -63,7 +63,8 @@ namespace RealismMod
             SpallReduction,
             CanAds,
             NoiseReduction,
-            ProjectileCount
+            ProjectileCount,
+            Convergence
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -122,6 +123,8 @@ namespace RealismMod
                     return "NOISE REDUCTION RATING";
                 case ENewItemAttributeId.ProjectileCount:
                     return "PROJECTILES";
+                case ENewItemAttributeId.Convergence:
+                    return "FLATNESS";
                 default:
                     return id.ToString();
             }

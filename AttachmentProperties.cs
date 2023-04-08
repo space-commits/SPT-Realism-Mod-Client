@@ -104,7 +104,7 @@ namespace RealismMod
             return float.Parse(mod.ConflictingItems[11]);
         }
 
-        public static float Length(Mod mod)
+        public static float ModConvergence(Mod mod)
         {
             if (Utils.NullCheck(mod.ConflictingItems))
             {

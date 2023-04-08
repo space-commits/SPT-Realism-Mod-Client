@@ -314,6 +314,7 @@ namespace RealismMod
             float chamberSpeed = AttachmentProperties.ChamberSpeed(__instance);
             float aimSpeed = AttachmentProperties.AimSpeed(__instance);
             float shotDisp = AttachmentProperties.ModShotDispersion(__instance);
+            float conv = AttachmentProperties.ModConvergence(__instance);
 
             if (Plugin.EnableMalfPatch.Value == true && Plugin.ModConfig.malf_changes == true)
             {
@@ -426,6 +427,15 @@ namespace RealismMod
             shotDispAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             shotDispAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Utils.SafelyAddAttributeToList(shotDispAtt, __instance);
+
+            ItemAttributeClass convAtt = new ItemAttributeClass(ENewItemAttributeId.Convergence);
+            convAtt.Name = ENewItemAttributeId.Convergence.GetName();
+            convAtt.Base = () => conv;
+            convAtt.StringValue = () => $"{conv}%";
+            convAtt.LessIsGood = false;
+            convAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+            convAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
+            Utils.SafelyAddAttributeToList(convAtt, __instance);
         }
 
         public static string getMalfOdds(float malfChance)
@@ -758,6 +768,9 @@ namespace RealismMod
             float baseCamRecoil = __instance.Template.CameraRecoil;
             float currentCamRecoil = baseCamRecoil;
 
+            float baseConv = __instance.Template.Convergence;
+            float currentConv = baseConv;
+
             float baseDispersion = __instance.Template.RecolDispersion;
             float currentDispersion = baseDispersion;
 
@@ -799,6 +812,7 @@ namespace RealismMod
 
             bool stockAllowsFSADS = false;
 
+
             if (WeaponProperties.WepHasShoulderContact(__instance) == true && !folded)
             {
                 hasShoulderContact = true;
@@ -819,6 +833,7 @@ namespace RealismMod
                 float modAutoROF = AttachmentProperties.AutoROF(__instance.Mods[i]);
                 float modSemiROF = AttachmentProperties.SemiROF(__instance.Mods[i]);
                 float modCamRecoil = AttachmentProperties.CameraRecoil(__instance.Mods[i]);
+                float modConv = AttachmentProperties.ModConvergence(__instance.Mods[i]);
                 float modDispersion = AttachmentProperties.Dispersion(__instance.Mods[i]);
                 float modAngle = AttachmentProperties.RecoilAngle(__instance.Mods[i]);
                 float modAccuracy = __instance.Mods[i].Accuracy;
@@ -832,8 +847,8 @@ namespace RealismMod
                 string modType = AttachmentProperties.ModType(__instance.Mods[i]);
                 string position = StatCalc.GetModPosition(__instance.Mods[i], weapType, weapOpType, modType);
 
-                StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, ref modMalfChance, ref modDuraBurn);
-                StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, true, __instance.WeapClass, ref pureErgo, 0, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, ref pureRecoil);
+                StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, ref modMalfChance, ref modDuraBurn, ref modConv);
+                StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, true, __instance.WeapClass, ref pureErgo, 0, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, ref pureRecoil, ref currentConv, modConv);
             }
 
             float totalTorque = 0;

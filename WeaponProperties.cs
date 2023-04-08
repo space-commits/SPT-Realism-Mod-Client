@@ -277,25 +277,27 @@ namespace RealismMod
 
         public static float TotalErgo = 0f;
 
-        public static float SDTotalErgo = 0f;
+        public static float InitTotalErgo = 0f;
 
-        public static float SDTotalVRecoil = 0f;
+        public static float InitTotalVRecoil = 0f;
 
-        public static float SDTotalHRecoil = 0f;
+        public static float InitTotalHRecoil = 0f;
 
-        public static float SDBalance = 0f;
+        public static float InitBalance = 0f;
 
-        public static float SDCamRecoil = 0f;
+        public static float InitCamRecoil = 0f;
 
-        public static float SDDispersion = 0f;
+        public static float ModdedConv = 0f;
 
-        public static float SDRecoilAngle = 0f;
+        public static float InitDispersion = 0f;
 
-        public static float SDTotalCOI = 0f;
+        public static float InitRecoilAngle = 0f;
+
+        public static float InitTotalCOI = 0f;
 
         public static string SavedInstanceID = "";
 
-        public static float SDPureErgo = 0f;
+        public static float InitPureErgo = 0f;
 
         public static float PureRecoilDelta = 0f;
 

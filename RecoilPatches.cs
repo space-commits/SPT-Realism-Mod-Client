@@ -76,7 +76,7 @@ namespace RealismMod
                 Plugin.CurrentHRecoilX = Plugin.StartingHRecoilX;
                 Plugin.CurrentHRecoilY = Plugin.StartingHRecoilY;
 
-                Plugin.StartingConvergence = (float)Math.Round(_weapon.WeaponTemplate.Convergence * Singleton<BackendConfigSettingsClass>.Instance.Aiming.RecoilConvergenceMult, 2);
+                Plugin.StartingConvergence = (float)Math.Round(WeaponProperties.ModdedConv * Singleton<BackendConfigSettingsClass>.Instance.Aiming.RecoilConvergenceMult, 2);
                 Plugin.CurrentConvergence = Plugin.StartingConvergence;
                 Plugin.ConvergenceProporitonK = (float)Math.Round(Plugin.StartingConvergence * Plugin.StartingVRecoilX, 2);
 
