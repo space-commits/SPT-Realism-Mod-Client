@@ -228,11 +228,11 @@ namespace RealismMod
 
                     if (Plugin.ShotCount == 1 && WeaponProperties._WeapClass != "pistol")
                     {
-                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * 0.69f;
+                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
                     }
                     if (Plugin.ShotCount > 1)
                     {
-                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * 0.59f;
+                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvAutoMulti.Value;
                     }
                 }
             }

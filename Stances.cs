@@ -319,10 +319,10 @@ namespace RealismMod
                     }
                 }
 
-                HighReadyManipBuff = IsHighReady == true ? 1.25f : 1f;
+                HighReadyManipBuff = IsHighReady == true ? 1.2f : 1f;
                 HighReadyManipDebuff = IsHighReady == true ? 0.8f : 1f;
                 ActiveAimManipDebuff = IsActiveAiming == true ? 0.8f : 1f;
-                LowReadyManipBuff = IsLowReady == true ? 1.25f : 1f;
+                LowReadyManipBuff = IsLowReady == true ? 1.2f : 1f;
 
 
                 if (ResetStances == true) 
@@ -862,6 +862,28 @@ namespace RealismMod
             {
                 Plugin.DidWeaponSwap = true;
             }
+        }
+    }
+
+    public class SetFireModePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetFireMode", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(FirearmsAnimator __instance, Weapon.EFireMode fireMode, bool skipAnimation = false)
+        {
+         
+            __instance.ResetLeftHand();
+            skipAnimation = StanceController.IsHighReady && Plugin.IsSprinting ? true : skipAnimation;
+            WeaponAnimationSpeedControllerClass.SetFireMode(__instance.Animator, (float)fireMode);
+            if (!skipAnimation)
+            {
+                WeaponAnimationSpeedControllerClass.TriggerFiremodeSwitch(__instance.Animator);
+            }
+            return false;
         }
     }
 
