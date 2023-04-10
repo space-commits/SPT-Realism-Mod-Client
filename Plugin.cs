@@ -658,8 +658,6 @@ namespace RealismMod
                     {
                         new IsPenetratedPatch().Enable();
                     }
-             
-
                 }
 
                 new ArmorComponentPatch().Enable();
@@ -815,8 +813,8 @@ namespace RealismMod
             EnablePlayerArmorZones = Config.Bind<bool>(BallSettings, "Enable Armor Hit Zones For Player.", true, new ConfigDescription("Enables Player To Use New Hit Zones.", null, new ConfigurationManagerAttributes { Order = 20 }));
             EnableArmPen = Config.Bind<bool>(BallSettings, "Enable Increased Arm Penetration", true, new ConfigDescription("Arm 'Armor' Is Reduced to Lvl 1, And Reduces Pen Of Bullets That Pass Through Them By A Lot Less. Arms Soak Up A Lot Less Damage Therefore Damage To Chest Is Increased.", null, new ConfigurationManagerAttributes { Order = 40 }));
             EnableHitSounds = Config.Bind<bool>(BallSettings, "Enable Hit Sounds", true, new ConfigDescription("Enables Additional Sounds To Be Played When Hitting The New Body Zones And Armor Hit Sounds By Material.", null, new ConfigurationManagerAttributes { Order = 50 }));
-            CloseHitSoundMulti = Config.Bind<float>(BallSettings, "Distance Armor Hit Sound Multi", 1.0f, new ConfigDescription("Raises/Lowers New Hit Sounds Audio Level.", null, new ConfigurationManagerAttributes { Order = 51 }));
-            FarHitSoundMulti = Config.Bind<float>(BallSettings, "Close Armor Hit Sound Mutli", 1.0f, new ConfigDescription("Raises/Lowers New Hit Sounds Audio Level.", null, new ConfigurationManagerAttributes { Order = 52 }));
+            CloseHitSoundMulti = Config.Bind<float>(BallSettings, "Distance Armor Hit Sound Multi", 1.0f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", null, new ConfigurationManagerAttributes { Order = 51 }));
+            FarHitSoundMulti = Config.Bind<float>(BallSettings, "Close Armor Hit Sound Mutli", 1.0f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", null, new ConfigurationManagerAttributes { Order = 52 }));
             EnableRealArmorClass = Config.Bind<bool>(BallSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 60 }));
 
             EnableHipfireRecoilClimb = Config.Bind<bool>(RecoilSettings, "Enable Hipfire Recoil Climb", true, new ConfigDescription("Requires Restart. Enabled Recoil Climbing While Hipfiring", null, new ConfigurationManagerAttributes { Order = 4 }));
