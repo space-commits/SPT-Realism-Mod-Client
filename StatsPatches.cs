@@ -532,7 +532,7 @@ namespace RealismMod
             {
                 SkillsClass.GClass1681 skillsClass = (SkillsClass.GClass1681)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1681_0").GetValue(__instance);
                 PlayerProperties.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
-                PlayerProperties.ReloadSkillMulti = skillsClass.ReloadSpeed;
+                PlayerProperties.ReloadSkillMulti = Mathf.Max(1, ((skillsClass.ReloadSpeed - 1f) * 0.5f) + 1f);
                 PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;
                 PlayerProperties.WeaponSkillErgo = skillsClass.DeltaErgonomics;
                 PlayerProperties.AimSkillADSBuff = skillsClass.AimSpeed;

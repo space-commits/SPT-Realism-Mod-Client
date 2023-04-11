@@ -64,11 +64,11 @@ namespace RealismMod
             {
                 if (!IsHighReady && !IsLowReady && !Plugin.IsAiming && !IsActiveAiming && !IsShortStock && Plugin.EnableIdleStamDrain.Value == true && !player.IsInPronePose)
                 {
-                    player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.5f);
+                    player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.5f * ((1f -PlayerProperties.ADSInjuryMulti) + 1f));
                 }
-                if (IsActiveAiming == true)
+                else if (IsActiveAiming == true)
                 {
-                    player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.3f);
+                    player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.3f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                 }
                 else if (!Plugin.IsAiming && !Plugin.EnableIdleStamDrain.Value)
                 {
@@ -77,17 +77,17 @@ namespace RealismMod
                 if (IsHighReady == true && !IsLowReady && !Plugin.IsAiming && !IsShortStock)
                 {
                     player.Physical.Aim(0f);
-                    player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.01f), player.Physical.HandsStamina.TotalCapacity);
+                    player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.01f) * PlayerProperties.ADSInjuryMulti)), player.Physical.HandsStamina.TotalCapacity);
                 }
                 if (IsLowReady == true && !IsHighReady && !Plugin.IsAiming && !IsShortStock)
                 {
                     player.Physical.Aim(0f);
-                    player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.03f), player.Physical.HandsStamina.TotalCapacity);
+                    player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.03f) * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
                 }
                 if (IsShortStock == true && !IsHighReady && !Plugin.IsAiming && !IsLowReady)
                 {
                     player.Physical.Aim(0f);
-                    player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.01f), player.Physical.HandsStamina.TotalCapacity);
+                    player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.01f) * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
                 }
             }
             else
@@ -95,21 +95,21 @@ namespace RealismMod
                 if (!Plugin.IsAiming)
                 {
                     player.Physical.Aim(0f);
-                    player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.025f), player.Physical.HandsStamina.TotalCapacity);
+                    player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.025f) * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
                 }
             }
 
             if (player.IsInventoryOpened == true || (player.IsInPronePose && !Plugin.IsAiming))
             {
                 player.Physical.Aim(0f);
-                player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + 0.04f, player.Physical.HandsStamina.TotalCapacity);
+                player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (0.04f * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
             }
         }
 
         public static void ResetStanceStamina(Player player) 
         {
             player.Physical.Aim(0f);
-            player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + 0.04f, player.Physical.HandsStamina.TotalCapacity);
+            player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (0.04f * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
         }
 
         public static bool IsIdle()
@@ -348,7 +348,7 @@ namespace RealismMod
 
         public static void DoPistolStances(bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation __instance, ref Quaternion currentRotation, float dt, ref bool hasResetPistolPos) 
         {
-            float aimMulti = Mathf.Clamp(WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f)), 0.5f, 1.3f);
+            float aimMulti = Mathf.Clamp(WeaponProperties.SightlessAimSpeed * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f)), 0.5f, 1.3f);
             float resetAimMulti = (1f - aimMulti) + 1f;
             float intensity = Mathf.Max(3f * (1f - PlayerProperties.WeaponSkillErgo) * resetAimMulti, 1f);
             float balanceFactor = 1f + (WeaponProperties.Balance / 100f);
@@ -360,7 +360,11 @@ namespace RealismMod
             Quaternion pistolMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.PistolAdditionalRotationX.Value, Plugin.PistolAdditionalRotationY.Value, Plugin.PistolAdditionalRotationZ.Value));
             Quaternion pistolRevertQuaternion = Quaternion.Euler(Plugin.PistolResetRotationX.Value * balanceFactor, Plugin.PistolResetRotationY.Value, Plugin.PistolResetRotationZ.Value);
 
-            AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, 1f);
+            if (StanceController.PistolIsCompressed) 
+            {
+                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, 1f);
+            }
+
             float pitch = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14").GetValue(__instance);
             float Single_3 = (float)AccessTools.Property(typeof(EFT.Animations.ProceduralWeaponAnimation), "Single_3").GetValue(__instance);
 
@@ -426,14 +430,13 @@ namespace RealismMod
 
         public static void DoRifleStances(ManualLogSource logger, bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation __instance, ref Quaternion currentRotation, float dt, ref bool isResettingShortStock, ref bool hasResetShortStock, ref bool hasResetLowReady, ref bool hasResetActiveAim, ref bool hasResetHighReady, ref bool isResettingHighReady, ref bool isResettingLowReady, ref bool isResettingActiveAim)
         {
-            float aimMultiPure = Mathf.Clamp(WeaponProperties.SightlessAimSpeed, 0.5f, 0.8f);
-            float aimMulti = Mathf.Clamp(WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.55f)), 0.5f, 0.8f);
+            float aimMulti = Mathf.Clamp(WeaponProperties.SightlessAimSpeed * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.55f)), 0.5f, 0.8f);
             float resetAimMulti = (1f - aimMulti) + 1f;
             float intensity = Mathf.Max(2f * (1f - (PlayerProperties.AimSkillADSBuff * 0.5f)) * resetAimMulti, 1f);
 
             if (!StanceController.IsIdle())
             {
-                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, aimMulti);
+                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, 1f);
             }
 
             bool isColliding = !__instance.OverlappingAllowsBlindfire;
@@ -475,7 +478,6 @@ namespace RealismMod
             //for setting baseline position
             __instance.HandsContainer.WeaponRoot.localPosition = Plugin.WeaponOffsetPosition;
 
-            AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, 1f);
             float pitch = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14").GetValue(__instance);
             float Single_3 = (float)AccessTools.Property(typeof(EFT.Animations.ProceduralWeaponAnimation), "Single_3").GetValue(__instance);
 
@@ -564,7 +566,7 @@ namespace RealismMod
             }
 
             ////high ready////
-            if (StanceController.IsHighReady == true && !StanceController.IsActiveAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !__instance.IsAiming && !StanceController.IsFiringFromStance && !StanceController.CancelHighReady)
+            if (StanceController.IsHighReady == true && !Plugin.IsSprinting && !StanceController.IsActiveAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !__instance.IsAiming && !StanceController.IsFiringFromStance && !StanceController.CancelHighReady)
             {
                 __instance.CameraSmoothTime = 4f;
 
@@ -1146,7 +1148,8 @@ namespace RealismMod
                         bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
 
                         ///active aim//// 
-                        if ((!player.AIData.BotOwner.Memory.IsPeace && StanceController.botsToUseTacticalStances.Contains(player.AIData.BotOwner.Profile.Info.Settings.Role.ToString()) && (nvgIsOn || fsIsON) && !player.IsSprintEnabled && !firearmController.IsInReloadOperation() && lastDistance < 25f && lastDistance > 2f && lastDistance != 0f) || (__instance.IsAiming && (nvgIsOn && __instance.CurrentScope.IsOptic || fsIsON) && !player.IsSprintEnabled && !firearmController.IsInReloadOperation()))
+       
+                        if ((!player.AIData.BotOwner.Memory.IsPeace && StanceController.botsToUseTacticalStances.Contains(player.AIData.BotOwner.Profile.Info.Settings.Role.ToString())) && (((nvgIsOn || fsIsON) && !player.IsSprintEnabled && !firearmController.IsInReloadOperation() && lastDistance < 25f && lastDistance > 2f && lastDistance != 0f) || (__instance.IsAiming && (nvgIsOn && __instance.CurrentScope.IsOptic || fsIsON))))
                         {
                             currentRotation = Quaternion.Lerp(currentRotation, activeAimTargetQuaternion, __instance.CameraSmoothTime * dt * Plugin.ActiveAimRotationMulti.Value);
                             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);

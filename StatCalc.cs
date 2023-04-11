@@ -121,11 +121,11 @@ namespace RealismMod
         public static void MagReloadSpeedModifier(MagazineClass magazine, bool isNewMag, bool reloadFromNoMag, bool isQuickReload = false)
         {
             float magWeight = magazine.GetSingleItemTotalWeight() * StatCalc.MagWeightMult;
-            float magWeightFactor = (magWeight / -100) + 1;
+            float magWeightFactor = (magWeight / - 100f) + 1f;
             float magSpeed = AttachmentProperties.ReloadSpeed(magazine);
             float reloadSpeedModiLessMag = WeaponProperties.TotalReloadSpeedLessMag;
 
-            float magSpeedMulti = (magSpeed / 100) + 1;
+            float magSpeedMulti = (magSpeed / 100f) + 1f;
             float totalReloadSpeed = magSpeedMulti * magWeightFactor * reloadSpeedModiLessMag;
 
             if (reloadFromNoMag == true)

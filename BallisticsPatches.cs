@@ -615,50 +615,60 @@ namespace RealismMod
             {
                 di.Damage *= HitZoneModifiers.Calf;
                 di.HeavyBleedingDelta *= 0.5f;
+                return;
             }
             if (hitThigh == true)
             {
                 di.Damage *= HitZoneModifiers.Thigh;
                 di.HeavyBleedingDelta *= 1.25f;
+                return;
             }
             if (hitForearm == true)
             {
                 di.Damage *= HitZoneModifiers.Forearm;
                 di.HeavyBleedingDelta *= 0.5f;
+                return;
             }
             if (hitUpperArm == true)
             {
                 di.Damage *= HitZoneModifiers.UpperArm;
                 di.HeavyBleedingDelta *= 0.8f;
+                return;
             }
             if (hitZone == EHitZone.AZone) 
             {
                 di.Damage *= HitZoneModifiers.AZone;
                 di.HeavyBleedingDelta *= 1.5f;
+                return;
             }
             if (hitZone == EHitZone.CZone)
             {
                 di.Damage *= HitZoneModifiers.CZone;
+                return;
             }
             if (hitZone == EHitZone.DZone)
             {
                 di.Damage *= HitZoneModifiers.DZone;
                 di.HeavyBleedingDelta *= 0.5f;
+                return;
             }
             if (hitZone == EHitZone.Neck)
             {
                 di.Damage += HitZoneModifiers.Neck;
                 di.HeavyBleedingDelta *= 1.5f;
+                return;
             }
             if (hitZone == EHitZone.Heart)
             {
                 di.Damage += HitZoneModifiers.Heart;
                 di.HeavyBleedingDelta *= 1.5f;
+                return;
             }
             if (hitZone == EHitZone.Spine)
             {
                 di.Damage += HitZoneModifiers.Spine;
                 di.HeavyBleedingDelta *= 1.25f;
+                return;
             }
         }
 
@@ -894,7 +904,7 @@ namespace RealismMod
                 }
 
 
-                if (Plugin.EnableBallisticsLogging.Value == true && __instance.IsYourPlayer == true && !damageInfo.Blunt)
+                if (Plugin.EnableBallisticsLogging.Value == true)
                 {
                     EHitZone hitZone = BallisticsController.GetHitBodyZone(Logger, hitPart, localPoint, hitOrientation);
 
@@ -906,6 +916,7 @@ namespace RealismMod
                     Logger.LogWarning("y = " + localPoint.y);
                     Logger.LogWarning("z = " + localPoint.z);
                     Logger.LogWarning("damage = " + damageInfo.Damage);
+                    Logger.LogWarning("damage type = " + damageInfo.DamageType);
                     Logger.LogWarning("=========================");
                 }
 
@@ -943,7 +954,7 @@ namespace RealismMod
                         AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
                         BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
                         damageInfo.BleedBlock = false;
-                        bool reduceDurability = armor.Template.ArmorMaterial != EArmorMaterial.ArmoredSteel || armor.Template.ArmorMaterial != EArmorMaterial.Titan ? true : false;
+                        bool isMetalArmor = armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel || armor.Template.ArmorMaterial == EArmorMaterial.Titan ? true : false;
                         float KE = ((0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000);
                         float bluntDamage = damageInfo.Damage;
                         float speedFactor = damageInfo.ArmorDamage / ammo.GetBulletSpeed;
@@ -952,24 +963,31 @@ namespace RealismMod
                         float heavyBleedChance = damageInfo.HeavyBleedingDelta;
                         float ricochetChance = ammo.RicochetChance * speedFactor;
                         float spallReduction = GearProperties.SpallReduction(armor.Item);
+                        float armorDamageActual = ammo.ArmorDamage * speedFactor;
+                        float penPower = damageInfo.PenetrationPower;
 
                         float duraPercent = _currentDura / _maxDura;
-                        float armorFactor = !reduceDurability ? _armorClass * (Mathf.Min(1, duraPercent * 1.15f)) : _armorClass * (Mathf.Min(1, duraPercent * 2f)); //durability should be more important for steel plates, representing anti-spall coating. Lower the amount durapercent is factored by to increase importance
-                        float penFactoredClass = Mathf.Max(1f, armorFactor - (damageInfo.PenetrationPower / 2.5f));
-                        float maxPotentialDamage = (KE / penFactoredClass);
+                        float armorFactor = _armorClass * (Mathf.Min(1f, duraPercent * 2f));
+                        float penDuraFactoredClass = Mathf.Max(1f, armorFactor - (penPower / 1.8f));
+                        float penFactoredClass = Mathf.Max(1f, _armorClass - (penPower / 1.8f));
+                        float maxPotentialDuraDamage = KE / penDuraFactoredClass;
+                        float maxPotentialBluntDamage = KE / penFactoredClass;
 
-                        float maxSpallingDamage = maxPotentialDamage - bluntDamage;
-                        float factoredSpallingDamage = maxSpallingDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction;
+                        float maxSpallingDamage = isMetalArmor ? maxPotentialBluntDamage - bluntDamage : maxPotentialDuraDamage - bluntDamage;
+                        float factoredSpallingDamage = maxSpallingDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction * (isMetalArmor ? (1f - duraPercent) + 1f : 1f);
+                        
 
                         int rnd = Math.Max(1, _randNum.Next(_bodyParts.Count));
                         float splitSpallingDmg = factoredSpallingDamage / _bodyParts.Count;
+
 
                         if (Plugin.EnableBallisticsLogging.Value)
                         {
                             Logger.LogWarning("===========SPALLING=============== ");
                             Logger.LogWarning("Spall Reduction " + spallReduction);
                             Logger.LogWarning("Dura Percent " + duraPercent);
-                            Logger.LogWarning("Max Potential Damage " + maxPotentialDamage);
+                            Logger.LogWarning("Max Dura Factored Damage " + maxPotentialDuraDamage);
+                            Logger.LogWarning("Max Blunt Damage " + maxPotentialBluntDamage);
                             Logger.LogWarning("Max Spalling Damage " + maxSpallingDamage);
                             Logger.LogWarning("Factored Spalling Damage " + factoredSpallingDamage);
                             Logger.LogWarning("Split Spalling Dmg " + splitSpallingDmg);
@@ -1023,10 +1041,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            var result = typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.SetPenetrationStatus), BindingFlags.Public | BindingFlags.Instance);
-
-            return result;
-
+            return typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.SetPenetrationStatus), BindingFlags.Public | BindingFlags.Instance);
         }
 
         private static int playCounter = 0;
@@ -1234,7 +1249,7 @@ namespace RealismMod
             }
             else if (__instance.Template.ArmorMaterial == EArmorMaterial.Titan)
             {
-                armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 1.7f);
+                armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 1.8f);
             }
             else 
             {
@@ -1286,7 +1301,7 @@ namespace RealismMod
             float dist = CameraClass.Instance.Distance(pos);
             string audioClip = playCounter == 0 ? "ric_1.wav" : playCounter == 1 ? "ric_2.wav" : "ric_3.wav";
 
-            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, 3.0f, EOcclusionTest.Continuous);
+            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, 4.0f, EOcclusionTest.Continuous);
         }
 
         [PatchPrefix]
@@ -1375,13 +1390,14 @@ namespace RealismMod
             armorResist = hitSecondaryArmor == true ? 50f : armorResist;
             float armorDestructibility = Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
 
-            float armorFactor = armorResist * (Mathf.Min(1f, duraPercent * 1.5f));
-            float throughputDuraFactored = Mathf.Min(1f, bluntThrput * (1f + ((duraPercent - 1f) * -1f)));
+            float armorFactor = armorResist * (Mathf.Min(1f, duraPercent * 1.9f));
+  /*          float throughputDuraFactored = Mathf.Min(1f, bluntThrput * (1f + ((duraPercent - 1f) * -1f)));*/
             float penDuraFactoredClass = Mathf.Max(1f, armorFactor - (penPower / 1.8f));
-            float maxPotentialBluntDamage = KE / penDuraFactoredClass;
-            float maxPotentialDuraDamage = KE / armorResist;
+            float penFactoredClass = Mathf.Max(1f, armorResist - (penPower / 1.8f));
+            float maxPotentialDuraDamage = KE / penDuraFactoredClass;
+            float maxPotentialBluntDamage = KE / penFactoredClass;
 
-            float throughputFactoredDamage = Math.Min(damageInfo.Damage, maxPotentialBluntDamage * throughputDuraFactored) * (armorDamageActual < 15f ? 0.5f : 1f);
+            float throughputFactoredDamage = Math.Min(damageInfo.Damage, maxPotentialDuraDamage * bluntThrput) * (armorDamageActual <= 2f ? 0.5f : 1f);
 
             float armorStatReductionFactor = Mathf.Max((1 - (penDuraFactoredClass / 100f)), 0.1f);
 
@@ -1395,14 +1411,14 @@ namespace RealismMod
 
             if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !__instance.Template.ArmorZone.Contains(EBodyPart.Head))
             {
-                throughputFactoredDamage = Math.Min(damageInfo.Damage, maxPotentialDuraDamage * bluntThrput) * (armorDamageActual < 15f ? 0.1f : 1f); ;
+                throughputFactoredDamage = Math.Min(damageInfo.Damage, maxPotentialBluntDamage * bluntThrput) * (armorDamageActual <= 2f ? 0.1f : 1f);
             }
             if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && __instance.Template.ArmorZone.Contains(EBodyPart.Head))
             {
                 armorDestructibility = 0.05f;
             }
 
-            float durabilityLoss = (maxPotentialDuraDamage / 24f) * Mathf.Clamp(ammo.BulletDiameterMilimeters / 7.62f, 1f, 1.25f) * armorDamageActual * armorDestructibility * (hitSecondaryArmor ? 0.25f : 1f);
+            float durabilityLoss = (maxPotentialBluntDamage / 24f) * Mathf.Clamp(ammo.BulletDiameterMilimeters / 7.62f, 1f, 1.25f) * armorDamageActual * armorDestructibility * (hitSecondaryArmor ? 0.25f : 1f);
 
             if (!(damageInfo.BlockedBy == __instance.Item.Id) && !(damageInfo.DeflectedBy == __instance.Item.Id) && !hasBypassedArmor)
             {
@@ -1437,8 +1453,8 @@ namespace RealismMod
                 Logger.LogWarning("Material Descructibility " + armorDestructibility);
                 Logger.LogWarning("Dura percent " + duraPercent);
                 Logger.LogWarning("Durability Loss " + durabilityLoss);
-                Logger.LogWarning("Max potential blunt damage " + maxPotentialBluntDamage);
-                Logger.LogWarning("Max potential dura damage " + maxPotentialDuraDamage);
+                Logger.LogWarning("Max potential blunt damage " + maxPotentialDuraDamage);
+                Logger.LogWarning("Max potential dura damage " + maxPotentialBluntDamage);
                 Logger.LogWarning("Damage " + damageInfo.Damage);
                 Logger.LogWarning("Throughput Facotred Damage " + throughputFactoredDamage);
                 Logger.LogWarning("========================== ");
@@ -1460,7 +1476,8 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, Player player, Item weapon, ref GClass2623 __result, float speedFactor, int fragmentIndex = 0)
         {
-            /*            Logger.LogWarning("!!!!!!!!!!! Shot Created!! !!!!!!!!!!!!!!");
+            
+   /*         Logger.LogWarning("!!!!!!!!!!! Shot Created!! !!!!!!!!!!!!!!");
             Logger.LogWarning("========================STARTING BULLET VALUES============================");
             Logger.LogWarning("Round ID = " + ammo.TemplateId);
             Logger.LogWarning("Round Damage = " + ammo.Damage);
@@ -1480,16 +1497,15 @@ namespace RealismMod
             float penPowerFactored = EFT.Ballistics.BallisticsCalculator.GetAmmoPenetrationPower(ammo, randomNum, __instance.Randoms) * speedFactor;
             float bcFactored = Mathf.Max(ammo.BallisticCoeficient * speedFactor, 0.01f);
 
-            /* Logger.LogWarning("========================AFTER SPEED FACTOR============================");
-             Logger.LogWarning("Round ID = " + ammo.TemplateId);
-             Logger.LogWarning("Round Damage = " + damageFactored);
-             Logger.LogWarning("Round Penetration Power UNFACTORED = " + penPowerUnfactored);
-             Logger.LogWarning("Round Penetration Power = " + penPowerFactored);
-             Logger.LogWarning("Round Penetration Chance = " + penChanceFactored);
-             Logger.LogWarning("Round Frag Chance = " + fragchanceFactored);
-             Logger.LogWarning("Round Factored Speed = " + velocityFactored);
-             Logger.LogWarning("Round Factored BC = " + bcFactored);
-             Logger.LogWarning("==============================================================");*/
+/*            Logger.LogWarning("========================AFTER SPEED FACTOR============================");
+            Logger.LogWarning("Round ID = " + ammo.TemplateId);
+            Logger.LogWarning("Round Damage = " + damageFactored);
+            Logger.LogWarning("Round Penetration Power = " + penPowerFactored);
+            Logger.LogWarning("Round Penetration Chance = " + penChanceFactored);
+            Logger.LogWarning("Round Frag Chance = " + fragchanceFactored);
+            Logger.LogWarning("Round Factored Speed = " + velocityFactored);
+            Logger.LogWarning("Round Factored BC = " + bcFactored);
+            Logger.LogWarning("==============================================================");*/
 
             __result = GClass2623.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
             return false;
