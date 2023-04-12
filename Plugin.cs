@@ -639,6 +639,7 @@ namespace RealismMod
                     new DamageInfoPatch().Enable();
                     new ApplyDamageInfoPatch().Enable();
                     new SetPenetrationStatusPatch().Enable();
+                    new ApplyCorpseImpulsePatch().Enable();
 
                     //Armor Class
                     if (Plugin.EnableRealArmorClass.Value == true)

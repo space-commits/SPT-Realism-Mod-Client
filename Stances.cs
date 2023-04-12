@@ -319,7 +319,7 @@ namespace RealismMod
                     }
                 }
 
-                HighReadyManipBuff = IsHighReady == true ? 1.2f : 1f;
+                HighReadyManipBuff = IsHighReady == true ? 1.15f : 1f;
                 HighReadyManipDebuff = IsHighReady == true ? 0.8f : 1f;
                 ActiveAimManipDebuff = IsActiveAiming == true ? 0.8f : 1f;
                 LowReadyManipBuff = IsLowReady == true ? 1.2f : 1f;
@@ -362,7 +362,7 @@ namespace RealismMod
 
             if (StanceController.PistolIsCompressed) 
             {
-                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, 1f);
+                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, 1f * PlayerProperties.StanceInjuryMulti);
             }
 
             float pitch = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14").GetValue(__instance);
@@ -436,7 +436,7 @@ namespace RealismMod
 
             if (!StanceController.IsIdle())
             {
-                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, 1f);
+                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, 1f * PlayerProperties.StanceInjuryMulti);
             }
 
             bool isColliding = !__instance.OverlappingAllowsBlindfire;
@@ -849,7 +849,6 @@ namespace RealismMod
         }
     }
 
-
     public class OnWeaponDrawPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -1109,7 +1108,7 @@ namespace RealismMod
                     Quaternion tacPistolTargetQuaternion = Quaternion.Euler(peacefulPistolTargetRotation);
                     Vector3 tacPistolTargetPosition = new Vector3(-0.05f, 0.15f, -0.15f);
 
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, 1f);
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, 1f * PlayerProperties.StanceInjuryMulti);
                     float pitch = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14").GetValue(__instance);
                     float Single_3 = (float)AccessTools.Property(typeof(EFT.Animations.ProceduralWeaponAnimation), "Single_3").GetValue(__instance);
 

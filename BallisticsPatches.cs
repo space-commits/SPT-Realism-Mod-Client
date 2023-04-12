@@ -18,6 +18,7 @@ using System.IO;
 using static EFT.Interactive.BetterPropagationGroups;
 using HarmonyLib.Tools;
 using System.Collections;
+using EFT.Interactive;
 
 namespace RealismMod
 {
@@ -1010,7 +1011,7 @@ namespace RealismMod
                             }
                             else if (part == EBodyPart.Head) 
                             {
-                                damage = hasNeckArmor == true ? Mathf.Min(10, splitSpallingDmg * 0.25f) : Mathf.Min(10, splitSpallingDmg);
+                                damage = hasNeckArmor == true ? Mathf.Min(10, splitSpallingDmg * 0.5f) : Mathf.Min(10, splitSpallingDmg);
                                 bleedFactor = hasNeckArmor == true ? 0f : bleedFactor;
                             }
 
@@ -1510,6 +1511,32 @@ namespace RealismMod
             __result = GClass2623.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
             return false;
 
+        }
+    }
+    public class ApplyCorpseImpulsePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            var result = typeof(Player).GetMethod("ApplyCorpseImpulse", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            return result;
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(Player __instance)
+        {
+            DamageInfo lastDam = (DamageInfo)AccessTools.Field(typeof(Player), "LastDamageInfo").GetValue(__instance);
+            Corpse corpse = (Corpse)AccessTools.Field(typeof(Player), "Corpse").GetValue(__instance);
+
+            AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[lastDam.SourceId];
+            BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
+            float KE = ((0.5f * ammo.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
+
+            float force = 10f * Mathf.Max(1f, KE / 1000f);
+            AccessTools.Field(typeof(Player), "_corpseAppliedForce").SetValue(__instance, force);
+            corpse.Ragdoll.ApplyImpulse(lastDam.HitCollider, lastDam.Direction, lastDam.HitPoint, force);
+
+            return false;
         }
     }
 
