@@ -29,10 +29,10 @@ namespace RealismMod
         public static bool IsHighReady = false;
         public static bool IsLowReady = false;
         public static bool IsShortStock = false;
-        public static bool WasHighReady;
-        public static bool WasLowReady;
-        public static bool WasShortStock;
-        public static bool WasActiveAim;
+        public static bool WasHighReady = false;
+        public static bool WasLowReady = false;
+        public static bool WasShortStock = false;
+        public static bool WasActiveAim = false;
 
         public static bool IsFiringFromStance = false;
         public static float StanceShotTime = 0.0f;
@@ -114,7 +114,7 @@ namespace RealismMod
 
         public static bool IsIdle()
         {
-            return !IsActiveAiming && !IsHighReady && !IsLowReady && !IsShortStock && !WasHighReady && !WasLowReady && !WasShortStock ? true : false;
+            return !IsActiveAiming && !IsHighReady && !IsLowReady && !IsShortStock && !WasHighReady && !WasLowReady && !WasShortStock && !WasActiveAim ? true : false;
         }
 
 
@@ -346,11 +346,13 @@ namespace RealismMod
 
         }
 
-        public static void DoPistolStances(bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation __instance, ref Quaternion currentRotation, float dt, ref bool hasResetPistolPos) 
+        public static void DoPistolStances(ManualLogSource logger, bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation __instance, ref Quaternion currentRotation, float dt, ref bool hasResetPistolPos) 
         {
             float aimMulti = Mathf.Clamp(WeaponProperties.SightlessAimSpeed * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f)), 0.5f, 1.3f);
+            float invInjuryMulti = (1f - PlayerProperties.StanceInjuryMulti) + 1f;
             float resetAimMulti = (1f - aimMulti) + 1f;
-            float intensity = Mathf.Max(3f * (1f - PlayerProperties.WeaponSkillErgo) * resetAimMulti, 1f);
+            float ergoFactor = 1f - WeaponProperties.ErgoDelta;
+            float intensity = Mathf.Max(2f * (1f - PlayerProperties.WeaponSkillErgo) * resetAimMulti * invInjuryMulti * ergoFactor, 0.25f);
             float balanceFactor = 1f + (WeaponProperties.Balance / 100f);
             balanceFactor = WeaponProperties.Balance > 0f ? balanceFactor * -1f : balanceFactor;
 
@@ -430,13 +432,15 @@ namespace RealismMod
 
         public static void DoRifleStances(ManualLogSource logger, bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation __instance, ref Quaternion currentRotation, float dt, ref bool isResettingShortStock, ref bool hasResetShortStock, ref bool hasResetLowReady, ref bool hasResetActiveAim, ref bool hasResetHighReady, ref bool isResettingHighReady, ref bool isResettingLowReady, ref bool isResettingActiveAim)
         {
-            float aimMulti = Mathf.Clamp(WeaponProperties.SightlessAimSpeed * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.55f)), 0.5f, 0.8f);
+            float aimMulti = Mathf.Clamp(WeaponProperties.SightlessAimSpeed * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.55f)), 0.45f, 0.85f);
+            float invInjuryMulti = (1f - PlayerProperties.StanceInjuryMulti) + 1f;
             float resetAimMulti = (1f - aimMulti) + 1f;
-            float intensity = Mathf.Max(2f * (1f - (PlayerProperties.AimSkillADSBuff * 0.5f)) * resetAimMulti, 1f);
+            float ergoFactor = 1f - WeaponProperties.ErgoDelta;
+            float intensity = Mathf.Max(2f * (1f - (PlayerProperties.AimSkillADSBuff * 0.5f)) * resetAimMulti * invInjuryMulti * ergoFactor, 0.5f);
 
             if (!StanceController.IsIdle())
             {
-                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, 1f * PlayerProperties.StanceInjuryMulti);
+                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, 0.9f * PlayerProperties.StanceInjuryMulti);
             }
 
             bool isColliding = !__instance.OverlappingAllowsBlindfire;
@@ -960,11 +964,11 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength * 0.8f);
                     return;
                 }
-                if (StanceController.WasShortStock == true && Plugin.IsAiming)
+/*                if (StanceController.WasShortStock == true && Plugin.IsAiming)
                 {
                     AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength * 0.7f);
                     return;
-                }
+                }*/
                 if (__instance.Item.WeapClass == "pistol")
                 {
                     if (StanceController.PistolIsCompressed == true)
@@ -1072,7 +1076,7 @@ namespace RealismMod
 
                     if (firearmController.Item.WeapClass == "pistol" && Plugin.EnableAltPistol.Value == true)
                     {
-                        StanceController.DoPistolStances(true, ref __instance, ref currentRotation, dt, ref hasResetPistolPos);
+                        StanceController.DoPistolStances(Logger, true, ref __instance, ref currentRotation, dt, ref hasResetPistolPos);
                     }
                     else
                     {
@@ -1092,7 +1096,7 @@ namespace RealismMod
                     Quaternion highReadyTargetQuaternion = Quaternion.Euler(highReadyTargetRotation);
                     Vector3 highReadyTargetPostion = new Vector3(0.05f, 0.04f, -0.1f);
 
-                    Vector3 activeAimTargetRotation = new Vector3(0.0f, -150.0f, 0.0f);
+                    Vector3 activeAimTargetRotation = new Vector3(0.0f, -130.0f, 0.0f);
                     Quaternion activeAimTargetQuaternion = Quaternion.Euler(activeAimTargetRotation);
                     Vector3 activeAimTargetPostion = new Vector3(0.0f, -0.025f, 0.0f);
 
@@ -1100,7 +1104,7 @@ namespace RealismMod
                     Quaternion shortStockTargetQuaternion = Quaternion.Euler(shortStockTargetRotation);
                     Vector3 shortStockTargetPostion = new Vector3(0.06f, 0.2f, -0.15f);
 
-                    Vector3 peacefulPistolTargetRotation = new Vector3(15.0f, -15.0f, 15.0f);
+                    Vector3 peacefulPistolTargetRotation = new Vector3(40.0f, -15.0f, 15.0f);
                     Quaternion peacefulPistolTargetQuaternion = Quaternion.Euler(peacefulPistolTargetRotation);
                     Vector3 peacefulPistolTargetPosition = new Vector3(-0.1f, 0.15f, -0.12f);
 
@@ -1224,7 +1228,7 @@ namespace RealismMod
 
                     if (firearmController.Item.WeapClass == "pistol" && WeaponProperties.HasShoulderContact == false && Plugin.EnableAltPistol.Value == true)
                     {
-                        StanceController.DoPistolStances(false, ref __instance, ref currentRotation, dt, ref hasResetPistolPos);
+                        StanceController.DoPistolStances(Logger, false, ref __instance, ref currentRotation, dt, ref hasResetPistolPos);
 
                     }
                     else

@@ -40,7 +40,7 @@ namespace RealismMod
                     }
                 }
                 else
-                {
+                { 
                     PlayerProperties.IsAllowedADS = true;
                     SetCanAds = false;
                 }

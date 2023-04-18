@@ -165,7 +165,7 @@ namespace RealismMod
                     totalTorque *= -1f;
                 }
 
-                totalWeight *= 3f;
+                totalWeight *= 2.9f;
             }
 
             float totalTorqueFactorInverse = totalTorque / -100f; // put totaltorque / 100 in brackets
@@ -701,7 +701,7 @@ namespace RealismMod
             }
             if (modType == "counter_weight") 
             {
-                return "front";
+                return "frontFar";
             }
 
             if (weapType == "pistol" || weapType == "bullpup")
@@ -906,6 +906,9 @@ namespace RealismMod
                     break;
                 case "rearHalf":
                     torque = TorqueCalc(5, weight, weapClass);
+                    break;
+                case "frontFar":
+                    torque = TorqueCalc(-15, weight, weapClass);
                     break;
                 default:
                     torque = 0;

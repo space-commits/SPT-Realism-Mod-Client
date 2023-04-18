@@ -36,51 +36,54 @@ namespace RealismMod
 
             if (Plugin.ShotCount == 1)
             {
-                VRecoilClimb(1.13f);
+                VRecoilClimb(1.14f);
                 HRecoilClimb(1.12f);
                 ConvergenceClimb();
 
             }
             if (Plugin.ShotCount >= 2 && Plugin.ShotCount <= 3 && Plugin.CurrentlyShootingWeapon.SelectedFireMode == Weapon.EFireMode.fullauto)
             {
-                VRecoilClimb(1.13f);
+                VRecoilClimb(1.15f);
                 HRecoilClimb(1.12f);
                 ConvergenceClimb();
+                DampingClimb(0.98f);
 
             }
             if (Plugin.ShotCount >= 4 && Plugin.ShotCount <= 5)
             {
-                VRecoilClimb(1.125f);
+                VRecoilClimb(1.146f);
                 HRecoilClimb(1.11f);
                 ConvergenceClimb();
+                DampingClimb(0.98f);
             }
             if (Plugin.ShotCount > 5 && Plugin.ShotCount <= 7)
             {
-                VRecoilClimb(1.1f);
+                VRecoilClimb(1.12f);
                 HRecoilClimb(1.09f);
                 ConvergenceClimb();
+                DampingClimb(0.98f);
             }
             if (Plugin.ShotCount > 8 && Plugin.ShotCount <= 10)
             {
-                VRecoilClimb(1.08f);
+                VRecoilClimb(1.09f);
                 HRecoilClimb(1.07f);
                 ConvergenceClimb();
+                DampingClimb(0.98f);
             }
             if (Plugin.ShotCount > 10 && Plugin.ShotCount <= 15)
             {
-                VRecoilClimb(1.05f);
+                VRecoilClimb(1.06f);
                 HRecoilClimb(1.045f);
                 ConvergenceClimb();
                 DampingClimb(0.98f);
-
             }
 
             if (Plugin.ShotCount > 15 && Plugin.ShotCount <= 20)
             {
-                VRecoilClimb(1.03f);
+                VRecoilClimb(1.04f);
                 HRecoilClimb(1.027f);
                 ConvergenceClimb();
-                DampingClimb(0.98f);
+                DampingClimb(0.97f);
             }
 
             if (Plugin.ShotCount > 20 && Plugin.ShotCount <= 25)
@@ -88,7 +91,7 @@ namespace RealismMod
                 VRecoilClimb(1.03f);
                 HRecoilClimb(1.02f);
                 ConvergenceClimb();
-                DampingClimb(0.98f);
+                DampingClimb(0.96f);
             }
 
             if (Plugin.ShotCount > 25 && Plugin.ShotCount <= 30)
@@ -96,7 +99,7 @@ namespace RealismMod
                 VRecoilClimb(1.03f);
                 HRecoilClimb(1.015f);
                 ConvergenceClimb();
-                DampingClimb(0.98f);
+                DampingClimb(0.95f);
             }
 
             if (Plugin.ShotCount > 30 && Plugin.ShotCount <= 35)
@@ -104,7 +107,7 @@ namespace RealismMod
                 VRecoilClimb(1.03f);
                 HRecoilClimb(1.01f);
                 ConvergenceClimb();
-                DampingClimb(0.98f);
+                DampingClimb(0.95f);
             }
 
             if (Plugin.ShotCount > 35)
@@ -112,7 +115,7 @@ namespace RealismMod
                 VRecoilClimb(1.03f);
                 HRecoilClimb(1.01f);
                 ConvergenceClimb();
-                DampingClimb(0.98f);
+                DampingClimb(0.95f);
             }
 
             if (Plugin.ReduceCamRecoil.Value == true)

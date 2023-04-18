@@ -54,15 +54,16 @@ namespace RealismMod
 
             float pelletCount = ammoTemplate.ProjectileCount;
 
-            ItemAttributeClass pelletAtt = new ItemAttributeClass(ENewItemAttributeId.ProjectileCount);
-            pelletAtt.Name = ENewItemAttributeId.ProjectileCount.GetName();
-            pelletAtt.Base = () => pelletCount;
-            pelletAtt.StringValue = () => pelletCount.ToString();
-            pelletAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            pelletAtt.LabelVariations = EItemAttributeLabelVariations.None;
-            ammoAttributes.Add(pelletAtt);
-
-
+            if (pelletCount > 1) 
+            {
+                ItemAttributeClass pelletAtt = new ItemAttributeClass(ENewItemAttributeId.ProjectileCount);
+                pelletAtt.Name = ENewItemAttributeId.ProjectileCount.GetName();
+                pelletAtt.Base = () => pelletCount;
+                pelletAtt.StringValue = () => pelletCount.ToString();
+                pelletAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                pelletAtt.LabelVariations = EItemAttributeLabelVariations.None;
+                ammoAttributes.Add(pelletAtt);
+            }
 
             /*            if (Plugin.enableAmmoDamageDisp.Value == true)
                         {

@@ -976,7 +976,6 @@ namespace RealismMod
 
                         float maxSpallingDamage = isMetalArmor ? maxPotentialBluntDamage - bluntDamage : maxPotentialDuraDamage - bluntDamage;
                         float factoredSpallingDamage = maxSpallingDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction * (isMetalArmor ? (1f - duraPercent) + 1f : 1f);
-                        
 
                         int rnd = Math.Max(1, _randNum.Next(_bodyParts.Count));
                         float splitSpallingDmg = factoredSpallingDamage / _bodyParts.Count;
@@ -1147,7 +1146,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(GClass2623 shot, ref ArmorComponent __instance)
         {
-            if (__instance.Repairable.Durability <= 0f)
+            if (__instance.Repairable.Durability <= 0f && __instance.Template.ArmorMaterial != EArmorMaterial.ArmoredSteel && !__instance.Template.ArmorZone.Contains(EBodyPart.Head))
             {
                 return false;
             }
@@ -1186,35 +1185,7 @@ namespace RealismMod
                     hasBypassedArmor = false;
                     hitSecondaryArmor = false;
                 }
-                /*
-                                if (isPlayer)
-                                {
-                                    Logger.LogWarning("=============Player SetPenStatus: Hit Zone ===============");
-                                    Logger.LogWarning("ammo name = " + shot.Ammo.LocalizedName());
-                                    Logger.LogWarning("ammo id = " + shot.Ammo.TemplateId);
-                                    Logger.LogWarning("collider = " + shot.HittedBallisticCollider.name);
-                                    Logger.LogWarning("orientation = " + hitOrientation);
-                                    Logger.LogWarning("has bypassed armor = " + hasBypassedArmor);
-                                    Logger.LogWarning("has secondary armor = " + hitSecondaryArmor);
-                                    Logger.LogWarning("hit x = " + localPoint.x);
-                                    Logger.LogWarning("hit y = " + localPoint.y);
-                                    Logger.LogWarning("hit z = " + localPoint.z);
-                                    Logger.LogWarning("============================");
-                                }
-                                else 
-                                {
-                                    Logger.LogWarning("-----------------------Bot SetPenStatus: Hit Zone-------------------");
-                                    Logger.LogWarning("ammo name = " + shot.Ammo.LocalizedName());
-                                    Logger.LogWarning("ammo id = " + shot.Ammo.TemplateId);
-                                    Logger.LogWarning("collider = " + shot.HittedBallisticCollider.name);
-                                    Logger.LogWarning("orientation = " + hitOrientation);
-                                    Logger.LogWarning("has bypassed armor = " + hasBypassedArmor);
-                                    Logger.LogWarning("has secondary armor = " + hitSecondaryArmor);
-                                    Logger.LogWarning("hit x = " + localPoint.x);
-                                    Logger.LogWarning("hit y = " + localPoint.y);
-                                    Logger.LogWarning("hit z = " + localPoint.z);
-                                    Logger.LogWarning("--------------------------------------");
-                                }*/
+
 
                 if (Plugin.EnableBallisticsLogging.Value)
                 {
@@ -1258,7 +1229,7 @@ namespace RealismMod
             }
 
             float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
-            armorResist = hitSecondaryArmor == true ? armorResist = Math.Min(armorResist, 50f) : armorResist;
+            armorResist = hitSecondaryArmor == true ? Math.Min(armorResist, 50f) : armorResist;
             float armorFactor = (121f - 5000f / (45f + armorDuraPercent * 2f)) * armorResist * 0.01f;
             if (((armorFactor >= penetrationPower + 15f) ? 0f : ((armorFactor >= penetrationPower) ? (0.4f * (armorFactor - penetrationPower - 15f) * (armorFactor - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * armorFactor - penetrationPower)))) - shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f < 0f)
             {
@@ -1391,7 +1362,7 @@ namespace RealismMod
             armorResist = hitSecondaryArmor == true ? 50f : armorResist;
             float armorDestructibility = Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
 
-            float armorFactor = armorResist * (Mathf.Min(1f, duraPercent * 1.9f));
+            float armorFactor = armorResist * (Mathf.Min(1f, duraPercent * 1.65f));
   /*          float throughputDuraFactored = Mathf.Min(1f, bluntThrput * (1f + ((duraPercent - 1f) * -1f)));*/
             float penDuraFactoredClass = Mathf.Max(1f, armorFactor - (penPower / 1.8f));
             float penFactoredClass = Mathf.Max(1f, armorResist - (penPower / 1.8f));
@@ -1414,12 +1385,13 @@ namespace RealismMod
             {
                 throughputFactoredDamage = Math.Min(damageInfo.Damage, maxPotentialBluntDamage * bluntThrput) * (armorDamageActual <= 2f ? 0.1f : 1f);
             }
-            if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && __instance.Template.ArmorZone.Contains(EBodyPart.Head))
+            if ((__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel || __instance.Template.ArmorMaterial == EArmorMaterial.Titan) && __instance.Template.ArmorZone.Contains(EBodyPart.Head))
             {
-                armorDestructibility = 0.05f;
+                armorDestructibility = 0.1f;
             }
 
-            float durabilityLoss = (maxPotentialBluntDamage / 24f) * Mathf.Clamp(ammo.BulletDiameterMilimeters / 7.62f, 1f, 1.25f) * armorDamageActual * armorDestructibility * (hitSecondaryArmor ? 0.25f : 1f);
+
+            float durabilityLoss = (maxPotentialBluntDamage / 24f) * Mathf.Clamp(ammo.BulletDiameterMilimeters / 7.62f, 1f, 2f) * armorDamageActual * armorDestructibility * (hitSecondaryArmor ? 0.25f : 1f);
 
             if (!(damageInfo.BlockedBy == __instance.Item.Id) && !(damageInfo.DeflectedBy == __instance.Item.Id) && !hasBypassedArmor)
             {
@@ -1430,7 +1402,7 @@ namespace RealismMod
             else if(!hasBypassedArmor)
             {
                 damageInfo.Damage = throughputFactoredDamage;
-                damageInfo.StaminaBurnRate = throughputFactoredDamage / 100f;
+                damageInfo.StaminaBurnRate = (throughputFactoredDamage / 100f) * 2f;
             }
 
             if ((damageInfo.BlockedBy == __instance.Item.Id || damageInfo.DeflectedBy == __instance.Item.Id) && !hasBypassedArmor) 
@@ -1528,11 +1500,23 @@ namespace RealismMod
             DamageInfo lastDam = (DamageInfo)AccessTools.Field(typeof(Player), "LastDamageInfo").GetValue(__instance);
             Corpse corpse = (Corpse)AccessTools.Field(typeof(Player), "Corpse").GetValue(__instance);
 
-            AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[lastDam.SourceId];
-            BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
-            float KE = ((0.5f * ammo.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
+            float force;
+            if (lastDam.DamageType == EDamageType.Bullet)
+            {
+                AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[lastDam.SourceId];
+                BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
+                float KE = ((0.5f * ammo.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
+                force = 10f * Mathf.Max(1f, KE / 1000f);
+            }
+            else if (lastDam.DamageType == EDamageType.Explosion)
+            {
+                force = 150f;
+            }
+            else 
+            {
+                force = 10f;
+            }
 
-            float force = 10f * Mathf.Max(1f, KE / 1000f);
             AccessTools.Field(typeof(Player), "_corpseAppliedForce").SetValue(__instance, force);
             corpse.Ragdoll.ApplyImpulse(lastDam.HitCollider, lastDam.Direction, lastDam.HitPoint, force);
 
