@@ -530,7 +530,7 @@ namespace RealismMod
                 new UpdateWeaponVariablesPatch().Enable();
                 new SetAimingSlowdownPatch().Enable();
 
-                //sway and aim inertia
+                //Sway and Aim Inertia
                 new method_20Patch().Enable();
                 new UpdateSwayFactorsPatch().Enable();
                 new GetOverweightPatch().Enable();
@@ -675,7 +675,7 @@ namespace RealismMod
 
                 new ToggleHoldingBreathPatch().Enable();
 
-                //movement
+                //Movement
                 new SprintAccelerationPatch().Enable();
 
                 //Shot Effects
@@ -692,7 +692,7 @@ namespace RealismMod
                 //LateUpdate
                 new PlayerLateUpdatePatch().Enable();
 
-                //stances
+                //Stances
                 new ApplyComplexRotationPatch().Enable();
                 new ApplySimpleRotationPatch().Enable();
                 new InitTransformsPatch().Enable();
@@ -704,9 +704,12 @@ namespace RealismMod
                 new UpdateHipInaccuracyPatch().Enable();
                 new SetFireModePatch().Enable();
 
-/*                new IsPlayerEnemyPatch().Enable();
-                new IsPlayerEnemyByRolePatch().Enable();
-*/
+                //Health
+                new HCApplyItemPatch().Enable();
+                new GClass2106ApplyItemPatch().Enable();
+                new HealthBarButtonApplyItemPatch2().Enable();
+                new SetQuickSlotItem().Enable();
+
             }
         }
 
