@@ -707,9 +707,10 @@ namespace RealismMod
                 //Health
                 new HCApplyItemPatch().Enable();
                 new GClass2106ApplyItemPatch().Enable();
-                new HealthBarButtonApplyItemPatch2().Enable();
+                new HealthBarButtonApplyItemPatch().Enable();
                 new SetQuickSlotItem().Enable();
-
+/*                new TryProceedPatch().Enable();
+*/                new ProceedPatch().Enable();
             }
         }
 

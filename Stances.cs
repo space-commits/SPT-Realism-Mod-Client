@@ -165,6 +165,7 @@ namespace RealismMod
                             IsLowReady = false;
                             IsShortStock = false;
                             IsActiveAiming = false;
+                            WasActiveAim = false;
                             WasHighReady = false;
                             WasLowReady = false;
                             WasShortStock = false;

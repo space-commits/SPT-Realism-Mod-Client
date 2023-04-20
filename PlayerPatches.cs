@@ -61,6 +61,9 @@ namespace RealismMod
 
     public class PlayerLateUpdatePatch : ModulePatch
     {
+
+        private static float timeSinceLast = 0f;
+
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Player).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -69,13 +72,21 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player __instance)
         {
-            if (Utils.IsReady == true && __instance.IsYourPlayer == true)
+            if (Utils.IsReady && __instance.IsYourPlayer)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
-                PlayerInjuryStateCheck(__instance, Logger);
+                RealismHealthController.PlayerInjuryStateCheck(__instance, Logger);
                 Plugin.IsSprinting = __instance.IsSprintEnabled;
-
                 PlayerProperties.enviroType = __instance.Environment;
+
+                timeSinceLast += Time.deltaTime;
+
+                if (timeSinceLast >= 10f)
+                {
+                    Logger.LogWarning("Checking for Double Bleed");
+                    RealismHealthController.DoubleBleedCheck(Logger, __instance);
+                    timeSinceLast = 0f;
+                }
 
                 if (fc != null)
                 {
@@ -97,67 +108,6 @@ namespace RealismMod
                 __instance.Physical.HandsStamina.Current = Mathf.Max(__instance.Physical.HandsStamina.Current, 1f);
             }
         }
-
-        private static void PlayerInjuryStateCheck(Player player, ManualLogSource logger)
-        {
-            bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
-            bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);
-            bool tremor = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.Tremor);
-
-            PlayerProperties.RightArmBlacked = rightArmDamaged;
-            PlayerProperties.LeftArmBlacked = leftArmDamaged;
-
-            if (!rightArmDamaged && !leftArmDamaged && !tremor)
-            {
-                PlayerProperties.AimMoveSpeedBase = 0.42f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 1f;
-                PlayerProperties.ADSInjuryMulti = 1f;
-                PlayerProperties.StanceInjuryMulti = 1f;
-                PlayerProperties.ReloadInjuryMulti = 1f;
-                PlayerProperties.RecoilInjuryMulti = 1f;
-            }
-            if (tremor == true)
-            {
-                PlayerProperties.AimMoveSpeedBase = 0.4f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 1.15f;
-                PlayerProperties.ADSInjuryMulti = 0.85f;
-                PlayerProperties.StanceInjuryMulti = 0.85f;
-                PlayerProperties.ReloadInjuryMulti = 0.9f;
-                PlayerProperties.RecoilInjuryMulti = 1.025f;
-            }
-            if ((rightArmDamaged == true && !leftArmDamaged))
-            {
-                PlayerProperties.AimMoveSpeedBase = 0.38f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 1.5f;
-                PlayerProperties.ADSInjuryMulti = 0.51f;
-                PlayerProperties.StanceInjuryMulti = 0.6f;
-                PlayerProperties.ReloadInjuryMulti = 0.85f;
-                PlayerProperties.RecoilInjuryMulti = 1.05f;
-            }
-            if ((!rightArmDamaged && leftArmDamaged == true))
-            { 
-                PlayerProperties.AimMoveSpeedBase = 0.34f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 2f;
-                PlayerProperties.ADSInjuryMulti = 0.59f;
-                PlayerProperties.StanceInjuryMulti = 0.7f;
-                PlayerProperties.ReloadInjuryMulti = 0.8f;
-                PlayerProperties.RecoilInjuryMulti = 1.1f;
-            }
-            if (rightArmDamaged == true && leftArmDamaged == true)
-            {
-                if (Plugin.EnableLogging.Value == true)
-                {
-                    logger.LogWarning("both arms damaged");
-                }
-                PlayerProperties.AimMoveSpeedBase = 0.3f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 3.5f;
-                PlayerProperties.ADSInjuryMulti = 0.42f;
-                PlayerProperties.StanceInjuryMulti = 0.5f;
-                PlayerProperties.ReloadInjuryMulti = 0.75f;
-                PlayerProperties.RecoilInjuryMulti = 1.15f;
-            }
-        }
-
     }
 }
 
