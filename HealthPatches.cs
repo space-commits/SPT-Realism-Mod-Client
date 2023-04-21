@@ -22,233 +22,7 @@ using static Systems.Effects.Effects;
 namespace RealismMod
 {
 
-    public static class MedProperties 
-    {
 
-        public static string MedType(Item med)
-        {
-            if (Utils.NullCheck(med.ConflictingItems))
-            {
-                return "unknown";
-            }
-            return med.ConflictingItems[1];
-        }
-
-        public static string HBleedHealType(Item med)
-        {
-            if (Utils.NullCheck(med.ConflictingItems))
-            {
-                return "unknown";
-            }
-            return med.ConflictingItems[2];
-        }
-    }
-
-    public static class RealismHealthController 
-    {
-        public static void PlayerInjuryStateCheck(Player player, ManualLogSource logger)
-        {
-            bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
-            bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);
-            bool tremor = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.Tremor);
-
-            PlayerProperties.RightArmBlacked = rightArmDamaged;
-            PlayerProperties.LeftArmBlacked = leftArmDamaged;
-
-            if (!rightArmDamaged && !leftArmDamaged && !tremor)
-            {
-                PlayerProperties.AimMoveSpeedBase = 0.42f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 1f;
-                PlayerProperties.ADSInjuryMulti = 1f;
-                PlayerProperties.StanceInjuryMulti = 1f;
-                PlayerProperties.ReloadInjuryMulti = 1f;
-                PlayerProperties.RecoilInjuryMulti = 1f;
-            }
-            if (tremor == true)
-            {
-                PlayerProperties.AimMoveSpeedBase = 0.4f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 1.15f;
-                PlayerProperties.ADSInjuryMulti = 0.85f;
-                PlayerProperties.StanceInjuryMulti = 0.85f;
-                PlayerProperties.ReloadInjuryMulti = 0.9f;
-                PlayerProperties.RecoilInjuryMulti = 1.025f;
-            }
-            if ((rightArmDamaged == true && !leftArmDamaged))
-            {
-                PlayerProperties.AimMoveSpeedBase = 0.38f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 1.5f;
-                PlayerProperties.ADSInjuryMulti = 0.51f;
-                PlayerProperties.StanceInjuryMulti = 0.6f;
-                PlayerProperties.ReloadInjuryMulti = 0.85f;
-                PlayerProperties.RecoilInjuryMulti = 1.05f;
-            }
-            if ((!rightArmDamaged && leftArmDamaged == true))
-            {
-                PlayerProperties.AimMoveSpeedBase = 0.34f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 2f;
-                PlayerProperties.ADSInjuryMulti = 0.59f;
-                PlayerProperties.StanceInjuryMulti = 0.7f;
-                PlayerProperties.ReloadInjuryMulti = 0.8f;
-                PlayerProperties.RecoilInjuryMulti = 1.1f;
-            }
-            if (rightArmDamaged == true && leftArmDamaged == true)
-            {
-                if (Plugin.EnableLogging.Value == true)
-                {
-                    logger.LogWarning("both arms damaged");
-                }
-                PlayerProperties.AimMoveSpeedBase = 0.3f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 3.5f;
-                PlayerProperties.ADSInjuryMulti = 0.42f;
-                PlayerProperties.StanceInjuryMulti = 0.5f;
-                PlayerProperties.ReloadInjuryMulti = 0.75f;
-                PlayerProperties.RecoilInjuryMulti = 1.15f;
-            }
-        }
-
-        public static void CanConsume(ManualLogSource Logger, Player player, Item item, ref bool canUse) 
-        {
-            EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(player);
-            Item face = equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
-
-            FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
-            NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
-            bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
-            bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
-
-            //will have to make mask exception for moustache, balaclava etc.
-            if (fsIsON || nvgIsOn || face != null)
-            {
-                Logger.LogWarning("juice denied");
-                canUse = false;
-                return;
-            }
-            Logger.LogWarning("juice time");
-        }
-
-        public static void CanUseMedItem(ManualLogSource Logger, Player player, EBodyPart bodyPart, Item item, ref bool canUse) 
-        {
-
-            if (item.Template.Parent._id == "5448f3a64bdc2d60728b456a" || MedProperties.MedType(item) != "drug")  
-            {
-                Logger.LogWarning("Is drug/stim");
-                return;
-            }
-
-            EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(player);
-
-            Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
-            Item ears = equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem;
-            Item glasses = equipment.GetSlot(EquipmentSlot.Eyewear).ContainedItem;
-            Item face = equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
-            Item vest = equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem;
-            Item tacrig = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
-            Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
-
-            bool hasBodyGear = head != null && ears != null && face != null;
-            bool hasHeadGear = vest != null && tacrig != null && bag != null;
-
-            bool isHead = bodyPart == EBodyPart.Chest || bodyPart == EBodyPart.Stomach;
-            bool isBody = bodyPart == EBodyPart.Chest || bodyPart == EBodyPart.Stomach;
-            bool isNotLimb = bodyPart == EBodyPart.Chest || bodyPart == EBodyPart.Stomach || bodyPart == EBodyPart.Head;
-
-            MedsClass med = item as MedsClass;
-
-            //will have to make mask exception for moustache and similar
-            if ((isBody && hasBodyGear) || (isHead && hasHeadGear))
-            {
-                canUse = false;
-                return;
-            }
-
-            Logger.LogWarning("==============");
-            Logger.LogWarning("GClass2106");
-
-            IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(bodyPart);
-            bool hasHeavyBleed = effects.OfType<GInterface191>().Any();
-            bool hasLightBleed = effects.OfType<GInterface190>().Any();
-            bool hasFracture = effects.OfType<GInterface193>().Any();
-
-            if (hasHeavyBleed && isNotLimb && MedProperties.HBleedHealType(item) == "trnqt")
-            {
-                canUse = false;
-                return;
-            }
-
-            if (MedProperties.MedType(item) == "splint" && med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && isNotLimb)
-            {
-                canUse = false;
-                return;
-            }
-
-            if (MedProperties.MedType(item) == "medkit" && med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && hasFracture && !hasHeavyBleed && !hasLightBleed && isNotLimb)
-            {
-                canUse = false;
-                return;
-            }
-
-            foreach (IEffect effect in effects)
-            {
-                Logger.LogWarning("==");
-                Logger.LogWarning("effect type " + effect.Type);
-                Logger.LogWarning("effect body part " + effect.BodyPart);
-                Logger.LogWarning("==");
-            }
-
-            Logger.LogWarning("item = " + item.TemplateId);
-            Logger.LogWarning("item name = " + item.LocalizedName());
-            Logger.LogWarning("EBodyPart = " + bodyPart);
-            Logger.LogWarning("==============");
-            return;
-        }
-
-        public static void DoubleBleedCheck(ManualLogSource logger,Player player)
-        {
-            IEnumerable<IEffect> commonEffects = player.ActiveHealthController.GetAllActiveEffects(EBodyPart.Common);
-
-            if (commonEffects.OfType<GInterface191>().Any() && commonEffects.OfType<GInterface190>().Any()) 
-            {
-                logger.LogWarning("H + L Bleed Present Commonly");
-
-                IEnumerable<IEffect> chestEffects = player.ActiveHealthController.GetAllActiveEffects(EBodyPart.Chest);
-                bool hasHeavyBleedChest = chestEffects.OfType<GInterface191>().Any();
-                bool hasLightBleedChest = chestEffects.OfType<GInterface190>().Any();
-
-                IEnumerable<IEffect> stomachEffects = player.ActiveHealthController.GetAllActiveEffects(EBodyPart.Stomach);
-                bool hasHeavyBleedStomach = chestEffects.OfType<GInterface191>().Any();
-                bool hasLightBleedStomach = chestEffects.OfType<GInterface190>().Any();
-
-                IEnumerable<IEffect> headEffects = player.ActiveHealthController.GetAllActiveEffects(EBodyPart.Stomach);
-                bool hasHeavyBleedHead = headEffects.OfType<GInterface191>().Any();
-                bool hasLightBleedHead = headEffects.OfType<GInterface190>().Any();
-
-                IReadOnlyList<GClass2103> effectsList = (IReadOnlyList<GClass2103>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
-
-                for (int i = effectsList.Count - 1; i >= 0; i--) 
-                {
-                    Type effectType = effectsList[i].Type;
-                    EBodyPart effectPart = effectsList[i].BodyPart;
-                    ActiveHealthControllerClass.GClass2103 effect = effectsList[i];
-
-                    if (hasHeavyBleedChest && hasLightBleedChest && effectPart == EBodyPart.Chest && effectType == typeof(GInterface190))
-                    {
-                        logger.LogWarning("removed bleed from " + effectPart);
-                        effect.ForceResidue();
-                    }
-                    if (hasHeavyBleedStomach && hasLightBleedStomach && effectPart == EBodyPart.Stomach && effectType == typeof(GInterface190))
-                    {
-                        logger.LogWarning("removed bleed from " + effectPart);
-                        effect.ForceResidue();
-                    }
-                    if (hasHeavyBleedHead && hasLightBleedHead && effectPart == EBodyPart.Head && effectType == typeof(GInterface190))
-                    {
-                        logger.LogWarning("removed bleed from " + effectPart);
-                        effect.ForceResidue();
-                    }
-                }
-            }
-        }
-    }
 
     //CHECK IF MED ITEM IS DRUG OR STIM, IF SO THEN LET ORIGINAL RUN AND SKIP CHECKS!!!!!!!
 
@@ -289,8 +63,6 @@ namespace RealismMod
     public class ProceedPatch : ModulePatch
     {
 
-        private static EBodyPart[] bodyParts = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.RightLeg, EBodyPart.LeftLeg};
-
         protected override MethodBase GetTargetMethod()
         {
             return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<GInterface114>), typeof(int), typeof(bool) }, null);
@@ -300,14 +72,15 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
         {
-            Logger.LogWarning("checking quickslot med");
-
+            Logger.LogWarning("checking if med can proceed");
+            Logger.LogWarning("bodyPart = " + bodyPart);
             string medType = MedProperties.MedType(meds);
 
             if (__instance.IsYourPlayer && bodyPart == EBodyPart.Common && medType != "drug" && meds.Template._parent != "5448f3a64bdc2d60728b456a") 
             {
                 Logger.LogWarning("med item to check = " + meds.LocalizedName());
 
+ 
                 bool proceedWithHealing = false;
 
                 string hBleedHealType = MedProperties.HBleedHealType(meds);
@@ -326,11 +99,27 @@ namespace RealismMod
                 Item tacrig = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
                 Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
 
+                bool mouthBlocked = RealismHealthController.MouthIsBlocked(head, face);
+
                 bool hasBodyGear = vest != null || tacrig != null || bag != null;
                 bool hasHeadGear = head != null || ears != null || face != null;
 
+                FaceShieldComponent fsComponent = __instance.FaceShieldObserver.Component;
+                NightVisionComponent nvgComponent = __instance.NightVisionObserver.Component;
+                bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
+                bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
 
-                foreach (EBodyPart part in bodyParts)
+
+                if (medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn))
+                {
+                    return false;
+                }
+                else if (medType == "pills")
+                {
+                    return true;
+                }
+
+                foreach (EBodyPart part in RealismHealthController.BodyParts)
                 {
                     IEnumerable<IEffect> effects = __instance.ActiveHealthController.GetAllActiveEffects(part);
 

@@ -530,7 +530,7 @@ namespace RealismMod
 
                 if (isThirdPerson)
                 {
-                    __instance.HandsContainer.HandsPosition.ReturnSpeed = Plugin.ThirdShortStockSpeedMulti.Value;
+                    __instance.HandsContainer.HandsPosition.ReturnSpeed = Plugin.ThirdShortStockSpeedMulti.Value * aimMulti;
                     __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * shortTargetPostionThird;
                 }
 
@@ -696,7 +696,7 @@ namespace RealismMod
                     }
                     if (!hasResetShortStock)
                     {
-                        shortToLow = isThirdPerson ? 3.0f : 1.45f;
+                        shortToLow = isThirdPerson ? 2.8f : 1.45f;
                     }
                     if (!hasResetActiveAim)
                     {
@@ -777,8 +777,8 @@ namespace RealismMod
                 {
                     if (!hasResetShortStock)
                     {
-                        shortToActivePosMulti = isThirdPerson ? 1.8f : 1.3f;
-                        thirdShortToActiveMulti = 0.7f;
+                        shortToActivePosMulti = isThirdPerson ? 1.7f : 1.3f;
+                        thirdShortToActiveMulti = 0.6f; 
                     }
                     if (!hasResetHighReady)
                     {

@@ -82,7 +82,7 @@ namespace RealismMod
             return float.Parse(armorItem.ConflictingItems[8]);
         }
 
-        public static bool HasBypassedArmorr_DEPRICATED(Item armorItem)
+        public static bool BlocksMouth(Item armorItem)
         {
             if (Utils.NullCheck(armorItem.ConflictingItems))
             {
