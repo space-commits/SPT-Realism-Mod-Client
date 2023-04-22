@@ -3,6 +3,8 @@ using Aki.Common.Utils;
 using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
+using Comfort.Common;
+using EFT;
 using EFT.Animals;
 using EFT.InventoryLogic;
 using EFT.UI;
@@ -281,6 +283,9 @@ namespace RealismMod
         public static ConfigEntry<bool> EnableLogging { get; set; }
         public static ConfigEntry<bool> EnableBallisticsLogging { get; set; }
 
+        public static ConfigEntry<KeyboardShortcut> AddEffectKeybind { get; set; }
+        public static ConfigEntry<int> AddEffectBodyPart { get; set; }
+        public static ConfigEntry<String> AddEffectType { get; set; }
 
         public static Weapon CurrentlyShootingWeapon;
 
@@ -789,6 +794,17 @@ namespace RealismMod
 
                     StanceController.StanceState();
 
+                    if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
+                    {
+                        GameWorld gameWorld = Singleton<GameWorld>.Instance;
+                        if (gameWorld?.AllPlayers.Count > 0)
+                        {
+                            Player player = gameWorld.AllPlayers[0];
+                            RealismHealthController.AddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, player, Plugin.AddEffectType.Value);
+                        }
+                    }
+
+
                 }
             }
         }
@@ -810,6 +826,10 @@ namespace RealismMod
             string LowReady = "12. Low Ready";
             string Pistol = "13. Pistol Position And Stance";
             string ShortStock = "14. Short-Stocking";
+
+            AddEffectType = Config.Bind<string>(MiscSettings, "Effect Type", "HeavyBleeding", new ConfigDescription("HeavyBleeding, LightBleeding, Fracture.", null, new ConfigurationManagerAttributes { Order = 100 }));
+            AddEffectBodyPart = Config.Bind<int>(MiscSettings, "Body Part Index", 1, new ConfigDescription("Head = 0, Chest = 1, Stomach = 2, Letft Arm, Right Arm, Left Leg, Right Leg, Common (whole body)", null, new ConfigurationManagerAttributes { Order = 120, IsAdvanced = true }));
+            AddEffectKeybind = Config.Bind(MiscSettings, "Add Effect Keybind", new KeyboardShortcut(KeyCode.M), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 130 }));
 
             EnableAmmoFirerateDisp = Config.Bind<bool>(MiscSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 11 }));
 

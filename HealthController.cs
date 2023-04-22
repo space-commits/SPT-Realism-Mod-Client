@@ -8,6 +8,10 @@ using System.Linq;
 using System.Text;
 using static ActiveHealthControllerClass;
 using System.Collections;
+using static System.Net.Mime.MediaTypeNames;
+using UnityEngine;
+using System.Reflection;
+using Comfort.Common;
 
 namespace RealismMod
 {
@@ -43,7 +47,12 @@ namespace RealismMod
 
         public void Tick()
         {
-            //reduce hp here
+            float currentPartHP = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
+
+            if (currentPartHP >= 20f) 
+            {
+                Player.ActiveHealthController.ChangeHealth(BodyPart, DamagePerTick, default);
+            }
         }
     }
 
@@ -70,11 +79,22 @@ namespace RealismMod
 
     public static class RealismHealthController
     {
-        public static EBodyPart[] BodyParts = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.RightLeg, EBodyPart.LeftLeg };
+        public static EBodyPart[] BodyParts = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm};
 
         private static List<IHealthEffect> _activeHealthEffects;
 
-        public static void AddEffect(IHealthEffect effect, bool canStack)
+        public static void AddBaseEFTEffect(int partIndex, Player player, String effect) 
+        {
+            MethodInfo effectMethod = typeof(ActiveHealthControllerClass).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic).First(m => 
+            m.GetParameters().Length == 6 
+            && m.GetParameters()[0].Name == "bodyPart"
+            && m.GetParameters()[5].Name == "initCallback"
+            && m.IsGenericMethod);
+
+            effectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType(effect, BindingFlags.Instance | BindingFlags.NonPublic)).Invoke(player.ActiveHealthController, new object[] { (EBodyPart)partIndex, null, null, null, null, null });
+        }
+
+        public static void AddCustomEffect(IHealthEffect effect, bool canStack)
         {
             //need to decide if it's better to keep the old effect or to replace it with a new one.
             if (!canStack)
@@ -178,6 +198,8 @@ namespace RealismMod
                 return;
             }
 
+            Logger.LogWarning("Checking if CanUseMedItem");
+
             MedsClass med = item as MedsClass;
 
             EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(player);
@@ -192,10 +214,10 @@ namespace RealismMod
 
             bool mouthBlocked = MouthIsBlocked(head, face);
 
-            bool hasBodyGear = head != null || ears != null || face != null;
-            bool hasHeadGear = vest != null || tacrig != null || bag != null;
+            bool hasHeadGear = head != null || ears != null || face != null;
+            bool hasBodyGear = vest != null || tacrig != null || bag != null; 
 
-            bool isHead = bodyPart == EBodyPart.Chest || bodyPart == EBodyPart.Stomach;
+            bool isHead = bodyPart == EBodyPart.Head;
             bool isBody = bodyPart == EBodyPart.Chest || bodyPart == EBodyPart.Stomach;
             bool isNotLimb = bodyPart == EBodyPart.Chest || bodyPart == EBodyPart.Stomach || bodyPart == EBodyPart.Head;
 
@@ -206,6 +228,8 @@ namespace RealismMod
 
             if (MedProperties.MedType(item) == "pills" && (mouthBlocked || fsIsON || nvgIsOn)) 
             {
+                Logger.LogWarning("Pills Blocked, Gear");
+
                 canUse = false;
                 return;
             }
@@ -213,6 +237,8 @@ namespace RealismMod
             //will have to make mask exception for moustache and similar
             if ((isBody && hasBodyGear) || (isHead && hasHeadGear))
             {
+                Logger.LogWarning("Med Blocked, Gear");
+
                 canUse = false;
                 return;
             }

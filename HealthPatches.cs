@@ -44,10 +44,14 @@ namespace RealismMod
             {
                 if (((medsClass = (item as MedsClass)) != null)) 
                 {
+                    Logger.LogWarning("ApplyItem Med");
+
                     RealismHealthController.CanUseMedItem(Logger, __instance.Player, bodyPart, item, ref canUse);
                 }
                 if((foodClass = (item as FoodClass)) != null)
                 {
+                    Logger.LogWarning("ApplyItem Food");
+
                     RealismHealthController.CanConsume(Logger, __instance.Player, item, ref canUse);
                 }
 
@@ -76,18 +80,23 @@ namespace RealismMod
             Logger.LogWarning("bodyPart = " + bodyPart);
             string medType = MedProperties.MedType(meds);
 
-            if (__instance.IsYourPlayer && bodyPart == EBodyPart.Common && medType != "drug" && meds.Template._parent != "5448f3a64bdc2d60728b456a") 
+            if (__instance.IsYourPlayer && medType != "drug" && meds.Template._parent != "5448f3a64bdc2d60728b456a") 
             {
+
                 Logger.LogWarning("med item to check = " + meds.LocalizedName());
 
  
                 bool proceedWithHealing = false;
 
+                MedsClass med = meds as MedsClass;
+                float medHPRes = med.MedKitComponent.HpResource;
+                Logger.LogWarning("remeaining hp resource = " + medHPRes);
                 string hBleedHealType = MedProperties.HBleedHealType(meds);
 
-                bool canHealFract = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture);
+
+                bool canHealFract = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
                 bool canHealLBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.LightBleeding);
-                bool canHealHBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding);
+                bool canHealHBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
 
                 EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
 
@@ -146,52 +155,68 @@ namespace RealismMod
                             continue;
                         }
 
-                        if (canHealHBleed && hasHeavyBleed)
+                        if (canHealHBleed && effect.Type == typeof(GInterface191))
                         {
+                            if (!isNotLimb) 
+                            {
+                                Logger.LogWarning("Limb " + part + " has heavy bleed, choosing " + part);
+                                bodyPart = part;
+                                break;
+                            }
                             if ((isBody || isHead) && hBleedHealType == "trnqt")
                             {
                                 Logger.LogWarning("Part " + part + " has heavy bleed but med is a trnqt, skipping");
-
                                 continue;
                             }
                             if ((isBody || isHead) && hBleedHealType == "clot")
                             {
                                 Logger.LogWarning("Part " + part + " has heavy bleed and med is clotter, choosing " + part);
-
                                 bodyPart = part;
                                 break;
                             }
-
-                            Logger.LogWarning("Part " + part + " is the only suitable part with a heavy bleed, choosing " + part);
-
+                            Logger.LogWarning("Part " + part + " has heavy bleed and no other checks fired, choosing " + part);
                             bodyPart = part;
                             break;
                         }
-                        if (canHealLBleed && hasLightBleed)
+                        if (canHealLBleed && effect.Type == typeof(GInterface190))
                         {
+                            if (!isNotLimb)
+                            {
+                                Logger.LogWarning("Limb " + part + " has light bleed, choosing " + part);
+                                bodyPart = part;
+                                break;
+                            }
                             if ((isBody || isHead) && hasHeavyBleed) 
                             {
                                 Logger.LogWarning("Part " + part + " has heavy bleed and a light bleed, skipping");
                                 continue;
                             }
-
-                            Logger.LogWarning("Part " + part + " is the only suitable part with a light bleed, choosing " + part);
-
+                            Logger.LogWarning("Part " + part + " has light bleed and no other checks fired, choosing " + part);
                             bodyPart = part;
                             break;
                         }
-                        if (hasFracture && canHealFract)
+                        if (canHealFract && effect.Type == typeof(GInterface193))
                         {
-                            if ((isBody || isHead))
+                            if (!isNotLimb)
                             {
-                                Logger.LogWarning("Part " + part + " has fracture but can't which can't be healed, skipping");
+                                Logger.LogWarning("Limb " + part + " has a fracture, choosing " + part);
+                                bodyPart = part;
+                                break;
+                            }
+                            if (isNotLimb)
+                            {
+                                Logger.LogWarning("Part " + part + " has fracture which can't be healed, skipping");
                                 continue;
                             }
-
-                            Logger.LogWarning("Part " + part + " is the only suitable part with a fracture, choosing " + part);
+                            Logger.LogWarning("Part " + part + " has fracture and no other checks fired, choosing " + part);
                             bodyPart = part;
                             break;
                         }
+                    }
+
+                    if (bodyPart != EBodyPart.Common) 
+                    {
+                        break;
                     }
                 }
 
@@ -199,15 +224,10 @@ namespace RealismMod
 
                 Logger.LogWarning("Prefix Body part = " + bodyPart);
                 Logger.LogWarning("proceedWithHealing = " + proceedWithHealing);
-
                 return proceedWithHealing;
             }
 
-            //check all body parts individually for what wounds they have
-            //based on what the med item is, assess what it should be healing, and what it can heal. EG if it's a clotter, and heavy bleed on chest and it's covered in gear, skip to nex possible limb
-            //if blocked/unable to treat, go to next limb, and change bodypart to that limb
-            //if none can be found, skip method entirely.
-            
+            //IF PART IS NOT COMMON, NOT DRUGS/STIMS, AND MEDKIT COULD HAD HEALED HEAVY BLEED, AND SELECTED LIMB AS A HEAVY BLEED
 
             return true;
         }

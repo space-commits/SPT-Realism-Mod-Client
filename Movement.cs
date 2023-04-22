@@ -35,7 +35,7 @@ namespace RealismMod
                     float baseSpeed = PlayerProperties.AimMoveSpeedBase * WeaponProperties.AimMoveSpeedModifier;
                     float totalSpeed = StanceController.IsActiveAiming ? baseSpeed * 1.35f : baseSpeed;
                     totalSpeed = WeaponProperties._WeapClass == "pistol" ? totalSpeed + 0.15f : totalSpeed;
-                    __instance.AddStateSpeedLimit(Mathf.Clamp(totalSpeed, 0.15f, 0.9f), Player.ESpeedLimit.Aiming);
+                    __instance.AddStateSpeedLimit(Mathf.Clamp(totalSpeed, 0.3f, 0.9f), Player.ESpeedLimit.Aiming);
                     return false;
                 }
                 __instance.RemoveStateSpeedLimit(Player.ESpeedLimit.Aiming);
