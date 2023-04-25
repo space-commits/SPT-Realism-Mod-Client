@@ -27,7 +27,7 @@ namespace RealismMod
     //CHECK IF MED ITEM IS DRUG OR STIM, IF SO THEN LET ORIGINAL RUN AND SKIP CHECKS!!!!!!!
 
     //in-raid healing
-    public class GClass2106ApplyItemPatch : ModulePatch
+    public class ApplyItemPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -62,7 +62,6 @@ namespace RealismMod
 
         }
     }
-    //CHECK IF MED ITEM IS DRUG OR STIM, IF SO THEN LET ORIGINAL RUN AND SKIP CHECKS!!!!!!!
 
     public class ProceedPatch : ModulePatch
     {
@@ -76,156 +75,194 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
         {
-            Logger.LogWarning("checking if med can proceed");
-            Logger.LogWarning("bodyPart = " + bodyPart);
             string medType = MedProperties.MedType(meds);
-
-            if (__instance.IsYourPlayer && medType != "drug" && meds.Template._parent != "5448f3a64bdc2d60728b456a") 
+            if (__instance.IsYourPlayer && medType != "drug" && meds.Template._parent != "5448f3a64bdc2d60728b456a")
             {
-
+                Logger.LogWarning("checking if med can proceed");
+                Logger.LogWarning("bodyPart = " + bodyPart);
                 Logger.LogWarning("med item to check = " + meds.LocalizedName());
-
- 
-                bool proceedWithHealing = false;
 
                 MedsClass med = meds as MedsClass;
                 float medHPRes = med.MedKitComponent.HpResource;
-                Logger.LogWarning("remeaining hp resource = " + medHPRes);
-                string hBleedHealType = MedProperties.HBleedHealType(meds);
 
+                Logger.LogWarning("remeaining hp resource = " + medHPRes);
+
+                string hBleedHealType = MedProperties.HBleedHealType(meds);
 
                 bool canHealFract = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
                 bool canHealLBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.LightBleeding);
                 bool canHealHBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
 
-                EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
-
-                Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
-                Item ears = equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem;
-                Item glasses = equipment.GetSlot(EquipmentSlot.Eyewear).ContainedItem;
-                Item face = equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
-                Item vest = equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem;
-                Item tacrig = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
-                Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
-
-                bool mouthBlocked = RealismHealthController.MouthIsBlocked(head, face);
-
-                bool hasBodyGear = vest != null || tacrig != null || bag != null;
-                bool hasHeadGear = head != null || ears != null || face != null;
-
-                FaceShieldComponent fsComponent = __instance.FaceShieldObserver.Component;
-                NightVisionComponent nvgComponent = __instance.NightVisionObserver.Component;
-                bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
-                bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
-
-
-                if (medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn))
+                if (bodyPart == EBodyPart.Common)
                 {
-                    return false;
-                }
-                else if (medType == "pills")
-                {
-                    return true;
-                }
+                    Logger.LogWarning("Body part is common");
 
-                foreach (EBodyPart part in RealismHealthController.BodyParts)
-                {
-                    IEnumerable<IEffect> effects = __instance.ActiveHealthController.GetAllActiveEffects(part);
+                    EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
 
-                    bool hasHeavyBleed = effects.OfType<GInterface191>().Any();
-                    bool hasLightBleed = effects.OfType<GInterface190>().Any();
-                    bool hasFracture = effects.OfType<GInterface193>().Any();
+                    Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
+                    Item ears = equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem;
+                    Item glasses = equipment.GetSlot(EquipmentSlot.Eyewear).ContainedItem;
+                    Item face = equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
+                    Item vest = equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem;
+                    Item tacrig = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
+                    Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
 
-                    bool isHead = part == EBodyPart.Head;
-                    bool isBody = part == EBodyPart.Chest || part == EBodyPart.Stomach;
-                    bool isNotLimb = part == EBodyPart.Chest || part == EBodyPart.Stomach || part == EBodyPart.Head;
-                    bool isLimb = part == EBodyPart.LeftArm || part == EBodyPart.RightArm || part == EBodyPart.LeftLeg || part == EBodyPart.RightLeg;
+                    bool mouthBlocked = RealismHealthController.MouthIsBlocked(head, face);
 
-                    foreach (IEffect effect in effects)
+                    bool hasBodyGear = vest != null || tacrig != null || bag != null;
+                    bool hasHeadGear = head != null || ears != null || face != null;
+
+                    FaceShieldComponent fsComponent = __instance.FaceShieldObserver.Component;
+                    NightVisionComponent nvgComponent = __instance.NightVisionObserver.Component;
+                    bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
+                    bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
+
+
+                    if (medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn))
                     {
-                        Logger.LogWarning("==");
-                        Logger.LogWarning("effect type " + effect.Type);
-                        Logger.LogWarning("effect body part " + effect.BodyPart);
-                        Logger.LogWarning("==");
+                        return false;
+                    }
+                    else if (medType == "pills")
+                    {
+                        return true;
+                    }
 
-                        if ((isBody && hasBodyGear) || (isHead && hasHeadGear))
+                    foreach (EBodyPart part in RealismHealthController.BodyParts)
+                    {
+                        bool hasHeavyBleed = false;
+                        bool hasLightBleed = false;
+                        bool hasFracture = false;
+
+                        IEnumerable<IEffect> effects = RealismHealthController.GetAllEffectsOnLimb(__instance, part, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
+
+                        bool isHead = false;
+                        bool isBody = false;
+                        bool isNotLimb = false;
+
+                        RealismHealthController.GetBodyPartType(part, ref isNotLimb, ref isHead, ref isBody);
+
+                        foreach (IEffect effect in effects)
                         {
-                            Logger.LogWarning("Part " + part + " has gear on, skipping");
+                            Logger.LogWarning("==");
+                            Logger.LogWarning("effect type " + effect.Type);
+                            Logger.LogWarning("effect body part " + effect.BodyPart);
+                            Logger.LogWarning("==");
 
-                            continue;
-                        }
+                            if ((isBody && hasBodyGear) || (isHead && hasHeadGear))
+                            {
+                                Logger.LogWarning("Part " + part + " has gear on, skipping");
 
-                        if (canHealHBleed && effect.Type == typeof(GInterface191))
-                        {
-                            if (!isNotLimb) 
-                            {
-                                Logger.LogWarning("Limb " + part + " has heavy bleed, choosing " + part);
-                                bodyPart = part;
-                                break;
-                            }
-                            if ((isBody || isHead) && hBleedHealType == "trnqt")
-                            {
-                                Logger.LogWarning("Part " + part + " has heavy bleed but med is a trnqt, skipping");
                                 continue;
                             }
-                            if ((isBody || isHead) && hBleedHealType == "clot")
+
+                            if (canHealHBleed && effect.Type == typeof(GInterface191))
                             {
-                                Logger.LogWarning("Part " + part + " has heavy bleed and med is clotter, choosing " + part);
+                                if (!isNotLimb)
+                                {
+                                    Logger.LogWarning("Limb " + part + " has heavy bleed, choosing " + part);
+                                    bodyPart = part;
+                                    break;
+                                }
+                                if ((isBody || isHead) && hBleedHealType == "trnqt")
+                                {
+                                    Logger.LogWarning("Part " + part + " has heavy bleed but med is a trnqt, skipping");
+                                    continue;
+                                }
+                                if ((isBody || isHead) && (hBleedHealType == "clot" || hBleedHealType == "combo" || hBleedHealType == "surg"))
+                                {
+                                    Logger.LogWarning("Part " + part + " has heavy bleed and this bleed heal type can stop it, choosing " + part);
+                                    bodyPart = part;
+                                    break;
+                                }
+                                Logger.LogWarning("Part " + part + " has heavy bleed and no other checks fired, choosing " + part);
                                 bodyPart = part;
                                 break;
                             }
-                            Logger.LogWarning("Part " + part + " has heavy bleed and no other checks fired, choosing " + part);
-                            bodyPart = part;
-                            break;
+                            if (canHealLBleed && effect.Type == typeof(GInterface190))
+                            {
+                                if (!isNotLimb)
+                                {
+                                    Logger.LogWarning("Limb " + part + " has light bleed, choosing " + part);
+                                    bodyPart = part;
+                                    break;
+                                }
+                                if ((isBody || isHead) && hasHeavyBleed)
+                                {
+                                    Logger.LogWarning("Part " + part + " has heavy bleed and a light bleed, skipping");
+                                    continue;
+                                }
+                                Logger.LogWarning("Part " + part + " has light bleed and no other checks fired, choosing " + part);
+                                bodyPart = part;
+                                break;
+                            }
+                            if (canHealFract && effect.Type == typeof(GInterface193))
+                            {
+                                if (!isNotLimb)
+                                {
+                                    Logger.LogWarning("Limb " + part + " has a fracture, choosing " + part);
+                                    bodyPart = part;
+                                    break;
+                                }
+                                if (isNotLimb)
+                                {
+                                    Logger.LogWarning("Part " + part + " has fracture which can't be healed, skipping");
+                                    continue;
+                                }
+                                Logger.LogWarning("Part " + part + " has fracture and no other checks fired, choosing " + part);
+                                bodyPart = part;
+                                break;
+                            }
                         }
-                        if (canHealLBleed && effect.Type == typeof(GInterface190))
+
+                        if (bodyPart != EBodyPart.Common)
                         {
-                            if (!isNotLimb)
-                            {
-                                Logger.LogWarning("Limb " + part + " has light bleed, choosing " + part);
-                                bodyPart = part;
-                                break;
-                            }
-                            if ((isBody || isHead) && hasHeavyBleed) 
-                            {
-                                Logger.LogWarning("Part " + part + " has heavy bleed and a light bleed, skipping");
-                                continue;
-                            }
-                            Logger.LogWarning("Part " + part + " has light bleed and no other checks fired, choosing " + part);
-                            bodyPart = part;
-                            break;
-                        }
-                        if (canHealFract && effect.Type == typeof(GInterface193))
-                        {
-                            if (!isNotLimb)
-                            {
-                                Logger.LogWarning("Limb " + part + " has a fracture, choosing " + part);
-                                bodyPart = part;
-                                break;
-                            }
-                            if (isNotLimb)
-                            {
-                                Logger.LogWarning("Part " + part + " has fracture which can't be healed, skipping");
-                                continue;
-                            }
-                            Logger.LogWarning("Part " + part + " has fracture and no other checks fired, choosing " + part);
-                            bodyPart = part;
+                            Logger.LogWarning("Common Body Part replaced with " + bodyPart);
                             break;
                         }
                     }
 
-                    if (bodyPart != EBodyPart.Common) 
+                    if (bodyPart == EBodyPart.Common) 
                     {
-                        break;
+                        Logger.LogWarning("After all checks, body part is still common, canceling heal");
+                        return false;
                     }
                 }
 
-                proceedWithHealing = bodyPart != EBodyPart.Common;
+                //determine if any effects should be applied based on what is being healed
+                if (bodyPart != EBodyPart.Common)
+                {
+                    Logger.LogWarning("Checking if custom effects shouldbe applied");
 
-                Logger.LogWarning("Prefix Body part = " + bodyPart);
-                Logger.LogWarning("proceedWithHealing = " + proceedWithHealing);
-                return proceedWithHealing;
+                    bool hasHeavyBleed = false;
+                    bool hasLightBleed = false;
+                    bool hasFracture = false;
+
+                    IEnumerable<IEffect> effects = RealismHealthController.GetAllEffectsOnLimb(__instance, bodyPart, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
+                     
+                    bool isHead = false;
+                    bool isBody = false;
+                    bool isNotLimb = false;
+
+                    RealismHealthController.GetBodyPartType(bodyPart, ref isNotLimb, ref isHead, ref isBody);
+
+                    if (hasHeavyBleed && canHealHBleed && (hBleedHealType == "combo" || hBleedHealType == "trnqt") && !isNotLimb)
+                    {
+                        Logger.LogWarning("Tourniquet application detected, adding TourniquetEffect");
+
+                        TourniquetEffect trnqt = new TourniquetEffect(MedProperties.HpPerTick(meds), null, bodyPart, __instance, meds.HealthEffectsComponent.UseTime);
+                        RealismHealthController.AddCustomEffect(trnqt, false);
+                    }
+
+                    //need to add tunnel vision, pain
+                    if (medType == "surg") 
+                    {
+                        SurgeryEffect surg = new SurgeryEffect(MedProperties.HpPerTick(meds), null, bodyPart, __instance, meds.HealthEffectsComponent.UseTime);
+                        RealismHealthController.AddCustomEffect(surg, false);
+                        Logger.LogWarning("Surgery kit use detected, adding SurgeryEffect");
+                    }
+                }
             }
+
 
             //IF PART IS NOT COMMON, NOT DRUGS/STIMS, AND MEDKIT COULD HAD HEALED HEAVY BLEED, AND SELECTED LIMB AS A HEAVY BLEED
 
@@ -239,22 +276,33 @@ namespace RealismMod
         }
     }
 
-    public class TryProceedPatch : ModulePatch
+    public class RemoveEffectPatch : ModulePatch
     {
+
+        private static Type _targetType;
+        private static MethodInfo _targetMethod;
+
+        public RemoveEffectPatch()
+        {
+            _targetType = AccessTools.TypeByName("MedsController");
+            _targetMethod = _targetType.GetMethod("Remove");
+        }
+
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player).GetMethod("TryProceed", BindingFlags.Instance | BindingFlags.NonPublic);
-
+            return _targetMethod;
         }
+
         [PatchPostfix]
         private static void PatchPostfix()
         {
-
+            Logger.LogWarning("Cancelling Meds");
+            RealismHealthController.CancelEffects(Logger);
         }
     }
 
     //when using quickslot
-    public class SetQuickSlotItem : ModulePatch
+    public class SetQuickSlotPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {

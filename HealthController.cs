@@ -16,46 +16,6 @@ using Comfort.Common;
 namespace RealismMod
 {
 
-    public interface IHealthEffect
-    {
-        public EBodyPart BodyPart { get; set; }
-        public int Duration { get; }
-        public float TimeExisted { get; set; }
-        public bool IsActive { get; set; }
-        public void Tick();
-        public Player Player { get; }
-    }
-
-    public class TourniquetEffect : IHealthEffect
-    {
-        public EBodyPart BodyPart { get; set; }
-        public int Duration { get; }
-        public float TimeExisted { get; set; }
-        public bool IsActive { get; set; }
-        public float DamagePerTick { get; }
-        public Player Player { get; }
-
-        public TourniquetEffect(float dmgTick, int dur, EBodyPart part, Player player) 
-        {
-            TimeExisted = 0;
-            IsActive = true;
-            DamagePerTick = dmgTick;
-            Duration = dur;
-            BodyPart = part;
-            Player = player;
-        }
-
-        public void Tick()
-        {
-            float currentPartHP = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
-
-            if (currentPartHP >= 20f) 
-            {
-                Player.ActiveHealthController.ChangeHealth(BodyPart, DamagePerTick, default);
-            }
-        }
-    }
-
     public static class MedProperties
     {
         public static string MedType(Item med)
@@ -75,23 +35,32 @@ namespace RealismMod
             }
             return med.ConflictingItems[2];
         }
+
+        public static float HpPerTick(Item med)
+        {
+            if (Utils.NullCheck(med.ConflictingItems))
+            {
+                return 1;
+            }
+            return float.Parse(med.ConflictingItems[3]);
+        }
     }
 
     public static class RealismHealthController
     {
-        public static EBodyPart[] BodyParts = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm};
+        public static EBodyPart[] BodyParts = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm };
 
-        private static List<IHealthEffect> _activeHealthEffects;
+        private static List<IHealthEffect> _activeHealthEffects = new List<IHealthEffect>();
 
-        public static void AddBaseEFTEffect(int partIndex, Player player, String effect) 
+        public static void AddBaseEFTEffect(int partIndex, Player player, String effect)
         {
-            MethodInfo effectMethod = typeof(ActiveHealthControllerClass).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic).First(m => 
-            m.GetParameters().Length == 6 
+            MethodInfo effectMethod = typeof(ActiveHealthControllerClass).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).First(m =>
+            m.GetParameters().Length == 6
             && m.GetParameters()[0].Name == "bodyPart"
             && m.GetParameters()[5].Name == "initCallback"
             && m.IsGenericMethod);
 
-            effectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType(effect, BindingFlags.Instance | BindingFlags.NonPublic)).Invoke(player.ActiveHealthController, new object[] { (EBodyPart)partIndex, null, null, null, null, null });
+            effectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType(effect,BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { (EBodyPart)partIndex, null, null, null, null, null });
         }
 
         public static void AddCustomEffect(IHealthEffect effect, bool canStack)
@@ -101,24 +70,35 @@ namespace RealismMod
             {
                 foreach (IHealthEffect eff in _activeHealthEffects)
                 {
-                    if (eff == effect && eff.BodyPart == effect.BodyPart)
+                    if (eff.GetType() == effect.GetType() && eff.BodyPart == effect.BodyPart)
                     {
-                        return;
+                        RemoveEffectOfType(effect.GetType(), effect.BodyPart);
+                        break;
                     }
                 }
             }
-            else
-            {
-                _activeHealthEffects.Add(effect);
-            }
+
+            _activeHealthEffects.Add(effect);
         }
 
-        public static void RemoveEffect(IHealthEffect effect, EBodyPart bodyPart)
+        public static void RemoveEffectOfType(Type effect, EBodyPart bodyPart)
         {
             for (int i = _activeHealthEffects.Count - 1; i >= 0; i--)
             {
-                if (_activeHealthEffects[i] == effect && _activeHealthEffects[i].BodyPart == bodyPart)
+                if (_activeHealthEffects[i].GetType() == effect && _activeHealthEffects[i].BodyPart == bodyPart)
                 {
+                    _activeHealthEffects.RemoveAt(i);
+                }
+            }
+        }
+
+        public static void CancelEffects(ManualLogSource logger)
+        {
+            for (int i = _activeHealthEffects.Count - 1; i >= 0; i--)
+            {
+                if (_activeHealthEffects[i].Delay > 0f)
+                {
+                    logger.LogWarning("Effect being cancelled = " + _activeHealthEffects[i].GetType().ToString());
                     _activeHealthEffects.RemoveAt(i);
                 }
             }
@@ -134,18 +114,34 @@ namespace RealismMod
             _activeHealthEffects.Clear();
         }
 
-        public static void TickEffects()
+        public static void ControllerTick(ManualLogSource logger, Player player)
         {
+            if ((int)(Time.time % 10) == 0) 
+            {
+                logger.LogWarning("Checking Double Bleeds");
+                RealismHealthController.DoubleBleedCheck(logger, player);
+            }
+
             for (int i = _activeHealthEffects.Count - 1; i >= 0; i--)
             {
                 IHealthEffect effect = _activeHealthEffects[i];
-                if (effect.IsActive)
+                logger.LogWarning("Type = " + effect.GetType().ToString());
+                logger.LogWarning("Delay = " + effect.Delay);
+                effect.Delay = effect.Delay > 0 ? effect.Delay - 1f : effect.Delay;
+
+                if ((int)(Time.time % 5) == 0) 
                 {
-                    effect.Tick();
-                }
-                else
-                {
-                    _activeHealthEffects.RemoveAt(i);
+                    logger.LogWarning("Second Health Effects Tick");
+                    if (effect.Duration == null || effect.Duration > 0f)
+                    {
+                        logger.LogWarning("Ticking Effect");
+                        effect.Tick();
+                    }
+                    else
+                    {
+                        logger.LogWarning("Removing Effect Due to Duration");
+                        _activeHealthEffects.RemoveAt(i);
+                    }
                 }
             }
         }
@@ -165,6 +161,24 @@ namespace RealismMod
             }
 
             return faceBlocksMouth || headBlocksMouth;
+        }
+
+        public static IEnumerable<IEffect> GetAllEffectsOnLimb(Player player, EBodyPart part, ref bool hasHeavyBleed, ref bool hasLightBleed, ref bool hasFracture)
+        {
+            IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(part);
+
+            hasHeavyBleed = effects.OfType<GInterface191>().Any();
+            hasLightBleed = effects.OfType<GInterface190>().Any();
+            hasFracture = effects.OfType<GInterface193>().Any();
+
+            return effects;
+        }
+
+        public static void GetBodyPartType(EBodyPart part, ref bool isNotLimb, ref bool isHead, ref bool isBody) 
+        {
+            isHead = part == EBodyPart.Head;
+            isBody = part == EBodyPart.Chest || part == EBodyPart.Stomach;
+            isNotLimb = part == EBodyPart.Chest || part == EBodyPart.Stomach || part == EBodyPart.Head;
         }
 
         public static void CanConsume(ManualLogSource Logger, Player player, Item item, ref bool canUse)
@@ -215,16 +229,21 @@ namespace RealismMod
             bool mouthBlocked = MouthIsBlocked(head, face);
 
             bool hasHeadGear = head != null || ears != null || face != null;
-            bool hasBodyGear = vest != null || tacrig != null || bag != null; 
+            bool hasBodyGear = vest != null || tacrig != null || bag != null;
 
-            bool isHead = bodyPart == EBodyPart.Head;
-            bool isBody = bodyPart == EBodyPart.Chest || bodyPart == EBodyPart.Stomach;
-            bool isNotLimb = bodyPart == EBodyPart.Chest || bodyPart == EBodyPart.Stomach || bodyPart == EBodyPart.Head;
+            bool isHead = false;
+            bool isBody = false;
+            bool isNotLimb = false;
+
+            RealismHealthController.GetBodyPartType(bodyPart, ref isNotLimb, ref isHead, ref isBody);
 
             FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
             NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
             bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
             bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
+
+            float medHPRes = med.MedKitComponent.HpResource;
+            Logger.LogWarning("remeaining hp resource = " + medHPRes);
 
             if (MedProperties.MedType(item) == "pills" && (mouthBlocked || fsIsON || nvgIsOn)) 
             {
@@ -246,12 +265,13 @@ namespace RealismMod
             Logger.LogWarning("==============");
             Logger.LogWarning("GClass2106");
 
-            IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(bodyPart);
-            bool hasHeavyBleed = effects.OfType<GInterface191>().Any();
-            bool hasLightBleed = effects.OfType<GInterface190>().Any();
-            bool hasFracture = effects.OfType<GInterface193>().Any();
+            bool hasHeavyBleed = false;
+            bool hasLightBleed = false;
+            bool hasFracture = false;
 
-            if (hasHeavyBleed && isNotLimb && MedProperties.HBleedHealType(item) == "trnqt")
+            IEnumerable<IEffect> effects = RealismHealthController.GetAllEffectsOnLimb(player, bodyPart, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
+
+            if (hasHeavyBleed && isNotLimb && MedProperties.HBleedHealType(item) == "trnqt" && medHPRes >= 3)
             {
                 canUse = false;
                 return;
@@ -263,7 +283,7 @@ namespace RealismMod
                 return;
             }
 
-            if (MedProperties.MedType(item) == "medkit" && med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && hasFracture && !hasHeavyBleed && !hasLightBleed && isNotLimb)
+            if (MedProperties.MedType(item) == "medkit" && med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && hasFracture && isNotLimb && !hasHeavyBleed && !hasLightBleed)
             {
                 canUse = false;
                 return;

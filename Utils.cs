@@ -120,6 +120,22 @@ namespace RealismMod
             return true;
         }
 
+        public static bool IsInHideout() 
+        {
+            GameWorld gameWorld = Singleton<GameWorld>.Instance;
+            SessionResultPanel sessionResultPanel = Singleton<SessionResultPanel>.Instance;
+
+            if (gameWorld?.AllPlayers.Count > 0)
+            {
+                Player player = gameWorld.AllPlayers[0];
+                if (player != null && player is HideoutPlayer)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
 
         public static void SafelyAddAttributeToList(ItemAttributeClass itemAttribute, Mod __instance)
         {

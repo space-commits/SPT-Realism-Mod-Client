@@ -383,6 +383,8 @@ namespace RealismMod
 
         public static bool HasOptic = false;
 
+        private static float _healthTick = 0f;
+
         private void GetPaths()
         {
             var mod = RequestHandler.GetJson($"/RealismMod/GetInfo");
@@ -711,11 +713,11 @@ namespace RealismMod
 
                 //Health
                 new HCApplyItemPatch().Enable();
-                new GClass2106ApplyItemPatch().Enable();
+                new ApplyItemPatch().Enable();
                 new HealthBarButtonApplyItemPatch().Enable();
-                new SetQuickSlotItem().Enable();
-/*                new TryProceedPatch().Enable();
-*/                new ProceedPatch().Enable();
+                new SetQuickSlotPatch().Enable();
+                new ProceedPatch().Enable();
+                new RemoveEffectPatch().Enable();
             }
         }
 
@@ -804,7 +806,21 @@ namespace RealismMod
                         }
                     }
 
+                    if (!Utils.IsInHideout()) 
+                    {
+                        _healthTick += Time.deltaTime;
 
+                        if (_healthTick >= 1f)
+                        {
+                            Logger.LogWarning("First Health Effects Tick");
+                            RealismHealthController.ControllerTick(Logger, Singleton<GameWorld>.Instance.AllPlayers[0]);
+                            _healthTick = 0f;
+                        }
+                    }
+                }
+                if (Utils.IsInHideout() || !Utils.IsReady) 
+                {
+                    RealismHealthController.RemoveAllEffects();
                 }
             }
         }

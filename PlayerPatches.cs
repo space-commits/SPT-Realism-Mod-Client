@@ -61,9 +61,6 @@ namespace RealismMod
 
     public class PlayerLateUpdatePatch : ModulePatch
     {
-
-        private static float timeSinceLast = 0f;
-
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Player).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -78,15 +75,6 @@ namespace RealismMod
                 RealismHealthController.PlayerInjuryStateCheck(__instance, Logger);
                 Plugin.IsSprinting = __instance.IsSprintEnabled;
                 PlayerProperties.enviroType = __instance.Environment;
-
-                timeSinceLast += Time.deltaTime;
-
-                if (timeSinceLast >= 10f)
-                {
-                    Logger.LogWarning("Checking for Double Bleed");
-                    RealismHealthController.DoubleBleedCheck(Logger, __instance);
-                    timeSinceLast = 0f;
-                }
 
                 if (fc != null)
                 {
