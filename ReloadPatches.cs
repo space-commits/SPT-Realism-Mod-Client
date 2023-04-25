@@ -210,7 +210,6 @@ namespace RealismMod
                     Logger.LogWarning("SetHammerArmed = " + hammerSpeed);
                 }
             }
-
         }
     }
 
@@ -429,7 +428,9 @@ namespace RealismMod
             {
                 if (Plugin.EnableLogging.Value == true)
                 {
-
+                    Logger.LogWarning("ReloadMag Patch");
+                    Logger.LogWarning("magazine = " + magazine.LocalizedName());
+                    Logger.LogWarning("magazine weight = " + magazine.GetSingleItemTotalWeight());
                 }
                 StatCalc.SetMagReloadSpeeds(__instance, magazine);
             }

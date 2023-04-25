@@ -144,6 +144,7 @@ namespace RealismMod
             }
 
             float weapWeightLessMag = totalWeight - magWeight;
+            Logger.LogWarning("Weapon weight less mag = " + weapWeightLessMag);
 
             float totalReloadSpeedMod = WeaponProperties.SDReloadSpeedModifier;
 
@@ -200,17 +201,17 @@ namespace RealismMod
             Utils.HasRunErgoWeightCalc = true;
 
             float totalAimMoveSpeedFactor = 0;
-            float totalReloadSpeed = 0;
+            float totalReloadSpeedLessMag = 0;
             float totalChamberSpeed = 0;
             float totalFiringChamberSpeed = 0;
             float totalChamberCheckSpeed = 0;
             float totalFixSpeed = 0;
 
-            StatCalc.SpeedStatCalc(__instance, ergonomicWeight, ergonomicWeightLessMag, totalChamberSpeedMod, totalReloadSpeedMod, ref totalReloadSpeed, ref totalChamberSpeed, ref totalAimMoveSpeedFactor, ref totalFiringChamberSpeed, ref totalChamberCheckSpeed, ref totalFixSpeed, pureErgoDelta, totalWeight, totalTorque);
+            StatCalc.SpeedStatCalc(__instance, ergonomicWeight, ergonomicWeightLessMag, totalChamberSpeedMod, totalReloadSpeedMod, ref totalReloadSpeedLessMag, ref totalChamberSpeed, ref totalAimMoveSpeedFactor, ref totalFiringChamberSpeed, ref totalChamberCheckSpeed, ref totalFixSpeed, pureErgoDelta, totalWeight, totalTorque);
 
             WeaponProperties.TotalFixSpeed = totalFixSpeed;
             WeaponProperties.TotalChamberCheckSpeed = totalChamberCheckSpeed;
-            WeaponProperties.TotalReloadSpeedLessMag = totalReloadSpeed;
+            WeaponProperties.TotalReloadSpeedLessMag = totalReloadSpeedLessMag;
             WeaponProperties.TotalChamberSpeed = totalChamberSpeed;
             WeaponProperties.TotalFiringChamberSpeed = totalFiringChamberSpeed;
             WeaponProperties.AimMoveSpeedModifier = totalAimMoveSpeedFactor;

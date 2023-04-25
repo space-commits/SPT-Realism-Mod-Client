@@ -131,7 +131,6 @@ namespace RealismMod
 
                 if ((int)(Time.time % 5) == 0) 
                 {
-                    logger.LogWarning("Second Health Effects Tick");
                     if (effect.Duration == null || effect.Duration > 0f)
                     {
                         logger.LogWarning("Ticking Effect");

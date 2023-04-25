@@ -122,7 +122,7 @@ namespace RealismMod
         {
             ManipTime += Time.deltaTime;
 
-            if (ManipTime >= 0.35f)
+            if (ManipTime >= 0.25f)
             {
                 CancelHighReady = false;
                 CancelLowReady = false;
