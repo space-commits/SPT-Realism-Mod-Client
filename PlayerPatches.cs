@@ -75,6 +75,7 @@ namespace RealismMod
                 RealismHealthController.PlayerInjuryStateCheck(__instance, Logger);
                 Plugin.IsSprinting = __instance.IsSprintEnabled;
                 PlayerProperties.enviroType = __instance.Environment;
+                Plugin.IsInInventory = __instance.IsInventoryOpened;
 
                 if (fc != null)
                 {

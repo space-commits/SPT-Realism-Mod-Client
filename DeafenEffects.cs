@@ -196,13 +196,6 @@ namespace RealismMod
                 Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", totalVolume + Plugin.AmbientOccluded);
 
 
-/*                logger.LogWarning("==========================");
-                logger.LogWarning("Deaf Factor = " + deafFactor);
-                logger.LogWarning("Volume = " + totalVolume);
-                logger.LogWarning("Distorion = " + totalDistortion);
-                logger.LogWarning("Vignette = " + Plugin.Vignette.darkness);
-                logger.LogWarning("==========================");*/
-
                 if (!Plugin.HasHeadSet)
                 {
                     Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", totalDistortion + Plugin.CompressorResonance);
@@ -229,7 +222,6 @@ namespace RealismMod
 
         private static void ChangeDeafValues(float deafFactor, ref float vigValue, float vigIncRate, float vigLimit, ref float volValue, float volDecRate, float volLimit, ref float distValue, float distIncRate, float distLimit, float enviroMulti)
         {
-
             Plugin.Vignette.enabled = true;
             vigValue = Mathf.Clamp(vigValue + (vigIncRate * deafFactor * enviroMulti), 0.0f, vigLimit * deafFactor * enviroMulti);
             volValue = Mathf.Clamp(volValue - (volDecRate * deafFactor * enviroMulti), volLimit, 0.0f);
@@ -238,7 +230,6 @@ namespace RealismMod
 
         private static void ReseDeaftValues(float deafFactor, ref float vigValue, float vigResetRate, float vigLimit, ref float volValue, float volResetRate, float volLimit, ref float distValue, float distResetRate, float distLimit)
         {
-
             vigValue = Mathf.Clamp(vigValue - vigResetRate, 0.0f, vigLimit * deafFactor);
             volValue = Mathf.Clamp(volValue + volResetRate, volLimit, 0.0f);
             distValue = Mathf.Clamp(distValue - distResetRate, 0.0f, distLimit);
@@ -349,13 +340,6 @@ namespace RealismMod
                     }
 
                     Deafening.AmmoDeafFactor = ammoDeafFactor == 0f ? 1f : ammoDeafFactor;
-
-/*                    Logger.LogWarning("==============");
-                    Logger.LogWarning("Player Shot");
-                    Logger.LogWarning("velocityFactor = " + velocityFactor);
-                    Logger.LogWarning("ammoFactor = " + ammoFactor);
-                    Logger.LogWarning("AmmoDeafFactor = " + Plugin.AmmoDeafFactor);
-                    Logger.LogWarning("==============");*/
                 }
                 else
                 {
@@ -378,15 +362,6 @@ namespace RealismMod
                         }
                         float muzzleLoudness = muzzleFactor * calFactor * ammoDeafFactor;
                         Deafening.BotDeafFactor = muzzleLoudness * ((-distanceFromPlayer / 100f) + 1f) * 1.15f;
-/*                        Logger.LogWarning("==============");
-                        Logger.LogWarning("Bot Shot");
-                        Logger.LogWarning("velocityFactor = " + velocityFactor);
-                        Logger.LogWarning("Muzzle Factor = " + muzzleFactor);
-                        Logger.LogWarning("ammoFactor = " + ammoFactor);
-                        Logger.LogWarning("Bot Calibre = " + calFactor);
-                        Logger.LogWarning("distance = " + distanceFromPlayer);
-                        Logger.LogWarning("BotDeafFactor = " + Plugin.BotDeafFactor);
-                        Logger.LogWarning("==============");*/
 
                     }
                 }
@@ -412,11 +387,6 @@ namespace RealismMod
                 Plugin.GrenadeExploded = true;
 
                 Deafening.GrenadeDeafFactor = grenadeItem.Contusion.z * ((-distanceFromPlayer / 100f) + 1f);
-                /*                Logger.LogWarning("==============");
-                                Logger.LogWarning("Explosion");
-                                Logger.LogWarning("distance = " + distanceFromPlayer);
-                                Logger.LogWarning("GrenadeDeafFactor = " + Plugin.GrenadeDeafFactor);
-                                Logger.LogWarning("==============");*/
             }
         }
     }

@@ -15,9 +15,6 @@ namespace RealismMod
     {
         private static bool SetCanAds = false;
         private static bool SetActiveAimADS = false;
-        private static bool SetRunAnim = false;
-        private static bool ResetRunAnim = false;
-
         private static bool wasToggled = false;
 
         public static void ADSCheck(Player player, EFT.Player.FirearmController fc, ManualLogSource logger)
@@ -80,26 +77,6 @@ namespace RealismMod
                         StanceController.IsActiveAiming = false;
                     }
                     wasToggled = false;
-                }
-
-                if ((StanceController.IsHighReady || StanceController.WasHighReady) && !PlayerProperties.RightArmBlacked)
-                {
-                    player.BodyAnimatorCommon.SetFloat(GClass1648.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
-                    if (!SetRunAnim)
-                    {
-                        SetRunAnim = true;
-                        ResetRunAnim = false;
-                    }
-                }
-                else
-                {
-                    if (!ResetRunAnim)
-                    {
-                        player.BodyAnimatorCommon.SetFloat(GClass1648.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
-                        ResetRunAnim = true;
-                        SetRunAnim = false;
-                    }
-
                 }
 
                 if (player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire)

@@ -144,7 +144,6 @@ namespace RealismMod
             }
 
             float weapWeightLessMag = totalWeight - magWeight;
-            Logger.LogWarning("Weapon weight less mag = " + weapWeightLessMag);
 
             float totalReloadSpeedMod = WeaponProperties.SDReloadSpeedModifier;
 
