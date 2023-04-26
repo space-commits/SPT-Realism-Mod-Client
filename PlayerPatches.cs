@@ -66,16 +66,25 @@ namespace RealismMod
             return typeof(Player).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
+        private static float tick = 0f;
+
         [PatchPostfix]
         private static void PatchPostfix(Player __instance)
         {
             if (Utils.IsReady && __instance.IsYourPlayer)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
-                RealismHealthController.PlayerInjuryStateCheck(__instance, Logger);
+               
                 Plugin.IsSprinting = __instance.IsSprintEnabled;
                 PlayerProperties.enviroType = __instance.Environment;
                 Plugin.IsInInventory = __instance.IsInventoryOpened;
+
+                tick += Time.deltaTime;
+
+                if (!Utils.IsInHideout() && tick >= 3f) 
+                {
+                    RealismHealthController.PlayerInjuryStateCheck(__instance, Logger);
+                }
 
                 if (fc != null)
                 {

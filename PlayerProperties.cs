@@ -54,9 +54,15 @@ namespace RealismMod
 
         public static float AimSkillADSBuff = 0f;
 
-        public static bool RightArmBlacked = false;
+        public static bool RightArmRuined = false;
 
-        public static bool LeftArmBlacked = false;
+        public static bool LeftArmRuined = false;
+
+        public static float HealthSprintSpeedFactor = 1f;
+
+        public static float HealthSprintAccelFactor = 1f;
+
+        public static float HealthWalkSpeedFactor = 1f;
 
     }
 }

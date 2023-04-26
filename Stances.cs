@@ -212,7 +212,7 @@ namespace RealismMod
                             WasLowReady = IsLowReady;
                             WasShortStock = IsShortStock;
 
-                            if (IsHighReady == true && (PlayerProperties.RightArmBlacked == true || PlayerProperties.LeftArmBlacked == true))
+                            if (IsHighReady == true && (PlayerProperties.RightArmRuined == true || PlayerProperties.LeftArmRuined == true))
                             {
                                 DoHighReadyInjuredAnim = true;
                             }
@@ -284,7 +284,7 @@ namespace RealismMod
                         WasLowReady = IsLowReady;
                         WasShortStock = IsShortStock;
 
-                        if (IsHighReady == true && (PlayerProperties.RightArmBlacked == true || PlayerProperties.LeftArmBlacked == true)) 
+                        if (IsHighReady == true && (PlayerProperties.RightArmRuined == true || PlayerProperties.LeftArmRuined == true)) 
                         {
                             DoHighReadyInjuredAnim = true;
                         }
@@ -504,7 +504,7 @@ namespace RealismMod
             Vector3 shortTargetPostionThird = new Vector3(Plugin.ThirdShortStockOffsetX.Value, Plugin.ThirdShortStockOffsetY.Value, Plugin.ThirdShortStockOffsetZ.Value);
 
 
-            if (Plugin.EnableTacSprint.Value && (StanceController.IsHighReady || StanceController.WasHighReady) && !PlayerProperties.RightArmBlacked)
+            if (Plugin.EnableTacSprint.Value && (StanceController.IsHighReady || StanceController.WasHighReady) && !PlayerProperties.RightArmRuined)
             {
                 player.BodyAnimatorCommon.SetFloat(GClass1648.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
                 if (!setRunAnim)

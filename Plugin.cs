@@ -385,7 +385,7 @@ namespace RealismMod
 
         public static bool HasOptic = false;
 
-        private static float _healthTick = 0f;
+        private static float healthTick = 0f;
 
         private void GetPaths()
         {
@@ -678,14 +678,14 @@ namespace RealismMod
                 new RigConstructorPatch().Enable();
 
                 //Player
-                new EnduranceSprintActionPatch().Enable();
-                new EnduranceMovementActionPatch().Enable();
                 new PlayerInitPatch().Enable();
-
                 new ToggleHoldingBreathPatch().Enable();
 
                 //Movement
                 new SprintAccelerationPatch().Enable();
+                new EnduranceSprintActionPatch().Enable();
+                new EnduranceMovementActionPatch().Enable();
+                new MaxWalkSpeedPatch().Enable();
 
                 //Shot Effects
                 if (Plugin.EnableDeafen.Value == true)
@@ -810,12 +810,12 @@ namespace RealismMod
 
                     if (!Utils.IsInHideout()) 
                     {
-                        _healthTick += Time.deltaTime;
+                        healthTick += Time.deltaTime;
 
-                        if (_healthTick >= 1f)
+                        if (healthTick >= 1f)
                         {
                             RealismHealthController.ControllerTick(Logger, Singleton<GameWorld>.Instance.AllPlayers[0]);
-                            _healthTick = 0f;
+                            healthTick = 0f;
                         }
                     }
                 }

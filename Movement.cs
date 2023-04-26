@@ -1,6 +1,7 @@
 ﻿using Aki.Reflection.Patching;
 using Aki.Reflection.Utils;
 using BepInEx.Logging;
+using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
@@ -60,23 +61,43 @@ namespace RealismMod
             if (player.IsYourPlayer == true)
             {
                 GClass755 rotationFrameSpan = (GClass755)AccessTools.Field(typeof(GClass1604), "gclass755_0").GetValue(__instance);
-                float highReadySpeedBonus = StanceController.IsHighReady ? 1.15f : 1f;
-                float highReadyAccelBonus = StanceController.IsHighReady ? 2f : 1f;
-                float lowReadyAccelBonus = StanceController.IsLowReady ? 1.25f : 1f;
-                float shortStockPenalty = StanceController.IsShortStock ? 0.9f : 1f;
+                float stanceSpeedBonus = StanceController.IsHighReady ? 1.15f : 1f;
+                float stanceAccelBonus = StanceController.IsShortStock ? 0.9f : StanceController.IsLowReady ? 1.25f : StanceController.IsHighReady ? 2f : 1f;
 
-                float sprintAccel = player.Physical.SprintAcceleration * deltaTime * lowReadyAccelBonus * highReadyAccelBonus * shortStockPenalty;
-                float speed = (player.Physical.SprintSpeed * __instance.SprintingSpeed + 1f) * __instance.StateSprintSpeedLimit * highReadySpeedBonus;
+                float sprintAccel = player.Physical.SprintAcceleration * stanceAccelBonus * PlayerProperties.HealthSprintAccelFactor * deltaTime;
+                float speed = (player.Physical.SprintSpeed * __instance.SprintingSpeed + 1f) * __instance.StateSprintSpeedLimit * stanceSpeedBonus * PlayerProperties.HealthSprintSpeedFactor;
                 float sprintInertia = Mathf.Max(EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(Mathf.Abs((float)rotationFrameSpan.Average)), EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(2.1474836E+09f) * (2f - player.Physical.Inertia));
                 speed = Mathf.Clamp(speed * sprintInertia, 0.1f, speed);
                 __instance.SprintSpeed = Mathf.Clamp(__instance.SprintSpeed + sprintAccel * Mathf.Sign(speed - __instance.SprintSpeed), 0.01f, speed);
-               
+
                 return false;
             }
             else 
             {
                 return true;
             }
+        }
+    }
+
+    public class MaxWalkSpeedPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GClass1604).GetMethod("get_MaxSpeed", BindingFlags.Instance | BindingFlags.Public);
+
+        }
+        [PatchPrefix]
+        private static bool Prefix(GClass1604 __instance, ref float __result)
+        {
+            Player player = (Player)AccessTools.Field(typeof(GClass1604), "player_0").GetValue(__instance);
+            if (player.IsYourPlayer == true)
+            {
+                float maxSpeed = Singleton<BackendConfigSettingsClass>.Instance.WalkSpeed.Evaluate((float)__instance.SkillManager.Strength.SummaryLevel / 60f);
+                __result = maxSpeed * PlayerProperties.HealthWalkSpeedFactor;
+
+                return false;
+            }
+            return true;
         }
     }
 
