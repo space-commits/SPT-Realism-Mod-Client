@@ -3,6 +3,7 @@ using Aki.Reflection.Utils;
 using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
+using EFT.Ballistics;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
@@ -37,6 +38,7 @@ namespace RealismMod
                     float totalSpeed = StanceController.IsActiveAiming ? baseSpeed * 1.35f : baseSpeed;
                     totalSpeed = WeaponProperties._WeapClass == "pistol" ? totalSpeed + 0.15f : totalSpeed;
                     __instance.AddStateSpeedLimit(Mathf.Clamp(totalSpeed, 0.3f, 0.9f), Player.ESpeedLimit.Aiming);
+
                     return false;
                 }
                 __instance.RemoveStateSpeedLimit(Player.ESpeedLimit.Aiming);

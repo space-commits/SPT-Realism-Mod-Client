@@ -81,9 +81,9 @@ namespace RealismMod
 
                 tick += Time.deltaTime;
 
-                if (!Utils.IsInHideout() && tick >= 3f) 
+                if (!Utils.IsInHideout() && tick >= 10f) 
                 {
-                    RealismHealthController.PlayerInjuryStateCheck(__instance, Logger);
+                    RealismHealthController.PlayerInjuryStateCheck(__instance);
                 }
 
                 if (fc != null)

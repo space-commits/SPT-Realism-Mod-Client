@@ -3,6 +3,7 @@ using Aki.Reflection.Utils;
 using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
+using EFT.Ballistics;
 using EFT.InventoryLogic;
 using EFT.UI.Health;
 using HarmonyLib;
@@ -21,9 +22,6 @@ using static Systems.Effects.Effects;
 
 namespace RealismMod
 {
-
-
-
     //CHECK IF MED ITEM IS DRUG OR STIM, IF SO THEN LET ORIGINAL RUN AND SKIP CHECKS!!!!!!!
 
     //in-raid healing
@@ -360,6 +358,28 @@ namespace RealismMod
 
             Logger.LogWarning("Health Controller");
 
+        }
+    }
+
+    public class ReceiveDamagePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player).GetMethod("ReceiveDamage", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        }
+        [PatchPostfix]
+        private static void PatchPostfix(Player __instance, float damage, EBodyPart part, EDamageType type, float absorbed, MaterialType special)
+        {
+            if (__instance.IsYourPlayer == true)
+            {
+                //get damage type, amount and part
+                //difference checks for each type of damage
+                //for fall dmg, only record if past
+                //get time of damage received
+                //if min time reached, start regen
+                //if certain types of damage received, cancel healing.
+            }
         }
     }
 

@@ -333,18 +333,13 @@ namespace RealismMod
             }
         }
 
+
+        private static float lastCurrentTotalHp = 0f;
+        private static float lastCurrentEnergy = 0f;
+        private static float lastCurrentHydro = 0f;
+
         public static void PlayerInjuryStateCheck(Player player, ManualLogSource logger)
         {
-            //get limb % health if about 0 hp, use as factor
-            //tremor should be minor factor
-            //check if limb has fracture, use as factor
-            //also calc movement speed and inertia penalties.
-            //keep the the both arms damaged factors as the max reduction values.
-
-            //for aim move speed, I will need to instead create a number that gets subtracted from the base speed.
-            //issue with current loop method is that arm factor doubles up...I need to at least reduce the penalty factor depending on which arm it is and
-            //type of penalty
-            //aim move speed needs to be affected by legs too
 
 /*            bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
             bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);*/
@@ -361,6 +356,14 @@ namespace RealismMod
             float sprintSpeedInjuryMulti = 1f;
             float sprintAccelInjuryMulti = 1f;
             float walkSpeedInjuryMulti = 1f;
+
+            float currentEnergy = player.ActiveHealthController.Energy.Current;
+            float maxEnergy = player.ActiveHealthController.Energy.Maximum;
+            float percentEnergy = currentEnergy / maxEnergy;
+
+            float currentHydro = player.ActiveHealthController.Hydration.Current;
+            float maxHydro = player.ActiveHealthController.Hydration.Current;
+            float percentHydro = currentHydro / maxHydro;
 
             float totalMaxHp = 0f;
             float totalCurrentHp = 0f;
@@ -384,8 +387,8 @@ namespace RealismMod
                 totalCurrentHp += currentHp;
 
                 float percentHp = (currentHp / maxHp);
-                float percentHpWalk = 1f - ((1f - percentHp) / (isBody ? 8f : 4f));
-                float percentHpSprint = 1f - ((1f - percentHp) / (isBody ? 6f : 3f));
+                float percentHpWalk = 1f - ((1f - percentHp) / (isBody ? 10f : 5f));
+                float percentHpSprint = 1f - ((1f - percentHp) / (isBody ? 8f : 4f));
                 float percentHpAimMove = 1f - ((1f - percentHp) / (isArm ? 20f : 10f));
                 float percentHpADS = 1f - ((1f - percentHp) / (isRightArm ? 2f : 5f));
                 float percentHpStance = 1f - ((1f - percentHp) / (isRightArm ? 3f : 6f));
@@ -420,28 +423,56 @@ namespace RealismMod
                 }
             }
 
-   /*         float percentTotalHp = (totalCurrentHp / totalMaxHp);
-            float percentTotalHpSprint = 1f - ((1f - percentTotalHp) / 8f);
-            float percentTotalHpWalk = 1f - ((1f - percentTotalHp) / 8f);
-            float percentTotalHpAimMove = 1f - ((1f - percentTotalHp) / 20f);
-            float percentTotalHpADS = 1f - ((1f - percentTotalHp) / 5f);
-            float percentTotalHpStance = 1f - ((1f - percentTotalHp) / 2f);
-            float percentTotalHpReload = 1f - ((1f - percentTotalHp) / 10f);
-            float percentTotalHpRecoil = 1f - ((1f - percentTotalHp) / 20f);
-            float percentTotalHpErgo = 1f - ((1f - percentTotalHp) / 2f);*/
+            float percentEnergyFactor = percentEnergy * 1.25f;
+            float percentHydroFactor = percentHydro * 1.25f;
 
-            PlayerProperties.AimMoveSpeedBase = Mathf.Max(aimMoveSpeedBase, 0.3f);
-            PlayerProperties.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti, 3.5f);
-            PlayerProperties.ADSInjuryMulti = Mathf.Max(adsInjuryMulti, 0.4f);
-            PlayerProperties.StanceInjuryMulti = Mathf.Max(stanceInjuryMulti, 0.5f);
-            PlayerProperties.ReloadInjuryMulti = Mathf.Max(reloadInjuryMulti, 0.7f);
-            PlayerProperties.RecoilInjuryMulti = Mathf.Min(recoilInjuryMulti, 1.15f);
-            PlayerProperties.HealthSprintSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti, 0.4f);
-            PlayerProperties.HealthSprintAccelFactor = Mathf.Max(sprintSpeedInjuryMulti, 0.4f);
-            PlayerProperties.HealthWalkSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti, 0.55f);
+            float percentEnergySprint = 1f - ((1f - percentEnergyFactor) / 8f);
+            float percentEnergyWalk = 1f - ((1f - percentEnergyFactor) / 12f);
+            float percentEnergyAimMove = 1f - ((1f - percentEnergyFactor) / 20f);
+            float percentEnergyADS = 1f - ((1f - percentEnergyFactor) / 5f);
+            float percentEnergyStance = 1f - ((1f - percentEnergyFactor) / 2f);
+            float percentEnergyReload = 1f - ((1f - percentEnergyFactor) / 10f);
+            float percentEnergyRecoil = 1f - ((1f - percentEnergyFactor) / 40f);
+            float percentEnergyErgo = 1f - ((1f - percentEnergyFactor) / 2f);
 
-            if ((int)(Time.time % 5) == 0) 
+            float percentHydroLowerLimit = 1f - ((1f - percentHydro) / 4f);
+            float percentHydroLimitRecoil = 1f + ((1f - percentHydro) / 20f);
+            float percentHydroUpperLimit = 1f + (1f - percentHydroLowerLimit);
+
+            PlayerProperties.AimMoveSpeedBase = Mathf.Max(aimMoveSpeedBase, 0.3f * percentHydroLowerLimit);
+            PlayerProperties.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)), 3.5f);
+            PlayerProperties.ADSInjuryMulti = Mathf.Max(adsInjuryMulti * percentEnergyADS, 0.4f * percentHydroLowerLimit);
+            PlayerProperties.StanceInjuryMulti = Mathf.Max(stanceInjuryMulti * percentEnergyStance, 0.5f * percentHydroLowerLimit);
+            PlayerProperties.ReloadInjuryMulti = Mathf.Max(reloadInjuryMulti * percentEnergyReload, 0.7f * percentHydroLowerLimit);
+            PlayerProperties.RecoilInjuryMulti = Mathf.Min(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)), 1.15f * percentHydroLimitRecoil);
+            PlayerProperties.HealthSprintSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
+            PlayerProperties.HealthSprintAccelFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
+            PlayerProperties.HealthWalkSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergyWalk, 0.55f * percentHydroLowerLimit);
+
+            float hydroDiff = Math.Abs(currentHydro - lastCurrentHydro) / currentHydro;
+            float energyDiff = Math.Abs(currentEnergy - lastCurrentEnergy) / currentEnergy;
+
+            if (((int)(Time.time % 10) == 0 && totalCurrentHp != lastCurrentTotalHp) || energyDiff > 0.15f || hydroDiff > 0.15f) 
             {
+
+                logger.LogWarning("AimMoveSpeedBase " + PlayerProperties.AimMoveSpeedBase);
+                logger.LogWarning("ErgoDeltaInjuryMulti " + PlayerProperties.ErgoDeltaInjuryMulti);
+                logger.LogWarning("ADSInjuryMulti " + PlayerProperties.ADSInjuryMulti);
+                logger.LogWarning("StanceInjuryMulti " + PlayerProperties.StanceInjuryMulti);
+                logger.LogWarning("ReloadInjuryMulti " + PlayerProperties.ReloadInjuryMulti);
+                logger.LogWarning("RecoilInjuryMulti " + PlayerProperties.RecoilInjuryMulti);
+                logger.LogWarning("HealthSprintSpeedFactor " + PlayerProperties.HealthSprintSpeedFactor);
+                logger.LogWarning("HealthSprintAccelFactor " + PlayerProperties.HealthSprintAccelFactor);
+                logger.LogWarning("HealthWalkSpeedFactor " + PlayerProperties.HealthWalkSpeedFactor);
+                logger.LogWarning("LeftArmRuined " + PlayerProperties.LeftArmRuined);
+                logger.LogWarning("RightArmRuined " + PlayerProperties.RightArmRuined);
+                logger.LogWarning("percentHydro " + percentHydro);
+                logger.LogWarning("percentEnergy " + percentEnergy);
+                logger.LogWarning("totalCurrentHp " + totalCurrentHp);
+
+                lastCurrentTotalHp = totalCurrentHp;
+                lastCurrentEnergy = currentEnergy;
+                lastCurrentHydro = currentHydro;
                 player.RaiseChangeSpeedEvent();
             }
   

@@ -155,7 +155,7 @@ namespace RealismMod
         }
 
 
-        public static float ErgoWeightCalc(float totalWeight, float pureErgoDelta, float totalTorque)
+        public static float ErgoWeightCalc(float totalWeight, float ergoDelta, float totalTorque)
         {
             if (WeaponProperties._WeapClass == "pistol")
             {
@@ -165,17 +165,17 @@ namespace RealismMod
                 }
 
                 float totalTorqueFactorInverse = totalTorque > 0 ? totalTorque / 100f : totalTorque / -100f;
-                float ergoFactoredWeight = (totalWeight * 1f) * (1f - (pureErgoDelta * 0.4f));
+                float ergoFactoredWeight = (totalWeight * 1f) * (1f - (ergoDelta * 1f));
                 float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse));
-                return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 3.2f, 3.2f) + 1f) / 10f, 1f, 70f);
+                return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 3.2f, 3.2f) + 1f) / 10f, 1f, 80f);
             }
             else 
             {
                 float totalTorqueFactorInverse = totalTorque / -100f;
-                float ergoFactoredWeight = (totalWeight) * (1f - (pureErgoDelta * 0.5f));
+                float ergoFactoredWeight = (totalWeight) * (1f - (ergoDelta * 1f));
                 float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse + 0.45f));
 
-                return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 2.1f, 3.7f) + 1f) / 750f, 1f, 70f);
+                return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 2.1f, 3.7f) + 1f) / 750f, 1f, 80f);
             }
         }
 
@@ -209,7 +209,7 @@ namespace RealismMod
             totalChamberSpeed = Mathf.Clamp(baseChamberSpeed * ergoWeightMulti * chamberSpeedMod, WeaponProperties.MinChamberSpeed(weap), WeaponProperties.MaxChamberSpeed(weap));
             totalChamberCheckSpeed = Mathf.Clamp(baseChamberCheckSpeed * ergoWeightMulti * chamberSpeedMod, WeaponProperties.MinChamberSpeed(weap), WeaponProperties.MaxChamberSpeed(weap));
             totalReloadSpeedLessMag = Mathf.Clamp(baseReloadSpeed * (1f - (ergonomicWeightLessMag / 100f)) * reloadSpeedMod, WeaponProperties.MinReloadSpeed(weap), WeaponProperties.MaxReloadSpeed(weap));
-            totalAimMoveSpeedFactor = Mathf.Min(1f - (ergoWeight / 100f), 0.5f);
+            totalAimMoveSpeedFactor = Mathf.Max(1f - (ergoWeight / 100f), 0.5f);
         }
 
         public static void WeaponStatCalc(Weapon weap, float currentTorque, ref float totalTorque, float currentErgo, float currentVRecoil, float currentHRecoil, float currentDispersion, float currentCamRecoil, float currentRecoilAngle, float baseErgo, float baseVRecoil, float baseHRecoil, ref float totalErgo, ref float totalVRecoil, ref float totalHRecoil, ref float totalDispersion, ref float totalCamRecoil, ref float totalRecoilAngle, ref float totalRecoilDamping, ref float totalRecoilHandDamping, ref float totalErgoDelta, ref float totalVRecoilDelta, ref float totalHRecoilDelta, ref float recoilDamping, ref float recoilHandDamping, float currentCOI, bool hasShoulderContact, ref float totalCOI, ref float totalCOIDelta, float baseCOI, bool isDisplayDelta)
