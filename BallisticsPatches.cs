@@ -1295,6 +1295,11 @@ namespace RealismMod
                 return false;
             }
 
+            if (damageType == EDamageType.Sniper) 
+            {
+                return true;
+            }
+
             bool hitSecondaryArmor = false;
             bool hasBypassedArmor = false;
 

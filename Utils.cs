@@ -61,22 +61,6 @@ namespace RealismMod
         public static string TacticalCombo = "55818b164bdc2ddc698b456c";
         public static string UBGL = "55818b014bdc2ddc698b456b";
 
-        public static LightComponent GetLightComponent(LightComponent x)
-        {
-            return x;
-        }
-
-        public static string GetLightId(LightComponent x)
-        {
-            return x.Item.Id;
-        }
-
-        public static Item GetContainedItem(Slot slot)
-        {
-            return slot.ContainedItem;
-        }
-
-
         public static bool NullCheck(string[] confItemArray)
         {
             if (confItemArray != null && confItemArray.Length > 0)
@@ -87,6 +71,13 @@ namespace RealismMod
                 }
             }
             return true;
+        }
+
+        public static Player GetPlayer() 
+        {
+            GameWorld gameWorld = Singleton<GameWorld>.Instance;
+            SessionResultPanel sessionResultPanel = Singleton<SessionResultPanel>.Instance;
+            return gameWorld.AllPlayers[0];
         }
 
         public static bool CheckIsReady()
@@ -116,7 +107,6 @@ namespace RealismMod
                 return false;
             }
             Utils.IsReady = true;
-
             return true;
         }
 

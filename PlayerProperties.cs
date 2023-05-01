@@ -64,5 +64,10 @@ namespace RealismMod
 
         public static float HealthWalkSpeedFactor = 1f;
 
+        public static float HealthStamRegenFactor = 1f;
+
+        public static float HealthResourceRateFactor = 0f;
+
+
     }
 }

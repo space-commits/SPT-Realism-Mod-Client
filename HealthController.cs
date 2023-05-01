@@ -116,9 +116,8 @@ namespace RealismMod
 
         public static void ControllerTick(ManualLogSource logger, Player player)
         {
-            if ((int)(Time.time % 10) == 0) 
+            if ((int)(Time.time % 9) == 0) 
             {
-                logger.LogWarning("Checking Double Bleeds");
                 RealismHealthController.DoubleBleedCheck(logger, player);
             }
 
@@ -356,13 +355,15 @@ namespace RealismMod
             float sprintSpeedInjuryMulti = 1f;
             float sprintAccelInjuryMulti = 1f;
             float walkSpeedInjuryMulti = 1f;
+            float stamRegenInjuryMulti = 1f;
+            float resourceRateInjuryMulti = 1f;
 
             float currentEnergy = player.ActiveHealthController.Energy.Current;
             float maxEnergy = player.ActiveHealthController.Energy.Maximum;
             float percentEnergy = currentEnergy / maxEnergy;
 
             float currentHydro = player.ActiveHealthController.Hydration.Current;
-            float maxHydro = player.ActiveHealthController.Hydration.Current;
+            float maxHydro = player.ActiveHealthController.Hydration.Maximum;
             float percentHydro = currentHydro / maxHydro;
 
             float totalMaxHp = 0f;
@@ -387,6 +388,7 @@ namespace RealismMod
                 totalCurrentHp += currentHp;
 
                 float percentHp = (currentHp / maxHp);
+                float percentHpStamRegen = 1f - ((1f - percentHp) / (isBody ? 10f : 5f));
                 float percentHpWalk = 1f - ((1f - percentHp) / (isBody ? 10f : 5f));
                 float percentHpSprint = 1f - ((1f - percentHp) / (isBody ? 8f : 4f));
                 float percentHpAimMove = 1f - ((1f - percentHp) / (isArm ? 20f : 10f));
@@ -401,6 +403,7 @@ namespace RealismMod
                     sprintSpeedInjuryMulti = sprintSpeedInjuryMulti * percentHpSprint;
                     sprintAccelInjuryMulti = sprintAccelInjuryMulti * percentHp;
                     walkSpeedInjuryMulti = walkSpeedInjuryMulti * percentHpWalk;
+                    stamRegenInjuryMulti = stamRegenInjuryMulti * percentHpStamRegen;
                 }
 
                 if (isArm) 
@@ -422,9 +425,11 @@ namespace RealismMod
                     }
                 }
             }
+            float totalHpPercent = totalCurrentHp / totalMaxHp;
+            resourceRateInjuryMulti = 1f - totalHpPercent;
 
-            float percentEnergyFactor = percentEnergy * 1.25f;
-            float percentHydroFactor = percentHydro * 1.25f;
+            float percentEnergyFactor = percentEnergy * 1.2f;
+            float percentHydroFactor = percentHydro * 1.2f;
 
             float percentEnergySprint = 1f - ((1f - percentEnergyFactor) / 8f);
             float percentEnergyWalk = 1f - ((1f - percentEnergyFactor) / 12f);
@@ -434,6 +439,7 @@ namespace RealismMod
             float percentEnergyReload = 1f - ((1f - percentEnergyFactor) / 10f);
             float percentEnergyRecoil = 1f - ((1f - percentEnergyFactor) / 40f);
             float percentEnergyErgo = 1f - ((1f - percentEnergyFactor) / 2f);
+            float percentEnergyStamRegen = 1f - ((1f - percentEnergyFactor) / 10f);
 
             float percentHydroLowerLimit = 1f - ((1f - percentHydro) / 4f);
             float percentHydroLimitRecoil = 1f + ((1f - percentHydro) / 20f);
@@ -446,16 +452,21 @@ namespace RealismMod
             PlayerProperties.ReloadInjuryMulti = Mathf.Max(reloadInjuryMulti * percentEnergyReload, 0.7f * percentHydroLowerLimit);
             PlayerProperties.RecoilInjuryMulti = Mathf.Min(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)), 1.15f * percentHydroLimitRecoil);
             PlayerProperties.HealthSprintSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
-            PlayerProperties.HealthSprintAccelFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
-            PlayerProperties.HealthWalkSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergyWalk, 0.55f * percentHydroLowerLimit);
+            PlayerProperties.HealthSprintAccelFactor = Mathf.Max(sprintAccelInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
+            PlayerProperties.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk, 0.55f * percentHydroLowerLimit);
+            PlayerProperties.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen, 0.5f * percentHydroLowerLimit);
+
+
+            lastCurrentHydro = lastCurrentHydro == 0 ? currentHydro : lastCurrentHydro;
+            lastCurrentEnergy = lastCurrentEnergy == 0 ? currentEnergy : lastCurrentEnergy;
 
             float hydroDiff = Math.Abs(currentHydro - lastCurrentHydro) / currentHydro;
             float energyDiff = Math.Abs(currentEnergy - lastCurrentEnergy) / currentEnergy;
 
-            if (((int)(Time.time % 10) == 0 && totalCurrentHp != lastCurrentTotalHp) || energyDiff > 0.15f || hydroDiff > 0.15f) 
+            if (((int)(Time.time % 10) == 0 && totalCurrentHp != lastCurrentTotalHp) || energyDiff > 0.05f || hydroDiff > 0.05f) 
             {
 
-                logger.LogWarning("AimMoveSpeedBase " + PlayerProperties.AimMoveSpeedBase);
+/*                logger.LogWarning("AimMoveSpeedBase " + PlayerProperties.AimMoveSpeedBase);
                 logger.LogWarning("ErgoDeltaInjuryMulti " + PlayerProperties.ErgoDeltaInjuryMulti);
                 logger.LogWarning("ADSInjuryMulti " + PlayerProperties.ADSInjuryMulti);
                 logger.LogWarning("StanceInjuryMulti " + PlayerProperties.StanceInjuryMulti);
@@ -464,16 +475,43 @@ namespace RealismMod
                 logger.LogWarning("HealthSprintSpeedFactor " + PlayerProperties.HealthSprintSpeedFactor);
                 logger.LogWarning("HealthSprintAccelFactor " + PlayerProperties.HealthSprintAccelFactor);
                 logger.LogWarning("HealthWalkSpeedFactor " + PlayerProperties.HealthWalkSpeedFactor);
-                logger.LogWarning("LeftArmRuined " + PlayerProperties.LeftArmRuined);
+                logger.LogWarning("HealthStamRegenFactor " + PlayerProperties.HealthStamRegenFactor);*/
+   /*             logger.LogWarning("LeftArmRuined " + PlayerProperties.LeftArmRuined);
                 logger.LogWarning("RightArmRuined " + PlayerProperties.RightArmRuined);
                 logger.LogWarning("percentHydro " + percentHydro);
                 logger.LogWarning("percentEnergy " + percentEnergy);
-                logger.LogWarning("totalCurrentHp " + totalCurrentHp);
-
+                logger.LogWarning("totalCurrentHp " + totalCurrentHp);*/
                 lastCurrentTotalHp = totalCurrentHp;
-                lastCurrentEnergy = currentEnergy;
+                lastCurrentEnergy = currentEnergy; 
                 lastCurrentHydro = currentHydro;
                 player.RaiseChangeSpeedEvent();
+
+                //will need to get current rate, current modifier, and per tick I need to work out what the true base 
+                //rate is before applying modifier again, otherwise it will just increase.
+
+
+                PropertyInfo energyProp = typeof(ActiveHealthControllerClass).GetProperty("EnergyRate");
+                float currentEnergyRate = (float)energyProp.GetValue(player.ActiveHealthController);
+                float prevEnergyRate = currentEnergyRate - PlayerProperties.HealthResourceRateFactor;
+
+                logger.LogWarning("currentEnergyRate " + currentEnergyRate);
+                logger.LogWarning("prevEnergyRate " + prevEnergyRate);
+
+                PropertyInfo hydroProp = typeof(ActiveHealthControllerClass).GetProperty("HydrationRate");
+                float currentHydroRate = (float)hydroProp.GetValue(player.ActiveHealthController);
+                float prevHydroRate = currentHydroRate - PlayerProperties.HealthResourceRateFactor;
+
+                PlayerProperties.HealthResourceRateFactor = -resourceRateInjuryMulti;
+                logger.LogWarning("HealthResourceRateFactor " + PlayerProperties.HealthResourceRateFactor);
+
+                float newEnergyRate = prevEnergyRate + PlayerProperties.HealthResourceRateFactor;
+                energyProp.SetValue(player.ActiveHealthController, newEnergyRate, null);
+
+                float newHydroRate = prevHydroRate + PlayerProperties.HealthResourceRateFactor;
+                hydroProp.SetValue(player.ActiveHealthController, newHydroRate, null);
+
+                logger.LogWarning("newEnergyRate " + newEnergyRate);
+
             }
   
         }

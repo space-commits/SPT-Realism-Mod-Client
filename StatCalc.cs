@@ -159,21 +159,18 @@ namespace RealismMod
         {
             if (WeaponProperties._WeapClass == "pistol")
             {
-                if (totalTorque > 3)
-                {
-                    totalTorque *= -1f;
-                }
-
-                float totalTorqueFactorInverse = totalTorque > 0 ? totalTorque / 100f : totalTorque / -100f;
-                float ergoFactoredWeight = (totalWeight * 1f) * (1f - (ergoDelta * 1f));
-                float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse));
+                totalTorque = totalTorque < 0 ? totalTorque * 2f : totalTorque;
+                float totalTorqueFactorInverse = 1f + (totalTorque > 5 ? totalTorque / 100f : totalTorque / -100f);
+                float ergoFactoredWeight = totalWeight * (1f - (ergoDelta * 0.5f));
+                float balancedErgoFactoredWeight = ergoFactoredWeight * totalTorqueFactorInverse;
                 return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 3.2f, 3.2f) + 1f) / 10f, 1f, 80f);
             }
             else 
             {
-                float totalTorqueFactorInverse = totalTorque / -100f;
-                float ergoFactoredWeight = (totalWeight) * (1f - (ergoDelta * 1f));
-                float balancedErgoFactoredWeight = ergoFactoredWeight + (ergoFactoredWeight * (totalTorqueFactorInverse + 0.45f));
+                totalTorque = totalTorque < 0 ? totalTorque * 4f : totalTorque / 2f;
+                float totalTorqueFactorInverse = 1f + (totalTorque / -100f);
+                float ergoFactoredWeight = totalWeight * (1f - (ergoDelta * 0.5f));
+                float balancedErgoFactoredWeight = ergoFactoredWeight * totalTorqueFactorInverse;
 
                 return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 2.1f, 3.7f) + 1f) / 750f, 1f, 80f);
             }
@@ -306,7 +303,7 @@ namespace RealismMod
             }
 
             totalCOIDelta = (baseCOI - totalCOI) / (baseCOI * -1f);
-            totalErgoDelta = (baseErgo - totalErgo) / (baseErgo * -1f);
+            totalErgoDelta = (80f - totalErgo) / -80f; //arbitrary base value to differentiate weapons better
             totalVRecoilDelta = (baseVRecoil - totalVRecoil) / (baseVRecoil * -1f);
             totalHRecoilDelta = (baseHRecoil - totalHRecoil) / (baseHRecoil * -1f);
 
@@ -314,7 +311,6 @@ namespace RealismMod
             {
                 return;
             }
-
 
             if (weap.WeapClass == "pistol")
             {
@@ -874,7 +870,7 @@ namespace RealismMod
         {
             if (weapClass == "pistol")
             {
-                distance *= 2.1f;
+                distance *= 2.5f;
             }
             return (distance - 0) * weight;
         }
@@ -891,7 +887,7 @@ namespace RealismMod
                     torque = TorqueCalc(10, weight, weapClass);
                     break;
                 case "rearHalf":
-                    torque = TorqueCalc(5, weight, weapClass);
+                    torque = TorqueCalc(2.5f, weight, weapClass);
                     break;
                 case "frontFar":
                     torque = TorqueCalc(-15, weight, weapClass);

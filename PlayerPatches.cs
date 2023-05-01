@@ -83,7 +83,7 @@ namespace RealismMod
 
                 if (!Utils.IsInHideout() && tick >= 10f) 
                 {
-                    RealismHealthController.PlayerInjuryStateCheck(__instance);
+                    RealismHealthController.PlayerInjuryStateCheck(__instance, Logger);
                 }
 
                 if (fc != null)

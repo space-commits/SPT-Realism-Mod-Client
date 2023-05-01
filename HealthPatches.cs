@@ -1,13 +1,16 @@
 ﻿using Aki.Reflection.Patching;
 using Aki.Reflection.Utils;
+using AmplifyMotion;
 using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
 using EFT.Ballistics;
+using EFT.HealthSystem;
 using EFT.InventoryLogic;
 using EFT.UI.Health;
 using HarmonyLib;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -17,13 +20,12 @@ using Systems.Effects;
 using UnityEngine;
 using UnityEngine.Assertions;
 using static ActiveHealthControllerClass;
+using static CW2.Animations.PhysicsSimulator.Val;
 using static EFT.Player;
 using static Systems.Effects.Effects;
 
 namespace RealismMod
 {
-    //CHECK IF MED ITEM IS DRUG OR STIM, IF SO THEN LET ORIGINAL RUN AND SKIP CHECKS!!!!!!!
-
     //in-raid healing
     public class ApplyItemPatch : ModulePatch
     {
@@ -274,30 +276,6 @@ namespace RealismMod
         }
     }
 
-    public class RemoveEffectPatch : ModulePatch
-    {
-
-        private static Type _targetType;
-        private static MethodInfo _targetMethod;
-
-        public RemoveEffectPatch()
-        {
-            _targetType = AccessTools.TypeByName("MedsController");
-            _targetMethod = _targetType.GetMethod("Remove");
-        }
-
-        protected override MethodBase GetTargetMethod()
-        {
-            return _targetMethod;
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix()
-        {
-            Logger.LogWarning("Cancelling Meds");
-            RealismHealthController.CancelEffects(Logger);
-        }
-    }
 
     //when using quickslot
     public class SetQuickSlotPatch : ModulePatch
@@ -325,39 +303,144 @@ namespace RealismMod
         }
     }
 
-
-    //controls whether or not to highlight a part if it can be healed when hovering over it with med item
-    public class HealthBarButtonApplyItemPatch : ModulePatch
+    public class RemoveEffectPatch : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
+
+        private static Type _targetType;
+        private static MethodInfo _targetMethod;
+
+        public RemoveEffectPatch()
         {
-            return typeof(HealthBarButton).GetMethod("OnPointerEnter", BindingFlags.Instance | BindingFlags.Public);
+            _targetType = AccessTools.TypeByName("MedsController");
+           /* _targetMethod = _targetType.GetMethod("Remove");*/
+            _targetMethod = AccessTools.Method(_targetType, "Remove");
 
         }
-        [PatchPostfix]
-        private static void PatchPostFix(HealthBarButton __instance)
-        {
 
-            Logger.LogWarning("HealthBarButton OnPointerEnter");
+        protected override MethodBase GetTargetMethod()
+        {
+            return _targetMethod;
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix()
+        {
+            Logger.LogWarning("Cancelling Meds");
+            RealismHealthController.CancelEffects(Logger);
         }
     }
 
 
-    //for out of raid healing
-    public class HCApplyItemPatch : ModulePatch
+    public class EnergyRatePatch : ModulePatch
+    {
+
+        private static Type _targetType;
+        private static MethodInfo _targetMethod;
+
+        public EnergyRatePatch()
+        {
+            _targetType = AccessTools.TypeByName("Existence");
+            _targetMethod = AccessTools.Method(_targetType, "method_5");
+        }
+
+        protected override MethodBase GetTargetMethod()
+        {
+            return _targetMethod;
+        }
+
+        private static float GetDecayRate(Player player)
+        {
+            float energyDecayRate = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyLoopTime;
+            if (player.HealthController.IsBodyPartDestroyed(EBodyPart.Stomach))
+            {
+                energyDecayRate /= Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.DestroyedStomachEnergyTimeFactor;
+            }
+            return energyDecayRate;
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(ref float __result)
+        {
+            if (Utils.IsReady && !Utils.IsInHideout()) 
+            {
+                Player player = Utils.GetPlayer();
+                if (player.IsYourPlayer) 
+                {
+                    Logger.LogWarning("EnergyRatePatch");
+                    float num = 1f - player.Skills.HealthHydration;
+                    __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num * PlayerProperties.HealthResourceRateFactor / GetDecayRate(player);
+                    Logger.LogWarning("modified energy decay = " + __result);
+                    Logger.LogWarning("original energy decay = " + Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num / GetDecayRate(player));
+                    return false;
+                }
+            }
+            return true;
+ 
+        }
+    }
+
+
+    public class HydoRatePatch : ModulePatch
+    {
+        private static Type _targetType;
+        private static MethodInfo _targetMethod;
+
+        public HydoRatePatch()
+        {
+            _targetType = AccessTools.TypeByName("Existence");
+            _targetMethod = AccessTools.Method(_targetType, "method_6");
+        }
+
+        protected override MethodBase GetTargetMethod()
+        {
+            return _targetMethod;
+        }
+
+        private static float GetDecayRate(Player player)
+        {
+            float energyDecayRate = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.HydrationLoopTime;
+            if (player.HealthController.IsBodyPartDestroyed(EBodyPart.Stomach))
+            {
+                energyDecayRate /= Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.DestroyedStomachHydrationTimeFactor;
+            }
+            return energyDecayRate;
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(ref float __result)
+        {
+            if (Utils.IsReady && !Utils.IsInHideout())
+            {
+                Player player = Utils.GetPlayer();
+                if (player.IsYourPlayer)
+                {
+                    Logger.LogWarning("HydroRatePatch");
+                    float num = 1f - player.Skills.HealthHydration;
+                    __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.HydrationDamage * num * PlayerProperties.HealthResourceRateFactor / GetDecayRate(player);
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    public class StamRegenRatePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(HealthControllerClass).GetMethod("ApplyItem", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GClass704).GetMethod("method_21", BindingFlags.Instance | BindingFlags.NonPublic);
 
         }
-        [PatchPostfix]
-        private static void PatchPostFix(HealthControllerClass __instance)
+        [PatchPrefix]
+        private static bool Prefix(GClass704 __instance, float baseValue, ref float __result)
         {
+            float[] float_7 = (float[])AccessTools.Field(typeof(GClass704), "float_7").GetValue(__instance);
+            GClass704.EPose epose_0 = (GClass704.EPose)AccessTools.Field(typeof(GClass704), "epose_0").GetValue(__instance);
+            Player player_0 = (Player)AccessTools.Field(typeof(GClass704), "player_0").GetValue(__instance);
+            float Single_0 = (float)AccessTools.Property(typeof(GClass704), "Single_0").GetValue(__instance);
 
-
-            Logger.LogWarning("Health Controller");
-
+            __result = baseValue * float_7[(int)epose_0] * Singleton<BackendConfigSettingsClass>.Instance.StaminaRestoration.GetAt(player_0.HealthController.Energy.Normalized) * (player_0.Skills.EnduranceBuffRestoration + 1f) * PlayerProperties.HealthStamRegenFactor / Single_0;
+            return false;
         }
     }
 
@@ -383,6 +466,41 @@ namespace RealismMod
         }
     }
 
+
+    /*    //controls whether or not to highlight a part if it can be healed when hovering over it with med item
+        public class HealthBarButtonApplyItemPatch : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                return typeof(HealthBarButton).GetMethod("OnPointerEnter", BindingFlags.Instance | BindingFlags.Public);
+
+            }
+            [PatchPostfix]
+            private static void PatchPostFix(HealthBarButton __instance)
+            {
+
+                Logger.LogWarning("HealthBarButton OnPointerEnter");
+            }
+        }*/
+
+
+    /*    //for out of raid healing
+        public class HCApplyItemPatch : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                return typeof(HealthControllerClass).GetMethod("ApplyItem", BindingFlags.Instance | BindingFlags.Public);
+
+            }
+            [PatchPostfix]
+            private static void PatchPostFix(HealthControllerClass __instance)
+            {
+
+
+                Logger.LogWarning("Health Controller");
+
+            }
+        }*/
 
     /*    var effects = __instance.Player.ActiveHealthController.BodyPartEffects.Effects;
 

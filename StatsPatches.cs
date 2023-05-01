@@ -156,7 +156,7 @@ namespace RealismMod
             float ergoWeightFactor = StatCalc.WeightStatCalc(StatCalc.ErgoWeightMult, magWeight) / 100;
             float currentErgo = WeaponProperties.InitTotalErgo + (WeaponProperties.InitTotalErgo * ((magErgo / 100f) + ergoWeightFactor));
             float totalPureErgo = WeaponProperties.InitPureErgo + (WeaponProperties.InitPureErgo * (magErgo / 100f));
-            float pureErgoDelta = (baseErgo - totalPureErgo) / (baseErgo * -1f);
+            float pureErgoDelta = (80f - totalPureErgo) / -80f; //using arbitrary base (ideal) value to differeniate weapon erog better
 
             float baseVRecoil = __instance.Template.RecoilForceUp;
             float vRecoilWeightFactor = StatCalc.WeightStatCalc(StatCalc.VRecoilWeightMult, magWeight) / 100;

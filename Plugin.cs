@@ -714,13 +714,13 @@ namespace RealismMod
                 new SetFireModePatch().Enable();
 
                 //Health
-                new HCApplyItemPatch().Enable();
                 new ApplyItemPatch().Enable();
-                new HealthBarButtonApplyItemPatch().Enable();
                 new SetQuickSlotPatch().Enable();
                 new ProceedPatch().Enable();
                 new RemoveEffectPatch().Enable();
                 new ReceiveDamagePatch().Enable();
+                new StamRegenRatePatch().Enable();
+
             }
         }
 
