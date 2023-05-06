@@ -44,11 +44,12 @@ namespace RealismMod
                     float singleItemTotalWeight = firearmController.Item.GetSingleItemTotalWeight();
                     float ergoWeight = WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f)); //maybe apply sterngth skill buff, but might be OP
 
-                    float ergo = Mathf.Clamp01(WeaponProperties.TotalErgo / 100f);
-                    float baseAimspeed = 1f - Mathf.InverseLerp(1f, 80f, ergoWeight);
+                    float ergoFactor = Mathf.Clamp01(WeaponProperties.TotalErgo / 100f);
+                    float inverseErgo = 80f - WeaponProperties.TotalErgo;
+                    float baseAimspeed = 1f - Mathf.InverseLerp(1f, 80f, inverseErgo);
                     float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (1f + WeaponProperties.ModAimSpeedModifier), 0.5f, 1.35f);
                     valueBlender.Speed = __instance.SwayFalloff / aimSpeed;
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_16").SetValue(__instance, Mathf.InverseLerp(3f, 10f, singleItemTotalWeight * (1f - ergo)));
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_16").SetValue(__instance, Mathf.InverseLerp(3f, 10f, singleItemTotalWeight * (1f - ergoFactor)));
                     __instance.UpdateSwayFactors();
 
                     aimSpeed = firearmController.Item.WeapClass == "pistol" ? aimSpeed * 1.35f : aimSpeed;
@@ -65,7 +66,7 @@ namespace RealismMod
                         Logger.LogWarning("========UpdateWeaponVariables=======");
                         Logger.LogWarning("singleItemTotalWeight = " + singleItemTotalWeight);
                         Logger.LogWarning("total ergo = " + WeaponProperties.TotalErgo);
-                        Logger.LogWarning("total ergo clamped= " + ergo);
+                        Logger.LogWarning("total ergo clamped= " + ergoFactor);
                         Logger.LogWarning("aimSpeed = " + aimSpeed);
                         Logger.LogWarning("base ergoWeight = " + ergoWeight);
                         Logger.LogWarning("total ergoWeight = " + WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f)) * PlayerProperties.ErgoDeltaInjuryMulti);

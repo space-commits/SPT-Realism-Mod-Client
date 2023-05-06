@@ -81,7 +81,7 @@ namespace RealismMod
 
                 tick += Time.deltaTime;
 
-                if (!Utils.IsInHideout() && tick >= 10f) 
+                if (!Utils.IsInHideout() && tick >= 10f && Plugin.HealthSpeedEffects.Value) 
                 {
                     RealismHealthController.PlayerInjuryStateCheck(__instance, Logger);
                 }
@@ -96,7 +96,8 @@ namespace RealismMod
                         StanceController.SetStanceStamina(__instance, fc);
                     }
 
-                    PlayerProperties.RemainingArmStamPercentage = Mathf.Min(__instance.Physical.HandsStamina.Current * 1.6f, __instance.Physical.HandsStamina.TotalCapacity) / __instance.Physical.HandsStamina.TotalCapacity;
+                    float remainStamPercent = __instance.Physical.HandsStamina.Current / __instance.Physical.HandsStamina.TotalCapacity;
+                    PlayerProperties.RemainingArmStamPercentage = 1f - ((1f - remainStamPercent) / 2.5f);
                 }
                 else if (Plugin.EnableStanceStamChanges.Value == true)
                 {

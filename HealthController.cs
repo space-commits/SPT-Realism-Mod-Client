@@ -144,10 +144,21 @@ namespace RealismMod
             }
         }
 
-        public static bool MouthIsBlocked(Item head, Item face)
+        public static bool MouthIsBlocked(Item head, Item face, EquipmentClass equipment)
         {
             bool faceBlocksMouth = false;
             bool headBlocksMouth = false;
+
+            LootItemClass headwear = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;
+            IEnumerable<Item> nestedItems = headwear != null ? headwear.GetAllItemsFromCollection().OfType<Item>() : null;
+
+            if (nestedItems != null) 
+            {
+                foreach (Item item in nestedItems)
+                {
+                    headBlocksMouth = GearProperties.BlocksMouth(item) ? true : false;
+                }
+            }
 
             if (head != null)
             {
@@ -187,10 +198,10 @@ namespace RealismMod
 
             FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
             NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
-            bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
+            bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On) && GearProperties.BlocksMouth(fsComponent.Item);
             bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
 
-            bool mouthBlocked = MouthIsBlocked(head, face);
+            bool mouthBlocked = MouthIsBlocked(head, face, equipment);
 
             //will have to make mask exception for moustache, balaclava etc.
             if (fsIsON || nvgIsOn || mouthBlocked)
@@ -224,7 +235,7 @@ namespace RealismMod
             Item tacrig = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
             Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
 
-            bool mouthBlocked = MouthIsBlocked(head, face);
+            bool mouthBlocked = MouthIsBlocked(head, face, equipment);
 
             bool hasHeadGear = head != null || ears != null || face != null;
             bool hasBodyGear = vest != null || tacrig != null || bag != null;
@@ -241,9 +252,9 @@ namespace RealismMod
             bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
 
             float medHPRes = med.MedKitComponent.HpResource;
-            Logger.LogWarning("remeaining hp resource = " + medHPRes);
+            Logger.LogWarning("remaining hp resource = " + medHPRes);
 
-            if (MedProperties.MedType(item) == "pills" && (mouthBlocked || fsIsON || nvgIsOn)) 
+            if (Plugin.GearBlocksEat.Value && MedProperties.MedType(item) == "pills" && (mouthBlocked || fsIsON || nvgIsOn)) 
             {
                 Logger.LogWarning("Pills Blocked, Gear");
 
@@ -251,14 +262,14 @@ namespace RealismMod
                 return;
             }
 
-            //will have to make mask exception for moustache and similar
-            if ((isBody && hasBodyGear) || (isHead && hasHeadGear))
+            if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear))) 
             {
                 Logger.LogWarning("Med Blocked, Gear");
 
                 canUse = false;
                 return;
             }
+
 
             Logger.LogWarning("==============");
             Logger.LogWarning("GClass2106");

@@ -51,8 +51,10 @@ namespace RealismMod
                 if((foodClass = (item as FoodClass)) != null)
                 {
                     Logger.LogWarning("ApplyItem Food");
-
-                    RealismHealthController.CanConsume(Logger, __instance.Player, item, ref canUse);
+                    if (Plugin.GearBlocksEat.Value) 
+                    {
+                        RealismHealthController.CanConsume(Logger, __instance.Player, item, ref canUse);
+                    }
                 }
 
                 __result = canUse;
@@ -85,7 +87,7 @@ namespace RealismMod
                 MedsClass med = meds as MedsClass;
                 float medHPRes = med.MedKitComponent.HpResource;
 
-                Logger.LogWarning("remeaining hp resource = " + medHPRes);
+                Logger.LogWarning("remaining hp resource = " + medHPRes);
 
                 string hBleedHealType = MedProperties.HBleedHealType(meds);
 
@@ -107,25 +109,28 @@ namespace RealismMod
                     Item tacrig = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
                     Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
 
-                    bool mouthBlocked = RealismHealthController.MouthIsBlocked(head, face);
+                    bool mouthBlocked = RealismHealthController.MouthIsBlocked(head, face, equipment);
 
                     bool hasBodyGear = vest != null || tacrig != null || bag != null;
                     bool hasHeadGear = head != null || ears != null || face != null;
 
                     FaceShieldComponent fsComponent = __instance.FaceShieldObserver.Component;
                     NightVisionComponent nvgComponent = __instance.NightVisionObserver.Component;
-                    bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
+                    bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On) && GearProperties.BlocksMouth(fsComponent.Item);
                     bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
 
-
-                    if (medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn))
+                    if (Plugin.GearBlocksHeal.Value) 
                     {
-                        return false;
+                        if (medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn))
+                        {
+                            return false;
+                        }
+                        else if (medType == "pills")
+                        {
+                            return true;
+                        }
                     }
-                    else if (medType == "pills")
-                    {
-                        return true;
-                    }
+                 
 
                     foreach (EBodyPart part in RealismHealthController.BodyParts)
                     {
@@ -148,7 +153,7 @@ namespace RealismMod
                             Logger.LogWarning("effect body part " + effect.BodyPart);
                             Logger.LogWarning("==");
 
-                            if ((isBody && hasBodyGear) || (isHead && hasHeadGear))
+                            if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
                             {
                                 Logger.LogWarning("Part " + part + " has gear on, skipping");
 
@@ -231,7 +236,7 @@ namespace RealismMod
                 //determine if any effects should be applied based on what is being healed
                 if (bodyPart != EBodyPart.Common)
                 {
-                    Logger.LogWarning("Checking if custom effects shouldbe applied");
+                    Logger.LogWarning("Checking if custom effects should be applied");
 
                     bool hasHeavyBleed = false;
                     bool hasLightBleed = false;
@@ -245,7 +250,7 @@ namespace RealismMod
 
                     RealismHealthController.GetBodyPartType(bodyPart, ref isNotLimb, ref isHead, ref isBody);
 
-                    if (hasHeavyBleed && canHealHBleed && (hBleedHealType == "combo" || hBleedHealType == "trnqt") && !isNotLimb)
+                    if (Plugin.TrnqtEffect.Value && hasHeavyBleed && canHealHBleed && (hBleedHealType == "combo" || hBleedHealType == "trnqt") && !isNotLimb)
                     {
                         Logger.LogWarning("Tourniquet application detected, adding TourniquetEffect");
 

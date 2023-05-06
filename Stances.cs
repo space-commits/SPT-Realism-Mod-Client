@@ -373,8 +373,7 @@ namespace RealismMod
             float aimMulti = Mathf.Clamp(WeaponProperties.SightlessAimSpeed * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.5f, 1.4f);
             float invInjuryMulti = (1f - PlayerProperties.StanceInjuryMulti) + 1f;
             float resetAimMulti = (1f - aimMulti) + 1f;
-            float ergoFactor = 1f - WeaponProperties.ErgoDelta;
-            float intensity = Mathf.Max(2f * (1f - PlayerProperties.WeaponSkillErgo) * resetAimMulti * invInjuryMulti * ergoFactor, 0.25f);
+            float intensity = Mathf.Max(1f * (1f - PlayerProperties.WeaponSkillErgo) * resetAimMulti * invInjuryMulti, 0.35f);
             float balanceFactor = 1f + (WeaponProperties.Balance / 100f);
             balanceFactor = WeaponProperties.Balance > 0f ? balanceFactor * -1f : balanceFactor;
 
@@ -459,8 +458,8 @@ namespace RealismMod
             float aimMulti = Mathf.Clamp(aimSpeed * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.4f, 0.85f);
             float invInjuryMulti = (1f - PlayerProperties.StanceInjuryMulti) + 1f;
             float resetAimMulti = (1f - aimMulti) + 1f;
-            float ergoFactor = 1f - WeaponProperties.ErgoDelta;
-            float intensity = Mathf.Max(2f * (1f - (PlayerProperties.AimSkillADSBuff * 0.5f)) * resetAimMulti * invInjuryMulti * ergoFactor, 0.5f);
+            float stocklessModifier = WeaponProperties.HasShoulderContact ? 2f : 1f;
+            float intensity = Mathf.Max(1f * (1f - (PlayerProperties.AimSkillADSBuff * 0.5f)) * resetAimMulti * invInjuryMulti * stocklessModifier, 0.5f);
 
             if (!StanceController.IsIdle())
             {

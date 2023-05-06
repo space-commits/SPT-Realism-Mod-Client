@@ -8,6 +8,7 @@ using System.Reflection;
 using static RealismMod.Attributes;
 using UnityEngine;
 using EFT;
+using BepInEx.Logging;
 
 namespace RealismMod
 {
@@ -536,11 +537,11 @@ namespace RealismMod
                 List<ItemAttributeClass> camRecoilAttList = __instance.Attributes;
                 GClass2409 camRecoilAtt = new GClass2409((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
                 camRecoilAtt.Name = ENewItemAttributeId.CameraRecoil.GetName();
-                camRecoilAtt.Range = new Vector2(0f, 0.25f);
+                camRecoilAtt.Range = new Vector2(0f, 50f);
                 camRecoilAtt.LessIsGood = true;
-                camRecoilAtt.Base = () => __instance.Template.CameraRecoil;
+                camRecoilAtt.Base = () => __instance.Template.CameraRecoil * 100f;
                 camRecoilAtt.Delta = () => CamRecoilDelta(__instance);
-                camRecoilAtt.StringValue = () => Math.Round(DisplayWeaponProperties.CamRecoil, 4).ToString();
+                camRecoilAtt.StringValue = () => Math.Round(DisplayWeaponProperties.CamRecoil * 100f, 2).ToString();
                 camRecoilAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
                 camRecoilAttList.Add(camRecoilAtt);
             }
@@ -582,49 +583,10 @@ namespace RealismMod
 
         private static float CamRecoilDelta(Weapon __instance)
         {
-            return (__instance.Template.CameraRecoil - DisplayWeaponProperties.CamRecoil) / (__instance.Template.CameraRecoil * -1f);
+            float tempalteCam = __instance.Template.CameraRecoil * 100f;
+            return (tempalteCam - (DisplayWeaponProperties.CamRecoil * 100f)) / (tempalteCam * -1f);
         }
 
-    }
-
-    public class ErgoDisplayDeltaPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Weapon).GetMethod("method_14", BindingFlags.Instance | BindingFlags.NonPublic);
-        }
-
-
-        [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref float __result)
-        {
-            if (Plugin.EnableStatsDelta.Value == true)
-            {
-                StatDeltaDisplay.DisplayDelta(__instance);
-            }
-
-            __result = DisplayWeaponProperties.ErgoDelta;
-            return false;
-        }
-    }
-
-    public class ErgoDisplayStringValuePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Weapon).GetMethod("method_15", BindingFlags.Instance | BindingFlags.NonPublic);
-        }
-
-
-        [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref string __result)
-        {
-            StatDeltaDisplay.DisplayDelta(__instance);
-            float ergoTotal = __instance.Template.Ergonomics * (1f + DisplayWeaponProperties.ErgoDelta);
-            string result = Mathf.Clamp(ergoTotal, 0f, 100f).ToString("0.##");
-            __result = result;
-            return false;
-        }
     }
 
     public class HRecoilDisplayDeltaPatch : ModulePatch
@@ -753,9 +715,48 @@ namespace RealismMod
         }
     }
 
+    public class ErgoDisplayDeltaPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Weapon).GetMethod("method_14", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+
+        [PatchPrefix]
+        private static bool Prefix(ref Weapon __instance, ref float __result)
+        {
+            if (Plugin.EnableStatsDelta.Value == true)
+            {
+                StatDeltaDisplay.DisplayDelta(__instance, Logger);
+            }
+
+            __result = DisplayWeaponProperties.ErgoDelta;
+            return false;
+        }
+    }
+
+    public class ErgoDisplayStringValuePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Weapon).GetMethod("method_15", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+
+        [PatchPrefix]
+        private static bool Prefix(ref Weapon __instance, ref string __result)
+        {
+            StatDeltaDisplay.DisplayDelta(__instance, Logger);
+            string result = Mathf.Clamp(DisplayWeaponProperties.TotalErgo, 0f, 100f).ToString("0.##");
+            __result = result;
+            return false;
+        }
+    }
+
     public static class StatDeltaDisplay
     {
-        public static void DisplayDelta(Weapon __instance)
+        public static void DisplayDelta(Weapon __instance, ManualLogSource logger)
         {
             float baseCOI = __instance.CenterOfImpactBase;
             float currentCOI = baseCOI;
@@ -785,7 +786,7 @@ namespace RealismMod
 
             float baseErgo = __instance.Template.Ergonomics;
             float currentErgo = baseErgo;
-            float pureErgo = 0;
+            float pureErgo = baseErgo;
             float pureRecoil = 0;
 
             float currentTorque = 0f;
@@ -814,7 +815,7 @@ namespace RealismMod
             bool stockAllowsFSADS = false;
 
 
-            if (WeaponProperties.WepHasShoulderContact(__instance) == true && !folded)
+            if (WeaponProperties.WepHasShoulderContact(__instance) && !folded)
             {
                 hasShoulderContact = true;
             }
@@ -823,7 +824,7 @@ namespace RealismMod
             {
                 Mod mod = __instance.Mods[i];
                 float modWeight = __instance.Mods[i].Weight;
-                if (Utils.IsMagazine(__instance.Mods[i]) == true)
+                if (Utils.IsMagazine(__instance.Mods[i]))
                 {
                     modWeight = __instance.Mods[i].GetSingleItemTotalWeight();
                 }
@@ -851,6 +852,7 @@ namespace RealismMod
                 StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, ref modMalfChance, ref modDuraBurn, ref modConv);
                 StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, true, __instance.WeapClass, ref pureErgo, 0, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, ref pureRecoil, ref currentConv, modConv);
             }
+      
 
             float totalTorque = 0;
             float totalErgo = 0;
@@ -868,8 +870,13 @@ namespace RealismMod
 
             float totalCOI = 0;
             float totalCOIDelta = 0;
+            float pureErgoDelta = 0f;
 
-            StatCalc.WeaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref totalRecoilDamping, ref totalRecoilHandDamping, currentCOI, hasShoulderContact, ref totalCOI, ref totalCOIDelta, baseCOI, true);
+            StatCalc.WeaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref totalRecoilDamping, ref totalRecoilHandDamping, currentCOI, hasShoulderContact, ref totalCOI, ref totalCOIDelta, baseCOI, pureErgo, ref pureErgoDelta, true);
+          
+       /*     float ergoWeight = StatCalc.ErgoWeightCalc(__instance.GetSingleItemTotalWeight(), pureErgoDelta, totalTorque, __instance.WeapClass);
+            float ergoDisp = 80f - ergoWeight;
+            float ergoDispDelta = ergoWeight / -80f;*/
 
             DisplayWeaponProperties.HasShoulderContact = hasShoulderContact;
             DisplayWeaponProperties.Dispersion = totalDispersion;
@@ -878,7 +885,7 @@ namespace RealismMod
             DisplayWeaponProperties.TotalVRecoil = totalVRecoil;
             DisplayWeaponProperties.TotalHRecoil = totalHRecoil;
             DisplayWeaponProperties.Balance = totalTorque;
-            DisplayWeaponProperties.TotalErgo = totalErgo;
+            DisplayWeaponProperties.TotalErgo = totalErgo; 
             DisplayWeaponProperties.ErgoDelta = totalErgoDelta;
             DisplayWeaponProperties.VRecoilDelta = totalVRecoilDelta;
             DisplayWeaponProperties.HRecoilDelta = totalHRecoilDelta;
