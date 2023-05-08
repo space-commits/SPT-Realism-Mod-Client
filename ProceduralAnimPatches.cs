@@ -45,9 +45,8 @@ namespace RealismMod
                     float ergoWeight = WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f)); //maybe apply sterngth skill buff, but might be OP
 
                     float ergoFactor = Mathf.Clamp01(WeaponProperties.TotalErgo / 100f);
-                    float inverseErgo = 80f - WeaponProperties.TotalErgo;
-                    float baseAimspeed = 1f - Mathf.InverseLerp(1f, 80f, inverseErgo);
-                    float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (1f + WeaponProperties.ModAimSpeedModifier), 0.5f, 1.35f);
+                    float baseAimspeed = Mathf.InverseLerp(1f, 65f, WeaponProperties.TotalErgo);
+                    float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (1f + WeaponProperties.ModAimSpeedModifier), 0.65f, 1.45f);
                     valueBlender.Speed = __instance.SwayFalloff / aimSpeed;
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_16").SetValue(__instance, Mathf.InverseLerp(3f, 10f, singleItemTotalWeight * (1f - ergoFactor)));
                     __instance.UpdateSwayFactors();
@@ -96,11 +95,11 @@ namespace RealismMod
                     //force ergo weight to update
                     float updateErgoWeight = firearmController.ErgonomicWeight;
 
-                    float idleMulti = StanceController.IsIdle() ? 1.25f : 1f;
+                    float idleMulti = StanceController.IsIdle() ? 1.3f : 1f;
                     float totalSightlessAimSpeed = WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f));
                     Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
                     float sightSpeedModi = currentAimingMod != null ? AttachmentProperties.AimSpeed(currentAimingMod) : 1f;
-                    float newAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)), 0.5f, 1.35f) * Plugin.GlobalAimSpeedModifier.Value * idleMulti;
+                    float newAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)), 0.65f, 1.45f) * Plugin.GlobalAimSpeedModifier.Value * idleMulti;
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
                     float float_9 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance); //aimspeed
                    

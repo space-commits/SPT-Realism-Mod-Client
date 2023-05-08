@@ -455,7 +455,7 @@ namespace RealismMod
         {
 
             float aimSpeed = 1f - ((1f - WeaponProperties.SightlessAimSpeed) * 1.5f);
-            float aimMulti = Mathf.Clamp(aimSpeed * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.4f, 0.85f);
+            float aimMulti = Mathf.Clamp(aimSpeed * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.4f, 0.8f);
             float invInjuryMulti = (1f - PlayerProperties.StanceInjuryMulti) + 1f;
             float resetAimMulti = (1f - aimMulti) + 1f;
             float stocklessModifier = WeaponProperties.HasShoulderContact ? 2f : 1f;

@@ -748,8 +748,8 @@ namespace RealismMod
         private static bool Prefix(ref Weapon __instance, ref string __result)
         {
             StatDeltaDisplay.DisplayDelta(__instance, Logger);
-            string result = Mathf.Clamp(DisplayWeaponProperties.TotalErgo, 0f, 100f).ToString("0.##");
-            __result = result;
+            float ergoTotal = __instance.Template.Ergonomics * (1f + DisplayWeaponProperties.ErgoDelta);
+            __result = Mathf.Clamp(ergoTotal, 0f, 100f).ToString("0.##");
             return false;
         }
     }
