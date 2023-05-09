@@ -53,9 +53,8 @@ namespace RealismMod
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }
         public float TimeExisted { get; set; }
-        public float hpPerTick { get; }
+        public float HpPerTick { get; }
         public Player Player { get; }
-        public float MaxHpRegen { get; }
         public float HpRegened { get; set; }
         public float Delay { get; set; }
         private bool _hasRemovedTrnqt = false;
@@ -63,11 +62,11 @@ namespace RealismMod
         public SurgeryEffect(float hpTick, int? dur, EBodyPart part, Player player, float delay)
         {
             TimeExisted = 0;
-            hpPerTick = hpTick;
+            HpRegened = 0;
+            HpPerTick = hpTick;
             Duration = dur;
             BodyPart = part;
             Player = player;
-            MaxHpRegen = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Maximum / 2f;
             Delay = delay;
         }
 
@@ -82,17 +81,20 @@ namespace RealismMod
                     _hasRemovedTrnqt = true;
                 }
 
-                float currentPartHP = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
-                HpRegened += hpPerTick;
+                float currentHp = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
+                float maxHp = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Maximum;
+                float maxHpRegen = maxHp / 2f;
 
-                if (HpRegened < MaxHpRegen)
-                {
-                    Player.ActiveHealthController.ChangeHealth(BodyPart, hpPerTick, default);
-                    return;
-                }
-                if (HpRegened > MaxHpRegen || currentPartHP == MaxHpRegen)
+                HpRegened += HpPerTick;
+
+                if (HpRegened >= maxHpRegen || currentHp == maxHp)
                 {
                     Duration = 0;
+                    return;
+                }
+                if (HpRegened < maxHpRegen)
+                {
+                    Player.ActiveHealthController.ChangeHealth(BodyPart, HpPerTick, default);
                 }
             }
         }

@@ -28,8 +28,8 @@ namespace RealismMod
                     StanceController.CancelHighReady = fc.Item.WeapClass != "shotgun" ? true : false;
                     StanceController.CancelLowReady = fc.Item.WeapClass == "shotgun" || fc.Item.WeapClass == "pistol" ? true : false;
 
-                    float highReadyBonus = WeaponProperties._WeapClass == "shotgun" && StanceController.IsHighReady == true ? StanceController.HighReadyManipBuff : 1f;
-                    float lowReadyBonus = WeaponProperties._WeapClass != "shotgun" && StanceController.IsLowReady == true ? StanceController.LowReadyManipBuff : 1f;
+                    float highReadyBonus = fc.Item.WeapClass == "shotgun" && StanceController.IsHighReady == true ? StanceController.HighReadyManipBuff : 1f;
+                    float lowReadyBonus = fc.Item.WeapClass != "shotgun" && StanceController.IsLowReady == true ? StanceController.LowReadyManipBuff : 1f;
 
                     float IntenralMagReloadSpeed = Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.55f, 1.4f);
                     player.HandsAnimator.SetAnimationSpeed(IntenralMagReloadSpeed);
@@ -210,7 +210,6 @@ namespace RealismMod
                     Logger.LogWarning("SetHammerArmed = " + hammerSpeed);
                 }
             }
-
         }
     }
 
@@ -429,7 +428,9 @@ namespace RealismMod
             {
                 if (Plugin.EnableLogging.Value == true)
                 {
-
+                    Logger.LogWarning("ReloadMag Patch");
+                    Logger.LogWarning("magazine = " + magazine.LocalizedName());
+                    Logger.LogWarning("magazine weight = " + magazine.GetSingleItemTotalWeight());
                 }
                 StatCalc.SetMagReloadSpeeds(__instance, magazine);
             }

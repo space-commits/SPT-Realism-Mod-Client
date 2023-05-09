@@ -229,15 +229,15 @@ namespace RealismMod
 
         public static float PumpGripReloadBonus = 18f;
 
-        public static float FoldedErgoFactor = 0.5f;
+        public static float FoldedErgoFactor = 0.8f;
 
         public static float FoldedHRecoilFactor = 1.15f;
 
-        public static float FoldedVRecoilFactor = 1.55f;
+        public static float FoldedVRecoilFactor = 1.5f;
 
         public static float FoldedCOIFactor = 2f;
 
-        public static float FoldedCamRecoilFactor = 0.5f;
+        public static float FoldedCamRecoilFactor = 0.4f;
 
         public static float FoldedDispersionFactor = 1.55f;
 

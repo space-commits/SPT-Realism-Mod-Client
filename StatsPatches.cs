@@ -155,8 +155,7 @@ namespace RealismMod
             float baseErgo = __instance.Template.Ergonomics;
             float ergoWeightFactor = StatCalc.WeightStatCalc(StatCalc.ErgoWeightMult, magWeight) / 100;
             float currentErgo = WeaponProperties.InitTotalErgo + (WeaponProperties.InitTotalErgo * ((magErgo / 100f) + ergoWeightFactor));
-            float totalPureErgo = WeaponProperties.InitPureErgo + (WeaponProperties.InitPureErgo * (magErgo / 100f));
-            float pureErgoDelta = (baseErgo - totalPureErgo) / (baseErgo * -1f);
+            float currentPureErgo = WeaponProperties.InitPureErgo + (WeaponProperties.InitPureErgo * (magErgo / 100f));
 
             float baseVRecoil = __instance.Template.RecoilForceUp;
             float vRecoilWeightFactor = StatCalc.WeightStatCalc(StatCalc.VRecoilWeightMult, magWeight) / 100;
@@ -175,42 +174,43 @@ namespace RealismMod
             float magazineTorque = currentTorque;
             currentTorque = WeaponProperties.InitBalance + currentTorque;
 
-            float totalTorque = 0;
-            float totalErgo = 0;
-            float totalVRecoil = 0;
-            float totalHRecoil = 0;
-            float totalDispersion = 0;
-            float totalCamRecoil = 0;
-            float totalRecoilAngle = 0;
-            float totalRecoilDamping = 0;
-            float totalRecoilHandDamping = 0;
+            float totalTorque = 0f;
+            float totalErgo = 0f;
+            float totalVRecoil = 0f;
+            float totalHRecoil = 0f;
+            float totalDispersion = 0f;
+            float totalCamRecoil = 0f;
+            float totalRecoilAngle = 0f;
+            float totalRecoilDamping = 0f;
+            float totalRecoilHandDamping = 0f;
 
-            float totalErgoDelta = 0;
-            float totalVRecoilDelta = 0;
-            float totalHRecoilDelta = 0;
+            float totalErgoDelta = 0f;
+            float totalPureErgoDelta = 0f;
+            float totalVRecoilDelta = 0f;
+            float totalHRecoilDelta = 0f;
 
-            float totalCOI = 0;
-            float totalCOIDelta = 0;
+            float totalCOI = 0f;
+            float totalCOIDelta = 0f;
 
 
-            StatCalc.WeaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref recoilDamping, ref recoilHandDamping, WeaponProperties.InitTotalCOI, WeaponProperties.HasShoulderContact, ref totalCOI, ref totalCOIDelta, __instance.CenterOfImpactBase, false);
+            StatCalc.WeaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref recoilDamping, ref recoilHandDamping, WeaponProperties.InitTotalCOI, WeaponProperties.HasShoulderContact, ref totalCOI, ref totalCOIDelta, __instance.CenterOfImpactBase, currentPureErgo, ref totalPureErgoDelta,  false);
 
-            float ergonomicWeight = StatCalc.ErgoWeightCalc(totalWeight, pureErgoDelta, totalErgoDelta);
-            float ergonomicWeightLessMag = StatCalc.ErgoWeightCalc(weapWeightLessMag, pureErgoDelta, totalErgoDelta);
+            float ergonomicWeight = StatCalc.ErgoWeightCalc(totalWeight, totalPureErgoDelta, totalTorque, __instance.WeapClass);
+            float ergonomicWeightLessMag = StatCalc.ErgoWeightCalc(weapWeightLessMag, totalPureErgoDelta, totalTorque, __instance.WeapClass);
             Utils.HasRunErgoWeightCalc = true;
 
             float totalAimMoveSpeedFactor = 0;
-            float totalReloadSpeed = 0;
+            float totalReloadSpeedLessMag = 0;
             float totalChamberSpeed = 0;
             float totalFiringChamberSpeed = 0;
             float totalChamberCheckSpeed = 0;
             float totalFixSpeed = 0;
 
-            StatCalc.SpeedStatCalc(__instance, ergonomicWeight, ergonomicWeightLessMag, totalChamberSpeedMod, totalReloadSpeedMod, ref totalReloadSpeed, ref totalChamberSpeed, ref totalAimMoveSpeedFactor, ref totalFiringChamberSpeed, ref totalChamberCheckSpeed, ref totalFixSpeed, pureErgoDelta, totalWeight, totalTorque);
+            StatCalc.SpeedStatCalc(__instance, ergonomicWeight, ergonomicWeightLessMag, totalChamberSpeedMod, totalReloadSpeedMod, ref totalReloadSpeedLessMag, ref totalChamberSpeed, ref totalAimMoveSpeedFactor, ref totalFiringChamberSpeed, ref totalChamberCheckSpeed, ref totalFixSpeed);
 
             WeaponProperties.TotalFixSpeed = totalFixSpeed;
             WeaponProperties.TotalChamberCheckSpeed = totalChamberCheckSpeed;
-            WeaponProperties.TotalReloadSpeedLessMag = totalReloadSpeed;
+            WeaponProperties.TotalReloadSpeedLessMag = totalReloadSpeedLessMag;
             WeaponProperties.TotalChamberSpeed = totalChamberSpeed;
             WeaponProperties.TotalFiringChamberSpeed = totalFiringChamberSpeed;
             WeaponProperties.AimMoveSpeedModifier = totalAimMoveSpeedFactor;
@@ -223,7 +223,7 @@ namespace RealismMod
             if (Plugin.EnableLogging.Value == true)
             {
                 Logger.LogWarning("Ergo weight = " + ergonomicWeight);
-                Logger.LogWarning("Pure Ergo D = " + pureErgoDelta);
+                Logger.LogWarning("Pure Ergo D = " + totalPureErgoDelta);
                 Logger.LogWarning("Torque = " + totalTorque);
             }
 
@@ -238,11 +238,11 @@ namespace RealismMod
             WeaponProperties.ErgoDelta = totalErgoDelta;
             WeaponProperties.VRecoilDelta = totalVRecoilDelta;
             WeaponProperties.HRecoilDelta = totalHRecoilDelta;
-            WeaponProperties.ErgonomicWeight = ergonomicWeight;
+            WeaponProperties.ErgonomicWeight = 80f - totalErgo;  //as an experiment, use total ergo as ergonomicWeight
             WeaponProperties.TotalRecoilDamping = totalRecoilDamping;
             WeaponProperties.TotalRecoilHandDamping = totalRecoilHandDamping;
             WeaponProperties.COIDelta = totalCOIDelta;
-            WeaponProperties.PureErgoDelta = pureErgoDelta;
+            WeaponProperties.PureErgoDelta = totalPureErgoDelta;
 
             return totalErgoDelta;
         }
@@ -254,7 +254,7 @@ namespace RealismMod
             WeaponProperties._IsManuallyOperated = isManual;
 
             WeaponProperties.ShouldGetSemiIncrease = false;
-            if (WeaponProperties._WeapClass != "pistol" || WeaponProperties._WeapClass != "shotgun" || WeaponProperties._WeapClass != "sniperRifle" || WeaponProperties._WeapClass != "smg")
+            if (__instance.WeapClass != "pistol" || __instance.WeapClass != "shotgun" || __instance.WeapClass != "sniperRifle" || __instance.WeapClass != "smg")
             {
                 WeaponProperties.ShouldGetSemiIncrease = true;
             }

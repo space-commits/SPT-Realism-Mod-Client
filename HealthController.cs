@@ -12,6 +12,8 @@ using static System.Net.Mime.MediaTypeNames;
 using UnityEngine;
 using System.Reflection;
 using Comfort.Common;
+using HarmonyLib.Tools;
+using static Systems.Effects.Effects;
 
 namespace RealismMod
 {
@@ -50,7 +52,7 @@ namespace RealismMod
     {
         public static EBodyPart[] BodyParts = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm };
 
-        private static List<IHealthEffect> _activeHealthEffects = new List<IHealthEffect>();
+        private static List<IHealthEffect> activeHealthEffects = new List<IHealthEffect>();
 
         public static void AddBaseEFTEffect(int partIndex, Player player, String effect)
         {
@@ -60,7 +62,7 @@ namespace RealismMod
             && m.GetParameters()[5].Name == "initCallback"
             && m.IsGenericMethod);
 
-            effectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType(effect,BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { (EBodyPart)partIndex, null, null, null, null, null });
+            effectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType(effect, BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { (EBodyPart)partIndex, null, null, null, null, null });
         }
 
         public static void AddCustomEffect(IHealthEffect effect, bool canStack)
@@ -68,7 +70,7 @@ namespace RealismMod
             //need to decide if it's better to keep the old effect or to replace it with a new one.
             if (!canStack)
             {
-                foreach (IHealthEffect eff in _activeHealthEffects)
+                foreach (IHealthEffect eff in activeHealthEffects)
                 {
                     if (eff.GetType() == effect.GetType() && eff.BodyPart == effect.BodyPart)
                     {
@@ -78,78 +80,96 @@ namespace RealismMod
                 }
             }
 
-            _activeHealthEffects.Add(effect);
+            activeHealthEffects.Add(effect);
         }
 
         public static void RemoveEffectOfType(Type effect, EBodyPart bodyPart)
         {
-            for (int i = _activeHealthEffects.Count - 1; i >= 0; i--)
+            for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
             {
-                if (_activeHealthEffects[i].GetType() == effect && _activeHealthEffects[i].BodyPart == bodyPart)
+                if (activeHealthEffects[i].GetType() == effect && activeHealthEffects[i].BodyPart == bodyPart)
                 {
-                    _activeHealthEffects.RemoveAt(i);
+                    activeHealthEffects.RemoveAt(i);
                 }
             }
         }
 
         public static void CancelEffects(ManualLogSource logger)
         {
-            for (int i = _activeHealthEffects.Count - 1; i >= 0; i--)
+            for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
             {
-                if (_activeHealthEffects[i].Delay > 0f)
+                if (activeHealthEffects[i].Delay > 0f)
                 {
-                    logger.LogWarning("Effect being cancelled = " + _activeHealthEffects[i].GetType().ToString());
-                    _activeHealthEffects.RemoveAt(i);
+                    if (Plugin.EnableLogging.Value) 
+                    {
+                        logger.LogWarning("Effect being cancelled = " + activeHealthEffects[i].GetType().ToString());
+                    }
+                    activeHealthEffects.RemoveAt(i);
                 }
             }
         }
 
         public static void RemoveAllEffectsOfType(IHealthEffect effect)
         {
-            _activeHealthEffects.RemoveAll(element => element.Equals(effect));
+            activeHealthEffects.RemoveAll(element => element.Equals(effect));
         }
 
         public static void RemoveAllEffects()
         {
-            _activeHealthEffects.Clear();
+            activeHealthEffects.Clear();
         }
 
         public static void ControllerTick(ManualLogSource logger, Player player)
         {
-            if ((int)(Time.time % 10) == 0) 
+            if ((int)(Time.time % 9) == 0) 
             {
-                logger.LogWarning("Checking Double Bleeds");
                 RealismHealthController.DoubleBleedCheck(logger, player);
             }
 
-            for (int i = _activeHealthEffects.Count - 1; i >= 0; i--)
+            for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
             {
-                IHealthEffect effect = _activeHealthEffects[i];
-                logger.LogWarning("Type = " + effect.GetType().ToString());
-                logger.LogWarning("Delay = " + effect.Delay);
+                IHealthEffect effect = activeHealthEffects[i];
+                if (Plugin.EnableLogging.Value)
+                {
+                    logger.LogWarning("Type = " + effect.GetType().ToString());
+                    logger.LogWarning("Delay = " + effect.Delay);
+                }
+  
                 effect.Delay = effect.Delay > 0 ? effect.Delay - 1f : effect.Delay;
 
                 if ((int)(Time.time % 5) == 0) 
                 {
-                    logger.LogWarning("Second Health Effects Tick");
                     if (effect.Duration == null || effect.Duration > 0f)
                     {
-                        logger.LogWarning("Ticking Effect");
                         effect.Tick();
                     }
                     else
                     {
-                        logger.LogWarning("Removing Effect Due to Duration");
-                        _activeHealthEffects.RemoveAt(i);
+                        if (Plugin.EnableLogging.Value)
+                        {
+                            logger.LogWarning("Removing Effect Due to Duration");
+                        }
+                        activeHealthEffects.RemoveAt(i);
                     }
                 }
             }
         }
 
-        public static bool MouthIsBlocked(Item head, Item face)
+        public static bool MouthIsBlocked(Item head, Item face, EquipmentClass equipment)
         {
             bool faceBlocksMouth = false;
             bool headBlocksMouth = false;
+
+            LootItemClass headwear = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;
+            IEnumerable<Item> nestedItems = headwear != null ? headwear.GetAllItemsFromCollection().OfType<Item>() : null;
+
+            if (nestedItems != null) 
+            {
+                foreach (Item item in nestedItems)
+                {
+                    headBlocksMouth = GearProperties.BlocksMouth(item) ? true : false;
+                }
+            }
 
             if (head != null)
             {
@@ -189,30 +209,38 @@ namespace RealismMod
 
             FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
             NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
-            bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
+            bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On) && GearProperties.BlocksMouth(fsComponent.Item);
             bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
 
-            bool mouthBlocked = MouthIsBlocked(head, face);
+            bool mouthBlocked = MouthIsBlocked(head, face, equipment);
 
             //will have to make mask exception for moustache, balaclava etc.
             if (fsIsON || nvgIsOn || mouthBlocked)
             {
-                Logger.LogWarning("juice denied");
+                if (Plugin.EnableLogging.Value)
+                {
+                    Logger.LogWarning("juice denied");
+                }
+     
                 canUse = false;
                 return;
             }
-            Logger.LogWarning("juice time");
+            if (Plugin.EnableLogging.Value)
+            {
+                Logger.LogWarning("juice time");
+            }
         }
 
         public static void CanUseMedItem(ManualLogSource Logger, Player player, EBodyPart bodyPart, Item item, ref bool canUse)
         {
             if (item.Template.Parent._id == "5448f3a64bdc2d60728b456a" || MedProperties.MedType(item) == "drug")
             {
-                Logger.LogWarning("Is drug/stim");
                 return;
             }
-
-            Logger.LogWarning("Checking if CanUseMedItem");
+            if (Plugin.EnableLogging.Value)
+            {
+                Logger.LogWarning("Checking if CanUseMedItem");
+            }
 
             MedsClass med = item as MedsClass;
 
@@ -226,7 +254,7 @@ namespace RealismMod
             Item tacrig = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
             Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
 
-            bool mouthBlocked = MouthIsBlocked(head, face);
+            bool mouthBlocked = MouthIsBlocked(head, face, equipment);
 
             bool hasHeadGear = head != null || ears != null || face != null;
             bool hasBodyGear = vest != null || tacrig != null || bag != null;
@@ -243,27 +271,32 @@ namespace RealismMod
             bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
 
             float medHPRes = med.MedKitComponent.HpResource;
-            Logger.LogWarning("remeaining hp resource = " + medHPRes);
-
-            if (MedProperties.MedType(item) == "pills" && (mouthBlocked || fsIsON || nvgIsOn)) 
+            if (Plugin.EnableLogging.Value)
             {
-                Logger.LogWarning("Pills Blocked, Gear");
+                Logger.LogWarning("remaining hp resource = " + medHPRes);
+            }
+       
+            if (Plugin.GearBlocksEat.Value && MedProperties.MedType(item) == "pills" && (mouthBlocked || fsIsON || nvgIsOn)) 
+            {
+                if (Plugin.EnableLogging.Value)
+                {
+                    Logger.LogWarning("Pills Blocked, Gear");
+                }
 
                 canUse = false;
                 return;
             }
 
-            //will have to make mask exception for moustache and similar
-            if ((isBody && hasBodyGear) || (isHead && hasHeadGear))
+            if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear))) 
             {
-                Logger.LogWarning("Med Blocked, Gear");
+                if (Plugin.EnableLogging.Value)
+                {
+                    Logger.LogWarning("Med Blocked, Gear");
+                }
 
                 canUse = false;
                 return;
             }
-
-            Logger.LogWarning("==============");
-            Logger.LogWarning("GClass2106");
 
             bool hasHeavyBleed = false;
             bool hasLightBleed = false;
@@ -291,16 +324,22 @@ namespace RealismMod
 
             foreach (IEffect effect in effects)
             {
-                Logger.LogWarning("==");
-                Logger.LogWarning("effect type " + effect.Type);
-                Logger.LogWarning("effect body part " + effect.BodyPart);
-                Logger.LogWarning("==");
-            }
+                if (Plugin.EnableLogging.Value)
+                {
+                    Logger.LogWarning("==");
+                    Logger.LogWarning("effect type " + effect.Type);
+                    Logger.LogWarning("effect body part " + effect.BodyPart);
+                    Logger.LogWarning("==");
+                }
 
-            Logger.LogWarning("item = " + item.TemplateId);
-            Logger.LogWarning("item name = " + item.LocalizedName());
-            Logger.LogWarning("EBodyPart = " + bodyPart);
-            Logger.LogWarning("==============");
+            }
+            if (Plugin.EnableLogging.Value)
+            {
+                Logger.LogWarning("item = " + item.TemplateId);
+                Logger.LogWarning("item name = " + item.LocalizedName());
+                Logger.LogWarning("EBodyPart = " + bodyPart);
+            }
+   
             return;
         }
 
@@ -310,8 +349,10 @@ namespace RealismMod
 
             if (commonEffects.OfType<GInterface191>().Any() && commonEffects.OfType<GInterface190>().Any())
             {
-                logger.LogWarning("H + L Bleed Present Commonly");
-
+                if (Plugin.EnableLogging.Value)
+                {
+                    logger.LogWarning("H + L Bleed Present Commonly");
+                }
 
                 IReadOnlyList<GClass2103> effectsList = (IReadOnlyList<GClass2103>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
 
@@ -327,70 +368,206 @@ namespace RealismMod
 
                     if (hasHeavyBleed && hasLightBleed && effectType == typeof(GInterface190))
                     {
-                        logger.LogWarning("removed bleed from " + effectPart);
+                        if (Plugin.EnableLogging.Value)
+                        {
+                            logger.LogWarning("removed bleed from " + effectPart);
+                        }
+     
                         effect.ForceResidue();
                     }
                 }
             }
         }
 
+
+        private static float lastCurrentTotalHp = 0f;
+        private static float lastCurrentEnergy = 0f;
+        private static float lastCurrentHydro = 0f;
+
         public static void PlayerInjuryStateCheck(Player player, ManualLogSource logger)
         {
-            bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
-            bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);
-            bool tremor = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.Tremor);
 
-            PlayerProperties.RightArmBlacked = rightArmDamaged;
-            PlayerProperties.LeftArmBlacked = leftArmDamaged;
+/*            bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
+            bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);*/
 
-            if (!rightArmDamaged && !leftArmDamaged && !tremor)
+/*            bool hasTremor = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.Tremor);
+            float tremorFactor = hasTremor ? 0.95f : 1f;*/
+
+            float aimMoveSpeedBase = 0.42f;
+            float ergoDeltaInjuryMulti = 1f;
+            float adsInjuryMulti = 1f;
+            float stanceInjuryMulti = 1f;
+            float reloadInjuryMulti = 1f;
+            float recoilInjuryMulti = 1f;
+            float sprintSpeedInjuryMulti = 1f;
+            float sprintAccelInjuryMulti = 1f;
+            float walkSpeedInjuryMulti = 1f;
+            float stamRegenInjuryMulti = 1f;
+            float resourceRateInjuryMulti = 1f;
+
+            float currentEnergy = player.ActiveHealthController.Energy.Current;
+            float maxEnergy = player.ActiveHealthController.Energy.Maximum;
+            float percentEnergy = currentEnergy / maxEnergy;
+
+            float currentHydro = player.ActiveHealthController.Hydration.Current;
+            float maxHydro = player.ActiveHealthController.Hydration.Maximum;
+            float percentHydro = currentHydro / maxHydro;
+
+            float totalMaxHp = 0f;
+            float totalCurrentHp = 0f;
+
+            foreach (EBodyPart part in BodyParts) 
             {
-                PlayerProperties.AimMoveSpeedBase = 0.42f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 1f;
-                PlayerProperties.ADSInjuryMulti = 1f;
-                PlayerProperties.StanceInjuryMulti = 1f;
-                PlayerProperties.ReloadInjuryMulti = 1f;
-                PlayerProperties.RecoilInjuryMulti = 1f;
-            }
-            if (tremor == true)
-            {
-                PlayerProperties.AimMoveSpeedBase = 0.4f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 1.15f;
-                PlayerProperties.ADSInjuryMulti = 0.85f;
-                PlayerProperties.StanceInjuryMulti = 0.85f;
-                PlayerProperties.ReloadInjuryMulti = 0.9f;
-                PlayerProperties.RecoilInjuryMulti = 1.025f;
-            }
-            if ((rightArmDamaged == true && !leftArmDamaged))
-            {
-                PlayerProperties.AimMoveSpeedBase = 0.38f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 1.5f;
-                PlayerProperties.ADSInjuryMulti = 0.51f;
-                PlayerProperties.StanceInjuryMulti = 0.6f;
-                PlayerProperties.ReloadInjuryMulti = 0.85f;
-                PlayerProperties.RecoilInjuryMulti = 1.05f;
-            }
-            if ((!rightArmDamaged && leftArmDamaged == true))
-            {
-                PlayerProperties.AimMoveSpeedBase = 0.34f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 2f;
-                PlayerProperties.ADSInjuryMulti = 0.59f;
-                PlayerProperties.StanceInjuryMulti = 0.7f;
-                PlayerProperties.ReloadInjuryMulti = 0.8f;
-                PlayerProperties.RecoilInjuryMulti = 1.1f;
-            }
-            if (rightArmDamaged == true && leftArmDamaged == true)
-            {
-                if (Plugin.EnableLogging.Value == true)
+                IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(part);
+
+                bool isLeftArm = part == EBodyPart.LeftArm;
+                bool isRightArm = part == EBodyPart.LeftArm;
+                bool isArm = isLeftArm || isRightArm;
+                bool isLeg = part == EBodyPart.LeftLeg || part == EBodyPart.RightLeg;
+                bool isBody = part == EBodyPart.Chest || part == EBodyPart.Stomach;
+
+                bool hasFracture = effects.OfType<GInterface193>().Any();
+                float fractureFactor = hasFracture ? 0.5f : 1f;
+
+                float currentHp = player.ActiveHealthController.GetBodyPartHealth(part).Current;
+                float maxHp = player.ActiveHealthController.GetBodyPartHealth(part).Maximum;
+                totalMaxHp += maxHp;
+                totalCurrentHp += currentHp;
+
+                float percentHp = (currentHp / maxHp);
+                float percentHpStamRegen = 1f - ((1f - percentHp) / (isBody ? 10f : 5f));
+                float percentHpWalk = 1f - ((1f - percentHp) / (isBody ? 15f : 7.5f));
+                float percentHpSprint = 1f - ((1f - percentHp) / (isBody ? 8f : 4f));
+                float percentHpAimMove = 1f - ((1f - percentHp) / (isArm ? 20f : 10f));
+                float percentHpADS = 1f - ((1f - percentHp) / (isRightArm ? 2f : 5f));
+                float percentHpStance = 1f - ((1f - percentHp) / (isRightArm ? 3f : 6f));
+                float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 6f : 8f));
+                float percentHpRecoil = 1f - ((1f - percentHp) / (isLeftArm ? 10f : 20f));
+
+                if (isLeg || isBody) 
                 {
-                    logger.LogWarning("both arms damaged");
+                    aimMoveSpeedBase = aimMoveSpeedBase * percentHpAimMove;
+                    sprintSpeedInjuryMulti = sprintSpeedInjuryMulti * percentHpSprint;
+                    sprintAccelInjuryMulti = sprintAccelInjuryMulti * percentHp;
+                    walkSpeedInjuryMulti = walkSpeedInjuryMulti * percentHpWalk;
+                    stamRegenInjuryMulti = stamRegenInjuryMulti * percentHpStamRegen;
                 }
-                PlayerProperties.AimMoveSpeedBase = 0.3f;
-                PlayerProperties.ErgoDeltaInjuryMulti = 3.5f;
-                PlayerProperties.ADSInjuryMulti = 0.42f;
-                PlayerProperties.StanceInjuryMulti = 0.5f;
-                PlayerProperties.ReloadInjuryMulti = 0.75f;
-                PlayerProperties.RecoilInjuryMulti = 1.15f;
+
+                if (isArm) 
+                {
+                    aimMoveSpeedBase = aimMoveSpeedBase * percentHpAimMove * fractureFactor;
+                    ergoDeltaInjuryMulti = ergoDeltaInjuryMulti * ( 1f + (1f - percentHp)) * fractureFactor;
+                    adsInjuryMulti = adsInjuryMulti * percentHpADS * fractureFactor;
+                    stanceInjuryMulti = stanceInjuryMulti * percentHpStance * fractureFactor; 
+                    reloadInjuryMulti = reloadInjuryMulti * percentHpReload * fractureFactor; 
+                    recoilInjuryMulti = recoilInjuryMulti * (1f + (1f - percentHpRecoil)) * fractureFactor; 
+
+                    if (isLeftArm) 
+                    {
+                        PlayerProperties.LeftArmRuined = player.ActiveHealthController.GetBodyPartHealth(EBodyPart.LeftArm).Current <= 10 || hasFracture;
+                    }
+                    if (isRightArm)
+                    {
+                        PlayerProperties.RightArmRuined = player.ActiveHealthController.GetBodyPartHealth(EBodyPart.RightArm).Current <= 10 || hasFracture;
+                    }
+                }
+            }
+            float totalHpPercent = totalCurrentHp / totalMaxHp;
+            resourceRateInjuryMulti = 1f - totalHpPercent;
+
+            float percentEnergyFactor = percentEnergy * 1.2f;
+            float percentHydroFactor = percentHydro * 1.2f;
+
+            float percentEnergySprint = 1f - ((1f - percentEnergyFactor) / 8f);
+            float percentEnergyWalk = 1f - ((1f - percentEnergyFactor) / 12f);
+            float percentEnergyAimMove = 1f - ((1f - percentEnergyFactor) / 20f);
+            float percentEnergyADS = 1f - ((1f - percentEnergyFactor) / 5f);
+            float percentEnergyStance = 1f - ((1f - percentEnergyFactor) / 2f);
+            float percentEnergyReload = 1f - ((1f - percentEnergyFactor) / 10f);
+            float percentEnergyRecoil = 1f - ((1f - percentEnergyFactor) / 40f);
+            float percentEnergyErgo = 1f - ((1f - percentEnergyFactor) / 2f);
+            float percentEnergyStamRegen = 1f - ((1f - percentEnergyFactor) / 10f);
+
+            float percentHydroLowerLimit = 1f - ((1f - percentHydro) / 4f);
+            float percentHydroLimitRecoil = 1f + ((1f - percentHydro) / 20f);
+            float percentHydroUpperLimit = 1f + (1f - percentHydroLowerLimit);
+
+            PlayerProperties.AimMoveSpeedBase = Mathf.Max(aimMoveSpeedBase, 0.3f * percentHydroLowerLimit);
+            PlayerProperties.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)), 3.5f);
+            PlayerProperties.ADSInjuryMulti = Mathf.Max(adsInjuryMulti * percentEnergyADS, 0.4f * percentHydroLowerLimit);
+            PlayerProperties.StanceInjuryMulti = Mathf.Max(stanceInjuryMulti * percentEnergyStance, 0.5f * percentHydroLowerLimit);
+            PlayerProperties.ReloadInjuryMulti = Mathf.Max(reloadInjuryMulti * percentEnergyReload, 0.7f * percentHydroLowerLimit);
+            PlayerProperties.RecoilInjuryMulti = Mathf.Min(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)), 1.15f * percentHydroLimitRecoil);
+            PlayerProperties.HealthSprintSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
+            PlayerProperties.HealthSprintAccelFactor = Mathf.Max(sprintAccelInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
+            PlayerProperties.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk, 0.6f * percentHydroLowerLimit);
+            PlayerProperties.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen, 0.5f * percentHydroLowerLimit);
+
+
+            lastCurrentHydro = lastCurrentHydro == 0 ? currentHydro : lastCurrentHydro;
+            lastCurrentEnergy = lastCurrentEnergy == 0 ? currentEnergy : lastCurrentEnergy;
+
+            float hydroDiff = Math.Abs(currentHydro - lastCurrentHydro) / currentHydro;
+            float energyDiff = Math.Abs(currentEnergy - lastCurrentEnergy) / currentEnergy;
+
+            if (((int)(Time.time % 10) == 0 && totalCurrentHp != lastCurrentTotalHp) || energyDiff > 0.05f || hydroDiff > 0.05f) 
+            {
+
+/*                logger.LogWarning("AimMoveSpeedBase " + PlayerProperties.AimMoveSpeedBase);
+                logger.LogWarning("ErgoDeltaInjuryMulti " + PlayerProperties.ErgoDeltaInjuryMulti);
+                logger.LogWarning("ADSInjuryMulti " + PlayerProperties.ADSInjuryMulti);
+                logger.LogWarning("StanceInjuryMulti " + PlayerProperties.StanceInjuryMulti);
+                logger.LogWarning("ReloadInjuryMulti " + PlayerProperties.ReloadInjuryMulti);
+                logger.LogWarning("RecoilInjuryMulti " + PlayerProperties.RecoilInjuryMulti);
+                logger.LogWarning("HealthSprintSpeedFactor " + PlayerProperties.HealthSprintSpeedFactor);
+                logger.LogWarning("HealthSprintAccelFactor " + PlayerProperties.HealthSprintAccelFactor);
+                logger.LogWarning("HealthWalkSpeedFactor " + PlayerProperties.HealthWalkSpeedFactor);
+                logger.LogWarning("HealthStamRegenFactor " + PlayerProperties.HealthStamRegenFactor);*/
+   /*             logger.LogWarning("LeftArmRuined " + PlayerProperties.LeftArmRuined);
+                logger.LogWarning("RightArmRuined " + PlayerProperties.RightArmRuined);
+                logger.LogWarning("percentHydro " + percentHydro);
+                logger.LogWarning("percentEnergy " + percentEnergy);
+                logger.LogWarning("totalCurrentHp " + totalCurrentHp);*/
+                lastCurrentTotalHp = totalCurrentHp;
+                lastCurrentEnergy = currentEnergy; 
+                lastCurrentHydro = currentHydro;
+                player.RaiseChangeSpeedEvent();
+
+                //will need to get current rate, current modifier, and per tick I need to work out what the true base 
+                //rate is before applying modifier again, otherwise it will just increase.
+
+
+                PropertyInfo energyProp = typeof(ActiveHealthControllerClass).GetProperty("EnergyRate");
+                float currentEnergyRate = (float)energyProp.GetValue(player.ActiveHealthController);
+                float prevEnergyRate = currentEnergyRate - PlayerProperties.HealthResourceRateFactor;
+
+                if (Plugin.EnableLogging.Value)
+                {
+                    logger.LogWarning("currentEnergyRate " + currentEnergyRate);
+                    logger.LogWarning("prevEnergyRate " + prevEnergyRate);
+                }
+ 
+                PropertyInfo hydroProp = typeof(ActiveHealthControllerClass).GetProperty("HydrationRate");
+                float currentHydroRate = (float)hydroProp.GetValue(player.ActiveHealthController);
+                float prevHydroRate = currentHydroRate - PlayerProperties.HealthResourceRateFactor;
+
+                PlayerProperties.HealthResourceRateFactor = -resourceRateInjuryMulti;
+
+                if (Plugin.EnableLogging.Value)
+                {
+                    logger.LogWarning("HealthResourceRateFactor " + PlayerProperties.HealthResourceRateFactor);
+                }
+
+                float newEnergyRate = prevEnergyRate + PlayerProperties.HealthResourceRateFactor;
+                energyProp.SetValue(player.ActiveHealthController, newEnergyRate, null);
+
+                float newHydroRate = prevHydroRate + PlayerProperties.HealthResourceRateFactor;
+                hydroProp.SetValue(player.ActiveHealthController, newHydroRate, null);
+
+                if (Plugin.EnableLogging.Value)
+                {
+                    logger.LogWarning("newEnergyRate " + newEnergyRate);
+                }
             }
         }
     }
