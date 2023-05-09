@@ -97,7 +97,7 @@ namespace RealismMod
                     }
 
                     float remainStamPercent = __instance.Physical.HandsStamina.Current / __instance.Physical.HandsStamina.TotalCapacity;
-                    PlayerProperties.RemainingArmStamPercentage = 1f - ((1f - remainStamPercent) / 2.5f);
+                    PlayerProperties.RemainingArmStamPercentage = 1f - ((1f - remainStamPercent) / 3.5f);
                 }
                 else if (Plugin.EnableStanceStamChanges.Value == true)
                 {

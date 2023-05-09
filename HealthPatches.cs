@@ -44,13 +44,20 @@ namespace RealismMod
             {
                 if (((medsClass = (item as MedsClass)) != null)) 
                 {
-                    Logger.LogWarning("ApplyItem Med");
+                    if (Plugin.EnableLogging.Value) 
+                    {
+                        Logger.LogWarning("ApplyItem Med");
+                    }
 
                     RealismHealthController.CanUseMedItem(Logger, __instance.Player, bodyPart, item, ref canUse);
                 }
                 if((foodClass = (item as FoodClass)) != null)
                 {
-                    Logger.LogWarning("ApplyItem Food");
+                    if (Plugin.EnableLogging.Value)
+                    {
+                        Logger.LogWarning("ApplyItem Food");
+                    }
+           
                     if (Plugin.GearBlocksEat.Value) 
                     {
                         RealismHealthController.CanConsume(Logger, __instance.Player, item, ref canUse);
@@ -80,14 +87,16 @@ namespace RealismMod
             string medType = MedProperties.MedType(meds);
             if (__instance.IsYourPlayer && medType != "drug" && meds.Template._parent != "5448f3a64bdc2d60728b456a")
             {
-                Logger.LogWarning("checking if med can proceed");
-                Logger.LogWarning("bodyPart = " + bodyPart);
-                Logger.LogWarning("med item to check = " + meds.LocalizedName());
-
                 MedsClass med = meds as MedsClass;
                 float medHPRes = med.MedKitComponent.HpResource;
 
-                Logger.LogWarning("remaining hp resource = " + medHPRes);
+                if (Plugin.EnableLogging.Value)
+                {
+                    Logger.LogWarning("checking if med can proceed");
+                    Logger.LogWarning("bodyPart = " + bodyPart);
+                    Logger.LogWarning("med item to check = " + meds.LocalizedName());
+                    Logger.LogWarning("remaining hp resource = " + medHPRes);
+                }
 
                 string hBleedHealType = MedProperties.HBleedHealType(meds);
 
@@ -97,7 +106,11 @@ namespace RealismMod
 
                 if (bodyPart == EBodyPart.Common)
                 {
-                    Logger.LogWarning("Body part is common");
+                    if (Plugin.EnableLogging.Value)
+                    {
+                        Logger.LogWarning("Body part is common");
+                    }
+              
 
                     EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
 
@@ -148,14 +161,21 @@ namespace RealismMod
 
                         foreach (IEffect effect in effects)
                         {
-                            Logger.LogWarning("==");
-                            Logger.LogWarning("effect type " + effect.Type);
-                            Logger.LogWarning("effect body part " + effect.BodyPart);
-                            Logger.LogWarning("==");
+                            if (Plugin.EnableLogging.Value)
+                            {
+                                Logger.LogWarning("==");
+                                Logger.LogWarning("effect type " + effect.Type);
+                                Logger.LogWarning("effect body part " + effect.BodyPart);
+                                Logger.LogWarning("==");
+                            }
+           
 
                             if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
                             {
-                                Logger.LogWarning("Part " + part + " has gear on, skipping");
+                                if (Plugin.EnableLogging.Value)
+                                {
+                                    Logger.LogWarning("Part " + part + " has gear on, skipping");
+                                }
 
                                 continue;
                             }
@@ -164,22 +184,38 @@ namespace RealismMod
                             {
                                 if (!isNotLimb)
                                 {
-                                    Logger.LogWarning("Limb " + part + " has heavy bleed, choosing " + part);
+                                    if (Plugin.EnableLogging.Value)
+                                    {
+                                        Logger.LogWarning("Limb " + part + " has heavy bleed, choosing " + part);
+                                    }
+                          
                                     bodyPart = part;
                                     break;
                                 }
                                 if ((isBody || isHead) && hBleedHealType == "trnqt")
                                 {
-                                    Logger.LogWarning("Part " + part + " has heavy bleed but med is a trnqt, skipping");
+                                    if (Plugin.EnableLogging.Value)
+                                    {
+                                        Logger.LogWarning("Part " + part + " has heavy bleed but med is a trnqt, skipping");
+                                    }
+
                                     continue;
                                 }
                                 if ((isBody || isHead) && (hBleedHealType == "clot" || hBleedHealType == "combo" || hBleedHealType == "surg"))
                                 {
-                                    Logger.LogWarning("Part " + part + " has heavy bleed and this bleed heal type can stop it, choosing " + part);
+                                    if (Plugin.EnableLogging.Value)
+                                    {
+                                        Logger.LogWarning("Part " + part + " has heavy bleed and this bleed heal type can stop it, choosing " + part);
+                                    }
+
                                     bodyPart = part;
                                     break;
                                 }
-                                Logger.LogWarning("Part " + part + " has heavy bleed and no other checks fired, choosing " + part);
+                                if (Plugin.EnableLogging.Value)
+                                {
+                                    Logger.LogWarning("Part " + part + " has heavy bleed and no other checks fired, choosing " + part);
+                                }
+
                                 bodyPart = part;
                                 break;
                             }
@@ -187,16 +223,28 @@ namespace RealismMod
                             {
                                 if (!isNotLimb)
                                 {
-                                    Logger.LogWarning("Limb " + part + " has light bleed, choosing " + part);
+                                    if (Plugin.EnableLogging.Value)
+                                    {
+                                        Logger.LogWarning("Limb " + part + " has light bleed, choosing " + part);
+                                    }
+
                                     bodyPart = part;
                                     break;
                                 }
                                 if ((isBody || isHead) && hasHeavyBleed)
                                 {
-                                    Logger.LogWarning("Part " + part + " has heavy bleed and a light bleed, skipping");
+                                    if (Plugin.EnableLogging.Value)
+                                    {
+                                        Logger.LogWarning("Part " + part + " has heavy bleed and a light bleed, skipping");
+                                    }
+
                                     continue;
                                 }
-                                Logger.LogWarning("Part " + part + " has light bleed and no other checks fired, choosing " + part);
+                                if (Plugin.EnableLogging.Value)
+                                {
+                                    Logger.LogWarning("Part " + part + " has light bleed and no other checks fired, choosing " + part);
+                                }
+
                                 bodyPart = part;
                                 break;
                             }
@@ -204,16 +252,28 @@ namespace RealismMod
                             {
                                 if (!isNotLimb)
                                 {
-                                    Logger.LogWarning("Limb " + part + " has a fracture, choosing " + part);
+                                    if (Plugin.EnableLogging.Value)
+                                    {
+                                        Logger.LogWarning("Limb " + part + " has a fracture, choosing " + part);
+                                    }
+
                                     bodyPart = part;
                                     break;
                                 }
                                 if (isNotLimb)
                                 {
-                                    Logger.LogWarning("Part " + part + " has fracture which can't be healed, skipping");
+                                    if (Plugin.EnableLogging.Value)
+                                    {
+                                        Logger.LogWarning("Part " + part + " has fracture which can't be healed, skipping");
+                                    }
+
                                     continue;
                                 }
-                                Logger.LogWarning("Part " + part + " has fracture and no other checks fired, choosing " + part);
+                                if (Plugin.EnableLogging.Value)
+                                {
+                                    Logger.LogWarning("Part " + part + " has fracture and no other checks fired, choosing " + part);
+                                }
+
                                 bodyPart = part;
                                 break;
                             }
@@ -221,14 +281,20 @@ namespace RealismMod
 
                         if (bodyPart != EBodyPart.Common)
                         {
-                            Logger.LogWarning("Common Body Part replaced with " + bodyPart);
+                            if (Plugin.EnableLogging.Value)
+                            {
+                                Logger.LogWarning("Common Body Part replaced with " + bodyPart);
+                            }
                             break;
                         }
                     }
 
                     if (bodyPart == EBodyPart.Common) 
                     {
-                        Logger.LogWarning("After all checks, body part is still common, canceling heal");
+                        if (Plugin.EnableLogging.Value)
+                        {
+                            Logger.LogWarning("After all checks, body part is still common, canceling heal");
+                        }
                         return false;
                     }
                 }
@@ -236,7 +302,10 @@ namespace RealismMod
                 //determine if any effects should be applied based on what is being healed
                 if (bodyPart != EBodyPart.Common)
                 {
-                    Logger.LogWarning("Checking if custom effects should be applied");
+                    if (Plugin.EnableLogging.Value)
+                    {
+                        Logger.LogWarning("Checking if custom effects should be applied");
+                    }
 
                     bool hasHeavyBleed = false;
                     bool hasLightBleed = false;
@@ -252,7 +321,10 @@ namespace RealismMod
 
                     if (Plugin.TrnqtEffect.Value && hasHeavyBleed && canHealHBleed && (hBleedHealType == "combo" || hBleedHealType == "trnqt") && !isNotLimb)
                     {
-                        Logger.LogWarning("Tourniquet application detected, adding TourniquetEffect");
+                        if (Plugin.EnableLogging.Value)
+                        {
+                            Logger.LogWarning("Tourniquet application detected, adding TourniquetEffect");
+                        }
 
                         TourniquetEffect trnqt = new TourniquetEffect(MedProperties.HpPerTick(meds), null, bodyPart, __instance, meds.HealthEffectsComponent.UseTime);
                         RealismHealthController.AddCustomEffect(trnqt, false);
@@ -263,7 +335,10 @@ namespace RealismMod
                     {
                         SurgeryEffect surg = new SurgeryEffect(MedProperties.HpPerTick(meds), null, bodyPart, __instance, meds.HealthEffectsComponent.UseTime);
                         RealismHealthController.AddCustomEffect(surg, false);
-                        Logger.LogWarning("Surgery kit use detected, adding SurgeryEffect");
+                        if (Plugin.EnableLogging.Value)
+                        {
+                            Logger.LogWarning("Surgery kit use detected, adding SurgeryEffect");
+                        }
                     }
                 }
             }
@@ -272,12 +347,6 @@ namespace RealismMod
             //IF PART IS NOT COMMON, NOT DRUGS/STIMS, AND MEDKIT COULD HAD HEALED HEAVY BLEED, AND SELECTED LIMB AS A HEAVY BLEED
 
             return true;
-        }
-
-        [PatchPostfix]
-        private static void PatchPostFix(EBodyPart bodyPart)
-        {
-            Logger.LogWarning("PostFix Body part = " + bodyPart);
         }
     }
 
@@ -293,7 +362,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(EFT.Player __instance, EBoundItem quickSlot)
         {
-            Logger.LogWarning("SetQuickSlotItem");
             InventoryControllerClass inventoryCont = (InventoryControllerClass)AccessTools.Property(typeof(EFT.Player), "GClass2417_0").GetValue(__instance);
             Item boundItem = inventoryCont.Inventory.FastAccess.GetBoundItem(quickSlot);
             FoodClass food = boundItem as FoodClass;
@@ -301,7 +369,11 @@ namespace RealismMod
             {
                 bool canUse = true;
                 RealismHealthController.CanConsume(Logger, __instance, boundItem, ref canUse);
-                Logger.LogWarning("qucik slot, can use = " + canUse);
+                if (Plugin.EnableLogging.Value)
+                {
+                    Logger.LogWarning("qucik slot, can use = " + canUse);
+                }
+          
                 return canUse;
             }
             return true;
@@ -330,7 +402,11 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix()
         {
-            Logger.LogWarning("Cancelling Meds");
+            if (Plugin.EnableLogging.Value)
+            {
+                Logger.LogWarning("Cancelling Meds");
+            }
+
             RealismHealthController.CancelEffects(Logger);
         }
     }
@@ -371,11 +447,19 @@ namespace RealismMod
                 Player player = Utils.GetPlayer();
                 if (player.IsYourPlayer) 
                 {
-                    Logger.LogWarning("EnergyRatePatch");
+                    if (Plugin.EnableLogging.Value)
+                    {
+                        Logger.LogWarning("EnergyRatePatch");
+                    }
+     
                     float num = 1f - player.Skills.HealthHydration;
                     __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num * PlayerProperties.HealthResourceRateFactor / GetDecayRate(player);
-                    Logger.LogWarning("modified energy decay = " + __result);
-                    Logger.LogWarning("original energy decay = " + Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num / GetDecayRate(player));
+                    if (Plugin.EnableLogging.Value)
+                    {
+                        Logger.LogWarning("modified energy decay = " + __result);
+                        Logger.LogWarning("original energy decay = " + Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num / GetDecayRate(player));
+                    }
+
                     return false;
                 }
             }
@@ -419,7 +503,6 @@ namespace RealismMod
                 Player player = Utils.GetPlayer();
                 if (player.IsYourPlayer)
                 {
-                    Logger.LogWarning("HydroRatePatch");
                     float num = 1f - player.Skills.HealthHydration;
                     __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.HydrationDamage * num * PlayerProperties.HealthResourceRateFactor / GetDecayRate(player);
                     return false;

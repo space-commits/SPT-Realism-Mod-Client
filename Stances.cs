@@ -341,7 +341,7 @@ namespace RealismMod
                     }
                 }
 
-                HighReadyManipBuff = IsHighReady == true ? 1.2f : 1f;
+                HighReadyManipBuff = IsHighReady == true ? 1.15f : 1f;
                 HighReadyManipDebuff = IsHighReady == true ? 0.8f : 1f;
                 ActiveAimManipDebuff = IsActiveAiming == true ? 0.8f : 1f;
                 LowReadyManipBuff = IsLowReady == true ? 1.2f : 1f;

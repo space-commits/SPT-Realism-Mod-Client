@@ -12,6 +12,8 @@ using static System.Net.Mime.MediaTypeNames;
 using UnityEngine;
 using System.Reflection;
 using Comfort.Common;
+using HarmonyLib.Tools;
+using static Systems.Effects.Effects;
 
 namespace RealismMod
 {
@@ -60,7 +62,7 @@ namespace RealismMod
             && m.GetParameters()[5].Name == "initCallback"
             && m.IsGenericMethod);
 
-            effectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType(effect,BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { (EBodyPart)partIndex, null, null, null, null, null });
+            effectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType(effect, BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { (EBodyPart)partIndex, null, null, null, null, null });
         }
 
         public static void AddCustomEffect(IHealthEffect effect, bool canStack)
@@ -98,7 +100,10 @@ namespace RealismMod
             {
                 if (activeHealthEffects[i].Delay > 0f)
                 {
-                    logger.LogWarning("Effect being cancelled = " + activeHealthEffects[i].GetType().ToString());
+                    if (Plugin.EnableLogging.Value) 
+                    {
+                        logger.LogWarning("Effect being cancelled = " + activeHealthEffects[i].GetType().ToString());
+                    }
                     activeHealthEffects.RemoveAt(i);
                 }
             }
@@ -124,20 +129,26 @@ namespace RealismMod
             for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
             {
                 IHealthEffect effect = activeHealthEffects[i];
-                logger.LogWarning("Type = " + effect.GetType().ToString());
-                logger.LogWarning("Delay = " + effect.Delay);
+                if (Plugin.EnableLogging.Value)
+                {
+                    logger.LogWarning("Type = " + effect.GetType().ToString());
+                    logger.LogWarning("Delay = " + effect.Delay);
+                }
+  
                 effect.Delay = effect.Delay > 0 ? effect.Delay - 1f : effect.Delay;
 
                 if ((int)(Time.time % 5) == 0) 
                 {
                     if (effect.Duration == null || effect.Duration > 0f)
                     {
-                        logger.LogWarning("Ticking Effect");
                         effect.Tick();
                     }
                     else
                     {
-                        logger.LogWarning("Removing Effect Due to Duration");
+                        if (Plugin.EnableLogging.Value)
+                        {
+                            logger.LogWarning("Removing Effect Due to Duration");
+                        }
                         activeHealthEffects.RemoveAt(i);
                     }
                 }
@@ -206,22 +217,30 @@ namespace RealismMod
             //will have to make mask exception for moustache, balaclava etc.
             if (fsIsON || nvgIsOn || mouthBlocked)
             {
-                Logger.LogWarning("juice denied");
+                if (Plugin.EnableLogging.Value)
+                {
+                    Logger.LogWarning("juice denied");
+                }
+     
                 canUse = false;
                 return;
             }
-            Logger.LogWarning("juice time");
+            if (Plugin.EnableLogging.Value)
+            {
+                Logger.LogWarning("juice time");
+            }
         }
 
         public static void CanUseMedItem(ManualLogSource Logger, Player player, EBodyPart bodyPart, Item item, ref bool canUse)
         {
             if (item.Template.Parent._id == "5448f3a64bdc2d60728b456a" || MedProperties.MedType(item) == "drug")
             {
-                Logger.LogWarning("Is drug/stim");
                 return;
             }
-
-            Logger.LogWarning("Checking if CanUseMedItem");
+            if (Plugin.EnableLogging.Value)
+            {
+                Logger.LogWarning("Checking if CanUseMedItem");
+            }
 
             MedsClass med = item as MedsClass;
 
@@ -252,11 +271,17 @@ namespace RealismMod
             bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
 
             float medHPRes = med.MedKitComponent.HpResource;
-            Logger.LogWarning("remaining hp resource = " + medHPRes);
-
+            if (Plugin.EnableLogging.Value)
+            {
+                Logger.LogWarning("remaining hp resource = " + medHPRes);
+            }
+       
             if (Plugin.GearBlocksEat.Value && MedProperties.MedType(item) == "pills" && (mouthBlocked || fsIsON || nvgIsOn)) 
             {
-                Logger.LogWarning("Pills Blocked, Gear");
+                if (Plugin.EnableLogging.Value)
+                {
+                    Logger.LogWarning("Pills Blocked, Gear");
+                }
 
                 canUse = false;
                 return;
@@ -264,15 +289,14 @@ namespace RealismMod
 
             if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear))) 
             {
-                Logger.LogWarning("Med Blocked, Gear");
+                if (Plugin.EnableLogging.Value)
+                {
+                    Logger.LogWarning("Med Blocked, Gear");
+                }
 
                 canUse = false;
                 return;
             }
-
-
-            Logger.LogWarning("==============");
-            Logger.LogWarning("GClass2106");
 
             bool hasHeavyBleed = false;
             bool hasLightBleed = false;
@@ -300,16 +324,22 @@ namespace RealismMod
 
             foreach (IEffect effect in effects)
             {
-                Logger.LogWarning("==");
-                Logger.LogWarning("effect type " + effect.Type);
-                Logger.LogWarning("effect body part " + effect.BodyPart);
-                Logger.LogWarning("==");
-            }
+                if (Plugin.EnableLogging.Value)
+                {
+                    Logger.LogWarning("==");
+                    Logger.LogWarning("effect type " + effect.Type);
+                    Logger.LogWarning("effect body part " + effect.BodyPart);
+                    Logger.LogWarning("==");
+                }
 
-            Logger.LogWarning("item = " + item.TemplateId);
-            Logger.LogWarning("item name = " + item.LocalizedName());
-            Logger.LogWarning("EBodyPart = " + bodyPart);
-            Logger.LogWarning("==============");
+            }
+            if (Plugin.EnableLogging.Value)
+            {
+                Logger.LogWarning("item = " + item.TemplateId);
+                Logger.LogWarning("item name = " + item.LocalizedName());
+                Logger.LogWarning("EBodyPart = " + bodyPart);
+            }
+   
             return;
         }
 
@@ -319,8 +349,10 @@ namespace RealismMod
 
             if (commonEffects.OfType<GInterface191>().Any() && commonEffects.OfType<GInterface190>().Any())
             {
-                logger.LogWarning("H + L Bleed Present Commonly");
-
+                if (Plugin.EnableLogging.Value)
+                {
+                    logger.LogWarning("H + L Bleed Present Commonly");
+                }
 
                 IReadOnlyList<GClass2103> effectsList = (IReadOnlyList<GClass2103>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
 
@@ -336,7 +368,11 @@ namespace RealismMod
 
                     if (hasHeavyBleed && hasLightBleed && effectType == typeof(GInterface190))
                     {
-                        logger.LogWarning("removed bleed from " + effectPart);
+                        if (Plugin.EnableLogging.Value)
+                        {
+                            logger.LogWarning("removed bleed from " + effectPart);
+                        }
+     
                         effect.ForceResidue();
                     }
                 }
@@ -400,7 +436,7 @@ namespace RealismMod
 
                 float percentHp = (currentHp / maxHp);
                 float percentHpStamRegen = 1f - ((1f - percentHp) / (isBody ? 10f : 5f));
-                float percentHpWalk = 1f - ((1f - percentHp) / (isBody ? 10f : 5f));
+                float percentHpWalk = 1f - ((1f - percentHp) / (isBody ? 15f : 7.5f));
                 float percentHpSprint = 1f - ((1f - percentHp) / (isBody ? 8f : 4f));
                 float percentHpAimMove = 1f - ((1f - percentHp) / (isArm ? 20f : 10f));
                 float percentHpADS = 1f - ((1f - percentHp) / (isRightArm ? 2f : 5f));
@@ -464,7 +500,7 @@ namespace RealismMod
             PlayerProperties.RecoilInjuryMulti = Mathf.Min(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)), 1.15f * percentHydroLimitRecoil);
             PlayerProperties.HealthSprintSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
             PlayerProperties.HealthSprintAccelFactor = Mathf.Max(sprintAccelInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
-            PlayerProperties.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk, 0.55f * percentHydroLowerLimit);
+            PlayerProperties.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk, 0.6f * percentHydroLowerLimit);
             PlayerProperties.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen, 0.5f * percentHydroLowerLimit);
 
 
@@ -505,15 +541,22 @@ namespace RealismMod
                 float currentEnergyRate = (float)energyProp.GetValue(player.ActiveHealthController);
                 float prevEnergyRate = currentEnergyRate - PlayerProperties.HealthResourceRateFactor;
 
-                logger.LogWarning("currentEnergyRate " + currentEnergyRate);
-                logger.LogWarning("prevEnergyRate " + prevEnergyRate);
-
+                if (Plugin.EnableLogging.Value)
+                {
+                    logger.LogWarning("currentEnergyRate " + currentEnergyRate);
+                    logger.LogWarning("prevEnergyRate " + prevEnergyRate);
+                }
+ 
                 PropertyInfo hydroProp = typeof(ActiveHealthControllerClass).GetProperty("HydrationRate");
                 float currentHydroRate = (float)hydroProp.GetValue(player.ActiveHealthController);
                 float prevHydroRate = currentHydroRate - PlayerProperties.HealthResourceRateFactor;
 
                 PlayerProperties.HealthResourceRateFactor = -resourceRateInjuryMulti;
-                logger.LogWarning("HealthResourceRateFactor " + PlayerProperties.HealthResourceRateFactor);
+
+                if (Plugin.EnableLogging.Value)
+                {
+                    logger.LogWarning("HealthResourceRateFactor " + PlayerProperties.HealthResourceRateFactor);
+                }
 
                 float newEnergyRate = prevEnergyRate + PlayerProperties.HealthResourceRateFactor;
                 energyProp.SetValue(player.ActiveHealthController, newEnergyRate, null);
@@ -521,10 +564,11 @@ namespace RealismMod
                 float newHydroRate = prevHydroRate + PlayerProperties.HealthResourceRateFactor;
                 hydroProp.SetValue(player.ActiveHealthController, newHydroRate, null);
 
-                logger.LogWarning("newEnergyRate " + newEnergyRate);
-
+                if (Plugin.EnableLogging.Value)
+                {
+                    logger.LogWarning("newEnergyRate " + newEnergyRate);
+                }
             }
-  
         }
     }
 }
