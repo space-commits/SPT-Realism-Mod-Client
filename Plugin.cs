@@ -730,11 +730,6 @@ namespace RealismMod
                     new ReceiveDamagePatch().Enable();
                     new StamRegenRatePatch().Enable();
                 }
-
-                new RaidmoddalbePatch().Enable();
-                new CanBeMovedPatch().Enable();
-                new Smethod().Enable();
-                new LootItemClassPatch().Enable();
             }
         }
 
