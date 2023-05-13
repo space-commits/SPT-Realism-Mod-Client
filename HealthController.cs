@@ -167,7 +167,10 @@ namespace RealismMod
             {
                 foreach (Item item in nestedItems)
                 {
-                    headBlocksMouth = GearProperties.BlocksMouth(item) ? true : false;
+                    if (headBlocksMouth = GearProperties.BlocksMouth(item)) 
+                    {
+                        return true;
+                    }
                 }
             }
 
@@ -304,7 +307,7 @@ namespace RealismMod
 
             IEnumerable<IEffect> effects = RealismHealthController.GetAllEffectsOnLimb(player, bodyPart, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
 
-            if (hasHeavyBleed && isNotLimb && MedProperties.HBleedHealType(item) == "trnqt" && medHPRes >= 3)
+            if (isNotLimb && MedProperties.HBleedHealType(item) == "trnqt")
             {
                 canUse = false;
                 return;
@@ -427,7 +430,6 @@ namespace RealismMod
                 bool isBody = part == EBodyPart.Chest || part == EBodyPart.Stomach;
 
                 bool hasFracture = effects.OfType<GInterface193>().Any();
-                float fractureFactor = hasFracture ? 0.5f : 1f;
 
                 float currentHp = player.ActiveHealthController.GetBodyPartHealth(part).Current;
                 float maxHp = player.ActiveHealthController.GetBodyPartHealth(part).Maximum;
@@ -455,13 +457,6 @@ namespace RealismMod
 
                 if (isArm) 
                 {
-                    aimMoveSpeedBase = aimMoveSpeedBase * percentHpAimMove * fractureFactor;
-                    ergoDeltaInjuryMulti = ergoDeltaInjuryMulti * ( 1f + (1f - percentHp)) * fractureFactor;
-                    adsInjuryMulti = adsInjuryMulti * percentHpADS * fractureFactor;
-                    stanceInjuryMulti = stanceInjuryMulti * percentHpStance * fractureFactor; 
-                    reloadInjuryMulti = reloadInjuryMulti * percentHpReload * fractureFactor; 
-                    recoilInjuryMulti = recoilInjuryMulti * (1f + (1f - percentHpRecoil)) * fractureFactor; 
-
                     if (isLeftArm) 
                     {
                         PlayerProperties.LeftArmRuined = player.ActiveHealthController.GetBodyPartHealth(EBodyPart.LeftArm).Current <= 10 || hasFracture;
@@ -470,6 +465,15 @@ namespace RealismMod
                     {
                         PlayerProperties.RightArmRuined = player.ActiveHealthController.GetBodyPartHealth(EBodyPart.RightArm).Current <= 10 || hasFracture;
                     }
+
+                    float ruinedFactor = PlayerProperties.LeftArmRuined ? 0.7f : PlayerProperties.RightArmRuined ? 0.8f : PlayerProperties.LeftArmRuined && PlayerProperties.RightArmRuined ? 0.5f : 1f;
+
+                    aimMoveSpeedBase = aimMoveSpeedBase * percentHpAimMove * ruinedFactor;
+                    ergoDeltaInjuryMulti = ergoDeltaInjuryMulti * (1f + (1f - percentHp)) * ruinedFactor;
+                    adsInjuryMulti = adsInjuryMulti * percentHpADS * ruinedFactor;
+                    stanceInjuryMulti = stanceInjuryMulti * percentHpStance * ruinedFactor;
+                    reloadInjuryMulti = reloadInjuryMulti * percentHpReload * ruinedFactor;
+                    recoilInjuryMulti = recoilInjuryMulti * (1f + (1f - percentHpRecoil)) * ruinedFactor;
                 }
             }
             float totalHpPercent = totalCurrentHp / totalMaxHp;

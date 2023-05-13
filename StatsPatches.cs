@@ -1,13 +1,17 @@
 using Aki.Reflection.Patching;
 using Comfort.Common;
 using EFT;
+using EFT.Hideout;
 using EFT.Interactive;
 using EFT.InventoryLogic;
+using EFT.UI.DragAndDrop;
 using HarmonyLib;
 using System;
 using System.Reflection;
+using System.Collections.Generic;
 using UnityEngine;
 using static EFT.Player;
+using System.Linq;
 
 namespace RealismMod
 {
@@ -69,7 +73,7 @@ namespace RealismMod
         }
         [PatchPrefix]
         private static bool Prefix(ref Player.FirearmController __instance, ref float __result)
-        {
+        {   
             //to find this method again, look for this._player.MovementContext.PhysicalConditionContainsAny(EPhysicalCondition.LeftArmDamaged | EPhysicalCondition.RightArmDamaged)
             //return Mathf.Max(0f, this.Item.ErgonomicsTotal * (1f + this.gclass1560_0.DeltaErgonomics + this._player.ErgonomicsPenalty));
 
@@ -217,12 +221,15 @@ namespace RealismMod
 
             if (hasMag == true)
             {
-                StatCalc.MagReloadSpeedModifier((MagazineClass)magazine, false, false);
+                StatCalc.MagReloadSpeedModifier(__instance, (MagazineClass)magazine, false, false);
             }
 
             if (Plugin.EnableLogging.Value == true)
             {
+                Logger.LogWarning("Total Ergo = " + totalErgo);
+                Logger.LogWarning("Total Ergo D = " + totalErgoDelta);
                 Logger.LogWarning("Ergo weight = " + ergonomicWeight);
+                Logger.LogWarning("Pure Ergo = " + currentPureErgo);
                 Logger.LogWarning("Pure Ergo D = " + totalPureErgoDelta);
                 Logger.LogWarning("Torque = " + totalTorque);
             }
@@ -238,7 +245,7 @@ namespace RealismMod
             WeaponProperties.ErgoDelta = totalErgoDelta;
             WeaponProperties.VRecoilDelta = totalVRecoilDelta;
             WeaponProperties.HRecoilDelta = totalHRecoilDelta;
-            WeaponProperties.ErgonomicWeight = 80f - totalErgo;  //as an experiment, use total ergo as ergonomicWeight
+            WeaponProperties.ErgonomicWeight = Mathf.Max(1, 80f - totalErgo);  //as an experiment, use total ergo as ergonomicWeight
             WeaponProperties.TotalRecoilDamping = totalRecoilDamping;
             WeaponProperties.TotalRecoilHandDamping = totalRecoilHandDamping;
             WeaponProperties.COIDelta = totalCOIDelta;
@@ -563,7 +570,7 @@ namespace RealismMod
 
                 if (Plugin.EnableLogging.Value == true)
                 {
-                    Logger.LogWarning("ErgonomicWeight");
+                    Logger.LogWarning("===ErgonomicWeight===");
                     Logger.LogWarning("total ergo weight = " + __result);
                     Logger.LogWarning("base ergo weight = " + WeaponProperties.ErgonomicWeight);
                 }

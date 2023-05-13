@@ -325,29 +325,34 @@ namespace RealismMod
                         IsActiveAiming = WasActiveAim;
                         SetAiming = false;
                     }
-                }
 
-                if(DoHighReadyInjuredAnim == true)
-                {
-                    HighReadyBlackedArmTime += Time.deltaTime;
-                    if (HighReadyBlackedArmTime >= 0.4f)
+                    if (DoHighReadyInjuredAnim == true)
                     {
-                        DoHighReadyInjuredAnim = false;
+                        HighReadyBlackedArmTime += Time.deltaTime;
+                        if (HighReadyBlackedArmTime >= 0.4f)
+                        {
+                            DoHighReadyInjuredAnim = false;
+                            IsLowReady = true;
+                            WasLowReady = IsLowReady;
+                            IsHighReady = false;
+                            WasHighReady = false;
+                            HighReadyBlackedArmTime = 0f;
+                        }
+                    }
+
+                    if ((PlayerProperties.LeftArmRuined || PlayerProperties.RightArmRuined) && !Plugin.IsAiming && !IsShortStock && !IsActiveAiming && !IsHighReady)
+                    {
                         IsLowReady = true;
-                        WasLowReady = IsLowReady;
-                        IsHighReady = false;
-                        WasHighReady = false;
-                        HighReadyBlackedArmTime = 0f;
+                        WasLowReady = true;
                     }
                 }
 
-                HighReadyManipBuff = IsHighReady == true ? 1.15f : 1f;
+                HighReadyManipBuff = IsHighReady == true ? 1.2f : 1f;
                 HighReadyManipDebuff = IsHighReady == true ? 0.8f : 1f;
                 ActiveAimManipDebuff = IsActiveAiming == true ? 0.8f : 1f;
                 LowReadyManipBuff = IsLowReady == true ? 1.2f : 1f;
 
-
-                if (ResetStances == true) 
+                if (ResetStances == true)
                 {
                     StanceManipCancelTimer();
                 }
@@ -364,16 +369,19 @@ namespace RealismMod
                     WasShortStock = false;
                     Plugin.DidWeaponSwap = false;
                 }
+
+
             }
 
         }
 
         public static void DoPistolStances(bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation __instance, ref Quaternion currentRotation, float dt, ref bool hasResetPistolPos) 
         {
-            float aimMulti = Mathf.Clamp(WeaponProperties.SightlessAimSpeed * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.5f, 1.4f);
+            float aimMulti = Mathf.Clamp(WeaponProperties.SightlessAimSpeed * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.5f, 1.45f);
             float invInjuryMulti = (1f - PlayerProperties.StanceInjuryMulti) + 1f;
             float resetAimMulti = (1f - aimMulti) + 1f;
-            float intensity = Mathf.Max(1f * (1f - PlayerProperties.WeaponSkillErgo) * resetAimMulti * invInjuryMulti, 0.35f);
+            float ergoDelta = (1f - WeaponProperties.ErgoDelta);
+            float intensity = Mathf.Max(1f * (1f - PlayerProperties.WeaponSkillErgo) * resetAimMulti * invInjuryMulti * ergoDelta, 0.35f);
             float balanceFactor = 1f + (WeaponProperties.Balance / 100f);
             balanceFactor = WeaponProperties.Balance > 0f ? balanceFactor * -1f : balanceFactor;
 
@@ -455,11 +463,12 @@ namespace RealismMod
         {
 
             float aimSpeed = 1f - ((1f - WeaponProperties.SightlessAimSpeed) * 1.5f);
-            float aimMulti = Mathf.Clamp(aimSpeed * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.4f, 0.8f);
+            float aimMulti = Mathf.Clamp(aimSpeed * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.4f, 0.9f);
             float invInjuryMulti = (1f - PlayerProperties.StanceInjuryMulti) + 1f;
             float resetAimMulti = (1f - aimMulti) + 1f;
-            float stocklessModifier = WeaponProperties.HasShoulderContact ? 2f : 1f;
-            float intensity = Mathf.Max(1f * (1f - (PlayerProperties.AimSkillADSBuff * 0.5f)) * resetAimMulti * invInjuryMulti * stocklessModifier, 0.5f);
+            float stocklessModifier = WeaponProperties.HasShoulderContact ? 1f : 2f;
+            float ergoDelta = (1f - WeaponProperties.ErgoDelta);
+            float intensity = Mathf.Max(1.5f * (1f - (PlayerProperties.AimSkillADSBuff * 0.5f)) * resetAimMulti * invInjuryMulti * stocklessModifier * ergoDelta, 0.5f);
 
             if (!StanceController.IsIdle())
             {
@@ -746,7 +755,7 @@ namespace RealismMod
                     }
                     if (!hasResetShortStock)
                     {
-                        shortToLow = isThirdPerson ? 2.8f : 1.45f;
+                        shortToLow = isThirdPerson ? 2.8f : 1.5f;
                     }
                     if (!hasResetActiveAim)
                     {
@@ -953,20 +962,23 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(LaserBeam __instance)
         {
-            Light light = (Light)AccessTools.Field(typeof(LaserBeam), "light_0").GetValue(__instance);
-            light.intensity *= 0.1f;
-
-
-            if ((StanceController.IsHighReady == true || StanceController.IsLowReady == true) && !Plugin.IsAiming)
+            if (Utils.IsReady) 
             {
-                Vector3 playerPos = Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position;
-                Vector3 lightPos = __instance.gameObject.transform.position;
-                float distanceFromPlayer = Vector3.Distance(lightPos, playerPos);
-                if (distanceFromPlayer <= 1.8f)
+                Light light = (Light)AccessTools.Field(typeof(LaserBeam), "light_0").GetValue(__instance);
+                light.intensity *= 0.1f;
+
+                if ((StanceController.IsHighReady == true || StanceController.IsLowReady == true) && !Plugin.IsAiming)
                 {
-                    return false;
+                    Vector3 playerPos = Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position;
+                    Vector3 lightPos = __instance.gameObject.transform.position;
+                    float distanceFromPlayer = Vector3.Distance(lightPos, playerPos);
+                    if (distanceFromPlayer <= 1.8f)
+                    {
+                        return false;
+                    }
+                    return true;
                 }
-                else return true;
+                return true;
             }
             else
             {

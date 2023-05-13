@@ -658,6 +658,7 @@ namespace RealismMod
                     if (EnableRagdollFix.Value) 
                     {
                         new ApplyCorpseImpulsePatch().Enable();
+                      /*  new RagdollPatch().Enable();*/
                     }
 
                     //Armor Class
@@ -729,8 +730,11 @@ namespace RealismMod
                     new ReceiveDamagePatch().Enable();
                     new StamRegenRatePatch().Enable();
                 }
-   
 
+                new RaidmoddalbePatch().Enable();
+                new CanBeMovedPatch().Enable();
+                new Smethod().Enable();
+                new LootItemClassPatch().Enable();
             }
         }
 
@@ -809,7 +813,7 @@ namespace RealismMod
 
                     StanceController.StanceState();
 
-                    if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
+                    if (Plugin.EnableHealthOvehaul.Value && Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
                     {
                         GameWorld gameWorld = Singleton<GameWorld>.Instance;
                         if (gameWorld?.AllPlayers.Count > 0)
@@ -865,7 +869,7 @@ namespace RealismMod
 
             AddEffectType = Config.Bind<string>(testing, "Effect Type", "HeavyBleeding", new ConfigDescription("HeavyBleeding, LightBleeding, Fracture.", null, new ConfigurationManagerAttributes { Order = 100, IsAdvanced = true }));
             AddEffectBodyPart = Config.Bind<int>(testing, "Body Part Index", 1, new ConfigDescription("Head = 0, Chest = 1, Stomach = 2, Letft Arm, Right Arm, Left Leg, Right Leg, Common (whole body)", null, new ConfigurationManagerAttributes { Order = 120, IsAdvanced = true }));
-            AddEffectKeybind = Config.Bind(testing, "Add Effect Keybind", new KeyboardShortcut(KeyCode.M), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 130, IsAdvanced = true }));
+            AddEffectKeybind = Config.Bind(testing, "Add Effect Keybind", new KeyboardShortcut(KeyCode.JoystickButton6), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 130, IsAdvanced = true }));
             EnableBallisticsLogging = Config.Bind<bool>(testing, "Enable Ballistics Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 2, IsAdvanced = true }));
             EnableLogging = Config.Bind<bool>(testing, "Enable Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true }));
 

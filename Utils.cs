@@ -76,8 +76,7 @@ namespace RealismMod
         public static Player GetPlayer() 
         {
             GameWorld gameWorld = Singleton<GameWorld>.Instance;
-            SessionResultPanel sessionResultPanel = Singleton<SessionResultPanel>.Instance;
-            return gameWorld.AllPlayers[0];
+            return gameWorld.AllPlayers[0] != null ? gameWorld.AllPlayers[0] : null;
         }
 
         public static bool CheckIsReady()

@@ -129,21 +129,18 @@ namespace RealismMod
 
                     FaceShieldComponent fsComponent = __instance.FaceShieldObserver.Component;
                     NightVisionComponent nvgComponent = __instance.NightVisionObserver.Component;
-                    bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On) && GearProperties.BlocksMouth(fsComponent.Item);
+                    bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
                     bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
 
-                    if (Plugin.GearBlocksHeal.Value) 
+                    if (Plugin.GearBlocksHeal.Value && medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn))
                     {
-                        if (medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn))
-                        {
-                            return false;
-                        }
-                        else if (medType == "pills")
-                        {
-                            return true;
-                        }
+                        return false;
                     }
-                 
+                    else if (medType == "pills")
+                    {
+                        return true;
+                    }
+
 
                     foreach (EBodyPart part in RealismHealthController.BodyParts)
                     {
@@ -230,6 +227,15 @@ namespace RealismMod
 
                                     bodyPart = part;
                                     break;
+                                }
+                                if ((isBody || isHead) && hBleedHealType == "trnqt")
+                                {
+                                    if (Plugin.EnableLogging.Value)
+                                    {
+                                        Logger.LogWarning("Part " + part + " has heavy bleed and a light bleed, skipping");
+                                    }
+
+                                    continue;
                                 }
                                 if ((isBody || isHead) && hasHeavyBleed)
                                 {
@@ -343,9 +349,6 @@ namespace RealismMod
                 }
             }
 
-
-            //IF PART IS NOT COMMON, NOT DRUGS/STIMS, AND MEDKIT COULD HAD HEALED HEAVY BLEED, AND SELECTED LIMB AS A HEAVY BLEED
-
             return true;
         }
     }
@@ -446,12 +449,7 @@ namespace RealismMod
             {
                 Player player = Utils.GetPlayer();
                 if (player.IsYourPlayer) 
-                {
-                    if (Plugin.EnableLogging.Value)
-                    {
-                        Logger.LogWarning("EnergyRatePatch");
-                    }
-     
+                {     
                     float num = 1f - player.Skills.HealthHydration;
                     __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num * PlayerProperties.HealthResourceRateFactor / GetDecayRate(player);
                     if (Plugin.EnableLogging.Value)

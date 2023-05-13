@@ -1490,6 +1490,7 @@ namespace RealismMod
 
         }
     }
+
     public class ApplyCorpseImpulsePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -1511,7 +1512,7 @@ namespace RealismMod
                 AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[lastDam.SourceId];
                 BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
                 float KE = ((0.5f * ammo.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
-                force = 10f * Mathf.Max(1f, KE / 1000f);
+                force = -Mathf.Max(1f, KE / 1000f);
             }
             else if (lastDam.DamageType == EDamageType.Explosion)
             {
@@ -1519,13 +1520,33 @@ namespace RealismMod
             }
             else 
             {
-                force = 10f;
+                force = 5f;
             }
 
             AccessTools.Field(typeof(Player), "_corpseAppliedForce").SetValue(__instance, force);
             corpse.Ragdoll.ApplyImpulse(lastDam.HitCollider, lastDam.Direction, lastDam.HitPoint, force);
 
             return false;
+        }
+    }
+
+    public class RagdollPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            var result = typeof(RagdollClass).GetMethod("method_8", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            return result;
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(RagdollClass __instance, RigidbodySpawner ___rigidbodySpawner_1)
+        {
+            Logger.LogWarning("mass " + ___rigidbodySpawner_1.Rigidbody.mass);
+            Logger.LogWarning("drag " + ___rigidbodySpawner_1.Rigidbody.mass);
+
+            ___rigidbodySpawner_1.Rigidbody.mass = 100f;
+            return true;
         }
     }
 
