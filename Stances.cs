@@ -466,7 +466,7 @@ namespace RealismMod
             float aimMulti = Mathf.Clamp(aimSpeed * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.4f, 0.9f);
             float invInjuryMulti = (1f - PlayerProperties.StanceInjuryMulti) + 1f;
             float resetAimMulti = (1f - aimMulti) + 1f;
-            float stocklessModifier = WeaponProperties.HasShoulderContact ? 1f : 2f;
+            float stocklessModifier = WeaponProperties.HasShoulderContact ? 1f : 2.2f;
             float ergoDelta = (1f - WeaponProperties.ErgoDelta);
             float intensity = Mathf.Max(1.5f * (1f - (PlayerProperties.AimSkillADSBuff * 0.5f)) * resetAimMulti * invInjuryMulti * stocklessModifier * ergoDelta, 0.5f);
 

@@ -81,7 +81,7 @@ namespace RealismMod
 
                 tick += Time.deltaTime;
 
-                if (!Utils.IsInHideout() && tick >= 10f && Plugin.HealthSpeedEffects.Value) 
+                if (!Utils.IsInHideout() && tick >= 10f && Plugin.HealthEffects.Value) 
                 {
                     RealismHealthController.PlayerInjuryStateCheck(__instance, Logger);
                 }
