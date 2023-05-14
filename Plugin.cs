@@ -698,6 +698,7 @@ namespace RealismMod
             new EnduranceSprintActionPatch().Enable();
             new EnduranceMovementActionPatch().Enable();
             new MaxWalkSpeedPatch().Enable();
+            new CalculateSurfacePatch().Enable();
 
             //LateUpdate
             new PlayerLateUpdatePatch().Enable();

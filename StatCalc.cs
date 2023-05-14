@@ -169,7 +169,7 @@ namespace RealismMod
             }
             else 
             {
-                totalTorque = totalTorque < 0f ? totalTorque * 5f : totalTorque > 10f ? totalTorque / 2f : totalTorque <= 10f && totalTorque >= 0f ? totalTorque * 2f : totalTorque;
+                totalTorque = totalTorque < 0f ? totalTorque * 3f : totalTorque > 10f ? totalTorque / 2f : totalTorque <= 10f && totalTorque >= 0f ? totalTorque * 1.5f : totalTorque;
                 float totalTorqueFactorInverse = 1f + (totalTorque / -100f);;
                 float ergoFactoredWeight = Math.Max(1f, totalWeight * (1f - ergoDelta));
                 float balancedErgoFactoredWeight = Math.Max(1f, ergoFactoredWeight * totalTorqueFactorInverse);

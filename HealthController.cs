@@ -517,29 +517,12 @@ namespace RealismMod
             if (((int)(Time.time % 10) == 0 && totalCurrentHp != lastCurrentTotalHp) || energyDiff > 0.05f || hydroDiff > 0.05f) 
             {
 
-/*                logger.LogWarning("AimMoveSpeedBase " + PlayerProperties.AimMoveSpeedBase);
-                logger.LogWarning("ErgoDeltaInjuryMulti " + PlayerProperties.ErgoDeltaInjuryMulti);
-                logger.LogWarning("ADSInjuryMulti " + PlayerProperties.ADSInjuryMulti);
-                logger.LogWarning("StanceInjuryMulti " + PlayerProperties.StanceInjuryMulti);
-                logger.LogWarning("ReloadInjuryMulti " + PlayerProperties.ReloadInjuryMulti);
-                logger.LogWarning("RecoilInjuryMulti " + PlayerProperties.RecoilInjuryMulti);
-                logger.LogWarning("HealthSprintSpeedFactor " + PlayerProperties.HealthSprintSpeedFactor);
-                logger.LogWarning("HealthSprintAccelFactor " + PlayerProperties.HealthSprintAccelFactor);
-                logger.LogWarning("HealthWalkSpeedFactor " + PlayerProperties.HealthWalkSpeedFactor);
-                logger.LogWarning("HealthStamRegenFactor " + PlayerProperties.HealthStamRegenFactor);*/
-   /*             logger.LogWarning("LeftArmRuined " + PlayerProperties.LeftArmRuined);
-                logger.LogWarning("RightArmRuined " + PlayerProperties.RightArmRuined);
-                logger.LogWarning("percentHydro " + percentHydro);
-                logger.LogWarning("percentEnergy " + percentEnergy);
-                logger.LogWarning("totalCurrentHp " + totalCurrentHp);*/
                 lastCurrentTotalHp = totalCurrentHp;
                 lastCurrentEnergy = currentEnergy; 
                 lastCurrentHydro = currentHydro;
-                player.RaiseChangeSpeedEvent();
 
-                //will need to get current rate, current modifier, and per tick I need to work out what the true base 
-                //rate is before applying modifier again, otherwise it will just increase.
-
+                player.MovementContext.SetCharacterMovementSpeed(player.MovementContext.MaxSpeed, false);
+                player.MovementContext.RaiseChangeSpeedEvent();
 
                 PropertyInfo energyProp = typeof(ActiveHealthControllerClass).GetProperty("EnergyRate");
                 float currentEnergyRate = (float)energyProp.GetValue(player.ActiveHealthController);

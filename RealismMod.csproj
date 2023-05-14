@@ -31,6 +31,7 @@
     <Reference Include="Unity.Postprocessing.Runtime" />
 	<Reference Include="UnityEngine.PhysicsModule" />
 	<Reference Include="ItemTemplate.Types" />
+    <Reference Include="UnityEngine.TerrainPhysicsModule"/>
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
