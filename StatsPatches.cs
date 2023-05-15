@@ -16,6 +16,8 @@ using System.Linq;
 namespace RealismMod
 {
 
+ 
+
     public class SingleFireRatePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -387,7 +389,7 @@ namespace RealismMod
             float totalLoudness = ((currentLoudness / 100) + 1f) * StatCalc.CalibreLoudnessFactor(calibre);
             if (weapType == "bullpup")
             {
-                totalLoudness *= 1.05f;
+                totalLoudness *= 1.1f;
             }
 
             float pureRecoilDelta = ((baseVRecoil + baseHRecoil) - pureRecoil) / ((baseVRecoil + baseHRecoil) * -1f);
@@ -453,7 +455,36 @@ namespace RealismMod
 
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
-                float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta));
+                float mountFactor = 1f;
+                if (Utils.IsReady)
+                {
+                    Player player = Utils.GetPlayer();
+                    Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
+                    if (currentAimingMod != null)
+                    {
+                        if (AttachmentProperties.ModType(currentAimingMod) == "sight")
+                        {
+                            mountFactor += (currentAimingMod.Accuracy / 100f);
+                            Logger.LogWarning("is sight");
+                            Logger.LogWarning(currentAimingMod.LocalizedName());
+                            Logger.LogWarning(mountFactor);
+                        }
+                        IEnumerable<Item> parents = currentAimingMod.GetAllParentItems();
+                        foreach (Item item in parents)
+                        {
+                            if (item is Mod && AttachmentProperties.ModType(item) == "mount")
+                            {
+                                Mod mod = item as Mod;
+                                mountFactor += (mod.Accuracy / 100f);
+                                Logger.LogWarning("is mount");
+                                Logger.LogWarning(mod.LocalizedName());
+                                Logger.LogWarning(mountFactor);
+                            }
+                        }
+                    }
+                }
+
+                float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * mountFactor;
                 if (!includeAmmo)
                 {
                     __result = totalCoi;

@@ -266,6 +266,8 @@ namespace RealismMod
             bool isBody = false;
             bool isNotLimb = false;
 
+            string medType = MedProperties.MedType(item);
+
             RealismHealthController.GetBodyPartType(bodyPart, ref isNotLimb, ref isHead, ref isBody);
 
             FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
@@ -279,7 +281,7 @@ namespace RealismMod
                 Logger.LogWarning("remaining hp resource = " + medHPRes);
             }
        
-            if (Plugin.GearBlocksEat.Value && MedProperties.MedType(item) == "pills" && (mouthBlocked || fsIsON || nvgIsOn)) 
+            if (Plugin.GearBlocksEat.Value && medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn)) 
             {
                 if (Plugin.EnableLogging.Value)
                 {
@@ -301,25 +303,30 @@ namespace RealismMod
                 return;
             }
 
+            if (medType == "vas") 
+            {
+                return;
+            }
+
             bool hasHeavyBleed = false;
             bool hasLightBleed = false;
             bool hasFracture = false;
 
             IEnumerable<IEffect> effects = RealismHealthController.GetAllEffectsOnLimb(player, bodyPart, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
 
-            if (isNotLimb && MedProperties.HBleedHealType(item) == "trnqt")
+            if (isNotLimb && medType == "trnqt")
             {
                 canUse = false;
                 return;
             }
 
-            if (MedProperties.MedType(item) == "splint" && med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && isNotLimb)
+            if (medType == "splint" && med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && isNotLimb)
             {
                 canUse = false;
                 return;
             }
 
-            if (MedProperties.MedType(item) == "medkit" && med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && hasFracture && isNotLimb && !hasHeavyBleed && !hasLightBleed)
+            if (medType == "medkit" && med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && hasFracture && isNotLimb && !hasHeavyBleed && !hasLightBleed)
             {
                 canUse = false;
                 return;
@@ -440,7 +447,7 @@ namespace RealismMod
                 float percentHpStamRegen = 1f - ((1f - percentHp) / (isBody ? 10f : 5f));
                 float percentHpWalk = 1f - ((1f - percentHp) / (isBody ? 15f : 7.5f));
                 float percentHpSprint = 1f - ((1f - percentHp) / (isBody ? 8f : 4f));
-                float percentHpAimMove = 1f - ((1f - percentHp) / (isArm ? 20f : 10f));
+                float percentHpAimMove = 1f - ((1f - percentHp) / (isArm ? 30f : 15f));
                 float percentHpADS = 1f - ((1f - percentHp) / (isRightArm ? 2f : 5f));
                 float percentHpStance = 1f - ((1f - percentHp) / (isRightArm ? 3f : 6f));
                 float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 6f : 8f));

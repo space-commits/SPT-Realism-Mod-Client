@@ -679,7 +679,7 @@ namespace RealismMod
         {
             return typeof(Weapon).GetMethod("method_18", BindingFlags.Instance | BindingFlags.NonPublic);
         }
-
+         
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref string __result)
         {

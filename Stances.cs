@@ -755,7 +755,7 @@ namespace RealismMod
                     }
                     if (!hasResetShortStock)
                     {
-                        shortToLow = isThirdPerson ? 2.8f : 1.5f;
+                        shortToLow = isThirdPerson ? 2.8f : 1.6f;
                     }
                     if (!hasResetActiveAim)
                     {

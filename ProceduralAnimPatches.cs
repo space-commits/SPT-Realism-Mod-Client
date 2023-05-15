@@ -92,6 +92,11 @@ namespace RealismMod
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
                 if (player.IsYourPlayer == true)
                 {
+
+
+                    float accuracy = firearmController.Item.GetTotalCenterOfImpact(false);
+                    AccessTools.Field(typeof(Player.FirearmController), "float_1").SetValue(firearmController, accuracy);
+
                     //force ergo weight to update
                     float updateErgoWeight = firearmController.ErgonomicWeight;
 

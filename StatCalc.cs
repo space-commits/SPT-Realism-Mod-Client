@@ -502,6 +502,11 @@ namespace RealismMod
                 }
             }
 
+            if (modType == "mount" || modType == "sight") 
+            {
+                modAccuracy = 0;
+            }
+
             if (modType == "booster" && weapType != "short_AK")
             {
                 modAutoROF *= 0.25f;

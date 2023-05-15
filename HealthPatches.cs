@@ -297,6 +297,11 @@ namespace RealismMod
 
                     if (bodyPart == EBodyPart.Common) 
                     {
+                        if (medType == "vas") 
+                        {
+                            return true;
+                        }
+
                         if (Plugin.EnableLogging.Value)
                         {
                             Logger.LogWarning("After all checks, body part is still common, canceling heal");

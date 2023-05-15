@@ -26,8 +26,8 @@ namespace RealismMod
             {BaseBallistic.ESurfaceSound.MetalThin,0.95f },
             {BaseBallistic.ESurfaceSound.GarbageMetal, 0.75f },
             {BaseBallistic.ESurfaceSound.Garbage, 0.75f },
-            {BaseBallistic.ESurfaceSound.Concrete, 1.0f },
-            {BaseBallistic.ESurfaceSound.Asphalt, 1.0f },
+            {BaseBallistic.ESurfaceSound.Concrete, 1.05f },
+            {BaseBallistic.ESurfaceSound.Asphalt, 1.05f },
             {BaseBallistic.ESurfaceSound.Gravel, 0.85f },
             {BaseBallistic.ESurfaceSound.Slate, 0.85f },
             {BaseBallistic.ESurfaceSound.Tile, 0.8f },
@@ -36,8 +36,8 @@ namespace RealismMod
             {BaseBallistic.ESurfaceSound.WholeGlass, 0.85f },
             {BaseBallistic.ESurfaceSound.Wood, 0.95f},
             {BaseBallistic.ESurfaceSound.WoodThick, 0.95f },
-            {BaseBallistic.ESurfaceSound.WoodThin, 0.9f },
-            {BaseBallistic.ESurfaceSound.Soil, 0.95f},
+            {BaseBallistic.ESurfaceSound.WoodThin, 0.95f },
+            {BaseBallistic.ESurfaceSound.Soil, 1.0f},
             {BaseBallistic.ESurfaceSound.Grass, 0.95f },
             {BaseBallistic.ESurfaceSound.Swamp, 1.0f },
             {BaseBallistic.ESurfaceSound.Puddle, 0.8f }
@@ -45,22 +45,21 @@ namespace RealismMod
 
         public static BaseBallistic.ESurfaceSound CurrentSurface;
 
+        private static float currentModifier = 1f;
+        private static float targetModifier = 1f;
+        private static float smoothness = 0.5f;
+
         public static float GetSurfaceSpeed() 
         {
-            if (SurfaceSpeedModifiers.TryGetValue(CurrentSurface, out float value))
-            {
-                return value;
-            }
-            else
-            {
-                return 1f;
-            }
+            targetModifier = SurfaceSpeedModifiers.TryGetValue(CurrentSurface, out float value) ? value : 1f;
+            currentModifier = Mathf.Lerp(currentModifier, targetModifier, smoothness);
+            return (float)Math.Round(currentModifier, 3);
         }
 
-        private static float maxSlopeAngle = 10f;
+        private static float maxSlopeAngle = 5f;
         private static float maxSlowdownFactor = 0.5f;
 
-        public static float GetSlope(Player player, ManualLogSource logger) 
+        public static float GetSlope(Player player) 
         {
             Vector3 movementDirecion = player.MovementContext.MovementDirection.normalized;
             Vector3 position = player.Transform.position;
@@ -73,7 +72,6 @@ namespace RealismMod
                 if (slopeAngle > maxSlopeAngle)
                 {
                     slowdownFactor = Mathf.Lerp(1f, maxSlowdownFactor, (slopeAngle - maxSlopeAngle) / (90f - maxSlopeAngle));
-                    logger.LogWarning("slowdown Factor = " + slowdownFactor);
                 }
             }
             return slowdownFactor;
@@ -96,8 +94,12 @@ namespace RealismMod
 
             if (__instance.IsYourPlayer == true)
             {
-                Logger.LogWarning((ESurfaceSound)__result.Item3);
-                MovementSpeedController.CurrentSurface = (ESurfaceSound)__result.Item3;
+                if (Plugin.EnableLogging.Value) 
+                {
+                    Logger.LogWarning(__result.Item3 ?? BaseBallistic.ESurfaceSound.Concrete);
+                }
+
+                MovementSpeedController.CurrentSurface = __result.Item3 ?? BaseBallistic.ESurfaceSound.Concrete;
                 __instance.MovementContext.SetCharacterMovementSpeed(__instance.MovementContext.MaxSpeed, true);
                 __instance.MovementContext.RaiseChangeSpeedEvent();
             }
@@ -151,9 +153,9 @@ namespace RealismMod
             {
                 GClass755 rotationFrameSpan = (GClass755)AccessTools.Field(typeof(GClass1604), "gclass755_0").GetValue(__instance);
 
-                float slopeFactor = MovementSpeedController.GetSlope(player, Logger);
-                float stanceSpeedBonus = StanceController.IsHighReady ? 1.15f : 1f;
-                float stanceAccelBonus = StanceController.IsShortStock ? 0.9f : StanceController.IsLowReady ? 1.25f : StanceController.IsHighReady ? 2f : 1f;
+                float slopeFactor = MovementSpeedController.GetSlope(player);
+                float stanceSpeedBonus = StanceController.IsHighReady && Plugin.EnableTacSprint.Value ? 1.15f : 1f;
+                float stanceAccelBonus = StanceController.IsShortStock ? 0.9f : StanceController.IsLowReady ? 1.3f : StanceController.IsHighReady ? 1.8f : 1f;
                 float surfaceMulti = MovementSpeedController.GetSurfaceSpeed();
 
                 if (surfaceMulti < 1.0f) 
@@ -164,9 +166,6 @@ namespace RealismMod
                 {
                     surfaceMulti = Mathf.Max(surfaceMulti * 0.85f, 0.2f);
                 }
-
-
-                Logger.LogWarning("sprint slopeFactor = " + slopeFactor);
 
                 float sprintAccel = player.Physical.SprintAcceleration * stanceAccelBonus * PlayerProperties.HealthSprintAccelFactor * surfaceMulti * slopeFactor * deltaTime;
                 float speed = (player.Physical.SprintSpeed * __instance.SprintingSpeed + 1f) * __instance.StateSprintSpeedLimit * stanceSpeedBonus * PlayerProperties.HealthSprintSpeedFactor * surfaceMulti * slopeFactor;
@@ -201,11 +200,10 @@ namespace RealismMod
 
                 if (Utils.IsReady) 
                 {
-                   slopeFactor = MovementSpeedController.GetSlope(player, Logger);
+                   slopeFactor = MovementSpeedController.GetSlope(player);
                 }
 
                 float surfaceMulti = MovementSpeedController.GetSurfaceSpeed();
-                Logger.LogWarning("walk slopeFactor = " + slopeFactor);
                 float maxSpeed = Singleton<BackendConfigSettingsClass>.Instance.WalkSpeed.Evaluate((float)__instance.SkillManager.Strength.SummaryLevel / 60f);
                 __result = maxSpeed * PlayerProperties.HealthWalkSpeedFactor * surfaceMulti * slopeFactor;
 

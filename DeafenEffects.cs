@@ -148,7 +148,7 @@ namespace RealismMod
 
         public static void DoDeafening() 
         {
-            float enviroMulti = PlayerProperties.enviroType == EnvironmentType.Indoor ? 1.2f : 1f;
+            float enviroMulti = PlayerProperties.enviroType == EnvironmentType.Indoor ? 1.2f : 0.9f;
             float deafFactor = AmmoDeafFactor * WeaponDeafFactor * EarProtectionFactor;
             float botDeafFactor = BotDeafFactor * EarProtectionFactor;
             float grenadeDeafFactor = GrenadeDeafFactor * EarProtectionFactor;
@@ -205,15 +205,20 @@ namespace RealismMod
                 }
                 else
                 {
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value * Plugin.GainReduc.Value);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value * Plugin.GainCutoff.Value);
+/*                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", Plugin.AmbientVolume * Plugin.RealTimeGain.Value * Plugin.GainCutoff.Value);
+*/
                 }
                 valuesAreReset = false;
             }
             else
             {
-                if (Plugin.HasHeadSet == true)
+                if (Plugin.HasHeadSet)
                 {
                     Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value);
+                    //WARNING: EAR RAPE
+                    /*Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", Plugin.AmbientVolume * -Plugin.RealTimeGain.Value);*/
+
                 }
                 Plugin.Vignette.enabled = false;
                 valuesAreReset = true;
@@ -295,7 +300,7 @@ namespace RealismMod
             {
                 if (mods[i].Slots.Length > 0 && mods[i].Slots[0].ContainedItem != null && Utils.IsSilencer((Mod)mods[i].Slots[0].ContainedItem))
                 {
-                    return 0.75f;
+                    continue;
                 }
                 else
                 {
@@ -360,8 +365,8 @@ namespace RealismMod
                         {
                             ammoDeafFactor *= 0.6f;
                         }
-                        float muzzleLoudness = muzzleFactor * calFactor * ammoDeafFactor;
-                        Deafening.BotDeafFactor = muzzleLoudness * ((-distanceFromPlayer / 100f) + 1f) * 1.15f;
+                        float totalBotDeafFactor = muzzleFactor * calFactor * ammoDeafFactor;
+                        Deafening.BotDeafFactor = totalBotDeafFactor * ((-distanceFromPlayer / 100f) + 1f) * 1.15f;
 
                     }
                 }
