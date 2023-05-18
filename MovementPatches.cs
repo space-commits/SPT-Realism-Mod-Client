@@ -153,10 +153,10 @@ namespace RealismMod
             {
                 GClass755 rotationFrameSpan = (GClass755)AccessTools.Field(typeof(GClass1604), "gclass755_0").GetValue(__instance);
 
-                float slopeFactor = MovementSpeedController.GetSlope(player);
+                float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;
+                float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float stanceSpeedBonus = StanceController.IsHighReady && Plugin.EnableTacSprint.Value ? 1.15f : 1f;
                 float stanceAccelBonus = StanceController.IsShortStock ? 0.9f : StanceController.IsLowReady ? 1.3f : StanceController.IsHighReady ? 1.8f : 1f;
-                float surfaceMulti = MovementSpeedController.GetSurfaceSpeed();
 
                 if (surfaceMulti < 1.0f) 
                 {
@@ -198,12 +198,12 @@ namespace RealismMod
 
                 float slopeFactor = 1f;
 
-                if (Utils.IsReady) 
+                if (Utils.IsReady && Plugin.EnableSlopeSpeed.Value) 
                 {
                    slopeFactor = MovementSpeedController.GetSlope(player);
                 }
 
-                float surfaceMulti = MovementSpeedController.GetSurfaceSpeed();
+                float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float maxSpeed = Singleton<BackendConfigSettingsClass>.Instance.WalkSpeed.Evaluate((float)__instance.SkillManager.Strength.SummaryLevel / 60f);
                 __result = maxSpeed * PlayerProperties.HealthWalkSpeedFactor * surfaceMulti * slopeFactor;
 

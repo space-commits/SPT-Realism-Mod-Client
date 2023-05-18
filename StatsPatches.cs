@@ -465,9 +465,6 @@ namespace RealismMod
                         if (AttachmentProperties.ModType(currentAimingMod) == "sight")
                         {
                             mountFactor += (currentAimingMod.Accuracy / 100f);
-                            Logger.LogWarning("is sight");
-                            Logger.LogWarning(currentAimingMod.LocalizedName());
-                            Logger.LogWarning(mountFactor);
                         }
                         IEnumerable<Item> parents = currentAimingMod.GetAllParentItems();
                         foreach (Item item in parents)
@@ -476,9 +473,6 @@ namespace RealismMod
                             {
                                 Mod mod = item as Mod;
                                 mountFactor += (mod.Accuracy / 100f);
-                                Logger.LogWarning("is mount");
-                                Logger.LogWarning(mod.LocalizedName());
-                                Logger.LogWarning(mountFactor);
                             }
                         }
                     }

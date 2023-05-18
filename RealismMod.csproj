@@ -13,6 +13,9 @@
   <ItemGroup>
     <Reference Include="Aki.Reflection" />
 	<Reference Include="Aki.Common" />
+	<Reference Include="Assembly-CSharp-firstpass">
+	  <HintPath>libs\Assembly-CSharp-firstpass.dll</HintPath>
+	</Reference>
 	<Reference Include="ItemComponent.Types" />
     <Reference Include="Comfort" />
     <Reference Include="Assembly-CSharp" />
@@ -31,7 +34,7 @@
     <Reference Include="Unity.Postprocessing.Runtime" />
 	<Reference Include="UnityEngine.PhysicsModule" />
 	<Reference Include="ItemTemplate.Types" />
-    <Reference Include="UnityEngine.TerrainPhysicsModule"/>
+    <Reference Include="UnityEngine.TerrainPhysicsModule" />
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />

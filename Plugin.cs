@@ -298,6 +298,9 @@ namespace RealismMod
         public static ConfigEntry<bool> TrnqtEffect { get; set; }
         public static ConfigEntry<bool> HealthEffects { get; set; }
 
+        public static ConfigEntry<bool> EnableMaterialSpeed { get; set; }
+        public static ConfigEntry<bool> EnableSlopeSpeed { get; set; }
+
         public static Weapon CurrentlyShootingWeapon;
 
         public static Vector3 WeaponStartPosition;
@@ -870,14 +873,18 @@ namespace RealismMod
             /*                string AmmoSettings = "4. Ammo Stat Display Settings";*/
             string waponSettings = ".6. Weapon Settings";
             string healthSettings = ".7. Health and Meds Settings";
-            string deafSettings = ".8. Deafening and Audio";
-            string speed = ".9. Weapon Speed Modifiers";
-            string weapAimAndPos = "10. Weapon Stances And Position";
-            string activeAim = "11. Active Aim";
-            string highReady = "12. High Ready";
-            string lowReady = "13. Low Ready";
-            string pistol = "14. Pistol Position And Stance";
-            string shortStock = "15. Short-Stocking";
+            string moveSettings = ".8. Movement Settings";
+            string deafSettings = ".9. Deafening and Audio";
+            string speed = ".10. Weapon Speed Modifiers";
+            string weapAimAndPos = "11. Weapon Stances And Position";
+            string activeAim = "12. Active Aim";
+            string highReady = "13. High Ready";
+            string lowReady = "14. Low Ready";
+            string pistol = "15. Pistol Position And Stance";
+            string shortStock = "16. Short-Stocking";
+
+            EnableMaterialSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Material Speed Modifier", true, new ConfigDescription("Enables Movement Speed Being Affected By Ground Material (Concrete, Grass, Metal, Glass Etc.)", null, new ConfigurationManagerAttributes { Order = 20 }));
+            EnableSlopeSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Slope Speed Modifier", false, new ConfigDescription("Enables Slopes Slowing Down Movement. Can Cause Random Speed Slowdowns In Some Small Spots Due To BSG's Bad Map Geometry.", null, new ConfigurationManagerAttributes { Order = 10 }));
 
             EnableMedicalOvehaul = Config.Bind<bool>(healthSettings, "Enable Medical Overhaul", false, new ConfigDescription("Enables The Overhaul Of The Health & Medical System.", null, new ConfigurationManagerAttributes { Order = 100 }));
             TrnqtEffect = Config.Bind<bool>(healthSettings, "Enable Tourniquet Effect", false, new ConfigDescription("Tourniquet Will Drain HP Of The Limb They Are Applied To.", null, new ConfigurationManagerAttributes { Order = 90 }));
