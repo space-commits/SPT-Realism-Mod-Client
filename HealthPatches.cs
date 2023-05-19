@@ -22,10 +22,93 @@ using UnityEngine.Assertions;
 using static ActiveHealthControllerClass;
 using static CW2.Animations.PhysicsSimulator.Val;
 using static EFT.Player;
+using static RealismMod.Attributes;
 using static Systems.Effects.Effects;
 
 namespace RealismMod
 {
+
+    public class MedkitConstructorPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(MedKitComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface244) });
+        }
+
+        private static string getHBTypeString(string type) 
+        {
+            switch (type) 
+            {
+                case "trnqt":
+                    return "TOURNIQUET";
+                case "surg": 
+                    return "SURGICAL";
+                case "combo":
+                    return "TOURNIQUET + CHEST SEAL";
+                case "clot":
+                    return "CLOTTING AGENT";
+                default:
+                    return "NONE";
+            }
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(MedKitComponent __instance, Item item)
+        {
+            string medType = MedProperties.MedType(item);
+
+            if (medType == "trnqt" || medType == "medkit" || medType == "surg")
+            {
+                string hBleedType = MedProperties.HBleedHealType(item);
+                float hpPerTick = medType != "surg" ? -MedProperties.HpPerTick(item) : MedProperties.HpPerTick(item);
+
+                if (hBleedType != "none") 
+                {
+                    List<ItemAttributeClass> hbAtt = item.Attributes;
+                    ItemAttributeClass hbAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.HBleedType);
+                    hbAttClass.Name = ENewItemAttributeId.HBleedType.GetName();
+                    hbAttClass.StringValue = () => getHBTypeString(hBleedType);
+                    hbAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    hbAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                    hbAttClass.LessIsGood = false;
+                    hbAtt.Add(hbAttClass);
+
+                    if (medType == "surg")
+                    {
+                        List<ItemAttributeClass> hpTickAtt = item.Attributes;
+                        ItemAttributeClass hpAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.HpPerTick);
+                        hpAttClass.Name = ENewItemAttributeId.HpPerTick.GetName();
+                        hpAttClass.Base = () => hpPerTick;
+                        hpAttClass.StringValue = () => hpPerTick.ToString();
+                        hpAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                        hpAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                        hpAttClass.LessIsGood = false;
+                        hpTickAtt.Add(hpAttClass);
+
+                        List<ItemAttributeClass> trqntAtt = item.Attributes;
+                        ItemAttributeClass trnqtClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.RemoveTrnqt);
+                        trnqtClass.Name = ENewItemAttributeId.RemoveTrnqt.GetName();
+                        trnqtClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                        trqntAtt.Add(trnqtClass);
+                    }
+                    else 
+                    {
+                        List<ItemAttributeClass> hpTickAtt = item.Attributes;
+                        ItemAttributeClass hpAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.LimbHpPerTick);
+                        hpAttClass.Name = ENewItemAttributeId.LimbHpPerTick.GetName();
+                        hpAttClass.Base = () => hpPerTick;
+                        hpAttClass.StringValue = () => hpPerTick.ToString();
+                        hpAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                        hpAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                        hpAttClass.LessIsGood = false;
+                        hpTickAtt.Add(hpAttClass);
+                    }
+                }
+            }
+        }
+    }
+
+
     //in-raid healing
     public class ApplyItemPatch : ModulePatch
     {
@@ -134,6 +217,7 @@ namespace RealismMod
 
                     if (Plugin.GearBlocksHeal.Value && medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn))
                     {
+                        NotificationManagerClass.DisplayWarningNotification("Can't Take Pills, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
                         return false;
                     }
                     else if (medType == "pills")
@@ -195,6 +279,7 @@ namespace RealismMod
                                     {
                                         Logger.LogWarning("Part " + part + " has heavy bleed but med is a trnqt, skipping");
                                     }
+                                    NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Heavy Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
 
                                     continue;
                                 }
@@ -232,8 +317,10 @@ namespace RealismMod
                                 {
                                     if (Plugin.EnableLogging.Value)
                                     {
-                                        Logger.LogWarning("Part " + part + " has heavy bleed and a light bleed, skipping");
+                                        Logger.LogWarning("Part " + part + " hhas heavy bleed but med is a trnqt, skipping");
                                     }
+
+                                    NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Heavy Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
 
                                     continue;
                                 }
@@ -273,6 +360,8 @@ namespace RealismMod
                                         Logger.LogWarning("Part " + part + " has fracture which can't be healed, skipping");
                                     }
 
+                                    NotificationManagerClass.DisplayWarningNotification("Splints Can Only Fix Fractures On Limbs", EFT.Communications.ENotificationDurationType.Long);
+
                                     continue;
                                 }
                                 if (Plugin.EnableLogging.Value)
@@ -306,7 +395,10 @@ namespace RealismMod
                         {
                             Logger.LogWarning("After all checks, body part is still common, canceling heal");
                         }
-                        return false;
+
+                        NotificationManagerClass.DisplayWarningNotification("No Suitable Bodypart Was Found For Healing, Make Sure Gear Isn't Covering The Wound And That You Have The Right Medical Item", EFT.Communications.ENotificationDurationType.Long);
+                        
+                         return false;
                     }
                 }
 
@@ -336,6 +428,7 @@ namespace RealismMod
                         {
                             Logger.LogWarning("Tourniquet application detected, adding TourniquetEffect");
                         }
+                        NotificationManagerClass.DisplayWarningNotification("Tourniquet Applied On " + bodyPart + ", You Are Losing Health On This Limb. Use A Surgery Kit To Remove It.", EFT.Communications.ENotificationDurationType.Long);
 
                         TourniquetEffect trnqt = new TourniquetEffect(MedProperties.HpPerTick(meds), null, bodyPart, __instance, meds.HealthEffectsComponent.UseTime);
                         RealismHealthController.AddCustomEffect(trnqt, false);

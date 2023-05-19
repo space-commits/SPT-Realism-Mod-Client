@@ -42,7 +42,7 @@ namespace RealismMod
         {
             if (Utils.NullCheck(med.ConflictingItems))
             {
-                return 1;
+                return 1f;
             }
             return float.Parse(med.ConflictingItems[3]);
         }
@@ -54,7 +54,14 @@ namespace RealismMod
 
         private static List<IHealthEffect> activeHealthEffects = new List<IHealthEffect>();
 
-        public static void AddBaseEFTEffect(int partIndex, Player player, String effect)
+        public static void TestAddBaseEFTEffect(int partIndex, Player player, String effect)
+        {
+            MethodInfo effectMethod = GetAddBaseEFTEffectMethod();
+
+            effectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType(effect, BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { (EBodyPart)partIndex, null, null, null, null, null });
+        }
+
+        public static MethodInfo GetAddBaseEFTEffectMethod()
         {
             MethodInfo effectMethod = typeof(ActiveHealthControllerClass).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).First(m =>
             m.GetParameters().Length == 6
@@ -62,7 +69,14 @@ namespace RealismMod
             && m.GetParameters()[5].Name == "initCallback"
             && m.IsGenericMethod);
 
-            effectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType(effect, BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { (EBodyPart)partIndex, null, null, null, null, null });
+            return effectMethod;
+        }
+
+        public static void RemoveBaseEFTEffect(Player player, string effectType, EBodyPart bodyPart) 
+        {
+            object effectObj = typeof(ActiveHealthControllerClass).GetMethod("FindActiveEffect", BindingFlags.Instance | BindingFlags.Public).MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType(effectType, BindingFlags.Instance | BindingFlags.NonPublic)).Invoke(player.ActiveHealthController, new object[] { bodyPart });
+            Type effect = typeof(ActiveHealthControllerClass).GetNestedTypes().First(t => t.GetProperty("Strength") != null);
+            effect.GetMethod("ForceResidue").Invoke(effectObj, new object[] {});
         }
 
         public static void AddCustomEffect(IHealthEffect effect, bool canStack)
@@ -123,7 +137,7 @@ namespace RealismMod
         {
             if ((int)(Time.time % 9) == 0) 
             {
-                RealismHealthController.DoubleBleedCheck(logger, player);
+                DoubleBleedCheck(logger, player);
             }
 
             for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
@@ -137,7 +151,7 @@ namespace RealismMod
   
                 effect.Delay = effect.Delay > 0 ? effect.Delay - 1f : effect.Delay;
 
-                if ((int)(Time.time % 5) == 0) 
+                if ((int)(Time.time % 3) == 0) 
                 {
                     if (effect.Duration == null || effect.Duration > 0f)
                     {
@@ -167,7 +181,8 @@ namespace RealismMod
             {
                 foreach (Item item in nestedItems)
                 {
-                    if (headBlocksMouth = GearProperties.BlocksMouth(item)) 
+                    FaceShieldComponent fs = item.GetItemComponent<FaceShieldComponent>();
+                    if (headBlocksMouth = GearProperties.BlocksMouth(item) && fs == null) 
                     {
                         return true;
                     }
@@ -224,7 +239,7 @@ namespace RealismMod
                 {
                     Logger.LogWarning("juice denied");
                 }
-     
+                NotificationManagerClass.DisplayWarningNotification("Can't Eat/Drink, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
             }
@@ -240,6 +255,7 @@ namespace RealismMod
             {
                 return;
             }
+
             if (Plugin.EnableLogging.Value)
             {
                 Logger.LogWarning("Checking if CanUseMedItem");
@@ -287,7 +303,7 @@ namespace RealismMod
                 {
                     Logger.LogWarning("Pills Blocked, Gear");
                 }
-
+                NotificationManagerClass.DisplayWarningNotification("Can't Take Pills, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
             }
@@ -298,6 +314,7 @@ namespace RealismMod
                 {
                     Logger.LogWarning("Med Blocked, Gear");
                 }
+                NotificationManagerClass.DisplayWarningNotification("Part " + bodyPart + " Has Gear On, Remove Gear First To Be Able To Heal", EFT.Communications.ENotificationDurationType.Long);
 
                 canUse = false;
                 return;
@@ -314,20 +331,23 @@ namespace RealismMod
 
             IEnumerable<IEffect> effects = RealismHealthController.GetAllEffectsOnLimb(player, bodyPart, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
 
-            if (isNotLimb && medType == "trnqt")
+            if (isNotLimb && MedProperties.HBleedHealType(item) == "trnqt")
             {
+                NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Heavy Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
             }
 
             if (medType == "splint" && med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && isNotLimb)
             {
+                NotificationManagerClass.DisplayWarningNotification("Splints Can Only Fix Fractures On Limbs", EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
             }
 
             if (medType == "medkit" && med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && hasFracture && isNotLimb && !hasHeavyBleed && !hasLightBleed)
             {
+                NotificationManagerClass.DisplayWarningNotification("Splints Can Only Fix Fractures On Limbs", EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
             }
@@ -527,9 +547,6 @@ namespace RealismMod
                 lastCurrentTotalHp = totalCurrentHp;
                 lastCurrentEnergy = currentEnergy; 
                 lastCurrentHydro = currentHydro;
-
-                player.MovementContext.SetCharacterMovementSpeed(player.MovementContext.MaxSpeed, false);
-                player.MovementContext.RaiseChangeSpeedEvent();
 
                 PropertyInfo energyProp = typeof(ActiveHealthControllerClass).GetProperty("EnergyRate");
                 float currentEnergyRate = (float)energyProp.GetValue(player.ActiveHealthController);

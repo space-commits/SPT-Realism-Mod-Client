@@ -65,7 +65,7 @@ namespace RealismMod
         {
             if (confItemArray != null && confItemArray.Length > 0)
             {
-                if (confItemArray[0] == "SPTRM") // if the array has SPTRM, but is set up incorrectly, it will probably cause null errors
+                if (confItemArray[0] == "SPTRM") 
                 {
                     return false;
                 }

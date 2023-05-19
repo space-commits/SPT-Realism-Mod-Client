@@ -64,7 +64,11 @@ namespace RealismMod
             CanAds,
             NoiseReduction,
             ProjectileCount,
-            Convergence
+            Convergence,
+            HBleedType,
+            LimbHpPerTick,
+            HpPerTick,
+            RemoveTrnqt
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -125,6 +129,14 @@ namespace RealismMod
                     return "PROJECTILES";
                 case ENewItemAttributeId.Convergence:
                     return "FLATNESS";
+                case ENewItemAttributeId.HBleedType:
+                    return "HEAVY BLEED HEAL TYPE";
+                case ENewItemAttributeId.LimbHpPerTick:
+                    return "LIMB HP CHANGE PER TICK";
+                case ENewItemAttributeId.HpPerTick:
+                    return "HP CHANGE PER TICK";
+                case ENewItemAttributeId.RemoveTrnqt:
+                    return "REMOVES TOURNIQUET EFFECT";
                 default:
                     return id.ToString();
             }

@@ -23,7 +23,7 @@ namespace RealismMod
         private static Dictionary<BaseBallistic.ESurfaceSound, float> SurfaceSpeedModifiers = new Dictionary<BaseBallistic.ESurfaceSound, float>()
         {
             {BaseBallistic.ESurfaceSound.Metal, 0.95f },
-            {BaseBallistic.ESurfaceSound.MetalThin,0.95f },
+            {BaseBallistic.ESurfaceSound.MetalThin, 0.95f },
             {BaseBallistic.ESurfaceSound.GarbageMetal, 0.75f },
             {BaseBallistic.ESurfaceSound.Garbage, 0.75f },
             {BaseBallistic.ESurfaceSound.Concrete, 1.05f },
@@ -80,6 +80,38 @@ namespace RealismMod
 
     }
 
+    public class ClampSpeedPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GClass1604).GetMethod("ClampSpeed", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+
+        [PatchPrefix]
+        private static bool Prefix(GClass1604 __instance, float speed, ref float __result)
+        {
+
+            Player player = (Player)AccessTools.Field(typeof(GClass1604), "player_0").GetValue(__instance);
+            if (player.IsYourPlayer == true)
+            {
+                float slopeFactor = 1f;
+
+                if (Utils.IsReady && Plugin.EnableSlopeSpeed.Value)
+                {
+                    slopeFactor = MovementSpeedController.GetSlope(player);
+                }
+
+                float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
+
+                __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * PlayerProperties.HealthWalkSpeedFactor * surfaceMulti * slopeFactor);
+                return false;
+            }
+            return true;
+
+        }
+    }
+
     public class CalculateSurfacePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -100,8 +132,6 @@ namespace RealismMod
                 }
 
                 MovementSpeedController.CurrentSurface = __result.Item3 ?? BaseBallistic.ESurfaceSound.Concrete;
-                __instance.MovementContext.SetCharacterMovementSpeed(__instance.MovementContext.MaxSpeed, true);
-                __instance.MovementContext.RaiseChangeSpeedEvent();
             }
         }
     }
@@ -179,37 +209,6 @@ namespace RealismMod
             {
                 return true;
             }
-        }
-    }
-
-    public class MaxWalkSpeedPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(GClass1604).GetMethod("get_MaxSpeed", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-        [PatchPrefix]
-        private static bool Prefix(GClass1604 __instance, ref float __result)
-        {
-            Player player = (Player)AccessTools.Field(typeof(GClass1604), "player_0").GetValue(__instance);
-            if (player.IsYourPlayer == true)
-            {
-
-                float slopeFactor = 1f;
-
-                if (Utils.IsReady && Plugin.EnableSlopeSpeed.Value) 
-                {
-                   slopeFactor = MovementSpeedController.GetSlope(player);
-                }
-
-                float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
-                float maxSpeed = Singleton<BackendConfigSettingsClass>.Instance.WalkSpeed.Evaluate((float)__instance.SkillManager.Strength.SummaryLevel / 60f);
-                __result = maxSpeed * PlayerProperties.HealthWalkSpeedFactor * surfaceMulti * slopeFactor;
-
-                return false;
-            }
-            return true;
         }
     }
 

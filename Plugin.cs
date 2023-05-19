@@ -440,6 +440,11 @@ namespace RealismMod
             IconCache.Add(ENewItemAttributeId.NoiseReduction, Resources.Load<Sprite>("characteristics/icons/icon_info_loudness"));
             IconCache.Add(ENewItemAttributeId.ProjectileCount, Resources.Load<Sprite>("characteristics/icons/icon_info_bulletspeed"));
             IconCache.Add(ENewItemAttributeId.Convergence, Resources.Load<Sprite>("characteristics/icons/Ergonomics"));
+            IconCache.Add(ENewItemAttributeId.HBleedType, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
+            IconCache.Add(ENewItemAttributeId.LimbHpPerTick, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
+            IconCache.Add(ENewItemAttributeId.HpPerTick, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
+            IconCache.Add(ENewItemAttributeId.RemoveTrnqt, Resources.Load<Sprite>("characteristics/icons/hpResource"));
+
             _ = LoadTexture(ENewItemAttributeId.Balance, Path.Combine(ModPath, "res\\balance.png"));
             _ = LoadTexture(ENewItemAttributeId.RecoilAngle, Path.Combine(ModPath, "res\\recoilAngle.png"));
         }
@@ -702,11 +707,18 @@ namespace RealismMod
             new ToggleHoldingBreathPatch().Enable();
 
             //Movement
+            if (EnableMaterialSpeed.Value) 
+            {
+                new CalculateSurfacePatch().Enable();
+            }
+            if (EnableMaterialSpeed.Value)
+            {
+                new CalculateSurfacePatch().Enable();
+                new ClampSpeedPatch().Enable();
+            }
             new SprintAccelerationPatch().Enable();
             new EnduranceSprintActionPatch().Enable();
             new EnduranceMovementActionPatch().Enable();
-            new MaxWalkSpeedPatch().Enable();
-            new CalculateSurfacePatch().Enable();
 
             //LateUpdate
             new PlayerLateUpdatePatch().Enable();
@@ -731,6 +743,7 @@ namespace RealismMod
                 new ProceedPatch().Enable();
                 new RemoveEffectPatch().Enable();
                 new StamRegenRatePatch().Enable();
+                new MedkitConstructorPatch().Enable();
                 /*new ReceiveDamagePatch().Enable();*/
                 //these patches weren't working great but keeping for future reference
                 /*                if (HealthSpeedEffects.Value) 
@@ -841,7 +854,8 @@ namespace RealismMod
                     if (gameWorld?.AllPlayers.Count > 0)
                     {
                         Player player = gameWorld.AllPlayers[0];
-                        RealismHealthController.AddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, player, Plugin.AddEffectType.Value);
+                        RealismHealthController.TestAddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, player, Plugin.AddEffectType.Value);
+                        NotificationManagerClass.DisplayMessageNotification("Adding Health Effect: " + Plugin.AddEffectBodyPart.Value);
                     }
                 }
 
@@ -875,7 +889,7 @@ namespace RealismMod
             string healthSettings = ".7. Health and Meds Settings";
             string moveSettings = ".8. Movement Settings";
             string deafSettings = ".9. Deafening and Audio";
-            string speed = ".10. Weapon Speed Modifiers";
+            string speed = "10. Weapon Speed Modifiers";
             string weapAimAndPos = "11. Weapon Stances And Position";
             string activeAim = "12. Active Aim";
             string highReady = "13. High Ready";
