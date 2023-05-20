@@ -14,6 +14,9 @@ using System.Reflection;
 using Comfort.Common;
 using HarmonyLib.Tools;
 using static Systems.Effects.Effects;
+using static RootMotion.Warning;
+using static CW2.Animations.PhysicsSimulator.Val;
+using EFT.Interactive;
 
 namespace RealismMod
 {
@@ -46,7 +49,53 @@ namespace RealismMod
             }
             return float.Parse(med.ConflictingItems[3]);
         }
+
+        public static readonly Dictionary<string, Type> EffectTypes = new Dictionary<string, Type>
+        {
+            { "Painkiller", typeof(GInterface208) },
+            { "Tremor", typeof(GInterface211) },
+            { "BrokenBone", typeof(GInterface193) },
+            { "TunnelVision", typeof(GInterface213) },
+            { "Contusion", typeof(GInterface203)  },
+            { "HeavyBleeding", typeof(GInterface191) },
+            { "LightBleeding", typeof(GInterface190) },
+            { "Pain", typeof(GInterface207) }
+        };
     }
+
+    public static class DamageTracker 
+    {
+
+        public static float TotalHeavyBleedDamage = 0f;
+        public static float TotalLightBleedDamage = 0f;
+        public static float TotalFallDamage = 0f;
+        public static float TotalBluntDamage = 0f;
+        public static float TotalBarbedWireDamage = 0f;
+
+        //need to differentiate between head and body blunt damage
+        public static void AddDamage(EDamageType damageType, EBodyPart bodyPart, float damage)
+        {
+            switch (damageType) 
+            {
+                case EDamageType.HeavyBleeding:
+                    TotalHeavyBleedDamage += damage;
+                    break;
+                case EDamageType.LightBleeding:
+                    TotalLightBleedDamage += damage;
+                    break;
+                case EDamageType.Fall:
+                    TotalFallDamage += damage;
+                    break;
+                case EDamageType.Blunt:
+                    TotalBluntDamage += damage;
+                    break;
+                case EDamageType.Barbed:
+                    TotalBarbedWireDamage += damage;
+                    break;
+            }
+        }
+    }
+
 
     public static class RealismHealthController
     {
@@ -72,11 +121,28 @@ namespace RealismMod
             return effectMethod;
         }
 
-        public static void RemoveBaseEFTEffect(Player player, string effectType, EBodyPart bodyPart) 
+        public static void RemoveBaseEFTEffect(Player player, EBodyPart targetBodyPart, string targetEffect) 
         {
-            object effectObj = typeof(ActiveHealthControllerClass).GetMethod("FindActiveEffect", BindingFlags.Instance | BindingFlags.Public).MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType(effectType, BindingFlags.Instance | BindingFlags.NonPublic)).Invoke(player.ActiveHealthController, new object[] { bodyPart });
-            Type effect = typeof(ActiveHealthControllerClass).GetNestedTypes().First(t => t.GetProperty("Strength") != null);
-            effect.GetMethod("ForceResidue").Invoke(effectObj, new object[] {});
+
+            IEnumerable<IEffect> commonEffects = player.ActiveHealthController.GetAllActiveEffects(targetBodyPart);
+            IReadOnlyList<GClass2103> effectsList = (IReadOnlyList<GClass2103>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
+
+            Type targetType = null;
+            if (MedProperties.EffectTypes.TryGetValue(targetEffect, out targetType))
+            {
+                for (int i = effectsList.Count - 1; i >= 0; i--)
+                {
+                    ActiveHealthControllerClass.GClass2103 effect = effectsList[i];
+                    Type effectType = effect.Type;
+                    EBodyPart effectPart = effect.BodyPart;
+    
+                    if (effectType == targetType && effectPart == targetBodyPart)
+                    {
+
+                        effect.ForceResidue();
+                    }
+                }
+            }
         }
 
         public static void AddCustomEffect(IHealthEffect effect, bool canStack)
@@ -108,6 +174,19 @@ namespace RealismMod
             }
         }
 
+        public static bool HasEffectOfType(Type effect, EBodyPart bodyPart)
+        {
+            bool hasEffect = false;
+            for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
+            {
+                if (activeHealthEffects[i].GetType() == effect && activeHealthEffects[i].BodyPart == bodyPart)
+                {
+                    hasEffect = true;
+                }
+            }
+            return hasEffect;
+        }
+
         public static void CancelEffects(ManualLogSource logger)
         {
             for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
@@ -133,11 +212,68 @@ namespace RealismMod
             activeHealthEffects.Clear();
         }
 
+        public static void RestoreHPArossBody(Player player, float hpToRestore, float delay)
+        {
+            hpToRestore = Mathf.RoundToInt((hpToRestore) / RealismHealthController.BodyParts.Length);
+
+            foreach (EBodyPart part in RealismHealthController.BodyParts)
+            {
+                HealthRegenEffect regenEffect = new HealthRegenEffect(1f, null, part, player, delay, hpToRestore);
+                RealismHealthController.AddCustomEffect(regenEffect, false);
+            }
+        }
+
+        public static void TrnqtRestoreHPArossBody(Player player, float hpToRestore, float delay, EBodyPart bodyPart)
+        {
+            hpToRestore = Mathf.RoundToInt((hpToRestore) / (RealismHealthController.BodyParts.Length - 1));
+
+            foreach (EBodyPart part in RealismHealthController.BodyParts)
+            {
+                if (part != bodyPart) 
+                {
+                    HealthRegenEffect regenEffect = new HealthRegenEffect(1f, null, part, player, delay, hpToRestore);
+                    RealismHealthController.AddCustomEffect(regenEffect, false);
+                }
+            }
+        }
+
+        public static void ResetBleedDamageRecord(Player player) 
+        {
+            bool hasHeavyBleed = false;
+            bool hasLightBleed = false;
+   
+            foreach (EBodyPart part in RealismHealthController.BodyParts)
+            {
+                IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(part);
+
+                if (effects.OfType<GInterface191>().Any()) 
+                {
+                    hasHeavyBleed = true;
+                }
+                if (effects.OfType<GInterface190>().Any())
+                {
+                    hasLightBleed = true;
+                }
+            }
+            if (!hasHeavyBleed)
+            {
+                DamageTracker.TotalHeavyBleedDamage = 0f;
+            }
+            if (!hasLightBleed)
+            {
+                DamageTracker.TotalLightBleedDamage = 0f;
+            }
+        }
+
         public static void ControllerTick(ManualLogSource logger, Player player)
         {
             if ((int)(Time.time % 9) == 0) 
             {
                 DoubleBleedCheck(logger, player);
+            }
+            if ((int)(Time.time % 3) == 0)
+            {
+                ResetBleedDamageRecord(player);
             }
 
             for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
@@ -166,6 +302,15 @@ namespace RealismMod
                         activeHealthEffects.RemoveAt(i);
                     }
                 }
+            }
+        }
+
+        public static void AddPainEffect(Player player) 
+        {
+            if (!player.ActiveHealthController.BodyPartEffects.Effects[0].Any(v => v.Key == "Pain"))
+            {
+                MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethod();
+                addEffectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType("Pain", BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { EBodyPart.Chest, 0f, 10f, 1f, 1f, null });
             }
         }
 
@@ -236,9 +381,7 @@ namespace RealismMod
             if (fsIsON || nvgIsOn || mouthBlocked)
             {
                 if (Plugin.EnableLogging.Value)
-                {
-                    Logger.LogWarning("juice denied");
-                }
+ 
                 NotificationManagerClass.DisplayWarningNotification("Can't Eat/Drink, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
@@ -470,8 +613,13 @@ namespace RealismMod
                 float percentHpAimMove = 1f - ((1f - percentHp) / (isArm ? 30f : 15f));
                 float percentHpADS = 1f - ((1f - percentHp) / (isRightArm ? 2f : 5f));
                 float percentHpStance = 1f - ((1f - percentHp) / (isRightArm ? 3f : 6f));
-                float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 6f : 8f));
+                float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 5.5f : 7.2f));
                 float percentHpRecoil = 1f - ((1f - percentHp) / (isLeftArm ? 10f : 20f));
+
+                if (percentHp <= 0.5f) 
+                {
+                    AddPainEffect(player);
+                }
 
                 if (isLeg || isBody) 
                 {
@@ -503,8 +651,14 @@ namespace RealismMod
                     recoilInjuryMulti = recoilInjuryMulti * (1f + (1f - percentHpRecoil)) * ruinedFactor;
                 }
             }
+
             float totalHpPercent = totalCurrentHp / totalMaxHp;
             resourceRateInjuryMulti = 1f - totalHpPercent;
+
+            if (totalHpPercent <= 0.5f)
+            {
+                AddPainEffect(player);
+            }
 
             float percentEnergyFactor = percentEnergy * 1.2f;
             float percentHydroFactor = percentHydro * 1.2f;
@@ -533,7 +687,6 @@ namespace RealismMod
             PlayerProperties.HealthSprintAccelFactor = Mathf.Max(sprintAccelInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
             PlayerProperties.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk, 0.6f * percentHydroLowerLimit);
             PlayerProperties.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen, 0.5f * percentHydroLowerLimit);
-
 
             lastCurrentHydro = lastCurrentHydro == 0 ? currentHydro : lastCurrentHydro;
             lastCurrentEnergy = lastCurrentEnergy == 0 ? currentEnergy : lastCurrentEnergy;
@@ -569,10 +722,10 @@ namespace RealismMod
                     logger.LogWarning("HealthResourceRateFactor " + PlayerProperties.HealthResourceRateFactor);
                 }
 
-                float newEnergyRate = prevEnergyRate + PlayerProperties.HealthResourceRateFactor;
+                float newEnergyRate = (float)Math.Round(prevEnergyRate + PlayerProperties.HealthResourceRateFactor, 2);
                 energyProp.SetValue(player.ActiveHealthController, newEnergyRate, null);
 
-                float newHydroRate = prevHydroRate + PlayerProperties.HealthResourceRateFactor;
+                float newHydroRate = (float)Math.Round(prevHydroRate + PlayerProperties.HealthResourceRateFactor, 2);
                 hydroProp.SetValue(player.ActiveHealthController, newHydroRate, null);
 
                 if (Plugin.EnableLogging.Value)

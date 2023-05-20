@@ -744,7 +744,7 @@ namespace RealismMod
                 new RemoveEffectPatch().Enable();
                 new StamRegenRatePatch().Enable();
                 new MedkitConstructorPatch().Enable();
-                /*new ReceiveDamagePatch().Enable();*/
+                new HCApplyDamagePatch().Enable();
                 //these patches weren't working great but keeping for future reference
                 /*                if (HealthSpeedEffects.Value) 
                                 {
@@ -855,7 +855,7 @@ namespace RealismMod
                     {
                         Player player = gameWorld.AllPlayers[0];
                         RealismHealthController.TestAddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, player, Plugin.AddEffectType.Value);
-                        NotificationManagerClass.DisplayMessageNotification("Adding Health Effect: " + Plugin.AddEffectBodyPart.Value);
+                        NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + Plugin.AddEffectType.Value + " To Part " +(EBodyPart)Plugin.AddEffectBodyPart.Value);
                     }
                 }
 

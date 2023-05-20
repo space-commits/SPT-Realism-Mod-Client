@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using static Systems.Effects.Effects;
 using UnityEngine;
+using System.Linq;
 
 namespace RealismMod
 {
@@ -43,11 +44,21 @@ namespace RealismMod
             {
                 float currentPartHP = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
 
+                TimeExisted += 3f;
+
+                if (TimeExisted > 10f && (int)(Time.time % 10) == 0) 
+                {
+                    RealismHealthController.RemoveBaseEFTEffect(Player, BodyPart, "HeavyBleeding");
+                    RealismHealthController.RemoveBaseEFTEffect(Player, BodyPart, "LightBleeding");
+                }
+               
                 if (currentPartHP > 25f)
                 {
-                    /*           Player.ActiveHealthController.ChangeHealth(BodyPart, -hpPerTick, default);*/
                     MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethod();
-                    addEffectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType("ScavRegeneration", BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(Player.ActiveHealthController, new object[] { BodyPart, 0f, 3f, 1f, HpPerTick, null });
+                    Type healthChangeType = typeof(HealthChange);
+                    MethodInfo genericEffectMethod = addEffectMethod.MakeGenericMethod(healthChangeType);
+                    HealthChange healthChangeInstance = new HealthChange();
+                    genericEffectMethod.Invoke(Player.ActiveHealthController, new object[] { BodyPart, 0f, 3f, 1f, HpPerTick, null });
                 }
             }
         }
@@ -62,7 +73,7 @@ namespace RealismMod
         public Player Player { get; }
         public float HpRegened { get; set; }
         public float Delay { get; set; }
-        private bool _hasRemovedTrnqt = false;
+        private bool hasRemovedTrnqt = false;
 
         public SurgeryEffect(float hpTick, int? dur, EBodyPart part, Player player, float delay)
         {
@@ -75,37 +86,110 @@ namespace RealismMod
             Delay = delay;
         }
 
-        //should only restore HP equivelent to half of the limbs max hp.
         public void Tick()
         {
             if (Delay <= 0f)
             {
-                if (!_hasRemovedTrnqt)
+                if (!hasRemovedTrnqt)
                 {
-                    NotificationManagerClass.DisplayMessageNotification("Surgical Kit Used, Removing Any Tourniquet Effect Present On Limb: " + BodyPart, EFT.Communications.ENotificationDurationType.Long);
                     RealismHealthController.RemoveEffectOfType(typeof(TourniquetEffect), BodyPart);
-                    _hasRemovedTrnqt = true;
+                    hasRemovedTrnqt = true;
                 }
 
                 float currentHp = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
                 float maxHp = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Maximum;
                 float maxHpRegen = maxHp / 2f;
 
-                HpRegened += HpPerTick / 20f; //BSG formula for ScavRegen rate.
-
+                if (HpRegened < maxHpRegen)
+                {
+                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethod();
+                    Type healthChangeType = typeof(HealthChange);
+                    MethodInfo genericEffectMethod = addEffectMethod.MakeGenericMethod(healthChangeType);
+                    HealthChange healthChangeInstance = new HealthChange();
+                    genericEffectMethod.Invoke(Player.ActiveHealthController, new object[] { BodyPart, 0f, 3f, 1f, HpPerTick, null });
+                    HpRegened += HpPerTick;
+                }
                 if (HpRegened >= maxHpRegen || currentHp == maxHp)
                 {
                     NotificationManagerClass.DisplayMessageNotification("Surgical Kit Health Regeneration On " + BodyPart + "Has Expired", EFT.Communications.ENotificationDurationType.Long);
                     Duration = 0;
                     return;
                 }
-                if (HpRegened < maxHpRegen)
-                {
-                    /* Player.ActiveHealthController.ChangeHealth(BodyPart, HpPerTick, default);*/
-                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethod();
-                    addEffectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType("ScavRegeneration", BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(Player.ActiveHealthController, new object[] { BodyPart, 0f, 3f, 1f, HpPerTick, null });
-                }
+
             }
         }
+    }
+
+    public class HealthRegenEffect : IHealthEffect
+    {
+        public EBodyPart BodyPart { get; set; }
+        public int? Duration { get; set; }
+        public float TimeExisted { get; set; }
+        public float HpPerTick { get; }
+        public Player Player { get; }
+        public float HpRegened { get; set; }
+        public float HpRegenLimit { get; }
+        public float Delay { get; set; }
+
+        public HealthRegenEffect(float hpTick, int? dur, EBodyPart part, Player player, float delay, float limit)
+        {
+            TimeExisted = 0;
+            HpRegened = 0;
+            HpRegenLimit = limit;
+            HpPerTick = hpTick;
+            Duration = dur;
+            BodyPart = part;
+            Player = player;
+            Delay = delay;
+        }
+
+        public void Tick()
+        {
+            if (HpRegened < HpRegenLimit)
+            {
+                if (Delay <= 0f)
+                {
+                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethod();
+                    Type healthChangeType = typeof(HealthChange);
+                    MethodInfo genericEffectMethod = addEffectMethod.MakeGenericMethod(healthChangeType);
+                    HealthChange healthChangeInstance = new HealthChange();
+                    genericEffectMethod.Invoke(Player.ActiveHealthController, new object[] { BodyPart, 0f, 3f, 1f, HpPerTick, null });
+                    HpRegened += HpPerTick;
+                }
+            }
+            else 
+            {
+                Duration = 0;
+            }
+        }
+    }
+
+
+    public class HealthChange : ActiveHealthControllerClass.GClass2103, IEffect, GInterface185, GInterface200
+    {
+        protected override void Started()
+        {
+            this.HpPerTick = base.Strength;
+            this.SetHealthRatesPerSecond(this.HpPerTick, 0f, 0f, 0f);
+            this.bodyPart = base.BodyPart;
+        }
+
+        protected override void RegularUpdate(float deltaTime)
+        {
+            this.time += deltaTime;
+            if (this.time < 3f)
+            {
+                return;
+            }
+            this.time -= 3f;
+            base.HealthController.ChangeHealth(bodyPart, this.HpPerTick, GClass2147.Existence);
+        }
+
+        private float HpPerTick;
+
+        private float time;
+
+        private EBodyPart bodyPart;
+
     }
 }

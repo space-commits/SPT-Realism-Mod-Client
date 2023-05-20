@@ -19,6 +19,7 @@ using static EFT.Interactive.BetterPropagationGroups;
 using HarmonyLib.Tools;
 using System.Collections;
 using EFT.Interactive;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace RealismMod
 {
@@ -835,20 +836,21 @@ namespace RealismMod
             return typeof(Player).GetMethod("ApplyDamageInfo", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static float _armorClass;
-        private static float _currentDura;
-        private static float _maxDura;
+        private static float armorClass;
+        private static float currentDura;
+        private static float maxDura;
 
-        private static List<EBodyPart> _bodyParts = new List<EBodyPart> { EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.LeftLeg, EBodyPart.RightLeg, EBodyPart.Head, EBodyPart.Common };
-        private static System.Random _randNum = new System.Random();
+        private static List<EBodyPart> bodyParts = new List<EBodyPart> { EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.LeftLeg, EBodyPart.RightLeg, EBodyPart.Head, EBodyPart.Common, EBodyPart.Common };
+        
+        private static System.Random randNum = new System.Random();
 
         private static List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(10);
 
         private static void SetArmorStats(ArmorComponent armor)
         {
-            _armorClass = armor.ArmorClass * 10f;
-            _currentDura = armor.Repairable.Durability;
-            _maxDura = armor.Repairable.TemplateDurability;
+            armorClass = armor.ArmorClass * 10f;
+            currentDura = armor.Repairable.Durability;
+            maxDura = armor.Repairable.TemplateDurability;
         }
 
         private static float GetBleedFactor(EBodyPart part)
@@ -967,18 +969,18 @@ namespace RealismMod
                         float armorDamageActual = ammo.ArmorDamage * speedFactor;
                         float penPower = damageInfo.PenetrationPower;
 
-                        float duraPercent = _currentDura / _maxDura;
-                        float armorFactor = _armorClass * (Mathf.Min(1f, duraPercent * 2f));
+                        float duraPercent = currentDura / maxDura;
+                        float armorFactor = armorClass * (Mathf.Min(1f, duraPercent * 2f));
                         float penDuraFactoredClass = Mathf.Max(1f, armorFactor - (penPower / 1.8f));
-                        float penFactoredClass = Mathf.Max(1f, _armorClass - (penPower / 1.8f));
+                        float penFactoredClass = Mathf.Max(1f, armorClass - (penPower / 1.8f));
                         float maxPotentialDuraDamage = KE / penDuraFactoredClass;
                         float maxPotentialBluntDamage = KE / penFactoredClass;
 
                         float maxSpallingDamage = isMetalArmor ? maxPotentialBluntDamage - bluntDamage : maxPotentialDuraDamage - bluntDamage;
                         float factoredSpallingDamage = maxSpallingDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction * (isMetalArmor ? (1f - duraPercent) + 1f : 1f);
 
-                        int rnd = Math.Max(1, _randNum.Next(_bodyParts.Count));
-                        float splitSpallingDmg = factoredSpallingDamage / _bodyParts.Count;
+                        int rnd = Math.Max(1, randNum.Next(bodyParts.Count));
+                        float splitSpallingDmg = factoredSpallingDamage / bodyParts.Count;
 
 
                         if (Plugin.EnableBallisticsLogging.Value)
@@ -993,7 +995,7 @@ namespace RealismMod
                             Logger.LogWarning("Split Spalling Dmg " + splitSpallingDmg);
                         }
 
-                        foreach (EBodyPart part in _bodyParts.OrderBy(x => _randNum.Next()).Take(rnd))
+                        foreach (EBodyPart part in bodyParts.OrderBy(x => randNum.Next()).Take(rnd))
                         {
 
                             if (part == EBodyPart.Common)
