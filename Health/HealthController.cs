@@ -380,8 +380,6 @@ namespace RealismMod
             //will have to make mask exception for moustache, balaclava etc.
             if (fsIsON || nvgIsOn || mouthBlocked)
             {
-                if (Plugin.EnableLogging.Value)
- 
                 NotificationManagerClass.DisplayWarningNotification("Can't Eat/Drink, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;

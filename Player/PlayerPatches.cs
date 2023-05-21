@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using static EFT.Player;
 
 
 namespace RealismMod
@@ -74,14 +73,14 @@ namespace RealismMod
             if (Utils.IsReady && __instance.IsYourPlayer)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
-               
+
                 Plugin.IsSprinting = __instance.IsSprintEnabled;
                 PlayerProperties.enviroType = __instance.Environment;
                 Plugin.IsInInventory = __instance.IsInventoryOpened;
 
                 tick += Time.deltaTime;
 
-                if (!Utils.IsInHideout() && tick >= 10f && Plugin.HealthEffects.Value) 
+                if (!Utils.IsInHideout() && tick >= 10f && Plugin.HealthEffects.Value)
                 {
                     RealismHealthController.PlayerInjuryStateCheck(__instance, Logger);
                 }
@@ -97,7 +96,7 @@ namespace RealismMod
                     }
 
                     float remainStamPercent = __instance.Physical.HandsStamina.Current / __instance.Physical.HandsStamina.TotalCapacity;
-                    PlayerProperties.RemainingArmStamPercentage = 1f - ((1f - remainStamPercent) / 3.5f);
+                    PlayerProperties.RemainingArmStamPercentage = 1f - (1f - remainStamPercent) / 3.5f;
                 }
                 else if (Plugin.EnableStanceStamChanges.Value == true)
                 {

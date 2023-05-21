@@ -225,15 +225,12 @@ namespace RealismMod
             MethodInfo method_45 = AccessTools.Method(typeof(ActiveHealthControllerClass), "method_45");
             MethodInfo method_38 = AccessTools.Method(typeof(ActiveHealthControllerClass), "method_38");
 
-            if (!bodyPartStateWrapper.IsDestroyed) 
+            if (!bodyPartStateWrapper.IsDestroyed)  
             {
-                Logger.LogWarning("body part not destroyed");
-                __result = true;
+                __result = false;
                 return false;
             }
 
-            ValueStruct hp = __instance.GetBodyPartHealth(bodyPart);
-            float currentHp = hp.Current;
             HealthValue health = bodyPartStateWrapper.Health;
             bodyPartStateWrapper.IsDestroyed = false;
             healthPenalty += (1f - healthPenalty) * skills.SurgeryReducePenalty;
@@ -308,18 +305,22 @@ namespace RealismMod
             return typeof(ActiveHealthControllerClass).GetMethod("ApplyDamage", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static EDamageType[] acceptedDamageTypes = { EDamageType.HeavyBleeding, EDamageType.LightBleeding, EDamageType.Fall, EDamageType.Barbed, EDamageType.Blunt };
+        private static EDamageType[] acceptedDamageTypes = { EDamageType.HeavyBleeding, EDamageType.LightBleeding, EDamageType.Fall, EDamageType.Barbed, EDamageType.Dehydration, EDamageType.Exhaustion };
 
         [PatchPostfix]
         private static void PatchPostfix(ActiveHealthControllerClass __instance, EBodyPart bodyPart, float damage, DamageInfo damageInfo)
         {
             if (__instance.Player.IsYourPlayer)
             {
-                Logger.LogWarning("=========");
-                Logger.LogWarning("part = " + bodyPart);
-                Logger.LogWarning("type = " + damageInfo.DamageType);
-                Logger.LogWarning("damage = " + damage);
-                Logger.LogWarning("=========");
+                if (Plugin.EnableLogging.Value) 
+                {
+                    Logger.LogWarning("=========");
+                    Logger.LogWarning("part = " + bodyPart);
+                    Logger.LogWarning("type = " + damageInfo.DamageType);
+                    Logger.LogWarning("damage = " + damage);
+                    Logger.LogWarning("=========");
+                }
+        
 
                 EDamageType damageType = damageInfo.DamageType;
 
@@ -338,7 +339,6 @@ namespace RealismMod
                     if (damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding || damageType == EDamageType.Barbed)
                     {
                         DamageTracker.AddDamage(damageType, bodyPart, damage);
-                        Logger.LogWarning("total bleed damage = " + DamageTracker.TotalHeavyBleedDamage);
                     }
                 }
             }
@@ -379,7 +379,7 @@ namespace RealismMod
             if (Plugin.TrnqtEffect.Value && hasHeavyBleed && canHealHBleed)
             {
                 NotificationManagerClass.DisplayMessageNotification("Heavy Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
-                float hpToRestore = Mathf.Min(DamageTracker.TotalHeavyBleedDamage, 25f);
+                float hpToRestore = Mathf.Min(DamageTracker.TotalHeavyBleedDamage, 35f);
 
                 if ((hBleedHealType == "combo" || hBleedHealType == "trnqt") && !isNotLimb)
                 {
@@ -440,7 +440,7 @@ namespace RealismMod
             {
                 NotificationManagerClass.DisplayMessageNotification("Fracture On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
 
-                HealthRegenEffect regenEffect = new HealthRegenEffect(1f, null, bodyPart, player, meds.HealthEffectsComponent.UseTime, 10f);
+                HealthRegenEffect regenEffect = new HealthRegenEffect(1f, null, bodyPart, player, meds.HealthEffectsComponent.UseTime, 12f);
                 RealismHealthController.AddCustomEffect(regenEffect, false);
             }
         }
@@ -521,6 +521,38 @@ namespace RealismMod
                         bool isNotLimb = false;
 
                         RealismHealthController.GetBodyPartType(part, ref isNotLimb, ref isHead, ref isBody);
+
+                        float currentHp = __instance.ActiveHealthController.GetBodyPartHealth(bodyPart).Current;
+                        float maxHp = __instance.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;
+
+                        if (medType == "surg" && ((isBody && !hasBodyGear) || (isHead && !hasHeadGear) || !isNotLimb))
+                        {
+                            Logger.LogWarning("part " + part);
+                            Logger.LogWarning("isBody " + isBody);
+                            Logger.LogWarning("hasBodyGear " + hasBodyGear);
+                            Logger.LogWarning("isHead " + isHead);
+                            Logger.LogWarning("hasHeadGear " + hasHeadGear);
+                            Logger.LogWarning("isNotLimb " + isNotLimb);
+
+                            if (currentHp == 0)
+                            {
+                                if (Plugin.EnableLogging.Value)
+                                {
+                                    Logger.LogWarning("Part " + part + " is 0 HP, choosing " + part);
+                                }
+                                bodyPart = part;
+                                break;
+                            }
+                            if (currentHp < maxHp)
+                            {
+                                if (Plugin.EnableLogging.Value)
+                                {
+                                    Logger.LogWarning("Part " + part + " is has HP lower than max, choosing " + part);
+                                }
+                                bodyPart = part;
+                                break;
+                            }
+                        }
 
                         foreach (IEffect effect in effects)
                         {
