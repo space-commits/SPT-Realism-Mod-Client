@@ -74,8 +74,8 @@ namespace RealismMod
                 if (weaponDurability >= Plugin.DuraMalfThreshold.Value)
                 {
 
-                    magMalfChance *= 0.5f;
-                    weaponMalfChance *= 0.5f;
+                    magMalfChance *= 0.25f;
+                    weaponMalfChance *= 0.25f;
                 }
                 if (weaponDurability >= 70)
                 {

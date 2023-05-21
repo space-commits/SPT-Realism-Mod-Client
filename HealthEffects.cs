@@ -145,6 +145,9 @@ namespace RealismMod
 
         public void Tick()
         {
+            float currentHp = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
+            float maxHp = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Maximum;
+
             if (HpRegened < HpRegenLimit)
             {
                 if (Delay <= 0f)
@@ -157,7 +160,8 @@ namespace RealismMod
                     HpRegened += HpPerTick;
                 }
             }
-            else 
+
+            if(HpRegened >= HpRegenLimit || (currentHp >= maxHp))
             {
                 Duration = 0;
             }
@@ -169,8 +173,8 @@ namespace RealismMod
     {
         protected override void Started()
         {
-            this.HpPerTick = base.Strength;
-            this.SetHealthRatesPerSecond(this.HpPerTick, 0f, 0f, 0f);
+            this.hpPerTick = base.Strength;
+            this.SetHealthRatesPerSecond(this.hpPerTick, 0f, 0f, 0f);
             this.bodyPart = base.BodyPart;
         }
 
@@ -182,10 +186,10 @@ namespace RealismMod
                 return;
             }
             this.time -= 3f;
-            base.HealthController.ChangeHealth(bodyPart, this.HpPerTick, GClass2147.Existence);
+            base.HealthController.ChangeHealth(bodyPart, this.hpPerTick, GClass2147.Existence);
         }
 
-        private float HpPerTick;
+        private float hpPerTick;
 
         private float time;
 

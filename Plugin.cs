@@ -644,6 +644,7 @@ namespace RealismMod
                 new HeadsetConstructorPatch().Enable();
                 new AmmoDuraBurnDisplayPatch().Enable();
                 new AmmoMalfChanceDisplayPatch().Enable();
+                new MagazineMalfChanceDisplayPatch().Enable();
                 new BarrelModClassPatch().Enable();
 
                 if (Plugin.IncreaseCOI.Value == true)
@@ -745,6 +746,7 @@ namespace RealismMod
                 new StamRegenRatePatch().Enable();
                 new MedkitConstructorPatch().Enable();
                 new HCApplyDamagePatch().Enable();
+                new RestoreBodyPartPatch().Enable();
                 //these patches weren't working great but keeping for future reference
                 /*                if (HealthSpeedEffects.Value) 
                                 {

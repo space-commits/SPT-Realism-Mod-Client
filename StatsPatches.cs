@@ -15,9 +15,6 @@ using System.Linq;
 
 namespace RealismMod
 {
-
- 
-
     public class SingleFireRatePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

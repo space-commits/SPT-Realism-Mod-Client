@@ -186,33 +186,62 @@ namespace RealismMod
         }
     }
 
+
     public class RestoreBodyPartPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(ActiveHealthControllerClass).GetMethod("RestoreBodyPart", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(ActiveHealthControllerClass).GetMethod("RestoreBodyPart", BindingFlags.Instance | BindingFlags.Public);
 
         }
+
+        private static BodyPartStateWrapper GetBodyPartStateWrapper(ActiveHealthControllerClass instance, EBodyPart bodyPart)
+        {
+
+            PropertyInfo bodyPartStateProperty = typeof(ActiveHealthControllerClass).GetProperty("IReadOnlyDictionary_0", BindingFlags.Instance | BindingFlags.NonPublic);
+            var bodyPartStateDict = (IDictionary)bodyPartStateProperty.GetMethod.Invoke(instance, null);
+            
+            object bodyPartStateInstance;
+            if (bodyPartStateDict.Contains(bodyPart))
+            {
+                bodyPartStateInstance = bodyPartStateDict[bodyPart];
+            }
+            else
+            {
+                Logger.LogWarning("=======Realism Mod: FAILED TO GET BODYPARTSTATE INSTANCE=========");
+                return null;
+            }
+
+            return new BodyPartStateWrapper(bodyPartStateInstance);
+        }
+
         [PatchPrefix]
         private static bool Prefix(ref ActiveHealthControllerClass __instance, EBodyPart bodyPart, float healthPenalty, ref bool __result)
         {
+
+            BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);
+            SkillsClass skills = (SkillsClass)AccessTools.Field(typeof(ActiveHealthControllerClass), "gclass1680_0").GetValue(__instance);
+            Action<EBodyPart, ValueStruct> actionStruct = (Action<EBodyPart, ValueStruct>)AccessTools.Field(typeof(ActiveHealthControllerClass), "action_15").GetValue(__instance);
+            MethodInfo method_45 = AccessTools.Method(typeof(ActiveHealthControllerClass), "method_45");
+            MethodInfo method_38 = AccessTools.Method(typeof(ActiveHealthControllerClass), "method_38");
+
+            if (!bodyPartStateWrapper.IsDestroyed) 
+            {
+                Logger.LogWarning("body part not destroyed");
+                __result = true;
+                return false;
+            }
+
             ValueStruct hp = __instance.GetBodyPartHealth(bodyPart);
             float currentHp = hp.Current;
+            HealthValue health = bodyPartStateWrapper.Health;
+            bodyPartStateWrapper.IsDestroyed = false;
+            healthPenalty += (1f - healthPenalty) * skills.SurgeryReducePenalty;
+            bodyPartStateWrapper.Health = new HealthValue(1f, Mathf.Max(1f, Mathf.Ceil(bodyPartStateWrapper.Health.Maximum * healthPenalty)), 0f);
+            method_45.Invoke(__instance, new object[] { bodyPart, EDamageType.Medicine });
+            method_38.Invoke(__instance, new object[] { bodyPart});
 
-
-            ///////////////////////////////
-            GClass2104<ActiveHealthControllerClass.GClass2103>.BodyPartState bodyPartState = base.IReadOnlyDictionary_0[bodyPart];
-            if (!bodyPartState.IsDestroyed)
-            {
-                __result = true;
-            }
-            HealthValue health = bodyPartState.Health;
-            bodyPartState.IsDestroyed = false;
-            healthPenalty += (1f - healthPenalty) * __instance.gclass1680_0.SurgeryReducePenalty;
-            bodyPartState.Health = new HealthValue(1f, Mathf.Max(1f, Mathf.Ceil(bodyPartState.Health.Maximum * healthPenalty)), 0f);
-            __instance.method_45(bodyPart, EDamageType.Medicine);
-            __instance.method_38(bodyPart);
-            Action<EBodyPart, ValueStruct> action = __instance.action_15;
+            Action<EBodyPart, ValueStruct> action = actionStruct;
             if (action != null)
             {
                 action(bodyPart, health.CurrentAndMaximum);
@@ -284,7 +313,6 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(ActiveHealthControllerClass __instance, EBodyPart bodyPart, float damage, DamageInfo damageInfo)
         {
-            Logger.LogWarning("ApplyDamage");
             if (__instance.Player.IsYourPlayer)
             {
                 Logger.LogWarning("=========");
@@ -292,26 +320,26 @@ namespace RealismMod
                 Logger.LogWarning("type = " + damageInfo.DamageType);
                 Logger.LogWarning("damage = " + damage);
                 Logger.LogWarning("=========");
-            }
 
-            EDamageType damageType = damageInfo.DamageType;
+                EDamageType damageType = damageInfo.DamageType;
 
-            if (acceptedDamageTypes.Contains(damageType))
-            {
-                if ((damageType == EDamageType.Fall && damage <= 15f))
+                if (acceptedDamageTypes.Contains(damageType))
                 {
-                    DamageTracker.TotalFallDamage = 0f;
-                    DamageTracker.AddDamage(damageType, bodyPart, damage);
-                }
-                if (damageType == EDamageType.Blunt && damage <= 10f)
-                {
-                    DamageTracker.TotalBluntDamage = 0f;
-                    DamageTracker.AddDamage(damageType, bodyPart, damage);
-                }
-                if (damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding || damageType == EDamageType.Barbed)
-                {
-                    DamageTracker.AddDamage(damageType, bodyPart, damage);
-                    Logger.LogWarning("total bleed damage = " + DamageTracker.TotalHeavyBleedDamage);
+                    if ((damageType == EDamageType.Fall && damage <= 15f))
+                    {
+                        DamageTracker.TotalFallDamage = 0f;
+                        DamageTracker.AddDamage(damageType, bodyPart, damage);
+                    }
+                    if (damageType == EDamageType.Blunt && damage <= 10f)
+                    {
+                        DamageTracker.TotalBluntDamage = 0f;
+                        DamageTracker.AddDamage(damageType, bodyPart, damage);
+                    }
+                    if (damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding || damageType == EDamageType.Barbed)
+                    {
+                        DamageTracker.AddDamage(damageType, bodyPart, damage);
+                        Logger.LogWarning("total bleed damage = " + DamageTracker.TotalHeavyBleedDamage);
+                    }
                 }
             }
         }

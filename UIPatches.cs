@@ -144,43 +144,97 @@ namespace RealismMod
 
     public class AmmoMalfChanceDisplayPatch : ModulePatch
     {
+   
         protected override MethodBase GetTargetMethod()
         {
             return typeof(AmmoTemplate).GetMethod("method_12", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
+        private static string[] malfChancesKeys = new string[]
+        {
+            "Malfunction/NoneChance",
+            "Malfunction/VeryLowChance",
+            "Malfunction/LowChance",
+            "Malfunction/MediumChance",
+            "Malfunction/HighChance",
+            "Malfunction/VeryHighChance"
+        };
 
         [PatchPrefix]
         private static bool Prefix(AmmoTemplate __instance, ref string __result)
         {
             float malfChance = __instance.MalfMisfireChance;
-
-            Logger.LogWarning("malfChance " + malfChance);
-
+            string text = "";
             switch (malfChance)
             {
                 case <= 0f:
-                    __result = "NONE";
+                    text = malfChancesKeys[0];
                     break;
                 case <= 0.15f:
-                    __result = "VERY LOW";
+                    text = malfChancesKeys[1];
                     break;
-                case <= 0.25f:
-                    __result = "LOW";
+                case <= 0.3f:
+                    text = malfChancesKeys[2];
                     break;
-                case <= 0.45f:
-                    __result = "MODERATE";
+                case <= 0.6f:
+                    text = malfChancesKeys[3];
                     break;
-                case <= 0.65f:
-                    __result = "SIGNIFICANT";
+                case <= 1.2f:
+                    text = malfChancesKeys[4];
                     break;
-                case <= 1.1f:
-                    __result = "HIGH";
-                    break;
-                case <= 10:
-                    __result = "VERY HIGH";
+                case > 1.2f:
+                    text = malfChancesKeys[5];
                     break;
             }
+            __result = text.Localized(null);
+            return false;
+        }
+    }
+
+    public class MagazineMalfChanceDisplayPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(MagazineClass).GetMethod("method_39", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        private static string[] malfChancesKeys = new string[]
+        {
+        "Malfunction/NoneChance",
+        "Malfunction/VeryLowChance",
+        "Malfunction/LowChance",
+        "Malfunction/MediumChance",
+        "Malfunction/HighChance",
+        "Malfunction/VeryHighChance"
+        };
+
+        [PatchPrefix] 
+        private static bool Prefix(MagazineClass __instance, ref string __result)
+        {
+            float malfChance = __instance.MalfunctionChance;
+            string text = "";
+            switch (malfChance)
+            {
+                case <= 0f:
+                    text = malfChancesKeys[0];
+                    break;
+                case <= 0.05f:
+                    text = malfChancesKeys[1];
+                    break;
+                case <= 0.2f:
+                    text = malfChancesKeys[2];
+                    break;
+                case <= 0.6f:
+                    text = malfChancesKeys[3];
+                    break;
+                case <= 1.2f:
+                    text = malfChancesKeys[4];
+                    break;
+                case > 1.2f:
+                    text = malfChancesKeys[5];
+                    break;
+            }
+            __result = text.Localized(null);
             return false;
         }
     }
@@ -197,8 +251,6 @@ namespace RealismMod
         private static bool Prefix(AmmoTemplate __instance, ref string __result)
         {
             float duraBurn = __instance.DurabilityBurnModificator - 1f;
-
-            Logger.LogWarning("duraBurn " + duraBurn);
 
             switch (duraBurn) 
             {

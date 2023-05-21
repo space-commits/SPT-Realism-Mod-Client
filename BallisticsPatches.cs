@@ -89,8 +89,8 @@ namespace RealismMod
         public const float Spine = 80f;
         public const float Heart = 120f;
         public const float Calf = 0.9f;
-        public const float Forearm = 0.7f;
-        public const float Thigh = 1.35f;
+        public const float Forearm = 0.65f;
+        public const float Thigh = 1.3f;
         public const float UpperArm = 1.35f;
         public const float AZone = 2f;
         public const float CZone = 1f;
