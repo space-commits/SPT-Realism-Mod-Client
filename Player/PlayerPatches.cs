@@ -14,9 +14,32 @@ using UnityEngine;
 
 namespace RealismMod
 {
+    public class SyncWithCharacterSkillsPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Player.FirearmController).GetMethod("SyncWithCharacterSkills", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(ref EFT.Player.FirearmController __instance)
+        {
+            Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
+            if (player.IsYourPlayer == true)
+            {
+                SkillsClass.GClass1681 skillsClass = (SkillsClass.GClass1681)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1681_0").GetValue(__instance);
+                PlayerProperties.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
+                PlayerProperties.ReloadSkillMulti = Mathf.Max(1, ((skillsClass.ReloadSpeed - 1f) * 0.5f) + 1f);
+                PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;
+                PlayerProperties.WeaponSkillErgo = skillsClass.DeltaErgonomics;
+                PlayerProperties.AimSkillADSBuff = skillsClass.AimSpeed;
+            }
+        }
+    }
+
+
     public class PlayerInitPatch : ModulePatch
     {
-
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Player).GetMethod("Init", BindingFlags.Instance | BindingFlags.NonPublic);

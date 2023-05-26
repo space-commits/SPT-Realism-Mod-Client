@@ -326,21 +326,30 @@ namespace RealismMod
 
                 if (acceptedDamageTypes.Contains(damageType))
                 {
+                    float vitalitySkill =__instance.Player.Skills.VitalityBuffSurviobilityInc;
+                    float delay = (float)Math.Round(15f * (1f - vitalitySkill), 2);
+                    float tickRate = (float)Math.Round(0.22f * (1f + vitalitySkill), 2);
+           
                     if ((damageType == EDamageType.Fall && damage <= 12f))
                     {
-                        HealthRegenEffect regenEffect = new HealthRegenEffect(1f, null, bodyPart, __instance.Player, 15f, damage, damageType);
+                        HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, bodyPart, __instance.Player, delay, damage, damageType);
                         RealismHealthController.AddCustomEffect(regenEffect, false);
                     }
                     if (damageType == EDamageType.Barbed)
                     {
-                        HealthRegenEffect regenEffect = new HealthRegenEffect(1f, null, bodyPart, __instance.Player, 15f, damage, damageType);
+                        HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
                         RealismHealthController.AddCustomEffect(regenEffect, true);
+                    }
+                    if (damageType == EDamageType.Blunt && damage <= 4f)
+                    {
+                        HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
+                        RealismHealthController.AddCustomEffect(regenEffect, false);
                     }
                     if (damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding)
                     {
                         DamageTracker.UpdateDamage(damageType, bodyPart, damage);
                     }
-                    if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= 18f) || (damageType == EDamageType.Blunt && damage >= 10f)) 
+                    if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= 16f) || (damageType == EDamageType.Blunt && damage >= 10f)) 
                     {
                         RealismHealthController.RemoveEffectsOfType(EHealthEffectType.HealthRegen);
                     }

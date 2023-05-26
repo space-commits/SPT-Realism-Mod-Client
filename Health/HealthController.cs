@@ -397,97 +397,106 @@ namespace RealismMod
         }
 
 
-        public static void RestoreHPArossBody(Player player, float hpToRestore, float delay, EDamageType damageType)
+        public static void RestoreHPArossBody(Player player, float hpToRestore, float delay, EDamageType damageType, float vitalitySkill)
         {
             hpToRestore = Mathf.RoundToInt((hpToRestore) / RealismHealthController.BodyParts.Length);
+            float tickRate = (float)Math.Round(0.85f * (1f + vitalitySkill), 2);
 
             foreach (EBodyPart part in RealismHealthController.BodyParts)
             {
-                HealthRegenEffect regenEffect = new HealthRegenEffect(1f, null, part, player, delay, hpToRestore, damageType);
+                HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, part, player, delay, hpToRestore, damageType);
                 RealismHealthController.AddCustomEffect(regenEffect, false);
             }
         }
 
-        public static void TrnqtRestoreHPArossBody(Player player, float hpToRestore, float delay, EBodyPart bodyPart, EDamageType damageType)
+        public static void TrnqtRestoreHPArossBody(Player player, float hpToRestore, float delay, EBodyPart bodyPart, EDamageType damageType, float vitalitySkill)
         {
             hpToRestore = Mathf.RoundToInt((hpToRestore) / (RealismHealthController.BodyParts.Length - 1));
+            float tickRate = (float)Math.Round(0.85f * (1f + vitalitySkill), 2);
 
             foreach (EBodyPart part in RealismHealthController.BodyParts)
             {
                 if (part != bodyPart)
                 {
-                    HealthRegenEffect regenEffect = new HealthRegenEffect(1f, null, part, player, delay, hpToRestore, damageType);
+                    HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, part, player, delay, hpToRestore, damageType);
                     RealismHealthController.AddCustomEffect(regenEffect, false);
                 }
             }
         }
 
-        private static async Task handleHeavyBleedHeal(string medType, MedsClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool isNotLimb)
+        private static async Task handleHeavyBleedHeal(string medType, MedsClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool isNotLimb, float vitalitySkill)
         {
             float delay = meds.HealthEffectsComponent.UseTime;
             await Task.Delay(TimeSpan.FromSeconds(delay));
 
             NotificationManagerClass.DisplayMessageNotification("Heavy Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
+            
+            float trnqtTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f - vitalitySkill), 2);
             float hpToRestore = Mathf.Min(DamageTracker.TotalHeavyBleedDamage, 35f);
 
             if ((hBleedHealType == "combo" || hBleedHealType == "trnqt") && !isNotLimb)
             {
                 NotificationManagerClass.DisplayWarningNotification("Tourniquet Applied On " + bodyPart + ", You Are Losing Health On This Limb. Use A Surgery Kit To Remove It.", EFT.Communications.ENotificationDurationType.Long);
 
-                TourniquetEffect trnqt = new TourniquetEffect(MedProperties.HpPerTick(meds), null, bodyPart, player, 0f);
+                TourniquetEffect trnqt = new TourniquetEffect(trnqtTickRate, null, bodyPart, player, 0f);
                 RealismHealthController.AddCustomEffect(trnqt, false);
 
                 if (DamageTracker.TotalHeavyBleedDamage > 0f)
                 {
-                    RealismHealthController.TrnqtRestoreHPArossBody(player, hpToRestore, 0f, bodyPart, EDamageType.HeavyBleeding);
+                    RealismHealthController.TrnqtRestoreHPArossBody(player, hpToRestore, 0f, bodyPart, EDamageType.HeavyBleeding, vitalitySkill);
                 }
             }
             else if (DamageTracker.TotalHeavyBleedDamage > 0f)
             {
-                RealismHealthController.RestoreHPArossBody(player, hpToRestore, 0f, EDamageType.HeavyBleeding);
+                RealismHealthController.RestoreHPArossBody(player, hpToRestore, 0f, EDamageType.HeavyBleeding, vitalitySkill);
             }
             DamageTracker.TotalHeavyBleedDamage = Mathf.Max(DamageTracker.TotalHeavyBleedDamage - hpToRestore, 0f);
         }
 
-        private static async Task handleLightBleedHeal(string medType, MedsClass meds, EBodyPart bodyPart, Player player, bool isNotLimb)
+        private static async Task handleLightBleedHeal(string medType, MedsClass meds, EBodyPart bodyPart, Player player, bool isNotLimb, float vitalitySkill)
         {
             float delay = meds.HealthEffectsComponent.UseTime;
             await Task.Delay(TimeSpan.FromSeconds(delay));
 
             NotificationManagerClass.DisplayMessageNotification("Light Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
+
+            float trnqtTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f - vitalitySkill), 2);
             float hpToRestore = Mathf.Min(DamageTracker.TotalLightBleedDamage, 35f);
 
             if (medType == "trnqt" && !isNotLimb)
             {
                 NotificationManagerClass.DisplayWarningNotification("Tourniquet Applied On " + bodyPart + ", You Are Losing Health On This Limb. Use A Surgery Kit To Remove It.", EFT.Communications.ENotificationDurationType.Long);
 
-                TourniquetEffect trnqt = new TourniquetEffect(MedProperties.HpPerTick(meds), null, bodyPart, player, 0f);
+                TourniquetEffect trnqt = new TourniquetEffect(trnqtTickRate, null, bodyPart, player, 0f);
                 RealismHealthController.AddCustomEffect(trnqt, false);
+                
                 if (DamageTracker.TotalLightBleedDamage > 0f)
                 {
-                    RealismHealthController.TrnqtRestoreHPArossBody(player, hpToRestore, 0f, bodyPart, EDamageType.LightBleeding);
+                    RealismHealthController.TrnqtRestoreHPArossBody(player, hpToRestore, 0f, bodyPart, EDamageType.LightBleeding, vitalitySkill);
                 }
             }
             else if (DamageTracker.TotalLightBleedDamage > 0f)
             {
-                RealismHealthController.RestoreHPArossBody(player, hpToRestore, 0f, EDamageType.LightBleeding);
+                RealismHealthController.RestoreHPArossBody(player, hpToRestore, 0f, EDamageType.LightBleeding, vitalitySkill);
             }
             DamageTracker.TotalLightBleedDamage = Mathf.Max(DamageTracker.TotalLightBleedDamage - hpToRestore, 0f);
         }
 
-        private static async Task handleSurgery(string medType, MedsClass meds, EBodyPart bodyPart, Player player)
+        private static async Task handleSurgery(string medType, MedsClass meds, EBodyPart bodyPart, Player player, float vitalitySkill)
         {
             float delay = meds.HealthEffectsComponent.UseTime;
             await Task.Delay(TimeSpan.FromSeconds(delay));
 
             NotificationManagerClass.DisplayMessageNotification("Surgery Kit Applied On " + bodyPart + ", Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
 
+            float surgTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f + vitalitySkill), 2);
+
             if (RealismHealthController.HasEffectOfType(typeof(TourniquetEffect), bodyPart))
             {
                 NotificationManagerClass.DisplayMessageNotification("Surgical Kit Used, Removing Tourniquet Effect Present On Limb: " + bodyPart, EFT.Communications.ENotificationDurationType.Long);
             }
 
-            SurgeryEffect surg = new SurgeryEffect(MedProperties.HpPerTick(meds), null, bodyPart, player, 0f);
+            SurgeryEffect surg = new SurgeryEffect(surgTickRate, null, bodyPart, player, 0f);
             RealismHealthController.AddCustomEffect(surg, false);
         }
 
@@ -495,6 +504,8 @@ namespace RealismMod
 
         public static void HandleHealtheffects(string medType, MedsClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool canHealHBleed, bool canHealLBleed, bool canHealFract)
         {
+            float vitalitySkill = player.Skills.VitalityBuffSurviobilityInc;
+
             bool hasHeavyBleed = false;
             bool hasLightBleed = false;
             bool hasFracture = false;
@@ -509,24 +520,25 @@ namespace RealismMod
 
             if (Plugin.TrnqtEffect.Value && hasHeavyBleed && canHealHBleed)
             {
-                handleHeavyBleedHeal(medType, meds, bodyPart, player, hBleedHealType, isNotLimb);
+                handleHeavyBleedHeal(medType, meds, bodyPart, player, hBleedHealType, isNotLimb, vitalitySkill);
             }
 
             if (medType == "surg")
             {
-                handleSurgery(medType, meds, bodyPart, player);
+                handleSurgery(medType, meds, bodyPart, player, vitalitySkill);
             }
 
             if (canHealLBleed && hasLightBleed && !hasHeavyBleed && (medType == "trnqt" && !isNotLimb || medType != "trnqt"))
             {
-                handleLightBleedHeal(medType, meds, bodyPart, player, isNotLimb);
+                handleLightBleedHeal(medType, meds, bodyPart, player, isNotLimb, vitalitySkill);
             }
 
             if (canHealFract && hasFracture && (medType == "splint" || (medType == "medkit" && !hasHeavyBleed && !hasLightBleed)))
             {
                 NotificationManagerClass.DisplayMessageNotification("Fracture On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
-
-                HealthRegenEffect regenEffect = new HealthRegenEffect(1f, null, bodyPart, player, meds.HealthEffectsComponent.UseTime, 12f, EDamageType.Impact);
+                
+                float trnqtTickRate = (float)Math.Round(0.85f * (1f + vitalitySkill), 2);
+                HealthRegenEffect regenEffect = new HealthRegenEffect(0.85f * (1f + vitalitySkill), null, bodyPart, player, meds.HealthEffectsComponent.UseTime, 12f, EDamageType.Impact);
                 RealismHealthController.AddCustomEffect(regenEffect, false);
             }
         }

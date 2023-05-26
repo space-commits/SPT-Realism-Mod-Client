@@ -132,7 +132,7 @@ namespace RealismMod
                 case ENewItemAttributeId.HBleedType:
                     return "HEAVY BLEED HEAL TYPE";
                 case ENewItemAttributeId.LimbHpPerTick:
-                    return "LIMB HP CHANGE PER TICK";
+                    return "TOURNIQUET HP LOSS PER TICK";
                 case ENewItemAttributeId.HpPerTick:
                     return "HP CHANGE PER TICK";
                 case ENewItemAttributeId.RemoveTrnqt:
