@@ -294,7 +294,7 @@ namespace RealismMod
                 Logger.LogWarning("Cancelling Meds");
             }
 
-            RealismHealthController.CancelEffects(Logger);
+            RealismHealthController.CancelEffects();
         }
     }
 
@@ -326,19 +326,23 @@ namespace RealismMod
 
                 if (acceptedDamageTypes.Contains(damageType))
                 {
-                    if ((damageType == EDamageType.Fall && damage <= 15f))
+                    if ((damageType == EDamageType.Fall && damage <= 12f))
                     {
-                        DamageTracker.TotalFallDamage = 0f;
-                        DamageTracker.AddDamage(damageType, bodyPart, damage);
+                        HealthRegenEffect regenEffect = new HealthRegenEffect(1f, null, bodyPart, __instance.Player, 15f, damage, damageType);
+                        RealismHealthController.AddCustomEffect(regenEffect, false);
                     }
-                    if (damageType == EDamageType.Blunt && damage <= 10f)
+                    if (damageType == EDamageType.Barbed)
                     {
-                        DamageTracker.TotalBluntDamage = 0f;
-                        DamageTracker.AddDamage(damageType, bodyPart, damage);
+                        HealthRegenEffect regenEffect = new HealthRegenEffect(1f, null, bodyPart, __instance.Player, 15f, damage, damageType);
+                        RealismHealthController.AddCustomEffect(regenEffect, true);
                     }
-                    if (damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding || damageType == EDamageType.Barbed)
+                    if (damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding)
                     {
-                        DamageTracker.AddDamage(damageType, bodyPart, damage);
+                        DamageTracker.UpdateDamage(damageType, bodyPart, damage);
+                    }
+                    if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= 18f) || (damageType == EDamageType.Blunt && damage >= 10f)) 
+                    {
+                        RealismHealthController.RemoveEffectsOfType(EHealthEffectType.HealthRegen);
                     }
                 }
             }
@@ -352,99 +356,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<GInterface114>), typeof(int), typeof(bool) }, null);
-
         }
-
-        private static void handleHealthEffects(string medType, MedsClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool canHealHBleed, bool canHealLBleed, bool canHealFract)
-        {
-            if (Plugin.EnableLogging.Value)
-            {
-                Logger.LogWarning("Checking if custom effects should be applied");
-            }
-
-            bool hasHeavyBleed = false;
-            bool hasLightBleed = false;
-            bool hasFracture = false;
-
-            IEnumerable<IEffect> effects = RealismHealthController.GetAllEffectsOnLimb(player, bodyPart, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
-
-            bool isHead = false;
-            bool isBody = false;
-            bool isNotLimb = false;
-
-            RealismHealthController.GetBodyPartType(bodyPart, ref isNotLimb, ref isHead, ref isBody);
-
-            MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethod();
-
-            if (Plugin.TrnqtEffect.Value && hasHeavyBleed && canHealHBleed)
-            {
-                NotificationManagerClass.DisplayMessageNotification("Heavy Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
-                float hpToRestore = Mathf.Min(DamageTracker.TotalHeavyBleedDamage, 35f);
-
-                if ((hBleedHealType == "combo" || hBleedHealType == "trnqt") && !isNotLimb)
-                {
-                    NotificationManagerClass.DisplayWarningNotification("Tourniquet Applied On " + bodyPart + ", You Are Losing Health On This Limb. Use A Surgery Kit To Remove It.", EFT.Communications.ENotificationDurationType.Long);
-
-                    TourniquetEffect trnqt = new TourniquetEffect(MedProperties.HpPerTick(meds), null, bodyPart, player, meds.HealthEffectsComponent.UseTime);
-                    RealismHealthController.AddCustomEffect(trnqt, false);
-                    RealismHealthController.TrnqtRestoreHPArossBody(player, hpToRestore, meds.HealthEffectsComponent.UseTime, bodyPart);
-                    if (DamageTracker.TotalHeavyBleedDamage > 0f)
-                    {
-                        RealismHealthController.TrnqtRestoreHPArossBody(player, hpToRestore, meds.HealthEffectsComponent.UseTime, bodyPart);
-                    }
-                }
-                else if (DamageTracker.TotalHeavyBleedDamage > 0f)
-                {
-                    RealismHealthController.RestoreHPArossBody(player, hpToRestore, meds.HealthEffectsComponent.UseTime);
-                }
-                DamageTracker.TotalHeavyBleedDamage = Mathf.Max(DamageTracker.TotalHeavyBleedDamage - hpToRestore, 0f);
-            }
-
-            if (medType == "surg")
-            {
-                NotificationManagerClass.DisplayMessageNotification("Surgery Kit Applied On " + bodyPart + ", Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
-
-                if (RealismHealthController.HasEffectOfType(typeof(TourniquetEffect), bodyPart)) 
-                {
-                    NotificationManagerClass.DisplayMessageNotification("Surgical Kit Used, Removing Any Tourniquet Effect Present On Limb: " + bodyPart, EFT.Communications.ENotificationDurationType.Long);
-                }
-
-                SurgeryEffect surg = new SurgeryEffect(MedProperties.HpPerTick(meds), null, bodyPart, player, meds.HealthEffectsComponent.UseTime);
-                RealismHealthController.AddCustomEffect(surg, false);
-            }
-
-            if (canHealLBleed && hasLightBleed && !hasHeavyBleed && (medType == "trnqt" && !isNotLimb || medType != "trnqt"))
-            {
-                NotificationManagerClass.DisplayMessageNotification("Light Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
-                float hpToRestore = Mathf.Min(DamageTracker.TotalLightBleedDamage, 15f);
-
-                if (medType == "trnqt" && !isNotLimb) 
-                {
-                    NotificationManagerClass.DisplayWarningNotification("Tourniquet Applied On " + bodyPart + ", You Are Losing Health On This Limb. Use A Surgery Kit To Remove It.", EFT.Communications.ENotificationDurationType.Long);
-
-                    TourniquetEffect trnqt = new TourniquetEffect(MedProperties.HpPerTick(meds), null, bodyPart, player, meds.HealthEffectsComponent.UseTime);
-                    RealismHealthController.AddCustomEffect(trnqt, false);
-                    if (DamageTracker.TotalLightBleedDamage > 0f) 
-                    {
-                        RealismHealthController.TrnqtRestoreHPArossBody(player, hpToRestore, meds.HealthEffectsComponent.UseTime, bodyPart);
-                    }
-                }
-                else if (DamageTracker.TotalLightBleedDamage > 0f) 
-                {
-                    RealismHealthController.RestoreHPArossBody(player, hpToRestore, meds.HealthEffectsComponent.UseTime);
-                }
-                DamageTracker.TotalLightBleedDamage = Mathf.Max(DamageTracker.TotalLightBleedDamage - hpToRestore, 0f);
-            }
-
-            if (canHealFract && hasFracture && (medType == "splint" || (medType == "medkit" && !hasHeavyBleed && !hasLightBleed)))
-            {
-                NotificationManagerClass.DisplayMessageNotification("Fracture On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
-
-                HealthRegenEffect regenEffect = new HealthRegenEffect(1f, null, bodyPart, player, meds.HealthEffectsComponent.UseTime, 12f);
-                RealismHealthController.AddCustomEffect(regenEffect, false);
-            }
-        }
-
 
         [PatchPrefix]
         private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
@@ -456,14 +368,6 @@ namespace RealismMod
                 MedsClass med = meds as MedsClass;
                 float medHPRes = med.MedKitComponent.HpResource;
 
-                if (Plugin.EnableLogging.Value)
-                {
-                    Logger.LogWarning("checking if med can proceed");
-                    Logger.LogWarning("bodyPart = " + bodyPart);
-                    Logger.LogWarning("med item to check = " + meds.LocalizedName());
-                    Logger.LogWarning("remaining hp resource = " + medHPRes);
-                }
-
                 string hBleedHealType = MedProperties.HBleedHealType(meds);
 
                 bool canHealFract = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
@@ -472,12 +376,6 @@ namespace RealismMod
 
                 if (bodyPart == EBodyPart.Common)
                 {
-                    if (Plugin.EnableLogging.Value)
-                    {
-                        Logger.LogWarning("Body part is common");
-                    }
-              
-
                     EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
 
                     Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
@@ -527,28 +425,13 @@ namespace RealismMod
 
                         if (medType == "surg" && ((isBody && !hasBodyGear) || (isHead && !hasHeadGear) || !isNotLimb))
                         {
-                            Logger.LogWarning("part " + part);
-                            Logger.LogWarning("isBody " + isBody);
-                            Logger.LogWarning("hasBodyGear " + hasBodyGear);
-                            Logger.LogWarning("isHead " + isHead);
-                            Logger.LogWarning("hasHeadGear " + hasHeadGear);
-                            Logger.LogWarning("isNotLimb " + isNotLimb);
-
                             if (currentHp == 0)
                             {
-                                if (Plugin.EnableLogging.Value)
-                                {
-                                    Logger.LogWarning("Part " + part + " is 0 HP, choosing " + part);
-                                }
                                 bodyPart = part;
                                 break;
                             }
                             if (currentHp < maxHp)
                             {
-                                if (Plugin.EnableLogging.Value)
-                                {
-                                    Logger.LogWarning("Part " + part + " is has HP lower than max, choosing " + part);
-                                }
                                 bodyPart = part;
                                 break;
                             }
@@ -556,60 +439,28 @@ namespace RealismMod
 
                         foreach (IEffect effect in effects)
                         {
-                            if (Plugin.EnableLogging.Value)
-                            {
-                                Logger.LogWarning("==");
-                                Logger.LogWarning("effect type " + effect.Type);
-                                Logger.LogWarning("effect body part " + effect.BodyPart);
-                                Logger.LogWarning("==");
-                            }
-           
-
                             if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
                             {
-                                if (Plugin.EnableLogging.Value)
-                                {
-                                    Logger.LogWarning("Part " + part + " has gear on, skipping");
-                                }
-
                                 continue;
                             }
 
                             if (canHealHBleed && effect.Type == typeof(GInterface191))
                             {
                                 if (!isNotLimb)
-                                {
-                                    if (Plugin.EnableLogging.Value)
-                                    {
-                                        Logger.LogWarning("Limb " + part + " has heavy bleed, choosing " + part);
-                                    }
-                          
+                                {                          
                                     bodyPart = part;
                                     break;
                                 }
                                 if ((isBody || isHead) && hBleedHealType == "trnqt")
                                 {
-                                    if (Plugin.EnableLogging.Value)
-                                    {
-                                        Logger.LogWarning("Part " + part + " has heavy bleed but med is a trnqt, skipping");
-                                    }
                                     NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Heavy Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
 
                                     continue;
                                 }
                                 if ((isBody || isHead) && (hBleedHealType == "clot" || hBleedHealType == "combo" || hBleedHealType == "surg"))
                                 {
-                                    if (Plugin.EnableLogging.Value)
-                                    {
-                                        Logger.LogWarning("Part " + part + " has heavy bleed and this bleed heal type can stop it, choosing " + part);
-                                    }
-
                                     bodyPart = part;
                                     break;
-                                }
-                                if (Plugin.EnableLogging.Value)
-                                {
-                                    Logger.LogWarning("Part " + part + " has heavy bleed and no other checks fired, choosing " + part);
                                 }
 
                                 bodyPart = part;
@@ -619,39 +470,20 @@ namespace RealismMod
                             {
                                 if (!isNotLimb)
                                 {
-                                    if (Plugin.EnableLogging.Value)
-                                    {
-                                        Logger.LogWarning("Limb " + part + " has light bleed, choosing " + part);
-                                    }
-
                                     bodyPart = part;
                                     break;
                                 }
                                 if ((isBody || isHead) && hBleedHealType == "trnqt")
                                 {
-                                    if (Plugin.EnableLogging.Value)
-                                    {
-                                        Logger.LogWarning("Part " + part + " hhas heavy bleed but med is a trnqt, skipping");
-                                    }
-
                                     NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Light Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
 
                                     continue;
                                 }
                                 if ((isBody || isHead) && hasHeavyBleed)
                                 {
-                                    if (Plugin.EnableLogging.Value)
-                                    {
-                                        Logger.LogWarning("Part " + part + " has heavy bleed and a light bleed, skipping");
-                                    }
-
                                     continue;
                                 }
-                                if (Plugin.EnableLogging.Value)
-                                {
-                                    Logger.LogWarning("Part " + part + " has light bleed and no other checks fired, choosing " + part);
-                                }
-
+              
                                 bodyPart = part;
                                 break;
                             }
@@ -659,30 +491,16 @@ namespace RealismMod
                             {
                                 if (!isNotLimb)
                                 {
-                                    if (Plugin.EnableLogging.Value)
-                                    {
-                                        Logger.LogWarning("Limb " + part + " has a fracture, choosing " + part);
-                                    }
-
                                     bodyPart = part;
                                     break;
                                 }
                                 if (isNotLimb)
                                 {
-                                    if (Plugin.EnableLogging.Value)
-                                    {
-                                        Logger.LogWarning("Part " + part + " has fracture which can't be healed, skipping");
-                                    }
-
                                     NotificationManagerClass.DisplayWarningNotification("Splints Can Only Fix Fractures On Limbs", EFT.Communications.ENotificationDurationType.Long);
 
                                     continue;
                                 }
-                                if (Plugin.EnableLogging.Value)
-                                {
-                                    Logger.LogWarning("Part " + part + " has fracture and no other checks fired, choosing " + part);
-                                }
-
+      
                                 bodyPart = part;
                                 break;
                             }
@@ -690,10 +508,6 @@ namespace RealismMod
 
                         if (bodyPart != EBodyPart.Common)
                         {
-                            if (Plugin.EnableLogging.Value)
-                            {
-                                Logger.LogWarning("Common Body Part replaced with " + bodyPart);
-                            }
                             break;
                         }
                     }
@@ -705,12 +519,7 @@ namespace RealismMod
                             return true;
                         }
 
-                        if (Plugin.EnableLogging.Value)
-                        {
-                            Logger.LogWarning("After all checks, body part is still common, canceling heal");
-                        }
-
-                        NotificationManagerClass.DisplayWarningNotification("No Suitable Bodypart Was Found For Healing, Make Sure Gear Isn't Covering The Wound And That You Have The Right Medical Item", EFT.Communications.ENotificationDurationType.Long);
+                        NotificationManagerClass.DisplayWarningNotification("No Suitable Bodypart Was Found For Healing, Gear May Be Covering The Wound.", EFT.Communications.ENotificationDurationType.Long);
                         
                          return false;
                     }
@@ -719,7 +528,7 @@ namespace RealismMod
                 //determine if any effects should be applied based on what is being healed
                 if (bodyPart != EBodyPart.Common)
                 {
-                    handleHealthEffects(medType, meds, bodyPart, __instance, hBleedHealType, canHealHBleed, canHealLBleed, canHealFract);
+                   RealismHealthController.HandleHealtheffects(medType, meds, bodyPart, __instance, hBleedHealType, canHealHBleed, canHealLBleed, canHealFract);
                 }
             }
 

@@ -20,8 +20,6 @@ using static RealismMod.ArmorPatches;
 using static RealismMod.Attributes;
 namespace RealismMod
 {
-
-
     public class ConfigTemplate
     {
         public bool recoil_attachment_overhaul { get; set; }
@@ -303,16 +301,9 @@ namespace RealismMod
 
         public static Weapon CurrentlyShootingWeapon;
 
-        public static Vector3 WeaponStartPosition;
         public static Vector3 WeaponOffsetPosition;
-        public static Vector3 PistolOffsetPostion;
         public static Vector3 PistolTransformNewStartPosition;
-        public static Vector3 WeaponTransformNewStartPosition;
-        public static Vector3 LowReadyTransformTargetPosition;
-        public static Vector3 HighTransformTargetPosition;
         public static Vector3 TransformBaseStartPosition;
-        public static Vector3 ActiveAimTransformTargetPosition;
-        public static Vector3 ShortTransformTargetPosition;
 
         public static bool DidWeaponSwap = false;
         public static bool IsSprinting = false;

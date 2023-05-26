@@ -2,8 +2,10 @@
 using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
+using EFT.InputSystem;
 using EFT.InventoryLogic;
 using HarmonyLib;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -93,6 +95,7 @@ namespace RealismMod
             }
         }
     }
+
 
     public class ToggleHoldingBreathPatch : ModulePatch
     {

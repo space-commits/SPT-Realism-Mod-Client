@@ -126,11 +126,6 @@ namespace RealismMod
 
             if (__instance.IsYourPlayer == true)
             {
-                if (Plugin.EnableLogging.Value) 
-                {
-                    Logger.LogWarning(__result.Item3 ?? BaseBallistic.ESurfaceSound.Concrete);
-                }
-
                 MovementSpeedController.CurrentSurface = __result.Item3 ?? BaseBallistic.ESurfaceSound.Concrete;
             }
         }

@@ -9,6 +9,14 @@ using System.Linq;
 
 namespace RealismMod
 {
+
+    public enum EHealthEffectType 
+    {
+        Surgery,
+        Tourniquet,
+        HealthRegen
+    }
+
     public interface IHealthEffect
     {
         public EBodyPart BodyPart { get; set; }
@@ -17,6 +25,7 @@ namespace RealismMod
         public void Tick();
         public Player Player { get; }
         public float Delay { get; set; }
+        public EHealthEffectType EffectType { get; }
     }
 
     public class TourniquetEffect : IHealthEffect
@@ -27,6 +36,7 @@ namespace RealismMod
         public float HpPerTick { get; }
         public Player Player { get; }
         public float Delay { get; set; }
+        public EHealthEffectType EffectType { get; }
 
         public TourniquetEffect(float hpTick, int? dur, EBodyPart part, Player player, float delay)
         {
@@ -36,6 +46,7 @@ namespace RealismMod
             BodyPart = part;
             Player = player;
             Delay = delay;
+            EffectType = EHealthEffectType.Tourniquet; 
         }
 
         public void Tick()
@@ -74,6 +85,7 @@ namespace RealismMod
         public float HpRegened { get; set; }
         public float Delay { get; set; }
         private bool hasRemovedTrnqt = false;
+        public EHealthEffectType EffectType { get; }
 
         public SurgeryEffect(float hpTick, int? dur, EBodyPart part, Player player, float delay)
         {
@@ -84,6 +96,7 @@ namespace RealismMod
             BodyPart = part;
             Player = player;
             Delay = delay;
+            EffectType = EHealthEffectType.Surgery;
         }
 
         public void Tick()
@@ -130,8 +143,10 @@ namespace RealismMod
         public float HpRegened { get; set; }
         public float HpRegenLimit { get; }
         public float Delay { get; set; }
+        public EDamageType DamageType { get; }
+        public EHealthEffectType EffectType { get; }
 
-        public HealthRegenEffect(float hpTick, int? dur, EBodyPart part, Player player, float delay, float limit)
+        public HealthRegenEffect(float hpTick, int? dur, EBodyPart part, Player player, float delay, float limit, EDamageType damageType)
         {
             TimeExisted = 0;
             HpRegened = 0;
@@ -141,6 +156,8 @@ namespace RealismMod
             BodyPart = part;
             Player = player;
             Delay = delay;
+            DamageType = damageType;
+            EffectType = EHealthEffectType.HealthRegen;    
         }
 
         public void Tick()
@@ -161,7 +178,7 @@ namespace RealismMod
                 }
             }
 
-            if(HpRegened >= HpRegenLimit || (currentHp >= maxHp))
+            if(HpRegened >= HpRegenLimit || (currentHp >= maxHp) || currentHp == 0)
             {
                 Duration = 0;
             }

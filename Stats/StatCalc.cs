@@ -127,7 +127,7 @@ namespace RealismMod
             float stockModifier = weapon.WeapClass != "pistol" && !WeaponProperties.HasShoulderContact ? 0.8f : 1f;
 
             float magSpeedMulti = (magSpeed / 100f) + 1f;
-            float totalReloadSpeed = magSpeedMulti * magWeightFactor * reloadSpeedModiLessMag;
+            float totalReloadSpeed = magSpeedMulti * magWeightFactor * reloadSpeedModiLessMag * stockModifier;
 
             if (reloadFromNoMag == true)
             {

@@ -28,11 +28,11 @@ namespace RealismMod
             Item item = __instance as Item;
 
             float gearReloadSpeed = GearProperties.ReloadSpeedMulti(item);
-            float reloadSpeedPercent = 0;
+            float reloadSpeedPercent = 0f;
 
             reloadSpeedPercent = (float)Math.Round((gearReloadSpeed - 1f) * 100f);
 
-            if (gearReloadSpeed != 1)
+            if (gearReloadSpeed > 0f && gearReloadSpeed != 1f)
             {
                 List<ItemAttributeClass> reloadAtt = item.Attributes;
                 ItemAttributeClass reloadAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.GearReloadSpeed);
