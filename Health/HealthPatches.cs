@@ -307,8 +307,8 @@ namespace RealismMod
 
         private static EDamageType[] acceptedDamageTypes = { EDamageType.HeavyBleeding, EDamageType.LightBleeding, EDamageType.Fall, EDamageType.Barbed, EDamageType.Dehydration, EDamageType.Exhaustion };
 
-        [PatchPostfix]
-        private static void PatchPostfix(ActiveHealthControllerClass __instance, EBodyPart bodyPart, float damage, DamageInfo damageInfo)
+        [PatchPrefix]
+        private static void Prefix(ActiveHealthControllerClass __instance, EBodyPart bodyPart, ref float damage, DamageInfo damageInfo)
         {
             if (__instance.Player.IsYourPlayer)
             {
@@ -320,12 +320,25 @@ namespace RealismMod
                     Logger.LogWarning("damage = " + damage);
                     Logger.LogWarning("=========");
                 }
-        
 
                 EDamageType damageType = damageInfo.DamageType;
 
                 if (acceptedDamageTypes.Contains(damageType))
                 {
+                    float currentHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Current;
+                    float maxHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;
+                    float remainingHp = currentHp / maxHp;  
+                   
+                    if (remainingHp < 0.2f && (damageType == EDamageType.Dehydration || damageType == EDamageType.Exhaustion))
+                    {
+                        damage = 0;
+                    }
+
+                    if (currentHp <= 2f && (bodyPart == EBodyPart.Head || bodyPart == EBodyPart.Chest) && (damageType == EDamageType.LightBleeding))
+                    {
+                        damage = 0;
+                    }
+
                     float vitalitySkill =__instance.Player.Skills.VitalityBuffSurviobilityInc;
                     float delay = (float)Math.Round(15f * (1f - vitalitySkill), 2);
                     float tickRate = (float)Math.Round(0.22f * (1f + vitalitySkill), 2);
@@ -439,11 +452,7 @@ namespace RealismMod
                                 bodyPart = part;
                                 break;
                             }
-                            if (currentHp < maxHp)
-                            {
-                                bodyPart = part;
-                                break;
-                            }
+                            continue;
                         }
 
                         foreach (IEffect effect in effects)

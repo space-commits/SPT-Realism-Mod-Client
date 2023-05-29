@@ -802,55 +802,61 @@ namespace RealismMod
             switch (calibre)
             {
                 case "Caliber9x18PM":
-                    return 2.1f;
+                    return 2.2f;
                 case "Caliber57x28":
                     return 2.4f;
                 case "Caliber46x30":
                     return 2.3f;
                 case "Caliber9x21":
-                    return 2.4f;
+                    return 2.35f;
                 case "Caliber762x25TT":
                     return 2.55f;
                 case "Caliber1143x23ACP":
-                    return 2.2f;
-                case "Caliber9x19PARA":
                     return 2.3f;
+                case "Caliber9x19PARA":
+                    return 2.4f;
                 case "Caliber9x33R":
                     return 3.3f;
+
                 case "Caliber762x35":
-                    return 1.9f;
+                    return 2.3f;
                 case "Caliber9x39":
-                    return 1.8f;
+                    return 2.2f;
+
                 case "Caliber762x39":
-                    return 2.68f;
+                    return 2.6f;
                 case "Caliber545x39":
-                    return 2.7f;
+                    return 2.63f;
                 case "Caliber556x45NATO":
-                    return 2.72f;
+                    return 2.65f;
                 case "Caliber366TKM":
-                    return 2.75f;
+                    return 2.68f;
+
                 case "Caliber762x51":
-                    return 3.3f;
+                    return 2.8f;
                 case "Caliber762x54R":
-                    return 3.3f;
+                    return 2.82f;
                 case "Caliber127x55":
-                    return 4.5f;
+                    return 3.8f;
+
                 case "Caliber86x70":
-                    return 8f;
+                    return 6f;
                 case "Caliber127x108":
-                    return 8f;
+                    return 6f;
+
                 case "Caliber23x75":
-                    return 4.5f;
+                    return 3.35f;
                 case "Caliber12g":
-                    return 4.5f;
+                    return 3.5f;
                 case "Caliber20g":
-                    return 4f;
+                    return 3f;
+
                 case "Caliber30x29":
-                    return 2f;
+                    return 2.4f;
                 case "Caliber40x46":
-                    return 1.5f;
+                    return 2.5f;
                 case "Caliber40x53":
-                    return 1.5f;
+                    return 2.5f;
                 default:
                     return 1f;
             }
