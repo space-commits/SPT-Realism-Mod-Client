@@ -307,6 +307,8 @@ namespace RealismMod
 
         public static float ErgonomicWeight = 1f;
 
+        public static float ErgoFactor = 1f;
+
         public static float ADSDelta = 0f;
 
         public static float TotalRecoilDamping;

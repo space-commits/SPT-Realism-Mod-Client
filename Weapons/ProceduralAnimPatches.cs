@@ -42,7 +42,7 @@ namespace RealismMod
                     Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "valueBlender_0").GetValue(__instance);
 
                     float singleItemTotalWeight = firearmController.Item.GetSingleItemTotalWeight();
-                    float ergoWeight = WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f)); //maybe apply sterngth skill buff, but might be OP
+/*                    float ergoWeightFactor = WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));*/
 
                     float ergoFactor = Mathf.Clamp01(WeaponProperties.TotalErgo / 100f);
                     float baseAimspeed = Mathf.InverseLerp(1f, 65f, WeaponProperties.TotalErgo);
@@ -67,8 +67,8 @@ namespace RealismMod
                         Logger.LogWarning("total ergo = " + WeaponProperties.TotalErgo);
                         Logger.LogWarning("total ergo clamped= " + ergoFactor);
                         Logger.LogWarning("aimSpeed = " + aimSpeed);
-                        Logger.LogWarning("base ergoWeight = " + ergoWeight);
-                        Logger.LogWarning("total ergoWeight = " + WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f)) * PlayerProperties.ErgoDeltaInjuryMulti);
+                        Logger.LogWarning("base ergofactor = " + ergoFactor);
+                        Logger.LogWarning("total ergofactor = " + WeaponProperties.ErgoFactor * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f)) * PlayerProperties.ErgoDeltaInjuryMulti);
                     }
                 }
             }

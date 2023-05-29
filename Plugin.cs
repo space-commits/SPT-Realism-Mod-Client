@@ -295,6 +295,7 @@ namespace RealismMod
         public static ConfigEntry<bool> GearBlocksEat { get; set; }
         public static ConfigEntry<bool> TrnqtEffect { get; set; }
         public static ConfigEntry<bool> HealthEffects { get; set; }
+        public static ConfigEntry<KeyboardShortcut> DropGearKeybind { get; set; }
 
         public static ConfigEntry<bool> EnableMaterialSpeed { get; set; }
         public static ConfigEntry<bool> EnableSlopeSpeed { get; set; }
@@ -841,31 +842,10 @@ namespace RealismMod
  
                 StanceController.StanceState();
 
-                if (Plugin.EnableMedicalOvehaul.Value && ModConfig.med_changes && Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
+                if (Plugin.EnableMedicalOvehaul.Value && ModConfig.med_changes) 
                 {
-                    GameWorld gameWorld = Singleton<GameWorld>.Instance;
-                    if (gameWorld?.AllPlayers.Count > 0)
-                    {
-                        Player player = gameWorld.AllPlayers[0];
-                        RealismHealthController.TestAddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, player, Plugin.AddEffectType.Value);
-                        NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + Plugin.AddEffectType.Value + " To Part " +(EBodyPart)Plugin.AddEffectBodyPart.Value);
-                    }
+                    RealismHealthController.HealthController(healthTick, Logger);
                 }
-
-                if (Plugin.EnableMedicalOvehaul.Value && ModConfig.med_changes && !Utils.IsInHideout())
-                {
-                    healthTick += Time.deltaTime;
-
-                    if (healthTick >= 1f)
-                    {
-                        RealismHealthController.ControllerTick(Logger, Singleton<GameWorld>.Instance.AllPlayers[0]);
-                        healthTick = 0f;
-                    }
-                }
-            }
-            if (Plugin.EnableMedicalOvehaul.Value && ModConfig.med_changes && (Utils.IsInHideout() || !Utils.IsReady))
-            {
-                RealismHealthController.RemoveAllEffects();
             }
         }
 
@@ -893,11 +873,12 @@ namespace RealismMod
             EnableMaterialSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Material Speed Modifier", true, new ConfigDescription("Enables Movement Speed Being Affected By Ground Material (Concrete, Grass, Metal, Glass Etc.)", null, new ConfigurationManagerAttributes { Order = 20 }));
             EnableSlopeSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Slope Speed Modifier", false, new ConfigDescription("Enables Slopes Slowing Down Movement. Can Cause Random Speed Slowdowns In Some Small Spots Due To BSG's Bad Map Geometry.", null, new ConfigurationManagerAttributes { Order = 10 }));
 
-            EnableMedicalOvehaul = Config.Bind<bool>(healthSettings, "Enable Medical Overhaul", false, new ConfigDescription("Enables The Overhaul Of The Health & Medical System.", null, new ConfigurationManagerAttributes { Order = 100 }));
-            TrnqtEffect = Config.Bind<bool>(healthSettings, "Enable Tourniquet Effect", false, new ConfigDescription("Tourniquet Will Drain HP Of The Limb They Are Applied To.", null, new ConfigurationManagerAttributes { Order = 90 }));
-            GearBlocksEat = Config.Bind<bool>(healthSettings, "Gear Blocks Consumption", false, new ConfigDescription("Gear Blocks Eating & Drinking. This Includes Some Masks & NVGs & Faceshields That Are Toggled On.", null, new ConfigurationManagerAttributes { Order = 80 }));
-            GearBlocksHeal = Config.Bind<bool>(healthSettings, "Gear Blocks Healing", false, new ConfigDescription("Gear Blocks Use Of Meds If The Wound Is Covered By It.", null, new ConfigurationManagerAttributes { Order = 70 }));
+            EnableMedicalOvehaul = Config.Bind<bool>(healthSettings, "Enable Medical Overhaul", true, new ConfigDescription("Enables The Overhaul Of The Health & Medical System.", null, new ConfigurationManagerAttributes { Order = 100 }));
+            TrnqtEffect = Config.Bind<bool>(healthSettings, "Enable Tourniquet Effect", true, new ConfigDescription("Tourniquet Will Drain HP Of The Limb They Are Applied To.", null, new ConfigurationManagerAttributes { Order = 90 }));
+            GearBlocksEat = Config.Bind<bool>(healthSettings, "Gear Blocks Consumption", true, new ConfigDescription("Gear Blocks Eating & Drinking. This Includes Some Masks & NVGs & Faceshields That Are Toggled On.", null, new ConfigurationManagerAttributes { Order = 80 }));
+            GearBlocksHeal = Config.Bind<bool>(healthSettings, "Gear Blocks Healing", true, new ConfigDescription("Gear Blocks Use Of Meds If The Wound Is Covered By It.", null, new ConfigurationManagerAttributes { Order = 70 }));
             HealthEffects = Config.Bind<bool>(healthSettings, "Health Effects", true, new ConfigDescription("Remaining HP On Each Body Part, Overall Remaining HP, Remaining Hydration & Energy All Affect The Speed Of Most Player Actions, Movement & Stamina Regen Depending On The Part. HP Remaining Affects Hydration & Energy Loss Rate.", null, new ConfigurationManagerAttributes { Order = 60 }));
+            DropGearKeybind = Config.Bind(healthSettings, "Remove Gear Keybind", new KeyboardShortcut(KeyCode.P), new ConfigDescription("Removes Any Gear That Is Blocking The Healing Of A Wound", null, new ConfigurationManagerAttributes { Order = 50 }));
 
             AddEffectType = Config.Bind<string>(testing, "Effect Type", "HeavyBleeding", new ConfigDescription("HeavyBleeding, LightBleeding, Fracture.", null, new ConfigurationManagerAttributes { Order = 100, IsAdvanced = true }));
             AddEffectBodyPart = Config.Bind<int>(testing, "Body Part Index", 1, new ConfigDescription("Head = 0, Chest = 1, Stomach = 2, Letft Arm, Right Arm, Left Leg, Right Leg, Common (whole body)", null, new ConfigurationManagerAttributes { Order = 120, IsAdvanced = true }));

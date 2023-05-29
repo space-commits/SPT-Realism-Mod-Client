@@ -417,17 +417,17 @@ namespace RealismMod
 
                     foreach (EBodyPart part in RealismHealthController.BodyParts)
                     {
-                        bool hasHeavyBleed = false;
-                        bool hasLightBleed = false;
-                        bool hasFracture = false;
-
-                        IEnumerable<IEffect> effects = RealismHealthController.GetAllEffectsOnLimb(__instance, part, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
-
                         bool isHead = false;
                         bool isBody = false;
                         bool isNotLimb = false;
 
                         RealismHealthController.GetBodyPartType(part, ref isNotLimb, ref isHead, ref isBody);
+
+                        bool hasHeavyBleed = false;
+                        bool hasLightBleed = false;
+                        bool hasFracture = false;
+
+                        IEnumerable<IEffect> effects = RealismHealthController.GetAllEffectsOnBodyPart(__instance, part, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
 
                         float currentHp = __instance.ActiveHealthController.GetBodyPartHealth(bodyPart).Current;
                         float maxHp = __instance.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;

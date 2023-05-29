@@ -113,8 +113,8 @@ namespace RealismMod
         {
             return typeof(Weapon.MalfunctionState).GetMethod("IsKnownMalfType", BindingFlags.Instance | BindingFlags.Public);
         }
-        [PatchPostfix]
-        private static void PatchPostfix(ref bool __result)
+        [PatchPrefix]
+        private static void PatchPrefix(Weapon.MalfunctionState __instance, ref bool __result)
         {
             __result = true;
         }

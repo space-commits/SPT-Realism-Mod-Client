@@ -198,11 +198,11 @@ namespace RealismMod
 
             StatCalc.WeaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref recoilDamping, ref recoilHandDamping, WeaponProperties.InitTotalCOI, WeaponProperties.HasShoulderContact, ref totalCOI, ref totalCOIDelta, __instance.CenterOfImpactBase, currentPureErgo, ref totalPureErgoDelta,  false);
 
-          /*  float ergonomicWeight = StatCalc.ErgoWeightCalc(totalWeight, totalPureErgoDelta, totalTorque, __instance.WeapClass);
-            float ergonomicWeightLessMag = StatCalc.ErgoWeightCalc(weapWeightLessMag, totalPureErgoDelta, totalTorque, __instance.WeapClass);*/
+            float ergonomicWeight = StatCalc.ErgoWeightCalc(totalWeight, totalPureErgoDelta, totalTorque, __instance.WeapClass);
+      /*      float ergonomicWeightLessMag = StatCalc.ErgoWeightCalc(weapWeightLessMag, totalPureErgoDelta, totalTorque, __instance.WeapClass);*/
 
-            float ergonomicWeight = Mathf.Max(1, 80f - totalErgo);; //as an experiment, use total ergo as ergonomicWeight
-            float ergonomicWeightLessMag = Mathf.Max(1, 80f - WeaponProperties.InitTotalErgo);  //as an experiment, use total ergo as ergonomicWeight
+            float ergoFactor = Mathf.Max(1, 80f - totalErgo); //as an experiment, use total ergo as ergonomicWeight
+            float ergoFactorLessMag = Mathf.Max(1, 80f - WeaponProperties.InitTotalErgo);  //as an experiment, use total ergo as ergonomicWeight
 
             Utils.HasRunErgoWeightCalc = true;
 
@@ -213,7 +213,7 @@ namespace RealismMod
             float totalChamberCheckSpeed = 0;
             float totalFixSpeed = 0;
 
-            StatCalc.SpeedStatCalc(__instance, ergonomicWeight, ergonomicWeightLessMag, totalChamberSpeedMod, totalReloadSpeedMod, ref totalReloadSpeedLessMag, ref totalChamberSpeed, ref totalAimMoveSpeedFactor, ref totalFiringChamberSpeed, ref totalChamberCheckSpeed, ref totalFixSpeed);
+            StatCalc.SpeedStatCalc(__instance, ergoFactor, ergoFactorLessMag, totalChamberSpeedMod, totalReloadSpeedMod, ref totalReloadSpeedLessMag, ref totalChamberSpeed, ref totalAimMoveSpeedFactor, ref totalFiringChamberSpeed, ref totalChamberCheckSpeed, ref totalFixSpeed);
 
             WeaponProperties.TotalFixSpeed = totalFixSpeed;
             WeaponProperties.TotalChamberCheckSpeed = totalChamberCheckSpeed;
@@ -231,7 +231,7 @@ namespace RealismMod
             {
                 Logger.LogWarning("Total Ergo = " + totalErgo);
                 Logger.LogWarning("Total Ergo D = " + totalErgoDelta);
-                Logger.LogWarning("Ergo weight = " + ergonomicWeight);
+                Logger.LogWarning("Ergo factor = " + ergoFactor);
                 Logger.LogWarning("Pure Ergo = " + currentPureErgo);
                 Logger.LogWarning("Pure Ergo D = " + totalPureErgoDelta);
                 Logger.LogWarning("Torque = " + totalTorque);
@@ -248,7 +248,8 @@ namespace RealismMod
             WeaponProperties.ErgoDelta = totalErgoDelta;
             WeaponProperties.VRecoilDelta = totalVRecoilDelta;
             WeaponProperties.HRecoilDelta = totalHRecoilDelta;
-            WeaponProperties.ErgonomicWeight = Mathf.Max(1, 80f - totalErgo);  //as an experiment, use total ergo as ergonomicWeight
+            WeaponProperties.ErgoFactor = Mathf.Max(1, 80f - totalErgo);  //as an experiment, use total ergo as ergonomicWeight
+            WeaponProperties.ErgonomicWeight = ergonomicWeight;
             WeaponProperties.TotalRecoilDamping = totalRecoilDamping;
             WeaponProperties.TotalRecoilHandDamping = totalRecoilHandDamping;
             WeaponProperties.COIDelta = totalCOIDelta;
@@ -575,7 +576,7 @@ namespace RealismMod
                 {
                     Logger.LogWarning("===ErgonomicWeight===");
                     Logger.LogWarning("total ergo weight = " + __result);
-                    Logger.LogWarning("base ergo weight = " + WeaponProperties.ErgonomicWeight);
+                    Logger.LogWarning("base ergo weight = " + WeaponProperties.ErgoFactor);
                 }
 
                 return false;
