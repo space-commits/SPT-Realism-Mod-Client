@@ -84,12 +84,12 @@ namespace RealismMod
             float protectionFactor;
 
             LootItemClass headwear = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;
-            GClass2298 headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as GClass2298) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<GClass2298>().FirstOrDefault<GClass2298>() : null);
+            GClass2297 headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as GClass2297) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<GClass2297>().FirstOrDefault<GClass2297>() : null);
 
             if (headset != null)
             {
                 Plugin.HasHeadSet = true;
-                GClass2205 headphone = headset.Template;
+                GClass2204 headphone = headset.Template;
                 protectionFactor = ((headphone.DryVolume / 100f) + 1f) * 1.3f;
             }
             else
@@ -268,8 +268,9 @@ namespace RealismMod
 
         }
         [PatchPrefix]
-        private static bool Prefix(GClass2205 template, BetterAudio __instance)
+        private static bool Prefix(GClass2204 template, BetterAudio __instance)
         {
+            GClass2557.CreateEvent<GClass2547>().Invoke(template);
 
             bool hasHeadsetTemplate = template != null;
             bool isNotHeadset = template?._id == null; //using both bools is redundant now.
@@ -300,6 +301,18 @@ namespace RealismMod
             __instance.Master.SetFloat("CompressorResonance", Plugin.CompressorResonance);
             __instance.Master.SetFloat("CompressorCutoff", hasHeadsetTemplate && !isNotHeadset ? template.CutoffFreq : 245f);
             __instance.Master.SetFloat("CompressorLowpass", Plugin.CompressorLowpass);
+
+            __instance.Master.SetFloat("OcclusionVolume", hasHeadsetTemplate && !isNotHeadset ? template.CompressorAttack : 35f);
+            __instance.Master.SetFloat("CompressorHighFrequenciesGain", template.HighFrequenciesGain);
+
+            //cursed BSG bull shit, best just replicate it
+            float vol;
+            float vol2;
+            __instance.Master.GetFloat("Tinnitus1", out vol);
+            __instance.Master.GetFloat("Tinnitus2", out vol2);
+            __instance.Master.SetFloat("Tinnitus1", vol);
+            __instance.Master.SetFloat("Tinnitus2", vol2);
+
 
             return false;
         }
@@ -340,7 +353,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance, Item weapon, GClass2623 shot)
+        private static void PatchPostfix(Player.FirearmController __instance, Item weapon, GClass2624 shot)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
 

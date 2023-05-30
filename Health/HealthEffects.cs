@@ -186,7 +186,7 @@ namespace RealismMod
     }
 
 
-    public class HealthChange : ActiveHealthControllerClass.GClass2103, IEffect, GInterface185, GInterface200
+    public class HealthChange : ActiveHealthControllerClass.GClass2102, IEffect, GInterface184, GInterface199
     {
         protected override void Started()
         {
@@ -203,7 +203,7 @@ namespace RealismMod
                 return;
             }
             this.time -= 3f;
-            base.HealthController.ChangeHealth(bodyPart, this.hpPerTick, GClass2147.Existence);
+            base.HealthController.ChangeHealth(bodyPart, this.hpPerTick, GClass2146.Existence);
         }
 
         private float hpPerTick;

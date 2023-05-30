@@ -18,6 +18,8 @@ using UnityEngine;
 using UnityEngine.Networking;
 using static RealismMod.ArmorPatches;
 using static RealismMod.Attributes;
+using static RootMotion.FinalIK.AimPoser;
+
 namespace RealismMod
 {
     public class ConfigTemplate
@@ -798,7 +800,8 @@ namespace RealismMod
                             if (Plugin.RealTimeGain.Value < 20)
                             {
                                 Plugin.RealTimeGain.Value += 1f;
-                                Singleton<BetterAudio>.Instance.PlayNonspatial(Plugin.LoadedAudioClips["beep.wav"], BetterAudio.AudioSourceGroupType.Nonspatial, 0, 1f);
+                                Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0,0,0), Plugin.LoadedAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 1.0f, EOcclusionTest.Continuous);
+
                             }
                         }
                         if (Input.GetKeyDown(Plugin.DecGain.Value.MainKey) && Plugin.HasHeadSet)
@@ -807,8 +810,7 @@ namespace RealismMod
                             if (Plugin.RealTimeGain.Value > 0)
                             {
                                 Plugin.RealTimeGain.Value -= 1f;
-                                Singleton<BetterAudio>.Instance.PlayNonspatial(Plugin.LoadedAudioClips["beep.wav"], BetterAudio.AudioSourceGroupType.Nonspatial, 0, 1f);
-
+                                Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), Plugin.LoadedAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 1.0f, EOcclusionTest.Continuous);
                             }
                         }
 

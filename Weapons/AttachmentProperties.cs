@@ -7,155 +7,104 @@ namespace RealismMod
 
         public static string ModType(Item mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return "";
-            }
-            return mod.ConflictingItems[1];
+            return !Utils.NullCheck(mod.ConflictingItems) ? mod.ConflictingItems[1] : "Unclassified";
+
         }
 
         public static float VerticalRecoil(Mod mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return mod.Recoil;
-            }
-            return float.Parse(mod.ConflictingItems[2]);
+            return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[2], out float result) ? result : mod.Recoil;
+
         }
 
         public static float HorizontalRecoil(Mod mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return mod.Recoil;
-            }
-            return float.Parse(mod.ConflictingItems[3]);
+            return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[3], out float result) ? result : mod.Recoil;
+
         }
 
         public static float Dispersion(Mod mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return 0;
-            }
-            return float.Parse(mod.ConflictingItems[4]);
+            return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[4], out float result) ? result : 0f;
+
         }
 
         public static float CameraRecoil(Mod mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return 0;
-            }
-            return float.Parse(mod.ConflictingItems[5]);
+            return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[5], out float result) ? result : 0f;
+
         }
 
         public static float AutoROF(Mod mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return 0;
-            }
-            return float.Parse(mod.ConflictingItems[6]);
+            return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[6], out float result) ? result : 0f;
+
         }
 
         public static float SemiROF(Mod mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return 0;
-            }
-            return float.Parse(mod.ConflictingItems[7]);
+            return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[7], out float result) ? result : 0f;
+
         }
 
         public static float ModMalfunctionChance(Mod mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return 0;
-            }
-            return float.Parse(mod.ConflictingItems[8]);
+            return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[8], out float result) ? result : 0f;
+
         }
 
         public static float ReloadSpeed(Mod mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return 0;
-            }
-            return float.Parse(mod.ConflictingItems[9]);
+            return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[9], out float result) ? result : 0f;
+
         }
 
         public static float AimSpeed(Mod mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return 0;
-            }
-            return float.Parse(mod.ConflictingItems[10]);
+            return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[10], out float result) ? result : 0f;
+
         }
 
         public static float ChamberSpeed(Mod mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return 0;
-            }
-            return float.Parse(mod.ConflictingItems[11]);
+            return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[11], out float result) ? result : 0f;
+
         }
 
         public static float ModConvergence(Mod mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return 0;
-            }
-            return float.Parse(mod.ConflictingItems[12]);
+            return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[12], out float result) ? result : 0f;
+
         }
 
         public static bool CanCylceSubs(Mod mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return false;
-            }
-            return bool.Parse(mod.ConflictingItems[13]);
+            return !Utils.NullCheck(mod.ConflictingItems) && bool.TryParse(mod.ConflictingItems[13], out bool result) ? result : false;
+
         }
 
         public static float RecoilAngle(Mod mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return 0;
-            }
-            return float.Parse(mod.ConflictingItems[14]);
+            return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[14], out float result) ? result : 0f;
+
         }
 
         public static bool StockAllowADS(Mod mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return false;
-            }
-            return bool.Parse(mod.ConflictingItems[15]);
+            return !Utils.NullCheck(mod.ConflictingItems) && bool.TryParse(mod.ConflictingItems[15], out bool result) ? result : false;
+
         }
 
         public static float FixSpeed(Mod mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return 0;
-            }
-            return float.Parse(mod.ConflictingItems[16]);
+            return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[16], out float result) ? result : 0f;
+
         }
 
         public static float ModShotDispersion(Mod mod)
         {
-            if (Utils.NullCheck(mod.ConflictingItems))
-            {
-                return 0;
-            }
-            return float.Parse(mod.ConflictingItems[17]);
+            return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[17], out float result) ? result : 0f;
+
         }
     }
 }
