@@ -10,14 +10,36 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using static EFT.Player;
 
 
 namespace RealismMod
 {
+    public class SyncWithCharacterSkillsPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Player.FirearmController).GetMethod("SyncWithCharacterSkills", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(ref EFT.Player.FirearmController __instance)
+        {
+            Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
+            if (player.IsYourPlayer == true)
+            {
+                SkillsClass.GClass1681 skillsClass = (SkillsClass.GClass1681)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1681_0").GetValue(__instance);
+                PlayerProperties.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
+                PlayerProperties.ReloadSkillMulti = Mathf.Max(1, ((skillsClass.ReloadSpeed - 1f) * 0.5f) + 1f);
+                PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;
+                PlayerProperties.WeaponSkillErgo = skillsClass.DeltaErgonomics;
+                PlayerProperties.AimSkillADSBuff = skillsClass.AimSpeed;
+            }
+        }
+    }
+
+
     public class PlayerInitPatch : ModulePatch
     {
-
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Player).GetMethod("Init", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -66,25 +88,16 @@ namespace RealismMod
             return typeof(Player).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
-        private static float tick = 0f;
-
         [PatchPostfix]
         private static void PatchPostfix(Player __instance)
         {
             if (Utils.IsReady && __instance.IsYourPlayer)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
-               
+
                 Plugin.IsSprinting = __instance.IsSprintEnabled;
                 PlayerProperties.enviroType = __instance.Environment;
                 Plugin.IsInInventory = __instance.IsInventoryOpened;
-
-                tick += Time.deltaTime;
-
-                if (!Utils.IsInHideout() && tick >= 10f && Plugin.HealthSpeedEffects.Value) 
-                {
-                    RealismHealthController.PlayerInjuryStateCheck(__instance, Logger);
-                }
 
                 if (fc != null)
                 {
@@ -97,7 +110,7 @@ namespace RealismMod
                     }
 
                     float remainStamPercent = __instance.Physical.HandsStamina.Current / __instance.Physical.HandsStamina.TotalCapacity;
-                    PlayerProperties.RemainingArmStamPercentage = 1f - ((1f - remainStamPercent) / 3.5f);
+                    PlayerProperties.RemainingArmStamPercentage = 1f - (1f - remainStamPercent) / 3f;
                 }
                 else if (Plugin.EnableStanceStamChanges.Value == true)
                 {

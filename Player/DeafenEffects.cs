@@ -17,6 +17,20 @@ using BepInEx.Logging;
 
 namespace RealismMod
 {
+
+    public class PrismEffectsPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(PrismEffects).GetMethod("OnEnable", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+        [PatchPostfix]
+        private static void PatchPostFix(ref PrismEffects __instance)
+        {
+            if (__instance.gameObject.name == "FPS Camera") Plugin.PrismEffects = __instance;
+        }
+    }
+
     public class VignettePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -120,7 +134,7 @@ namespace RealismMod
 
         public static float VolumeLimit = -30f;
         public static float DistortionLimit = 70f;
-        public static float VignetteDarknessLimit = 12f;
+        public static float VignetteDarknessLimit = 0.3f;
 
         //bot
         public static float BotVolume = 0f;
@@ -134,7 +148,7 @@ namespace RealismMod
 
         public static float GrenadeVolumeLimit = -40f;
         public static float GrenadeDistortionLimit = 50f;
-        public static float GrenadeVignetteDarknessLimit = 10f;
+        public static float GrenadeVignetteDarknessLimit = 0.2f;
 
         public static float GrenadeVolumeDecreaseRate = 0.02f;
         public static float GrenadeDistortionIncreaseRate = 0.5f;
@@ -148,7 +162,7 @@ namespace RealismMod
 
         public static void DoDeafening() 
         {
-            float enviroMulti = PlayerProperties.enviroType == EnvironmentType.Indoor ? 1.2f : 1f;
+            float enviroMulti = PlayerProperties.enviroType == EnvironmentType.Indoor ? 1.2f : 0.9f;
             float deafFactor = AmmoDeafFactor * WeaponDeafFactor * EarProtectionFactor;
             float botDeafFactor = BotDeafFactor * EarProtectionFactor;
             float grenadeDeafFactor = GrenadeDeafFactor * EarProtectionFactor;
@@ -159,7 +173,7 @@ namespace RealismMod
             }
             else if (!valuesAreReset)
             {
-                ReseDeaftValues(deafFactor, ref VignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafReset.Value, VolumeLimit, ref Distortion, Plugin.DistReset.Value, DistortionLimit);
+                ReseDeaftValues(deafFactor, ref VignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafReset.Value, VolumeLimit, ref Distortion, Plugin.DistReset.Value, DistortionLimit, enviroMulti);
             }
 
             if (Plugin.IsBotFiring == true)
@@ -168,7 +182,7 @@ namespace RealismMod
             }
             else if (!valuesAreReset)
             {
-                ReseDeaftValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafReset.Value, VolumeLimit, ref BotDistortion, Plugin.DistReset.Value, DistortionLimit);
+                ReseDeaftValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafReset.Value, VolumeLimit, ref BotDistortion, Plugin.DistReset.Value, DistortionLimit, enviroMulti);
             }
 
             if (Plugin.GrenadeExploded == true)
@@ -177,7 +191,7 @@ namespace RealismMod
             }
             else if (!valuesAreReset)
             {
-                ReseDeaftValues(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessResetRate, GrenadeVignetteDarknessLimit, ref GrenadeVolume, GrenadeVolumeResetRate, GrenadeVolumeLimit, ref GrenadeDistortion, GrenadeDistortionResetRate, GrenadeDistortionLimit);
+                ReseDeaftValues(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessResetRate, GrenadeVignetteDarknessLimit, ref GrenadeVolume, GrenadeVolumeResetRate, GrenadeVolumeLimit, ref GrenadeDistortion, GrenadeDistortionResetRate, GrenadeDistortionLimit, enviroMulti);
             }
 
 
@@ -188,8 +202,9 @@ namespace RealismMod
             //for some reason this prevents the values from being fully reset to 0
             if (totalVolume != 0.0f || totalDistortion != 0.0f || totalVignette != 0.0f)
             {
-                Plugin.Vignette.darkness = totalVignette;
-                Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", totalVolume + Plugin.GunsVolume);
+                Plugin.PrismEffects.vignetteStrength = totalVignette;   
+/*                Plugin.Vignette.darkness = totalVignette;
+*/                Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", totalVolume + Plugin.GunsVolume);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("OcclusionVolume", totalVolume + Plugin.MainVolume);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", totalVolume + Plugin.MainVolume);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", totalVolume + Plugin.AmbientVolume);
@@ -205,32 +220,41 @@ namespace RealismMod
                 }
                 else
                 {
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value * Plugin.GainReduc.Value);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value * Plugin.GainCutoff.Value);
+/*                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", Plugin.AmbientVolume * Plugin.RealTimeGain.Value * Plugin.GainCutoff.Value);
+*/
                 }
                 valuesAreReset = false;
             }
             else
             {
-                if (Plugin.HasHeadSet == true)
+                if (Plugin.HasHeadSet)
                 {
                     Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value);
+                    //WARNING: EAR RAPE
+                    /*Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", Plugin.AmbientVolume * -Plugin.RealTimeGain.Value);*/
+
                 }
-                Plugin.Vignette.enabled = false;
+                Plugin.PrismEffects.useVignette = false;
+         /*       Plugin.Vignette.enabled = false;*/
                 valuesAreReset = true;
             }
         }
 
         private static void ChangeDeafValues(float deafFactor, ref float vigValue, float vigIncRate, float vigLimit, ref float volValue, float volDecRate, float volLimit, ref float distValue, float distIncRate, float distLimit, float enviroMulti)
         {
-            Plugin.Vignette.enabled = true;
-            vigValue = Mathf.Clamp(vigValue + (vigIncRate * deafFactor * enviroMulti), 0.0f, vigLimit * deafFactor * enviroMulti);
+            Plugin.PrismEffects.useVignette = true;
+            /*            Plugin.Vignette.enabled = true;*/
+            float totalVigLimit = Mathf.Min(vigLimit * deafFactor * enviroMulti, 1.5f);
+            vigValue = Mathf.Clamp(vigValue + (vigIncRate * deafFactor * enviroMulti), 0.0f, totalVigLimit);
             volValue = Mathf.Clamp(volValue - (volDecRate * deafFactor * enviroMulti), volLimit, 0.0f);
             distValue = Mathf.Clamp(distValue + (distIncRate * deafFactor), 0.0f, distLimit);
         }
 
-        private static void ReseDeaftValues(float deafFactor, ref float vigValue, float vigResetRate, float vigLimit, ref float volValue, float volResetRate, float volLimit, ref float distValue, float distResetRate, float distLimit)
+        private static void ReseDeaftValues(float deafFactor, ref float vigValue, float vigResetRate, float vigLimit, ref float volValue, float volResetRate, float volLimit, ref float distValue, float distResetRate, float distLimit, float enviroMulti)
         {
-            vigValue = Mathf.Clamp(vigValue - vigResetRate, 0.0f, vigLimit * deafFactor);
+            float totalVigLimit = Mathf.Min(vigLimit * deafFactor * enviroMulti, 1.5f);
+            vigValue = Mathf.Clamp(vigValue - vigResetRate, 0.0f, totalVigLimit);
             volValue = Mathf.Clamp(volValue + volResetRate, volLimit, 0.0f);
             distValue = Mathf.Clamp(distValue - distResetRate, 0.0f, distLimit);
         }
@@ -295,7 +319,7 @@ namespace RealismMod
             {
                 if (mods[i].Slots.Length > 0 && mods[i].Slots[0].ContainedItem != null && Utils.IsSilencer((Mod)mods[i].Slots[0].ContainedItem))
                 {
-                    return 0.75f;
+                    continue;
                 }
                 else
                 {
@@ -307,7 +331,7 @@ namespace RealismMod
 
         private static float CalcAmmoFactor(AmmoTemplate ammTemp)
         {
-            return Math.Min(((ammTemp.ammoRec / 100f) * 2f) + 1f, 2f);
+            return Math.Min((ammTemp.ammoRec / 100f) + 1f, 2f);
         }
 
         private static float CalcVelocityFactor(Weapon weap)
@@ -360,8 +384,8 @@ namespace RealismMod
                         {
                             ammoDeafFactor *= 0.6f;
                         }
-                        float muzzleLoudness = muzzleFactor * calFactor * ammoDeafFactor;
-                        Deafening.BotDeafFactor = muzzleLoudness * ((-distanceFromPlayer / 100f) + 1f) * 1.15f;
+                        float totalBotDeafFactor = muzzleFactor * calFactor * ammoDeafFactor;
+                        Deafening.BotDeafFactor = totalBotDeafFactor * ((-distanceFromPlayer / 100f) + 1f) * 1.15f;
 
                     }
                 }

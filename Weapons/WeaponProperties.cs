@@ -229,7 +229,7 @@ namespace RealismMod
 
         public static float PumpGripReloadBonus = 18f;
 
-        public static float FoldedErgoFactor = 0.8f;
+        public static float FoldedErgoFactor = 1.0f;
 
         public static float FoldedHRecoilFactor = 1.15f;
 
@@ -306,6 +306,8 @@ namespace RealismMod
         public static string Placement = "";
 
         public static float ErgonomicWeight = 1f;
+
+        public static float ErgoFactor = 1f;
 
         public static float ADSDelta = 0f;
 

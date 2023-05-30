@@ -19,6 +19,7 @@ using static EFT.Interactive.BetterPropagationGroups;
 using HarmonyLib.Tools;
 using System.Collections;
 using EFT.Interactive;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace RealismMod
 {
@@ -88,8 +89,8 @@ namespace RealismMod
         public const float Spine = 80f;
         public const float Heart = 120f;
         public const float Calf = 0.9f;
-        public const float Forearm = 0.7f;
-        public const float Thigh = 1.35f;
+        public const float Forearm = 0.65f;
+        public const float Thigh = 1.3f;
         public const float UpperArm = 1.35f;
         public const float AZone = 2f;
         public const float CZone = 1f;
@@ -835,20 +836,21 @@ namespace RealismMod
             return typeof(Player).GetMethod("ApplyDamageInfo", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static float _armorClass;
-        private static float _currentDura;
-        private static float _maxDura;
+        private static float armorClass;
+        private static float currentDura;
+        private static float maxDura;
 
-        private static List<EBodyPart> _bodyParts = new List<EBodyPart> { EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.LeftLeg, EBodyPart.RightLeg, EBodyPart.Head, EBodyPart.Common };
-        private static System.Random _randNum = new System.Random();
+        private static List<EBodyPart> bodyParts = new List<EBodyPart> { EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.LeftLeg, EBodyPart.RightLeg, EBodyPart.Head, EBodyPart.Common, EBodyPart.Common };
+        
+        private static System.Random randNum = new System.Random();
 
         private static List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(10);
 
         private static void SetArmorStats(ArmorComponent armor)
         {
-            _armorClass = armor.ArmorClass * 10f;
-            _currentDura = armor.Repairable.Durability;
-            _maxDura = armor.Repairable.TemplateDurability;
+            armorClass = armor.ArmorClass * 10f;
+            currentDura = armor.Repairable.Durability;
+            maxDura = armor.Repairable.TemplateDurability;
         }
 
         private static float GetBleedFactor(EBodyPart part)
@@ -967,18 +969,18 @@ namespace RealismMod
                         float armorDamageActual = ammo.ArmorDamage * speedFactor;
                         float penPower = damageInfo.PenetrationPower;
 
-                        float duraPercent = _currentDura / _maxDura;
-                        float armorFactor = _armorClass * (Mathf.Min(1f, duraPercent * 2f));
+                        float duraPercent = currentDura / maxDura;
+                        float armorFactor = armorClass * (Mathf.Min(1f, duraPercent * 2f));
                         float penDuraFactoredClass = Mathf.Max(1f, armorFactor - (penPower / 1.8f));
-                        float penFactoredClass = Mathf.Max(1f, _armorClass - (penPower / 1.8f));
+                        float penFactoredClass = Mathf.Max(1f, armorClass - (penPower / 1.8f));
                         float maxPotentialDuraDamage = KE / penDuraFactoredClass;
                         float maxPotentialBluntDamage = KE / penFactoredClass;
 
                         float maxSpallingDamage = isMetalArmor ? maxPotentialBluntDamage - bluntDamage : maxPotentialDuraDamage - bluntDamage;
                         float factoredSpallingDamage = maxSpallingDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction * (isMetalArmor ? (1f - duraPercent) + 1f : 1f);
 
-                        int rnd = Math.Max(1, _randNum.Next(_bodyParts.Count));
-                        float splitSpallingDmg = factoredSpallingDamage / _bodyParts.Count;
+                        int rnd = Math.Max(1, randNum.Next(bodyParts.Count));
+                        float splitSpallingDmg = factoredSpallingDamage / bodyParts.Count;
 
 
                         if (Plugin.EnableBallisticsLogging.Value)
@@ -993,7 +995,7 @@ namespace RealismMod
                             Logger.LogWarning("Split Spalling Dmg " + splitSpallingDmg);
                         }
 
-                        foreach (EBodyPart part in _bodyParts.OrderBy(x => _randNum.Next()).Take(rnd))
+                        foreach (EBodyPart part in bodyParts.OrderBy(x => randNum.Next()).Take(rnd))
                         {
 
                             if (part == EBodyPart.Common)
@@ -1490,6 +1492,7 @@ namespace RealismMod
 
         }
     }
+
     public class ApplyCorpseImpulsePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -1511,7 +1514,7 @@ namespace RealismMod
                 AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[lastDam.SourceId];
                 BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
                 float KE = ((0.5f * ammo.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
-                force = 10f * Mathf.Max(1f, KE / 1000f);
+                force = -Mathf.Max(1f, KE / 1000f);
             }
             else if (lastDam.DamageType == EDamageType.Explosion)
             {
@@ -1519,13 +1522,33 @@ namespace RealismMod
             }
             else 
             {
-                force = 10f;
+                force = 5f;
             }
 
             AccessTools.Field(typeof(Player), "_corpseAppliedForce").SetValue(__instance, force);
             corpse.Ragdoll.ApplyImpulse(lastDam.HitCollider, lastDam.Direction, lastDam.HitPoint, force);
 
             return false;
+        }
+    }
+
+    public class RagdollPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            var result = typeof(RagdollClass).GetMethod("method_8", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            return result;
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(RagdollClass __instance, RigidbodySpawner ___rigidbodySpawner_1)
+        {
+            Logger.LogWarning("mass " + ___rigidbodySpawner_1.Rigidbody.mass);
+            Logger.LogWarning("drag " + ___rigidbodySpawner_1.Rigidbody.mass);
+
+            ___rigidbodySpawner_1.Rigidbody.mass = 100f;
+            return true;
         }
     }
 

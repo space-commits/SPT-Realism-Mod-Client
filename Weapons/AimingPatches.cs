@@ -2,8 +2,10 @@
 using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
+using EFT.InputSystem;
 using EFT.InventoryLogic;
 using HarmonyLib;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -13,8 +15,8 @@ namespace RealismMod
 {
     public static class AimController 
     {
-        private static bool SetCanAds = false;
-        private static bool SetActiveAimADS = false;
+        private static bool HasSetCanAds = false;
+        private static bool HasSetActiveAimADS = false;
         private static bool wasToggled = false;
 
         public static void ADSCheck(Player player, EFT.Player.FirearmController fc, ManualLogSource logger)
@@ -26,38 +28,39 @@ namespace RealismMod
                 NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
                 bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
                 bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
-                if ((Plugin.EnableNVGPatch.Value && nvgIsOn && Plugin.HasOptic) || (Plugin.EnableFSPatch.Value && fsIsON && (!WeaponProperties.WeaponCanFSADS && !GearProperties.AllowsADS(fsComponent.Item)) || (!PlayerProperties.GearAllowsADS && !WeaponProperties.WeaponCanFSADS)))
+                bool gearAllowsADS = Plugin.EnableFSPatch.Value && fsIsON && (!WeaponProperties.WeaponCanFSADS && (!GearProperties.AllowsADS(fsComponent.Item) || !PlayerProperties.GearAllowsADS));
+                if (Plugin.ModConfig.recoil_attachment_overhaul && ((Plugin.EnableNVGPatch.Value && nvgIsOn && Plugin.HasOptic) || gearAllowsADS))
                 {
-                    if (!SetCanAds)
+                    if (!HasSetCanAds)
                     {
                         PlayerProperties.IsAllowedADS = false;
                         player.ProceduralWeaponAnimation.IsAiming = false;
                         AccessTools.Field(typeof(EFT.Player.FirearmController), "_isAiming").SetValue(fc, false);
-                        SetCanAds = true;
+                        HasSetCanAds = true;
                     }
                 }
                 else
                 { 
                     PlayerProperties.IsAllowedADS = true;
-                    SetCanAds = false;
+                    HasSetCanAds = false;
                 }
 
                 if (StanceController.IsActiveAiming && !isAiming)
                 {
-                    if (!SetActiveAimADS)
+                    if (!HasSetActiveAimADS)
                     {
                         PlayerProperties.IsAllowedADS = false;
                         player.ProceduralWeaponAnimation.IsAiming = false;
                         AccessTools.Field(typeof(EFT.Player.FirearmController), "_isAiming").SetValue(fc, false);
                         player.MovementContext.SetAimingSlowdown(true, 0.33f);
-                        SetActiveAimADS = true;
+                        HasSetActiveAimADS = true;
                     }
 
                 }
-                if (!StanceController.IsActiveAiming && SetActiveAimADS)
+                if (!StanceController.IsActiveAiming && HasSetActiveAimADS)
                 {
                     player.MovementContext.SetAimingSlowdown(false, 0.33f);
-                    SetActiveAimADS = false;
+                    HasSetActiveAimADS = false;
                 }
 
                 if (isAiming)
@@ -92,6 +95,7 @@ namespace RealismMod
             }
         }
     }
+
 
     public class ToggleHoldingBreathPatch : ModulePatch
     {

@@ -9,6 +9,7 @@ using EFT.Animals;
 using EFT.InventoryLogic;
 using EFT.UI;
 using Newtonsoft.Json;
+using notGreg.UniformAim;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,13 +20,12 @@ using static RealismMod.ArmorPatches;
 using static RealismMod.Attributes;
 namespace RealismMod
 {
-
-
     public class ConfigTemplate
     {
         public bool recoil_attachment_overhaul { get; set; }
         public bool malf_changes { get; set; }
         public bool realistic_ballistics { get; set; }
+        public bool med_changes { get; set; }
     }
 
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
@@ -80,8 +80,10 @@ namespace RealismMod
         public static ConfigEntry<float> VigReset { get; set; }
         public static ConfigEntry<float> DistRate { get; set; }
         public static ConfigEntry<float> DistReset { get; set; }
-        public static ConfigEntry<float> GainReduc { get; set; }
+        public static ConfigEntry<float> GainCutoff { get; set; }
         public static ConfigEntry<float> RealTimeGain { get; set; }
+        public static ConfigEntry<KeyboardShortcut> IncGain { get; set; }
+        public static ConfigEntry<KeyboardShortcut> DecGain { get; set; }
 
         public static ConfigEntry<KeyboardShortcut> ActiveAimKeybind { get; set; }
         public static ConfigEntry<KeyboardShortcut> LowReadyKeybind { get; set; }
@@ -288,24 +290,21 @@ namespace RealismMod
         public static ConfigEntry<int> AddEffectBodyPart { get; set; }
         public static ConfigEntry<String> AddEffectType { get; set; }
 
-        public static ConfigEntry<bool> EnableHealthOvehaul { get; set; }
+        public static ConfigEntry<bool> EnableMedicalOvehaul { get; set; }
         public static ConfigEntry<bool> GearBlocksHeal { get; set; }
         public static ConfigEntry<bool> GearBlocksEat { get; set; }
         public static ConfigEntry<bool> TrnqtEffect { get; set; }
-        public static ConfigEntry<bool> HealthSpeedEffects { get; set; }
+        public static ConfigEntry<bool> HealthEffects { get; set; }
+        public static ConfigEntry<KeyboardShortcut> DropGearKeybind { get; set; }
+
+        public static ConfigEntry<bool> EnableMaterialSpeed { get; set; }
+        public static ConfigEntry<bool> EnableSlopeSpeed { get; set; }
 
         public static Weapon CurrentlyShootingWeapon;
 
-        public static Vector3 WeaponStartPosition;
         public static Vector3 WeaponOffsetPosition;
-        public static Vector3 PistolOffsetPostion;
         public static Vector3 PistolTransformNewStartPosition;
-        public static Vector3 WeaponTransformNewStartPosition;
-        public static Vector3 LowReadyTransformTargetPosition;
-        public static Vector3 HighTransformTargetPosition;
         public static Vector3 TransformBaseStartPosition;
-        public static Vector3 ActiveAimTransformTargetPosition;
-        public static Vector3 ShortTransformTargetPosition;
 
         public static bool DidWeaponSwap = false;
         public static bool IsSprinting = false;
@@ -369,7 +368,6 @@ namespace RealismMod
         private string ConfigFilePath;
         private string ConfigJson;
         public static ConfigTemplate ModConfig;
-        private bool IsConfigCorrect = true;
 
         public static bool isUniformAimPresent = false;
         public static bool isBridgePresent = false;
@@ -388,10 +386,11 @@ namespace RealismMod
 
         public static bool HasHeadSet = false;
         public static CC_FastVignette Vignette;
+        public static PrismEffects PrismEffects;
 
         public static bool HasOptic = false;
 
-        private static float healthTick = 0f;
+        public static float healthControllerTick = 0f;
 
         private void GetPaths()
         {
@@ -404,11 +403,6 @@ namespace RealismMod
         {
             ConfigJson = File.ReadAllText(ConfigFilePath);
             ModConfig = JsonConvert.DeserializeObject<ConfigTemplate>(ConfigJson);
-            if (!ModConfig.recoil_attachment_overhaul)
-            {
-                IsConfigCorrect = false;
-                Logger.LogError("WARNING: 'Recoil, Ballistics and Attachment Overhaul' MUST be enabled in the config in order to use this plugin! Patches have been disabled.");
-            }
         }
 
         private void CacheIcons()
@@ -438,6 +432,11 @@ namespace RealismMod
             IconCache.Add(ENewItemAttributeId.NoiseReduction, Resources.Load<Sprite>("characteristics/icons/icon_info_loudness"));
             IconCache.Add(ENewItemAttributeId.ProjectileCount, Resources.Load<Sprite>("characteristics/icons/icon_info_bulletspeed"));
             IconCache.Add(ENewItemAttributeId.Convergence, Resources.Load<Sprite>("characteristics/icons/Ergonomics"));
+            IconCache.Add(ENewItemAttributeId.HBleedType, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
+            IconCache.Add(ENewItemAttributeId.LimbHpPerTick, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
+            IconCache.Add(ENewItemAttributeId.HpPerTick, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
+            IconCache.Add(ENewItemAttributeId.RemoveTrnqt, Resources.Load<Sprite>("characteristics/icons/hpResource"));
+
             _ = LoadTexture(ENewItemAttributeId.Balance, Path.Combine(ModPath, "res\\balance.png"));
             _ = LoadTexture(ENewItemAttributeId.RecoilAngle, Path.Combine(ModPath, "res\\recoilAngle.png"));
         }
@@ -453,6 +452,7 @@ namespace RealismMod
 
                 if (uwr.responseCode != 200)
                 {
+                    Logger.LogError("Realism: Error Requesting Textures");
                 }
                 else
                 {
@@ -515,22 +515,21 @@ namespace RealismMod
             }
             catch (Exception exception)
             {
-                IsConfigCorrect = false;
                 Logger.LogError(exception);
             }
 
 
-            if (IsConfigCorrect == true)
+
+            InitConfigs();
+
+            if (Plugin.EnableProgramK.Value == true)
             {
+                Utils.ProgramKEnabled = true;
+                Logger.LogInfo("Realism Mod: ProgramK Compatibiltiy Enabled!");
+            }
 
-                InitConfigs();
-
-                if (Plugin.EnableProgramK.Value == true)
-                {
-                    Utils.ProgramKEnabled = true;
-                    Logger.LogInfo("Realism Mod: ProgramK Compatibiltiy Enabled!");
-                }
-
+            if (ModConfig.recoil_attachment_overhaul)
+            {
                 //Stat assignment patches
                 new COIDeltaPatch().Enable();
                 new TotalShotgunDispersionPatch().Enable();
@@ -560,7 +559,7 @@ namespace RealismMod
                 //Sensitivity Patches
                 new AimingSensitivityPatch().Enable();
                 new UpdateSensitivityPatch().Enable();
-                if (Plugin.EnableHipfireRecoilClimb.Value == true)
+                if (Plugin.EnableHipfireRecoilClimb.Value)
                 {
                     new GetRotationMultiplierPatch().Enable();
                 }
@@ -570,17 +569,17 @@ namespace RealismMod
                 new ToggleAimPatch().Enable();
 
                 //Malf Patches
-                if (Plugin.EnableMalfPatch.Value == true && ModConfig.malf_changes == true)
+                if (Plugin.EnableMalfPatch.Value && ModConfig.malf_changes)
                 {
                     new GetTotalMalfunctionChancePatch().Enable();
                 }
-                if (Plugin.InspectionlessMalfs.Value == true) 
+                if (Plugin.InspectionlessMalfs.Value)
                 {
                     new IsKnownMalfTypePatch().Enable();
                 }
 
                 //Reload Patches
-                if (Plugin.EnableReloadPatches.Value == true)
+                if (Plugin.EnableReloadPatches.Value)
                 {
                     new CanStartReloadPatch().Enable();
                     new ReloadMagPatch().Enable();
@@ -611,7 +610,6 @@ namespace RealismMod
                 new SetAnimatorAndProceduralValuesPatch().Enable();
                 new OnItemAddedOrRemovedPatch().Enable();
 
-
                 if (Plugin.enableSGMastering.Value == true)
                 {
                     new SetWeaponLevelPatch().Enable();
@@ -638,64 +636,54 @@ namespace RealismMod
                 new HeadsetConstructorPatch().Enable();
                 new AmmoDuraBurnDisplayPatch().Enable();
                 new AmmoMalfChanceDisplayPatch().Enable();
+                new MagazineMalfChanceDisplayPatch().Enable();
                 new BarrelModClassPatch().Enable();
-
 
                 if (Plugin.IncreaseCOI.Value == true)
                 {
                     new GetTotalCenterOfImpactPatch().Enable();
                 }
+            }
 
-                //Ballistics
-                if (ModConfig.realistic_ballistics == true)
+
+            //Ballistics
+            if (ModConfig.realistic_ballistics == true)
+            {
+                new CreateShotPatch().Enable();
+                new ApplyDamagePatch().Enable();
+                new DamageInfoPatch().Enable();
+                new ApplyDamageInfoPatch().Enable();
+                new SetPenetrationStatusPatch().Enable();
+
+                if (EnableRagdollFix.Value)
                 {
-                    new CreateShotPatch().Enable();
-                    new ApplyDamagePatch().Enable();
-                    new DamageInfoPatch().Enable();
-                    new ApplyDamageInfoPatch().Enable();
-                    new SetPenetrationStatusPatch().Enable();
-
-                    if (EnableRagdollFix.Value) 
-                    {
-                        new ApplyCorpseImpulsePatch().Enable();
-                    }
-
-                    //Armor Class
-                    if (Plugin.EnableRealArmorClass.Value == true)
-                    {
-                        new ArmorClassDisplayPatch().Enable();
-                    }
-
-                    if (Plugin.EnableArmorHitZones.Value) 
-                    {
-                        new ArmorZoneBaseDisplayPatch().Enable();
-                        new ArmorZoneSringValueDisplayPatch().Enable();
-                    }
-
-                    new IsShotDeflectedByHeavyArmorPatch().Enable();
-
-                    if (Plugin.EnableArmPen.Value) 
-                    {
-                        new IsPenetratedPatch().Enable();
-                    }
+                    new ApplyCorpseImpulsePatch().Enable();
+                    /*  new RagdollPatch().Enable();*/
                 }
 
-                new ArmorComponentPatch().Enable();
-                new RigConstructorPatch().Enable();
+                //Armor Class
+                if (Plugin.EnableRealArmorClass.Value == true)
+                {
+                    new ArmorClassDisplayPatch().Enable();
+                }
 
-                //Player
-                new PlayerInitPatch().Enable();
-                new ToggleHoldingBreathPatch().Enable();
+                if (Plugin.EnableArmorHitZones.Value)
+                {
+                    new ArmorZoneBaseDisplayPatch().Enable();
+                    new ArmorZoneSringValueDisplayPatch().Enable();
+                }
 
-                //Movement
-                new SprintAccelerationPatch().Enable();
-                new EnduranceSprintActionPatch().Enable();
-                new EnduranceMovementActionPatch().Enable();
-                new MaxWalkSpeedPatch().Enable();
+                new IsShotDeflectedByHeavyArmorPatch().Enable();
+
+                if (Plugin.EnableArmPen.Value)
+                {
+                    new IsPenetratedPatch().Enable();
+                }
 
                 //Shot Effects
                 if (Plugin.EnableDeafen.Value == true)
                 {
+                    new PrismEffectsPatch().Enable();
                     new VignettePatch().Enable();
                     new UpdatePhonesPatch().Enable();
                     new SetCompressorPatch().Enable();
@@ -703,51 +691,77 @@ namespace RealismMod
                     new ExplosionPatch().Enable();
                     new GrenadeClassContusionPatch().Enable();
                 }
+            }
 
-                //LateUpdate
-                new PlayerLateUpdatePatch().Enable();
+            new ArmorComponentPatch().Enable();
+            new RigConstructorPatch().Enable();
 
-                //Stances
-                new ApplyComplexRotationPatch().Enable();
-                new ApplySimpleRotationPatch().Enable();
-                new InitTransformsPatch().Enable();
-                new LaserLateUpdatePatch().Enable();
-                new WeaponOverlappingPatch().Enable();
-                new WeaponLengthPatch().Enable();
-                new WeaponOverlappingPatch().Enable();
-                new OnWeaponDrawPatch().Enable();
-                new UpdateHipInaccuracyPatch().Enable();
-                new SetFireModePatch().Enable();
+            //Player
+            new PlayerInitPatch().Enable();
+            new ToggleHoldingBreathPatch().Enable();
 
-                //Health
-                if (EnableHealthOvehaul.Value) 
-                {
-                    new ApplyItemPatch().Enable();
-                    new SetQuickSlotPatch().Enable();
-                    new ProceedPatch().Enable();
-                    new RemoveEffectPatch().Enable();
-                    new ReceiveDamagePatch().Enable();
-                    new StamRegenRatePatch().Enable();
-                }
-   
+            //Movement
+            if (EnableMaterialSpeed.Value) 
+            {
+                new CalculateSurfacePatch().Enable();
+            }
+            if (EnableMaterialSpeed.Value)
+            {
+                new CalculateSurfacePatch().Enable();
+                new ClampSpeedPatch().Enable();
+            }
+            new SprintAccelerationPatch().Enable();
+            new EnduranceSprintActionPatch().Enable();
+            new EnduranceMovementActionPatch().Enable();
 
+            //LateUpdate
+            new PlayerLateUpdatePatch().Enable();
+
+            //Stances
+            new ApplyComplexRotationPatch().Enable();
+            new ApplySimpleRotationPatch().Enable();
+            new InitTransformsPatch().Enable();
+            new LaserLateUpdatePatch().Enable();
+            new WeaponOverlappingPatch().Enable();
+            new WeaponLengthPatch().Enable();
+            new WeaponOverlappingPatch().Enable();
+            new OnWeaponDrawPatch().Enable();
+            new UpdateHipInaccuracyPatch().Enable();
+            new SetFireModePatch().Enable();
+
+            //Health
+            if (EnableMedicalOvehaul.Value && ModConfig.med_changes)
+            {
+                new ApplyItemPatch().Enable();
+                new SetQuickSlotPatch().Enable();
+                new ProceedPatch().Enable();
+                new RemoveEffectPatch().Enable();
+                new StamRegenRatePatch().Enable();
+                new MedkitConstructorPatch().Enable();
+                new HCApplyDamagePatch().Enable();
+                new RestoreBodyPartPatch().Enable();
+                //these patches weren't working great but keeping for future reference
+                /*                if (HealthSpeedEffects.Value) 
+                                {
+                                    new EnergyRatePatch().Enable();
+                                    new HydoRatePatch().Enable();
+                                }*/
             }
         }
 
         void Update()
         {
-            if (IsConfigCorrect == true)
+            if (!checkedForUniformAim)
             {
-                if (!checkedForUniformAim)
-                {
-                    isUniformAimPresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.UniformAim");
-                    isBridgePresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.RealismModBridge");
-                    checkedForUniformAim = true;
-                }
+                isUniformAimPresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.UniformAim");
+                isBridgePresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.RealismModBridge");
+                checkedForUniformAim = true;
+            }
 
-                if (Utils.CheckIsReady())
+            if (Utils.CheckIsReady())
+            {
+                if (ModConfig.recoil_attachment_overhaul) 
                 {
-
                     if (Plugin.ShotCount > Plugin.PrevShotCount)
                     {
                         Plugin.IsFiring = true;
@@ -761,11 +775,10 @@ namespace RealismMod
                         Plugin.PrevShotCount = Plugin.ShotCount;
                     }
 
-
                     if (Plugin.ShotCount == Plugin.PrevShotCount)
                     {
                         Plugin.Timer += Time.deltaTime;
-                 
+
                         if (Plugin.Timer >= Plugin.resetTime.Value)
                         {
                             Plugin.IsFiring = false;
@@ -777,11 +790,35 @@ namespace RealismMod
                         StanceController.StanceShotTimer();
                     }
 
-                    if (Plugin.EnableDeafen.Value == true)
+                    if (Plugin.EnableDeafen.Value)
                     {
-                        Deafening.DoDeafening();
+                        if (Input.GetKeyDown(Plugin.IncGain.Value.MainKey) && Plugin.HasHeadSet)
+                        {
+             
+                            if (Plugin.RealTimeGain.Value < 20)
+                            {
+                                Plugin.RealTimeGain.Value += 1f;
+                                Singleton<BetterAudio>.Instance.PlayNonspatial(Plugin.LoadedAudioClips["beep.wav"], BetterAudio.AudioSourceGroupType.Nonspatial, 0, 1f);
+                            }
+                        }
+                        if (Input.GetKeyDown(Plugin.DecGain.Value.MainKey) && Plugin.HasHeadSet)
+                        {
+                
+                            if (Plugin.RealTimeGain.Value > 0)
+                            {
+                                Plugin.RealTimeGain.Value -= 1f;
+                                Singleton<BetterAudio>.Instance.PlayNonspatial(Plugin.LoadedAudioClips["beep.wav"], BetterAudio.AudioSourceGroupType.Nonspatial, 0, 1f);
 
-                        if (Plugin.IsBotFiring == true)
+                            }
+                        }
+
+                        if (PrismEffects != null) 
+                        {
+                            Deafening.DoDeafening();
+                        }
+            
+
+                        if (Plugin.IsBotFiring)
                         {
                             Plugin.BotTimer += Time.deltaTime;
                             if (Plugin.BotTimer >= 0.5f)
@@ -791,7 +828,7 @@ namespace RealismMod
                             }
                         }
 
-                        if (Plugin.GrenadeExploded == true)
+                        if (Plugin.GrenadeExploded)
                         {
                             Plugin.GrenadeTimer += Time.deltaTime;
                             if (Plugin.GrenadeTimer >= 0.7f)
@@ -806,33 +843,15 @@ namespace RealismMod
                     {
                         RecoilController.ResetRecoil();
                     }
-
-                    StanceController.StanceState();
-
-                    if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
-                    {
-                        GameWorld gameWorld = Singleton<GameWorld>.Instance;
-                        if (gameWorld?.AllPlayers.Count > 0)
-                        {
-                            Player player = gameWorld.AllPlayers[0];
-                            RealismHealthController.AddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, player, Plugin.AddEffectType.Value);
-                        }
-                    }
-
-                    if (!Utils.IsInHideout()) 
-                    {
-                        healthTick += Time.deltaTime;
-
-                        if (healthTick >= 1f)
-                        {
-                            RealismHealthController.ControllerTick(Logger, Singleton<GameWorld>.Instance.AllPlayers[0]);
-                            healthTick = 0f;
-                        }
-                    }
                 }
-                if (Utils.IsInHideout() || !Utils.IsReady) 
+ 
+                StanceController.StanceState();
+
+                if (Plugin.EnableMedicalOvehaul.Value && ModConfig.med_changes)
                 {
-                    RealismHealthController.RemoveAllEffects();
+                    healthControllerTick += Time.deltaTime;
+                    RealismHealthController.HealthController(Logger);
+            
                 }
             }
         }
@@ -848,24 +867,29 @@ namespace RealismMod
             /*                string AmmoSettings = "4. Ammo Stat Display Settings";*/
             string waponSettings = ".6. Weapon Settings";
             string healthSettings = ".7. Health and Meds Settings";
-            string deafSettings = ".8. Deafening and Audio";
-            string speed = ".9. Weapon Speed Modifiers";
-            string weapAimAndPos = "10. Weapon Stances And Position";
-            string activeAim = "11. Active Aim";
-            string highReady = "12. High Ready";
-            string lowReady = "13. Low Ready";
-            string pistol = "14. Pistol Position And Stance";
-            string shortStock = "15. Short-Stocking";
+            string moveSettings = ".8. Movement Settings";
+            string deafSettings = ".9. Deafening and Audio";
+            string speed = "10. Weapon Speed Modifiers";
+            string weapAimAndPos = "11. Weapon Stances And Position";
+            string activeAim = "12. Active Aim";
+            string highReady = "13. High Ready";
+            string lowReady = "14. Low Ready";
+            string pistol = "15. Pistol Position And Stance";
+            string shortStock = "16. Short-Stocking";
 
-            EnableHealthOvehaul = Config.Bind<bool>(healthSettings, "Enable Medical Overhaul", false, new ConfigDescription("Enables The Overhaul Of The Health & Medical System.", null, new ConfigurationManagerAttributes { Order = 100 }));
-            TrnqtEffect = Config.Bind<bool>(healthSettings, "Enable Tourniquet Effect", false, new ConfigDescription("Tourniquet Will Drain HP Of The Limb They Are Applied To.", null, new ConfigurationManagerAttributes { Order = 90 }));
-            GearBlocksEat = Config.Bind<bool>(healthSettings, "Gear Blocks Consumption", false, new ConfigDescription("Gear Blocks Eating & Drinking. This Includes Some Masks & NVGs & Faceshields That Are Toggled On.", null, new ConfigurationManagerAttributes { Order = 80 }));
-            GearBlocksHeal = Config.Bind<bool>(healthSettings, "Gear Blocks Healing", false, new ConfigDescription("Gear Blocks Use Of Meds If The Wound Is Covered By It.", null, new ConfigurationManagerAttributes { Order = 70 }));
-            HealthSpeedEffects = Config.Bind<bool>(healthSettings, "Health Effects", true, new ConfigDescription("Remaining HP On Each Body Part, Overall Remaining HP, Remaining Hydration & Energy All Affect The Speed Of Most Player Actions, Movement & Stamina Regen Depending On The Part. HP Remaining Affects Hydration & Energy Loss Rate.", null, new ConfigurationManagerAttributes { Order = 60 }));
+            EnableMaterialSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Material Speed Modifier", true, new ConfigDescription("Enables Movement Speed Being Affected By Ground Material (Concrete, Grass, Metal, Glass Etc.)", null, new ConfigurationManagerAttributes { Order = 20 }));
+            EnableSlopeSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Slope Speed Modifier", false, new ConfigDescription("Enables Slopes Slowing Down Movement. Can Cause Random Speed Slowdowns In Some Small Spots Due To BSG's Bad Map Geometry.", null, new ConfigurationManagerAttributes { Order = 10 }));
+
+            EnableMedicalOvehaul = Config.Bind<bool>(healthSettings, "Enable Medical Overhaul", true, new ConfigDescription("Enables The Overhaul Of The Health & Medical System.", null, new ConfigurationManagerAttributes { Order = 100 }));
+            TrnqtEffect = Config.Bind<bool>(healthSettings, "Enable Tourniquet Effect", true, new ConfigDescription("Tourniquet Will Drain HP Of The Limb They Are Applied To.", null, new ConfigurationManagerAttributes { Order = 90 }));
+            GearBlocksEat = Config.Bind<bool>(healthSettings, "Gear Blocks Consumption", true, new ConfigDescription("Gear Blocks Eating & Drinking. This Includes Some Masks & NVGs & Faceshields That Are Toggled On.", null, new ConfigurationManagerAttributes { Order = 80 }));
+            GearBlocksHeal = Config.Bind<bool>(healthSettings, "Gear Blocks Healing", true, new ConfigDescription("Gear Blocks Use Of Meds If The Wound Is Covered By It.", null, new ConfigurationManagerAttributes { Order = 70 }));
+            HealthEffects = Config.Bind<bool>(healthSettings, "Health Effects", true, new ConfigDescription("Remaining HP On Each Body Part, Overall Remaining HP, Remaining Hydration & Energy All Affect The Speed Of Most Player Actions, Movement & Stamina Regen Depending On The Part. HP Remaining Affects Hydration & Energy Loss Rate.", null, new ConfigurationManagerAttributes { Order = 60 }));
+            DropGearKeybind = Config.Bind(healthSettings, "Remove Gear Keybind", new KeyboardShortcut(KeyCode.P), new ConfigDescription("Removes Any Gear That Is Blocking The Healing Of A Wound", null, new ConfigurationManagerAttributes { Order = 50 }));
 
             AddEffectType = Config.Bind<string>(testing, "Effect Type", "HeavyBleeding", new ConfigDescription("HeavyBleeding, LightBleeding, Fracture.", null, new ConfigurationManagerAttributes { Order = 100, IsAdvanced = true }));
             AddEffectBodyPart = Config.Bind<int>(testing, "Body Part Index", 1, new ConfigDescription("Head = 0, Chest = 1, Stomach = 2, Letft Arm, Right Arm, Left Leg, Right Leg, Common (whole body)", null, new ConfigurationManagerAttributes { Order = 120, IsAdvanced = true }));
-            AddEffectKeybind = Config.Bind(testing, "Add Effect Keybind", new KeyboardShortcut(KeyCode.M), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 130, IsAdvanced = true }));
+            AddEffectKeybind = Config.Bind(testing, "Add Effect Keybind", new KeyboardShortcut(KeyCode.JoystickButton6), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 130, IsAdvanced = true }));
             EnableBallisticsLogging = Config.Bind<bool>(testing, "Enable Ballistics Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 2, IsAdvanced = true }));
             EnableLogging = Config.Bind<bool>(testing, "Enable Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true }));
 
@@ -889,7 +913,7 @@ namespace RealismMod
             SensLimit = Config.Bind<float>(recoilSettings, "Sensitivity Lower Limit", 0.4f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction. 100% Means No Sensitivity Reduction.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 2 }));
             RecoilIntensity = Config.Bind<float>(recoilSettings, "Recoil Multi", 1.15f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 1 }));
 
-            ConvSemiMulti = Config.Bind<float>(advancedRecoilSettings, "Semi Auto Convergence Multi", 0.69f, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 30, IsAdvanced = true }));
+            ConvSemiMulti = Config.Bind<float>(advancedRecoilSettings, "Semi Auto Convergence Multi", 0.8f, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 30, IsAdvanced = true }));
             ConvAutoMulti = Config.Bind<float>(advancedRecoilSettings, "Auto Convergence Multi", 0.59f, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 20, IsAdvanced = true }));
             EnableRecoilClimb = Config.Bind<bool>(advancedRecoilSettings, "Enable Recoil Climb", true, new ConfigDescription("The Core Of The Recoil Overhaul. Recoil Increase Per Shot, Nullifying Recoil Auto-Compensation In Full Auto And Requiring A Constant Pull Of The Mouse To Control Recoil. If Diabled Weapons Will Be Completely Unbalanced Without Stat Changes.", null, new ConfigurationManagerAttributes { Order = 13 }));
             SensChangeRate = Config.Bind<float>(advancedRecoilSettings, "Sensitivity Change Rate", 0.75f, new ConfigDescription("Rate At Which Sensitivity Is Reduced While Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 12 }));
@@ -920,15 +944,17 @@ namespace RealismMod
             enableSGMastering = Config.Bind<bool>(waponSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 5 }));
             IncreaseCOI = Config.Bind<bool>(waponSettings, "Enable Increased Inaccuracy", true, new ConfigDescription("Requires Restart. Increases The Innacuracy Of All Weapons So That MOA/Accuracy Is A More Important Stat.", null, new ConfigurationManagerAttributes { Order = 6 }));
 
-            EnableDeafen = Config.Bind<bool>(deafSettings, "Enable Deafening", true, new ConfigDescription("Requiures Restart. Enables Gunshots And Explosions Deafening The Player.", null, new ConfigurationManagerAttributes { Order = 9 }));
-            RealTimeGain = Config.Bind<float>(deafSettings, "Headset Gain", 13f, new ConfigDescription("WARNING: DO NOT SET THIS TOO HIGH, IT MAY DAMAGE YOUR HEARING! Most EFT Headsets Are Set To 13 By Default, Don't Make It Much Higher. Adjusts The Gain Of Equipped Headsets In Real Time, Acts Just Like The Volume Control On IRL Ear Defenders.", new AcceptableValueRange<float>(0f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 8 }));
-            GainReduc = Config.Bind<float>(deafSettings, "Headset Gain Cutoff Multi", 0.75f, new ConfigDescription("How Much Headset Gain Is Reduced While Firing. 0.75 = 25% Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7 }));
-            DeafRate = Config.Bind<float>(deafSettings, "Deafen Rate", 0.023f, new ConfigDescription("How Quickly Player Gets Deafened. Higher = Faster.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true }));
-            DeafReset = Config.Bind<float>(deafSettings, "Deafen Reset Rate", 0.033f, new ConfigDescription("How Quickly Player Regains Hearing. Higher = Faster.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true }));
-            VigRate = Config.Bind<float>(deafSettings, "Tunnel Effect Rate", 0.65f, new ConfigDescription("How Quickly Player Gets Tunnel Vission. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true }));
-            VigReset = Config.Bind<float>(deafSettings, "Tunnel Effect Reset Rate", 1f, new ConfigDescription("How Quickly Player Recovers From Tunnel Vision. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
-            DistRate = Config.Bind<float>(deafSettings, "Distortion Rate", 0.16f, new ConfigDescription("How Quickly Player's Hearing Gets Distorted. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
-            DistReset = Config.Bind<float>(deafSettings, "Distortion Reset Rate", 0.25f, new ConfigDescription("How Quickly Player's Hearing Recovers From Distortion. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, IsAdvanced = true }));
+            RealTimeGain = Config.Bind<float>(deafSettings, "Headset Gain", 13f, new ConfigDescription("WARNING: DO NOT SET THIS TOO HIGH, IT MAY DAMAGE YOUR HEARING! Most EFT Headsets Are Set To 13 By Default, Don't Make It Much Higher. Adjusts The Gain Of Equipped Headsets In Real Time, Acts Just Like The Volume Control On IRL Ear Defenders.", new AcceptableValueRange<float>(0f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11 }));
+            GainCutoff = Config.Bind<float>(deafSettings, "Headset Gain Cutoff Multi", 0.75f, new ConfigDescription("How Much Headset Gain Is Reduced While Firing. 0.75 = 25% Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10 }));
+            DecGain = Config.Bind(deafSettings, "Reduce Gain Keybind", new KeyboardShortcut(KeyCode.KeypadMinus), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 9 }));
+            IncGain = Config.Bind(deafSettings, "Increase Gain Keybind", new KeyboardShortcut(KeyCode.KeypadPlus), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 8 }));
+            DeafRate = Config.Bind<float>(deafSettings, "Deafen Rate", 0.023f, new ConfigDescription("How Quickly Player Gets Deafened. Higher = Faster.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7, IsAdvanced = true }));
+            DeafReset = Config.Bind<float>(deafSettings, "Deafen Reset Rate", 0.033f, new ConfigDescription("How Quickly Player Regains Hearing. Higher = Faster.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true }));
+            VigRate = Config.Bind<float>(deafSettings, "Tunnel Effect Rate", 0.02f, new ConfigDescription("How Quickly Player Gets Tunnel Vission. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true }));
+            VigReset = Config.Bind<float>(deafSettings, "Tunnel Effect Reset Rate", 0.02f, new ConfigDescription("How Quickly Player Recovers From Tunnel Vision. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true }));
+            DistRate = Config.Bind<float>(deafSettings, "Distortion Rate", 0.16f, new ConfigDescription("How Quickly Player's Hearing Gets Distorted. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
+            DistReset = Config.Bind<float>(deafSettings, "Distortion Reset Rate", 0.25f, new ConfigDescription("How Quickly Player's Hearing Recovers From Distortion. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
+            EnableDeafen = Config.Bind<bool>(deafSettings, "Enable Deafening", true, new ConfigDescription("Requiures Restart. Enables Gunshots And Explosions Deafening The Player.", null, new ConfigurationManagerAttributes { Order = 1 }));
 
             EnableReloadPatches = Config.Bind<bool>(speed, "Enable Reload And Chamber Speed Changes", true, new ConfigDescription("Requires Restart. Weapon Weight, Magazine Weight, Attachment Reload And Chamber Speed Stat, Balance, Ergo And Arm Injury Affect Reload And Chamber Speed.", null, new ConfigurationManagerAttributes { Order = 17 }));
             GlobalAimSpeedModifier = Config.Bind<float>(speed, "Aim Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16 }));

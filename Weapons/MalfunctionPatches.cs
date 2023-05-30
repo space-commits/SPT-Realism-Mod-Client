@@ -74,8 +74,8 @@ namespace RealismMod
                 if (weaponDurability >= Plugin.DuraMalfThreshold.Value)
                 {
 
-                    magMalfChance *= 0.5f;
-                    weaponMalfChance *= 0.5f;
+                    magMalfChance *= 0.25f;
+                    weaponMalfChance *= 0.25f;
                 }
                 if (weaponDurability >= 70)
                 {
@@ -114,7 +114,7 @@ namespace RealismMod
             return typeof(Weapon.MalfunctionState).GetMethod("IsKnownMalfType", BindingFlags.Instance | BindingFlags.Public);
         }
         [PatchPostfix]
-        private static void PatchPostfix(ref bool __result)
+        private static void PatchPrefix(ref bool __result)
         {
             __result = true;
         }
