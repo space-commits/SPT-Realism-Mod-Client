@@ -390,8 +390,7 @@ namespace RealismMod
 
         public static bool HasOptic = false;
 
-        private static float healthTick = 0f;
-
+        public static float healthControllerTick = 0f;
 
         private void GetPaths()
         {
@@ -813,7 +812,11 @@ namespace RealismMod
                             }
                         }
 
-                        Deafening.DoDeafening();
+                        if (PrismEffects != null) 
+                        {
+                            Deafening.DoDeafening();
+                        }
+            
 
                         if (Plugin.IsBotFiring)
                         {
@@ -844,9 +847,11 @@ namespace RealismMod
  
                 StanceController.StanceState();
 
-                if (Plugin.EnableMedicalOvehaul.Value && ModConfig.med_changes) 
+                if (Plugin.EnableMedicalOvehaul.Value && ModConfig.med_changes)
                 {
-                    RealismHealthController.HealthController(healthTick, Logger);
+                    healthControllerTick += Time.deltaTime;
+                    RealismHealthController.HealthController(Logger);
+            
                 }
             }
         }

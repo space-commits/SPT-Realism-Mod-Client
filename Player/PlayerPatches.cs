@@ -88,8 +88,6 @@ namespace RealismMod
             return typeof(Player).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
-        private static float tick = 0f;
-
         [PatchPostfix]
         private static void PatchPostfix(Player __instance)
         {
@@ -100,13 +98,6 @@ namespace RealismMod
                 Plugin.IsSprinting = __instance.IsSprintEnabled;
                 PlayerProperties.enviroType = __instance.Environment;
                 Plugin.IsInInventory = __instance.IsInventoryOpened;
-
-                tick += Time.deltaTime;
-
-                if (!Utils.IsInHideout() && tick >= 10f && Plugin.HealthEffects.Value)
-                {
-                    RealismHealthController.PlayerInjuryStateCheck(__instance, Logger);
-                }
 
                 if (fc != null)
                 {

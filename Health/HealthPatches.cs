@@ -342,7 +342,15 @@ namespace RealismMod
                     float vitalitySkill =__instance.Player.Skills.VitalityBuffSurviobilityInc;
                     float delay = (float)Math.Round(15f * (1f - vitalitySkill), 2);
                     float tickRate = (float)Math.Round(0.22f * (1f + vitalitySkill), 2);
-           
+
+                    if (damageType == EDamageType.Dehydration)
+                    {
+                        DamageTracker.TotalDehydrationDamage += damage;
+                    }
+                    if (damageType == EDamageType.Exhaustion)
+                    {
+                        DamageTracker.TotalExhaustionDamage += damage;
+                    }
                     if ((damageType == EDamageType.Fall && damage <= 12f))
                     {
                         HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, bodyPart, __instance.Player, delay, damage, damageType);

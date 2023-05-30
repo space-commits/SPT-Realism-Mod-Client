@@ -367,7 +367,7 @@ namespace RealismMod
             }
             else
             {
-                pureRecoil = pureRecoil + (pureRecoil * ((modVRecoil / 100f) + (modHRecoil / 100f) + (modCamRecoil / 100f) + (modConv / 100f) + (modDispersion / 100f)));
+                pureRecoil = pureRecoil + (pureRecoil * ((modVRecoil / 100f) + (modHRecoil / 100f) + (modCamRecoil / 100f) + (-modConv / 100f) + (modDispersion / 100f)));
             }
 
 

@@ -377,9 +377,10 @@ namespace RealismMod
 
         public static void DoPistolStances(bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation __instance, ref Quaternion currentRotation, float dt, ref bool hasResetPistolPos, Player player, ManualLogSource logger) 
         {
-            float aimMulti = Mathf.Clamp(WeaponProperties.SightlessAimSpeed * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f)), 0.5f, 1.45f);
+            float aimMulti = Mathf.Clamp(WeaponProperties.SightlessAimSpeed, 0.65f, 1.45f);
+            float stanceMulti = Mathf.Clamp(aimMulti * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f)), 0.5f, 1.45f);
             float invInjuryMulti = (1f - PlayerProperties.StanceInjuryMulti) + 1f;
-            float resetAimMulti = (1f - aimMulti) + 1f;
+            float resetAimMulti = (1f - stanceMulti) + 1f;
             float ergoDelta = (1f - WeaponProperties.ErgoDelta);
             float intensity = Mathf.Max(1f * (1f - PlayerProperties.WeaponSkillErgo) * resetAimMulti * invInjuryMulti * ergoDelta, 0.35f);
             float balanceFactor = 1f + (WeaponProperties.Balance / 100f);
@@ -407,21 +408,21 @@ namespace RealismMod
 
                 StanceController.PistolIsCompressed = true;
 
-                currentRotation = Quaternion.Lerp(currentRotation, pistolTargetQuaternion, __instance.CameraSmoothTime * aimMulti * dt * Plugin.PistolRotationSpeedMulti.Value * aimMulti);
+                currentRotation = Quaternion.Lerp(currentRotation, pistolTargetQuaternion, __instance.CameraSmoothTime * stanceMulti * dt * Plugin.PistolRotationSpeedMulti.Value * stanceMulti);
                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
-                __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.PistolTransformNewStartPosition, Plugin.PistolPosSpeedMulti.Value * aimMulti * dt);
+                __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.PistolTransformNewStartPosition, Plugin.PistolPosSpeedMulti.Value * stanceMulti * dt);
                 hasResetPistolPos = false;
 
                 if (isThirdPerson)
                 {
-                    __instance.HandsContainer.HandsPosition.ReturnSpeed = Plugin.ThirdPistolPosSpeedMulti.Value * aimMulti;
+                    __instance.HandsContainer.HandsPosition.ReturnSpeed = Plugin.ThirdPistolPosSpeedMulti.Value * stanceMulti;
                     __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * new Vector3(Plugin.ThirdPistolOffsetX.Value, Plugin.ThirdPistolOffsetY.Value, Plugin.ThirdPistolOffsetZ.Value);
                 }
 
                 if (__instance.HandsContainer.TrackingTransform.localPosition != Plugin.PistolTransformNewStartPosition)
                 {
-                    currentRotation = Quaternion.Lerp(currentRotation, pistolMiniTargetQuaternion, __instance.CameraSmoothTime * aimMulti * dt * Plugin.PistolAdditionalRotationSpeedMulti.Value * aimMulti);
+                    currentRotation = Quaternion.Lerp(currentRotation, pistolMiniTargetQuaternion, __instance.CameraSmoothTime * stanceMulti * dt * Plugin.PistolAdditionalRotationSpeedMulti.Value * stanceMulti);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
                 }
             }
@@ -434,10 +435,10 @@ namespace RealismMod
                     __instance.HandsContainer.HandsRotation.InputIntensity = intensity;
                 }
 
-                currentRotation = Quaternion.Lerp(currentRotation, pistolRevertQuaternion, __instance.CameraSmoothTime * aimMulti * dt * Plugin.PistolResetRotationSpeedMulti.Value * aimMulti);
+                currentRotation = Quaternion.Lerp(currentRotation, pistolRevertQuaternion, __instance.CameraSmoothTime * stanceMulti * dt * Plugin.PistolResetRotationSpeedMulti.Value * stanceMulti);
                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1").SetValue(__instance, currentRotation);
 
-                __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.TransformBaseStartPosition, Plugin.PistolPosResetSpeedMulti.Value * aimMulti * dt);
+                __instance.HandsContainer.TrackingTransform.localPosition = Vector3.MoveTowards(__instance.HandsContainer.TrackingTransform.localPosition, Plugin.TransformBaseStartPosition, Plugin.PistolPosResetSpeedMulti.Value * stanceMulti * dt);
             }
             else if (__instance.HandsContainer.TrackingTransform.localPosition == Plugin.TransformBaseStartPosition)
             {
@@ -461,9 +462,8 @@ namespace RealismMod
 
         public static void DoRifleStances(ManualLogSource logger, Player player, Player.FirearmController fc, bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation __instance, ref Quaternion currentRotation, float dt, ref bool isResettingShortStock, ref bool hasResetShortStock, ref bool hasResetLowReady, ref bool hasResetActiveAim, ref bool hasResetHighReady, ref bool isResettingHighReady, ref bool isResettingLowReady, ref bool isResettingActiveAim)
         {
-            float aimSpeed = 1f - ((1f - WeaponProperties.SightlessAimSpeed) * 1.5f);
-            float aimMulti = Mathf.Clamp(aimSpeed * PlayerProperties.StanceInjuryMulti, 0.65f, 0.95f);
-            float stanceMulti = Mathf.Clamp(aimMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f)), 0.4f, 0.95f);
+            float aimMulti = Mathf.Clamp(1f - ((1f - WeaponProperties.SightlessAimSpeed) * 1.5f), 0.65f, 0.95f);
+            float stanceMulti = Mathf.Clamp(aimMulti * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f)), 0.45f, 0.95f);
             float invInjuryMulti = (1f - PlayerProperties.StanceInjuryMulti) + 1f;
             float resetAimMulti = (1f - stanceMulti) + 1f;
             float stocklessModifier = WeaponProperties.HasShoulderContact ? 1f : 2.3f;
