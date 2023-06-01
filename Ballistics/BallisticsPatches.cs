@@ -587,7 +587,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static void Prefix(EFT.Ballistics.BallisticCollider __instance, GClass2623 shot, Vector3 hitPoint)
+        private static void Prefix(EFT.Ballistics.BallisticCollider __instance, GClass2624 shot, Vector3 hitPoint)
         {
             if (__instance.name == HitBox.LeftUpperArm || __instance.name == HitBox.RightUpperArm || __instance.name == HitBox.LeftForearm || __instance.name == HitBox.RightForearm )
             {
@@ -601,7 +601,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(GClass2623) });
+            return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(GClass2624) });
         }
 
         private static int playCounter = 0;
@@ -678,20 +678,20 @@ namespace RealismMod
         {
             float dist = CameraClass.Instance.Distance(pos);
             float volClose = 2.7f * Plugin.CloseHitSoundMulti.Value;
-            float volDist = 4.1f * Plugin.FarHitSoundMulti.Value;
+            float volDist = 4.25f * Plugin.FarHitSoundMulti.Value;
 
             if (hitZone == EHitZone.Spine)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["spine.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["spine.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.25f, EOcclusionTest.Continuous);
 
             }
             else if (hitZone == EHitZone.Heart)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["heart.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["heart.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.25f, EOcclusionTest.Continuous);
             }
             else if(hitZone == EHitZone.AssZone)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["ass_impact.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, 1.0f, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["ass_impact.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, 1.5f, EOcclusionTest.Continuous);
             }
             else
             {
@@ -712,7 +712,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, GClass2623 shot)
+        private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, GClass2624 shot)
         {
             __instance.DamageType = damageType;
             __instance.Damage = shot.Damage;
@@ -1051,8 +1051,8 @@ namespace RealismMod
         private static void playArmorHitSound(EArmorMaterial mat, Vector3 pos, bool isHelm)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 4.5f * Plugin.CloseHitSoundMulti.Value;
-            float volDist = 5.0f * Plugin.FarHitSoundMulti.Value;
+            float volClose = 4.65f * Plugin.CloseHitSoundMulti.Value;
+            float volDist = 5.5f * Plugin.FarHitSoundMulti.Value;
 
             if (mat == EArmorMaterial.Aramid)
             {
@@ -1115,7 +1115,7 @@ namespace RealismMod
                     audioClip = playCounter == 0 ? "metal_1.wav" : playCounter == 1 ? "metal_2.wav" : "metal_3.wav";
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? 4.0f * Plugin.FarHitSoundMulti.Value : 2.25f * Plugin.CloseHitSoundMulti.Value, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? 4.3f * Plugin.FarHitSoundMulti.Value : 2.25f * Plugin.CloseHitSoundMulti.Value, EOcclusionTest.Continuous);
             }
             else if (mat == EArmorMaterial.Glass)
             {
@@ -1146,7 +1146,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(GClass2623 shot, ref ArmorComponent __instance)
+        private static bool Prefix(GClass2624 shot, ref ArmorComponent __instance)
         {
             if (__instance.Repairable.Durability <= 0f && __instance.Template.ArmorMaterial != EArmorMaterial.ArmoredSteel && !__instance.Template.ArmorZone.Contains(EBodyPart.Head))
             {
@@ -1163,7 +1163,7 @@ namespace RealismMod
 
             if (Plugin.EnableArmorHitZones.Value && (isPlayer && Plugin.EnablePlayerArmorZones.Value || !isPlayer)) 
             {
-                RaycastHit raycast = (RaycastHit)AccessTools.Field(typeof(GClass2623), "raycastHit_0").GetValue(shot);
+                RaycastHit raycast = (RaycastHit)AccessTools.Field(typeof(GClass2624), "raycastHit_0").GetValue(shot);
                 Collider col = raycast.collider;
                 Vector3 localPoint = col.transform.InverseTransformPoint(raycast.point);
 /*                Vector3 normalizedPoint = localPoint.normalized;*/
@@ -1275,7 +1275,7 @@ namespace RealismMod
             float dist = CameraClass.Instance.Distance(pos);
             string audioClip = playCounter == 0 ? "ric_1.wav" : playCounter == 1 ? "ric_2.wav" : "ric_3.wav";
 
-            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, 4.0f, EOcclusionTest.Continuous);
+            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, 4.25f, EOcclusionTest.Continuous);
         }
 
         [PatchPrefix]
@@ -1454,7 +1454,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, Player player, Item weapon, ref GClass2623 __result, float speedFactor, int fragmentIndex = 0)
+        private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, Player player, Item weapon, ref GClass2624 __result, float speedFactor, int fragmentIndex = 0)
         {
             
    /*         Logger.LogWarning("!!!!!!!!!!! Shot Created!! !!!!!!!!!!!!!!");
@@ -1487,7 +1487,7 @@ namespace RealismMod
             Logger.LogWarning("Round Factored BC = " + bcFactored);
             Logger.LogWarning("==============================================================");*/
 
-            __result = GClass2623.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
+            __result = GClass2624.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
             return false;
 
         }
@@ -1604,7 +1604,7 @@ namespace RealismMod
             }
 
             [PatchPrefix]
-            private static bool Prefix(GClass2620 shot, ref ArmorComponent __instance)
+            private static bool Prefix(GClass2624 shot, ref ArmorComponent __instance)
             {
 
                 float penetrationPower = shot.PenetrationPower;

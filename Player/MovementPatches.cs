@@ -84,15 +84,15 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass1604).GetMethod("ClampSpeed", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GClass1603).GetMethod("ClampSpeed", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
         [PatchPrefix]
-        private static bool Prefix(GClass1604 __instance, float speed, ref float __result)
+        private static bool Prefix(GClass1603 __instance, float speed, ref float __result)
         {
 
-            Player player = (Player)AccessTools.Field(typeof(GClass1604), "player_0").GetValue(__instance);
+            Player player = (Player)AccessTools.Field(typeof(GClass1603), "player_0").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 float slopeFactor = 1f;
@@ -135,21 +135,21 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass1604).GetMethod("SetAimingSlowdown", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GClass1603).GetMethod("SetAimingSlowdown", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref GClass1604 __instance, bool isAiming)
+        private static bool Prefix(ref GClass1603 __instance, bool isAiming)
         {
             
-            Player player = (Player)AccessTools.Field(typeof(GClass1604), "player_0").GetValue(__instance);
+            Player player = (Player)AccessTools.Field(typeof(GClass1603), "player_0").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 if (isAiming)
                 {
                     //slow is hard set to 0.33 when called, 0.4-0.43 feels best.
                     float baseSpeed = PlayerProperties.AimMoveSpeedBase * WeaponProperties.AimMoveSpeedModifier;
-                    float totalSpeed = StanceController.IsActiveAiming ? baseSpeed * 1.35f : baseSpeed;
+                    float totalSpeed = StanceController.IsActiveAiming ? baseSpeed * 1.45f : baseSpeed;
                     totalSpeed = WeaponProperties._WeapClass == "pistol" ? totalSpeed + 0.15f : totalSpeed;
                     __instance.AddStateSpeedLimit(Mathf.Clamp(totalSpeed, 0.3f, 0.9f), Player.ESpeedLimit.Aiming);
 
@@ -166,17 +166,17 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass1604).GetMethod("SprintAcceleration", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GClass1603).GetMethod("SprintAcceleration", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(GClass1604 __instance, float deltaTime)
+        private static bool Prefix(GClass1603 __instance, float deltaTime)
         {
-            Player player = (Player)AccessTools.Field(typeof(GClass1604), "player_0").GetValue(__instance);
+            Player player = (Player)AccessTools.Field(typeof(GClass1603), "player_0").GetValue(__instance);
 
             if (player.IsYourPlayer == true)
             {
-                GClass755 rotationFrameSpan = (GClass755)AccessTools.Field(typeof(GClass1604), "gclass755_0").GetValue(__instance);
+                GClass755 rotationFrameSpan = (GClass755)AccessTools.Field(typeof(GClass1603), "gclass755_0").GetValue(__instance);
 
                 float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
@@ -225,7 +225,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref float __result, SkillsClass.GStruct203 movement, SkillsClass __instance)
+        private static bool Prefix(ref float __result, SkillsClass.GStruct200 movement, SkillsClass __instance)
         {
             float xp = __instance.Settings.Endurance.SprintAction * (1f + __instance.Settings.Endurance.GainPerFatigueStack * movement.Fatigue);
             if (movement.Overweight <= 0f)
@@ -260,7 +260,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref float __result, SkillsClass.GStruct203 movement, SkillsClass __instance)
+        private static bool Prefix(ref float __result, SkillsClass.GStruct200 movement, SkillsClass __instance)
         {
             float xp = __instance.Settings.Endurance.MovementAction * (1f + __instance.Settings.Endurance.GainPerFatigueStack * movement.Fatigue);
             if (movement.Overweight <= 0f)
@@ -280,7 +280,7 @@ namespace RealismMod
     {
         public static bool IsEnduraStrngthType(Type type)
         {
-            return type.GetField("skillsRelatedToHealth") != null && type.GetField("gclass1680_0") != null;
+            return type.GetField("skillsRelatedToHealth") != null && type.GetField("gclass1679_0") != null;
         }
     }
 }

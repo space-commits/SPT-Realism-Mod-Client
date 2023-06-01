@@ -44,156 +44,106 @@ namespace RealismMod
 
         public static string WeaponType(Weapon weapon)
         {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return "";
-            }
-            return weapon.ConflictingItems[1];
+            return !Utils.NullCheck(weapon.ConflictingItems) ? weapon.ConflictingItems[1] : "Unknown";
+
         }
 
         public static float BaseTorqueDistance(Weapon weapon)
         {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return 0;
-            }
-            return float.Parse(weapon.ConflictingItems[2]);
+            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[2], out float result) ? result : 0f;
+
         }
 
         public static bool WepHasShoulderContact(Weapon weapon)
         {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return false;
-            }
-            return bool.Parse(weapon.ConflictingItems[3]);
+            return !Utils.NullCheck(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[3], out bool result) ? result : false;
+
         }
 
         public static float BaseReloadSpeed(Weapon weapon)
         {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return 1;
-            }
-            return float.Parse(weapon.ConflictingItems[4]);
+            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[4], out float result) ? result : 1f;
+
         }
 
         public static string OperationType(Weapon weapon)
         {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return "";
-            }
-            return weapon.ConflictingItems[5];
+            return !Utils.NullCheck(weapon.ConflictingItems) ? weapon.ConflictingItems[5] : "Unknown";
+
         }
 
         public static float WeaponAccuracy(Weapon weapon)
         {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return 0;
-            }
-            return float.Parse(weapon.ConflictingItems[6]);
+ 
+            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[6], out float result) ? result : 0f;
+
         }
 
         public static float RecoilDamping(Weapon weapon)
-        {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return 0.7f;
-            }
-            return float.Parse(weapon.ConflictingItems[7]);
+        {;
+            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[7], out float result) ? result : 0f;
+
         }
 
         public static float RecoilHandDamping(Weapon weapon)
         {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return 0.65f;
-            }
-            return float.Parse(weapon.ConflictingItems[8]);
+            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[8], out float result) ? result : 0.65f;
+
         }
 
         public static bool WeaponAllowsADS(Weapon weapon)
         {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return false;
-            }
-            return bool.Parse(weapon.ConflictingItems[9]);
+            return !Utils.NullCheck(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[9], out bool result) ? result : false;
+
         }
 
         public static float BaseChamberSpeed(Weapon weapon)
         {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return 1;
-            }
-            return float.Parse(weapon.ConflictingItems[10]);
+            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[10], out float result) ? result : 1f;
+
         }
 
         public static float MaxChamberSpeed(Weapon weapon)
         {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return 1.2f;
-            }
-            return float.Parse(weapon.ConflictingItems[11]);
+            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[11], out float result) ? result : 1.2f;
+
         }
 
 
         public static float MinChamberSpeed(Weapon weapon)
         {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return 0.7f;
-            }
-            return float.Parse(weapon.ConflictingItems[12]);
+            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[12], out float result) ? result : 0.7f;
+
         }
 
         public static bool IsManuallyOperated(Weapon weapon)
         {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return false;
-            }
-            return bool.Parse(weapon.ConflictingItems[13]);
+            return !Utils.NullCheck(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[13], out bool result) ? result : false;
+
         }
 
         public static float MaxReloadSpeed(Weapon weapon)
         {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return 1.2f;
-            }
-            return float.Parse(weapon.ConflictingItems[14]);
+            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[14], out float result) ? result : 1.2f;
+
         }
 
         public static float MinReloadSpeed(Weapon weapon)
         {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return 0.7f;
-            }
-            return float.Parse(weapon.ConflictingItems[15]);
+            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[15], out float result) ? result : 0.7f;
+
         }
 
         public static float BaseChamberCheckSpeed(Weapon weapon)
         {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return 1f;
-            }
-            return float.Parse(weapon.ConflictingItems[16]);
+            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[16], out float result) ? result : 1f;
+
         }
 
         public static float BaseFixSpeed(Weapon weapon)
         {
-            if (Utils.NullCheck(weapon.ConflictingItems))
-            {
-                return 1f;
-            }
-            return float.Parse(weapon.ConflictingItems[17]);
+            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[17], out float result) ? result : 1f;
+
         }
 
         public static float BaseHipfireAccuracy;

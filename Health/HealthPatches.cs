@@ -32,7 +32,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(MedKitComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface244) });
+            return typeof(MedKitComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface243) });
         }
 
         private static string getHBTypeString(string type) 
@@ -91,7 +91,7 @@ namespace RealismMod
                         trnqtClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                         trqntAtt.Add(trnqtClass);
                     }
-                    else 
+                    else if(hpPerTick > 0)
                     {
                         List<ItemAttributeClass> hpTickAtt = item.Attributes;
                         ItemAttributeClass hpAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.LimbHpPerTick);
@@ -114,11 +114,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass2106).GetMethod("ApplyItem", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GClass2105).GetMethod("ApplyItem", BindingFlags.Instance | BindingFlags.Public);
 
         }
         [PatchPrefix]
-        private static bool Prefix(GClass2106 __instance, Item item, EBodyPart bodyPart, ref bool __result)
+        private static bool Prefix(GClass2105 __instance, Item item, EBodyPart bodyPart, ref bool __result)
         {
             MedsClass medsClass;
             FoodClass foodClass;
@@ -168,7 +168,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(EFT.Player __instance, EBoundItem quickSlot)
         {
-            InventoryControllerClass inventoryCont = (InventoryControllerClass)AccessTools.Property(typeof(EFT.Player), "GClass2417_0").GetValue(__instance);
+            InventoryControllerClass inventoryCont = (InventoryControllerClass)AccessTools.Property(typeof(EFT.Player), "GClass2416_0").GetValue(__instance);
             Item boundItem = inventoryCont.Inventory.FastAccess.GetBoundItem(quickSlot);
             FoodClass food = boundItem as FoodClass;
             if (boundItem != null && (food = (boundItem as FoodClass)) != null)
@@ -220,7 +220,7 @@ namespace RealismMod
         {
 
             BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);
-            SkillsClass skills = (SkillsClass)AccessTools.Field(typeof(ActiveHealthControllerClass), "gclass1680_0").GetValue(__instance);
+            SkillsClass skills = (SkillsClass)AccessTools.Field(typeof(ActiveHealthControllerClass), "gclass1679_0").GetValue(__instance);
             Action<EBodyPart, ValueStruct> actionStruct = (Action<EBodyPart, ValueStruct>)AccessTools.Field(typeof(ActiveHealthControllerClass), "action_15").GetValue(__instance);
             MethodInfo method_45 = AccessTools.Method(typeof(ActiveHealthControllerClass), "method_45");
             MethodInfo method_38 = AccessTools.Method(typeof(ActiveHealthControllerClass), "method_38");
@@ -385,7 +385,7 @@ namespace RealismMod
 
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<GInterface114>), typeof(int), typeof(bool) }, null);
+            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<GInterface113>), typeof(int), typeof(bool) }, null);
         }
 
         [PatchPrefix]
@@ -436,6 +436,13 @@ namespace RealismMod
                         return true;
                     }
 
+                    Type heavyBleedType;
+                    Type lightBleedType;
+                    Type fractureType;
+                    MedProperties.EffectTypes.TryGetValue("HeavyBleeding", out heavyBleedType);
+                    MedProperties.EffectTypes.TryGetValue("LightBleeding", out lightBleedType);
+                    MedProperties.EffectTypes.TryGetValue("BrokenBone", out fractureType);
+
                     foreach (EBodyPart part in RealismHealthController.BodyParts)
                     {
                         bool isHead = false;
@@ -448,10 +455,10 @@ namespace RealismMod
                         bool hasLightBleed = false;
                         bool hasFracture = false;
 
-                        IEnumerable<IEffect> effects = RealismHealthController.GetAllEffectsOnBodyPart(__instance, part, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
+                        IEnumerable<IEffect> effects = RealismHealthController.GetInjuriesOnBodyPart(__instance, part, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
 
-                        float currentHp = __instance.ActiveHealthController.GetBodyPartHealth(bodyPart).Current;
-                        float maxHp = __instance.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;
+                        float currentHp = __instance.ActiveHealthController.GetBodyPartHealth(part).Current;
+                        float maxHp = __instance.ActiveHealthController.GetBodyPartHealth(part).Maximum;
 
                         if (medType == "surg" && ((isBody && !hasBodyGear) || (isHead && !hasHeadGear) || !isNotLimb))
                         {
@@ -470,7 +477,7 @@ namespace RealismMod
                                 continue;
                             }
 
-                            if (canHealHBleed && effect.Type == typeof(GInterface191))
+                            if (canHealHBleed && effect.Type == heavyBleedType)
                             {
                                 if (!isNotLimb)
                                 {                          
@@ -492,7 +499,7 @@ namespace RealismMod
                                 bodyPart = part;
                                 break;
                             }
-                            if (canHealLBleed && effect.Type == typeof(GInterface190))
+                            if (canHealLBleed && effect.Type == lightBleedType)
                             {
                                 if (!isNotLimb)
                                 {
@@ -513,7 +520,7 @@ namespace RealismMod
                                 bodyPart = part;
                                 break;
                             }
-                            if (canHealFract && effect.Type == typeof(GInterface193))
+                            if (canHealFract && effect.Type == fractureType)
                             {
                                 if (!isNotLimb)
                                 {

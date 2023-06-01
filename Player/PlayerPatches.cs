@@ -27,7 +27,7 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                SkillsClass.GClass1681 skillsClass = (SkillsClass.GClass1681)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1681_0").GetValue(__instance);
+                SkillsClass.GClass1680 skillsClass = (SkillsClass.GClass1680)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1680_0").GetValue(__instance);
                 PlayerProperties.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
                 PlayerProperties.ReloadSkillMulti = Mathf.Max(1, ((skillsClass.ReloadSpeed - 1f) * 0.5f) + 1f);
                 PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;

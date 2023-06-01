@@ -18,6 +18,7 @@ using static RootMotion.Warning;
 using static CW2.Animations.PhysicsSimulator.Val;
 using EFT.Interactive;
 using System.Threading.Tasks;
+using Systems.Effects;
 
 namespace RealismMod
 {
@@ -26,43 +27,32 @@ namespace RealismMod
     {
         public static string MedType(Item med)
         {
-            if (Utils.NullCheck(med.ConflictingItems))
-            {
-                return "unknown";
-            }
-            return med.ConflictingItems[1];
+            return !Utils.NullCheck(med.ConflictingItems) ? med.ConflictingItems[1] : "Unknown";
+
         }
 
         public static string HBleedHealType(Item med)
         {
-            if (Utils.NullCheck(med.ConflictingItems))
-            {
-                return "unknown";
-            }
-            return med.ConflictingItems[2];
+            return !Utils.NullCheck(med.ConflictingItems) ? med.ConflictingItems[2] : "Unknown";
         }
 
         public static float HpPerTick(Item med)
         {
-            if (Utils.NullCheck(med.ConflictingItems))
-            {
-                return 1f;
-            }
-            return float.Parse(med.ConflictingItems[3]);
+            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[3], out float result) ? result : 1f;
         }
 
         public static readonly Dictionary<string, Type> EffectTypes = new Dictionary<string, Type>
         {
-            { "Painkiller", typeof(GInterface208) },
-            { "Tremor", typeof(GInterface211) },
-            { "BrokenBone", typeof(GInterface193) },
-            { "TunnelVision", typeof(GInterface213) },
-            { "Contusion", typeof(GInterface203)  },
-            { "HeavyBleeding", typeof(GInterface191) },
-            { "LightBleeding", typeof(GInterface190) },
-            { "Dehydration", typeof(GInterface194) },
-            { "Exhaustion", typeof(GInterface195) },
-            { "Pain", typeof(GInterface207) }
+            { "Painkiller", typeof(GInterface207) },
+            { "Tremor", typeof(GInterface210) },
+            { "BrokenBone", typeof(GInterface192) },
+            { "TunnelVision", typeof(GInterface212) },
+            { "Contusion", typeof(GInterface202)  },
+            { "HeavyBleeding", typeof(GInterface190) },
+            { "LightBleeding", typeof(GInterface189) },
+            { "Dehydration", typeof(GInterface193) },
+            { "Exhaustion", typeof(GInterface194) },
+            { "Pain", typeof(GInterface206) }
         };
     }
 
@@ -198,14 +188,14 @@ namespace RealismMod
         public static void RemoveBaseEFTEffect(Player player, EBodyPart targetBodyPart, string targetEffect) 
         {
             IEnumerable<IEffect> commonEffects = player.ActiveHealthController.GetAllActiveEffects(targetBodyPart);
-            IReadOnlyList<GClass2103> effectsList = (IReadOnlyList<GClass2103>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
+            IReadOnlyList<GClass2102> effectsList = (IReadOnlyList<GClass2102>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
 
             Type targetType = null;
             if (MedProperties.EffectTypes.TryGetValue(targetEffect, out targetType))
             {
                 for (int i = effectsList.Count - 1; i >= 0; i--)
                 {
-                    ActiveHealthControllerClass.GClass2103 effect = effectsList[i];
+                    ActiveHealthControllerClass.GClass2102 effect = effectsList[i];
                     Type effectType = effect.Type;
                     EBodyPart effectPart = effect.BodyPart;
     
@@ -292,16 +282,21 @@ namespace RealismMod
         {
             bool hasHeavyBleed = false;
             bool hasLightBleed = false;
-   
+
+            Type heavyBleedType;
+            Type lightBleedType;
+            MedProperties.EffectTypes.TryGetValue("HeavyBleeding", out heavyBleedType);
+            MedProperties.EffectTypes.TryGetValue("LightBleeding", out lightBleedType);
+
             foreach (EBodyPart part in BodyParts)
             {
                 IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(part);
 
-                if (effects.OfType<GInterface191>().Any()) 
+                if (heavyBleedType != null && effects.Any(e => e.Type == heavyBleedType))
                 {
                     hasHeavyBleed = true;
                 }
-                if (effects.OfType<GInterface190>().Any())
+                if (lightBleedType != null && effects.Any(e => e.Type == lightBleedType))
                 {
                     hasLightBleed = true;
                 }
@@ -319,14 +314,14 @@ namespace RealismMod
         public static bool HasBaseEFTEffect(Player player, string targetEffect)
         {
             IEnumerable<IEffect> commonEffects = player.ActiveHealthController.GetAllEffects();
-            IReadOnlyList<GClass2103> effectsList = (IReadOnlyList<GClass2103>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
+            IReadOnlyList<GClass2102> effectsList = (IReadOnlyList<GClass2102>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
 
             Type targetType = null;
             if (MedProperties.EffectTypes.TryGetValue(targetEffect, out targetType))
             {
                 for (int i = effectsList.Count - 1; i >= 0; i--)
                 {
-                    ActiveHealthControllerClass.GClass2103 effect = effectsList[i];
+                    ActiveHealthControllerClass.GClass2102 effect = effectsList[i];
                     Type effectType = effect.Type;
  
                     if (effectType == targetType)
@@ -444,13 +439,13 @@ namespace RealismMod
                 List<Item> gear = new List<Item>();
                 List<EquipmentSlot> slots = new List<EquipmentSlot>();
 
-                if (BodyPartHasInjury(player, EBodyPart.Head))
+                if (BodyPartHasBleed(player, EBodyPart.Head))
                 {
                     slots.Add(EquipmentSlot.Headwear);
                     slots.Add(EquipmentSlot.Earpiece);
                     slots.Add(EquipmentSlot.FaceCover);
                 }
-                if (BodyPartHasInjury(player, EBodyPart.Stomach) || BodyPartHasInjury(player, EBodyPart.Chest))
+                if (BodyPartHasBleed(player, EBodyPart.Stomach) || BodyPartHasBleed(player, EBodyPart.Chest))
                 {
                     slots.Add(EquipmentSlot.TacticalVest);
                     slots.Add(EquipmentSlot.Backpack);
@@ -521,13 +516,17 @@ namespace RealismMod
             return faceBlocksMouth || headBlocksMouth;
         }
 
-        public static bool BodyPartHasInjury(Player player, EBodyPart part) 
+        public static bool BodyPartHasBleed(Player player, EBodyPart part) 
         {
             IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(part);
 
-            bool hasHeavyBleed = effects.OfType<GInterface191>().Any();
-            bool hasLightBleed = effects.OfType<GInterface190>().Any();
-            bool hasFracture = effects.OfType<GInterface193>().Any();
+            Type heavyBleedType;
+            Type lightBleedType;
+            MedProperties.EffectTypes.TryGetValue("HeavyBleeding", out heavyBleedType);
+            MedProperties.EffectTypes.TryGetValue("LightBleeding", out lightBleedType);
+
+            bool hasHeavyBleed = heavyBleedType != null && effects.Any(e => e.Type == heavyBleedType);
+            bool hasLightBleed = lightBleedType != null && effects.Any(e => e.Type == lightBleedType);
 
             if (hasHeavyBleed || hasLightBleed)
             {
@@ -536,13 +535,20 @@ namespace RealismMod
             return false;
         }
 
-        public static IEnumerable<IEffect> GetAllEffectsOnBodyPart(Player player, EBodyPart part, ref bool hasHeavyBleed, ref bool hasLightBleed, ref bool hasFracture)
+        public static IEnumerable<IEffect> GetInjuriesOnBodyPart(Player player, EBodyPart part, ref bool hasHeavyBleed, ref bool hasLightBleed, ref bool hasFracture)
         {
             IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(part);
 
-            hasHeavyBleed = effects.OfType<GInterface191>().Any();
-            hasLightBleed = effects.OfType<GInterface190>().Any();
-            hasFracture = effects.OfType<GInterface193>().Any();
+            Type heavyBleedType;
+            Type lightBleedType;
+            Type fractureType;
+            MedProperties.EffectTypes.TryGetValue("HeavyBleeding", out heavyBleedType);
+            MedProperties.EffectTypes.TryGetValue("LightBleeding", out lightBleedType);
+            MedProperties.EffectTypes.TryGetValue("BrokenBone", out fractureType);
+
+            hasHeavyBleed = heavyBleedType != null && effects.Any(e => e.Type == heavyBleedType);
+            hasLightBleed = lightBleedType != null && effects.Any(e => e.Type == lightBleedType);
+            hasFracture = fractureType != null && effects.Any(e => e.Type == fractureType);   
 
             return effects;
         }
@@ -691,7 +697,7 @@ namespace RealismMod
             bool hasLightBleed = false;
             bool hasFracture = false;
 
-            IEnumerable<IEffect> effects = GetAllEffectsOnBodyPart(player, bodyPart, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
+            IEnumerable<IEffect> effects = GetInjuriesOnBodyPart(player, bodyPart, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
 
             bool isHead = false;
             bool isBody = false;
@@ -788,7 +794,7 @@ namespace RealismMod
             bool hasLightBleed = false;
             bool hasFracture = false;
 
-            IEnumerable<IEffect> effects = GetAllEffectsOnBodyPart(player, bodyPart, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
+            IEnumerable<IEffect> effects = GetInjuriesOnBodyPart(player, bodyPart, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
 
             if (isNotLimb && MedProperties.HBleedHealType(item) == "trnqt")
             {
@@ -818,23 +824,31 @@ namespace RealismMod
         {
             IEnumerable<IEffect> commonEffects = player.ActiveHealthController.GetAllActiveEffects(EBodyPart.Common);
 
-            if (commonEffects.OfType<GInterface191>().Any() && commonEffects.OfType<GInterface190>().Any())
+            Type heavyBleedType;
+            Type lightBleedType;
+            MedProperties.EffectTypes.TryGetValue("HeavyBleeding", out heavyBleedType);
+            MedProperties.EffectTypes.TryGetValue("LightBleeding", out lightBleedType);
+
+            bool hasCommonHeavyBleed = heavyBleedType != null && commonEffects.Any(e => e.Type == heavyBleedType);
+            bool hasCommonLightBleed = lightBleedType != null && commonEffects.Any(e => e.Type == lightBleedType);
+
+            if (hasCommonHeavyBleed && hasCommonLightBleed)
             {
-                IReadOnlyList<GClass2103> effectsList = (IReadOnlyList<GClass2103>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
+                IReadOnlyList<GClass2102> effectsList = (IReadOnlyList<GClass2102>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
 
                 for (int i = effectsList.Count - 1; i >= 0; i--)
                 {
                     Type effectType = effectsList[i].Type;
                     EBodyPart effectPart = effectsList[i].BodyPart;
-                    ActiveHealthControllerClass.GClass2103 effect = effectsList[i];
+                    ActiveHealthControllerClass.GClass2102 effect = effectsList[i];
 
                     IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(effectPart);
-                    bool hasHeavyBleed = effects.OfType<GInterface191>().Any();
-                    bool hasLightBleed = effects.OfType<GInterface190>().Any();
+                    bool hasHeavyBleed = heavyBleedType != null && effects.Any(e => e.Type == heavyBleedType);
+                    bool hasLightBleed = lightBleedType != null && effects.Any(e => e.Type == lightBleedType);
 
-                    if (hasHeavyBleed && hasLightBleed && effectType == typeof(GInterface190))
-                    {     
-                        effect.ForceResidue();
+                    if (hasHeavyBleed && hasLightBleed && effectType == lightBleedType)
+                    {
+                         effect.ForceResidue();
                     }
                 }
             }
@@ -877,17 +891,19 @@ namespace RealismMod
             float totalMaxHp = 0f;
             float totalCurrentHp = 0f;
 
+            Type fractureType;
+            MedProperties.EffectTypes.TryGetValue("BrokenBone", out fractureType);
+
             foreach (EBodyPart part in BodyParts) 
             {
                 IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(part);
+                bool hasFracture = fractureType != null && effects.Any(e => e.Type == fractureType);
 
                 bool isLeftArm = part == EBodyPart.LeftArm;
                 bool isRightArm = part == EBodyPart.LeftArm;
                 bool isArm = isLeftArm || isRightArm;
                 bool isLeg = part == EBodyPart.LeftLeg || part == EBodyPart.RightLeg;
                 bool isBody = part == EBodyPart.Chest || part == EBodyPart.Stomach;
-
-                bool hasFracture = effects.OfType<GInterface193>().Any();
 
                 float currentHp = player.ActiveHealthController.GetBodyPartHealth(part).Current;
                 float maxHp = player.ActiveHealthController.GetBodyPartHealth(part).Maximum;

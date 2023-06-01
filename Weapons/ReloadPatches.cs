@@ -663,10 +663,6 @@ namespace RealismMod
 
     }
 
-
-
-
-
     /*    public class SetBoltCatch : ModulePatch
         {
             protected override MethodBase GetTargetMethod()
