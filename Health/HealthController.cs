@@ -834,7 +834,6 @@ namespace RealismMod
 
             if (hasCommonHeavyBleed && hasCommonLightBleed)
             {
-                logger.LogWarning("has both");
                 IReadOnlyList<GClass2102> effectsList = (IReadOnlyList<GClass2102>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
 
                 for (int i = effectsList.Count - 1; i >= 0; i--)
@@ -849,8 +848,7 @@ namespace RealismMod
 
                     if (hasHeavyBleed && hasLightBleed && effectType == lightBleedType)
                     {
-                        logger.LogWarning("removing light bleed");
-                        effect.ForceResidue();
+                         effect.ForceResidue();
                     }
                 }
             }

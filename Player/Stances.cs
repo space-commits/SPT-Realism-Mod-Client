@@ -63,6 +63,11 @@ namespace RealismMod
         private static bool gotCurrentStam = false;
         private static float currentStam = 100f;
 
+        public static Dictionary<string, bool> LightDictionary = new Dictionary<string, bool>();
+
+        public static bool toggledLight = false;
+
+
         public static void SetStanceStamina(Player player, Player.FirearmController fc) 
         {
             if (!Plugin.IsSprinting)
@@ -369,10 +374,63 @@ namespace RealismMod
                     WasShortStock = false;
                     Plugin.DidWeaponSwap = false;
                 }
-
-
             }
 
+        }
+
+        //doesn't work with multiple lights where one is off and the other is on
+        public static void ToggleDevice(FirearmController fc, bool activating, ManualLogSource logger) 
+        {
+            foreach (Mod mod in fc.Item.Mods)
+            {
+                LightComponent light;
+                if (mod.TryGetItemComponent<LightComponent>(out light))
+                {
+                    if (!LightDictionary.ContainsKey(mod.Id))
+                    {
+                        LightDictionary.Add(mod.Id, light.IsActive);
+                    }
+
+                    logger.LogWarning("mod " + mod.LocalizedName());
+                    logger.LogWarning("on " + light.IsActive);
+
+                    bool isOn = light.IsActive;
+                    bool state = false;
+
+                    if (!activating && isOn)
+                    {
+                        state = false;
+                        LightDictionary[mod.Id] = true;
+                    }
+                    if (!activating && !isOn)
+                    {
+                        LightDictionary[mod.Id] = false;
+                        return;
+                    }
+                    if (activating && isOn)
+                    {
+                        return;
+                    }
+                    if (activating && !isOn && LightDictionary[mod.Id])
+                    {
+                        state = true;
+                    }
+                    else if (activating && !isOn)
+                    {
+                        return;
+                    }
+
+                    fc.SetLightsState(new GStruct143[]
+                    {
+                        new GStruct143
+                        {
+                            Id = light.Item.Id,
+                            IsActive = state,
+                            LightMode = light.SelectedMode
+                        }
+                    }, false);
+                }
+            }
         }
 
         public static void DoPistolStances(bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation __instance, ref Quaternion currentRotation, float dt, ref bool hasResetPistolPos, Player player, ManualLogSource logger) 
@@ -462,7 +520,7 @@ namespace RealismMod
 
         public static void DoRifleStances(ManualLogSource logger, Player player, Player.FirearmController fc, bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation __instance, ref Quaternion currentRotation, float dt, ref bool isResettingShortStock, ref bool hasResetShortStock, ref bool hasResetLowReady, ref bool hasResetActiveAim, ref bool hasResetHighReady, ref bool isResettingHighReady, ref bool isResettingLowReady, ref bool isResettingActiveAim)
         {
-            float aimMulti = Mathf.Clamp(1f - ((1f - WeaponProperties.SightlessAimSpeed) * 1.5f), 0.65f, 0.95f);
+            float aimMulti = Mathf.Clamp(1f - ((1f - WeaponProperties.SightlessAimSpeed) * 1.5f), 0.6f, 0.98f);
             float stanceMulti = Mathf.Clamp(aimMulti * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f)), 0.45f, 0.95f);
             float invInjuryMulti = (1f - PlayerProperties.StanceInjuryMulti) + 1f;
             float resetAimMulti = (1f - stanceMulti) + 1f;
@@ -540,6 +598,8 @@ namespace RealismMod
             ////short-stock////
             if (StanceController.IsShortStock == true && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsLowReady && !__instance.IsAiming && !Plugin.IsSprinting && !StanceController.CancelShortStock)
             {
+                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireAccuracy * 4f;
+
                 __instance.CameraSmoothTime = 4f;
 
                 float activeToShort = 1f;
@@ -907,11 +967,62 @@ namespace RealismMod
 
             if (!StanceController.IsActiveAiming && !StanceController.IsShortStock)
             {
+                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireAccuracy * 2f;
+            }
+            if (StanceController.IsActiveAiming) 
+            {
                 __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireAccuracy;
             }
+
+            if (Plugin.StanceToggleDevice.Value)
+            {
+                if (!toggledLight && (IsHighReady || IsLowReady))
+                {
+                    ToggleDevice(fc, false, logger);
+                    toggledLight = true;
+                }
+                if (toggledLight && !IsHighReady && !IsLowReady)
+                {
+                    ToggleDevice(fc, true, logger);
+                    toggledLight = false;
+                }
+            }
+
         }
     }
 
+/*    public class LaserLateUpdatePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(LaserBeam).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(LaserBeam __instance)
+        {
+            if (Utils.IsReady)
+            {
+                if ((StanceController.IsHighReady == true || StanceController.IsLowReady == true) && !Plugin.IsAiming)
+                {
+                    Vector3 playerPos = Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position;
+                    Vector3 lightPos = __instance.gameObject.transform.position;
+                    float distanceFromPlayer = Vector3.Distance(lightPos, playerPos);
+                    if (distanceFromPlayer <= 1.8f)
+                    {
+                        return false;
+                    }
+                    return true;
+                }
+                return true;
+            }
+            else
+            {
+                return true;
+            }
+        }
+    }
+*/
     public class OnWeaponDrawPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -948,41 +1059,6 @@ namespace RealismMod
                 WeaponAnimationSpeedControllerClass.TriggerFiremodeSwitch(__instance.Animator);
             }
             return false;
-        }
-    }
-
-    public class LaserLateUpdatePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(LaserBeam).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic);
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(LaserBeam __instance)
-        {
-            if (Utils.IsReady) 
-            {
-                Light light = (Light)AccessTools.Field(typeof(LaserBeam), "light_0").GetValue(__instance);
-                light.intensity *= 0.1f;
-
-                if ((StanceController.IsHighReady == true || StanceController.IsLowReady == true) && !Plugin.IsAiming)
-                {
-                    Vector3 playerPos = Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position;
-                    Vector3 lightPos = __instance.gameObject.transform.position;
-                    float distanceFromPlayer = Vector3.Distance(lightPos, playerPos);
-                    if (distanceFromPlayer <= 1.8f)
-                    {
-                        return false;
-                    }
-                    return true;
-                }
-                return true;
-            }
-            else
-            {
-                return true;
-            }
         }
     }
 

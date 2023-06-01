@@ -457,8 +457,8 @@ namespace RealismMod
 
                         IEnumerable<IEffect> effects = RealismHealthController.GetInjuriesOnBodyPart(__instance, part, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
 
-                        float currentHp = __instance.ActiveHealthController.GetBodyPartHealth(bodyPart).Current;
-                        float maxHp = __instance.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;
+                        float currentHp = __instance.ActiveHealthController.GetBodyPartHealth(part).Current;
+                        float maxHp = __instance.ActiveHealthController.GetBodyPartHealth(part).Maximum;
 
                         if (medType == "surg" && ((isBody && !hasBodyGear) || (isHead && !hasHeadGear) || !isNotLimb))
                         {
