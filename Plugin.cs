@@ -304,9 +304,9 @@ namespace RealismMod
 
         public static Weapon CurrentlyShootingWeapon;
 
-        public static Vector3 WeaponOffsetPosition;
         public static Vector3 PistolTransformNewStartPosition;
         public static Vector3 TransformBaseStartPosition;
+        public static Vector3 WeaponOffsetPosition;
 
         public static bool DidWeaponSwap = false;
         public static bool IsSprinting = false;
@@ -316,7 +316,7 @@ namespace RealismMod
 
         public static bool IsBotFiring = false;
         public static bool GrenadeExploded = false;
-        public static bool IsAiming;
+        public static bool IsAiming = false;
         public static float Timer = 0.0f;
         public static float BotTimer = 0.0f;
         public static float GrenadeTimer = 0.0f;
