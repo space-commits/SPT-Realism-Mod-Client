@@ -741,7 +741,7 @@ namespace RealismMod
                 {
                     __instance.HandsContainer.HandsPosition.ReturnSpeed = Plugin.ThirdHighReadySpeedMulti.Value * stanceMulti;
 
-                    if (Plugin.EnableTacSprint.Value)
+                    if (!Plugin.EnableTacSprint.Value)
                     {
                         __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * highReadyTargetPostionThird;
                     }
