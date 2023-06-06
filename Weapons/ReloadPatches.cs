@@ -67,7 +67,7 @@ namespace RealismMod
                     Logger.LogWarning("SetAnimatorAndProceduralValues");
                 }
 
-                StanceController.ResetStances = true;
+                StanceController.DoResetStances = true;
             }
         }
     }
