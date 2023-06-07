@@ -58,9 +58,10 @@ namespace RealismMod
 
                     __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.StartingConvergence * __instance.Aiming.RecoilConvergenceMult;
                     __instance.HandsContainer.Recoil.Damping = WeaponProperties.TotalRecoilDamping;
-                    __instance.HandsContainer.HandsPosition.Damping = WeaponProperties.TotalRecoilHandDamping;
 
-                    if (Plugin.EnableLogging.Value == true)
+                    WeaponProperties.AnimationWeightFactor = 1f - (singleItemTotalWeight / 12f);
+
+                    if (Plugin.EnableLogging.Value == true) 
                     {
                         Logger.LogWarning("========UpdateWeaponVariables=======");
                         Logger.LogWarning("singleItemTotalWeight = " + singleItemTotalWeight);
@@ -153,7 +154,7 @@ namespace RealismMod
                     __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = handsIntensity * handsIntensity); //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
                     PlayerProperties.TotalHandsIntensity = __instance.HandsContainer.HandsRotation.InputIntensity;
 
-                    __instance.Shootingg.Intensity = Plugin.RecoilIntensity.Value;
+                    __instance.Shootingg.Intensity = Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value;
                     __instance.Overweight = 0;
                 }
             }

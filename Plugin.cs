@@ -356,6 +356,8 @@ namespace RealismMod
 
         public static float healthControllerTick = 0f;
 
+        public static bool IsInThirdPerson = false;
+
         public static Player.BetterValueBlender StanceBlender = new Player.BetterValueBlender
         {
             Speed = 5f,
@@ -762,8 +764,7 @@ namespace RealismMod
                             if (Plugin.RealTimeGain.Value < 20)
                             {
                                 Plugin.RealTimeGain.Value += 1f;
-                                Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0,0,0), Plugin.LoadedAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Character, 100, 1.0f, EOcclusionTest.None, null, false);
-
+                                Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0,0,0), Plugin.LoadedAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 1.0f, EOcclusionTest.None, null, false);
                             }
                         }
                         if (Input.GetKeyDown(Plugin.DecGain.Value.MainKey) && Plugin.HasHeadSet)
@@ -772,7 +773,7 @@ namespace RealismMod
                             if (Plugin.RealTimeGain.Value > 0)
                             {
                                 Plugin.RealTimeGain.Value -= 1f;
-                                Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), Plugin.LoadedAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Character, 100, 1.0f, EOcclusionTest.None, null, false);
+                                Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), Plugin.LoadedAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 1.0f, EOcclusionTest.None, null, false);
                             }
                         }
 

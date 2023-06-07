@@ -124,7 +124,7 @@ namespace RealismMod
                 }
                 if (HpRegened >= maxHpRegen || currentHp == maxHp)
                 {
-                    NotificationManagerClass.DisplayMessageNotification("Surgical Kit Health Regeneration On " + BodyPart + "Has Expired", EFT.Communications.ENotificationDurationType.Long);
+                    NotificationManagerClass.DisplayMessageNotification("Surgical Kit Health Regeneration On " + BodyPart + " Has Expired", EFT.Communications.ENotificationDurationType.Long);
                     Duration = 0;
                     return;
                 }

@@ -146,6 +146,8 @@ namespace RealismMod
 
         }
 
+        public static float AnimationWeightFactor = 1f;
+
         public static float BaseHipfireAccuracy;
 
         public static float BaseWeaponLength = 0f;

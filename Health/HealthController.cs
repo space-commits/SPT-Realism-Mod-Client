@@ -707,17 +707,23 @@ namespace RealismMod
 
             if (Plugin.TrnqtEffect.Value && hasHeavyBleed && canHealHBleed)
             {
+#pragma warning disable CS4014
                 handleHeavyBleedHeal(medType, meds, bodyPart, player, hBleedHealType, isNotLimb, vitalitySkill, regenTickRate);
+#pragma warning restore CS4014
             }
 
             if (medType == "surg")
             {
+#pragma warning disable CS4014
                 handleSurgery(medType, meds, bodyPart, player, vitalitySkill);
+#pragma warning restore CS4014
             }
 
             if (canHealLBleed && hasLightBleed && !hasHeavyBleed && (medType == "trnqt" && !isNotLimb || medType != "trnqt"))
             {
+#pragma warning disable CS4014
                 handleLightBleedHeal(medType, meds, bodyPart, player, isNotLimb, vitalitySkill, regenTickRate);
+#pragma warning restore CS4014
             }
 
             if (canHealFract && hasFracture && (medType == "splint" || (medType == "medkit" && !hasHeavyBleed && !hasLightBleed)))
