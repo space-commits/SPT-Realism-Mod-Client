@@ -105,6 +105,10 @@ namespace RealismMod
         public static ConfigEntry<float> WeapOffsetY { get; set; }
         public static ConfigEntry<float> WeapOffsetZ { get; set; }
 
+        public static ConfigEntry<float> StanceTransitionSpeed { get; set; }
+        public static ConfigEntry<float> ThirdPersonPositionSpeed { get; set; }
+        public static ConfigEntry<float> ThirdPersonRotationSpeed { get; set; }
+
         public static ConfigEntry<float> ActiveAimRotationX { get; set; }
         public static ConfigEntry<float> ActiveAimRotationY { get; set; }
         public static ConfigEntry<float> ActiveAimRotationZ { get; set; }
@@ -216,49 +220,7 @@ namespace RealismMod
         public static ConfigEntry<float> ShortStockReadyRotationX { get; set; }
         public static ConfigEntry<float> ShortStockReadyRotationY { get; set; }
         public static ConfigEntry<float> ShortStockReadyRotationZ { get; set; }
-
-        public static ConfigEntry<float> ThirdPistolPosSpeedMulti { get; set; }
-        public static ConfigEntry<float> ThirdLowReadySpeedMulti { get; set; }
-        public static ConfigEntry<float> ThirdHighReadySpeedMulti { get; set; }
-        public static ConfigEntry<float> ThirdShortStockSpeedMulti { get; set; }
-        public static ConfigEntry<float> ThirdActiveAimSpeedMulti { get; set; }
-
-        public static ConfigEntry<float> ThirdShortStockOffsetX { get; set; }
-        public static ConfigEntry<float> ThirdShortStockOffsetY { get; set; }
-        public static ConfigEntry<float> ThirdShortStockOffsetZ { get; set; }
-        public static ConfigEntry<float> ThirdShortStockRotationX { get; set; }
-        public static ConfigEntry<float> ThirdShortStockRotationY { get; set; }
-        public static ConfigEntry<float> ThirdShortStockRotationZ { get; set; }
-
-        public static ConfigEntry<float> ThirdHighReadyOffsetX { get; set; }
-        public static ConfigEntry<float> ThirdHighReadyOffsetY { get; set; }
-        public static ConfigEntry<float> ThirdHighReadyOffsetZ { get; set; }
-        public static ConfigEntry<float> ThirdHighReadyRotationX { get; set; }
-        public static ConfigEntry<float> ThirdHighReadyRotationY { get; set; }
-        public static ConfigEntry<float> ThirdHighReadyRotationZ { get; set; }
-
-        public static ConfigEntry<float> ThirdLowReadyOffsetX { get; set; }
-        public static ConfigEntry<float> ThirdLowReadyOffsetY { get; set; }
-        public static ConfigEntry<float> ThirdLowReadyOffsetZ { get; set; }
-        public static ConfigEntry<float> ThirdLowReadyRotationX { get; set; }
-        public static ConfigEntry<float> ThirdLowReadyRotationY { get; set; }
-        public static ConfigEntry<float> ThirdLowReadyRotationZ { get; set; }
-
-
-        public static ConfigEntry<float> ThirdActiveAimOffsetX { get; set; }
-        public static ConfigEntry<float> ThirdActiveAimOffsetY { get; set; }
-        public static ConfigEntry<float> ThirdActiveAimOffsetZ { get; set; }
-        public static ConfigEntry<float> ThirdActiveAimRotationX { get; set; }
-        public static ConfigEntry<float> ThirdActiveAimRotationY { get; set; }
-        public static ConfigEntry<float> ThirdActiveAimRotationZ { get; set; }
-
-        public static ConfigEntry<float> ThirdPistolOffsetX { get; set; }
-        public static ConfigEntry<float> ThirdPistolOffsetY { get; set; }
-        public static ConfigEntry<float> ThirdPistolOffsetZ { get; set; }
-        public static ConfigEntry<float> ThirdPistolRotationX { get; set; }
-        public static ConfigEntry<float> ThirdPistolRotationY { get; set; }
-        public static ConfigEntry<float> ThirdPistolRotationZ { get; set; }
-
+      
         public static ConfigEntry<float> GlobalAimSpeedModifier { get; set; }
         public static ConfigEntry<float> GlobalReloadSpeedMulti { get; set; }
         public static ConfigEntry<float> GlobalFixSpeedMulti { get; set; }
@@ -992,7 +954,10 @@ namespace RealismMod
             WeapOffsetY = Config.Bind<float>(weapAimAndPos, "Weapon Position Y-Axis", 0.0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 151 }));
             WeapOffsetZ = Config.Bind<float>(weapAimAndPos, "Weapon Position Z-Axis", 0.0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 150 }));
 
-            ThirdActiveAimSpeedMulti = Config.Bind<float>(activeAim, "Third Person Active Aim Speed Multi", 0.15f, new ConfigDescription("", new AcceptableValueRange<float>(0.01f, 1.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 146, IsAdvanced = true }));
+            StanceTransitionSpeed = Config.Bind<float>(weapAimAndPos, "Stance Transition Speed", 8.0f, new ConfigDescription("Adjusts The Position Change Speed Between Stances.", new AcceptableValueRange<float>(1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true }));
+            ThirdPersonRotationSpeed = Config.Bind<float>(weapAimAndPos, "Third Person Postion Speed Multi", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 144, IsAdvanced = true }));
+            ThirdPersonPositionSpeed = Config.Bind<float>(weapAimAndPos, "Third Person Transition Speed Multi", 2.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 143, IsAdvanced = true }));
+
             ActiveAimAdditionalRotationSpeedMulti = Config.Bind<float>(activeAim, "Active Aim Additonal Rotation Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true }));
             ActiveAimResetRotationSpeedMulti = Config.Bind<float>(activeAim, "Active Aim Reset Rotation Speed Multi", 3.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true }));
             ActiveAimRotationMulti = Config.Bind<float>(activeAim, "Active Aim Rotation Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 144, IsAdvanced = true }));
@@ -1003,27 +968,18 @@ namespace RealismMod
             ActiveAimOffsetY = Config.Bind<float>(activeAim, "Active Aim Position Y-Axis", -0.01f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 134, IsAdvanced = true }));
             ActiveAimOffsetZ = Config.Bind<float>(activeAim, "Active Aim Position Z-Axis", -0.01f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 133, IsAdvanced = true }));
 
-            ThirdActiveAimOffsetX = Config.Bind<float>(activeAim, "Third Person Active Aim Position X-Axis", -0.015f, new ConfigDescription("Weapon Position When In Stance In Third Person.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 132, IsAdvanced = true }));
-            ThirdActiveAimOffsetY = Config.Bind<float>(activeAim, "Third Person Active Aim Position Y-Axis", -0.01f, new ConfigDescription("Weapon Position When In Stance In Third Person.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 131, IsAdvanced = true }));
-            ThirdActiveAimOffsetZ = Config.Bind<float>(activeAim, "Third Person Active Aim Position Z-Axis", 0.05f, new ConfigDescription("Weapon Position When In Stance In Third Person.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 130, IsAdvanced = true }));
-
-            ThirdActiveAimRotationX = Config.Bind<float>(activeAim, "Third Person Active Aim Rotation X-Axis", 0.0f, new ConfigDescription("Third Person Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 125, IsAdvanced = true }));
-            ThirdActiveAimRotationY = Config.Bind<float>(activeAim, "Third Person Active Aim Rotation Y-Axis", -120.0f, new ConfigDescription("Third Person Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 124, IsAdvanced = true }));
-            ThirdActiveAimRotationZ = Config.Bind<float>(activeAim, "Third Person Active Aim Rotation Z-Axis", 0.0f, new ConfigDescription("Third Person Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 123, IsAdvanced = true }));
-
             ActiveAimRotationX = Config.Bind<float>(activeAim, "Active Aim Rotation X-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 122, IsAdvanced = true }));
             ActiveAimRotationY = Config.Bind<float>(activeAim, "Active Aim Rotation Y-Axis", -30.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 121, IsAdvanced = true }));
             ActiveAimRotationZ = Config.Bind<float>(activeAim, "Active Aim Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 120, IsAdvanced = true }));
             
             ActiveAimAdditionalRotationX = Config.Bind<float>(activeAim, "Active Aiming Additional Rotation X-Axis", -1.5f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 111, IsAdvanced = true }));
-            ActiveAimAdditionalRotationY = Config.Bind<float>(activeAim, "Active Aiming Additional Rotation Y-Axis", -80f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true }));
+            ActiveAimAdditionalRotationY = Config.Bind<float>(activeAim, "Active Aiming Additional Rotation Y-Axis", -70f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true }));
             ActiveAimAdditionalRotationZ = Config.Bind<float>(activeAim, "Active Aiming Additional Rotation Z-Axis", 2f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true }));
 
             ActiveAimResetRotationX = Config.Bind<float>(activeAim, "Active Aiming Reset Rotation X-Axis", 5.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 102, IsAdvanced = true }));
-            ActiveAimResetRotationY = Config.Bind<float>(activeAim, "Active Aiming Reset Rotation Y-Axis", 60.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 101, IsAdvanced = true }));
+            ActiveAimResetRotationY = Config.Bind<float>(activeAim, "Active Aiming Reset Rotation Y-Axis", 50.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 101, IsAdvanced = true }));
             ActiveAimResetRotationZ = Config.Bind<float>(activeAim, "Active Aiming Reset Rotation Z-Axis", -3.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = true }));
 
-            ThirdHighReadySpeedMulti = Config.Bind<float>(highReady, "Third Person High Ready Speed Multi", 0.1f, new ConfigDescription("How Fast The Weapon Moves Going Into Stance", new AcceptableValueRange<float>(0.01f, 1.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 95, IsAdvanced = true }));
             HighReadyAdditionalRotationSpeedMulti = Config.Bind<float>(highReady, "High Ready Additonal Rotation Speed Multi", 1.25f, new ConfigDescription("How Fast The Weapon Rotates Going Out Of Stance.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 94, IsAdvanced = true }));
             HighReadyResetRotationMulti = Config.Bind<float>(highReady, "High Ready Reset Rotation Speed Multi", 3.5f, new ConfigDescription("How Fast The Weapon Rotates Going Out Of Stance.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 93, IsAdvanced = true }));
             HighReadyRotationMulti = Config.Bind<float>(highReady, "High Ready Rotation Speed Multi", 1.8f, new ConfigDescription("How Fast The Weapon Rotates Going Into Stance.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 92, IsAdvanced = true }));
@@ -1033,14 +989,6 @@ namespace RealismMod
             HighReadyOffsetX = Config.Bind<float>(highReady, "High Ready Position X-Axis", 0.005f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 85, IsAdvanced = true }));
             HighReadyOffsetY = Config.Bind<float>(highReady, "High Ready Position Y-Axis", 0.04f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 84, IsAdvanced = true }));
             HighReadyOffsetZ = Config.Bind<float>(highReady, "High Ready Position Z-Axis", -0.05f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 83, IsAdvanced = true }));
-
-            ThirdHighReadyOffsetX = Config.Bind<float>(highReady, "Third Person High Ready Position X-Axis", 0.055f, new ConfigDescription("Weapon Position When In Stance In Third Person.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 82, IsAdvanced = true }));
-            ThirdHighReadyOffsetY = Config.Bind<float>(highReady, "Third Person High Ready Position Y-Axis", 0.17f, new ConfigDescription("Weapon Position When In Stance In Third Person.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 81, IsAdvanced = true }));
-            ThirdHighReadyOffsetZ = Config.Bind<float>(highReady, "Third Person High Ready Position Z-Axis", -0.2f, new ConfigDescription("Weapon Position When In Stance In Third Person.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 80, IsAdvanced = true }));
-
-            ThirdHighReadyRotationX = Config.Bind<float>(highReady, "Third Person High Ready Rotation X-Axis", -140.0f, new ConfigDescription("Third Person Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 75, IsAdvanced = true }));
-            ThirdHighReadyRotationY = Config.Bind<float>(highReady, "Third Person High Ready Rotation Y-Axis", 0.0f, new ConfigDescription("Third Person Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 74, IsAdvanced = true }));
-            ThirdHighReadyRotationZ = Config.Bind<float>(highReady, "Third Person High Ready Rotation Z-Axis", 20.0f, new ConfigDescription("Third Person Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 73, IsAdvanced = true }));
 
             HighReadyRotationX = Config.Bind<float>(highReady, "High Ready Rotation X-Axis", -10.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 72, IsAdvanced = true }));
             HighReadyRotationY = Config.Bind<float>(highReady, "High Ready Rotation Y-Axis", 3.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 71, IsAdvanced = true }));
@@ -1054,7 +1002,6 @@ namespace RealismMod
             HighReadyResetRotationY = Config.Bind<float>(highReady, "High Ready Reset Rotation Y-Axis", -1.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 65, IsAdvanced = true }));
             HighReadyResetRotationZ = Config.Bind<float>(highReady, "High Ready Reset Rotation Z-Axis", 1.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 64, IsAdvanced = true }));
 
-            ThirdLowReadySpeedMulti = Config.Bind<float>(lowReady, "Third Person Low Ready Speed Multi", 0.15f, new ConfigDescription("", new AcceptableValueRange<float>(0.01f, 1.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 65, IsAdvanced = true }));
             LowReadyAdditionalRotationSpeedMulti = Config.Bind<float>(lowReady, "Low Ready Additonal Rotation Speed Multi", 0.5f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 64, IsAdvanced = true }));
             LowReadyResetRotationMulti = Config.Bind<float>(lowReady, "Low Ready Reset Rotation Speed Multi", 2.5f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 63, IsAdvanced = true }));
             LowReadyRotationMulti = Config.Bind<float>(lowReady, "Low Ready Rotation Speed Multi", 2.0f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 62, IsAdvanced = true }));
@@ -1064,14 +1011,6 @@ namespace RealismMod
             LowReadyOffsetX = Config.Bind<float>(lowReady, "Low Ready Position X-Axis", -0.01f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 55, IsAdvanced = true }));
             LowReadyOffsetY = Config.Bind<float>(lowReady, "Low Ready Position Y-Axis", -0.01f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 54, IsAdvanced = true }));
             LowReadyOffsetZ = Config.Bind<float>(lowReady, "Low Ready Position Z-Axis", 0.0f, new ConfigDescription("Weapon Position When In Stance..", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 53, IsAdvanced = true }));
-
-            ThirdLowReadyOffsetX = Config.Bind<float>(lowReady, "Third Person Low Ready Position X-Axis", 0.04f, new ConfigDescription("Weapon Position When In Stance In Third Person.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 52, IsAdvanced = true }));
-            ThirdLowReadyOffsetY = Config.Bind<float>(lowReady, "Third Person Low Ready Position Y-Axis", -0.01f, new ConfigDescription("Weapon Position When In Stance In Third Person.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 51, IsAdvanced = true }));
-            ThirdLowReadyOffsetZ = Config.Bind<float>(lowReady, "Third Person Low Ready Position Z-Axis", -0.02f, new ConfigDescription("Weapon Position When In Stance In Third Person.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 50, IsAdvanced = true }));
-           
-            ThirdLowReadyRotationX = Config.Bind<float>(lowReady, "Third Person Low Ready Rotation X-Axis", 90.0f, new ConfigDescription("Third Person Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 45, IsAdvanced = true }));
-            ThirdLowReadyRotationY = Config.Bind<float>(lowReady, "Third Person Low Ready Rotation Y-Axis", 40.0f, new ConfigDescription("Third Person Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 44, IsAdvanced = true }));
-            ThirdLowReadyRotationZ = Config.Bind<float>(lowReady, "Third Person Low Ready Rotation Z-Axis", 10.0f, new ConfigDescription("Third Person Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 43, IsAdvanced = true }));
 
             LowReadyRotationX = Config.Bind<float>(lowReady, "Low Ready Rotation X-Axis", 8, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 42, IsAdvanced = true }));
             LowReadyRotationY = Config.Bind<float>(lowReady, "Low Ready Rotation Y-Axis", -5.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 41, IsAdvanced = true }));
@@ -1085,7 +1024,6 @@ namespace RealismMod
             LowReadyResetRotationY = Config.Bind<float>(lowReady, "Low Ready Reset Rotation Y-Axis", 2.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 35, IsAdvanced = true }));
             LowReadyResetRotationZ = Config.Bind<float>(lowReady, "Low Ready Reset Rotation Z-Axis", -0.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 34, IsAdvanced = true }));
 
-            ThirdPistolPosSpeedMulti = Config.Bind<float>(pistol, "Third Person Pistol Position Speed Multi", 0.08f, new ConfigDescription("", new AcceptableValueRange<float>(0.01f, 1.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 36, IsAdvanced = true }));
             PistolAdditionalRotationSpeedMulti = Config.Bind<float>(pistol, "Pistol Additional Rotation Speed Multi", 1f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 35, IsAdvanced = true }));
             PistolResetRotationSpeedMulti = Config.Bind<float>(pistol, "Pistol Reset Rotation Speed Multi", 5f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 34, IsAdvanced = true }));
             PistolRotationSpeedMulti = Config.Bind<float>(pistol, "Pistol Rotation Speed Multi", 1f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 33, IsAdvanced = true }));
@@ -1095,14 +1033,6 @@ namespace RealismMod
             PistolOffsetX = Config.Bind<float>(pistol, "Pistol Position X-Axis", 0.025f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 25, IsAdvanced = true }));
             PistolOffsetY = Config.Bind<float>(pistol, "Pistol Position Y-Axis", 0.02f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 24, IsAdvanced = true }));
             PistolOffsetZ = Config.Bind<float>(pistol, "Pistol Position Z-Axis", -0.035f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 23, IsAdvanced = true }));
-
-            ThirdPistolOffsetX = Config.Bind<float>(pistol, "Third Person Pistol Position X-Axis", -0.05f, new ConfigDescription("Weapon Position When In Stance In Third Person.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 22, IsAdvanced = true }));
-            ThirdPistolOffsetY = Config.Bind<float>(pistol, "Third Person Pistol Position Y-Axis", 0.15f, new ConfigDescription("Weapon Position When In Stance In Third Person.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 21, IsAdvanced = true }));
-            ThirdPistolOffsetZ = Config.Bind<float>(pistol, "Third Person Pistol Position Z-Axis", -0.15f, new ConfigDescription("Weapon Position When In Stance In Third Person.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, IsAdvanced = true }));
-
-            ThirdPistolRotationX = Config.Bind<float>(pistol, "Third Person Pistol Rotation X-Axis", -2.5f, new ConfigDescription("Third Person Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15, IsAdvanced = true }));
-            ThirdPistolRotationY = Config.Bind<float>(pistol, "Third Person Pistol Rotation Y-Axis", -20f, new ConfigDescription("Third Person Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14, IsAdvanced = true }));
-            ThirdPistolRotationZ = Config.Bind<float>(pistol, "Third Person Pistol Rotation Z-Axis", 0.0f, new ConfigDescription("Third Person Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13, IsAdvanced = true }));
 
             PistolRotationX = Config.Bind<float>(pistol, "Pistol Rotation X-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true }));
             PistolRotationY = Config.Bind<float>(pistol, "Pistol Rotation Y-Axis", -15f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, IsAdvanced = true }));
@@ -1116,7 +1046,6 @@ namespace RealismMod
             PistolResetRotationY = Config.Bind<float>(pistol, "Pistol Ready Reset Rotation Y-Axis", 2.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
             PistolResetRotationZ = Config.Bind<float>(pistol, "Pistol Ready Reset Rotation Z-Axis", 1.2f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, IsAdvanced = true }));
 
-            ThirdShortStockSpeedMulti = Config.Bind<float>(shortStock, "Third Person Short-Stock Position Speed Multi", 0.08f, new ConfigDescription("", new AcceptableValueRange<float>(0.01f, 1.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 36, IsAdvanced = true }));
             ShortStockAdditionalRotationSpeedMulti = Config.Bind<float>(shortStock, "Short-Stock Additional Rotation Speed Multi", 2.0f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.1f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 35, IsAdvanced = true }));
             ShortStockResetRotationSpeedMulti = Config.Bind<float>(shortStock, "Short-Stock Reset Rotation Speed Multi", 2.0f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.1f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 34, IsAdvanced = true }));
             ShortStockRotationMulti = Config.Bind<float>(shortStock, "Short-Stock Rotation Speed Multi", 2.0f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.1f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 33, IsAdvanced = true }));
@@ -1126,14 +1055,6 @@ namespace RealismMod
             ShortStockOffsetX = Config.Bind<float>(shortStock, "Short-Stock Position X-Axis", 0.02f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 25, IsAdvanced = true }));
             ShortStockOffsetY = Config.Bind<float>(shortStock, "Short-Stock Position Y-Axis", 0.1f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 24, IsAdvanced = true }));
             ShortStockOffsetZ = Config.Bind<float>(shortStock, "Short-Stock Position Z-Axis", -0.025f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 23, IsAdvanced = true }));
-
-            ThirdShortStockOffsetX = Config.Bind<float>(shortStock, "Third Person Short-Stock Position X-Axis", 0.045f, new ConfigDescription("Weapon Position When In Stance In Third Person.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 22, IsAdvanced = true }));
-            ThirdShortStockOffsetY = Config.Bind<float>(shortStock, "Third Person Short-Stock Position Y-Axis", 0.25f, new ConfigDescription("Weapon Position When In Stance In Third Person.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 21, IsAdvanced = true }));
-            ThirdShortStockOffsetZ = Config.Bind<float>(shortStock, "Third Person Short-Stock Position Z-Axis", -0.23f, new ConfigDescription("Weapon Position When In Stance In Third Person .", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, IsAdvanced = true }));
-
-            ThirdShortStockRotationX = Config.Bind<float>(shortStock, "Third Person Short-Stock Rotation X-Axis", 0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15, IsAdvanced = true }));
-            ThirdShortStockRotationY = Config.Bind<float>(shortStock, "Third Person Short-Stock Rotation Y-Axis", 50.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14, IsAdvanced = true }));
-            ThirdShortStockRotationZ = Config.Bind<float>(shortStock, "Third Person Short-Stock Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13, IsAdvanced = true }));
 
             ShortStockRotationX = Config.Bind<float>(shortStock, "Short-Stock Rotation X-Axis", 0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true }));
             ShortStockRotationY = Config.Bind<float>(shortStock, "Short-Stock Rotation Y-Axis", -15.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, IsAdvanced = true }));
