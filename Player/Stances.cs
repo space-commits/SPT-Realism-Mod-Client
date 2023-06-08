@@ -609,23 +609,48 @@ namespace RealismMod
             {
                 __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireAccuracy * 4f;
 
+                float activeToShort = 1f;
+                float highToShort = 1f;
+                float lowToShort = 1f;
                 isResettingShortStock = false;
                 hasResetShortStock = false;
-                hasResetActiveAim = true;
-                hasResetHighReady = true;
-                hasResetLowReady = true;
 
-                Plugin.StanceBlender.Speed = Plugin.ShortStockSpeedMulti.Value * stanceMulti * (isThirdPerson ? Plugin.ThirdPersonPositionSpeed.Value : 1f);
-                StanceController.StanceTargetPosition = Vector3.Lerp(StanceController.StanceTargetPosition, shortStockTargetPosition, Plugin.StanceTransitionSpeed.Value * stanceMulti * dt);
+                if (StanceController.StanceTargetPosition != shortStockTargetPosition)
+                {
+                    if (!hasResetActiveAim)
+                    {
+                        activeToShort = 1.5f;
+                    }
+                    if (!hasResetHighReady)
+                    {
+                        highToShort = 1.0f;
+                    }
+                    if (!hasResetLowReady)
+                    {
+                        lowToShort = 1.0f;
+                    }
+                }
+                if (StanceController.StanceTargetPosition == shortStockTargetPosition)
+                {
+                    hasResetActiveAim = true;
+                    hasResetHighReady = true;
+                    hasResetLowReady = true;
+                }
 
-                rotationSpeed = 4f * stanceMulti * dt * Plugin.ShortStockRotationMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
+                float transitionSpeedFactor = activeToShort * highToShort * lowToShort;
+
+                rotationSpeed = 4f * stanceMulti * dt * Plugin.ShortStockRotationMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f) * transitionSpeedFactor;
                 stanceRotation = shortStockTargetQuaternion;
 
                 if (Plugin.StanceBlender.Value < 1f)
                 {
-                    rotationSpeed = 4f * stanceMulti * dt * Plugin.ShortStockAdditionalRotationSpeedMulti.Value;
+                    rotationSpeed = 4f * stanceMulti * dt * Plugin.ShortStockAdditionalRotationSpeedMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f) * transitionSpeedFactor;
                     stanceRotation = shortStockMiniTargetQuaternion;
                 }
+
+                Plugin.StanceBlender.Speed = Plugin.ShortStockSpeedMulti.Value * stanceMulti * (isThirdPerson ? Plugin.ThirdPersonPositionSpeed.Value : 1f);
+                StanceController.StanceTargetPosition = Vector3.Lerp(StanceController.StanceTargetPosition, shortStockTargetPosition, Plugin.StanceTransitionSpeed.Value * stanceMulti * dt);
+
             }
             else if (Plugin.StanceBlender.Value > 0f && !hasResetShortStock && !StanceController.IsLowReady && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !isResettingActiveAim && !isResettingHighReady && !isResettingLowReady)
             {
@@ -650,11 +675,35 @@ namespace RealismMod
             ////high ready////
             if (StanceController.IsHighReady == true && !StanceController.IsActiveAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !__instance.IsAiming && !StanceController.IsFiringFromStance && !StanceController.CancelHighReady)
             {
+                float shortToHighMulti = 1.0f;
+                float lowToHighMulti = 1.0f;
+                float activeToHighMulti = 1.0f;
                 isResettingHighReady = false;
                 hasResetHighReady = false;
-                hasResetActiveAim = true;
-                hasResetLowReady = true;
-                hasResetShortStock = true;
+      
+                if (StanceController.StanceTargetPosition != highReadyTargetPosition)
+                {
+                    if (!hasResetShortStock)
+                    {
+                        shortToHighMulti = 1.0f;
+                    }
+                    if (!hasResetActiveAim)
+                    {
+                        activeToHighMulti = 2.0f;
+                    }
+                    if (!hasResetLowReady)
+                    {
+                        lowToHighMulti = 1.0f;
+                    }
+                }
+                if (StanceController.StanceTargetPosition == highReadyTargetPosition)
+                {
+                    hasResetActiveAim = true;
+                    hasResetLowReady = true;
+                    hasResetShortStock = true;
+                }
+
+                float transitionSpeedFactor = shortToHighMulti * lowToHighMulti * activeToHighMulti;
 
                 if (StanceController.DoHighReadyInjuredAnim)
                 {
@@ -662,17 +711,17 @@ namespace RealismMod
                     stanceRotation = highReadyMiniTargetQuaternion;
                     if (Plugin.StanceBlender.Value < 1f)
                     {
-                        rotationSpeed = 4f * stanceMulti * dt * Plugin.HighReadyRotationMulti.Value * 0.25f * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
+                        rotationSpeed = 4f * stanceMulti * dt * Plugin.HighReadyRotationMulti.Value * 0.5f * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
                         stanceRotation = lowReadyTargetQuaternion;
                     }
                 }
                 else
                 {
-                    rotationSpeed = 4f * stanceMulti * dt * Plugin.HighReadyRotationMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
+                    rotationSpeed = 4f * stanceMulti * dt * Plugin.HighReadyRotationMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f) * transitionSpeedFactor;
                     stanceRotation = highReadyTargetQuaternion;
                     if (Plugin.StanceBlender.Value < 1f)
                     {
-                        rotationSpeed = 4f * stanceMulti * dt * Plugin.HighReadyAdditionalRotationSpeedMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
+                        rotationSpeed = 4f * stanceMulti * dt * Plugin.HighReadyAdditionalRotationSpeedMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f) * transitionSpeedFactor;
                         stanceRotation = highReadyMiniTargetQuaternion;
                     }
                 }
@@ -706,17 +755,42 @@ namespace RealismMod
             ////low ready////
             if (StanceController.IsLowReady == true && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsShortStock && !__instance.IsAiming && !StanceController.IsFiringFromStance && !StanceController.CancelLowReady)
             {
+                float highToLow = 1.0f;
+                float shortToLow = 1.0f;
+                float activeToLow = 1.0f;
                 isResettingLowReady = false;
                 hasResetLowReady = false;
-                hasResetHighReady = true;
-                hasResetShortStock = true;
-                hasResetActiveAim = true;
 
-                rotationSpeed = 4f * stanceMulti * dt * Plugin.LowReadyRotationMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
+                if (StanceController.StanceTargetPosition != lowReadyTargetPosition)
+                {
+                    if (!hasResetHighReady)
+                    {
+                        highToLow = 1.0f;
+                    }
+                    if (!hasResetShortStock)
+                    {
+                        shortToLow = 1.0f;
+                    }
+                    if (!hasResetActiveAim)
+                    {
+                        activeToLow = 2.0f;
+                    }
+
+                }
+                if (StanceController.StanceTargetPosition == lowReadyTargetPosition)
+                {
+                    hasResetHighReady = true;
+                    hasResetShortStock = true;
+                    hasResetActiveAim = true;
+                }
+
+                float transitionSpeedFactor = highToLow * shortToLow * activeToLow;
+
+                rotationSpeed = 4f * stanceMulti * dt * Plugin.LowReadyRotationMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f) * transitionSpeedFactor;
                 stanceRotation = lowReadyTargetQuaternion;
                 if (Plugin.StanceBlender.Value < 1f)
                 {
-                    rotationSpeed = 4f * stanceMulti * dt * Plugin.LowReadyAdditionalRotationSpeedMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
+                    rotationSpeed = 4f * stanceMulti * dt * Plugin.LowReadyAdditionalRotationSpeedMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f) * transitionSpeedFactor;
                     stanceRotation = lowReadyMiniTargetQuaternion;
                 }
 
@@ -749,17 +823,41 @@ namespace RealismMod
             ////active aiming////
             if (StanceController.IsActiveAiming == true && !__instance.IsAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !StanceController.IsHighReady && !StanceController.CancelActiveAim)
             {
+                float shortToActive = 1f;
+                float highToActive = 1f;
+                float lowToActive = 1f;
                 isResettingActiveAim = false;
                 hasResetActiveAim = false;
-                hasResetShortStock = true;
-                hasResetHighReady = true;
-                hasResetLowReady = true;
 
-                rotationSpeed = 4f * stanceMulti * dt * Plugin.ActiveAimRotationMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
+                if (StanceController.StanceTargetPosition != activeAimTargetPosition)
+                {
+                    if (!hasResetShortStock)
+                    {
+                        shortToActive = 2f;
+                    }
+                    if (!hasResetHighReady)
+                    {
+                        highToActive = 2.25f;
+                    }
+                    if (!hasResetLowReady)
+                    {
+                        lowToActive = 2.25f;
+                    }
+                }
+                if (StanceController.StanceTargetPosition == activeAimTargetPosition)
+                {
+                    hasResetShortStock = true;
+                    hasResetHighReady = true;
+                    hasResetLowReady = true;
+                }
+
+                float transitionSpeedFactor = shortToActive * highToActive * lowToActive;
+
+                rotationSpeed = 4f * stanceMulti * dt * Plugin.ActiveAimRotationMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f) * transitionSpeedFactor;
                 stanceRotation = activeAimTargetQuaternion;
                 if (Plugin.StanceBlender.Value < 1f)
                 {
-                    rotationSpeed = 4f * stanceMulti * dt * Plugin.ActiveAimAdditionalRotationSpeedMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
+                    rotationSpeed = 4f * stanceMulti * dt * Plugin.ActiveAimAdditionalRotationSpeedMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f) * transitionSpeedFactor;
                     stanceRotation = activeAimMiniTargetQuaternion;
                 }
 
@@ -1089,14 +1187,14 @@ namespace RealismMod
                     bool cancelBecauseSooting = StanceController.IsFiringFromStance && !StanceController.IsActiveAiming && !StanceController.IsShortStock && !isPistol;
                     bool doStanceRotation = (isInStance || !allStancesReset || StanceController.PistolIsCompressed) && !cancelBecauseSooting;
 
-                    currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? quaternion_2 : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceSpeed : __instance.IsAiming ? __instance.CameraSmoothTime * float_9 * dt : __instance.CameraSmoothTime * dt);
+                    currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? quaternion_2 : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceSpeed : __instance.IsAiming ? 8f * float_9 * dt : 8f * dt);
 
                     Quaternion rhs = Quaternion.Euler(float_14 * Single_3 * vector3_6);
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(vector3_4, quaternion_6 * rhs * currentRotation);
 
                     if (!Plugin.IsFiring)
                     {
-                        __instance.HandsContainer.HandsPosition.Damping = Mathf.Clamp(1f * WeaponProperties.AnimationWeightFactor, 0.6f, 0.77f);
+                        __instance.HandsContainer.HandsPosition.Damping = Mathf.Clamp(1f * WeaponProperties.AnimationWeightFactor, 0.6f, 0.72f);
                     }
 
                     if (isPistol && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value)
@@ -1276,7 +1374,7 @@ namespace RealismMod
                     }
 
                     Quaternion rhs = Quaternion.Euler(float_14 * Single_3 * vector3_6);
-                    currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && !isInStance ? quaternion_2 : isInStance ? targetRotation : Quaternion.identity, isInStance ? stanceSpeed : __instance.CameraSmoothTime * dt);
+                    currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && !isInStance ? quaternion_2 : isInStance ? targetRotation : Quaternion.identity, isInStance ? stanceSpeed : 8f * dt);
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(vector3_4, quaternion_6 * rhs * currentRotation);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_3").SetValue(__instance, currentRotation);
 
@@ -1371,14 +1469,14 @@ namespace RealismMod
                     bool cancelBecauseSooting = StanceController.IsFiringFromStance && !StanceController.IsActiveAiming && !StanceController.IsShortStock && !isPistol;
                     bool doStanceRotation = (isInStance || !allStancesReset || StanceController.PistolIsCompressed) && !cancelBecauseSooting;
 
-                    currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? quaternion_2 : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceSpeed : __instance.IsAiming ? __instance.CameraSmoothTime * float_9 * dt : __instance.CameraSmoothTime * dt);
+                    currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? quaternion_2 : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceSpeed : __instance.IsAiming ? 8f * float_9 * dt : 8f * dt);
 
                     Quaternion rhs = Quaternion.Euler(float_14 * Single_3 * vector3_6);
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(vector3_4, quaternion_6 * rhs * currentRotation);
 
                     if (!Plugin.IsFiring) 
                     {
-                        __instance.HandsContainer.HandsPosition.Damping = Mathf.Clamp(1f * WeaponProperties.AnimationWeightFactor, 0.6f, 0.77f);
+                        __instance.HandsContainer.HandsPosition.Damping = Mathf.Clamp(1f * WeaponProperties.AnimationWeightFactor, 0.6f, 0.72f);
                     }
 
                     if (isPistol && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value)

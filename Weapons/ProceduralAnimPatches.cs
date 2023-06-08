@@ -59,8 +59,6 @@ namespace RealismMod
                     __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.StartingConvergence * __instance.Aiming.RecoilConvergenceMult;
                     __instance.HandsContainer.Recoil.Damping = WeaponProperties.TotalRecoilDamping;
 
-                    WeaponProperties.AnimationWeightFactor = 1f - (singleItemTotalWeight / 12f);
-
                     if (Plugin.EnableLogging.Value == true) 
                     {
                         Logger.LogWarning("========UpdateWeaponVariables=======");
@@ -111,7 +109,9 @@ namespace RealismMod
                     
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
                     float float_9 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance); //aimspeed
-                   
+
+                    WeaponProperties.AnimationWeightFactor = 1f - (firearmController.Item.GetSingleItemTotalWeight() / 12f);
+
                     if (Plugin.EnableLogging.Value == true)
                     {
                         Logger.LogWarning("=====method_20========");
