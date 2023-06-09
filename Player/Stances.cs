@@ -46,8 +46,7 @@ namespace RealismMod
         public static bool SetActiveAiming = false;
 
         public static float HighReadyManipBuff = 1f;
-        public static float HighReadyManipDebuff = 1f;
-        public static float ActiveAimManipDebuff = 1f;
+        public static float ActiveAimManipBuff = 1f;
         public static float LowReadyManipBuff = 1f;
 
         public static bool CancelPistolStance = false;
@@ -372,10 +371,9 @@ namespace RealismMod
                     }
                 }
 
-                HighReadyManipBuff = IsHighReady == true ? 1.2f : 1f;
-                HighReadyManipDebuff = IsHighReady == true ? 0.8f : 1f;
-                ActiveAimManipDebuff = IsActiveAiming == true ? 0.8f : 1f;
-                LowReadyManipBuff = IsLowReady == true ? 1.2f : 1f;
+                HighReadyManipBuff = IsHighReady? 1.2f : 1f;
+                ActiveAimManipBuff = IsActiveAiming && Plugin.ActiveAimReload.Value ? 1.25f : 1f;
+                LowReadyManipBuff = IsLowReady ? 1.2f : 1f;
 
                 if (DoResetStances)
                 {
@@ -399,6 +397,7 @@ namespace RealismMod
                     WasHighReady = false;
                     WasLowReady = false;
                     WasShortStock = false;
+                    WasActiveAim = false;
                     Plugin.DidWeaponSwap = false;
                 }
             }
@@ -476,7 +475,7 @@ namespace RealismMod
  
             __instance.HandsContainer.WeaponRoot.localPosition = new Vector3(Plugin.PistolTransformNewStartPosition.x, __instance.HandsContainer.TrackingTransform.localPosition.y, __instance.HandsContainer.TrackingTransform.localPosition.z);
 
-            if (!__instance.IsAiming && !StanceController.CancelPistolStance && !StanceController.PistolIsColliding)
+            if (!__instance.IsAiming && !StanceController.CancelPistolStance && !StanceController.PistolIsColliding && !Plugin.IsBlindFiring)
             {
 
                 StanceController.PistolIsCompressed = true;
@@ -583,11 +582,11 @@ namespace RealismMod
 
             if (!StanceController.IsActiveAiming && !StanceController.IsShortStock)
             {
-                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 2f;
+                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 1.2f;
             }
             if (StanceController.IsActiveAiming)
             {
-                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy;
+                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 0.8f;
             }
 
             if (Plugin.StanceToggleDevice.Value)
@@ -605,9 +604,9 @@ namespace RealismMod
             }
 
             ////short-stock////
-            if (StanceController.IsShortStock == true && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsLowReady && !__instance.IsAiming && !Plugin.IsSprinting && !StanceController.CancelShortStock)
+            if (StanceController.IsShortStock && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsLowReady && !__instance.IsAiming && !Plugin.IsSprinting && !StanceController.CancelShortStock && !Plugin.IsBlindFiring)
             {
-                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 4f;
+                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 1.5f;
 
                 float activeToShort = 1f;
                 float highToShort = 1f;
@@ -673,7 +672,7 @@ namespace RealismMod
             }
 
             ////high ready////
-            if (StanceController.IsHighReady == true && !StanceController.IsActiveAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !__instance.IsAiming && !StanceController.IsFiringFromStance && !StanceController.CancelHighReady)
+            if (StanceController.IsHighReady && !StanceController.IsActiveAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !__instance.IsAiming && !StanceController.IsFiringFromStance && !StanceController.CancelHighReady && !Plugin.IsBlindFiring)
             {
                 float shortToHighMulti = 1.0f;
                 float lowToHighMulti = 1.0f;
@@ -753,7 +752,7 @@ namespace RealismMod
             }
 
             ////low ready////
-            if (StanceController.IsLowReady == true && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsShortStock && !__instance.IsAiming && !StanceController.IsFiringFromStance && !StanceController.CancelLowReady)
+            if (StanceController.IsLowReady && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsShortStock && !__instance.IsAiming && !StanceController.IsFiringFromStance && !StanceController.CancelLowReady && !Plugin.IsBlindFiring)
             {
                 float highToLow = 1.0f;
                 float shortToLow = 1.0f;
@@ -821,7 +820,7 @@ namespace RealismMod
             }
 
             ////active aiming////
-            if (StanceController.IsActiveAiming == true && !__instance.IsAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !StanceController.IsHighReady && !StanceController.CancelActiveAim)
+            if (StanceController.IsActiveAiming && !__instance.IsAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !StanceController.IsHighReady && !StanceController.CancelActiveAim && !Plugin.IsBlindFiring)
             {
                 float shortToActive = 1f;
                 float highToActive = 1f;
@@ -1097,23 +1096,30 @@ namespace RealismMod
                     __instance.PositionZeroSum.y = (__instance._shouldMoveWeaponCloser ? 0.05f : 0f);
                     __instance.RotationZeroSum.y = __instance.SmoothedTilt * __instance.PossibleTilt;
 
+                    float stanceBlendValue = Plugin.StanceBlender.Value;
+                    float stanceAbs = Mathf.Abs(stanceBlendValue);
+
                     float blindFireBlendValue = __instance.BlindfireBlender.Value;
                     float blindFireAbs = Mathf.Abs(blindFireBlendValue);
+
                     if (blindFireAbs > 0f)
                     {
+                        Plugin.IsBlindFiring = true;
                         float pitch = ((Mathf.Abs(__instance.Pitch) < 45f) ? 1f : ((90f - Mathf.Abs(__instance.Pitch)) / 45f));
                         AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14").SetValue(__instance, pitch);
                         AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_6").SetValue(__instance, ((blindFireBlendValue > 0f) ? (__instance.BlindFireRotation * blindFireAbs) : (__instance.SideFireRotation * blindFireAbs)));
                         targetPosition = ((blindFireBlendValue > 0f) ? (__instance.BlindFireOffset * blindFireAbs) : (__instance.SideFireOffset * blindFireAbs));
+                        targetPosition += StanceController.StanceTargetPosition;
                         __instance.BlindFireEndPosition = ((blindFireBlendValue > 0f) ? __instance.BlindFireOffset : __instance.SideFireOffset);
                         __instance.BlindFireEndPosition *= pitch;
                         __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * isColliding * targetPosition;
                         __instance.HandsContainer.HandsRotation.Zero = __instance.RotationZeroSum;
+
                         return false;
                     }
 
-                    float stanceBlendValue = Plugin.StanceBlender.Value;
-                    float stanceAbs = Mathf.Abs(stanceBlendValue);
+                    Plugin.IsBlindFiring = false;
+
                     if (stanceAbs > 0f)
                     {
                         float pitch = ((Mathf.Abs(__instance.Pitch) < 45f) ? 1f : ((90f - Mathf.Abs(__instance.Pitch)) / 45f));
@@ -1135,28 +1141,6 @@ namespace RealismMod
 
     public class ApplySimpleRotationPatch : ModulePatch
     {
-        public int[] TwoSum(int[] nums, int target)
-        {
-
-            List<int> storedNums = new List<int>();
-
-            for (int i = 0; i < nums.Length; i++) 
-            {
-
-                for (int j = 0; j < nums.Length; j++)
-                {
-                    if (nums[i] + nums[j] == target && i != j) 
-                    {
-                        storedNums.Add(i);
-                        storedNums.Add(j);
-                        return storedNums.ToArray(); ;
-                    }
-                }
-            }
-
-            return storedNums.ToArray();
-        }
-
         protected override MethodBase GetTargetMethod()
         {
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("ApplySimpleRotation", BindingFlags.Instance | BindingFlags.Public);
@@ -1208,7 +1192,8 @@ namespace RealismMod
                     bool isInShootableStance = StanceController.IsShortStock || StanceController.IsActiveAiming || isPistol;
                     bool cancelBecauseSooting = StanceController.IsFiringFromStance && !StanceController.IsActiveAiming && !StanceController.IsShortStock && !isPistol;
                     bool doStanceRotation = (isInStance || !allStancesReset || StanceController.PistolIsCompressed) && !cancelBecauseSooting;
-                    bool cancelStance = (StanceController.CancelActiveAim && StanceController.IsActiveAiming) || (StanceController.CancelHighReady && StanceController.IsHighReady) || (StanceController.CancelLowReady && StanceController.IsLowReady) || (StanceController.CancelShortStock && StanceController.IsShortStock) || (StanceController.CancelPistolStance &&  StanceController.PistolIsCompressed);
+                    bool allowActiveAimReload = Plugin.ActiveAimReload.Value && PlayerProperties.IsInReloadOpertation && !PlayerProperties.IsAttemptingToReloadInternalMag && !PlayerProperties.IsQuickReloading;
+                    bool cancelStance = (StanceController.CancelActiveAim && StanceController.IsActiveAiming && !allowActiveAimReload) || (StanceController.CancelHighReady && StanceController.IsHighReady) || (StanceController.CancelLowReady && StanceController.IsLowReady) || (StanceController.CancelShortStock && StanceController.IsShortStock) || (StanceController.CancelPistolStance &&  StanceController.PistolIsCompressed);
 
                     currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? quaternion_2 : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceSpeed : __instance.IsAiming ? 8f * float_9 * dt : 8f * dt);
 
@@ -1222,7 +1207,7 @@ namespace RealismMod
 
                     if (isPistol && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value)
                     {
-                        if (StanceController.PistolIsCompressed && !Plugin.IsAiming && !isResettingPistol)
+                        if (StanceController.PistolIsCompressed && !Plugin.IsAiming && !isResettingPistol && !Plugin.IsBlindFiring)
                         {
                             Plugin.StanceBlender.Target = 1f;
                         }
@@ -1231,7 +1216,7 @@ namespace RealismMod
                             Plugin.StanceBlender.Target = 0f;
                         }
 
-                        if (!StanceController.PistolIsCompressed && !Plugin.IsAiming && !isResettingPistol)
+                        if ((!StanceController.PistolIsCompressed && !Plugin.IsAiming && !isResettingPistol) || (Plugin.IsBlindFiring))
                         {
                             StanceController.StanceTargetPosition = Vector3.Lerp(StanceController.StanceTargetPosition, Vector3.zero, 5f * dt);
                         }
@@ -1244,7 +1229,7 @@ namespace RealismMod
                     }
                     else
                     {
-                        if ((!isInStance && allStancesReset) || (cancelBecauseSooting && !isInShootableStance) || Plugin.IsAiming || cancelStance)
+                        if ((!isInStance && allStancesReset) || (cancelBecauseSooting && !isInShootableStance) || Plugin.IsAiming || cancelStance || Plugin.IsBlindFiring)
                         {
                             Plugin.StanceBlender.Target = 0f;
                         }
@@ -1253,7 +1238,7 @@ namespace RealismMod
                             Plugin.StanceBlender.Target = 1f;
                         }
 
-                        if ((!isInStance && allStancesReset) && !cancelBecauseSooting && !Plugin.IsAiming)
+                        if (((!isInStance && allStancesReset) && !cancelBecauseSooting && !Plugin.IsAiming) || (Plugin.IsBlindFiring))
                         {
                             StanceController.StanceTargetPosition = Vector3.Lerp(StanceController.StanceTargetPosition, Vector3.zero, 5f * dt);
                         }
@@ -1491,7 +1476,8 @@ namespace RealismMod
                     bool isInShootableStance = StanceController.IsShortStock || StanceController.IsActiveAiming || isPistol;
                     bool cancelBecauseSooting = StanceController.IsFiringFromStance && !StanceController.IsActiveAiming && !StanceController.IsShortStock && !isPistol;
                     bool doStanceRotation = (isInStance || !allStancesReset || StanceController.PistolIsCompressed) && !cancelBecauseSooting;
-                    bool cancelStance = (StanceController.CancelActiveAim && StanceController.IsActiveAiming) || (StanceController.CancelHighReady && StanceController.IsHighReady) || (StanceController.CancelLowReady && StanceController.IsLowReady) || (StanceController.CancelShortStock && StanceController.IsShortStock) || (StanceController.CancelPistolStance && StanceController.PistolIsCompressed);
+                    bool allowActiveAimReload = Plugin.ActiveAimReload.Value && PlayerProperties.IsInReloadOpertation && !PlayerProperties.IsAttemptingToReloadInternalMag && !PlayerProperties.IsQuickReloading;
+                    bool cancelStance = (StanceController.CancelActiveAim && StanceController.IsActiveAiming && !allowActiveAimReload) || (StanceController.CancelHighReady && StanceController.IsHighReady) || (StanceController.CancelLowReady && StanceController.IsLowReady) || (StanceController.CancelShortStock && StanceController.IsShortStock) || (StanceController.CancelPistolStance && StanceController.PistolIsCompressed);
 
                     currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? quaternion_2 : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceSpeed : __instance.IsAiming ? 8f * float_9 * dt : 8f * dt);
 
@@ -1505,7 +1491,7 @@ namespace RealismMod
 
                     if (isPistol && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value)
                     {
-                        if (StanceController.PistolIsCompressed && !Plugin.IsAiming && !isResettingPistol)
+                        if (StanceController.PistolIsCompressed && !Plugin.IsAiming && !isResettingPistol && !Plugin.IsBlindFiring)
                         {
                             Plugin.StanceBlender.Target = 1f;
                         }
@@ -1514,7 +1500,7 @@ namespace RealismMod
                             Plugin.StanceBlender.Target = 0f;
                         }
                                     
-                        if (!StanceController.PistolIsCompressed && !Plugin.IsAiming && !isResettingPistol) 
+                        if ((!StanceController.PistolIsCompressed && !Plugin.IsAiming && !isResettingPistol) || (Plugin.IsBlindFiring)) 
                         {
                             StanceController.StanceTargetPosition = Vector3.Lerp(StanceController.StanceTargetPosition, Vector3.zero, 5f * dt);
                         }
@@ -1527,7 +1513,7 @@ namespace RealismMod
                     }
                     else
                     {
-                        if ((!isInStance && allStancesReset) || (cancelBecauseSooting && !isInShootableStance) || Plugin.IsAiming || cancelStance)
+                        if ((!isInStance && allStancesReset) || (cancelBecauseSooting && !isInShootableStance) || Plugin.IsAiming || cancelStance || Plugin.IsBlindFiring)
                         {
                             Plugin.StanceBlender.Target = 0f;
                         }
@@ -1536,7 +1522,7 @@ namespace RealismMod
                             Plugin.StanceBlender.Target = 1f;
                         }
 
-                        if ((!isInStance && allStancesReset) && !cancelBecauseSooting && !Plugin.IsAiming)
+                        if (((!isInStance && allStancesReset) && !cancelBecauseSooting && !Plugin.IsAiming) || (Plugin.IsBlindFiring))
                         {
                             StanceController.StanceTargetPosition = Vector3.Lerp(StanceController.StanceTargetPosition, Vector3.zero, 5f * dt);
                         }

@@ -42,6 +42,8 @@ namespace RealismMod
 
         public static bool IsInReloadOpertation = false;
 
+        public static bool IsQuickReloading = false;
+
         public static bool NoCurrentMagazineReload = false;
 
         public static bool IsAttemptingRevolverReload = false;
