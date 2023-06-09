@@ -77,6 +77,7 @@ namespace RealismMod
                     StanceController.WasActiveAim = false;
                     if (Plugin.ToggleActiveAim.Value)
                     {
+                        Plugin.StanceBlender.Target = 0f;
                         StanceController.IsActiveAiming = false;
                     }
                     wasToggled = false;

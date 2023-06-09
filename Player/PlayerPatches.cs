@@ -51,6 +51,7 @@ namespace RealismMod
 
             if (__instance.IsYourPlayer == true)
             {
+                Plugin.StanceBlender.Target = 0f;
                 StatCalc.SetGearParamaters(__instance);
                 StanceController.SelectedStance = 0;
                 StanceController.IsLowReady = false;

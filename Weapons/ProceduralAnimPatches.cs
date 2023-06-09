@@ -53,6 +53,7 @@ namespace RealismMod
 
                     aimSpeed = firearmController.Item.WeapClass == "pistol" ? aimSpeed * 1.35f : aimSpeed;
                     WeaponProperties.SightlessAimSpeed = aimSpeed;
+                    WeaponProperties.ErgoStanceSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)), 0.55f, 1.4f); ;
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, aimSpeed);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f)) * PlayerProperties.ErgoDeltaInjuryMulti);
 
@@ -110,7 +111,8 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
                     float float_9 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance); //aimspeed
 
-                    WeaponProperties.AnimationWeightFactor = 1f - (firearmController.Item.GetSingleItemTotalWeight() / 12f);
+                    float totalWeight = firearmController.Item.WeapClass == "pistol" ? firearmController.Item.GetSingleItemTotalWeight() * 2 : firearmController.Item.GetSingleItemTotalWeight();
+                    WeaponProperties.AnimationWeightFactor = 1f - (totalWeight / 12f);
 
                     if (Plugin.EnableLogging.Value == true)
                     {

@@ -148,7 +148,7 @@ namespace RealismMod
 
         public static float AnimationWeightFactor = 1f;
 
-        public static float BaseHipfireAccuracy;
+        public static float BaseHipfireInaccuracy;
 
         public static float BaseWeaponLength = 0f;
         public static float NewWeaponLength = 0f;
@@ -292,6 +292,8 @@ namespace RealismMod
         public static float GlobalAimSpeedModifier = 1f;
 
         public static float SightlessAimSpeed = 1f;
+
+        public static float ErgoStanceSpeed = 1f;
 
         public static float CurrentMagReloadSpeed = 1f;
         public static float NewMagReloadSpeed = 1f;
