@@ -1301,7 +1301,7 @@ namespace RealismMod
                 return false;
             }
 
-            if (damageType == EDamageType.Sniper || damageType == EDamageType.Melee)
+            if (damageType == EDamageType.Sniper || damageType == EDamageType.Melee || damageType == EDamageType.Landmine)
             {
                 return true;
             }
