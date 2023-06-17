@@ -681,11 +681,14 @@ namespace RealismMod
             {
                 return "rearHalf";
             }
-            if (modType == "counter_weight") 
+            if (modType == "counterWeight") 
             {
                 return "frontFar";
             }
-
+            if (modType == "shotTube")
+            {
+                return "frontHalf";
+            }
             if (weapType == "pistol" || weapType == "bullpup")
             {
                 if (IsStock(mod) || IsMagazine(mod))
@@ -897,6 +900,9 @@ namespace RealismMod
                     break;
                 case "frontFar":
                     torque = TorqueCalc(-15f, weight, weapClass);
+                    break;
+                case "frontHalf":
+                    torque = TorqueCalc(-5f, weight, weapClass);
                     break;
                 default:
                     torque = 0f;

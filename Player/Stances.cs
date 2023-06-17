@@ -479,12 +479,13 @@ namespace RealismMod
                 __instance.HandsContainer.WeaponRoot.localPosition = new Vector3(Plugin.PistolTransformNewStartPosition.x, __instance.HandsContainer.TrackingTransform.localPosition.y, __instance.HandsContainer.TrackingTransform.localPosition.z);
             }
 
-            if (!__instance.IsAiming && !StanceController.CancelPistolStance && !StanceController.PistolIsColliding && !Plugin.IsBlindFiring)
+            if (!__instance.IsAiming && !StanceController.CancelPistolStance && !StanceController.PistolIsColliding && !Plugin.IsBlindFiring && !Plugin.IsSprinting)
             {
-
                 StanceController.PistolIsCompressed = true;
                 isResettingPistol = false;
                 hasResetPistolPos = false;
+
+                __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity;
 
                 Plugin.StanceBlender.Speed = Plugin.PistolPosSpeedMulti.Value * stanceMulti;
                 StanceController.StanceTargetPosition = Vector3.Lerp(StanceController.StanceTargetPosition, pistolTargetPosition, Plugin.StanceTransitionSpeed.Value * stanceMulti * dt);
@@ -612,7 +613,7 @@ namespace RealismMod
             }
 
             ////short-stock////
-            if (StanceController.IsShortStock && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsLowReady && !__instance.IsAiming && !Plugin.IsSprinting && !StanceController.CancelShortStock && !Plugin.IsBlindFiring)
+            if (StanceController.IsShortStock && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsLowReady && !__instance.IsAiming && !StanceController.CancelShortStock && !Plugin.IsBlindFiring && !Plugin.IsSprinting)
             {
                 __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 1.5f;
 
@@ -621,6 +622,8 @@ namespace RealismMod
                 float lowToShort = 1f;
                 isResettingShortStock = false;
                 hasResetShortStock = false;
+
+                __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity;
 
                 if (StanceController.StanceTargetPosition != shortStockTargetPosition)
                 {
@@ -687,7 +690,9 @@ namespace RealismMod
                 float activeToHighMulti = 1.0f;
                 isResettingHighReady = false;
                 hasResetHighReady = false;
-      
+
+                __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity;
+
                 if (StanceController.StanceTargetPosition != highReadyTargetPosition)
                 {
                     if (!hasResetShortStock)
@@ -768,6 +773,8 @@ namespace RealismMod
                 isResettingLowReady = false;
                 hasResetLowReady = false;
 
+                __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity;
+
                 if (StanceController.StanceTargetPosition != lowReadyTargetPosition)
                 {
                     if (!hasResetHighReady)
@@ -835,6 +842,8 @@ namespace RealismMod
                 float lowToActive = 1f;
                 isResettingActiveAim = false;
                 hasResetActiveAim = false;
+
+                __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity;
 
                 if (StanceController.StanceTargetPosition != activeAimTargetPosition)
                 {

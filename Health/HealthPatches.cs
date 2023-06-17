@@ -306,9 +306,9 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void Postfix()
+        private static void Postfix(FlyingBulletSoundPlayer __instance)
         {
-            Logger.LogWarning("FLYING BULLET !!!! =====> ==> ===>");
+            RealismHealthController.AddPainKillerEffect(Utils.GetPlayer(), 30f);
         }
     }
 
@@ -390,6 +390,10 @@ namespace RealismMod
                     {
                         RealismHealthController.RemoveEffectsOfType(EHealthEffectType.HealthRegen);
                     }
+                    if (damageType == EDamageType.Bullet || damageType == EDamageType.Blunt || damageType == EDamageType.Melee || damageType == EDamageType.Sniper)
+                    {
+                        RealismHealthController.AddPainKillerEffect(__instance.Player, 15f);   
+                    } 
                 }
             }
         }

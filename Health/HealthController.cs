@@ -130,7 +130,7 @@ namespace RealismMod
                     GameWorld gameWorld = Singleton<GameWorld>.Instance;
                     if (gameWorld?.AllPlayers.Count > 0)
                     {
-                        TestAddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, gameWorld.AllPlayers[0], Plugin.AddEffectType.Value);
+                        AddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, gameWorld.AllPlayers[0], Plugin.AddEffectType.Value);
                         NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + Plugin.AddEffectType.Value + " To Part " + (EBodyPart)Plugin.AddEffectBodyPart.Value);
                     }
                 }
@@ -167,14 +167,50 @@ namespace RealismMod
             }
         }
 
-        public static void TestAddBaseEFTEffect(int partIndex, Player player, String effect)
+
+        public static void AddBaseEFTEffect(int partIndex, Player player, String effect)
         {
-            MethodInfo effectMethod = GetAddBaseEFTEffectMethod();
+            MethodInfo effectMethod = GetAddBaseEFTEffectMethodInfo();
 
             effectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType(effect, BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { (EBodyPart)partIndex, null, null, null, null, null });
         }
 
-        public static MethodInfo GetAddBaseEFTEffectMethod()
+
+        public static void AddPainKillerEffect(Player player, float duration)
+        {
+            if (!player.ActiveHealthController.BodyPartEffects.Effects[0].Any(v => v.Key == "PainKiller"))
+            {
+                MethodInfo effectMethod = GetAddBaseEFTEffectMethodInfo();
+                effectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType("PainKiller", BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { EBodyPart.Head, 0f, duration, 1f, 1f, null });
+            }
+            else 
+            {
+                IReadOnlyList < GClass2102 > effectsList = (IReadOnlyList<GClass2102>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
+                Type targetType = null;
+                for (int i = effectsList.Count - 1; i >= 0; i--)
+                {
+                    ActiveHealthControllerClass.GClass2102 effect = effectsList[i];
+                    Type effectType = effect.Type;
+                    EBodyPart effectPart = effect.BodyPart;
+
+                    if (effectType == targetType)
+                    {
+                        effect.AddWorkTime(duration, false);
+                    }
+                }
+            }
+        }
+
+        public static void AddPainEffect(Player player)
+        {
+            if (!player.ActiveHealthController.BodyPartEffects.Effects[0].Any(v => v.Key == "Pain"))
+            {
+                MethodInfo addEffectMethod = GetAddBaseEFTEffectMethodInfo();
+                addEffectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType("Pain", BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { EBodyPart.Chest, 0f, 10f, 1f, 1f, null });
+            }
+        }
+
+        public static MethodInfo GetAddBaseEFTEffectMethodInfo()
         {
             MethodInfo effectMethod = typeof(ActiveHealthControllerClass).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).First(m =>
             m.GetParameters().Length == 6
@@ -187,7 +223,7 @@ namespace RealismMod
 
         public static void RemoveBaseEFTEffect(Player player, EBodyPart targetBodyPart, string targetEffect) 
         {
-            IEnumerable<IEffect> commonEffects = player.ActiveHealthController.GetAllActiveEffects(targetBodyPart);
+          /*  IEnumerable<IEffect> commonEffects = player.ActiveHealthController.GetAllActiveEffects(targetBodyPart);*/
             IReadOnlyList<GClass2102> effectsList = (IReadOnlyList<GClass2102>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
 
             Type targetType = null;
@@ -313,8 +349,8 @@ namespace RealismMod
 
         public static bool HasBaseEFTEffect(Player player, string targetEffect)
         {
-            IEnumerable<IEffect> commonEffects = player.ActiveHealthController.GetAllEffects();
-            IReadOnlyList<GClass2102> effectsList = (IReadOnlyList<GClass2102>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
+/*            IEnumerable<IEffect> commonEffects = player.ActiveHealthController.GetAllEffects();
+*/            IReadOnlyList<GClass2102> effectsList = (IReadOnlyList<GClass2102>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
 
             Type targetType = null;
             if (MedProperties.EffectTypes.TryGetValue(targetEffect, out targetType))
@@ -410,15 +446,6 @@ namespace RealismMod
                     }
                 }
             }   
-        }
-
-        public static void AddPainEffect(Player player) 
-        {
-            if (!player.ActiveHealthController.BodyPartEffects.Effects[0].Any(v => v.Key == "Pain"))
-            {
-                MethodInfo addEffectMethod = GetAddBaseEFTEffectMethod();
-                addEffectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType("Pain", BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { EBodyPart.Chest, 0f, 10f, 1f, 1f, null });
-            }
         }
 
         public static void DropBlockingGear(Player player) 

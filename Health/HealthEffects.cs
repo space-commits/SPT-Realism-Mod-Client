@@ -65,7 +65,7 @@ namespace RealismMod
                
                 if (currentPartHP > 25f)
                 {
-                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethod();
+                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethodInfo();
                     Type healthChangeType = typeof(HealthChange);
                     MethodInfo genericEffectMethod = addEffectMethod.MakeGenericMethod(healthChangeType);
                     HealthChange healthChangeInstance = new HealthChange();
@@ -115,7 +115,7 @@ namespace RealismMod
 
                 if (HpRegened < maxHpRegen)
                 {
-                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethod();
+                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethodInfo();
                     Type healthChangeType = typeof(HealthChange);
                     MethodInfo genericEffectMethod = addEffectMethod.MakeGenericMethod(healthChangeType);
                     HealthChange healthChangeInstance = new HealthChange();
@@ -169,7 +169,7 @@ namespace RealismMod
             {
                 if (Delay <= 0f)
                 {
-                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethod();
+                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethodInfo();
                     Type healthChangeType = typeof(HealthChange);
                     MethodInfo genericEffectMethod = addEffectMethod.MakeGenericMethod(healthChangeType);
                     HealthChange healthChangeInstance = new HealthChange();
