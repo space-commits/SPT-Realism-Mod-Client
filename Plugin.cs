@@ -575,6 +575,7 @@ namespace RealismMod
                     new CheckAmmoPatch().Enable();
                     new SetHammerArmedPatch().Enable();
                     new SetLauncherPatch().Enable();
+
                 }
 
                 new CheckAmmoFirearmControllerPatch().Enable();
