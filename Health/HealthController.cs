@@ -115,6 +115,9 @@ namespace RealismMod
         private static float timeSinceLastClicked = 0f;
         private static bool clickTriggered = false;
 
+        private static float adrenalineCooldownTime = 60f;
+        public static bool AdrenalineTimerActive = false;
+  
         public static void HealthController(ManualLogSource logger)
         {
             if (!Utils.IsInHideout())
@@ -130,7 +133,7 @@ namespace RealismMod
                     GameWorld gameWorld = Singleton<GameWorld>.Instance;
                     if (gameWorld?.AllPlayers.Count > 0)
                     {
-                        AddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, gameWorld.AllPlayers[0], Plugin.AddEffectType.Value);
+                        TestAddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, gameWorld.AllPlayers[0], Plugin.AddEffectType.Value);
                         NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + Plugin.AddEffectType.Value + " To Part " + (EBodyPart)Plugin.AddEffectBodyPart.Value);
                     }
                 }
@@ -163,52 +166,77 @@ namespace RealismMod
             {
                 RemoveAllEffects();
                 DamageTracker.ResetTracker();
+            }
 
+            if (AdrenalineTimerActive && adrenalineCooldownTime > 0.0f) 
+            {
+                adrenalineCooldownTime -= Time.deltaTime;
+            }
+            if (AdrenalineTimerActive && adrenalineCooldownTime <= 0.0f) 
+            {
+                adrenalineCooldownTime = 60f;
+                AdrenalineTimerActive = false;
             }
         }
 
 
-        public static void AddBaseEFTEffect(int partIndex, Player player, String effect)
+        public static void TestAddBaseEFTEffect(int partIndex, Player player, String effect)
         {
             MethodInfo effectMethod = GetAddBaseEFTEffectMethodInfo();
-
             effectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType(effect, BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { (EBodyPart)partIndex, null, null, null, null, null });
         }
 
-
-        public static void AddPainKillerEffect(Player player, float duration)
+        public static void AddBasesEFTEffect(Player player, String effect, EBodyPart bodyPart, float delayTime, float duration, float residueTime, float strength)
         {
-            if (!player.ActiveHealthController.BodyPartEffects.Effects[0].Any(v => v.Key == "PainKiller"))
+            MethodInfo effectMethod = GetAddBaseEFTEffectMethodInfo();
+            effectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType(effect, BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { bodyPart, delayTime, duration, residueTime, strength, null });
+        }
+
+
+        public static void AddBaseEFTEffectIfNoneExisting(Player player, string effect, EBodyPart bodyPart, float delayTime, float duration, float residueTime, float strength)
+        {
+            if (!player.ActiveHealthController.BodyPartEffects.Effects[0].Any(v => v.Key == effect))
             {
-                MethodInfo effectMethod = GetAddBaseEFTEffectMethodInfo();
-                effectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType("PainKiller", BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { EBodyPart.Head, 0f, duration, 1f, 1f, null });
+                AddBasesEFTEffect(player, effect, bodyPart, delayTime, duration, residueTime, strength);
             }
-            else 
+        }
+
+        public static void AddToExistingBaseEFTEffect(Player player, string targetEffect, EBodyPart bodyPart, float delayTime, float duration, float residueTime, float strength)
+        {
+            if (!player.ActiveHealthController.BodyPartEffects.Effects[0].Any(v => v.Key == targetEffect))
             {
-                IReadOnlyList < GClass2102 > effectsList = (IReadOnlyList<GClass2102>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
+                AddBasesEFTEffect(player, targetEffect, bodyPart, delayTime, duration, residueTime, strength);
+            }
+            else
+            {
+                IReadOnlyList<GClass2102> effectsList = (IReadOnlyList<GClass2102>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
                 Type targetType = null;
+                MedProperties.EffectTypes.TryGetValue(targetEffect, out targetType);
                 for (int i = effectsList.Count - 1; i >= 0; i--)
                 {
-                    ActiveHealthControllerClass.GClass2102 effect = effectsList[i];
-                    Type effectType = effect.Type;
-                    EBodyPart effectPart = effect.BodyPart;
+                    ActiveHealthControllerClass.GClass2102 existingEffect = effectsList[i];
+                    Type effectType = existingEffect.Type;
+                    EBodyPart effectPart = existingEffect.BodyPart;
 
                     if (effectType == targetType)
                     {
-                        effect.AddWorkTime(duration, false);
+                        existingEffect.AddWorkTime(duration, false);
                     }
                 }
             }
         }
 
-        public static void AddPainEffect(Player player)
+        public static void AddAdrenaline(Player player,float painkillerDuration, float negativeEffectDuration, float negativeEffectStrength)
         {
-            if (!player.ActiveHealthController.BodyPartEffects.Effects[0].Any(v => v.Key == "Pain"))
+            if (Plugin.EnableAdrenaline.Value && !RealismHealthController.AdrenalineTimerActive)
             {
-                MethodInfo addEffectMethod = GetAddBaseEFTEffectMethodInfo();
-                addEffectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType("Pain", BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { EBodyPart.Chest, 0f, 10f, 1f, 1f, null });
+                AdrenalineTimerActive = true;
+                AddToExistingBaseEFTEffect(player, "PainKiller", EBodyPart.Head, 0f, painkillerDuration, 3f, 1f);
+                AddToExistingBaseEFTEffect(player, "TunnelVision", EBodyPart.Head, 0f, negativeEffectDuration * 0.5f, 3f, negativeEffectStrength);
+                AddToExistingBaseEFTEffect(player, "Tremor", EBodyPart.Head, 0f, negativeEffectDuration, 3f, negativeEffectStrength);
             }
         }
+
 
         public static MethodInfo GetAddBaseEFTEffectMethodInfo()
         {
@@ -237,7 +265,6 @@ namespace RealismMod
     
                     if (effectType == targetType && effectPart == targetBodyPart)
                     {
-
                         effect.ForceResidue();
                     }
                 }
@@ -371,7 +398,7 @@ namespace RealismMod
 
         public static void ResourceRegenCheck(Player player, ManualLogSource logger) 
         {
-            float vitalitySkill = player.Skills.VitalityBuffSurviobilityInc;
+            float vitalitySkill = player.Skills.VitalityBuffSurviobilityInc.Value;
             float delay = (float)Math.Round(15f * (1f - vitalitySkill), 2);
             float tickRate = (float)Math.Round(0.22f * (1f + vitalitySkill), 2);
 
@@ -717,7 +744,7 @@ namespace RealismMod
 
         public static void HandleHealtheffects(string medType, MedsClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool canHealHBleed, bool canHealLBleed, bool canHealFract)
         {
-            float vitalitySkill = player.Skills.VitalityBuffSurviobilityInc;
+            float vitalitySkill = player.Skills.VitalityBuffSurviobilityInc.Value;
             float regenTickRate = (float)Math.Round(0.85f * (1f + vitalitySkill), 2);
 
             bool hasHeavyBleed = false;
@@ -732,7 +759,7 @@ namespace RealismMod
 
             GetBodyPartType(bodyPart, ref isNotLimb, ref isHead, ref isBody);
 
-            if (Plugin.TrnqtEffect.Value && hasHeavyBleed && canHealHBleed)
+            if (Plugin.EnableTrnqtEffect.Value && hasHeavyBleed && canHealHBleed)
             {
 #pragma warning disable CS4014
                 handleHeavyBleedHeal(medType, meds, bodyPart, player, hBleedHealType, isNotLimb, vitalitySkill, regenTickRate);
@@ -955,7 +982,7 @@ namespace RealismMod
 
                 if (percentHp <= 0.5f) 
                 {
-                    AddPainEffect(player);
+                    AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 10f, 1f, 1f);
                 }
 
                 if (isLeg || isBody) 
@@ -994,7 +1021,7 @@ namespace RealismMod
 
             if (totalHpPercent <= 0.5f)
             {
-                AddPainEffect(player);
+                AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 10f, 1f, 1f);
             }
 
             float percentEnergyFactor = percentEnergy * 1.2f;

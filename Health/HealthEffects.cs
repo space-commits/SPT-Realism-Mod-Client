@@ -6,6 +6,7 @@ using System.Text;
 using static Systems.Effects.Effects;
 using UnityEngine;
 using System.Linq;
+using BepInEx.Logging;
 
 namespace RealismMod
 {
@@ -14,13 +15,14 @@ namespace RealismMod
     {
         Surgery,
         Tourniquet,
-        HealthRegen
+        HealthRegen,
+        Adrenaline
     }
 
     public interface IHealthEffect
     {
         public EBodyPart BodyPart { get; set; }
-        public int? Duration { get; }
+        public float? Duration { get; }
         public float TimeExisted { get; set; }
         public void Tick();
         public Player Player { get; }
@@ -31,16 +33,16 @@ namespace RealismMod
     public class TourniquetEffect : IHealthEffect
     {
         public EBodyPart BodyPart { get; set; }
-        public int? Duration { get; }
+        public float? Duration { get; }
         public float TimeExisted { get; set; }
         public float HpPerTick { get; }
         public Player Player { get; }
         public float Delay { get; set; }
         public EHealthEffectType EffectType { get; }
 
-        public TourniquetEffect(float hpTick, int? dur, EBodyPart part, Player player, float delay)
+        public TourniquetEffect(float hpTick, float? dur, EBodyPart part, Player player, float delay)
         {
-            TimeExisted = 0;
+            TimeExisted = 0f;
             HpPerTick = -hpTick;
             Duration = dur;
             BodyPart = part;
@@ -78,7 +80,7 @@ namespace RealismMod
     public class SurgeryEffect : IHealthEffect
     {
         public EBodyPart BodyPart { get; set; }
-        public int? Duration { get; set; }
+        public float? Duration { get; set; }
         public float TimeExisted { get; set; }
         public float HpPerTick { get; }
         public Player Player { get; }
@@ -87,7 +89,7 @@ namespace RealismMod
         private bool hasRemovedTrnqt = false;
         public EHealthEffectType EffectType { get; }
 
-        public SurgeryEffect(float hpTick, int? dur, EBodyPart part, Player player, float delay)
+        public SurgeryEffect(float hpTick, float? dur, EBodyPart part, Player player, float delay)
         {
             TimeExisted = 0;
             HpRegened = 0;
@@ -133,10 +135,50 @@ namespace RealismMod
         }
     }
 
+/*    public class AdrenalineEffect : IHealthEffect
+    {
+        public EBodyPart BodyPart { get; set; }
+        public float? Duration { get; set; }
+        public float TimeExisted { get; set; }
+        public Player Player { get; }
+        public float HpRegened { get; set; }
+        public float Delay { get; set; }
+        public EHealthEffectType EffectType { get; }
+        private float tunnelVisionStrength { get; }
+        private ManualLogSource Logger { get; set; }
+        private bool haveDoneEffects = false;
+
+        public AdrenalineEffect(float? dur, EBodyPart part, Player player, float delay, float skillFactor)
+        {
+            TimeExisted = 0;
+            HpRegened = 0;
+            Duration = dur;
+            BodyPart = part;
+            Player = player;
+            Delay = delay;
+            EffectType = EHealthEffectType.Adrenaline;
+            tunnelVisionStrength = (float)Math.Round(0.5f * (1f - skillFactor), 2);
+        }
+
+        public void Tick()
+        {
+            if (Delay <= 0f)
+            {
+                RealismHealthController.AddToExistingBaseEFTEffect(Utils.GetPlayer(), "PainKiller", EBodyPart.Head, 0f, 3f, 3f, 1f);
+
+                TimeExisted += 3f;
+                if (TimeExisted < 10f) 
+                {
+                    RealismHealthController.AddToExistingBaseEFTEffect(Utils.GetPlayer(), "TunnelVision", EBodyPart.Head, 0f, 3f, 3f, tunnelVisionStrength);
+                }
+            }
+        }
+    }*/
+
     public class HealthRegenEffect : IHealthEffect
     {
         public EBodyPart BodyPart { get; set; }
-        public int? Duration { get; set; }
+        public float? Duration { get; set; }
         public float TimeExisted { get; set; }
         public float HpPerTick { get; }
         public Player Player { get; }
@@ -146,7 +188,7 @@ namespace RealismMod
         public EDamageType DamageType { get; }
         public EHealthEffectType EffectType { get; }
 
-        public HealthRegenEffect(float hpTick, int? dur, EBodyPart part, Player player, float delay, float limit, EDamageType damageType)
+        public HealthRegenEffect(float hpTick, float? dur, EBodyPart part, Player player, float delay, float limit, EDamageType damageType)
         {
             TimeExisted = 0;
             HpRegened = 0;

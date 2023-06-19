@@ -308,7 +308,12 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(FlyingBulletSoundPlayer __instance)
         {
-            RealismHealthController.AddPainKillerEffect(Utils.GetPlayer(), 30f);
+            Player player = Utils.GetPlayer();
+            float stressResist = player.Skills.StressPain.Value;
+            float painkillerDuration = (float)Math.Round(20f * (1f + stressResist), 2);
+            float tunnelVisionDuration = (float)Math.Round(30f * (1f - stressResist), 2);
+            float tunnelVisionStrength = (float)Math.Round(1f * (1f + stressResist), 2);
+            RealismHealthController.AddAdrenaline(player, painkillerDuration, tunnelVisionDuration, tunnelVisionStrength);
         }
     }
 
@@ -355,7 +360,8 @@ namespace RealismMod
                         damage = 0;
                     }
 
-                    float vitalitySkill =__instance.Player.Skills.VitalityBuffSurviobilityInc;
+                    float vitalitySkill = __instance.Player.Skills.VitalityBuffSurviobilityInc.Value;
+                    float stressResist = __instance.Player.Skills.StressPain.Value;
                     float delay = (float)Math.Round(15f * (1f - vitalitySkill), 2);
                     float tickRate = (float)Math.Round(0.22f * (1f + vitalitySkill), 2);
 
@@ -392,7 +398,10 @@ namespace RealismMod
                     }
                     if (damageType == EDamageType.Bullet || damageType == EDamageType.Blunt || damageType == EDamageType.Melee || damageType == EDamageType.Sniper)
                     {
-                        RealismHealthController.AddPainKillerEffect(__instance.Player, 15f);   
+                        float painkillerDuration = (float)Math.Round(12f * (1f + (stressResist / 2)), 2);
+                        float negativeEffectDuration = (float)Math.Round(15f * (1f - stressResist), 2);
+                        float negativeEffectStrength = (float)Math.Round(1f * (1f + (stressResist / 2)), 2);
+                        RealismHealthController.AddAdrenaline(__instance.Player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
                     } 
                 }
             }
