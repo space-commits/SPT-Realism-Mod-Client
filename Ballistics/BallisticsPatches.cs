@@ -70,7 +70,7 @@ namespace RealismMod
 
         private static string[] humanBodyColliders = { HitBox.Head, HitBox.UpperTorso, HitBox.LowerTorso, HitBox.Pelvis, HitBox.LeftThigh, HitBox.RightThigh, HitBox.LeftCalf, HitBox.RightCalf, HitBox.RightUpperArm, HitBox.LeftUpperArm, HitBox.RightForearm, HitBox.LeftForearm };
 
-        public static bool hitValidCollider(string hitCollider)
+        public static bool HitValidCollider(string hitCollider)
         {
             foreach (string s in humanBodyColliders)
             {
@@ -674,7 +674,7 @@ namespace RealismMod
             }
         }
 
-        private static void playBodyHitSound(EHitZone hitZone, Vector3 pos) 
+        private static void playBodyHitSound(EHitZone hitZone, Vector3 pos, string hitBox) 
         {
             float dist = CameraClass.Instance.Distance(pos);
             float volClose = 2.7f * Plugin.CloseHitSoundMulti.Value;
@@ -682,16 +682,20 @@ namespace RealismMod
 
             if (hitZone == EHitZone.Spine)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["spine.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.25f, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["spine.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.35f, EOcclusionTest.Continuous);
 
+            }
+            else if (hitBox == HitBox.Head) 
+            {
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 200, volClose, EOcclusionTest.Continuous);
             }
             else if (hitZone == EHitZone.Heart)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["heart.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.25f, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["heart.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.35f, EOcclusionTest.Continuous);
             }
-            else if(hitZone == EHitZone.AssZone)
+            else if (hitZone == EHitZone.AssZone)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["ass_impact.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, 1.5f, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["ass_impact.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, 2f, EOcclusionTest.Continuous);
             }
             else
             {
@@ -700,12 +704,12 @@ namespace RealismMod
                 {
                     audioClip = playCounter == 0 ? "flesh_dist_1.wav" : playCounter == 1 ? "flesh_dist_2.wav" : "flesh_dist_2.wav";
                 }
-                else 
+                else
                 {
                     audioClip = playCounter == 0 ? "flesh_1.wav" : playCounter == 1 ? "flesh_2.wav" : "flesh_3.wav";
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200,  dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
 
 
             }
@@ -735,7 +739,7 @@ namespace RealismMod
             if (Plugin.EnableBodyHitZones.Value && !__instance.Blunt && __instance.DamageType == EDamageType.Bullet) 
             {
                 string hitCollider = shot.HittedBallisticCollider.name;
-                if (HitBox.hitValidCollider(hitCollider))
+                if (HitBox.HitValidCollider(hitCollider))
                 {
                     Collider col = shot.HitCollider;
                     Vector3 localPoint = col.transform.InverseTransformPoint(shot.HitPoint);
@@ -747,7 +751,7 @@ namespace RealismMod
 
                     if (Plugin.EnableHitSounds.Value) 
                     {
-                        playBodyHitSound(hitZone, col.transform.position);
+                        playBodyHitSound(hitZone, col.transform.position, hitCollider);
                         playCounter++;
                         playCounter = playCounter > 2 ? 0 : playCounter;
                     }
@@ -1297,7 +1301,7 @@ namespace RealismMod
                 return false;
             }
 
-            if (damageType == EDamageType.Sniper || damageType == EDamageType.Melee)
+            if (damageType == EDamageType.Sniper || damageType == EDamageType.Melee || damageType == EDamageType.Landmine)
             {
                 return true;
             }

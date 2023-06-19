@@ -15,8 +15,8 @@ namespace RealismMod
 {
     public static class AimController 
     {
-        private static bool HasSetCanAds = false;
-        private static bool HasSetActiveAimADS = false;
+        private static bool hasSetCanAds = false;
+        private static bool hasSetActiveAimADS = false;
         private static bool wasToggled = false;
 
         public static void ADSCheck(Player player, EFT.Player.FirearmController fc, ManualLogSource logger)
@@ -28,39 +28,39 @@ namespace RealismMod
                 NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
                 bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
                 bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
-                bool gearAllowsADS = Plugin.EnableFSPatch.Value && fsIsON && (!WeaponProperties.WeaponCanFSADS && (!GearProperties.AllowsADS(fsComponent.Item) || !PlayerProperties.GearAllowsADS));
-                if (Plugin.ModConfig.recoil_attachment_overhaul && ((Plugin.EnableNVGPatch.Value && nvgIsOn && Plugin.HasOptic) || gearAllowsADS))
+                bool gearBlocksADS = Plugin.EnableFSPatch.Value && fsIsON && (!WeaponProperties.WeaponCanFSADS && (!GearProperties.AllowsADS(fsComponent.Item) || !PlayerProperties.GearAllowsADS));
+                if (Plugin.ModConfig.recoil_attachment_overhaul && ((Plugin.EnableNVGPatch.Value && nvgIsOn && Plugin.HasOptic) || gearBlocksADS))
                 {
-                    if (!HasSetCanAds)
+                    if (!hasSetCanAds)
                     {
                         PlayerProperties.IsAllowedADS = false;
                         player.ProceduralWeaponAnimation.IsAiming = false;
                         AccessTools.Field(typeof(EFT.Player.FirearmController), "_isAiming").SetValue(fc, false);
-                        HasSetCanAds = true;
+                        hasSetCanAds = true;
                     }
                 }
                 else
                 { 
                     PlayerProperties.IsAllowedADS = true;
-                    HasSetCanAds = false;
+                    hasSetCanAds = false;
                 }
 
                 if (StanceController.IsActiveAiming && !isAiming)
                 {
-                    if (!HasSetActiveAimADS)
+                    if (!hasSetActiveAimADS)
                     {
                         PlayerProperties.IsAllowedADS = false;
                         player.ProceduralWeaponAnimation.IsAiming = false;
                         AccessTools.Field(typeof(EFT.Player.FirearmController), "_isAiming").SetValue(fc, false);
                         player.MovementContext.SetAimingSlowdown(true, 0.33f);
-                        HasSetActiveAimADS = true;
+                        hasSetActiveAimADS = true;
                     }
 
                 }
-                if (!StanceController.IsActiveAiming && HasSetActiveAimADS)
+                if (!StanceController.IsActiveAiming && hasSetActiveAimADS)
                 {
                     player.MovementContext.SetAimingSlowdown(false, 0.33f);
-                    HasSetActiveAimADS = false;
+                    hasSetActiveAimADS = false;
                 }
 
                 if (isAiming)
@@ -77,6 +77,7 @@ namespace RealismMod
                     StanceController.WasActiveAim = false;
                     if (Plugin.ToggleActiveAim.Value)
                     {
+                        Plugin.StanceBlender.Target = 0f;
                         StanceController.IsActiveAiming = false;
                     }
                     wasToggled = false;
@@ -148,7 +149,7 @@ namespace RealismMod
         private static bool Prefix(EFT.Player.FirearmController __instance)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
-            if ((Plugin.EnableFSPatch.Value == true || Plugin.EnableNVGPatch.Value == true) && !player.IsAI)
+            if ((Plugin.EnableFSPatch.Value || Plugin.EnableNVGPatch.Value) && !player.IsAI)
             {
                 return PlayerProperties.IsAllowedADS;
             }

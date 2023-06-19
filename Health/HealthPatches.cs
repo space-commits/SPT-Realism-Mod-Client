@@ -298,6 +298,22 @@ namespace RealismMod
         }
     }
 
+    public class FlyingBulletPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FlyingBulletSoundPlayer).GetMethod("method_3", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        [PatchPostfix]
+        private static void Postfix(FlyingBulletSoundPlayer __instance)
+        {
+            RealismHealthController.AddPainKillerEffect(Utils.GetPlayer(), 30f);
+        }
+    }
+
+
+
     public class HCApplyDamagePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -335,7 +351,7 @@ namespace RealismMod
                     }
 
                     if (currentHp <= 2f && (bodyPart == EBodyPart.Head || bodyPart == EBodyPart.Chest) && (damageType == EDamageType.LightBleeding))
-                    {
+                    { 
                         damage = 0;
                     }
 
@@ -374,6 +390,10 @@ namespace RealismMod
                     {
                         RealismHealthController.RemoveEffectsOfType(EHealthEffectType.HealthRegen);
                     }
+                    if (damageType == EDamageType.Bullet || damageType == EDamageType.Blunt || damageType == EDamageType.Melee || damageType == EDamageType.Sniper)
+                    {
+                        RealismHealthController.AddPainKillerEffect(__instance.Player, 15f);   
+                    } 
                 }
             }
         }

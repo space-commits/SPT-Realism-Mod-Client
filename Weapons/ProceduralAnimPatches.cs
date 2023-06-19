@@ -53,14 +53,14 @@ namespace RealismMod
 
                     aimSpeed = firearmController.Item.WeapClass == "pistol" ? aimSpeed * 1.35f : aimSpeed;
                     WeaponProperties.SightlessAimSpeed = aimSpeed;
+                    WeaponProperties.ErgoStanceSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)), 0.55f, 1.4f); ;
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, aimSpeed);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f)) * PlayerProperties.ErgoDeltaInjuryMulti);
 
                     __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.StartingConvergence * __instance.Aiming.RecoilConvergenceMult;
                     __instance.HandsContainer.Recoil.Damping = WeaponProperties.TotalRecoilDamping;
-                    __instance.HandsContainer.HandsPosition.Damping = WeaponProperties.TotalRecoilHandDamping;
 
-                    if (Plugin.EnableLogging.Value == true)
+                    if (Plugin.EnableLogging.Value == true) 
                     {
                         Logger.LogWarning("========UpdateWeaponVariables=======");
                         Logger.LogWarning("singleItemTotalWeight = " + singleItemTotalWeight);
@@ -110,7 +110,10 @@ namespace RealismMod
                     
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
                     float float_9 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance); //aimspeed
-                   
+
+                    float totalWeight = firearmController.Item.WeapClass == "pistol" ? firearmController.Item.GetSingleItemTotalWeight() * 2 : firearmController.Item.GetSingleItemTotalWeight();
+                    WeaponProperties.AnimationWeightFactor = 1f - (totalWeight / 12f);
+
                     if (Plugin.EnableLogging.Value == true)
                     {
                         Logger.LogWarning("=====method_20========");
@@ -153,7 +156,7 @@ namespace RealismMod
                     __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = handsIntensity * handsIntensity); //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
                     PlayerProperties.TotalHandsIntensity = __instance.HandsContainer.HandsRotation.InputIntensity;
 
-                    __instance.Shootingg.Intensity = Plugin.RecoilIntensity.Value;
+                    __instance.Shootingg.Intensity = Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value;
                     __instance.Overweight = 0;
                 }
             }

@@ -65,7 +65,7 @@ namespace RealismMod
                
                 if (currentPartHP > 25f)
                 {
-                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethod();
+                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethodInfo();
                     Type healthChangeType = typeof(HealthChange);
                     MethodInfo genericEffectMethod = addEffectMethod.MakeGenericMethod(healthChangeType);
                     HealthChange healthChangeInstance = new HealthChange();
@@ -115,7 +115,7 @@ namespace RealismMod
 
                 if (HpRegened < maxHpRegen)
                 {
-                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethod();
+                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethodInfo();
                     Type healthChangeType = typeof(HealthChange);
                     MethodInfo genericEffectMethod = addEffectMethod.MakeGenericMethod(healthChangeType);
                     HealthChange healthChangeInstance = new HealthChange();
@@ -124,7 +124,7 @@ namespace RealismMod
                 }
                 if (HpRegened >= maxHpRegen || currentHp == maxHp)
                 {
-                    NotificationManagerClass.DisplayMessageNotification("Surgical Kit Health Regeneration On " + BodyPart + "Has Expired", EFT.Communications.ENotificationDurationType.Long);
+                    NotificationManagerClass.DisplayMessageNotification("Surgical Kit Health Regeneration On " + BodyPart + " Has Expired", EFT.Communications.ENotificationDurationType.Long);
                     Duration = 0;
                     return;
                 }
@@ -169,7 +169,7 @@ namespace RealismMod
             {
                 if (Delay <= 0f)
                 {
-                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethod();
+                    MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethodInfo();
                     Type healthChangeType = typeof(HealthChange);
                     MethodInfo genericEffectMethod = addEffectMethod.MakeGenericMethod(healthChangeType);
                     HealthChange healthChangeInstance = new HealthChange();

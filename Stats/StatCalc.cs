@@ -110,7 +110,7 @@ namespace RealismMod
             {
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 StatCalc.MagReloadSpeedModifier(weapon, magazine, false, true);
-                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadInjuryMulti * PlayerProperties.ReloadSkillMulti * PlayerProperties.GearReloadMulti * StanceController.HighReadyManipBuff * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.45f, 1.3f));
+                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadInjuryMulti * PlayerProperties.ReloadSkillMulti * PlayerProperties.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.45f, 1.3f));
             }
             else
             {
@@ -681,11 +681,14 @@ namespace RealismMod
             {
                 return "rearHalf";
             }
-            if (modType == "counter_weight") 
+            if (modType == "counterWeight") 
             {
                 return "frontFar";
             }
-
+            if (modType == "shotTube")
+            {
+                return "frontHalf";
+            }
             if (weapType == "pistol" || weapType == "bullpup")
             {
                 if (IsStock(mod) || IsMagazine(mod))
@@ -897,6 +900,9 @@ namespace RealismMod
                     break;
                 case "frontFar":
                     torque = TorqueCalc(-15f, weight, weapClass);
+                    break;
+                case "frontHalf":
+                    torque = TorqueCalc(-5f, weight, weapClass);
                     break;
                 default:
                     torque = 0f;

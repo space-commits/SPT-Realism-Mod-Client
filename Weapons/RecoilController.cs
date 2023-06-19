@@ -36,43 +36,41 @@ namespace RealismMod
 
             if (Plugin.ShotCount == 1)
             {
-                VRecoilClimb(1.14f);
+                VRecoilClimb(1.15f);
                 HRecoilClimb(1.12f);
                 ConvergenceClimb();
 
             }
             if (Plugin.ShotCount >= 2 && Plugin.ShotCount <= 3 && Plugin.CurrentlyShootingWeapon.SelectedFireMode == Weapon.EFireMode.fullauto)
             {
-                VRecoilClimb(1.15f);
+                VRecoilClimb(1.16f);
                 HRecoilClimb(1.12f);
                 ConvergenceClimb();
-                DampingClimb(0.98f);
-
             }
             if (Plugin.ShotCount >= 4 && Plugin.ShotCount <= 5)
             {
-                VRecoilClimb(1.146f);
+                VRecoilClimb(1.155f);
                 HRecoilClimb(1.11f);
                 ConvergenceClimb();
                 DampingClimb(0.98f);
             }
             if (Plugin.ShotCount > 5 && Plugin.ShotCount <= 7)
             {
-                VRecoilClimb(1.12f);
+                VRecoilClimb(1.13f);
                 HRecoilClimb(1.09f);
                 ConvergenceClimb();
                 DampingClimb(0.98f);
             }
             if (Plugin.ShotCount > 8 && Plugin.ShotCount <= 10)
             {
-                VRecoilClimb(1.09f);
+                VRecoilClimb(1.1f);
                 HRecoilClimb(1.07f);
                 ConvergenceClimb();
                 DampingClimb(0.98f);
             }
             if (Plugin.ShotCount > 10 && Plugin.ShotCount <= 15)
             {
-                VRecoilClimb(1.06f);
+                VRecoilClimb(1.07f);
                 HRecoilClimb(1.045f);
                 ConvergenceClimb();
                 DampingClimb(0.98f);
