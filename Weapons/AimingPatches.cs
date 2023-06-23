@@ -131,7 +131,7 @@ namespace RealismMod
         private static void PatchPostfix(EFT.Player.FirearmController __instance, bool value, ref bool ____isAiming)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
-            if (__instance.Item.WeapClass == "pistol")
+            if (player.IsYourPlayer && __instance.Item.WeapClass == "pistol")
             {
                 player.Physical.Aim((!____isAiming || !(player.MovementContext.StationaryWeapon == null)) ? 0f : __instance.ErgonomicWeight * 0.2f);
             }

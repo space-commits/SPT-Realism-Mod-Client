@@ -233,7 +233,7 @@ namespace RealismMod
                 AdrenalineTimerActive = true;
                 AddToExistingBaseEFTEffect(player, "PainKiller", EBodyPart.Head, 0f, painkillerDuration, 3f, 1f);
                 AddToExistingBaseEFTEffect(player, "TunnelVision", EBodyPart.Head, 0f, negativeEffectDuration * 0.5f, 3f, negativeEffectStrength);
-                AddToExistingBaseEFTEffect(player, "Tremor", EBodyPart.Head, 0f, negativeEffectDuration, 3f, negativeEffectStrength);
+                AddToExistingBaseEFTEffect(player, "Tremor", EBodyPart.Head, painkillerDuration, negativeEffectDuration, 3f, negativeEffectStrength);
             }
         }
 

@@ -528,7 +528,7 @@ namespace RealismMod
             float stanceMulti = Mathf.Clamp(ergoMulti * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f)), 0.45f, 0.95f);
             float invInjuryMulti = (1f - PlayerProperties.StanceInjuryMulti) + 1f;
             float resetErgoMulti = (1f - stanceMulti) + 1f;
-            float stocklessModifier = WeaponProperties.HasShoulderContact ? 1f : 2.3f;
+            float stocklessModifier = WeaponProperties.HasShoulderContact ? 1f : 2.4f;
             float ergoDelta = (1f - WeaponProperties.ErgoDelta);
             float intensity = Mathf.Max(1.5f * (1f - (PlayerProperties.AimSkillADSBuff * 0.5f)) * resetErgoMulti * invInjuryMulti * stocklessModifier * ergoDelta, 0.5f);
 
@@ -1219,7 +1219,7 @@ namespace RealismMod
 
                     if (!Plugin.IsFiring)
                     {
-                        __instance.HandsContainer.HandsPosition.Damping = Mathf.Clamp(1f * WeaponProperties.AnimationWeightFactor, 0.6f, 0.7f);
+                        __instance.HandsContainer.HandsPosition.Damping = 0.5f;
                     }
 
                     if (isPistol && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value)
@@ -1282,29 +1282,29 @@ namespace RealismMod
                     Vector3 vector3_4 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").GetValue(__instance);
                     Vector3 vector3_6 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_6").GetValue(__instance);
 
-                    Vector3 lowReadyTargetRotation = new Vector3(9.0f, -5.0f, -1.0f);
+                    Vector3 lowReadyTargetRotation = new Vector3(18.0f, 5.0f, -1.0f);
                     Quaternion lowReadyTargetQuaternion = Quaternion.Euler(lowReadyTargetRotation);
-                    Vector3 lowReadyTargetPostion = new Vector3(-0.03f, -0.01f, 0.0f);
+                    Vector3 lowReadyTargetPostion = new Vector3(0.06f, 0.04f, 0.0f);
 
-                    Vector3 highReadyTargetRotation = new Vector3(-12.0f, 3.0f, 3.0f);
+                    Vector3 highReadyTargetRotation = new Vector3(-15.0f, 3.0f, 3.0f);
                     Quaternion highReadyTargetQuaternion = Quaternion.Euler(highReadyTargetRotation);
-                    Vector3 highReadyTargetPostion = new Vector3(0.03f, 0.04f, -0.1f);
+                    Vector3 highReadyTargetPostion = new Vector3(0.05f, 0.1f, -0.12f);
 
-                    Vector3 activeAimTargetRotation = new Vector3(0.0f, -30.0f, 0.0f);
+                    Vector3 activeAimTargetRotation = new Vector3(0.0f, -40.0f, 0.0f);
                     Quaternion activeAimTargetQuaternion = Quaternion.Euler(activeAimTargetRotation);
-                    Vector3 activeAimTargetPostion = new Vector3(-0.04f, -0.01f, -0.01f);
+                    Vector3 activeAimTargetPostion = new Vector3(0.0f, 0.0f, 0.0f);
 
-                    Vector3 shortStockTargetRotation = new Vector3(0.0f, -15.0f, 0.0f);
+                    Vector3 shortStockTargetRotation = new Vector3(0.0f, -28.0f, 0.0f);
                     Quaternion shortStockTargetQuaternion = Quaternion.Euler(shortStockTargetRotation);
-                    Vector3 shortStockTargetPostion = new Vector3(0.04f, 0.1f, -0.025f);
+                    Vector3 shortStockTargetPostion = new Vector3(0.05f, 0.18f, -0.2f);
 
-                    Vector3 peacefulPistolTargetRotation = new Vector3(4.0f, -20.0f, 0.0f);
-                    Quaternion peacefulPistolTargetQuaternion = Quaternion.Euler(peacefulPistolTargetRotation);
-                    Vector3 peacefulPistolTargetPosition = new Vector3(0.025f, 0.05f, -0.035f);
+                    Vector3 tacPistolTargetRotation = new Vector3(0.0f, -20.0f, 0.0f);
+                    Quaternion tacPistolTargetQuaternion = Quaternion.Euler(tacPistolTargetRotation);
+                    Vector3 tacPistolTargetPosition = new Vector3(-0.1f, 0.1f, -0.05f);
 
-                    Vector3 tacPistolTargetRotation = new Vector3(-1f, -15.0f, 0.0f);
-                    Quaternion tacPistolTargetQuaternion = Quaternion.Euler(peacefulPistolTargetRotation);
-                    Vector3 tacPistolTargetPosition = new Vector3(0.025f, 0.05f, -0.035f);
+                    Vector3 normalPistolTargetRotation = new Vector3(0f, -5.0f, 0.0f);
+                    Quaternion normalPistolTargetQuaternion = Quaternion.Euler(normalPistolTargetRotation);
+                    Vector3 normalPistolTargetPosition = new Vector3(-0.05f, 0.0f, 0.0f);
 
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, 1f);
                     float pitch = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14").GetValue(__instance);
@@ -1327,73 +1327,76 @@ namespace RealismMod
 
                     ////peaceful positon//// (player.AIData.BotOwner.Memory.IsPeace == true && !StanceController.botsToUseTacticalStances.Contains(player.AIData.BotOwner.Profile.Info.Settings.Role.ToString()) && !player.IsSprintEnabled && !__instance.IsAiming && !player.AIData.BotOwner.ShootData.Shooting && (Time.time - player.AIData.BotOwner.ShootData.LastTriggerPressd) > 20f)
 
-                    if (isPeace && !player.IsSprintEnabled && player.MovementContext.StationaryWeapon == null && !__instance.IsAiming && !firearmController.IsInReloadOperation() && !firearmController.IsInventoryOpen() && !firearmController.IsInInteractionStrictCheck() && !firearmController.IsInSpawnOperation() && !firearmController.IsHandsProcessing()) // && player.AIData.BotOwner.WeaponManager.IsWeaponReady &&  player.AIData.BotOwner.WeaponManager.InIdleState()
+                    if (player.AIData.BotOwner.GetPlayer.MovementContext.BlindFire == 0)
                     {
-                        isInStance = true;
-                        player.HandsController.FirearmsAnimator.SetPatrol(true);
-                    }
-                    else
-                    {
-                        player.HandsController.FirearmsAnimator.SetPatrol(false);
-                        if (firearmController.Item.WeapClass != "pistol")
+                        if (isPeace && !player.IsSprintEnabled && player.MovementContext.StationaryWeapon == null && !__instance.IsAiming && !firearmController.IsInReloadOperation() && !firearmController.IsInventoryOpen() && !firearmController.IsInInteractionStrictCheck() && !firearmController.IsInSpawnOperation() && !firearmController.IsHandsProcessing()) // && player.AIData.BotOwner.WeaponManager.IsWeaponReady &&  player.AIData.BotOwner.WeaponManager.InIdleState()
                         {
-                            ////low ready//// 
-                            if (!isTacBot && !firearmController.IsInReloadOperation() && !player.IsSprintEnabled && !__instance.IsAiming && notShooting && (lastDistance >= 25f || lastDistance == 0f))    // (Time.time - player.AIData.BotOwner.Memory.LastEnemyTimeSeen) > 1f
-                            {
-                                isInStance = true;
-                                stanceSpeed = 4f * dt * Plugin.LowReadyRotationMulti.Value * Plugin.ThirdPersonRotationSpeed.Value;
-                                targetRotation = lowReadyTargetQuaternion;
-                                __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * lowReadyTargetPostion;
-                            }
-
-                            ////high ready////
-                            if (isTacBot && !firearmController.IsInReloadOperation() && !__instance.IsAiming && notShooting && (lastDistance >= 25f || lastDistance == 0f))
-                            {
-                                isInStance = true;
-                                player.BodyAnimatorCommon.SetFloat(GClass1647.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2);
-                                stanceSpeed = 4f * dt * Plugin.HighReadyRotationMulti.Value * Plugin.ThirdPersonRotationSpeed.Value;
-                                targetRotation = highReadyTargetQuaternion;
-                                __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * highReadyTargetPostion;
-                            }
-                            else
-                            {
-                                player.BodyAnimatorCommon.SetFloat(GClass1647.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)firearmController.Item.CalculateCellSize().X);
-                            }
-
-                            ///active aim//// 
-                            if (isTacBot && (((nvgIsOn || fsIsON) && !player.IsSprintEnabled && !firearmController.IsInReloadOperation() && lastDistance < 25f && lastDistance > 2f && lastDistance != 0f) || (__instance.IsAiming && (nvgIsOn && __instance.CurrentScope.IsOptic || fsIsON))))
-                            {
-                                isInStance = true;
-                                stanceSpeed = 4f * dt * Plugin.ActiveAimRotationMulti.Value * Plugin.ThirdPersonRotationSpeed.Value;
-                                targetRotation = activeAimTargetQuaternion;
-                                __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * activeAimTargetPostion;
-                            }
-
-                            ///short stock//// 
-                            if (isTacBot && !player.IsSprintEnabled && !firearmController.IsInReloadOperation() && lastDistance <= 2f && lastDistance != 0f)
-                            {
-                                isInStance = true;
-                                stanceSpeed = 4f * dt * Plugin.ShortStockRotationMulti.Value * Plugin.ThirdPersonRotationSpeed.Value;
-                                targetRotation = shortStockTargetQuaternion;
-                                __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * shortStockTargetPostion;
-                            }
+                            isInStance = true;
+                            player.HandsController.FirearmsAnimator.SetPatrol(true);
                         }
                         else
                         {
-                            if (!isTacBot && !player.IsSprintEnabled && !__instance.IsAiming && notShooting)
+                            player.HandsController.FirearmsAnimator.SetPatrol(false);
+                            if (firearmController.Item.WeapClass != "pistol")
                             {
-                                isInStance = true;
-                                stanceSpeed = 4f * dt * Plugin.PistolRotationSpeedMulti.Value * Plugin.ThirdPersonRotationSpeed.Value;
-                                targetRotation = peacefulPistolTargetQuaternion;
-                                __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * peacefulPistolTargetPosition;
-                            }
+                                ////low ready//// 
+                                if (!isTacBot && !firearmController.IsInReloadOperation() && !player.IsSprintEnabled && !__instance.IsAiming && notShooting && (lastDistance >= 25f || lastDistance == 0f))    // (Time.time - player.AIData.BotOwner.Memory.LastEnemyTimeSeen) > 1f
+                                {
+                                    isInStance = true;
+                                    stanceSpeed = 4f * dt * 3f;
+                                    targetRotation = lowReadyTargetQuaternion;
+                                    __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * lowReadyTargetPostion;
+                                }
 
-                            if (isTacBot && !player.IsSprintEnabled && !__instance.IsAiming && notShooting)
+                                ////high ready////
+                                if (isTacBot && !firearmController.IsInReloadOperation() && !__instance.IsAiming && notShooting && (lastDistance >= 25f || lastDistance == 0f))
+                                {
+                                    isInStance = true;
+                                    player.BodyAnimatorCommon.SetFloat(GClass1647.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2);
+                                    stanceSpeed = 4f * dt * 2.7f;
+                                    targetRotation = highReadyTargetQuaternion;
+                                    __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * highReadyTargetPostion;
+                                }
+                                else
+                                {
+                                    player.BodyAnimatorCommon.SetFloat(GClass1647.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)firearmController.Item.CalculateCellSize().X);
+                                }
+
+                                ///active aim//// 
+                                if (isTacBot && (((nvgIsOn || fsIsON) && !player.IsSprintEnabled && !firearmController.IsInReloadOperation() && lastDistance < 25f && lastDistance > 2f && lastDistance != 0f) || (__instance.IsAiming && (nvgIsOn && __instance.CurrentScope.IsOptic || fsIsON))))
+                                {
+                                    isInStance = true;
+                                    stanceSpeed = 4f * dt * 1.5f;
+                                    targetRotation = activeAimTargetQuaternion;
+                                    __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * activeAimTargetPostion;
+                                }
+
+                                ///short stock//// 
+                                if (isTacBot && !player.IsSprintEnabled && !firearmController.IsInReloadOperation() && lastDistance <= 2f && lastDistance != 0f)
+                                {
+                                    isInStance = true;
+                                    stanceSpeed = 4f * dt * 3f;
+                                    targetRotation = shortStockTargetQuaternion;
+                                    __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * shortStockTargetPostion;
+                                }
+                            }
+                            else
                             {
-                                isInStance = true;
-                                stanceSpeed = 4f * dt * Plugin.PistolRotationSpeedMulti.Value * Plugin.ThirdPersonRotationSpeed.Value;
-                                targetRotation = tacPistolTargetQuaternion;
-                                __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * tacPistolTargetPosition;
+                                if (!isTacBot && !player.IsSprintEnabled && !__instance.IsAiming && notShooting)
+                                {
+                                    isInStance = true;
+                                    stanceSpeed = 4f * dt * 1.5f;
+                                    targetRotation = normalPistolTargetQuaternion;
+                                    __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * normalPistolTargetPosition;
+                                }
+
+                                if (isTacBot && !player.IsSprintEnabled && !__instance.IsAiming && notShooting)
+                                {
+                                    isInStance = true;
+                                    stanceSpeed = 4f * dt * 1.5f;
+                                    targetRotation = tacPistolTargetQuaternion;
+                                    __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * tacPistolTargetPosition;
+                                }
                             }
                         }
                     }
@@ -1402,7 +1405,6 @@ namespace RealismMod
                     currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && !isInStance ? quaternion_2 : isInStance ? targetRotation : Quaternion.identity, isInStance ? stanceSpeed : 8f * dt);
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(vector3_4, quaternion_6 * rhs * currentRotation);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_3").SetValue(__instance, currentRotation);
-
                 }
             }
         }
@@ -1503,7 +1505,7 @@ namespace RealismMod
 
                     if (!Plugin.IsFiring) 
                     {
-                        __instance.HandsContainer.HandsPosition.Damping = 0.65f;
+                        __instance.HandsContainer.HandsPosition.Damping = 0.5f;
                     }
 
                     if (isPistol && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value)

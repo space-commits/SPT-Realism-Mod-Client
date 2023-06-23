@@ -310,10 +310,10 @@ namespace RealismMod
         {
             Player player = Utils.GetPlayer();
             float stressResist = player.Skills.StressPain.Value;
-            float painkillerDuration = (float)Math.Round(20f * (1f + stressResist), 2);
-            float tunnelVisionDuration = (float)Math.Round(30f * (1f - stressResist), 2);
-            float tunnelVisionStrength = (float)Math.Round(1f * (1f + stressResist), 2);
-            RealismHealthController.AddAdrenaline(player, painkillerDuration, tunnelVisionDuration, tunnelVisionStrength);
+            float painkillerDuration = (float)Math.Round(10f * (1f + stressResist), 2);
+            float negativeEffectDuration = (float)Math.Round(20f * (1f - stressResist), 2);
+            float negativeEffectStrength = (float)Math.Round(0.9f * (1f - stressResist), 2);
+            RealismHealthController.AddAdrenaline(player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
         }
     }
 
@@ -398,11 +398,12 @@ namespace RealismMod
                     }
                     if (damageType == EDamageType.Bullet || damageType == EDamageType.Blunt || damageType == EDamageType.Melee || damageType == EDamageType.Sniper)
                     {
-                        float painkillerDuration = (float)Math.Round(12f * (1f + (stressResist / 2)), 2);
-                        float negativeEffectDuration = (float)Math.Round(15f * (1f - stressResist), 2);
-                        float negativeEffectStrength = (float)Math.Round(1f * (1f + (stressResist / 2)), 2);
+                        float painkillerDuration = (float)Math.Round(20f * (1f + (stressResist /2)), 2);
+                        float negativeEffectDuration = (float)Math.Round(25f * (1f - (stressResist / 2)), 2);
+                        float negativeEffectStrength = (float)Math.Round(0.95f * (1f - (stressResist / 2)), 2);
                         RealismHealthController.AddAdrenaline(__instance.Player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
-                    } 
+
+                    }
                 }
             }
         }
