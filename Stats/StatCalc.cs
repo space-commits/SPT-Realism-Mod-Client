@@ -433,7 +433,7 @@ namespace RealismMod
 
                     }
 
-                    if (Utils.ProgramKEnabled == true)
+                    if (Plugin.EnableStockSlots.Value)
                     {
                         StatCalc.StockPositionChecker(mod, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
                     }
@@ -455,7 +455,7 @@ namespace RealismMod
                             {
                                 return;
                             }
-                            if (!Utils.ProgramKEnabled)
+                            if (!Plugin.EnableStockSlots.Value)
                             {
                                 if (containedMod.Slots.Length > 0 && (containedMod.Slots[0].ContainedItem != null))
                                 {

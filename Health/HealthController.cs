@@ -115,7 +115,7 @@ namespace RealismMod
         private static float timeSinceLastClicked = 0f;
         private static bool clickTriggered = false;
 
-        private static float adrenalineCooldownTime = 60f;
+        private static float adrenalineCooldownTime = 60f * (1f - PlayerProperties.StressResistanceFactor);
         public static bool AdrenalineTimerActive = false;
   
         public static void HealthController(ManualLogSource logger)
@@ -174,7 +174,7 @@ namespace RealismMod
             }
             if (AdrenalineTimerActive && adrenalineCooldownTime <= 0.0f) 
             {
-                adrenalineCooldownTime = 60f;
+                adrenalineCooldownTime = 60f * (1f - PlayerProperties.StressResistanceFactor);
                 AdrenalineTimerActive = false;
             }
         }
@@ -232,7 +232,7 @@ namespace RealismMod
             {
                 AdrenalineTimerActive = true;
                 AddToExistingBaseEFTEffect(player, "PainKiller", EBodyPart.Head, 0f, painkillerDuration, 3f, 1f);
-                AddToExistingBaseEFTEffect(player, "TunnelVision", EBodyPart.Head, 0f, negativeEffectDuration * 0.5f, 3f, negativeEffectStrength);
+                AddToExistingBaseEFTEffect(player, "TunnelVision", EBodyPart.Head, 0f, negativeEffectDuration, 3f, negativeEffectStrength);
                 AddToExistingBaseEFTEffect(player, "Tremor", EBodyPart.Head, painkillerDuration, negativeEffectDuration, 3f, negativeEffectStrength);
             }
         }
@@ -524,8 +524,6 @@ namespace RealismMod
                 {
                     return;
                 }
-
-                NotificationManagerClass.DisplayMessageNotification("Dropping Gear");
 
                 foreach (Item item in gear)
                 {

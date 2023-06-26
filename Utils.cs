@@ -29,8 +29,6 @@ namespace RealismMod
 {
     public static class Utils
     {
-        public static bool ProgramKEnabled = false;
-
         public static bool IsReady = false;
 
         public static bool WeaponReady = false;

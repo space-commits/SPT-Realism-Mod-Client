@@ -677,8 +677,8 @@ namespace RealismMod
         private static void playBodyHitSound(EHitZone hitZone, Vector3 pos, string hitBox) 
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 2.7f * Plugin.CloseHitSoundMulti.Value;
-            float volDist = 4.25f * Plugin.FarHitSoundMulti.Value;
+            float volClose = 2.5f * Plugin.CloseHitSoundMulti.Value;
+            float volDist = 4.3f * Plugin.FarHitSoundMulti.Value;
 
             if (hitZone == EHitZone.Spine)
             {

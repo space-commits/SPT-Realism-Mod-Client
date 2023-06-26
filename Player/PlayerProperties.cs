@@ -70,6 +70,8 @@ namespace RealismMod
 
         public static float HealthResourceRateFactor = 0f;
 
+        public static float StressResistanceFactor = 0f;
+
 
     }
 }

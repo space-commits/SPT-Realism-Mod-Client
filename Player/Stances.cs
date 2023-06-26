@@ -629,15 +629,15 @@ namespace RealismMod
                 {
                     if (!hasResetActiveAim)
                     {
-                        activeToShort = 1.5f;
+                        activeToShort = 1.75f;
                     }
                     if (!hasResetHighReady)
                     {
-                        highToShort = 1.0f;
+                        highToShort = 1.15f;
                     }
                     if (!hasResetLowReady)
                     {
-                        lowToShort = 1.0f;
+                        lowToShort = 1.15f;
                     }
                 }
                 if (StanceController.StanceTargetPosition == shortStockTargetPosition)
@@ -697,15 +697,15 @@ namespace RealismMod
                 {
                     if (!hasResetShortStock)
                     {
-                        shortToHighMulti = 1.0f;
+                        shortToHighMulti = 1.15f;
                     }
                     if (!hasResetActiveAim)
                     {
-                        activeToHighMulti = 2.0f;
+                        activeToHighMulti = 1.85f;
                     }
                     if (!hasResetLowReady)
                     {
-                        lowToHighMulti = 1.0f;
+                        lowToHighMulti = 1.25f;
                     }
                 }
                 if (StanceController.StanceTargetPosition == highReadyTargetPosition)
@@ -779,15 +779,15 @@ namespace RealismMod
                 {
                     if (!hasResetHighReady)
                     {
-                        highToLow = 1.0f;
+                        highToLow = 1.25f;
                     }
                     if (!hasResetShortStock)
                     {
-                        shortToLow = 1.0f;
+                        shortToLow = 1.15f;
                     }
                     if (!hasResetActiveAim)
                     {
-                        activeToLow = 2.0f;
+                        activeToLow = 1.85f;
                     }
 
                 }
@@ -849,11 +849,11 @@ namespace RealismMod
                 {
                     if (!hasResetShortStock)
                     {
-                        shortToActive = 2f;
+                        shortToActive = 2.15f;
                     }
                     if (!hasResetHighReady)
                     {
-                        highToActive = 2.25f;
+                        highToActive = 2.4f;
                     }
                     if (!hasResetLowReady)
                     {

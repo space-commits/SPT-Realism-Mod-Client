@@ -33,6 +33,7 @@ namespace RealismMod
                 PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;
                 PlayerProperties.WeaponSkillErgo = skillsClass.DeltaErgonomics;
                 PlayerProperties.AimSkillADSBuff = skillsClass.AimSpeed;
+                PlayerProperties.StressResistanceFactor = player.Skills.StressPain.Value;
             }
         }
     }

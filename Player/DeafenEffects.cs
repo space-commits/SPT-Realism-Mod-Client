@@ -396,7 +396,7 @@ namespace RealismMod
                             ammoDeafFactor *= 0.6f;
                         }
                         float totalBotDeafFactor = muzzleFactor * calFactor * ammoDeafFactor;
-                        Deafening.BotDeafFactor = totalBotDeafFactor * ((-distanceFromPlayer / 100f) + 1f) * 1.15f;
+                        Deafening.BotDeafFactor = totalBotDeafFactor * ((-distanceFromPlayer / 100f) + 1f) * 1.25f;
 
                     }
                 }
