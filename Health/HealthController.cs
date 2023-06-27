@@ -41,6 +41,11 @@ namespace RealismMod
             return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[3], out float result) ? result : 1f;
         }
 
+        public static bool CanBeUsedInRaid(Item med)
+        {
+            return !Utils.NullCheck(med.ConflictingItems) && bool.TryParse(med.ConflictingItems[4], out bool result) ? result : false;
+        }
+
         public static readonly Dictionary<string, Type> EffectTypes = new Dictionary<string, Type>
         {
             { "Painkiller", typeof(GInterface207) },
@@ -796,6 +801,13 @@ namespace RealismMod
                 return;
             }
 
+            if (MedProperties.CanBeUsedInRaid(item) == false) 
+            {
+                NotificationManagerClass.DisplayWarningNotification("This Item Can Not Be Used In Raid", EFT.Communications.ENotificationDurationType.Long);
+                canUse = false;
+                return;
+            }
+
             MedsClass med = item as MedsClass;
 
             EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(player);
@@ -952,6 +964,7 @@ namespace RealismMod
             Type fractureType;
             MedProperties.EffectTypes.TryGetValue("BrokenBone", out fractureType);
 
+            //not doing this loop correctly, I am resetting all these values per loop....
             foreach (EBodyPart part in BodyParts) 
             {
                 IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(part);
@@ -980,16 +993,16 @@ namespace RealismMod
 
                 if (percentHp <= 0.5f) 
                 {
-                    AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 10f, 1f, 1f);
+                    AddBaseEFTEffectIfNoneExisting(player, "Pain", part, 0f, 10f, 1f, 1f);
                 }
 
                 if (isLeg || isBody) 
                 {
-                    aimMoveSpeedBase = aimMoveSpeedBase * percentHpAimMove;
-                    sprintSpeedInjuryMulti = sprintSpeedInjuryMulti * percentHpSprint;
-                    sprintAccelInjuryMulti = sprintAccelInjuryMulti * percentHp;
-                    walkSpeedInjuryMulti = walkSpeedInjuryMulti * percentHpWalk;
-                    stamRegenInjuryMulti = stamRegenInjuryMulti * percentHpStamRegen;
+                    aimMoveSpeedBase *= percentHpAimMove;
+                    sprintSpeedInjuryMulti *= percentHpSprint;
+                    sprintAccelInjuryMulti *= percentHp;
+                    walkSpeedInjuryMulti *= percentHpWalk;
+                    stamRegenInjuryMulti *= percentHpStamRegen;
                 }
 
                 if (isArm) 
@@ -1003,19 +1016,22 @@ namespace RealismMod
                         PlayerProperties.RightArmRuined = player.ActiveHealthController.GetBodyPartHealth(EBodyPart.RightArm).Current <= 0 || hasFracture;
                     }
 
-                    float ruinedFactor = PlayerProperties.LeftArmRuined ? 0.7f : PlayerProperties.RightArmRuined ? 0.8f : PlayerProperties.LeftArmRuined && PlayerProperties.RightArmRuined ? 0.5f : 1f;
+                    //this makes no sense, loop is per body part so possible that both arms are blacked but loop hasn't done both arms yet. Though this check does happen per tick so it'll sort of still work due to
+                    //global property ArmRuined
+/*                    float ruinedFactor = PlayerProperties.LeftArmRuined ? 0.8f : PlayerProperties.RightArmRuined ? 0.9f : PlayerProperties.LeftArmRuined && PlayerProperties.RightArmRuined ? 0.7f : 1f;
+*/                  float armFractureFactor = isLeftArm && hasFracture ? 0.8f : isRightArm && hasFracture ? 0.9f : 1f;
 
-                    aimMoveSpeedBase = aimMoveSpeedBase * percentHpAimMove * ruinedFactor;
-                    ergoDeltaInjuryMulti = ergoDeltaInjuryMulti * (1f + (1f - percentHp)) * ruinedFactor;
-                    adsInjuryMulti = adsInjuryMulti * percentHpADS * ruinedFactor;
-                    stanceInjuryMulti = stanceInjuryMulti * percentHpStance * ruinedFactor;
-                    reloadInjuryMulti = reloadInjuryMulti * percentHpReload * ruinedFactor;
-                    recoilInjuryMulti = recoilInjuryMulti * (1f + (1f - percentHpRecoil)) * ruinedFactor;
+                    aimMoveSpeedBase *= percentHpAimMove * armFractureFactor;
+                    ergoDeltaInjuryMulti *= (1f + (1f - percentHp)) * armFractureFactor;
+                    adsInjuryMulti *= percentHpADS * armFractureFactor;
+                    stanceInjuryMulti *= percentHpStance * armFractureFactor;
+                    reloadInjuryMulti *= percentHpReload * armFractureFactor;
+                    recoilInjuryMulti *= (1f + (1f - percentHpRecoil)) * armFractureFactor;
                 }
             }
 
             float totalHpPercent = totalCurrentHp / totalMaxHp;
-            resourceRateInjuryMulti = 1f - totalHpPercent;
+            resourceRateInjuryMulti = (1f - totalHpPercent) * 2f;
 
             if (totalHpPercent <= 0.5f)
             {

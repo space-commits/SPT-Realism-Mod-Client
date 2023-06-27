@@ -73,6 +73,12 @@ namespace RealismMod
         public static ConfigEntry<bool> EnableRecoilClimb { get; set; }
         public static ConfigEntry<float> SwayIntensity { get; set; }
         public static ConfigEntry<float> RecoilIntensity { get; set; }
+        public static ConfigEntry<float> VertRecSemiMulti { get; set; }
+        public static ConfigEntry<float> VertRecAutoMulti { get; set; }
+        public static ConfigEntry<float> HorzRecSemiMulti { get; set; }
+        public static ConfigEntry<float> HorzRecAutoMulti { get; set; }
+        public static ConfigEntry<float> HorzRecLimit { get; set; }
+
         public static ConfigEntry<bool> EnableStatsDelta { get; set; }
         public static ConfigEntry<bool> EnableHipfireRecoilClimb { get; set; }
         public static ConfigEntry<bool> IncreaseCOI { get; set; }
@@ -268,7 +274,6 @@ namespace RealismMod
 
         public static Weapon CurrentlyShootingWeapon;
 
-        public static Vector3 PistolTransformNewStartPosition;
         public static Vector3 TransformBaseStartPosition;
         public static Vector3 WeaponOffsetPosition;
 
@@ -871,10 +876,15 @@ namespace RealismMod
             EnableRealArmorClass = Config.Bind<bool>(ballSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 60 }));
             EnableRagdollFix = Config.Bind<bool>(ballSettings, "Enable Ragdoll Fix (Experimental)", true, new ConfigDescription("Requiures Restart. Enables Fix For Ragdolls Flying Into The Stratosphere.", null, new ConfigurationManagerAttributes { Order = 70 }));
 
-            EnableHipfireRecoilClimb = Config.Bind<bool>(recoilSettings, "Enable Hipfire Recoil Climb", true, new ConfigDescription("Requires Restart. Enabled Recoil Climbing While Hipfiring", null, new ConfigurationManagerAttributes { Order = 4 }));
-            ReduceCamRecoil = Config.Bind<bool>(recoilSettings, "Reduce Camera Recoil", false, new ConfigDescription("Reduces Camera Recoil Per Shot. If Disabled, Camera Recoil Becomes More Intense As Weapon Recoil Increases.", null, new ConfigurationManagerAttributes { Order = 3 }));
-            SensLimit = Config.Bind<float>(recoilSettings, "Sensitivity Lower Limit", 0.4f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction. 100% Means No Sensitivity Reduction.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 2 }));
-            RecoilIntensity = Config.Bind<float>(recoilSettings, "Recoil Multi", 1.2f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 1 }));
+            EnableHipfireRecoilClimb = Config.Bind<bool>(recoilSettings, "Enable Hipfire Recoil Climb", true, new ConfigDescription("Requires Restart. Enabled Recoil Climbing While Hipfiring", null, new ConfigurationManagerAttributes { Order = 80 }));
+            ReduceCamRecoil = Config.Bind<bool>(recoilSettings, "Reduce Camera Recoil", false, new ConfigDescription("Reduces Camera Recoil Per Shot. If Disabled, Camera Recoil Becomes More Intense As Weapon Recoil Increases.", null, new ConfigurationManagerAttributes { Order = 70 }));
+            SensLimit = Config.Bind<float>(recoilSettings, "Sensitivity Lower Limit", 0.4f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction. 100% Means No Sensitivity Reduction.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 60 }));
+            RecoilIntensity = Config.Bind<float>(recoilSettings, "Recoil Multi", 1.2f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 50 }));
+            VertRecAutoMulti = Config.Bind<float>(recoilSettings, "Vertical Recoil Auto Multi", 0.63f, new ConfigDescription("Only Applies To Assault Rifles, Carbines And DMRs.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 40 }));
+            VertRecSemiMulti = Config.Bind<float>(recoilSettings, "Vertical Recoil Semi Multi", 1.35f, new ConfigDescription("Only Applies To Assault Rifles, Carbines And DMRs.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 30 }));
+            HorzRecAutoMulti = Config.Bind<float>(recoilSettings, "Horizontal Recoil Auto Multi", 0.4f, new ConfigDescription("Only Applies To Assault Rifles, Carbines And DMRs..", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 20 }));
+            HorzRecSemiMulti = Config.Bind<float>(recoilSettings, "Horizontal Recoil Semi Multi", 1.15f, new ConfigDescription("Only Applies To Assault Rifles, Carbines And DMRs.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 10 }));
+            HorzRecLimit = Config.Bind<float>(recoilSettings, "Horizontal Recoil Limit", 15f, new ConfigDescription("Horizontal Recoil Limit For All Guns. A Value Of 15 Roughly Equals 150 Horizontal Recoil.", new AcceptableValueRange<float>(0f, 100f), new ConfigurationManagerAttributes { Order = 1 }));
 
             ConvSemiMulti = Config.Bind<float>(advancedRecoilSettings, "Semi Auto Convergence Multi", 0.69f, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 30, IsAdvanced = true }));
             ConvAutoMulti = Config.Bind<float>(advancedRecoilSettings, "Auto Convergence Multi", 0.59f, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 20, IsAdvanced = true }));
@@ -903,7 +913,7 @@ namespace RealismMod
             SwayIntensity = Config.Bind<float>(waponSettings, "Sway Intensity", 1.1f, new ConfigDescription("Changes The Intensity Of Aim Sway And Inertia.", new AcceptableValueRange<float>(0f, 3f), new ConfigurationManagerAttributes { Order = 1 }));
             EnableMalfPatch = Config.Bind<bool>(waponSettings, "Enable Malfunctions Changes", true, new ConfigDescription("Requires Restart. Malfunction Changes Must Be Enabled On The Server (Config App). Some Subsonic Ammo Needs Special Mods To Cycle, Malfunctions Can Happen At Any Durability But The Chance Is Halved If Above The Durability Threshold.", null, new ConfigurationManagerAttributes { Order = 2 }));
             InspectionlessMalfs = Config.Bind<bool>(waponSettings, "Enable Inspectionless Malfunctions", true, new ConfigDescription("Requires Restart. You Don't Need To Inspect A Malfunction In Order To Clear It.", null, new ConfigurationManagerAttributes { Order = 3 }));
-            DuraMalfThreshold = Config.Bind<float>(waponSettings, "Malfunction Durability Threshold", 98f, new ConfigDescription("Malfunction Changes Must Be Enabled On The Server (Config App) And 'Enable Malfunctions Changes' Must Be True. Malfunction Chance Is Reduced By Half Until This Durability Threshold Is Met.", new AcceptableValueRange<float>(80f, 100f), new ConfigurationManagerAttributes { Order = 4 }));
+            DuraMalfThreshold = Config.Bind<float>(waponSettings, "Malfunction Durability Threshold", 98f, new ConfigDescription("Malfunction Changes Must Be Enabled On The Server (Config App) And 'Enable Malfunctions Changes' Must Be True. Malfunction Chance Is 0 Until This Durability Threshold Is Exceeded.", new AcceptableValueRange<float>(80f, 100f), new ConfigurationManagerAttributes { Order = 4 }));
             enableSGMastering = Config.Bind<bool>(waponSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 5 }));
             IncreaseCOI = Config.Bind<bool>(waponSettings, "Enable Increased Inaccuracy", true, new ConfigDescription("Requires Restart. Increases The Innacuracy Of All Weapons So That MOA/Accuracy Is A More Important Stat.", null, new ConfigurationManagerAttributes { Order = 6 }));
 
@@ -1031,17 +1041,17 @@ namespace RealismMod
             PistolPosSpeedMulti = Config.Bind<float>(pistol, "Pistol Position Speed Multi", 10.0f, new ConfigDescription("", new AcceptableValueRange<float>(1.0f, 100.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 32, IsAdvanced = true }));
             PistolPosResetSpeedMulti = Config.Bind<float>(pistol, "Pistol Position Reset Speed Multi", 7.0f, new ConfigDescription("", new AcceptableValueRange<float>(1.0f, 100.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true }));
 
-            PistolOffsetX = Config.Bind<float>(pistol, "Pistol Position X-Axis", 0.025f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 25, IsAdvanced = true }));
-            PistolOffsetY = Config.Bind<float>(pistol, "Pistol Position Y-Axis", 0.05f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 24, IsAdvanced = true }));
-            PistolOffsetZ = Config.Bind<float>(pistol, "Pistol Position Z-Axis", -0.035f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 23, IsAdvanced = true }));
+            PistolOffsetX = Config.Bind<float>(pistol, "Pistol Position X-Axis.", 0.015f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 25, IsAdvanced = true }));
+            PistolOffsetY = Config.Bind<float>(pistol, "Pistol Position Y-Axis.", 0.04f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 24, IsAdvanced = true }));
+            PistolOffsetZ = Config.Bind<float>(pistol, "Pistol Position Z-Axis.", -0.04f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 23, IsAdvanced = true }));
 
             PistolRotationX = Config.Bind<float>(pistol, "Pistol Rotation X-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true }));
             PistolRotationY = Config.Bind<float>(pistol, "Pistol Rotation Y-Axis", -15f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, IsAdvanced = true }));
             PistolRotationZ = Config.Bind<float>(pistol, "Pistol Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true }));
 
-            PistolAdditionalRotationX = Config.Bind<float>(pistol, "Pistol Ready Additional Rotation X-Axis", -2.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true }));
-            PistolAdditionalRotationY = Config.Bind<float>(pistol, "Pistol Ready Additional Rotation Y-Axis", -15.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true }));
-            PistolAdditionalRotationZ = Config.Bind<float>(pistol, "Pistol Ready Additional Rotation Z-Axis", 1.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true }));
+            PistolAdditionalRotationX = Config.Bind<float>(pistol, "Pistol Ready Additional Rotation X-Axis.", 0.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true }));
+            PistolAdditionalRotationY = Config.Bind<float>(pistol, "Pistol Ready Additional Rotation Y-Axis.", -10.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true }));
+            PistolAdditionalRotationZ = Config.Bind<float>(pistol, "Pistol Ready Additional Rotation Z-Axis.", 0.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true }));
 
             PistolResetRotationX = Config.Bind<float>(pistol, "Pistol Ready Reset Rotation X-Axis", 1.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
             PistolResetRotationY = Config.Bind<float>(pistol, "Pistol Ready Reset Rotation Y-Axis", 2.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));

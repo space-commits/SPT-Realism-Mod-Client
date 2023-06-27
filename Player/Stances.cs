@@ -456,6 +456,8 @@ namespace RealismMod
             }
         }
 
+        public static float currentX = 0f;
+
         public static void DoPistolStances(bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation __instance, ref Quaternion stanceRotation, float dt, ref bool hasResetPistolPos, Player player, ManualLogSource logger, ref float rotationSpeed, ref bool isResettingPistol)
         {
             float ergoMulti = Mathf.Clamp(WeaponProperties.ErgoStanceSpeed, 0.65f, 1.45f);
@@ -473,11 +475,15 @@ namespace RealismMod
             Quaternion pistolMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.PistolAdditionalRotationX.Value, Plugin.PistolAdditionalRotationY.Value, Plugin.PistolAdditionalRotationZ.Value));
             Quaternion pistolRevertQuaternion = Quaternion.Euler(Plugin.PistolResetRotationX.Value * balanceFactor, Plugin.PistolResetRotationY.Value, Plugin.PistolResetRotationZ.Value);
 
-
-            if (!Plugin.IsBlindFiring)
+            //I've no idea wtf is going on here but it sort of works
+            float targetPos = 0.09f;
+            if (!Plugin.IsBlindFiring && !StanceController.CancelPistolStance)
             {
-                __instance.HandsContainer.WeaponRoot.localPosition = new Vector3(Plugin.PistolTransformNewStartPosition.x, __instance.HandsContainer.TrackingTransform.localPosition.y, __instance.HandsContainer.TrackingTransform.localPosition.z);
+                targetPos = Plugin.PistolOffsetX.Value;
             }
+             currentX = Mathf.Lerp(currentX, targetPos, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * 0.5f);
+
+            __instance.HandsContainer.WeaponRoot.localPosition = new Vector3(currentX, __instance.HandsContainer.TrackingTransform.localPosition.y, __instance.HandsContainer.TrackingTransform.localPosition.z);
 
             if (!__instance.IsAiming && !StanceController.CancelPistolStance && !StanceController.PistolIsColliding && !Plugin.IsBlindFiring)
             {

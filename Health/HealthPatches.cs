@@ -425,6 +425,12 @@ namespace RealismMod
             if (__instance.IsYourPlayer && medType != "drug" && meds.Template._parent != "5448f3a64bdc2d60728b456a")
             {
 
+                if (MedProperties.CanBeUsedInRaid(meds) == false)
+                {
+                    NotificationManagerClass.DisplayWarningNotification("This Item Can Not Be Used In Raid", EFT.Communications.ENotificationDurationType.Long);
+                    return false;
+                }
+
                 MedsClass med = meds as MedsClass;
                 float medHPRes = med.MedKitComponent.HpResource;
 
