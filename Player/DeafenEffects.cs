@@ -90,7 +90,7 @@ namespace RealismMod
             {
                 Plugin.HasHeadSet = true;
                 GClass2204 headphone = headset.Template;
-                protectionFactor = ((headphone.DryVolume / 100f) + 1f) * 1.3f;
+                protectionFactor = ((headphone.DryVolume / 100f) + 1f) * 1.4f;
             }
             else
             {
@@ -199,7 +199,7 @@ namespace RealismMod
             float totalDistortion = Mathf.Clamp(Distortion + BotDistortion + GrenadeDistortion, 0.0f, 70.0f);
             float totalVignette = Mathf.Clamp(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 0.0f, 60.0f);
 
-            float headsetAmbientVol = Plugin.AmbientVolume * (1f + ((20f - Plugin.RealTimeGain.Value) / 2.35f));
+            float headsetAmbientVol = Plugin.AmbientVolume * (1f + ((20f - Plugin.RealTimeGain.Value) / Plugin.HeadsetAmbientMulti.Value));
              
             //for some reason this prevents the values from being fully reset to 0
             if (totalVolume != 0.0f || totalDistortion != 0.0f || totalVignette != 0.0f)

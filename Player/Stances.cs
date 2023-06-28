@@ -456,6 +456,7 @@ namespace RealismMod
             }
         }
 
+        //move this to the patch classes
         public static float currentX = 0f;
 
         public static void DoPistolStances(bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation __instance, ref Quaternion stanceRotation, float dt, ref bool hasResetPistolPos, Player player, ManualLogSource logger, ref float rotationSpeed, ref bool isResettingPistol)
