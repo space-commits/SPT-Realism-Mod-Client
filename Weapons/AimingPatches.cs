@@ -149,9 +149,24 @@ namespace RealismMod
         private static bool Prefix(EFT.Player.FirearmController __instance)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
-            if ((Plugin.EnableFSPatch.Value || Plugin.EnableNVGPatch.Value) && !player.IsAI)
+
+            if (player.IsYourPlayer) 
             {
-                return PlayerProperties.IsAllowedADS;
+                if (PlayerProperties.SprintBlockADS && !PlayerProperties.TriedToADSFromSprint) 
+                {
+                    Logger.LogWarning("blocked ADS");
+                    PlayerProperties.TriedToADSFromSprint = true;
+                    return false;
+                }
+                Logger.LogWarning("allowed ADS");
+                PlayerProperties.TriedToADSFromSprint = false;
+                return true;
+
+                //need to integrate this with sprint blocking
+     /*           if (Plugin.EnableFSPatch.Value || Plugin.EnableNVGPatch.Value)
+                {
+                    return PlayerProperties.IsAllowedADS;
+                }*/
             }
             return true;
         }

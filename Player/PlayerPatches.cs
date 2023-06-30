@@ -91,7 +91,7 @@ namespace RealismMod
         private static float sprintTimer = 0f;
         private static bool didSprintPenalties = false;
 
-        private static void doSprintTimer(ProceduralWeaponAnimation pwa)
+        private static void doSprintTimer(ProceduralWeaponAnimation pwa, Player.FirearmController fc)
         {
             sprintCooldownTimer += Time.deltaTime;
 
@@ -106,18 +106,24 @@ namespace RealismMod
                 PlayerProperties.SprintTotalBreathIntensity = breathIntensity;
                 PlayerProperties.SprintTotalHandsIntensity = inputIntensitry;
 
-                PlayerProperties.ADSSprintMulti = Mathf.Clamp(1f - ((sprintDurationModi * 2f) / 10f), 0.1f, 0.5f);
+                PlayerProperties.ADSSprintMulti = Mathf.Min(1f - (sprintDurationModi / 5f), 0.1f);
 
                 didSprintPenalties = true;
                 doSwayReset = false;
             }
 
-            if (sprintCooldownTimer >= 2.5f)
+            if (sprintCooldownTimer >= 0.5f)
             {
                 PlayerProperties.WasSprinting = false;
                 doSwayReset = true;
                 sprintCooldownTimer = 0f;
                 sprintTimer = 0f;
+                PlayerProperties.SprintBlockADS = false;
+                if (PlayerProperties.TriedToADSFromSprint) 
+                {
+                    fc.ToggleAim();
+                }
+
             }
         }
 
@@ -160,6 +166,7 @@ namespace RealismMod
                     sprintTimer += Time.deltaTime;
                     if (sprintTimer >= 1f) 
                     {
+                        PlayerProperties.SprintBlockADS = true;
                         PlayerProperties.WasSprinting = true;
                         didSprintPenalties = false;
                     }
@@ -168,7 +175,7 @@ namespace RealismMod
                 {
                     if (PlayerProperties.WasSprinting) 
                     {
-                        doSprintTimer(__instance.ProceduralWeaponAnimation);
+                        doSprintTimer(__instance.ProceduralWeaponAnimation, fc);
                     }
                     if (doSwayReset)
                     {

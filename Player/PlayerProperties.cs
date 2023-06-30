@@ -81,6 +81,9 @@ namespace RealismMod
         public static bool IsSprinting = false;
         public static bool WasSprinting = false;
 
+        public static bool SprintBlockADS = false;
+        public static bool TriedToADSFromSprint = false;
+
         public static bool HasFullyResetSprintADSPenalties = false;
     }
 }
