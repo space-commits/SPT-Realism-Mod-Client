@@ -78,7 +78,7 @@ namespace RealismMod
 
         public static void SetStanceStamina(Player player, Player.FirearmController fc)
         {
-            if (!Plugin.IsSprinting)
+            if (!PlayerProperties.IsSprinting)
             {
                 gotCurrentStam = false;
 
@@ -184,7 +184,7 @@ namespace RealismMod
         {
             if (Utils.WeaponReady == true)
             {
-                if (!Plugin.IsSprinting && !Plugin.IsInInventory && WeaponProperties._WeapClass != "pistol")
+                if (!PlayerProperties.IsSprinting && !Plugin.IsInInventory && WeaponProperties._WeapClass != "pistol")
                 {
 
                     //cycle stances
@@ -620,7 +620,7 @@ namespace RealismMod
             }
 
             ////short-stock////
-            if (StanceController.IsShortStock && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsLowReady && !__instance.IsAiming && !StanceController.CancelShortStock && !Plugin.IsBlindFiring && !Plugin.IsSprinting)
+            if (StanceController.IsShortStock && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsLowReady && !__instance.IsAiming && !StanceController.CancelShortStock && !Plugin.IsBlindFiring && !PlayerProperties.IsSprinting)
             {
                 __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 1.5f;
 
@@ -971,7 +971,7 @@ namespace RealismMod
         {
 
             __instance.ResetLeftHand();
-            skipAnimation = StanceController.IsHighReady && Plugin.IsSprinting ? true : skipAnimation;
+            skipAnimation = StanceController.IsHighReady && PlayerProperties.IsSprinting ? true : skipAnimation;
             WeaponAnimationSpeedControllerClass.SetFireMode(__instance.Animator, (float)fireMode);
             if (!skipAnimation)
             {

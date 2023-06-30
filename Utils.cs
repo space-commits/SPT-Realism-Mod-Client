@@ -1,6 +1,7 @@
 ﻿using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
+using System;
 /*using Silencer = GClass2124;
 using FlashHider = GClass2121;
 using MuzzleCombo = GClass2116;
@@ -58,6 +59,12 @@ namespace RealismMod
         public static string Flashlight = "55818b084bdc2d5b648b4571";
         public static string TacticalCombo = "55818b164bdc2ddc698b456c";
         public static string UBGL = "55818b014bdc2ddc698b456b";
+
+        public static bool AreFloatsEqual(float a, float b, float epsilon = 0.001f)
+        {
+            float difference = Math.Abs(a - b);
+            return difference < epsilon;
+        }
 
         public static bool NullCheck(string[] confItemArray)
         {

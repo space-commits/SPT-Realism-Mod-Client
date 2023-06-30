@@ -85,6 +85,60 @@ namespace RealismMod
 
     public class PlayerLateUpdatePatch : ModulePatch
     {
+
+        private static float sprintCooldownTimer = 0f;
+        private static bool doSwayReset = false;
+        private static float sprintTimer = 0f;
+        private static bool didSprintPenalties = false;
+
+        private static void doSprintTimer(ProceduralWeaponAnimation pwa)
+        {
+            sprintCooldownTimer += Time.deltaTime;
+
+            if (!didSprintPenalties) 
+            {
+                float sprintDurationModi = Mathf.Max(sprintTimer, 1f);
+
+                float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi * 2f, 5f);
+                float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi, 1f);
+                pwa.Breath.Intensity = breathIntensity;
+                pwa.HandsContainer.HandsRotation.InputIntensity = inputIntensitry;
+                PlayerProperties.SprintTotalBreathIntensity = breathIntensity;
+                PlayerProperties.SprintTotalHandsIntensity = inputIntensitry;
+
+                PlayerProperties.ADSSprintMulti = Mathf.Clamp(1f - ((sprintDurationModi * 2f) / 10f), 0.1f, 0.5f);
+
+                didSprintPenalties = true;
+                doSwayReset = false;
+            }
+
+            if (sprintCooldownTimer >= 2.5f)
+            {
+                PlayerProperties.WasSprinting = false;
+                doSwayReset = true;
+                sprintCooldownTimer = 0f;
+                sprintTimer = 0f;
+            }
+        }
+
+        private static void resetSprintPenalties(ProceduralWeaponAnimation pwa) 
+        {
+            float resetSpeed = Time.deltaTime * 0.25f;
+            pwa.Breath.Intensity = Mathf.Lerp(pwa.Breath.Intensity, PlayerProperties.TotalBreathIntensity, resetSpeed);
+            pwa.HandsContainer.HandsRotation.InputIntensity = Mathf.Lerp(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerProperties.TotalHandsIntensity, resetSpeed);
+            PlayerProperties.ADSSprintMulti = Mathf.Lerp(PlayerProperties.ADSSprintMulti, 1f, resetSpeed);
+            sprintTimer = Mathf.Lerp(sprintTimer, 0f, Time.deltaTime * 2f);
+
+            PlayerProperties.SprintTotalBreathIntensity = pwa.Breath.Intensity;
+            PlayerProperties.SprintTotalHandsIntensity = pwa.HandsContainer.HandsRotation.InputIntensity;
+
+            if (Utils.AreFloatsEqual(sprintTimer, 0f) && Utils.AreFloatsEqual(1f, PlayerProperties.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerProperties.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerProperties.TotalHandsIntensity))
+            {
+                Logger.LogWarning("reset ");
+                doSwayReset = false;
+            }
+        } 
+
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Player).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -97,9 +151,40 @@ namespace RealismMod
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
 
-                Plugin.IsSprinting = __instance.IsSprintEnabled;
+                PlayerProperties.IsSprinting = __instance.IsSprintEnabled;
                 PlayerProperties.enviroType = __instance.Environment;
                 Plugin.IsInInventory = __instance.IsInventoryOpened;
+
+                if (__instance.IsSprintEnabled)
+                {
+                    sprintTimer += Time.deltaTime;
+                    if (sprintTimer >= 1f) 
+                    {
+                        PlayerProperties.WasSprinting = true;
+                        didSprintPenalties = false;
+                    }
+                }
+                else
+                {
+                    if (PlayerProperties.WasSprinting) 
+                    {
+                        doSprintTimer(__instance.ProceduralWeaponAnimation);
+                    }
+                    if (doSwayReset)
+                    {
+                        resetSprintPenalties(__instance.ProceduralWeaponAnimation);
+                    }
+                }
+
+                if (!doSwayReset && !PlayerProperties.WasSprinting)
+                {
+                    PlayerProperties.HasFullyResetSprintADSPenalties = true;
+                }
+                else
+                {
+                    PlayerProperties.HasFullyResetSprintADSPenalties = false;
+                }
+
 
                 if (fc != null)
                 {

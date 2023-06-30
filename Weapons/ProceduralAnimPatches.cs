@@ -101,13 +101,16 @@ namespace RealismMod
                     float updateErgoWeight = firearmController.ErgonomicWeight;
 
                     Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
-                    
+
                     float idleMulti = StanceController.IsIdle() ? 1.3f : 1f;
                     float stockMulti = firearmController.Item.WeapClass != "pistol" && !WeaponProperties.HasShoulderContact ? 0.75f : 1f;
                     float totalSightlessAimSpeed = WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f));
                     float sightSpeedModi = currentAimingMod != null ? AttachmentProperties.AimSpeed(currentAimingMod) : 1f;
-                    float newAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)) * idleMulti * stockMulti, 0.45f, 1.5f) * Plugin.GlobalAimSpeedModifier.Value;
-                    
+                    float totalSightedAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)) * idleMulti * stockMulti, 0.45f, 1.5f);
+                    float newAimSpeed = Mathf.Max(totalSightedAimSpeed * PlayerProperties.ADSSprintMulti, 0.3f) * Plugin.GlobalAimSpeedModifier.Value;
+
+                    Logger.LogWarning("aim speed " + newAimSpeed);
+
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
                     float float_9 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance); //aimspeed
 
@@ -140,13 +143,24 @@ namespace RealismMod
                     breathIntensity *= Plugin.SwayIntensity.Value;
                     handsIntensity *= Plugin.SwayIntensity.Value;
 
-                    __instance.Breath.Intensity = breathIntensity * __instance.IntensityByPoseLevel; //both aim sway and up and down breathing
-                    __instance.HandsContainer.HandsRotation.InputIntensity = handsIntensity * handsIntensity; //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
-                    PlayerProperties.TotalHandsIntensity = __instance.HandsContainer.HandsRotation.InputIntensity;
+                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel;
+                    float totalInputIntensitry = handsIntensity * handsIntensity;
+                    PlayerProperties.TotalBreathIntensity = totalBreathIntensity;
+                    PlayerProperties.TotalHandsIntensity = totalInputIntensitry;
+
+                    if (PlayerProperties.HasFullyResetSprintADSPenalties)
+                    {
+                        __instance.Breath.Intensity = totalBreathIntensity; //both aim sway and up and down breathing
+                        __instance.HandsContainer.HandsRotation.InputIntensity = totalInputIntensitry; //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
+                    }
+                    else
+                    {
+                        __instance.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity;
+                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity;
+                    }
 
                     __instance.Shootingg.Intensity = Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value;
                     __instance.Overweight = 0;
-
 
                     if (Plugin.EnableLogging.Value == true)
                     {
@@ -207,7 +221,7 @@ namespace RealismMod
                     float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate(ergoWeight * weightFactor);//delay from moving mouse to the weapon moving to center of screen.
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_21").SetValue(__instance, weapDisplacement * weightFactor * displacementModifier);
 
-                    __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * Mathf.Clamp(aimIntensity * weightFactor, aimIntensity, 1.1f); // the diving/tiling animation as you move weapon side to side.
+                    __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * Mathf.Clamp(aimIntensity * weightFactor, aimIntensity, 1f); // the diving/tiling animation as you move weapon side to side.
 
 
                     if (Plugin.EnableLogging.Value == true)

@@ -279,7 +279,6 @@ namespace RealismMod
         public static Vector3 WeaponOffsetPosition;
 
         public static bool DidWeaponSwap = false;
-        public static bool IsSprinting = false;
         public static bool IsInInventory = false;
 
         public static bool IsFiring = false;
