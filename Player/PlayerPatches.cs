@@ -83,6 +83,25 @@ namespace RealismMod
         }
     }
 
+ /*   public class ToggleSprintPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player).GetMethod("ToggleSprint", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void PatchPrefix(Player __instance)
+        {
+
+            if (__instance.IsYourPlayer == true)
+            {
+                StanceController.IsActiveAiming = true;
+            }
+        }
+    }*/
+
+
     public class PlayerLateUpdatePatch : ModulePatch
     {
 
@@ -90,6 +109,7 @@ namespace RealismMod
         private static bool doSwayReset = false;
         private static float sprintTimer = 0f;
         private static bool didSprintPenalties = false;
+        private static bool resetSwayAfterFiring = false;
 
         private static void doSprintTimer(ProceduralWeaponAnimation pwa, Player.FirearmController fc)
         {
@@ -97,50 +117,50 @@ namespace RealismMod
 
             if (!didSprintPenalties) 
             {
-                float sprintDurationModi = Mathf.Max(sprintTimer, 1f);
+                float sprintDurationModi = 1 + (sprintTimer / 10f);
 
-                float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi * 2f, 5f);
+                float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi, 5f);
                 float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi, 1f);
                 pwa.Breath.Intensity = breathIntensity;
                 pwa.HandsContainer.HandsRotation.InputIntensity = inputIntensitry;
                 PlayerProperties.SprintTotalBreathIntensity = breathIntensity;
                 PlayerProperties.SprintTotalHandsIntensity = inputIntensitry;
 
-                PlayerProperties.ADSSprintMulti = Mathf.Min(1f - (sprintDurationModi / 5f), 0.1f);
+                PlayerProperties.ADSSprintMulti = Mathf.Min(1f - (sprintTimer / 15f), 0.2f);
 
                 didSprintPenalties = true;
                 doSwayReset = false;
             }
 
-            if (sprintCooldownTimer >= 0.5f)
+            if (sprintCooldownTimer >= 0.75f)
+            {
+                PlayerProperties.SprintBlockADS = false;
+                if (PlayerProperties.TriedToADSFromSprint)
+                {
+                    fc.ToggleAim();
+                }
+            }
+            if (sprintCooldownTimer >= 3f)
             {
                 PlayerProperties.WasSprinting = false;
                 doSwayReset = true;
                 sprintCooldownTimer = 0f;
                 sprintTimer = 0f;
-                PlayerProperties.SprintBlockADS = false;
-                if (PlayerProperties.TriedToADSFromSprint) 
-                {
-                    fc.ToggleAim();
-                }
-
             }
         }
 
-        private static void resetSprintPenalties(ProceduralWeaponAnimation pwa) 
+        private static void resetSwayParams(ProceduralWeaponAnimation pwa) 
         {
-            float resetSpeed = Time.deltaTime * 0.25f;
-            pwa.Breath.Intensity = Mathf.Lerp(pwa.Breath.Intensity, PlayerProperties.TotalBreathIntensity, resetSpeed);
-            pwa.HandsContainer.HandsRotation.InputIntensity = Mathf.Lerp(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerProperties.TotalHandsIntensity, resetSpeed);
+            float resetSpeed = Time.deltaTime * 0.75f;
+            PlayerProperties.SprintTotalBreathIntensity = Mathf.Lerp(PlayerProperties.SprintTotalBreathIntensity, PlayerProperties.TotalBreathIntensity, resetSpeed);
+            PlayerProperties.SprintTotalHandsIntensity = Mathf.Lerp(PlayerProperties.SprintTotalHandsIntensity, PlayerProperties.TotalHandsIntensity, resetSpeed);
             PlayerProperties.ADSSprintMulti = Mathf.Lerp(PlayerProperties.ADSSprintMulti, 1f, resetSpeed);
-            sprintTimer = Mathf.Lerp(sprintTimer, 0f, Time.deltaTime * 2f);
 
-            PlayerProperties.SprintTotalBreathIntensity = pwa.Breath.Intensity;
-            PlayerProperties.SprintTotalHandsIntensity = pwa.HandsContainer.HandsRotation.InputIntensity;
+            pwa.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity;
+            pwa.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity;
 
-            if (Utils.AreFloatsEqual(sprintTimer, 0f) && Utils.AreFloatsEqual(1f, PlayerProperties.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerProperties.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerProperties.TotalHandsIntensity))
+            if (Utils.AreFloatsEqual(1f, PlayerProperties.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerProperties.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerProperties.TotalHandsIntensity))
             {
-                Logger.LogWarning("reset ");
                 doSwayReset = false;
             }
         } 
@@ -179,7 +199,7 @@ namespace RealismMod
                     }
                     if (doSwayReset)
                     {
-                        resetSprintPenalties(__instance.ProceduralWeaponAnimation);
+                        resetSwayParams(__instance.ProceduralWeaponAnimation);
                     }
                 }
 
@@ -192,6 +212,18 @@ namespace RealismMod
                     PlayerProperties.HasFullyResetSprintADSPenalties = false;
                 }
 
+                if (Plugin.IsFiring)
+                {
+                    doSwayReset = false;
+                    __instance.ProceduralWeaponAnimation.Breath.Intensity = 0.69f;
+                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f;
+                    resetSwayAfterFiring = false;
+                }
+                else if (!resetSwayAfterFiring)
+                {
+                    resetSwayAfterFiring = true;
+                    doSwayReset = true;
+                }
 
                 if (fc != null)
                 {

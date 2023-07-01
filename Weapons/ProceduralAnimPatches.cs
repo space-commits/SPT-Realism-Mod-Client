@@ -109,8 +109,6 @@ namespace RealismMod
                     float totalSightedAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)) * idleMulti * stockMulti, 0.45f, 1.5f);
                     float newAimSpeed = Mathf.Max(totalSightedAimSpeed * PlayerProperties.ADSSprintMulti, 0.3f) * Plugin.GlobalAimSpeedModifier.Value;
 
-                    Logger.LogWarning("aim speed " + newAimSpeed);
-
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
                     float float_9 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance); //aimspeed
 

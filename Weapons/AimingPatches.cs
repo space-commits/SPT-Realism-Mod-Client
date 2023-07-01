@@ -152,21 +152,16 @@ namespace RealismMod
 
             if (player.IsYourPlayer) 
             {
+                bool gearFactorEnabled = Plugin.EnableFSPatch.Value || Plugin.EnableNVGPatch.Value;
+
                 if (PlayerProperties.SprintBlockADS && !PlayerProperties.TriedToADSFromSprint) 
                 {
-                    Logger.LogWarning("blocked ADS");
                     PlayerProperties.TriedToADSFromSprint = true;
                     return false;
                 }
-                Logger.LogWarning("allowed ADS");
-                PlayerProperties.TriedToADSFromSprint = false;
-                return true;
 
-                //need to integrate this with sprint blocking
-     /*           if (Plugin.EnableFSPatch.Value || Plugin.EnableNVGPatch.Value)
-                {
-                    return PlayerProperties.IsAllowedADS;
-                }*/
+                PlayerProperties.TriedToADSFromSprint = false;
+                return gearFactorEnabled ? PlayerProperties.IsAllowedADS : true;
             }
             return true;
         }
