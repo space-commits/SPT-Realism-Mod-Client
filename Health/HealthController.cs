@@ -187,6 +187,17 @@ namespace RealismMod
 
         public static void TestAddBaseEFTEffect(int partIndex, Player player, String effect)
         {
+            if (effect == "removeHP") 
+            {
+                player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, -player.ActiveHealthController.GetBodyPartHealth((EBodyPart)partIndex).Maximum, GClass2146.Existence);
+                return;
+            }
+            if (effect == "addHP")
+            {
+                player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, player.ActiveHealthController.GetBodyPartHealth((EBodyPart)partIndex).Maximum, GClass2146.Existence);
+                return;
+            }
+
             MethodInfo effectMethod = GetAddBaseEFTEffectMethodInfo();
             effectMethod.MakeGenericMethod(typeof(ActiveHealthControllerClass).GetNestedType(effect, BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { (EBodyPart)partIndex, null, null, null, null, null });
         }
@@ -554,7 +565,7 @@ namespace RealismMod
                 foreach (Item item in nestedItems)
                 {
                     FaceShieldComponent fs = item.GetItemComponent<FaceShieldComponent>();
-                    if (headBlocksMouth = GearProperties.BlocksMouth(item) && fs == null) 
+                    if (GearProperties.BlocksMouth(item) && fs == null) 
                     {
                         return true;
                     }
@@ -924,7 +935,6 @@ namespace RealismMod
             }
         }
 
-
         private static float lastCurrentTotalHp = 0f;
         private static float lastCurrentEnergy = 0f;
         private static float lastCurrentHydro = 0f;
@@ -985,10 +995,10 @@ namespace RealismMod
                 float percentHpStamRegen = 1f - ((1f - percentHp) / (isBody ? 10f : 5f));
                 float percentHpWalk = 1f - ((1f - percentHp) / (isBody ? 15f : 7.5f));
                 float percentHpSprint = 1f - ((1f - percentHp) / (isBody ? 8f : 4f));
-                float percentHpAimMove = 1f - ((1f - percentHp) / (isArm ? 30f : 15f));
-                float percentHpADS = 1f - ((1f - percentHp) / (isRightArm ? 2f : 5f));
-                float percentHpStance = 1f - ((1f - percentHp) / (isRightArm ? 3f : 6f));
-                float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 5.5f : 7.2f));
+                float percentHpAimMove = 1f - ((1f - percentHp) / (isArm ? 20f : 14f));
+                float percentHpADS = 1f - ((1f - percentHp) / (isRightArm ? 1f : 2f));
+                float percentHpStance = 1f - ((1f - percentHp) / (isRightArm ? 1.5f : 3f));
+                float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 2f : 3.5f));
                 float percentHpRecoil = 1f - ((1f - percentHp) / (isLeftArm ? 10f : 20f));
 
                 if (percentHp <= 0.5f) 
@@ -1057,9 +1067,9 @@ namespace RealismMod
 
             PlayerProperties.AimMoveSpeedBase = Mathf.Max(aimMoveSpeedBase, 0.3f * percentHydroLowerLimit);
             PlayerProperties.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)), 3.5f);
-            PlayerProperties.ADSInjuryMulti = Mathf.Max(adsInjuryMulti * percentEnergyADS, 0.4f * percentHydroLowerLimit);
-            PlayerProperties.StanceInjuryMulti = Mathf.Max(stanceInjuryMulti * percentEnergyStance, 0.5f * percentHydroLowerLimit);
-            PlayerProperties.ReloadInjuryMulti = Mathf.Max(reloadInjuryMulti * percentEnergyReload, 0.7f * percentHydroLowerLimit);
+            PlayerProperties.ADSInjuryMulti = Mathf.Max(adsInjuryMulti * percentEnergyADS, 0.35f * percentHydroLowerLimit);
+            PlayerProperties.StanceInjuryMulti = Mathf.Max(stanceInjuryMulti * percentEnergyStance, 0.45f * percentHydroLowerLimit);
+            PlayerProperties.ReloadInjuryMulti = Mathf.Max(reloadInjuryMulti * percentEnergyReload, 0.65f * percentHydroLowerLimit);
             PlayerProperties.RecoilInjuryMulti = Mathf.Min(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)), 1.15f * percentHydroLimitRecoil);
             PlayerProperties.HealthSprintSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
             PlayerProperties.HealthSprintAccelFactor = Mathf.Max(sprintAccelInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);

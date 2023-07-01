@@ -10,6 +10,32 @@ using static EFT.Profile;
 namespace RealismMod
 {
 
+    public class SensPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GClass1603).GetMethod("ApplyExternalSense", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(ref Player.FirearmController __instance, Vector2 deltaRotation, ref Vector2 __result)
+        {
+
+            if (Plugin.IsFiring) 
+            {
+                Player player = (Player)AccessTools.Field(typeof(GClass1603), "player_0").GetValue(__instance);
+                float _mouseSensitivityModifier = (float)AccessTools.Field(typeof(Player), "_mouseSensitivityModifier").GetValue(player);
+                Vector2 newSens = deltaRotation;
+                newSens.y *= player.GetRotationMultiplier();
+                newSens.x *= Mathf.Min(player.GetRotationMultiplier() * 1.5f, Plugin.StartingAimSens * (1f + _mouseSensitivityModifier));
+                __result = newSens;
+                return false;
+            }
+            return true;
+        }
+    }
+
+
     public class UpdateSensitivityPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -23,7 +49,7 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                if (!Plugin.isUniformAimPresent || !Plugin.isBridgePresent)
+                if (!Plugin.UniformAimIsPresent || !Plugin.BridgeIsPresent)
                 {
                     Plugin.StartingAimSens = ____aimingSens;
                     Plugin.CurrentAimSens = ____aimingSens;

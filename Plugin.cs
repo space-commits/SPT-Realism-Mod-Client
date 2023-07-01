@@ -341,8 +341,8 @@ namespace RealismMod
         private string ConfigJson;
         public static ConfigTemplate ModConfig;
 
-        public static bool isUniformAimPresent = false;
-        public static bool isBridgePresent = false;
+        public static bool UniformAimIsPresent = false;
+        public static bool BridgeIsPresent = false;
         public static bool checkedForUniformAim = false;
 
 
@@ -533,6 +533,8 @@ namespace RealismMod
                 //Sensitivity Patches
                 new AimingSensitivityPatch().Enable();
                 new UpdateSensitivityPatch().Enable();
+                new SensPatch().Enable();
+
                 if (Plugin.EnableHipfireRecoilClimb.Value)
                 {
                     new GetRotationMultiplierPatch().Enable();
@@ -723,8 +725,8 @@ namespace RealismMod
         {
             if (!checkedForUniformAim)
             {
-                isUniformAimPresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.UniformAim");
-                isBridgePresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.RealismModBridge");
+                UniformAimIsPresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.UniformAim");
+                BridgeIsPresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.RealismModBridge");
                 checkedForUniformAim = true;
             }
 

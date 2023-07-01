@@ -132,7 +132,7 @@ namespace RealismMod
                 doSwayReset = false;
             }
 
-            if (sprintCooldownTimer >= 0.75f)
+            if (sprintCooldownTimer >= 0.35f)
             {
                 PlayerProperties.SprintBlockADS = false;
                 if (PlayerProperties.TriedToADSFromSprint)
@@ -236,7 +236,7 @@ namespace RealismMod
                     }
 
                     float remainStamPercent = __instance.Physical.HandsStamina.Current / __instance.Physical.HandsStamina.TotalCapacity;
-                    PlayerProperties.RemainingArmStamPercentage = 1f - (1f - remainStamPercent) / 3f;
+                    PlayerProperties.RemainingArmStamPercentage = 1f - ((1f - remainStamPercent) / 3.5f);
                 }
                 else if (Plugin.EnableStanceStamChanges.Value == true)
                 {
