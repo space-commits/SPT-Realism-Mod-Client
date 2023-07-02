@@ -1072,7 +1072,7 @@ namespace RealismMod
             PlayerProperties.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk, 0.6f * percentHydroLowerLimit);
             PlayerProperties.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen, 0.5f * percentHydroLowerLimit);
 
-            ResourceRateEffect resEffect = new ResourceRateEffect(resourceRateInjuryMulti, 3f, player, 0f, logger);
+            ResourceRateEffect resEffect = new ResourceRateEffect(resourceRateInjuryMulti, 3f, player, 0f);
             RealismHealthController.AddCustomEffect(resEffect, true);
         }
     }

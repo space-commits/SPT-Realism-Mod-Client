@@ -197,9 +197,8 @@ namespace RealismMod
         public Player Player { get; }
         public float Delay { get; set; }
         public EHealthEffectType EffectType { get; }
-        public ManualLogSource Logger { get; }
 
-        public ResourceRateEffect(float resourcePerTick, float? dur, Player player, float delay, ManualLogSource logger)
+        public ResourceRateEffect(float resourcePerTick, float? dur, Player player, float delay)
         {
             TimeExisted = 0;
             Duration = dur;
@@ -208,7 +207,6 @@ namespace RealismMod
             EffectType = EHealthEffectType.ResourceRate;
             BodyPart = EBodyPart.Stomach;
             ResourcePerTick = resourcePerTick;
-            Logger = logger;
         }
 
         public void Tick()
@@ -216,16 +214,11 @@ namespace RealismMod
             if (Delay <= 0f)
             {
                 Duration -= 3;
-
-                Logger.LogWarning("adding effect");
                 MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethodInfo();
                 Type resourceRatesType = typeof(ResourceRates);
                 MethodInfo genericEffectMethod = addEffectMethod.MakeGenericMethod(resourceRatesType);
                 ResourceRates healthChangeInstance = new ResourceRates();
                 genericEffectMethod.Invoke(Player.ActiveHealthController, new object[] { BodyPart, 0f, 3f, 0f, ResourcePerTick, null });
-
-                Logger.LogWarning("Duration " + Duration);
-                Logger.LogWarning("ResourcePerTick " + ResourcePerTick);
             }
         }
     }
