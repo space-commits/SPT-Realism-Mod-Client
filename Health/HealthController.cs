@@ -256,13 +256,13 @@ namespace RealismMod
 
         public static MethodInfo GetAddBaseEFTEffectMethodInfo()
         {
-            MethodInfo effectMethod = typeof(ActiveHealthControllerClass).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).First(m =>
+            MethodInfo effectMethodInfo = typeof(ActiveHealthControllerClass).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).First(m =>
             m.GetParameters().Length == 6
             && m.GetParameters()[0].Name == "bodyPart"
             && m.GetParameters()[5].Name == "initCallback"
             && m.IsGenericMethod);
 
-            return effectMethod;
+            return effectMethodInfo;
         }
 
         public static void RemoveBaseEFTEffect(Player player, EBodyPart targetBodyPart, string targetEffect) 
@@ -449,15 +449,15 @@ namespace RealismMod
             {
                 ResetBleedDamageRecord(player);
             }
-            if ((int)(Time.time % 8) == 0)
+            if ((int)(Time.time % 4) == 0)
             {
                 ResourceRegenCheck(player, logger);
             }
-            if ((int)(Time.time % 9) == 0)
+            if ((int)(Time.time % 5) == 0)
             {
                 DoubleBleedCheck(logger, player);
             }
-            if ((int)(Time.time % 10) == 0)
+            if ((int)(Time.time % 6) == 0)
             {
                 PlayerInjuryStateCheck(player, logger);
             }
@@ -935,10 +935,6 @@ namespace RealismMod
             }
         }
 
-        private static float lastCurrentTotalHp = 0f;
-        private static float lastCurrentEnergy = 0f;
-        private static float lastCurrentHydro = 0f;
-
         public static void PlayerInjuryStateCheck(Player player, ManualLogSource logger)
         {
 
@@ -1041,7 +1037,7 @@ namespace RealismMod
             }
 
             float totalHpPercent = totalCurrentHp / totalMaxHp;
-            resourceRateInjuryMulti = (1f - totalHpPercent) * 2f;
+            resourceRateInjuryMulti = (1f - totalHpPercent);
 
             if (totalHpPercent <= 0.5f)
             {
@@ -1076,78 +1072,8 @@ namespace RealismMod
             PlayerProperties.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk, 0.6f * percentHydroLowerLimit);
             PlayerProperties.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen, 0.5f * percentHydroLowerLimit);
 
-            lastCurrentHydro = lastCurrentHydro == 0 ? currentHydro : lastCurrentHydro;
-            lastCurrentEnergy = lastCurrentEnergy == 0 ? currentEnergy : lastCurrentEnergy;
-
-            float hydroDiff = Math.Abs(currentHydro - lastCurrentHydro) / currentHydro;
-            float energyDiff = Math.Abs(currentEnergy - lastCurrentEnergy) / currentEnergy;
-
-            if (((int)(Time.time % 10) == 0 && totalCurrentHp != lastCurrentTotalHp) || energyDiff > 0.05f || hydroDiff > 0.05f) 
-            {
-
-                lastCurrentTotalHp = totalCurrentHp;
-                lastCurrentEnergy = currentEnergy; 
-                lastCurrentHydro = currentHydro;
-
-                PropertyInfo energyProp = typeof(ActiveHealthControllerClass).GetProperty("EnergyRate");
-                float currentEnergyRate = (float)energyProp.GetValue(player.ActiveHealthController);
-                float prevEnergyRate = currentEnergyRate - PlayerProperties.HealthResourceRateFactor;
-
-                if (Plugin.EnableLogging.Value)
-                {
-                    logger.LogWarning("currentEnergyRate " + currentEnergyRate);
-                    logger.LogWarning("prevEnergyRate " + prevEnergyRate);
-                }
- 
-                PropertyInfo hydroProp = typeof(ActiveHealthControllerClass).GetProperty("HydrationRate");
-                float currentHydroRate = (float)hydroProp.GetValue(player.ActiveHealthController);
-                float prevHydroRate = currentHydroRate - PlayerProperties.HealthResourceRateFactor;
-
-                PlayerProperties.HealthResourceRateFactor = -resourceRateInjuryMulti;
-
-                if (Plugin.EnableLogging.Value)
-                {
-                    logger.LogWarning("HealthResourceRateFactor " + PlayerProperties.HealthResourceRateFactor);
-                }
-
-                float newEnergyRate = (float)Math.Round(prevEnergyRate + PlayerProperties.HealthResourceRateFactor, 2);
-                energyProp.SetValue(player.ActiveHealthController, newEnergyRate, null);
-
-                float newHydroRate = (float)Math.Round(prevHydroRate + PlayerProperties.HealthResourceRateFactor, 2);
-                hydroProp.SetValue(player.ActiveHealthController, newHydroRate, null);
-
-                if (Plugin.EnableLogging.Value)
-                {
-                    logger.LogWarning("newEnergyRate " + newEnergyRate);
-                }
-            }
+            ResourceRateEffect resEffect = new ResourceRateEffect(resourceRateInjuryMulti, 3f, player, 0f, logger);
+            RealismHealthController.AddCustomEffect(resEffect, true);
         }
-
-        //reduntant
-        /*        public static void PassiveHealthRegen(Player player)
-                {
-                    foreach (var damageTypeEntry in DamageTracker.DamageRecord)
-                    {
-                        EDamageType damageType = damageTypeEntry.Key;
-                        Dictionary<EBodyPart, float> bodyPartDictionary = damageTypeEntry.Value;
-
-                        foreach (var bodyPartEntry in bodyPartDictionary)
-                        {
-                            EBodyPart bodyPart = bodyPartEntry.Key;
-                            float hpToRestore = bodyPartEntry.Value;
-
-                            if (hpToRestore > 0)
-                            {
-                                //need to run this method per tick
-                                //I need to remove existing regen on same part and of same type
-                                //need to calculate how much HP would have been healed in that tick
-                                //and then subtract it from the recorded amount of damage
-                                HealthRegenEffect regenEffect = new HealthRegenEffect(0.25f, null, bodyPart, player, 15f, hpToRestore, damageType);
-                                RealismHealthController.AddCustomEffect(regenEffect, true);
-                                bodyPartDictionary[bodyPart] -= hpToRestore;
-                            }
-                        }
-                    }
-                }*/
     }
 }

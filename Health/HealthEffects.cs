@@ -16,7 +16,8 @@ namespace RealismMod
         Surgery,
         Tourniquet,
         HealthRegen,
-        Adrenaline
+        Adrenaline,
+        ResourceRate
     }
 
     public interface IHealthEffect
@@ -180,12 +181,55 @@ namespace RealismMod
                 }
             }
 
-            if(HpRegened >= HpRegenLimit || (currentHp >= maxHp) || currentHp == 0)
+            if (HpRegened >= HpRegenLimit || (currentHp >= maxHp) || currentHp == 0)
             {
                 Duration = 0;
             }
         }
     }
+
+    public class ResourceRateEffect : IHealthEffect
+    {
+        public EBodyPart BodyPart { get; set; }
+        public float? Duration { get; set; }
+        public float TimeExisted { get; set; }
+        public float ResourcePerTick { get; }
+        public Player Player { get; }
+        public float Delay { get; set; }
+        public EHealthEffectType EffectType { get; }
+        public ManualLogSource Logger { get; }
+
+        public ResourceRateEffect(float resourcePerTick, float? dur, Player player, float delay, ManualLogSource logger)
+        {
+            TimeExisted = 0;
+            Duration = dur;
+            Player = player;
+            Delay = delay;
+            EffectType = EHealthEffectType.ResourceRate;
+            BodyPart = EBodyPart.Stomach;
+            ResourcePerTick = resourcePerTick;
+            Logger = logger;
+        }
+
+        public void Tick()
+        {
+            if (Delay <= 0f)
+            {
+                Duration -= 3;
+
+                Logger.LogWarning("adding effect");
+                MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethodInfo();
+                Type resourceRatesType = typeof(ResourceRates);
+                MethodInfo genericEffectMethod = addEffectMethod.MakeGenericMethod(resourceRatesType);
+                ResourceRates healthChangeInstance = new ResourceRates();
+                genericEffectMethod.Invoke(Player.ActiveHealthController, new object[] { BodyPart, 0f, 3f, 0f, ResourcePerTick, null });
+
+                Logger.LogWarning("Duration " + Duration);
+                Logger.LogWarning("ResourcePerTick " + ResourcePerTick);
+            }
+        }
+    }
+
 
 
     public class HealthChange : ActiveHealthControllerClass.GClass2102, IEffect, GInterface184, GInterface199
@@ -215,4 +259,33 @@ namespace RealismMod
         private EBodyPart bodyPart;
 
     }
+
+    public class ResourceRates : ActiveHealthControllerClass.GClass2102, IEffect, GInterface184, GInterface199
+    {
+        protected override void Started()
+        {
+            this.resourcePerTick = base.Strength;
+            this.bodyPart = base.BodyPart;
+            this.SetHealthRatesPerSecond(0f, -this.resourcePerTick, -this.resourcePerTick, 0f);
+        }
+
+        protected override void RegularUpdate(float deltaTime)
+        {
+            this.time += deltaTime;
+            if (this.time < 3f)
+            {
+                return;
+            }
+            this.time -= 3f;
+            base.HealthController.ChangeEnergy(-this.resourcePerTick);
+            base.HealthController.ChangeHydration(-this.resourcePerTick);
+        }
+
+        private float resourcePerTick;
+
+        private float time;
+
+        private EBodyPart bodyPart;
+    }
+
 }
