@@ -108,7 +108,8 @@ namespace RealismMod
         public static ConfigEntry<bool> EnableIdleStamDrain { get; set; }
         public static ConfigEntry<bool> EnableStanceStamChanges { get; set; }
         public static ConfigEntry<bool> EnableTacSprint { get; set; }
-
+        public static ConfigEntry<bool> EnableSprintPenalty { get; set; }
+        
         public static ConfigEntry<float> WeapOffsetX { get; set; }
         public static ConfigEntry<float> WeapOffsetY { get; set; }
         public static ConfigEntry<float> WeapOffsetZ { get; set; }
@@ -254,6 +255,7 @@ namespace RealismMod
         public static ConfigEntry<float> CloseHitSoundMulti { get; set; }
         public static ConfigEntry<float> FarHitSoundMulti { get; set; }
         public static ConfigEntry<bool> EnableRagdollFix { get; set; }
+        public static ConfigEntry<float> RagdollForceModifier { get; set; }
 
         public static ConfigEntry<bool> EnableLogging { get; set; }
         public static ConfigEntry<bool> EnableBallisticsLogging { get; set; }
@@ -877,6 +879,7 @@ namespace RealismMod
             FarHitSoundMulti = Config.Bind<float>(ballSettings, "Close Armor Hit Sound Mutli", 1.2f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", null, new ConfigurationManagerAttributes { Order = 52 }));
             EnableRealArmorClass = Config.Bind<bool>(ballSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 60 }));
             EnableRagdollFix = Config.Bind<bool>(ballSettings, "Enable Ragdoll Fix (Experimental)", true, new ConfigDescription("Requiures Restart. Enables Fix For Ragdolls Flying Into The Stratosphere.", null, new ConfigurationManagerAttributes { Order = 70 }));
+            RagdollForceModifier = Config.Bind<float>(ballSettings, "Ragdoll Force Modifier", 1f, new ConfigDescription("Requires Ragdoll Fix To Be Enabled.", null, new ConfigurationManagerAttributes { Order = 80 }));
 
             EnableHipfireRecoilClimb = Config.Bind<bool>(recoilSettings, "Enable Hipfire Recoil Climb", true, new ConfigDescription("Requires Restart. Enabled Recoil Climbing While Hipfiring", null, new ConfigurationManagerAttributes { Order = 80 }));
             ReduceCamRecoil = Config.Bind<bool>(recoilSettings, "Reduce Camera Recoil", false, new ConfigDescription("Reduces Camera Recoil Per Shot. If Disabled, Camera Recoil Becomes More Intense As Weapon Recoil Increases.", null, new ConfigurationManagerAttributes { Order = 70 }));
@@ -950,6 +953,7 @@ namespace RealismMod
             QuickReloadSpeedMulti = Config.Bind<float>(speed, "Quick Reload Multi", 1.4f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
             InternalMagReloadMulti = Config.Bind<float>(speed, "Internal Magazine Reload", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1 }));
 
+            EnableSprintPenalty = Config.Bind<bool>(weapAimAndPos, "Enable Sprint Aim Penalties", false, new ConfigDescription("ADS Out Of Sprint Has A Short Delay, Reduced Aim Speed And Increased Sway. The Longer You Sprint The Bigger The Penalty.", null, new ConfigurationManagerAttributes { Order = 240 }));
             EnableTacSprint = Config.Bind<bool>(weapAimAndPos, "Enable High Ready Sprint Animation", false, new ConfigDescription("Enables Usage Of High Ready Sprint Animation When Sprinting From High Ready Position.", null, new ConfigurationManagerAttributes { Order = 230 }));
             EnableAltPistol = Config.Bind<bool>(weapAimAndPos, "Enable Alternative Pistol Position And ADS", true, new ConfigDescription("Pistol Will Be Held Centered And In A Compressed Stance. ADS Will Be Animated.", null, new ConfigurationManagerAttributes { Order = 229 }));
             EnableIdleStamDrain = Config.Bind<bool>(weapAimAndPos, "Enable Idle Arm Stamina Drain", false, new ConfigDescription("Arm Stamina Will Drain When Not In A Stance (High And Low Ready, Short-Stocking).", null, new ConfigurationManagerAttributes { Order = 210 }));

@@ -683,11 +683,10 @@ namespace RealismMod
             if (hitZone == EHitZone.Spine)
             {
                 Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["spine.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.35f, EOcclusionTest.Continuous);
-
             }
             else if (hitBox == HitBox.Head) 
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 200, volClose, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose, EOcclusionTest.Continuous);
             }
             else if (hitZone == EHitZone.Heart)
             {
@@ -697,22 +696,18 @@ namespace RealismMod
             {
                 Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["ass_impact.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, 2f, EOcclusionTest.Continuous);
             }
+
+            string audioClip = "flesh_dist_1.wav";
+            if (dist >= 40)
+            {
+                audioClip = playCounter == 0 ? "flesh_dist_1.wav" : playCounter == 1 ? "flesh_dist_2.wav" : "flesh_dist_2.wav";
+            }
             else
             {
-                string audioClip = "flesh_dist_1.wav";
-                if (dist >= 40)
-                {
-                    audioClip = playCounter == 0 ? "flesh_dist_1.wav" : playCounter == 1 ? "flesh_dist_2.wav" : "flesh_dist_2.wav";
-                }
-                else
-                {
-                    audioClip = playCounter == 0 ? "flesh_1.wav" : playCounter == 1 ? "flesh_2.wav" : "flesh_3.wav";
-                }
-
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
-
-
+                audioClip = playCounter == 0 ? "flesh_1.wav" : playCounter == 1 ? "flesh_2.wav" : "flesh_3.wav";
             }
+
+            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
         }
 
         [PatchPrefix]
@@ -1186,13 +1181,6 @@ namespace RealismMod
                     BallisticsController.GetHitArmorZone(Logger, __instance, hitPart, localPoint, hitOrientation, hasSideArmor, hasStomachArmor, hasNeckArmor, ref hasBypassedArmor, ref hitSecondaryArmor);
                 }
 
-                if (__instance?.Item?.Owner?.ID != null && (__instance.Item.Owner.ID.StartsWith("pmc")) && !Plugin.EnablePlayerArmorZones.Value)
-                {
-                    hasBypassedArmor = false;
-                    hitSecondaryArmor = false;
-                }
-
-
                 if (Plugin.EnableBallisticsLogging.Value)
                 {
                     Logger.LogWarning("=============SetPenStatus: Hit Zone ===============");
@@ -1309,7 +1297,9 @@ namespace RealismMod
             bool hitSecondaryArmor = false;
             bool hasBypassedArmor = false;
 
-            if (Plugin.EnableArmorHitZones.Value) 
+            bool isPlayer = __instance.Item.Owner.ID.StartsWith("pmc") || __instance.Item.Owner.ID.StartsWith("scav");
+
+            if (Plugin.EnableArmorHitZones.Value && (isPlayer && Plugin.EnablePlayerArmorZones.Value || !isPlayer)) 
             {
                 string hitPart = damageInfo.HittedBallisticCollider.name;
                 Collider col = damageInfo.HitCollider;
@@ -1518,7 +1508,7 @@ namespace RealismMod
                 AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[lastDam.SourceId];
                 BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
                 float KE = ((0.5f * ammo.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
-                force = -Mathf.Max(1f, KE / 1000f);
+                force = (-Mathf.Max(1f, KE / 1000f)) * Plugin.RagdollForceModifier.Value;
             }
             else if (lastDam.DamageType == EDamageType.Explosion)
             {

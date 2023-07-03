@@ -83,25 +83,6 @@ namespace RealismMod
         }
     }
 
- /*   public class ToggleSprintPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player).GetMethod("ToggleSprint", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static void PatchPrefix(Player __instance)
-        {
-
-            if (__instance.IsYourPlayer == true)
-            {
-                StanceController.IsActiveAiming = true;
-            }
-        }
-    }*/
-
-
     public class PlayerLateUpdatePatch : ModulePatch
     {
 
@@ -117,16 +98,16 @@ namespace RealismMod
 
             if (!didSprintPenalties) 
             {
-                float sprintDurationModi = 1 + (sprintTimer / 10f);
+                float sprintDurationModi = 1 + ((sprintTimer * 2) / 10f);
 
                 float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi, 5f);
-                float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi, 1f);
+                float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi, 1.15f);
                 pwa.Breath.Intensity = breathIntensity;
                 pwa.HandsContainer.HandsRotation.InputIntensity = inputIntensitry;
                 PlayerProperties.SprintTotalBreathIntensity = breathIntensity;
                 PlayerProperties.SprintTotalHandsIntensity = inputIntensitry;
 
-                PlayerProperties.ADSSprintMulti = Mathf.Min(1f - (sprintTimer / 15f), 0.2f);
+                PlayerProperties.ADSSprintMulti = Mathf.Min(1f - (sprintTimer / 20f), 0.2f);
 
                 didSprintPenalties = true;
                 doSwayReset = false;
@@ -151,10 +132,11 @@ namespace RealismMod
 
         private static void resetSwayParams(ProceduralWeaponAnimation pwa) 
         {
-            float resetSpeed = Time.deltaTime * 0.75f;
+            float resetSpeed = Time.deltaTime * 0.5f;
+            float resetSpeedADS = Time.deltaTime;
             PlayerProperties.SprintTotalBreathIntensity = Mathf.Lerp(PlayerProperties.SprintTotalBreathIntensity, PlayerProperties.TotalBreathIntensity, resetSpeed);
             PlayerProperties.SprintTotalHandsIntensity = Mathf.Lerp(PlayerProperties.SprintTotalHandsIntensity, PlayerProperties.TotalHandsIntensity, resetSpeed);
-            PlayerProperties.ADSSprintMulti = Mathf.Lerp(PlayerProperties.ADSSprintMulti, 1f, resetSpeed);
+            PlayerProperties.ADSSprintMulti = Mathf.Lerp(PlayerProperties.ADSSprintMulti, 1f, resetSpeedADS);
 
             pwa.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity;
             pwa.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity;
@@ -163,7 +145,54 @@ namespace RealismMod
             {
                 doSwayReset = false;
             }
-        } 
+        }
+
+        private static void DoSprintPenalty(Player player, Player.FirearmController fc) 
+        {
+            if (player.IsSprintEnabled)
+            {
+                sprintTimer += Time.deltaTime;
+                if (sprintTimer >= 1f)
+                {
+                    PlayerProperties.SprintBlockADS = true;
+                    PlayerProperties.WasSprinting = true;
+                    didSprintPenalties = false;
+                }
+            }
+            else
+            {
+                if (PlayerProperties.WasSprinting)
+                {
+                    doSprintTimer(player.ProceduralWeaponAnimation, fc);
+                }
+                if (doSwayReset)
+                {
+                    resetSwayParams(player.ProceduralWeaponAnimation);
+                }
+            }
+
+            if (!doSwayReset && !PlayerProperties.WasSprinting)
+            {
+                PlayerProperties.HasFullyResetSprintADSPenalties = true;
+            }
+            else
+            {
+                PlayerProperties.HasFullyResetSprintADSPenalties = false;
+            }
+
+            if (Plugin.IsFiring)
+            {
+                doSwayReset = false;
+                player.ProceduralWeaponAnimation.Breath.Intensity = 0.69f;
+                player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f;
+                resetSwayAfterFiring = false;
+            }
+            else if (!resetSwayAfterFiring)
+            {
+                resetSwayAfterFiring = true;
+                doSwayReset = true;
+            }
+        }
 
         protected override MethodBase GetTargetMethod()
         {
@@ -181,48 +210,9 @@ namespace RealismMod
                 PlayerProperties.enviroType = __instance.Environment;
                 Plugin.IsInInventory = __instance.IsInventoryOpened;
 
-                if (__instance.IsSprintEnabled)
+                if (Plugin.EnableSprintPenalty.Value) 
                 {
-                    sprintTimer += Time.deltaTime;
-                    if (sprintTimer >= 1f) 
-                    {
-                        PlayerProperties.SprintBlockADS = true;
-                        PlayerProperties.WasSprinting = true;
-                        didSprintPenalties = false;
-                    }
-                }
-                else
-                {
-                    if (PlayerProperties.WasSprinting) 
-                    {
-                        doSprintTimer(__instance.ProceduralWeaponAnimation, fc);
-                    }
-                    if (doSwayReset)
-                    {
-                        resetSwayParams(__instance.ProceduralWeaponAnimation);
-                    }
-                }
-
-                if (!doSwayReset && !PlayerProperties.WasSprinting)
-                {
-                    PlayerProperties.HasFullyResetSprintADSPenalties = true;
-                }
-                else
-                {
-                    PlayerProperties.HasFullyResetSprintADSPenalties = false;
-                }
-
-                if (Plugin.IsFiring)
-                {
-                    doSwayReset = false;
-                    __instance.ProceduralWeaponAnimation.Breath.Intensity = 0.69f;
-                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f;
-                    resetSwayAfterFiring = false;
-                }
-                else if (!resetSwayAfterFiring)
-                {
-                    resetSwayAfterFiring = true;
-                    doSwayReset = true;
+                    DoSprintPenalty(__instance, fc);
                 }
 
                 if (fc != null)
