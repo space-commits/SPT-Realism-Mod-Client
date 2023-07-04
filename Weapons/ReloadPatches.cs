@@ -92,7 +92,7 @@ namespace RealismMod
 
                 StanceController.CancelLowReady = true;
                 StanceController.CancelShortStock = true;
-                StanceController.CancelPistolStance = true;
+/*                StanceController.CancelPistolStance = true;*/
                 StanceController.CancelActiveAim = true;
             }
 

@@ -71,9 +71,9 @@ namespace RealismMod
             switch (deafStr)
             {
                 case "Low":
-                    return 0.9f;
+                    return 0.92f;
                 case "High":
-                    return 0.8f;
+                    return 0.85f;
                 default:
                     return 1f;
             }
@@ -90,7 +90,7 @@ namespace RealismMod
             {
                 Plugin.HasHeadSet = true;
                 GClass2204 headphone = headset.Template;
-                protectionFactor = ((headphone.DryVolume / 100f) + 1f) * 1.4f;
+                protectionFactor = ((headphone.DryVolume / 100f) + 1f) * 1.5f;
             }
             else
             {

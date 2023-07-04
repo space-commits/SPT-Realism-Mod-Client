@@ -107,7 +107,7 @@ namespace RealismMod
                 PlayerProperties.SprintTotalBreathIntensity = breathIntensity;
                 PlayerProperties.SprintTotalHandsIntensity = inputIntensitry;
 
-                PlayerProperties.ADSSprintMulti = Mathf.Min(1f - (sprintTimer / 20f), 0.2f);
+                PlayerProperties.ADSSprintMulti = Mathf.Min(1f - (sprintTimer / 25f), 0.3f);
 
                 didSprintPenalties = true;
                 doSwayReset = false;
@@ -143,6 +143,7 @@ namespace RealismMod
 
             if (Utils.AreFloatsEqual(1f, PlayerProperties.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerProperties.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerProperties.TotalHandsIntensity))
             {
+                Logger.LogWarning("=============RESET=========");
                 doSwayReset = false;
             }
         }

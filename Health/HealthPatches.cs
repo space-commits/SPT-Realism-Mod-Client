@@ -422,7 +422,7 @@ namespace RealismMod
         private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
         {
             string medType = MedProperties.MedType(meds);
-            if (__instance.IsYourPlayer && medType != "drug" && meds.Template._parent != "5448f3a64bdc2d60728b456a")
+            if (__instance.IsYourPlayer && meds.Template._parent != "5448f3a64bdc2d60728b456a")
             {
 
                 if (MedProperties.CanBeUsedInRaid(meds) == false)
@@ -467,8 +467,16 @@ namespace RealismMod
                         NotificationManagerClass.DisplayWarningNotification("Can't Take Pills, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
                         return false;
                     }
-                    else if (medType == "pills")
+                    if (medType == "pills" || medType == "drug")
                     {
+                        float duration = MedProperties.PainKillerFullDuration(meds);
+                        float delay = MedProperties.Delay(meds);
+                        float wait = MedProperties.PainKillerWaitTime(meds);
+                        float intermittentDur = MedProperties.PainKillerTime(meds);
+                        float tunnelVisionStr = MedProperties.TunnelVisionStrength(meds);
+                        float painStr = MedProperties.Strength(meds);
+                        PainKillerEffect painKillerEffect = new PainKillerEffect(duration, __instance, delay, wait, intermittentDur, tunnelVisionStr, painStr);
+                        RealismHealthController.AddCustomEffect(painKillerEffect, false);
                         return true;
                     }
 

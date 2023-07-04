@@ -46,6 +46,36 @@ namespace RealismMod
             return !Utils.NullCheck(med.ConflictingItems) && bool.TryParse(med.ConflictingItems[4], out bool result) ? result : false;
         }
 
+        public static float PainKillerFullDuration(Item med)
+        {
+            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[5], out float result) ? result : 1f;
+        }
+
+        public static float PainKillerWaitTime(Item med)
+        {
+            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[6], out float result) ? result : 1f;
+        }
+
+        public static float PainKillerTime(Item med)
+        {
+            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[7], out float result) ? result : 1f;
+        }
+
+        public static float TunnelVisionStrength(Item med)
+        {
+            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[8], out float result) ? result : 1f;
+        }
+
+        public static float Delay(Item med)
+        {
+            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[9], out float result) ? result : 1f;
+        }
+
+        public static float Strength(Item med)
+        {
+            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[10], out float result) ? result : 1f;
+        }
+
         public static readonly Dictionary<string, Type> EffectTypes = new Dictionary<string, Type>
         {
             { "Painkiller", typeof(GInterface207) },
@@ -121,7 +151,7 @@ namespace RealismMod
         private static bool clickTriggered = false;
 
         private static float adrenalineCooldownTime = 60f * (1f - PlayerProperties.StressResistanceFactor);
-        public static bool AdrenalineTimerActive = false;
+        public static bool AdrenalineCooldownActive = false;
   
         public static void HealthController(ManualLogSource logger)
         {
@@ -173,14 +203,14 @@ namespace RealismMod
                 DamageTracker.ResetTracker();
             }
 
-            if (AdrenalineTimerActive && adrenalineCooldownTime > 0.0f) 
+            if (AdrenalineCooldownActive && adrenalineCooldownTime > 0.0f) 
             {
                 adrenalineCooldownTime -= Time.deltaTime;
             }
-            if (AdrenalineTimerActive && adrenalineCooldownTime <= 0.0f) 
+            if (AdrenalineCooldownActive && adrenalineCooldownTime <= 0.0f) 
             {
                 adrenalineCooldownTime = 60f * (1f - PlayerProperties.StressResistanceFactor);
-                AdrenalineTimerActive = false;
+                AdrenalineCooldownActive = false;
             }
         }
 
@@ -244,9 +274,9 @@ namespace RealismMod
 
         public static void AddAdrenaline(Player player,float painkillerDuration, float negativeEffectDuration, float negativeEffectStrength)
         {
-            if (Plugin.EnableAdrenaline.Value && !RealismHealthController.AdrenalineTimerActive)
+            if (Plugin.EnableAdrenaline.Value && !RealismHealthController.AdrenalineCooldownActive)
             {
-                AdrenalineTimerActive = true;
+                AdrenalineCooldownActive = true;
                 AddToExistingBaseEFTEffect(player, "PainKiller", EBodyPart.Head, 0f, painkillerDuration, 3f, 1f);
                 AddToExistingBaseEFTEffect(player, "TunnelVision", EBodyPart.Head, 0f, negativeEffectDuration, 3f, negativeEffectStrength);
                 AddToExistingBaseEFTEffect(player, "Tremor", EBodyPart.Head, painkillerDuration, negativeEffectDuration, 3f, negativeEffectStrength);
@@ -933,6 +963,16 @@ namespace RealismMod
                     }
                 }
             }
+        }
+
+        public static void PainKillerCheck(Player player) 
+        {
+            //add new method for adding effect that doesn't add if one is already existing
+            //check for HP %, 0 parts, fracture
+            //compare against active pain effect strngth
+            //determine if pain killer effect should be interrupted and set player field
+            //pk effect checks this field
+            //getting shot and blunt damage exceeding X should remove all PK effects, base and custom
         }
 
         public static void PlayerInjuryStateCheck(Player player, ManualLogSource logger)

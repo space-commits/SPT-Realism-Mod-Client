@@ -17,7 +17,8 @@ namespace RealismMod
         Tourniquet,
         HealthRegen,
         Adrenaline,
-        ResourceRate
+        ResourceRate,
+        PainKiller
     }
 
     public interface IHealthEffect
@@ -223,7 +224,69 @@ namespace RealismMod
         }
     }
 
+    public class PainKillerEffect : IHealthEffect
+    {
+        public EBodyPart BodyPart { get; set; }
+        public float? Duration { get; set; }
+        public float TimeExisted { get; set; }
+        public Player Player { get; }
+        public float Delay { get; set; }
+        public EHealthEffectType EffectType { get; }
+        public float TunnelVisionStrength { get; }
+        public float IntermittentWaitDur { get; }
+        public float IntermittentEffectDur { get;}
+        private float waitCounter { get; set; }
+        private float durCounter { get; set; }
+        private bool addedEffect = false;
+        private bool canSkipWait = true;
+        public float PainStrength { get; set; }
 
+        public PainKillerEffect(float? dur, Player player, float delay, float intermittentWaitDur, float intermittentEffectDur, float tunnelStrength, float painStrength)
+        {
+            TimeExisted = 0;
+            Duration = dur;
+            BodyPart = EBodyPart.Head;
+            Player = player;
+            Delay = delay;
+            EffectType = EHealthEffectType.PainKiller;
+            IntermittentWaitDur = intermittentWaitDur;
+            IntermittentEffectDur = intermittentEffectDur;
+            waitCounter = intermittentWaitDur;
+            durCounter = intermittentEffectDur;
+            TunnelVisionStrength = tunnelStrength;
+            PainStrength = painStrength;    
+        }
+
+        public void Tick()
+        {
+            if (Delay <= 0f)
+            {
+                Duration -= 3f;
+                waitCounter -= 3f;
+
+                if (waitCounter <= 0f || canSkipWait) 
+                {
+                    durCounter -= 3f;
+
+                    if (!addedEffect) 
+                    {
+                        RealismHealthController.AddBasesEFTEffect(Player, "PainKiller", BodyPart, 0f, IntermittentEffectDur, 1f, 1f);
+                        RealismHealthController.AddBasesEFTEffect(Player, "TunnelVision", BodyPart, 0f, IntermittentEffectDur, 1f, TunnelVisionStrength);
+                        canSkipWait = false;
+                        addedEffect = true;
+                    }
+
+                    if (durCounter <= 0f) 
+                    {
+                        waitCounter = IntermittentWaitDur;
+                        durCounter = IntermittentEffectDur;
+                        addedEffect = false;
+                    }
+                }
+
+            }
+        }
+    }
 
     public class HealthChange : ActiveHealthControllerClass.GClass2102, IEffect, GInterface184, GInterface199
     {

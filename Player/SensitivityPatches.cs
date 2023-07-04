@@ -25,9 +25,10 @@ namespace RealismMod
             {
                 Player player = (Player)AccessTools.Field(typeof(GClass1603), "player_0").GetValue(__instance);
                 float _mouseSensitivityModifier = (float)AccessTools.Field(typeof(Player), "_mouseSensitivityModifier").GetValue(player);
+                float xLimit = Plugin.IsAiming ? Plugin.StartingAimSens : Plugin.StartingHipSens;
                 Vector2 newSens = deltaRotation;
                 newSens.y *= player.GetRotationMultiplier();
-                newSens.x *= Mathf.Min(player.GetRotationMultiplier() * 1.5f, Plugin.StartingAimSens * (1f + _mouseSensitivityModifier));
+                newSens.x *= Mathf.Min(player.GetRotationMultiplier() * 1.5f, xLimit * (1f + _mouseSensitivityModifier));
                 __result = newSens;
                 return false;
             }
