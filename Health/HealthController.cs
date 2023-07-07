@@ -766,21 +766,23 @@ namespace RealismMod
             DamageTracker.TotalLightBleedDamage = Mathf.Max(DamageTracker.TotalLightBleedDamage - hpToRestore, 0f);
         }
 
-        private static async Task handleSurgery(string medType, MedsClass meds, EBodyPart bodyPart, Player player, float vitalitySkill)
+        private static async Task handleSurgery(string medType, MedsClass meds, EBodyPart bodyPart, Player player, float surgerySkill)
         {
             float delay = meds.HealthEffectsComponent.UseTime;
+            float regenLimitFactor = 0.5f * (1f + surgerySkill);
+
             await Task.Delay(TimeSpan.FromSeconds(delay));
 
             NotificationManagerClass.DisplayMessageNotification("Surgery Kit Applied On " + bodyPart + ", Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
 
-            float surgTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f + vitalitySkill), 2);
+            float surgTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f + surgerySkill), 2);
 
             if (RealismMod.RealismHealthController.HasEffectOfType(typeof(TourniquetEffect), bodyPart))
             {
                 NotificationManagerClass.DisplayMessageNotification("Surgical Kit Used, Removing Tourniquet Effect Present On Limb: " + bodyPart, EFT.Communications.ENotificationDurationType.Long);
             }
 
-            SurgeryEffect surg = new SurgeryEffect(surgTickRate, null, bodyPart, player, 0f);
+            SurgeryEffect surg = new SurgeryEffect(surgTickRate, null, bodyPart, player, 0f, regenLimitFactor);
             AddCustomEffect(surg, false);
         }
 
@@ -788,7 +790,8 @@ namespace RealismMod
 
         public static void HandleHealtheffects(string medType, MedsClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool canHealHBleed, bool canHealLBleed, bool canHealFract)
         {
-            float vitalitySkill = player.Skills.VitalityBuffSurviobilityInc.Value;
+            float vitalitySkill = player.Skills.VitalityBuffBleedChanceRed.Value;
+            float surgerySkill = player.Skills.SurgeryReducePenalty.Value;
             float regenTickRate = (float)Math.Round(0.85f * (1f + vitalitySkill), 2);
 
             bool hasHeavyBleed = false;
@@ -813,7 +816,7 @@ namespace RealismMod
             if (medType == "surg")
             {
 #pragma warning disable CS4014
-                handleSurgery(medType, meds, bodyPart, player, vitalitySkill);
+                handleSurgery(medType, meds, bodyPart, player, surgerySkill);
 #pragma warning restore CS4014
             }
 
