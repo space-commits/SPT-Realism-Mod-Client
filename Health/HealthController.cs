@@ -686,8 +686,11 @@ namespace RealismMod
 
             foreach (EBodyPart part in BodyParts)
             {
-                HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, part, player, delay, hpToRestore, damageType);
-                AddCustomEffect(regenEffect, false);
+                if (!HasEffectOfType(typeof(TourniquetEffect), part)) 
+                {
+                    HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, part, player, delay, hpToRestore, damageType);
+                    AddCustomEffect(regenEffect, false);
+                }
             }
         }
 
@@ -698,7 +701,7 @@ namespace RealismMod
 
             foreach (EBodyPart part in BodyParts)
             {
-                if (part != bodyPart)
+                if (part != bodyPart && !HasEffectOfType(typeof(TourniquetEffect), part))
                 {
                     HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, part, player, delay, hpToRestore, damageType);
                     AddCustomEffect(regenEffect, false);

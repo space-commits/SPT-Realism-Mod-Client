@@ -91,7 +91,7 @@ namespace RealismMod
                         trnqtClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                         trqntAtt.Add(trnqtClass);
                     }
-                    else if(hpPerTick > 0)
+                    else if(hpPerTick != 0)
                     {
                         List<ItemAttributeClass> hpTickAtt = item.Attributes;
                         ItemAttributeClass hpAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.LimbHpPerTick);

@@ -218,9 +218,9 @@ namespace RealismMod
             {
                 Duration -= 3;
                 MethodInfo addEffectMethod = RealismHealthController.GetAddBaseEFTEffectMethodInfo();
-                Type resourceRatesType = typeof(ResourceRates);
+                Type resourceRatesType = typeof(ResourceRateChange);
                 MethodInfo genericEffectMethod = addEffectMethod.MakeGenericMethod(resourceRatesType);
-                ResourceRates healthChangeInstance = new ResourceRates();
+                ResourceRateChange healthChangeInstance = new ResourceRateChange();
                 genericEffectMethod.Invoke(Player.ActiveHealthController, new object[] { BodyPart, 0f, 3f, 0f, ResourcePerTick, null });
             }
         }
@@ -318,7 +318,7 @@ namespace RealismMod
 
     }
 
-    public class ResourceRates : ActiveHealthControllerClass.GClass2102, IEffect, GInterface184, GInterface199
+    public class ResourceRateChange : ActiveHealthControllerClass.GClass2102, IEffect, GInterface184, GInterface199
     {
         protected override void Started()
         {
