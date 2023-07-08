@@ -100,8 +100,8 @@ namespace RealismMod
             {
                 float sprintDurationModi = 1 + ((sprintTimer * 2) / 10f);
 
-                float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi, 5f);
-                float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi, 1.15f);
+                float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi, 3f);
+                float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi, 1.05f);
                 pwa.Breath.Intensity = breathIntensity;
                 pwa.HandsContainer.HandsRotation.InputIntensity = inputIntensitry;
                 PlayerProperties.SprintTotalBreathIntensity = breathIntensity;
@@ -121,7 +121,7 @@ namespace RealismMod
                     fc.ToggleAim();
                 }
             }
-            if (sprintCooldownTimer >= 3f)
+            if (sprintCooldownTimer >= 4f)
             {
                 PlayerProperties.WasSprinting = false;
                 doSwayReset = true;
@@ -132,7 +132,7 @@ namespace RealismMod
 
         private static void resetSwayParams(ProceduralWeaponAnimation pwa) 
         {
-            float resetSpeed = Time.deltaTime * 0.5f;
+            float resetSpeed = Time.deltaTime * 0.3f;
             float resetSpeedADS = Time.deltaTime;
             PlayerProperties.SprintTotalBreathIntensity = Mathf.Lerp(PlayerProperties.SprintTotalBreathIntensity, PlayerProperties.TotalBreathIntensity, resetSpeed);
             PlayerProperties.SprintTotalHandsIntensity = Mathf.Lerp(PlayerProperties.SprintTotalHandsIntensity, PlayerProperties.TotalHandsIntensity, resetSpeed);
@@ -143,7 +143,6 @@ namespace RealismMod
 
             if (Utils.AreFloatsEqual(1f, PlayerProperties.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerProperties.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerProperties.TotalHandsIntensity))
             {
-                Logger.LogWarning("=============RESET=========");
                 doSwayReset = false;
             }
         }
