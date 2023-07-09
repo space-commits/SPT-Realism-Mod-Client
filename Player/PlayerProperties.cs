@@ -86,6 +86,7 @@ namespace RealismMod
 
         public static bool HasFullyResetSprintADSPenalties = false;
 
-        public static float TotalTrueWeight = 0f;
+        public static float TotalModifiedWeight = 0f;
+        public static float TotalModifiedWeightMinusWeapon = 0f;
     }
 }

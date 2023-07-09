@@ -14,6 +14,37 @@ using UnityEngine;
 namespace RealismMod
 {
 
+    public class BackpackConstructorPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GClass2341).GetConstructor(new Type[] { typeof(string), typeof(GClass2248) });
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(GClass2342 __instance)
+        {
+            Item item = __instance as Item;
+
+            float comfortModifier = GearProperties.ComfortModifier(item);
+            float comfortPercent = -1f * (float)Math.Round((comfortModifier - 1f) * 100f);
+
+            if (comfortModifier > 0f && comfortModifier != 1f)
+            {
+                List<ItemAttributeClass> comfortAtt = item.Attributes;
+                ItemAttributeClass comfortAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.Comfort);
+                comfortAttClass.Name = ENewItemAttributeId.Comfort.GetName();
+                comfortAttClass.Base = () => comfortPercent;
+                comfortAttClass.StringValue = () => comfortPercent.ToString() + " %";
+                comfortAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                comfortAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                comfortAttClass.LessIsGood = false;
+                comfortAtt.Add(comfortAttClass);
+            }
+        }
+    }
+
+
     public class RigConstructorPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -28,9 +59,10 @@ namespace RealismMod
             Item item = __instance as Item;
 
             float gearReloadSpeed = GearProperties.ReloadSpeedMulti(item);
-            float reloadSpeedPercent = 0f;
+            float reloadSpeedPercent = (float)Math.Round((gearReloadSpeed - 1f) * 100f);
 
-            reloadSpeedPercent = (float)Math.Round((gearReloadSpeed - 1f) * 100f);
+            float comfortModifier = GearProperties.ComfortModifier(item);
+            float comfortPercent = -1f * (float)Math.Round((comfortModifier - 1f) * 100f);
 
             if (gearReloadSpeed > 0f && gearReloadSpeed != 1f)
             {
@@ -44,10 +76,23 @@ namespace RealismMod
                 reloadAttClass.LessIsGood = false;
                 reloadAtt.Add(reloadAttClass);
             }
+
+            if (comfortModifier > 0f && comfortModifier != 1f) 
+            {
+                List<ItemAttributeClass> comfortAtt = item.Attributes;
+                ItemAttributeClass comfortAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.Comfort);
+                comfortAttClass.Name = ENewItemAttributeId.Comfort.GetName();
+                comfortAttClass.Base = () => comfortPercent;
+                comfortAttClass.StringValue = () => comfortPercent.ToString() + " %";
+                comfortAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                comfortAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                comfortAttClass.LessIsGood = false;
+                comfortAtt.Add(comfortAttClass);
+            }
         }
     }
 
-    public class ArmorPatches
+    public class GearPatches
     {
 
         public class ArmorZoneBaseDisplayPatch : ModulePatch

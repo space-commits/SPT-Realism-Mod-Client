@@ -48,7 +48,7 @@ namespace RealismMod
             InventoryControllerClass invController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
             this.invClass = invController.Inventory;
             invController.Inventory.TotalWeight = new GClass777<float>(new Func<float>(getTotalWeight));
-            Logger.LogWarning("total weight " + getTotalWeight());
+            PlayerProperties.TotalModifiedWeightMinusWeapon = PlayerProperties.TotalModifiedWeight - player.HandsController.Item.GetSingleItemTotalWeight();
         }
 
         private float getTotalWeight()
@@ -64,10 +64,9 @@ namespace RealismMod
                     trueWeight += itemTotalWeight;
                     if (equipmentSlot == EquipmentSlot.Backpack || equipmentSlot == EquipmentSlot.TacticalVest)
                     {
-                        Logger.LogWarning("item = " + item.LocalizedName());
                         float modifier = GearProperties.ComfortModifier(item);
-                        Logger.LogWarning("modifier = " + modifier);
-                        modifiedWeight += (itemTotalWeight - item.Weight) * modifier;
+                        float containedItemsModifiedWeight = (itemTotalWeight - item.Weight) * modifier;
+                        modifiedWeight += item.Weight + containedItemsModifiedWeight;
                     }
                     else 
                     {
@@ -75,13 +74,12 @@ namespace RealismMod
                     }
                 }
             }
-            PlayerProperties.TotalTrueWeight = trueWeight;
+            PlayerProperties.TotalModifiedWeight = modifiedWeight;
             return modifiedWeight;
         }
 
         private void HandleAddItemEvent(GEventArgs2 args)
         {
-            Logger.LogWarning("My Add Item Event");
             Player player = Utils.GetPlayer();
             PlayerInitPatch p = new PlayerInitPatch();
             p.calcWeight(player);
@@ -89,7 +87,6 @@ namespace RealismMod
 
         private void HandleRemoveItemEvent(GEventArgs3 args)
         {
-            Logger.LogWarning("My Remove Item Event");
             Player player = Utils.GetPlayer();
             PlayerInitPatch p = new PlayerInitPatch();
             p.calcWeight(player);
@@ -177,7 +174,7 @@ namespace RealismMod
                 PlayerProperties.SprintTotalBreathIntensity = breathIntensity;
                 PlayerProperties.SprintTotalHandsIntensity = inputIntensitry;
 
-                PlayerProperties.ADSSprintMulti = Mathf.Min(1f - (sprintTimer / 25f), 0.3f);
+                PlayerProperties.ADSSprintMulti = Mathf.Min(1f - (sprintTimer / 35f), 0.3f);
 
                 didSprintPenalties = true;
                 doSwayReset = false;

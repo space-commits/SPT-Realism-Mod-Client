@@ -16,7 +16,7 @@ using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
-using static RealismMod.ArmorPatches;
+using static RealismMod.GearPatches;
 using static RealismMod.Attributes;
 using static RootMotion.FinalIK.AimPoser;
 
@@ -415,6 +415,7 @@ namespace RealismMod
             IconCache.Add(ENewItemAttributeId.LimbHpPerTick, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
             IconCache.Add(ENewItemAttributeId.HpPerTick, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
             IconCache.Add(ENewItemAttributeId.RemoveTrnqt, Resources.Load<Sprite>("characteristics/icons/hpResource"));
+            IconCache.Add(ENewItemAttributeId.Comfort, Resources.Load<Sprite>("characteristics/icons/Weight"));
 
             _ = LoadTexture(ENewItemAttributeId.Balance, Path.Combine(ModPath, "res\\balance.png"));
             _ = LoadTexture(ENewItemAttributeId.RecoilAngle, Path.Combine(ModPath, "res\\recoilAngle.png"));
@@ -621,7 +622,7 @@ namespace RealismMod
 
 
             //Ballistics
-            if (ModConfig.realistic_ballistics == true)
+            if (ModConfig.realistic_ballistics)
             {
                 new CreateShotPatch().Enable();
                 new ApplyDamagePatch().Enable();
@@ -669,6 +670,7 @@ namespace RealismMod
 
             new ArmorComponentPatch().Enable();
             new RigConstructorPatch().Enable();
+            new BackpackConstructorPatch().Enable();
 
             //Player
             new PlayerInitPatch().Enable();

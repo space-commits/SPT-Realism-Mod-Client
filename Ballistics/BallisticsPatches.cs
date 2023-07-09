@@ -928,7 +928,7 @@ namespace RealismMod
             float damageFactored = ammo.Damage * speedFactor;
             float fragchanceFactored = Mathf.Max(ammo.FragmentationChance * speedFactor, 0);
             float penPowerFactored = EFT.Ballistics.BallisticsCalculator.GetAmmoPenetrationPower(ammo, randomNum, __instance.Randoms) * speedFactor;
-            float bcFactored = Mathf.Max(ammo.BallisticCoeficient * speedFactor, 0.01f);
+            float bcFactored = Mathf.Max(ammo.BallisticCoeficient * (1f - ((1f - speedFactor) * 2.5f)), 0.01f);
 
 /*            Logger.LogWarning("========================AFTER SPEED FACTOR============================");
             Logger.LogWarning("Round ID = " + ammo.TemplateId);

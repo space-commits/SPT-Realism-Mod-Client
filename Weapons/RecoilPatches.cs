@@ -131,7 +131,9 @@ namespace RealismMod
                 StanceController.IsFiringFromStance = true;
                 Plugin.ShotCount++;
 
-                float playerWeightFactor = 1f - ((PlayerProperties.TotalTrueWeight - weaponClass.GetSingleItemTotalWeight()) / 100f);
+                float totalPlayerWeight = PlayerProperties.TotalModifiedWeight - weaponClass.GetSingleItemTotalWeight();
+                float playerWeightFactorBuff = 1f - (totalPlayerWeight / 550f);
+                float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 100f);
 
                 float activeAimingBonus = StanceController.IsActiveAiming == true ? 0.95f : 1f;
                 float aimCamRecoilBonus = StanceController.IsActiveAiming == true || !Plugin.IsAiming ? 0.9f : 1f;
@@ -139,7 +141,6 @@ namespace RealismMod
                 float shortStockingCamBonus = StanceController.IsShortStock == true ? 0.85f : 1f;
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
-
 
                 //instead of shot count, can check weapon firemode in here. Can also get weapon class/type.
                 //would be more efficient to have a static bool "getsSemiRecoilIncrease" and check the weap class in stat detla instead.
@@ -167,7 +168,7 @@ namespace RealismMod
                     __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY;
                 }
 
-                float buffFactoredDispersion = Plugin.CurrentDispersion * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff;
+                float buffFactoredDispersion = Plugin.CurrentDispersion * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff;
 
                 if (Plugin.ShotCount > 1 && weaponClass.WeapClass == "pistol" && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
                 {
@@ -182,12 +183,12 @@ namespace RealismMod
                 __instance.RecoilDegree = new Vector2(angle - buffFactoredDispersion, angle + buffFactoredDispersion);
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
 
-                __instance.ShotVals[3].Intensity = Plugin.CurrentCamRecoilX * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactor;
-                __instance.ShotVals[4].Intensity = Plugin.CurrentCamRecoilY * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactor;
+                __instance.ShotVals[3].Intensity = Plugin.CurrentCamRecoilX * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff;
+                __instance.ShotVals[4].Intensity = Plugin.CurrentCamRecoilY * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff;
 
                 float totalDispersion = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
-                float totalVerticalRecoil = __instance.RecoilStrengthXy.y * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactor;
-                float totalHorizontalRecoil = Mathf.Min(__instance.RecoilStrengthZ.y * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactor, Plugin.HorzRecLimit.Value);
+                float totalVerticalRecoil = __instance.RecoilStrengthXy.y * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff;
+                float totalHorizontalRecoil = Mathf.Min(__instance.RecoilStrengthZ.y * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff, Plugin.HorzRecLimit.Value);
 
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.x, Mathf.Cos(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.y, totalHorizontalRecoil * _separateIntensityFactors.z) * __instance.Intensity;
                 IWeapon weapon = iWeapon;
