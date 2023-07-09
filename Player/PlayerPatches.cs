@@ -94,7 +94,6 @@ namespace RealismMod
 
         private void RefreshItemEvent(GEventArgs22 args)
         {
-            Logger.LogWarning("My Refresh Item Event");
             Player player = Utils.GetPlayer();
             PlayerInitPatch p = new PlayerInitPatch();
             p.calcWeight(player);
@@ -174,7 +173,7 @@ namespace RealismMod
                 PlayerProperties.SprintTotalBreathIntensity = breathIntensity;
                 PlayerProperties.SprintTotalHandsIntensity = inputIntensitry;
 
-                PlayerProperties.ADSSprintMulti = Mathf.Min(1f - (sprintTimer / 35f), 0.3f);
+                PlayerProperties.ADSSprintMulti = Mathf.Max(1f - (sprintTimer / 10f), 0.3f);
 
                 didSprintPenalties = true;
                 doSwayReset = false;
