@@ -48,7 +48,7 @@ namespace RealismMod
         public static void PatchPostfix(ref Player.FirearmController __instance, ref float ____aimingSens)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (player.IsYourPlayer == true)
+            if (player.IsYourPlayer)
             {
                 if (!Plugin.UniformAimIsPresent || !Plugin.BridgeIsPresent)
                 {
@@ -73,7 +73,7 @@ namespace RealismMod
         public static void PatchPostfix(ref Player.FirearmController __instance, ref float __result)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (player.IsYourPlayer == true)
+            if (player.IsYourPlayer)
             {
                 __result = Plugin.CurrentAimSens;
             }
@@ -89,7 +89,7 @@ namespace RealismMod
         [PatchPostfix]
         public static void PatchPostfix(ref Player __instance, ref float __result)
         {
-            if (__instance.IsYourPlayer == true)
+            if (__instance.IsYourPlayer)
             {
                 if (!(__instance.HandsController != null) || !__instance.HandsController.IsAiming)
                 {

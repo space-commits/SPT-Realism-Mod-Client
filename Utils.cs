@@ -70,6 +70,18 @@ namespace RealismMod
         {
             if (confItemArray != null && confItemArray.Length > 0)
             {
+                if (confItemArray[0] == "SPTRM")
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public static bool ConfItemsIsNullOrInvalid(string[] confItemArray, int length)
+        {
+            if (confItemArray != null && confItemArray.Length >= length)
+            {
                 if (confItemArray[0] == "SPTRM") 
                 {
                     return false;

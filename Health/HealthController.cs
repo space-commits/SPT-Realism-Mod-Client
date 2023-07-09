@@ -680,6 +680,16 @@ namespace RealismMod
             }
         }
 
+        public static void DoPassiveRegen(float tickRate, EBodyPart bodyPart, Player player, float delay, float hpToRestore, EDamageType damageType)
+        {
+            if (!HasEffectOfType(typeof(TourniquetEffect), bodyPart))
+            {
+                HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, bodyPart, player, delay, hpToRestore, damageType);
+                AddCustomEffect(regenEffect, false);
+            }
+        }
+
+
         public static void RestoreHPArossBody(Player player, float hpToRestore, float delay, EDamageType damageType, float tickRate)
         {
             hpToRestore = Mathf.RoundToInt((hpToRestore) / BodyParts.Length);

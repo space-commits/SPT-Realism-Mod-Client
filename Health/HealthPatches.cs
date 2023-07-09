@@ -375,18 +375,15 @@ namespace RealismMod
                     }
                     if ((damageType == EDamageType.Fall && damage <= 12f))
                     {
-                        HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, bodyPart, __instance.Player, delay, damage, damageType);
-                        RealismHealthController.AddCustomEffect(regenEffect, false);
+                        RealismHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage, damageType);
                     }
                     if (damageType == EDamageType.Barbed)
                     {
-                        HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
-                        RealismHealthController.AddCustomEffect(regenEffect, true);
+                        RealismHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
                     }
-                    if (damageType == EDamageType.Blunt && damage <= 4f)
+                    if (damageType == EDamageType.Blunt && damage <= 5f)
                     {
-                        HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
-                        RealismHealthController.AddCustomEffect(regenEffect, false);
+                        RealismHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
                     }
                     if (damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding)
                     {

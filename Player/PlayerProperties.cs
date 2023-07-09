@@ -85,5 +85,7 @@ namespace RealismMod
         public static bool TriedToADSFromSprint = false;
 
         public static bool HasFullyResetSprintADSPenalties = false;
+
+        public static float TotalTrueWeight = 0f;
     }
 }

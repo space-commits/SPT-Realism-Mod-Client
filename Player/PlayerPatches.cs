@@ -41,6 +41,68 @@ namespace RealismMod
 
     public class PlayerInitPatch : ModulePatch
     {
+        private InventoryClass invClass;
+
+        private void calcWeight(Player player)
+        {
+            InventoryControllerClass invController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
+            this.invClass = invController.Inventory;
+            invController.Inventory.TotalWeight = new GClass777<float>(new Func<float>(getTotalWeight));
+            Logger.LogWarning("total weight " + getTotalWeight());
+        }
+
+        private float getTotalWeight()
+        {
+            float modifiedWeight = 0f;
+            float trueWeight = 0f;
+            foreach (EquipmentSlot equipmentSlot in EquipmentClass.AllSlotNames) 
+            {
+                IEnumerable<Item> items = this.invClass.Equipment.GetSlot(equipmentSlot).Items;
+                foreach (Item item in items) 
+                {
+                    float itemTotalWeight = item.GetSingleItemTotalWeight();
+                    trueWeight += itemTotalWeight;
+                    if (equipmentSlot == EquipmentSlot.Backpack || equipmentSlot == EquipmentSlot.TacticalVest)
+                    {
+                        Logger.LogWarning("item = " + item.LocalizedName());
+                        float modifier = GearProperties.ComfortModifier(item);
+                        Logger.LogWarning("modifier = " + modifier);
+                        modifiedWeight += (itemTotalWeight - item.Weight) * modifier;
+                    }
+                    else 
+                    {
+                        modifiedWeight += itemTotalWeight;
+                    }
+                }
+            }
+            PlayerProperties.TotalTrueWeight = trueWeight;
+            return modifiedWeight;
+        }
+
+        private void HandleAddItemEvent(GEventArgs2 args)
+        {
+            Logger.LogWarning("My Add Item Event");
+            Player player = Utils.GetPlayer();
+            PlayerInitPatch p = new PlayerInitPatch();
+            p.calcWeight(player);
+        }
+
+        private void HandleRemoveItemEvent(GEventArgs3 args)
+        {
+            Logger.LogWarning("My Remove Item Event");
+            Player player = Utils.GetPlayer();
+            PlayerInitPatch p = new PlayerInitPatch();
+            p.calcWeight(player);
+        }
+
+        private void RefreshItemEvent(GEventArgs22 args)
+        {
+            Logger.LogWarning("My Refresh Item Event");
+            Player player = Utils.GetPlayer();
+            PlayerInitPatch p = new PlayerInitPatch();
+            p.calcWeight(player);
+        }
+
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Player).GetMethod("Init", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -52,6 +114,8 @@ namespace RealismMod
 
             if (__instance.IsYourPlayer == true)
             {
+                PlayerInitPatch p = new PlayerInitPatch();
+
                 Plugin.StanceBlender.Target = 0f;
                 StatCalc.SetGearParamaters(__instance);
                 StanceController.SelectedStance = 0;
@@ -61,6 +125,12 @@ namespace RealismMod
                 StanceController.WasHighReady = false;
                 StanceController.WasLowReady = false;
                 StanceController.IsShortStock = false;
+
+                InventoryControllerClass invController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(__instance);
+   
+                invController.AddItemEvent += p.HandleAddItemEvent;
+                invController.RemoveItemEvent += p.HandleRemoveItemEvent;
+                invController.RefreshItemEvent += p.RefreshItemEvent;
             }
         }
     }

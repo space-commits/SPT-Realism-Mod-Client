@@ -58,11 +58,7 @@ namespace RealismMod
         public static ConfigEntry<bool> InspectionlessMalfs { get; set; }
         public static ConfigEntry<bool> enableSGMastering { get; set; }
         public static ConfigEntry<bool> EnableStockSlots { get; set; }
-        public static ConfigEntry<bool> EnableAmmoFirerateDisp { get; set; }
-        public static ConfigEntry<bool> enableAmmoDamageDisp { get; set; }
-        public static ConfigEntry<bool> enableAmmoPenDisp { get; set; }
-        public static ConfigEntry<bool> enableAmmoArmorDamageDisp { get; set; }
-        public static ConfigEntry<bool> enableAmmoFragDisp { get; set; }
+        public static ConfigEntry<bool> EnableAmmoStats { get; set; }
         public static ConfigEntry<bool> EnableReloadPatches { get; set; }
         public static ConfigEntry<bool> EnableRealArmorClass { get; set; }
         public static ConfigEntry<bool> ReduceCamRecoil { get; set; }
@@ -501,8 +497,6 @@ namespace RealismMod
                 Logger.LogError(exception);
             }
 
-
-
             InitConfigs();
 
             if (ModConfig.recoil_attachment_overhaul)
@@ -909,7 +903,7 @@ namespace RealismMod
             convergenceLimit = Config.Bind<float>(advancedRecoilSettings, "Convergence Lower Limit", 0.3f, new ConfigDescription("The Lower Limit For Convergence. Convergence Is Kept In Proportion With Vertical Recoil While Firing, Down To The Set Limit. Value Of 0.3 Means Convegence Lower Limit Of 0.3 * Starting Convergance.", new AcceptableValueRange<float>(0.1f, 1.0f), new ConfigurationManagerAttributes { Order = 2, IsAdvanced = true }));
             resetTime = Config.Bind<float>(advancedRecoilSettings, "Time Before Reset", 0.14f, new ConfigDescription("The Time In Seconds That Has To Be Elapsed Before Firing Is Considered Over, Stats Will Not Reset Until This Timer Is Done. Helps Prevent Spam Fire In Full Auto.", new AcceptableValueRange<float>(0.1f, 0.5f), new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true }));
 
-            EnableAmmoFirerateDisp = Config.Bind<bool>(statSettings, "Display Ammo Fire Rate", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 11 }));
+            EnableAmmoStats = Config.Bind<bool>(statSettings, "Display Ammo Stats", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 11 }));
             EnableStatsDelta = Config.Bind<bool>(statSettings, "Show Stats Delta Preview", false, new ConfigDescription("Requiures Restart. Shows A Preview Of The Difference To Stats Swapping/Removing Attachments Will Make. Warning: Will Degrade Performance Significantly When Moddig Weapons In Inspect Or Modding Screens.", null, new ConfigurationManagerAttributes { Order = 5 }));
             ShowBalance = Config.Bind<bool>(statSettings, "Show Balance Stat", true, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 5 }));
             ShowCamRecoil = Config.Bind<bool>(statSettings, "Show Camera Recoil Stat", false, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 4 }));
