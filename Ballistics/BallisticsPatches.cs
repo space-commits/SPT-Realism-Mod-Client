@@ -20,6 +20,7 @@ using HarmonyLib.Tools;
 using System.Collections;
 using EFT.Interactive;
 using static System.Net.Mime.MediaTypeNames;
+using static EFT.Player;
 
 namespace RealismMod
 {
@@ -328,22 +329,32 @@ namespace RealismMod
             }
         }
 
-        private static void DoDisarm(Player player, float kineticEnergy, bool hitArmArmor) 
+        private static void TryDoDisarm(Player player, float kineticEnergy, bool hitArmArmor) 
         {
-            float rndNumber = UnityEngine.Random.Range(0, 101);
-            float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
-            float hitArmArmorFactor = hitArmArmor ? 0.5f : 1f;
-            float totalChance = Mathf.Round(Plugin.DisarmBaseChance.Value * kineticEnergyFactor * hitArmArmorFactor);
-
-            if (rndNumber <= totalChance) 
+            Player.ItemHandsController itemHandsController = player.HandsController as Player.ItemHandsController;
+            if (itemHandsController != null && itemHandsController.CurrentCompassState)
             {
-                InventoryControllerClass inventoryController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
-                Player.FirearmController fc = player.HandsController as Player.FirearmController;
-                if (inventoryController.CanThrow(fc.Item))
+                itemHandsController.SetCompassState(false);
+                return;
+            }
+
+            if (player.MovementContext.StationaryWeapon == null && !player.HandsController.IsPlacingBeacon() && !player.HandsController.IsInInteractionStrictCheck() && player.CurrentStateName != EPlayerState.BreachDoor && !player.IsSprintEnabled) 
+            {
+                float rndNumber = UnityEngine.Random.Range(0, 101);
+                float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
+                float hitArmArmorFactor = hitArmArmor ? 0.5f : 1f;
+                float totalChance = Mathf.Round(Plugin.DisarmBaseChance.Value * kineticEnergyFactor * hitArmArmorFactor);
+
+                if (rndNumber <= totalChance)
                 {
-                    inventoryController.TryThrowItem(fc.Item, null, false);
+                    InventoryControllerClass inventoryController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
+                    Player.FirearmController fc = player.HandsController as Player.FirearmController;
+                    if (inventoryController.CanThrow(fc.Item))
+                    {
+                        inventoryController.TryThrowItem(fc.Item, null, false);
+                    }
                 }
-            }  
+            }
         }
 
         [PatchPrefix]
@@ -515,7 +526,7 @@ namespace RealismMod
 
                 if ((hitUpperArm || hitForearm) && ((!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value) || (__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value)))
                 {
-                    DoDisarm(__instance, KE, hasArmArmor);
+                    TryDoDisarm(__instance, KE, hasArmArmor);
                 }
 
             }
@@ -953,7 +964,7 @@ namespace RealismMod
             float damageFactored = ammo.Damage * speedFactor;
             float fragchanceFactored = Mathf.Max(ammo.FragmentationChance * speedFactor, 0);
             float penPowerFactored = EFT.Ballistics.BallisticsCalculator.GetAmmoPenetrationPower(ammo, randomNum, __instance.Randoms) * speedFactor;
-            float bcFactored = Mathf.Max(ammo.BallisticCoeficient * (1f - ((1f - speedFactor) * 2.5f)), 0.01f);
+            float bcFactored = Mathf.Max(ammo.BallisticCoeficient * speedFactor, 0.01f);
 
 /*            Logger.LogWarning("========================AFTER SPEED FACTOR============================");
             Logger.LogWarning("Round ID = " + ammo.TemplateId);

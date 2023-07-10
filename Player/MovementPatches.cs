@@ -57,7 +57,7 @@ namespace RealismMod
         }
 
         private static float maxSlopeAngle = 5f;
-        private static float maxSlowdownFactor = 0.5f;
+        private static float maxSlowdownFactor = 0.45f;
 
         public static float GetSlope(Player player) 
         {
@@ -76,7 +76,28 @@ namespace RealismMod
             }
             return slowdownFactor;
 
-        } 
+        }
+
+        public static float GetFiringMovementSpeedFactor(Player player, ManualLogSource logger) 
+        {
+            if (!Plugin.IsFiring) 
+            {
+                logger.LogWarning("not firing");
+                return 1f;
+            }
+
+            Player.FirearmController fc = player.HandsController as Player.FirearmController;
+            if (fc == null) 
+            {
+                logger.LogWarning("fc null");
+                return 1f;
+            }
+
+            float recoilSum = Plugin.CurrentVRecoilX + Plugin.CurrentHRecoilX;
+            recoilSum = fc.Item.WeapClass == "pistol" ? recoilSum * 0.5f : recoilSum;
+            float recoilFactor = 1f - (recoilSum / 100f);
+            return recoilFactor;
+        }
 
     }
 
@@ -103,8 +124,11 @@ namespace RealismMod
                 }
 
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
+                float firingMulti = MovementSpeedController.GetFiringMovementSpeedFactor(player, Logger);
 
-                __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * PlayerProperties.HealthWalkSpeedFactor * surfaceMulti * slopeFactor);
+                __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * PlayerProperties.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti);
+                Logger.LogWarning("multi = " + firingMulti);
+                Logger.LogWarning(__result);
                 return false;
             }
             return true;
