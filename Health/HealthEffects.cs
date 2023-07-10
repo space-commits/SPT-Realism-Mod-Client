@@ -241,9 +241,9 @@ namespace RealismMod
         private float durCounter { get; set; }
         private bool addedEffect = false;
         private bool canSkipWait = true;
-        public float PainStrength { get; set; }
+        public float PainKillerStrength { get; set; }
 
-        public PainKillerEffect(float? dur, Player player, float delay, float intermittentWaitDur, float intermittentEffectDur, float tunnelStrength, float painStrength)
+        public PainKillerEffect(float? dur, Player player, float delay, float intermittentWaitDur, float intermittentEffectDur, float tunnelStrength, float painKillerStrength)
         {
             TimeExisted = 0;
             Duration = dur;
@@ -256,7 +256,7 @@ namespace RealismMod
             waitCounter = intermittentWaitDur;
             durCounter = intermittentEffectDur;
             TunnelVisionStrength = tunnelStrength;
-            PainStrength = painStrength;    
+            PainKillerStrength = painKillerStrength;    
         }
 
         public void Tick()
@@ -272,10 +272,19 @@ namespace RealismMod
 
                     if (!addedEffect) 
                     {
-                        RealismHealthController.AddBasesEFTEffect(Player, "PainKiller", BodyPart, 0f, IntermittentEffectDur, 1f, 1f);
-                        RealismHealthController.AddBasesEFTEffect(Player, "TunnelVision", BodyPart, 0f, IntermittentEffectDur, 1f, TunnelVisionStrength);
                         canSkipWait = false;
                         addedEffect = true;
+
+                        float blacked = RealismHealthController.HasBlackedPart ? 1 : 0f;
+                        float fracture = RealismHealthController.HasFracture ? 1 : 0f;
+                        float hp = RealismHealthController.HPBelow50 ? 1 : 0f;
+                        float painStrength = blacked + fracture + hp;
+
+                        if (PainKillerStrength >= painStrength) 
+                        {
+                            RealismHealthController.AddBasesEFTEffect(Player, "PainKiller", BodyPart, 0f, IntermittentEffectDur, 1f, 1f);
+                            RealismHealthController.AddBasesEFTEffect(Player, "TunnelVision", BodyPart, 0f, IntermittentEffectDur, 1f, TunnelVisionStrength);
+                        }
                     }
 
                     if (durCounter <= 0f) 

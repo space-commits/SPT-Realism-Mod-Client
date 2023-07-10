@@ -611,7 +611,7 @@ namespace RealismMod
 
             if (!StanceController.IsActiveAiming && !StanceController.IsShortStock)
             {
-                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 1.2f;
+                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 1.1f;
             }
             if (StanceController.IsActiveAiming)
             {

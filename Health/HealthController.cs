@@ -73,7 +73,7 @@ namespace RealismMod
 
         public static float Strength(Item med)
         {
-            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[10], out float result) ? result : 1f;
+            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[10], out float result) ? result : 0f;
         }
 
         public static readonly Dictionary<string, Type> EffectTypes = new Dictionary<string, Type>
@@ -152,7 +152,11 @@ namespace RealismMod
 
         private static float adrenalineCooldownTime = 60f * (1f - PlayerProperties.StressResistanceFactor);
         public static bool AdrenalineCooldownActive = false;
-  
+
+        public static bool HasFracture;
+        public static bool HasBlackedPart;
+        public static bool HPBelow50;
+
         public static void HealthController(ManualLogSource logger)
         {
             if (!Utils.IsInHideout())
@@ -852,7 +856,7 @@ namespace RealismMod
 
         public static void CanUseMedItem(ManualLogSource Logger, Player player, EBodyPart bodyPart, Item item, ref bool canUse)
         {
-            if (item.Template.Parent._id == "5448f3a64bdc2d60728b456a" || MedProperties.MedType(item) == "drug")
+            if (item.Template.Parent._id == "5448f3a64bdc2d60728b456a" || MedProperties.MedType(item).Contains("drug"))
             {
                 return;
             }
@@ -896,7 +900,7 @@ namespace RealismMod
 
             float medHPRes = med.MedKitComponent.HpResource;
        
-            if (Plugin.GearBlocksEat.Value && medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn)) 
+            if (Plugin.GearBlocksEat.Value && medType.Contains("pills") && (mouthBlocked || fsIsON || nvgIsOn)) 
             {
                 NotificationManagerClass.DisplayWarningNotification("Can't Take Pills, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
@@ -980,16 +984,6 @@ namespace RealismMod
             }
         }
 
-        public static void PainKillerCheck(Player player) 
-        {
-            //add new method for adding effect that doesn't add if one is already existing
-            //check for HP %, 0 parts, fracture
-            //compare against active pain effect strngth
-            //determine if pain killer effect should be interrupted and set player field
-            //pk effect checks this field
-            //getting shot and blunt damage exceeding X should remove all PK effects, base and custom
-        }
-
         public static void PlayerInjuryStateCheck(Player player, ManualLogSource logger)
         {
 
@@ -1030,6 +1024,7 @@ namespace RealismMod
             {
                 IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(part);
                 bool hasFracture = fractureType != null && effects.Any(e => e.Type == fractureType);
+                RealismHealthController.HasFracture = hasFracture;
 
                 bool isLeftArm = part == EBodyPart.LeftArm;
                 bool isRightArm = part == EBodyPart.LeftArm;
@@ -1055,6 +1050,12 @@ namespace RealismMod
                 if (percentHp <= 0.5f) 
                 {
                     AddBaseEFTEffectIfNoneExisting(player, "Pain", part, 0f, 10f, 1f, 1f);
+                    RealismHealthController.HPBelow50 = true;
+                }
+
+                if (currentHp <= 0)
+                {
+                    RealismHealthController.HasBlackedPart = true;  
                 }
 
                 if (isLeg || isBody) 
@@ -1068,13 +1069,14 @@ namespace RealismMod
 
                 if (isArm) 
                 {
+                    bool isArmRuined = currentHp <= 0 || hasFracture;
                     if (isLeftArm) 
                     {
-                        PlayerProperties.LeftArmRuined = player.ActiveHealthController.GetBodyPartHealth(EBodyPart.LeftArm).Current <= 0 || hasFracture;
+                        PlayerProperties.LeftArmRuined = isArmRuined;
                     }
                     if (isRightArm)
                     {
-                        PlayerProperties.RightArmRuined = player.ActiveHealthController.GetBodyPartHealth(EBodyPart.RightArm).Current <= 0 || hasFracture;
+                        PlayerProperties.RightArmRuined = isArmRuined;
                     }
 
                     //this makes no sense, loop is per body part so possible that both arms are blacked but loop hasn't done both arms yet. Though this check does happen per tick so it'll sort of still work due to
@@ -1097,6 +1099,7 @@ namespace RealismMod
             if (totalHpPercent <= 0.5f)
             {
                 AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 10f, 1f, 1f);
+                RealismHealthController.HPBelow50 = true;
             }
 
             float percentEnergyFactor = percentEnergy * 1.2f;

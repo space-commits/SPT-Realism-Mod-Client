@@ -56,6 +56,7 @@ namespace RealismMod
         private static void PatchPostfix(MedKitComponent __instance, Item item)
         {
             string medType = MedProperties.MedType(item);
+            float strength = MedProperties.Strength(item);
 
             if (medType == "trnqt" || medType == "medkit" || medType == "surg")
             {
@@ -104,6 +105,18 @@ namespace RealismMod
                         hpTickAtt.Add(hpAttClass);
                     }
                 }
+            }
+            if (medType.Contains("pain"))
+            {
+                List<ItemAttributeClass> strengthAtt = item.Attributes;
+                ItemAttributeClass strengthAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.PainKillerStrength);
+                strengthAttClass.Name = ENewItemAttributeId.PainKillerStrength.GetName();
+                strengthAttClass.Base = () => strength;
+                strengthAttClass.StringValue = () => strength.ToString();
+                strengthAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                strengthAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                strengthAttClass.LessIsGood = false;
+                strengthAtt.Add(strengthAttClass);
             }
         }
     }
@@ -459,12 +472,12 @@ namespace RealismMod
                     bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
                     bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
 
-                    if (Plugin.GearBlocksHeal.Value && medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn))
+                    if (Plugin.GearBlocksHeal.Value && medType.Contains("pills") && (mouthBlocked || fsIsON || nvgIsOn))
                     {
                         NotificationManagerClass.DisplayWarningNotification("Can't Take Pills, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
                         return false;
                     }
-                    if (medType == "pills" || medType == "drug")
+                    if (medType.Contains("pain"))
                     {
                         float duration = MedProperties.PainKillerFullDuration(meds);
                         float delay = MedProperties.Delay(meds);
@@ -474,6 +487,10 @@ namespace RealismMod
                         float painStr = MedProperties.Strength(meds);
                         PainKillerEffect painKillerEffect = new PainKillerEffect(duration, __instance, delay, wait, intermittentDur, tunnelVisionStr, painStr);
                         RealismHealthController.AddCustomEffect(painKillerEffect, false);
+                        return true;
+                    }
+                    if (medType.Contains("pills") || medType.Contains("drug")) 
+                    {
                         return true;
                     }
 

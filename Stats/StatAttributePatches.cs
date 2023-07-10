@@ -69,7 +69,8 @@ namespace RealismMod
             LimbHpPerTick,
             HpPerTick,
             RemoveTrnqt,
-            Comfort
+            Comfort,
+            PainKillerStrength
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -140,6 +141,8 @@ namespace RealismMod
                     return "REMOVES TOURNIQUET EFFECT";
                 case ENewItemAttributeId.Comfort:
                     return "COMFORT MODIFIER";
+                case ENewItemAttributeId.PainKillerStrength:
+                    return "PAINKILLER STRENGTH";
                 default:
                     return id.ToString();
             }

@@ -135,10 +135,10 @@ namespace RealismMod
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 550f);
                 float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 100f);
 
-                float activeAimingBonus = StanceController.IsActiveAiming == true ? 0.95f : 1f;
-                float aimCamRecoilBonus = StanceController.IsActiveAiming == true || !Plugin.IsAiming ? 0.9f : 1f;
+                float activeAimingBonus = StanceController.IsActiveAiming == true ? 0.9f : 1f;
+                float aimCamRecoilBonus = StanceController.IsActiveAiming == true || !Plugin.IsAiming ? 0.8f : 1f;
                 float shortStockingDebuff = StanceController.IsShortStock == true ? 1.15f : 1f;
-                float shortStockingCamBonus = StanceController.IsShortStock == true ? 0.85f : 1f;
+                float shortStockingCamBonus = StanceController.IsShortStock == true ? 0.75f : 1f;
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
