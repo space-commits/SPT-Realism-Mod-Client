@@ -173,7 +173,7 @@ namespace RealismMod
         {
             StanceShotTime += Time.deltaTime;
 
-            if (StanceShotTime >= 0.5f)
+            if (StanceShotTime >= 0.55f)
             {
                 IsFiringFromStance = false;
                 StanceShotTime = 0f;

@@ -290,7 +290,9 @@ namespace RealismMod
         public static bool GrenadeExploded = false;
         public static bool IsAiming = false;
         public static bool IsBlindFiring = false;
-        public static float Timer = 0.0f;
+        public static bool IsFiringMovement = false;
+        public static float ShotTimer = 0.0f;
+        public static float MovementSpeedShotTimer = 0.0f;
         public static float BotTimer = 0.0f;
         public static float GrenadeTimer = 0.0f;
 
@@ -741,6 +743,7 @@ namespace RealismMod
                     {
                         Plugin.IsFiring = true;
                         StanceController.IsFiringFromStance = true;
+                        Plugin.IsFiringMovement = true; 
 
                         if (Plugin.EnableRecoilClimb.Value == true && (Plugin.IsAiming == true || Plugin.EnableHipfireRecoilClimb.Value == true))
                         {
@@ -752,14 +755,21 @@ namespace RealismMod
 
                     if (Plugin.ShotCount == Plugin.PrevShotCount)
                     {
-                        Plugin.Timer += Time.deltaTime;
+                        Plugin.ShotTimer += Time.deltaTime;
+                        Plugin.MovementSpeedShotTimer += Time.deltaTime;
 
-                        if (Plugin.Timer >= Plugin.resetTime.Value)
+                        if (Plugin.ShotTimer >= Plugin.resetTime.Value)
                         {
                             Plugin.IsFiring = false;
                             Plugin.ShotCount = 0;
                             Plugin.PrevShotCount = 0;
-                            Plugin.Timer = 0f;
+                            Plugin.ShotTimer = 0f;
+                        }
+
+                        if (Plugin.MovementSpeedShotTimer >= 0.5f)
+                        {
+                            Plugin.IsFiringMovement = false;
+                            Plugin.MovementSpeedShotTimer = 0f;
                         }
 
                         StanceController.StanceShotTimer();

@@ -125,7 +125,7 @@ namespace RealismMod
             {
                 Plugin.CurrentlyShootingWeapon = weaponClass;
 
-                Plugin.Timer = 0f;
+                Plugin.ShotTimer = 0f;
                 StanceController.StanceShotTime = 0f;
                 Plugin.IsFiring = true;
                 StanceController.IsFiringFromStance = true;

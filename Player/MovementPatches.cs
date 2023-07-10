@@ -80,16 +80,14 @@ namespace RealismMod
 
         public static float GetFiringMovementSpeedFactor(Player player, ManualLogSource logger) 
         {
-            if (!Plugin.IsFiring) 
+            if (!Plugin.IsFiringMovement) 
             {
-                logger.LogWarning("not firing");
                 return 1f;
             }
 
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
             if (fc == null) 
             {
-                logger.LogWarning("fc null");
                 return 1f;
             }
 
