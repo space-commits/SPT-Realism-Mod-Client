@@ -20,550 +20,10 @@ using HarmonyLib.Tools;
 using System.Collections;
 using EFT.Interactive;
 using static System.Net.Mime.MediaTypeNames;
+using static EFT.Player;
 
 namespace RealismMod
 {
-    public enum EHitZone
-    {
-        AZone,
-        CZone,
-        DZone,
-        Neck,
-        Heart,
-        Spine,
-        ArmArmor,
-        NeckArmor,
-        SidePlate,
-        ChestPlate,
-        StomachArmor,
-        AssZone,
-        Unknown
-    }
-
-    public enum EHitOrientation
-    {
-        FrontHit,
-        BackHit,
-        LeftSideHit,
-        RightSideHit,
-        TopHit,
-        BottomHit,
-        UnknownOrientation
-    }
-
-    public static class HitBox 
-    {
-        public const string Head = "Base HumanHead";
-        public const string UpperTorso = "Base HumanSpine3";
-        public const string LowerTorso = "Base HumanSpine2";
-        public const string Pelvis = "Base HumanPelvis";
-
-        public const string RightUpperArm = "Base HumanRUpperarm";
-        public const string RightForearm = "Base HumanRForearm1";
-        public const string LeftUpperArm = "Base HumanLUpperarm";
-        public const string LeftForearm = "Base HumanLForearm1";
-
-        public const string LeftThigh = "Base HumanLThigh1";
-        public const string LeftCalf = "Base HumanLCalf";
-        public const string RightThigh = "Base HumanRThigh1";
-        public const string RightCalf = "Base HumanRCalf";
-
-        private static string[] humanBodyColliders = { HitBox.Head, HitBox.UpperTorso, HitBox.LowerTorso, HitBox.Pelvis, HitBox.LeftThigh, HitBox.RightThigh, HitBox.LeftCalf, HitBox.RightCalf, HitBox.RightUpperArm, HitBox.LeftUpperArm, HitBox.RightForearm, HitBox.LeftForearm };
-
-        public static bool HitValidCollider(string hitCollider)
-        {
-            foreach (string s in humanBodyColliders)
-            {
-                if (s == hitCollider)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
-    public static class HitZoneModifiers
-    {
-        public const float Neck = 100f;
-        public const float Spine = 80f;
-        public const float Heart = 120f;
-        public const float Calf = 0.9f;
-        public const float Forearm = 0.65f;
-        public const float Thigh = 1.3f;
-        public const float UpperArm = 1.35f;
-        public const float AZone = 2f;
-        public const float CZone = 1f;
-        public const float DZone = 0.7f;
-    }
-
-    public static class BallisticsController
-    {
-        public static EHitOrientation GetHitOrientation(Vector3 hitNormal, Transform colliderTransform, ManualLogSource logger)
-        {
-            Vector3 localHitNormal = colliderTransform.InverseTransformDirection(hitNormal);
-
-            if (Mathf.Abs(localHitNormal.y) > Mathf.Abs(localHitNormal.x) && Mathf.Abs(localHitNormal.y) > Mathf.Abs(localHitNormal.z))
-            {
-                if (localHitNormal.y > 0)
-                {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
-                    {
-                        logger.LogWarning("hit front side of the box collider");
-                    }
-                    return EHitOrientation.FrontHit; //FRONT
-                }
-                else
-                {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
-                    {
-                        logger.LogWarning("hit back side of the box collider");
-                    }
-                    return EHitOrientation.BackHit; //BACK
-                }
-            }
-            else if (Mathf.Abs(localHitNormal.x) > Mathf.Abs(localHitNormal.y) && Mathf.Abs(localHitNormal.x) > Mathf.Abs(localHitNormal.z))
-            {
-                if (localHitNormal.x > 0)
-                {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
-                    {
-                        logger.LogWarning("hit bottom side of the box collider");
-                    }
-                    return EHitOrientation.BottomHit; //BOTTOM
-                }
-                else
-                {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
-                    {
-                        logger.LogWarning("hit top side of the box collider");
-                    }
-                    return EHitOrientation.TopHit; //TOP
-                }
-            }
-            else
-            {
-                if (localHitNormal.z > 0)
-                {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
-                    {
-                        logger.LogWarning("hit left side of the box collider");
-                    }
-                    return EHitOrientation.LeftSideHit; // LEFT
-                }
-                else
-                {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
-                    {
-                        logger.LogWarning("hit right side of the box collider");
-                    }
-                    return EHitOrientation.RightSideHit; // RIGHT
-                }
-            }
-        }
-
-        private static bool hitSpine(Vector3 localPoint, bool isSideHit, float spineZ, ManualLogSource logger) 
-        {
-            if (localPoint.z >= -spineZ && localPoint.z <= spineZ && !isSideHit)
-            {
-                if (Plugin.EnableBallisticsLogging.Value == true)
-                {
-                    logger.LogWarning("SPINE HIT");
-                }
-                return true;
-            }
-            return false;
-        }
-
-        public static EHitZone GetHitBodyZone(ManualLogSource logger, string hitPart, Vector3 localPoint, EHitOrientation hitOrientation)
-        {
-            bool isSideHit = hitOrientation == EHitOrientation.LeftSideHit || hitOrientation == EHitOrientation.RightSideHit;
-
-            if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis)
-            {
-                float spineZ = 0.01f;
-                float heartL = 0.03f;
-                float heartR = -0.015f;
-                float heartTop = hitOrientation == EHitOrientation.BackHit ? -0.0435f : -0.063f;
-                float heartBottom = hitOrientation == EHitOrientation.BackHit ? -0.028f : -0.05f;
-
-                float dZoneZUpper = hitOrientation == EHitOrientation.BackHit ? 0.12f : 0.125f;
-                float dZoneZMid = hitOrientation == EHitOrientation.BackHit ? 0.12f : 0.125f;
-                float dZoneZLower = hitOrientation == EHitOrientation.BackHit ? 0.15f : 0.125f;
-                float dZoneXLower = -0.16f;
-
-                float aZoneZUpper = 0.045f;
-                float aZoneZMid = 0.045f;
-                float aZoneXMid = -0.17f;
-
-                float topNeckZ = 0.04f;
-                float topNeckX = -0.26f;
-
-                float rearNeckZ = 0.05f;
-                float rearNeckX = -0.2f;
-
-                if (hitOrientation != EHitOrientation.TopHit && hitOrientation != EHitOrientation.BottomHit)
-                {
-                    if (hitPart == HitBox.UpperTorso)
-                    {
-                        if (hitOrientation == EHitOrientation.BackHit && localPoint.z > -rearNeckZ && localPoint.z < rearNeckZ && localPoint.x < rearNeckX)
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("NECK: Front HIT");
-                            }
-                            return EHitZone.Neck;
-                        }
-
-                        if (localPoint.z <= heartL && localPoint.z >= heartR && localPoint.x >= heartTop && localPoint.x <= heartBottom && !isSideHit)
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("HEART HIT");
-                            }
-                            return EHitZone.Heart;
-                        }
-
-                        if (hitSpine(localPoint, isSideHit, spineZ, logger)) 
-                        {
-                            return EHitZone.Spine;
-                        }
-
-                        if (localPoint.z < -dZoneZUpper || localPoint.z > dZoneZUpper)
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("D-ZONE HIT: UPPER TORSO");
-                            }
-                            return EHitZone.DZone;
-
-                        }
-                        else if (localPoint.z > -aZoneZUpper && localPoint.z < aZoneZUpper)
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("A-ZONE HIT: UPPER TORSO");
-                            }
-                            return EHitZone.AZone;
-                        }
-                        else
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("C-ZONE HIT: UPPER TORSO");
-                            }
-                            return EHitZone.CZone;
-                        }
-                    }
-
-                    if (hitSpine(localPoint, isSideHit, spineZ, logger))
-                    {
-                        return EHitZone.Spine;
-                    }
-
-                    if (hitPart == HitBox.LowerTorso)
-                    {
-                        if (localPoint.z < -dZoneZMid || localPoint.z > dZoneZMid)
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("D-ZONE HIT: MID TORSO");
-                            }
-                            return EHitZone.DZone;
-                        }
-                        else if (localPoint.z > -aZoneZMid && localPoint.z < aZoneZMid && localPoint.x < aZoneXMid)
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("A-ZONE HIT: MID TORSO");
-                            }
-                            return EHitZone.AZone;
-                        }
-                        else
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("C-ZONE HIT: MID TORSO");
-                            }
-                            return EHitZone.CZone;
-                        }
-                    }
-                    if (hitPart == HitBox.Pelvis)
-                    {
-                        if (localPoint.z >= -dZoneZLower && localPoint.z <= dZoneZLower && localPoint.x <= dZoneXLower)
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("C-ZONE HIT: Stomach");
-                            }
-                            return EHitZone.CZone;
-                        }
-                        else
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("D-ZONE HIT: Stomach");
-                            }
-                            return EHitZone.DZone;
-                        }
-                    }
-                    if (Plugin.EnableBallisticsLogging.Value == true)
-                    {
-                        logger.LogWarning("COULDN'T FIND HIT ZONE");
-                    }
-                    return EHitZone.Unknown;
-                }
-                if (hitOrientation == EHitOrientation.TopHit && hitPart == HitBox.UpperTorso)
-                {
-                    if (localPoint.z > -topNeckZ && localPoint.z < topNeckZ && localPoint.x < topNeckX)
-                    {
-                        if (Plugin.EnableBallisticsLogging.Value == true)
-                        {
-                            logger.LogWarning("NECK: TOP HIT");
-                        }
-                        return EHitZone.Neck;
-                    }
-                    if (localPoint.z > -spineZ && localPoint.z < spineZ)
-                    {
-                        if (Plugin.EnableBallisticsLogging.Value == true)
-                        {
-                            logger.LogWarning("SPINE: TOP HIT");
-                        }
-                        return EHitZone.Spine;
-                    }
-                    if (localPoint.z > -topNeckZ && localPoint.z < topNeckZ && localPoint.x > topNeckX)
-                    {
-                        if (Plugin.EnableBallisticsLogging.Value == true)
-                        {
-                            logger.LogWarning("C-ZONE: TOP HIT");
-                        }
-                        return EHitZone.CZone;
-                    }
-                    if (Plugin.EnableBallisticsLogging.Value == true)
-                    {
-                        logger.LogWarning("D-ZONE: TOP SHOULDERS HIT");
-                    }
-                    return EHitZone.DZone;
-                }
-                if (hitOrientation == EHitOrientation.BottomHit && hitPart == HitBox.Pelvis)
-                {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
-                    {
-                        logger.LogWarning("ARSE HIT");
-                    }
-                    return EHitZone.AssZone;
-                }
-            }
-            if (Plugin.EnableBallisticsLogging.Value == true)
-            {
-                logger.LogWarning("COULDN'T FIND HIT ZONE");
-            }
-            return EHitZone.Unknown;
-        }
-
-        public static void GetHitArmorZone(ManualLogSource logger, ArmorComponent ac, string hitPart, Vector3 localPoint, EHitOrientation hitOrientation, bool hasSideArmor, bool hasStomachArmor, bool hasNeckArmor, ref bool hasBypassedArmor, ref bool hitSecondaryArmor)
-        {
-
-            float topOfPlate = hitOrientation == EHitOrientation.BackHit ? -0.166f : -0.24f;
-            float bottomOfPlate = hitOrientation == EHitOrientation.BackHit || hitOrientation == EHitOrientation.LeftSideHit || hitOrientation == EHitOrientation.LeftSideHit ? -0.22f : -0.13f;
-            float upperSides = hitOrientation == EHitOrientation.BackHit ? 0.125f : 0.13f;
-            float midSides = hitOrientation == EHitOrientation.BackHit ? 0.135f : 0.14f;
-            float lowerSides = hitOrientation == EHitOrientation.BackHit ? 0.145f : 0.15f;
-            float topOfSidePlates = hitOrientation == EHitOrientation.BackHit ? -0.14f : -0.145f;
-            float bottomOfSidePlates = hitOrientation == EHitOrientation.BackHit ? -0.22f : -0.175f;
-            float sidesOfStomachArmor = hitOrientation == EHitOrientation.BackHit ? 0.11f : 0.12f;
-            float bottomOfStomachArmorRear = -0.14f;
-
-            if ((ac.Template.ArmorZone.Contains(EBodyPart.LeftArm) || ac.Template.ArmorZone.Contains(EBodyPart.RightArm)))
-            {
-                if ((hitPart == HitBox.RightUpperArm || hitPart == HitBox.LeftUpperArm))
-                {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
-                    {
-                        logger.LogWarning("ARM ARMOR HIT");
-                    }
-                    hitSecondaryArmor = true;
-                }
-                if ((hitPart == HitBox.RightForearm || hitPart == HitBox.LeftForearm))
-                {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
-                    {
-                        logger.LogWarning("ARM ARMOR BYPASSED");
-                    }
-                    hasBypassedArmor = true;
-                }
-            }
-            else if(hitPart == HitBox.RightUpperArm || hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightForearm || hitPart == HitBox.LeftForearm)
-            {
-                if (Plugin.EnableBallisticsLogging.Value == true)
-                {
-                    logger.LogWarning("ARM HIT DURING ARMROR CHECK WITH NO ARM ARMOR");
-                }
-                hasBypassedArmor = true;
-            }
-
-            if (hitOrientation != EHitOrientation.TopHit && hitOrientation != EHitOrientation.BottomHit) 
-            {
-                if (hitPart == HitBox.UpperTorso)
-                {
-                    if (localPoint.x < topOfPlate)
-                    {
-                        if (!hasNeckArmor)
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("ARMOR BYPASSED: NECK/TOP OF PLATE");
-                            }
-                            hasBypassedArmor = true;
-                        }
-                        else
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("NECK ARMOR HIT");
-                            }
-                            hitSecondaryArmor = true;
-                        }
-
-                    }
-
-                    if (localPoint.z < -upperSides || localPoint.z > upperSides)
-                    {
-                        if (Plugin.EnableBallisticsLogging.Value == true)
-                        {
-                            logger.LogWarning("ARMOR BYPASSED: UPPER SIDES");
-                        }
-                        hasBypassedArmor = true;
-                    }
-                }
-
-                if (hitPart == HitBox.LowerTorso)
-                {
-                    if (!hasSideArmor)
-                    {
-                        if (localPoint.z < -midSides || localPoint.z > midSides)
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("ARMOR BYPASSED: LOWER SIDES");
-                            }
-                            hasBypassedArmor = true;
-                        }
-                    }
-                    else
-                    {
-                        if (localPoint.x < topOfSidePlates && (localPoint.z < -midSides || localPoint.z > midSides))
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("ARMOR BYPASSED: ABOVE SIDE ARMOR PLATE");
-                            }
-                            hasBypassedArmor = true;
-                        }
-                    }
-                }
-
-                if (hitPart == HitBox.Pelvis && (hitOrientation == EHitOrientation.FrontHit || hitOrientation == EHitOrientation.BackHit))
-                {
-                    if (!hasStomachArmor)
-                    {
-                        if (localPoint.x > bottomOfPlate)
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("ARMOR BYPASSED: BELOW PLATE, STOMACH");
-                            }
-                            hasBypassedArmor = true;
-                        }
-                    }
-                    else
-                    {
-                        if (localPoint.z > -sidesOfStomachArmor && localPoint.z < sidesOfStomachArmor && ((hitOrientation == EHitOrientation.BackHit && localPoint.x < bottomOfStomachArmorRear && localPoint.x > bottomOfPlate) || (hitOrientation == EHitOrientation.FrontHit && localPoint.x > bottomOfPlate)))
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("STOMACH ARMOR HIT");
-                            }
-                            hitSecondaryArmor = true;
-                        }
-                        else if (localPoint.x > bottomOfPlate)
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("ARMOR BYPASSED: STOMACH ARMOR SIDES OR BOTTOM REAR");
-                            }
-                            hasBypassedArmor = true;
-                        }
-                    }
-                }
-            }
-
-            if (hitPart == HitBox.Pelvis && (hitOrientation == EHitOrientation.LeftSideHit || hitOrientation == EHitOrientation.RightSideHit)) 
-            {
-                if (!hasSideArmor)
-                {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
-                    {
-                        logger.LogWarning("ARMOR BYPASSED: STOMACH SIDES");
-                    }
-                    hasBypassedArmor = true;
-                }
-                else
-                {
-                    if (localPoint.x > bottomOfPlate)
-                    {
-                        if (Plugin.EnableBallisticsLogging.Value == true)
-                        {
-                            logger.LogWarning("SIDE ARMOR BYPASSED: BELOW SIDE ARMOR PLATE");
-                        }
-                        hasBypassedArmor = true;
-                    }
-                }
-            }
-            if (hitOrientation == EHitOrientation.TopHit && hitPart == HitBox.UpperTorso)
-            {
-                float neckArmorTopZ = 0.075f;
-  
-                if (!hasNeckArmor)
-                {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
-                    {
-                        logger.LogWarning("ARMOR BYPASSED: TOP HIT");
-                    }
-                    hasBypassedArmor = true;
-                }
-                else
-                {
-                    if (localPoint.z > -neckArmorTopZ && localPoint.z < neckArmorTopZ)
-                    {
-                        if (Plugin.EnableBallisticsLogging.Value == true)
-                        {
-                            logger.LogWarning("NECK ARMOR TOP HIT");
-                        }
-                        hitSecondaryArmor = true;
-                    }
-                    else
-                    {
-                        if (Plugin.EnableBallisticsLogging.Value == true)
-                        {
-                            logger.LogWarning("NECK ARMOR BYPASSED TOP HIT");
-                        }
-                        hasBypassedArmor = true;
-                    }
-                }
-
-            }
-            if (hitOrientation == EHitOrientation.BottomHit && hitPart == HitBox.Pelvis && !hasStomachArmor)
-            {
-                if (Plugin.EnableBallisticsLogging.Value == true)
-                {
-                    logger.LogWarning("ARMOR BYPASSED: ARSE");
-                }
-                hasBypassedArmor = true;
-            }
-        }
-    }
-
     public class IsShotDeflectedByHeavyArmorPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -606,7 +66,7 @@ namespace RealismMod
 
         private static int playCounter = 0;
 
-        private static void modifyDamageByHitZone(string hitPart, EHitZone hitZone, ref DamageInfo di) 
+        private static void modifyDamageByHitZone(string hitPart, EBodyHitZone hitZone, ref DamageInfo di) 
         {
             bool hitCalf = hitPart == HitBox.LeftCalf || hitPart == HitBox.RightCalf ? true : false;
             bool hitThigh = hitPart == HitBox.LeftThigh || hitPart == HitBox.RightThigh ? true : false;
@@ -637,36 +97,36 @@ namespace RealismMod
                 di.HeavyBleedingDelta *= 0.8f;
                 return;
             }
-            if (hitZone == EHitZone.AZone) 
+            if (hitZone == EBodyHitZone.AZone) 
             {
                 di.Damage *= HitZoneModifiers.AZone;
                 di.HeavyBleedingDelta *= 1.5f;
                 return;
             }
-            if (hitZone == EHitZone.CZone)
+            if (hitZone == EBodyHitZone.CZone)
             {
                 di.Damage *= HitZoneModifiers.CZone;
                 return;
             }
-            if (hitZone == EHitZone.DZone)
+            if (hitZone == EBodyHitZone.DZone)
             {
                 di.Damage *= HitZoneModifiers.DZone;
                 di.HeavyBleedingDelta *= 0.5f;
                 return;
             }
-            if (hitZone == EHitZone.Neck)
+            if (hitZone == EBodyHitZone.Neck)
             {
                 di.Damage += HitZoneModifiers.Neck;
                 di.HeavyBleedingDelta *= 1.5f;
                 return;
             }
-            if (hitZone == EHitZone.Heart)
+            if (hitZone == EBodyHitZone.Heart)
             {
                 di.Damage += HitZoneModifiers.Heart;
                 di.HeavyBleedingDelta *= 1.5f;
                 return;
             }
-            if (hitZone == EHitZone.Spine)
+            if (hitZone == EBodyHitZone.Spine)
             {
                 di.Damage += HitZoneModifiers.Spine;
                 di.HeavyBleedingDelta *= 1.25f;
@@ -674,45 +134,40 @@ namespace RealismMod
             }
         }
 
-        private static void playBodyHitSound(EHitZone hitZone, Vector3 pos, string hitBox) 
+        private static void playBodyHitSound(EBodyHitZone hitZone, Vector3 pos, string hitBox) 
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 2.7f * Plugin.CloseHitSoundMulti.Value;
-            float volDist = 4.25f * Plugin.FarHitSoundMulti.Value;
+            float volClose = 2.5f * Plugin.FleshHitSoundMulti.Value;
+            float volDist = 4.3f * Plugin.FleshHitSoundMulti.Value;
 
-            if (hitZone == EHitZone.Spine)
+            if (hitZone == EBodyHitZone.Spine)
             {
                 Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["spine.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.35f, EOcclusionTest.Continuous);
-
             }
             else if (hitBox == HitBox.Head) 
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 200, volClose, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose, EOcclusionTest.Continuous);
             }
-            else if (hitZone == EHitZone.Heart)
+            else if (hitZone == EBodyHitZone.Heart)
             {
                 Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["heart.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.35f, EOcclusionTest.Continuous);
             }
-            else if (hitZone == EHitZone.AssZone)
+            else if (hitZone == EBodyHitZone.AssZone)
             {
                 Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["ass_impact.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, 2f, EOcclusionTest.Continuous);
             }
+
+            string audioClip = "flesh_dist_1.wav";
+            if (dist >= 40)
+            {
+                audioClip = playCounter == 0 ? "flesh_dist_1.wav" : playCounter == 1 ? "flesh_dist_2.wav" : "flesh_dist_2.wav";
+            }
             else
             {
-                string audioClip = "flesh_dist_1.wav";
-                if (dist >= 40)
-                {
-                    audioClip = playCounter == 0 ? "flesh_dist_1.wav" : playCounter == 1 ? "flesh_dist_2.wav" : "flesh_dist_2.wav";
-                }
-                else
-                {
-                    audioClip = playCounter == 0 ? "flesh_1.wav" : playCounter == 1 ? "flesh_2.wav" : "flesh_3.wav";
-                }
-
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
-
-
+                audioClip = playCounter == 0 ? "flesh_1.wav" : playCounter == 1 ? "flesh_2.wav" : "flesh_3.wav";
             }
+
+            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
         }
 
         [PatchPrefix]
@@ -746,7 +201,7 @@ namespace RealismMod
    /*                 Vector3 normalizedPoint = localPoint.normalized;*/
                     Vector3 hitNormal = shot.HitNormal;
                     EHitOrientation hitOrientation = BallisticsController.GetHitOrientation(hitNormal, col.transform, Logger);
-                    EHitZone hitZone = BallisticsController.GetHitBodyZone(Logger, hitCollider, localPoint, hitOrientation);
+                    EBodyHitZone hitZone = BallisticsController.GetHitBodyZone(Logger, hitCollider, localPoint, hitOrientation);
                     modifyDamageByHitZone(hitCollider, hitZone, ref __instance);
 
                     if (Plugin.EnableHitSounds.Value) 
@@ -874,11 +329,40 @@ namespace RealismMod
             }
         }
 
+        private static void TryDoDisarm(Player player, float kineticEnergy, bool hitArmArmor) 
+        {
+            Player.ItemHandsController itemHandsController = player.HandsController as Player.ItemHandsController;
+            if (itemHandsController != null && itemHandsController.CurrentCompassState)
+            {
+                itemHandsController.SetCompassState(false);
+                return;
+            }
+
+            if (player.MovementContext.StationaryWeapon == null && !player.HandsController.IsPlacingBeacon() && !player.HandsController.IsInInteractionStrictCheck() && player.CurrentStateName != EPlayerState.BreachDoor && !player.IsSprintEnabled) 
+            {
+                float rndNumber = UnityEngine.Random.Range(0, 101);
+                float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
+                float hitArmArmorFactor = hitArmArmor ? 0.5f : 1f;
+                float totalChance = Mathf.Round(Plugin.DisarmBaseChance.Value * kineticEnergyFactor * hitArmArmorFactor);
+
+                if (rndNumber <= totalChance)
+                {
+                    InventoryControllerClass inventoryController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
+                    Player.FirearmController fc = player.HandsController as Player.FirearmController;
+                    if (inventoryController.CanThrow(fc.Item))
+                    {
+                        inventoryController.TryThrowItem(fc.Item, null, false);
+                    }
+                }
+            }
+        }
+
         [PatchPrefix]
         private static void Prefix(Player __instance, DamageInfo damageInfo, EBodyPart bodyPartType, float absorbed, EHeadSegment? headSegment = null)
         {
             if (damageInfo.DamageType == EDamageType.Bullet)
             {
+
                 EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
                 InventoryClass inventory = (InventoryClass)AccessTools.Property(typeof(Player), "Inventory").GetValue(__instance);
                 preAllocatedArmorComponents.Clear();
@@ -910,10 +394,9 @@ namespace RealismMod
                     hitOrientation = BallisticsController.GetHitOrientation(hitNormal, col.transform, Logger);
                 }
 
-
                 if (Plugin.EnableBallisticsLogging.Value == true)
                 {
-                    EHitZone hitZone = BallisticsController.GetHitBodyZone(Logger, hitPart, localPoint, hitOrientation);
+                    EBodyHitZone hitZone = BallisticsController.GetHitBodyZone(Logger, hitPart, localPoint, hitOrientation);
 
                     Logger.LogWarning("=============Apply Damage Info============");
                     Logger.LogWarning("hit part = " + hitPart);
@@ -927,6 +410,11 @@ namespace RealismMod
                     Logger.LogWarning("=========================");
                 }
 
+                bool hasArmArmor = false;
+                AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
+                BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
+                float KE = ((0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000);
+
                 if (armor != null)
                 {
                     bool hitSecondaryArmor = false;
@@ -934,7 +422,7 @@ namespace RealismMod
                     bool hasSideArmor = GearProperties.HasSideArmor(armor.Item);
                     bool hasStomachArmor = GearProperties.HasStomachArmor(armor.Item);
                     bool hasNeckArmor = GearProperties.HasNeckArmor(armor.Item);
-                    bool hasArmArmor = armor.Template.ArmorZone.Contains(EBodyPart.LeftArm) || armor.Template.ArmorZone.Contains(EBodyPart.RightArm);
+                    hasArmArmor = armor.Template.ArmorZone.Contains(EBodyPart.LeftArm) || armor.Template.ArmorZone.Contains(EBodyPart.RightArm);
 
                     if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis || hitPart == HitBox.LeftForearm || hitPart == HitBox.RightForearm || hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightUpperArm)
                     {
@@ -958,11 +446,8 @@ namespace RealismMod
                     if (damageInfo.Blunt && GearProperties.CanSpall(armor.Item) && (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso) && !hasBypassedArmor && !hitSecondaryArmor)
                     {
                         SetArmorStats(armor);
-                        AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
-                        BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
                         damageInfo.BleedBlock = false;
                         bool isMetalArmor = armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel || armor.Template.ArmorMaterial == EArmorMaterial.Titan ? true : false;
-                        float KE = ((0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000);
                         float bluntDamage = damageInfo.Damage;
                         float speedFactor = damageInfo.ArmorDamage / ammo.GetBulletSpeed;
                         float fragChance = ammo.FragmentationChance * speedFactor;
@@ -1038,6 +523,12 @@ namespace RealismMod
                         }
                     }
                 }
+
+                if ((hitUpperArm || hitForearm) && ((!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value) || (__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value)))
+                {
+                    TryDoDisarm(__instance, KE, hasArmArmor);
+                }
+
             }
         }
     }
@@ -1055,8 +546,8 @@ namespace RealismMod
         private static void playArmorHitSound(EArmorMaterial mat, Vector3 pos, bool isHelm)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 4.65f * Plugin.CloseHitSoundMulti.Value;
-            float volDist = 5.5f * Plugin.FarHitSoundMulti.Value;
+            float volClose = 4.65f * Plugin.ArmorCloseHitSoundMulti.Value;
+            float volDist = 5.5f * Plugin.ArmorFarHitSoundMulti.Value;
 
             if (mat == EArmorMaterial.Aramid)
             {
@@ -1119,7 +610,7 @@ namespace RealismMod
                     audioClip = playCounter == 0 ? "metal_1.wav" : playCounter == 1 ? "metal_2.wav" : "metal_3.wav";
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? 4.3f * Plugin.FarHitSoundMulti.Value : 2.25f * Plugin.CloseHitSoundMulti.Value, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? 4.3f * Plugin.ArmorFarHitSoundMulti.Value : 2.25f * Plugin.ArmorCloseHitSoundMulti.Value, EOcclusionTest.Continuous);
             }
             else if (mat == EArmorMaterial.Glass)
             {
@@ -1165,7 +656,7 @@ namespace RealismMod
 
             bool isPlayer = __instance.Item.Owner.ID.StartsWith("pmc") || __instance.Item.Owner.ID.StartsWith("scav");
 
-            if (Plugin.EnableArmorHitZones.Value && (isPlayer && Plugin.EnablePlayerArmorZones.Value || !isPlayer)) 
+            if (Plugin.EnableArmorHitZones.Value && ((isPlayer && Plugin.EnablePlayerArmorZones.Value) || !isPlayer)) 
             {
                 RaycastHit raycast = (RaycastHit)AccessTools.Field(typeof(GClass2624), "raycastHit_0").GetValue(shot);
                 Collider col = raycast.collider;
@@ -1185,13 +676,6 @@ namespace RealismMod
                 {
                     BallisticsController.GetHitArmorZone(Logger, __instance, hitPart, localPoint, hitOrientation, hasSideArmor, hasStomachArmor, hasNeckArmor, ref hasBypassedArmor, ref hitSecondaryArmor);
                 }
-
-                if (__instance?.Item?.Owner?.ID != null && (__instance.Item.Owner.ID.StartsWith("pmc")) && !Plugin.EnablePlayerArmorZones.Value)
-                {
-                    hasBypassedArmor = false;
-                    hitSecondaryArmor = false;
-                }
-
 
                 if (Plugin.EnableBallisticsLogging.Value)
                 {
@@ -1309,7 +793,9 @@ namespace RealismMod
             bool hitSecondaryArmor = false;
             bool hasBypassedArmor = false;
 
-            if (Plugin.EnableArmorHitZones.Value) 
+            bool isPlayer = __instance.Item.Owner.ID.StartsWith("pmc") || __instance.Item.Owner.ID.StartsWith("scav");
+
+            if (Plugin.EnableArmorHitZones.Value && ((isPlayer && Plugin.EnablePlayerArmorZones.Value) || !isPlayer)) 
             {
                 string hitPart = damageInfo.HittedBallisticCollider.name;
                 Collider col = damageInfo.HitCollider;
@@ -1364,8 +850,7 @@ namespace RealismMod
                 return false;
             }
 
-
-            float KE = (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000;
+            float KE = (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f;
             float bluntThrput = hitSecondaryArmor == true ? __instance.Template.BluntThroughput * 1.15f : __instance.Template.BluntThroughput;
             float penPower = damageInfo.PenetrationPower;
             float duraPercent = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability;
@@ -1518,7 +1003,7 @@ namespace RealismMod
                 AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[lastDam.SourceId];
                 BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
                 float KE = ((0.5f * ammo.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
-                force = -Mathf.Max(1f, KE / 1000f);
+                force = (-Mathf.Max(1f, KE / 1000f)) * Plugin.RagdollForceModifier.Value;
             }
             else if (lastDam.DamageType == EDamageType.Explosion)
             {

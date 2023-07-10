@@ -125,37 +125,40 @@ namespace RealismMod
             {
                 Plugin.CurrentlyShootingWeapon = weaponClass;
 
-                Plugin.Timer = 0f;
+                Plugin.ShotTimer = 0f;
                 StanceController.StanceShotTime = 0f;
                 Plugin.IsFiring = true;
                 StanceController.IsFiringFromStance = true;
                 Plugin.ShotCount++;
 
-                float activeAimingBonus = StanceController.IsActiveAiming == true ? 0.95f : 1f;
-                float aimCamRecoilBonus = StanceController.IsActiveAiming == true || !Plugin.IsAiming ? 0.9f : 1f;
+                float totalPlayerWeight = PlayerProperties.TotalModifiedWeight - weaponClass.GetSingleItemTotalWeight();
+                float playerWeightFactorBuff = 1f - (totalPlayerWeight / 550f);
+                float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 100f);
+
+                float activeAimingBonus = StanceController.IsActiveAiming == true ? 0.9f : 1f;
+                float aimCamRecoilBonus = StanceController.IsActiveAiming == true || !Plugin.IsAiming ? 0.8f : 1f;
                 float shortStockingDebuff = StanceController.IsShortStock == true ? 1.15f : 1f;
-                float shortStockingCamBonus = StanceController.IsShortStock == true ? 0.85f : 1f;
+                float shortStockingCamBonus = StanceController.IsShortStock == true ? 0.75f : 1f;
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
-
 
                 //instead of shot count, can check weapon firemode in here. Can also get weapon class/type.
                 //would be more efficient to have a static bool "getsSemiRecoilIncrease" and check the weap class in stat detla instead.
                 //1.5f recoil on pistols unironically felt good, even a lot of the rifles. Some got a bit too fucked by it some some rebalancing might be needed.
                 //wep.FireMode.FireMode == Weapon.EFireMode.single, problem with restrcting it to semi only is that then firing one shot in full auto is more controlalble than semi
-                if (Plugin.ShotCount == 1 && WeaponProperties.ShouldGetSemiIncrease == true)
+                if (Plugin.ShotCount == 1 && WeaponProperties.ShouldGetSemiIncrease)
                 {
-                    __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * 1.35f;
-                    __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * 1.35f;
-                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * 1.35f;
-                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * 1.35f;
+                    __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * Plugin.VertRecSemiMulti.Value;
+                    __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * Plugin.VertRecSemiMulti.Value;
+                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * Plugin.HorzRecSemiMulti.Value;
+                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * Plugin.HorzRecSemiMulti.Value;
                 }
                 else if (Plugin.ShotCount > 1 && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
                 {
-                    __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * 0.63f;
-                    __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * 0.63f;
-                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * 0.6f;
-                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * 0.6f;
+                    __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * Plugin.VertRecAutoMulti.Value;
+                    __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * Plugin.VertRecAutoMulti.Value;
+                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * Plugin.HorzRecAutoMulti.Value;
+                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * Plugin.HorzRecAutoMulti.Value;
                 }
                 else
                 {
@@ -165,7 +168,7 @@ namespace RealismMod
                     __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY;
                 }
 
-                float buffFactoredDispersion = Plugin.CurrentDispersion * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff;
+                float buffFactoredDispersion = Plugin.CurrentDispersion * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff;
 
                 if (Plugin.ShotCount > 1 && weaponClass.WeapClass == "pistol" && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
                 {
@@ -180,20 +183,21 @@ namespace RealismMod
                 __instance.RecoilDegree = new Vector2(angle - buffFactoredDispersion, angle + buffFactoredDispersion);
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
 
-                __instance.ShotVals[3].Intensity = Plugin.CurrentCamRecoilX * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus;
-                __instance.ShotVals[4].Intensity = Plugin.CurrentCamRecoilY * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus;
+                __instance.ShotVals[3].Intensity = Plugin.CurrentCamRecoilX * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff;
+                __instance.ShotVals[4].Intensity = Plugin.CurrentCamRecoilY * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff;
 
-                float num = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
-                float num2 = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff;
-                float num3 = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff;
-                __instance.RecoilDirection = new Vector3(-Mathf.Sin(num) * num2 * _separateIntensityFactors.x, Mathf.Cos(num) * num2 * _separateIntensityFactors.y, num3 * _separateIntensityFactors.z) * __instance.Intensity;
+                float totalDispersion = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
+                float totalVerticalRecoil = __instance.RecoilStrengthXy.y * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff;
+                float totalHorizontalRecoil = Mathf.Min(__instance.RecoilStrengthZ.y * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff, Plugin.HorzRecLimit.Value);
+
+                __instance.RecoilDirection = new Vector3(-Mathf.Sin(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.x, Mathf.Cos(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.y, totalHorizontalRecoil * _separateIntensityFactors.z) * __instance.Intensity;
                 IWeapon weapon = iWeapon;
                 Vector2 vector = (weapon != null) ? weapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
                 IWeapon weapon2 = iWeapon;
-                float num4 = (weapon2 != null) ? weapon2.MalfState.OverheatBarrelMoveMult : 0f;
-                float num5 = (__instance.RecoilRadian.x + __instance.RecoilRadian.y) / 2f * ((__instance.RecoilStrengthXy.x + __instance.RecoilStrengthXy.y) / 2f) * num4;
-                __instance.RecoilDirection.x = __instance.RecoilDirection.x + vector.x * num5;
-                __instance.RecoilDirection.y = __instance.RecoilDirection.y + vector.y * num5;
+                float malfFactor = (weapon2 != null) ? weapon2.MalfState.OverheatBarrelMoveMult : 0f;
+                float totalRecoil = (__instance.RecoilRadian.x + __instance.RecoilRadian.y) / 2f * ((__instance.RecoilStrengthXy.x + __instance.RecoilStrengthXy.y) / 2f) * malfFactor;
+                __instance.RecoilDirection.x = __instance.RecoilDirection.x + vector.x * totalRecoil;
+                __instance.RecoilDirection.y = __instance.RecoilDirection.y + vector.y * totalRecoil;
                 ShotEffector.ShotVal[] shotVals = __instance.ShotVals;
                 for (int i = 0; i < shotVals.Length; i++)
                 {
@@ -225,7 +229,6 @@ namespace RealismMod
                 {
                     __instance.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
                     __instance.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
-
 
                     if (Plugin.ShotCount == 1 && firearmController.Item.WeapClass != "pistol")
                     {

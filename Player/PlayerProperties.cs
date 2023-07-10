@@ -49,6 +49,12 @@ namespace RealismMod
         public static bool IsAttemptingRevolverReload = false;
 
         public static float TotalHandsIntensity = 1f;
+        public static float TotalBreathIntensity = 1f;
+
+        public static float SprintTotalHandsIntensity = 1f;
+        public static float SprintTotalBreathIntensity = 1f;
+
+        public static float ADSSprintMulti = 1f;
 
         public static float WeaponSkillErgo = 0f;
 
@@ -70,6 +76,17 @@ namespace RealismMod
 
         public static float HealthResourceRateFactor = 0f;
 
+        public static float StressResistanceFactor = 0f;
 
+        public static bool IsSprinting = false;
+        public static bool WasSprinting = false;
+
+        public static bool SprintBlockADS = false;
+        public static bool TriedToADSFromSprint = false;
+
+        public static bool HasFullyResetSprintADSPenalties = false;
+
+        public static float TotalModifiedWeight = 0f;
+        public static float TotalModifiedWeightMinusWeapon = 0f;
     }
 }

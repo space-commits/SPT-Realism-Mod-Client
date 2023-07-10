@@ -71,9 +71,9 @@ namespace RealismMod
             switch (deafStr)
             {
                 case "Low":
-                    return 0.9f;
+                    return 0.92f;
                 case "High":
-                    return 0.8f;
+                    return 0.85f;
                 default:
                     return 1f;
             }
@@ -90,7 +90,7 @@ namespace RealismMod
             {
                 Plugin.HasHeadSet = true;
                 GClass2204 headphone = headset.Template;
-                protectionFactor = ((headphone.DryVolume / 100f) + 1f) * 1.3f;
+                protectionFactor = ((headphone.DryVolume / 100f) + 1f) * 1.55f;
             }
             else
             {
@@ -134,7 +134,7 @@ namespace RealismMod
 
         public static float VolumeLimit = -30f;
         public static float DistortionLimit = 70f;
-        public static float VignetteDarknessLimit = 0.3f;
+        public static float VignetteDarknessLimit = 0.32f;
 
         //bot
         public static float BotVolume = 0f;
@@ -197,9 +197,9 @@ namespace RealismMod
 
             float totalVolume = Mathf.Clamp(Volume + BotVolume + GrenadeVolume, -40.0f, 0.0f);
             float totalDistortion = Mathf.Clamp(Distortion + BotDistortion + GrenadeDistortion, 0.0f, 70.0f);
-            float totalVignette = Mathf.Clamp(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 0.0f, 60.0f);
+            float totalVignette = Mathf.Clamp(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 0.0f, 65.0f);
 
-            float headsetAmbientVol = Plugin.AmbientVolume * (1f + ((20f - Plugin.RealTimeGain.Value) / 2.35f));
+            float headsetAmbientVol = Plugin.AmbientVolume * (1f + ((20f - Plugin.RealTimeGain.Value) / Plugin.HeadsetAmbientMulti.Value));
              
             //for some reason this prevents the values from being fully reset to 0
             if (totalVolume != 0.0f || totalDistortion != 0.0f || totalVignette != 0.0f)
@@ -396,7 +396,7 @@ namespace RealismMod
                             ammoDeafFactor *= 0.6f;
                         }
                         float totalBotDeafFactor = muzzleFactor * calFactor * ammoDeafFactor;
-                        Deafening.BotDeafFactor = totalBotDeafFactor * ((-distanceFromPlayer / 100f) + 1f) * 1.15f;
+                        Deafening.BotDeafFactor = totalBotDeafFactor * ((-distanceFromPlayer / 100f) + 1f) * 1.25f;
 
                     }
                 }

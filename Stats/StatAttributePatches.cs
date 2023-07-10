@@ -68,7 +68,9 @@ namespace RealismMod
             HBleedType,
             LimbHpPerTick,
             HpPerTick,
-            RemoveTrnqt
+            RemoveTrnqt,
+            Comfort,
+            PainKillerStrength
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -137,6 +139,10 @@ namespace RealismMod
                     return "HP CHANGE PER TICK";
                 case ENewItemAttributeId.RemoveTrnqt:
                     return "REMOVES TOURNIQUET EFFECT";
+                case ENewItemAttributeId.Comfort:
+                    return "COMFORT MODIFIER";
+                case ENewItemAttributeId.PainKillerStrength:
+                    return "PAINKILLER STRENGTH";
                 default:
                     return id.ToString();
             }

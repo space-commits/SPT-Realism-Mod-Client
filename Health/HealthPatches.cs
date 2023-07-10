@@ -56,6 +56,7 @@ namespace RealismMod
         private static void PatchPostfix(MedKitComponent __instance, Item item)
         {
             string medType = MedProperties.MedType(item);
+            float strength = MedProperties.Strength(item);
 
             if (medType == "trnqt" || medType == "medkit" || medType == "surg")
             {
@@ -91,7 +92,7 @@ namespace RealismMod
                         trnqtClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                         trqntAtt.Add(trnqtClass);
                     }
-                    else if(hpPerTick > 0)
+                    else if(hpPerTick != 0)
                     {
                         List<ItemAttributeClass> hpTickAtt = item.Attributes;
                         ItemAttributeClass hpAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.LimbHpPerTick);
@@ -104,6 +105,18 @@ namespace RealismMod
                         hpTickAtt.Add(hpAttClass);
                     }
                 }
+            }
+            if (medType.Contains("pain"))
+            {
+                List<ItemAttributeClass> strengthAtt = item.Attributes;
+                ItemAttributeClass strengthAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.PainKillerStrength);
+                strengthAttClass.Name = ENewItemAttributeId.PainKillerStrength.GetName();
+                strengthAttClass.Base = () => strength;
+                strengthAttClass.StringValue = () => strength.ToString();
+                strengthAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                strengthAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                strengthAttClass.LessIsGood = false;
+                strengthAtt.Add(strengthAttClass);
             }
         }
     }
@@ -308,7 +321,12 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(FlyingBulletSoundPlayer __instance)
         {
-            RealismHealthController.AddPainKillerEffect(Utils.GetPlayer(), 30f);
+            Player player = Utils.GetPlayer();
+            float stressResist = player.Skills.StressPain.Value;
+            float painkillerDuration = (float)Math.Round(10f * (1f + stressResist), 2);
+            float negativeEffectDuration = (float)Math.Round(10f * (1f - stressResist), 2);
+            float negativeEffectStrength = (float)Math.Round(0.9f * (1f - stressResist), 2);
+            RealismHealthController.AddAdrenaline(player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
         }
     }
 
@@ -355,7 +373,8 @@ namespace RealismMod
                         damage = 0;
                     }
 
-                    float vitalitySkill =__instance.Player.Skills.VitalityBuffSurviobilityInc;
+                    float vitalitySkill = __instance.Player.Skills.VitalityBuffSurviobilityInc.Value;
+                    float stressResist = __instance.Player.Skills.StressPain.Value;
                     float delay = (float)Math.Round(15f * (1f - vitalitySkill), 2);
                     float tickRate = (float)Math.Round(0.22f * (1f + vitalitySkill), 2);
 
@@ -369,18 +388,15 @@ namespace RealismMod
                     }
                     if ((damageType == EDamageType.Fall && damage <= 12f))
                     {
-                        HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, bodyPart, __instance.Player, delay, damage, damageType);
-                        RealismHealthController.AddCustomEffect(regenEffect, false);
+                        RealismHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage, damageType);
                     }
                     if (damageType == EDamageType.Barbed)
                     {
-                        HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
-                        RealismHealthController.AddCustomEffect(regenEffect, true);
+                        RealismHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
                     }
-                    if (damageType == EDamageType.Blunt && damage <= 4f)
+                    if (damageType == EDamageType.Blunt && damage <= 5f)
                     {
-                        HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
-                        RealismHealthController.AddCustomEffect(regenEffect, false);
+                        RealismHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
                     }
                     if (damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding)
                     {
@@ -392,8 +408,12 @@ namespace RealismMod
                     }
                     if (damageType == EDamageType.Bullet || damageType == EDamageType.Blunt || damageType == EDamageType.Melee || damageType == EDamageType.Sniper)
                     {
-                        RealismHealthController.AddPainKillerEffect(__instance.Player, 15f);   
-                    } 
+                        float painkillerDuration = (float)Math.Round(20f * (1f + (stressResist /2)), 2);
+                        float negativeEffectDuration = (float)Math.Round(20f * (1f - (stressResist / 2)), 2);
+                        float negativeEffectStrength = (float)Math.Round(0.95f * (1f - (stressResist / 2)), 2);
+                        RealismHealthController.AddAdrenaline(__instance.Player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
+
+                    }
                 }
             }
         }
@@ -412,8 +432,14 @@ namespace RealismMod
         private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
         {
             string medType = MedProperties.MedType(meds);
-            if (__instance.IsYourPlayer && medType != "drug" && meds.Template._parent != "5448f3a64bdc2d60728b456a")
+            if (__instance.IsYourPlayer && meds.Template._parent != "5448f3a64bdc2d60728b456a")
             {
+
+                if (MedProperties.CanBeUsedInRaid(meds) == false)
+                {
+                    NotificationManagerClass.DisplayWarningNotification("This Item Can Not Be Used In Raid", EFT.Communications.ENotificationDurationType.Long);
+                    return false;
+                }
 
                 MedsClass med = meds as MedsClass;
                 float medHPRes = med.MedKitComponent.HpResource;
@@ -446,12 +472,24 @@ namespace RealismMod
                     bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
                     bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
 
-                    if (Plugin.GearBlocksHeal.Value && medType == "pills" && (mouthBlocked || fsIsON || nvgIsOn))
+                    if (Plugin.GearBlocksHeal.Value && medType.Contains("pills") && (mouthBlocked || fsIsON || nvgIsOn))
                     {
                         NotificationManagerClass.DisplayWarningNotification("Can't Take Pills, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
                         return false;
                     }
-                    else if (medType == "pills")
+                    if (medType.Contains("pain"))
+                    {
+                        float duration = MedProperties.PainKillerFullDuration(meds);
+                        float delay = MedProperties.Delay(meds);
+                        float wait = MedProperties.PainKillerWaitTime(meds);
+                        float intermittentDur = MedProperties.PainKillerTime(meds);
+                        float tunnelVisionStr = MedProperties.TunnelVisionStrength(meds);
+                        float painStr = MedProperties.Strength(meds);
+                        PainKillerEffect painKillerEffect = new PainKillerEffect(duration, __instance, delay, wait, intermittentDur, tunnelVisionStr, painStr);
+                        RealismHealthController.AddCustomEffect(painKillerEffect, false);
+                        return true;
+                    }
+                    if (medType.Contains("pills") || medType.Contains("drug")) 
                     {
                         return true;
                     }

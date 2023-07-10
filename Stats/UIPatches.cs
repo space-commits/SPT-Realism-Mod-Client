@@ -26,7 +26,7 @@ namespace RealismMod
         private static void PatchPostFix(AmmoTemplate __instance, ref List<ItemAttributeClass> __result)
         {
 
-            if (!__result.Any((ItemAttributeClass i) => (ENewItemAttributeId)i.Id == ENewItemAttributeId.Firerate) && !__result.Any((ItemAttributeClass i) => (ENewItemAttributeId)i.Id == ENewItemAttributeId.ProjectileCount))
+            if (!__result.Any((ItemAttributeClass i) => (ENewItemAttributeId)i.Id == ENewItemAttributeId.Damage) && !__result.Any((ItemAttributeClass i) => (ENewItemAttributeId)i.Id == ENewItemAttributeId.ProjectileCount))
             {
                 AddCustomAttributes(__instance, ref __result);
             }
@@ -34,12 +34,9 @@ namespace RealismMod
         }
         public static void AddCustomAttributes(AmmoTemplate ammoTemplate, ref List<ItemAttributeClass> ammoAttributes)
         {
-
-
-            if (Plugin.EnableAmmoFirerateDisp.Value == true)
+            if (Plugin.EnableAmmoStats.Value == true)
             {
                 float fireRate = (float)Math.Round((ammoTemplate.casingMass - 1) * 100, 2);
-
                 if (fireRate != 0)
                 {
                     ItemAttributeClass fireRateAtt = new ItemAttributeClass(ENewItemAttributeId.Firerate);
@@ -51,66 +48,61 @@ namespace RealismMod
                     fireRateAtt.LessIsGood = true;
                     ammoAttributes.Add(fireRateAtt);
                 }
+
+                float pelletCount = ammoTemplate.ProjectileCount;
+                if (pelletCount > 1)
+                {
+                    ItemAttributeClass pelletAtt = new ItemAttributeClass(ENewItemAttributeId.ProjectileCount);
+                    pelletAtt.Name = ENewItemAttributeId.ProjectileCount.GetName();
+                    pelletAtt.Base = () => pelletCount;
+                    pelletAtt.StringValue = () => pelletCount.ToString();
+                    pelletAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    pelletAtt.LabelVariations = EItemAttributeLabelVariations.None;
+                    ammoAttributes.Add(pelletAtt);
+                }
+
+                float fragChance = ammoTemplate.FragmentationChance * 100;
+                if (fragChance > 0)
+                {
+                    ItemAttributeClass fragAtt = new ItemAttributeClass(ENewItemAttributeId.FragmentationChance);
+                    fragAtt.Name = ENewItemAttributeId.FragmentationChance.GetName();
+                    fragAtt.Base = () => fragChance;
+                    fragAtt.StringValue = () => $"{fragChance} %";
+                    fragAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    ammoAttributes.Add(fragAtt);
+                }
+
+                float totalDamage = ammoTemplate.Damage * ammoTemplate.ProjectileCount;
+                if (totalDamage > 0)
+                {
+                    ItemAttributeClass damageAtt = new ItemAttributeClass(ENewItemAttributeId.Damage);
+                    damageAtt.Name = ENewItemAttributeId.Damage.GetName();
+                    damageAtt.Base = () => totalDamage;
+                    damageAtt.StringValue = () => $"{totalDamage}";
+                    damageAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    ammoAttributes.Add(damageAtt);
+                }
+
+                if (ammoTemplate.PenetrationPower > 0f)
+                {
+                    ItemAttributeClass penAtt = new ItemAttributeClass(ENewItemAttributeId.Penetration);
+                    penAtt.Name = ENewItemAttributeId.Penetration.GetName();
+                    penAtt.Base = () => ammoTemplate.PenetrationPower;
+                    penAtt.StringValue = () => $"{ammoTemplate.PenetrationPower}";
+                    penAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    ammoAttributes.Add(penAtt);
+                }
+
+                if (ammoTemplate.ArmorDamage > 0f)
+                {
+                    ItemAttributeClass armorDamAtt = new ItemAttributeClass(ENewItemAttributeId.ArmorDamage);
+                    armorDamAtt.Name = ENewItemAttributeId.ArmorDamage.GetName();
+                    armorDamAtt.Base = () => ammoTemplate.ArmorDamage;
+                    armorDamAtt.StringValue = () => $"{ammoTemplate.ArmorDamage}";
+                    armorDamAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    ammoAttributes.Add(armorDamAtt);
+                }
             }
-
-            float pelletCount = ammoTemplate.ProjectileCount;
-
-            if (pelletCount > 1) 
-            {
-                ItemAttributeClass pelletAtt = new ItemAttributeClass(ENewItemAttributeId.ProjectileCount);
-                pelletAtt.Name = ENewItemAttributeId.ProjectileCount.GetName();
-                pelletAtt.Base = () => pelletCount;
-                pelletAtt.StringValue = () => pelletCount.ToString();
-                pelletAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-                pelletAtt.LabelVariations = EItemAttributeLabelVariations.None;
-                ammoAttributes.Add(pelletAtt);
-            }
-
-            /*            if (Plugin.enableAmmoDamageDisp.Value == true)
-                        {
-                            float totalDamage = ammoTemplate.Damage * ammoTemplate.ProjectileCount;
-                            ItemAttributeClass damageAtt = new ItemAttributeClass(ENewItemAttributeId.Damage);
-                            damageAtt.Name = ENewItemAttributeId.Damage.GetName();
-                            damageAtt.Base = () => totalDamage;
-                            damageAtt.StringValue = () => $"{totalDamage}";
-                            damageAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-                            ammoAttributes.Add(damageAtt);
-
-                        }
-
-                        if (Plugin.enableAmmoFragDisp.Value == true)
-                        {
-                            float fragChance = ammoTemplate.FragmentationChance * 100;
-                            if (fragChance > 0)
-                            {
-                                ItemAttributeClass fragAtt = new ItemAttributeClass(ENewItemAttributeId.FragmentationChance);
-                                fragAtt.Name = ENewItemAttributeId.FragmentationChance.GetName();
-                                fragAtt.Base = () => fragChance;
-                                fragAtt.StringValue = () => $"{fragChance} %";
-                                fragAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-                                ammoAttributes.Add(fragAtt);
-                            }
-                        }
-
-                        if (Plugin.enableAmmoPenDisp.Value == true)
-                        {
-                            ItemAttributeClass penAtt = new ItemAttributeClass(ENewItemAttributeId.Penetration);
-                            penAtt.Name = ENewItemAttributeId.Penetration.GetName();
-                            penAtt.Base = () => ammoTemplate.PenetrationPower;
-                            penAtt.StringValue = () => $"{ammoTemplate.PenetrationPower}";
-                            penAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-                            ammoAttributes.Add(penAtt);
-                        }
-
-                        if (Plugin.enableAmmoArmorDamageDisp.Value == true)
-                        {
-                            ItemAttributeClass armorDamAtt = new ItemAttributeClass(ENewItemAttributeId.ArmorDamage);
-                            armorDamAtt.Name = ENewItemAttributeId.ArmorDamage.GetName();
-                            armorDamAtt.Base = () => ammoTemplate.ArmorDamage;
-                            armorDamAtt.StringValue = () => $"{ammoTemplate.ArmorDamage}";
-                            armorDamAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-                            ammoAttributes.Add(armorDamAtt);
-                        }*/
         }
     }
 

@@ -1,6 +1,7 @@
 ﻿using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
+using System;
 /*using Silencer = GClass2124;
 using FlashHider = GClass2121;
 using MuzzleCombo = GClass2116;
@@ -29,8 +30,6 @@ namespace RealismMod
 {
     public static class Utils
     {
-        public static bool ProgramKEnabled = false;
-
         public static bool IsReady = false;
 
         public static bool WeaponReady = false;
@@ -61,9 +60,27 @@ namespace RealismMod
         public static string TacticalCombo = "55818b164bdc2ddc698b456c";
         public static string UBGL = "55818b014bdc2ddc698b456b";
 
+        public static bool AreFloatsEqual(float a, float b, float epsilon = 0.001f)
+        {
+            float difference = Math.Abs(a - b);
+            return difference < epsilon;
+        }
+
         public static bool NullCheck(string[] confItemArray)
         {
             if (confItemArray != null && confItemArray.Length > 0)
+            {
+                if (confItemArray[0] == "SPTRM")
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public static bool ConfItemsIsNullOrInvalid(string[] confItemArray, int length)
+        {
+            if (confItemArray != null && confItemArray.Length >= length)
             {
                 if (confItemArray[0] == "SPTRM") 
                 {

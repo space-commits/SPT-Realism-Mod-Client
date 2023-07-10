@@ -33,6 +33,7 @@ namespace RealismMod
                 PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;
                 PlayerProperties.WeaponSkillErgo = skillsClass.DeltaErgonomics;
                 PlayerProperties.AimSkillADSBuff = skillsClass.AimSpeed;
+                PlayerProperties.StressResistanceFactor = player.Skills.StressPain.Value;
             }
         }
     }
@@ -40,6 +41,65 @@ namespace RealismMod
 
     public class PlayerInitPatch : ModulePatch
     {
+        private InventoryClass invClass;
+
+        private void calcWeight(Player player)
+        {
+            InventoryControllerClass invController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
+            this.invClass = invController.Inventory;
+            invController.Inventory.TotalWeight = new GClass777<float>(new Func<float>(getTotalWeight));
+            float weaponWeight = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item.GetSingleItemTotalWeight() : 1f;
+            PlayerProperties.TotalModifiedWeightMinusWeapon = PlayerProperties.TotalModifiedWeight - weaponWeight;
+        }
+
+        private float getTotalWeight()
+        {
+            float modifiedWeight = 0f;
+            float trueWeight = 0f;
+            foreach (EquipmentSlot equipmentSlot in EquipmentClass.AllSlotNames) 
+            {
+                IEnumerable<Item> items = this.invClass.Equipment.GetSlot(equipmentSlot).Items;
+                foreach (Item item in items) 
+                {
+                    float itemTotalWeight = item.GetSingleItemTotalWeight();
+                    trueWeight += itemTotalWeight;
+                    if (equipmentSlot == EquipmentSlot.Backpack || equipmentSlot == EquipmentSlot.TacticalVest)
+                    {
+                        float modifier = GearProperties.ComfortModifier(item);
+                        float containedItemsModifiedWeight = (itemTotalWeight - item.Weight) * modifier;
+                        modifiedWeight += item.Weight + containedItemsModifiedWeight;
+                    }
+                    else 
+                    {
+                        modifiedWeight += itemTotalWeight;
+                    }
+                }
+            }
+            PlayerProperties.TotalModifiedWeight = modifiedWeight;
+            return modifiedWeight;
+        }
+
+        private void HandleAddItemEvent(GEventArgs2 args)
+        {
+            Player player = Utils.GetPlayer();
+            PlayerInitPatch p = new PlayerInitPatch();
+            p.calcWeight(player);
+        }
+
+        private void HandleRemoveItemEvent(GEventArgs3 args)
+        {
+            Player player = Utils.GetPlayer();
+            PlayerInitPatch p = new PlayerInitPatch();
+            p.calcWeight(player);
+        }
+
+        private void RefreshItemEvent(GEventArgs22 args)
+        {
+            Player player = Utils.GetPlayer();
+            PlayerInitPatch p = new PlayerInitPatch();
+            p.calcWeight(player);
+        }
+
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Player).GetMethod("Init", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -51,6 +111,8 @@ namespace RealismMod
 
             if (__instance.IsYourPlayer == true)
             {
+                PlayerInitPatch p = new PlayerInitPatch();
+
                 Plugin.StanceBlender.Target = 0f;
                 StatCalc.SetGearParamaters(__instance);
                 StanceController.SelectedStance = 0;
@@ -60,6 +122,12 @@ namespace RealismMod
                 StanceController.WasHighReady = false;
                 StanceController.WasLowReady = false;
                 StanceController.IsShortStock = false;
+
+                InventoryControllerClass invController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(__instance);
+   
+                invController.AddItemEvent += p.HandleAddItemEvent;
+                invController.RemoveItemEvent += p.HandleRemoveItemEvent;
+                invController.RefreshItemEvent += p.RefreshItemEvent;
             }
         }
     }
@@ -84,6 +152,115 @@ namespace RealismMod
 
     public class PlayerLateUpdatePatch : ModulePatch
     {
+
+        private static float sprintCooldownTimer = 0f;
+        private static bool doSwayReset = false;
+        private static float sprintTimer = 0f;
+        private static bool didSprintPenalties = false;
+        private static bool resetSwayAfterFiring = false;
+
+        private static void doSprintTimer(ProceduralWeaponAnimation pwa, Player.FirearmController fc)
+        {
+            sprintCooldownTimer += Time.deltaTime;
+
+            if (!didSprintPenalties) 
+            {
+                float sprintDurationModi = 1 + ((sprintTimer * 2) / 10f);
+
+                float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi, 3f);
+                float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi, 1.05f);
+                pwa.Breath.Intensity = breathIntensity;
+                pwa.HandsContainer.HandsRotation.InputIntensity = inputIntensitry;
+                PlayerProperties.SprintTotalBreathIntensity = breathIntensity;
+                PlayerProperties.SprintTotalHandsIntensity = inputIntensitry;
+
+                PlayerProperties.ADSSprintMulti = Mathf.Max(1f - (sprintTimer / 10f), 0.3f);
+
+                didSprintPenalties = true;
+                doSwayReset = false;
+            }
+
+            if (sprintCooldownTimer >= 0.35f)
+            {
+                PlayerProperties.SprintBlockADS = false;
+                if (PlayerProperties.TriedToADSFromSprint)
+                {
+                    fc.ToggleAim();
+                }
+            }
+            if (sprintCooldownTimer >= 4f)
+            {
+                PlayerProperties.WasSprinting = false;
+                doSwayReset = true;
+                sprintCooldownTimer = 0f;
+                sprintTimer = 0f;
+            }
+        }
+
+        private static void resetSwayParams(ProceduralWeaponAnimation pwa) 
+        {
+            float resetSpeed = Time.deltaTime * 0.3f;
+            float resetSpeedADS = Time.deltaTime;
+            PlayerProperties.SprintTotalBreathIntensity = Mathf.Lerp(PlayerProperties.SprintTotalBreathIntensity, PlayerProperties.TotalBreathIntensity, resetSpeed);
+            PlayerProperties.SprintTotalHandsIntensity = Mathf.Lerp(PlayerProperties.SprintTotalHandsIntensity, PlayerProperties.TotalHandsIntensity, resetSpeed);
+            PlayerProperties.ADSSprintMulti = Mathf.Lerp(PlayerProperties.ADSSprintMulti, 1f, resetSpeedADS);
+
+            pwa.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity;
+            pwa.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity;
+
+            if (Utils.AreFloatsEqual(1f, PlayerProperties.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerProperties.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerProperties.TotalHandsIntensity))
+            {
+                doSwayReset = false;
+            }
+        }
+
+        private static void DoSprintPenalty(Player player, Player.FirearmController fc) 
+        {
+            if (player.IsSprintEnabled)
+            {
+                sprintTimer += Time.deltaTime;
+                if (sprintTimer >= 1f)
+                {
+                    PlayerProperties.SprintBlockADS = true;
+                    PlayerProperties.WasSprinting = true;
+                    didSprintPenalties = false;
+                }
+            }
+            else
+            {
+                if (PlayerProperties.WasSprinting)
+                {
+                    doSprintTimer(player.ProceduralWeaponAnimation, fc);
+                }
+                if (doSwayReset)
+                {
+                    resetSwayParams(player.ProceduralWeaponAnimation);
+                }
+            }
+
+            if (!doSwayReset && !PlayerProperties.WasSprinting)
+            {
+                PlayerProperties.HasFullyResetSprintADSPenalties = true;
+            }
+            else
+            {
+                PlayerProperties.HasFullyResetSprintADSPenalties = false;
+            }
+
+            if (Plugin.IsFiring)
+            {
+                doSwayReset = false;
+                player.ProceduralWeaponAnimation.Breath.Intensity = 0.69f;
+                player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f;
+                resetSwayAfterFiring = false;
+            }
+            else if (!resetSwayAfterFiring)
+            {
+                resetSwayAfterFiring = true;
+                doSwayReset = true;
+            }
+        }
+
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Player).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -96,9 +273,14 @@ namespace RealismMod
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
 
-                Plugin.IsSprinting = __instance.IsSprintEnabled;
+                PlayerProperties.IsSprinting = __instance.IsSprintEnabled;
                 PlayerProperties.enviroType = __instance.Environment;
                 Plugin.IsInInventory = __instance.IsInventoryOpened;
+
+                if (Plugin.EnableSprintPenalty.Value) 
+                {
+                    DoSprintPenalty(__instance, fc);
+                }
 
                 if (fc != null)
                 {
@@ -111,7 +293,7 @@ namespace RealismMod
                     }
 
                     float remainStamPercent = __instance.Physical.HandsStamina.Current / __instance.Physical.HandsStamina.TotalCapacity;
-                    PlayerProperties.RemainingArmStamPercentage = 1f - (1f - remainStamPercent) / 3f;
+                    PlayerProperties.RemainingArmStamPercentage = 1f - ((1f - remainStamPercent) / 3.5f);
                 }
                 else if (Plugin.EnableStanceStamChanges.Value == true)
                 {

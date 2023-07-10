@@ -12,8 +12,8 @@ namespace RealismMod
     public static class StatCalc
     {
 
-        public static float ErgoWeightMult = 11f;
-        public static float ErgoTorqueMult = 0.81f;
+        public static float ErgoWeightMult = 11.11f;
+        public static float ErgoTorqueMult = 0.82f;
         public static float PistolErgoWeightMult = 12f;
         public static float PistolErgoTorqueMult = 1.0f;
 
@@ -433,7 +433,7 @@ namespace RealismMod
 
                     }
 
-                    if (Utils.ProgramKEnabled == true)
+                    if (Plugin.EnableStockSlots.Value)
                     {
                         StatCalc.StockPositionChecker(mod, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
                     }
@@ -455,7 +455,7 @@ namespace RealismMod
                             {
                                 return;
                             }
-                            if (!Utils.ProgramKEnabled)
+                            if (!Plugin.EnableStockSlots.Value)
                             {
                                 if (containedMod.Slots.Length > 0 && (containedMod.Slots[0].ContainedItem != null))
                                 {
