@@ -52,11 +52,27 @@ namespace RealismMod
             }
         }
 
+        private static string getPKStrengthString(float str)
+        {
+            switch (str)
+            {
+                case 0:
+                    return "NONE";
+                case 1:
+                    return "WEAK";
+                case 2:
+                    return "MILD";
+                case 3:
+                    return "STRONG";
+                default:
+                    return "NONE";
+            }
+        }
+
         [PatchPostfix]
         private static void PatchPostfix(MedKitComponent __instance, Item item)
         {
             string medType = MedProperties.MedType(item);
-            float strength = MedProperties.Strength(item);
 
             if (medType == "trnqt" || medType == "medkit" || medType == "surg")
             {
@@ -108,11 +124,11 @@ namespace RealismMod
             }
             if (medType.Contains("pain"))
             {
+                float strength = MedProperties.Strength(item);
                 List<ItemAttributeClass> strengthAtt = item.Attributes;
                 ItemAttributeClass strengthAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.PainKillerStrength);
                 strengthAttClass.Name = ENewItemAttributeId.PainKillerStrength.GetName();
-                strengthAttClass.Base = () => strength;
-                strengthAttClass.StringValue = () => strength.ToString();
+                strengthAttClass.StringValue = () => getPKStrengthString(strength);
                 strengthAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                 strengthAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
                 strengthAttClass.LessIsGood = false;
