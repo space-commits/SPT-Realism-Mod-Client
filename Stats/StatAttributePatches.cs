@@ -142,7 +142,7 @@ namespace RealismMod
                 case ENewItemAttributeId.Comfort:
                     return "COMFORT MODIFIER";
                 case ENewItemAttributeId.PainKillerStrength:
-                    return "PAINKILLER STRENGTH";
+                    return "SEDATIVE STRENGTH";
                 default:
                     return id.ToString();
             }
