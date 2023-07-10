@@ -576,7 +576,6 @@ namespace RealismMod
                     if (inventoryController.CanThrow(item))
                     {
                         inventoryController.TryThrowItem(item, null, false);
-
                     }
                 }
             }

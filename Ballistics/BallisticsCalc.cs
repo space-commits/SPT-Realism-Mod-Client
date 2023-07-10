@@ -17,7 +17,7 @@ using System.Collections;
 
 namespace RealismMod
 {
-    public enum EHitZone
+    public enum EBodyHitZone
     {
         AZone,
         CZone,
@@ -169,7 +169,7 @@ namespace RealismMod
             return false;
         }
 
-        public static EHitZone GetHitBodyZone(ManualLogSource logger, string hitPart, Vector3 localPoint, EHitOrientation hitOrientation)
+        public static EBodyHitZone GetHitBodyZone(ManualLogSource logger, string hitPart, Vector3 localPoint, EHitOrientation hitOrientation)
         {
             bool isSideHit = hitOrientation == EHitOrientation.LeftSideHit || hitOrientation == EHitOrientation.RightSideHit;
 
@@ -206,7 +206,7 @@ namespace RealismMod
                             {
                                 logger.LogWarning("NECK: Front HIT");
                             }
-                            return EHitZone.Neck;
+                            return EBodyHitZone.Neck;
                         }
 
                         if (localPoint.z <= heartL && localPoint.z >= heartR && localPoint.x >= heartTop && localPoint.x <= heartBottom && !isSideHit)
@@ -215,12 +215,12 @@ namespace RealismMod
                             {
                                 logger.LogWarning("HEART HIT");
                             }
-                            return EHitZone.Heart;
+                            return EBodyHitZone.Heart;
                         }
 
                         if (hitSpine(localPoint, isSideHit, spineZ, logger))
                         {
-                            return EHitZone.Spine;
+                            return EBodyHitZone.Spine;
                         }
 
                         if (localPoint.z < -dZoneZUpper || localPoint.z > dZoneZUpper)
@@ -229,7 +229,7 @@ namespace RealismMod
                             {
                                 logger.LogWarning("D-ZONE HIT: UPPER TORSO");
                             }
-                            return EHitZone.DZone;
+                            return EBodyHitZone.DZone;
 
                         }
                         else if (localPoint.z > -aZoneZUpper && localPoint.z < aZoneZUpper)
@@ -238,7 +238,7 @@ namespace RealismMod
                             {
                                 logger.LogWarning("A-ZONE HIT: UPPER TORSO");
                             }
-                            return EHitZone.AZone;
+                            return EBodyHitZone.AZone;
                         }
                         else
                         {
@@ -246,13 +246,13 @@ namespace RealismMod
                             {
                                 logger.LogWarning("C-ZONE HIT: UPPER TORSO");
                             }
-                            return EHitZone.CZone;
+                            return EBodyHitZone.CZone;
                         }
                     }
 
                     if (hitSpine(localPoint, isSideHit, spineZ, logger))
                     {
-                        return EHitZone.Spine;
+                        return EBodyHitZone.Spine;
                     }
 
                     if (hitPart == HitBox.LowerTorso)
@@ -263,7 +263,7 @@ namespace RealismMod
                             {
                                 logger.LogWarning("D-ZONE HIT: MID TORSO");
                             }
-                            return EHitZone.DZone;
+                            return EBodyHitZone.DZone;
                         }
                         else if (localPoint.z > -aZoneZMid && localPoint.z < aZoneZMid && localPoint.x < aZoneXMid)
                         {
@@ -271,7 +271,7 @@ namespace RealismMod
                             {
                                 logger.LogWarning("A-ZONE HIT: MID TORSO");
                             }
-                            return EHitZone.AZone;
+                            return EBodyHitZone.AZone;
                         }
                         else
                         {
@@ -279,7 +279,7 @@ namespace RealismMod
                             {
                                 logger.LogWarning("C-ZONE HIT: MID TORSO");
                             }
-                            return EHitZone.CZone;
+                            return EBodyHitZone.CZone;
                         }
                     }
                     if (hitPart == HitBox.Pelvis)
@@ -290,7 +290,7 @@ namespace RealismMod
                             {
                                 logger.LogWarning("C-ZONE HIT: Stomach");
                             }
-                            return EHitZone.CZone;
+                            return EBodyHitZone.CZone;
                         }
                         else
                         {
@@ -298,14 +298,14 @@ namespace RealismMod
                             {
                                 logger.LogWarning("D-ZONE HIT: Stomach");
                             }
-                            return EHitZone.DZone;
+                            return EBodyHitZone.DZone;
                         }
                     }
                     if (Plugin.EnableBallisticsLogging.Value == true)
                     {
                         logger.LogWarning("COULDN'T FIND HIT ZONE");
                     }
-                    return EHitZone.Unknown;
+                    return EBodyHitZone.Unknown;
                 }
                 if (hitOrientation == EHitOrientation.TopHit && hitPart == HitBox.UpperTorso)
                 {
@@ -315,7 +315,7 @@ namespace RealismMod
                         {
                             logger.LogWarning("NECK: TOP HIT");
                         }
-                        return EHitZone.Neck;
+                        return EBodyHitZone.Neck;
                     }
                     if (localPoint.z > -spineZ && localPoint.z < spineZ)
                     {
@@ -323,7 +323,7 @@ namespace RealismMod
                         {
                             logger.LogWarning("SPINE: TOP HIT");
                         }
-                        return EHitZone.Spine;
+                        return EBodyHitZone.Spine;
                     }
                     if (localPoint.z > -topNeckZ && localPoint.z < topNeckZ && localPoint.x > topNeckX)
                     {
@@ -331,13 +331,13 @@ namespace RealismMod
                         {
                             logger.LogWarning("C-ZONE: TOP HIT");
                         }
-                        return EHitZone.CZone;
+                        return EBodyHitZone.CZone;
                     }
                     if (Plugin.EnableBallisticsLogging.Value == true)
                     {
                         logger.LogWarning("D-ZONE: TOP SHOULDERS HIT");
                     }
-                    return EHitZone.DZone;
+                    return EBodyHitZone.DZone;
                 }
                 if (hitOrientation == EHitOrientation.BottomHit && hitPart == HitBox.Pelvis)
                 {
@@ -345,14 +345,14 @@ namespace RealismMod
                     {
                         logger.LogWarning("ARSE HIT");
                     }
-                    return EHitZone.AssZone;
+                    return EBodyHitZone.AssZone;
                 }
             }
             if (Plugin.EnableBallisticsLogging.Value == true)
             {
                 logger.LogWarning("COULDN'T FIND HIT ZONE");
             }
-            return EHitZone.Unknown;
+            return EBodyHitZone.Unknown;
         }
 
         public static void GetHitArmorZone(ManualLogSource logger, ArmorComponent ac, string hitPart, Vector3 localPoint, EHitOrientation hitOrientation, bool hasSideArmor, bool hasStomachArmor, bool hasNeckArmor, ref bool hasBypassedArmor, ref bool hitSecondaryArmor)

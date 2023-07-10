@@ -272,6 +272,10 @@ namespace RealismMod
         public static ConfigEntry<bool> EnableMaterialSpeed { get; set; }
         public static ConfigEntry<bool> EnableSlopeSpeed { get; set; }
 
+        public static ConfigEntry<bool> CanDisarmPlayer { get; set; }
+        public static ConfigEntry<bool> CanDisarmBot { get; set; }
+        public static ConfigEntry<float> DisarmBaseChance { get; set; }
+
         public static Weapon CurrentlyShootingWeapon;
 
         public static Vector3 TransformBaseStartPosition;
@@ -878,6 +882,9 @@ namespace RealismMod
             EnableRealArmorClass = Config.Bind<bool>(ballSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 90 }));
             EnableRagdollFix = Config.Bind<bool>(ballSettings, "Enable Ragdoll Fix (Experimental)", true, new ConfigDescription("Requiures Restart. Enables Fix For Ragdolls Flying Into The Stratosphere.", null, new ConfigurationManagerAttributes { Order = 100 }));
             RagdollForceModifier = Config.Bind<float>(ballSettings, "Ragdoll Force Modifier", 1f, new ConfigDescription("Requires Ragdoll Fix To Be Enabled.", null, new ConfigurationManagerAttributes { Order = 110 }));
+            CanDisarmBot = Config.Bind<bool>(ballSettings, "Can Disarm Bot", true, new ConfigDescription("If Hit In The Arms, There Is A Chance That The Currently Equipped Weapon Will Be Dropped. Chance Is Modified By Bullet Kinetic Energy And Reduced If Hit Arm Armor.", null, new ConfigurationManagerAttributes { Order = 120 }));
+            CanDisarmPlayer = Config.Bind<bool>(ballSettings, "Can Disarm Player", false, new ConfigDescription("If Hit In The Arms, There Is A Chance That The Currently Equipped Weapon Will Be Dropped. Chance Is Modified By Bullet Kinetic Energy And Reduced If Hit Arm Armor.", null, new ConfigurationManagerAttributes { Order = 130 }));
+            DisarmBaseChance = Config.Bind<float>(ballSettings, "Disarm Base Chance", 1f, new ConfigDescription("The Base Chance To Be Disarmed. 1 = 1% Chance. This Value Is Increased By The Bullet's Kinetic Energy, Reduced By Armor Armor If Hit.", null, new ConfigurationManagerAttributes { Order = 140 }));
 
             EnableHipfireRecoilClimb = Config.Bind<bool>(recoilSettings, "Enable Hipfire Recoil Climb", true, new ConfigDescription("Requires Restart. Enabled Recoil Climbing While Hipfiring", null, new ConfigurationManagerAttributes { Order = 80 }));
             ReduceCamRecoil = Config.Bind<bool>(recoilSettings, "Reduce Camera Recoil", false, new ConfigDescription("Reduces Camera Recoil Per Shot. If Disabled, Camera Recoil Becomes More Intense As Weapon Recoil Increases.", null, new ConfigurationManagerAttributes { Order = 70 }));

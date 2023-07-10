@@ -48,7 +48,8 @@ namespace RealismMod
             InventoryControllerClass invController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
             this.invClass = invController.Inventory;
             invController.Inventory.TotalWeight = new GClass777<float>(new Func<float>(getTotalWeight));
-            PlayerProperties.TotalModifiedWeightMinusWeapon = PlayerProperties.TotalModifiedWeight - player.HandsController.Item.GetSingleItemTotalWeight();
+            float weaponWeight = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item.GetSingleItemTotalWeight() : 1f;
+            PlayerProperties.TotalModifiedWeightMinusWeapon = PlayerProperties.TotalModifiedWeight - weaponWeight;
         }
 
         private float getTotalWeight()
