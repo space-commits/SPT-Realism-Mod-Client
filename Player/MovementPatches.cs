@@ -125,8 +125,6 @@ namespace RealismMod
                 float firingMulti = MovementSpeedController.GetFiringMovementSpeedFactor(player, Logger);
 
                 __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * PlayerProperties.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti);
-                Logger.LogWarning("multi = " + firingMulti);
-                Logger.LogWarning(__result);
                 return false;
             }
             return true;

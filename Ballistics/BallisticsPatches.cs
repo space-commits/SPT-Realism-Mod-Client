@@ -329,7 +329,7 @@ namespace RealismMod
             }
         }
 
-        private static void TryDoDisarm(Player player, float kineticEnergy, bool hitArmArmor) 
+        private static void TryDoDisarm(Player player, float kineticEnergy, bool hitArmArmor, bool forearm) 
         {
             Player.ItemHandsController itemHandsController = player.HandsController as Player.ItemHandsController;
             if (itemHandsController != null && itemHandsController.CurrentCompassState)
@@ -343,7 +343,8 @@ namespace RealismMod
                 float rndNumber = UnityEngine.Random.Range(0, 101);
                 float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
                 float hitArmArmorFactor = hitArmArmor ? 0.5f : 1f;
-                float totalChance = Mathf.Round(Plugin.DisarmBaseChance.Value * kineticEnergyFactor * hitArmArmorFactor);
+                float hitLocationModifier = forearm ? 2f : 1f;
+                float totalChance = Mathf.Round(Plugin.DisarmBaseChance.Value * kineticEnergyFactor * hitArmArmorFactor * hitLocationModifier);
 
                 if (rndNumber <= totalChance)
                 {
@@ -354,6 +355,19 @@ namespace RealismMod
                         inventoryController.TryThrowItem(fc.Item, null, false);
                     }
                 }
+            }
+        }
+
+        private static void TryDoFalldown(Player player, float kineticEnergy, bool calf)
+        {
+            float rndNumber = UnityEngine.Random.Range(0, 101);
+            float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
+            float hitLocationModifier = calf ? 2f : 1f;
+            float totalChance = Mathf.Round(Plugin.FallBaseChance.Value * kineticEnergyFactor * hitLocationModifier);
+
+            if (rndNumber <= totalChance)
+            {
+                player.ToggleProne();
             }
         }
 
@@ -413,7 +427,7 @@ namespace RealismMod
                 bool hasArmArmor = false;
                 AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
                 BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
-                float KE = ((0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000);
+                float KE = ((0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f);
 
                 if (armor != null)
                 {
@@ -526,7 +540,16 @@ namespace RealismMod
 
                 if ((hitUpperArm || hitForearm) && ((!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value) || (__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value)))
                 {
-                    TryDoDisarm(__instance, KE, hasArmArmor);
+                    TryDoDisarm(__instance, KE, hasArmArmor, hitForearm);
+                }
+
+                BodyPartCollider bpc = damageInfo.HittedBallisticCollider as BodyPartCollider;
+                float hitPartHP = __instance.ActiveHealthController.GetBodyPartHealth(bpc.BodyPartType).Current;
+                float toBeHP = hitPartHP - damageInfo.Damage;
+
+                if ((hitCalf || hitThigh) && (toBeHP <= 0f) && ((!__instance.IsYourPlayer && Plugin.CanFellBot.Value) || (__instance.IsYourPlayer && Plugin.CanFellPlayer.Value))) 
+                {
+                    TryDoFalldown(__instance, KE, hitCalf);    
                 }
 
             }
