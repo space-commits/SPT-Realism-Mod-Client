@@ -53,6 +53,7 @@ namespace RealismMod
 
         public static float SprintTotalHandsIntensity = 1f;
         public static float SprintTotalBreathIntensity = 1f;
+        public static float SprintHipfirePenalty = 1f;
 
         public static float ADSSprintMulti = 1f;
 

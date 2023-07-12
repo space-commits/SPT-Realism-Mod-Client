@@ -173,6 +173,7 @@ namespace RealismMod
                 pwa.HandsContainer.HandsRotation.InputIntensity = inputIntensitry;
                 PlayerProperties.SprintTotalBreathIntensity = breathIntensity;
                 PlayerProperties.SprintTotalHandsIntensity = inputIntensitry;
+                PlayerProperties.SprintHipfirePenalty = Mathf.Min(1f + (sprintTimer / 100f), 1.2f);
 
                 PlayerProperties.ADSSprintMulti = Mathf.Max(1f - (sprintTimer / 10f), 0.3f);
 
@@ -199,11 +200,12 @@ namespace RealismMod
 
         private static void resetSwayParams(ProceduralWeaponAnimation pwa) 
         {
-            float resetSpeed = Time.deltaTime * 0.3f;
-            float resetSpeedADS = Time.deltaTime;
-            PlayerProperties.SprintTotalBreathIntensity = Mathf.Lerp(PlayerProperties.SprintTotalBreathIntensity, PlayerProperties.TotalBreathIntensity, resetSpeed);
-            PlayerProperties.SprintTotalHandsIntensity = Mathf.Lerp(PlayerProperties.SprintTotalHandsIntensity, PlayerProperties.TotalHandsIntensity, resetSpeed);
-            PlayerProperties.ADSSprintMulti = Mathf.Lerp(PlayerProperties.ADSSprintMulti, 1f, resetSpeedADS);
+            float resetSwaySpeed = Time.deltaTime * 0.3f;
+            float resetSpeed = Time.deltaTime;
+            PlayerProperties.SprintTotalBreathIntensity = Mathf.Lerp(PlayerProperties.SprintTotalBreathIntensity, PlayerProperties.TotalBreathIntensity, resetSwaySpeed);
+            PlayerProperties.SprintTotalHandsIntensity = Mathf.Lerp(PlayerProperties.SprintTotalHandsIntensity, PlayerProperties.TotalHandsIntensity, resetSwaySpeed);
+            PlayerProperties.ADSSprintMulti = Mathf.Lerp(PlayerProperties.ADSSprintMulti, 1f, resetSpeed);
+            PlayerProperties.SprintHipfirePenalty = Mathf.Lerp(PlayerProperties.SprintHipfirePenalty, 1f, resetSpeed);
 
             pwa.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity;
             pwa.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity;

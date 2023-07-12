@@ -490,6 +490,8 @@ namespace RealismMod
 
             if (!__instance.IsAiming && !StanceController.CancelPistolStance && !StanceController.PistolIsColliding && !Plugin.IsBlindFiring)
             {
+                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * PlayerProperties. SprintHipfirePenalty;
+
                 StanceController.PistolIsCompressed = true;
                 isResettingPistol = false;
                 hasResetPistolPos = false;
@@ -611,11 +613,11 @@ namespace RealismMod
 
             if (!StanceController.IsActiveAiming && !StanceController.IsShortStock)
             {
-                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 1.1f;
+                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 1.1f * PlayerProperties.SprintHipfirePenalty;
             }
             if (StanceController.IsActiveAiming)
             {
-                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 0.8f;
+                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 0.8f * PlayerProperties.SprintHipfirePenalty;
             }
 
             if (Plugin.StanceToggleDevice.Value)
@@ -635,7 +637,7 @@ namespace RealismMod
             ////short-stock////
             if (StanceController.IsShortStock && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsLowReady && !__instance.IsAiming && !StanceController.CancelShortStock && !Plugin.IsBlindFiring && !PlayerProperties.IsSprinting)
             {
-                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 1.5f;
+                __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 1.5f * PlayerProperties.SprintHipfirePenalty;
 
                 float activeToShort = 1f;
                 float highToShort = 1f;
