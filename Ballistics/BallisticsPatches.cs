@@ -538,14 +538,15 @@ namespace RealismMod
                     }
                 }
 
-                if ((hitUpperArm || hitForearm) && ((!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value) || (__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value)))
-                {
-                    TryDoDisarm(__instance, KE, hasArmArmor, hitForearm);
-                }
-
                 BodyPartCollider bpc = damageInfo.HittedBallisticCollider as BodyPartCollider;
                 float hitPartHP = __instance.ActiveHealthController.GetBodyPartHealth(bpc.BodyPartType).Current;
                 float toBeHP = hitPartHP - damageInfo.Damage;
+
+
+                if ((hitUpperArm || hitForearm) && (toBeHP <= 0f) && ((!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value) || (__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value)))
+                {
+                    TryDoDisarm(__instance, KE, hasArmArmor, hitForearm);
+                }
 
                 if ((hitCalf || hitThigh) && (toBeHP <= 0f) && ((!__instance.IsYourPlayer && Plugin.CanFellBot.Value) || (__instance.IsYourPlayer && Plugin.CanFellPlayer.Value))) 
                 {

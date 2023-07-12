@@ -153,9 +153,9 @@ namespace RealismMod
         private static float adrenalineCooldownTime = 60f * (1f - PlayerProperties.StressResistanceFactor);
         public static bool AdrenalineCooldownActive = false;
 
-        public static bool HasFracture;
-        public static bool HasBlackedPart;
-        public static bool HPBelow50;
+        public static bool HasFracture = false;
+        public static bool HasBlackedPart = false;
+        public static bool HPBelow50 = false;
 
         public static void HealthController(ManualLogSource logger)
         {
@@ -1016,6 +1016,10 @@ namespace RealismMod
             float totalMaxHp = 0f;
             float totalCurrentHp = 0f;
 
+            RealismHealthController.HasBlackedPart = false;
+            RealismHealthController.HPBelow50 = false;
+            RealismHealthController.HasFracture = false;
+
             Type fractureType;
             MedProperties.EffectTypes.TryGetValue("BrokenBone", out fractureType);
 
@@ -1024,8 +1028,12 @@ namespace RealismMod
             {
                 IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(part);
                 bool hasFracture = fractureType != null && effects.Any(e => e.Type == fractureType);
-                RealismHealthController.HasFracture = hasFracture;
 
+                if (hasFracture) 
+                {
+                    RealismHealthController.HasFracture = false;
+                }
+               
                 bool isLeftArm = part == EBodyPart.LeftArm;
                 bool isRightArm = part == EBodyPart.LeftArm;
                 bool isArm = isLeftArm || isRightArm;
@@ -1047,17 +1055,18 @@ namespace RealismMod
                 float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 2f : 3.5f));
                 float percentHpRecoil = 1f - ((1f - percentHp) / (isLeftArm ? 10f : 20f));
 
-                if (percentHp <= 0.5f) 
+                if (percentHp <= 0.5f)
                 {
                     AddBaseEFTEffectIfNoneExisting(player, "Pain", part, 0f, 10f, 1f, 1f);
                     RealismHealthController.HPBelow50 = true;
                 }
 
-                if (currentHp <= 0)
+                if (currentHp <= 0) 
                 {
-                    RealismHealthController.HasBlackedPart = true;  
+                    RealismHealthController.HasBlackedPart = true;
                 }
 
+    
                 if (isLeg || isBody) 
                 {
                     aimMoveSpeedBase *= percentHpAimMove;
@@ -1101,6 +1110,7 @@ namespace RealismMod
                 AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 10f, 1f, 1f);
                 RealismHealthController.HPBelow50 = true;
             }
+            
 
             float percentEnergyFactor = percentEnergy * 1.2f;
             float percentHydroFactor = percentHydro * 1.2f;
