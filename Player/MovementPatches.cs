@@ -57,7 +57,7 @@ namespace RealismMod
         }
 
         private static float maxSlopeAngle = 5f;
-        private static float maxSlowdownFactor = 0.45f;
+        private static float maxSlowdownFactor = 0.48f;
 
         public static float GetSlope(Player player) 
         {

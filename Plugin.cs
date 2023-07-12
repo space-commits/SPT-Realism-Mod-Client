@@ -351,9 +351,8 @@ namespace RealismMod
         public static ConfigTemplate ModConfig;
 
         public static bool UniformAimIsPresent = false;
-        public static bool BridgeIsPresent = false;
-        public static bool checkedForUniformAim = false;
-
+        public static bool FovFixIsPresent = false;
+        private static bool checkedForSensMods = false;
 
         public static float MainVolume = 0f;
         public static float GunsVolume = 0f;
@@ -733,11 +732,12 @@ namespace RealismMod
 
         void Update()
         {
-            if (!checkedForUniformAim)
+            if (!checkedForSensMods)
             {
-                UniformAimIsPresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.UniformAim");
-                BridgeIsPresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.RealismModBridge");
-                checkedForUniformAim = true;
+                UniformAimIsPresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.UniformAim") && Chainloader.PluginInfos.ContainsKey("com.notGreg.RealismModBridge");
+                FovFixIsPresent = Chainloader.PluginInfos.ContainsKey("FOVFix") && Chainloader.PluginInfos.ContainsKey("Bridge");
+                checkedForSensMods = true;
+                Logger.LogWarning("FovFixIsPresent = " + FovFixIsPresent);
             }
 
             if (Utils.CheckIsReady())
