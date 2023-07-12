@@ -1094,7 +1094,7 @@ namespace RealismMod
             }
 
             float totalHpPercent = totalCurrentHp / totalMaxHp;
-            resourceRateInjuryMulti = (1f - totalHpPercent);
+            resourceRateInjuryMulti = Mathf.Min((1f - (totalHpPercent * 1.25f)), 1f);
 
             if (totalHpPercent <= 0.5f)
             {
