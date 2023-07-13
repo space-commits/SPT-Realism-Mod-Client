@@ -808,7 +808,7 @@ namespace RealismMod
         {
             float vitalitySkill = player.Skills.VitalityBuffBleedChanceRed.Value;
             float surgerySkill = player.Skills.SurgeryReducePenalty.Value;
-            float regenTickRate = (float)Math.Round(0.85f * (1f + vitalitySkill), 2);
+            float regenTickRate = (float)Math.Round(0.4f * (1f + vitalitySkill), 2);
 
             bool hasHeavyBleed = false;
             bool hasLightBleed = false;
@@ -847,8 +847,7 @@ namespace RealismMod
             {
                 NotificationManagerClass.DisplayMessageNotification("Fracture On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
                 
-                float trnqtTickRate = (float)Math.Round(0.85f * (1f + vitalitySkill), 2);
-                HealthRegenEffect regenEffect = new HealthRegenEffect(0.85f * (1f + vitalitySkill), null, bodyPart, player, meds.HealthEffectsComponent.UseTime, 12f, EDamageType.Impact);
+                HealthRegenEffect regenEffect = new HealthRegenEffect(regenTickRate, null, bodyPart, player, meds.HealthEffectsComponent.UseTime, 12f, EDamageType.Impact);
                 AddCustomEffect(regenEffect, false);
             }
         }
