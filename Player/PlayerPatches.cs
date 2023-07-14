@@ -165,7 +165,7 @@ namespace RealismMod
 
             if (!didSprintPenalties) 
             {
-                float sprintDurationModi = 1 + ((sprintTimer * 2) / 10f);
+                float sprintDurationModi = 1f + (sprintTimer / 7f);
 
                 float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi, 3f);
                 float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi, 1.05f);
@@ -175,7 +175,7 @@ namespace RealismMod
                 PlayerProperties.SprintTotalHandsIntensity = inputIntensitry;
                 PlayerProperties.SprintHipfirePenalty = Mathf.Min(1f + (sprintTimer / 100f), 1.2f);
 
-                PlayerProperties.ADSSprintMulti = Mathf.Max(1f - (sprintTimer / 10f), 0.3f);
+                PlayerProperties.ADSSprintMulti = Mathf.Max(1f - (sprintTimer / 12f), 0.3f);
 
                 didSprintPenalties = true;
                 doSwayReset = false;
