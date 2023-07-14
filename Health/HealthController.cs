@@ -1102,7 +1102,7 @@ namespace RealismMod
             }
 
             float totalHpPercent = totalCurrentHp / totalMaxHp;
-            resourceRateInjuryMulti = Mathf.Min((1f - (totalHpPercent * 1.25f)), 1f);
+            resourceRateInjuryMulti = Mathf.Clamp((1f - (totalHpPercent * 1.25f)), 0f, 1f);
 
             if (totalHpPercent <= 0.5f)
             {
@@ -1139,8 +1139,11 @@ namespace RealismMod
             PlayerProperties.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk, 0.6f * percentHydroLowerLimit);
             PlayerProperties.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen, 0.5f * percentHydroLowerLimit);
 
-            ResourceRateEffect resEffect = new ResourceRateEffect(resourceRateInjuryMulti, 3f, player, 0f);
-            RealismHealthController.AddCustomEffect(resEffect, true);
+            if (totalHpPercent < 1f) 
+            {
+                ResourceRateEffect resEffect = new ResourceRateEffect(resourceRateInjuryMulti, 3f, player, 0f);
+                RealismHealthController.AddCustomEffect(resEffect, true);
+            }
         }
     }
 }
