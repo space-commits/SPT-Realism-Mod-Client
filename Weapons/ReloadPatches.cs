@@ -206,7 +206,6 @@ namespace RealismMod
                 __instance.SetAnimationSpeed(hammerSpeed);
                 if (Plugin.EnableLogging.Value == true)
                 {
-                    Logger.LogWarning("SetHammerArmed, firing and reload op");
                     Logger.LogWarning("SetHammerArmed = " + hammerSpeed);
                 }
             }

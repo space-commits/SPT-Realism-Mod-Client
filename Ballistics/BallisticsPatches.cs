@@ -210,8 +210,8 @@ namespace RealismMod
                         playCounter++;
                         playCounter = playCounter > 2 ? 0 : playCounter;
                     }
-/*
-                    if (!shot.Player.IsYourPlayer) 
+
+/*                    if (!shot.Player.IsYourPlayer)
                     {
                         Logger.LogWarning("=========Player Hit Damage Info==========");
                         Logger.LogWarning("ammo name = " + shot.Ammo.LocalizedName());
@@ -223,7 +223,7 @@ namespace RealismMod
                         Logger.LogWarning("x = " + localPoint.x);
                         Logger.LogWarning("y = " + localPoint.y);
                         Logger.LogWarning("z = " + localPoint.z);
-                           Logger.LogWarning("===================");
+                        Logger.LogWarning("===================");
                     }
                     else
                     {
@@ -239,7 +239,6 @@ namespace RealismMod
                         Logger.LogWarning("z = " + localPoint.z);
                         Logger.LogWarning("------------------");
                     }*/
-
 
                     if (Plugin.EnableBallisticsLogging.Value)
                     {
@@ -350,7 +349,7 @@ namespace RealismMod
                 {
                     InventoryControllerClass inventoryController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
                     Player.FirearmController fc = player.HandsController as Player.FirearmController;
-                    if (inventoryController.CanThrow(fc.Item))
+                    if (fc.Item != null && inventoryController.CanThrow(fc.Item))
                     {
                         inventoryController.TryThrowItem(fc.Item, null, false);
                     }
@@ -368,15 +367,21 @@ namespace RealismMod
             if (rndNumber <= totalChance)
             {
                 player.ToggleProne();
+                TryDoDisarm(player, kineticEnergy * 0.25f, false, false);
             }
         }
 
         [PatchPrefix]
         private static void Prefix(Player __instance, DamageInfo damageInfo, EBodyPart bodyPartType, float absorbed, EHeadSegment? headSegment = null)
         {
+            if (damageInfo.DamageType == EDamageType.Fall && damageInfo.Damage >= 15f) 
+            {
+                __instance.ToggleProne();
+                TryDoDisarm(__instance, damageInfo.Damage * 50f, false, false);
+            }
+
             if (damageInfo.DamageType == EDamageType.Bullet)
             {
-
                 EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
                 InventoryClass inventory = (InventoryClass)AccessTools.Property(typeof(Player), "Inventory").GetValue(__instance);
                 preAllocatedArmorComponents.Clear();

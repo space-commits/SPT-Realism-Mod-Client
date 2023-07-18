@@ -542,11 +542,7 @@ namespace RealismMod
                 new AimingSensitivityPatch().Enable();
                 new UpdateSensitivityPatch().Enable();
                 new SensPatch().Enable();
-
-                if (Plugin.EnableHipfireRecoilClimb.Value)
-                {
-                    new GetRotationMultiplierPatch().Enable();
-                }
+                new GetRotationMultiplierPatch().Enable();
 
                 //Aiming Patches
                 new SetAimingPatch().Enable();
@@ -750,7 +746,7 @@ namespace RealismMod
                         StanceController.IsFiringFromStance = true;
                         Plugin.IsFiringMovement = true; 
 
-                        if (Plugin.EnableRecoilClimb.Value == true && (Plugin.IsAiming == true || Plugin.EnableHipfireRecoilClimb.Value == true))
+                        if ((Plugin.EnableRecoilClimb.Value && Plugin.IsAiming) || (Plugin.EnableHipfireRecoilClimb.Value == true && !Plugin.IsAiming))
                         {
                             RecoilController.DoRecoilClimb();
                         }
@@ -928,7 +924,7 @@ namespace RealismMod
             hRecoilResetRate = Config.Bind<float>(advancedRecoilSettings, "Rearward Recoil Reset Rate", 0.91f, new ConfigDescription("The Rate At Which Rearward Recoil Resets Over Time After Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 0.99f), new ConfigurationManagerAttributes { Order = 4, IsAdvanced = true }));
             ConvergenceResetRate = Config.Bind<float>(advancedRecoilSettings, "Convergence Reset Rate", 1.16f, new ConfigDescription("The Rate At Which Convergence Resets Over Time After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 3, IsAdvanced = true }));
             convergenceLimit = Config.Bind<float>(advancedRecoilSettings, "Convergence Lower Limit", 0.3f, new ConfigDescription("The Lower Limit For Convergence. Convergence Is Kept In Proportion With Vertical Recoil While Firing, Down To The Set Limit. Value Of 0.3 Means Convegence Lower Limit Of 0.3 * Starting Convergance.", new AcceptableValueRange<float>(0.1f, 1.0f), new ConfigurationManagerAttributes { Order = 2, IsAdvanced = true }));
-            resetTime = Config.Bind<float>(advancedRecoilSettings, "Time Before Reset.", 0.2f, new ConfigDescription("The Time In Seconds That Has To Be Elapsed Before Firing Is Considered Over, Stats Will Not Reset Until This Timer Is Done. Helps Prevent Spam Fire In Full Auto.", new AcceptableValueRange<float>(0.1f, 0.55f), new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true }));
+            resetTime = Config.Bind<float>(advancedRecoilSettings, "Time Before Reset", 0.15f, new ConfigDescription("The Time In Seconds That Has To Be Elapsed Before Firing Is Considered Over, Stats Will Not Reset Until This Timer Is Done. Helps Prevent Spam Fire In Full Auto.", new AcceptableValueRange<float>(0.1f, 0.55f), new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true }));
 
             EnableAmmoStats = Config.Bind<bool>(statSettings, "Display Ammo Stats", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 11 }));
             EnableStatsDelta = Config.Bind<bool>(statSettings, "Show Stats Delta Preview", false, new ConfigDescription("Requiures Restart. Shows A Preview Of The Difference To Stats Swapping/Removing Attachments Will Make. Warning: Will Degrade Performance Significantly When Moddig Weapons In Inspect Or Modding Screens.", null, new ConfigurationManagerAttributes { Order = 5 }));

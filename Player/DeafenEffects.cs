@@ -24,6 +24,7 @@ namespace RealismMod
         {
             return typeof(PrismEffects).GetMethod("OnEnable", BindingFlags.Instance | BindingFlags.NonPublic);
         }
+
         [PatchPostfix]
         private static void PatchPostFix(ref PrismEffects __instance)
         {

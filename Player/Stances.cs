@@ -545,8 +545,8 @@ namespace RealismMod
         public static void DoRifleStances(ManualLogSource logger, Player player, Player.FirearmController fc, bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation __instance, ref Quaternion stanceRotation, float dt, ref bool isResettingShortStock, ref bool hasResetShortStock, ref bool hasResetLowReady, ref bool hasResetActiveAim, ref bool hasResetHighReady, ref bool isResettingHighReady, ref bool isResettingLowReady, ref bool isResettingActiveAim, ref float rotationSpeed)
         {
             float totalPlayerWeight = PlayerProperties.TotalModifiedWeightMinusWeapon;
-            float playerWeightFactor = 1f + (totalPlayerWeight / 100f);
-            float ergoMulti = Mathf.Clamp(1f - ((1f - WeaponProperties.ErgoStanceSpeed) * 1.5f), 0.5f, 0.98f);
+            float playerWeightFactor = 1f + (totalPlayerWeight / 150f);
+            float ergoMulti = Mathf.Clamp(1f - ((1f - WeaponProperties.ErgoStanceSpeed) * 1.7f), 0.5f, 0.98f);
             float stanceMulti = Mathf.Clamp(ergoMulti * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f)), 0.4f, 0.95f);
             float invInjuryMulti = (1f - PlayerProperties.StanceInjuryMulti) + 1f;
             float resetErgoMulti = (1f - stanceMulti) + 1f;
