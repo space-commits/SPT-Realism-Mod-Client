@@ -142,19 +142,23 @@ namespace RealismMod
 
             if (hitZone == EBodyHitZone.Spine)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["spine.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.35f, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["spine.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose, EOcclusionTest.Continuous);
+                return;
             }
-            else if (hitBox == HitBox.Head) 
+            if (hitBox == HitBox.Head) 
             {
                 Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose, EOcclusionTest.Continuous);
+                return;
             }
-            else if (hitZone == EBodyHitZone.Heart)
+            if (hitZone == EBodyHitZone.Heart)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["heart.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.35f, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["heart.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose, EOcclusionTest.Continuous);
+                return;
             }
-            else if (hitZone == EBodyHitZone.AssZone)
+            if (hitZone == EBodyHitZone.AssZone)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["ass_impact.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, 2f, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["ass_impact.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, 0.5f, EOcclusionTest.Continuous);
+                return;
             }
 
             string audioClip = "flesh_dist_1.wav";

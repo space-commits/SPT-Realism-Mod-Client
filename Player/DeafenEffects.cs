@@ -327,18 +327,20 @@ namespace RealismMod
         private static float GetMuzzleLoudness(Mod[] mods)
         {
             float loudness = 0f;
-            for (int i = 0; i < mods.Length; i++)
+
+            foreach (Mod mod in mods.OfType<Mod>())
             {
-                if (mods[i].Slots.Length > 0 && mods[i].Slots[0].ContainedItem != null && Utils.IsSilencer((Mod)mods[i].Slots[0].ContainedItem))
+                if (mod.Slots.Length > 0 && mod.Slots[0].ContainedItem != null && Utils.IsSilencer((Mod)mod.Slots[0].ContainedItem))
                 {
                     continue;
                 }
                 else
                 {
-                    loudness += mods[i].Template.Loudness;
+                    loudness += mod.Template.Loudness;
                 }
             }
             return (loudness / 100) + 1f;
+
         }
 
         private static float CalcAmmoFactor(AmmoTemplate ammTemp)
@@ -389,14 +391,14 @@ namespace RealismMod
                         AmmoTemplate currentAmmoTemplate = bullet.Template as AmmoTemplate;
                         float velocityFactor = CalcVelocityFactor(weap);
                         float ammoFactor = CalcAmmoFactor(currentAmmoTemplate);
-                        float muzzleFactor = GetMuzzleLoudness(weap.Mods);
+                      /*  float muzzleFactor = GetMuzzleLoudness(weap.Mods);*/
                         float calFactor = StatCalc.CalibreLoudnessFactor(weap.AmmoCaliber);
                         float ammoDeafFactor = ammoFactor * velocityFactor;
                         if (bullet.InitialSpeed * weap.SpeedFactor <= 335f)
                         {
                             ammoDeafFactor *= 0.6f;
                         }
-                        float totalBotDeafFactor = muzzleFactor * calFactor * ammoDeafFactor;
+                        float totalBotDeafFactor = 1 * calFactor * ammoDeafFactor;
                         Deafening.BotDeafFactor = totalBotDeafFactor * ((-distanceFromPlayer / 100f) + 1f) * 1.25f;
 
                     }
