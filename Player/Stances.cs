@@ -1,11 +1,11 @@
 ﻿using Aki.Reflection.Patching;
 using BepInEx.Logging;
 using Comfort.Common;
+using CustomPlayerLoopSystem;
 using EFT;
 using EFT.InventoryLogic;
 using EFT.UI;
 using HarmonyLib;
-using notGreg.UniformAim;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +13,8 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using static EFT.Player;
+using static EFT.Weather.WeatherDebug;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace RealismMod
 {
@@ -1050,11 +1052,138 @@ namespace RealismMod
         }
     }
 
+    public class CollisionPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player.FirearmController).GetMethod("method_8", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        [PatchPrefix]
+        private static void PatchPrefix(Player.FirearmController __instance, Vector3 origin, float ln, ref bool overlapsWithPlayer, Vector3? weaponUp = null)
+        {
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            int int_0 = (int)AccessTools.Field(typeof(EFT.Player.FirearmController), "int_0").GetValue(__instance);
+            RaycastHit[] raycastHit_0 = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
+            Func<RaycastHit, bool> func_1 = (Func<RaycastHit, bool>)AccessTools.Field(typeof(EFT.Player.FirearmController), "func_1").GetValue(__instance);
+            float overlapValue = 0f;
+            if (player.IsYourPlayer == true)
+            {
+                origin += new Vector3(Plugin.PistolAdditionalRotationX.Value, Plugin.PistolAdditionalRotationY.Value, Plugin.PistolAdditionalRotationZ.Value);
+                Vector3 a = weaponUp ?? __instance.WeaponRoot.up;
+                Vector3 end = origin - a * ln;
+                RaycastHit raycastHit;
+                if (GClass672.Linecast(origin, end, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                {
+                    overlapsWithPlayer = (raycastHit.collider.gameObject.layer == int_0);
+                    overlapValue = ln - raycastHit.distance;
+                    Logger.LogWarning("weap " + overlapValue);
+                    Plugin.WeaponIsColliding = true;
+                    return;
+                }
+                Vector3 lhs = origin - player.Position;
+                Vector3 up = Vector3.up;
+                float d = Vector3.Dot(lhs, up);
+                if (GClass672.Linecast(player.Position + d * up, origin, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                {
+                    overlapsWithPlayer = (raycastHit.collider.gameObject.layer == int_0);
+                    overlapValue = ln;
+                    Plugin.WeaponIsColliding = true;
+                    Logger.LogWarning("player " + overlapValue);
+                    return;
+                }
+                Plugin.WeaponIsColliding = false;
+                Logger.LogWarning(overlapValue);
+                overlapValue = 0f;
+            }
+        }
+    }
+
+    public class WeaponOverlapViewPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player.FirearmController).GetMethod("WeaponOverlapView", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool PatchPrefix(Player.FirearmController __instance)
+        {
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (player.IsYourPlayer == true)
+            {
+                bool AimingInterruptedByOverlap = (bool)AccessTools.Field(typeof(EFT.Player.FirearmController), "AimingInterruptedByOverlap").GetValue(__instance);
+                float float_0 = (float)AccessTools.Field(typeof(EFT.Player.FirearmController), "float_0").GetValue(__instance);
+                Vector3 vector = player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Get();
+
+                if (float_0 < 0.02f)
+                {
+                    player.ProceduralWeaponAnimation.TurnAway.OverlapDepth = float_0;
+                    player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire = true;
+                }
+                else
+                {
+                    player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire = false;
+                    player.ProceduralWeaponAnimation.TurnAway.OriginZShift = vector.y;
+                    player.ProceduralWeaponAnimation.TurnAway.OverlapDepth = float_0;
+                }
+/*                if (float_0 > EFTHardSettings.Instance.STOP_AIMING_AT && __instance.IsAiming)
+                {
+                    __instance.ToggleAim();
+                    AimingInterruptedByOverlap = true;
+                    return false;
+                }*/
+                if (float_0 < EFTHardSettings.Instance.STOP_AIMING_AT && player.ProceduralWeaponAnimation.TurnAway.OverlapValue < 0.2f && AimingInterruptedByOverlap && !__instance.IsAiming)
+                {
+                    /*__instance.ToggleAim();*/
+                    AimingInterruptedByOverlap = false;
+                }
+                return false;
+            }
+            return true;
+        }
+    }
+
+    //not sure why this is here, something to do with stances bugging out if overlapping
+    /*    public class WeaponOverlapViewPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player.FirearmController).GetMethod("WeaponOverlapView", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(Player.FirearmController __instance)
+        {
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            float float_0 = (float)AccessTools.Field(typeof(EFT.Player.FirearmController), "float_0").GetValue(__instance);
+
+            if (float_0 > EFTHardSettings.Instance.STOP_AIMING_AT && __instance.IsAiming)
+            {
+                Plugin.IsAiming = true;
+                return;
+            }
+        }
+    }*/
+
+
     public class WeaponOverlappingPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Player.FirearmController).GetMethod("WeaponOverlapping", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        private static void doCollisions(Player.FirearmController fc, Player player) 
+        {
+/*            AccessTools.Field(typeof(TurnAwayEffector), "_turnAwayThreshold").SetValue(player.ProceduralWeaponAnimation.TurnAway, Plugin.test2.Value);
+*//*            AccessTools.Field(typeof(TurnAwayEffector), "_playerOverlapThreshold").SetValue(player.ProceduralWeaponAnimation.TurnAway, Plugin.test1.Value);
+            AccessTools.Field(typeof(TurnAwayEffector), "_smoothTimeIn").SetValue(player.ProceduralWeaponAnimation.TurnAway, Plugin.ShortStockSpeedMulti.Value);
+            AccessTools.Field(typeof(TurnAwayEffector), "_smoothTimeOut").SetValue(player.ProceduralWeaponAnimation.TurnAway, Plugin.ActiveAimSpeedMulti.Value);*/
+
+            bool isCollding = !player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire || Plugin.WeaponIsColliding;
+          /*  PlayerProperties.CoverStabilityBonus = (float)Math.Round(Mathf.Lerp(PlayerProperties.CoverStabilityBonus, isCollding ? 0.8f : 1f, Time.deltaTime * 60f), 2);*/
+            PlayerProperties.CoverStabilityBonus = isCollding ? 0.1f : 1f;
         }
 
         [PatchPrefix]
@@ -1064,6 +1193,7 @@ namespace RealismMod
 
             if (player.IsYourPlayer == true)
             {
+                doCollisions(__instance, player);
 
                 if ((StanceController.IsHighReady == true || StanceController.IsLowReady == true || StanceController.IsShortStock == true))
                 {
@@ -1093,26 +1223,6 @@ namespace RealismMod
         }
     }
 
-    public class WeaponOverlapViewPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player.FirearmController).GetMethod("WeaponOverlapView", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static void Prefix(Player.FirearmController __instance)
-        {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            float float_0 = (float)AccessTools.Field(typeof(EFT.Player.FirearmController), "float_0").GetValue(__instance);
-
-            if (float_0 > EFTHardSettings.Instance.STOP_AIMING_AT && __instance.IsAiming)
-            {
-                Plugin.IsAiming = true;
-                return;
-            }
-        }
-    }
 
     public class InitTransformsPatch : ModulePatch
     {

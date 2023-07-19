@@ -207,8 +207,8 @@ namespace RealismMod
             PlayerProperties.ADSSprintMulti = Mathf.Lerp(PlayerProperties.ADSSprintMulti, 1f, resetSpeed);
             PlayerProperties.SprintHipfirePenalty = Mathf.Lerp(PlayerProperties.SprintHipfirePenalty, 1f, resetSpeed);
 
-            pwa.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity;
-            pwa.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity;
+            pwa.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity * PlayerProperties.CoverStabilityBonus;
+            pwa.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity * PlayerProperties.CoverStabilityBonus;
 
             if (Utils.AreFloatsEqual(1f, PlayerProperties.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerProperties.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerProperties.TotalHandsIntensity))
             {
@@ -252,8 +252,8 @@ namespace RealismMod
             if (Plugin.IsFiring)
             {
                 doSwayReset = false;
-                player.ProceduralWeaponAnimation.Breath.Intensity = 0.69f;
-                player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f;
+                player.ProceduralWeaponAnimation.Breath.Intensity = 0.69f * PlayerProperties.CoverStabilityBonus;
+                player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f * PlayerProperties.CoverStabilityBonus;
                 resetSwayAfterFiring = false;
             }
             else if (!resetSwayAfterFiring)

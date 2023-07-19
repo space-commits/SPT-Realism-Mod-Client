@@ -19,6 +19,7 @@ using UnityEngine.Networking;
 using static RealismMod.GearPatches;
 using static RealismMod.Attributes;
 using static RootMotion.FinalIK.AimPoser;
+using HarmonyLib;
 
 namespace RealismMod
 {
@@ -280,6 +281,9 @@ namespace RealismMod
         public static ConfigEntry<bool> CanFellBot { get; set; }
         public static ConfigEntry<float> FallBaseChance { get; set; }
 
+        public static ConfigEntry<float> test1 { get; set; }
+        public static ConfigEntry<float> test2 { get; set; }
+
         public static Weapon CurrentlyShootingWeapon;
 
         public static Vector3 TransformBaseStartPosition;
@@ -290,6 +294,7 @@ namespace RealismMod
 
         public static bool IsFiring = false;
 
+        public static bool WeaponIsColliding = false;
         public static bool IsBotFiring = false;
         public static bool GrenadeExploded = false;
         public static bool IsAiming = false;
@@ -706,10 +711,11 @@ namespace RealismMod
             new ZeroAdjustmentsPatch().Enable();
             new WeaponOverlappingPatch().Enable();
             new WeaponLengthPatch().Enable();
-            new WeaponOverlappingPatch().Enable();
             new OnWeaponDrawPatch().Enable();
             new UpdateHipInaccuracyPatch().Enable();
             new SetFireModePatch().Enable();
+            /*new WeaponOverlapViewPatch().Enable();*/
+            new CollisionPatch().Enable();
 
             //Health
             if (EnableMedicalOvehaul.Value && ModConfig.med_changes)
@@ -738,6 +744,12 @@ namespace RealismMod
 
             if (Utils.CheckIsReady())
             {
+                if (PlayerProperties.CoverStabilityBonus < 0.95f) 
+                {
+                    AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
+                    panelUI.Show("Mounting");
+                }
+
                 if (ModConfig.recoil_attachment_overhaul) 
                 {
                     if (Plugin.ShotCount > Plugin.PrevShotCount)
@@ -876,6 +888,8 @@ namespace RealismMod
             AddEffectKeybind = Config.Bind(testing, "Add Effect Keybind", new KeyboardShortcut(KeyCode.JoystickButton6), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 130, IsAdvanced = true }));
             EnableBallisticsLogging = Config.Bind<bool>(testing, "Enable Ballistics Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 2, IsAdvanced = true }));
             EnableLogging = Config.Bind<bool>(testing, "Enable Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true }));
+            test1 = Config.Bind<float>(testing, "test 1", 1f, new ConfigDescription("Only Applies To Assault Rifles, Carbines And DMRs.", new AcceptableValueRange<float>(0f, 5000f), new ConfigurationManagerAttributes { Order = 600 }));
+            test2 = Config.Bind<float>(testing, "test 2", 1f, new ConfigDescription("Only Applies To Assault Rifles, Carbines And DMRs.", new AcceptableValueRange<float>(0f, 5000f), new ConfigurationManagerAttributes { Order = 500 }));
 
             EnableStockSlots = Config.Bind<bool>(miscSettings, "Enable Stock Slot Stat Modifiers", true, new ConfigDescription("Requires Restart. For Buffer Tubes That Have Multiple Stock Slots, Each Slot Will Modify The Ergo And Recoil Stats Of The Attached Stock.", null, new ConfigurationManagerAttributes { Order = 3 }));
             EnableFSPatch = Config.Bind<bool>(miscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 4 }));

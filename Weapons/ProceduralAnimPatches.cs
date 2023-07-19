@@ -146,8 +146,8 @@ namespace RealismMod
                     breathIntensity *= Plugin.SwayIntensity.Value;
                     handsIntensity *= Plugin.SwayIntensity.Value;
 
-                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel;
-                    float totalInputIntensitry = handsIntensity * handsIntensity;
+                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * PlayerProperties.CoverStabilityBonus;
+                    float totalInputIntensitry = handsIntensity * handsIntensity * PlayerProperties.CoverStabilityBonus;
                     PlayerProperties.TotalBreathIntensity = totalBreathIntensity;
                     PlayerProperties.TotalHandsIntensity = totalInputIntensitry;
 
@@ -158,11 +158,11 @@ namespace RealismMod
                     }
                     else
                     {
-                        __instance.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity;
-                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity;
+                        __instance.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity * PlayerProperties.CoverStabilityBonus;
+                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity * PlayerProperties.CoverStabilityBonus;
                     }
 
-                    __instance.Shootingg.Intensity = Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value;
+                    __instance.Shootingg.Intensity = (Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value) * PlayerProperties.CoverStabilityBonus;
                     __instance.Overweight = 0;
 
                     if (Plugin.EnableLogging.Value == true)
