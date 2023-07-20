@@ -3,6 +3,7 @@ using BepInEx.Logging;
 using Comfort.Common;
 using CustomPlayerLoopSystem;
 using EFT;
+using EFT.Animations;
 using EFT.InventoryLogic;
 using EFT.UI;
 using HarmonyLib;
@@ -14,6 +15,7 @@ using System.Text;
 using UnityEngine;
 using static EFT.Player;
 using static EFT.Weather.WeatherDebug;
+using static ShotEffector;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace RealismMod
@@ -73,10 +75,14 @@ namespace RealismMod
         public static bool HasResetShortStock = true;
         public static bool HasResetPistolPos = true;
 
+        public static Vector3 CoverWiggleDirection = Vector3.zero;
+        public static Vector3 CoverDirection = Vector3.zero;
+
         public static Dictionary<string, bool> LightDictionary = new Dictionary<string, bool>();
 
         public static bool toggledLight = false;
 
+        public static bool IsInStance = false;
 
         public static void SetStanceStamina(Player player, Player.FirearmController fc)
         {
@@ -960,6 +966,55 @@ namespace RealismMod
                 hasResetActiveAim = true;
             }
         }
+
+        private static void doMountingEffects(Player player, ProceduralWeaponAnimation pwa) 
+        {
+            AccessTools.Method(typeof(Player), "method_40").Invoke(player, new object[] { 2f });
+            for (int i = 0; i < pwa.Shootingg.ShotVals.Length; i++)
+            {
+                pwa.Shootingg.ShotVals[i].Process(Plugin.WeaponIsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f);
+            }
+        }
+
+        public static void DoMounting(ManualLogSource Logger, Player player, ProceduralWeaponAnimation pwa, ref Vector3 weaponWorldPos, ref Vector3 mountWeapPosition) 
+        {
+            bool isMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
+            if (Plugin.WeaponIsMounting && (isMoving || !Plugin.IsAiming)) 
+            {
+                Plugin.WeaponIsMounting = false;
+                doMountingEffects(player, pwa);
+                Logger.LogWarning("WASD");
+            }
+            if (Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && Plugin.WeaponCanMount && Plugin.IsAiming)
+            {
+                Plugin.WeaponIsMounting = !Plugin.WeaponIsMounting;
+                mountWeapPosition = weaponWorldPos;
+                doMountingEffects(player, pwa);
+                Logger.LogWarning("Toggling Mounting = " + Plugin.WeaponIsMounting);
+            }
+            if (Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && !Plugin.WeaponCanMount && Plugin.WeaponIsMounting)
+            {
+                Plugin.WeaponIsMounting = false;
+                doMountingEffects(player, pwa);
+            }
+            if (Plugin.WeaponIsMounting)
+            {
+                AccessTools.Field(typeof(TurnAwayEffector), "_turnAwayThreshold").SetValue(pwa.TurnAway, 1f);
+                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").SetValue(pwa, weaponWorldPos);
+                pwa.HandsContainer.WeaponRootAnim.position = weaponWorldPos;
+                weaponWorldPos = mountWeapPosition + StanceController.CoverDirection;
+
+                Logger.LogWarning("Is Mounting");
+            }
+            else 
+            {
+                Logger.LogWarning("reseting");
+                mountWeapPosition = Vector3.Lerp(mountWeapPosition, pwa.HandsContainer.WeaponRootAnim.position, Time.deltaTime * 10f);
+                weaponWorldPos = mountWeapPosition;
+            }
+
+        }
+
     }
 
     public class LaserLateUpdatePatch : ModulePatch
@@ -1077,7 +1132,9 @@ namespace RealismMod
                 RaycastHit[] raycastHit_0 = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
                 Func<RaycastHit, bool> func_1 = (Func<RaycastHit, bool>)AccessTools.Field(typeof(EFT.Player.FirearmController), "func_1").GetValue(__instance);
 
-                float offset = Plugin.test2.Value;
+                float offset = 0.12f;
+                float wiggleAmount = 6f;
+                float moveToCoverOffset = 0.01f;
 
                 Vector3 originUp = origin + new Vector3(0f, -offset, 0f);
                 Vector3 originRight = origin + new Vector3(offset, 0f, 0f);
@@ -1093,23 +1150,31 @@ namespace RealismMod
                 {
                     DebugGizmos.SingleObjects.Line(originUp, forwardDirection, Color.red, 0.04f, true, 0.3f, true);
                     doStability();
+                    StanceController.CoverWiggleDirection = new Vector3(wiggleAmount, 0f, 0f);
+                    StanceController.CoverDirection = new Vector3(0f, -moveToCoverOffset, 0f);
                     return;
                 }
-
                 if (GClass672.Linecast(originRight, rightDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
                 {
                     DebugGizmos.SingleObjects.Line(originRight, rightDirection, Color.green, 0.04f, true, 0.3f, true);
                     doStability();
+                    StanceController.CoverWiggleDirection = new Vector3(0f, wiggleAmount, 0f);
+                    StanceController.CoverDirection = new Vector3(moveToCoverOffset, 0f, 0f);
                     return;
                 }
-
                 if (GClass672.Linecast(originLeft, leftDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
                 {
                     DebugGizmos.SingleObjects.Line(originLeft, leftDirection, Color.blue, 0.04f, true, 0.3f, true);
                     doStability();
+                    StanceController.CoverWiggleDirection = new Vector3(0f, -wiggleAmount, 0f);
+                    StanceController.CoverDirection = new Vector3(-moveToCoverOffset, 0f, 0f);
                     return;
                 }
-
+                if (Plugin.WeaponIsMounting) 
+                {
+                    doStability();
+                    return;
+                }
                 PlayerProperties.MountingSwayBonus = Mathf.Lerp(PlayerProperties.MountingSwayBonus, 1f, Time.deltaTime * 3f);
                 PlayerProperties.MountingRecoilBonus = Mathf.Lerp(PlayerProperties.MountingRecoilBonus, 1f, Time.deltaTime * 3f);
                 Plugin.WeaponCanMount = false;
@@ -1647,30 +1712,7 @@ namespace RealismMod
                     Vector3 worldPivot = __instance.HandsContainer.WeaponRootAnim.TransformPoint(position);
                     Vector3 weaponWorldPos = __instance.HandsContainer.WeaponRootAnim.position;
 
-
-                    /*
-                     *                    Vector3 vector3_4 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").GetValue(__instance);
-                                        vector3_4 = __instance.HandsContainer.WeaponRootAnim.position;
-                                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.position);
-                                        quaternion_5 = __instance.HandsContainer.WeaponRootAnim.localRotation;
-                                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_5").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.localRotation);
-                                        quaternion_6 = __instance.HandsContainer.WeaponRootAnim.rotation;
-                                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_6").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.rotation);
-                    */
-
-                    if (Input.GetKeyDown(KeyCode.M) && Plugin.WeaponCanMount)
-                    {
-                        Plugin.WeaponIsMounting = !Plugin.WeaponIsMounting;
-                        mountWeapPosition = weaponWorldPos;
-                    }
-                    if (Plugin.WeaponIsMounting) 
-                    {
-                        Logger.LogWarning("Mounting");
-                        AccessTools.Field(typeof(TurnAwayEffector), "_turnAwayThreshold").SetValue(__instance.TurnAway, 1f);
-                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").SetValue(__instance, weaponWorldPos);
-                        __instance.HandsContainer.WeaponRootAnim.position = weaponWorldPos;
-                        weaponWorldPos = mountWeapPosition;
-                    }
+                    StanceController.DoMounting(Logger, player, __instance, ref weaponWorldPos, ref mountWeapPosition);
 
                     __instance.DeferredRotateWithCustomOrder(__instance.HandsContainer.WeaponRootAnim, worldPivot, vector);
                     Vector3 vector2 = __instance.HandsContainer.Recoil.Get();
