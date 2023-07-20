@@ -1076,9 +1076,9 @@ namespace RealismMod
                 RaycastHit[] raycastHit_0 = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
                 Func<RaycastHit, bool> func_1 = (Func<RaycastHit, bool>)AccessTools.Field(typeof(EFT.Player.FirearmController), "func_1").GetValue(__instance);
 
-                Vector3 originUp = origin + new Vector3(0, -0.1f, 0);
-                Vector3 originRight = origin + new Vector3(0.1f, 0, 0);
-                Vector3 originLeft = origin + new Vector3(-0.1f, 0, 0);
+                Vector3 originUp = origin + new Vector3(0, -0.12f, 0);
+                Vector3 originRight = origin + new Vector3(0.12f, 0, 0);
+                Vector3 originLeft = origin + new Vector3(-0.12f, 0, 0);
 
                 Vector3 up = weaponUp ?? __instance.WeaponRoot.up; //this is actually down because bsg
                 Vector3 forwardDirection = originUp - up * ln;
@@ -1618,7 +1618,6 @@ namespace RealismMod
                     float float_13 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_13").GetValue(__instance);
                     float float_14 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14").GetValue(__instance);
                     float float_21 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_21").GetValue(__instance);
-                    Vector3 vector3_4 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").GetValue(__instance);
                     Vector3 vector3_6 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_6").GetValue(__instance);
                     Quaternion quaternion_2 = (Quaternion)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_2").GetValue(__instance);
                     Quaternion quaternion_5 = (Quaternion)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_5").GetValue(__instance);
@@ -1632,14 +1631,29 @@ namespace RealismMod
                     vector += value;
                     Vector3 position = __instance._shouldMoveWeaponCloser ? __instance.HandsContainer.RotationCenterWoStock : __instance.HandsContainer.RotationCenter;
                     Vector3 worldPivot = __instance.HandsContainer.WeaponRootAnim.TransformPoint(position);//
-/*
-                    vector3_4 = __instance.HandsContainer.WeaponRootAnim.position;
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.position);
-                    quaternion_5 = __instance.HandsContainer.WeaponRootAnim.localRotation;
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_5").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.localRotation);
-                    quaternion_6 = __instance.HandsContainer.WeaponRootAnim.rotation;
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_6").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.rotation);
-*/
+                    /*
+                                        vector3_4 = __instance.HandsContainer.WeaponRootAnim.position;
+                                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.position);
+                                        quaternion_5 = __instance.HandsContainer.WeaponRootAnim.localRotation;
+                                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_5").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.localRotation);
+                                        quaternion_6 = __instance.HandsContainer.WeaponRootAnim.rotation;
+                                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_6").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.rotation);
+                    */
+
+                    if (Input.GetKeyDown(KeyCode.M) && Plugin.WeaponIsMounting)
+                    {
+                        Logger.LogWarning(__instance.HandsContainer.WeaponRootAnim.position);
+                        Plugin.mountWeapPosition = __instance.HandsContainer.WeaponRootAnim.position;
+                    }
+                    if (Input.GetKey(KeyCode.M))
+                    {
+                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").SetValue(__instance, Plugin.mountWeapPosition);
+                        Logger.LogWarning("Holding");
+                    }
+
+                    Vector3 vector3_4 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").GetValue(__instance);
+
+
                     __instance.DeferredRotateWithCustomOrder(__instance.HandsContainer.WeaponRootAnim, worldPivot, vector);
                     Vector3 vector2 = __instance.HandsContainer.Recoil.Get();
                     if (vector2.magnitude > 1E-45f)
@@ -1668,6 +1682,19 @@ namespace RealismMod
 
                     Quaternion rhs = Quaternion.Euler(float_14 * Single_3 * vector3_6);
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(vector3_4, quaternion_6 * rhs * currentRotation);
+
+            /*        if (Input.GetKeyDown(KeyCode.M) && Plugin.WeaponIsMounting)
+                    {
+                        Logger.LogWarning(__instance.HandsContainer.WeaponRootAnim.position);
+                        Plugin.mountWeapPosition = __instance.HandsContainer.WeaponRootAnim.position;
+                    }
+                    if (Input.GetKey(KeyCode.M))
+                    {
+                        __instance.HandsContainer.WeaponRootAnim.position = Plugin.mountWeapPosition;
+                        Logger.LogWarning("Holding");
+                    }
+
+*/
 
                     if (!Plugin.IsFiring) 
                     {

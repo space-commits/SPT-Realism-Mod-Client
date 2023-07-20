@@ -34,6 +34,9 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class Plugin : BaseUnityPlugin
     {
+
+        public static Vector3 mountWeapPosition = Vector3.zero;
+
         public static ConfigEntry<float> ConvSemiMulti { get; set; }
         public static ConfigEntry<float> ConvAutoMulti { get; set; }
         public static ConfigEntry<float> resetTime { get; set; }
