@@ -90,6 +90,7 @@ namespace RealismMod
         public static float TotalModifiedWeight = 0f;
         public static float TotalModifiedWeightMinusWeapon = 0f;
 
-        public static float CoverStabilityBonus = 1f;
+        public static float MountingSwayBonus = 1f;
+        public static float MountingRecoilBonus = 1f;
     }
 }

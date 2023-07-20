@@ -207,8 +207,8 @@ namespace RealismMod
             PlayerProperties.ADSSprintMulti = Mathf.Lerp(PlayerProperties.ADSSprintMulti, 1f, resetSpeed);
             PlayerProperties.SprintHipfirePenalty = Mathf.Lerp(PlayerProperties.SprintHipfirePenalty, 1f, resetSpeed);
 
-            pwa.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity * PlayerProperties.CoverStabilityBonus;
-            pwa.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity * PlayerProperties.CoverStabilityBonus;
+            pwa.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity * PlayerProperties.MountingSwayBonus;
+            pwa.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity * PlayerProperties.MountingSwayBonus;
 
             if (Utils.AreFloatsEqual(1f, PlayerProperties.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerProperties.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerProperties.TotalHandsIntensity))
             {
@@ -252,8 +252,8 @@ namespace RealismMod
             if (Plugin.IsFiring)
             {
                 doSwayReset = false;
-                player.ProceduralWeaponAnimation.Breath.Intensity = 0.69f * PlayerProperties.CoverStabilityBonus;
-                player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f * PlayerProperties.CoverStabilityBonus;
+                player.ProceduralWeaponAnimation.Breath.Intensity = 0.69f * PlayerProperties.MountingSwayBonus;
+                player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f * PlayerProperties.MountingSwayBonus;
                 resetSwayAfterFiring = false;
             }
             else if (!resetSwayAfterFiring)
@@ -286,13 +286,13 @@ namespace RealismMod
 
                 if (PlayerProperties.HasFullyResetSprintADSPenalties)
                 {
-                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * PlayerProperties.CoverStabilityBonus; //both aim sway and up and down breathing
-                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * PlayerProperties.CoverStabilityBonus; //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
+                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * PlayerProperties.MountingSwayBonus; //both aim sway and up and down breathing
+                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * PlayerProperties.MountingSwayBonus; //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
                 }
                 else
                 {
-                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity * PlayerProperties.CoverStabilityBonus;
-                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity * PlayerProperties.CoverStabilityBonus;
+                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity * PlayerProperties.MountingSwayBonus;
+                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity * PlayerProperties.MountingSwayBonus;
                 }
 
                 if (fc != null)

@@ -146,8 +146,8 @@ namespace RealismMod
                     breathIntensity *= Plugin.SwayIntensity.Value;
                     handsIntensity *= Plugin.SwayIntensity.Value;
 
-                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * PlayerProperties.CoverStabilityBonus;
-                    float totalInputIntensitry = handsIntensity * handsIntensity * PlayerProperties.CoverStabilityBonus;
+                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * PlayerProperties.MountingSwayBonus;
+                    float totalInputIntensitry = handsIntensity * handsIntensity * PlayerProperties.MountingSwayBonus;
                     PlayerProperties.TotalBreathIntensity = totalBreathIntensity;
                     PlayerProperties.TotalHandsIntensity = totalInputIntensitry;
 

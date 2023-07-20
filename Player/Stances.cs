@@ -1062,8 +1062,9 @@ namespace RealismMod
 
         private static void doStability() 
         {
-            Plugin.WeaponIsMounting = true;
-            PlayerProperties.CoverStabilityBonus = Mathf.Lerp(PlayerProperties.CoverStabilityBonus, 0.6f, Time.deltaTime * 3f);
+            Plugin.WeaponCanMount = true;
+            PlayerProperties.MountingSwayBonus = Mathf.Lerp(PlayerProperties.MountingSwayBonus, 0.5f, Time.deltaTime * 3f);
+            PlayerProperties.MountingRecoilBonus = Mathf.Lerp(PlayerProperties.MountingRecoilBonus, 0.3f, Time.deltaTime * 3f);
         }
 
         [PatchPrefix]
@@ -1076,9 +1077,11 @@ namespace RealismMod
                 RaycastHit[] raycastHit_0 = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
                 Func<RaycastHit, bool> func_1 = (Func<RaycastHit, bool>)AccessTools.Field(typeof(EFT.Player.FirearmController), "func_1").GetValue(__instance);
 
-                Vector3 originUp = origin + new Vector3(0, -0.12f, 0);
-                Vector3 originRight = origin + new Vector3(0.12f, 0, 0);
-                Vector3 originLeft = origin + new Vector3(-0.12f, 0, 0);
+                float offset = Plugin.test2.Value;
+
+                Vector3 originUp = origin + new Vector3(0f, -offset, 0f);
+                Vector3 originRight = origin + new Vector3(offset, 0f, 0f);
+                Vector3 originLeft = origin + new Vector3(-offset, 0f, 0f);
 
                 Vector3 up = weaponUp ?? __instance.WeaponRoot.up; //this is actually down because bsg
                 Vector3 forwardDirection = originUp - up * ln;
@@ -1107,8 +1110,9 @@ namespace RealismMod
                     return;
                 }
 
-                PlayerProperties.CoverStabilityBonus = Mathf.Lerp(PlayerProperties.CoverStabilityBonus, 1f, Time.deltaTime * 3f);
-                Plugin.WeaponIsMounting = false;
+                PlayerProperties.MountingSwayBonus = Mathf.Lerp(PlayerProperties.MountingSwayBonus, 1f, Time.deltaTime * 3f);
+                PlayerProperties.MountingRecoilBonus = Mathf.Lerp(PlayerProperties.MountingRecoilBonus, 1f, Time.deltaTime * 3f);
+                Plugin.WeaponCanMount = false;
             }
         }
     }
@@ -1126,7 +1130,13 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                bool AimingInterruptedByOverlap = (bool)AccessTools.Field(typeof(EFT.Player.FirearmController), "AimingInterruptedByOverlap").GetValue(__instance);
+                if (Plugin.WeaponIsMounting) 
+                {
+                    return false;
+                }
+                return true;
+
+               /* bool AimingInterruptedByOverlap = (bool)AccessTools.Field(typeof(EFT.Player.FirearmController), "AimingInterruptedByOverlap").GetValue(__instance);
                 float float_0 = (float)AccessTools.Field(typeof(EFT.Player.FirearmController), "float_0").GetValue(__instance);
                 Vector3 vector = player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Get();
 
@@ -1141,18 +1151,18 @@ namespace RealismMod
                     player.ProceduralWeaponAnimation.TurnAway.OriginZShift = vector.y;
                     player.ProceduralWeaponAnimation.TurnAway.OverlapDepth = float_0;
                 }
-/*                if (float_0 > EFTHardSettings.Instance.STOP_AIMING_AT && __instance.IsAiming)
+*//*                if (float_0 > EFTHardSettings.Instance.STOP_AIMING_AT && __instance.IsAiming)
                 {
                     __instance.ToggleAim();
                     AimingInterruptedByOverlap = true;
                     return false;
-                }*/
+                }*//*
                 if (float_0 < EFTHardSettings.Instance.STOP_AIMING_AT && player.ProceduralWeaponAnimation.TurnAway.OverlapValue < 0.2f && AimingInterruptedByOverlap && !__instance.IsAiming)
                 {
-                    /*__instance.ToggleAim();*/
+                    *//*__instance.ToggleAim();*//*
                     AimingInterruptedByOverlap = false;
                 }
-                return false;
+                return false;*/
             }
             return true;
         }
@@ -1625,13 +1635,18 @@ namespace RealismMod
                     bool bool_1 = (bool)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "bool_1").GetValue(__instance);
                     float Single_3 = (float)AccessTools.Property(typeof(EFT.Animations.ProceduralWeaponAnimation), "Single_3").GetValue(__instance);
 
+        
                     Vector3 vector = __instance.HandsContainer.HandsRotation.Get();
                     Vector3 value = __instance.HandsContainer.SwaySpring.Value;
                     vector += float_21 * (bool_1 ? __instance.AimingDisplacementStr : 1f) * new Vector3(value.x, 0f, value.z);
                     vector += value;
                     Vector3 position = __instance._shouldMoveWeaponCloser ? __instance.HandsContainer.RotationCenterWoStock : __instance.HandsContainer.RotationCenter;
-                    Vector3 worldPivot = __instance.HandsContainer.WeaponRootAnim.TransformPoint(position);//
+                    Vector3 worldPivot = __instance.HandsContainer.WeaponRootAnim.TransformPoint(position);
+                    Vector3 weaponWorldPos = __instance.HandsContainer.WeaponRootAnim.position;
+
+
                     /*
+                     *                    Vector3 vector3_4 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").GetValue(__instance);
                                         vector3_4 = __instance.HandsContainer.WeaponRootAnim.position;
                                         AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.position);
                                         quaternion_5 = __instance.HandsContainer.WeaponRootAnim.localRotation;
@@ -1640,19 +1655,30 @@ namespace RealismMod
                                         AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_6").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.rotation);
                     */
 
-                    if (Input.GetKeyDown(KeyCode.M) && Plugin.WeaponIsMounting)
+                    if (Input.GetKeyDown(KeyCode.M) && Plugin.WeaponCanMount)
                     {
                         Logger.LogWarning(__instance.HandsContainer.WeaponRootAnim.position);
-                        Plugin.mountWeapPosition = __instance.HandsContainer.WeaponRootAnim.position;
+                        Plugin.mountWeapPosition = weaponWorldPos;
                     }
-                    if (Input.GetKey(KeyCode.M))
+                    else 
                     {
-                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").SetValue(__instance, Plugin.mountWeapPosition);
-                        Logger.LogWarning("Holding");
+                        Plugin.mountWeapPosition = weaponWorldPos;
                     }
-
-                    Vector3 vector3_4 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").GetValue(__instance);
-
+                    if (Input.GetKeyDown(KeyCode.M) && Plugin.WeaponCanMount)
+                    {
+                        Plugin.WeaponIsMounting = true;
+                        AccessTools.Field(typeof(TurnAwayEffector), "_turnAwayThreshold").SetValue(__instance.TurnAway, 1f);
+                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").SetValue(__instance, weaponWorldPos);
+                        __instance.HandsContainer.WeaponRootAnim.position = weaponWorldPos;
+                        weaponWorldPos = Plugin.mountWeapPosition;
+                        Logger.LogWarning("Holding");
+                        AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
+                        panelUI.Show("Mounting");
+                    }
+                    else 
+                    {
+                        Plugin.WeaponIsMounting = false;
+                    }
 
                     __instance.DeferredRotateWithCustomOrder(__instance.HandsContainer.WeaponRootAnim, worldPivot, vector);
                     Vector3 vector2 = __instance.HandsContainer.Recoil.Get();
@@ -1663,7 +1689,7 @@ namespace RealismMod
                             vector2.x = Mathf.Atan(Mathf.Tan(vector2.x * 0.017453292f) * float_13) * 57.29578f;
                             vector2.z = Mathf.Atan(Mathf.Tan(vector2.z * 0.017453292f) * float_13) * 57.29578f;
                         }
-                        Vector3 worldPivot2 = vector3_4 + quaternion_6 * __instance.HandsContainer.RecoilPivot;
+                        Vector3 worldPivot2 = weaponWorldPos + quaternion_6 * __instance.HandsContainer.RecoilPivot;
                         __instance.DeferredRotate(__instance.HandsContainer.WeaponRootAnim, worldPivot2, quaternion_6 * vector2);
                     }
 
@@ -1681,7 +1707,7 @@ namespace RealismMod
                     currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? quaternion_2 : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceSpeed : __instance.IsAiming ? 8f * float_9 * dt : 8f * dt);
 
                     Quaternion rhs = Quaternion.Euler(float_14 * Single_3 * vector3_6);
-                    __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(vector3_4, quaternion_6 * rhs * currentRotation);
+                    __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponWorldPos, quaternion_6 * rhs * currentRotation);
 
             /*        if (Input.GetKeyDown(KeyCode.M) && Plugin.WeaponIsMounting)
                     {

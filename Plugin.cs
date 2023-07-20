@@ -297,6 +297,7 @@ namespace RealismMod
 
         public static bool IsFiring = false;
 
+        public static bool WeaponCanMount = false;
         public static bool WeaponIsMounting = false;
         public static bool IsBotFiring = false;
         public static bool GrenadeExploded = false;
@@ -717,7 +718,7 @@ namespace RealismMod
             new OnWeaponDrawPatch().Enable();
             new UpdateHipInaccuracyPatch().Enable();
             new SetFireModePatch().Enable();
-            /*new WeaponOverlapViewPatch().Enable();*/
+            new WeaponOverlapViewPatch().Enable();
             new CollisionPatch().Enable();
 
             //Health
@@ -747,10 +748,10 @@ namespace RealismMod
 
             if (Utils.CheckIsReady())
             {
-                if (PlayerProperties.CoverStabilityBonus < 0.95f) 
+                if (Plugin.WeaponCanMount && !Plugin.WeaponIsMounting) 
                 {
                     AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
-                    panelUI.Show("Mounting");
+                    panelUI.Show("Can Mount");
                 }
 
                 if (ModConfig.recoil_attachment_overhaul) 
