@@ -151,18 +151,8 @@ namespace RealismMod
                     PlayerProperties.TotalBreathIntensity = totalBreathIntensity;
                     PlayerProperties.TotalHandsIntensity = totalInputIntensitry;
 
-                    if (PlayerProperties.HasFullyResetSprintADSPenalties)
-                    {
-                        __instance.Breath.Intensity = totalBreathIntensity; //both aim sway and up and down breathing
-                        __instance.HandsContainer.HandsRotation.InputIntensity = totalInputIntensitry; //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
-                    }
-                    else
-                    {
-                        __instance.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity * PlayerProperties.CoverStabilityBonus;
-                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity * PlayerProperties.CoverStabilityBonus;
-                    }
+                    
 
-                    __instance.Shootingg.Intensity = (Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value) * PlayerProperties.CoverStabilityBonus;
                     __instance.Overweight = 0;
 
                     if (Plugin.EnableLogging.Value == true)

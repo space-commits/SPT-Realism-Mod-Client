@@ -135,10 +135,10 @@ namespace RealismMod
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 550f);
                 float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 100f);
 
-                float activeAimingBonus = StanceController.IsActiveAiming == true ? 0.9f : 1f;
-                float aimCamRecoilBonus = StanceController.IsActiveAiming == true || !Plugin.IsAiming ? 0.8f : 1f;
-                float shortStockingDebuff = StanceController.IsShortStock == true ? 1.15f : 1f;
-                float shortStockingCamBonus = StanceController.IsShortStock == true ? 0.75f : 1f;
+                float activeAimingBonus = StanceController.IsActiveAiming ? 0.9f : 1f;
+                float aimCamRecoilBonus = StanceController.IsActiveAiming || !Plugin.IsAiming ? 0.8f : 1f;
+                float shortStockingDebuff = StanceController.IsShortStock ? 1.15f : 1f;
+                float shortStockingCamBonus = StanceController.IsShortStock ? 0.75f : 1f;
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
@@ -159,7 +159,7 @@ namespace RealismMod
                     __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * Plugin.VertRecAutoMulti.Value;
                     __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * Plugin.HorzRecAutoMulti.Value;
                     __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * Plugin.HorzRecAutoMulti.Value;
-                }
+                }   
                 else
                 {
                     __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX;
@@ -168,11 +168,11 @@ namespace RealismMod
                     __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY;
                 }
 
-                float buffFactoredDispersion = Plugin.CurrentDispersion * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff;
+                float factoredDispersion = Plugin.CurrentDispersion * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff * PlayerProperties.CoverStabilityBonus;
 
                 if (Plugin.ShotCount > 1 && weaponClass.WeapClass == "pistol" && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
                 {
-                    buffFactoredDispersion *= 0.80f;
+                    factoredDispersion *= 0.80f;
                     __instance.RecoilStrengthZ.x *= 0.5f;
                     __instance.RecoilStrengthZ.y *= 0.5f;
                     __instance.RecoilStrengthXy.x *= 0.3f;
@@ -180,14 +180,14 @@ namespace RealismMod
                 }
 
                 float angle = Plugin.StartingRecoilAngle;
-                __instance.RecoilDegree = new Vector2(angle - buffFactoredDispersion, angle + buffFactoredDispersion);
+                __instance.RecoilDegree = new Vector2(angle - factoredDispersion, angle + factoredDispersion);
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
 
                 __instance.ShotVals[3].Intensity = Plugin.CurrentCamRecoilX * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff;
                 __instance.ShotVals[4].Intensity = Plugin.CurrentCamRecoilY * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff;
 
                 float totalDispersion = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
-                float totalVerticalRecoil = __instance.RecoilStrengthXy.y * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff;
+                float totalVerticalRecoil = __instance.RecoilStrengthXy.y * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * PlayerProperties.CoverStabilityBonus;
                 float totalHorizontalRecoil = Mathf.Min(__instance.RecoilStrengthZ.y * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff, Plugin.HorzRecLimit.Value);
 
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.x, Mathf.Cos(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.y, totalHorizontalRecoil * _separateIntensityFactors.z) * __instance.Intensity;

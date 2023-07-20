@@ -1059,42 +1059,58 @@ namespace RealismMod
             return typeof(Player.FirearmController).GetMethod("method_8", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
+        private static void doStability() 
+        {
+            Plugin.WeaponIsColliding = true;
+            PlayerProperties.CoverStabilityBonus = Mathf.Lerp(PlayerProperties.CoverStabilityBonus, 0.5f, Time.deltaTime);
+        }
+
         [PatchPrefix]
-        private static void PatchPrefix(Player.FirearmController __instance, Vector3 origin, float ln, ref bool overlapsWithPlayer, Vector3? weaponUp = null)
+        private static void PatchPrefix(Player.FirearmController __instance, Vector3 origin, float ln, Vector3? weaponUp = null)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            int int_0 = (int)AccessTools.Field(typeof(EFT.Player.FirearmController), "int_0").GetValue(__instance);
-            RaycastHit[] raycastHit_0 = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
-            Func<RaycastHit, bool> func_1 = (Func<RaycastHit, bool>)AccessTools.Field(typeof(EFT.Player.FirearmController), "func_1").GetValue(__instance);
-            float overlapValue = 0f;
             if (player.IsYourPlayer == true)
             {
-                origin += new Vector3(Plugin.PistolAdditionalRotationX.Value, Plugin.PistolAdditionalRotationY.Value, Plugin.PistolAdditionalRotationZ.Value);
-                Vector3 a = weaponUp ?? __instance.WeaponRoot.up;
-                Vector3 end = origin - a * ln;
+                int int_0 = (int)AccessTools.Field(typeof(EFT.Player.FirearmController), "int_0").GetValue(__instance);
+                RaycastHit[] raycastHit_0 = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
+                Func<RaycastHit, bool> func_1 = (Func<RaycastHit, bool>)AccessTools.Field(typeof(EFT.Player.FirearmController), "func_1").GetValue(__instance);
+
+                Vector3 originUp = origin + new Vector3(0, Plugin.PistolAdditionalRotationY.Value, 0);
+                Vector3 originRight = origin + new Vector3(Plugin.PistolAdditionalRotationX.Value, 0, 0);
+                Vector3 originLeft = origin + new Vector3(Plugin.PistolAdditionalRotationZ.Value, 0, 0);
+
+                Vector3 up = weaponUp ?? __instance.WeaponRoot.up; //this is actually down because bsg
+                Vector3 forwardDirection = originUp - up * ln;
+                Vector3 rightDirection = originRight - up * ln;
+                Vector3 leftDirection = originLeft - up * ln;
+
                 RaycastHit raycastHit;
-                if (GClass672.Linecast(origin, end, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                if (GClass672.Linecast(originUp, forwardDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
                 {
-                    overlapsWithPlayer = (raycastHit.collider.gameObject.layer == int_0);
-                    overlapValue = ln - raycastHit.distance;
-                    Logger.LogWarning("weap " + overlapValue);
-                    Plugin.WeaponIsColliding = true;
+                    DebugGizmos.SingleObjects.Line(originUp, forwardDirection, Color.red, 0.04f, true, 0.3f, true);
+                    Logger.LogWarning("forward or up hit");
+                    doStability();
                     return;
                 }
-                Vector3 lhs = origin - player.Position;
-                Vector3 up = Vector3.up;
-                float d = Vector3.Dot(lhs, up);
-                if (GClass672.Linecast(player.Position + d * up, origin, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+
+                if (GClass672.Linecast(originRight, rightDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
                 {
-                    overlapsWithPlayer = (raycastHit.collider.gameObject.layer == int_0);
-                    overlapValue = ln;
-                    Plugin.WeaponIsColliding = true;
-                    Logger.LogWarning("player " + overlapValue);
+                    DebugGizmos.SingleObjects.Line(origin, rightDirection, Color.green, 0.04f, true, 0.3f, true);
+                    Logger.LogWarning("right hit");
+                    doStability();
                     return;
                 }
+
+                if (GClass672.Linecast(originLeft, leftDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                {
+                    DebugGizmos.SingleObjects.Line(origin, leftDirection, Color.blue, 0.04f, true, 0.3f, true);
+                    Logger.LogWarning("left hit");
+                    doStability();
+                    return;
+                }
+
+                PlayerProperties.CoverStabilityBonus = Mathf.Lerp(PlayerProperties.CoverStabilityBonus, 1f, Time.deltaTime);
                 Plugin.WeaponIsColliding = false;
-                Logger.LogWarning(overlapValue);
-                overlapValue = 0f;
             }
         }
     }
@@ -1174,18 +1190,6 @@ namespace RealismMod
             return typeof(Player.FirearmController).GetMethod("WeaponOverlapping", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static void doCollisions(Player.FirearmController fc, Player player) 
-        {
-/*            AccessTools.Field(typeof(TurnAwayEffector), "_turnAwayThreshold").SetValue(player.ProceduralWeaponAnimation.TurnAway, Plugin.test2.Value);
-*//*            AccessTools.Field(typeof(TurnAwayEffector), "_playerOverlapThreshold").SetValue(player.ProceduralWeaponAnimation.TurnAway, Plugin.test1.Value);
-            AccessTools.Field(typeof(TurnAwayEffector), "_smoothTimeIn").SetValue(player.ProceduralWeaponAnimation.TurnAway, Plugin.ShortStockSpeedMulti.Value);
-            AccessTools.Field(typeof(TurnAwayEffector), "_smoothTimeOut").SetValue(player.ProceduralWeaponAnimation.TurnAway, Plugin.ActiveAimSpeedMulti.Value);*/
-
-            bool isCollding = !player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire || Plugin.WeaponIsColliding;
-          /*  PlayerProperties.CoverStabilityBonus = (float)Math.Round(Mathf.Lerp(PlayerProperties.CoverStabilityBonus, isCollding ? 0.8f : 1f, Time.deltaTime * 60f), 2);*/
-            PlayerProperties.CoverStabilityBonus = isCollding ? 0.1f : 1f;
-        }
-
         [PatchPrefix]
         private static void Prefix(Player.FirearmController __instance)
         {
@@ -1193,8 +1197,6 @@ namespace RealismMod
 
             if (player.IsYourPlayer == true)
             {
-                doCollisions(__instance, player);
-
                 if ((StanceController.IsHighReady == true || StanceController.IsLowReady == true || StanceController.IsShortStock == true))
                 {
                     AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength * 0.8f);

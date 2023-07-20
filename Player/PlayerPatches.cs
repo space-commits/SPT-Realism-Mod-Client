@@ -284,8 +284,20 @@ namespace RealismMod
                     DoSprintPenalty(__instance, fc);
                 }
 
+                if (PlayerProperties.HasFullyResetSprintADSPenalties)
+                {
+                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * PlayerProperties.CoverStabilityBonus; //both aim sway and up and down breathing
+                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * PlayerProperties.CoverStabilityBonus; //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
+                }
+                else
+                {
+                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity * PlayerProperties.CoverStabilityBonus;
+                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity * PlayerProperties.CoverStabilityBonus;
+                }
+
                 if (fc != null)
                 {
+                    __instance.ProceduralWeaponAnimation.Shootingg.Intensity = (Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value);
                     ReloadController.ReloadStateCheck(__instance, fc, Logger);
                     AimController.ADSCheck(__instance, fc, Logger);
 
