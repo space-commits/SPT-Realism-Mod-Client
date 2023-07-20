@@ -86,7 +86,7 @@ namespace RealismMod
 
                 if (fc.Item.WeapClass != "pistol")
                 {
-                    if (!IsHighReady && !IsLowReady && !Plugin.IsAiming && !IsActiveAiming && !IsShortStock && Plugin.EnableIdleStamDrain.Value && !player.IsInPronePose)
+                    if (!IsHighReady && !IsLowReady && !Plugin.IsAiming && !IsShortStock && Plugin.EnableIdleStamDrain.Value && !player.IsInPronePose && !Plugin.WeaponIsMounting)
                     {
                         player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgoFactor * 0.8f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                     }
@@ -94,10 +94,11 @@ namespace RealismMod
                     {
                         player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgoFactor * 0.4f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                     }
-                    else if (!Plugin.IsAiming && !Plugin.EnableIdleStamDrain.Value)
+                    else if ((!Plugin.IsAiming && !Plugin.EnableIdleStamDrain.Value) || Plugin.WeaponIsMounting)
                     {
                         player.Physical.Aim(0f);
                     }
+
                     if (IsHighReady && !IsLowReady && !Plugin.IsAiming && !IsShortStock)
                     {
                         player.Physical.Aim(0f);
@@ -1061,8 +1062,8 @@ namespace RealismMod
 
         private static void doStability() 
         {
-            Plugin.WeaponIsColliding = true;
-            PlayerProperties.CoverStabilityBonus = Mathf.Lerp(PlayerProperties.CoverStabilityBonus, 0.5f, Time.deltaTime);
+            Plugin.WeaponIsMounting = true;
+            PlayerProperties.CoverStabilityBonus = Mathf.Lerp(PlayerProperties.CoverStabilityBonus, 0.6f, Time.deltaTime * 3f);
         }
 
         [PatchPrefix]
@@ -1075,9 +1076,9 @@ namespace RealismMod
                 RaycastHit[] raycastHit_0 = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
                 Func<RaycastHit, bool> func_1 = (Func<RaycastHit, bool>)AccessTools.Field(typeof(EFT.Player.FirearmController), "func_1").GetValue(__instance);
 
-                Vector3 originUp = origin + new Vector3(0, Plugin.PistolAdditionalRotationY.Value, 0);
-                Vector3 originRight = origin + new Vector3(Plugin.PistolAdditionalRotationX.Value, 0, 0);
-                Vector3 originLeft = origin + new Vector3(Plugin.PistolAdditionalRotationZ.Value, 0, 0);
+                Vector3 originUp = origin + new Vector3(0, -0.1f, 0);
+                Vector3 originRight = origin + new Vector3(0.1f, 0, 0);
+                Vector3 originLeft = origin + new Vector3(-0.1f, 0, 0);
 
                 Vector3 up = weaponUp ?? __instance.WeaponRoot.up; //this is actually down because bsg
                 Vector3 forwardDirection = originUp - up * ln;
@@ -1088,29 +1089,26 @@ namespace RealismMod
                 if (GClass672.Linecast(originUp, forwardDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
                 {
                     DebugGizmos.SingleObjects.Line(originUp, forwardDirection, Color.red, 0.04f, true, 0.3f, true);
-                    Logger.LogWarning("forward or up hit");
                     doStability();
                     return;
                 }
 
                 if (GClass672.Linecast(originRight, rightDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
                 {
-                    DebugGizmos.SingleObjects.Line(origin, rightDirection, Color.green, 0.04f, true, 0.3f, true);
-                    Logger.LogWarning("right hit");
+                    DebugGizmos.SingleObjects.Line(originRight, rightDirection, Color.green, 0.04f, true, 0.3f, true);
                     doStability();
                     return;
                 }
 
                 if (GClass672.Linecast(originLeft, leftDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
                 {
-                    DebugGizmos.SingleObjects.Line(origin, leftDirection, Color.blue, 0.04f, true, 0.3f, true);
-                    Logger.LogWarning("left hit");
+                    DebugGizmos.SingleObjects.Line(originLeft, leftDirection, Color.blue, 0.04f, true, 0.3f, true);
                     doStability();
                     return;
                 }
 
-                PlayerProperties.CoverStabilityBonus = Mathf.Lerp(PlayerProperties.CoverStabilityBonus, 1f, Time.deltaTime);
-                Plugin.WeaponIsColliding = false;
+                PlayerProperties.CoverStabilityBonus = Mathf.Lerp(PlayerProperties.CoverStabilityBonus, 1f, Time.deltaTime * 3f);
+                Plugin.WeaponIsMounting = false;
             }
         }
     }

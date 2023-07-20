@@ -294,7 +294,7 @@ namespace RealismMod
 
         public static bool IsFiring = false;
 
-        public static bool WeaponIsColliding = false;
+        public static bool WeaponIsMounting = false;
         public static bool IsBotFiring = false;
         public static bool GrenadeExploded = false;
         public static bool IsAiming = false;
