@@ -1611,6 +1611,9 @@ namespace RealismMod
 
         private static float stanceSpeed = 1f;
 
+        private static Vector3 mountWeapPosition = Vector3.zero;
+
+
         [PatchPostfix]
         private static void Postfix(ref EFT.Animations.ProceduralWeaponAnimation __instance, float dt)
         {
@@ -1657,27 +1660,16 @@ namespace RealismMod
 
                     if (Input.GetKeyDown(KeyCode.M) && Plugin.WeaponCanMount)
                     {
-                        Logger.LogWarning(__instance.HandsContainer.WeaponRootAnim.position);
-                        Plugin.mountWeapPosition = weaponWorldPos;
+                        Plugin.WeaponIsMounting = !Plugin.WeaponIsMounting;
+                        mountWeapPosition = weaponWorldPos;
                     }
-                    else 
+                    if (Plugin.WeaponIsMounting) 
                     {
-                        Plugin.mountWeapPosition = weaponWorldPos;
-                    }
-                    if (Input.GetKeyDown(KeyCode.M) && Plugin.WeaponCanMount)
-                    {
-                        Plugin.WeaponIsMounting = true;
+                        Logger.LogWarning("Mounting");
                         AccessTools.Field(typeof(TurnAwayEffector), "_turnAwayThreshold").SetValue(__instance.TurnAway, 1f);
                         AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").SetValue(__instance, weaponWorldPos);
                         __instance.HandsContainer.WeaponRootAnim.position = weaponWorldPos;
-                        weaponWorldPos = Plugin.mountWeapPosition;
-                        Logger.LogWarning("Holding");
-                        AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
-                        panelUI.Show("Mounting");
-                    }
-                    else 
-                    {
-                        Plugin.WeaponIsMounting = false;
+                        weaponWorldPos = mountWeapPosition;
                     }
 
                     __instance.DeferredRotateWithCustomOrder(__instance.HandsContainer.WeaponRootAnim, worldPivot, vector);

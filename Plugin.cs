@@ -34,9 +34,6 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class Plugin : BaseUnityPlugin
     {
-
-        public static Vector3 mountWeapPosition = Vector3.zero;
-
         public static ConfigEntry<float> ConvSemiMulti { get; set; }
         public static ConfigEntry<float> ConvAutoMulti { get; set; }
         public static ConfigEntry<float> resetTime { get; set; }
@@ -748,10 +745,15 @@ namespace RealismMod
 
             if (Utils.CheckIsReady())
             {
-                if (Plugin.WeaponCanMount && !Plugin.WeaponIsMounting) 
+                if (Plugin.WeaponCanMount && !Plugin.WeaponIsMounting)
                 {
                     AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
                     panelUI.Show("Can Mount");
+                }
+                else if (Plugin.WeaponIsMounting)
+                {
+                    AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
+                    panelUI.Show("Mounting");
                 }
 
                 if (ModConfig.recoil_attachment_overhaul) 
