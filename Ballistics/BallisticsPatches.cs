@@ -352,10 +352,13 @@ namespace RealismMod
                 if (rndNumber <= totalChance)
                 {
                     InventoryControllerClass inventoryController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
-                    Player.FirearmController fc = player.HandsController as Player.FirearmController;
-                    if (fc.Item != null && inventoryController.CanThrow(fc.Item))
+                    if (player.HandsController as Player.FirearmController != null) 
                     {
-                        inventoryController.TryThrowItem(fc.Item, null, false);
+                        Player.FirearmController fc = player.HandsController as Player.FirearmController;
+                        if (fc.Item != null && inventoryController.CanThrow(fc.Item))
+                        {
+                            inventoryController.TryThrowItem(fc.Item, null, false);
+                        }
                     }
                 }
             }

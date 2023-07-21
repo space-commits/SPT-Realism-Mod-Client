@@ -124,6 +124,7 @@ namespace RealismMod
                     float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f);
                     float totalPlayerWeight = PlayerProperties.TotalModifiedWeight - firearmController.Item.GetSingleItemTotalWeight();
                     float playerWeightFactor = 1f + (totalPlayerWeight / 400f);
+                    float mountingBonus = StanceController.WeaponIsMounting ? StanceController.MountingSwayBonus : StanceController.BracingSwayBonus;
                     float breathIntensity;
                     float handsIntensity;
 
@@ -146,8 +147,8 @@ namespace RealismMod
                     breathIntensity *= Plugin.SwayIntensity.Value;
                     handsIntensity *= Plugin.SwayIntensity.Value;
 
-                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * PlayerProperties.MountingSwayBonus;
-                    float totalInputIntensitry = handsIntensity * handsIntensity * PlayerProperties.MountingSwayBonus;
+                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * mountingBonus;
+                    float totalInputIntensitry = handsIntensity * handsIntensity * mountingBonus;
                     PlayerProperties.TotalBreathIntensity = totalBreathIntensity;
                     PlayerProperties.TotalHandsIntensity = totalInputIntensitry;
 

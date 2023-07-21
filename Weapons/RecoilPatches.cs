@@ -139,6 +139,7 @@ namespace RealismMod
                 float aimCamRecoilBonus = StanceController.IsActiveAiming || !Plugin.IsAiming ? 0.8f : 1f;
                 float shortStockingDebuff = StanceController.IsShortStock ? 1.15f : 1f;
                 float shortStockingCamBonus = StanceController.IsShortStock ? 0.75f : 1f;
+                float mountingBonus = StanceController.WeaponIsMounting ? StanceController.MountingRecoilBonus : StanceController.BracingRecoilBonus;
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
@@ -187,7 +188,7 @@ namespace RealismMod
                 __instance.ShotVals[4].Intensity = Plugin.CurrentCamRecoilY * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff;
 
                 float totalDispersion = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
-                float totalVerticalRecoil = __instance.RecoilStrengthXy.y * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * PlayerProperties.MountingRecoilBonus;
+                float totalVerticalRecoil = __instance.RecoilStrengthXy.y * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * mountingBonus;
                 float totalHorizontalRecoil = Mathf.Min(__instance.RecoilStrengthZ.y * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff, Plugin.HorzRecLimit.Value);
 
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.x, Mathf.Cos(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.y, totalHorizontalRecoil * _separateIntensityFactors.z) * __instance.Intensity;
@@ -230,7 +231,7 @@ namespace RealismMod
                     __instance.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
                     __instance.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
 
-                    float mountingBonus = 2f - PlayerProperties.MountingRecoilBonus;
+                    float mountingBonus = StanceController.WeaponIsMounting ?  (2f - StanceController.MountingRecoilBonus) : (2f - StanceController.BracingRecoilBonus);
 
                     if (Plugin.ShotCount == 1 && firearmController.Item.WeapClass != "pistol")
                     {

@@ -296,8 +296,7 @@ namespace RealismMod
 
         public static bool IsFiring = false;
 
-        public static bool WeaponCanMount = false;
-        public static bool WeaponIsMounting = false;
+
         public static bool IsBotFiring = false;
         public static bool GrenadeExploded = false;
         public static bool IsAiming = false;
@@ -307,6 +306,7 @@ namespace RealismMod
         public static float MovementSpeedShotTimer = 0.0f;
         public static float BotTimer = 0.0f;
         public static float GrenadeTimer = 0.0f;
+
 
         public static int ShotCount = 0;
         public static int PrevShotCount = ShotCount;
@@ -747,17 +747,6 @@ namespace RealismMod
 
             if (Utils.CheckIsReady())
             {
-                if (Plugin.WeaponCanMount && !Plugin.WeaponIsMounting)
-                {
-                    AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
-                    panelUI.Show("Can Mount");
-                }
-                else if (Plugin.WeaponIsMounting)
-                {
-                    AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
-                    panelUI.Show("Mounting");
-                }
-
                 if (ModConfig.recoil_attachment_overhaul) 
                 {
                     if (Plugin.ShotCount > Plugin.PrevShotCount)

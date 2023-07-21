@@ -78,6 +78,17 @@ namespace RealismMod
         public static Vector3 CoverWiggleDirection = Vector3.zero;
         public static Vector3 CoverDirection = Vector3.zero;
 
+        public static float BracingSwayBonus = 1f;
+        public static float BracingRecoilBonus = 1f;
+        public static bool IsBracingSide = false;
+        public static bool IsBracingTop = false;
+        public static float MountingRecoilBonus = 1f;
+        public static float MountingSwayBonus = 1f;
+        public static bool WeaponIsBracing = false;
+        public static bool WeaponIsMounting = false;
+        public static float DismountTimer = 0.0f;
+        public static bool DoDismountTimer = false;
+
         public static Dictionary<string, bool> LightDictionary = new Dictionary<string, bool>();
 
         public static bool toggledLight = false;
@@ -86,13 +97,13 @@ namespace RealismMod
 
         public static void SetStanceStamina(Player player, Player.FirearmController fc)
         {
-            if (!PlayerProperties.IsSprinting)
+            if (!PlayerProperties.IsSprinting && !WeaponIsBracing)
             {
                 gotCurrentStam = false;
 
                 if (fc.Item.WeapClass != "pistol")
                 {
-                    if (!IsHighReady && !IsLowReady && !Plugin.IsAiming && !IsShortStock && Plugin.EnableIdleStamDrain.Value && !player.IsInPronePose && !Plugin.WeaponIsMounting)
+                    if (!IsHighReady && !IsLowReady && !Plugin.IsAiming && !IsShortStock && Plugin.EnableIdleStamDrain.Value && !player.IsInPronePose && !WeaponIsMounting && !WeaponIsBracing)
                     {
                         player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgoFactor * 0.8f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                     }
@@ -100,7 +111,7 @@ namespace RealismMod
                     {
                         player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgoFactor * 0.4f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                     }
-                    else if ((!Plugin.IsAiming && !Plugin.EnableIdleStamDrain.Value) || Plugin.WeaponIsMounting)
+                    else if ((!Plugin.IsAiming && !Plugin.EnableIdleStamDrain.Value) || WeaponIsMounting)
                     {
                         player.Physical.Aim(0f);
                     }
@@ -195,6 +206,16 @@ namespace RealismMod
             {
                 if (!PlayerProperties.IsSprinting && !Plugin.IsInInventory && WeaponProperties._WeapClass != "pistol")
                 {
+                    if (StanceController.WeaponIsBracing && !StanceController.WeaponIsMounting)
+                    {
+                        AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
+                        panelUI.Show("Bracing");
+                    }
+                    else if (StanceController.WeaponIsMounting)
+                    {
+                        AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
+                        panelUI.Show("Mounting");
+                    }
 
                     //cycle stances
                     if (Input.GetKeyUp(Plugin.CycleStancesKeybind.Value.MainKey))
@@ -972,45 +993,60 @@ namespace RealismMod
             AccessTools.Method(typeof(Player), "method_40").Invoke(player, new object[] { 2f });
             for (int i = 0; i < pwa.Shootingg.ShotVals.Length; i++)
             {
-                pwa.Shootingg.ShotVals[i].Process(Plugin.WeaponIsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f);
+                pwa.Shootingg.ShotVals[i].Process(StanceController.WeaponIsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f);
             }
         }
 
         public static void DoMounting(ManualLogSource Logger, Player player, ProceduralWeaponAnimation pwa, ref Vector3 weaponWorldPos, ref Vector3 mountWeapPosition) 
         {
             bool isMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
-            if (Plugin.WeaponIsMounting && (isMoving || !Plugin.IsAiming)) 
+
+            if (StanceController.WeaponIsMounting && isMoving) // !Plugin.IsAiming
             {
-                Plugin.WeaponIsMounting = false;
+                StanceController.WeaponIsMounting = false;
                 doMountingEffects(player, pwa);
                 Logger.LogWarning("WASD");
             }
-            if (Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && Plugin.WeaponCanMount && Plugin.IsAiming)
+            if (Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && StanceController.WeaponIsBracing) //  && Plugin.IsAiming
             {
-                Plugin.WeaponIsMounting = !Plugin.WeaponIsMounting;
-                mountWeapPosition = weaponWorldPos;
+                StanceController.WeaponIsMounting = !StanceController.WeaponIsMounting;
+                if (StanceController.WeaponIsMounting) 
+                {
+                    mountWeapPosition = weaponWorldPos;
+                }
                 doMountingEffects(player, pwa);
-                Logger.LogWarning("Toggling Mounting = " + Plugin.WeaponIsMounting);
+                Logger.LogWarning("Toggling Mounting = " + StanceController.WeaponIsMounting);
             }
-            if (Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && !Plugin.WeaponCanMount && Plugin.WeaponIsMounting)
+            if (Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && !StanceController.WeaponIsBracing && StanceController.WeaponIsMounting)
             {
-                Plugin.WeaponIsMounting = false;
+                StanceController.WeaponIsMounting = false;
                 doMountingEffects(player, pwa);
             }
-            if (Plugin.WeaponIsMounting)
+            if (StanceController.WeaponIsMounting)
             {
                 AccessTools.Field(typeof(TurnAwayEffector), "_turnAwayThreshold").SetValue(pwa.TurnAway, 1f);
-                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").SetValue(pwa, weaponWorldPos);
-                pwa.HandsContainer.WeaponRootAnim.position = weaponWorldPos;
-                weaponWorldPos = mountWeapPosition + StanceController.CoverDirection;
+                /*weaponWorldPos = mountWeapPosition + StanceController.CoverDirection;*/  // this makes it feel more clamped to cover but no H recoil
+                Vector3 mountPos = new Vector3(mountWeapPosition.x, mountWeapPosition.y, weaponWorldPos.z) + StanceController.CoverDirection; //this makes it feel less clamped to cover but allows h recoil
+                weaponWorldPos = mountPos;
 
                 Logger.LogWarning("Is Mounting");
+                StanceController.DoDismountTimer = true;
             }
-            else 
+            else if (StanceController.DoDismountTimer) 
             {
-                Logger.LogWarning("reseting");
-                mountWeapPosition = Vector3.Lerp(mountWeapPosition, pwa.HandsContainer.WeaponRootAnim.position, Time.deltaTime * 10f);
+                StanceController.DismountTimer += Time.deltaTime;
+                if (StanceController.DismountTimer > 0.4f)
+                {
+                    StanceController.DoDismountTimer = false;
+                    StanceController.DismountTimer = 0f;
+                    return;
+                }
+
+                mountWeapPosition = Vector3.Lerp(mountWeapPosition, pwa.HandsContainer.WeaponRootAnim.position, Time.deltaTime * 20f);
                 weaponWorldPos = mountWeapPosition;
+         
+
+                Logger.LogWarning("Dismounting");
             }
 
         }
@@ -1117,9 +1153,27 @@ namespace RealismMod
 
         private static void doStability() 
         {
-            Plugin.WeaponCanMount = true;
-            PlayerProperties.MountingSwayBonus = Mathf.Lerp(PlayerProperties.MountingSwayBonus, 0.5f, Time.deltaTime * 3f);
-            PlayerProperties.MountingRecoilBonus = Mathf.Lerp(PlayerProperties.MountingRecoilBonus, 0.3f, Time.deltaTime * 3f);
+            StanceController.WeaponIsBracing = true;
+
+            if (StanceController.CoverDirection.x == 0f)
+            {
+                StanceController.IsBracingTop = true;
+                StanceController.IsBracingSide = false;
+                Logger.LogWarning("mounted to top");
+            }
+            else 
+            {
+                StanceController.IsBracingTop = false;
+                StanceController.IsBracingSide = true;
+                Logger.LogWarning("mounted to side");
+            }
+
+            float mountOrientationBonus = StanceController.IsBracingTop ? 0.75f : 0.9f;
+
+            StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 0.85f * mountOrientationBonus, Time.deltaTime * 2f);
+            StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 0.85f * mountOrientationBonus, Time.deltaTime * 2f);
+            StanceController.MountingRecoilBonus = Mathf.Clamp(1f * mountOrientationBonus, 0.1f, 1f);
+            StanceController.MountingSwayBonus = Mathf.Clamp(0.6f * mountOrientationBonus, 0.4f, 1f);
         }
 
         [PatchPrefix]
@@ -1170,14 +1224,14 @@ namespace RealismMod
                     StanceController.CoverDirection = new Vector3(-moveToCoverOffset, 0f, 0f);
                     return;
                 }
-                if (Plugin.WeaponIsMounting) 
+                if (StanceController.WeaponIsMounting) 
                 {
                     doStability();
                     return;
                 }
-                PlayerProperties.MountingSwayBonus = Mathf.Lerp(PlayerProperties.MountingSwayBonus, 1f, Time.deltaTime * 3f);
-                PlayerProperties.MountingRecoilBonus = Mathf.Lerp(PlayerProperties.MountingRecoilBonus, 1f, Time.deltaTime * 3f);
-                Plugin.WeaponCanMount = false;
+                StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 1f, Time.deltaTime * 4f);
+                StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 1f, Time.deltaTime * 4f);
+                StanceController.WeaponIsBracing = false;
             }
         }
     }
@@ -1195,7 +1249,7 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                if (Plugin.WeaponIsMounting) 
+                if (StanceController.WeaponIsMounting) 
                 {
                     return false;
                 }
@@ -1742,19 +1796,6 @@ namespace RealismMod
 
                     Quaternion rhs = Quaternion.Euler(float_14 * Single_3 * vector3_6);
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponWorldPos, quaternion_6 * rhs * currentRotation);
-
-            /*        if (Input.GetKeyDown(KeyCode.M) && Plugin.WeaponIsMounting)
-                    {
-                        Logger.LogWarning(__instance.HandsContainer.WeaponRootAnim.position);
-                        Plugin.mountWeapPosition = __instance.HandsContainer.WeaponRootAnim.position;
-                    }
-                    if (Input.GetKey(KeyCode.M))
-                    {
-                        __instance.HandsContainer.WeaponRootAnim.position = Plugin.mountWeapPosition;
-                        Logger.LogWarning("Holding");
-                    }
-
-*/
 
                     if (!Plugin.IsFiring) 
                     {
