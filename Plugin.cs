@@ -19,6 +19,7 @@ using UnityEngine.Networking;
 using static RealismMod.GearPatches;
 using static RealismMod.Attributes;
 using static RootMotion.FinalIK.AimPoser;
+using HarmonyLib;
 
 namespace RealismMod
 {
@@ -280,6 +281,13 @@ namespace RealismMod
         public static ConfigEntry<bool> CanFellBot { get; set; }
         public static ConfigEntry<float> FallBaseChance { get; set; }
 
+        public static ConfigEntry<float> test1 { get; set; }
+        public static ConfigEntry<float> test2 { get; set; }
+        public static ConfigEntry<float> test3 { get; set; }
+        public static ConfigEntry<float> test4 { get; set; }
+
+        public static ConfigEntry<KeyboardShortcut> MountKeybind { get; set; }
+
         public static Weapon CurrentlyShootingWeapon;
 
         public static Vector3 TransformBaseStartPosition;
@@ -290,6 +298,7 @@ namespace RealismMod
 
         public static bool IsFiring = false;
 
+
         public static bool IsBotFiring = false;
         public static bool GrenadeExploded = false;
         public static bool IsAiming = false;
@@ -299,6 +308,7 @@ namespace RealismMod
         public static float MovementSpeedShotTimer = 0.0f;
         public static float BotTimer = 0.0f;
         public static float GrenadeTimer = 0.0f;
+
 
         public static int ShotCount = 0;
         public static int PrevShotCount = ShotCount;
@@ -542,11 +552,7 @@ namespace RealismMod
                 new AimingSensitivityPatch().Enable();
                 new UpdateSensitivityPatch().Enable();
                 new SensPatch().Enable();
-
-                if (Plugin.EnableHipfireRecoilClimb.Value)
-                {
-                    new GetRotationMultiplierPatch().Enable();
-                }
+                new GetRotationMultiplierPatch().Enable();
 
                 //Aiming Patches
                 new SetAimingPatch().Enable();
@@ -710,10 +716,14 @@ namespace RealismMod
             new ZeroAdjustmentsPatch().Enable();
             new WeaponOverlappingPatch().Enable();
             new WeaponLengthPatch().Enable();
-            new WeaponOverlappingPatch().Enable();
             new OnWeaponDrawPatch().Enable();
             new UpdateHipInaccuracyPatch().Enable();
             new SetFireModePatch().Enable();
+            new WeaponOverlapViewPatch().Enable();
+            new CollisionPatch().Enable();
+
+            new RotatePatch().Enable();
+            new SetTiltPatch().Enable();
 
             //Health
             if (EnableMedicalOvehaul.Value && ModConfig.med_changes)
@@ -750,7 +760,7 @@ namespace RealismMod
                         StanceController.IsFiringFromStance = true;
                         Plugin.IsFiringMovement = true; 
 
-                        if (Plugin.EnableRecoilClimb.Value == true && (Plugin.IsAiming == true || Plugin.EnableHipfireRecoilClimb.Value == true))
+                        if ((Plugin.EnableRecoilClimb.Value && Plugin.IsAiming) || (Plugin.EnableHipfireRecoilClimb.Value == true && !Plugin.IsAiming))
                         {
                             RecoilController.DoRecoilClimb();
                         }
@@ -784,7 +794,6 @@ namespace RealismMod
                     {
                         if (Input.GetKeyDown(Plugin.IncGain.Value.MainKey) && Plugin.HasHeadSet)
                         {
-             
                             if (Plugin.RealTimeGain.Value < 20)
                             {
                                 Plugin.RealTimeGain.Value += 1f;
@@ -865,6 +874,7 @@ namespace RealismMod
             string pistol = "15. Pistol Position And Stance";
             string shortStock = "16. Short-Stocking";
 
+
             EnableMaterialSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Material Speed Modifier", true, new ConfigDescription("Enables Movement Speed Being Affected By Ground Material (Concrete, Grass, Metal, Glass Etc.)", null, new ConfigurationManagerAttributes { Order = 20 }));
             EnableSlopeSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Slope Speed Modifier", false, new ConfigDescription("Enables Slopes Slowing Down Movement. Can Cause Random Speed Slowdowns In Some Small Spots Due To BSG's Bad Map Geometry.", null, new ConfigurationManagerAttributes { Order = 10 }));
 
@@ -880,6 +890,11 @@ namespace RealismMod
             AddEffectKeybind = Config.Bind(testing, "Add Effect Keybind", new KeyboardShortcut(KeyCode.JoystickButton6), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 130, IsAdvanced = true }));
             EnableBallisticsLogging = Config.Bind<bool>(testing, "Enable Ballistics Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 2, IsAdvanced = true }));
             EnableLogging = Config.Bind<bool>(testing, "Enable Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true }));
+            test1 = Config.Bind<float>(testing, "test 1", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 600 }));
+            test2 = Config.Bind<float>(testing, "test 2", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 500 }));
+            test3 = Config.Bind<float>(testing, "test 3", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 400 }));
+            test4 = Config.Bind<float>(testing, "test 4", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 300 }));
+
 
             EnableStockSlots = Config.Bind<bool>(miscSettings, "Enable Stock Slot Stat Modifiers", true, new ConfigDescription("Requires Restart. For Buffer Tubes That Have Multiple Stock Slots, Each Slot Will Modify The Ergo And Recoil Stats Of The Attached Stock.", null, new ConfigurationManagerAttributes { Order = 3 }));
             EnableFSPatch = Config.Bind<bool>(miscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 4 }));
@@ -891,7 +906,7 @@ namespace RealismMod
             EnablePlayerArmorZones = Config.Bind<bool>(ballSettings, "Enable Armor Hit Zones For Player.", true, new ConfigDescription("Enables Player To Use New Hit Zones.", null, new ConfigurationManagerAttributes { Order = 20 }));
             EnableArmPen = Config.Bind<bool>(ballSettings, "Enable Increased Arm Penetration", true, new ConfigDescription("Arm 'Armor' Is Reduced to Lvl 1, And Reduces Pen Of Bullets That Pass Through Them By A Lot Less. Arms Soak Up A Lot Less Damage Therefore Damage To Chest Is Increased.", null, new ConfigurationManagerAttributes { Order = 40 }));
             EnableHitSounds = Config.Bind<bool>(ballSettings, "Enable Hit Sounds", true, new ConfigDescription("Enables Additional Sounds To Be Played When Hitting The New Body Zones And Armor Hit Sounds By Material.", null, new ConfigurationManagerAttributes { Order = 50 }));
-            FleshHitSoundMulti = Config.Bind<float>(ballSettings, "FleshHit Sound Multi", 0.9f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 60 }));
+            FleshHitSoundMulti = Config.Bind<float>(ballSettings, "FleshHit Sound Multi.", 0.45f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 60 }));
             ArmorCloseHitSoundMulti = Config.Bind<float>(ballSettings, "Distant Armor Hit Sound Multi", 1.1f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 70 }));
             ArmorFarHitSoundMulti = Config.Bind<float>(ballSettings, "Close Armor Hit Sound Mutli", 1.2f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 80 }));
             EnableRealArmorClass = Config.Bind<bool>(ballSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 90 }));
@@ -899,7 +914,7 @@ namespace RealismMod
             RagdollForceModifier = Config.Bind<float>(ballSettings, "Ragdoll Force Modifier", 1f, new ConfigDescription("Requires Ragdoll Fix To Be Enabled.", new AcceptableValueRange<float>(0f, 10f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 110 }));
             CanDisarmBot = Config.Bind<bool>(ballSettings, "Can Disarm Bot", true, new ConfigDescription("If Hit In The Arms, There Is A Chance That The Currently Equipped Weapon Will Be Dropped. Chance Is Modified By Bullet Kinetic Energy And Reduced If Hit Arm Armor, And Doubled If Forearm Is Hit.", null, new ConfigurationManagerAttributes { Order = 120 }));
             CanDisarmPlayer = Config.Bind<bool>(ballSettings, "Can Disarm Player", false, new ConfigDescription("If Hit In The Arms, There Is A Chance That The Currently Equipped Weapon Will Be Dropped. Chance Is Modified By Bullet Kinetic Energy And Reduced If Hit Arm Armor, And Doubled If Forearm Is Hit.", null, new ConfigurationManagerAttributes { Order = 130 }));
-            DisarmBaseChance = Config.Bind<float>(ballSettings, "Disarm Base Chance", 5f, new ConfigDescription("The Base Chance To Be Disarmed. 1 = 1% Chance. This Value Is Increased By The Bullet's Kinetic Energy, Reduced By Armor Armor If Hit, And Doubled If Forearm Is Hit.", new AcceptableValueRange<float>(0f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, IsAdvanced = true, Order = 140 }));
+            DisarmBaseChance = Config.Bind<float>(ballSettings, "Disarm Base Chance.", 1f, new ConfigDescription("The Base Chance To Be Disarmed. 1 = 1% Chance. This Value Is Increased By The Bullet's Kinetic Energy, Reduced By Armor Armor If Hit, And Doubled If Forearm Is Hit.", new AcceptableValueRange<float>(0f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, IsAdvanced = true, Order = 140 }));
             CanFellBot = Config.Bind<bool>(ballSettings, "Bot Can Fall", true, new ConfigDescription("If Hit In The Leg And The Leg Has/Will Have 0 HP, There Is A Chance That Prone Will Be Toggled. Chance Is Modified By Bullet Kinetic EnergyAnd Doubled If Calf Is Hit.", null, new ConfigurationManagerAttributes { Order = 150 }));
             CanFellPlayer = Config.Bind<bool>(ballSettings, "Player Can Fall", false, new ConfigDescription("If Hit In The Leg And The Leg Has/Will Have 0 HP, There Is A Chance That Prone Will Be Toggled. Chance Is Modified By Bullet Kinetic Energy And Doubled If Calf Is Hit.", null, new ConfigurationManagerAttributes { Order = 160 }));
             FallBaseChance = Config.Bind<float>(ballSettings, "Fall Base Chance", 10f, new ConfigDescription("The Base Chance To Toggle Prone If Shot In Leg. 1 = 1% Chance. This Value Is Increased By The Bullet's Kinetic Energy And Doubled If Calf Is Hit.", new AcceptableValueRange<float>(0f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, IsAdvanced = true, Order = 170 }));
@@ -928,7 +943,7 @@ namespace RealismMod
             hRecoilResetRate = Config.Bind<float>(advancedRecoilSettings, "Rearward Recoil Reset Rate", 0.91f, new ConfigDescription("The Rate At Which Rearward Recoil Resets Over Time After Firing. Lower Means Faster Rate.", new AcceptableValueRange<float>(0.1f, 0.99f), new ConfigurationManagerAttributes { Order = 4, IsAdvanced = true }));
             ConvergenceResetRate = Config.Bind<float>(advancedRecoilSettings, "Convergence Reset Rate", 1.16f, new ConfigDescription("The Rate At Which Convergence Resets Over Time After Firing. Higher Means Faster Rate.", new AcceptableValueRange<float>(1.01f, 2f), new ConfigurationManagerAttributes { Order = 3, IsAdvanced = true }));
             convergenceLimit = Config.Bind<float>(advancedRecoilSettings, "Convergence Lower Limit", 0.3f, new ConfigDescription("The Lower Limit For Convergence. Convergence Is Kept In Proportion With Vertical Recoil While Firing, Down To The Set Limit. Value Of 0.3 Means Convegence Lower Limit Of 0.3 * Starting Convergance.", new AcceptableValueRange<float>(0.1f, 1.0f), new ConfigurationManagerAttributes { Order = 2, IsAdvanced = true }));
-            resetTime = Config.Bind<float>(advancedRecoilSettings, "Time Before Reset.", 0.2f, new ConfigDescription("The Time In Seconds That Has To Be Elapsed Before Firing Is Considered Over, Stats Will Not Reset Until This Timer Is Done. Helps Prevent Spam Fire In Full Auto.", new AcceptableValueRange<float>(0.1f, 0.55f), new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true }));
+            resetTime = Config.Bind<float>(advancedRecoilSettings, "Time Before Reset", 0.15f, new ConfigDescription("The Time In Seconds That Has To Be Elapsed Before Firing Is Considered Over, Stats Will Not Reset Until This Timer Is Done. Helps Prevent Spam Fire In Full Auto.", new AcceptableValueRange<float>(0.1f, 0.55f), new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true }));
 
             EnableAmmoStats = Config.Bind<bool>(statSettings, "Display Ammo Stats", true, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 11 }));
             EnableStatsDelta = Config.Bind<bool>(statSettings, "Show Stats Delta Preview", false, new ConfigDescription("Requiures Restart. Shows A Preview Of The Difference To Stats Swapping/Removing Attachments Will Make. Warning: Will Degrade Performance Significantly When Moddig Weapons In Inspect Or Modding Screens.", null, new ConfigurationManagerAttributes { Order = 5 }));
@@ -990,6 +1005,7 @@ namespace RealismMod
             HighReadyKeybind = Config.Bind(weapAimAndPos, "High Ready Keybind", new KeyboardShortcut(KeyCode.UpArrow), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 172 }));
             LowReadyKeybind = Config.Bind(weapAimAndPos, "Low Ready Keybind", new KeyboardShortcut(KeyCode.DownArrow), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 171 }));
             ShortStockKeybind = Config.Bind(weapAimAndPos, "Short-Stock Keybind", new KeyboardShortcut(KeyCode.RightArrow), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 170 }));
+            MountKeybind = Config.Bind(weapAimAndPos, "Mounting Keybind", new KeyboardShortcut(KeyCode.KeypadMultiply), new ConfigDescription("Snaps To Cover, Toggle Only.", null, new ConfigurationManagerAttributes { Order = 160 }));
 
             WeapOffsetX = Config.Bind<float>(weapAimAndPos, "Weapon Position X-Axis", 0.0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 152 }));
             WeapOffsetY = Config.Bind<float>(weapAimAndPos, "Weapon Position Y-Axis", 0.0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 151 }));
@@ -1106,9 +1122,8 @@ namespace RealismMod
             ShortStockAdditionalRotationZ = Config.Bind<float>(shortStock, "Short-Stock Ready Additional Rotation Z-Axis", 5.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true }));
 
             ShortStockResetRotationX = Config.Bind<float>(shortStock, "Short-Stock Ready Reset Rotation X-Axis", -5.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
-            ShortStockResetRotationY = Config.Bind<float>(shortStock, "Short-Stock Ready Reset Rotation Y-Axis", 12.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
+            ShortStockResetRotationY = Config.Bind<float>(shortStock, "Short-Stock Ready Reset Rotation Y-Axis", 1-2.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
             ShortStockResetRotationZ = Config.Bind<float>(shortStock, "Short-Stock Ready Reset Rotation Z-Axis", 1.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, IsAdvanced = true }));
-
         }
     }
 }

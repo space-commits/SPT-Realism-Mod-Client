@@ -100,7 +100,7 @@ namespace RealismMod
                         Plugin.CurrentHipSens = sens;
                         Plugin.CheckedForSens = true;
                     }
-                    else
+                    else if (Plugin.EnableHipfireRecoilClimb.Value)
                     {
                         float _mouseSensitivityModifier = (float)AccessTools.Field(typeof(Player), "_mouseSensitivityModifier").GetValue(__instance);
                         __result = Plugin.CurrentHipSens * (1f + _mouseSensitivityModifier);

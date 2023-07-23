@@ -142,19 +142,23 @@ namespace RealismMod
 
             if (hitZone == EBodyHitZone.Spine)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["spine.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.35f, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["spine.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose, EOcclusionTest.Continuous);
+                return;
             }
-            else if (hitBox == HitBox.Head) 
+            if (hitBox == HitBox.Head) 
             {
                 Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose, EOcclusionTest.Continuous);
+                return;
             }
-            else if (hitZone == EBodyHitZone.Heart)
+            if (hitZone == EBodyHitZone.Heart)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["heart.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 1.35f, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["heart.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose, EOcclusionTest.Continuous);
+                return;
             }
-            else if (hitZone == EBodyHitZone.AssZone)
+            if (hitZone == EBodyHitZone.AssZone)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["ass_impact.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, 2f, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["ass_impact.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, 0.5f, EOcclusionTest.Continuous);
+                return;
             }
 
             string audioClip = "flesh_dist_1.wav";
@@ -210,8 +214,8 @@ namespace RealismMod
                         playCounter++;
                         playCounter = playCounter > 2 ? 0 : playCounter;
                     }
-/*
-                    if (!shot.Player.IsYourPlayer) 
+
+/*                    if (!shot.Player.IsYourPlayer)
                     {
                         Logger.LogWarning("=========Player Hit Damage Info==========");
                         Logger.LogWarning("ammo name = " + shot.Ammo.LocalizedName());
@@ -223,7 +227,7 @@ namespace RealismMod
                         Logger.LogWarning("x = " + localPoint.x);
                         Logger.LogWarning("y = " + localPoint.y);
                         Logger.LogWarning("z = " + localPoint.z);
-                           Logger.LogWarning("===================");
+                        Logger.LogWarning("===================");
                     }
                     else
                     {
@@ -239,7 +243,6 @@ namespace RealismMod
                         Logger.LogWarning("z = " + localPoint.z);
                         Logger.LogWarning("------------------");
                     }*/
-
 
                     if (Plugin.EnableBallisticsLogging.Value)
                     {
@@ -343,16 +346,19 @@ namespace RealismMod
                 float rndNumber = UnityEngine.Random.Range(0, 101);
                 float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
                 float hitArmArmorFactor = hitArmArmor ? 0.5f : 1f;
-                float hitLocationModifier = forearm ? 2f : 1f;
+                float hitLocationModifier = forearm ? 1.5f : 1f;
                 float totalChance = Mathf.Round(Plugin.DisarmBaseChance.Value * kineticEnergyFactor * hitArmArmorFactor * hitLocationModifier);
 
                 if (rndNumber <= totalChance)
                 {
                     InventoryControllerClass inventoryController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
-                    Player.FirearmController fc = player.HandsController as Player.FirearmController;
-                    if (inventoryController.CanThrow(fc.Item))
+                    if (player.HandsController as Player.FirearmController != null) 
                     {
-                        inventoryController.TryThrowItem(fc.Item, null, false);
+                        Player.FirearmController fc = player.HandsController as Player.FirearmController;
+                        if (fc.Item != null && inventoryController.CanThrow(fc.Item))
+                        {
+                            inventoryController.TryThrowItem(fc.Item, null, false);
+                        }
                     }
                 }
             }
@@ -368,15 +374,21 @@ namespace RealismMod
             if (rndNumber <= totalChance)
             {
                 player.ToggleProne();
+                TryDoDisarm(player, kineticEnergy * 0.25f, false, false);
             }
         }
 
         [PatchPrefix]
         private static void Prefix(Player __instance, DamageInfo damageInfo, EBodyPart bodyPartType, float absorbed, EHeadSegment? headSegment = null)
         {
+            if (damageInfo.DamageType == EDamageType.Fall && damageInfo.Damage >= 15f) 
+            {
+                __instance.ToggleProne();
+                TryDoDisarm(__instance, damageInfo.Damage * 50f, false, false);
+            }
+
             if (damageInfo.DamageType == EDamageType.Bullet)
             {
-
                 EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
                 InventoryClass inventory = (InventoryClass)AccessTools.Property(typeof(Player), "Inventory").GetValue(__instance);
                 preAllocatedArmorComponents.Clear();

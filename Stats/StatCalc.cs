@@ -12,8 +12,8 @@ namespace RealismMod
     public static class StatCalc
     {
 
-        public static float ErgoWeightMult = 11.11f;
-        public static float ErgoTorqueMult = 0.82f;
+        public static float ErgoWeightMult = 11f;
+        public static float ErgoTorqueMult = 0.8f;
         public static float PistolErgoWeightMult = 12f;
         public static float PistolErgoTorqueMult = 1.0f;
 
@@ -35,7 +35,7 @@ namespace RealismMod
         public static float CamWeightMult = 3.25f;
         public static float CamTorqueMult = 0.25f;
 
-        public static float AngleTorqueMult = 0.7f;//needs tweaking
+        public static float AngleTorqueMult = 0.4f;//needs tweaking
         public static float PistolAngleTorqueMult = 0.3f;
 
         public static float DampingWeightMult = 0.04f;

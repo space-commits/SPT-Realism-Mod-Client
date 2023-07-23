@@ -1,11 +1,13 @@
 ﻿using Aki.Reflection.Patching;
 using BepInEx.Logging;
 using Comfort.Common;
+using CustomPlayerLoopSystem;
 using EFT;
+using EFT.Animations;
+using EFT.InputSystem;
 using EFT.InventoryLogic;
 using EFT.UI;
 using HarmonyLib;
-using notGreg.UniformAim;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +15,9 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using static EFT.Player;
+using static EFT.Weather.WeatherDebug;
+using static ShotEffector;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace RealismMod
 {
@@ -71,20 +76,36 @@ namespace RealismMod
         public static bool HasResetShortStock = true;
         public static bool HasResetPistolPos = true;
 
+        public static Vector3 CoverWiggleDirection = Vector3.zero;
+        public static Vector3 CoverDirection = Vector3.zero;
+
+        public static float BracingSwayBonus = 1f;
+        public static float BracingRecoilBonus = 1f;
+        public static bool IsBracingTop = false;
+        public static bool IsBracingLeftSide = false;
+        public static bool IsBracingRightSide = false;
+        public static bool IsBracingSide = false;
+        public static float MountingSwayBonus = 1f;
+        public static bool WeaponIsBracing = false;
+        public static bool WeaponIsMounting = false;
+        public static float DismountTimer = 0.0f;
+        public static bool CanDoDismountiImer = false;
+
         public static Dictionary<string, bool> LightDictionary = new Dictionary<string, bool>();
 
         public static bool toggledLight = false;
 
+        public static bool IsInStance = false;
 
         public static void SetStanceStamina(Player player, Player.FirearmController fc)
         {
-            if (!PlayerProperties.IsSprinting)
+            if (!PlayerProperties.IsSprinting && !WeaponIsBracing)
             {
                 gotCurrentStam = false;
 
                 if (fc.Item.WeapClass != "pistol")
                 {
-                    if (!IsHighReady && !IsLowReady && !Plugin.IsAiming && !IsActiveAiming && !IsShortStock && Plugin.EnableIdleStamDrain.Value && !player.IsInPronePose)
+                    if (!IsHighReady && !IsLowReady && !Plugin.IsAiming && !IsShortStock && Plugin.EnableIdleStamDrain.Value && !player.IsInPronePose && !WeaponIsMounting && !WeaponIsBracing)
                     {
                         player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgoFactor * 0.8f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                     }
@@ -92,10 +113,11 @@ namespace RealismMod
                     {
                         player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgoFactor * 0.4f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                     }
-                    else if (!Plugin.IsAiming && !Plugin.EnableIdleStamDrain.Value)
+                    else if ((!Plugin.IsAiming && !Plugin.EnableIdleStamDrain.Value) || WeaponIsMounting)
                     {
                         player.Physical.Aim(0f);
                     }
+
                     if (IsHighReady && !IsLowReady && !Plugin.IsAiming && !IsShortStock)
                     {
                         player.Physical.Aim(0f);
@@ -186,6 +208,16 @@ namespace RealismMod
             {
                 if (!PlayerProperties.IsSprinting && !Plugin.IsInInventory && WeaponProperties._WeapClass != "pistol")
                 {
+                    if (StanceController.WeaponIsBracing && !StanceController.WeaponIsMounting)
+                    {
+                        AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
+                        panelUI.Show("Bracing");
+                    }
+                    else if (StanceController.WeaponIsMounting)
+                    {
+                        AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
+                        panelUI.Show("Mounting");
+                    }
 
                     //cycle stances
                     if (Input.GetKeyUp(Plugin.CycleStancesKeybind.Value.MainKey))
@@ -545,14 +577,14 @@ namespace RealismMod
         public static void DoRifleStances(ManualLogSource logger, Player player, Player.FirearmController fc, bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation __instance, ref Quaternion stanceRotation, float dt, ref bool isResettingShortStock, ref bool hasResetShortStock, ref bool hasResetLowReady, ref bool hasResetActiveAim, ref bool hasResetHighReady, ref bool isResettingHighReady, ref bool isResettingLowReady, ref bool isResettingActiveAim, ref float rotationSpeed)
         {
             float totalPlayerWeight = PlayerProperties.TotalModifiedWeightMinusWeapon;
-            float playerWeightFactor = 1f + (totalPlayerWeight / 100f);
-            float ergoMulti = Mathf.Clamp(1f - ((1f - WeaponProperties.ErgoStanceSpeed) * 1.5f), 0.5f, 0.98f);
-            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f)), 0.4f, 0.95f);
+            float playerWeightFactor = 1f + (totalPlayerWeight / 150f);
+            float ergoMulti = Mathf.Clamp(1f - ((1f - WeaponProperties.ErgoStanceSpeed) * 2f), 0.5f, 0.98f);
+            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f)), 0.5f, 0.95f);
             float invInjuryMulti = (1f - PlayerProperties.StanceInjuryMulti) + 1f;
             float resetErgoMulti = (1f - stanceMulti) + 1f;
             float stocklessModifier = WeaponProperties.HasShoulderContact ? 1f : 2.4f;
             float ergoDelta = (1f - WeaponProperties.ErgoDelta);
-            float intensity = Mathf.Max(1.5f * (1f - (PlayerProperties.AimSkillADSBuff * 0.5f)) * resetErgoMulti * invInjuryMulti * stocklessModifier * ergoDelta * playerWeightFactor, 0.5f);
+            float intensity = Mathf.Max(1.2f * (1f - (PlayerProperties.AimSkillADSBuff * 0.5f)) * resetErgoMulti * invInjuryMulti * stocklessModifier * ergoDelta * playerWeightFactor, 0.5f);
 
             float pitch = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14").GetValue(__instance);
 
@@ -957,6 +989,68 @@ namespace RealismMod
                 hasResetActiveAim = true;
             }
         }
+
+        private static void doMountingEffects(Player player, ProceduralWeaponAnimation pwa) 
+        {
+            AccessTools.Method(typeof(Player), "method_40").Invoke(player, new object[] { 2f });
+            for (int i = 0; i < pwa.Shootingg.ShotVals.Length; i++)
+            {
+                pwa.Shootingg.ShotVals[i].Process(StanceController.WeaponIsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f);
+            }
+        }
+
+        public static void DoMounting(ManualLogSource Logger, Player player, ProceduralWeaponAnimation pwa, ref Vector3 weaponWorldPos, ref Vector3 mountWeapPosition) 
+        {
+            bool isMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
+
+            if (StanceController.WeaponIsMounting && (isMoving || !Plugin.IsAiming)) 
+            {
+                StanceController.WeaponIsMounting = false;
+                doMountingEffects(player, pwa);
+            }
+            if (Plugin.IsAiming && Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && StanceController.WeaponIsBracing && player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire)
+            {
+                StanceController.WeaponIsMounting = !StanceController.WeaponIsMounting;
+                if (StanceController.WeaponIsMounting) 
+                {
+                    mountWeapPosition = weaponWorldPos + StanceController.CoverDirection;
+                }
+                doMountingEffects(player, pwa);
+            }
+            if (Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && !StanceController.WeaponIsBracing && StanceController.WeaponIsMounting)
+            {
+                StanceController.WeaponIsMounting = false;
+                doMountingEffects(player, pwa);
+            }
+            if (StanceController.WeaponIsMounting)
+            {
+                AccessTools.Field(typeof(TurnAwayEffector), "_turnAwayThreshold").SetValue(pwa.TurnAway, 1f);
+                weaponWorldPos = mountWeapPosition + StanceController.CoverDirection;  // this makes it feel more clamped to cover but no H recoil
+                /*weaponWorldPos = new Vector3(mountWeapPosition.x, mountWeapPosition.y, weaponWorldPos.z) + StanceController.CoverDirection;*/ //this makes it feel less clamped to cover but allows h recoil
+/*                pwa.HandsContainer.CameraTransform.localRotation = cameraLocalRotation;  
+*/                StanceController.CanDoDismountiImer = true;
+
+                /*player.CurrentState.RotationSpeedClamp = Plugin.test1.Value;*/
+
+     
+            }
+            else if (StanceController.CanDoDismountiImer) 
+            {
+                StanceController.DismountTimer += Time.deltaTime;
+                if (StanceController.DismountTimer > 0.4f)
+                {
+                    StanceController.CanDoDismountiImer = false;
+                    StanceController.DismountTimer = 0f;
+                    return;
+                }
+
+                mountWeapPosition = Vector3.Lerp(mountWeapPosition, pwa.HandsContainer.WeaponRootAnim.position, Time.deltaTime * 20f);
+                weaponWorldPos = mountWeapPosition;
+         
+            }
+
+        }
+
     }
 
     public class LaserLateUpdatePatch : ModulePatch
@@ -1050,6 +1144,186 @@ namespace RealismMod
         }
     }
 
+    public class CollisionPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player.FirearmController).GetMethod("method_8", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        private static void setMountingStatus(bool isTop, bool isRightide) 
+        {
+            if (isTop)
+            {
+                StanceController.IsBracingTop = true;
+                StanceController.IsBracingSide = false;
+                StanceController.IsBracingRightSide = false;
+                StanceController.IsBracingLeftSide = false;
+            }
+            else
+            {
+                StanceController.IsBracingSide = true;
+                StanceController.IsBracingTop = false;
+
+                if (isRightide)
+                {
+                    StanceController.IsBracingRightSide = true;
+                    StanceController.IsBracingLeftSide = false;
+                }
+                else 
+                {
+                    StanceController.IsBracingRightSide = false;
+                    StanceController.IsBracingLeftSide = true;
+                }
+            }
+        }
+
+        private static void doStability(bool isTop, bool isRightide) 
+        {
+            if (!StanceController.WeaponIsMounting) 
+            {
+                setMountingStatus(isTop, isRightide);
+            }
+
+            StanceController.WeaponIsBracing = true;
+
+            float mountOrientationBonus = StanceController.IsBracingTop ? 0.75f : 0.9f;
+
+            StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 0.85f * mountOrientationBonus, Time.deltaTime * 2f);
+            StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 0.8f * mountOrientationBonus, Time.deltaTime * 2f);
+            StanceController.MountingSwayBonus = Mathf.Clamp(0.6f * mountOrientationBonus, 0.4f, 1f);
+        }
+
+        [PatchPrefix]
+        private static void PatchPrefix(Player.FirearmController __instance, Vector3 origin, float ln, Vector3? weaponUp = null)
+        {
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (player.IsYourPlayer == true)
+            {
+                int int_0 = (int)AccessTools.Field(typeof(EFT.Player.FirearmController), "int_0").GetValue(__instance);
+                RaycastHit[] raycastHit_0 = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
+                Func<RaycastHit, bool> func_1 = (Func<RaycastHit, bool>)AccessTools.Field(typeof(EFT.Player.FirearmController), "func_1").GetValue(__instance);
+
+                float offset = 0.12f;
+                float wiggleAmount = 6f;
+                float moveToCoverOffset = 0.0025f;
+
+                Vector3 originUp = origin + new Vector3(0f, -offset, 0f);
+                Vector3 originLeft = origin + new Vector3(offset, 0f, 0f);
+                Vector3 originRight = origin + new Vector3(-offset, 0f, 0f);
+
+                Vector3 up = weaponUp ?? __instance.WeaponRoot.up; //this is actually down because bsg
+                Vector3 forwardDirection = originUp - up * ln;
+                Vector3 leftDirection = originLeft - up * ln;
+                Vector3 rightDirection = originRight - up * ln;
+
+                RaycastHit raycastHit;
+                if (GClass672.Linecast(originUp, forwardDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                {
+                    DebugGizmos.SingleObjects.Line(originUp, forwardDirection, Color.red, 0.04f, true, 0.3f, true);
+                    doStability(true, false);
+                    StanceController.CoverWiggleDirection = new Vector3(wiggleAmount, 0f, 0f);
+                    StanceController.CoverDirection = new Vector3(0f, -moveToCoverOffset, 0f);
+                    return;
+                }
+                if (GClass672.Linecast(originLeft, leftDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                {
+                    DebugGizmos.SingleObjects.Line(originLeft, leftDirection, Color.green, 0.04f, true, 0.3f, true);
+                    doStability(false, false);
+                    StanceController.CoverWiggleDirection = new Vector3(0f, wiggleAmount, 0f);
+                    StanceController.CoverDirection = new Vector3(moveToCoverOffset, 0f, 0f);
+                    return;
+                }
+                if (GClass672.Linecast(originRight, rightDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                {
+                    DebugGizmos.SingleObjects.Line(originRight, rightDirection, Color.blue, 0.04f, true, 0.3f, true);
+                    doStability(false, true);
+                    StanceController.CoverWiggleDirection = new Vector3(0f, -wiggleAmount, 0f);
+                    StanceController.CoverDirection = new Vector3(-moveToCoverOffset, 0f, 0f);
+                    return;
+                }
+
+                StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 1f, Time.deltaTime * 4f);
+                StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 1f, Time.deltaTime * 4f);
+                StanceController.WeaponIsBracing = false;
+            }
+        }
+    }
+
+    public class WeaponOverlapViewPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player.FirearmController).GetMethod("WeaponOverlapView", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool PatchPrefix(Player.FirearmController __instance)
+        {
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (player.IsYourPlayer == true)
+            {
+                if (StanceController.WeaponIsMounting) 
+                {
+                    return false;
+                }
+                return true;
+
+               /* bool AimingInterruptedByOverlap = (bool)AccessTools.Field(typeof(EFT.Player.FirearmController), "AimingInterruptedByOverlap").GetValue(__instance);
+                float float_0 = (float)AccessTools.Field(typeof(EFT.Player.FirearmController), "float_0").GetValue(__instance);
+                Vector3 vector = player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Get();
+
+                if (float_0 < 0.02f)
+                {
+                    player.ProceduralWeaponAnimation.TurnAway.OverlapDepth = float_0;
+                    player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire = true;
+                }
+                else
+                {
+                    player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire = false;
+                    player.ProceduralWeaponAnimation.TurnAway.OriginZShift = vector.y;
+                    player.ProceduralWeaponAnimation.TurnAway.OverlapDepth = float_0;
+                }
+*//*                if (float_0 > EFTHardSettings.Instance.STOP_AIMING_AT && __instance.IsAiming)
+                {
+                    __instance.ToggleAim();
+                    AimingInterruptedByOverlap = true;
+                    return false;
+                }*//*
+                if (float_0 < EFTHardSettings.Instance.STOP_AIMING_AT && player.ProceduralWeaponAnimation.TurnAway.OverlapValue < 0.2f && AimingInterruptedByOverlap && !__instance.IsAiming)
+                {
+                    *//*__instance.ToggleAim();*//*
+                    AimingInterruptedByOverlap = false;
+                }
+                return false;*/
+            }
+            return true;
+        }
+    }
+
+    //not sure why this is here, something to do with stances bugging out if overlapping
+    /*    public class WeaponOverlapViewPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player.FirearmController).GetMethod("WeaponOverlapView", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(Player.FirearmController __instance)
+        {
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            float float_0 = (float)AccessTools.Field(typeof(EFT.Player.FirearmController), "float_0").GetValue(__instance);
+
+            if (float_0 > EFTHardSettings.Instance.STOP_AIMING_AT && __instance.IsAiming)
+            {
+                Plugin.IsAiming = true;
+                return;
+            }
+        }
+    }*/
+
+
     public class WeaponOverlappingPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -1064,7 +1338,6 @@ namespace RealismMod
 
             if (player.IsYourPlayer == true)
             {
-
                 if ((StanceController.IsHighReady == true || StanceController.IsLowReady == true || StanceController.IsShortStock == true))
                 {
                     AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength * 0.8f);
@@ -1093,26 +1366,6 @@ namespace RealismMod
         }
     }
 
-    public class WeaponOverlapViewPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player.FirearmController).GetMethod("WeaponOverlapView", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static void Prefix(Player.FirearmController __instance)
-        {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            float float_0 = (float)AccessTools.Field(typeof(EFT.Player.FirearmController), "float_0").GetValue(__instance);
-
-            if (float_0 > EFTHardSettings.Instance.STOP_AIMING_AT && __instance.IsAiming)
-            {
-                Plugin.IsAiming = true;
-                return;
-            }
-        }
-    }
 
     public class InitTransformsPatch : ModulePatch
     {
@@ -1466,6 +1719,79 @@ namespace RealismMod
         }
     }
 
+    public class RotatePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(MovementState).GetMethod("Rotate", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(MovementState __instance, Vector2 deltaRotation, bool ignoreClamp)
+        {
+            if (StanceController.WeaponIsMounting && !ignoreClamp) 
+            {
+                GClass1603 MovementContext = (GClass1603)AccessTools.Field(typeof(MovementState), "MovementContext").GetValue(__instance);
+
+                Player player = Utils.GetPlayer();
+                FirearmController fc = player.HandsController as FirearmController;
+
+                Vector2 currentRotation = MovementContext.Rotation;
+
+                deltaRotation *= (fc.AimingSensitivity * 0.9f);
+             
+                float lowerClampXLimit = StanceController.IsBracingTop ? -17f : StanceController.IsBracingRightSide ? -4f : -15f;
+                float upperClampXLimit = StanceController.IsBracingTop ? 17f : StanceController.IsBracingRightSide ? 15f : 1f;
+
+                float lowerClampYLimit = StanceController.IsBracingTop ? -10f : -8f;
+                float upperClampYLimit = StanceController.IsBracingTop ? 10f : 15f;
+
+                float clampedX = Mathf.Clamp(currentRotation.x + deltaRotation.x, lowerClampXLimit, upperClampXLimit);
+                float clampedY = Mathf.Clamp(currentRotation.y + deltaRotation.y, lowerClampYLimit, upperClampYLimit);
+
+                deltaRotation = new Vector2(clampedX - currentRotation.x, clampedY - currentRotation.y);
+
+                deltaRotation = MovementContext.ClampRotation(deltaRotation);
+
+                MovementContext.Rotation += deltaRotation;
+
+                return false;
+            }
+            return true;
+     
+        }
+    }
+
+    public class SetTiltPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(MovementState).GetMethod("SetTilt", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        public static float currentTilt = 0f;
+        public static float currentPoseLevel = 0f;
+
+        [PatchPrefix]
+        private static void Prefix(MovementState __instance, float tilt)
+        {
+            GClass1603 MovementContext = (GClass1603)AccessTools.Field(typeof(MovementState), "MovementContext").GetValue(__instance);
+            Player player_0 = (Player)AccessTools.Field(typeof(GClass1603), "player_0").GetValue(MovementContext);
+            if (player_0.IsYourPlayer) 
+            {
+                if (!StanceController.WeaponIsMounting) 
+                {
+                    currentTilt = tilt;
+                    currentPoseLevel = MovementContext.PoseLevel;
+                }
+                if (currentTilt != tilt || currentPoseLevel != MovementContext.PoseLevel || !MovementContext.IsGrounded) 
+                {
+                    StanceController.WeaponIsMounting = false;
+                }
+            }
+        }
+    }
+
 
     public class ApplyComplexRotationPatch : ModulePatch
     {
@@ -1491,6 +1817,9 @@ namespace RealismMod
 
         private static float stanceSpeed = 1f;
 
+        private static Vector3 mountWeapPosition = Vector3.zero;
+        private static Quaternion mountWeapRotation = Quaternion.identity;
+
         [PatchPostfix]
         private static void Postfix(ref EFT.Animations.ProceduralWeaponAnimation __instance, float dt)
         {
@@ -1508,7 +1837,6 @@ namespace RealismMod
                     float float_13 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_13").GetValue(__instance);
                     float float_14 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14").GetValue(__instance);
                     float float_21 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_21").GetValue(__instance);
-                    Vector3 vector3_4 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").GetValue(__instance);
                     Vector3 vector3_6 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_6").GetValue(__instance);
                     Quaternion quaternion_2 = (Quaternion)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_2").GetValue(__instance);
                     Quaternion quaternion_5 = (Quaternion)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_5").GetValue(__instance);
@@ -1516,20 +1844,17 @@ namespace RealismMod
                     bool bool_1 = (bool)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "bool_1").GetValue(__instance);
                     float Single_3 = (float)AccessTools.Property(typeof(EFT.Animations.ProceduralWeaponAnimation), "Single_3").GetValue(__instance);
 
+        
                     Vector3 vector = __instance.HandsContainer.HandsRotation.Get();
                     Vector3 value = __instance.HandsContainer.SwaySpring.Value;
                     vector += float_21 * (bool_1 ? __instance.AimingDisplacementStr : 1f) * new Vector3(value.x, 0f, value.z);
                     vector += value;
                     Vector3 position = __instance._shouldMoveWeaponCloser ? __instance.HandsContainer.RotationCenterWoStock : __instance.HandsContainer.RotationCenter;
-                    Vector3 worldPivot = __instance.HandsContainer.WeaponRootAnim.TransformPoint(position);//
-/*
-                    vector3_4 = __instance.HandsContainer.WeaponRootAnim.position;
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.position);
-                    quaternion_5 = __instance.HandsContainer.WeaponRootAnim.localRotation;
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_5").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.localRotation);
-                    quaternion_6 = __instance.HandsContainer.WeaponRootAnim.rotation;
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_6").SetValue(__instance, __instance.HandsContainer.WeaponRootAnim.rotation);
-*/
+                    Vector3 worldPivot = __instance.HandsContainer.WeaponRootAnim.TransformPoint(position);
+                    Vector3 weaponWorldPos = __instance.HandsContainer.WeaponRootAnim.position;
+
+                    StanceController.DoMounting(Logger, player, __instance, ref weaponWorldPos, ref mountWeapPosition);
+
                     __instance.DeferredRotateWithCustomOrder(__instance.HandsContainer.WeaponRootAnim, worldPivot, vector);
                     Vector3 vector2 = __instance.HandsContainer.Recoil.Get();
                     if (vector2.magnitude > 1E-45f)
@@ -1539,7 +1864,7 @@ namespace RealismMod
                             vector2.x = Mathf.Atan(Mathf.Tan(vector2.x * 0.017453292f) * float_13) * 57.29578f;
                             vector2.z = Mathf.Atan(Mathf.Tan(vector2.z * 0.017453292f) * float_13) * 57.29578f;
                         }
-                        Vector3 worldPivot2 = vector3_4 + quaternion_6 * __instance.HandsContainer.RecoilPivot;
+                        Vector3 worldPivot2 = weaponWorldPos + quaternion_6 * __instance.HandsContainer.RecoilPivot;
                         __instance.DeferredRotate(__instance.HandsContainer.WeaponRootAnim, worldPivot2, quaternion_6 * vector2);
                     }
 
@@ -1556,8 +1881,25 @@ namespace RealismMod
 
                     currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? quaternion_2 : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceSpeed : __instance.IsAiming ? 8f * float_9 * dt : 8f * dt);
 
+
+
+                    /*  if (!StanceController.WeaponIsMounting)
+                      {
+                          mountWeapRotation = currentRotation;
+                      }
+                      else
+                      {
+                          Vector3 rotationEuler = mountWeapRotation.eulerAngles;
+                          float clampedX = Mathf.Clamp(rotationEuler.x, Plugin.test1.Value, Plugin.test2.Value);
+                          float clampedY = Mathf.Clamp(rotationEuler.y, Plugin.test1.Value, Plugin.test2.Value);
+                          Quaternion clampedRotation = Quaternion.Euler(clampedX, clampedY, rotationEuler.z);
+                          currentRotation = clampedRotation;
+                      }
+
+  */
+
                     Quaternion rhs = Quaternion.Euler(float_14 * Single_3 * vector3_6);
-                    __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(vector3_4, quaternion_6 * rhs * currentRotation);
+                    __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponWorldPos, quaternion_6 * rhs * currentRotation);
 
                     if (!Plugin.IsFiring) 
                     {

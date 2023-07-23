@@ -241,7 +241,7 @@ namespace RealismMod
 
             WeaponProperties.Dispersion = totalDispersion;
             WeaponProperties.CamRecoil = totalCamRecoil;
-            WeaponProperties.RecoilAngle = totalRecoilAngle;
+            WeaponProperties.RecoilAngle = Mathf.Max(totalRecoilAngle, 65f);
             WeaponProperties.TotalVRecoil = totalVRecoil;
             WeaponProperties.TotalHRecoil = totalHRecoil;
             WeaponProperties.Balance = totalTorque;
