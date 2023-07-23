@@ -139,7 +139,10 @@ namespace RealismMod
                 float aimCamRecoilBonus = StanceController.IsActiveAiming || !Plugin.IsAiming ? 0.8f : 1f;
                 float shortStockingDebuff = StanceController.IsShortStock ? 1.15f : 1f;
                 float shortStockingCamBonus = StanceController.IsShortStock ? 0.75f : 1f;
-                float mountingBonus = StanceController.WeaponIsMounting ? StanceController.MountingRecoilBonus : StanceController.BracingRecoilBonus;
+                float mountingVertModi = StanceController.WeaponIsMounting ? 0.25f : StanceController.WeaponIsBracing ? StanceController.BracingRecoilBonus : 1f;
+                float mountingCamModi = StanceController.WeaponIsMounting ? 1.3f : 1f;
+                float mountingDispModi = StanceController.WeaponIsMounting ? 1.2f : StanceController.WeaponIsBracing ? StanceController.BracingRecoilBonus : 1f;
+                float mountingAngleModi = StanceController.WeaponIsMounting ? Mathf.Min(Plugin.StartingRecoilAngle + 17f, 90f) : StanceController.WeaponIsBracing ? Mathf.Min(Plugin.StartingRecoilAngle + 10f, 90f) : Plugin.StartingRecoilAngle;
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
@@ -169,7 +172,7 @@ namespace RealismMod
                     __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY;
                 }
 
-                float factoredDispersion = Plugin.CurrentDispersion * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff;
+                float factoredDispersion = Plugin.CurrentDispersion * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff * mountingDispModi;
 
                 if (Plugin.ShotCount > 1 && weaponClass.WeapClass == "pistol" && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
                 {
@@ -180,15 +183,15 @@ namespace RealismMod
                     __instance.RecoilStrengthXy.y *= 0.3f;
                 }
 
-                float angle = Plugin.StartingRecoilAngle;
+                float angle = mountingAngleModi;
                 __instance.RecoilDegree = new Vector2(angle - factoredDispersion, angle + factoredDispersion);
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
 
-                __instance.ShotVals[3].Intensity = Plugin.CurrentCamRecoilX * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff;
-                __instance.ShotVals[4].Intensity = Plugin.CurrentCamRecoilY * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff;
+                __instance.ShotVals[3].Intensity = Plugin.CurrentCamRecoilX * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * mountingCamModi;
+                __instance.ShotVals[4].Intensity = Plugin.CurrentCamRecoilY * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * mountingCamModi;
 
                 float totalDispersion = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
-                float totalVerticalRecoil = __instance.RecoilStrengthXy.y * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * mountingBonus;
+                float totalVerticalRecoil = __instance.RecoilStrengthXy.y * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * mountingVertModi;
                 float totalHorizontalRecoil = Mathf.Min(__instance.RecoilStrengthZ.y * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff, Plugin.HorzRecLimit.Value);
 
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.x, Mathf.Cos(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.y, totalHorizontalRecoil * _separateIntensityFactors.z) * __instance.Intensity;
@@ -231,15 +234,13 @@ namespace RealismMod
                     __instance.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
                     __instance.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
 
-                    float mountingBonus = StanceController.WeaponIsMounting ?  (2f - StanceController.MountingRecoilBonus) : (2f - StanceController.BracingRecoilBonus);
-
                     if (Plugin.ShotCount == 1 && firearmController.Item.WeapClass != "pistol")
                     {
-                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value * mountingBonus;
+                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
                     }
                     if (Plugin.ShotCount > 1)
                     {
-                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvAutoMulti.Value * mountingBonus;
+                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvAutoMulti.Value;
                     }
                 }
             }

@@ -346,7 +346,7 @@ namespace RealismMod
                 float rndNumber = UnityEngine.Random.Range(0, 101);
                 float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
                 float hitArmArmorFactor = hitArmArmor ? 0.5f : 1f;
-                float hitLocationModifier = forearm ? 2f : 1f;
+                float hitLocationModifier = forearm ? 1.5f : 1f;
                 float totalChance = Mathf.Round(Plugin.DisarmBaseChance.Value * kineticEnergyFactor * hitArmArmorFactor * hitLocationModifier);
 
                 if (rndNumber <= totalChance)
