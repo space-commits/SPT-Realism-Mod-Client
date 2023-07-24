@@ -139,9 +139,9 @@ namespace RealismMod
                 float aimCamRecoilBonus = StanceController.IsActiveAiming || !Plugin.IsAiming ? 0.8f : 1f;
                 float shortStockingDebuff = StanceController.IsShortStock ? 1.15f : 1f;
                 float shortStockingCamBonus = StanceController.IsShortStock ? 0.75f : 1f;
-                float mountingVertModi = StanceController.WeaponIsMounting ? 0.25f : StanceController.WeaponIsBracing ? StanceController.BracingRecoilBonus : 1f;
+                float mountingVertModi = StanceController.WeaponIsMounting ? 0.28f : StanceController.WeaponIsBracing ? StanceController.BracingRecoilBonus : 1f;
                 float mountingCamModi = StanceController.WeaponIsMounting ? 1.3f : 1f;
-                float mountingDispModi = StanceController.WeaponIsMounting ? 1.2f : StanceController.WeaponIsBracing ? StanceController.BracingRecoilBonus : 1f;
+                float mountingDispModi = StanceController.WeaponIsMounting ? 1.3f : StanceController.WeaponIsBracing ? StanceController.BracingRecoilBonus : 1f;
                 float mountingAngleModi = StanceController.WeaponIsMounting ? Mathf.Min(Plugin.StartingRecoilAngle + 17f, 90f) : StanceController.WeaponIsBracing ? Mathf.Min(Plugin.StartingRecoilAngle + 10f, 90f) : Plugin.StartingRecoilAngle;
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
