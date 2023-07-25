@@ -298,6 +298,16 @@ namespace RealismMod
 
         public static bool IsFiring = false;
 
+        public static bool FreeAimEnabled = false;
+        public static bool IsInDeadZone = false;
+        public static bool DeadZoneReduceSens = false;
+        public static float DeadZoneSensAmount = 0.5f;
+        public static bool DeadZonePanCamLeft = false;
+        public static bool DeadZonePanCamRight = false;
+        public static bool DeadZonePanCamUp = false;
+        public static bool DeadZonePanCamDown = false;
+        public static float CamRotationMulti = 1f;
+
 
         public static bool IsBotFiring = false;
         public static bool GrenadeExploded = false;
@@ -738,8 +748,6 @@ namespace RealismMod
                 new RestoreBodyPartPatch().Enable();
                 new FlyingBulletPatch().Enable();   
             }
-
-            new LerpCamera().Enable();
         }
 
         void Update()

@@ -91,8 +91,6 @@ namespace RealismMod
         public static float DismountTimer = 0.0f;
         public static bool CanDoDismountTimer = false;
 
-        public static bool IsFreeAiming = false;
-
         public static Dictionary<string, bool> LightDictionary = new Dictionary<string, bool>();
 
         public static bool toggledLight = false;
@@ -580,14 +578,15 @@ namespace RealismMod
         {
             float totalPlayerWeight = PlayerProperties.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 150f);
-            float ergoMulti = Mathf.Clamp(1f - ((1f - WeaponProperties.ErgoStanceSpeed) * 2f), 0.5f, 0.98f);
-            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f)), 0.5f, 0.95f);
+            float ergoMulti = Mathf.Clamp(WeaponProperties.ErgoStanceSpeed, 0.55f, 1f);
+            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f)), 0.5f, 1f);
             float invInjuryMulti = (1f - PlayerProperties.StanceInjuryMulti) + 1f;
             float resetErgoMulti = (1f - stanceMulti) + 1f;
             float stocklessModifier = WeaponProperties.HasShoulderContact ? 1f : 2.4f;
             float ergoDelta = (1f - WeaponProperties.ErgoDelta);
             float intensity = Mathf.Max(1.2f * (1f - (PlayerProperties.AimSkillADSBuff * 0.5f)) * resetErgoMulti * invInjuryMulti * stocklessModifier * ergoDelta * playerWeightFactor, 0.5f);
 
+    
             float pitch = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14").GetValue(__instance);
 
             bool isColliding = !__instance.OverlappingAllowsBlindfire;
@@ -1210,37 +1209,38 @@ namespace RealismMod
                 float wiggleAmount = 6f;
                 float moveToCoverOffset = 0.005f;
 
-                Vector3 originUp = origin + new Vector3(0f, 0.06f, 0f);
-                Vector3 originLeft = origin + new Vector3(Plugin.test3.Value, Plugin.test4.Value, 0f);
-                Vector3 originRight = origin + new Vector3(Plugin.test1.Value, Plugin.test2.Value, 0f);
+                Transform weapTransform = player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim;
+                Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
 
-                Vector3 up = weaponUp ?? __instance.WeaponRoot.up; //this is actually down because bsg
-                Vector3 forwardDirection = originUp - up * ln;
-                Vector3 leftDirection = originLeft - up * ln;
-                Vector3 rightDirection = originRight - up * ln;
+                Vector3 startDown = weapTransform.position + weapTransform.TransformDirection(new Vector3(0f, 0f, -0.1f));
+                Vector3 startLeft = weapTransform.position + weapTransform.TransformDirection(new Vector3(0.1f, 0f, 0f));
+                Vector3 startRight = weapTransform.position + weapTransform.TransformDirection(new Vector3(-0.1f, 0f, 0f));
+
+                Vector3 forwardDirection = startDown - linecastDirection * ln;
+                Vector3 leftDirection = startLeft - linecastDirection * ln;
+                Vector3 rightDirection = startRight - linecastDirection * ln;
+
+                DebugGizmos.SingleObjects.Line(startDown, forwardDirection, Color.red, 0.02f, true, 0.3f, true);
+                DebugGizmos.SingleObjects.Line(startLeft, leftDirection, Color.green, 0.02f, true, 0.3f, true);
+                DebugGizmos.SingleObjects.Line(startRight, rightDirection, Color.yellow, 0.02f, true, 0.3f, true);
 
                 RaycastHit raycastHit;
-                if (GClass672.Linecast(originUp, forwardDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                if (GClass672.Linecast(startDown, forwardDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
                 {
-                    DebugGizmos.SingleObjects.Line(originUp, forwardDirection, Color.red, 0.04f, true, 0.3f, true);
                     doStability(true, false);
                     StanceController.CoverWiggleDirection = new Vector3(wiggleAmount, 0f, 0f);
                     StanceController.CoverDirection = new Vector3(0f, -moveToCoverOffset, 0f);
                     return;
                 }
-                if (GClass672.Linecast(originLeft, leftDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                if (GClass672.Linecast(startLeft, leftDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
                 {
-                    Logger.LogWarning("left");
-                    DebugGizmos.SingleObjects.Line(originLeft, leftDirection, Color.green, 0.04f, true, 0.3f, true);
                     doStability(false, false);
                     StanceController.CoverWiggleDirection = new Vector3(0f, wiggleAmount, 0f);
                     StanceController.CoverDirection = new Vector3(moveToCoverOffset, 0f, 0f);
                     return;
                 }
-                if (GClass672.Linecast(originRight, rightDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                if (GClass672.Linecast(startRight, rightDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
                 {
-                    Logger.LogWarning("right");
-                    DebugGizmos.SingleObjects.Line(originRight, rightDirection, Color.blue, 0.04f, true, 0.3f, true);
                     doStability(false, true);
                     StanceController.CoverWiggleDirection = new Vector3(0f, -wiggleAmount, 0f);
                     StanceController.CoverDirection = new Vector3(-moveToCoverOffset, 0f, 0f);
@@ -1733,26 +1733,52 @@ namespace RealismMod
         private static Vector2 initialRotation = Vector3.zero;
 
         [PatchPrefix]
-        private static bool Prefix(MovementState __instance, Vector2 deltaRotation, bool ignoreClamp)
+        private static bool Prefix(MovementState __instance, ref Vector2 deltaRotation, bool ignoreClamp)
         {
             GClass1603 MovementContext = (GClass1603)AccessTools.Field(typeof(MovementState), "MovementContext").GetValue(__instance);
 
-/*            if (StanceController.IsFreeAiming) 
-            {
-                Logger.LogWarning("rotate skipped");
-                return false;
-            }*/
-
-            if (!StanceController.WeaponIsMounting) 
+            if (!StanceController.WeaponIsMounting)
             {
                 initialRotation = MovementContext.Rotation;
             }
 
-            if (StanceController.WeaponIsMounting && !ignoreClamp) 
+            if (Plugin.FreeAimEnabled && !StanceController.WeaponIsMounting) 
             {
+                if (Plugin.IsInDeadZone)
+                {
+                    if (Plugin.DeadZoneReduceSens)
+                    {
+                        deltaRotation *= Plugin.DeadZoneSensAmount;
+                        return true;
+                    }
+                    return false;
+                }
+                else
+                {
+                    if (Plugin.DeadZonePanCamLeft)
+                    { 
+                        deltaRotation.x += -1f * Plugin.CamRotationMulti;
+                    }
+                    if (Plugin.DeadZonePanCamRight)
+                    {
+                         deltaRotation.x += 1f * Plugin.CamRotationMulti;
+                    }
+                    if (Plugin.DeadZonePanCamUp)
+                    {
+                         deltaRotation.y += -1f * Plugin.CamRotationMulti;
+                    }
+                    if (Plugin.DeadZonePanCamDown)
+                    {
+                         deltaRotation.y += 1f * Plugin.CamRotationMulti;
+                    }
+                    deltaRotation = MovementContext.ClampRotation(deltaRotation);
+                    MovementContext.Rotation += deltaRotation;
+                    return false;
+                }
+            }
 
-                Logger.LogWarning("" + StanceController.IsBracingRightSide);
-            
+            if (StanceController.WeaponIsMounting && !ignoreClamp) 
+            {            
                 Player player = Utils.GetPlayer();
                 FirearmController fc = player.HandsController as FirearmController;
 
@@ -1817,108 +1843,7 @@ namespace RealismMod
         }
     }
 
-    public class LerpCamera : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(ProceduralWeaponAnimation).GetMethod("CalculateCameraPosition", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-
-        private static Quaternion accumulatedRotation = Quaternion.identity;
-
-        private static Vector3 accumulatedRotationVect = Vector3.zero;
-
-        [PatchPostfix]
-        private static void PatchPostfix(ProceduralWeaponAnimation __instance)
-        {
-
-            /*       if (Plugin.test1.Value > 1)
-                   {
-                       Logger.LogWarning("1");
-                       __instance.HandsContainer.CameraRotation.Current = Vector3.zero;
-
-                   }
-                   if (Plugin.test2.Value > 1)
-                   {
-                       Logger.LogWarning("2");
-                       __instance.HandsContainer.CameraPosition.Current = Vector3.zero;
-
-                   }
-
-                   if (Plugin.test3.Value > 1)
-                   {
-                       Logger.LogWarning("3");
-                       __instance.HandsContainer.CameraTransform.localRotation = Quaternion.identity;
-
-                   }
-                   if (Plugin.test4.Value > 1)
-                   {
-                       Logger.LogWarning("4");
-                       __instance.HandsContainer.CameraTransform.rotation = Quaternion.identity;
-
-                   }
-
-
-                   if (!Plugin.IsAiming)
-                   {
-                       currentRotation = __instance.HandsContainer.CameraTransform.rotation;
-                   }
-                   else
-                   {
-                       __instance.HandsContainer.CameraTransform.rotation = currentRotation;
-                   }*/
-
-            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
-
-            /* float mouseY = Input.GetAxis("Mouse Y");*/
-
-
-
-            /*     Quaternion mouseRotation = Quaternion.Euler(-mouseY, __instance.HandsContainer.Weapon.localRotation.eulerAngles.y, mouseX);
-                 accumulatedRotation *= mouseRotation;
-
-                 __instance.HandsContainer.Weapon.localRotation = accumulatedRotation;*/
-
-
-           /* if (Plugin.IsAiming)
-            {
-          
-                float mouseX = Input.GetAxis("Mouse X");
-                float mouseY = Input.GetAxis("Mouse Y");
-
-                accumulatedRotationVect.x -= mouseY;
-                accumulatedRotationVect.z += mouseX;
-
-          
-
-                __instance.HandsContainer.HandsRotation.Damping = Plugin.test1.Value;
-                __instance.HandsContainer.HandsRotation.InputIntensity = Plugin.test2.Value;
-                __instance.HandsContainer.HandsRotation.AccelerationMax = Plugin.test3.Value;
-                __instance.HandsContainer.HandsRotation.ReturnSpeed = Plugin.test4.Value;
-
-                __instance.HandsContainer.HandsRotation.Zero = accumulatedRotationVect;
-
-                Logger.LogWarning(__instance.HandsContainer.HandsRotation.Zero);
-
-
-                if ((__instance.HandsContainer.HandsRotation.Zero.z < 10f && __instance.HandsContainer.HandsRotation.Zero.z > -10f) && (__instance.HandsContainer.HandsRotation.Zero.x < 10f && __instance.HandsContainer.HandsRotation.Zero.x > -10f))
-                {
-                    StanceController.IsFreeAiming = true;
-                    Logger.LogWarning("is freeaiming");
-                }
-                else
-                {
-                  *//*  __instance.HandsContainer.HandsRotation.Zero = Vector3.zero;*//*
-                    Logger.LogWarning("stop free aim");
-                    StanceController.IsFreeAiming = false;
-                }
-            }*/
-      
-
-        }
-    }
-
+  
 
     public class ApplyComplexRotationPatch : ModulePatch
     {
