@@ -221,7 +221,7 @@ namespace RealismMod
             WeaponProperties.TotalReloadSpeedLessMag = totalReloadSpeedLessMag;
             WeaponProperties.TotalChamberSpeed = totalChamberSpeed;
             WeaponProperties.TotalFiringChamberSpeed = totalFiringChamberSpeed;
-            WeaponProperties.AimMoveSpeedModifier = totalAimMoveSpeedFactor;
+            WeaponProperties.AimMoveSpeedWeapModifier = totalAimMoveSpeedFactor;
 
             if (hasMag == true)
             {

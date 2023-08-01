@@ -207,7 +207,7 @@ namespace RealismMod
             totalChamberSpeed = Mathf.Clamp(baseChamberSpeed * ergoWeightMulti * chamberSpeedMod, WeaponProperties.MinChamberSpeed(weap), WeaponProperties.MaxChamberSpeed(weap));
             totalChamberCheckSpeed = Mathf.Clamp(baseChamberCheckSpeed * ergoWeightMulti * chamberSpeedMod, WeaponProperties.MinChamberSpeed(weap), WeaponProperties.MaxChamberSpeed(weap));
             totalReloadSpeedLessMag = Mathf.Clamp(baseReloadSpeed * (1f - (ergonomicWeightLessMag / 100f)) * reloadSpeedMod, WeaponProperties.MinReloadSpeed(weap), WeaponProperties.MaxReloadSpeed(weap));
-            totalAimMoveSpeedFactor = Mathf.Max(1f - (ergoWeight / 100f), 0.5f);
+            totalAimMoveSpeedFactor = Mathf.Max(1f - (ergoWeight / 150f), 0.5f);
         }
 
         public static void WeaponStatCalc(Weapon weap, float currentTorque, ref float totalTorque, float currentErgo, float currentVRecoil, float currentHRecoil, float currentDispersion, float currentCamRecoil, float currentRecoilAngle, float baseErgo, float baseVRecoil, float baseHRecoil, ref float totalErgo, ref float totalVRecoil, ref float totalHRecoil, ref float totalDispersion, ref float totalCamRecoil, ref float totalRecoilAngle, ref float totalRecoilDamping, ref float totalRecoilHandDamping, ref float totalErgoDelta, ref float totalVRecoilDelta, ref float totalHRecoilDelta, ref float recoilDamping, ref float recoilHandDamping, float currentCOI, bool hasShoulderContact, ref float totalCOI, ref float totalCOIDelta, float baseCOI, float totalPureErgo, ref float totalPureErgoDelta, bool isDisplayDelta)

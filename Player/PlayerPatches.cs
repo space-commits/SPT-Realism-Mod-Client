@@ -252,8 +252,6 @@ namespace RealismMod
             if (Plugin.IsFiring)
             {
                 doSwayReset = false;
-                player.ProceduralWeaponAnimation.Breath.Intensity = 0.69f * mountingBonus;
-                player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f * mountingBonus;
                 resetSwayAfterFiring = false;
             }
             else if (!resetSwayAfterFiring)
@@ -287,13 +285,18 @@ namespace RealismMod
 
                 if (PlayerProperties.HasFullyResetSprintADSPenalties)
                 {
-                    Logger.LogWarning("setting normal");
                     __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingBonus; //both aim sway and up and down breathing
                     __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingBonus; //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
                 }
-  
+
                 if (fc != null)
                 {
+                    if (Plugin.IsFiring)
+                    {
+                        __instance.ProceduralWeaponAnimation.Breath.Intensity = 0.69f * mountingBonus;
+                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f * mountingBonus;
+                    }
+
                     __instance.ProceduralWeaponAnimation.Shootingg.Intensity = (Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value);
                     ReloadController.ReloadStateCheck(__instance, fc, Logger);
                     AimController.ADSCheck(__instance, fc, Logger);

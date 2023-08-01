@@ -992,7 +992,7 @@ namespace RealismMod
 /*            bool hasTremor = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.Tremor);
             float tremorFactor = hasTremor ? 0.95f : 1f;*/
 
-            float aimMoveSpeedBase = 0.42f;
+            float aimMoveSpeedMulti = 1f;
             float ergoDeltaInjuryMulti = 1f;
             float adsInjuryMulti = 1f;
             float stanceInjuryMulti = 1f;
@@ -1068,7 +1068,7 @@ namespace RealismMod
     
                 if (isLeg || isBody) 
                 {
-                    aimMoveSpeedBase *= percentHpAimMove;
+                    aimMoveSpeedMulti *= percentHpAimMove;
                     sprintSpeedInjuryMulti *= percentHpSprint;
                     sprintAccelInjuryMulti *= percentHp;
                     walkSpeedInjuryMulti *= percentHpWalk;
@@ -1092,7 +1092,7 @@ namespace RealismMod
 /*                    float ruinedFactor = PlayerProperties.LeftArmRuined ? 0.8f : PlayerProperties.RightArmRuined ? 0.9f : PlayerProperties.LeftArmRuined && PlayerProperties.RightArmRuined ? 0.7f : 1f;
 */                  float armFractureFactor = isLeftArm && hasFracture ? 0.8f : isRightArm && hasFracture ? 0.9f : 1f;
 
-                    aimMoveSpeedBase *= percentHpAimMove * armFractureFactor;
+                    aimMoveSpeedMulti *= percentHpAimMove * armFractureFactor;
                     ergoDeltaInjuryMulti *= (1f + (1f - percentHp)) * armFractureFactor;
                     adsInjuryMulti *= percentHpADS * armFractureFactor;
                     stanceInjuryMulti *= percentHpStance * armFractureFactor;
@@ -1128,7 +1128,7 @@ namespace RealismMod
             float percentHydroLimitRecoil = 1f + ((1f - percentHydro) / 20f);
             float percentHydroUpperLimit = 1f + (1f - percentHydroLowerLimit);
 
-            PlayerProperties.AimMoveSpeedBase = Mathf.Max(aimMoveSpeedBase, 0.3f * percentHydroLowerLimit);
+            PlayerProperties.AimMoveSpeedInjuryMulti = Mathf.Max(aimMoveSpeedMulti, 0.6f * percentHydroLowerLimit);
             PlayerProperties.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)), 3.5f);
             PlayerProperties.ADSInjuryMulti = Mathf.Max(adsInjuryMulti * percentEnergyADS, 0.35f * percentHydroLowerLimit);
             PlayerProperties.StanceInjuryMulti = Mathf.Max(stanceInjuryMulti * percentEnergyStance, 0.45f * percentHydroLowerLimit);

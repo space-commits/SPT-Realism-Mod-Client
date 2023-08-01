@@ -283,7 +283,7 @@ namespace RealismMod
 
         public static float SDChamberSpeedModifier = 1f;
 
-        public static float AimMoveSpeedModifier = 1f;
+        public static float AimMoveSpeedWeapModifier = 1f;
 
         public static float ModAimSpeedModifier = 1f;
 
