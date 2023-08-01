@@ -464,11 +464,11 @@ namespace RealismMod
     }
 
 
-    public class ReloadRevolverDrumPatch : ModulePatch
+    public class ReloadCylinderMagazinePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player.FirearmController).GetMethod("ReloadRevolverDrum", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player.FirearmController).GetMethod("ReloadCylinderMagazine", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
@@ -479,7 +479,7 @@ namespace RealismMod
             {
                 if (Plugin.EnableLogging.Value == true)
                 {
-                    Logger.LogWarning("===ReloadRevolverDrum===");
+                    Logger.LogWarning("===ReloadCylinderMagazine===");
                     Logger.LogWarning("=============");
                 }
 

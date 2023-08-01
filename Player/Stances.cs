@@ -437,7 +437,7 @@ namespace RealismMod
         }
 
         //doesn't work with multiple lights where one is off and the other is on
-        public static void ToggleDevice(FirearmController fc, bool activating, ManualLogSource logger)
+        public static void ToggleDevice(FirearmController fc, bool activating)
         {
             foreach (Mod mod in fc.Item.Mods)
             {
@@ -475,9 +475,9 @@ namespace RealismMod
                         return;
                     }
 
-                    fc.SetLightsState(new GStruct143[]
+                    fc.SetLightsState(new GStruct154[]
                     {
-                        new GStruct143
+                        new GStruct154
                         {
                             Id = light.Item.Id,
                             IsActive = state,
@@ -627,7 +627,7 @@ namespace RealismMod
 
             if (Plugin.EnableTacSprint.Value && (StanceController.IsHighReady || StanceController.WasHighReady) && !PlayerProperties.RightArmRuined)
             {
-                player.BodyAnimatorCommon.SetFloat(GClass1647.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
+                player.BodyAnimatorCommon.SetFloat(GClass1710.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
                 if (!setRunAnim)
                 {
                     setRunAnim = true;
@@ -638,7 +638,7 @@ namespace RealismMod
             {
                 if (!resetRunAnim)
                 {
-                    player.BodyAnimatorCommon.SetFloat(GClass1647.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
+                    player.BodyAnimatorCommon.SetFloat(GClass1710.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
                     resetRunAnim = true;
                     setRunAnim = false;
                 }
@@ -657,12 +657,12 @@ namespace RealismMod
             {
                 if (!toggledLight && (IsHighReady || IsLowReady))
                 {
-                    ToggleDevice(fc, false, logger);
+                    ToggleDevice(fc, false);
                     toggledLight = true;
                 }
                 if (toggledLight && !IsHighReady && !IsLowReady)
                 {
-                    ToggleDevice(fc, true, logger);
+                    ToggleDevice(fc, true);
                     toggledLight = false;
                 }
             }
@@ -1069,7 +1069,7 @@ namespace RealismMod
             {
                 if ((StanceController.IsHighReady == true || StanceController.IsLowReady == true) && !Plugin.IsAiming)
                 {
-                    Vector3 playerPos = Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position;
+                    Vector3 playerPos = Singleton<GameWorld>.Instance.AllAlivePlayersList[0].Transform.position;
                     Vector3 lightPos = __instance.gameObject.transform.position;
                     float distanceFromPlayer = Vector3.Distance(lightPos, playerPos);
                     if (distanceFromPlayer <= 1.8f)
@@ -1231,21 +1231,21 @@ namespace RealismMod
                 DebugGizmos.SingleObjects.Line(startRight, rightDirection, Color.yellow, 0.02f, true, 0.3f, true);*/
 
                 RaycastHit raycastHit;
-                if (GClass672.Linecast(startDown, forwardDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                if (GClass682.Linecast(startDown, forwardDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
                 {
                     doStability(true, false);
                     StanceController.CoverWiggleDirection = new Vector3(wiggleAmount, 0f, 0f);
                     StanceController.CoverDirection = new Vector3(0f, -moveToCoverOffset, 0f);
                     return;
                 }
-                if (GClass672.Linecast(startLeft, leftDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                if (GClass682.Linecast(startLeft, leftDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
                 {
                     doStability(false, false);
                     StanceController.CoverWiggleDirection = new Vector3(0f, wiggleAmount, 0f);
                     StanceController.CoverDirection = new Vector3(moveToCoverOffset, 0f, 0f);
                     return;
                 }
-                if (GClass672.Linecast(startRight, rightDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                if (GClass682.Linecast(startRight, rightDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
                 {
                     doStability(false, true);
                     StanceController.CoverWiggleDirection = new Vector3(0f, -wiggleAmount, 0f);
@@ -1388,12 +1388,13 @@ namespace RealismMod
         private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
 
-            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
+            GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
 
-            if (firearmController != null)
+            if (ginterface114 != null && ginterface114.Weapon != null)
             {
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
-                if (player.IsYourPlayer == true)
+                Weapon weapon = ginterface114.Weapon;
+                Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
+                if (player.IsYourPlayer)
                 {
                     Plugin.WeaponOffsetPosition = __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value);
                     __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value);
@@ -1417,12 +1418,12 @@ namespace RealismMod
         private static bool PatchPrefix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
 
-            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
+            GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
 
-            if (firearmController != null)
+            if (ginterface114 != null && ginterface114.Weapon != null)
             {
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
-                if (player.IsYourPlayer == true)
+                Weapon weapon = ginterface114.Weapon;
+                if ((weapon?.Owner?.ID != null && (weapon.Owner.ID.StartsWith("pmc") || weapon.Owner.ID.StartsWith("scav"))))
                 {
                     float isColliding = (float)AccessTools.Property(typeof(EFT.Animations.ProceduralWeaponAnimation), "Single_3").GetValue(__instance);
                     Vector3 blindfirePosition = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_5").GetValue(__instance);
@@ -1503,17 +1504,19 @@ namespace RealismMod
         private static void Postfix(ref EFT.Animations.ProceduralWeaponAnimation __instance, float dt)
         {
 
-            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
+            GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
 
-            if (firearmController != null)
+            if (ginterface114 != null && ginterface114.Weapon != null)
             {
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
+                Weapon weapon = ginterface114.Weapon;
+                Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
+                FirearmController firearmController = player.HandsController as FirearmController;
 
                 if (player.IsYourPlayer == true)
                 {
                     Plugin.IsInThirdPerson = true;
 
-                    float float_9 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance);
+                    float aimSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance);
                     float float_14 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14").GetValue(__instance);
                     Vector3 vector3_4 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_4").GetValue(__instance);
                     Vector3 vector3_6 = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_6").GetValue(__instance);
@@ -1531,7 +1534,7 @@ namespace RealismMod
                     bool allowActiveAimReload = Plugin.ActiveAimReload.Value && PlayerProperties.IsInReloadOpertation && !PlayerProperties.IsAttemptingToReloadInternalMag && !PlayerProperties.IsQuickReloading;
                     bool cancelStance = (StanceController.CancelActiveAim && StanceController.IsActiveAiming && !allowActiveAimReload) || (StanceController.CancelHighReady && StanceController.IsHighReady) || (StanceController.CancelLowReady && StanceController.IsLowReady) || (StanceController.CancelShortStock && StanceController.IsShortStock) || (StanceController.CancelPistolStance &&  StanceController.PistolIsCompressed);
 
-                    currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? quaternion_2 : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceSpeed : __instance.IsAiming ? 8f * float_9 * dt : 8f * dt);
+                    currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? quaternion_2 : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceSpeed : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
 
                     Quaternion rhs = Quaternion.Euler(float_14 * Single_3 * vector3_6);
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(vector3_4, quaternion_6 * rhs * currentRotation);
@@ -1671,14 +1674,14 @@ namespace RealismMod
                                 if (isTacBot && !firearmController.IsInReloadOperation() && !__instance.IsAiming && notShooting && (lastDistance >= 25f || lastDistance == 0f))
                                 {
                                     isInStance = true;
-                                    player.BodyAnimatorCommon.SetFloat(GClass1647.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2);
+                                    player.BodyAnimatorCommon.SetFloat(GClass1710.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2);
                                     stanceSpeed = 4f * dt * 2.7f;
                                     targetRotation = highReadyTargetQuaternion;
                                     __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * highReadyTargetPostion;
                                 }
                                 else
                                 {
-                                    player.BodyAnimatorCommon.SetFloat(GClass1647.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)firearmController.Item.CalculateCellSize().X);
+                                    player.BodyAnimatorCommon.SetFloat(GClass1710.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)firearmController.Item.CalculateCellSize().X);
                                 }
 
                                 ///active aim//// 
@@ -1741,8 +1744,8 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(MovementState __instance, ref Vector2 deltaRotation, bool ignoreClamp)
         {
-            GClass1603 MovementContext = (GClass1603)AccessTools.Field(typeof(MovementState), "MovementContext").GetValue(__instance);
-            Player player = (Player)AccessTools.Field(typeof(GClass1603), "player_0").GetValue(MovementContext);
+            GClass1667 MovementContext = (GClass1667)AccessTools.Field(typeof(MovementState), "MovementContext").GetValue(__instance);
+            Player player = (Player)AccessTools.Field(typeof(GClass1667), "player_0").GetValue(MovementContext);
 
             if (player.IsYourPlayer) 
             {
@@ -1800,8 +1803,8 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(MovementState __instance, float tilt)
         {
-            GClass1603 MovementContext = (GClass1603)AccessTools.Field(typeof(MovementState), "MovementContext").GetValue(__instance);
-            Player player_0 = (Player)AccessTools.Field(typeof(GClass1603), "player_0").GetValue(MovementContext);
+            GClass1667 MovementContext = (GClass1667)AccessTools.Field(typeof(MovementState), "MovementContext").GetValue(__instance);
+            Player player_0 = (Player)AccessTools.Field(typeof(GClass1667), "player_0").GetValue(MovementContext);
             if (player_0.IsYourPlayer) 
             {
                 if (!StanceController.WeaponIsMounting) 
@@ -1850,13 +1853,16 @@ namespace RealismMod
         private static void Postfix(ref EFT.Animations.ProceduralWeaponAnimation __instance, float dt)
         {
 
-            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
+            GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
 
-            if (firearmController != null)
+            if (ginterface114 != null && ginterface114.Weapon != null)
             {
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
+                Weapon weapon = ginterface114.Weapon;
+                Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
                 if (player.IsYourPlayer == true)
                 {
+                    FirearmController firearmController = player.HandsController as FirearmController;
+
                     Plugin.IsInThirdPerson = false;
 
                     float float_9 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance);

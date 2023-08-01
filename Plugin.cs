@@ -586,7 +586,7 @@ namespace RealismMod
                     new QuickReloadMagPatch().Enable();
                     new ReloadWithAmmoPatch().Enable();
                     new ReloadBarrelsPatch().Enable();
-                    new ReloadRevolverDrumPatch().Enable();
+                    new ReloadCylinderMagazinePatch().Enable();
 
                     new OnMagInsertedPatch().Enable();
                     new SetMagTypeCurrentPatch().Enable();
@@ -720,7 +720,7 @@ namespace RealismMod
             new PlayerLateUpdatePatch().Enable();
 
             //Stances
-            new ApplyComplexRotationPatch().Enable();
+    /*        new ApplyComplexRotationPatch().Enable();
             new ApplySimpleRotationPatch().Enable();
             new InitTransformsPatch().Enable();
             new ZeroAdjustmentsPatch().Enable();
@@ -733,7 +733,7 @@ namespace RealismMod
             new CollisionPatch().Enable();
 
             new RotatePatch().Enable();
-            new SetTiltPatch().Enable();
+            new SetTiltPatch().Enable();*/
 
             //Health
             if (EnableMedicalOvehaul.Value && ModConfig.med_changes)

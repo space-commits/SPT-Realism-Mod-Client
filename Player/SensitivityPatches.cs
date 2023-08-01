@@ -14,7 +14,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass1603).GetMethod("ApplyExternalSense", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GClass1667).GetMethod("ApplyExternalSense", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -23,7 +23,7 @@ namespace RealismMod
 
             if (Plugin.IsFiring) 
             {
-                Player player = (Player)AccessTools.Field(typeof(GClass1603), "player_0").GetValue(__instance);
+                Player player = (Player)AccessTools.Field(typeof(GClass1667), "player_0").GetValue(__instance);
                 float _mouseSensitivityModifier = (float)AccessTools.Field(typeof(Player), "_mouseSensitivityModifier").GetValue(player);
                 float xLimit = Plugin.IsAiming ? Plugin.StartingAimSens : Plugin.StartingHipSens;
                 Vector2 newSens = deltaRotation;

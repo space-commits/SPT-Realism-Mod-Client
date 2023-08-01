@@ -78,16 +78,16 @@ namespace RealismMod
 
         public static readonly Dictionary<string, Type> EffectTypes = new Dictionary<string, Type>
         {
-            { "Painkiller", typeof(GInterface207) },
-            { "Tremor", typeof(GInterface210) },
-            { "BrokenBone", typeof(GInterface192) },
-            { "TunnelVision", typeof(GInterface212) },
-            { "Contusion", typeof(GInterface202)  },
-            { "HeavyBleeding", typeof(GInterface190) },
-            { "LightBleeding", typeof(GInterface189) },
-            { "Dehydration", typeof(GInterface193) },
-            { "Exhaustion", typeof(GInterface194) },
-            { "Pain", typeof(GInterface206) }
+            { "Painkiller", typeof(GInterface219) },
+            { "Tremor", typeof(GInterface222) },
+            { "BrokenBone", typeof(GInterface204) },
+            { "TunnelVision", typeof(GInterface224) },
+            { "Contusion", typeof(GInterface214)  },
+            { "HeavyBleeding", typeof(GInterface202) },
+            { "LightBleeding", typeof(GInterface201) },
+            { "Dehydration", typeof(GInterface205) },
+            { "Exhaustion", typeof(GInterface206) },
+            { "Pain", typeof(GInterface218) }
         };
     }
 
@@ -163,16 +163,16 @@ namespace RealismMod
             {
                 if (Plugin.healthControllerTick >= 1f)
                 {
-                    ControllerTick(logger, Singleton<GameWorld>.Instance.AllPlayers[0]);
+                    ControllerTick(logger, Singleton<GameWorld>.Instance.AllAlivePlayersList[0]);
                     Plugin.healthControllerTick = 0f;
                 }
 
                 if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
                 {
                     GameWorld gameWorld = Singleton<GameWorld>.Instance;
-                    if (gameWorld?.AllPlayers.Count > 0)
+                    if (gameWorld?.AllAlivePlayersList.Count > 0)
                     {
-                        TestAddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, gameWorld.AllPlayers[0], Plugin.AddEffectType.Value);
+                        TestAddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, gameWorld.AllAlivePlayersList[0], Plugin.AddEffectType.Value);
                         NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + Plugin.AddEffectType.Value + " To Part " + (EBodyPart)Plugin.AddEffectBodyPart.Value);
                     }
                 }
@@ -182,9 +182,9 @@ namespace RealismMod
                     if (clickTriggered)
                     {
                         GameWorld gameWorld = Singleton<GameWorld>.Instance;
-                        if (gameWorld?.AllPlayers.Count > 0)
+                        if (gameWorld?.AllAlivePlayersList.Count > 0)
                         {
-                            DropBlockingGear(gameWorld.AllPlayers[0]);
+                            DropBlockingGear(gameWorld.AllAlivePlayersList [0]);
                         }
                         clickTriggered = false;
                     }
@@ -223,12 +223,12 @@ namespace RealismMod
         {
             if (effect == "removeHP") 
             {
-                player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, -player.ActiveHealthController.GetBodyPartHealth((EBodyPart)partIndex).Maximum, GClass2146.Existence);
+                player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, -player.ActiveHealthController.GetBodyPartHealth((EBodyPart)partIndex).Maximum, GClass2370.Existence);
                 return;
             }
             if (effect == "addHP")
             {
-                player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, player.ActiveHealthController.GetBodyPartHealth((EBodyPart)partIndex).Maximum, GClass2146.Existence);
+                player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, player.ActiveHealthController.GetBodyPartHealth((EBodyPart)partIndex).Maximum, GClass2370.Existence);
                 return;
             }
 
@@ -259,12 +259,12 @@ namespace RealismMod
             }
             else
             {
-                IReadOnlyList<GClass2102> effectsList = (IReadOnlyList<GClass2102>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
+                IReadOnlyList<GClass2327> effectsList = (IReadOnlyList<GClass2327>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
                 Type targetType = null;
                 MedProperties.EffectTypes.TryGetValue(targetEffect, out targetType);
                 for (int i = effectsList.Count - 1; i >= 0; i--)
                 {
-                    ActiveHealthControllerClass.GClass2102 existingEffect = effectsList[i];
+                    ActiveHealthControllerClass.GClass2327 existingEffect = effectsList[i];
                     Type effectType = existingEffect.Type;
                     EBodyPart effectPart = existingEffect.BodyPart;
 
@@ -302,14 +302,14 @@ namespace RealismMod
         public static void RemoveBaseEFTEffect(Player player, EBodyPart targetBodyPart, string targetEffect) 
         {
           /*  IEnumerable<IEffect> commonEffects = player.ActiveHealthController.GetAllActiveEffects(targetBodyPart);*/
-            IReadOnlyList<GClass2102> effectsList = (IReadOnlyList<GClass2102>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
+            IReadOnlyList<GClass2327> effectsList = (IReadOnlyList<GClass2327>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
 
             Type targetType = null;
             if (MedProperties.EffectTypes.TryGetValue(targetEffect, out targetType))
             {
                 for (int i = effectsList.Count - 1; i >= 0; i--)
                 {
-                    ActiveHealthControllerClass.GClass2102 effect = effectsList[i];
+                    ActiveHealthControllerClass.GClass2327 effect = effectsList[i];
                     Type effectType = effect.Type;
                     EBodyPart effectPart = effect.BodyPart;
     
@@ -427,14 +427,14 @@ namespace RealismMod
         public static bool HasBaseEFTEffect(Player player, string targetEffect)
         {
 /*            IEnumerable<IEffect> commonEffects = player.ActiveHealthController.GetAllEffects();
-*/            IReadOnlyList<GClass2102> effectsList = (IReadOnlyList<GClass2102>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
+*/            IReadOnlyList<GClass2327> effectsList = (IReadOnlyList<GClass2327>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
 
             Type targetType = null;
             if (MedProperties.EffectTypes.TryGetValue(targetEffect, out targetType))
             {
                 for (int i = effectsList.Count - 1; i >= 0; i--)
                 {
-                    ActiveHealthControllerClass.GClass2102 effect = effectsList[i];
+                    ActiveHealthControllerClass.GClass2327 effect = effectsList[i];
                     Type effectType = effect.Type;
  
                     if (effectType == targetType)
@@ -963,13 +963,13 @@ namespace RealismMod
 
             if (hasCommonHeavyBleed && hasCommonLightBleed)
             {
-                IReadOnlyList<GClass2102> effectsList = (IReadOnlyList<GClass2102>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
+                IReadOnlyList<GClass2327> effectsList = (IReadOnlyList<GClass2327>)AccessTools.Property(typeof(ActiveHealthControllerClass), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
 
                 for (int i = effectsList.Count - 1; i >= 0; i--)
                 {
                     Type effectType = effectsList[i].Type;
                     EBodyPart effectPart = effectsList[i].BodyPart;
-                    ActiveHealthControllerClass.GClass2102 effect = effectsList[i];
+                    ActiveHealthControllerClass.GClass2327 effect = effectsList[i];
 
                     IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(effectPart);
                     bool hasHeavyBleed = heavyBleedType != null && effects.Any(e => e.Type == heavyBleedType);

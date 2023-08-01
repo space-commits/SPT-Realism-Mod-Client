@@ -73,7 +73,7 @@ namespace RealismMod
                     break;
                 }
                 reloadMulti *= GearProperties.ReloadSpeedMulti(armorComponent.Item);
-                GClass2199 armorTemplate = armorComponent.Template as GClass2199;
+                GClass2442 armorTemplate = armorComponent.Template as GClass2442;
 
                 if (!GearProperties.AllowsADS(armorComponent.Item) && !armorTemplate.HasHinge)
                 {

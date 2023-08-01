@@ -110,12 +110,12 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass2297).GetConstructor(new Type[] {typeof(string), typeof(GClass2204) });
+            return typeof(GClass2540).GetConstructor(new Type[] {typeof(string), typeof(GClass2447) });
         }
 
 
         [PatchPostfix]
-        private static void PatchPostfix(GClass2297 __instance)
+        private static void PatchPostfix(GClass2540 __instance)
         {
             Item item = __instance as Item;
 
@@ -317,11 +317,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(BarrelModClass).GetConstructor(new Type[] { typeof(string), typeof(GClass2240) });
+            return typeof(BarrelModClass).GetConstructor(new Type[] { typeof(string), typeof(GClass2483) });
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(ref BarrelModClass __instance, GClass2240 template)
+        private static void PatchPostfix(ref BarrelModClass __instance, GClass2483 template)
         {
             float shotDisp = (template.ShotgunDispersion - 1f) * 100f;
 
@@ -550,7 +550,7 @@ namespace RealismMod
             if (Plugin.ShowBalance.Value == true)
             {
                 List<ItemAttributeClass> balanceAttList = __instance.Attributes;
-                GClass2408 balanceAtt = new GClass2408((EItemAttributeId)ENewItemAttributeId.Balance);
+                GClass2650 balanceAtt = new GClass2650((EItemAttributeId)ENewItemAttributeId.Balance);
                 balanceAtt.Name = ENewItemAttributeId.Balance.GetName();
                 balanceAtt.Range = new Vector2(100f, 200f);
                 balanceAtt.LessIsGood = false;
@@ -565,7 +565,7 @@ namespace RealismMod
             if (Plugin.ShowDispersion.Value == true)
             {
                 List<ItemAttributeClass> dispersionAttList = __instance.Attributes;
-                GClass2408 dispersionAtt = new GClass2408((EItemAttributeId)ENewItemAttributeId.Dispersion);
+                GClass2650 dispersionAtt = new GClass2650((EItemAttributeId)ENewItemAttributeId.Dispersion);
                 dispersionAtt.Name = ENewItemAttributeId.Dispersion.GetName();
                 dispersionAtt.Range = new Vector2(0f, 50f);
                 dispersionAtt.LessIsGood = true;
@@ -579,7 +579,7 @@ namespace RealismMod
             if (Plugin.ShowCamRecoil.Value == true)
             {
                 List<ItemAttributeClass> camRecoilAttList = __instance.Attributes;
-                GClass2408 camRecoilAtt = new GClass2408((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
+                GClass2650 camRecoilAtt = new GClass2650((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
                 camRecoilAtt.Name = ENewItemAttributeId.CameraRecoil.GetName();
                 camRecoilAtt.Range = new Vector2(0f, 50f);
                 camRecoilAtt.LessIsGood = true;

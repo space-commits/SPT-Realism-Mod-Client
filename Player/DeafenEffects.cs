@@ -85,12 +85,12 @@ namespace RealismMod
             float protectionFactor;
 
             LootItemClass headwear = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;
-            GClass2297 headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as GClass2297) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<GClass2297>().FirstOrDefault<GClass2297>() : null);
+            GClass2540 headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as GClass2540) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<GClass2540>().FirstOrDefault<GClass2540>() : null);
 
             if (headset != null)
             {
                 Plugin.HasHeadSet = true;
-                GClass2204 headphone = headset.Template;
+                GClass2447 headphone = headset.Template;
                 protectionFactor = ((headphone.DryVolume / 100f) + 1f) * 1.55f;
             }
             else
@@ -267,9 +267,9 @@ namespace RealismMod
 
         }
         [PatchPrefix]
-        private static bool Prefix(GClass2204 template, BetterAudio __instance)
+        private static bool Prefix(GClass2447 template, BetterAudio __instance)
         {
-            GClass2557.CreateEvent<GClass2547>().Invoke(template);
+            GClass2802.CreateEvent<GClass2789>().Invoke(template);
 
             bool hasHeadsetTemplate = template != null;
             bool isNotHeadset = template?._id == null; //using both bools is redundant now.
@@ -354,7 +354,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance, Item weapon, GClass2624 shot)
+        private static void PatchPostfix(Player.FirearmController __instance, Item weapon, GClass2870 shot)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
 
@@ -381,7 +381,7 @@ namespace RealismMod
                 }
                 else
                 {
-                    Vector3 playerPos = Singleton<GameWorld>.Instance.AllPlayers[0].Transform.position;
+                    Vector3 playerPos = Singleton<GameWorld>.Instance.AllAlivePlayersList[0].Transform.position;
                     Vector3 shootePos = player.Transform.position;
                     float distanceFromPlayer = Vector3.Distance(shootePos, playerPos);
                     if (distanceFromPlayer <= 15f)
@@ -417,7 +417,7 @@ namespace RealismMod
         [PatchPrefix]
         static void PreFix(IExplosiveItem grenadeItem, Vector3 grenadePosition)
         {
-            Player player = Singleton<GameWorld>.Instance.AllPlayers[0];
+            Player player = Singleton<GameWorld>.Instance.AllAlivePlayersList[0];
             float distanceFromPlayer = Vector3.Distance(grenadePosition, player.Transform.position);
 
             if (distanceFromPlayer <= 10f)
