@@ -1153,6 +1153,8 @@ namespace RealismMod
             return typeof(Player.FirearmController).GetMethod("method_8", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
+        private static int timer = 0;
+
         private static void setMountingStatus(bool isTop, bool isRightide) 
         {
             if (isTop)
@@ -1199,9 +1201,13 @@ namespace RealismMod
         [PatchPrefix]
         private static void PatchPrefix(Player.FirearmController __instance, Vector3 origin, float ln, Vector3? weaponUp = null)
         {
+            timer += 1;
+
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (player.IsYourPlayer == true)
+            if (player.IsYourPlayer && timer == 60)
             {
+                timer = 0; 
+
                 int int_0 = (int)AccessTools.Field(typeof(EFT.Player.FirearmController), "int_0").GetValue(__instance);
                 RaycastHit[] raycastHit_0 = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
                 Func<RaycastHit, bool> func_1 = (Func<RaycastHit, bool>)AccessTools.Field(typeof(EFT.Player.FirearmController), "func_1").GetValue(__instance);
@@ -1219,10 +1225,10 @@ namespace RealismMod
                 Vector3 forwardDirection = startDown - linecastDirection * ln;
                 Vector3 leftDirection = startLeft - linecastDirection * ln;
                 Vector3 rightDirection = startRight - linecastDirection * ln;
-
+/*
                 DebugGizmos.SingleObjects.Line(startDown, forwardDirection, Color.red, 0.02f, true, 0.3f, true);
                 DebugGizmos.SingleObjects.Line(startLeft, leftDirection, Color.green, 0.02f, true, 0.3f, true);
-                DebugGizmos.SingleObjects.Line(startRight, rightDirection, Color.yellow, 0.02f, true, 0.3f, true);
+                DebugGizmos.SingleObjects.Line(startRight, rightDirection, Color.yellow, 0.02f, true, 0.3f, true);*/
 
                 RaycastHit raycastHit;
                 if (GClass672.Linecast(startDown, forwardDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
@@ -1736,80 +1742,48 @@ namespace RealismMod
         private static bool Prefix(MovementState __instance, ref Vector2 deltaRotation, bool ignoreClamp)
         {
             GClass1603 MovementContext = (GClass1603)AccessTools.Field(typeof(MovementState), "MovementContext").GetValue(__instance);
+            Player player = (Player)AccessTools.Field(typeof(GClass1603), "player_0").GetValue(MovementContext);
 
-            if (!StanceController.WeaponIsMounting)
+            if (player.IsYourPlayer) 
             {
-                initialRotation = MovementContext.Rotation;
-            }
 
-            if (Plugin.FreeAimEnabled && !StanceController.WeaponIsMounting) 
-            {
-                if (Plugin.IsInDeadZone)
+                if (!StanceController.WeaponIsMounting)
                 {
-                    if (Plugin.DeadZoneReduceSens)
-                    {
-                        deltaRotation *= Plugin.DeadZoneSensAmount;
-                        return true;
-                    }
-                    return false;
+                    initialRotation = MovementContext.Rotation;
                 }
-                else
+
+                if (StanceController.WeaponIsMounting && !ignoreClamp)
                 {
-                    if (Plugin.DeadZonePanCamLeft)
-                    { 
-                        deltaRotation.x += -1f * Plugin.CamRotationMulti;
-                    }
-                    if (Plugin.DeadZonePanCamRight)
-                    {
-                         deltaRotation.x += 1f * Plugin.CamRotationMulti;
-                    }
-                    if (Plugin.DeadZonePanCamUp)
-                    {
-                         deltaRotation.y += -1f * Plugin.CamRotationMulti;
-                    }
-                    if (Plugin.DeadZonePanCamDown)
-                    {
-                         deltaRotation.y += 1f * Plugin.CamRotationMulti;
-                    }
+                    FirearmController fc = player.HandsController as FirearmController;
+
+                    Vector2 currentRotation = MovementContext.Rotation;
+
+                    deltaRotation *= (fc.AimingSensitivity * 0.9f);
+
+                    float lowerClampXLimit = StanceController.IsBracingTop ? -17f : StanceController.IsBracingRightSide ? -4f : -15f;
+                    float upperClampXLimit = StanceController.IsBracingTop ? 17f : StanceController.IsBracingRightSide ? 15f : 1f;
+
+                    float lowerClampYLimit = StanceController.IsBracingTop ? -10f : -8f;
+                    float upperClampYLimit = StanceController.IsBracingTop ? 10f : 15f;
+
+                    float relativeLowerXLimit = initialRotation.x + lowerClampXLimit;
+                    float relativeUpperXLimit = initialRotation.x + upperClampXLimit;
+                    float relativeLowerYLimit = initialRotation.y + lowerClampYLimit;
+                    float relativeUpperYLimit = initialRotation.y + upperClampYLimit;
+
+                    float clampedX = Mathf.Clamp(currentRotation.x + deltaRotation.x, relativeLowerXLimit, relativeUpperXLimit);
+                    float clampedY = Mathf.Clamp(currentRotation.y + deltaRotation.y, relativeLowerYLimit, relativeUpperYLimit);
+
+                    deltaRotation = new Vector2(clampedX - currentRotation.x, clampedY - currentRotation.y);
+
                     deltaRotation = MovementContext.ClampRotation(deltaRotation);
+
                     MovementContext.Rotation += deltaRotation;
+
                     return false;
                 }
-            }
-
-            if (StanceController.WeaponIsMounting && !ignoreClamp) 
-            {            
-                Player player = Utils.GetPlayer();
-                FirearmController fc = player.HandsController as FirearmController;
-
-                Vector2 currentRotation = MovementContext.Rotation;
-
-                deltaRotation *= (fc.AimingSensitivity * 0.9f);
-
-                float lowerClampXLimit = StanceController.IsBracingTop ? -17f : StanceController.IsBracingRightSide ? -4f : -15f;
-                float upperClampXLimit = StanceController.IsBracingTop ? 17f : StanceController.IsBracingRightSide ? 15f : 1f;
-
-                float lowerClampYLimit = StanceController.IsBracingTop ? -10f : -8f;
-                float upperClampYLimit = StanceController.IsBracingTop ? 10f : 15f;
-
-                float relativeLowerXLimit = initialRotation.x + lowerClampXLimit;
-                float relativeUpperXLimit = initialRotation.x + upperClampXLimit;
-                float relativeLowerYLimit = initialRotation.y + lowerClampYLimit;
-                float relativeUpperYLimit = initialRotation.y + upperClampYLimit;
-
-                float clampedX = Mathf.Clamp(currentRotation.x + deltaRotation.x, relativeLowerXLimit, relativeUpperXLimit);
-                float clampedY = Mathf.Clamp(currentRotation.y + deltaRotation.y, relativeLowerYLimit, relativeUpperYLimit);
-
-                deltaRotation = new Vector2(clampedX - currentRotation.x, clampedY - currentRotation.y);
-
-                deltaRotation = MovementContext.ClampRotation(deltaRotation);
-
-                MovementContext.Rotation += deltaRotation;
-
-                return false;
             }
             return true;
-     
         }
     }
 

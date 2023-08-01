@@ -152,8 +152,6 @@ namespace RealismMod
                     PlayerProperties.TotalBreathIntensity = totalBreathIntensity;
                     PlayerProperties.TotalHandsIntensity = totalInputIntensitry;
 
-                    
-
                     __instance.Overweight = 0;
 
                     if (Plugin.EnableLogging.Value == true)
