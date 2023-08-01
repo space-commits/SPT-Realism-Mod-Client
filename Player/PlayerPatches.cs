@@ -207,8 +207,7 @@ namespace RealismMod
             PlayerProperties.ADSSprintMulti = Mathf.Lerp(PlayerProperties.ADSSprintMulti, 1f, resetSpeed);
             PlayerProperties.SprintHipfirePenalty = Mathf.Lerp(PlayerProperties.SprintHipfirePenalty, 1f, resetSpeed);
 
-
-            pwa.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity * StanceController.BracingSwayBonus;
+            pwa.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity * mountingBonus;
             pwa.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity * mountingBonus;
 
             if (Utils.AreFloatsEqual(1f, PlayerProperties.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerProperties.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerProperties.TotalHandsIntensity))
@@ -288,15 +287,11 @@ namespace RealismMod
 
                 if (PlayerProperties.HasFullyResetSprintADSPenalties)
                 {
+                    Logger.LogWarning("setting normal");
                     __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingBonus; //both aim sway and up and down breathing
                     __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingBonus; //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
                 }
-                else
-                {
-                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity * mountingBonus;
-                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity * mountingBonus;
-                }
-
+  
                 if (fc != null)
                 {
                     __instance.ProceduralWeaponAnimation.Shootingg.Intensity = (Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value);

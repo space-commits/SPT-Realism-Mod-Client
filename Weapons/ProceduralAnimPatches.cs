@@ -85,7 +85,7 @@ namespace RealismMod
         }
     }
 
-    public class method_20Patch : ModulePatch
+    public class method_21Patch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -152,13 +152,21 @@ namespace RealismMod
                         handsIntensity = Mathf.Min(0.57f * ergoWeightFactor, 0.86f);
                     }
 
-                    breathIntensity *= Plugin.SwayIntensity.Value;
-                    handsIntensity *= Plugin.SwayIntensity.Value;
-
-                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * mountingBonus;
-                    float totalInputIntensitry = handsIntensity * handsIntensity * mountingBonus;
+                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * Plugin.SwayIntensity.Value;
+                    float totalInputIntensitry = handsIntensity * handsIntensity * Plugin.SwayIntensity.Value;
                     PlayerProperties.TotalBreathIntensity = totalBreathIntensity;
                     PlayerProperties.TotalHandsIntensity = totalInputIntensitry;
+
+                    if (PlayerProperties.HasFullyResetSprintADSPenalties)
+                    {
+                        __instance.Breath.Intensity = PlayerProperties.TotalBreathIntensity;
+                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity; 
+                    }
+                    else
+                    {
+                        __instance.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity;
+                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity;
+                    }
 
                     __instance.Overweight = 0;
 

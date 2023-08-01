@@ -547,7 +547,7 @@ namespace RealismMod
                 new SetAimingSlowdownPatch().Enable();
 
                 //Sway and Aim Inertia
-                new method_20Patch().Enable();
+                new method_21Patch().Enable();
                 new UpdateSwayFactorsPatch().Enable();
                 new GetOverweightPatch().Enable();
                 new SetOverweightPatch().Enable();
@@ -720,7 +720,7 @@ namespace RealismMod
             new PlayerLateUpdatePatch().Enable();
 
             //Stances
-    /*        new ApplyComplexRotationPatch().Enable();
+            new ApplyComplexRotationPatch().Enable();
             new ApplySimpleRotationPatch().Enable();
             new InitTransformsPatch().Enable();
             new ZeroAdjustmentsPatch().Enable();
@@ -733,7 +733,7 @@ namespace RealismMod
             new CollisionPatch().Enable();
 
             new RotatePatch().Enable();
-            new SetTiltPatch().Enable();*/
+            new SetTiltPatch().Enable();
 
             //Health
             if (EnableMedicalOvehaul.Value && ModConfig.med_changes)
