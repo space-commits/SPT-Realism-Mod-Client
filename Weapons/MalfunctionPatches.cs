@@ -56,8 +56,8 @@ namespace RealismMod
                 }
 
                 BackendConfigSettingsClass instance = Singleton<BackendConfigSettingsClass>.Instance;
-                BackendConfigSettingsClass.GClass1325 malfunction = instance.Malfunction;
-                BackendConfigSettingsClass.GClass1326 overheat2 = instance.Overheat;
+                BackendConfigSettingsClass.GClass1369 malfunction = instance.Malfunction;
+                BackendConfigSettingsClass.GClass1370 overheat2 = instance.Overheat;
                 float ammoMalfChanceMult = malfunction.AmmoMalfChanceMult;
                 float magazineMalfChanceMult = malfunction.MagazineMalfChanceMult;
                 MagazineClass currentMagazine = __instance.Item.GetCurrentMagazine();

@@ -28,7 +28,7 @@ namespace RealismMod
             if (_weapon.Item.Owner.ID.StartsWith("pmc") || _weapon.Item.Owner.ID.StartsWith("scav"))
             {
          
-                SkillsClass.GClass1680 buffInfo = (SkillsClass.GClass1680)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
+                SkillsClass.GClass1743 buffInfo = (SkillsClass.GClass1743)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
                 WeaponTemplate template = _weapon.WeaponTemplate;
 
                 float vRecoilDelta;
@@ -139,9 +139,9 @@ namespace RealismMod
                 float aimCamRecoilBonus = StanceController.IsActiveAiming || !Plugin.IsAiming ? 0.8f : 1f;
                 float shortStockingDebuff = StanceController.IsShortStock ? 1.15f : 1f;
                 float shortStockingCamBonus = StanceController.IsShortStock ? 0.75f : 1f;
-                float mountingVertModi = StanceController.WeaponIsMounting ? 0.25f : StanceController.WeaponIsBracing ? StanceController.BracingRecoilBonus : 1f;
+                float mountingVertModi = StanceController.WeaponIsMounting ? 0.28f : StanceController.WeaponIsBracing ? StanceController.BracingRecoilBonus : 1f;
                 float mountingCamModi = StanceController.WeaponIsMounting ? 1.3f : 1f;
-                float mountingDispModi = StanceController.WeaponIsMounting ? 1.2f : StanceController.WeaponIsBracing ? StanceController.BracingRecoilBonus : 1f;
+                float mountingDispModi = StanceController.WeaponIsMounting ? 1.3f : StanceController.WeaponIsBracing ? StanceController.BracingRecoilBonus : 1f;
                 float mountingAngleModi = StanceController.WeaponIsMounting ? Mathf.Min(Plugin.StartingRecoilAngle + 17f, 90f) : StanceController.WeaponIsBracing ? Mathf.Min(Plugin.StartingRecoilAngle + 10f, 90f) : Plugin.StartingRecoilAngle;
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
@@ -221,20 +221,22 @@ namespace RealismMod
         {
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("Shoot");
         }
+
         [PatchPostfix]
         public static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
-            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
+            GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
 
-            if (firearmController != null)
+            if (ginterface114 != null && ginterface114.Weapon != null)
             {
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
-                if (player.IsYourPlayer == true)
+                Weapon weapon = ginterface114.Weapon;
+                Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
+                if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
                 {
                     __instance.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
                     __instance.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
 
-                    if (Plugin.ShotCount == 1 && firearmController.Item.WeapClass != "pistol")
+                    if (Plugin.ShotCount == 1 && weapon.WeapClass != "pistol")
                     {
                         __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
                     }

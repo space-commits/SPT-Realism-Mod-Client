@@ -93,7 +93,7 @@ namespace RealismMod
         public static Player GetPlayer() 
         {
             GameWorld gameWorld = Singleton<GameWorld>.Instance;
-            return gameWorld.AllPlayers[0] != null ? gameWorld.AllPlayers[0] : null;
+            return gameWorld.AllAlivePlayersList[0] != null ? gameWorld.AllAlivePlayersList[0] : null;
         }
 
         public static bool CheckIsReady()
@@ -101,9 +101,9 @@ namespace RealismMod
             GameWorld gameWorld = Singleton<GameWorld>.Instance;
             SessionResultPanel sessionResultPanel = Singleton<SessionResultPanel>.Instance;
 
-            if (gameWorld?.AllPlayers.Count > 0)
+            if (gameWorld?.AllAlivePlayersList.Count > 0)
             {
-                Player player = gameWorld.AllPlayers[0];
+                Player player = gameWorld.AllAlivePlayersList[0];
                 if (player != null && player?.HandsController != null)
                 {
                     if (player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon)
@@ -117,7 +117,7 @@ namespace RealismMod
                 }
             }
 
-            if (gameWorld == null || gameWorld.AllPlayers == null || gameWorld.AllPlayers.Count <= 0 || sessionResultPanel != null)
+            if (gameWorld == null || gameWorld.AllAlivePlayersList == null || gameWorld.AllAlivePlayersList.Count <= 0 || sessionResultPanel != null)
             {
                 Utils.IsReady = false;
                 return false;
@@ -131,9 +131,9 @@ namespace RealismMod
             GameWorld gameWorld = Singleton<GameWorld>.Instance;
             SessionResultPanel sessionResultPanel = Singleton<SessionResultPanel>.Instance;
 
-            if (gameWorld?.AllPlayers.Count > 0)
+            if (gameWorld?.AllAlivePlayersList.Count > 0)
             {
-                Player player = gameWorld.AllPlayers[0];
+                Player player = gameWorld.AllAlivePlayersList[0];
                 if (player != null && player is HideoutPlayer)
                 {
                     return true;

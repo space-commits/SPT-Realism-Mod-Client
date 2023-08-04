@@ -16,6 +16,7 @@ using EFT.Animations;
 using System.Linq;
 using static EFT.Player;
 using System.ComponentModel;
+using static EFT.ClientPlayer;
 
 namespace RealismMod
 {
@@ -32,31 +33,36 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
         {
-            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
-            if (firearmController != null)
+            GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
+            if (ginterface114 != null && ginterface114.Weapon != null)
             {
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
-                if (player.IsYourPlayer == true)
+                Weapon weapon = ginterface114.Weapon;
+                Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
+                if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
+                    FirearmController firearmController = player.HandsController as FirearmController;
                     float totalPlayerWeight = PlayerProperties.TotalModifiedWeightMinusWeapon;
                     float playerWeightFactor = 1f - (totalPlayerWeight / 150f);
 
-                    SkillsClass.GClass1680 skillsClass = (SkillsClass.GClass1680)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "gclass1680_0").GetValue(__instance);
+                    SkillsClass.GClass1743 skillsClass = (SkillsClass.GClass1743)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "gclass1743_0").GetValue(__instance);
                     Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "valueBlender_0").GetValue(__instance);
 
-                    float singleItemTotalWeight = firearmController.Item.GetSingleItemTotalWeight();
-/*                    float ergoWeightFactor = WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));*/
+                    float singleItemTotalWeight = weapon.GetSingleItemTotalWeight();
+                    /*                    float ergoWeightFactor = WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));*/
 
                     float ergoFactor = Mathf.Clamp01(WeaponProperties.TotalErgo / 100f);
                     float baseAimspeed = Mathf.InverseLerp(1f, 65f, WeaponProperties.TotalErgo);
                     float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (1f + WeaponProperties.ModAimSpeedModifier) * playerWeightFactor, 0.55f, 1.4f);
                     valueBlender.Speed = __instance.SwayFalloff / aimSpeed;
+
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_16").SetValue(__instance, Mathf.InverseLerp(3f, 10f, singleItemTotalWeight * (1f - ergoFactor)));
+  
                     __instance.UpdateSwayFactors();
 
-                    aimSpeed = firearmController.Item.WeapClass == "pistol" ? aimSpeed * 1.35f : aimSpeed;
+                    aimSpeed = weapon.WeapClass == "pistol" ? aimSpeed * 1.35f : aimSpeed;
                     WeaponProperties.SightlessAimSpeed = aimSpeed;
                     WeaponProperties.ErgoStanceSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)), 0.55f, 1.4f);
+
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, aimSpeed);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f)) * PlayerProperties.ErgoDeltaInjuryMulti);
 
@@ -78,62 +84,63 @@ namespace RealismMod
         }
     }
 
-    public class method_20Patch : ModulePatch
+    public class method_21Patch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("method_20", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("method_21", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
         {
-            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
 
-            if (firearmController != null)
+            GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
+            if (ginterface114 != null && ginterface114.Weapon != null)
             {
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
-                if (player.IsYourPlayer == true)
+                Weapon weapon = ginterface114.Weapon;
+                Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
+                if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
-
-
-                    float accuracy = firearmController.Item.GetTotalCenterOfImpact(false);
-                    AccessTools.Field(typeof(Player.FirearmController), "float_1").SetValue(firearmController, accuracy);
-
+                    FirearmController firearmController = player.HandsController as FirearmController;
                     //force ergo weight to update
-                    float updateErgoWeight = firearmController.ErgonomicWeight;
+                    if (firearmController != null) 
+                    {
+                        float updateErgoWeight = firearmController.ErgonomicWeight;
+                        float accuracy = weapon.GetTotalCenterOfImpact(false);
+                        AccessTools.Field(typeof(Player.FirearmController), "float_1").SetValue(firearmController, accuracy);
+                    }
 
-                    Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
+                    Mod currentAimingMod = (__instance.CurrentAimingMod != null) ? __instance.CurrentAimingMod.Item as Mod : null;
 
                     float idleMulti = StanceController.IsIdle() ? 1.3f : 1f;
-                    float stockMulti = firearmController.Item.WeapClass != "pistol" && !WeaponProperties.HasShoulderContact ? 0.75f : 1f;
+                    float stockMulti = weapon.WeapClass != "pistol" && !WeaponProperties.HasShoulderContact ? 0.75f : 1f;
                     float totalSightlessAimSpeed = WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f));
                     float sightSpeedModi = currentAimingMod != null ? AttachmentProperties.AimSpeed(currentAimingMod) : 1f;
                     float totalSightedAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)) * idleMulti * stockMulti, 0.45f, 1.5f);
                     float newAimSpeed = Mathf.Max(totalSightedAimSpeed * PlayerProperties.ADSSprintMulti, 0.3f) * Plugin.GlobalAimSpeedModifier.Value;
-
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
                     float float_9 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance); //aimspeed
 
-/*                    float totalWeight = firearmController.Item.WeapClass == "pistol" ? firearmController.Item.GetSingleItemTotalWeight() * 2 : firearmController.Item.GetSingleItemTotalWeight();
-*/
+                    /*                    float totalWeight = firearmController.Item.WeapClass == "pistol" ? firearmController.Item.GetSingleItemTotalWeight() * 2 : firearmController.Item.GetSingleItemTotalWeight();
+                    */
                     Plugin.HasOptic = __instance.CurrentScope.IsOptic ? true : false;
 
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, ergoWeight); 
                     float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f);
-                    float totalPlayerWeight = PlayerProperties.TotalModifiedWeight - firearmController.Item.GetSingleItemTotalWeight();
+                    float totalPlayerWeight = PlayerProperties.TotalModifiedWeight - weapon.GetSingleItemTotalWeight();
                     float playerWeightFactor = 1f + (totalPlayerWeight / 400f);
                     float mountingBonus = StanceController.WeaponIsMounting ? StanceController.MountingSwayBonus : StanceController.BracingSwayBonus;
                     float breathIntensity;
                     float handsIntensity;
 
-                    if (!WeaponProperties.HasShoulderContact && firearmController.Item.WeapClass != "pistol")
+                    if (!WeaponProperties.HasShoulderContact && weapon.WeapClass != "pistol")
                     {
                         breathIntensity = Mathf.Min(0.78f * ergoWeightFactor * playerWeightFactor, 1.01f);
                         handsIntensity = Mathf.Min(0.78f * ergoWeightFactor, 1.05f);
                     }
-                    else if (!WeaponProperties.HasShoulderContact && firearmController.Item.WeapClass == "pistol" )
+                    else if (!WeaponProperties.HasShoulderContact && weapon.WeapClass == "pistol" )
                     {
                         breathIntensity = Mathf.Min(0.58f * ergoWeightFactor * playerWeightFactor, 0.9f);
                         handsIntensity = Mathf.Min(0.58f * ergoWeightFactor, 0.95f);
@@ -144,21 +151,27 @@ namespace RealismMod
                         handsIntensity = Mathf.Min(0.57f * ergoWeightFactor, 0.86f);
                     }
 
-                    breathIntensity *= Plugin.SwayIntensity.Value;
-                    handsIntensity *= Plugin.SwayIntensity.Value;
-
-                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * mountingBonus;
-                    float totalInputIntensitry = handsIntensity * handsIntensity * mountingBonus;
+                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * Plugin.SwayIntensity.Value;
+                    float totalInputIntensitry = handsIntensity * handsIntensity * Plugin.SwayIntensity.Value;
                     PlayerProperties.TotalBreathIntensity = totalBreathIntensity;
                     PlayerProperties.TotalHandsIntensity = totalInputIntensitry;
 
-                    
+                    if (PlayerProperties.HasFullyResetSprintADSPenalties)
+                    {
+                        __instance.Breath.Intensity = PlayerProperties.TotalBreathIntensity;
+                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity; 
+                    }
+                    else
+                    {
+                        __instance.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity;
+                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity;
+                    }
 
                     __instance.Overweight = 0;
 
                     if (Plugin.EnableLogging.Value == true)
                     {
-                        Logger.LogWarning("=====method_20========");
+                        Logger.LogWarning("=====method_21========");
                         Logger.LogWarning("ADSInjuryMulti = " + PlayerProperties.ADSInjuryMulti);
                         Logger.LogWarning("remaining stam percentage = " + PlayerProperties.RemainingArmStamPercentage);
                         Logger.LogWarning("strength = " + PlayerProperties.StrengthSkillAimBuff);
@@ -195,17 +208,17 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
         {
-            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
+            GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
 
-            if (firearmController != null)
+            if (ginterface114 != null && ginterface114.Weapon != null)
             {
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
-
-                if (player.IsYourPlayer == true)
+                Weapon weapon = ginterface114.Weapon;
+                Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
+                if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
-                    float totalPlayerWeight = PlayerProperties.TotalModifiedWeight - firearmController.Item.GetSingleItemTotalWeight();
+                    float totalPlayerWeight = PlayerProperties.TotalModifiedWeight - weapon.GetSingleItemTotalWeight();
                     float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
-                    bool noShoulderContact = !WeaponProperties.HasShoulderContact && firearmController.Item.WeapClass != "pistol";
+                    bool noShoulderContact = !WeaponProperties.HasShoulderContact && weapon.WeapClass != "pistol";
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));
                     float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f);
                     float displacementModifier = noShoulderContact ? 0.65f : 0.4f;//lower = less drag
@@ -231,18 +244,10 @@ namespace RealismMod
                         Logger.LogWarning("aimIntensity = " + aimIntensity);
                         Logger.LogWarning("Sway Factors = " + __instance.MotionReact.SwayFactors);
                     }
-
                     return false;
                 }
-                else
-                {
-                    return true;
-                }
             }
-            else
-            {
-                return true;
-            }
+            return true;
         }
     }
 
@@ -256,13 +261,13 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref EFT.Animations.ProceduralWeaponAnimation __instance, float value)
         {
+            GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
 
-            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
-
-            if (firearmController != null)
+            if (ginterface114 != null && ginterface114.Weapon != null)
             {
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
-                if (player.IsYourPlayer == true)
+                Weapon weapon = ginterface114.Weapon;
+                Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
+                if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
                     __instance.Breath.Overweight = value;
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_2").SetValue(__instance, 0);
@@ -288,12 +293,12 @@ namespace RealismMod
         private static bool Prefix(ref EFT.Animations.ProceduralWeaponAnimation __instance, ref float __result)
         {
 
-            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
-
-            if (firearmController != null)
+            GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
+            if (ginterface114 != null && ginterface114.Weapon != null)
             {
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
-                if (player.IsYourPlayer == true)
+                Weapon weapon = ginterface114.Weapon;
+                Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
+                if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
                     __result = 0;
                     return false;

@@ -27,7 +27,7 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                SkillsClass.GClass1680 skillsClass = (SkillsClass.GClass1680)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1680_0").GetValue(__instance);
+                SkillsClass.GClass1743 skillsClass = (SkillsClass.GClass1743)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1743_0").GetValue(__instance);
                 PlayerProperties.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
                 PlayerProperties.ReloadSkillMulti = Mathf.Max(1, ((skillsClass.ReloadSpeed - 1f) * 0.5f) + 1f);
                 PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;
@@ -47,7 +47,7 @@ namespace RealismMod
         {
             InventoryControllerClass invController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
             this.invClass = invController.Inventory;
-            invController.Inventory.TotalWeight = new GClass777<float>(new Func<float>(getTotalWeight));
+            invController.Inventory.TotalWeight = new GClass787<float>(new Func<float>(getTotalWeight));
             float weaponWeight = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item.GetSingleItemTotalWeight() : 1f;
             PlayerProperties.TotalModifiedWeightMinusWeapon = PlayerProperties.TotalModifiedWeight - weaponWeight;
         }
@@ -200,15 +200,14 @@ namespace RealismMod
 
         private static void resetSwayParams(ProceduralWeaponAnimation pwa, float mountingBonus) 
         {
-            float resetSwaySpeed = Time.deltaTime * 0.3f;
-            float resetSpeed = Time.deltaTime;
+            float resetSwaySpeed = 0.1f;
+            float resetSpeed = 0.5f;
             PlayerProperties.SprintTotalBreathIntensity = Mathf.Lerp(PlayerProperties.SprintTotalBreathIntensity, PlayerProperties.TotalBreathIntensity, resetSwaySpeed);
             PlayerProperties.SprintTotalHandsIntensity = Mathf.Lerp(PlayerProperties.SprintTotalHandsIntensity, PlayerProperties.TotalHandsIntensity, resetSwaySpeed);
             PlayerProperties.ADSSprintMulti = Mathf.Lerp(PlayerProperties.ADSSprintMulti, 1f, resetSpeed);
             PlayerProperties.SprintHipfirePenalty = Mathf.Lerp(PlayerProperties.SprintHipfirePenalty, 1f, resetSpeed);
 
-
-            pwa.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity * StanceController.BracingSwayBonus;
+            pwa.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity * mountingBonus;
             pwa.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity * mountingBonus;
 
             if (Utils.AreFloatsEqual(1f, PlayerProperties.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerProperties.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerProperties.TotalHandsIntensity))
@@ -253,8 +252,6 @@ namespace RealismMod
             if (Plugin.IsFiring)
             {
                 doSwayReset = false;
-                player.ProceduralWeaponAnimation.Breath.Intensity = 0.69f * mountingBonus;
-                player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f * mountingBonus;
                 resetSwayAfterFiring = false;
             }
             else if (!resetSwayAfterFiring)
@@ -291,14 +288,15 @@ namespace RealismMod
                     __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingBonus; //both aim sway and up and down breathing
                     __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingBonus; //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
                 }
-                else
-                {
-                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity * mountingBonus;
-                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity * mountingBonus;
-                }
 
                 if (fc != null)
                 {
+                    if (Plugin.IsFiring)
+                    {
+                        __instance.ProceduralWeaponAnimation.Breath.Intensity = 0.69f * mountingBonus;
+                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f * mountingBonus;
+                    }
+
                     __instance.ProceduralWeaponAnimation.Shootingg.Intensity = (Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value);
                     ReloadController.ReloadStateCheck(__instance, fc, Logger);
                     AimController.ADSCheck(__instance, fc, Logger);
