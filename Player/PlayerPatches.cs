@@ -200,8 +200,8 @@ namespace RealismMod
 
         private static void resetSwayParams(ProceduralWeaponAnimation pwa, float mountingBonus) 
         {
-            float resetSwaySpeed = Time.deltaTime * 0.3f;
-            float resetSpeed = Time.deltaTime;
+            float resetSwaySpeed = 0.1f;
+            float resetSpeed = 0.5f;
             PlayerProperties.SprintTotalBreathIntensity = Mathf.Lerp(PlayerProperties.SprintTotalBreathIntensity, PlayerProperties.TotalBreathIntensity, resetSwaySpeed);
             PlayerProperties.SprintTotalHandsIntensity = Mathf.Lerp(PlayerProperties.SprintTotalHandsIntensity, PlayerProperties.TotalHandsIntensity, resetSwaySpeed);
             PlayerProperties.ADSSprintMulti = Mathf.Lerp(PlayerProperties.ADSSprintMulti, 1f, resetSpeed);

@@ -138,7 +138,7 @@ namespace RealismMod
         {
             float dist = CameraClass.Instance.Distance(pos);
             float volClose = 2f * Plugin.FleshHitSoundMulti.Value;
-            float volDist = 4.4f * Plugin.FleshHitSoundMulti.Value;
+            float volDist = 4.5f * Plugin.FleshHitSoundMulti.Value;
 
             if (hitZone == EBodyHitZone.Spine)
             {
@@ -147,7 +147,7 @@ namespace RealismMod
             }
             if (hitBox == HitBox.Head) 
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Distant, 100, volClose * 0.8f, EOcclusionTest.Continuous);
                 return;
             }
             if (hitZone == EBodyHitZone.Heart)

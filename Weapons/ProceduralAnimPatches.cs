@@ -38,8 +38,7 @@ namespace RealismMod
             {
                 Weapon weapon = ginterface114.Weapon;
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
-
-                if (player.IsYourPlayer)
+                if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
                     FirearmController firearmController = player.HandsController as FirearmController;
                     float totalPlayerWeight = PlayerProperties.TotalModifiedWeightMinusWeapon;
@@ -101,7 +100,7 @@ namespace RealismMod
             {
                 Weapon weapon = ginterface114.Weapon;
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
-                if (player.IsYourPlayer)
+                if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
                     FirearmController firearmController = player.HandsController as FirearmController;
                     //force ergo weight to update
@@ -215,7 +214,7 @@ namespace RealismMod
             {
                 Weapon weapon = ginterface114.Weapon;
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
-                if (player.IsYourPlayer)
+                if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
                     float totalPlayerWeight = PlayerProperties.TotalModifiedWeight - weapon.GetSingleItemTotalWeight();
                     float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
@@ -245,18 +244,10 @@ namespace RealismMod
                         Logger.LogWarning("aimIntensity = " + aimIntensity);
                         Logger.LogWarning("Sway Factors = " + __instance.MotionReact.SwayFactors);
                     }
-
                     return false;
                 }
-                else
-                {
-                    return true;
-                }
             }
-            else
-            {
-                return true;
-            }
+            return true;
         }
     }
 
@@ -276,7 +267,7 @@ namespace RealismMod
             {
                 Weapon weapon = ginterface114.Weapon;
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
-                if (player.IsYourPlayer)
+                if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
                     __instance.Breath.Overweight = value;
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_2").SetValue(__instance, 0);
@@ -307,7 +298,7 @@ namespace RealismMod
             {
                 Weapon weapon = ginterface114.Weapon;
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
-                if (player.IsYourPlayer)
+                if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
                     __result = 0;
                     return false;
