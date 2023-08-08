@@ -18,6 +18,9 @@ using static EFT.Player;
 using static EFT.Weather.WeatherDebug;
 using static ShotEffector;
 using static System.Net.Mime.MediaTypeNames;
+using LightStruct = GStruct154;
+using GlobalValues = GClass1710;
+using PlayerInterface = GInterface114;
 
 namespace RealismMod
 {
@@ -216,22 +219,31 @@ namespace RealismMod
             }
         }
 
+        private static void showMountingUI() 
+        {
+            if ((int)Time.time % 5 == 0)
+            {
+                if (StanceController.WeaponIsBracing && !StanceController.WeaponIsMounting)
+                {
+                    AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
+                    panelUI.Show("Bracing");
+                }
+                else if (StanceController.WeaponIsMounting)
+                {
+                    AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
+                    panelUI.Show("Mounting");
+                }
+            }
+        }
+
         public static void StanceState()
         {
             if (Utils.WeaponReady == true)
             {
                 if (!PlayerProperties.IsSprinting && !Plugin.IsInInventory && WeaponProperties._WeapClass != "pistol")
                 {
-                    if (StanceController.WeaponIsBracing && !StanceController.WeaponIsMounting)
-                    {
-                        AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
-                        panelUI.Show("Bracing");
-                    }
-                    else if (StanceController.WeaponIsMounting)
-                    {
-                        AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
-                        panelUI.Show("Mounting");
-                    }
+
+                    showMountingUI();
 
                     //cycle stances
                     if (Input.GetKeyUp(Plugin.CycleStancesKeybind.Value.MainKey))
@@ -489,9 +501,9 @@ namespace RealismMod
                         return;
                     }
 
-                    fc.SetLightsState(new GStruct154[]
+                    fc.SetLightsState(new LightStruct[]
                     {
-                        new GStruct154
+                        new LightStruct
                         {
                             Id = light.Item.Id,
                             IsActive = state,
@@ -534,7 +546,7 @@ namespace RealismMod
 
             __instance.HandsContainer.WeaponRoot.localPosition = new Vector3(currentX, __instance.HandsContainer.TrackingTransform.localPosition.y, __instance.HandsContainer.TrackingTransform.localPosition.z);
 
-            if (!__instance.IsAiming && !StanceController.CancelPistolStance && !StanceController.PistolIsColliding && !Plugin.IsBlindFiring)
+            if (!__instance.IsAiming && !StanceController.CancelPistolStance && !Plugin.IsBlindFiring && !StanceController.PistolIsColliding)
             {
                 __instance.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * PlayerProperties. SprintHipfirePenalty;
 
@@ -1041,14 +1053,15 @@ namespace RealismMod
             if (StanceController.WeaponIsMounting)
             {
                 AccessTools.Field(typeof(TurnAwayEffector), "_turnAwayThreshold").SetValue(pwa.TurnAway, 1f);
-                weaponWorldPos = mountWeapPosition + StanceController.CoverDirection;  // this makes it feel more clamped to cover but no H recoil
-                /*weaponWorldPos = new Vector3(mountWeapPosition.x, mountWeapPosition.y, weaponWorldPos.z) + StanceController.CoverDirection;*/ //this makes it feel less clamped to cover but allows h recoil
-/*                pwa.HandsContainer.CameraTransform.localRotation = cameraLocalRotation;  
-*/                StanceController.CanDoDismountTimer = true;
+               /* weaponWorldPos = mountWeapPosition + StanceController.CoverDirection; */ // this makes it feel more clamped to cover but no H recoil
+                weaponWorldPos = new Vector3(mountWeapPosition.x, mountWeapPosition.y, weaponWorldPos.z) + StanceController.CoverDirection; //this makes it feel less clamped to cover but allows h recoil
 
+                StanceController.CanDoDismountTimer = true;
+
+                /*pwa.HandsContainer.CameraTransform.localRotation = cameraLocalRotation;*/
                 /*player.CurrentState.RotationSpeedClamp = Plugin.test1.Value;*/
 
-     
+
             }
             else if (StanceController.CanDoDismountTimer) 
             {
@@ -1234,61 +1247,63 @@ namespace RealismMod
         [PatchPrefix]
         private static void PatchPrefix(Player.FirearmController __instance, Vector3 origin, float ln, Vector3? weaponUp = null)
         {
-            timer += 1;
-
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (player.IsYourPlayer && timer == 60)
+            if (player.IsYourPlayer)
             {
-                timer = 0; 
-
-                int int_0 = (int)AccessTools.Field(typeof(EFT.Player.FirearmController), "int_0").GetValue(__instance);
-                RaycastHit[] raycastHit_0 = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
-                Func<RaycastHit, bool> func_1 = (Func<RaycastHit, bool>)AccessTools.Field(typeof(EFT.Player.FirearmController), "func_1").GetValue(__instance);
-
-                float wiggleAmount = 6f;
-                float moveToCoverOffset = 0.005f;
-
-                Transform weapTransform = player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim;
-                Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
-
-                Vector3 startDown = weapTransform.position + weapTransform.TransformDirection(new Vector3(0f, 0f, -0.1f));
-                Vector3 startLeft = weapTransform.position + weapTransform.TransformDirection(new Vector3(0.1f, 0f, 0f));
-                Vector3 startRight = weapTransform.position + weapTransform.TransformDirection(new Vector3(-0.1f, 0f, 0f));
-
-                Vector3 forwardDirection = startDown - linecastDirection * ln;
-                Vector3 leftDirection = startLeft - linecastDirection * ln;
-                Vector3 rightDirection = startRight - linecastDirection * ln;
-/*
-                DebugGizmos.SingleObjects.Line(startDown, forwardDirection, Color.red, 0.02f, true, 0.3f, true);
-                DebugGizmos.SingleObjects.Line(startLeft, leftDirection, Color.green, 0.02f, true, 0.3f, true);
-                DebugGizmos.SingleObjects.Line(startRight, rightDirection, Color.yellow, 0.02f, true, 0.3f, true);*/
-
-                RaycastHit raycastHit;
-                if (GClass682.Linecast(startDown, forwardDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                timer += 1;
+                if (timer >= 60) 
                 {
-                    doStability(true, false);
-                    StanceController.CoverWiggleDirection = new Vector3(wiggleAmount, 0f, 0f);
-                    StanceController.CoverDirection = new Vector3(0f, -moveToCoverOffset, 0f);
-                    return;
-                }
-                if (GClass682.Linecast(startLeft, leftDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
-                {
-                    doStability(false, false);
-                    StanceController.CoverWiggleDirection = new Vector3(0f, wiggleAmount, 0f);
-                    StanceController.CoverDirection = new Vector3(moveToCoverOffset, 0f, 0f);
-                    return;
-                }
-                if (GClass682.Linecast(startRight, rightDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
-                {
-                    doStability(false, true);
-                    StanceController.CoverWiggleDirection = new Vector3(0f, -wiggleAmount, 0f);
-                    StanceController.CoverDirection = new Vector3(-moveToCoverOffset, 0f, 0f);
-                    return;
-                }
+                    timer = 0;
 
-                StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 1f, 0.5f);
-                StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 1f, 0.5f);
-                StanceController.WeaponIsBracing = false;
+                    int int_0 = (int)AccessTools.Field(typeof(EFT.Player.FirearmController), "int_0").GetValue(__instance);
+                    RaycastHit[] raycastHit_0 = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
+                    Func<RaycastHit, bool> func_1 = (Func<RaycastHit, bool>)AccessTools.Field(typeof(EFT.Player.FirearmController), "func_1").GetValue(__instance);
+
+                    float wiggleAmount = 6f;
+                    float moveToCoverOffset = 0.005f;
+
+                    Transform weapTransform = player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim;
+                    Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
+
+                    Vector3 startDown = weapTransform.position + weapTransform.TransformDirection(new Vector3(0f, 0f, -0.1f));
+                    Vector3 startLeft = weapTransform.position + weapTransform.TransformDirection(new Vector3(0.1f, 0f, 0f));
+                    Vector3 startRight = weapTransform.position + weapTransform.TransformDirection(new Vector3(-0.1f, 0f, 0f));
+
+                    Vector3 forwardDirection = startDown - linecastDirection * ln;
+                    Vector3 leftDirection = startLeft - linecastDirection * ln;
+                    Vector3 rightDirection = startRight - linecastDirection * ln;
+                    /*
+                                    DebugGizmos.SingleObjects.Line(startDown, forwardDirection, Color.red, 0.02f, true, 0.3f, true);
+                                    DebugGizmos.SingleObjects.Line(startLeft, leftDirection, Color.green, 0.02f, true, 0.3f, true);
+                                    DebugGizmos.SingleObjects.Line(startRight, rightDirection, Color.yellow, 0.02f, true, 0.3f, true);*/
+
+                    RaycastHit raycastHit;
+                    if (GClass682.Linecast(startDown, forwardDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                    {
+                        doStability(true, false);
+                        StanceController.CoverWiggleDirection = new Vector3(wiggleAmount, 0f, 0f);
+                        StanceController.CoverDirection = new Vector3(0f, -moveToCoverOffset, 0f);
+                        return;
+                    }
+                    if (GClass682.Linecast(startLeft, leftDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                    {
+                        doStability(false, false);
+                        StanceController.CoverWiggleDirection = new Vector3(0f, wiggleAmount, 0f);
+                        StanceController.CoverDirection = new Vector3(moveToCoverOffset, 0f, 0f);
+                        return;
+                    }
+                    if (GClass682.Linecast(startRight, rightDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastHit_0, func_1))
+                    {
+                        doStability(false, true);
+                        StanceController.CoverWiggleDirection = new Vector3(0f, -wiggleAmount, 0f);
+                        StanceController.CoverDirection = new Vector3(-moveToCoverOffset, 0f, 0f);
+                        return;
+                    }
+
+                    StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 1f, 0.5f);
+                    StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 1f, 0.5f);
+                    StanceController.WeaponIsBracing = false;
+                }
             }
         }
     }
@@ -1304,68 +1319,18 @@ namespace RealismMod
         private static bool PatchPrefix(Player.FirearmController __instance)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+
             if (player.IsYourPlayer == true)
             {
                 if (StanceController.WeaponIsMounting)
                 {
                     return false;
                 }
-                return true;
 
-               /* bool AimingInterruptedByOverlap = (bool)AccessTools.Field(typeof(EFT.Player.FirearmController), "AimingInterruptedByOverlap").GetValue(__instance);
-                float float_0 = (float)AccessTools.Field(typeof(EFT.Player.FirearmController), "float_0").GetValue(__instance);
-                Vector3 vector = player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Get();
-
-                if (float_0 < 0.02f)
-                {
-                    player.ProceduralWeaponAnimation.TurnAway.OverlapDepth = float_0;
-                    player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire = true;
-                }
-                else
-                {
-                    player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire = false;
-                    player.ProceduralWeaponAnimation.TurnAway.OriginZShift = vector.y;
-                    player.ProceduralWeaponAnimation.TurnAway.OverlapDepth = float_0;
-                }
-*//*                if (float_0 > EFTHardSettings.Instance.STOP_AIMING_AT && __instance.IsAiming)
-                {
-                    __instance.ToggleAim();
-                    AimingInterruptedByOverlap = true;
-                    return false;
-                }*//*
-                if (float_0 < EFTHardSettings.Instance.STOP_AIMING_AT && player.ProceduralWeaponAnimation.TurnAway.OverlapValue < 0.2f && AimingInterruptedByOverlap && !__instance.IsAiming)
-                {
-                    *//*__instance.ToggleAim();*//*
-                    AimingInterruptedByOverlap = false;
-                }
-                return false;*/
             }
             return true;
         }
     }
-
-    //not sure why this is here, something to do with stances bugging out if overlapping
-    /*    public class WeaponOverlapViewPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player.FirearmController).GetMethod("WeaponOverlapView", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static void Prefix(Player.FirearmController __instance)
-        {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            float float_0 = (float)AccessTools.Field(typeof(EFT.Player.FirearmController), "float_0").GetValue(__instance);
-
-            if (float_0 > EFTHardSettings.Instance.STOP_AIMING_AT && __instance.IsAiming)
-            {
-                Plugin.IsAiming = true;
-                return;
-            }
-        }
-    }*/
-
 
     public class WeaponOverlappingPatch : ModulePatch
     {
@@ -1395,11 +1360,11 @@ namespace RealismMod
                 {
                     if (StanceController.PistolIsCompressed == true)
                     {
-                        AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength * 0.7f);
+                        AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength * 0.75f);
                     }
                     else
                     {
-                        AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength * 0.9f);
+                        AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn").SetValue(__instance, WeaponProperties.NewWeaponLength * 0.85f);
                     }
                     return;
                 }
@@ -1421,11 +1386,11 @@ namespace RealismMod
         private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
 
-            GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
+            PlayerInterface playerInterface = (PlayerInterface)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
 
-            if (ginterface114 != null && ginterface114.Weapon != null)
+            if (playerInterface != null && playerInterface.Weapon != null)
             {
-                Weapon weapon = ginterface114.Weapon;
+                Weapon weapon = playerInterface.Weapon;
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
                 if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
@@ -1451,11 +1416,11 @@ namespace RealismMod
         private static bool PatchPrefix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
 
-            GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
+            PlayerInterface playerInterface = (PlayerInterface)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
 
-            if (ginterface114 != null && ginterface114.Weapon != null)
+            if (playerInterface != null && playerInterface.Weapon != null)
             {
-                Weapon weapon = ginterface114.Weapon;
+                Weapon weapon = playerInterface.Weapon;
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
                 if (player != null && player.IsYourPlayer) // player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer
                 {
@@ -1538,17 +1503,17 @@ namespace RealismMod
         private static void Postfix(ref EFT.Animations.ProceduralWeaponAnimation __instance, float dt)
         {
 
-            GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
+            PlayerInterface playerInterface = (PlayerInterface)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
 
-            if (ginterface114 != null && ginterface114.Weapon != null)
+            if (playerInterface != null && playerInterface.Weapon != null)
             {
-                Weapon weapon = ginterface114.Weapon;
+                Weapon weapon = playerInterface.Weapon;
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
 
                 if (player != null) 
                 {
                     FirearmController firearmController = player.HandsController as FirearmController;
-                    if (player.IsYourPlayer == true)
+                    if (player.IsYourPlayer)
                     {
                         Plugin.IsInThirdPerson = true;
 
@@ -1889,10 +1854,10 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(ref EFT.Animations.ProceduralWeaponAnimation __instance, float dt)
         {
-            GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
-            if (ginterface114 != null && ginterface114.Weapon != null)
+            PlayerInterface playerInterface = (PlayerInterface)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
+            if (playerInterface != null && playerInterface.Weapon != null)
             {
-                Weapon weapon = ginterface114.Weapon;
+                Weapon weapon = playerInterface.Weapon;
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
                 if (player != null && player.IsYourPlayer)
                 {

@@ -29,6 +29,7 @@ namespace RealismMod
         public bool malf_changes { get; set; }
         public bool realistic_ballistics { get; set; }
         public bool med_changes { get; set; }
+        public bool headset_changes { get; set; }
     }
 
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
@@ -547,7 +548,7 @@ namespace RealismMod
                 new SetAimingSlowdownPatch().Enable();
 
                 //Sway and Aim Inertia
-                new method_21Patch().Enable();
+                new PwaWeaponParamsPatch().Enable();
                 new UpdateSwayFactorsPatch().Enable();
                 new GetOverweightPatch().Enable();
                 new SetOverweightPatch().Enable();
@@ -682,7 +683,7 @@ namespace RealismMod
                 }
 
                 //Shot Effects
-                if (Plugin.EnableDeafen.Value == true)
+                if (Plugin.EnableDeafen.Value && ModConfig.headset_changes)
                 {
                     new PrismEffectsPatch().Enable();
                     new VignettePatch().Enable();
@@ -801,7 +802,7 @@ namespace RealismMod
                         StanceController.StanceShotTimer();
                     }
 
-                    if (Plugin.EnableDeafen.Value)
+                    if (Plugin.EnableDeafen.Value && ModConfig.headset_changes)
                     {
                         if (Input.GetKeyDown(Plugin.IncGain.Value.MainKey) && Plugin.HasHeadSet)
                         {
@@ -982,7 +983,7 @@ namespace RealismMod
             VigReset = Config.Bind<float>(deafSettings, "Tunnel Effect Reset Rate", 0.02f, new ConfigDescription("How Quickly Player Recovers From Tunnel Vision. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true }));
             DistRate = Config.Bind<float>(deafSettings, "Distortion Rate", 0.16f, new ConfigDescription("How Quickly Player's Hearing Gets Distorted. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
             DistReset = Config.Bind<float>(deafSettings, "Distortion Reset Rate", 0.25f, new ConfigDescription("How Quickly Player's Hearing Recovers From Distortion. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
-            EnableDeafen = Config.Bind<bool>(deafSettings, "Enable Deafening", true, new ConfigDescription("Requiures Restart. Enables Gunshots And Explosions Deafening The Player.", null, new ConfigurationManagerAttributes { Order = 1 }));
+            EnableDeafen = Config.Bind<bool>(deafSettings, "Enable Deafening", true, new ConfigDescription("Requiures Restart. Enables Gunshots And Explosions Deafening The Player. Requires Headset Changes To Be Enabled In The Config App.", null, new ConfigurationManagerAttributes { Order = 1 }));
 
             EnableReloadPatches = Config.Bind<bool>(speed, "Enable Reload And Chamber Speed Changes", true, new ConfigDescription("Requires Restart. Weapon Weight, Magazine Weight, Attachment Reload And Chamber Speed Stat, Balance, Ergo And Arm Injury Affect Reload And Chamber Speed.", null, new ConfigurationManagerAttributes { Order = 17 }));
             GlobalAimSpeedModifier = Config.Bind<float>(speed, "Aim Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 2.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16 }));

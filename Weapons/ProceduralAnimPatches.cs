@@ -84,7 +84,7 @@ namespace RealismMod
         }
     }
 
-    public class method_21Patch : ModulePatch
+    public class PwaWeaponParamsPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {

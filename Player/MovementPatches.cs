@@ -13,7 +13,8 @@ using System.Reflection;
 using UnityEngine;
 using static BaseBallistic;
 using static EFT.Player;
-
+using MovementContext = GClass1667;
+using ValueHandler = GClass765;
 
 namespace RealismMod
 {
@@ -103,15 +104,15 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass1667).GetMethod("ClampSpeed", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(MovementContext).GetMethod("ClampSpeed", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
         [PatchPrefix]
-        private static bool Prefix(GClass1667 __instance, float speed, ref float __result)
+        private static bool Prefix(MovementContext __instance, float speed, ref float __result)
         {
 
-            Player player = (Player)AccessTools.Field(typeof(GClass1667), "player_0").GetValue(__instance);
+            Player player = (Player)AccessTools.Field(typeof(MovementContext), "player_0").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 float slopeFactor = 1f;
@@ -155,14 +156,14 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass1667).GetMethod("SetAimingSlowdown", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(MovementContext).GetMethod("SetAimingSlowdown", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref GClass1667 __instance, bool isAiming)
+        private static bool Prefix(ref MovementContext __instance, bool isAiming)
         {
             
-            Player player = (Player)AccessTools.Field(typeof(GClass1667), "player_0").GetValue(__instance);
+            Player player = (Player)AccessTools.Field(typeof(MovementContext), "player_0").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 if (isAiming)
@@ -186,17 +187,17 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass1667).GetMethod("SprintAcceleration", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(MovementContext).GetMethod("SprintAcceleration", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(GClass1667 __instance, float deltaTime)
+        private static bool Prefix(MovementContext __instance, float deltaTime)
         {
-            Player player = (Player)AccessTools.Field(typeof(GClass1667), "player_0").GetValue(__instance);
+            Player player = (Player)AccessTools.Field(typeof(MovementContext), "player_0").GetValue(__instance);
 
             if (player.IsYourPlayer == true)
             {
-                GClass765 rotationFrameSpan = (GClass765)AccessTools.Field(typeof(GClass1667), "gclass765_0").GetValue(__instance);
+                ValueHandler rotationFrameSpan = (ValueHandler)AccessTools.Field(typeof(MovementContext), "gclass765_0").GetValue(__instance);
 
                 float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
