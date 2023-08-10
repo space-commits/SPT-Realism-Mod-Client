@@ -571,7 +571,7 @@ namespace RealismMod
                     stanceRotation = pistolMiniTargetQuaternion;
                 }
             }
-            else if (Plugin.StanceBlender.Value > 0f && !hasResetPistolPos)
+            else if (Plugin.StanceBlender.Value > 0f && !hasResetPistolPos && !StanceController.PistolIsColliding)
             {
                 isResettingPistol = true;
 
@@ -584,7 +584,7 @@ namespace RealismMod
                 stanceRotation = pistolRevertQuaternion;
                 Plugin.StanceBlender.Speed = Plugin.PistolPosResetSpeedMulti.Value * stanceMulti * (isThirdPerson ? Plugin.ThirdPersonPositionSpeed.Value : 1f);
             }
-            else if (Plugin.StanceBlender.Value == 0f && !hasResetPistolPos)
+            else if (Plugin.StanceBlender.Value == 0f && !hasResetPistolPos && !StanceController.PistolIsColliding)
             {
                 isResettingPistol = false;
 

@@ -163,14 +163,14 @@ namespace RealismMod
             {
                 if (Plugin.healthControllerTick >= 1f)
                 {
-                    ControllerTick(logger, Singleton<GameWorld>.Instance.AllAlivePlayersList[0]);
+                    ControllerTick(logger, Singleton<GameWorld>.Instance.MainPlayer);
                     Plugin.healthControllerTick = 0f;
                 }
 
                 if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
                 {
                     GameWorld gameWorld = Singleton<GameWorld>.Instance;
-                    if (gameWorld?.AllAlivePlayersList.Count > 0)
+                    if (gameWorld?.MainPlayer != null)
                     {
                         TestAddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, gameWorld.AllAlivePlayersList[0], Plugin.AddEffectType.Value);
                         NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + Plugin.AddEffectType.Value + " To Part " + (EBodyPart)Plugin.AddEffectBodyPart.Value);

@@ -414,7 +414,7 @@ namespace RealismMod
             ModConfig = JsonConvert.DeserializeObject<ConfigTemplate>(ConfigJson);
         }
 
-        private void CacheIcons()
+        private void cacheIcons()
         {
             IconCache.Add(ENewItemAttributeId.ShotDispersion, Resources.Load<Sprite>("characteristics/icons/Velocity"));
             IconCache.Add(ENewItemAttributeId.BluntThroughput, Resources.Load<Sprite>("characteristics/icons/armorMaterial"));
@@ -448,11 +448,11 @@ namespace RealismMod
             IconCache.Add(ENewItemAttributeId.Comfort, Resources.Load<Sprite>("characteristics/icons/Weight"));
             IconCache.Add(ENewItemAttributeId.PainKillerStrength, Resources.Load<Sprite>("characteristics/icons/hpResource"));
 
-            _ = LoadTexture(ENewItemAttributeId.Balance, Path.Combine(ModPath, "res\\balance.png"));
-            _ = LoadTexture(ENewItemAttributeId.RecoilAngle, Path.Combine(ModPath, "res\\recoilAngle.png"));
+            _ = loadImage(ENewItemAttributeId.Balance, Path.Combine(ModPath, "res\\balance.png"));
+            _ = loadImage(ENewItemAttributeId.RecoilAngle, Path.Combine(ModPath, "res\\recoilAngle.png"));
         }
 
-        private async Task LoadTexture(Enum id, string path)
+        private async Task loadImage(Enum id, string path)
         {
             using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(path))
             {
@@ -475,12 +475,12 @@ namespace RealismMod
 
         public static Dictionary<string, AudioClip> LoadedAudioClips = new Dictionary<string, AudioClip>();
 
-        async static void LoadAudioClip(string path)
+        private async static void loadAudioClip(string path)
         {
-            LoadedAudioClips[Path.GetFileName(path)] = await RequestAudioClip(path);
+            LoadedAudioClips[Path.GetFileName(path)] = await requestAudioClip(path);
         }
 
-        async static Task<AudioClip> RequestAudioClip(string path)
+        private async static Task<AudioClip> requestAudioClip(string path)
         {
             string extension = Path.GetExtension(path);
             AudioType audioType = AudioType.WAV;
@@ -516,12 +516,12 @@ namespace RealismMod
             {
                 GetPaths();
                 ConfigCheck();
-                CacheIcons();
+                cacheIcons();
 
-                string[] AudioFiles = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "/BepInEx/plugins/Realism/sounds/");
-                foreach (string File in AudioFiles)
+                string[] audioFilesDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "/BepInEx/plugins/Realism/sounds/");
+                foreach (string fileDir in audioFilesDir)
                 {
-                    LoadAudioClip(File);
+                    loadAudioClip(fileDir);
                 }
             }
             catch (Exception exception)
