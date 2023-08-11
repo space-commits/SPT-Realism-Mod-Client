@@ -853,6 +853,7 @@ namespace RealismMod
                     {
                         RecoilController.ResetRecoil();
                     }
+
                 }
  
                 StanceController.StanceState();

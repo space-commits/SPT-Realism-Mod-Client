@@ -30,6 +30,8 @@ namespace RealismMod
 {
     public static class Utils
     {
+        public static Player ClientPlayer;
+
         public static bool IsReady = false;
 
         public static bool WeaponReady = false;
@@ -59,6 +61,7 @@ namespace RealismMod
         public static string Flashlight = "55818b084bdc2d5b648b4571";
         public static string TacticalCombo = "55818b164bdc2ddc698b456c";
         public static string UBGL = "55818b014bdc2ddc698b456b";
+
 
         public static bool AreFloatsEqual(float a, float b, float epsilon = 0.001f)
         {
@@ -104,6 +107,8 @@ namespace RealismMod
             Player player = gameWorld?.MainPlayer;
             if (player != null && player?.HandsController != null)
             {
+                ClientPlayer = player;
+
                 if (player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon)
                 {
                     Utils.WeaponReady = true;

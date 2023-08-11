@@ -103,7 +103,7 @@ namespace RealismMod
 
         public static void SetStanceStamina(Player player, Player.FirearmController fc)
         {
-            if (!PlayerProperties.IsSprinting && (WeaponIsMounting || !WeaponIsBracing))
+            if (!PlayerProperties.IsSprinting && (WeaponIsMounting || (!WeaponIsBracing && Plugin.EnableIdleStamDrain.Value)))
             {
                 gotCurrentStam = false;
 
@@ -222,7 +222,7 @@ namespace RealismMod
 
         private static void showMountingUI() 
         {
-            if ((int)Time.time % 5 == 0)
+            if ((int)Time.time % 4 == 0)
             {
                 if (StanceController.WeaponIsBracing && !StanceController.WeaponIsMounting)
                 {
@@ -1245,9 +1245,9 @@ namespace RealismMod
             float mountOrientationBonus = StanceController.IsBracingTop ? 0.75f : 1f;
             float mountingRecoilLimit = weapClass == "pistol" ? 0.1f : 0.65f;
 
-            StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 0.85f * mountOrientationBonus, 0.25f);
+            StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 0.75f * mountOrientationBonus, 0.25f);
             StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 0.85f * mountOrientationBonus, 0.25f);
-            StanceController.MountingSwayBonus = Mathf.Clamp(0.65f * mountOrientationBonus, 0.4f, 1f);
+            StanceController.MountingSwayBonus = Mathf.Clamp(0.55f * mountOrientationBonus, 0.4f, 1f);
             StanceController.MountingRecoilBonus = Mathf.Clamp(mountingRecoilLimit * mountOrientationBonus, 0.1f, 1f);
         }
 
@@ -1544,11 +1544,6 @@ namespace RealismMod
 
                         Quaternion rhs = Quaternion.Euler(float_14 * Single_3 * vector3_6);
                         __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(vector3_4, quaternion_6 * rhs * currentRotation);
-
-                        if (!Plugin.IsFiring)
-                        {
-                            __instance.HandsContainer.HandsPosition.Damping = 0.5f;
-                        }
 
                         if (isPistol && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value)
                         {
@@ -1919,12 +1914,6 @@ namespace RealismMod
                     currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? quaternion_2 : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceSpeed : __instance.IsAiming ? 8f * float_9 * dt : 8f * dt);
                     Quaternion rhs = Quaternion.Euler(float_14 * Single_3 * vector3_6);
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponWorldPos, quaternion_6 * rhs * currentRotation);
-
-
-                    if (!Plugin.IsFiring) 
-                    {
-                        __instance.HandsContainer.HandsPosition.Damping = 0.5f;
-                    }
 
                     if (isPistol && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value)
                     {
