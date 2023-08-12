@@ -200,7 +200,7 @@ namespace RealismMod
 
         private static void resetSwayParams(ProceduralWeaponAnimation pwa, float mountingBonus) 
         {
-            float resetSwaySpeed = 0.1f;
+            float resetSwaySpeed = 0.05f;
             float resetSpeed = 0.5f;
             PlayerProperties.SprintTotalBreathIntensity = Mathf.Lerp(PlayerProperties.SprintTotalBreathIntensity, PlayerProperties.TotalBreathIntensity, resetSwaySpeed);
             PlayerProperties.SprintTotalHandsIntensity = Mathf.Lerp(PlayerProperties.SprintTotalHandsIntensity, PlayerProperties.TotalHandsIntensity, resetSwaySpeed);
@@ -295,13 +295,14 @@ namespace RealismMod
                     {
                         __instance.ProceduralWeaponAnimation.Breath.Intensity = 0.69f * mountingBonus;
                         __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f * mountingBonus;
+                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
                     }
 
                     __instance.ProceduralWeaponAnimation.Shootingg.Intensity = (Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value);
                     ReloadController.ReloadStateCheck(__instance, fc, Logger);
                     AimController.ADSCheck(__instance, fc, Logger);
 
-                    if (Plugin.EnableStanceStamChanges.Value == true)
+                    if (Plugin.EnableStanceStamChanges.Value)
                     {
                         StanceController.SetStanceStamina(__instance, fc);
                     }
@@ -309,12 +310,24 @@ namespace RealismMod
                     float remainStamPercent = __instance.Physical.HandsStamina.Current / __instance.Physical.HandsStamina.TotalCapacity;
                     PlayerProperties.RemainingArmStamPercentage = 1f - ((1f - remainStamPercent) / 3f);
                 }
-                else if (Plugin.EnableStanceStamChanges.Value == true)
+                else if (Plugin.EnableStanceStamChanges.Value)
                 {
                     StanceController.ResetStanceStamina(__instance);
                 }
 
                 __instance.Physical.HandsStamina.Current = Mathf.Max(__instance.Physical.HandsStamina.Current, 1f);
+
+                if (!Plugin.IsFiring)
+                {
+                    if (Plugin.IsAiming)
+                    {
+                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Clamp(0.3f * (1f + (WeaponProperties.ErgoFactor / 100f)), 0.2f, 0.6f);
+                    }
+                    else 
+                    {
+                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.3f;
+                    }
+                }
             }
         }
     }
