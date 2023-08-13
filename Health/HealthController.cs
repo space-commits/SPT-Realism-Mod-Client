@@ -153,9 +153,7 @@ namespace RealismMod
         private static float adrenalineCooldownTime = 60f * (1f - PlayerProperties.StressResistanceFactor);
         public static bool AdrenalineCooldownActive = false;
 
-        public static bool HasFracture = false;
-        public static bool HasBlackedPart = false;
-        public static bool HPBelow50 = false;
+        public static float PainStrength = 0f;
 
         public static void HealthController(ManualLogSource logger)
         {
@@ -1015,9 +1013,7 @@ namespace RealismMod
             float totalMaxHp = 0f;
             float totalCurrentHp = 0f;
 
-            RealismHealthController.HasBlackedPart = false;
-            RealismHealthController.HPBelow50 = false;
-            RealismHealthController.HasFracture = false;
+            RealismHealthController.PainStrength = 0f;
 
             Type fractureType;
             MedProperties.EffectTypes.TryGetValue("BrokenBone", out fractureType);
@@ -1030,7 +1026,7 @@ namespace RealismMod
 
                 if (hasFracture) 
                 {
-                    RealismHealthController.HasFracture = false;
+                    RealismHealthController.PainStrength += 5;
                 }
                
                 bool isLeftArm = part == EBodyPart.LeftArm;
@@ -1057,12 +1053,12 @@ namespace RealismMod
                 if (percentHp <= 0.5f)
                 {
                     AddBaseEFTEffectIfNoneExisting(player, "Pain", part, 0f, 10f, 1f, 1f);
-                    RealismHealthController.HPBelow50 = true;
+                    RealismHealthController.PainStrength += 1;
                 }
 
-                if (currentHp <= 0) 
+                if (currentHp <= 0)
                 {
-                    RealismHealthController.HasBlackedPart = true;
+                    RealismHealthController.PainStrength += 5;
                 }
 
     
@@ -1107,9 +1103,8 @@ namespace RealismMod
             if (totalHpPercent <= 0.5f)
             {
                 AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 10f, 1f, 1f);
-                RealismHealthController.HPBelow50 = true;
+                RealismHealthController.PainStrength += 5;
             }
-            
 
             float percentEnergyFactor = percentEnergy * 1.2f;
             float percentHydroFactor = percentHydro * 1.2f;

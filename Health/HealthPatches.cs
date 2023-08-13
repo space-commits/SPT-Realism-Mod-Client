@@ -59,11 +59,11 @@ namespace RealismMod
             {
                 case 0:
                     return "NONE";
-                case 1:
+                case <= 5:
                     return "WEAK";
-                case 2:
+                case <= 10:
                     return "MILD";
-                case 3:
+                case <= 15:
                     return "STRONG";
                 default:
                     return "NONE";
