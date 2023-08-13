@@ -33,7 +33,6 @@ namespace RealismMod
 
         public static void DoRecoilClimb()
         {
-
             if (Plugin.ShotCount == 1)
             {
                 VRecoilClimb(1.15f);

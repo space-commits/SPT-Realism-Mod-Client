@@ -7,6 +7,7 @@ using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -113,7 +114,7 @@ namespace RealismMod
             {
                 PlayerInitPatch p = new PlayerInitPatch();
 
-                Plugin.StanceBlender.Target = 0f;
+                StanceController.StanceBlender.Target = 0f;
                 StatCalc.SetGearParamaters(__instance);
                 StanceController.SelectedStance = 0;
                 StanceController.IsLowReady = false;
@@ -319,13 +320,27 @@ namespace RealismMod
 
                 if (!Plugin.IsFiring)
                 {
-                    if (Plugin.IsAiming)
+                    Logger.LogWarning(StanceController.CanResetDamping);
+
+                    if (StanceController.CanResetDamping)
                     {
-                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Clamp(0.3f * (1f + (WeaponProperties.ErgoFactor / 100f)), 0.2f, 0.6f);
+                        Logger.LogWarning("reset");
+                        if (Plugin.IsAiming)
+                        {
+                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Clamp(0.3f * (1f + (WeaponProperties.ErgoFactor / 100f)), 0.2f, 0.6f);
+                        }
+                        else
+                        {
+                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.3f * Plugin.test4.Value;
+                        }
                     }
-                    else 
+                    else
                     {
-                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.3f;
+                        Logger.LogWarning("set");
+                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Plugin.test4.Value;
+                        __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Plugin.test1.Value;
+                        __instance.ProceduralWeaponAnimation.Shootingg.ShotVals[3].Intensity = 0;
+                        __instance.ProceduralWeaponAnimation.Shootingg.ShotVals[4].Intensity = 0;
                     }
                 }
             }
