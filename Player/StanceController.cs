@@ -128,7 +128,7 @@ namespace RealismMod
                     }
                     else if (!Plugin.EnableIdleStamDrain.Value)
                     {
-                        player.Physical.Aim(0);
+                        player.Physical.Aim(0f);
                     }
 
                     if (IsHighReady && !Plugin.IsFiring && !IsLowReady && !Plugin.IsAiming && !IsShortStock)
@@ -221,7 +221,7 @@ namespace RealismMod
         {
             DampingTimer += Time.deltaTime;
 
-            if (DampingTimer >= Plugin.test3.Value)
+            if (DampingTimer >= 1f)
             {
                 CanResetDamping = true;
                 DoDampingTimer = false;
