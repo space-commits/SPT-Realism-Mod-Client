@@ -275,12 +275,7 @@ namespace RealismMod
                         canSkipWait = false;
                         addedEffect = true;
 
-                        float blacked = RealismHealthController.HasBlackedPart ? 1 : 0f;
-                        float fracture = RealismHealthController.HasFracture ? 1 : 0f;
-                        float hp = RealismHealthController.HPBelow50 ? 1 : 0f;
-                        float painStrength = blacked + fracture + hp;
-
-                        if (PainKillerStrength >= painStrength) 
+                        if (PainKillerStrength >= RealismHealthController.PainStrength) 
                         {
                             RealismHealthController.AddBasesEFTEffect(Player, "PainKiller", BodyPart, 0f, IntermittentEffectDur, 1f, 1f);
                             RealismHealthController.AddBasesEFTEffect(Player, "TunnelVision", BodyPart, 0f, IntermittentEffectDur, 1f, TunnelVisionStrength);
