@@ -297,6 +297,22 @@ namespace RealismMod
                         __instance.ProceduralWeaponAnimation.Breath.Intensity = 0.69f * mountingBonus;
                         __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f * mountingBonus;
                         __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
+
+                        if (fc.Item.WeapClass != "pistol")
+                        {
+                            if (Plugin.ShotCount <= 1)
+                            {
+                                __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
+                            }
+                            else
+                            {
+                                __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvAutoMulti.Value;
+                            }
+                        }
+                        else
+                        {
+                            __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
+                        }
                     }
 
                     __instance.ProceduralWeaponAnimation.Shootingg.Intensity = (Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value);
@@ -337,8 +353,7 @@ namespace RealismMod
                         __instance.ProceduralWeaponAnimation.Shootingg.ShotVals[3].Intensity = 0;
                         __instance.ProceduralWeaponAnimation.Shootingg.ShotVals[4].Intensity = 0;
                     }
-
-                    __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Plugin.test4.Value;
+                    __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Plugin.test4.Value; //5
                   }
             }
         }

@@ -235,13 +235,20 @@ namespace RealismMod
                     __instance.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
                     __instance.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
 
-                    if (Plugin.ShotCount == 1 && weapon.WeapClass != "pistol")
+                    if (weapon.WeapClass != "pistol")
+                    {
+                        if (Plugin.ShotCount <= 1)
+                        {
+                            __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
+                        }
+                        else
+                        {
+                            __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvAutoMulti.Value;
+                        }
+                    }
+                    else 
                     {
                         __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
-                    }
-                    if (Plugin.ShotCount > 1)
-                    {
-                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvAutoMulti.Value;
                     }
                 }
             }
