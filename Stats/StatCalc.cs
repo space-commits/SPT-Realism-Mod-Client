@@ -32,7 +32,7 @@ namespace RealismMod
         public static float PistolDispersionWeightMult = 0.8f;
         public static float PistolDispersionTorqueMult = 1f;
 
-        public static float CamWeightMult = 3.25f;
+        public static float CamWeightMult = 5f;
         public static float CamTorqueMult = 0.25f;
 
         public static float AngleTorqueMult = 0.4f;//needs tweaking

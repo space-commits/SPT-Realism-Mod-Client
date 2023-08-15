@@ -353,8 +353,8 @@ namespace RealismMod
                         __instance.ProceduralWeaponAnimation.Shootingg.ShotVals[3].Intensity = 0;
                         __instance.ProceduralWeaponAnimation.Shootingg.ShotVals[4].Intensity = 0;
                     }
-                    __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Plugin.test4.Value; //5
-                  }
+                    __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = 10f * StanceController.WiggleReturnSpeed;
+                }
             }
         }
     }
