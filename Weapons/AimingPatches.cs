@@ -65,6 +65,7 @@ namespace RealismMod
 
                 if (isAiming)
                 {
+                    StanceController.IsPatrolStance = false;
                     player.MovementContext.SetAimingSlowdown(true, 0.33f);
                 }
 

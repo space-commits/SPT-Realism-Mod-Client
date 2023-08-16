@@ -31,6 +31,7 @@ namespace RealismMod
         private static bool clickTriggered = true;
         public static int SelectedStance = 0;
 
+        public static bool IsPatrolStance = false;
         public static bool IsActiveAiming = false;
         public static bool PistolIsCompressed = false;
         public static bool IsHighReady = false;
@@ -91,8 +92,8 @@ namespace RealismMod
         public static bool IsBracingSide = false;
         public static float MountingSwayBonus = 1f;
         public static float MountingRecoilBonus = 1f;
-        public static bool WeaponIsBracing = false;
-        public static bool WeaponIsMounting = false;
+        public static bool IsBracing = false;
+        public static bool IsMounting = false;
         public static float DismountTimer = 0.0f;
         public static bool CanDoDismountTimer = false;
 
@@ -113,18 +114,18 @@ namespace RealismMod
 
         public static void SetStanceStamina(Player player, Player.FirearmController fc)
         {
-            bool isBracing = !WeaponIsMounting && WeaponIsBracing && Plugin.EnableIdleStamDrain.Value;
+            bool isBracing = !IsMounting && IsBracing && Plugin.EnableIdleStamDrain.Value;
             if (!PlayerProperties.IsSprinting && !isBracing)
             {
                 gotCurrentStam = false;
 
                 if (fc.Item.WeapClass != "pistol")
                 {
-                    if (WeaponIsBracing && !WeaponIsMounting && !Plugin.EnableIdleStamDrain.Value) 
+                    if (IsBracing && !IsMounting && !Plugin.EnableIdleStamDrain.Value) 
                     {
                         player.Physical.Aim(0f);
                     }
-                    else if (Plugin.IsAiming || (Plugin.EnableIdleStamDrain.Value && !IsActiveAiming && !WeaponIsMounting && !WeaponIsBracing && !player.IsInPronePose && (!IsHighReady && !IsLowReady && !IsShortStock && !Plugin.IsFiring)))
+                    else if (Plugin.IsAiming || (Plugin.EnableIdleStamDrain.Value && !IsActiveAiming && !IsMounting && !IsBracing && !player.IsInPronePose && (!IsHighReady && !IsLowReady && !IsShortStock && !Plugin.IsFiring)))
                     {
                         player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgoFactor * 0.8f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                     }
@@ -137,20 +138,26 @@ namespace RealismMod
                         player.Physical.Aim(0f);
                     }
 
-                    if (IsHighReady && !Plugin.IsFiring && !IsLowReady && !Plugin.IsAiming && !IsShortStock)
+
+                    if (IsPatrolStance)
+                    {
+                        player.Physical.Aim(0f);
+                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((((1f - (WeaponProperties.ErgoFactor / 100f)) * 0.04f) * PlayerProperties.ADSInjuryMulti)), player.Physical.HandsStamina.TotalCapacity);
+                    }
+                    else if (IsHighReady && !Plugin.IsFiring && !Plugin.IsAiming)
                     {
                         player.Physical.Aim(0f);
                         player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((((1f - (WeaponProperties.ErgoFactor / 100f)) * 0.01f) * PlayerProperties.ADSInjuryMulti)), player.Physical.HandsStamina.TotalCapacity);
                     }
-                    if (WeaponIsMounting || (IsLowReady && !Plugin.IsFiring && !IsHighReady && !Plugin.IsAiming && !IsShortStock))
+                    else if (IsMounting || (IsLowReady && !Plugin.IsFiring && !Plugin.IsAiming))
                     {
                         player.Physical.Aim(0f);
                         player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponProperties.ErgoFactor / 100f)) * 0.03f) * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
                     }
-                    if (IsShortStock && !Plugin.IsFiring && !IsHighReady && !Plugin.IsAiming && !IsLowReady)
+                    else if (IsShortStock && !Plugin.IsFiring && !Plugin.IsAiming)
                     {
                         player.Physical.Aim(0f);
-                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponProperties.ErgoFactor / 100f)) * 0.01f) * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
+                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponProperties.ErgoFactor / 100f)) * 0.02f) * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
                     }
                 }
                 else
@@ -202,8 +209,9 @@ namespace RealismMod
             WasLowReady = false;
             IsShortStock = false;
             WasShortStock = false;
-            WeaponIsMounting = false;
+            IsMounting = false;
             DidStanceWiggle = false;
+            IsPatrolStance = false;
         }
 
 
@@ -246,32 +254,28 @@ namespace RealismMod
             }
         }
 
-        private static void showMountingUI()
-        {
-            if ((int)Time.time % 4 == 0)
-            {
-                if (StanceController.WeaponIsBracing && !StanceController.WeaponIsMounting)
-                {
-                    AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
-                    panelUI.Show("Bracing");
-                }
-                else if (StanceController.WeaponIsMounting)
-                {
-                    AmmoCountPanel panelUI = (AmmoCountPanel)AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel").GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
-                    panelUI.Show("Mounting");
-                }
-            }
-        }
-
         public static void StanceState()
         {
             if (Utils.WeaponReady == true)
             {
-                showMountingUI();
-
                 if (DoDampingTimer) 
                 {
                     StanceDampingTimer();
+                }
+
+                //patrol
+                if (Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey))
+                {
+                    StanceController.StanceBlender.Target = 0f;
+                    IsPatrolStance = !IsPatrolStance;
+                    IsHighReady = false;
+                    IsLowReady = false;
+                    IsActiveAiming = false;
+                    WasActiveAim = IsActiveAiming;
+                    WasHighReady = IsHighReady;
+                    WasLowReady = IsLowReady;
+                    WasShortStock = IsShortStock;
+                    DidStanceWiggle = false; 
                 }
 
                 if (!PlayerProperties.IsSprinting && !Plugin.IsInInventory && WeaponProperties._WeapClass != "pistol")
@@ -338,10 +342,11 @@ namespace RealismMod
                             IsShortStock = false;
                             IsHighReady = false;
                             IsLowReady = false;
+                            IsPatrolStance = false;
                             WasActiveAim = IsActiveAiming;
                             SetActiveAiming = true;
                         }
-                        else if (SetActiveAiming == true)
+                        else if (SetActiveAiming)
                         {
                             StanceController.StanceBlender.Target = 0f;
                             IsActiveAiming = false;
@@ -362,6 +367,7 @@ namespace RealismMod
                             IsShortStock = false;
                             IsHighReady = false;
                             IsLowReady = false;
+                            IsPatrolStance = false;
                             WasActiveAim = IsActiveAiming;
                             DidStanceWiggle = false;
                             if (IsActiveAiming == false)
@@ -382,6 +388,7 @@ namespace RealismMod
                         IsHighReady = false;
                         IsLowReady = false;
                         IsActiveAiming = false;
+                        IsPatrolStance = false;
                         WasActiveAim = IsActiveAiming;
                         WasHighReady = IsHighReady;
                         WasLowReady = IsLowReady;
@@ -398,6 +405,7 @@ namespace RealismMod
                         IsShortStock = false;
                         IsLowReady = false;
                         IsActiveAiming = false;
+                        IsPatrolStance = false;
                         WasActiveAim = IsActiveAiming;
                         WasHighReady = IsHighReady;
                         WasLowReady = IsLowReady;
@@ -419,6 +427,7 @@ namespace RealismMod
                         IsHighReady = false;
                         IsActiveAiming = false;
                         IsShortStock = false;
+                        IsPatrolStance = false;
                         WasActiveAim = IsActiveAiming;
                         WasHighReady = IsHighReady;
                         WasLowReady = IsLowReady;
@@ -438,6 +447,7 @@ namespace RealismMod
                         IsHighReady = false;
                         IsShortStock = false;
                         IsActiveAiming = false;
+                        IsPatrolStance = false;
                         HaveSetAiming = true;
                     }
                     else if (HaveSetAiming)
@@ -498,6 +508,7 @@ namespace RealismMod
                     WasLowReady = false;
                     WasShortStock = false;
                     WasActiveAim = false;
+                    IsPatrolStance = false;
                     Plugin.DidWeaponSwap = false;
                 }
             }
@@ -588,6 +599,7 @@ namespace RealismMod
 
             pwa.HandsContainer.WeaponRoot.localPosition = new Vector3(currentX, pwa.HandsContainer.TrackingTransform.localPosition.y, pwa.HandsContainer.TrackingTransform.localPosition.z);
 
+
             if (!pwa.IsAiming && !StanceController.CancelPistolStance && !Plugin.IsBlindFiring && !StanceController.PistolIsColliding)
             {
                 pwa.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * PlayerProperties.SprintHipfirePenalty;
@@ -664,7 +676,6 @@ namespace RealismMod
             float wiggleErgoMulti = Mathf.Clamp((WeaponProperties.ErgoStanceSpeed * 0.5f), 0.1f, 1f);
             float stocklessModifier = WeaponProperties.HasShoulderContact ? 1f : 0.5f;
             StanceController.WiggleReturnSpeed = (1f - (PlayerProperties.AimSkillADSBuff * 0.5f)) * wiggleErgoMulti * PlayerProperties.StanceInjuryMulti * stocklessModifier * playerWeightFactor * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f));
-            logger.LogWarning("stanceMulti " + stanceMulti);
 
             bool isColliding = !pwa.OverlappingAllowsBlindfire;
             float collisionRotationFactor = isColliding ? 2f : 1f;
@@ -1111,27 +1122,27 @@ namespace RealismMod
         {
             bool isMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
 
-            if (StanceController.WeaponIsMounting && (isMoving || !Plugin.IsAiming))
+            if (StanceController.IsMounting && (isMoving || !Plugin.IsAiming))
             {
-                StanceController.WeaponIsMounting = false;
-                doWiggleEffects(Logger, player, pwa, StanceController.WeaponIsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
+                StanceController.IsMounting = false;
+                doWiggleEffects(Logger, player, pwa, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
             }
-            if (Plugin.IsAiming && Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && StanceController.WeaponIsBracing && player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire)
+            if (Plugin.IsAiming && Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && StanceController.IsBracing && player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire)
             {
-                StanceController.WeaponIsMounting = !StanceController.WeaponIsMounting;
-                if (StanceController.WeaponIsMounting)
+                StanceController.IsMounting = !StanceController.IsMounting;
+                if (StanceController.IsMounting)
                 {
                     mountWeapPosition = weaponWorldPos; // + StanceController.CoverDirection
                 }
 
-                doWiggleEffects(Logger, player, pwa, StanceController.WeaponIsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
+                doWiggleEffects(Logger, player, pwa, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
             }
-            if (Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && !StanceController.WeaponIsBracing && StanceController.WeaponIsMounting)
+            if (Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && !StanceController.IsBracing && StanceController.IsMounting)
             {
-                StanceController.WeaponIsMounting = false;
-                doWiggleEffects(Logger, player, pwa, StanceController.WeaponIsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
+                StanceController.IsMounting = false;
+                doWiggleEffects(Logger, player, pwa, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
             }
-            if (StanceController.WeaponIsMounting)
+            if (StanceController.IsMounting)
             {
                 AccessTools.Field(typeof(TurnAwayEffector), "_turnAwayThreshold").SetValue(pwa.TurnAway, 1f);
                 weaponWorldPos = new Vector3(mountWeapPosition.x, mountWeapPosition.y, weaponWorldPos.z); //this makes it feel less clamped to cover but allows h recoil + StanceController.CoverDirection

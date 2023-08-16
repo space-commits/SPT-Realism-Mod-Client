@@ -337,7 +337,6 @@ namespace RealismMod
 
             float currentFixSpeedMod = 0f;
 
-
             if (WeaponProperties.WepHasShoulderContact(__instance) == true && !folded)
             {
                 hasShoulderContact = true;

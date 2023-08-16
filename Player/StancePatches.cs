@@ -165,12 +165,12 @@ namespace RealismMod
 
         private static void doStability(bool isTop, bool isRightide, string weapClass)
         {
-            if (!StanceController.WeaponIsMounting)
+            if (!StanceController.IsMounting)
             {
                 setMountingStatus(isTop, isRightide);
             }
 
-            StanceController.WeaponIsBracing = true;
+            StanceController.IsBracing = true;
 
             float mountOrientationBonus = StanceController.IsBracingTop ? 0.75f : 1f;
             float mountingRecoilLimit = weapClass == "pistol" ? 0.1f : 0.65f;
@@ -241,7 +241,7 @@ namespace RealismMod
 
                     StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 1f, 0.5f);
                     StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 1f, 0.5f);
-                    StanceController.WeaponIsBracing = false;
+                    StanceController.IsBracing = false;
                 }
             }
         }
@@ -259,7 +259,7 @@ namespace RealismMod
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
 
-            if (player.IsYourPlayer && StanceController.WeaponIsMounting)
+            if (player.IsYourPlayer && StanceController.IsMounting)
             {
                 return false;
             }
@@ -428,12 +428,12 @@ namespace RealismMod
             if (player.IsYourPlayer)
             {
 
-                if (!StanceController.WeaponIsMounting)
+                if (!StanceController.IsMounting)
                 {
                     initialRotation = MovementContext.Rotation;
                 }
 
-                if (StanceController.WeaponIsMounting && !ignoreClamp)
+                if (StanceController.IsMounting && !ignoreClamp)
                 {
                     FirearmController fc = player.HandsController as FirearmController;
 
@@ -485,14 +485,14 @@ namespace RealismMod
             Player player_0 = (Player)AccessTools.Field(typeof(GClass1667), "player_0").GetValue(MovementContext);
             if (player_0.IsYourPlayer)
             {
-                if (!StanceController.WeaponIsMounting)
+                if (!StanceController.IsMounting)
                 {
                     currentTilt = tilt;
                     currentPoseLevel = MovementContext.PoseLevel;
                 }
                 if (currentTilt != tilt || currentPoseLevel != MovementContext.PoseLevel || !MovementContext.IsGrounded)
                 {
-                    StanceController.WeaponIsMounting = false;
+                    StanceController.IsMounting = false;
                 }
             }
         }

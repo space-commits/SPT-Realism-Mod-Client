@@ -20,6 +20,8 @@ using static RealismMod.GearPatches;
 using static RealismMod.Attributes;
 using static RootMotion.FinalIK.AimPoser;
 using HarmonyLib;
+using static System.Net.Mime.MediaTypeNames;
+using MonoMod.RuntimeDetour;
 
 namespace RealismMod
 {
@@ -291,6 +293,8 @@ namespace RealismMod
         public static ConfigEntry<float> test4 { get; set; }
 
         public static ConfigEntry<KeyboardShortcut> MountKeybind { get; set; }
+        public static ConfigEntry<bool> EnableMountUI { get; set; }
+
 
         public static Weapon CurrentlyShootingWeapon;
 
@@ -398,20 +402,28 @@ namespace RealismMod
 
         public static bool IsInThirdPerson = false;
 
-        private void GetPaths()
+        public static GameObject Hook;
+        public static MountingUI MountingUIComponent;
+
+        public static bool HasReloadedAudio = false;
+
+        public static Dictionary<string, AudioClip> LoadedAudioClips = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, Sprite> LoadedSprites = new Dictionary<string, Sprite>();
+
+        private void getPaths()
         {
             var mod = RequestHandler.GetJson($"/RealismMod/GetInfo");
             ModPath = Json.Deserialize<string>(mod);
             ConfigFilePath = Path.Combine(ModPath, @"config\config.json");
         }
 
-        private void ConfigCheck()
+        private void configCheck()
         {
             ConfigJson = File.ReadAllText(ConfigFilePath);
             ModConfig = JsonConvert.DeserializeObject<ConfigTemplate>(ConfigJson);
         }
 
-        private void cacheIcons()
+        private async void cacheIcons()
         {
             IconCache.Add(ENewItemAttributeId.ShotDispersion, Resources.Load<Sprite>("characteristics/icons/Velocity"));
             IconCache.Add(ENewItemAttributeId.BluntThroughput, Resources.Load<Sprite>("characteristics/icons/armorMaterial"));
@@ -445,39 +457,44 @@ namespace RealismMod
             IconCache.Add(ENewItemAttributeId.Comfort, Resources.Load<Sprite>("characteristics/icons/Weight"));
             IconCache.Add(ENewItemAttributeId.PainKillerStrength, Resources.Load<Sprite>("characteristics/icons/hpResource"));
 
-            _ = loadImage(ENewItemAttributeId.Balance, Path.Combine(ModPath, "res\\balance.png"));
-            _ = loadImage(ENewItemAttributeId.RecoilAngle, Path.Combine(ModPath, "res\\recoilAngle.png"));
+            Sprite balanceSprite = await requestSprite(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\icons\\balance.png");
+            Sprite recoilAngleSprite = await requestSprite(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\icons\\recoilAngle.png");
+
+            IconCache.Add(ENewItemAttributeId.Balance, balanceSprite);
+            IconCache.Add(ENewItemAttributeId.RecoilAngle, recoilAngleSprite);
         }
 
-        private async Task loadImage(Enum id, string path)
+        private async void loadSprite(string path)
         {
-            using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(path))
+            LoadedSprites[Path.GetFileName(path)] = await requestSprite(path);
+        }
+
+        private async Task<Sprite> requestSprite(string path)
+        {
+            UnityWebRequest www = UnityWebRequestTexture.GetTexture(path);
+            var SendWeb = www.SendWebRequest();
+
+            while (!SendWeb.isDone)
+                await Task.Yield();
+
+            if (www.isNetworkError || www.isHttpError)
             {
-                uwr.SendWebRequest();
-
-                while (!uwr.isDone)
-                    await Task.Delay(5);
-
-                if (uwr.responseCode != 200)
-                {
-                    Logger.LogError("Realism: Error Requesting Textures");
-                }
-                else
-                {
-                    Texture2D cachedTexture = DownloadHandlerTexture.GetContent(uwr);
-                    IconCache.Add(id, Sprite.Create(cachedTexture, new Rect(0, 0, cachedTexture.width, cachedTexture.height), new Vector2(0, 0)));
-                }
+                return null;
+            }
+            else
+            {
+                Texture2D texture = ((DownloadHandlerTexture)www.downloadHandler).texture;
+                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                return sprite;
             }
         }
 
-        public static Dictionary<string, AudioClip> LoadedAudioClips = new Dictionary<string, AudioClip>();
-
-        private async static void loadAudioClip(string path)
+        private async void loadAudioClip(string path)
         {
             LoadedAudioClips[Path.GetFileName(path)] = await requestAudioClip(path);
         }
 
-        private async static Task<AudioClip> requestAudioClip(string path)
+        private async Task<AudioClip> requestAudioClip(string path)
         {
             string extension = Path.GetExtension(path);
             AudioType audioType = AudioType.WAV;
@@ -507,24 +524,47 @@ namespace RealismMod
             }
         }
 
+        private void loadAudioClips() 
+        {
+            string[] audioFilesDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\");
+            LoadedAudioClips.Clear();   
+
+            foreach (string fileDir in audioFilesDir)
+            {
+                this.loadAudioClip(fileDir);
+            }
+
+            Plugin.HasReloadedAudio = true;
+        }
+
+        private void loadSprites()
+        {
+            string[] iconFilesDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\icons\\", "*.png");
+
+            foreach (string fileDir in iconFilesDir)
+            {
+                loadSprite(fileDir);
+            }
+        }
+
         void Awake()
         {
             try
             {
-                GetPaths();
-                ConfigCheck();
+                getPaths();
+                configCheck();
+                loadSprites();
+                loadAudioClips();
                 cacheIcons();
-
-                string[] audioFilesDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "/BepInEx/plugins/Realism/sounds/");
-                foreach (string fileDir in audioFilesDir)
-                {
-                    loadAudioClip(fileDir);
-                }
             }
             catch (Exception exception)
             {
                 Logger.LogError(exception);
             }
+
+            Hook = new GameObject();
+            MountingUIComponent = Hook.AddComponent<MountingUI>();
+            DontDestroyOnLoad(Hook);
 
             InitConfigs();
 
@@ -747,6 +787,8 @@ namespace RealismMod
                 new RestoreBodyPartPatch().Enable();
                 new FlyingBulletPatch().Enable();   
             }
+
+            new BattleUIScreenPatch().Enable();
         }
 
         void Update()
@@ -761,13 +803,19 @@ namespace RealismMod
 
             if (Utils.CheckIsReady())
             {
-                if (ModConfig.recoil_attachment_overhaul) 
+                if (!Plugin.HasReloadedAudio) 
+                {
+                    loadAudioClips();
+                    Plugin.HasReloadedAudio = true;
+                }
+
+                if (ModConfig.recoil_attachment_overhaul)
                 {
                     if (Plugin.ShotCount > Plugin.PrevShotCount)
                     {
                         Plugin.IsFiring = true;
                         StanceController.IsFiringFromStance = true;
-                        Plugin.IsFiringMovement = true; 
+                        Plugin.IsFiringMovement = true;
 
                         if ((Plugin.EnableRecoilClimb.Value && Plugin.IsAiming) || (Plugin.EnableHipfireRecoilClimb.Value == true && !Plugin.IsAiming))
                         {
@@ -806,12 +854,12 @@ namespace RealismMod
                             if (Plugin.RealTimeGain.Value < 20)
                             {
                                 Plugin.RealTimeGain.Value += 1f;
-                                Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0,0,0), Plugin.LoadedAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 1.0f, EOcclusionTest.None, null, false);
+                                Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), Plugin.LoadedAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 1.0f, EOcclusionTest.None, null, false);
                             }
                         }
                         if (Input.GetKeyDown(Plugin.DecGain.Value.MainKey) && Plugin.HasHeadSet)
                         {
-                
+
                             if (Plugin.RealTimeGain.Value > 0)
                             {
                                 Plugin.RealTimeGain.Value -= 1f;
@@ -819,11 +867,11 @@ namespace RealismMod
                             }
                         }
 
-                        if (PrismEffects != null) 
+                        if (PrismEffects != null)
                         {
                             Deafening.DoDeafening();
                         }
-            
+
 
                         if (Plugin.IsBotFiring)
                         {
@@ -852,7 +900,7 @@ namespace RealismMod
                     }
 
                 }
- 
+
                 StanceController.StanceState();
 
                 if (Plugin.EnableMedicalOvehaul.Value && ModConfig.med_changes)
@@ -860,6 +908,10 @@ namespace RealismMod
                     healthControllerTick += Time.deltaTime;
                     RealismHealthController.HealthController(Logger);
                 }
+            }
+            else
+            {
+                HasReloadedAudio = false;
             }
         }
 
@@ -916,7 +968,7 @@ namespace RealismMod
             EnablePlayerArmorZones = Config.Bind<bool>(ballSettings, "Enable Armor Hit Zones For Player.", true, new ConfigDescription("Enables Player To Use New Hit Zones.", null, new ConfigurationManagerAttributes { Order = 20 }));
             EnableArmPen = Config.Bind<bool>(ballSettings, "Enable Increased Arm Penetration", true, new ConfigDescription("Arm 'Armor' Is Reduced to Lvl 1, And Reduces Pen Of Bullets That Pass Through Them By A Lot Less. Arms Soak Up A Lot Less Damage Therefore Damage To Chest Is Increased.", null, new ConfigurationManagerAttributes { Order = 40 }));
             EnableHitSounds = Config.Bind<bool>(ballSettings, "Enable Hit Sounds", true, new ConfigDescription("Enables Additional Sounds To Be Played When Hitting The New Body Zones And Armor Hit Sounds By Material.", null, new ConfigurationManagerAttributes { Order = 50 }));
-            FleshHitSoundMulti = Config.Bind<float>(ballSettings, "FleshHit Sound Multi..", 0.35f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 60 }));
+            FleshHitSoundMulti = Config.Bind<float>(ballSettings, "FleshHit Sound Multi.", 0.2f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 60 }));
             ArmorCloseHitSoundMulti = Config.Bind<float>(ballSettings, "Distant Armor Hit Sound Multi", 1.1f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 70 }));
             ArmorFarHitSoundMulti = Config.Bind<float>(ballSettings, "Close Armor Hit Sound Mutli", 1.2f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 80 }));
             EnableRealArmorClass = Config.Bind<bool>(ballSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 90 }));
@@ -1009,6 +1061,7 @@ namespace RealismMod
             ToggleActiveAim = Config.Bind<bool>(weapAimAndPos, "Use Toggle For Active Aim", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 200 }));
             ActiveAimReload = Config.Bind<bool>(weapAimAndPos, "Allow Reload From Active Aim", false, new ConfigDescription("Allows Reload From Magazine While In Active Aim With Speed Bonus.", null, new ConfigurationManagerAttributes { Order = 190 }));
             StanceToggleDevice = Config.Bind<bool>(weapAimAndPos, "Stance Toggles Off Light/Laser", true, new ConfigDescription("Entering High/Low Ready Will Toggle Off Lights/Lasers.", null, new ConfigurationManagerAttributes { Order = 180 }));
+            EnableMountUI = Config.Bind<bool>(weapAimAndPos, "Enable Mounting UI", true, new ConfigDescription("If Enabled, An Icon On Screen Will Indicate If Player Is Bracing, Mounting And What Side Of Cover They Are On.", null, new ConfigurationManagerAttributes { Order = 179 }));
 
             CycleStancesKeybind = Config.Bind(weapAimAndPos, "Cycle Stances Keybind", new KeyboardShortcut(KeyCode.J), new ConfigDescription("Cycles Between High, Low Ready and Short-Stocking. Double Click Returns To Idle.", null, new ConfigurationManagerAttributes { Order = 174 }));
             ActiveAimKeybind = Config.Bind(weapAimAndPos, "Active Aim Keybind", new KeyboardShortcut(KeyCode.LeftArrow), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 173 }));
