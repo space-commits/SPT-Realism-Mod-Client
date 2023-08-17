@@ -175,7 +175,7 @@ namespace RealismMod
             float mountOrientationBonus = StanceController.IsBracingTop ? 0.75f : 1f;
             float mountingRecoilLimit = weapClass == "pistol" ? 0.1f : 0.65f;
 
-            StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 0.75f * mountOrientationBonus, 0.25f);
+            StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 0.8f * mountOrientationBonus, 0.25f);
             StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 0.85f * mountOrientationBonus, 0.25f);
             StanceController.MountingSwayBonus = Mathf.Clamp(0.55f * mountOrientationBonus, 0.4f, 1f);
             StanceController.MountingRecoilBonus = Mathf.Clamp(mountingRecoilLimit * mountOrientationBonus, 0.1f, 1f);
@@ -199,7 +199,7 @@ namespace RealismMod
                     string weapClass = __instance.Item.WeapClass;
 
                     float wiggleAmount = 6f;
-                    float moveToCoverOffset = 0.005f;
+                    float moveToCoverOffset = 0.01f;
 
                     Transform weapTransform = player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim;
                     Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
@@ -527,6 +527,8 @@ namespace RealismMod
 
         private static float stanceRotationSpeed = 1f;
 
+        private static Vector3 mountWeapPosition = Vector3.zero;
+
         protected override MethodBase GetTargetMethod()
         {
             aimSpeedField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9");
@@ -580,12 +582,15 @@ namespace RealismMod
                         bool allowActiveAimReload = Plugin.ActiveAimReload.Value && PlayerProperties.IsInReloadOpertation && !PlayerProperties.IsAttemptingToReloadInternalMag && !PlayerProperties.IsQuickReloading;
                         bool cancelStance = (StanceController.CancelActiveAim && StanceController.IsActiveAiming && !allowActiveAimReload) || (StanceController.CancelHighReady && StanceController.IsHighReady) || (StanceController.CancelLowReady && StanceController.IsLowReady) || (StanceController.CancelShortStock && StanceController.IsShortStock) || (StanceController.CancelPistolStance && StanceController.PistolIsCompressed);
 
+                        StanceController.DoMounting(Logger, player, __instance, ref weaponPosition, ref mountWeapPosition);
+                        weaponPositionField.SetValue(__instance, weaponPosition);
+
                         currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? aimingQuat : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
 
                         Quaternion rhs = Quaternion.Euler(pitch * overlappingBlindfire * blindfireRotation);
                         __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponPosition, weapRotation * rhs * currentRotation);
 
-                        if (isPistol && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value)
+                        if (isPistol && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value && !StanceController.IsPatrolStance)
                         {
                             if (StanceController.PistolIsCompressed && !Plugin.IsAiming && !isResettingPistol && !Plugin.IsBlindFiring)
                             {
@@ -607,7 +612,7 @@ namespace RealismMod
                             hasResetShortStock = true;
                             StanceController.DoPistolStances(true, ref __instance, ref stanceRotation, dt, ref hasResetPistolPos, player, Logger, ref stanceRotationSpeed, ref isResettingPistol, firearmController);
                         }
-                        else
+                        else if(!isPistol || WeaponProperties.HasShoulderContact)
                         {
                             if ((!isInStance && allStancesReset) || (cancelBecauseSooting && !isInShootableStance) || Plugin.IsAiming || cancelStance || Plugin.IsBlindFiring)
                             {
@@ -813,7 +818,6 @@ namespace RealismMod
         private static float stanceRotationSpeed = 1f;
 
         private static Vector3 mountWeapPosition = Vector3.zero;
-        private static Quaternion mountWeapRotation = Quaternion.identity;
 
         [PatchPostfix]
         private static void Postfix(ref EFT.Animations.ProceduralWeaponAnimation __instance, float dt)
@@ -878,7 +882,7 @@ namespace RealismMod
                     Quaternion rhs = Quaternion.Euler(pitch * overlappingBlindfire * blindFireRotation);
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponWorldPos, weapRotation * rhs * currentRotation);
 
-                    if (isPistol && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value)
+                    if (isPistol && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value && !StanceController.IsPatrolStance)
                     {
                         if (StanceController.PistolIsCompressed && !Plugin.IsAiming && !isResettingPistol && !Plugin.IsBlindFiring)
                         {
@@ -900,7 +904,7 @@ namespace RealismMod
                         hasResetShortStock = true;
                         StanceController.DoPistolStances(false, ref __instance, ref stanceRotation, dt, ref hasResetPistolPos, player, Logger, ref stanceRotationSpeed, ref isResettingPistol, firearmController);
                     }
-                    else
+                    else if (!isPistol || WeaponProperties.HasShoulderContact)
                     {
                         if ((!isInStance && allStancesReset) || (cancelBecauseSooting && !isInShootableStance) || Plugin.IsAiming || cancelStance || Plugin.IsBlindFiring)
                         {

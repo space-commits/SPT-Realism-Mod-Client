@@ -64,8 +64,6 @@ namespace RealismMod
                 if (StanceController.IsMounting)
                 {
                     mountingUIImage.color = Color.white;
-                    mountingUIRect.sizeDelta = new Vector2(90f, 90f);
-
                     float scaleAmount = Mathf.Lerp(1f, 1.15f, Mathf.PingPong(Time.time * 0.9f, 1.0f));
                     mountingUIRect.sizeDelta = new Vector2(90f, 90f) * scaleAmount;
 
@@ -73,7 +71,6 @@ namespace RealismMod
                 else if (StanceController.IsBracing) 
                 {
                     mountingUIRect.sizeDelta = new Vector2(90f, 90f);
-
                     float alpha = Mathf.Lerp(0.2f, 1f, Mathf.PingPong(Time.time * 1f, 1.0f));
                     Color lerpedColor = new Color(1f, 1f, 1f, alpha);
                     mountingUIImage.color = lerpedColor;
@@ -82,7 +79,7 @@ namespace RealismMod
                 {
                     mountingUIImage.color = Color.clear;
                 }
-                mountingUIRect.localPosition = new Vector3(Plugin.test1.Value, Plugin.test2.Value, 0f);
+                mountingUIRect.localPosition = new Vector3(650f, -460f, 0f);
             }
         }
     }

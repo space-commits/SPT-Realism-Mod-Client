@@ -137,8 +137,6 @@ namespace RealismMod
                     {
                         player.Physical.Aim(0f);
                     }
-
-
                     if (IsPatrolStance)
                     {
                         player.Physical.Aim(0f);
@@ -256,7 +254,7 @@ namespace RealismMod
 
         public static void StanceState()
         {
-            if (Utils.WeaponReady == true)
+            if (Utils.WeaponReady)
             {
                 if (DoDampingTimer) 
                 {
@@ -264,10 +262,10 @@ namespace RealismMod
                 }
 
                 //patrol
-                if (Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey))
+                if (Input.GetKeyDown(Plugin.PatrolKeybind.Value.MainKey))
                 {
-                    StanceController.StanceBlender.Target = 0f;
                     IsPatrolStance = !IsPatrolStance;
+                    StanceBlender.Target = 0f;
                     IsHighReady = false;
                     IsLowReady = false;
                     IsActiveAiming = false;
@@ -275,7 +273,8 @@ namespace RealismMod
                     WasHighReady = IsHighReady;
                     WasLowReady = IsLowReady;
                     WasShortStock = IsShortStock;
-                    DidStanceWiggle = false; 
+                    DidStanceWiggle = false;
+       
                 }
 
                 if (!PlayerProperties.IsSprinting && !Plugin.IsInInventory && WeaponProperties._WeapClass != "pistol")
@@ -383,7 +382,6 @@ namespace RealismMod
                     if (Input.GetKeyDown(Plugin.ShortStockKeybind.Value.MainKey))
                     {
                         StanceController.StanceBlender.Target = StanceController.StanceBlender.Target == 0f ? 1f : 0f;
-
                         IsShortStock = !IsShortStock;
                         IsHighReady = false;
                         IsLowReady = false;
@@ -395,6 +393,7 @@ namespace RealismMod
                         WasShortStock = IsShortStock;
                         DidStanceWiggle = false;
                     }
+
 
                     //high ready
                     if (Input.GetKeyDown(Plugin.HighReadyKeybind.Value.MainKey))
@@ -494,6 +493,7 @@ namespace RealismMod
                 {
                     if (Plugin.DidWeaponSwap)
                     {
+                        IsPatrolStance = false;
                         StanceController.PistolIsCompressed = false;
                         StanceController.StanceTargetPosition = Vector3.zero;
                         StanceController.StanceBlender.Target = 0f;
@@ -508,7 +508,6 @@ namespace RealismMod
                     WasLowReady = false;
                     WasShortStock = false;
                     WasActiveAim = false;
-                    IsPatrolStance = false;
                     Plugin.DidWeaponSwap = false;
                 }
             }
@@ -596,9 +595,7 @@ namespace RealismMod
             }
 
             currentX = Mathf.Lerp(currentX, targetPos, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * 0.5f);
-
             pwa.HandsContainer.WeaponRoot.localPosition = new Vector3(currentX, pwa.HandsContainer.TrackingTransform.localPosition.y, pwa.HandsContainer.TrackingTransform.localPosition.z);
-
 
             if (!pwa.IsAiming && !StanceController.CancelPistolStance && !Plugin.IsBlindFiring && !StanceController.PistolIsColliding)
             {
@@ -949,7 +946,7 @@ namespace RealismMod
                 {
                     if (!hasResetHighReady)
                     {
-                        highToLow = 1.2f;
+                        highToLow = 1.05f;
                     }
                     if (!hasResetShortStock)
                     {
@@ -991,7 +988,7 @@ namespace RealismMod
 
                 if ((StanceController.StanceBlender.Value >= 0.95f || StanceController.StanceTargetPosition == lowReadyTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-                    StanceController.doWiggleEffects(logger, player, pwa, new Vector3(5f, -5f, -5f), true);
+                    StanceController.doWiggleEffects(logger, player, pwa, new Vector3(5.5f, -5.5f, -5.5f), true);
                     StanceController.DidStanceWiggle = true;
                 }
             }
@@ -1132,7 +1129,7 @@ namespace RealismMod
                 StanceController.IsMounting = !StanceController.IsMounting;
                 if (StanceController.IsMounting)
                 {
-                    mountWeapPosition = weaponWorldPos; // + StanceController.CoverDirection
+                    mountWeapPosition = weaponWorldPos + StanceController.CoverDirection; // + StanceController.CoverDirection
                 }
 
                 doWiggleEffects(Logger, player, pwa, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
