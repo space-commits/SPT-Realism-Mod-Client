@@ -463,6 +463,16 @@ namespace RealismMod
             IconCache.Add(ENewItemAttributeId.RecoilAngle, recoilAngleSprite);
         }
 
+        private void loadSprites()
+        {
+            string[] iconFilesDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\icons\\", "*.png");
+
+            foreach (string fileDir in iconFilesDir)
+            {
+                loadSprite(fileDir);
+            }
+        }
+
         private async void loadSprite(string path)
         {
             LoadedSprites[Path.GetFileName(path)] = await requestSprite(path);
@@ -486,6 +496,19 @@ namespace RealismMod
                 Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
                 return sprite;
             }
+        }
+
+        private void loadAudioClips()
+        {
+            string[] audioFilesDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\");
+            LoadedAudioClips.Clear();
+
+            foreach (string fileDir in audioFilesDir)
+            {
+                this.loadAudioClip(fileDir);
+            }
+
+            Plugin.HasReloadedAudio = true;
         }
 
         private async void loadAudioClip(string path)
@@ -523,29 +546,6 @@ namespace RealismMod
             }
         }
 
-        private void loadAudioClips() 
-        {
-            string[] audioFilesDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\");
-            LoadedAudioClips.Clear();   
-
-            foreach (string fileDir in audioFilesDir)
-            {
-                this.loadAudioClip(fileDir);
-            }
-
-            Plugin.HasReloadedAudio = true;
-        }
-
-        private void loadSprites()
-        {
-            string[] iconFilesDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\icons\\", "*.png");
-
-            foreach (string fileDir in iconFilesDir)
-            {
-                loadSprite(fileDir);
-            }
-        }
-
         void Awake()
         {
             try
@@ -565,7 +565,7 @@ namespace RealismMod
             MountingUIComponent = Hook.AddComponent<MountingUI>();
             DontDestroyOnLoad(Hook);
 
-            InitConfigs();
+            initConfigs();
 
             if (ModConfig.recoil_attachment_overhaul)
             {
@@ -769,7 +769,6 @@ namespace RealismMod
             new WeaponOverlapViewPatch().Enable();
             new CollisionPatch().Enable();
             new OperateStationaryWeaponPatch().Enable();
-
             new RotatePatch().Enable();
             new SetTiltPatch().Enable();
 
@@ -914,7 +913,7 @@ namespace RealismMod
             }
         }
 
-        public void InitConfigs()
+        private void initConfigs()
         {
             string testing = ".0. Testing";
             string miscSettings = ".1. Misc. Settings";
@@ -1075,8 +1074,8 @@ namespace RealismMod
 
             StanceRotationSpeedMulti = Config.Bind<float>(weapAimAndPos, "Stance Rotation Speed Multi", 1f, new ConfigDescription("Adjusts The Speed Of Stance Rotation Changes.", new AcceptableValueRange<float>(1f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 146, IsAdvanced = true }));
             StanceTransitionSpeedMulti = Config.Bind<float>(weapAimAndPos, "Stance Transition Speed.", 15.0f, new ConfigDescription("Adjusts The Position Change Speed Between Stances", new AcceptableValueRange<float>(1f, 35f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true }));
-            ThirdPersonRotationSpeed = Config.Bind<float>(weapAimAndPos, "Third Person Postion Speed Multi", 1.5f, new ConfigDescription("Speed Of Stance Position Change In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 144, IsAdvanced = true }));
-            ThirdPersonPositionSpeed = Config.Bind<float>(weapAimAndPos, "Third Person Transition Speed Multi", 1.0f, new ConfigDescription("Speed Of Transition Between Stances In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 143, IsAdvanced = true }));
+            ThirdPersonRotationSpeed = Config.Bind<float>(weapAimAndPos, "Third Person Rotation Speed Multi", 1.5f, new ConfigDescription("Speed Of Stance Rotation Change In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 144, IsAdvanced = true }));
+            ThirdPersonPositionSpeed = Config.Bind<float>(weapAimAndPos, "Third Person Position Speed Multi", 1.0f, new ConfigDescription("Speed Of Stance Position Change In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 143, IsAdvanced = true }));
             ThirdPersonRotationMulti = Config.Bind<float>(weapAimAndPos, "Third Person Rotation Multi", 2.0f, new ConfigDescription("Increases The Rotation Of High Ready And Low Ready Stances.", new AcceptableValueRange<float>(1f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 140, IsAdvanced = true }));
 
             ActiveAimAdditionalRotationSpeedMulti = Config.Bind<float>(activeAim, "Active Aim Additonal Rotation Speed Multi.", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true }));

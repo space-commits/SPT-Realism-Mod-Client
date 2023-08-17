@@ -340,17 +340,26 @@ namespace RealismMod
 
     public class ZeroAdjustmentsPatch : ModulePatch
     {
+        private static FieldInfo pitchField;
+        private static FieldInfo blindfireRotationField;
+        private static PropertyInfo overlappingBlindfireField;
+        private static FieldInfo blindfirePositionField;
+
         private static Vector3 targetPosition = Vector3.zero;
 
         protected override MethodBase GetTargetMethod()
         {
+            pitchField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14");
+            blindfireRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_6");
+            overlappingBlindfireField = AccessTools.Property(typeof(EFT.Animations.ProceduralWeaponAnimation), "Single_3");
+            blindfirePositionField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_5");
+
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("ZeroAdjustments", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static bool PatchPrefix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
-
             PlayerInterface playerInterface = (PlayerInterface)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
 
             if (playerInterface != null && playerInterface.Weapon != null)
@@ -359,8 +368,8 @@ namespace RealismMod
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
                 if (player != null && player.IsYourPlayer) // player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer
                 {
-                    float collidingModifier = (float)AccessTools.Property(typeof(EFT.Animations.ProceduralWeaponAnimation), "Single_3").GetValue(__instance);
-                    Vector3 blindfirePosition = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_5").GetValue(__instance);
+                    float collidingModifier = (float)overlappingBlindfireField.GetValue(__instance);
+                    Vector3 blindfirePosition = (Vector3)blindfirePositionField.GetValue(__instance);
 
                     Vector3 highReadyTargetPosition = new Vector3(Plugin.HighReadyOffsetX.Value, Plugin.HighReadyOffsetY.Value, Plugin.HighReadyOffsetZ.Value);
 
@@ -377,8 +386,8 @@ namespace RealismMod
                     {
                         Plugin.IsBlindFiring = true;
                         float pitch = ((Mathf.Abs(__instance.Pitch) < 45f) ? 1f : ((90f - Mathf.Abs(__instance.Pitch)) / 45f));
-                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14").SetValue(__instance, pitch);
-                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_6").SetValue(__instance, ((blindFireBlendValue > 0f) ? (__instance.BlindFireRotation * blindFireAbs) : (__instance.SideFireRotation * blindFireAbs)));
+                        pitchField.SetValue(__instance, pitch);
+                        blindfireRotationField.SetValue(__instance, ((blindFireBlendValue > 0f) ? (__instance.BlindFireRotation * blindFireAbs) : (__instance.SideFireRotation * blindFireAbs)));
                         targetPosition = ((blindFireBlendValue > 0f) ? (__instance.BlindFireOffset * blindFireAbs) : (__instance.SideFireOffset * blindFireAbs));
                         targetPosition += StanceController.StanceTargetPosition;
                         __instance.BlindFireEndPosition = ((blindFireBlendValue > 0f) ? __instance.BlindFireOffset : __instance.SideFireOffset);
@@ -394,7 +403,7 @@ namespace RealismMod
                     if (stanceAbs > 0f)
                     {
                         float pitch = ((Mathf.Abs(__instance.Pitch) < 45f) ? 1f : ((90f - Mathf.Abs(__instance.Pitch)) / 45f));
-                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14").SetValue(__instance, pitch);
+                        pitchField.SetValue(__instance, pitch);
                         targetPosition = StanceController.StanceTargetPosition * stanceAbs;
                         __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * targetPosition;
                         __instance.HandsContainer.HandsRotation.Zero = __instance.RotationZeroSum;
@@ -524,10 +533,9 @@ namespace RealismMod
 
         private static Quaternion currentRotation = Quaternion.identity;
         private static Quaternion stanceRotation = Quaternion.identity;
+        private static Vector3 mountWeapPosition = Vector3.zero;
 
         private static float stanceRotationSpeed = 1f;
-
-        private static Vector3 mountWeapPosition = Vector3.zero;
 
         protected override MethodBase GetTargetMethod()
         {
@@ -814,10 +822,9 @@ namespace RealismMod
 
         private static Quaternion currentRotation = Quaternion.identity;
         private static Quaternion stanceRotation = Quaternion.identity;
+        private static Vector3 mountWeapPosition = Vector3.zero;
 
         private static float stanceRotationSpeed = 1f;
-
-        private static Vector3 mountWeapPosition = Vector3.zero;
 
         [PatchPostfix]
         private static void Postfix(ref EFT.Animations.ProceduralWeaponAnimation __instance, float dt)

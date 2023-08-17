@@ -14,10 +14,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
-using static EFT.Player;
-using static EFT.Weather.WeatherDebug;
 using static ShotEffector;
 using LightStruct = GStruct154;
+using GlobalValues = GClass1710;
 
 
 namespace RealismMod
@@ -96,7 +95,6 @@ namespace RealismMod
         public static bool IsMounting = false;
         public static float DismountTimer = 0.0f;
         public static bool CanDoDismountTimer = false;
-
         public static bool DidStanceWiggle = false;
         public static float WiggleReturnSpeed = 1f;
 
@@ -137,6 +135,7 @@ namespace RealismMod
                     {
                         player.Physical.Aim(0f);
                     }
+
                     if (IsPatrolStance)
                     {
                         player.Physical.Aim(0f);
@@ -194,7 +193,7 @@ namespace RealismMod
 
         public static bool IsIdle()
         {
-            return !IsActiveAiming && !IsHighReady && !IsLowReady && !IsShortStock && !WasHighReady && !WasLowReady && !WasShortStock && !WasActiveAim && HasResetActiveAim && HasResetHighReady && HasResetLowReady && HasResetShortStock && HasResetPistolPos ? true : false;
+            return !IsPatrolStance && !IsActiveAiming && !IsHighReady && !IsLowReady && !IsShortStock && !WasHighReady && !WasLowReady && !WasShortStock && !WasActiveAim && HasResetActiveAim && HasResetHighReady && HasResetLowReady && HasResetShortStock && HasResetPistolPos ? true : false;
         }
 
         public static void CancelAllStances()
@@ -284,7 +283,7 @@ namespace RealismMod
                     {
                         if (Time.time <= doubleClickTime)
                         {
-                            StanceController.StanceBlender.Target = 0f;
+                            StanceBlender.Target = 0f;
                             clickTriggered = true;
                             SelectedStance = 0;
                             IsHighReady = false;
@@ -296,6 +295,7 @@ namespace RealismMod
                             WasLowReady = false;
                             WasShortStock = false;
                             DidStanceWiggle = false;
+                            IsPatrolStance = false;
                         }
                         else
                         {
@@ -307,7 +307,7 @@ namespace RealismMod
                     {
                         if (Time.time > doubleClickTime)
                         {
-                            StanceController.StanceBlender.Target = 1f;
+                            StanceBlender.Target = 1f;
                             clickTriggered = true;
                             SelectedStance++;
                             SelectedStance = SelectedStance > 3 ? 1 : SelectedStance;
@@ -336,7 +336,7 @@ namespace RealismMod
                             {
                                 DidStanceWiggle = false;
                             }
-                            StanceController.StanceBlender.Target = 1f;
+                            StanceBlender.Target = 1f;
                             IsActiveAiming = true;
                             IsShortStock = false;
                             IsHighReady = false;
@@ -361,7 +361,7 @@ namespace RealismMod
                     {
                         if (Input.GetKeyDown(Plugin.ActiveAimKeybind.Value.MainKey) || (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerProperties.IsAllowedADS))
                         {
-                            StanceController.StanceBlender.Target = StanceController.StanceBlender.Target == 0f ? 1f : 0f;
+                            StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
                             IsActiveAiming = !IsActiveAiming;
                             IsShortStock = false;
                             IsHighReady = false;
@@ -381,7 +381,7 @@ namespace RealismMod
                     //short-stock
                     if (Input.GetKeyDown(Plugin.ShortStockKeybind.Value.MainKey))
                     {
-                        StanceController.StanceBlender.Target = StanceController.StanceBlender.Target == 0f ? 1f : 0f;
+                        StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
                         IsShortStock = !IsShortStock;
                         IsHighReady = false;
                         IsLowReady = false;
@@ -398,8 +398,7 @@ namespace RealismMod
                     //high ready
                     if (Input.GetKeyDown(Plugin.HighReadyKeybind.Value.MainKey))
                     {
-                        StanceController.StanceBlender.Target = StanceController.StanceBlender.Target == 0f ? 1f : 0f;
-
+                        StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
                         IsHighReady = !IsHighReady;
                         IsShortStock = false;
                         IsLowReady = false;
@@ -474,7 +473,7 @@ namespace RealismMod
 
                     if ((PlayerProperties.LeftArmRuined || PlayerProperties.RightArmRuined) && !Plugin.IsAiming && !IsShortStock && !IsActiveAiming && !IsHighReady)
                     {
-                        StanceController.StanceBlender.Target = 1f;
+                        StanceBlender.Target = 1f;
                         IsLowReady = true;
                         WasLowReady = true;
                     }
@@ -494,9 +493,9 @@ namespace RealismMod
                     if (Plugin.DidWeaponSwap)
                     {
                         IsPatrolStance = false;
-                        StanceController.PistolIsCompressed = false;
-                        StanceController.StanceTargetPosition = Vector3.zero;
-                        StanceController.StanceBlender.Target = 0f;
+                        PistolIsCompressed = false;
+                        StanceTargetPosition = Vector3.zero;
+                        StanceBlender.Target = 0f;
                     }
 
                     SelectedStance = 0;
@@ -515,7 +514,7 @@ namespace RealismMod
         }
 
         //doesn't work with multiple lights where one is off and the other is on
-        public static void ToggleDevice(FirearmController fc, bool activating)
+        public static void ToggleDevice(Player.FirearmController fc, bool activating)
         {
             foreach (Mod mod in fc.Item.Mods)
             {
@@ -569,7 +568,7 @@ namespace RealismMod
         //move this to the patch classes
         public static float currentX = 0f;
 
-        public static void DoPistolStances(bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation pwa, ref Quaternion stanceRotation, float dt, ref bool hasResetPistolPos, Player player, ManualLogSource logger, ref float rotationSpeed, ref bool isResettingPistol, FirearmController fc)
+        public static void DoPistolStances(bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation pwa, ref Quaternion stanceRotation, float dt, ref bool hasResetPistolPos, Player player, ManualLogSource logger, ref float rotationSpeed, ref bool isResettingPistol, Player.FirearmController fc)
         {
             float totalPlayerWeight = PlayerProperties.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 100f);
@@ -578,6 +577,7 @@ namespace RealismMod
             float balanceFactor = 1f + (WeaponProperties.Balance / 100f);
             balanceFactor = WeaponProperties.Balance > 0f ? balanceFactor * -1f : balanceFactor;
             float resetErgoMulti = (1f - stanceMulti) + 1f;
+
             float wiggleErgoMulti = Mathf.Clamp((WeaponProperties.ErgoStanceSpeed * 0.5f), 0.1f, 1f);
             StanceController.WiggleReturnSpeed = (1f - (PlayerProperties.AimSkillADSBuff * 0.5f)) * wiggleErgoMulti * PlayerProperties.StanceInjuryMulti * playerWeightFactor * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f));
 
@@ -668,8 +668,8 @@ namespace RealismMod
             float playerWeightFactor = 1f + (totalPlayerWeight / 150f);
             float ergoMulti = Mathf.Clamp(WeaponProperties.ErgoStanceSpeed, 0.45f, 1.15f);
             float stanceMulti = Mathf.Clamp(ergoMulti * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f)), 0.35f, 1.15f);
-
             float resetErgoMulti = (1f - stanceMulti) + 1f;
+
             float wiggleErgoMulti = Mathf.Clamp((WeaponProperties.ErgoStanceSpeed * 0.5f), 0.1f, 1f);
             float stocklessModifier = WeaponProperties.HasShoulderContact ? 1f : 0.5f;
             StanceController.WiggleReturnSpeed = (1f - (PlayerProperties.AimSkillADSBuff * 0.5f)) * wiggleErgoMulti * PlayerProperties.StanceInjuryMulti * stocklessModifier * playerWeightFactor * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f));
@@ -713,7 +713,7 @@ namespace RealismMod
 
             if (Plugin.EnableTacSprint.Value && (StanceController.IsHighReady || StanceController.WasHighReady) && !PlayerProperties.RightArmRuined)
             {
-                player.BodyAnimatorCommon.SetFloat(GClass1710.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
+                player.BodyAnimatorCommon.SetFloat(GlobalValues.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
                 if (!setRunAnim)
                 {
                     setRunAnim = true;
@@ -724,7 +724,7 @@ namespace RealismMod
             {
                 if (!resetRunAnim)
                 {
-                    player.BodyAnimatorCommon.SetFloat(GClass1710.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
+                    player.BodyAnimatorCommon.SetFloat(GlobalValues.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
                     resetRunAnim = true;
                     setRunAnim = false;
                 }
@@ -734,7 +734,7 @@ namespace RealismMod
             {
                 pwa.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 1.1f * PlayerProperties.SprintHipfirePenalty;
             }
-            if (StanceController.IsActiveAiming)
+            else if (StanceController.IsActiveAiming)
             {
                 pwa.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 0.8f * PlayerProperties.SprintHipfirePenalty;
             }
@@ -1102,6 +1102,19 @@ namespace RealismMod
             }
         }
 
+        private static void doStanceWiggle(Player player, ProceduralWeaponAnimation pwa, Vector3 wiggleDirection, bool playSound = false)
+        {
+            if (playSound)
+            {
+                AccessTools.Method(typeof(Player), "method_40").Invoke(player, new object[] { 2f });
+            }
+
+            for (int i = 0; i < pwa.Shootingg.ShotVals.Length; i++)
+            {
+                pwa.Shootingg.ShotVals[i].Process(wiggleDirection);
+            }
+        }
+
         private static void doWiggleEffects(ManualLogSource logger, Player player, ProceduralWeaponAnimation pwa, Vector3 wiggleDirection, bool playSound = false, float volume = 1f)
         {
             if (playSound)
@@ -1145,6 +1158,5 @@ namespace RealismMod
                 weaponWorldPos = new Vector3(mountWeapPosition.x, mountWeapPosition.y, weaponWorldPos.z); //this makes it feel less clamped to cover but allows h recoil + StanceController.CoverDirection
             }
         }
-
     }
 }
