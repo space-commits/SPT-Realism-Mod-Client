@@ -17,8 +17,9 @@ namespace RealismMod
         {
             PlayerProperties.IsInReloadOpertation = fc.IsInReloadOperation();
 
-            if (PlayerProperties.IsInReloadOpertation == true)
+            if (PlayerProperties.IsInReloadOpertation)
             {
+                StanceController.IsPatrolStance = false;
                 StanceController.CancelShortStock = true;
                 StanceController.CancelPistolStance = true;
                 StanceController.CancelActiveAim = true;

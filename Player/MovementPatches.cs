@@ -124,8 +124,9 @@ namespace RealismMod
 
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float firingMulti = MovementSpeedController.GetFiringMovementSpeedFactor(player, Logger);
+                float stanceFactor = StanceController.IsPatrolStance ? 1.25f : StanceController.IsHighReady ? 0.9f : 1f;
 
-                __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * PlayerProperties.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti);
+                __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * PlayerProperties.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti * stanceFactor);
                 return false;
             }
             return true;
@@ -202,7 +203,7 @@ namespace RealismMod
                 float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float stanceSpeedBonus = StanceController.IsHighReady && Plugin.EnableTacSprint.Value ? 1.15f : 1f;
-                float stanceAccelBonus = StanceController.IsShortStock ? 0.9f : StanceController.IsLowReady ? 1.3f : StanceController.IsHighReady && Plugin.EnableTacSprint.Value ? 1.7f : StanceController.IsHighReady ? 1.3f : 1f;
+                float stanceAccelBonus = StanceController.IsPatrolStance ? 1.5f : StanceController.IsShortStock ? 0.9f : StanceController.IsLowReady ? 1.3f : StanceController.IsHighReady && Plugin.EnableTacSprint.Value ? 1.7f : StanceController.IsHighReady ? 1.3f : 1f;
 
                 if (surfaceMulti < 1.0f) 
                 {

@@ -65,6 +65,7 @@ namespace RealismMod
 
                 if (isAiming)
                 {
+                    StanceController.IsPatrolStance = false;
                     player.MovementContext.SetAimingSlowdown(true, 0.33f);
                 }
 
@@ -77,7 +78,7 @@ namespace RealismMod
                     StanceController.WasActiveAim = false;
                     if (Plugin.ToggleActiveAim.Value)
                     {
-                        Plugin.StanceBlender.Target = 0f;
+                        StanceController.StanceBlender.Target = 0f;
                         StanceController.IsActiveAiming = false;
                     }
                     wasToggled = false;

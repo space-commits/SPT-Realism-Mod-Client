@@ -131,7 +131,7 @@ namespace RealismMod
                 StanceController.IsFiringFromStance = true;
                 Plugin.ShotCount++;
 
-                float totalPlayerWeight = PlayerProperties.TotalModifiedWeight - weaponClass.GetSingleItemTotalWeight();
+                float totalPlayerWeight = PlayerProperties.TotalUnmodifiedWeight - weaponClass.GetSingleItemTotalWeight();
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 550f);
                 float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 100f);
 
@@ -139,9 +139,9 @@ namespace RealismMod
                 float aimCamRecoilBonus = StanceController.IsActiveAiming || !Plugin.IsAiming ? 0.8f : 1f;
                 float shortStockingDebuff = StanceController.IsShortStock ? 1.15f : 1f;
                 float shortStockingCamBonus = StanceController.IsShortStock ? 0.75f : 1f;
-                float mountingVertModi = StanceController.WeaponIsMounting ? StanceController.MountingRecoilBonus : StanceController.WeaponIsBracing ? StanceController.BracingRecoilBonus : 1f;
-                float mountingDispModi = Mathf.Min(StanceController.WeaponIsMounting ? StanceController.MountingRecoilBonus * 1.25f : StanceController.WeaponIsBracing ? StanceController.BracingRecoilBonus * 1.2f : 1f, 1f);
-                float mountingAngleModi = StanceController.WeaponIsMounting ? Mathf.Min(Plugin.StartingRecoilAngle + 17f, 90f) : StanceController.WeaponIsBracing ? Mathf.Min(Plugin.StartingRecoilAngle + 10f, 90f) : Plugin.StartingRecoilAngle;
+                float mountingVertModi = StanceController.IsMounting ? StanceController.MountingRecoilBonus : StanceController.IsBracing ? StanceController.BracingRecoilBonus : 1f;
+                float mountingDispModi = Mathf.Clamp(StanceController.IsMounting ? StanceController.MountingRecoilBonus * 1.25f : StanceController.IsBracing ? StanceController.BracingRecoilBonus * 1.2f : 1f, 0.85f, 1f);
+                float mountingAngleModi = StanceController.IsMounting ? Mathf.Min(Plugin.StartingRecoilAngle + 17f, 90f) : StanceController.IsBracing ? Mathf.Min(Plugin.StartingRecoilAngle + 10f, 90f) : Plugin.StartingRecoilAngle;
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
@@ -235,13 +235,20 @@ namespace RealismMod
                     __instance.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
                     __instance.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
 
-                    if (Plugin.ShotCount == 1 && weapon.WeapClass != "pistol")
+                    if (weapon.WeapClass != "pistol")
+                    {
+                        if (Plugin.ShotCount <= 1)
+                        {
+                            __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
+                        }
+                        else
+                        {
+                            __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvAutoMulti.Value;
+                        }
+                    }
+                    else 
                     {
                         __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
-                    }
-                    if (Plugin.ShotCount > 1)
-                    {
-                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvAutoMulti.Value;
                     }
                 }
             }

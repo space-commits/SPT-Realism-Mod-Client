@@ -7,6 +7,7 @@ using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -76,6 +77,7 @@ namespace RealismMod
                 }
             }
             PlayerProperties.TotalModifiedWeight = modifiedWeight;
+            PlayerProperties.TotalUnmodifiedWeight = trueWeight;
             return modifiedWeight;
         }
 
@@ -113,7 +115,7 @@ namespace RealismMod
             {
                 PlayerInitPatch p = new PlayerInitPatch();
 
-                Plugin.StanceBlender.Target = 0f;
+                StanceController.StanceBlender.Target = 0f;
                 StatCalc.SetGearParamaters(__instance);
                 StanceController.SelectedStance = 0;
                 StanceController.IsLowReady = false;
@@ -276,7 +278,7 @@ namespace RealismMod
                 PlayerProperties.IsSprinting = __instance.IsSprintEnabled;
                 PlayerProperties.enviroType = __instance.Environment;
                 Plugin.IsInInventory = __instance.IsInventoryOpened;
-                float mountingBonus = StanceController.WeaponIsMounting ? StanceController.MountingSwayBonus : StanceController.BracingSwayBonus;
+                float mountingBonus = StanceController.IsMounting ? StanceController.MountingSwayBonus : StanceController.BracingSwayBonus;
 
                 if (Plugin.EnableSprintPenalty.Value) 
                 {
@@ -293,9 +295,28 @@ namespace RealismMod
                 {
                     if (Plugin.IsFiring)
                     {
+                        StanceController.IsPatrolStance = false;
+                        __instance.HandsController.FirearmsAnimator.SetPatrol(false);
+
                         __instance.ProceduralWeaponAnimation.Breath.Intensity = 0.69f * mountingBonus;
                         __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f * mountingBonus;
                         __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
+
+                        if (fc.Item.WeapClass != "pistol")
+                        {
+                            if (Plugin.ShotCount <= 1)
+                            {
+                                __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
+                            }
+                            else
+                            {
+                                __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvAutoMulti.Value;
+                            }
+                        }
+                        else
+                        {
+                            __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
+                        }
                     }
 
                     __instance.ProceduralWeaponAnimation.Shootingg.Intensity = (Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value);
@@ -319,14 +340,26 @@ namespace RealismMod
 
                 if (!Plugin.IsFiring)
                 {
-                    if (Plugin.IsAiming)
+                    __instance.HandsController.FirearmsAnimator.SetPatrol(StanceController.IsPatrolStance);
+
+                    if (StanceController.CanResetDamping)
                     {
-                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Clamp(0.3f * (1f + (WeaponProperties.ErgoFactor / 100f)), 0.2f, 0.6f);
+                        if (Plugin.IsAiming)
+                        {
+                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, Mathf.Clamp(0.35f * (1f + (WeaponProperties.ErgoFactor / 100f)), 0.2f, 0.6f), 0.04f);
+                        }
+                        else
+                        {
+                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.35f, 0.04f);
+                        }
                     }
-                    else 
+                    else
                     {
-                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.3f;
+                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.75f;
+                        __instance.ProceduralWeaponAnimation.Shootingg.ShotVals[3].Intensity = 0;
+                        __instance.ProceduralWeaponAnimation.Shootingg.ShotVals[4].Intensity = 0;
                     }
+                    __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = 10f * StanceController.WiggleReturnSpeed;
                 }
             }
         }
