@@ -578,7 +578,7 @@ namespace RealismMod
             balanceFactor = WeaponProperties.Balance > 0f ? balanceFactor * -1f : balanceFactor;
             float resetErgoMulti = (1f - stanceMulti) + 1f;
 
-            float wiggleErgoMulti = Mathf.Clamp((WeaponProperties.ErgoStanceSpeed * 0.5f), 0.1f, 1f);
+            float wiggleErgoMulti = Mathf.Clamp((WeaponProperties.ErgoStanceSpeed * 0.25f), 0.1f, 1f);
             StanceController.WiggleReturnSpeed = (1f - (PlayerProperties.AimSkillADSBuff * 0.5f)) * wiggleErgoMulti * PlayerProperties.StanceInjuryMulti * playerWeightFactor * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f));
 
             Vector3 pistolTargetPosition = new Vector3(Plugin.PistolOffsetX.Value, Plugin.PistolOffsetY.Value, Plugin.PistolOffsetZ.Value);
@@ -666,8 +666,8 @@ namespace RealismMod
         {
             float totalPlayerWeight = PlayerProperties.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 150f);
-            float ergoMulti = Mathf.Clamp(WeaponProperties.ErgoStanceSpeed, 0.45f, 1.15f);
-            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f)), 0.35f, 1.15f);
+            float ergoMulti = Mathf.Clamp(WeaponProperties.ErgoStanceSpeed, 0.5f, 1.2f);
+            float stanceMulti = Mathf.Max(ergoMulti * PlayerProperties.StanceInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.65f)), 0.35f);
             float resetErgoMulti = (1f - stanceMulti) + 1f;
 
             float wiggleErgoMulti = Mathf.Clamp((WeaponProperties.ErgoStanceSpeed * 0.5f), 0.1f, 1f);
@@ -768,7 +768,7 @@ namespace RealismMod
                 {
                     if (!hasResetActiveAim)
                     {
-                        activeToShort = 0.6f;
+                        activeToShort = 0.65f;
                     }
                     if (!hasResetHighReady)
                     {
@@ -776,7 +776,7 @@ namespace RealismMod
                     }
                     if (!hasResetLowReady)
                     {
-                        lowToShort = 0.6f;
+                        lowToShort = 0.7f;
                     }
                 }
                 else
@@ -857,7 +857,7 @@ namespace RealismMod
                     }
                     if (!hasResetLowReady)
                     {
-                        lowToHighMulti = 1.1f;
+                        lowToHighMulti = 1.15f;
                     }
                 }
                 else
@@ -924,7 +924,7 @@ namespace RealismMod
                     StanceController.DoDampingTimer = true;
                 }
 
-                StanceController.doWiggleEffects(logger, player, pwa, new Vector3(-10f, 5f, -10f), true);
+                StanceController.doWiggleEffects(logger, player, pwa, new Vector3(-12f, 6f, -12f), true);
                 StanceController.DidStanceWiggle = false;
 
                 stanceRotation = Quaternion.identity;
@@ -946,7 +946,7 @@ namespace RealismMod
                 {
                     if (!hasResetHighReady)
                     {
-                        highToLow = 1.05f;
+                        highToLow = 1.1f;
                     }
                     if (!hasResetShortStock)
                     {
@@ -1009,7 +1009,7 @@ namespace RealismMod
                     StanceController.DoDampingTimer = true;
                 }
 
-                StanceController.doWiggleEffects(logger, player, pwa, new Vector3(2.5f, 2.5f, 5f), true);
+                StanceController.doWiggleEffects(logger, player, pwa, new Vector3(4f, 4f, 7.5f), true);
                 StanceController.DidStanceWiggle = false;
                 stanceRotation = Quaternion.identity;
                 isResettingLowReady = false;
@@ -1029,11 +1029,11 @@ namespace RealismMod
                 {
                     if (!hasResetShortStock)
                     {
-                        shortToActive = 0.65f;
+                        shortToActive = 0.75f;
                     }
                     if (!hasResetHighReady)
                     {
-                        highToActive = 1f;
+                        highToActive = 1.15f;
                     }
                     if (!hasResetLowReady)
                     {
@@ -1071,7 +1071,7 @@ namespace RealismMod
 
                 if ((StanceController.StanceBlender.Value >= 0.95f || StanceController.StanceTargetPosition == activeAimTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-                    StanceController.doWiggleEffects(logger, player, pwa, new Vector3(-2.5f, -2.5f, 3f), true);
+                    StanceController.doWiggleEffects(logger, player, pwa, new Vector3(-2.5f, -2.5f, 10f), true);
                     StanceController.DidStanceWiggle = true;
                 }
             }
@@ -1092,7 +1092,7 @@ namespace RealismMod
                     StanceController.DoDampingTimer = true;
                 }
 
-                StanceController.doWiggleEffects(logger, player, pwa, new Vector3(2.5f, -2.5f, 2.5f), true);
+                StanceController.doWiggleEffects(logger, player, pwa, new Vector3(-4f, -5f, 10f), true);
                 StanceController.DidStanceWiggle = false;
 
                 stanceRotation = Quaternion.identity;

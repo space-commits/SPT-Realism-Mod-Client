@@ -364,7 +364,7 @@ namespace RealismMod
             }
         }
 
-        private static void TryDoFalldown(Player player, float kineticEnergy, bool calf)
+        private static void TryDoFalldown(Player player, float kineticEnergy, bool calf, bool isPlayer)
         {
             float rndNumber = UnityEngine.Random.Range(0, 101);
             float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
@@ -374,7 +374,10 @@ namespace RealismMod
             if (rndNumber <= totalChance)
             {
                 player.ToggleProne();
-                TryDoDisarm(player, kineticEnergy * 0.25f, false, false);
+                if ((isPlayer && Plugin.CanDisarmPlayer.Value) || (!isPlayer && Plugin.CanDisarmBot.Value)) 
+                {
+                    TryDoDisarm(player, kineticEnergy * 0.25f, false, false);
+                }
             }
         }
 
@@ -384,7 +387,10 @@ namespace RealismMod
             if (damageInfo.DamageType == EDamageType.Fall && damageInfo.Damage >= 15f) 
             {
                 __instance.ToggleProne();
-                TryDoDisarm(__instance, damageInfo.Damage * 50f, false, false);
+                if ((__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value) ||  (!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value)) 
+                {
+                    TryDoDisarm(__instance, damageInfo.Damage * 50f, false, false);
+                }
             }
 
             if (damageInfo.DamageType == EDamageType.Bullet)
@@ -562,7 +568,7 @@ namespace RealismMod
 
                 if ((hitCalf || hitThigh) && (toBeHP <= 0f) && ((!__instance.IsYourPlayer && Plugin.CanFellBot.Value) || (__instance.IsYourPlayer && Plugin.CanFellPlayer.Value))) 
                 {
-                    TryDoFalldown(__instance, KE, hitCalf);    
+                    TryDoFalldown(__instance, KE, hitCalf, __instance.IsYourPlayer);    
                 }
 
             }

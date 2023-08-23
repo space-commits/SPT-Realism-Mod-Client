@@ -1,4 +1,5 @@
-﻿using EFT.InventoryLogic;
+﻿using EFT.Animations;
+using EFT.InventoryLogic;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,6 +9,35 @@ namespace RealismMod
 {
     public class RecoilController
     {
+        public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weapon) 
+        {
+            pwa.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
+            pwa.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
+
+            if (weapon.WeapClass != "pistol")
+            {
+                if (Plugin.ShotCount <= 1)
+                {
+                    pwa.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
+                }
+                else
+                {
+                    pwa.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvAutoMulti.Value;
+                }
+            }
+            else
+            {
+                if (Plugin.ShotCount <= 1)
+                {
+                    pwa.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
+                }
+                else
+                {
+                    pwa.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value * 1.25f;
+                }
+            }
+        }
+
         private static void VRecoilClimb(float climbFactor)
         {
             Plugin.CurrentVRecoilX = Mathf.Clamp((float)Math.Round(Plugin.CurrentVRecoilX * climbFactor * Plugin.vRecoilChangeMulti.Value, 3), Plugin.CurrentVRecoilX, Plugin.StartingVRecoilX * Plugin.vRecoilLimit.Value);

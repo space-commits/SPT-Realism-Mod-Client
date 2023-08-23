@@ -156,7 +156,7 @@ namespace RealismMod
                     __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * Plugin.HorzRecSemiMulti.Value;
                     __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * Plugin.HorzRecSemiMulti.Value;
                 }
-                else if (Plugin.ShotCount > 1 && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
+                else if (Plugin.ShotCount > 1 && (weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto || weaponClass.SelectedFireMode == Weapon.EFireMode.burst))
                 {
                     __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * Plugin.VertRecAutoMulti.Value;
                     __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * Plugin.VertRecAutoMulti.Value;
@@ -175,11 +175,11 @@ namespace RealismMod
 
                 if (Plugin.ShotCount > 1 && weaponClass.WeapClass == "pistol" && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
                 {
-                    factoredDispersion *= 0.80f;
+                    factoredDispersion *= 0.5f;
                     __instance.RecoilStrengthZ.x *= 0.5f;
                     __instance.RecoilStrengthZ.y *= 0.5f;
-                    __instance.RecoilStrengthXy.x *= 0.3f;
-                    __instance.RecoilStrengthXy.y *= 0.3f;
+                    __instance.RecoilStrengthXy.x = Mathf.Min(__instance.RecoilStrengthXy.x * 0.3f, 100f);
+                    __instance.RecoilStrengthXy.y = Mathf.Min(__instance.RecoilStrengthXy.y * 0.3f, 100f);
                 }
 
                 float angle = mountingAngleModi;
@@ -214,6 +214,7 @@ namespace RealismMod
             }
         }
     }
+
     public class ShootPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -232,24 +233,7 @@ namespace RealismMod
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
                 if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
                 {
-                    __instance.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
-                    __instance.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
-
-                    if (weapon.WeapClass != "pistol")
-                    {
-                        if (Plugin.ShotCount <= 1)
-                        {
-                            __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
-                        }
-                        else
-                        {
-                            __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvAutoMulti.Value;
-                        }
-                    }
-                    else 
-                    {
-                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
-                    }
+                    RecoilController.SetRecoilParams(__instance, weapon);
                 }
             }
         }

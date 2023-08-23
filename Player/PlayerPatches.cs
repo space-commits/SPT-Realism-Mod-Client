@@ -124,6 +124,8 @@ namespace RealismMod
                 StanceController.WasHighReady = false;
                 StanceController.WasLowReady = false;
                 StanceController.IsShortStock = false;
+                StanceController.WasShortStock = false;
+                StanceController.IsPatrolStance = false;
 
                 InventoryControllerClass invController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(__instance);
    
@@ -300,23 +302,7 @@ namespace RealismMod
 
                         __instance.ProceduralWeaponAnimation.Breath.Intensity = 0.69f * mountingBonus;
                         __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f * mountingBonus;
-                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
-
-                        if (fc.Item.WeapClass != "pistol")
-                        {
-                            if (Plugin.ShotCount <= 1)
-                            {
-                                __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
-                            }
-                            else
-                            {
-                                __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvAutoMulti.Value;
-                            }
-                        }
-                        else
-                        {
-                            __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
-                        }
+                        RecoilController.SetRecoilParams(__instance.ProceduralWeaponAnimation, fc.Item);
                     }
 
                     __instance.ProceduralWeaponAnimation.Shootingg.Intensity = (Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value);
@@ -338,6 +324,8 @@ namespace RealismMod
 
                 __instance.Physical.HandsStamina.Current = Mathf.Max(__instance.Physical.HandsStamina.Current, 1f);
 
+                __instance.ProceduralWeaponAnimation.HandsContainer.CameraRotation.ReturnSpeed = 0.1f;
+
                 if (!Plugin.IsFiring)
                 {
                     __instance.HandsController.FirearmsAnimator.SetPatrol(StanceController.IsPatrolStance);
@@ -346,11 +334,11 @@ namespace RealismMod
                     {
                         if (Plugin.IsAiming)
                         {
-                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, Mathf.Clamp(0.35f * (1f + (WeaponProperties.ErgoFactor / 100f)), 0.2f, 0.6f), 0.04f);
+                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, Mathf.Clamp(0.35f * (1f + (WeaponProperties.ErgoFactor / 100f)), 0.4f, 0.6f), 0.04f);
                         }
                         else
                         {
-                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.35f, 0.04f);
+                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.4f, 0.01f);
                         }
                     }
                     else
@@ -359,7 +347,7 @@ namespace RealismMod
                         __instance.ProceduralWeaponAnimation.Shootingg.ShotVals[3].Intensity = 0;
                         __instance.ProceduralWeaponAnimation.Shootingg.ShotVals[4].Intensity = 0;
                     }
-                    __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = 10f * StanceController.WiggleReturnSpeed;
+                    __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed, 10f * StanceController.WiggleReturnSpeed, 0.05f);
                 }
             }
         }
