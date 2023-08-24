@@ -9,7 +9,6 @@ using EFT.Animals;
 using EFT.InventoryLogic;
 using EFT.UI;
 using Newtonsoft.Json;
-using notGreg.UniformAim;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -290,6 +289,11 @@ namespace RealismMod
         public static ConfigEntry<bool> CanFellBot { get; set; }
         public static ConfigEntry<float> FallBaseChance { get; set; }
 
+        public static ConfigEntry<bool> EnableExperimentalRecoil { get; set; }
+        public static ConfigEntry<float> ResetSpeed { get; set; }
+        public static ConfigEntry<float> RecoilClimbFactor { get; set; }
+        public static ConfigEntry<float> RecoilDispersionFactor { get; set; }
+
         public static ConfigEntry<float> test1 { get; set; }
         public static ConfigEntry<float> test2 { get; set; }
         public static ConfigEntry<float> test3 { get; set; }
@@ -337,7 +341,8 @@ namespace RealismMod
         public static float CurrentAimSens = StartingAimSens;
         public static float StartingHipSens;
         public static float CurrentHipSens = StartingHipSens;
-        public static bool CheckedForSens = false;
+        public static bool CheckedForOtherMods = false;
+        private static bool warnedUser = false;
 
         public static float StartingDispersion;
         public static float CurrentDispersion;
@@ -377,7 +382,6 @@ namespace RealismMod
         private string ConfigJson;
         public static ConfigTemplate ModConfig;
 
-        public static bool UniformAimIsPresent = false;
         public static bool FovFixIsPresent = false;
         private static bool checkedForSensMods = false;
 
@@ -639,7 +643,6 @@ namespace RealismMod
                     new CheckAmmoPatch().Enable();
                     new SetHammerArmedPatch().Enable();
                     new SetLauncherPatch().Enable();
-
                 }
 
                 new CheckAmmoFirearmControllerPatch().Enable();
@@ -793,11 +796,31 @@ namespace RealismMod
         {
             if (!checkedForSensMods)
             {
-                UniformAimIsPresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.UniformAim") && Chainloader.PluginInfos.ContainsKey("com.notGreg.RealismModBridge");
                 FovFixIsPresent = Chainloader.PluginInfos.ContainsKey("FOVFix") && Chainloader.PluginInfos.ContainsKey("Bridge");
                 checkedForSensMods = true;
                 Logger.LogWarning("FovFixIsPresent = " + FovFixIsPresent);
             }
+            if ((int)Time.time % 5 == 0 && !warnedUser)
+            {
+                warnedUser = true;
+                if (Chainloader.PluginInfos.ContainsKey("FOVFix") && !Chainloader.PluginInfos.ContainsKey("Bridge"))
+                {
+                    NotificationManagerClass.DisplayWarningNotification("ERROR: FOV FIX IS INSTALLED BUT THE COMPATIBILITY BRIDGE IS NOT! INSTALL IT BEFORE USING THESE MODS TOGETHER!", EFT.Communications.ENotificationDurationType.Long);
+                }
+                if (Chainloader.PluginInfos.ContainsKey("com.servph.realisticrecoil"))
+                {
+                    NotificationManagerClass.DisplayWarningNotification("ERROR: COMBAT OVERHAUL DETECTED, IT IS NOT COMPATIBLE!", EFT.Communications.ENotificationDurationType.Long);
+                }
+                if (Chainloader.PluginInfos.ContainsKey("com.IcyClawz.MunitionsExpert"))
+                {
+                    NotificationManagerClass.DisplayWarningNotification("ERROR: MUNITIONS EXPERT DETECTED, IT IS NOT COMPATIBLE!", EFT.Communications.ENotificationDurationType.Long);
+                }
+            }
+            if ((int)Time.time % 5 != 0)
+            {
+                warnedUser = false;
+            }
+
 
             if (Utils.CheckIsReady())
             {
@@ -815,7 +838,7 @@ namespace RealismMod
                         StanceController.IsFiringFromStance = true;
                         Plugin.IsFiringMovement = true;
 
-                        if ((Plugin.EnableRecoilClimb.Value && Plugin.IsAiming) || (Plugin.EnableHipfireRecoilClimb.Value == true && !Plugin.IsAiming))
+                        if (!Plugin.EnableExperimentalRecoil.Value && ((Plugin.EnableRecoilClimb.Value && Plugin.IsAiming) || (Plugin.EnableHipfireRecoilClimb.Value && !Plugin.IsAiming)))
                         {
                             RecoilController.DoRecoilClimb();
                         }
@@ -916,23 +939,28 @@ namespace RealismMod
         private void initConfigs()
         {
             string testing = ".0. Testing";
-            string miscSettings = ".1. Misc. Settings";
-            string ballSettings = ".2. Ballistics Settings";
-            string recoilSettings = ".3. Recoil Settings";
-            string advancedRecoilSettings = ".4. Advanced Recoil Settings";
-            string statSettings = ".5. Stat Display Settings";
-            /*                string AmmoSettings = "4. Ammo Stat Display Settings";*/
-            string waponSettings = ".6. Weapon Settings";
-            string healthSettings = ".7. Health and Meds Settings";
-            string moveSettings = ".8. Movement Settings";
-            string deafSettings = ".9. Deafening and Audio";
-            string speed = "10. Weapon Speed Modifiers";
-            string weapAimAndPos = "11. Weapon Stances And Position";
-            string activeAim = "12. Active Aim";
-            string highReady = "13. High Ready";
-            string lowReady = "14. Low Ready";
-            string pistol = "15. Pistol Position And Stance";
-            string shortStock = "16. Short-Stocking";
+            string experimental = ".01. Experimental Recoil.";
+            string miscSettings = ".1. Misc. Settings.";
+            string ballSettings = ".2. Ballistics Settings.";
+            string recoilSettings = ".3. Recoil Settings.";
+            string advancedRecoilSettings = ".4. Advanced Recoil Settings.";
+            string statSettings = ".5. Stat Display Settings.";
+            string waponSettings = ".6. Weapon Settings.";
+            string healthSettings = ".7. Health and Meds Settings.";
+            string moveSettings = ".8. Movement Settings.";
+            string deafSettings = ".9. Deafening and Audio.";
+            string speed = "10. Weapon Speed Modifiers.";
+            string weapAimAndPos = "11. Weapon Stances And Position.";
+            string activeAim = "12. Active Aim.";
+            string highReady = "13. High Ready.";
+            string lowReady = "14. Low Ready.";
+            string pistol = "15. Pistol Position And Stance.";
+            string shortStock = "16. Short-Stocking.";
+
+            EnableExperimentalRecoil = Config.Bind<bool>(experimental, "Enable Experimental Recoil", false, new ConfigDescription("Removes Auto-Compensation And All Its Problems Completely For A More Traditional Recoil Mechanic. This Will Become Standard In The Future.", null, new ConfigurationManagerAttributes { Order = 6 }));
+            ResetSpeed = Config.Bind<float>(experimental, "Reset Speed", 0.6f, new ConfigDescription("How Fast The Weapon's Vertical Position Resets After Firing.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 3 }));
+            RecoilClimbFactor = Config.Bind<float>(experimental, "Recoil Climb Multi", 0.1f, new ConfigDescription("Multiplier For How Much The Weapon Climbs Vertically Per Shot.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 2 }));
+            RecoilDispersionFactor = Config.Bind<float>(experimental, "Recoil Dispersion Multi", 0.1f, new ConfigDescription("Multiplier For Recoil Climb Dispersion, Modifies The Classic S Pattern.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 1 }));
 
             EnableMaterialSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Material Speed Modifier", true, new ConfigDescription("Enables Movement Speed Being Affected By Ground Material (Concrete, Grass, Metal, Glass Etc.)", null, new ConfigurationManagerAttributes { Order = 20 }));
             EnableSlopeSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Slope Speed Modifier", false, new ConfigDescription("Enables Slopes Slowing Down Movement. Can Cause Random Speed Slowdowns In Some Small Spots Due To BSG's Bad Map Geometry.", null, new ConfigurationManagerAttributes { Order = 10 }));

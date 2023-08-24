@@ -114,10 +114,10 @@ namespace RealismMod
                 {
                     float sens = Singleton<SharedGameSettingsClass>.Instance.Control.Settings.MouseSensitivity;
                     Plugin.StartingHipSens = sens;
-                    if (!Plugin.CheckedForSens)
+                    if (!Plugin.CheckedForOtherMods)
                     {
                         Plugin.CurrentHipSens = sens;
-                        Plugin.CheckedForSens = true;
+                        Plugin.CheckedForOtherMods = true;
                     }
                     else if (Plugin.EnableHipfireRecoilClimb.Value)
                     {

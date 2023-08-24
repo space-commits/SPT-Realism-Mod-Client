@@ -427,6 +427,8 @@ namespace RealismMod
         }
 
         private static Vector2 initialRotation = Vector3.zero;
+        private static Vector2 recordedRotation = Vector3.zero;
+        private static Vector2 targetRotation = Vector3.zero;
 
         [PatchPrefix]
         private static bool Prefix(MovementState __instance, ref Vector2 deltaRotation, bool ignoreClamp)
@@ -436,10 +438,43 @@ namespace RealismMod
 
             if (player.IsYourPlayer)
             {
-
                 if (!StanceController.IsMounting)
                 {
                     initialRotation = MovementContext.Rotation;
+                }
+
+                if (Plugin.EnableExperimentalRecoil.Value) 
+                {
+              
+                    if (Plugin.ShotCount > Plugin.PrevShotCount)
+                    {
+                        float dispersion = 0.2f * Plugin.StartingDispersion * Plugin.RecoilDispersionFactor.Value;
+                        float xRotaion = Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(Time.time * Plugin.RecoilDispersionFactor.Value * 30f, 1f));
+                        float yRotation = -Plugin.StartingVRecoilX * Plugin.RecoilClimbFactor.Value;
+                        targetRotation = MovementContext.Rotation + new Vector2(xRotaion, yRotation);
+
+                        if (MovementContext.Rotation.y > recordedRotation.y + 0.5f)
+                        {
+                            recordedRotation = MovementContext.Rotation;
+                        }
+                        if (deltaRotation.y <= -0.5f)
+                        {
+                            recordedRotation = MovementContext.Rotation;
+                        }
+                    }
+                    else if (!Plugin.IsFiring && Mathf.Abs(deltaRotation.x) < 0.2f && Mathf.Abs(deltaRotation.y) < 0.2f)
+                    {
+                        float resetSpeed = Plugin.CurrentConvergence * 0.01f * Plugin.ResetSpeed.Value;
+                        MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(MovementContext.Rotation.x, recordedRotation.y), resetSpeed);
+                    }
+                    else if (!Plugin.IsFiring)
+                    {
+                        recordedRotation = MovementContext.Rotation;
+                    }
+                    if (Plugin.IsFiring) 
+                    {
+                        MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, targetRotation, 0.065f);
+                    }
                 }
 
                 if (StanceController.IsMounting && !ignoreClamp)
@@ -862,16 +897,16 @@ namespace RealismMod
                     StanceController.DoMounting(Logger, player, __instance, ref weaponWorldPos, ref mountWeapPosition);
 
                     __instance.DeferredRotateWithCustomOrder(__instance.HandsContainer.WeaponRootAnim, worldPivot, vector);
-                    Vector3 vector2 = __instance.HandsContainer.Recoil.Get();
-                    if (vector2.magnitude > 1E-45f)
+                    Vector3 recoilVector = __instance.HandsContainer.Recoil.Get();
+                    if (recoilVector.magnitude > 1E-45f)
                     {
                         if (fovScale < 1f && __instance.ShotNeedsFovAdjustments)
                         {
-                            vector2.x = Mathf.Atan(Mathf.Tan(vector2.x * 0.017453292f) * fovScale) * 57.29578f;
-                            vector2.z = Mathf.Atan(Mathf.Tan(vector2.z * 0.017453292f) * fovScale) * 57.29578f;
+                            recoilVector.x = Mathf.Atan(Mathf.Tan(recoilVector.x * 0.017453292f) * fovScale) * 57.29578f;
+                            recoilVector.z = Mathf.Atan(Mathf.Tan(recoilVector.z * 0.017453292f) * fovScale) * 57.29578f;
                         }
                         Vector3 worldPivot2 = weaponWorldPos + weapRotation * __instance.HandsContainer.RecoilPivot;
-                        __instance.DeferredRotate(__instance.HandsContainer.WeaponRootAnim, worldPivot2, weapRotation * vector2);
+                        __instance.DeferredRotate(__instance.HandsContainer.WeaponRootAnim, worldPivot2, weapRotation * recoilVector);
                     }
 
                     __instance.ApplyAimingAlignment(dt);

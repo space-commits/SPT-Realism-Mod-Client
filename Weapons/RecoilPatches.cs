@@ -53,12 +53,12 @@ namespace RealismMod
                 __instance.RecoilStrengthXy = new Vector2(0.9f, 1.15f) * __instance.ConvertFromTaxanomy(template.RecoilForceUp * totalVRecoilDelta);
                 __instance.RecoilStrengthZ = new Vector2(0.65f, 1.05f) * __instance.ConvertFromTaxanomy(template.RecoilForceBack * totalHRecoilDelta);
 
-                float buffFactoredDispersion = WeaponProperties.Dispersion * (1f - buffInfo.RecoilSupression.y);
-                float angle = Mathf.LerpAngle(WeaponProperties.RecoilAngle, 90f, buffInfo.RecoilSupression.y);
+                float buffFactoredDispersion = WeaponProperties.Dispersion * (1f - buffInfo.RecoilSupression.y) * (Plugin.EnableExperimentalRecoil.Value ? 2.5f : 1f);
+                float angle = Mathf.LerpAngle(Plugin.EnableExperimentalRecoil.Value ? 90f : WeaponProperties.RecoilAngle, 90f, buffInfo.RecoilSupression.y);
                 __instance.RecoilDegree = new Vector2(angle - buffFactoredDispersion, angle + buffFactoredDispersion);
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
 
-                float cameraRecoil = WeaponProperties.CamRecoil;
+                float cameraRecoil = WeaponProperties.CamRecoil * (Plugin.EnableExperimentalRecoil.Value ? 2f : 1f);
                 __instance.ShotVals[3].Intensity = cameraRecoil;
                 __instance.ShotVals[4].Intensity = -cameraRecoil;
 
@@ -77,7 +77,7 @@ namespace RealismMod
                 Plugin.CurrentHRecoilX = Plugin.StartingHRecoilX;
                 Plugin.CurrentHRecoilY = Plugin.StartingHRecoilY;
 
-                Plugin.StartingConvergence = (float)Math.Round(WeaponProperties.ModdedConv * Singleton<BackendConfigSettingsClass>.Instance.Aiming.RecoilConvergenceMult, 2);
+                Plugin.StartingConvergence = (float)Math.Round(WeaponProperties.ModdedConv * Singleton<BackendConfigSettingsClass>.Instance.Aiming.RecoilConvergenceMult * (Plugin.EnableExperimentalRecoil.Value ? 3f : 1f), 2);
                 Plugin.CurrentConvergence = Plugin.StartingConvergence;
                 Plugin.ConvergenceProporitonK = (float)Math.Round(Plugin.StartingConvergence * Plugin.StartingVRecoilX, 2);
 
@@ -149,6 +149,7 @@ namespace RealismMod
                 //would be more efficient to have a static bool "getsSemiRecoilIncrease" and check the weap class in stat detla instead.
                 //1.5f recoil on pistols unironically felt good, even a lot of the rifles. Some got a bit too fucked by it some some rebalancing might be needed.
                 //wep.FireMode.FireMode == Weapon.EFireMode.single, problem with restrcting it to semi only is that then firing one shot in full auto is more controlalble than semi
+              
                 if (Plugin.ShotCount == 1 && WeaponProperties.ShouldGetSemiIncrease)
                 {
                     __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * Plugin.VertRecSemiMulti.Value;
