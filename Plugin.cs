@@ -21,6 +21,7 @@ using static RootMotion.FinalIK.AimPoser;
 using HarmonyLib;
 using static System.Net.Mime.MediaTypeNames;
 using MonoMod.RuntimeDetour;
+using GPUInstancer;
 
 namespace RealismMod
 {
@@ -293,6 +294,11 @@ namespace RealismMod
         public static ConfigEntry<float> ResetSpeed { get; set; }
         public static ConfigEntry<float> RecoilClimbFactor { get; set; }
         public static ConfigEntry<float> RecoilDispersionFactor { get; set; }
+        public static ConfigEntry<float> RecoilDispersionSpeed { get; set; }
+        public static ConfigEntry<float> RecoilSmoothness { get; set; }
+        public static ConfigEntry<float> ResetSensitivity { get; set; }
+        public static ConfigEntry<bool> ResetVertical { get; set; }
+        public static ConfigEntry<bool> ResetHorizontal { get; set; }
 
         public static ConfigEntry<float> test1 { get; set; }
         public static ConfigEntry<float> test2 { get; set; }
@@ -334,8 +340,6 @@ namespace RealismMod
         public static int ShotCount = 0;
         public static int PrevShotCount = ShotCount;
         public static bool StatsAreReset;
-
-        public static float StartingRecoilAngle;
 
         public static float StartingAimSens;
         public static float CurrentAimSens = StartingAimSens;
@@ -957,10 +961,15 @@ namespace RealismMod
             string pistol = "15. Pistol Position And Stance.";
             string shortStock = "16. Short-Stocking.";
 
-            EnableExperimentalRecoil = Config.Bind<bool>(experimental, "Enable Experimental Recoil", false, new ConfigDescription("Removes Auto-Compensation And All Its Problems Completely For A More Traditional Recoil Mechanic. This Will Become Standard In The Future.", null, new ConfigurationManagerAttributes { Order = 6 }));
-            ResetSpeed = Config.Bind<float>(experimental, "Reset Speed", 0.6f, new ConfigDescription("How Fast The Weapon's Vertical Position Resets After Firing.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 3 }));
-            RecoilClimbFactor = Config.Bind<float>(experimental, "Recoil Climb Multi", 0.1f, new ConfigDescription("Multiplier For How Much The Weapon Climbs Vertically Per Shot.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 2 }));
-            RecoilDispersionFactor = Config.Bind<float>(experimental, "Recoil Dispersion Multi", 0.1f, new ConfigDescription("Multiplier For Recoil Climb Dispersion, Modifies The Classic S Pattern.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 1 }));
+            EnableExperimentalRecoil = Config.Bind<bool>(experimental, "Enable Experimental Recoil", false, new ConfigDescription("Removes Auto-Compensation And All Its Problems Completely For A More Traditional Recoil Mechanic. This Will Become Standard In The Future.", null, new ConfigurationManagerAttributes { Order = 60 }));
+            RecoilSmoothness = Config.Bind<float>(experimental, "Recoil Smoothness", 0.05f, new ConfigDescription("How Fast Recoil Moves Weapon While Firing, Higher Value Increases Smoothness.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 40 }));
+            ResetSpeed = Config.Bind<float>(experimental, "Reset Speed", 0.005f, new ConfigDescription("How Fast The Weapon's Vertical Position Resets After Firing.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 30 }));
+            RecoilClimbFactor = Config.Bind<float>(experimental, "Recoil Climb Multi", 0.2f, new ConfigDescription("Multiplier For How Much The Weapon Climbs Vertically Per Shot.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 20 }));
+            ResetSensitivity = Config.Bind<float>(experimental, "Reset Sensitvity", 0.15f, new ConfigDescription("The Amount Of Mouse Movement After Firing Needed To Cancel Reseting Back To Weapon's Original Position.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 13 }));
+            ResetVertical = Config.Bind<bool>(experimental, "Enable Vertical Reset", true, new ConfigDescription("Enables Weapon Reseting Back To Original Vertical Position.", null, new ConfigurationManagerAttributes { Order = 12 }));
+            ResetHorizontal = Config.Bind<bool>(experimental, "Enable Horizontal Reset", false, new ConfigDescription("Enables Weapon Reseting Back To Original Horizontal Position.", null, new ConfigurationManagerAttributes { Order = 11 }));
+            RecoilDispersionFactor = Config.Bind<float>(experimental, "Recoil Dispersion Multi", 0.01f, new ConfigDescription("Increases The Size The Classic S Pattern.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 10 }));
+            RecoilDispersionSpeed = Config.Bind<float>(experimental, "Recoil Dispersion Speed", 2f, new ConfigDescription("Increases The Speed At Which Recoil Makes The Classic S Pattern.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 1 }));
 
             EnableMaterialSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Material Speed Modifier", true, new ConfigDescription("Enables Movement Speed Being Affected By Ground Material (Concrete, Grass, Metal, Glass Etc.)", null, new ConfigurationManagerAttributes { Order = 20 }));
             EnableSlopeSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Slope Speed Modifier", false, new ConfigDescription("Enables Slopes Slowing Down Movement. Can Cause Random Speed Slowdowns In Some Small Spots Due To BSG's Bad Map Geometry.", null, new ConfigurationManagerAttributes { Order = 10 }));

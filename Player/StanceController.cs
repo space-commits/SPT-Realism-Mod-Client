@@ -127,7 +127,7 @@ namespace RealismMod
                     {
                         player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgoFactor * 0.8f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                     }
-                    else if (IsActiveAiming)
+                    else if (IsActiveAiming && Plugin.EnableIdleStamDrain.Value)
                     {
                         player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgoFactor * 0.2f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                     }
@@ -232,7 +232,7 @@ namespace RealismMod
         {
             DampingTimer += Time.deltaTime;
 
-            if (DampingTimer >= 0.25f)
+            if (DampingTimer >= 0.05f)
             {
                 CanResetDamping = true;
                 DoDampingTimer = false;
@@ -587,6 +587,9 @@ namespace RealismMod
             Quaternion pistolMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.PistolAdditionalRotationX.Value, Plugin.PistolAdditionalRotationY.Value, Plugin.PistolAdditionalRotationZ.Value));
             Quaternion pistolRevertQuaternion = Quaternion.Euler(Plugin.PistolResetRotationX.Value * balanceFactor, Plugin.PistolResetRotationY.Value, Plugin.PistolResetRotationZ.Value);
 
+            bool isMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
+            float movementFactor = 1.3f;
+
             //I've no idea wtf is going on here but it sort of works
             float targetPos = 0.09f;
             if (!Plugin.IsBlindFiring && !StanceController.CancelPistolStance)
@@ -632,7 +635,7 @@ namespace RealismMod
                 }
                 if ((StanceController.StanceBlender.Value >= 0.95f && StanceController.StanceTargetPosition == pistolTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-                    StanceController.doWiggleEffects(logger, player, pwa, new Vector3(-20f, 1f, 10f));
+                    StanceController.doWiggleEffects(logger, player, pwa, new Vector3(-20f, 1f, 10f) * (isMoving ? movementFactor : 1f));
                     StanceController.DidStanceWiggle = true;
                 }
      
@@ -653,7 +656,7 @@ namespace RealismMod
                     StanceController.DoDampingTimer = true;
                 }
 
-                StanceController.doWiggleEffects(logger, player, pwa, new Vector3(10f, 1f, -10f));
+                StanceController.doWiggleEffects(logger, player, pwa, new Vector3(10f, 1f, -10f) * (isMoving ? movementFactor : 1f));
 
                 isResettingPistol = false;
                 StanceController.PistolIsCompressed = false;
@@ -704,6 +707,9 @@ namespace RealismMod
             Quaternion shortStockMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.ShortStockAdditionalRotationX.Value * resetErgoMulti, Plugin.ShortStockAdditionalRotationY.Value * resetErgoMulti, Plugin.ShortStockAdditionalRotationZ.Value * resetErgoMulti));
             Quaternion shortStockRevertQuaternion = Quaternion.Euler(Plugin.ShortStockResetRotationX.Value * resetErgoMulti, Plugin.ShortStockResetRotationY.Value * resetErgoMulti, Plugin.ShortStockResetRotationZ.Value * resetErgoMulti);
             Vector3 shortStockTargetPosition = new Vector3(Plugin.ShortStockOffsetX.Value, Plugin.ShortStockOffsetY.Value, Plugin.ShortStockOffsetZ.Value * thirdPersonMulti);
+
+            bool isMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
+            float movementFactor = 1.3f;
 
             //for setting baseline position
             if (!Plugin.IsBlindFiring)
@@ -811,7 +817,7 @@ namespace RealismMod
 
                 if ((StanceController.StanceBlender.Value > 0.95f || StanceController.StanceTargetPosition == shortStockTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-                    StanceController.doWiggleEffects(logger, player, pwa, new Vector3(10f, -5f, 10f), true);
+                    StanceController.doWiggleEffects(logger, player, pwa, new Vector3(10f, -5f, 10f) * (isMoving ? movementFactor : 1f), true);
                     StanceController.DidStanceWiggle = true;
                 }
             }
@@ -830,7 +836,7 @@ namespace RealismMod
                     StanceController.DoDampingTimer = true;
                 }
 
-                StanceController.doWiggleEffects(logger, player, pwa, new Vector3(5, -5f, -10f), true);
+                StanceController.doWiggleEffects(logger, player, pwa, new Vector3(5, -5f, -10f) * (isMoving ? movementFactor : 1f), true);
                 stanceRotation = Quaternion.identity;
                 isResettingShortStock = false;
                 hasResetShortStock = true;
@@ -904,7 +910,7 @@ namespace RealismMod
 
                 if ((StanceController.StanceBlender.Value >= 0.95f || StanceController.StanceTargetPosition == highReadyTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-                    StanceController.doWiggleEffects(logger, player, pwa, new Vector3(5f, 5f, 5f), true);
+                    StanceController.doWiggleEffects(logger, player, pwa, new Vector3(5f, 5f, 5f) * (isMoving ? movementFactor : 1f), true);
                     StanceController.DidStanceWiggle = true;
                 }
             }
@@ -924,7 +930,7 @@ namespace RealismMod
                     StanceController.DoDampingTimer = true;
                 }
 
-                StanceController.doWiggleEffects(logger, player, pwa, new Vector3(-12f, 6f, -12f), true);
+                StanceController.doWiggleEffects(logger, player, pwa, new Vector3(-12f, 6f, -12f) * (isMoving ? movementFactor : 1f), true);
                 StanceController.DidStanceWiggle = false;
 
                 stanceRotation = Quaternion.identity;
@@ -988,7 +994,7 @@ namespace RealismMod
 
                 if ((StanceController.StanceBlender.Value >= 0.95f || StanceController.StanceTargetPosition == lowReadyTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-                    StanceController.doWiggleEffects(logger, player, pwa, new Vector3(5.5f, -5.5f, -5.5f), true);
+                    StanceController.doWiggleEffects(logger, player, pwa, new Vector3(5f, -5f, -6f) * (isMoving ? movementFactor : 1f), true);
                     StanceController.DidStanceWiggle = true;
                 }
             }
@@ -1009,7 +1015,7 @@ namespace RealismMod
                     StanceController.DoDampingTimer = true;
                 }
 
-                StanceController.doWiggleEffects(logger, player, pwa, new Vector3(4f, 4f, 7.5f), true);
+                StanceController.doWiggleEffects(logger, player, pwa, new Vector3(4.5f, 4.5f, 7.5f) * (isMoving ? movementFactor : 1f), true);
                 StanceController.DidStanceWiggle = false;
                 stanceRotation = Quaternion.identity;
                 isResettingLowReady = false;
@@ -1071,7 +1077,7 @@ namespace RealismMod
 
                 if ((StanceController.StanceBlender.Value >= 0.95f || StanceController.StanceTargetPosition == activeAimTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-                    StanceController.doWiggleEffects(logger, player, pwa, new Vector3(-2.5f, -2.5f, 10f), true);
+                    StanceController.doWiggleEffects(logger, player, pwa, new Vector3(-2.5f, -2.5f, 10f) * (isMoving ? movementFactor : 1f), true);
                     StanceController.DidStanceWiggle = true;
                 }
             }
@@ -1092,7 +1098,7 @@ namespace RealismMod
                     StanceController.DoDampingTimer = true;
                 }
 
-                StanceController.doWiggleEffects(logger, player, pwa, new Vector3(-4f, -5f, 10f), true);
+                StanceController.doWiggleEffects(logger, player, pwa, new Vector3(-4f, -5f, 10f) * (isMoving ? movementFactor : 1f), true);
                 StanceController.DidStanceWiggle = false;
 
                 stanceRotation = Quaternion.identity;

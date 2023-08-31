@@ -11,8 +11,8 @@ namespace RealismMod
     {
         public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weapon) 
         {
-            pwa.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
-            pwa.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
+            pwa.HandsContainer.Recoil.Damping = Plugin.CurrentDamping * (Plugin.EnableExperimentalRecoil.Value ? 0.9f : 1f);
+            pwa.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping * Plugin.test1.Value;
 
             if (weapon.WeapClass != "pistol")
             {

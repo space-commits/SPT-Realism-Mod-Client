@@ -334,12 +334,20 @@ namespace RealismMod
                     {
                         if (Plugin.IsAiming)
                         {
-                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, Mathf.Clamp(0.35f * (1f + (WeaponProperties.ErgoFactor / 100f)), 0.4f, 0.6f), 0.04f);
+                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, Mathf.Clamp(0.45f * (1f + (WeaponProperties.ErgoFactor / 100f)), 0.4f, 0.6f), 0.1f);
                         }
                         else
                         {
-                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.4f, 0.01f);
+                            float resetSpeed = 0.02f;
+                            bool isMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
+                            if (isMoving && (StanceController.WasLowReady || StanceController.WasHighReady || StanceController.WasShortStock || StanceController.WasActiveAim))
+                            {
+                                resetSpeed = 1f;
+                            }
+
+                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, resetSpeed);
                         }
+           
                     }
                     else
                     {

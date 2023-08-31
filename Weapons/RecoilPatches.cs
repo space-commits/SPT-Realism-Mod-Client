@@ -53,12 +53,12 @@ namespace RealismMod
                 __instance.RecoilStrengthXy = new Vector2(0.9f, 1.15f) * __instance.ConvertFromTaxanomy(template.RecoilForceUp * totalVRecoilDelta);
                 __instance.RecoilStrengthZ = new Vector2(0.65f, 1.05f) * __instance.ConvertFromTaxanomy(template.RecoilForceBack * totalHRecoilDelta);
 
-                float buffFactoredDispersion = WeaponProperties.Dispersion * (1f - buffInfo.RecoilSupression.y) * (Plugin.EnableExperimentalRecoil.Value ? 2.5f : 1f);
-                float angle = Mathf.LerpAngle(Plugin.EnableExperimentalRecoil.Value ? 90f : WeaponProperties.RecoilAngle, 90f, buffInfo.RecoilSupression.y);
+                float buffFactoredDispersion = WeaponProperties.Dispersion * (1f - buffInfo.RecoilSupression.y);
+                float angle = Mathf.LerpAngle(WeaponProperties.RecoilAngle, 90f, buffInfo.RecoilSupression.y);
                 __instance.RecoilDegree = new Vector2(angle - buffFactoredDispersion, angle + buffFactoredDispersion);
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
 
-                float cameraRecoil = WeaponProperties.CamRecoil * (Plugin.EnableExperimentalRecoil.Value ? 2f : 1f);
+                float cameraRecoil = WeaponProperties.CamRecoil;
                 __instance.ShotVals[3].Intensity = cameraRecoil;
                 __instance.ShotVals[4].Intensity = -cameraRecoil;
 
@@ -81,7 +81,7 @@ namespace RealismMod
                 Plugin.CurrentConvergence = Plugin.StartingConvergence;
                 Plugin.ConvergenceProporitonK = (float)Math.Round(Plugin.StartingConvergence * Plugin.StartingVRecoilX, 2);
 
-                Plugin.StartingRecoilAngle = (float)Math.Round(angle, 2);
+                WeaponProperties.RecoilAngle = (float)Math.Round(angle, 2);
 
                 Plugin.StartingDispersion = (float)Math.Round(buffFactoredDispersion, 2);
                 Plugin.CurrentDispersion = Plugin.StartingDispersion;
@@ -123,6 +123,8 @@ namespace RealismMod
 
             if (iWeapon.Item.Owner.ID.StartsWith("pmc") || iWeapon.Item.Owner.ID.StartsWith("scav"))
             {
+                SkillsClass.GClass1743 buffInfo = (SkillsClass.GClass1743)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
+
                 Plugin.CurrentlyShootingWeapon = weaponClass;
 
                 Plugin.ShotTimer = 0f;
@@ -141,7 +143,7 @@ namespace RealismMod
                 float shortStockingCamBonus = StanceController.IsShortStock ? 0.75f : 1f;
                 float mountingVertModi = StanceController.IsMounting ? StanceController.MountingRecoilBonus : StanceController.IsBracing ? StanceController.BracingRecoilBonus : 1f;
                 float mountingDispModi = Mathf.Clamp(StanceController.IsMounting ? StanceController.MountingRecoilBonus * 1.25f : StanceController.IsBracing ? StanceController.BracingRecoilBonus * 1.2f : 1f, 0.85f, 1f);
-                float mountingAngleModi = StanceController.IsMounting ? Mathf.Min(Plugin.StartingRecoilAngle + 17f, 90f) : StanceController.IsBracing ? Mathf.Min(Plugin.StartingRecoilAngle + 10f, 90f) : Plugin.StartingRecoilAngle;
+                float mountingAngleModi = StanceController.IsMounting ? Mathf.Min(WeaponProperties.RecoilAngle + 17f, 90f) : StanceController.IsBracing ? Mathf.Min(WeaponProperties.RecoilAngle + 10f, 90f) : WeaponProperties.RecoilAngle;
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
@@ -183,7 +185,7 @@ namespace RealismMod
                     __instance.RecoilStrengthXy.y = Mathf.Min(__instance.RecoilStrengthXy.y * 0.3f, 100f);
                 }
 
-                float angle = mountingAngleModi;
+                float angle = Mathf.LerpAngle(mountingAngleModi, 90f, buffInfo.RecoilSupression.y);
                 __instance.RecoilDegree = new Vector2(angle - factoredDispersion, angle + factoredDispersion);
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
 
