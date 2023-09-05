@@ -58,7 +58,7 @@ namespace RealismMod
                 __instance.RecoilDegree = new Vector2(angle - buffFactoredDispersion, angle + buffFactoredDispersion);
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
 
-                float cameraRecoil = WeaponProperties.CamRecoil;
+                float cameraRecoil = WeaponProperties.CamRecoil * (Plugin.EnableExperimentalRecoil.Value ? 2f : 1f);
                 __instance.ShotVals[3].Intensity = cameraRecoil;
                 __instance.ShotVals[4].Intensity = -cameraRecoil;
 
@@ -197,13 +197,12 @@ namespace RealismMod
                 float totalHorizontalRecoil = Mathf.Min(__instance.RecoilStrengthZ.y * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff, Plugin.HorzRecLimit.Value);
 
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.x, Mathf.Cos(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.y, totalHorizontalRecoil * _separateIntensityFactors.z) * __instance.Intensity;
-                IWeapon weapon = iWeapon;
-                Vector2 vector = (weapon != null) ? weapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
-                IWeapon weapon2 = iWeapon;
-                float malfFactor = (weapon2 != null) ? weapon2.MalfState.OverheatBarrelMoveMult : 0f;
-                float totalRecoil = (__instance.RecoilRadian.x + __instance.RecoilRadian.y) / 2f * ((__instance.RecoilStrengthXy.x + __instance.RecoilStrengthXy.y) / 2f) * malfFactor;
-                __instance.RecoilDirection.x = __instance.RecoilDirection.x + vector.x * totalRecoil;
-                __instance.RecoilDirection.y = __instance.RecoilDirection.y + vector.y * totalRecoil;
+                Vector2 heatDirection = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
+                float heatFactor = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveMult : 0f;
+                float totalRecoil = (__instance.RecoilRadian.x + __instance.RecoilRadian.y) / 2f * ((__instance.RecoilStrengthXy.x + __instance.RecoilStrengthXy.y) / 2f) * heatFactor;
+                __instance.RecoilDirection.x = __instance.RecoilDirection.x + heatDirection.x * totalRecoil;
+                __instance.RecoilDirection.y = __instance.RecoilDirection.y + heatDirection.y * totalRecoil;
+
                 ShotEffector.ShotVal[] shotVals = __instance.ShotVals;
                 for (int i = 0; i < shotVals.Length; i++)
                 {

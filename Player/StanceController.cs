@@ -994,7 +994,7 @@ namespace RealismMod
 
                 if ((StanceController.StanceBlender.Value >= 0.95f || StanceController.StanceTargetPosition == lowReadyTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-                    StanceController.doWiggleEffects(logger, player, pwa, new Vector3(5f, -5f, -6f) * (isMoving ? movementFactor : 1f), true);
+                    StanceController.doWiggleEffects(logger, player, pwa, new Vector3(5f, -5f, -5f) * (isMoving ? movementFactor : 1f), true);
                     StanceController.DidStanceWiggle = true;
                 }
             }

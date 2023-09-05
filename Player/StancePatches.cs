@@ -914,6 +914,8 @@ namespace RealismMod
         private static Quaternion currentRotation = Quaternion.identity;
         private static Quaternion stanceRotation = Quaternion.identity;
         private static Vector3 mountWeapPosition = Vector3.zero;
+        private static Vector3 currentRecoil = Vector3.zero;
+        private static Vector3 targetRecoil = Vector3.zero;
 
         private static float stanceRotationSpeed = 1f;
 
@@ -978,6 +980,12 @@ namespace RealismMod
 
                     currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? aimingQuat : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
                     Quaternion rhs = Quaternion.Euler(pitch * overlappingBlindfire * blindFireRotation);
+
+                    if (Plugin.EnableExperimentalRecoil.Value)
+                    {
+                        RecoilController.DoCantedRecoil(ref targetRecoil, ref currentRecoil, ref weapRotation);
+                    }
+
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponWorldPos, weapRotation * rhs * currentRotation);
 
                     if (isPistol && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value && !StanceController.IsPatrolStance)
