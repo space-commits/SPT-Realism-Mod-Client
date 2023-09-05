@@ -421,12 +421,30 @@ namespace RealismMod
 
     public class RotatePatch : ModulePatch
     {
+
+        private static Vector2 initialRotation = Vector3.zero;
+        private static Vector2 recordedRotation = Vector3.zero;
+        private static Vector2 targetRotation = Vector3.zero;
+        private static bool hasReset = false;
+        private static float timer = 0.0f;
+        private static float resetTime = 0.5f;
+
+        private static float spiralTime;
+
         protected override MethodBase GetTargetMethod()
         {
             return typeof(MovementState).GetMethod("Rotate", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static Vector2 initialRotation = Vector3.zero;
+        private static void resetTimer(Vector2 target, Vector2 current) 
+        {
+            timer += Time.deltaTime;
+
+            if (timer >= resetTime && target == current)
+            {
+                hasReset = true;
+            }
+        }
 
         [PatchPrefix]
         private static bool Prefix(MovementState __instance, ref Vector2 deltaRotation, bool ignoreClamp)
@@ -436,10 +454,83 @@ namespace RealismMod
 
             if (player.IsYourPlayer)
             {
-
                 if (!StanceController.IsMounting)
                 {
                     initialRotation = MovementContext.Rotation;
+                }
+
+                if (Plugin.EnableExperimentalRecoil.Value) 
+                {
+                    float fpsFactor = 144f / (1f / Time.unscaledDeltaTime);
+
+                    if (Plugin.ShotCount > Plugin.PrevShotCount)
+                    {
+                        hasReset = false;
+                        timer = 0f;
+
+                        FirearmController fc = player.HandsController as FirearmController;
+                        float shotCountFactor = Mathf.Min(Plugin.ShotCount * 0.5f, 1.5f);
+                        float angle = ((90f - WeaponProperties.RecoilAngle) / 100f);
+                        float dispersion = Mathf.Max(Plugin.StartingDispersion * 2.5f * Plugin.RecoilDispersionFactor.Value * (fc.Item.WeapClass == "pistol" ? 0.5f : 1f) * shotCountFactor * fpsFactor, 0f);
+                        float dispersionSpeed = Math.Max(Time.time * Plugin.RecoilDispersionSpeed.Value, 0.1f);
+
+                        //S pattern
+                        float xRotation = Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(dispersionSpeed, 1f)) + angle;
+                        float yRotation = Mathf.Min(-Plugin.StartingVRecoilX * Plugin.RecoilClimbFactor.Value * (fc.Item.WeapClass == "pistol" ? 0.5f : 1f) * shotCountFactor * fpsFactor, 0f);
+
+                        //Spiral/circular, could modify x axis with ping pong or something to make it more random or simply use random.range
+                        /*              spiralTime += Time.deltaTime * 20f;
+                                      float xRotaion = Mathf.Sin(spiralTime * 10f) * 1f;
+                                      float yRotation = Mathf.Cos(spiralTime * 10f) * 1f;*/
+
+                        //spiral + pingpong, would work well as vector recoil
+                        /*                 spiralTime += Time.deltaTime * 20f;
+                                         float recoilAmount = Plugin.StartingVRecoilX * Plugin.RecoilClimbFactor.Value * (fc.Item.WeapClass == "pistol" ? 0.5f : 1f) * shotCountFactor * fpsFactor;
+                                         float yRotation = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(dispersionSpeed, 1f));
+                                         float xRotation = Mathf.Sin(spiralTime * Plugin.test1.Value) * Plugin.test2.Value;*/
+
+
+                        targetRotation = MovementContext.Rotation + new Vector2(xRotation, yRotation);
+
+                        if ((Plugin.ResetVertical.Value && (MovementContext.Rotation.y > recordedRotation.y + 1f || deltaRotation.y <= -1f)) || (Plugin.ResetHorizontal.Value && (MovementContext.Rotation.x > recordedRotation.x + 1f || deltaRotation.x <= -1f)))
+                        {
+                            recordedRotation = MovementContext.Rotation;
+                        }
+                    }
+                    else if (!hasReset && !Plugin.IsFiring)
+                    {
+                        float resetSpeed = Plugin.CurrentConvergence * Plugin.ResetSpeed.Value;
+
+                        bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Plugin.ResetSensitivity.Value;
+                        bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= Plugin.ResetSensitivity.Value;
+
+                        if (Plugin.ResetVertical.Value && Plugin.ResetHorizontal.Value && xIsBelowThreshold && yIsBelowThreshold)
+                        {
+                            MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(recordedRotation.x, recordedRotation.y), resetSpeed);
+                        }
+                        else if (Plugin.ResetHorizontal.Value && xIsBelowThreshold)
+                        {
+                            MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(recordedRotation.x, MovementContext.Rotation.y), resetSpeed);
+                        }
+                        else if (Plugin.ResetVertical.Value && yIsBelowThreshold) 
+                        {
+                            MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(MovementContext.Rotation.x, recordedRotation.y), resetSpeed);
+                        }
+                        else
+                        {
+                            recordedRotation = MovementContext.Rotation;
+                        }
+
+                        resetTimer(new Vector2(MovementContext.Rotation.x, recordedRotation.y), MovementContext.Rotation);
+                    }
+                    else if (!Plugin.IsFiring)
+                    {
+                        recordedRotation = MovementContext.Rotation;
+                    }
+                    if (Plugin.IsFiring) 
+                    {
+                        MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, targetRotation, Plugin.RecoilSmoothness.Value);
+                    }
                 }
 
                 if (StanceController.IsMounting && !ignoreClamp)
@@ -823,6 +914,8 @@ namespace RealismMod
         private static Quaternion currentRotation = Quaternion.identity;
         private static Quaternion stanceRotation = Quaternion.identity;
         private static Vector3 mountWeapPosition = Vector3.zero;
+        private static Vector3 currentRecoil = Vector3.zero;
+        private static Vector3 targetRecoil = Vector3.zero;
 
         private static float stanceRotationSpeed = 1f;
 
@@ -862,16 +955,16 @@ namespace RealismMod
                     StanceController.DoMounting(Logger, player, __instance, ref weaponWorldPos, ref mountWeapPosition);
 
                     __instance.DeferredRotateWithCustomOrder(__instance.HandsContainer.WeaponRootAnim, worldPivot, vector);
-                    Vector3 vector2 = __instance.HandsContainer.Recoil.Get();
-                    if (vector2.magnitude > 1E-45f)
+                    Vector3 recoilVector = __instance.HandsContainer.Recoil.Get();
+                    if (recoilVector.magnitude > 1E-45f)
                     {
                         if (fovScale < 1f && __instance.ShotNeedsFovAdjustments)
                         {
-                            vector2.x = Mathf.Atan(Mathf.Tan(vector2.x * 0.017453292f) * fovScale) * 57.29578f;
-                            vector2.z = Mathf.Atan(Mathf.Tan(vector2.z * 0.017453292f) * fovScale) * 57.29578f;
+                            recoilVector.x = Mathf.Atan(Mathf.Tan(recoilVector.x * 0.017453292f) * fovScale) * 57.29578f;
+                            recoilVector.z = Mathf.Atan(Mathf.Tan(recoilVector.z * 0.017453292f) * fovScale) * 57.29578f;
                         }
                         Vector3 worldPivot2 = weaponWorldPos + weapRotation * __instance.HandsContainer.RecoilPivot;
-                        __instance.DeferredRotate(__instance.HandsContainer.WeaponRootAnim, worldPivot2, weapRotation * vector2);
+                        __instance.DeferredRotate(__instance.HandsContainer.WeaponRootAnim, worldPivot2, weapRotation * recoilVector);
                     }
 
                     __instance.ApplyAimingAlignment(dt);
@@ -887,6 +980,12 @@ namespace RealismMod
 
                     currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? aimingQuat : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
                     Quaternion rhs = Quaternion.Euler(pitch * overlappingBlindfire * blindFireRotation);
+
+                    if (Plugin.EnableExperimentalRecoil.Value)
+                    {
+                        RecoilController.DoCantedRecoil(ref targetRecoil, ref currentRecoil, ref weapRotation);
+                    }
+
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponWorldPos, weapRotation * rhs * currentRotation);
 
                     if (isPistol && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value && !StanceController.IsPatrolStance)

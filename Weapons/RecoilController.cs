@@ -1,4 +1,5 @@
-﻿using EFT.InventoryLogic;
+﻿using EFT.Animations;
+using EFT.InventoryLogic;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,6 +9,54 @@ namespace RealismMod
 {
     public class RecoilController
     {
+        public static void DoCantedRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation) 
+        {
+            if (Plugin.IsFiring)
+            {
+                float recoilAmount = Plugin.StartingHRecoilX / 15f;
+                float recoilSpeed = Plugin.StartingConvergence;
+                float totalRecoil = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * recoilSpeed, 1.0f));
+                targetRecoil = new Vector3(0f, totalRecoil, 0f);
+            }
+            else
+            {
+                targetRecoil = Vector3.zero;
+            }
+
+            currentRecoil = Vector3.Lerp(currentRecoil, targetRecoil, 1f);
+            Quaternion recoilQ = Quaternion.Euler(currentRecoil);
+            weapRotation *= recoilQ;
+        }
+
+        public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weapon) 
+        {
+            pwa.HandsContainer.Recoil.Damping = Plugin.CurrentDamping * (Plugin.EnableExperimentalRecoil.Value ? 0.9f : 1f);
+            pwa.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
+
+            if (weapon.WeapClass != "pistol")
+            {
+                if (Plugin.ShotCount <= 1)
+                {
+                    pwa.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
+                }
+                else
+                {
+                    pwa.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvAutoMulti.Value;
+                }
+            }
+            else
+            {
+                if (Plugin.ShotCount <= 1)
+                {
+                    pwa.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value;
+                }
+                else
+                {
+                    pwa.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConvSemiMulti.Value * 1.25f;
+                }
+            }
+        }
+
         private static void VRecoilClimb(float climbFactor)
         {
             Plugin.CurrentVRecoilX = Mathf.Clamp((float)Math.Round(Plugin.CurrentVRecoilX * climbFactor * Plugin.vRecoilChangeMulti.Value, 3), Plugin.CurrentVRecoilX, Plugin.StartingVRecoilX * Plugin.vRecoilLimit.Value);

@@ -341,7 +341,7 @@ namespace RealismMod
             Player player = Utils.GetPlayer();
             float stressResist = player.Skills.StressPain.Value;
             float painkillerDuration = (float)Math.Round(10f * (1f + stressResist), 2);
-            float negativeEffectDuration = (float)Math.Round(10f * (1f - stressResist), 2);
+            float negativeEffectDuration = (float)Math.Round(15f * (1f - stressResist), 2);
             float negativeEffectStrength = (float)Math.Round(0.9f * (1f - stressResist), 2);
             RealismHealthController.AddAdrenaline(player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
         }
@@ -380,14 +380,16 @@ namespace RealismMod
                     float maxHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;
                     float remainingHp = currentHp / maxHp;  
                    
-                    if (remainingHp < 0.2f && (damageType == EDamageType.Dehydration || damageType == EDamageType.Exhaustion))
+                    if (remainingHp <= 0.5f && (damageType == EDamageType.Dehydration || damageType == EDamageType.Exhaustion))
                     {
                         damage = 0;
+                        return;
                     }
 
-                    if (currentHp <= 2f && (bodyPart == EBodyPart.Head || bodyPart == EBodyPart.Chest) && (damageType == EDamageType.LightBleeding))
+                    if (currentHp <= 10f && (bodyPart == EBodyPart.Head || bodyPart == EBodyPart.Chest) && (damageType == EDamageType.LightBleeding))
                     { 
                         damage = 0;
+                        return;
                     }
 
                     float vitalitySkill = __instance.Player.Skills.VitalityBuffSurviobilityInc.Value;
@@ -398,26 +400,32 @@ namespace RealismMod
                     if (damageType == EDamageType.Dehydration)
                     {
                         DamageTracker.TotalDehydrationDamage += damage;
+                        return;
                     }
                     if (damageType == EDamageType.Exhaustion)
                     {
                         DamageTracker.TotalExhaustionDamage += damage;
+                        return;
                     }
                     if ((damageType == EDamageType.Fall && damage <= 12f))
                     {
                         RealismHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage, damageType);
+                        return;
                     }
                     if (damageType == EDamageType.Barbed)
                     {
                         RealismHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
+                        return;
                     }
                     if (damageType == EDamageType.Blunt && damage <= 5f)
                     {
                         RealismHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
+                        return;
                     }
                     if (damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding)
                     {
                         DamageTracker.UpdateDamage(damageType, bodyPart, damage);
+                        return;
                     }
                     if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= 16f) || (damageType == EDamageType.Blunt && damage >= 10f)) 
                     {
@@ -426,7 +434,7 @@ namespace RealismMod
                     if (damageType == EDamageType.Bullet || damageType == EDamageType.Blunt || damageType == EDamageType.Melee || damageType == EDamageType.Sniper)
                     {
                         float painkillerDuration = (float)Math.Round(20f * (1f + (stressResist /2)), 2);
-                        float negativeEffectDuration = (float)Math.Round(20f * (1f - (stressResist / 2)), 2);
+                        float negativeEffectDuration = (float)Math.Round(25f * (1f - (stressResist / 2)), 2);
                         float negativeEffectStrength = (float)Math.Round(0.95f * (1f - (stressResist / 2)), 2);
                         RealismHealthController.AddAdrenaline(__instance.Player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
 

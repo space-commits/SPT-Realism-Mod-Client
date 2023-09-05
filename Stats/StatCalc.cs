@@ -20,17 +20,17 @@ namespace RealismMod
         public static float VRecoilWeightMult = 2f;
         public static float VRecoilTorqueMult = 0.9f;
         public static float PistolVRecoilWeightMult = 1.5f;
-        public static float PistolVRecoilTorqueMult = 2f;
+        public static float PistolVRecoilTorqueMult = 1.5f;
 
         public static float HRecoilWeightMult = 3.55f;
         public static float HRecoilTorqueMult = 0.4f;
         public static float PistolHRecoilWeightMult = 3.5f;
-        public static float PistolHRecoilTorqueMult = 1f;
+        public static float PistolHRecoilTorqueMult = 0.8f;
 
         public static float DispersionWeightMult = 1.5f;
         public static float DispersionTorqueMult = 1.2f;
         public static float PistolDispersionWeightMult = 0.8f;
-        public static float PistolDispersionTorqueMult = 1f;
+        public static float PistolDispersionTorqueMult = 1.5f;
 
         public static float CamWeightMult = 5f;
         public static float CamTorqueMult = 0.25f;
@@ -691,6 +691,10 @@ namespace RealismMod
             }
             if (weapType == "pistol" || weapType == "bullpup")
             {
+                if (weapType == "pistol" && IsMount(mod))
+                {
+                    return "front";
+                }
                 if (IsStock(mod) || IsMagazine(mod))
                 {
                     return "rear";
