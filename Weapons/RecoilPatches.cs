@@ -221,7 +221,7 @@ namespace RealismMod
                 RecoilController.BaseTotalCamRecoil = cameraRecoil;
                 RecoilController.BaseTotalVRecoil = (float)Math.Round(__instance.RecoilStrengthXy.y, 3);
                 RecoilController.BaseTotalHRecoil = (float)Math.Round(__instance.RecoilStrengthZ.y, 3);
-                RecoilController.BaseTotalConvergence = WeaponProperties.ModdedConv;
+                RecoilController.BaseTotalConvergence = WeaponProperties.ModdedConv * Plugin.ConvergenceMulti.Value;
                 RecoilController.BaseTotalRecoilAngle = (float)Math.Round(angle, 2);
                 RecoilController.BaseTotalDispersion = (float)Math.Round(buffFactoredDispersion, 2);
                 RecoilController.BaseTotalRecoilDamping = (float)Math.Round(WeaponProperties.TotalRecoilDamping, 3);
@@ -316,18 +316,19 @@ namespace RealismMod
                 __instance.ShotVals[4].Intensity = -totalCamRecoil;
 
                 float totalDispersion = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y) * Plugin.DispMulti.Value;
+                float totalVerticalRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y)  * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * mountingVertModi * Plugin.VertMulti.Value;
+                float totalHorizontalRecoil = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * Plugin.HorzMulti.Value;
+
                 RecoilController.FactoredTotalDispersion = totalDispersion;
-                float totalVerticalRecoil = __instance.RecoilStrengthXy.y * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * mountingVertModi * Plugin.VertMulti.Value;
                 RecoilController.FactoredTotalVRecoil = totalVerticalRecoil;
-                float totalHorizontalRecoil = __instance.RecoilStrengthZ.y * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * Plugin.HorzMulti.Value;
                 RecoilController.FactoredTotalHRecoil = totalHorizontalRecoil;
 
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.x, Mathf.Cos(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.y, totalHorizontalRecoil * _separateIntensityFactors.z) * __instance.Intensity;
                 Vector2 heatDirection = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
                 float heatFactor = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveMult : 0f;
-                float totalRecoil = (__instance.RecoilRadian.x + __instance.RecoilRadian.y) / 2f * ((__instance.RecoilStrengthXy.x + __instance.RecoilStrengthXy.y) / 2f) * heatFactor;
-                __instance.RecoilDirection.x = __instance.RecoilDirection.x + heatDirection.x * totalRecoil;
-                __instance.RecoilDirection.y = __instance.RecoilDirection.y + heatDirection.y * totalRecoil;
+                float totalRecoilFactor = (__instance.RecoilRadian.x + __instance.RecoilRadian.y) / 2f * ((__instance.RecoilStrengthXy.x + __instance.RecoilStrengthXy.y) / 2f) * heatFactor;
+                __instance.RecoilDirection.x = __instance.RecoilDirection.x + heatDirection.x * totalRecoilFactor;
+                __instance.RecoilDirection.y = __instance.RecoilDirection.y + heatDirection.y * totalRecoilFactor;
 
                 ShotEffector.ShotVal[] shotVals = __instance.ShotVals;
                 for (int i = 0; i < shotVals.Length; i++)

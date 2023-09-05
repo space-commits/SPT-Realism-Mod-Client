@@ -283,30 +283,38 @@ namespace RealismMod
                 PlayerProperties.IsSprinting = __instance.IsSprintEnabled;
                 PlayerProperties.EnviroType = __instance.Environment;
                 Plugin.IsInInventory = __instance.IsInventoryOpened;
-                float mountingBonus = StanceController.IsMounting ? StanceController.MountingSwayBonus : StanceController.BracingSwayBonus;
+                float mountingSwayBonus = StanceController.IsMounting ? StanceController.MountingSwayBonus : StanceController.BracingSwayBonus;
                 PlayerProperties.IsMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
 
                 if (Plugin.EnableSprintPenalty.Value) 
                 {
-                    DoSprintPenalty(__instance, fc, mountingBonus);
+                    DoSprintPenalty(__instance, fc, mountingSwayBonus);
                 }
                 if (!RecoilController.IsFiring && PlayerProperties.HasFullyResetSprintADSPenalties)
                 {
-                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingBonus; //both aim sway and up and down breathing
-                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingBonus; //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
+                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingSwayBonus; //both aim sway and up and down breathing
+                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingSwayBonus; //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
                 }
 
                 if (fc != null)
                 {
                     if (RecoilController.IsFiring)
                     {
-                        StanceController.IsPatrolStance = false;
-                        __instance.HandsController.FirearmsAnimator.SetPatrol(false);
-
-                        __instance.ProceduralWeaponAnimation.Breath.Intensity = 0.69f * mountingBonus; 
-                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.71f * mountingBonus; // CHECK IF THIS AFFECTS RECOIL
+                        if (PlayerProperties.IsMoving)
+                        {
+                            __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingSwayBonus * 0.01f;
+                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingSwayBonus * 0.01f; // CHECK IF THIS AFFECTS RECOIL
+                        }
+                        else 
+                        {
+                            __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingSwayBonus * 0.25f;
+                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingSwayBonus * 0.25f; // CHECK IF THIS AFFECTS RECOIL
+                        }
 
                         RecoilController.SetRecoilParams(__instance.ProceduralWeaponAnimation, fc.Item);
+
+                        StanceController.IsPatrolStance = false;
+                        __instance.HandsController.FirearmsAnimator.SetPatrol(false);
                     }
 
                     __instance.ProceduralWeaponAnimation.Shootingg.Intensity = (Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value);

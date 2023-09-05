@@ -41,7 +41,7 @@ namespace RealismMod
         {
             if (RecoilController.IsFiring)
             {
-                float recoilAmount = RecoilController.FactoredTotalDispersion / 35f;
+                float recoilAmount = RecoilController.FactoredTotalDispersion / 2.2f; 
                 float recoilSpeed = RecoilController.BaseTotalConvergence * 0.75f;
                 float totalRecoil = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * recoilSpeed, 1.0f));
                 targetRecoil = new Vector3(0f, totalRecoil, 0f);
@@ -66,7 +66,7 @@ namespace RealismMod
             }
             else
             {
-                pwa.HandsContainer.Recoil.ReturnSpeed = RecoilController.BaseTotalConvergence * Plugin.ConvergenceMulti.Value;
+                pwa.HandsContainer.Recoil.ReturnSpeed = RecoilController.BaseTotalConvergence;
             }
             pwa.HandsContainer.HandsPosition.Damping = (float)Math.Round(RecoilController.BaseTotalHandDamping * Plugin.HandsDampingMulti.Value * (PlayerProperties.IsMoving ? 0.5f : 1f), 3);
         }     
