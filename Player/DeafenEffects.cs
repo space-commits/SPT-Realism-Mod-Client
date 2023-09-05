@@ -163,12 +163,12 @@ namespace RealismMod
 
         public static void DoDeafening() 
         {
-            float enviroMulti = PlayerProperties.enviroType == EnvironmentType.Indoor ? 1.3f : 0.95f;
+            float enviroMulti = PlayerProperties.EnviroType == EnvironmentType.Indoor ? 1.3f : 0.95f;
             float deafFactor = AmmoDeafFactor * WeaponDeafFactor * EarProtectionFactor;
             float botDeafFactor = BotDeafFactor * EarProtectionFactor;
             float grenadeDeafFactor = GrenadeDeafFactor * EarProtectionFactor;
 
-            if (Plugin.IsFiring == true)
+            if (RecoilController.IsFiring)
             {
                 ChangeDeafValues(deafFactor, ref VignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafRate.Value, VolumeLimit, ref Distortion, Plugin.DistRate.Value, DistortionLimit, enviroMulti);
             }
@@ -177,7 +177,7 @@ namespace RealismMod
                 ReseDeaftValues(deafFactor, ref VignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafReset.Value, VolumeLimit, ref Distortion, Plugin.DistReset.Value, DistortionLimit, enviroMulti);
             }
 
-            if (Plugin.IsBotFiring == true)
+            if (Plugin.IsBotFiring)
             {
                 ChangeDeafValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafRate.Value, VolumeLimit, ref BotDistortion, Plugin.DistRate.Value, DistortionLimit, enviroMulti);
             }
@@ -186,7 +186,7 @@ namespace RealismMod
                 ReseDeaftValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafReset.Value, VolumeLimit, ref BotDistortion, Plugin.DistReset.Value, DistortionLimit, enviroMulti);
             }
 
-            if (Plugin.GrenadeExploded == true)
+            if (Plugin.GrenadeExploded)
             {
                 ChangeDeafValues(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessIncreaseRate, GrenadeVignetteDarknessLimit, ref GrenadeVolume, GrenadeVolumeDecreaseRate, GrenadeVolumeLimit, ref GrenadeDistortion, GrenadeDistortionIncreaseRate, GrenadeDistortionLimit, enviroMulti);
             }
@@ -443,8 +443,8 @@ namespace RealismMod
             Vector3 contusionVect = grenade.Contusion;
             float intensity = contusionVect.z * (1f - ((1f - Deafening.EarProtectionFactor) * 1.3f));
             float distance = contusionVect.y * 2f * Deafening.EarProtectionFactor;
-            intensity = PlayerProperties.enviroType == EnvironmentType.Indoor ? intensity * 1.7f : intensity;
-            distance = PlayerProperties.enviroType == EnvironmentType.Indoor ? distance * 1.7f : distance;
+            intensity = PlayerProperties.EnviroType == EnvironmentType.Indoor ? intensity * 1.7f : intensity;
+            distance = PlayerProperties.EnviroType == EnvironmentType.Indoor ? distance * 1.7f : distance;
             __result = new Vector3(contusionVect.x, distance, intensity);
             return false;
         }

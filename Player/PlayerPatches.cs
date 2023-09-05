@@ -211,7 +211,7 @@ namespace RealismMod
             PlayerProperties.ADSSprintMulti = Mathf.Lerp(PlayerProperties.ADSSprintMulti, 1f, resetSpeed);
             PlayerProperties.SprintHipfirePenalty = Mathf.Lerp(PlayerProperties.SprintHipfirePenalty, 1f, resetSpeed);
 
-            if (!Plugin.IsFiring) 
+            if (!RecoilController.IsFiring) 
             {
                 pwa.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity * mountingBonus;
                 pwa.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity * mountingBonus;
@@ -256,7 +256,7 @@ namespace RealismMod
                 PlayerProperties.HasFullyResetSprintADSPenalties = false;
             }
 
-            if (Plugin.IsFiring)
+            if (RecoilController.IsFiring)
             {
                 doSwayReset = false;
                 resetSwayAfterFiring = false;
@@ -281,15 +281,16 @@ namespace RealismMod
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
 
                 PlayerProperties.IsSprinting = __instance.IsSprintEnabled;
-                PlayerProperties.enviroType = __instance.Environment;
+                PlayerProperties.EnviroType = __instance.Environment;
                 Plugin.IsInInventory = __instance.IsInventoryOpened;
                 float mountingBonus = StanceController.IsMounting ? StanceController.MountingSwayBonus : StanceController.BracingSwayBonus;
+                PlayerProperties.IsMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
 
                 if (Plugin.EnableSprintPenalty.Value) 
                 {
                     DoSprintPenalty(__instance, fc, mountingBonus);
                 }
-                if (!Plugin.IsFiring && PlayerProperties.HasFullyResetSprintADSPenalties)
+                if (!RecoilController.IsFiring && PlayerProperties.HasFullyResetSprintADSPenalties)
                 {
                     __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingBonus; //both aim sway and up and down breathing
                     __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingBonus; //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
@@ -297,7 +298,7 @@ namespace RealismMod
 
                 if (fc != null)
                 {
-                    if (Plugin.IsFiring)
+                    if (RecoilController.IsFiring)
                     {
                         StanceController.IsPatrolStance = false;
                         __instance.HandsController.FirearmsAnimator.SetPatrol(false);
@@ -330,7 +331,7 @@ namespace RealismMod
                 /* __instance.ProceduralWeaponAnimation.HandsContainer.CameraRotation.ReturnSpeed = 0.1f;*/
                 /*__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = Plugin.test1.Value;*/
 
-                if (!Plugin.IsFiring)
+                if (!RecoilController.IsFiring)
                 {
                     __instance.HandsController.FirearmsAnimator.SetPatrol(StanceController.IsPatrolStance);
 
@@ -343,8 +344,7 @@ namespace RealismMod
                         else
                         {
                             float resetSpeed = 0.02f;
-                            bool isMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
-                            if (isMoving && (StanceController.WasLowReady || StanceController.WasHighReady || StanceController.WasShortStock || StanceController.WasActiveAim))
+                            if (PlayerProperties.IsMoving && (StanceController.WasLowReady || StanceController.WasHighReady || StanceController.WasShortStock || StanceController.WasActiveAim))
                             {
                                 resetSpeed = 1f;
                             }

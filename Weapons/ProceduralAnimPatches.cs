@@ -66,12 +66,6 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, aimSpeed);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f)) * PlayerProperties.ErgoDeltaInjuryMulti);
 
-                    __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.StartingConvergence * __instance.Aiming.RecoilConvergenceMult;
-                    __instance.HandsContainer.Recoil.Damping = WeaponProperties.TotalRecoilDamping;
-
-/*                    __instance.HandsContainer.RecoilPivot = new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value );
-*/
-
                     if (Plugin.EnableLogging.Value == true) 
                     {
                         Logger.LogWarning("========UpdateWeaponVariables=======");
@@ -173,6 +167,8 @@ namespace RealismMod
 
                     __instance.Overweight = 0;
 
+                    __instance.CrankRecoil = Plugin.EnableCrank.Value;
+
                     if (Plugin.EnableLogging.Value == true)
                     {
                         Logger.LogWarning("=====method_21========");
@@ -235,7 +231,6 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_21").SetValue(__instance, weapDisplacement * weightFactor * displacementModifier * playerWeightFactor);
 
                     __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * Mathf.Clamp(aimIntensity * weightFactor * playerWeightFactor, aimIntensity, 1f); // the diving/tiling animation as you move weapon side to side.
-
 
                     if (Plugin.EnableLogging.Value == true)
                     {

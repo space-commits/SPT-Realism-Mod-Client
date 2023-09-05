@@ -13,6 +13,162 @@ using System.Linq;
 
 namespace RealismMod
 {
+    public class RecoilRotatePatch : ModulePatch
+    {
+        private static FieldInfo movementContextField;
+        private static FieldInfo playerField;
+
+        private static Vector2 recordedRotation = Vector3.zero;
+        private static Vector2 targetRotation = Vector3.zero;
+        private static bool hasReset = false;
+        private static float timer = 0.0f;
+        private static float resetTime = 0.5f;
+        private static float spiralTime = 0.0f;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            movementContextField = AccessTools.Field(typeof(MovementState), "MovementContext");
+            playerField = AccessTools.Field(typeof(GClass1667), "player_0");
+
+            return typeof(MovementState).GetMethod("Rotate", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        private static void resetTimer(Vector2 target, Vector2 current)
+        {
+            timer += Time.deltaTime;
+
+            bool doHybridReset = (Plugin.EnableHybridRecoil.Value && !WeaponProperties.HasShoulderContact) || (Plugin.EnableHybridRecoil.Value && Plugin.HybridForAll.Value);
+            if ((doHybridReset && timer >= resetTime && target == current) || (!doHybridReset && (timer >= resetTime || target == current)))
+            {
+                hasReset = true;
+            }
+        }
+
+        [PatchPrefix]
+        private static void Prefix(MovementState __instance, ref Vector2 deltaRotation, bool ignoreClamp)
+        {
+            GClass1667 MovementContext = (GClass1667)movementContextField.GetValue(__instance);
+            Player player = (Player)playerField.GetValue(MovementContext);
+
+            if (player.IsYourPlayer)
+            {
+                float fpsFactor = 144f / (1f / Time.unscaledDeltaTime);
+
+                //restet is enabled && if hybrid for all is NOT enabled || if hybrid is eanbled + for all is false + is pistol or folded stock/stockless
+                bool hybridBlocksReset = Plugin.EnableHybridRecoil.Value && !WeaponProperties.HasShoulderContact && !Plugin.EnableHybridReset.Value;
+                bool canResetVert = Plugin.ResetVertical.Value && !hybridBlocksReset;
+                bool canResetHorz = Plugin.ResetHorizontal.Value && !hybridBlocksReset;
+
+
+                if (RecoilController.ShotCount > RecoilController.PrevShotCount)
+                {
+                    float controlFactor = RecoilController.ShotCount <= 2f ? Plugin.PlayerControlMulti.Value * 3 : Plugin.PlayerControlMulti.Value;
+                    RecoilController.PlayerControl += Mathf.Abs(deltaRotation.y) * controlFactor;
+
+                    hasReset = false;
+                    timer = 0f;
+
+                    FirearmController fc = player.HandsController as FirearmController;
+                    float shotCountFactor = Mathf.Min(RecoilController.ShotCount * 0.4f, 1.75f);
+                    float angle = ((90f - RecoilController.BaseTotalRecoilAngle) / 50f);
+                    float dispersion = Mathf.Max(RecoilController.FactoredTotalDispersion * 2.5f * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor, 0f);
+                    float dispersionSpeed = Math.Max(Time.time * Plugin.RecoilDispersionSpeed.Value, 0.1f);
+
+                    float xRotation = 0f;
+                    float yRotation = 0f;
+
+                    //S pattern
+                    if (!RecoilController.IsVector)
+                    {
+                        xRotation = Mathf.Lerp(-dispersion * 1.1f, dispersion * 1.1f, Mathf.PingPong(dispersionSpeed, 1f)) + angle;
+                        yRotation = Mathf.Min(-RecoilController.FactoredTotalVRecoil * Plugin.RecoilClimbFactor.Value * shotCountFactor * fpsFactor, 0f);
+                    }
+                    else
+                    {
+                        //spiral + pingpong, would work well as vector recoil
+                        spiralTime += Time.deltaTime * 20f;
+                        float recoilAmount = RecoilController.FactoredTotalVRecoil * Plugin.RecoilClimbFactor.Value * shotCountFactor * fpsFactor;
+                        xRotation = Mathf.Sin(spiralTime * 10f) * 1f;
+                        yRotation = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * 4f, 1f));
+                    }
+
+                    //Spiral/circular, could modify x axis with ping pong or something to make it more random or simply use random.range
+                    /*              spiralTime += Time.deltaTime * 20f;
+                                  float xRotaion = Mathf.Sin(spiralTime * 10f) * 1f;
+                                  float yRotation = Mathf.Cos(spiralTime * 10f) * 1f;*/
+
+
+                    targetRotation = MovementContext.Rotation + new Vector2(xRotation, yRotation);
+
+                    if ((canResetVert && (MovementContext.Rotation.y > recordedRotation.y + 2f || deltaRotation.y <= -1f)) || (canResetHorz && Mathf.Abs(deltaRotation.x) >= 1f))
+                    {
+                        recordedRotation = MovementContext.Rotation;
+                    }
+
+                }
+                else if (!hasReset && !RecoilController.IsFiring)
+                {
+                    float resetSpeed = RecoilController.BaseTotalConvergence * Plugin.ResetSpeed.Value;
+
+                    bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Plugin.ResetSensitivity.Value;
+                    bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= Plugin.ResetSensitivity.Value;
+
+                    Vector2 resetTarget = MovementContext.Rotation;
+
+                    if (canResetVert && canResetHorz && xIsBelowThreshold && yIsBelowThreshold)
+                    {
+                        resetTarget = new Vector2(recordedRotation.x, recordedRotation.y);
+                        MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(recordedRotation.x, recordedRotation.y), resetSpeed);
+                    }
+                    else if (canResetHorz && xIsBelowThreshold)
+                    {
+                        resetTarget = new Vector2(recordedRotation.x, MovementContext.Rotation.y);
+                        MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(recordedRotation.x, MovementContext.Rotation.y), resetSpeed);
+                    }
+                    else if (canResetVert && yIsBelowThreshold)
+                    {
+                        resetTarget = new Vector2(MovementContext.Rotation.x, recordedRotation.y);
+                        MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(MovementContext.Rotation.x, recordedRotation.y), resetSpeed);
+                    }
+                    else
+                    {
+                        resetTarget = MovementContext.Rotation;
+                        recordedRotation = MovementContext.Rotation;
+                    }
+
+                    resetTimer(resetTarget, MovementContext.Rotation);
+                }
+                else if (!RecoilController.IsFiring)
+                {
+                    if (Mathf.Abs(deltaRotation.y) > 0.1f)
+                    {
+                        RecoilController.PlayerControl += Mathf.Abs(deltaRotation.y) * Plugin.PlayerControlMulti.Value;
+                    }
+                    else
+                    {
+                        RecoilController.PlayerControl = 0f;
+                    }
+
+                    recordedRotation = MovementContext.Rotation;
+                }
+                if (RecoilController.IsFiring)
+                {
+                    if (targetRotation.y <= recordedRotation.y - Plugin.RecoilClimbLimit.Value)
+                    {
+                        targetRotation.y = MovementContext.Rotation.y;
+                    }
+
+                    MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, targetRotation, Plugin.RecoilSmoothness.Value);
+                }
+
+                if (RecoilController.ShotCount == RecoilController.PrevShotCount)
+                {
+                    RecoilController.PlayerControl = Mathf.Lerp(RecoilController.PlayerControl, 0f, 0.05f);
+                }
+            }
+        }
+    }
+
     public class OnWeaponParametersChangedPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -53,45 +209,23 @@ namespace RealismMod
                 __instance.RecoilStrengthXy = new Vector2(0.9f, 1.15f) * __instance.ConvertFromTaxanomy(template.RecoilForceUp * totalVRecoilDelta);
                 __instance.RecoilStrengthZ = new Vector2(0.65f, 1.05f) * __instance.ConvertFromTaxanomy(template.RecoilForceBack * totalHRecoilDelta);
 
-                float buffFactoredDispersion = WeaponProperties.Dispersion * (1f - buffInfo.RecoilSupression.y);
-                float angle = Mathf.LerpAngle(WeaponProperties.RecoilAngle, 90f, buffInfo.RecoilSupression.y);
+                float buffFactoredDispersion = WeaponProperties.TotalDispersion * (1f - buffInfo.RecoilSupression.y);
+                float angle = Mathf.LerpAngle(WeaponProperties.TotalRecoilAngle, 90f, buffInfo.RecoilSupression.y);
                 __instance.RecoilDegree = new Vector2(angle - buffFactoredDispersion, angle + buffFactoredDispersion);
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
 
-                float cameraRecoil = WeaponProperties.CamRecoil * (Plugin.EnableExperimentalRecoil.Value ? 2f : 1f);
+                float cameraRecoil = WeaponProperties.TotalCamRecoil;
                 __instance.ShotVals[3].Intensity = cameraRecoil;
                 __instance.ShotVals[4].Intensity = -cameraRecoil;
 
-                Plugin.StartingCamRecoilX = (float)Math.Round(cameraRecoil, 4);
-                Plugin.StartingCamRecoilY = (float)Math.Round(-cameraRecoil, 4);
-                Plugin.CurrentCamRecoilX = Plugin.StartingCamRecoilX;
-                Plugin.CurrentCamRecoilY = Plugin.StartingCamRecoilY;
-
-                Plugin.StartingVRecoilX = (float)Math.Round(__instance.RecoilStrengthXy.x, 3);
-                Plugin.StartingVRecoilY = (float)Math.Round(__instance.RecoilStrengthXy.y, 3);
-                Plugin.CurrentVRecoilX = Plugin.StartingVRecoilX;
-                Plugin.CurrentVRecoilY = Plugin.StartingVRecoilY;
-
-                Plugin.StartingHRecoilX = (float)Math.Round(__instance.RecoilStrengthZ.x, 3);
-                Plugin.StartingHRecoilY = (float)Math.Round(__instance.RecoilStrengthZ.y, 3);
-                Plugin.CurrentHRecoilX = Plugin.StartingHRecoilX;
-                Plugin.CurrentHRecoilY = Plugin.StartingHRecoilY;
-
-                Plugin.StartingConvergence = (float)Math.Round(WeaponProperties.ModdedConv * Singleton<BackendConfigSettingsClass>.Instance.Aiming.RecoilConvergenceMult * (Plugin.EnableExperimentalRecoil.Value ? 3f : 1f), 2);
-                Plugin.CurrentConvergence = Plugin.StartingConvergence;
-                Plugin.ConvergenceProporitonK = (float)Math.Round(Plugin.StartingConvergence * Plugin.StartingVRecoilX, 2);
-
-                WeaponProperties.RecoilAngle = (float)Math.Round(angle, 2);
-
-                Plugin.StartingDispersion = (float)Math.Round(buffFactoredDispersion, 2);
-                Plugin.CurrentDispersion = Plugin.StartingDispersion;
-/*                Plugin.dispersionProportionK = (float)Math.Round(Plugin.startingDispersion * Plugin.startingVRecoilX, 2);
-*/
-                Plugin.StartingDamping = (float)Math.Round(WeaponProperties.TotalRecoilDamping, 3);
-                Plugin.CurrentDamping = Plugin.StartingDamping;
-
-                Plugin.StartingHandDamping = (float)Math.Round(WeaponProperties.TotalRecoilHandDamping, 3);
-                Plugin.CurrentHandDamping = Plugin.StartingHandDamping;
+                RecoilController.BaseTotalCamRecoil = cameraRecoil;
+                RecoilController.BaseTotalVRecoil = (float)Math.Round(__instance.RecoilStrengthXy.y, 3);
+                RecoilController.BaseTotalHRecoil = (float)Math.Round(__instance.RecoilStrengthZ.y, 3);
+                RecoilController.BaseTotalConvergence = WeaponProperties.ModdedConv;
+                RecoilController.BaseTotalRecoilAngle = (float)Math.Round(angle, 2);
+                RecoilController.BaseTotalDispersion = (float)Math.Round(buffFactoredDispersion, 2);
+                RecoilController.BaseTotalRecoilDamping = (float)Math.Round(WeaponProperties.TotalRecoilDamping, 3);
+                RecoilController.BaseTotalHandDamping = (float)Math.Round(WeaponProperties.TotalRecoilHandDamping, 3);
 
                 if (WeaponProperties.WeapID != template._id) 
                 {
@@ -110,28 +244,39 @@ namespace RealismMod
 
     public class ProcessPatch : ModulePatch
     {
+        private static FieldInfo iWeaponField;
+        private static FieldInfo weaponClassField;
+        private static FieldInfo intensityFactorsField;
+        private static FieldInfo buffInfoField;
+
         protected override MethodBase GetTargetMethod()
         {
+            iWeaponField = AccessTools.Field(typeof(ShotEffector), "_weapon");
+            weaponClassField = AccessTools.Field(typeof(ShotEffector), "_mainWeaponInHands");
+            intensityFactorsField = AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors");
+            buffInfoField = AccessTools.Field(typeof(ShotEffector), "_buffs");
+
             return typeof(ShotEffector).GetMethod("Process");
         }
+
         [PatchPrefix]
         public static bool Prefix(ref ShotEffector __instance, float str = 1f)
         {
-
-            IWeapon iWeapon = (IWeapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
-            Weapon weaponClass = (Weapon)AccessTools.Field(typeof(ShotEffector), "_mainWeaponInHands").GetValue(__instance);
+            IWeapon iWeapon = (IWeapon)iWeaponField.GetValue(__instance);
 
             if (iWeapon.Item.Owner.ID.StartsWith("pmc") || iWeapon.Item.Owner.ID.StartsWith("scav"))
             {
-                SkillsClass.GClass1743 buffInfo = (SkillsClass.GClass1743)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
+                Weapon weaponClass = (Weapon)weaponClassField.GetValue(__instance);
+                Vector3 separateIntensityFactors = (Vector3)intensityFactorsField.GetValue(__instance);
+                SkillsClass.GClass1743 buffInfo = (SkillsClass.GClass1743)buffInfoField.GetValue(__instance);
 
                 Plugin.CurrentlyShootingWeapon = weaponClass;
 
-                Plugin.ShotTimer = 0f;
+                RecoilController.ShotTimer = 0f;
                 StanceController.StanceShotTime = 0f;
-                Plugin.IsFiring = true;
+                RecoilController.IsFiring = true;
                 StanceController.IsFiringFromStance = true;
-                Plugin.ShotCount++;
+                RecoilController.ShotCount++;
 
                 float totalPlayerWeight = PlayerProperties.TotalUnmodifiedWeight - weaponClass.GetSingleItemTotalWeight();
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 550f);
@@ -141,42 +286,16 @@ namespace RealismMod
                 float aimCamRecoilBonus = StanceController.IsActiveAiming || !Plugin.IsAiming ? 0.8f : 1f;
                 float shortStockingDebuff = StanceController.IsShortStock ? 1.15f : 1f;
                 float shortStockingCamBonus = StanceController.IsShortStock ? 0.75f : 1f;
+
                 float mountingVertModi = StanceController.IsMounting ? StanceController.MountingRecoilBonus : StanceController.IsBracing ? StanceController.BracingRecoilBonus : 1f;
                 float mountingDispModi = Mathf.Clamp(StanceController.IsMounting ? StanceController.MountingRecoilBonus * 1.25f : StanceController.IsBracing ? StanceController.BracingRecoilBonus * 1.2f : 1f, 0.85f, 1f);
-                float mountingAngleModi = StanceController.IsMounting ? Mathf.Min(WeaponProperties.RecoilAngle + 17f, 90f) : StanceController.IsBracing ? Mathf.Min(WeaponProperties.RecoilAngle + 10f, 90f) : WeaponProperties.RecoilAngle;
+                float mountingAngleModi = StanceController.IsMounting ? Mathf.Min(RecoilController.BaseTotalRecoilAngle + 17f, 90f) : StanceController.IsBracing ? Mathf.Min(RecoilController.BaseTotalRecoilAngle + 10f, 90f) : RecoilController.BaseTotalRecoilAngle;
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
-                //instead of shot count, can check weapon firemode in here. Can also get weapon class/type.
-                //would be more efficient to have a static bool "getsSemiRecoilIncrease" and check the weap class in stat detla instead.
-                //1.5f recoil on pistols unironically felt good, even a lot of the rifles. Some got a bit too fucked by it some some rebalancing might be needed.
-                //wep.FireMode.FireMode == Weapon.EFireMode.single, problem with restrcting it to semi only is that then firing one shot in full auto is more controlalble than semi
-              
-                if (Plugin.ShotCount == 1 && WeaponProperties.ShouldGetSemiIncrease)
-                {
-                    __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * Plugin.VertRecSemiMulti.Value;
-                    __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * Plugin.VertRecSemiMulti.Value;
-                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * Plugin.HorzRecSemiMulti.Value;
-                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * Plugin.HorzRecSemiMulti.Value;
-                }
-                else if (Plugin.ShotCount > 1 && (weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto || weaponClass.SelectedFireMode == Weapon.EFireMode.burst))
-                {
-                    __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * Plugin.VertRecAutoMulti.Value;
-                    __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * Plugin.VertRecAutoMulti.Value;
-                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * Plugin.HorzRecAutoMulti.Value;
-                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * Plugin.HorzRecAutoMulti.Value;
-                }   
-                else
-                {
-                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX;
-                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY;
-                    __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX;
-                    __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY;
-                }
+                float factoredDispersion = RecoilController.BaseTotalDispersion * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff * mountingDispModi;
 
-                float factoredDispersion = Plugin.CurrentDispersion * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff * mountingDispModi;
-
-                if (Plugin.ShotCount > 1 && weaponClass.WeapClass == "pistol" && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
+                if (RecoilController.ShotCount > 1 && weaponClass.WeapClass == "pistol" && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
                 {
                     factoredDispersion *= 0.5f;
                     __instance.RecoilStrengthZ.x *= 0.5f;
@@ -189,12 +308,19 @@ namespace RealismMod
                 __instance.RecoilDegree = new Vector2(angle - factoredDispersion, angle + factoredDispersion);
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
 
-                __instance.ShotVals[3].Intensity = Plugin.CurrentCamRecoilX * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff;
-                __instance.ShotVals[4].Intensity = Plugin.CurrentCamRecoilY * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff;
+                float totalCamRecoil = RecoilController.BaseTotalCamRecoil * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * Plugin.CamMulti.Value;
+                RecoilController.FactoredTotalCamRecoil = totalCamRecoil;
 
-                float totalDispersion = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
-                float totalVerticalRecoil = __instance.RecoilStrengthXy.y * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * mountingVertModi;
-                float totalHorizontalRecoil = Mathf.Min(__instance.RecoilStrengthZ.y * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff, Plugin.HorzRecLimit.Value);
+                //try inverting for fun
+                __instance.ShotVals[3].Intensity = totalCamRecoil;
+                __instance.ShotVals[4].Intensity = -totalCamRecoil;
+
+                float totalDispersion = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y) * Plugin.DispMulti.Value;
+                RecoilController.FactoredTotalDispersion = totalDispersion;
+                float totalVerticalRecoil = __instance.RecoilStrengthXy.y * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * mountingVertModi * Plugin.VertMulti.Value;
+                RecoilController.FactoredTotalVRecoil = totalVerticalRecoil;
+                float totalHorizontalRecoil = __instance.RecoilStrengthZ.y * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * Plugin.HorzMulti.Value;
+                RecoilController.FactoredTotalHRecoil = totalHorizontalRecoil;
 
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.x, Mathf.Cos(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.y, totalHorizontalRecoil * _separateIntensityFactors.z) * __instance.Intensity;
                 Vector2 heatDirection = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;

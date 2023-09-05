@@ -215,11 +215,11 @@ namespace RealismMod
 
         public static float COIDelta = 0f;
 
-        public static float CamRecoil = 0f;
+        public static float TotalCamRecoil = 0f;
 
-        public static float Dispersion = 0f;
+        public static float TotalDispersion = 0f;
 
-        public static float RecoilAngle = 0f;
+        public static float TotalRecoilAngle = 0f;
 
         public static float TotalVRecoil = 0f;
 

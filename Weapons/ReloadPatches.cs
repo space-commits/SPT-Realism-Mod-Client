@@ -201,7 +201,7 @@ namespace RealismMod
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
 
-            if (Plugin.IsFiring != true && PlayerProperties.IsInReloadOpertation)
+            if (RecoilController.IsFiring != true && PlayerProperties.IsInReloadOpertation)
             {
                 float hammerSpeed = Mathf.Clamp(WeaponProperties.TotalChamberSpeed * Plugin.GlobalArmHammerSpeedMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.5f, 1.35f);
                 __instance.SetAnimationSpeed(hammerSpeed);

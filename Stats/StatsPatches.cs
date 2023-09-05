@@ -239,9 +239,9 @@ namespace RealismMod
             }
 
 
-            WeaponProperties.Dispersion = totalDispersion;
-            WeaponProperties.CamRecoil = totalCamRecoil;
-            WeaponProperties.RecoilAngle = Mathf.Max(totalRecoilAngle, 65f);
+            WeaponProperties.TotalDispersion = totalDispersion;
+            WeaponProperties.TotalCamRecoil = totalCamRecoil;
+            WeaponProperties.TotalRecoilAngle = Mathf.Max(totalRecoilAngle, 65f);
             WeaponProperties.TotalVRecoil = totalVRecoil;
             WeaponProperties.TotalHRecoil = totalHRecoil;
             WeaponProperties.Balance = totalTorque;
@@ -337,7 +337,7 @@ namespace RealismMod
 
             float currentFixSpeedMod = 0f;
 
-            if (WeaponProperties.WepHasShoulderContact(__instance) == true && !folded)
+            if (WeaponProperties.WepHasShoulderContact(__instance) && !folded)
             {
                 hasShoulderContact = true;
             }

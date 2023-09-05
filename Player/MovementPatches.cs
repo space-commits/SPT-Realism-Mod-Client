@@ -81,7 +81,7 @@ namespace RealismMod
 
         public static float GetFiringMovementSpeedFactor(Player player, ManualLogSource logger) 
         {
-            if (!Plugin.IsFiringMovement) 
+            if (!RecoilController.IsFiringMovement) 
             {
                 return 1f;
             }
@@ -92,7 +92,7 @@ namespace RealismMod
                 return 1f;
             }
 
-            float recoilSum = Plugin.CurrentVRecoilX + Plugin.CurrentHRecoilX;
+            float recoilSum = (RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil) * RecoilController.ShotCount;
             recoilSum = fc.Item.WeapClass == "pistol" ? recoilSum * 0.5f : recoilSum;
             float recoilFactor = 1f - (recoilSum / 100f);
             return recoilFactor;
@@ -124,7 +124,7 @@ namespace RealismMod
 
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float firingMulti = MovementSpeedController.GetFiringMovementSpeedFactor(player, Logger);
-                float stanceFactor = StanceController.IsPatrolStance ? 1.25f : StanceController.IsHighReady ? 0.9f : 1f;
+                float stanceFactor = StanceController.IsPatrolStance ? 1.25f : StanceController.IsHighReady || StanceController.IsShortStock ? 0.95f : 1f;
 
                 __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * PlayerProperties.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti * stanceFactor);
                 return false;
