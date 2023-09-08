@@ -35,22 +35,18 @@ namespace RealismMod
         public static float CamWeightMult = 5f;
         public static float CamTorqueMult = 0.25f;
 
-        public static float AngleTorqueMult = 0.4f;//needs tweaking
+        public static float AngleTorqueMult = 0.39f;
         public static float PistolAngleTorqueMult = 0.3f;
 
         public static float DampingWeightMult = 0.04f;
         public static float DampingTorqueMult = 0.055f;
-        public static float DampingMin = 0.67f;
-        public static float DampingMax = 0.77f;
-        public static float DampingPistolMin = 0.52f;
-        public static float DampingPistolMax = 0.7f;
+        public static float DampingMin = 0.2f;
+        public static float DampingMax = 0.9f;
+        public static float DampingPistolMin = 0.2f;
+        public static float DampingPistolMax = 0.9f;
 
-        public static float HandDampingWeightMult = 0.07f;//
-        public static float HandDampingTorqueMult = 0.04f;// needs tweaking
-        public static float HandDampingMin = 0.67f;
-        public static float HandDampingMax = 0.77f;
-        public static float HandDampingPistolMin = 0.52f;
-        public static float HandDampingPistolMax = 0.7f;
+        public static float HandDampingPistolMin = 0.2f;
+        public static float HandDampingPistolMax = 0.9f;
 
         public static float MagWeightMult = 16f;
 
@@ -155,7 +151,6 @@ namespace RealismMod
             WeaponProperties.NewMagReloadSpeed *= Plugin.GlobalReloadSpeedMulti.Value;
             WeaponProperties.CurrentMagReloadSpeed *= Plugin.GlobalReloadSpeedMulti.Value;;
         }
-
 
         public static float ErgoWeightCalc(float totalWeight, float ergoDelta, float totalTorque, string weapClass)
         {
@@ -283,7 +278,6 @@ namespace RealismMod
             totalRecoilAngle = currentRecoilAngle + (currentRecoilAngle * (totalTorqueFactor * angleTorqueMulti));
             totalCOI = currentCOI + (currentCOI * ((-1f * WeaponProperties.WeaponAccuracy(weap)) / 100));
 
-
             if (!hasShoulderContact && weap.WeapClass != "pistol")
             {
                 totalPureErgo *= WeaponProperties.FoldedErgoFactor;
@@ -326,9 +320,8 @@ namespace RealismMod
         }
 
 
-        public static void ModStatCalc(Mod mod, float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeedMod, float modReload, ref float currentReloadSpeedMod, float modFix, ref float currentFixSpeedMod, float modErgo, ref float currentErgo, float modVRecoil, ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeedMod, float modChamber, bool isDisplayDelta, string weapClass, ref float pureErgo, float modShotDisp, ref float currentShotDisp, float modloudness, ref float currentLoudness, ref float currentMalfChance, float modMalfChance, ref float pureRecoil, ref float currentConv, float modConv)
+        public static void ModStatCalc(Mod mod, float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeedMod, float modReload, ref float currentReloadSpeedMod, float modFix, ref float currentFixSpeedMod, float modErgo, ref float currentErgo, float modVRecoil, ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeedMod, float modChamber, bool isDisplayDelta, string weapClass, ref float pureErgo, float modShotDisp, ref float currentShotDisp, float modloudness, ref float currentLoudness, ref float currentMalfChance, float modMalfChance, ref float pureRecoil, ref float currentConv, float modConv, ref float currentCamReturnSpeed)
         {
-
             float ergoWeightFactor = WeightStatCalc(StatCalc.ErgoWeightMult, modWeight) / 100f;
             float vRecoilWeightFactor = WeightStatCalc(StatCalc.VRecoilWeightMult, modWeight) / 100f;
             float hRecoilWeightFactor = WeightStatCalc(StatCalc.HRecoilWeightMult, modWeight) / 100f;
@@ -346,6 +339,7 @@ namespace RealismMod
             currentAutoROF = currentAutoROF + (currentAutoROF * (modAutoROF / 100f));
             currentSemiROF = currentSemiROF + (currentSemiROF * (modSemiROF / 100f));
             pureErgo = pureErgo + (pureErgo * (modErgo / 100f));
+            currentCamReturnSpeed = Mathf.Clamp(currentCamReturnSpeed + (currentCamReturnSpeed * (modCamRecoil / 100f)), 0.1f, 0.5f);
 
             if (isDisplayDelta)
             {
@@ -355,7 +349,6 @@ namespace RealismMod
             currentConv = currentConv + (currentConv * ((modConv / 100f)));
             currentShotDisp = currentShotDisp + (currentShotDisp * ((-1f * modShotDisp) / 100f));
             currentMalfChance = currentMalfChance + (currentMalfChance * (modMalfChance / 100f));
-
             currentReloadSpeedMod = currentReloadSpeedMod + modReload;
             currentChamberSpeedMod = currentChamberSpeedMod + modChamber;
             currentFixSpeedMod = currentFixSpeedMod + modFix;
@@ -369,7 +362,6 @@ namespace RealismMod
             {
                 pureRecoil = pureRecoil + (pureRecoil * ((modVRecoil / 100f) + (modHRecoil / 100f) + (modCamRecoil / 100f) + (-modConv / 100f) + (modDispersion / 100f)));
             }
-
 
             if (!Utils.IsSight(mod))
             {

@@ -220,9 +220,9 @@ namespace RealismMod
                     float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
                     bool noShoulderContact = !WeaponProperties.HasShoulderContact && weapon.WeapClass != "pistol";
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));
-                    float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f);
-                    float displacementModifier = noShoulderContact ? Plugin.SwayIntensity.Value * 1f : Plugin.SwayIntensity.Value * 0.55f;//lower = less drag
-                    float aimIntensity = noShoulderContact ? Plugin.SwayIntensity.Value * 1f : Plugin.SwayIntensity.Value * 0.65f;
+                    float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6.5f);
+                    float displacementModifier = noShoulderContact ? Plugin.SwayIntensity.Value * 1f : Plugin.SwayIntensity.Value * 0.5f;//lower = less drag
+                    float aimIntensity = noShoulderContact ? Plugin.SwayIntensity.Value * 1f : Plugin.SwayIntensity.Value * 0.6f;
 
                     float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight * weightFactor * playerWeightFactor);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_20").SetValue(__instance, swayStrength);

@@ -1,4 +1,5 @@
-﻿using EFT.Animations;
+﻿using BepInEx.Logging;
+using EFT.Animations;
 using EFT.InventoryLogic;
 using System;
 using System.Collections.Generic;
@@ -11,9 +12,11 @@ namespace RealismMod
     {
         public static bool IsFiring = false;
         public static bool IsFiringMovement = false;
+        public static bool IsFiringWiggle = false;
         public static float ShotCount = 0f;
         public static float PrevShotCount = ShotCount;
         public static float ShotTimer = 0.0f;
+        public static float WiggleShotTimer = 0.0f;
         public static float MovementSpeedShotTimer = 0.0f;
 
         public static bool IsVector = false;
@@ -37,18 +40,18 @@ namespace RealismMod
         public static float FactoredTotalCamRecoil;
 
 
-        public static void DoCantedRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation) 
+        public static void DoCantedRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation, ManualLogSource logger) 
         {
-            if (RecoilController.IsFiring)
+            if (RecoilController.IsFiringWiggle)
             {
-                float recoilAmount = RecoilController.FactoredTotalDispersion / 2.2f; 
+                float recoilAmount = (RecoilController.FactoredTotalHRecoil / 20f); 
                 float recoilSpeed = RecoilController.BaseTotalConvergence * 0.75f;
-                float totalRecoil = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * recoilSpeed, 1.0f));
+                float totalRecoil = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * recoilSpeed , 1.0f));
                 targetRecoil = new Vector3(0f, totalRecoil, 0f);
             }
             else
-            {
-                targetRecoil = Vector3.zero;
+            { 
+                targetRecoil = Vector3.Lerp(targetRecoil, Vector3.zero, 0.1f);
             }
 
             currentRecoil = Vector3.Lerp(currentRecoil, targetRecoil, 1f);

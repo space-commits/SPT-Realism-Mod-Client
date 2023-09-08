@@ -756,6 +756,7 @@ namespace RealismMod
                     if (RecoilController.ShotCount > RecoilController.PrevShotCount)
                     {
                         RecoilController.IsFiring = true;
+                        RecoilController.IsFiringWiggle = true;
                         StanceController.IsFiringFromStance = true;
                         RecoilController.IsFiringMovement = true;
                         RecoilController.PrevShotCount = RecoilController.ShotCount;
@@ -763,6 +764,7 @@ namespace RealismMod
 
                     if (RecoilController.ShotCount == RecoilController.PrevShotCount)
                     {
+                        RecoilController.WiggleShotTimer += Time.deltaTime;
                         RecoilController.ShotTimer += Time.deltaTime;
                         RecoilController.MovementSpeedShotTimer += Time.deltaTime;
 
@@ -772,6 +774,12 @@ namespace RealismMod
                             RecoilController.ShotCount = 0;
                             RecoilController.PrevShotCount = 0;
                             RecoilController.ShotTimer = 0f;
+                        }
+
+                        if (RecoilController.WiggleShotTimer >= 0.1f)
+                        {
+                            RecoilController.IsFiringWiggle = false;
+                            RecoilController.WiggleShotTimer = 0f;
                         }
 
                         if (RecoilController.MovementSpeedShotTimer >= 0.5f)
@@ -807,7 +815,6 @@ namespace RealismMod
                         {
                             Deafening.DoDeafening();
                         }
-
 
                         if (Plugin.IsBotFiring)
                         {
@@ -884,12 +891,12 @@ namespace RealismMod
             PlayerControlMulti = Config.Bind<float>(advancedRecoilSettings, "Player Control Strength", 80f, new ConfigDescription("How Quickly The Weapon Responds To Mouse Input If Using The Hybrid Recoil System.", new AcceptableValueRange<float>(0f, 200f), new ConfigurationManagerAttributes { Order = 85 }));
             ResetVertical = Config.Bind<bool>(advancedRecoilSettings, "Enable Vertical Reset", true, new ConfigDescription("Enables Weapon Reseting Back To Original Vertical Position.", null, new ConfigurationManagerAttributes { Order = 80 }));
             ResetHorizontal = Config.Bind<bool>(advancedRecoilSettings, "Enable Horizontal Reset", false, new ConfigDescription("Enables Weapon Reseting Back To Original Horizontal Position.", null, new ConfigurationManagerAttributes { Order = 70 }));
-            ResetSpeed = Config.Bind<float>(advancedRecoilSettings, "Reset Speed", 0.003f, new ConfigDescription("How Fast The Weapon's Vertical Position Resets After Firing. Weapon's Convergence Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 60 }));
+            ResetSpeed = Config.Bind<float>(advancedRecoilSettings, "Reset Speed", 0.004f, new ConfigDescription("How Fast The Weapon's Vertical Position Resets After Firing. Weapon's Convergence Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 60 }));
             ResetSensitivity = Config.Bind<float>(advancedRecoilSettings, "Reset Sensitvity", 0.15f, new ConfigDescription("The Amount Of Mouse Movement After Firing Needed To Cancel Reseting Back To Weapon's Original Position.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 50 }));
             RecoilSmoothness = Config.Bind<float>(advancedRecoilSettings, "Recoil Smoothness", 0.05f, new ConfigDescription("How Fast Recoil Moves Weapon While Firing, Higher Value Increases Smoothness.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 40 }));
-            RecoilClimbFactor = Config.Bind<float>(advancedRecoilSettings, "Recoil Climb Multi", 0.12f, new ConfigDescription("Multiplier For How Much The Weapon Climbs Vertically Per Shot. Weapon's Vertical Recoil Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 30 }));
-            RecoilClimbLimit = Config.Bind<float>(advancedRecoilSettings, "Recoil Climb Limit", 10f, new ConfigDescription("How Far Recoil Can Climb.", new AcceptableValueRange<float>(0f, 100f), new ConfigurationManagerAttributes { Order = 25 }));
-            RecoilDispersionFactor = Config.Bind<float>(advancedRecoilSettings, "S-Pattern Multi", 0.025f, new ConfigDescription("Increases The Size The Classic S Pattern. Weapon's Dispersion Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 20 }));
+            RecoilClimbFactor = Config.Bind<float>(advancedRecoilSettings, "Recoil Climb Multi", 0.15f, new ConfigDescription("Multiplier For How Much The Weapon Climbs Vertically Per Shot. Weapon's Vertical Recoil Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 30 }));
+            RecoilClimbLimit = Config.Bind<float>(advancedRecoilSettings, "Recoil Climb Limit", 12f, new ConfigDescription("How Far Recoil Can Climb.", new AcceptableValueRange<float>(0f, 100f), new ConfigurationManagerAttributes { Order = 25 }));
+            RecoilDispersionFactor = Config.Bind<float>(advancedRecoilSettings, "S-Pattern Multi", 0.05f, new ConfigDescription("Increases The Size The Classic S Pattern. Weapon's Dispersion Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 20 }));
             RecoilDispersionSpeed = Config.Bind<float>(advancedRecoilSettings, "S-Pattern Speed Multi", 2f, new ConfigDescription("Increases The Speed At Which Recoil Makes The Classic S Pattern.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 10 }));
 
             EnableMaterialSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Material Speed Modifier", true, new ConfigDescription("Enables Movement Speed Being Affected By Ground Material (Concrete, Grass, Metal, Glass Etc.)", null, new ConfigurationManagerAttributes { Order = 20 }));
