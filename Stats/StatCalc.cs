@@ -45,6 +45,10 @@ namespace RealismMod
         public static float DampingPistolMin = 0.2f;
         public static float DampingPistolMax = 0.9f;
 
+        public static float HandDampingWeightMult = 0.07f;
+        public static float HandDampingTorqueMult = 0.04f;
+        public static float HandDampingMin = 0.2f;
+        public static float HandDampingMax = 0.9f;
         public static float HandDampingPistolMin = 0.2f;
         public static float HandDampingPistolMax = 0.9f;
 
