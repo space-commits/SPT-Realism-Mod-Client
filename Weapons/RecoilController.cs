@@ -45,7 +45,7 @@ namespace RealismMod
             if (RecoilController.IsFiringWiggle)
             {
                 float recoilAmount = (RecoilController.FactoredTotalHRecoil / 20f); 
-                float recoilSpeed = Mathf.Max(RecoilController.BaseTotalConvergence * 0.75f, 13f);
+                float recoilSpeed = Mathf.Max(RecoilController.BaseTotalConvergence * 0.75f, 14f);
                 float totalRecoil = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * recoilSpeed , 1.0f));
                 targetRecoil = new Vector3(0f, totalRecoil, 0f);
             }

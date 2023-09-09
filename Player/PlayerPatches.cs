@@ -174,17 +174,17 @@ namespace RealismMod
             bool isInjured = __instance.TremorOn || __instance.Fracture;
             float intensityHolder = 1f;
 
-            if (Time.time < __instance.StiffUntill)
+            if (__instance.Physical.HoldingBreath)
+            {
+                ____breathIntensity = 0.15f;
+                ____shakeIntensity = 0.15f;
+            }
+            else if (Time.time < __instance.StiffUntill)
             {
                 float intensity = Mathf.Clamp(-__instance.StiffUntill + Time.time + 1f, isInjured ? 0.5f : 0.3f, 1f);
                 ____breathIntensity = intensity * __instance.Intensity;
                 ____shakeIntensity = intensity;
                 intensityHolder = intensity;
-            }
-            else if (__instance.Physical.HoldingBreath)
-            {
-                ____breathIntensity = 0.15f;
-                ____shakeIntensity = 0.15f;
             }
             else
             {
