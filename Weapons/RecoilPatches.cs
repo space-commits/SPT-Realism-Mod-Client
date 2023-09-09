@@ -224,8 +224,8 @@ namespace RealismMod
                 RecoilController.BaseTotalConvergence = WeaponProperties.TotalModdedConv * Plugin.ConvergenceMulti.Value;
                 RecoilController.BaseTotalRecoilAngle = (float)Math.Round(angle, 2);
                 RecoilController.BaseTotalDispersion = (float)Math.Round(buffFactoredDispersion, 2);
-                RecoilController.BaseTotalRecoilDamping = (float)Math.Round(WeaponProperties.TotalRecoilDamping, 3);
-                RecoilController.BaseTotalHandDamping = (float)Math.Round(WeaponProperties.TotalRecoilHandDamping, 3);
+                RecoilController.BaseTotalRecoilDamping = (float)Math.Round(WeaponProperties.TotalRecoilDamping * Plugin.RecoilDampingMulti.Value, 3);
+                RecoilController.BaseTotalHandDamping = (float)Math.Round(WeaponProperties.TotalRecoilHandDamping * Plugin.HandsDampingMulti.Value, 3);
                 WeaponProperties.TotalWeaponWeight = _weapon.Item.GetSingleItemTotalWeight();
                 Logger.LogWarning(WeaponProperties.TotalWeaponWeight);
 

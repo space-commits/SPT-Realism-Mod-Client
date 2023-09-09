@@ -92,9 +92,10 @@ namespace RealismMod
                 return 1f;
             }
 
-            float recoilSum = (RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil) * RecoilController.ShotCount;
-            recoilSum = fc.Item.WeapClass == "pistol" ? recoilSum * 0.5f : recoilSum;
-            float recoilFactor = 1f - (recoilSum / 100f);
+            float totalRecoil = RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil;
+            float recoilFactor = Mathf.Min((totalRecoil) * RecoilController.ShotCount * 0.5f, 1f - (totalRecoil / 750f));
+            recoilFactor = fc.Item.WeapClass == "pistol" ? recoilFactor * 0.5f : recoilFactor;
+            recoilFactor = 1f - (recoilFactor / 100f);
             return recoilFactor;
         }
 

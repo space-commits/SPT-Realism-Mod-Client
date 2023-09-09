@@ -45,7 +45,7 @@ namespace RealismMod
             if (RecoilController.IsFiringWiggle)
             {
                 float recoilAmount = (RecoilController.FactoredTotalHRecoil / 20f); 
-                float recoilSpeed = RecoilController.BaseTotalConvergence * 0.75f;
+                float recoilSpeed = Mathf.Max(RecoilController.BaseTotalConvergence * 0.75f, 13f);
                 float totalRecoil = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * recoilSpeed , 1.0f));
                 targetRecoil = new Vector3(0f, totalRecoil, 0f);
             }
@@ -61,7 +61,7 @@ namespace RealismMod
 
         public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weapon) 
         {
-            pwa.HandsContainer.Recoil.Damping = (float)Math.Round(RecoilController.BaseTotalRecoilDamping * Plugin.RecoilDampingMulti.Value, 3);
+            pwa.HandsContainer.Recoil.Damping = RecoilController.BaseTotalRecoilDamping;
 
             if (Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !WeaponProperties.HasShoulderContact)))
             {
@@ -71,7 +71,7 @@ namespace RealismMod
             {
                 pwa.HandsContainer.Recoil.ReturnSpeed = RecoilController.BaseTotalConvergence;
             }
-            pwa.HandsContainer.HandsPosition.Damping = (float)Math.Round(RecoilController.BaseTotalHandDamping * Plugin.HandsDampingMulti.Value * (PlayerProperties.IsMoving ? 0.5f : 1f), 3);
+            pwa.HandsContainer.HandsPosition.Damping = (float)Math.Round(RecoilController.BaseTotalHandDamping * (PlayerProperties.IsMoving ? 0.5f : 1f), 3);
         }     
     }
 }

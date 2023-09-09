@@ -529,6 +529,7 @@ namespace RealismMod
                 new UpdateSwayFactorsPatch().Enable();
                 new GetOverweightPatch().Enable();
                 new SetOverweightPatch().Enable();
+                new BreathProcessPatch().Enable();
 
                 //Recoil Patches
                 new OnWeaponParametersChangedPatch().Enable();

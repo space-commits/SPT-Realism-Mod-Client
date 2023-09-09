@@ -154,6 +154,87 @@ namespace RealismMod
         }
     }
 
+
+    public class BreathProcessPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(BreathEffector).GetMethod("Process", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool PatchPrefix(BreathEffector __instance, float deltaTime, float ____breathIntensity, float ____shakeIntensity, float ____breathFrequency, 
+        float ____cameraSensetivity, Vector2 ____baseHipRandomAmplitudes, Spring ____recoilRotationSpring, Spring ____handsRotationSpring, AnimationCurve ____lackOfOxygenStrength, GClass2139[] ____processors)
+        {
+            float amplGain = Mathf.Sqrt(__instance.AmplitudeGain.Value);
+            __instance.HipXRandom.Amplitude = Mathf.Clamp(____baseHipRandomAmplitudes.x + amplGain, 0f, 3f);
+            __instance.HipZRandom.Amplitude = Mathf.Clamp(____baseHipRandomAmplitudes.y + amplGain, 0f, 3f);
+            __instance.HipXRandom.Hardness = (__instance.HipZRandom.Hardness = __instance.Hardness.Value);
+            ____shakeIntensity = 1f;
+            bool isInjured = __instance.TremorOn || __instance.Fracture;
+            float intensityHolder = 1f;
+
+            if (Time.time < __instance.StiffUntill)
+            {
+                float intensity = Mathf.Clamp(-__instance.StiffUntill + Time.time + 1f, isInjured ? 0.5f : 0.3f, 1f);
+                ____breathIntensity = intensity * __instance.Intensity;
+                ____shakeIntensity = intensity;
+                intensityHolder = intensity;
+            }
+            else if (__instance.Physical.HoldingBreath)
+            {
+                ____breathIntensity = 0.15f;
+                ____shakeIntensity = 0.15f;
+            }
+            else
+            {
+                float t = ____lackOfOxygenStrength.Evaluate(__instance.OxygenLevel);
+                float b = __instance.IsAiming ? 0.75f : 1f;
+                ____breathIntensity = Mathf.Clamp(Mathf.Lerp(4f, b, t), 1f, 1.5f) * __instance.Intensity;
+                ____breathFrequency = Mathf.Clamp(Mathf.Lerp(4f, 1f, t), 1f, 2.5f) * deltaTime;
+                ____cameraSensetivity = Mathf.Lerp(2f, 0f, t) * __instance.Intensity;
+            }
+            GClass786<float> staminaLevel = __instance.StaminaLevel;
+            __instance.YRandom.Amplitude = __instance.BreathParams.AmplitudeCurve.Evaluate(staminaLevel);
+            float stamFactor = __instance.BreathParams.Delay.Evaluate(staminaLevel);
+            __instance.XRandom.MinMaxDelay = (__instance.YRandom.MinMaxDelay = new Vector2(stamFactor / 2f, stamFactor));
+            __instance.YRandom.Hardness = __instance.BreathParams.Hardness.Evaluate(staminaLevel);
+            float randomY = __instance.YRandom.GetValue(deltaTime);
+            float randomX = __instance.XRandom.GetValue(deltaTime);
+            ____handsRotationSpring.AddAcceleration(new Vector3(Mathf.Max(0f, -randomY) * (1f - staminaLevel) * 2f, randomY, randomX) * (____shakeIntensity * __instance.Intensity));
+            Vector3 breathVector = Vector3.zero;
+            if (isInjured)
+            {
+                float tremorSpeed = __instance.TremorOn ? deltaTime : (deltaTime / 2f);
+                tremorSpeed *= intensityHolder;
+                float tremorXRandom = __instance.TremorXRandom.GetValue(tremorSpeed);
+                float tremorYRandom = __instance.TremorYRandom.GetValue(tremorSpeed);
+                float tremorZRnadom = __instance.TremorZRandom.GetValue(tremorSpeed);
+                if (__instance.Fracture && !__instance.IsAiming)
+                {
+                    tremorXRandom += Mathf.Max(0f, randomY) * Mathf.Lerp(1f, 100f / __instance.EnergyFractureLimit, staminaLevel);
+                }
+                breathVector = new Vector3(tremorXRandom, tremorYRandom, tremorZRnadom) * __instance.Intensity;
+            }
+            else if (!__instance.IsAiming)
+            {
+                breathVector = new Vector3(__instance.HipXRandom.GetValue(deltaTime), 0f, __instance.HipZRandom.GetValue(deltaTime)) * (__instance.Intensity * __instance.HipPenalty);
+            }
+
+            if (Vector3.SqrMagnitude(breathVector - ____recoilRotationSpring.Zero) > 0.01f)
+            {
+                ____recoilRotationSpring.Zero = Vector3.Lerp(____recoilRotationSpring.Zero, breathVector, 0.1f);
+            }
+            else
+            {
+                ____recoilRotationSpring.Zero = breathVector;
+            }
+            ____processors[0].ProcessRaw(____breathFrequency, PlayerProperties.TotalBreathIntensity * 0.15f);
+            ____processors[1].ProcessRaw(____breathFrequency, PlayerProperties.TotalBreathIntensity * 0.15f * ____cameraSensetivity);
+            return false;
+        }
+    }
+
     public class PlayerLateUpdatePatch : ModulePatch
     {
 
@@ -292,24 +373,16 @@ namespace RealismMod
                 }
                 if (!RecoilController.IsFiring && PlayerProperties.HasFullyResetSprintADSPenalties)
                 {
-                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingSwayBonus; //both aim sway and up and down breathing
-                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingSwayBonus; //also breathing and sway but different, the hands doing sway motion but camera bobbing up and down. 
+                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingSwayBonus;
+                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingSwayBonus;
                 }
 
                 if (fc != null)
                 {
                     if (RecoilController.IsFiring)
                     {
-                        if (PlayerProperties.IsMoving)
-                        {
-                            __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingSwayBonus * 0.01f;
-                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingSwayBonus * 0.01f; // CHECK IF THIS AFFECTS RECOIL
-                        }
-                        else 
-                        {
-                            __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingSwayBonus * 0.25f;
-                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingSwayBonus * 0.25f; // CHECK IF THIS AFFECTS RECOIL
-                        }
+                        __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingSwayBonus * 0.01f;
+                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingSwayBonus * 0.01f;
 
                         RecoilController.SetRecoilParams(__instance.ProceduralWeaponAnimation, fc.Item);
 
@@ -336,28 +409,20 @@ namespace RealismMod
 
                 __instance.Physical.HandsStamina.Current = Mathf.Max(__instance.Physical.HandsStamina.Current, 1f);
 
-     /*           __instance.ProceduralWeaponAnimation.HandsContainer.CameraRotation.ReturnSpeed = WeaponProperties.TotalCameraReturnSpeed;*/ //not sure about this one
-                /*__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = Plugin.test1.Value;*/
-
+/*                __instance.ProceduralWeaponAnimation.HandsContainer.CameraRotation.ReturnSpeed = WeaponProperties.TotalCameraReturnSpeed; //not sure about this one
+                __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = Plugin.test1.Value;
+*/
                 if (!RecoilController.IsFiring)
                 {
                     if (StanceController.CanResetDamping)
                     {
-                        if (Plugin.IsAiming)
+                        float resetSpeed = 0.02f;
+                        if (PlayerProperties.IsMoving && (StanceController.WasLowReady || StanceController.WasHighReady || StanceController.WasShortStock || StanceController.WasActiveAim))
                         {
-                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, Mathf.Clamp(0.45f * (1f + (WeaponProperties.ErgoFactor / 100f)), 0.4f, 0.6f), 0.1f);
-                        }
-                        else
-                        {
-                            float resetSpeed = 0.02f;
-                            if (PlayerProperties.IsMoving && (StanceController.WasLowReady || StanceController.WasHighReady || StanceController.WasShortStock || StanceController.WasActiveAim))
-                            {
-                                resetSpeed = 1f;
-                            }
-                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed, 0.1f, resetSpeed);
-                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, resetSpeed);
+                            resetSpeed = 1f;
                         }
 
+                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, resetSpeed);
                     }
                     else
                     {
@@ -368,7 +433,7 @@ namespace RealismMod
 
                     __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed, 10f * StanceController.WiggleReturnSpeed, 0.05f);
 
-      /*              __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.5f;
+/*                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.5f;
                     __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.4f;*/
                 }
             }

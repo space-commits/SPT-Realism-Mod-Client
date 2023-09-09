@@ -191,7 +191,7 @@ namespace RealismMod
                     if (!__instance.Sprint && AimIndex < __instance.ScopeAimTransforms.Count)
                     {
                         __instance.Breath.Intensity = 0.5f * __instance.IntensityByPoseLevel;
-                        __instance.HandsContainer.HandsRotation.InputIntensity = 0.5f * 0.5f;
+                        __instance.HandsContainer.HandsRotation.InputIntensity = 0.25f;
                     }
                 }
             }
