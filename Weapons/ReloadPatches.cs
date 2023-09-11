@@ -267,7 +267,7 @@ namespace RealismMod
                 chamberSpeed *= Plugin.GlobalCheckChamberSpeedMulti.Value;
             }
 
-            float totalCheckChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.5f, 1.3f);
+            float totalCheckChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.55f, 1.3f);
           
             __instance.SetAnimationSpeed(totalCheckChamberSpeed);
 
@@ -310,7 +310,8 @@ namespace RealismMod
                     chamberSpeed *= Plugin.GlobalBoltSpeedMulti.Value;
                 }
 
-                float totalChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.5f, 1.3f);
+                float stanceModifier = StanceController.IsBracing ? 1.15f : StanceController.IsMounting ? 1.35f : StanceController.IsActiveAiming ? 1.15f : 1f;
+                float totalChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * stanceModifier * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.55f, 1.3f);
 
                 __instance.SetAnimationSpeed(totalChamberSpeed);
 
@@ -336,7 +337,7 @@ namespace RealismMod
         private static void Prefix(FirearmsAnimator __instance, float fix)
         {
 
-            float totalFixSpeed = Mathf.Clamp(fix * WeaponProperties.TotalFixSpeed * PlayerProperties.ReloadInjuryMulti * Plugin.GlobalFixSpeedMulti.Value * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.5f, 1.3f);
+            float totalFixSpeed = Mathf.Clamp(fix * WeaponProperties.TotalFixSpeed * PlayerProperties.ReloadInjuryMulti * Plugin.GlobalFixSpeedMulti.Value * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.55f, 1.3f);
             WeaponAnimationSpeedControllerClass.SetSpeedFix(__instance.Animator, totalFixSpeed);
             __instance.SetAnimationSpeed(totalFixSpeed);
             if (Plugin.EnableLogging.Value == true)
