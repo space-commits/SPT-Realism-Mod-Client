@@ -71,7 +71,7 @@ namespace RealismMod
                     float shotCountFactor = (float)Math.Round(Mathf.Min(RecoilController.ShotCount * 0.4f, 1.75f), 2);
                     float angle = ((90f - RecoilController.BaseTotalRecoilAngle) / 50f);
                     float angleDispFactor = 90f / RecoilController.BaseTotalRecoilAngle;
-                    float dispersion = Mathf.Max(RecoilController.FactoredTotalDispersion * 2.5f * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor * angleDispFactor, 0f);
+                    float dispersion = Mathf.Max(RecoilController.FactoredTotalDispersion * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor * angleDispFactor, 0f);
                     float dispersionSpeed = Math.Max(Time.time * Plugin.RecoilDispersionSpeed.Value, 0.1f);
 
                     float xRotation = 0f;
@@ -80,7 +80,7 @@ namespace RealismMod
                     //S pattern
                     if (!RecoilController.IsVector)
                     {
-                        xRotation = (float)Math.Round(Mathf.Lerp(-dispersion * 1.1f, dispersion * 1.1f, Mathf.PingPong(dispersionSpeed, 1f)) + angle, 3);
+                        xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(dispersionSpeed, 1f)) + angle, 3);
                         yRotation = (float)Math.Round(Mathf.Min(-RecoilController.FactoredTotalVRecoil * Plugin.RecoilClimbFactor.Value * shotCountFactor * fpsFactor, 0f), 3);
                     }
                     else
@@ -88,7 +88,7 @@ namespace RealismMod
                         //spiral + pingpong, would work well as vector recoil
                         spiralTime += Time.deltaTime * 20f;
                         float recoilAmount = RecoilController.FactoredTotalVRecoil * Plugin.RecoilClimbFactor.Value * shotCountFactor * fpsFactor;
-                        xRotation = (float)Math.Round(Mathf.Sin(spiralTime * 10f) * 1f, 3);
+                        xRotation = (float)Math.Round(Mathf.Sin(spiralTime * 5f * dispersion) * 1f, 3);
                         yRotation = (float)Math.Round(Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * 4f, 1f)), 3);
                     }
 

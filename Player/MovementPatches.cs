@@ -100,7 +100,6 @@ namespace RealismMod
             recoilFactor = fc.Item.WeapClass == "pistol" ? recoilFactor * 0.25f : recoilFactor;
             float totalRecoilFactor = 1f - ((recoilFactor / 1000f) * RecoilController.ShotCount);
             totalRecoilFactor = Mathf.Clamp(totalRecoilFactor, 0.25f, 1f);
-            logger.LogWarning(totalRecoilFactor);
             return totalRecoilFactor;
         }
 
