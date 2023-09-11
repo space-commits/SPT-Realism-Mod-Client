@@ -227,7 +227,6 @@ namespace RealismMod
                 RecoilController.BaseTotalRecoilDamping = (float)Math.Round(WeaponProperties.TotalRecoilDamping * Plugin.RecoilDampingMulti.Value, 3);
                 RecoilController.BaseTotalHandDamping = (float)Math.Round(WeaponProperties.TotalRecoilHandDamping * Plugin.HandsDampingMulti.Value, 3);
                 WeaponProperties.TotalWeaponWeight = _weapon.Item.GetSingleItemTotalWeight();
-                Logger.LogWarning(WeaponProperties.TotalWeaponWeight);
 
                 if (WeaponProperties.WeapID != template._id) 
                 {
@@ -306,7 +305,6 @@ namespace RealismMod
 
                 if (weaponClass.WeapClass == "pistol" && RecoilController.ShotCount > 1f && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto) 
                 {
-                    Logger.LogWarning("auto");
                     shotFactor = Plugin.test1.Value;
                 }
 
