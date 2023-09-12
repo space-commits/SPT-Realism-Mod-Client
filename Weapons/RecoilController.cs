@@ -39,7 +39,6 @@ namespace RealismMod
         public static float FactoredTotalDispersion;
         public static float FactoredTotalCamRecoil;
 
-
         public static void DoCantedRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation, ManualLogSource logger) 
         {
             if (RecoilController.IsFiringWiggle)
@@ -61,7 +60,9 @@ namespace RealismMod
 
         public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weapon) 
         {
-            pwa.HandsContainer.Recoil.Damping = RecoilController.BaseTotalRecoilDamping;
+            float opticLimit = Plugin.IsAiming && Plugin.HasOptic ? 0.74f : 1f;
+            pwa.HandsContainer.Recoil.Damping = Mathf.Min(RecoilController.BaseTotalRecoilDamping, opticLimit);
+            pwa.HandsContainer.HandsPosition.Damping = (float)Math.Round(RecoilController.BaseTotalHandDamping * (PlayerProperties.IsMoving ? 0.5f : 1f), 3);
 
             if (Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !WeaponProperties.HasShoulderContact)))
             {
@@ -71,7 +72,7 @@ namespace RealismMod
             {
                 pwa.HandsContainer.Recoil.ReturnSpeed = RecoilController.BaseTotalConvergence;
             }
-            pwa.HandsContainer.HandsPosition.Damping = (float)Math.Round(RecoilController.BaseTotalHandDamping * (PlayerProperties.IsMoving ? 0.5f : 1f), 3);
+
         }     
     }
 }

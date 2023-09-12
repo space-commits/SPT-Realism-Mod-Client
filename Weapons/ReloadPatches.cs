@@ -295,11 +295,14 @@ namespace RealismMod
 
             if (WeaponProperties._IsManuallyOperated == true || Plugin.LauncherIsActive == true)
             {
+        
 
                 float chamberSpeed = WeaponProperties.TotalFiringChamberSpeed;
+                float stanceModifier = 1f;
                 if (WeaponProperties._WeapClass == "shotgun")
                 {
                     chamberSpeed *= Plugin.GlobalShotgunRackSpeedFactor.Value;
+                    stanceModifier = StanceController.IsBracing ? 1.1f : StanceController.IsMounting ? 1.2f : StanceController.IsActiveAiming ? 1.35f : 1f;
                 }
                 if (Plugin.LauncherIsActive == true)
                 {
@@ -308,11 +311,9 @@ namespace RealismMod
                 if (WeaponProperties._WeapClass == "sniperRifle")
                 {
                     chamberSpeed *= Plugin.GlobalBoltSpeedMulti.Value;
+                    stanceModifier = StanceController.IsBracing ? 1.2f : StanceController.IsMounting ? 1.4f : StanceController.IsActiveAiming ? 1.15f : 1f;
                 }
-
-                float stanceModifier = StanceController.IsBracing ? 1.15f : StanceController.IsMounting ? 1.35f : StanceController.IsActiveAiming ? 1.15f : 1f;
                 float totalChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * stanceModifier * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.55f, 1.3f);
-
                 __instance.SetAnimationSpeed(totalChamberSpeed);
 
                 if (Plugin.EnableLogging.Value == true)

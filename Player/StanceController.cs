@@ -1024,8 +1024,8 @@ namespace RealismMod
             if (StanceController.IsActiveAiming && !pwa.IsAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !StanceController.IsHighReady && !StanceController.CancelActiveAim && !Plugin.IsBlindFiring)
             {
                 float shortToActive = 1f;
-                float highToActive = 1f;
-                float lowToActive = 1f;
+                float highToActive = 0.9f;
+                float lowToActive = 0.95f;
                 isResettingActiveAim = false;
                 hasResetActiveAim = false;
 
