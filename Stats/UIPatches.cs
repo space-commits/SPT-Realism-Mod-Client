@@ -671,9 +671,9 @@ namespace RealismMod
                 camRecoilAtt.Name = ENewItemAttributeId.CameraRecoil.GetName();
                 camRecoilAtt.Range = new Vector2(0f, 50f);
                 camRecoilAtt.LessIsGood = true;
-                camRecoilAtt.Base = () => __instance.Template.CameraRecoil * 100f * (1f + WeaponProperties.CameraReturnSpeed(__instance));
+                camRecoilAtt.Base = () => __instance.Template.CameraRecoil * 100f;
                 camRecoilAtt.Delta = () => CamRecoilDelta(__instance);
-                camRecoilAtt.StringValue = () => Math.Round(DisplayWeaponProperties.CamRecoil * (1f + DisplayWeaponProperties.CamReturnSpeed) * 100f, 2).ToString();
+                camRecoilAtt.StringValue = () => Math.Round(DisplayWeaponProperties.CamRecoil * 100f, 2).ToString();
                 camRecoilAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
                 camRecoilAttList.Add(camRecoilAtt);
             }
