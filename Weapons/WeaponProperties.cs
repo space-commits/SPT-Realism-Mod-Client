@@ -8,34 +8,21 @@ namespace RealismMod
     public static class DisplayWeaponProperties
     {
         public static float ErgoDelta = 0;
-
         public static int AutoFireRate = 0;
-
         public static int SemiFireRate = 0;
-
         public static float Balance = 0;
-
         public static float VRecoilDelta = 0;
-
         public static float HRecoilDelta = 0;
-
         public static bool HasShoulderContact = true;
-
         public static float COIDelta = 0;
-
         public static float CamRecoil = 0;
-
         public static float Dispersion = 0;
-
         public static float RecoilAngle = 0;
-
         public static float TotalVRecoil = 0;
-
         public static float TotalHRecoil = 0;
-
         public static float TotalErgo = 0;
-
         public static float ErgnomicWeight = 0;
+        public static float CamReturnSpeed = 0;
     }
 
 
@@ -146,6 +133,16 @@ namespace RealismMod
 
         }
 
+        public static float CameraReturnSpeed(Weapon weapon)
+        {
+            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[18], out float result) ? result : 0.1f;
+
+        }
+
+        public static float TotalWeaponWeight = 0f;
+
+        public static float TotalCameraReturnSpeed = 0.1f;
+
         public static float BaseHipfireInaccuracy;
 
         public static float BaseWeaponLength = 0f;
@@ -215,11 +212,11 @@ namespace RealismMod
 
         public static float COIDelta = 0f;
 
-        public static float CamRecoil = 0f;
+        public static float TotalCamRecoil = 0f;
 
-        public static float Dispersion = 0f;
+        public static float TotalDispersion = 0f;
 
-        public static float RecoilAngle = 0f;
+        public static float TotalRecoilAngle = 0f;
 
         public static float TotalVRecoil = 0f;
 
@@ -237,7 +234,8 @@ namespace RealismMod
 
         public static float InitCamRecoil = 0f;
 
-        public static float ModdedConv = 0f;
+        public static float TotalModdedConv = 0f;
+        public static float ConvergenceDelta = 0f;
 
         public static float InitDispersion = 0f;
 

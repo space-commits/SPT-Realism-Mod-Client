@@ -81,7 +81,7 @@ namespace RealismMod
 
         public static float GetFiringMovementSpeedFactor(Player player, ManualLogSource logger) 
         {
-            if (!Plugin.IsFiringMovement) 
+            if (!RecoilController.IsFiringMovement) 
             {
                 return 1f;
             }
@@ -92,10 +92,15 @@ namespace RealismMod
                 return 1f;
             }
 
-            float recoilSum = Plugin.CurrentVRecoilX + Plugin.CurrentHRecoilX;
-            recoilSum = fc.Item.WeapClass == "pistol" ? recoilSum * 0.5f : recoilSum;
-            float recoilFactor = 1f - (recoilSum / 100f);
-            return recoilFactor;
+            float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
+            float dampingFactor = RecoilController.BaseTotalHandDamping + RecoilController.BaseTotalRecoilDamping;
+            float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
+            float recoilFactor = RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil;
+            recoilFactor = recoilFactor * dispersionFactor * dampingFactor * convergenceFactor;
+            recoilFactor = fc.Item.WeapClass == "pistol" ? recoilFactor * 0.25f : recoilFactor;
+            float totalRecoilFactor = 1f - ((recoilFactor / 1000f) * RecoilController.ShotCount);
+            totalRecoilFactor = Mathf.Clamp(totalRecoilFactor, 0.25f, 1f);
+            return totalRecoilFactor;
         }
 
     }
@@ -124,7 +129,7 @@ namespace RealismMod
 
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float firingMulti = MovementSpeedController.GetFiringMovementSpeedFactor(player, Logger);
-                float stanceFactor = StanceController.IsPatrolStance ? 1.25f : StanceController.IsHighReady ? 0.9f : 1f;
+                float stanceFactor = StanceController.IsPatrolStance ? 1.25f : StanceController.IsHighReady || StanceController.IsShortStock ? 0.95f : 1f;
 
                 __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * PlayerProperties.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti * stanceFactor);
                 return false;

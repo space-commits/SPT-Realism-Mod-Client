@@ -66,12 +66,6 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, aimSpeed);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f)) * PlayerProperties.ErgoDeltaInjuryMulti);
 
-                    __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.StartingConvergence * __instance.Aiming.RecoilConvergenceMult;
-                    __instance.HandsContainer.Recoil.Damping = WeaponProperties.TotalRecoilDamping;
-
-/*                    __instance.HandsContainer.RecoilPivot = new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value );
-*/
-
                     if (Plugin.EnableLogging.Value == true) 
                     {
                         Logger.LogWarning("========UpdateWeaponVariables=======");
@@ -117,11 +111,11 @@ namespace RealismMod
 
                     Mod currentAimingMod = (__instance.CurrentAimingMod != null) ? __instance.CurrentAimingMod.Item as Mod : null;
 
-                    float idleMulti = StanceController.IsIdle() ? 1.3f : 1f;
+                    float stanceMulti = StanceController.IsIdle() ? 1.5f : StanceController.WasActiveAim || StanceController.IsActiveAiming ? 1.5f : StanceController.WasHighReady || StanceController.IsHighReady ? 1.1f : StanceController.WasLowReady || StanceController.IsLowReady ? 1.3f : 1f;
                     float stockMulti = weapon.WeapClass != "pistol" && !WeaponProperties.HasShoulderContact ? 0.75f : 1f;
                     float totalSightlessAimSpeed = WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f));
                     float sightSpeedModi = currentAimingMod != null ? AttachmentProperties.AimSpeed(currentAimingMod) : 1f;
-                    float totalSightedAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)) * idleMulti * stockMulti, 0.45f, 1.5f);
+                    float totalSightedAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)) * stanceMulti * stockMulti, 0.45f, 1.5f);
                     float newAimSpeed = Mathf.Max(totalSightedAimSpeed * PlayerProperties.ADSSprintMulti, 0.3f) * Plugin.GlobalAimSpeedModifier.Value;
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
                     float float_9 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance); //aimspeed
@@ -173,6 +167,8 @@ namespace RealismMod
 
                     __instance.Overweight = 0;
 
+                    __instance.CrankRecoil = Plugin.EnableCrank.Value;
+
                     if (Plugin.EnableLogging.Value == true)
                     {
                         Logger.LogWarning("=====method_21========");
@@ -195,7 +191,7 @@ namespace RealismMod
                     if (!__instance.Sprint && AimIndex < __instance.ScopeAimTransforms.Count)
                     {
                         __instance.Breath.Intensity = 0.5f * __instance.IntensityByPoseLevel;
-                        __instance.HandsContainer.HandsRotation.InputIntensity = 0.5f * 0.5f;
+                        __instance.HandsContainer.HandsRotation.InputIntensity = 0.25f;
                     }
                 }
             }
@@ -224,9 +220,9 @@ namespace RealismMod
                     float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
                     bool noShoulderContact = !WeaponProperties.HasShoulderContact && weapon.WeapClass != "pistol";
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));
-                    float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f);
-                    float displacementModifier = noShoulderContact ? Plugin.SwayIntensity.Value * 1f : Plugin.SwayIntensity.Value * 0.55f;//lower = less drag
-                    float aimIntensity = noShoulderContact ? Plugin.SwayIntensity.Value * 1f : Plugin.SwayIntensity.Value * 0.65f;
+                    float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6.5f);
+                    float displacementModifier = noShoulderContact ? Plugin.SwayIntensity.Value * 1f : Plugin.SwayIntensity.Value * 0.5f;//lower = less drag
+                    float aimIntensity = noShoulderContact ? Plugin.SwayIntensity.Value * 1f : Plugin.SwayIntensity.Value * 0.6f;
 
                     float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight * weightFactor * playerWeightFactor);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_20").SetValue(__instance, swayStrength);
@@ -235,7 +231,6 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_21").SetValue(__instance, weapDisplacement * weightFactor * displacementModifier * playerWeightFactor);
 
                     __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * Mathf.Clamp(aimIntensity * weightFactor * playerWeightFactor, aimIntensity, 1f); // the diving/tiling animation as you move weapon side to side.
-
 
                     if (Plugin.EnableLogging.Value == true)
                     {
