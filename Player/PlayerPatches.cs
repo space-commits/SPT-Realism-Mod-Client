@@ -114,19 +114,25 @@ namespace RealismMod
             if (__instance.IsYourPlayer == true)
             {
                 PlayerInitPatch p = new PlayerInitPatch();
-
+/*                StanceController.StanceBlender.Speed = 1f;
                 StanceController.StanceBlender.Target = 0f;
-                StatCalc.SetGearParamaters(__instance);
-                StanceController.SelectedStance = 0;
+                StanceController.StanceTargetPosition = Vector3.zero;
                 StanceController.IsLowReady = false;
-                StanceController.IsHighReady = false;
-                StanceController.IsActiveAiming = false;
-                StanceController.WasHighReady = false;
                 StanceController.WasLowReady = false;
+                StanceController.IsHighReady = false;
+                StanceController.WasHighReady = false;
+                StanceController.IsActiveAiming = false;
+                StanceController.WasActiveAim = false;
                 StanceController.IsShortStock = false;
                 StanceController.WasShortStock = false;
                 StanceController.IsPatrolStance = false;
+                StanceController.IsMounting = false;
+                StanceController.IsBracing = false;
+                StanceController.DidStanceWiggle = false;
 
+                Plugin.PlayerSpawnedIn = true;*/
+
+                StatCalc.SetGearParamaters(__instance);
                 InventoryControllerClass invController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(__instance);
    
                 invController.AddItemEvent += p.HandleAddItemEvent;
@@ -194,6 +200,7 @@ namespace RealismMod
                 ____breathFrequency = Mathf.Clamp(Mathf.Lerp(4f, 1f, t), 1f, 2.5f) * deltaTime;
                 ____cameraSensetivity = Mathf.Lerp(2f, 0f, t) * __instance.Intensity;
             }
+
             GClass786<float> staminaLevel = __instance.StaminaLevel;
             __instance.YRandom.Amplitude = __instance.BreathParams.AmplitudeCurve.Evaluate(staminaLevel);
             float stamFactor = __instance.BreathParams.Delay.Evaluate(staminaLevel);
@@ -203,6 +210,7 @@ namespace RealismMod
             float randomX = __instance.XRandom.GetValue(deltaTime);
             ____handsRotationSpring.AddAcceleration(new Vector3(Mathf.Max(0f, -randomY) * (1f - staminaLevel) * 2f, randomY, randomX) * (____shakeIntensity * __instance.Intensity));
             Vector3 breathVector = Vector3.zero;
+
             if (isInjured)
             {
                 float tremorSpeed = __instance.TremorOn ? deltaTime : (deltaTime / 2f);
@@ -258,7 +266,7 @@ namespace RealismMod
                 pwa.HandsContainer.HandsRotation.InputIntensity = inputIntensitry;
                 PlayerProperties.SprintTotalBreathIntensity = breathIntensity;
                 PlayerProperties.SprintTotalHandsIntensity = inputIntensitry;
-                PlayerProperties.SprintHipfirePenalty = Mathf.Min(1f + (sprintTimer / 100f), 1.2f);
+                PlayerProperties.SprintHipfirePenalty = Mathf.Min(1f + (sprintTimer / 100f), 2f);
 
                 PlayerProperties.ADSSprintMulti = Mathf.Max(1f - (sprintTimer / 12f), 0.3f);
 
@@ -381,13 +389,15 @@ namespace RealismMod
                 {
                     if (RecoilController.IsFiring)
                     {
-                        __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingSwayBonus * 0.01f;
-                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingSwayBonus * 0.01f;
+                        if (Plugin.IsAiming) 
+                        {
+                            __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingSwayBonus * 0.01f;
+                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingSwayBonus * 0.01f;
+                        }
 
                         RecoilController.SetRecoilParams(__instance.ProceduralWeaponAnimation, fc.Item);
 
                         StanceController.IsPatrolStance = false;
-                        __instance.HandsController.FirearmsAnimator.SetPatrol(false);
                     }
 
                     __instance.ProceduralWeaponAnimation.Shootingg.Intensity = (Plugin.IsInThirdPerson && !Plugin.IsAiming ? Plugin.RecoilIntensity.Value * 5f : Plugin.RecoilIntensity.Value);
@@ -436,6 +446,8 @@ namespace RealismMod
 /*                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.5f;
                     __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.4f;*/
                 }
+
+                __instance.HandsController.FirearmsAnimator.SetPatrol(StanceController.IsPatrolStance);
             }
         }
     }

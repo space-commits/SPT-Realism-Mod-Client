@@ -72,6 +72,7 @@ namespace RealismMod
                     float angleDispFactor = 90f / RecoilController.BaseTotalRecoilAngle;
                     float dispersion = Mathf.Max(RecoilController.FactoredTotalDispersion * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor * angleDispFactor, 0f);
                     float dispersionSpeed = Math.Max(Time.time * Plugin.RecoilDispersionSpeed.Value, 0.1f);
+                    float recoilClimbMulti = WeaponProperties._WeapClass == "pistol" ? Plugin.RecoilClimbFactor.Value / 3f : Plugin.RecoilClimbFactor.Value;
 
                     float xRotation = 0f;
                     float yRotation = 0f;
@@ -83,7 +84,7 @@ namespace RealismMod
                     }
                     else
                     {
-                        float recoilAmount = RecoilController.FactoredTotalVRecoil * Plugin.RecoilClimbFactor.Value * shotCountFactor * fpsFactor;
+                        float recoilAmount = RecoilController.FactoredTotalVRecoil * recoilClimbMulti * shotCountFactor * fpsFactor;
                         dispersion = Mathf.Max(RecoilController.FactoredTotalDispersion * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor, 0f);
                         xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(Time.time * 10f, 1f)), 3);
                         yRotation = (float)Math.Round(Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * 4f, 1f)), 3);

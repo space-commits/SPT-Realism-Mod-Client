@@ -896,24 +896,29 @@ namespace RealismMod
             bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
 
             float medHPRes = med.MedKitComponent.HpResource;
-       
-            if (Plugin.GearBlocksEat.Value && medType.Contains("pills") && (mouthBlocked || fsIsON || nvgIsOn)) 
+
+            if (medType == "vas")
             {
-                NotificationManagerClass.DisplayWarningNotification("Can't Take Pills, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
-                canUse = false;
                 return;
             }
+
+            if (medType.Contains("pills")) 
+            {
+                if (Plugin.GearBlocksEat.Value && (mouthBlocked || fsIsON || nvgIsOn))
+                {
+                    NotificationManagerClass.DisplayWarningNotification("Can't Take Pills, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
+                    canUse = false;
+                    return;
+                }
+                return;
+            }
+  
 
             if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear))) 
             {
                 NotificationManagerClass.DisplayWarningNotification("Part " + bodyPart + " Has Gear On, Remove Gear First To Be Able To Heal", EFT.Communications.ENotificationDurationType.Long);
 
                 canUse = false;
-                return;
-            }
-
-            if (medType == "vas") 
-            {
                 return;
             }
 

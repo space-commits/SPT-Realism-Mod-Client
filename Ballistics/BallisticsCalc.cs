@@ -75,6 +75,38 @@ namespace RealismMod
             }
             return false;
         }
+
+        public static EBodyPart GetBodyPartFromCol(string hitCollider) 
+        {
+            switch (hitCollider) 
+            {
+                case HitBox.Head:
+                    return EBodyPart.Head;
+                case HitBox.UpperTorso:
+                    return EBodyPart.Chest;
+                case HitBox.LowerTorso:
+                    return EBodyPart.Chest;
+                case HitBox.Pelvis:
+                    return EBodyPart.Stomach;
+                case HitBox.RightForearm:
+                    return EBodyPart.RightArm;
+                case HitBox.LeftForearm:
+                    return EBodyPart.LeftArm;
+                case HitBox.RightUpperArm:
+                    return EBodyPart.RightArm;
+                case HitBox.LeftUpperArm:
+                    return EBodyPart.LeftArm;
+                case HitBox.LeftThigh:
+                    return EBodyPart.LeftLeg;
+                case HitBox.RightThigh:
+                    return EBodyPart.RightLeg;
+                case HitBox.LeftCalf:
+                    return EBodyPart.LeftLeg;
+                case HitBox.RightCalf:
+                    return EBodyPart.RightLeg;
+                default: return EBodyPart.Chest;
+            }
+        }
     }
 
     public static class HitZoneModifiers

@@ -269,13 +269,9 @@ namespace RealismMod
             }
             else
             {
-                float lightBleedingDelta = 0f;
-                float num = 0f;
-                __instance.LightBleedingDelta = lightBleedingDelta;
-                float heavyBleedingDelta = num;
-                num = 0f;
-                __instance.HeavyBleedingDelta = heavyBleedingDelta;
-                __instance.StaminaBurnRate = num;
+                __instance.LightBleedingDelta = 0f;
+                __instance.HeavyBleedingDelta = 0f;
+                __instance.StaminaBurnRate = 0f;
                 KnifeClass knifeClass;
                 if ((knifeClass = (__instance.Weapon as KnifeClass)) != null)
                 {

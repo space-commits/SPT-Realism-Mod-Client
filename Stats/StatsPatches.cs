@@ -462,16 +462,18 @@ namespace RealismMod
 
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
-                float mountFactor = 1f;
-                if (Utils.IsReady)
+                float currentSightFactor = 1f;
+    
+                if (Utils.IsReady && Plugin.IsAiming)
                 {
                     Player player = Utils.GetPlayer();
+                    Logger.LogWarning("is aiming " + player.ProceduralWeaponAnimation.IsAiming);
                     Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
                     if (currentAimingMod != null)
                     {
                         if (AttachmentProperties.ModType(currentAimingMod) == "sight")
                         {
-                            mountFactor += (currentAimingMod.Accuracy / 100f);
+                            currentSightFactor += (currentAimingMod.Accuracy / 100f);
                         }
                         IEnumerable<Item> parents = currentAimingMod.GetAllParentItems();
                         foreach (Item item in parents)
@@ -479,13 +481,13 @@ namespace RealismMod
                             if (item is Mod && AttachmentProperties.ModType(item) == "mount")
                             {
                                 Mod mod = item as Mod;
-                                mountFactor += (mod.Accuracy / 100f);
+                                currentSightFactor += (mod.Accuracy / 100f);
                             }
                         }
                     }
                 }
 
-                float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * mountFactor;
+                float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * currentSightFactor;
                 if (!includeAmmo)
                 {
                     __result = totalCoi;

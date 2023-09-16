@@ -101,10 +101,10 @@ namespace RealismMod
                 if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
                     FirearmController firearmController = player.HandsController as FirearmController;
-                    //force ergo weight to update
-                    if (firearmController != null) 
-                    {
-                        float updateErgoWeight = firearmController.ErgonomicWeight;
+             
+                    if (firearmController != null)
+                    {       
+                        float updateErgoWeight = firearmController.ErgonomicWeight; //force ergo weight to update
                         float accuracy = weapon.GetTotalCenterOfImpact(false);
                         AccessTools.Field(typeof(Player.FirearmController), "float_1").SetValue(firearmController, accuracy);
                     }
@@ -133,6 +133,23 @@ namespace RealismMod
                     float breathIntensity;
                     float handsIntensity;
 
+                    //this triggers when toggling scope mode :(
+/*                    if (StanceController.IsIdle())
+                    {
+                        __instance.Shootingg.ShotVals[3].Intensity = 0;
+                        __instance.Shootingg.ShotVals[4].Intensity = 0;
+                        Vector3 wiggleDir = new Vector3(-15f, 5f, -10f) * (Plugin.HasOptic ? 0.4f : 1f);
+
+                        if (__instance.IsAiming)
+                        {
+                            StanceController.DoWiggleEffects(player, __instance, wiggleDir * newAimSpeed);
+                        }
+                        else 
+                        {
+                            StanceController.DoWiggleEffects(player, __instance, -wiggleDir * newAimSpeed * 0.3f);
+                        }
+                    }*/
+       
                     if (!WeaponProperties.HasShoulderContact && weapon.WeapClass != "pistol")
                     {
                         breathIntensity = Mathf.Min(0.78f * ergoWeightFactor * playerWeightFactor, 1.01f);
