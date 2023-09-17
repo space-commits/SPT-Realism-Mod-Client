@@ -91,7 +91,7 @@ namespace RealismMod
             {
                 Plugin.HasHeadSet = true;
                 GClass2447 headphone = headset.Template;
-                protectionFactor = ((headphone.DryVolume / 100f) + 1f) * 1.55f;
+                protectionFactor = Mathf.Clamp(((headphone.DryVolume / 100f) + 1f) * 1.65f, 0.5f, 1f);
             }
             else
             {

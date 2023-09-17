@@ -72,7 +72,7 @@ namespace RealismMod
                     float angleDispFactor = 90f / RecoilController.BaseTotalRecoilAngle;
                     float dispersion = Mathf.Max(RecoilController.FactoredTotalDispersion * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor * angleDispFactor, 0f);
                     float dispersionSpeed = Math.Max(Time.time * Plugin.RecoilDispersionSpeed.Value, 0.1f);
-                    float recoilClimbMulti = WeaponProperties._WeapClass == "pistol" ? Plugin.RecoilClimbFactor.Value / 3f : Plugin.RecoilClimbFactor.Value;
+                    float recoilClimbMulti = WeaponProperties._WeapClass == "pistol" ? Plugin.PistolRecClimbFactor.Value : Plugin.RecoilClimbFactor.Value;
 
                     float xRotation = 0f;
                     float yRotation = 0f;
@@ -109,7 +109,7 @@ namespace RealismMod
                 {
                     float resetSpeed = RecoilController.BaseTotalConvergence * WeaponProperties.ConvergenceDelta * Plugin.ResetSpeed.Value;
 
-                    bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Plugin.ResetSensitivity.Value;
+                    bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Mathf.Clamp(Plugin.ResetSensitivity.Value / 2.5f, 0f, 0.1f);
                     bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= Plugin.ResetSensitivity.Value;
 
                     Vector2 resetTarget = MovementContext.Rotation;

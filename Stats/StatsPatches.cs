@@ -462,12 +462,11 @@ namespace RealismMod
 
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
-                float currentSightFactor = 1f;
-    
                 if (Utils.IsReady && Plugin.IsAiming)
                 {
+                    float currentSightFactor = 1f;
+                    int iterations = 0;
                     Player player = Utils.GetPlayer();
-                    Logger.LogWarning("is aiming " + player.ProceduralWeaponAnimation.IsAiming);
                     Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
                     if (currentAimingMod != null)
                     {
@@ -483,24 +482,29 @@ namespace RealismMod
                                 Mod mod = item as Mod;
                                 currentSightFactor += (mod.Accuracy / 100f);
                             }
+                            iterations++;
+                            if (iterations >= 5) 
+                            {
+                                break;
+                            }
                         }
                     }
                 }
-
-                float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * currentSightFactor;
+                bool isBracingTop = StanceController.IsBracingTop;
+                float mountingFactor = StanceController.IsBracing && isBracingTop ? 1.05f : StanceController.IsBracing && !isBracingTop ? 1.025f : StanceController.IsMounting && isBracingTop ? 1.1f : StanceController.IsMounting && !isBracingTop ? 1.075f : 1f;
+                float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * currentSightFactor * mountingFactor;
+               
                 if (!includeAmmo)
                 {
                     __result = totalCoi;
                     return false;
                 }
+
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
                 __result = totalCoi * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
                 return false;
             }
-            else
-            {
-                return true;
-            }
+            return true;
         }
     }
 
