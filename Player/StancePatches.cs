@@ -198,7 +198,7 @@ namespace RealismMod
             if (player.IsYourPlayer)
             {
                 timer += 1;
-                if (timer >= 2)
+                if (timer >= 60)
                 {
                     timer = 0;
 
@@ -224,96 +224,94 @@ namespace RealismMod
                     /*          DebugGizmos.SingleObjects.Line(startDown, forwardDirection, Color.red, 0.02f, true, 0.3f, true);
                               DebugGizmos.SingleObjects.Line(startLeft, leftDirection, Color.green, 0.02f, true, 0.3f, true);
                               DebugGizmos.SingleObjects.Line(startRight, rightDirection, Color.yellow, 0.02f, true, 0.3f, true);*/
-                 
- 
-                    RaycastHit raycastHit;
-                    if (!PlayerProperties.IsSprinting && StanceController.CanDoMelee && !StanceController.DidMelee)
-                    {
-                        Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value));
-                        Vector3 meleeDir = meleeStart - linecastDirection * ln;
-                        DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);
 
-                        EBodyPart hitPart = EBodyPart.Chest;
-                        BallisticCollider hitBalls = null;
-                        if (GClass682.Linecast(meleeStart, meleeDir, out raycastHit, GClass2869.HitMask, false, raycastArr, isHitIgnoreTest))
-                        {
-                            Collider col = raycastHit.collider;
-                            BaseBallistic baseballComp = col.GetComponent<BaseBallistic>();
-                            if (baseballComp != null)
-                            {
-                                hitBalls = baseballComp.Get(raycastHit.point);
-                                hitPart = HitBox.GetBodyPartFromCol(hitBalls.name);
-                                Logger.LogWarning(hitBalls.name);
-                                Logger.LogWarning(hitBalls.TypeOfMaterial);
-                            }
-
-                            if (allowedMats.Contains(hitBalls.TypeOfMaterial))
-                            {
-                                Vector3 position = __instance.CurrentFireport.position;
-                                Vector3 vector = __instance.WeaponDirection;
-                                Vector3 shotPosition = position;
-                                __instance.AdjustShotVectors(ref shotPosition, ref vector);
-                                Vector3 shotDirection = vector;
-
-                                DamageInfo damageInfo = new DamageInfo
+                    /*            if (!PlayerProperties.IsSprinting && StanceController.CanDoMelee && !StanceController.DidMelee)
                                 {
-                                    DamageType = EDamageType.Melee,
-                                    Damage = 60f,
-                                    PenetrationPower = 20f,
-                                    ArmorDamage = 1f,
-                                    Direction = shotDirection.normalized,
-                                    HitCollider = col,
-                                    HitPoint = raycastHit.point,
-                                    Player = Singleton<GameWorld>.Instance.GetAlivePlayerBridgeByProfileID(player.ProfileId),
-                                    HittedBallisticCollider = hitBalls,
-                                    HitNormal = raycastHit.normal,
-                                    Weapon = __instance.Item as Item,
-                                    IsForwardHit = true,
-                                    StaminaBurnRate = 5f
-                                };
-                                GClass1661 result = Singleton<GameWorld>.Instance.HackShot(damageInfo);
-                            }
-                            Singleton<BetterAudio>.Instance.PlayDropItem(baseballComp.SurfaceSound, JsonType.EItemDropSoundType.Rifle, raycastHit.point, 50f);
-                            StanceController.DidMelee = true;
+                                    Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(new Vector3(0f, Plugin.test2.Value, Plugin.test3.Value));
+                                    Vector3 meleeDir = meleeStart - linecastDirection * ln;
+                                    DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);
 
-                            /*             AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates["5cadf6ddae9215051e1c23b2"];
-                                          BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
-                                          Vector3 position = __instance.CurrentFireport.position;
-                                          Vector3 vector = __instance.WeaponDirection;
-                                          Vector3 shotPosition = position;
-                                          Vector3 shotDirection = vector;
-                                          __instance.AdjustShotVectors(ref shotPosition, ref vector);
-                                          GInterface307 bc = (GInterface307)AccessTools.Field(typeof(EFT.Player.FirearmController), "BallisticsCalculator").GetValue(__instance);
-                                          GClass2870 shot = bc.Shoot(ammo, shotPosition, shotDirection.normalized, player.ProfileId, __instance.Item as Item, 1, 0);
-                                          MethodInfo regShot = AccessTools.Method(typeof(Player.FirearmController), "RegisterShot");
-                                          regShot.Invoke(__instance, new object[] { __instance.Item as Item, shot });*/
+                                    EBodyPart hitPart = EBodyPart.Chest;
+                                    BallisticCollider hitBalls = null;
+                                    if (GClass682.Linecast(meleeStart, meleeDir, out raycastHit, GClass2869.HitMask, false, raycastArr, isHitIgnoreTest))
+                                    {
+                                        Collider col = raycastHit.collider;
+                                        BaseBallistic baseballComp = col.GetComponent<BaseBallistic>();
+                                        if (baseballComp != null)
+                                        {
+                                            hitBalls = baseballComp.Get(raycastHit.point);
+                                            hitPart = HitBox.GetBodyPartFromCol(hitBalls.name);
+                                            Logger.LogWarning(hitBalls.name);
+                                            Logger.LogWarning(hitBalls.TypeOfMaterial);
+                                        }
 
-                        }
-                        /*if (GClass682.Linecast(meleeStart, meleeDir, out raycastHit, GClass2869.PlayerMask, false, raycastHit_0, func_1))
-                        {
-                            Collider col = raycastHit.collider;
-                            Player victim = Singleton<GameWorld>.Instance.GetPlayerByCollider(raycastHit.collider);
-                            if (victim != null && hitBalls != null)
-                            {
-                                Logger.LogWarning("found player");
-                                Logger.LogWarning("target " + hitPart);
-                                Logger.LogWarning(victim.Id);
+                                        if (allowedMats.Contains(hitBalls.TypeOfMaterial))
+                                        {
+                                            Vector3 position = __instance.CurrentFireport.position;
+                                            Vector3 vector = __instance.WeaponDirection;
+                                            Vector3 shotPosition = position;
+                                            __instance.AdjustShotVectors(ref shotPosition, ref vector);
+                                            Vector3 shotDirection = vector;
 
-                                *//*      DamageInfo di = default(DamageInfo);
-                                      di.DamageType = EDamageType.Impact;
-                                      di.Damage = 120f;
-                                      di.PenetrationPower = 20f;
-                                      di.ArmorDamage = 10f;
-                                      BodyPartCollider bpc = hitBalls as BodyPartCollider;
-                                      di.HitCollider = bpc.Collider;
-                                      victim.ApplyShot(di, hitPart, GStruct353.EMPTY_SHOT_ID);               
-                                      StanceController.CanDoMelee = false;*//*
-                            }
-                        }
-                        return;*/
-                    }
+                                            DamageInfo damageInfo = new DamageInfo
+                                            {
+                                                DamageType = EDamageType.Melee,
+                                                Damage = 60f,
+                                                PenetrationPower = 20f,
+                                                ArmorDamage = 1f,
+                                                Direction = shotDirection.normalized,
+                                                HitCollider = col,
+                                                HitPoint = raycastHit.point,
+                                                Player = Singleton<GameWorld>.Instance.GetAlivePlayerBridgeByProfileID(player.ProfileId),
+                                                HittedBallisticCollider = hitBalls,
+                                                HitNormal = raycastHit.normal,
+                                                Weapon = __instance.Item as Item,
+                                                IsForwardHit = true,
+                                                StaminaBurnRate = 5f
+                                            };
+                                            GClass1661 result = Singleton<GameWorld>.Instance.HackShot(damageInfo);
+                                        }
+                                        Singleton<BetterAudio>.Instance.PlayDropItem(baseballComp.SurfaceSound, JsonType.EItemDropSoundType.Rifle, raycastHit.point, 50f);
+                                        StanceController.DidMelee = true;
 
+                                        *//*             AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates["5cadf6ddae9215051e1c23b2"];
+                                                      BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
+                                                      Vector3 position = __instance.CurrentFireport.position;
+                                                      Vector3 vector = __instance.WeaponDirection;
+                                                      Vector3 shotPosition = position;
+                                                      Vector3 shotDirection = vector;
+                                                      __instance.AdjustShotVectors(ref shotPosition, ref vector);
+                                                      GInterface307 bc = (GInterface307)AccessTools.Field(typeof(EFT.Player.FirearmController), "BallisticsCalculator").GetValue(__instance);
+                                                      GClass2870 shot = bc.Shoot(ammo, shotPosition, shotDirection.normalized, player.ProfileId, __instance.Item as Item, 1, 0);
+                                                      MethodInfo regShot = AccessTools.Method(typeof(Player.FirearmController), "RegisterShot");
+                                                      regShot.Invoke(__instance, new object[] { __instance.Item as Item, shot });*//*
 
+                                    }
+                                    *//*if (GClass682.Linecast(meleeStart, meleeDir, out raycastHit, GClass2869.PlayerMask, false, raycastHit_0, func_1))
+                                    {
+                                        Collider col = raycastHit.collider;
+                                        Player victim = Singleton<GameWorld>.Instance.GetPlayerByCollider(raycastHit.collider);
+                                        if (victim != null && hitBalls != null)
+                                        {
+                                            Logger.LogWarning("found player");
+                                            Logger.LogWarning("target " + hitPart);
+                                            Logger.LogWarning(victim.Id);
+
+                                            *//*      DamageInfo di = default(DamageInfo);
+                                                  di.DamageType = EDamageType.Impact;
+                                                  di.Damage = 120f;
+                                                  di.PenetrationPower = 20f;
+                                                  di.ArmorDamage = 10f;
+                                                  BodyPartCollider bpc = hitBalls as BodyPartCollider;
+                                                  di.HitCollider = bpc.Collider;
+                                                  victim.ApplyShot(di, hitPart, GStruct353.EMPTY_SHOT_ID);               
+                                                  StanceController.CanDoMelee = false;*//*
+                                        }
+                                    }
+                                    return;*//*
+                                }*/
+
+                    RaycastHit raycastHit;
                     if (GClass682.Linecast(startDown, forwardDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastArr, isHitIgnoreTest))
                     {                
                         doStability(true, false, weapClass);

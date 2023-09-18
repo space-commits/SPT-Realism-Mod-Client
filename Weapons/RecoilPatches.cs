@@ -67,7 +67,7 @@ namespace RealismMod
                     timer = 0f;
 
                     FirearmController fc = player.HandsController as FirearmController;
-                    float shotCountFactor = (float)Math.Round(Mathf.Min(RecoilController.ShotCount * 0.4f, 1.75f), 2);
+                    float shotCountFactor = (float)Math.Round(Mathf.Min(RecoilController.ShotCount * 0.4f, 1.65f), 2);
                     float angle = Plugin.RecoilDispersionFactor.Value == 0f ? 0f : ((90f - RecoilController.BaseTotalRecoilAngle) / 50f);
                     float angleDispFactor = 90f / RecoilController.BaseTotalRecoilAngle;
                     float dispersion = Mathf.Max(RecoilController.FactoredTotalDispersion * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor * angleDispFactor, 0f);
@@ -272,8 +272,6 @@ namespace RealismMod
                 Vector3 separateIntensityFactors = (Vector3)intensityFactorsField.GetValue(__instance);
                 SkillsClass.GClass1743 buffInfo = (SkillsClass.GClass1743)buffInfoField.GetValue(__instance);
 
-                Plugin.CurrentlyShootingWeapon = weaponClass;
-     
                 float totalPlayerWeight = PlayerProperties.TotalUnmodifiedWeight - WeaponProperties.TotalWeaponWeight;
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 550f);
                 float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 100f);

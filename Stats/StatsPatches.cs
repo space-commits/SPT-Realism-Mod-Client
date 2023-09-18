@@ -400,6 +400,7 @@ namespace RealismMod
             float pureRecoilDelta = ((baseVRecoil + baseHRecoil) - pureRecoil) / ((baseVRecoil + baseHRecoil) * -1f);
             WeaponProperties.TotalModDuraBurn = modBurnRatio;
             WeaponProperties.TotalMalfChance = currentMalfChance;
+            WeaponProperties.MalfChanceDelta = (currentMalfChance - baseMalfChance) / baseMalfChance;
             Deafening.WeaponDeafFactor = totalLoudness;
             WeaponProperties.CanCycleSubs = canCycleSubs;
             WeaponProperties.HasShoulderContact = hasShoulderContact;
@@ -462,9 +463,9 @@ namespace RealismMod
 
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
+                float currentSightFactor = 1f;
                 if (Utils.IsReady && Plugin.IsAiming)
                 {
-                    float currentSightFactor = 1f;
                     int iterations = 0;
                     Player player = Utils.GetPlayer();
                     Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
@@ -490,6 +491,7 @@ namespace RealismMod
                         }
                     }
                 }
+
                 bool isBracingTop = StanceController.IsBracingTop;
                 float mountingFactor = StanceController.IsBracing && isBracingTop ? 1.05f : StanceController.IsBracing && !isBracingTop ? 1.025f : StanceController.IsMounting && isBracingTop ? 1.1f : StanceController.IsMounting && !isBracingTop ? 1.075f : 1f;
                 float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * currentSightFactor * mountingFactor;

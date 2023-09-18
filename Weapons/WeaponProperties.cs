@@ -157,6 +157,7 @@ namespace RealismMod
         public static float TotalModDuraBurn = 1;
 
         public static float TotalMalfChance = 0;
+        public static float MalfChanceDelta = 0;
 
         public static bool CanCycleSubs = false;
 

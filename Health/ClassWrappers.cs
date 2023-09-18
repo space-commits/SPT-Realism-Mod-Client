@@ -9,9 +9,7 @@ namespace RealismMod.Health
     public class BodyPartStateWrapper
     {
         private readonly object bodyPartStateInstance;
-
         private FieldInfo isDestroyedField;
-
         private FieldInfo healthField;
 
         public BodyPartStateWrapper(object bodyPartStateInstance)
