@@ -739,15 +739,15 @@ namespace RealismMod
 
             if (!StanceController.IsActiveAiming && !StanceController.IsShortStock)
             {
-                pwa.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 1.2f * PlayerProperties.SprintHipfirePenalty;
+                pwa.Breath.HipPenalty = Mathf.Min(WeaponProperties.BaseHipfireInaccuracy * 1.05f * PlayerProperties.SprintHipfirePenalty, 1.6f);
             }
             else if (StanceController.IsActiveAiming)
             {
-                pwa.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 0.8f * PlayerProperties.SprintHipfirePenalty;
+                pwa.Breath.HipPenalty = Mathf.Min(WeaponProperties.BaseHipfireInaccuracy * 0.8f * PlayerProperties.SprintHipfirePenalty, 1.6f);
             }
             else if(StanceController.IsShortStock)
             {
-                pwa.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * 1.5f * PlayerProperties.SprintHipfirePenalty;
+                pwa.Breath.HipPenalty = Mathf.Min(WeaponProperties.BaseHipfireInaccuracy * 1.4f * PlayerProperties.SprintHipfirePenalty, 1.6f);
             }
 
             if (Plugin.StanceToggleDevice.Value)
@@ -828,8 +828,6 @@ namespace RealismMod
             }
             else if (StanceController.StanceBlender.Value > 0f && !hasResetShortStock && !StanceController.IsLowReady && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !isResettingActiveAim && !isResettingHighReady && !isResettingLowReady)
             {
-                logger.LogWarning("reset");
-
                 StanceController.CanDoMelee = true;
 
                 StanceController.CanResetDamping = false;
@@ -1130,6 +1128,7 @@ namespace RealismMod
             }
         }
 
+        private static bool needToReset = false;
         public static void DoWiggleEffects(Player player, ProceduralWeaponAnimation pwa, Vector3 wiggleDirection, bool playSound = false, float volume = 1f)
         {
             if (playSound)
@@ -1143,16 +1142,18 @@ namespace RealismMod
             }
         }
 
-        public static void DoMounting(ManualLogSource Logger, Player player, ProceduralWeaponAnimation pwa, ref Vector3 weaponWorldPos, ref Vector3 mountWeapPosition)
+        private static Vector3 currentMountedPos = Vector3.zero;
+        private static float timer = 0f;
+        public static void DoMounting(ManualLogSource Logger, Player player, ProceduralWeaponAnimation pwa, ref Vector3 weaponWorldPos, ref Vector3 mountWeapPosition, float dt, Vector3 referencePos)
         {
             bool isMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
 
-            if (StanceController.IsMounting && (isMoving || !Plugin.IsAiming))
+            if (StanceController.IsMounting && (isMoving))
             {
                 StanceController.IsMounting = false;
                 DoWiggleEffects(player, pwa, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
             }
-            if (Plugin.IsAiming && Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && StanceController.IsBracing && player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire)
+            if (Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && StanceController.IsBracing && player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire)
             {
                 StanceController.IsMounting = !StanceController.IsMounting;
                 if (StanceController.IsMounting)
@@ -1167,10 +1168,24 @@ namespace RealismMod
                 StanceController.IsMounting = false;
                 DoWiggleEffects(player, pwa, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
             }
+
             if (StanceController.IsMounting)
             {
+                needToReset = true;
                 AccessTools.Field(typeof(TurnAwayEffector), "_turnAwayThreshold").SetValue(pwa.TurnAway, 1f);
                 weaponWorldPos = new Vector3(mountWeapPosition.x, mountWeapPosition.y, weaponWorldPos.z); //this makes it feel less clamped to cover but allows h recoil + StanceController.CoverDirection
+                currentMountedPos = weaponWorldPos;
+            }
+            else if (!isMoving && needToReset && mountWeapPosition != referencePos && timer < 0.3f)
+            {
+                timer += dt;
+                currentMountedPos = Vector3.Lerp(currentMountedPos, referencePos, 0.2f);
+                weaponWorldPos = currentMountedPos;
+            }
+            else
+            {
+                needToReset = false;
+                timer = 0f;
             }
         }
     }

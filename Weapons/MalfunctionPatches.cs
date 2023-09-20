@@ -187,7 +187,6 @@ namespace RealismMod
                 weaponDurability = 0f;
                 return true;
             }
-
         }
     }
 

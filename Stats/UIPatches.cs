@@ -64,14 +64,14 @@ namespace RealismMod
                 if (StanceController.IsMounting)
                 {
                     mountingUIImage.color = Color.white;
-                    float scaleAmount = Mathf.Lerp(1f, 1.15f, Mathf.PingPong(Time.time * 0.9f, 1.0f));
+                    float scaleAmount = Mathf.Lerp(1f, 1.15f, Mathf.PingPong(Time.time * 0.9f, 1f));
                     mountingUIRect.sizeDelta = new Vector2(90f, 90f) * scaleAmount;
 
                 }
                 else if (StanceController.IsBracing) 
                 {
                     mountingUIRect.sizeDelta = new Vector2(90f, 90f);
-                    float alpha = Mathf.Lerp(0.2f, 1f, Mathf.PingPong(Time.time * 1f, 1.0f));
+                    float alpha = Mathf.Lerp(0.2f, 1f, Mathf.PingPong(Time.time * 1f, 1f));
                     Color lerpedColor = new Color(1f, 1f, 1f, alpha);
                     mountingUIImage.color = lerpedColor;
                 }

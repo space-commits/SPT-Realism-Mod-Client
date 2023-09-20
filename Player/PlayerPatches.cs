@@ -43,17 +43,20 @@ namespace RealismMod
     public class PlayerInitPatch : ModulePatch
     {
         private InventoryClass invClass;
+        private Player player;
 
-        private void calcWeight(Player player)
+        //this is fucking curesd: it gets called twice, and both times calcWeightPenalties() will somehow be called after getTotalWeight() and the event that called it.
+        //remove event will have calcWeightPenalties be called twice, but the add event will only have it called once despite getTotalWeight being called twice.
+        //DO NOT RELY ON SETTING VALUES IN getTotalWeight()! Only set them inside calcWeightPenalties()!
+        private void getTotalWeight()
         {
+            this.player = Utils.GetPlayer();
             InventoryControllerClass invController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
             this.invClass = invController.Inventory;
-            invController.Inventory.TotalWeight = new GClass787<float>(new Func<float>(getTotalWeight));
-            float weaponWeight = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item.GetSingleItemTotalWeight() : 1f;
-            PlayerProperties.TotalModifiedWeightMinusWeapon = PlayerProperties.TotalModifiedWeight - weaponWeight;
+            invController.Inventory.TotalWeight = new GClass787<float>(new Func<float>(calcWeightPenalties));
         }
 
-        private float getTotalWeight()
+        private float calcWeightPenalties()
         {
             float modifiedWeight = 0f;
             float trueWeight = 0f;
@@ -76,30 +79,41 @@ namespace RealismMod
                     }
                 }
             }
+
             PlayerProperties.TotalModifiedWeight = modifiedWeight;
             PlayerProperties.TotalUnmodifiedWeight = trueWeight;
+            PlayerProperties.TotalMousePenalty = (-modifiedWeight / 10f);
+            float weaponWeight = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item.GetSingleItemTotalWeight() : 1f;
+            PlayerProperties.TotalModifiedWeightMinusWeapon = PlayerProperties.TotalModifiedWeight - weaponWeight;
+
+            if (Plugin.EnableMouseSensPenalty.Value)
+            {
+                player.RemoveMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor);
+                if (PlayerProperties.TotalMousePenalty < 0f)
+                {
+                    player.AddMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor, PlayerProperties.TotalMousePenalty / 100f);
+                }
+            }
+
             return modifiedWeight;
         }
 
         private void HandleAddItemEvent(GEventArgs2 args)
         {
-            Player player = Utils.GetPlayer();
             PlayerInitPatch p = new PlayerInitPatch();
-            p.calcWeight(player);
+            p.getTotalWeight();
         }
 
         private void HandleRemoveItemEvent(GEventArgs3 args)
         {
-            Player player = Utils.GetPlayer();
             PlayerInitPatch p = new PlayerInitPatch();
-            p.calcWeight(player);
+            p.getTotalWeight();
         }
 
         private void RefreshItemEvent(GEventArgs22 args)
         {
-            Player player = Utils.GetPlayer();
             PlayerInitPatch p = new PlayerInitPatch();
-            p.calcWeight(player);
+            p.getTotalWeight();
         }
 
         protected override MethodBase GetTargetMethod()
@@ -111,33 +125,34 @@ namespace RealismMod
         private static void PatchPostfix(Player __instance)
         {
 
-            if (__instance.IsYourPlayer == true)
+            if (__instance.IsYourPlayer)
             {
+                //for some reason this makes stances NOT reset
+                /*              StanceController.StanceBlender.Speed = 1f;
+                                StanceController.StanceBlender.Target = 0f;
+                                StanceController.StanceTargetPosition = Vector3.zero;
+                                StanceController.IsLowReady = false;
+                                StanceController.WasLowReady = false;
+                                StanceController.IsHighReady = false;
+                                StanceController.WasHighReady = false;
+                                StanceController.IsActiveAiming = false;
+                                StanceController.WasActiveAim = false;
+                                StanceController.IsShortStock = false;
+                                StanceController.WasShortStock = false;
+                                StanceController.IsPatrolStance = false;
+                                StanceController.IsMounting = false;
+                                StanceController.IsBracing = false;
+                                StanceController.DidStanceWiggle = false;
+
+                                Plugin.PlayerSpawnedIn = true;*/
+
                 PlayerInitPatch p = new PlayerInitPatch();
-/*                StanceController.StanceBlender.Speed = 1f;
-                StanceController.StanceBlender.Target = 0f;
-                StanceController.StanceTargetPosition = Vector3.zero;
-                StanceController.IsLowReady = false;
-                StanceController.WasLowReady = false;
-                StanceController.IsHighReady = false;
-                StanceController.WasHighReady = false;
-                StanceController.IsActiveAiming = false;
-                StanceController.WasActiveAim = false;
-                StanceController.IsShortStock = false;
-                StanceController.WasShortStock = false;
-                StanceController.IsPatrolStance = false;
-                StanceController.IsMounting = false;
-                StanceController.IsBracing = false;
-                StanceController.DidStanceWiggle = false;
-
-                Plugin.PlayerSpawnedIn = true;*/
-
                 StatCalc.SetGearParamaters(__instance);
                 InventoryControllerClass invController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(__instance);
-   
                 invController.AddItemEvent += p.HandleAddItemEvent;
                 invController.RemoveItemEvent += p.HandleRemoveItemEvent;
                 invController.RefreshItemEvent += p.RefreshItemEvent;
+                p.getTotalWeight();
             }
         }
     }
@@ -266,9 +281,9 @@ namespace RealismMod
                 pwa.HandsContainer.HandsRotation.InputIntensity = inputIntensitry;
                 PlayerProperties.SprintTotalBreathIntensity = breathIntensity;
                 PlayerProperties.SprintTotalHandsIntensity = inputIntensitry;
-                PlayerProperties.SprintHipfirePenalty = Mathf.Min(1f + (sprintTimer / 100f), 2f);
-
+                PlayerProperties.SprintHipfirePenalty = Mathf.Min(1f + (sprintTimer / 100f), 1.25f);
                 PlayerProperties.ADSSprintMulti = Mathf.Max(1f - (sprintTimer / 12f), 0.3f);
+
 
                 didSprintPenalties = true;
                 doSwayReset = false;
@@ -389,10 +404,15 @@ namespace RealismMod
                 {
                     if (RecoilController.IsFiring)
                     {
-                        if (Plugin.IsAiming) 
+                        if (Plugin.IsAiming)
                         {
                             __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingSwayBonus * 0.01f;
                             __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingSwayBonus * 0.01f;
+                        }
+                        else 
+                        {
+                            __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingSwayBonus;
+                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.TotalHandsIntensity * mountingSwayBonus;
                         }
 
                         RecoilController.SetRecoilParams(__instance.ProceduralWeaponAnimation, fc.Item);

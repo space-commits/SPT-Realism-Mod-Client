@@ -216,6 +216,7 @@ namespace RealismMod
         public static float TotalCamRecoil = 0f;
 
         public static float TotalDispersion = 0f;
+        public static float TotalDispersionDelta = 1f;
 
         public static float TotalRecoilAngle = 0f;
 

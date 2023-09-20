@@ -21,8 +21,8 @@ using static EFT.ClientPlayer;
 namespace RealismMod
 {
 
-    //to find float_9 on new client version, look for: public float AimingSpeed { get{ return this.float_9; } }
-    //to finf float_19 again, it's set to ErgnomicWeight in this method.
+    //to find float_9 on new client version for 3.6.0, look for: public float AimingSpeed { get{ return this.float_9; } }
+    //to find float_19 again, it's set to ErgnomicWeight in this method.
     public class UpdateWeaponVariablesPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -235,6 +235,7 @@ namespace RealismMod
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
                 if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
+
                     float totalPlayerWeight = PlayerProperties.TotalModifiedWeight - weapon.GetSingleItemTotalWeight();
                     float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
                     bool noShoulderContact = !WeaponProperties.HasShoulderContact && weapon.WeapClass != "pistol";

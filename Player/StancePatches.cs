@@ -208,7 +208,7 @@ namespace RealismMod
                     string weapClass = __instance.Item.WeapClass;
 
                     float wiggleAmount = 6f;
-                    float moveToCoverOffset = 0.01f;
+                    float moveToCoverOffset = 0.006f;
 
                     Transform weapTransform = player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim;
                     Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
@@ -684,7 +684,7 @@ namespace RealismMod
                         bool allowActiveAimReload = Plugin.ActiveAimReload.Value && PlayerProperties.IsInReloadOpertation && !PlayerProperties.IsAttemptingToReloadInternalMag && !PlayerProperties.IsQuickReloading;
                         bool cancelStance = (StanceController.CancelActiveAim && StanceController.IsActiveAiming && !allowActiveAimReload) || (StanceController.CancelHighReady && StanceController.IsHighReady) || (StanceController.CancelLowReady && StanceController.IsLowReady) || (StanceController.CancelShortStock && StanceController.IsShortStock) || (StanceController.CancelPistolStance && StanceController.PistolIsCompressed);
 
-                        StanceController.DoMounting(Logger, player, __instance, ref weaponPosition, ref mountWeapPosition);
+                        StanceController.DoMounting(Logger, player, __instance, ref weaponPosition, ref mountWeapPosition, dt, __instance.HandsContainer.WeaponRoot.position);
                         weaponPositionField.SetValue(__instance, weaponPosition);
 
                         currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? aimingQuat : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
@@ -955,7 +955,11 @@ namespace RealismMod
                     Vector3 worldPivot = __instance.HandsContainer.WeaponRootAnim.TransformPoint(position);
                     Vector3 weaponWorldPos = __instance.HandsContainer.WeaponRootAnim.position;
 
-                    StanceController.DoMounting(Logger, player, __instance, ref weaponWorldPos, ref mountWeapPosition);
+                    StanceController.DoMounting(Logger, player, __instance, ref weaponWorldPos, ref mountWeapPosition, dt, __instance.HandsContainer.WeaponRoot.position);
+         /*           Logger.LogWarning("weap root anim pos " + weaponWorldPos);
+                    Logger.LogWarning("weap root pos " + __instance.HandsContainer.WeaponRoot.position);
+                    Logger.LogWarning("weap pos " + __instance.HandsContainer.Weapon.position);
+                    Logger.LogWarning("tracking " + __instance.HandsContainer.TrackingTransform.position);*/
 
                     __instance.DeferredRotateWithCustomOrder(__instance.HandsContainer.WeaponRootAnim, worldPivot, vector);
                     Vector3 recoilVector = __instance.HandsContainer.Recoil.Get();
@@ -1036,24 +1040,6 @@ namespace RealismMod
                     StanceController.HasResetShortStock = hasResetShortStock;
                     StanceController.HasResetPistolPos = hasResetPistolPos;
                 }
-            }
-        }
-    }
-
-    public class UpdateHipInaccuracyPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(EFT.Player.FirearmController).GetMethod("UpdateHipInaccuracy", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(ref Player.FirearmController __instance)
-        {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (player.IsYourPlayer == true)
-            {
-                WeaponProperties.BaseHipfireInaccuracy = player.ProceduralWeaponAnimation.Breath.HipPenalty;
             }
         }
     }

@@ -240,6 +240,7 @@ namespace RealismMod
 
 
             WeaponProperties.TotalDispersion = totalDispersion;
+            WeaponProperties.TotalDispersionDelta = (totalDispersion - __instance.Template.RecolDispersion) / __instance.Template.RecolDispersion;
             WeaponProperties.TotalCamRecoil = totalCamRecoil;
             WeaponProperties.TotalRecoilAngle = Mathf.Max(totalRecoilAngle, 65f);
             WeaponProperties.TotalVRecoil = totalVRecoil;
@@ -602,4 +603,25 @@ namespace RealismMod
     }
 
 
+    public class UpdateHipInaccuracyPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Player.FirearmController).GetMethod("UpdateHipInaccuracy", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(ref Player.FirearmController __instance)
+        {
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            if (player.IsYourPlayer == true)
+            {
+                float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
+                float dampingFactor = (RecoilController.BaseTotalHandDamping + RecoilController.BaseTotalRecoilDamping);
+                float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
+                float recoilFactor = 1f + (RecoilController.BaseTotalVRecoil + RecoilController.BaseTotalHRecoil) / 100f;
+                WeaponProperties.BaseHipfireInaccuracy = player.ProceduralWeaponAnimation.Breath.HipPenalty * (1f - WeaponProperties.ErgoDelta) * convergenceFactor * dispersionFactor * recoilFactor * dampingFactor * 0.25f;
+            }
+        }
+    }
 }
