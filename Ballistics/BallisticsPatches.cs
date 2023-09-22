@@ -679,7 +679,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(GClass2870 shot, ref ArmorComponent __instance)
+        private static bool Prefix(GClass2870 shot, ArmorComponent __instance)
         {
             if (__instance.Repairable.Durability <= 0f && __instance.Template.ArmorMaterial != EArmorMaterial.ArmoredSteel && !__instance.Template.ArmorZone.Contains(EBodyPart.Head))
             {
@@ -805,7 +805,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref DamageInfo damageInfo, bool damageInfoIsLocal, ref ArmorComponent __instance, ref float __result)
+        private static bool Prefix(ArmorComponent __instance, ref DamageInfo damageInfo, bool damageInfoIsLocal, ref float __result)
         {
             EDamageType damageType = damageInfo.DamageType;
 

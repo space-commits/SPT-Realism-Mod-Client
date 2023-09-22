@@ -106,5 +106,15 @@ namespace RealismMod
             return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[17], out float result) ? result : 0f;
 
         }
+
+        public static float ModMeleeDamage(Mod mod)
+        {
+            return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[18], out float result) ? result : 0f;
+        }
+
+        public static float ModMeleePen(Mod mod)
+        {
+            return !Utils.NullCheck(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[19], out float result) ? result : 0f;
+        }
     }
 }

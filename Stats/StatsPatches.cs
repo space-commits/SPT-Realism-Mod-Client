@@ -107,12 +107,12 @@ namespace RealismMod
                 ErgoDeltaPatch p = new ErgoDeltaPatch();
                 if (PlayerProperties.IsInReloadOpertation)
                 {
-                    __result = p.FinalStatCalc(ref __instance);
+                    __result = FinalStatCalc(ref __instance);
                 }
                 else
                 {
-                    p.InitialStaCalc(ref __instance);
-                    __result = p.FinalStatCalc(ref __instance);
+                    InitialStaCalc(ref __instance);
+                    __result = FinalStatCalc(ref __instance);
                 }
                 return false;
             }
@@ -122,7 +122,7 @@ namespace RealismMod
             }
         }
 
-        public float FinalStatCalc(ref Weapon __instance)
+        public static float FinalStatCalc(ref Weapon __instance)
         {
             WeaponProperties._WeapClass = __instance.WeapClass;
             bool isManual = WeaponProperties.IsManuallyOperated(__instance);
@@ -259,7 +259,7 @@ namespace RealismMod
             return totalErgoDelta;
         }
 
-        public void InitialStaCalc(ref Weapon __instance)
+        public static void InitialStaCalc(ref Weapon __instance)
         {
             WeaponProperties._WeapClass = __instance.WeapClass;
             bool isManual = WeaponProperties.IsManuallyOperated(__instance);
@@ -344,7 +344,8 @@ namespace RealismMod
             {
                 hasShoulderContact = true;
             }
-
+            WeaponProperties.BaseMeleeDamage = 0f; //reset the melee dmg
+            WeaponProperties.BaseMeleePen = 0f; 
             for (int i = 0; i < __instance.Mods.Length; i++)
             {
                 Mod mod = __instance.Mods[i];
@@ -372,7 +373,14 @@ namespace RealismMod
                     float modMalfChance = AttachmentProperties.ModMalfunctionChance(__instance.Mods[i]);
                     float modDuraBurn = __instance.Mods[i].DurabilityBurnModificator;
                     float modFix = AttachmentProperties.FixSpeed(__instance.Mods[i]);
-                    modVRecoil += modConv > 0f ? modConv * -1f : 0f;    
+                    modVRecoil += modConv > 0f ? modConv * -1f : 0f;
+                    WeaponProperties.HasBayonet = modType == "bayonet" ? true : false;
+                    if (Utils.IsMuzzleDevice(mod))
+                    {
+                        WeaponProperties.BaseMeleeDamage = AttachmentProperties.ModMeleeDamage(mod);
+                        WeaponProperties.BaseMeleePen = AttachmentProperties.ModMeleePen(mod);
+                    }
+
 
                     StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, ref modMalfChance, ref modDuraBurn, ref modConv);
                     StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeedMod, modReload, ref currentReloadSpeedMod, modFix, ref currentFixSpeedMod, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeedMod, modChamber, false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed);

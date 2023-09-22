@@ -70,7 +70,9 @@ namespace RealismMod
             HpPerTick,
             RemoveTrnqt,
             Comfort,
-            PainKillerStrength
+            PainKillerStrength,
+            MeleeDamage,
+            MeleePen
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -143,6 +145,10 @@ namespace RealismMod
                     return "COMFORT MODIFIER";
                 case ENewItemAttributeId.PainKillerStrength:
                     return "PAIN RELIEF STRENGTH";
+                case ENewItemAttributeId.MeleeDamage:
+                    return "MELEE DAMAGE";
+                case ENewItemAttributeId.MeleePen:
+                    return "MELEE PENETRATION";
                 default:
                     return id.ToString();
             }

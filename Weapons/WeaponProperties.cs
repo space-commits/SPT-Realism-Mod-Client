@@ -23,6 +23,7 @@ namespace RealismMod
         public static float TotalErgo = 0;
         public static float ErgnomicWeight = 0;
         public static float CamReturnSpeed = 0;
+        public static float TotalConvergence = 0;
     }
 
 
@@ -319,5 +320,9 @@ namespace RealismMod
         public static float DispersionChangeRate = 0.95f;
         public static float DispersionResetRate = 1.05f;
         public static float DispersionLimit = 0.5f;
+
+        public static bool HasBayonet = false;
+        public static float BaseMeleeDamage = 0f;
+        public static float BaseMeleePen = 0f;
     }
 }
