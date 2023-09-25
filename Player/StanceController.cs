@@ -17,6 +17,7 @@ using UnityEngine;
 using static ShotEffector;
 using LightStruct = GStruct154;
 using GlobalValues = GClass1710;
+using RootMotion.FinalIK;
 
 
 namespace RealismMod
@@ -115,7 +116,7 @@ namespace RealismMod
 
         public static void SetStanceStamina(Player player, Player.FirearmController fc)
         {
-            bool isBracing = !IsMounting && IsBracing && Plugin.EnableIdleStamDrain.Value;
+            bool isBracing = !IsMounting && IsBracing && Plugin.EnableIdleStamDrain.Value && !IsHighReady && !IsLowReady;
             if (!PlayerProperties.IsSprinting && !isBracing)
             {
                 gotCurrentStam = false;
@@ -128,11 +129,11 @@ namespace RealismMod
                     }
                     else if (Plugin.IsAiming || (Plugin.EnableIdleStamDrain.Value && !IsActiveAiming && !IsMounting && !IsBracing && !player.IsInPronePose && (!IsHighReady && !IsLowReady && !IsShortStock && !RecoilController.IsFiring)))
                     {
-                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgoFactor * 0.8f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
+                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.8f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                     }
                     else if (IsActiveAiming && Plugin.EnableIdleStamDrain.Value)
                     {
-                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgoFactor * 0.2f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
+                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.2f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                     }
                     else if (!Plugin.EnableIdleStamDrain.Value)
                     {
@@ -142,22 +143,22 @@ namespace RealismMod
                     if (IsPatrolStance)
                     {
                         player.Physical.Aim(0f);
-                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((((1f - (WeaponProperties.ErgoFactor / 100f)) * 0.04f) * PlayerProperties.ADSInjuryMulti)), player.Physical.HandsStamina.TotalCapacity);
+                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.04f) * PlayerProperties.ADSInjuryMulti)), player.Physical.HandsStamina.TotalCapacity);
                     }
                     else if (IsHighReady && !RecoilController.IsFiring && !Plugin.IsAiming)
                     {
                         player.Physical.Aim(0f);
-                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((((1f - (WeaponProperties.ErgoFactor / 100f)) * 0.01f) * PlayerProperties.ADSInjuryMulti)), player.Physical.HandsStamina.TotalCapacity);
+                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.01f) * PlayerProperties.ADSInjuryMulti)), player.Physical.HandsStamina.TotalCapacity);
                     }
                     else if (IsMounting || (IsLowReady && !RecoilController.IsFiring && !Plugin.IsAiming))
                     {
                         player.Physical.Aim(0f);
-                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponProperties.ErgoFactor / 100f)) * 0.03f) * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
+                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.03f) * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
                     }
                     else if (IsShortStock && !RecoilController.IsFiring && !Plugin.IsAiming)
                     {
                         player.Physical.Aim(0f);
-                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponProperties.ErgoFactor / 100f)) * 0.02f) * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
+                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.02f) * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
                     }
                 }
                 else
@@ -165,7 +166,7 @@ namespace RealismMod
                     if (!Plugin.IsAiming)
                     {
                         player.Physical.Aim(0f);
-                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponProperties.ErgoFactor / 100f)) * 0.025f) * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
+                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.025f) * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
                     }
                 }
             }

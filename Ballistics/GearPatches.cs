@@ -126,18 +126,24 @@ namespace RealismMod
             private static bool Prefix(ref float __result, ref EFT.InventoryLogic.ArmorComponent ___armorComponent_0)
             {
                 float armorElementsToAdd = 0;
-                if (GearProperties.HasNeckArmor(___armorComponent_0.Item) == true) 
+
+                if (GearProperties.HasExtraArmor(___armorComponent_0.Item))
                 {
                     armorElementsToAdd += 1;
                 }
-                if (GearProperties.HasSideArmor(___armorComponent_0.Item) == true)
+                if (GearProperties.HasNeckArmor(___armorComponent_0.Item)) 
                 {
                     armorElementsToAdd += 1;
                 }
-                if (GearProperties.HasStomachArmor(___armorComponent_0.Item) == true)
+                if (GearProperties.HasSideArmor(___armorComponent_0.Item))
                 {
                     armorElementsToAdd += 1;
                 }
+                if (GearProperties.HasStomachArmor(___armorComponent_0.Item))
+                {
+                    armorElementsToAdd += 1;
+                }
+  
                 __result = ___armorComponent_0.ArmorZone.Contains(EBodyPart.Stomach) ? (float)___armorComponent_0.ArmorZone.Length + armorElementsToAdd - 1f : (float)___armorComponent_0.ArmorZone.Length + armorElementsToAdd;
                 return false;
             }
@@ -146,7 +152,7 @@ namespace RealismMod
         public class ArmorZoneSringValueDisplayPatch : ModulePatch
         {
 
-            private static Type _targetType;
+            private static Type _targetType;    
             private static MethodInfo _method_1;
 
             public ArmorZoneSringValueDisplayPatch()
@@ -186,17 +192,22 @@ namespace RealismMod
                     {
                         parts.Add(e.ToString());
                     }
-    
                 }
-                if (GearProperties.HasNeckArmor(___armorComponent_0.Item) == true)
+                if (GearProperties.HasExtraArmor(___armorComponent_0.Item))
+                {
+                    Logger.LogWarning(___armorComponent_0.Item.LocalizedName());
+                    Logger.LogWarning("has secondary armor");
+                    parts.Add("SECONDARY ARMOR");
+                }
+                if (GearProperties.HasNeckArmor(___armorComponent_0.Item))
                 {
                     parts.Add("NECK");
                 }
-                if (GearProperties.HasSideArmor(___armorComponent_0.Item) == true)
+                if (GearProperties.HasSideArmor(___armorComponent_0.Item))
                 {
                     parts.Add("SIDES");
                 }
-                if (GearProperties.HasStomachArmor(___armorComponent_0.Item) == true)
+                if (GearProperties.HasStomachArmor(___armorComponent_0.Item))
                 {
                     parts.Add("STOMACH");
                 }

@@ -664,18 +664,18 @@ namespace RealismMod
                 {
                     new IsPenetratedPatch().Enable();
                 }
+            }
 
-                //Shot Effects
-                if (Plugin.EnableDeafen.Value && ModConfig.headset_changes)
-                {
-                    new PrismEffectsPatch().Enable();
-                    new VignettePatch().Enable();
-                    new UpdatePhonesPatch().Enable();
-                    new SetCompressorPatch().Enable();
-                    new RegisterShotPatch().Enable();
-                    new ExplosionPatch().Enable();
-                    new GrenadeClassContusionPatch().Enable();
-                }
+            //Shot Effects
+            if (Plugin.EnableDeafen.Value && ModConfig.headset_changes && ModConfig.realistic_ballistics && ModConfig.recoil_attachment_overhaul)
+            {
+                new PrismEffectsPatch().Enable();
+                new VignettePatch().Enable();
+                new UpdatePhonesPatch().Enable();
+                new SetCompressorPatch().Enable();
+                new RegisterShotPatch().Enable();
+                new ExplosionPatch().Enable();
+                new GrenadeClassContusionPatch().Enable();
             }
 
             new ArmorComponentPatch().Enable();
@@ -718,6 +718,9 @@ namespace RealismMod
             new OperateStationaryWeaponPatch().Enable();
             new RotatePatch().Enable();
             new SetTiltPatch().Enable();
+
+/*            new CalibrationPatch1().Enable();*/
+/*            new CalibrationPatch2().Enable();*/
 
             //Health
             if (EnableMedicalOvehaul.Value && ModConfig.med_changes)
@@ -986,10 +989,10 @@ namespace RealismMod
             VigReset = Config.Bind<float>(deafSettings, "Tunnel Effect Reset Rate", 0.02f, new ConfigDescription("How Quickly Player Recovers From Tunnel Vision. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true }));
             DistRate = Config.Bind<float>(deafSettings, "Distortion Rate", 0.16f, new ConfigDescription("How Quickly Player's Hearing Gets Distorted. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
             DistReset = Config.Bind<float>(deafSettings, "Distortion Reset Rate", 0.25f, new ConfigDescription("How Quickly Player's Hearing Recovers From Distortion. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
-            EnableDeafen = Config.Bind<bool>(deafSettings, "Enable Deafening", true, new ConfigDescription("Requiures Restart. Enables Gunshots And Explosions Deafening The Player. Requires Headset Changes To Be Enabled In The Config App.", null, new ConfigurationManagerAttributes { Order = 1 }));
+            EnableDeafen = Config.Bind<bool>(deafSettings, "Enable Deafening", true, new ConfigDescription("Requiures Restart, And For Ballistics And Recoil/Attachment Overhauls To Be Enabled. Enables Gunshots And Explosions Deafening The Player. Requires Headset Changes To Be Enabled In The Config App.", null, new ConfigurationManagerAttributes { Order = 1 }));
 
             EnableReloadPatches = Config.Bind<bool>(speed, "Enable Reload And Chamber Speed Changes", true, new ConfigDescription("Requires Restart. Weapon Weight, Magazine Weight, Attachment Reload And Chamber Speed Stat, Balance, Ergo And Arm Injury Affect Reload And Chamber Speed.", null, new ConfigurationManagerAttributes { Order = 17 }));
-            GlobalAimSpeedModifier = Config.Bind<float>(speed, "Aim Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16 }));
+            GlobalAimSpeedModifier = Config.Bind<float>(speed, "Aim Speed Multi.", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16 }));
             GlobalReloadSpeedMulti = Config.Bind<float>(speed, "Magazine Reload Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15 }));
             GlobalFixSpeedMulti = Config.Bind<float>(speed, "Malfunction Fix Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14 }));
             GlobalUBGLReloadMulti = Config.Bind<float>(speed, "UBGL Reload Speed Multi", 1.35f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13, IsAdvanced = true }));

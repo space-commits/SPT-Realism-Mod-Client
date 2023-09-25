@@ -31,7 +31,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
+        private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
             GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
             if (ginterface114 != null && ginterface114.Weapon != null)
@@ -92,7 +92,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
+        private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
 
             GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
@@ -117,13 +117,12 @@ namespace RealismMod
                     float stockMulti = weapon.WeapClass != "pistol" && !WeaponProperties.HasShoulderContact ? 0.75f : 1f;
                     float totalSightlessAimSpeed = WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f));
                     float sightSpeedModi = currentAimingMod != null ? AttachmentProperties.AimSpeed(currentAimingMod) : 1f;
+                    sightSpeedModi = currentAimingMod != null && (currentAimingMod.TemplateId == "5c07dd120db834001c39092d" || currentAimingMod.TemplateId == "5c0a2cec0db834001b7ce47d") && __instance.CurrentScope.IsOptic ? 1f : sightSpeedModi;
                     float totalSightedAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)) * stanceMulti * stockMulti, 0.45f, 1.5f);
                     float newAimSpeed = Mathf.Max(totalSightedAimSpeed * PlayerProperties.ADSSprintMulti, 0.3f) * Plugin.GlobalAimSpeedModifier.Value;
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
                     float float_9 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance); //aimspeed
 
-                    /*                    float totalWeight = firearmController.Item.WeapClass == "pistol" ? firearmController.Item.GetSingleItemTotalWeight() * 2 : firearmController.Item.GetSingleItemTotalWeight();
-                    */
                     Plugin.IsOptic = __instance.CurrentScope.IsOptic ? true : false;
 
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));
@@ -225,7 +224,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
+        private static bool Prefix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
             GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
 
@@ -278,7 +277,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref EFT.Animations.ProceduralWeaponAnimation __instance, float value)
+        private static bool Prefix(EFT.Animations.ProceduralWeaponAnimation __instance, float value)
         {
             GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
 
@@ -309,7 +308,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref EFT.Animations.ProceduralWeaponAnimation __instance, ref float __result)
+        private static bool Prefix(EFT.Animations.ProceduralWeaponAnimation __instance, ref float __result)
         {
 
             GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
@@ -326,4 +325,52 @@ namespace RealismMod
             return true;
         }
     }
+
+/*    public class CalibrationPatch1 : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(CollimatorSight).GetMethod("LookAt", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void PatchPrefix(CollimatorSight __instance, ref Vector3 point, ref Vector3 worldUp)
+        {
+            Logger.LogWarning("x" + __instance.transform.localPosition.x);
+            Logger.LogWarning("y" + __instance.transform.localPosition.y);
+            Logger.LogWarning("z" + __instance.transform.localPosition.z);
+            __instance.transform.localPosition = new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value);
+
+        }
+    }
+*/
+    /*  public class CalibrationPatch1 : ModulePatch
+      {
+          protected override MethodBase GetTargetMethod()
+          {
+              return typeof(ScopePrefabCache).GetMethod("LookAtCollimatorOnly", BindingFlags.Instance | BindingFlags.Public);
+          }
+
+          [PatchPrefix]
+          private static void PatchPrefix(ScopePrefabCache __instance, ref Vector3 point, ref Vector3 worldUp)
+          {
+              point = point + new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value);
+              Logger.LogWarning("newPoint 1" + point);
+          }
+      }
+
+      public class CalibrationPatch2 : ModulePatch
+      {
+          protected override MethodBase GetTargetMethod()
+          {
+              return typeof(ScopePrefabCache).GetMethod("LookAt", BindingFlags.Instance | BindingFlags.Public);
+          }
+
+          [PatchPrefix]
+          private static void PatchPrefix(ScopePrefabCache __instance, ref Vector3 point,ref Vector3 worldUp)
+          {
+              point = point + new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value);
+              Logger.LogWarning("newPoint 2" + point);
+          }
+      }*/
 }

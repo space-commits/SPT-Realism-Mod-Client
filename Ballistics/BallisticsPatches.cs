@@ -447,14 +447,16 @@ namespace RealismMod
                 {
                     bool hitSecondaryArmor = false;
                     bool hasBypassedArmor = false;
+                    bool hasExtraArmor = GearProperties.HasExtraArmor(armor.Item);
                     bool hasSideArmor = GearProperties.HasSideArmor(armor.Item);
                     bool hasStomachArmor = GearProperties.HasStomachArmor(armor.Item);
                     bool hasNeckArmor = GearProperties.HasNeckArmor(armor.Item);
                     hasArmArmor = armor.Template.ArmorZone.Contains(EBodyPart.LeftArm) || armor.Template.ArmorZone.Contains(EBodyPart.RightArm);
+                    bool shouldHaveExtraSides = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(armor.ArmorClass).Resistance > 50 ? true : false;
 
                     if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis || hitPart == HitBox.LeftForearm || hitPart == HitBox.RightForearm || hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightUpperArm)
                     {
-                        BallisticsController.GetHitArmorZone(Logger, armor, hitPart, localPoint, hitOrientation, hasSideArmor, hasStomachArmor, hasNeckArmor, ref hasBypassedArmor, ref hitSecondaryArmor);
+                        BallisticsController.GetHitArmorZone(Logger, armor, hitPart, localPoint, hitOrientation, hasSideArmor, hasStomachArmor, hasNeckArmor, hasExtraArmor, shouldHaveExtraSides, hasArmArmor, ref hasBypassedArmor, ref hitSecondaryArmor);
                     }
 
                     if (Plugin.EnableBallisticsLogging.Value && __instance.IsYourPlayer)
@@ -688,14 +690,17 @@ namespace RealismMod
 
             bool hitSecondaryArmor = false;
             bool hasBypassedArmor = false;
-            bool hasSideArmor = GearProperties.HasSideArmor(__instance.Item);
-            bool hasStomachArmor = GearProperties.HasStomachArmor(__instance.Item);
-            bool hasNeckArmor = GearProperties.HasNeckArmor(__instance.Item);
 
             bool isPlayer = __instance.Item.Owner.ID.StartsWith("pmc") || __instance.Item.Owner.ID.StartsWith("scav");
-
             if (Plugin.EnableArmorHitZones.Value && ((isPlayer && Plugin.EnablePlayerArmorZones.Value) || !isPlayer)) 
             {
+                bool hasExtraArmor = GearProperties.HasExtraArmor(__instance.Item);
+                bool hasSideArmor = GearProperties.HasSideArmor(__instance.Item);
+                bool hasStomachArmor = GearProperties.HasStomachArmor(__instance.Item);
+                bool hasNeckArmor = GearProperties.HasNeckArmor(__instance.Item);
+                bool shouldHaveExtraSides = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance > 50 ? true : false;
+                bool hasArmArmor = __instance.Template.ArmorZone.Contains(EBodyPart.LeftArm) || __instance.Template.ArmorZone.Contains(EBodyPart.RightArm);
+
                 RaycastHit raycast = (RaycastHit)AccessTools.Field(typeof(GClass2870), "raycastHit_0").GetValue(shot);
                 Collider col = raycast.collider;
                 Vector3 localPoint = col.transform.InverseTransformPoint(raycast.point);
@@ -712,7 +717,7 @@ namespace RealismMod
 
                 if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis || hitPart == HitBox.LeftForearm || hitPart == HitBox.RightForearm || hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightUpperArm) 
                 {
-                    BallisticsController.GetHitArmorZone(Logger, __instance, hitPart, localPoint, hitOrientation, hasSideArmor, hasStomachArmor, hasNeckArmor, ref hasBypassedArmor, ref hitSecondaryArmor);
+                    BallisticsController.GetHitArmorZone(Logger, __instance, hitPart, localPoint, hitOrientation, hasSideArmor, hasStomachArmor, hasNeckArmor, hasExtraArmor, shouldHaveExtraSides, hasArmArmor, ref hasBypassedArmor, ref hitSecondaryArmor);
                 }
 
                 if (Plugin.EnableBallisticsLogging.Value)
@@ -757,13 +762,14 @@ namespace RealismMod
             }
 
             float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
-            armorResist = hitSecondaryArmor == true ? Math.Min(armorResist, 50f) : armorResist;
+            float secondaryArmorResist = armorResist <= 50 ? armorResist : Mathf.Clamp(armorResist - 40f, 35f, 45f);
+            armorResist = hitSecondaryArmor ? secondaryArmorResist : armorResist;
             float armorFactor = (121f - 5000f / (45f + armorDuraPercent * 2f)) * armorResist * 0.01f;
             if (((armorFactor >= penetrationPower + 15f) ? 0f : ((armorFactor >= penetrationPower) ? (0.4f * (armorFactor - penetrationPower - 15f) * (armorFactor - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * armorFactor - penetrationPower)))) - shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f < 0f)
             {
                 shot.BlockedBy = __instance.Item.Id;
                 Debug.Log(">>> Shot blocked by armor piece");
-                if (Plugin.EnableBallisticsLogging.Value == true)
+                if (Plugin.EnableBallisticsLogging.Value)
                 {
                     Logger.LogWarning("===========PEN STATUS=============== ");
                     Logger.LogWarning("Blocked");
@@ -845,11 +851,14 @@ namespace RealismMod
       /*          Vector3 normalizedPoint = localPoint.normalized;*/
                 Vector3 hitNormal = damageInfo.HitNormal;
 
+                bool hasExtraArmor = GearProperties.HasExtraArmor(__instance.Item);
                 bool hasSideArmor = GearProperties.HasSideArmor(__instance.Item);
                 bool hasStomachArmor = GearProperties.HasStomachArmor(__instance.Item);
                 bool hasNeckArmor = GearProperties.HasNeckArmor(__instance.Item);
-                EHitOrientation hitOrientation = EHitOrientation.UnknownOrientation;
+                bool shouldHaveExtraSides = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance >= 50 ? true : false;
+                bool hasArmArmor = __instance.Template.ArmorZone.Contains(EBodyPart.LeftArm) || __instance.Template.ArmorZone.Contains(EBodyPart.RightArm);
 
+                EHitOrientation hitOrientation = EHitOrientation.UnknownOrientation;
                 if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis)
                 {
                     hitOrientation = BallisticsController.GetHitOrientation(hitNormal, col.transform, Logger);
@@ -857,7 +866,7 @@ namespace RealismMod
 
                 if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis || hitPart == HitBox.LeftForearm || hitPart == HitBox.RightForearm || hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightUpperArm)
                 {
-                    BallisticsController.GetHitArmorZone(Logger, __instance, hitPart, localPoint, hitOrientation, hasSideArmor, hasStomachArmor, hasNeckArmor, ref hasBypassedArmor, ref hitSecondaryArmor);
+                    BallisticsController.GetHitArmorZone(Logger, __instance, hitPart, localPoint, hitOrientation, hasSideArmor, hasStomachArmor, hasNeckArmor, hasExtraArmor, shouldHaveExtraSides, hasArmArmor, ref hasBypassedArmor, ref hitSecondaryArmor);
                 }
 
                 if (damageInfo.DeflectedBy == __instance.Item.Id) 
@@ -897,7 +906,8 @@ namespace RealismMod
             float penPower = damageInfo.PenetrationPower;
             float duraPercent = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability;
             float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
-            armorResist = hitSecondaryArmor == true ? 50f : armorResist;
+            float secondaryArmorResist = armorResist <= 50 ? armorResist : Mathf.Clamp(armorResist - 40f, 35f, 45f);
+            armorResist = hitSecondaryArmor == true ? secondaryArmorResist : armorResist;
             float armorDestructibility = Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
 
             float armorFactor = armorResist * (Mathf.Min(1f, duraPercent * 1.65f));
