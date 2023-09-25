@@ -93,6 +93,7 @@ namespace RealismMod
         public static ConfigEntry<KeyboardShortcut> CycleStancesKeybind { get; set; }
         public static ConfigEntry<KeyboardShortcut> MountKeybind { get; set; }
         public static ConfigEntry<KeyboardShortcut> PatrolKeybind { get; set; }
+        public static ConfigEntry<KeyboardShortcut> MeleeKeybind { get; set; }
 
         public static ConfigEntry<bool> EnableMountUI { get; set; }
         public static ConfigEntry<bool> ToggleActiveAim { get; set; }
@@ -1026,6 +1027,7 @@ namespace RealismMod
             ShortStockKeybind = Config.Bind(weapAimAndPos, "Short-Stock Keybind", new KeyboardShortcut(KeyCode.RightArrow), new ConfigDescription("Tucks The Weapon's Stock Under Player's Arm, Shortening The Overall Length Of The Wweapon To Prevent Muzzle Being Pushed Away From Target.", null, new ConfigurationManagerAttributes { Order = 170 }));
             MountKeybind = Config.Bind(weapAimAndPos, "Mounting Keybind", new KeyboardShortcut(KeyCode.KeypadMultiply), new ConfigDescription("Snaps To Cover To Improve Weapon Stability And Recoil, Toggle Only.", null, new ConfigurationManagerAttributes { Order = 160 }));
             PatrolKeybind = Config.Bind(weapAimAndPos, "Patrol/Neutral Stance Keybind", new KeyboardShortcut(KeyCode.KeypadEnter), new ConfigDescription("Puts The Weapon In A Neutral Position, Improving Arm Stam Regen And Walk Speed. For Maximum Larping.", null, new ConfigurationManagerAttributes { Order = 155 }));
+            MeleeKeybind = Config.Bind(weapAimAndPos, "Melee Keybind", new KeyboardShortcut(KeyCode.Joystick1Button0), new ConfigDescription("Strike With Muzzle Or Bayonet Of Equipped Weapon.", null, new ConfigurationManagerAttributes { Order = 154 }));
 
             WeapOffsetX = Config.Bind<float>(weapAimAndPos, "Weapon Position X-Axis", 0.0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 152 }));
             WeapOffsetY = Config.Bind<float>(weapAimAndPos, "Weapon Position Y-Axis", 0.0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 151 }));

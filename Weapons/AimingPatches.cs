@@ -29,7 +29,7 @@ namespace RealismMod
                 bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
                 bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
                 bool gearBlocksADS = Plugin.EnableFSPatch.Value && fsIsON && (!WeaponProperties.WeaponCanFSADS && (!GearProperties.AllowsADS(fsComponent.Item) || !PlayerProperties.GearAllowsADS));
-                if (Plugin.ModConfig.recoil_attachment_overhaul && ((Plugin.EnableNVGPatch.Value && nvgIsOn && Plugin.IsOptic) || gearBlocksADS))
+                if (Plugin.ModConfig.recoil_attachment_overhaul && ((Plugin.EnableNVGPatch.Value && nvgIsOn && Plugin.IsOptic) || gearBlocksADS || StanceController.IsMeleeAttack))
                 {
                     if (!hasSetCanAds)
                     {
@@ -69,6 +69,11 @@ namespace RealismMod
                     player.MovementContext.SetAimingSlowdown(true, 0.33f);
                 }
 
+     /*           if (StanceController.IsMeleeAttack && isAiming)
+                {
+                    fc.ToggleAim();
+                }
+*/
                 if (!wasToggled && (fsIsON || nvgIsOn)) 
                 {
                     wasToggled = true;
