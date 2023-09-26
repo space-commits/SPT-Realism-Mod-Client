@@ -188,14 +188,21 @@ namespace RealismMod
             __instance.Player = shot.Player;
             __instance.Weapon = shot.Weapon;
             __instance.FireIndex = shot.FireIndex;
-            __instance.ArmorDamage = shot.VelocityMagnitude;
+            if (__instance.DamageType == EDamageType.Blunt || __instance.DamageType == EDamageType.Bullet)
+            {
+                __instance.ArmorDamage = shot.VelocityMagnitude;
+            }
+            else 
+            {
+                __instance.ArmorDamage = shot.ArmorDamage;
+            }
             __instance.DeflectedBy = shot.DeflectedBy;
             __instance.BlockedBy = shot.BlockedBy;
             __instance.MasterOrigin = shot.MasterOrigin;
             __instance.IsForwardHit = shot.IsForwardHit;
             __instance.SourceId = shot.Ammo.TemplateId;
 
-            if (Plugin.EnableBodyHitZones.Value && !__instance.Blunt && __instance.DamageType == EDamageType.Bullet) 
+            if (Plugin.EnableBodyHitZones.Value && !__instance.Blunt && (__instance.DamageType == EDamageType.Bullet || __instance.DamageType == EDamageType.Melee)) 
             {
                 string hitCollider = shot.HittedBallisticCollider.name;
                 if (HitBox.HitValidCollider(hitCollider))
@@ -683,7 +690,10 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(GClass2870 shot, ArmorComponent __instance)
         {
-            if (__instance.Repairable.Durability <= 0f && __instance.Template.ArmorMaterial != EArmorMaterial.ArmoredSteel && !__instance.Template.ArmorZone.Contains(EBodyPart.Head))
+            Logger.LogWarning("pen status");
+
+            bool isSteelBodyArmor = __instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !__instance.Template.ArmorZone.Contains(EBodyPart.Head);
+            if (__instance.Repairable.Durability <= 0f && !isSteelBodyArmor)
             {
                 return false;
             }
@@ -795,9 +805,7 @@ namespace RealismMod
 
         protected override MethodBase GetTargetMethod()
         {
-            var result = typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.ApplyDamage), BindingFlags.Public | BindingFlags.Instance);
-
-            return result;
+            return typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.ApplyDamage), BindingFlags.Public | BindingFlags.Instance);
         }
 
         private static int playCounter = 0;
@@ -833,7 +841,7 @@ namespace RealismMod
                 return false;
             }
 
-            if (damageType == EDamageType.Sniper || damageType == EDamageType.Melee || damageType == EDamageType.Landmine)
+            if (damageType == EDamageType.Sniper || damageType == EDamageType.Landmine)
             {
                 return true;
             }
@@ -889,19 +897,32 @@ namespace RealismMod
                 }
             }
 
-            AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
-            BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
-
-            float speedFactor = ammo.GetBulletSpeed / damageInfo.ArmorDamage;
-            float armorDamageActual = ammo.ArmorDamage * speedFactor;
-
-            if (hasBypassedArmor) 
+            if (hasBypassedArmor)
             {
                 __result = 0f;
                 return false;
             }
 
-            float KE = (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f;
+            float speedFactor = 1f;
+            float armorDamageActual = 1f;
+            float KE = 1f;
+
+            BulletClass ammo = null;
+            if (damageType != EDamageType.Melee)
+            {
+                AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
+                ammo = new BulletClass("newAmmo", ammoTemp);
+                speedFactor = ammo.GetBulletSpeed / damageInfo.ArmorDamage;
+                armorDamageActual = ammo.ArmorDamage * speedFactor;
+                KE = (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f;
+            }
+            else 
+            {
+                armorDamageActual = damageInfo.ArmorDamage;
+                float velocity = 40f * (1f - (WeaponProperties.ErgoFactor / 100f));
+                KE = (0.5f * (WeaponProperties.TotalWeaponWeight * 1000f) * velocity * velocity) / 1000f;
+            }
+
             float bluntThrput = hitSecondaryArmor == true ? __instance.Template.BluntThroughput * 1.15f : __instance.Template.BluntThroughput;
             float penPower = damageInfo.PenetrationPower;
             float duraPercent = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability;
@@ -911,14 +932,12 @@ namespace RealismMod
             float armorDestructibility = Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
 
             float armorFactor = armorResist * (Mathf.Min(1f, duraPercent * 1.65f));
-  /*          float throughputDuraFactored = Mathf.Min(1f, bluntThrput * (1f + ((duraPercent - 1f) * -1f)));*/
+            /*          float throughputDuraFactored = Mathf.Min(1f, bluntThrput * (1f + ((duraPercent - 1f) * -1f)));*/
             float penDuraFactoredClass = Mathf.Max(1f, armorFactor - (penPower / 1.8f));
             float penFactoredClass = Mathf.Max(1f, armorResist - (penPower / 1.8f));
             float maxPotentialDuraDamage = KE / penDuraFactoredClass;
             float maxPotentialBluntDamage = KE / penFactoredClass;
-
             float throughputFactoredDamage = Math.Min(damageInfo.Damage, maxPotentialDuraDamage * bluntThrput) * (armorDamageActual <= 2f ? 0.5f : 1f);
-
             float armorStatReductionFactor = Mathf.Max((1 - (penDuraFactoredClass / 100f)), 0.1f);
 
             if (damageInfo.DeflectedBy == __instance.Item.Id)
@@ -938,10 +957,36 @@ namespace RealismMod
                 armorDestructibility = 0.1f;
             }
 
+            float durabilityLoss = 1f;
+            if (damageType != EDamageType.Melee)
+            {
+                durabilityLoss = (maxPotentialBluntDamage / 24f) * Mathf.Clamp(ammo.BulletDiameterMilimeters / 7.62f, 1f, 2f) * armorDamageActual * armorDestructibility * (hitSecondaryArmor ? 0.25f : 1f);
+            }
+            else 
+            {
+                durabilityLoss = (maxPotentialBluntDamage / 24f) * Mathf.Clamp(9f / 7.62f, 1f, 2f) * armorDamageActual * armorDestructibility * (hitSecondaryArmor ? 0.25f : 1f);
+            }
 
-            float durabilityLoss = (maxPotentialBluntDamage / 24f) * Mathf.Clamp(ammo.BulletDiameterMilimeters / 7.62f, 1f, 2f) * armorDamageActual * armorDestructibility * (hitSecondaryArmor ? 0.25f : 1f);
-
-            if (!(damageInfo.BlockedBy == __instance.Item.Id) && !(damageInfo.DeflectedBy == __instance.Item.Id) && !hasBypassedArmor)
+            if (damageType == EDamageType.Melee) 
+            {
+                if (damageInfo.PenetrationPower > penDuraFactoredClass)
+                {
+                    Logger.LogWarning("melee pen");
+                    Logger.LogWarning("damageInfo.PenetrationPower " + damageInfo.PenetrationPower);
+                    Logger.LogWarning("penDuraFactoredClass " + penDuraFactoredClass);
+                    damageInfo.Damage *= armorStatReductionFactor;
+                    damageInfo.PenetrationPower *= armorStatReductionFactor;
+                }
+                else
+                {
+                    Logger.LogWarning("melee hit");
+                    damageInfo.Damage = throughputFactoredDamage;
+                    damageInfo.StaminaBurnRate = (throughputFactoredDamage / 100f) * 2f;
+                    damageInfo.HeavyBleedingDelta = 0f;
+                    damageInfo.LightBleedingDelta = 0f;
+                }
+            }
+            else if (!(damageInfo.BlockedBy == __instance.Item.Id) && !(damageInfo.DeflectedBy == __instance.Item.Id) && !hasBypassedArmor)
             {
                 durabilityLoss *= (1 - (penPower / 100f));
                 damageInfo.Damage *= armorStatReductionFactor;

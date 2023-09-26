@@ -307,7 +307,7 @@ namespace RealismMod
                 __instance.ShotVals[4].Intensity = -totalCamRecoil;
 
                 float fovFactor = (Singleton<SharedGameSettingsClass>.Instance.Game.Settings.FieldOfView / 70f) * Plugin.HRecLimitMulti.Value;
-                float opticLimit = Plugin.IsAiming && Plugin.IsOptic ? 15f * fovFactor: 35f * fovFactor;
+                float opticLimit = Plugin.IsAiming && Plugin.IsOptic ? 15f * fovFactor: 30f * fovFactor;
                 float shotFactor = 1f;
                 if (weaponClass.WeapClass == "pistol" && RecoilController.ShotCount > 1f && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto) 
                 {

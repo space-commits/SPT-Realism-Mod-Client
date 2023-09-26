@@ -290,7 +290,7 @@ namespace RealismMod
                 }
 
                 //patrol
-                if (Input.GetKeyDown(Plugin.PatrolKeybind.Value.MainKey))
+                if (CanToggleMelee && DidMelee && HasResetMelee && Input.GetKeyDown(Plugin.PatrolKeybind.Value.MainKey))
                 {
                     IsPatrolStance = !IsPatrolStance;
                     StanceBlender.Target = 0f;
@@ -308,7 +308,7 @@ namespace RealismMod
                 if (!PlayerProperties.IsSprinting && !Plugin.IsInInventory && WeaponProperties._WeapClass != "pistol")
                 {
                     //cycle stances
-                    if (Input.GetKeyUp(Plugin.CycleStancesKeybind.Value.MainKey))
+                    if (CanToggleMelee && DidMelee && HasResetMelee && Input.GetKeyUp(Plugin.CycleStancesKeybind.Value.MainKey))
                     {
                         if (Time.time <= doubleClickTime)
                         {
@@ -359,7 +359,7 @@ namespace RealismMod
                     //active aim
                     if (!Plugin.ToggleActiveAim.Value)
                     {
-                        if (DidMelee && Input.GetKey(Plugin.ActiveAimKeybind.Value.MainKey) || (Input.GetKey(KeyCode.Mouse1) && !PlayerProperties.IsAllowedADS))
+                        if (CanToggleMelee && DidMelee && HasResetMelee && Input.GetKey(Plugin.ActiveAimKeybind.Value.MainKey) || (Input.GetKey(KeyCode.Mouse1) && !PlayerProperties.IsAllowedADS))
                         {
                             if (!SetActiveAiming)
                             {
@@ -388,7 +388,7 @@ namespace RealismMod
                     }
                     else
                     {
-                        if (Input.GetKeyDown(Plugin.ActiveAimKeybind.Value.MainKey) || (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerProperties.IsAllowedADS))
+                        if (CanToggleMelee && DidMelee && HasResetMelee && Input.GetKeyDown(Plugin.ActiveAimKeybind.Value.MainKey) || (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerProperties.IsAllowedADS))
                         {
                             StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
                             IsActiveAiming = !IsActiveAiming;
@@ -429,7 +429,7 @@ namespace RealismMod
 
 
                     //short-stock
-                    if (!Plugin.IsAiming && DidMelee && Input.GetKeyDown(Plugin.ShortStockKeybind.Value.MainKey))
+                    if (CanToggleMelee && DidMelee && HasResetMelee && Input.GetKeyDown(Plugin.ShortStockKeybind.Value.MainKey))
                     {
                         StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
                         IsShortStock = !IsShortStock;
@@ -446,7 +446,7 @@ namespace RealismMod
 
 
                     //high ready
-                    if (!Plugin.IsAiming && Input.GetKeyDown(Plugin.HighReadyKeybind.Value.MainKey))
+                    if (CanToggleMelee && DidMelee && HasResetMelee && Input.GetKeyDown(Plugin.HighReadyKeybind.Value.MainKey))
                     {
                         StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
                         IsHighReady = !IsHighReady;
@@ -467,7 +467,7 @@ namespace RealismMod
                     }
 
                     //low ready
-                    if (!Plugin.IsAiming && Input.GetKeyDown(Plugin.LowReadyKeybind.Value.MainKey))
+                    if (CanToggleMelee && DidMelee && HasResetMelee && Input.GetKeyDown(Plugin.LowReadyKeybind.Value.MainKey))
                     {
                         StanceController.StanceBlender.Target = StanceController.StanceBlender.Target == 0f ? 1f : 0f;
 
@@ -1209,7 +1209,7 @@ namespace RealismMod
             {
                 logger.LogWarning("resetting melee");
 
-                if (StanceController.StanceBlender.Value <= 0.15f) 
+                if (StanceController.StanceBlender.Value <= 0.2f) 
                 {
                     StanceController.CanDoMeleeDetection = true;
                 }
@@ -1231,7 +1231,7 @@ namespace RealismMod
 
                 StanceController.DoResetMelee = true;
                 StanceController.CanDoMeleeDetection = false;
-                StanceController.DoWiggleEffects(player, pwa, new Vector3(5, -5f, -75f) * movementFactor, true);
+                StanceController.DoWiggleEffects(player, pwa, new Vector3(5, -5f, -70f) * movementFactor, true);
                 stanceRotation = Quaternion.identity;
                 isResettingMelee = false;
                 hasResetMelee = true;

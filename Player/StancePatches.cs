@@ -215,7 +215,7 @@ namespace RealismMod
                         Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
 
                         Logger.LogWarning("casting ");
-                        Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(new Vector3(0f, WeaponProperties.HasBayonet ? -0.3f : 0.2f, 0f));
+                        Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(new Vector3(0f, WeaponProperties.HasBayonet ? -0.4f : -0.3f, 0f));
                         Vector3 meleeDir = meleeStart - linecastDirection * ln;
                         DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);
 
@@ -267,7 +267,7 @@ namespace RealismMod
                                     DamageType = EDamageType.Melee,
                                     Damage = damage, //modify by stamina, skills, weight (bonus) and ergo
                                     PenetrationPower = pen, //ideally should have its own penetration stat
-                                    ArmorDamage = 1f,
+                                    ArmorDamage = 1f + (damage / 10f),
                                     Direction = shotDirection.normalized,
                                     HitCollider = col,
                                     HitPoint = raycastHit.point,
