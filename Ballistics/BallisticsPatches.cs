@@ -64,7 +64,7 @@ namespace RealismMod
             return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(GClass2870) });
         }
 
-        private static int playCounter = 0;
+        private static int rndNum = 0;
 
         private static void modifyDamageByHitZone(string hitPart, EBodyHitZone hitZone, ref DamageInfo di) 
         {
@@ -164,11 +164,11 @@ namespace RealismMod
             string audioClip = "flesh_dist_1.wav";
             if (dist >= 40)
             {
-                audioClip = playCounter == 0 ? "flesh_dist_1.wav" : playCounter == 1 ? "flesh_dist_2.wav" : "flesh_dist_2.wav";
+                audioClip = rndNum == 0 ? "flesh_dist_1.wav" : rndNum == 1 ? "flesh_dist_2.wav" : "flesh_dist_2.wav";
             }
             else
             {
-                audioClip = playCounter == 0 ? "flesh_1.wav" : playCounter == 1 ? "flesh_2.wav" : "flesh_3.wav";
+                audioClip = rndNum == 0 ? "flesh_1.wav" : rndNum == 1 ? "flesh_2.wav" : "flesh_3.wav";
             }
 
             Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
@@ -215,11 +215,11 @@ namespace RealismMod
                     EBodyHitZone hitZone = BallisticsController.GetHitBodyZone(Logger, hitCollider, localPoint, hitOrientation);
                     modifyDamageByHitZone(hitCollider, hitZone, ref __instance);
 
-                    if (Plugin.EnableHitSounds.Value) 
+                    if (Plugin.EnableHitSounds.Value)
                     {
+                        System.Random rnd = new System.Random();
+                        rndNum = rnd.Next(0, 2);
                         playBodyHitSound(hitZone, col.transform.position, hitCollider);
-                        playCounter++;
-                        playCounter = playCounter > 2 ? 0 : playCounter;
                     }
 
 /*                    if (!shot.Player.IsYourPlayer)
@@ -588,110 +588,9 @@ namespace RealismMod
             return typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.SetPenetrationStatus), BindingFlags.Public | BindingFlags.Instance);
         }
 
-        private static int playCounter = 0;
-
-        private static void playArmorHitSound(EArmorMaterial mat, Vector3 pos, bool isHelm)
-        {
-            float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 4.65f * Plugin.ArmorCloseHitSoundMulti.Value;
-            float volDist = 5.5f * Plugin.ArmorFarHitSoundMulti.Value;
-
-            if (mat == EArmorMaterial.Aramid)
-            {
-                string audioClip = "aramid_1.wav";
-                if (dist >= 40)
-                {
-                    audioClip = playCounter == 0 ? "impact_dist_1.wav" : playCounter == 1 ? "impact_dist_2.wav" : "impact_dist_3.wav";
-                }
-                else
-                {
-                    if (!isHelm)
-                    {
-                        audioClip = playCounter == 0 ? "aramid_1.wav" : playCounter == 1 ? "aramid_2.wav" : "aramid_3.wav";
-                    }
-                    else 
-                    {
-                        audioClip = playCounter == 0 ? "uhmwpe_1.wav" : playCounter == 1 ? "uhmwpe_2.wav" : "uhmwpe_3.wav";
-                    }
-                }
-
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
-            }
-            else if (mat == EArmorMaterial.Ceramic)
-            {
-                string audioClip = "ceramic_1.wav";
-                if (dist >= 40) 
-                {
-                    audioClip = playCounter == 0 ? "ceramic_dist_1.wav" : playCounter == 1 ? "ceramic_dist_2.wav" : "ceramic_dist_3.wav";
-                }
-                else 
-                {
-                    audioClip = playCounter == 0 ? "ceramic_1.wav" : playCounter == 1 ? "ceramic_2.wav" : "ceramic_3.wav";
-                }
-
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
-            }
-            else if (mat == EArmorMaterial.UHMWPE || mat == EArmorMaterial.Combined)
-            {
-                string audioClip = "uhmwpe_1.wav";
-                if (dist >= 40)
-                {
-                    audioClip = playCounter == 0 ? "impact_dist_1.wav" : playCounter == 1 ? "impact_dist_2.wav" : "impact_dist_4.wav";
-                }
-                else
-                {
-                    audioClip = playCounter == 0 ? "uhmwpe_1.wav" : playCounter == 1 ? "uhmwpe_2.wav" : "uhmwpe_3.wav";
-                }
-
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
-            }
-            else if (mat == EArmorMaterial.Titan || mat == EArmorMaterial.ArmoredSteel)
-            {
-                string audioClip = "metal_1.wav";
-                if (dist >= 40)
-                {
-                    audioClip = playCounter == 0 ? "metal_dist_1.wav" : playCounter == 1 ? "metal_dist_2.wav" : "metal_dist_3.wav";
-                }
-                else
-                {
-                    audioClip = playCounter == 0 ? "metal_1.wav" : playCounter == 1 ? "metal_2.wav" : "metal_3.wav";
-                }
-
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? 4.3f * Plugin.ArmorFarHitSoundMulti.Value : 2.25f * Plugin.ArmorCloseHitSoundMulti.Value, EOcclusionTest.Continuous);
-            }
-            else if (mat == EArmorMaterial.Glass)
-            {
-                string audioClip = "glass_1.wav";
-                if (dist >= 40)
-                {
-                    audioClip = playCounter == 0 ? "impact_dist_3.wav" : playCounter == 1 ? "impact_dist_4.wav" : "impact_dist_2.wav";
-                }
-                else
-                {
-                    audioClip = playCounter == 0 ? "glass_1.wav" : playCounter == 1 ? "glass_2.wav" : "glass_3.wav";
-                }
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist: volClose, EOcclusionTest.Continuous);
-            }
-            else 
-            {
-                string audioClip = "impact_1.wav";
-                if (dist >= 40)
-                {
-                    audioClip = playCounter == 0 ? "impact_dist_4.wav" : playCounter == 1 ? "impact_dist_1.wav" : "impact_dist_3.wav";
-                }
-                else
-                {
-                    audioClip = playCounter == 0 ? "impact_1.wav" : playCounter == 1 ? "impact_2.wav" : "impact_3.wav";
-                }
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
-            }
-        }
-
         [PatchPrefix]
         private static bool Prefix(GClass2870 shot, ArmorComponent __instance)
         {
-            Logger.LogWarning("pen status");
-
             bool isSteelBodyArmor = __instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !__instance.Template.ArmorZone.Contains(EBodyPart.Head);
             if (__instance.Repairable.Durability <= 0f && !isSteelBodyArmor)
             {
@@ -747,12 +646,6 @@ namespace RealismMod
                 {
                     return false;
                 }
-                else 
-                {
-                    playArmorHitSound(__instance.Template.ArmorMaterial, col.transform.position, __instance.Template.ArmorZone.Contains(EBodyPart.Head));
-                    playCounter++;
-                    playCounter = playCounter > 2 ? 0 : playCounter;
-                }
             }
 
             float penetrationPower = shot.PenetrationPower;
@@ -802,20 +695,117 @@ namespace RealismMod
 
     public class ApplyDamagePatch : ModulePatch
     {
+        private static int rndNum = 0;
 
         protected override MethodBase GetTargetMethod()
         {
             return typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.ApplyDamage), BindingFlags.Public | BindingFlags.Instance);
         }
 
-        private static int playCounter = 0;
-
         private static void playRicochetSound(Vector3 pos)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            string audioClip = playCounter == 0 ? "ric_1.wav" : playCounter == 1 ? "ric_2.wav" : "ric_3.wav";
+            string audioClip = rndNum == 0 ? "ric_1.wav" : rndNum == 1 ? "ric_2.wav" : "ric_3.wav";
 
             Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, 4.25f, EOcclusionTest.Continuous);
+        }
+
+
+        private static void playArmorHitSound(EArmorMaterial mat, Vector3 pos, bool isHelm)
+        {
+            float dist = CameraClass.Instance.Distance(pos);
+            float volClose = 4.65f * Plugin.ArmorCloseHitSoundMulti.Value;
+            float volDist = 5.5f * Plugin.ArmorFarHitSoundMulti.Value;
+
+            if (mat == EArmorMaterial.Aramid)
+            {
+                string audioClip = "aramid_1.wav";
+                if (dist >= 40)
+                {
+                    audioClip = rndNum == 0 ? "impact_dist_1.wav" : rndNum == 1 ? "impact_dist_2.wav" : "impact_dist_3.wav";
+                }
+                else
+                {
+                    if (!isHelm)
+                    {
+                        audioClip = rndNum == 0 ? "aramid_1.wav" : rndNum == 1 ? "aramid_2.wav" : "aramid_3.wav";
+                    }
+                    else
+                    {
+                        audioClip = rndNum == 0 ? "uhmwpe_1.wav" : rndNum == 1 ? "uhmwpe_2.wav" : "uhmwpe_3.wav";
+                    }
+                }
+
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
+            }
+            else if (mat == EArmorMaterial.Ceramic)
+            {
+                string audioClip = "ceramic_1.wav";
+                if (dist >= 40)
+                {
+                    audioClip = rndNum == 0 ? "ceramic_dist_1.wav" : rndNum == 1 ? "ceramic_dist_2.wav" : "ceramic_dist_3.wav";
+                }
+                else
+                {
+                    audioClip = rndNum == 0 ? "ceramic_1.wav" : rndNum == 1 ? "ceramic_2.wav" : "ceramic_3.wav";
+                }
+
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
+            }
+            else if (mat == EArmorMaterial.UHMWPE || mat == EArmorMaterial.Combined)
+            {
+                string audioClip = "uhmwpe_1.wav";
+                if (dist >= 40)
+                {
+                    audioClip = rndNum == 0 ? "impact_dist_1.wav" : rndNum == 1 ? "impact_dist_2.wav" : "impact_dist_4.wav";
+                }
+                else
+                {
+                    audioClip = rndNum == 0 ? "uhmwpe_1.wav" : rndNum == 1 ? "uhmwpe_2.wav" : "uhmwpe_3.wav";
+                }
+
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
+            }
+            else if (mat == EArmorMaterial.Titan || mat == EArmorMaterial.ArmoredSteel)
+            {
+                string audioClip = "metal_1.wav";
+                if (dist >= 40)
+                {
+                    audioClip = rndNum == 0 ? "metal_dist_1.wav" : rndNum == 1 ? "metal_dist_2.wav" : "metal_dist_3.wav";
+                }
+                else
+                {
+                    audioClip = rndNum == 0 ? "metal_1.wav" : rndNum == 1 ? "metal_2.wav" : "metal_3.wav";
+                }
+
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? 4.3f * Plugin.ArmorFarHitSoundMulti.Value : 2.25f * Plugin.ArmorCloseHitSoundMulti.Value, EOcclusionTest.Continuous);
+            }
+            else if (mat == EArmorMaterial.Glass)
+            {
+                string audioClip = "glass_1.wav";
+                if (dist >= 40)
+                {
+                    audioClip = rndNum == 0 ? "impact_dist_3.wav" : rndNum == 1 ? "impact_dist_4.wav" : "impact_dist_2.wav";
+                }
+                else
+                {
+                    audioClip = rndNum == 0 ? "glass_1.wav" : rndNum == 1 ? "glass_2.wav" : "glass_3.wav";
+                }
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
+            }
+            else
+            {
+                string audioClip = "impact_1.wav";
+                if (dist >= 40)
+                {
+                    audioClip = rndNum == 0 ? "impact_dist_4.wav" : rndNum == 1 ? "impact_dist_1.wav" : "impact_dist_3.wav";
+                }
+                else
+                {
+                    audioClip = rndNum == 0 ? "impact_1.wav" : rndNum == 1 ? "impact_2.wav" : "impact_3.wav";
+                }
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Distant, 200, dist >= 40 ? volDist : volClose, EOcclusionTest.Continuous);
+            }
         }
 
         [PatchPrefix]
@@ -877,13 +867,7 @@ namespace RealismMod
                     BallisticsController.GetHitArmorZone(Logger, __instance, hitPart, localPoint, hitOrientation, hasSideArmor, hasStomachArmor, hasNeckArmor, hasExtraArmor, shouldHaveExtraSides, hasArmArmor, ref hasBypassedArmor, ref hitSecondaryArmor);
                 }
 
-                if (damageInfo.DeflectedBy == __instance.Item.Id) 
-                {
-                    playRicochetSound(col.transform.position);
-                    playCounter++;
-                    playCounter = playCounter > 2 ? 0 : playCounter;
-                }
-
+     
                 if (Plugin.EnableBallisticsLogging.Value)
                 {
                     Logger.LogWarning("============ApplyDamagePatch: Hit Zone ============== ");
@@ -895,12 +879,24 @@ namespace RealismMod
                     Logger.LogWarning("hit z = " + localPoint.z);
                     Logger.LogWarning("========================== ");
                 }
-            }
 
-            if (hasBypassedArmor)
-            {
-                __result = 0f;
-                return false;
+                System.Random rnd = new System.Random();
+                rndNum = rnd.Next(0, 2);
+
+                if (damageInfo.DeflectedBy == __instance.Item.Id)
+                {
+                    playRicochetSound(col.transform.position);
+                }
+
+                if (hasBypassedArmor)
+                {
+                    __result = 0f;
+                    return false;
+                }
+                else
+                {
+                    playArmorHitSound(__instance.Template.ArmorMaterial, col.transform.position, __instance.Template.ArmorZone.Contains(EBodyPart.Head));
+                }
             }
 
             float speedFactor = 1f;
@@ -919,7 +915,8 @@ namespace RealismMod
             else 
             {
                 armorDamageActual = damageInfo.ArmorDamage;
-                float velocity = 40f * (1f - (WeaponProperties.ErgoFactor / 100f));
+                float meleeDamage = damageInfo.Damage <= 5 ? damageInfo.Damage * 2f : damageInfo.Damage * 0.5f;
+                float velocity = meleeDamage * (1f - (WeaponProperties.ErgoFactor / 100f));
                 KE = (0.5f * (WeaponProperties.TotalWeaponWeight * 1000f) * velocity * velocity) / 1000f;
             }
 

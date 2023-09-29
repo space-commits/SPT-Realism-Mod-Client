@@ -478,15 +478,17 @@ namespace RealismMod
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 float currentSightFactor = 1f;
-                if (Utils.IsReady && Plugin.IsAiming)
+                if (Utils.IsReady)
                 {
                     int iterations = 0;
                     Player player = Utils.GetPlayer();
                     Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
+                   
                     if (currentAimingMod != null)
                     {
                         if (AttachmentProperties.ModType(currentAimingMod) == "sight")
                         {
+                            Logger.LogWarning("found sight");
                             currentSightFactor += (currentAimingMod.Accuracy / 100f);
                         }
                         IEnumerable<Item> parents = currentAimingMod.GetAllParentItems();
@@ -506,6 +508,7 @@ namespace RealismMod
                     }
                 }
 
+                Plugin.ScopeAccuracyFactor = currentSightFactor > 1f ? 1f + ((currentSightFactor - 1f) * 2f) : 2f - currentSightFactor;
                 bool isBracingTop = StanceController.IsBracingTop;
                 float mountingFactor = StanceController.IsBracing && isBracingTop ? 1.05f : StanceController.IsBracing && !isBracingTop ? 1.025f : StanceController.IsMounting && isBracingTop ? 1.1f : StanceController.IsMounting && !isBracingTop ? 1.075f : 1f;
                 float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * currentSightFactor * mountingFactor;

@@ -306,20 +306,15 @@ namespace RealismMod
                 __instance.ShotVals[3].Intensity = totalCamRecoil;
                 __instance.ShotVals[4].Intensity = -totalCamRecoil;
 
-                float fovFactor = (Singleton<SharedGameSettingsClass>.Instance.Game.Settings.FieldOfView / 70f) * Plugin.HRecLimitMulti.Value;
-                float opticLimit = Plugin.IsAiming && Plugin.IsOptic ? 15f * fovFactor: 30f * fovFactor;
-                float shotFactor = 1f;
-                if (weaponClass.WeapClass == "pistol" && RecoilController.ShotCount > 1f && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto) 
-                {
-                    shotFactor = 0.5f;
-                }
-
+                float shotFactor = weaponClass.WeapClass == "pistol" && RecoilController.ShotCount > 1f && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto ? 0.5f : 1f;
                 float totalDispersion = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
                 float totalVerticalRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y)  * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * mountingVertModi * shotFactor * Plugin.VertMulti.Value;
                 float totalHorizontalRecoil = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * shotFactor * Plugin.HorzMulti.Value;
                 RecoilController.FactoredTotalVRecoil = totalVerticalRecoil;
                 RecoilController.FactoredTotalHRecoil = totalHorizontalRecoil;
 
+                float fovFactor = (Singleton<SharedGameSettingsClass>.Instance.Game.Settings.FieldOfView / 70f) * Plugin.HRecLimitMulti.Value;
+                float opticLimit = Plugin.IsAiming && Plugin.IsOptic ? 17f * fovFactor : 25f * fovFactor;
                 totalHorizontalRecoil = Mathf.Min(totalHorizontalRecoil * fovFactor, opticLimit); //put it after setting factored so that visual recoil isn't affected
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(totalDispersion) * totalVerticalRecoil * poseIntensityFactors.x, Mathf.Cos(totalDispersion) * totalVerticalRecoil * poseIntensityFactors.y, totalHorizontalRecoil * poseIntensityFactors.z) * __instance.Intensity;
                 Vector2 heatDirection = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
@@ -332,6 +327,33 @@ namespace RealismMod
                 for (int i = 0; i < shotVals.Length; i++)
                 {
                     shotVals[i].Process(__instance.RecoilDirection);
+                }
+                Logger.LogWarning("factoredDispersion " + factoredDispersion);
+                Logger.LogWarning("totalCamRecoil " + totalCamRecoil);
+
+                float gunFactor = weaponClass.TemplateId == "6183afd850224f204c1da514" || weaponClass.TemplateId == "6165ac306ef05c2ce828ef74" ? 2.5f : 1f;
+                float shiftRecoilFactor = (factoredDispersion + totalVerticalRecoil + totalHorizontalRecoil) * (1f + (totalCamRecoil * 10f)) * gunFactor;
+                Logger.LogWarning("shiftRecoilFactor " + shiftRecoilFactor);
+                Logger.LogWarning("totalVerticalRecoil " + totalVerticalRecoil);
+                Logger.LogWarning("totalHorizontalRecoil " + totalHorizontalRecoil);
+                System.Random rnd = new System.Random();
+                int num = rnd.Next(1, 10);
+                if (num < 3 + (0.1f * shiftRecoilFactor)) //make chance higher based on recoil
+                {
+                    float offsetFactor = Plugin.ScopeAccuracyFactor > 1f ? (Plugin.ScopeAccuracyFactor - 1f) * 0.1f + (0.001f * shiftRecoilFactor) : 0f; //make chance higher based on recoil
+                    Logger.LogWarning("offsetFactor " + offsetFactor);
+                    float offsetX = Random.Range(-offsetFactor, offsetFactor);
+                    float offsetY = Random.Range(-offsetFactor, offsetFactor);
+                    Plugin.ZeroRecoilOffset = new Vector2(offsetX, offsetY);
+
+                    if (Plugin.ScopeID != null && Plugin.ScopeID != "")
+                    {
+                        if (Plugin.ZeroOffsetDict.ContainsKey(Plugin.ScopeID))
+                        {
+                            Logger.LogWarning("recoil found sight");
+                            Plugin.ZeroOffsetDict[Plugin.ScopeID] = Plugin.ZeroRecoilOffset;
+                        }
+                    }
                 }
 
                 RecoilController.ShotCount++;

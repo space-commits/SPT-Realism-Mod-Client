@@ -17,6 +17,7 @@ using System.Linq;
 using static EFT.Player;
 using System.ComponentModel;
 using static EFT.ClientPlayer;
+using static RootMotion.FinalIK.Recoil;
 
 namespace RealismMod
 {
@@ -102,8 +103,10 @@ namespace RealismMod
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
                 if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
+                    __instance.Overweight = 0;
+                    __instance.CrankRecoil = Plugin.EnableCrank.Value;
+
                     FirearmController firearmController = player.HandsController as FirearmController;
-             
                     if (firearmController != null)
                     {       
                         float updateErgoWeight = firearmController.ErgonomicWeight; //force ergo weight to update
@@ -134,7 +137,7 @@ namespace RealismMod
                     float breathIntensity;
                     float handsIntensity;
 
-                    //this triggers when toggling scope mode :(
+                    //ADS animation/wiggle, this triggers when toggling scope mode :(
 /*                    if (StanceController.IsIdle())
                     {
                         __instance.Shootingg.ShotVals[3].Intensity = 0;
@@ -183,9 +186,32 @@ namespace RealismMod
                         __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity;
                     }
 
-                    __instance.Overweight = 0;
 
-                    __instance.CrankRecoil = Plugin.EnableCrank.Value;
+                    if (__instance.CurrentAimingMod != null) 
+                    {
+                        Plugin.Parralax = 0.1f * Plugin.ScopeAccuracyFactor;
+                        Logger.LogWarning("Parralax " + Plugin.Parralax);
+                        string id = (__instance.CurrentAimingMod?.Item?.Id != null) ? __instance.CurrentAimingMod.Item.Id : "";
+                        Plugin.ScopeID = id;
+                        if (id != null)
+                        {
+                            if (Plugin.ZeroOffsetDict.TryGetValue(id, out Vector2 offset))
+                            {
+                                Logger.LogWarning("found existing sight");
+                                Logger.LogWarning("x " + offset.x);
+                                Logger.LogWarning("y " + offset.y);
+                                Plugin.ZeroRecoilOffset = offset;
+                            }
+                            else
+                            {
+                                Logger.LogWarning("new sight");
+                                Plugin.ZeroRecoilOffset = Vector2.zero;
+                                Plugin.ZeroOffsetDict.Add(id, Plugin.ZeroRecoilOffset);
+                            }
+                            Logger.LogWarning(__instance.CurrentAimingMod.Item.Id);
+                        }
+                    }
+                    
 
                     if (Plugin.EnableLogging.Value == true)
                     {
@@ -247,7 +273,7 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_20").SetValue(__instance, swayStrength);
 
                     float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate(ergoWeight * weightFactor);//delay from moving mouse to the weapon moving to center of screen.
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_21").SetValue(__instance, weapDisplacement * weightFactor * displacementModifier * playerWeightFactor);
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_21").SetValue(__instance, -(weapDisplacement * weightFactor * displacementModifier * playerWeightFactor));
 
                     __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * Mathf.Clamp(aimIntensity * weightFactor * playerWeightFactor, aimIntensity, 1f); // the diving/tiling animation as you move weapon side to side.
 
@@ -326,51 +352,75 @@ namespace RealismMod
         }
     }
 
-/*    public class CalibrationPatch1 : ModulePatch
+    public class CalibrationLookAt : ModulePatch
     {
+        private static float recordedDistance = 0f;
+
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(CollimatorSight).GetMethod("LookAt", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(ProceduralWeaponAnimation).GetMethod("method_7", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
         [PatchPrefix]
-        private static void PatchPrefix(CollimatorSight __instance, ref Vector3 point, ref Vector3 worldUp)
+        private static void PatchPrefix(ProceduralWeaponAnimation __instance, ref Vector3 point)
         {
-            Logger.LogWarning("x" + __instance.transform.localPosition.x);
-            Logger.LogWarning("y" + __instance.transform.localPosition.y);
-            Logger.LogWarning("z" + __instance.transform.localPosition.z);
-            __instance.transform.localPosition = new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value);
+            if (__instance.CurrentAimingMod != null && !__instance.CurrentScope.IsOptic && Plugin.ScopeID != null && Plugin.ScopeID != "")
+            {
+                float distance = __instance.CurrentAimingMod.GetCurrentOpticCalibrationDistance();
 
+                if (recordedDistance != distance)
+                {
+                    Plugin.ZeroRecoilOffset = Vector2.zero;
+                    if (Plugin.ZeroOffsetDict.ContainsKey(Plugin.ScopeID))
+                    {
+                        Logger.LogWarning("calibrate found sight");
+                        Plugin.ZeroOffsetDict[Plugin.ScopeID] = Plugin.ZeroRecoilOffset;
+                    }
+                    Logger.LogWarning("distance changed");
+                }
+
+                recordedDistance = distance;
+                float factor = distance / 25f; //need to find default zero
+                Vector3 recoilOffset = new Vector3(Plugin.ZeroRecoilOffset.x * factor, Plugin.ZeroRecoilOffset.y * factor);
+                Vector3 target = point + new Vector3(Plugin.MouseRotation.x * factor * -Plugin.Parralax, Plugin.MouseRotation.y * factor * Plugin.Parralax, 0f);
+                point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
+            }
         }
     }
-*/
-    /*  public class CalibrationPatch1 : ModulePatch
-      {
-          protected override MethodBase GetTargetMethod()
-          {
-              return typeof(ScopePrefabCache).GetMethod("LookAtCollimatorOnly", BindingFlags.Instance | BindingFlags.Public);
-          }
 
-          [PatchPrefix]
-          private static void PatchPrefix(ScopePrefabCache __instance, ref Vector3 point, ref Vector3 worldUp)
-          {
-              point = point + new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value);
-              Logger.LogWarning("newPoint 1" + point);
-          }
-      }
+    public class CalibrationLookAtScope : ModulePatch
+    {
+        private static float recordedDistance = 0f;
 
-      public class CalibrationPatch2 : ModulePatch
-      {
-          protected override MethodBase GetTargetMethod()
-          {
-              return typeof(ScopePrefabCache).GetMethod("LookAt", BindingFlags.Instance | BindingFlags.Public);
-          }
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(ProceduralWeaponAnimation).GetMethod("method_5", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
 
-          [PatchPrefix]
-          private static void PatchPrefix(ScopePrefabCache __instance, ref Vector3 point,ref Vector3 worldUp)
-          {
-              point = point + new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value);
-              Logger.LogWarning("newPoint 2" + point);
-          }
-      }*/
+        [PatchPrefix]
+        private static void PatchPrefix(ProceduralWeaponAnimation __instance, ref Vector3 point)
+        {
+            if (__instance.CurrentAimingMod != null && Plugin.ScopeID != null && Plugin.ScopeID != "")
+            {
+                float distance = __instance.CurrentAimingMod.GetCurrentOpticCalibrationDistance();
+
+                if (recordedDistance != distance)
+                {
+                    Plugin.ZeroRecoilOffset = Vector2.zero;
+                    if (Plugin.ZeroOffsetDict.ContainsKey(Plugin.ScopeID))
+                    {
+                        Logger.LogWarning("calibrate found sight");
+                        Plugin.ZeroOffsetDict[Plugin.ScopeID] = Plugin.ZeroRecoilOffset;
+                    }
+                    Logger.LogWarning("distance changed 2");
+                }
+
+                recordedDistance = distance;
+                float factor = distance / 50f; //need to find default zero
+                Vector3 recoilOffset = new Vector3(Plugin.ZeroRecoilOffset.x * factor, Plugin.ZeroRecoilOffset.y * factor);
+                Vector3 target = point + new Vector3(Plugin.MouseRotation.x * factor * -Plugin.Parralax, Plugin.MouseRotation.y * factor * Plugin.Parralax, 0f);
+                point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
+            }
+        }
+    }
 }

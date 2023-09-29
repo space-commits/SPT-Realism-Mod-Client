@@ -203,7 +203,7 @@ namespace RealismMod
 
         public static bool IsIdle()
         {
-            return !IsPatrolStance && !IsActiveAiming && !IsHighReady && !IsLowReady && !IsShortStock && !WasHighReady && !WasLowReady && !WasShortStock && !WasActiveAim && HasResetActiveAim && HasResetHighReady && HasResetLowReady && HasResetShortStock && HasResetPistolPos ? true : false;
+            return !IsPatrolStance && !IsMeleeAttack && !IsActiveAiming && !IsHighReady && !IsLowReady && !IsShortStock && !WasHighReady && !WasLowReady && !WasShortStock && !WasActiveAim && HasResetActiveAim && HasResetHighReady && HasResetLowReady && HasResetShortStock && HasResetPistolPos && HasResetMelee ? true : false;
         }
 
         public static void CancelAllStances()
@@ -1047,7 +1047,7 @@ namespace RealismMod
 
                 if ((StanceController.StanceBlender.Value >= 1f || StanceController.StanceTargetPosition == lowReadyTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-                    StanceController.DoWiggleEffects(player, pwa, new Vector3(4f, -4f, -4f) * movementFactor, true);
+                    StanceController.DoWiggleEffects(player, pwa, new Vector3(5f, 4f, -8f) * movementFactor, true);
                     StanceController.DidStanceWiggle = true;
                 }
             }
@@ -1068,7 +1068,7 @@ namespace RealismMod
                     StanceController.DoDampingTimer = true;
                 }
 
-                StanceController.DoWiggleEffects(player, pwa, new Vector3(4.5f, 4.5f, 7.5f) * movementFactor, true);
+                StanceController.DoWiggleEffects(player, pwa, new Vector3(6f, 3f, 10f) * movementFactor, true);
                 StanceController.DidStanceWiggle = false;
                 stanceRotation = Quaternion.identity;
                 isResettingLowReady = false;

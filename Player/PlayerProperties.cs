@@ -32,7 +32,7 @@ namespace RealismMod
 
         public static float BaseSprintSpeed = 1f;
 
-        public static EnvironmentType EnviroType;
+        public static EnvironmentType EnviroType = EnvironmentType.Outdoor;
 
         public static bool IsClearingMalf;
 

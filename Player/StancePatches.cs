@@ -452,7 +452,6 @@ namespace RealismMod
                 {
                     Plugin.WeaponOffsetPosition = __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value);
                     __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value);
-                    Plugin.TransformBaseStartPosition = new Vector3(0.0f, 0.0f, 0.0f);
                 }
             }
         }
@@ -557,6 +556,9 @@ namespace RealismMod
 
             if (player.IsYourPlayer)
             {
+
+                Plugin.MouseRotation = MovementContext.ClampRotation(deltaRotation);
+
                 if (!StanceController.IsMounting)
                 {
                     initialRotation = MovementContext.Rotation;
@@ -587,7 +589,6 @@ namespace RealismMod
                     deltaRotation = new Vector2(clampedX - currentRotation.x, clampedY - currentRotation.y);
 
                     deltaRotation = MovementContext.ClampRotation(deltaRotation);
-
                     MovementContext.Rotation += deltaRotation;
 
                     return false;

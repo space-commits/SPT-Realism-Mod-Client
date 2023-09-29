@@ -394,6 +394,7 @@ namespace RealismMod
                 {
                     DoSprintPenalty(__instance, fc, mountingSwayBonus);
                 }
+
                 if (!RecoilController.IsFiring && PlayerProperties.HasFullyResetSprintADSPenalties)
                 {
                     __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerProperties.TotalBreathIntensity * mountingSwayBonus;
@@ -459,15 +460,13 @@ namespace RealismMod
                         __instance.ProceduralWeaponAnimation.Shootingg.ShotVals[3].Intensity = 0;
                         __instance.ProceduralWeaponAnimation.Shootingg.ShotVals[4].Intensity = 0;
                     }
-
                     __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed, 10f * StanceController.WiggleReturnSpeed, 0.05f);
-
-/*                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.5f;
-                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.4f;*/
+                    /*                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.5f;
+                                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.4f;*/
                 }
-
                 __instance.HandsController.FirearmsAnimator.SetPatrol(StanceController.IsPatrolStance);
             }
+
         }
     }
 }

@@ -69,7 +69,7 @@ namespace RealismMod
             return difference < epsilon;
         }
 
-        public static bool NullCheck(string[] confItemArray)
+        public static bool IsNull(string[] confItemArray)
         {
             if (confItemArray != null && confItemArray.Length > 0)
             {

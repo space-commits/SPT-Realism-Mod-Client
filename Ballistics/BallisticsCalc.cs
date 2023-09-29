@@ -530,11 +530,11 @@ namespace RealismMod
                     }
                     else
                     {
-                        if ((hasStomachArmor || hasExtraArmor) && localPoint.z > -sidesOfStomachArmor && localPoint.z < sidesOfStomachArmor && ((hitOrientation == EHitOrientation.BackHit && localPoint.x < bottomOfStomachArmorRear && localPoint.x > bottomOfPlate) || (hitOrientation == EHitOrientation.FrontHit && localPoint.x > bottomOfPlate)))
+                        if ((hasStomachArmor || hasExtraArmor) && localPoint.z > -sidesOfStomachArmor && localPoint.z < sidesOfStomachArmor && ((hitOrientation == EHitOrientation.BackHit && localPoint.x < bottomOfStomachArmorRear && localPoint.x > bottomOfPlate) || (hasStomachArmor && hitOrientation == EHitOrientation.FrontHit && localPoint.x > bottomOfPlate)))
                         {
                             if (Plugin.EnableBallisticsLogging.Value == true)
                             {
-                                logger.LogWarning("STOMACH/SECONDARY ARMOR HIT BOTTOM REAR");
+                                logger.LogWarning("STOMACH/SECONDARY ARMOR HIT STOMACH");
                             }
                             hitSecondaryArmor = true;
                             return;
@@ -543,7 +543,7 @@ namespace RealismMod
                         {
                             if (Plugin.EnableBallisticsLogging.Value == true)
                             {
-                                logger.LogWarning("ARMOR BYPASSED: STOMACH ARMOR SIDES OR BOTTOM REAR");
+                                logger.LogWarning("ARMOR BYPASSED: STOMACH ARMOR SIDES OR BELLOW PLATE");
                             }
                             hasBypassedArmor = true;
                             return;
