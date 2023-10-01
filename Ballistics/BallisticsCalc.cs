@@ -388,11 +388,11 @@ namespace RealismMod
         }
 
         public static void GetHitArmorZone(ManualLogSource logger, ArmorComponent ac, string hitPart, Vector3 localPoint, EHitOrientation hitOrientation, bool hasSideArmor, bool hasStomachArmor, bool hasNeckArmor, bool hasExtraArmor, bool shouldHaveExtraSides, bool hasArmArmor, ref bool hasBypassedArmor, ref bool hitSecondaryArmor)
-        {
+        {   
             float topOfPlate = hitOrientation == EHitOrientation.BackHit ? -0.166f : -0.24f;
             float bottomOfPlate = hitOrientation == EHitOrientation.BackHit || hitOrientation == EHitOrientation.LeftSideHit || hitOrientation == EHitOrientation.RightSideHit ? -0.21f : -0.13f;
-            float upperSides = hitOrientation == EHitOrientation.BackHit ? 0.125f : 0.13f;
-            float midSides = hitOrientation == EHitOrientation.BackHit ? 0.135f : 0.14f;
+            float upperSides = hitOrientation == EHitOrientation.BackHit ? 0.13f : 0.13f;
+            float midSides = hitOrientation == EHitOrientation.BackHit ? 0.137f : 0.14f;
             float lowerSides = hitOrientation == EHitOrientation.BackHit ? 0.145f : 0.15f;
             float topOfSidePlates = hitOrientation == EHitOrientation.BackHit ? -0.14f : -0.145f;
             float bottomOfSidePlates = hitOrientation == EHitOrientation.BackHit ? -0.22f : -0.175f;
@@ -456,17 +456,18 @@ namespace RealismMod
                         }
                     }
 
+                    if (hasExtraArmor && (localPoint.z > -0.142f && localPoint.z < 0.142f && (localPoint.z < -upperSides || localPoint.z > upperSides)))
+                    {
+                        if (Plugin.EnableBallisticsLogging.Value == true)
+                        {
+                            logger.LogWarning("SECONDARY ARMOR HIT: UPPER SIDES");
+                        }
+                        hitSecondaryArmor = true;
+                        return;
+                    }
+
                     if (localPoint.z < -upperSides || localPoint.z > upperSides)
                     {
-                        if (hasExtraArmor && (hitOrientation == EHitOrientation.FrontHit || hitOrientation == EHitOrientation.BackHit))
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("SECONDARY ARMOR HIT: UPPER SIDES");
-                            }
-                            hitSecondaryArmor = true;
-                            return;
-                        }
 
                         if (Plugin.EnableBallisticsLogging.Value == true)
                         {
@@ -493,7 +494,7 @@ namespace RealismMod
                     }
                     else
                     {
-                        if ((hasExtraArmor && shouldHaveExtraSides) && !hasSideArmor && (hitOrientation == EHitOrientation.FrontHit || hitOrientation == EHitOrientation.BackHit))
+                        if ((hasExtraArmor && shouldHaveExtraSides) && !hasSideArmor && localPoint.x > topOfSidePlates && (localPoint.z < -midSides || localPoint.z > midSides))
                         {
                             if (Plugin.EnableBallisticsLogging.Value == true)
                             {
@@ -612,7 +613,7 @@ namespace RealismMod
                     }
                     else
                     {
-                        if (hasExtraArmor && localPoint.z < -neckArmorTopZ && localPoint.z > neckArmorTopZ) 
+                        if (hasExtraArmor && (localPoint.z < -neckArmorTopZ || localPoint.z > neckArmorTopZ)) 
                         {
                             if (Plugin.EnableBallisticsLogging.Value == true)
                             {

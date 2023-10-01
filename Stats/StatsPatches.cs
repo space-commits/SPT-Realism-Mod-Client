@@ -47,7 +47,7 @@ namespace RealismMod
 
         }
         [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref int __result)
+        private static bool Prefix(Weapon __instance, ref int __result)
         {
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
@@ -72,7 +72,7 @@ namespace RealismMod
 
         }
         [PatchPrefix]
-        private static bool Prefix(ref Player.FirearmController __instance, ref float __result)
+        private static bool Prefix(Player.FirearmController __instance, ref float __result)
         {   
             //to find this method again, look for this._player.MovementContext.PhysicalConditionContainsAny(EPhysicalCondition.LeftArmDamaged | EPhysicalCondition.RightArmDamaged)
             //return Mathf.Max(0f, this.Item.ErgonomicsTotal * (1f + this.gclass1560_0.DeltaErgonomics + this._player.ErgonomicsPenalty));
@@ -100,19 +100,19 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref float __result)
+        private static bool Prefix(Weapon __instance, ref float __result)
         {
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 ErgoDeltaPatch p = new ErgoDeltaPatch();
                 if (PlayerProperties.IsInReloadOpertation)
                 {
-                    __result = FinalStatCalc(ref __instance);
+                    __result = FinalStatCalc(__instance);
                 }
                 else
                 {
-                    InitialStaCalc(ref __instance);
-                    __result = FinalStatCalc(ref __instance);
+                    InitialStaCalc(__instance);
+                    __result = FinalStatCalc(__instance);
                 }
                 return false;
             }
@@ -122,7 +122,7 @@ namespace RealismMod
             }
         }
 
-        public static float FinalStatCalc(ref Weapon __instance)
+        public static float FinalStatCalc(Weapon __instance)
         {
             WeaponProperties._WeapClass = __instance.WeapClass;
             bool isManual = WeaponProperties.IsManuallyOperated(__instance);
@@ -259,7 +259,7 @@ namespace RealismMod
             return totalErgoDelta;
         }
 
-        public static void InitialStaCalc(ref Weapon __instance)
+        public static void InitialStaCalc(Weapon __instance)
         {
             WeaponProperties._WeapClass = __instance.WeapClass;
             bool isManual = WeaponProperties.IsManuallyOperated(__instance);
@@ -449,7 +449,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref float __result)
+        private static bool Prefix(Weapon __instance, ref float __result)
         {
 
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
@@ -472,7 +472,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref float __result, bool includeAmmo)
+        private static bool Prefix(Weapon __instance, ref float __result, bool includeAmmo)
         {
 
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
@@ -488,7 +488,6 @@ namespace RealismMod
                     {
                         if (AttachmentProperties.ModType(currentAimingMod) == "sight")
                         {
-                            Logger.LogWarning("found sight");
                             currentSightFactor += (currentAimingMod.Accuracy / 100f);
                         }
                         IEnumerable<Item> parents = currentAimingMod.GetAllParentItems();
@@ -508,7 +507,7 @@ namespace RealismMod
                     }
                 }
 
-                Plugin.ScopeAccuracyFactor = currentSightFactor > 1f ? 1f + ((currentSightFactor - 1f) * 2f) : 2f - currentSightFactor;
+                Plugin.ScopeAccuracyFactor = currentSightFactor > 1f ? 1f - ((currentSightFactor - 1f) * 2f) : 2f - currentSightFactor;
                 bool isBracingTop = StanceController.IsBracingTop;
                 float mountingFactor = StanceController.IsBracing && isBracingTop ? 1.05f : StanceController.IsBracing && !isBracingTop ? 1.025f : StanceController.IsMounting && isBracingTop ? 1.1f : StanceController.IsMounting && !isBracingTop ? 1.075f : 1f;
                 float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * currentSightFactor * mountingFactor;
@@ -536,7 +535,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref float __result)
+        private static bool Prefix(Weapon __instance, ref float __result)
         {
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
@@ -564,7 +563,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref float __result, float ammoBurnRatio, float overheatFactor, float skillWeaponTreatmentFactor, out float modsBurnRatio)
+        private static bool Prefix(Weapon __instance, ref float __result, float ammoBurnRatio, float overheatFactor, float skillWeaponTreatmentFactor, out float modsBurnRatio)
         {
 
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
@@ -589,7 +588,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref Player.FirearmController __instance, ref float __result)
+        private static bool Prefix(Player.FirearmController __instance, ref float __result)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
@@ -627,7 +626,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(ref Player.FirearmController __instance)
+        private static void PatchPostfix(Player.FirearmController __instance)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)

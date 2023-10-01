@@ -313,7 +313,7 @@ namespace RealismMod
         public static Vector2 ZeroRecoilOffset;
         public static string ScopeID;
         public static float ScopeAccuracyFactor = 0f;
-        public static float Parralax = 0.1f;
+        public static float Parralax = 0.07f;
 
         public static bool DidWeaponSwap = false;
         public static bool IsInInventory = false;
@@ -563,9 +563,9 @@ namespace RealismMod
                 //Malf Patches
                 if (Plugin.EnableMalfPatch.Value && ModConfig.malf_changes)
                 {
+                    new GetMalfVariantsPatch().Enable();
                     new GetTotalMalfunctionChancePatch().Enable();
-/*                    new GetMalfunctionStatePatch().Enable();
-                    new RemoveMagCommandPatch().Enable();*/
+/*                    new GetMalfunctionStatePatch().Enable();*/
                 }
                 if (Plugin.InspectionlessMalfs.Value)
                 {

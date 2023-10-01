@@ -26,7 +26,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostFix(ref PrismEffects __instance)
+        private static void PatchPostFix(PrismEffects __instance)
         {
             if (__instance.gameObject.name == "FPS Camera") Plugin.PrismEffects = __instance;
         }

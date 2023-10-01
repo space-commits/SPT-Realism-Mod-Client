@@ -10,6 +10,7 @@ using System;
 using static EFT.Player;
 using EFT.Interactive;
 using System.Linq;
+using notGreg.UniformAim;
 
 namespace RealismMod
 {
@@ -93,7 +94,6 @@ namespace RealismMod
                         dispersion = Mathf.Max(RecoilController.FactoredTotalDispersion * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor, 0f);
                         xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(Time.time * 8f, 1f)), 3);
                         yRotation = (float)Math.Round(Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * 4f, 1f)), 3);
-                        Logger.LogWarning(xRotation);
                     }
 
                     //Spiral/circular, could modify x axis with ping pong or something to make it more random or simply use random.range
@@ -180,7 +180,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref ShotEffector __instance)
+        private static bool Prefix(ShotEffector __instance)
         {
             IWeapon _weapon = (IWeapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
 
@@ -266,7 +266,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        public static bool Prefix(ref ShotEffector __instance, float str = 1f)
+        public static bool Prefix(ShotEffector __instance, float str = 1f)
         {
             IWeapon iWeapon = (IWeapon)iWeaponField.GetValue(__instance);
 
@@ -308,7 +308,7 @@ namespace RealismMod
 
                 float shotFactor = weaponClass.WeapClass == "pistol" && RecoilController.ShotCount > 1f && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto ? 0.5f : 1f;
                 float totalDispersion = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
-                float totalVerticalRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y)  * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * mountingVertModi * shotFactor * Plugin.VertMulti.Value;
+                float totalVerticalRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * mountingVertModi * shotFactor * Plugin.VertMulti.Value;
                 float totalHorizontalRecoil = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * shotFactor * Plugin.HorzMulti.Value;
                 RecoilController.FactoredTotalVRecoil = totalVerticalRecoil;
                 RecoilController.FactoredTotalHRecoil = totalHorizontalRecoil;
@@ -328,34 +328,29 @@ namespace RealismMod
                 {
                     shotVals[i].Process(__instance.RecoilDirection);
                 }
-                Logger.LogWarning("factoredDispersion " + factoredDispersion);
-                Logger.LogWarning("totalCamRecoil " + totalCamRecoil);
 
-                float gunFactor = weaponClass.TemplateId == "6183afd850224f204c1da514" || weaponClass.TemplateId == "6165ac306ef05c2ce828ef74" ? 2.5f : 1f;
-                float shiftRecoilFactor = (factoredDispersion + totalVerticalRecoil + totalHorizontalRecoil) * (1f + (totalCamRecoil * 10f)) * gunFactor;
-                Logger.LogWarning("shiftRecoilFactor " + shiftRecoilFactor);
-                Logger.LogWarning("totalVerticalRecoil " + totalVerticalRecoil);
-                Logger.LogWarning("totalHorizontalRecoil " + totalHorizontalRecoil);
-                System.Random rnd = new System.Random();
-                int num = rnd.Next(1, 10);
-                if (num < 3 + (0.1f * shiftRecoilFactor)) //make chance higher based on recoil
+                if (Plugin.ScopeAccuracyFactor > 1f) 
                 {
-                    float offsetFactor = Plugin.ScopeAccuracyFactor > 1f ? (Plugin.ScopeAccuracyFactor - 1f) * 0.1f + (0.001f * shiftRecoilFactor) : 0f; //make chance higher based on recoil
-                    Logger.LogWarning("offsetFactor " + offsetFactor);
-                    float offsetX = Random.Range(-offsetFactor, offsetFactor);
-                    float offsetY = Random.Range(-offsetFactor, offsetFactor);
-                    Plugin.ZeroRecoilOffset = new Vector2(offsetX, offsetY);
-
-                    if (Plugin.ScopeID != null && Plugin.ScopeID != "")
+                    float gunFactor = weaponClass.TemplateId == "6183afd850224f204c1da514" || weaponClass.TemplateId == "6165ac306ef05c2ce828ef74" ? 2f : 1f;
+                    float shiftRecoilFactor = (factoredDispersion + totalVerticalRecoil + totalHorizontalRecoil) * (1f + (totalCamRecoil * 10f)) * gunFactor;
+                    System.Random rnd = new System.Random();
+                    int num = rnd.Next(1, 10);
+                    if (num <= Mathf.Min(1 + (0.1f * shiftRecoilFactor), 8))
                     {
-                        if (Plugin.ZeroOffsetDict.ContainsKey(Plugin.ScopeID))
+                        float offsetFactor = (Plugin.ScopeAccuracyFactor - 1f) * (0.005f * shiftRecoilFactor);
+                        float offsetX = Random.Range(-offsetFactor, offsetFactor);
+                        float offsetY = Random.Range(-offsetFactor, offsetFactor);
+                        Plugin.ZeroRecoilOffset = new Vector2(offsetX, offsetY);
+                        if (Plugin.ScopeID != null && Plugin.ScopeID != "")
                         {
-                            Logger.LogWarning("recoil found sight");
-                            Plugin.ZeroOffsetDict[Plugin.ScopeID] = Plugin.ZeroRecoilOffset;
+                            if (Plugin.ZeroOffsetDict.ContainsKey(Plugin.ScopeID))
+                            {
+                                Plugin.ZeroOffsetDict[Plugin.ScopeID] = Plugin.ZeroRecoilOffset;
+                            }
                         }
                     }
                 }
-
+               
                 RecoilController.ShotCount++;
                 RecoilController.ShotTimer = 0f;
                 RecoilController.WiggleShotTimer = 0f;

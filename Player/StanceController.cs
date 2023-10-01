@@ -618,7 +618,7 @@ namespace RealismMod
         //move this to the patch classes
         public static float currentX = 0f;
 
-        public static void DoPistolStances(bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation pwa, ref Quaternion stanceRotation, float dt, ref bool hasResetPistolPos, Player player, ManualLogSource logger, ref float rotationSpeed, ref bool isResettingPistol, Player.FirearmController fc)
+        public static void DoPistolStances(bool isThirdPerson, EFT.Animations.ProceduralWeaponAnimation pwa, ref Quaternion stanceRotation, float dt, ref bool hasResetPistolPos, Player player, ManualLogSource logger, ref float rotationSpeed, ref bool isResettingPistol, Player.FirearmController fc)
         {
             float totalPlayerWeight = PlayerProperties.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 100f);
@@ -714,7 +714,7 @@ namespace RealismMod
             }
         }
 
-        public static void DoRifleStances(ManualLogSource logger, Player player, Player.FirearmController fc, bool isThirdPerson, ref EFT.Animations.ProceduralWeaponAnimation pwa, float pitch, ref Quaternion stanceRotation, float dt, ref bool isResettingShortStock, ref bool hasResetShortStock, ref bool hasResetLowReady, ref bool hasResetActiveAim, ref bool hasResetHighReady, ref bool isResettingHighReady, ref bool isResettingLowReady, ref bool isResettingActiveAim, ref float rotationSpeed, ref bool hasResetMelee, ref bool isResettingMelee)
+        public static void DoRifleStances(ManualLogSource logger, Player player, Player.FirearmController fc, bool isThirdPerson, EFT.Animations.ProceduralWeaponAnimation pwa, float pitch, ref Quaternion stanceRotation, float dt, ref bool isResettingShortStock, ref bool hasResetShortStock, ref bool hasResetLowReady, ref bool hasResetActiveAim, ref bool hasResetHighReady, ref bool isResettingHighReady, ref bool isResettingLowReady, ref bool isResettingActiveAim, ref float rotationSpeed, ref bool hasResetMelee, ref bool isResettingMelee)
         {
             float totalPlayerWeight = PlayerProperties.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 150f);
@@ -1196,8 +1196,6 @@ namespace RealismMod
 
                 if ((StanceController.StanceBlender.Value >= 1f || StanceController.StanceTargetPosition == meleeTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-                    logger.LogWarning("melee rearward position reached");
-
                     StanceController.DoWiggleEffects(player, pwa, new Vector3(10f, -5f, 10f) * movementFactor, true);
                     StanceController.DidStanceWiggle = true;
 
@@ -1207,8 +1205,6 @@ namespace RealismMod
             }
             else if (StanceController.StanceBlender.Value > 0f && !hasResetMelee) //&& !StanceController.IsLowReady && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsShortStock && !isResettingActiveAim && !isResettingHighReady && !isResettingLowReady && !isResettingShortStock
             {
-                logger.LogWarning("resetting melee");
-
                 if (StanceController.StanceBlender.Value <= 0.2f) 
                 {
                     StanceController.CanDoMeleeDetection = true;
@@ -1222,8 +1218,6 @@ namespace RealismMod
             }
             else if (StanceController.StanceBlender.Value == 0f && !hasResetMelee)
             {
-                logger.LogWarning("reset melee");
-
                 if (!StanceController.CanResetDamping)
                 {
                     StanceController.DoDampingTimer = true;
@@ -1231,7 +1225,7 @@ namespace RealismMod
 
                 StanceController.DoResetMelee = true;
                 StanceController.CanDoMeleeDetection = false;
-                StanceController.DoWiggleEffects(player, pwa, new Vector3(5, -5f, -70f) * movementFactor, true);
+                StanceController.DoWiggleEffects(player, pwa, new Vector3(5, -5f, -70f), true);
                 stanceRotation = Quaternion.identity;
                 isResettingMelee = false;
                 hasResetMelee = true;
@@ -1268,7 +1262,7 @@ namespace RealismMod
 
         private static Vector3 currentMountedPos = Vector3.zero;
         private static float timer = 0f;
-        public static void DoMounting(ManualLogSource Logger, Player player, ProceduralWeaponAnimation pwa, ref Vector3 weaponWorldPos, ref Vector3 mountWeapPosition, float dt, Vector3 referencePos)
+        public static void DoMounting(ManualLogSource Logger, Player player, ProceduralWeaponAnimation pwa, FirearmController fc, ref Vector3 weaponWorldPos, ref Vector3 mountWeapPosition, float dt, Vector3 referencePos)
         {
             bool isMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
 
@@ -1286,6 +1280,9 @@ namespace RealismMod
                 }
 
                 DoWiggleEffects(player, pwa, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
+
+                float accuracy = fc.Item.GetTotalCenterOfImpact(false); //forces accuracy to update
+                AccessTools.Field(typeof(Player.FirearmController), "float_1").SetValue(fc, accuracy);
             }
             if (Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && !StanceController.IsBracing && StanceController.IsMounting)
             {

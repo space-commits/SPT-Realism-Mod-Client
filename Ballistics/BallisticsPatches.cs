@@ -21,6 +21,7 @@ using System.Collections;
 using EFT.Interactive;
 using static System.Net.Mime.MediaTypeNames;
 using static EFT.Player;
+using static Val;
 
 namespace RealismMod
 {
@@ -296,8 +297,16 @@ namespace RealismMod
 
     public class ApplyDamageInfoPatch : ModulePatch
     {
+        private static FieldInfo inventoryControllerField;
+        private static PropertyInfo inventoryClassProperty;
+        private static PropertyInfo equipmentClassProperty;
+
         protected override MethodBase GetTargetMethod()
         {
+            inventoryControllerField = AccessTools.Field(typeof(Player), "_inventoryController");
+            inventoryClassProperty = AccessTools.Property(typeof(Player), "Inventory");
+            equipmentClassProperty = AccessTools.Property(typeof(Player), "Equipment");
+
             return typeof(Player).GetMethod("ApplyDamageInfo", BindingFlags.Instance | BindingFlags.Public);
         }
 
@@ -354,7 +363,7 @@ namespace RealismMod
 
                 if (rndNumber <= totalChance)
                 {
-                    InventoryControllerClass inventoryController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
+                    InventoryControllerClass inventoryController = (InventoryControllerClass)inventoryControllerField.GetValue(player);
                     if (player.HandsController as Player.FirearmController != null) 
                     {
                         Player.FirearmController fc = player.HandsController as Player.FirearmController;
@@ -398,8 +407,9 @@ namespace RealismMod
 
             if (damageInfo.DamageType == EDamageType.Bullet)
             {
-                EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
-                InventoryClass inventory = (InventoryClass)AccessTools.Property(typeof(Player), "Inventory").GetValue(__instance);
+                EquipmentClass equipment = (EquipmentClass)equipmentClassProperty.GetValue(__instance);
+                InventoryClass inventory = (InventoryClass)inventoryClassProperty.GetValue(__instance);
+
                 preAllocatedArmorComponents.Clear();
                 inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
                 ArmorComponent armor = null;
@@ -583,8 +593,11 @@ namespace RealismMod
 
     public class SetPenetrationStatusPatch : ModulePatch
     {
+        private static FieldInfo rayCastField;
+
         protected override MethodBase GetTargetMethod()
         {
+            rayCastField = AccessTools.Field(typeof(GClass2870), "raycastHit_0");
             return typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.SetPenetrationStatus), BindingFlags.Public | BindingFlags.Instance);
         }
 
@@ -609,8 +622,9 @@ namespace RealismMod
                 bool hasNeckArmor = GearProperties.HasNeckArmor(__instance.Item);
                 bool shouldHaveExtraSides = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance > 50 ? true : false;
                 bool hasArmArmor = __instance.Template.ArmorZone.Contains(EBodyPart.LeftArm) || __instance.Template.ArmorZone.Contains(EBodyPart.RightArm);
+                Logger.LogWarning(shouldHaveExtraSides);
 
-                RaycastHit raycast = (RaycastHit)AccessTools.Field(typeof(GClass2870), "raycastHit_0").GetValue(shot);
+                RaycastHit raycast = (RaycastHit)rayCastField.GetValue(shot);
                 Collider col = raycast.collider;
                 Vector3 localPoint = col.transform.InverseTransformPoint(raycast.point);
 /*                Vector3 normalizedPoint = localPoint.normalized;*/
@@ -853,7 +867,7 @@ namespace RealismMod
                 bool hasSideArmor = GearProperties.HasSideArmor(__instance.Item);
                 bool hasStomachArmor = GearProperties.HasStomachArmor(__instance.Item);
                 bool hasNeckArmor = GearProperties.HasNeckArmor(__instance.Item);
-                bool shouldHaveExtraSides = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance >= 50 ? true : false;
+                bool shouldHaveExtraSides = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance > 50 ? true : false;
                 bool hasArmArmor = __instance.Template.ArmorZone.Contains(EBodyPart.LeftArm) || __instance.Template.ArmorZone.Contains(EBodyPart.RightArm);
 
                 EHitOrientation hitOrientation = EHitOrientation.UnknownOrientation;
@@ -1078,18 +1092,24 @@ namespace RealismMod
 
     public class ApplyCorpseImpulsePatch : ModulePatch
     {
+        private static FieldInfo lastDamField;
+        private static FieldInfo corpseField;
+        private static FieldInfo corpseAppliedForceField;
+
         protected override MethodBase GetTargetMethod()
         {
-            var result = typeof(Player).GetMethod("ApplyCorpseImpulse", BindingFlags.Instance | BindingFlags.NonPublic);
+            lastDamField = AccessTools.Field(typeof(Player), "LastDamageInfo");
+            corpseField = AccessTools.Field(typeof(Player), "Corpse");
+            corpseAppliedForceField = AccessTools.Field(typeof(Player), "_corpseAppliedForce");
 
-            return result;
+            return typeof(Player).GetMethod("ApplyCorpseImpulse", BindingFlags.Instance | BindingFlags.NonPublic); ;
         }
 
         [PatchPrefix]
         private static bool Prefix(Player __instance)
         {
-            DamageInfo lastDam = (DamageInfo)AccessTools.Field(typeof(Player), "LastDamageInfo").GetValue(__instance);
-            Corpse corpse = (Corpse)AccessTools.Field(typeof(Player), "Corpse").GetValue(__instance);
+            DamageInfo lastDam = (DamageInfo)lastDamField.GetValue(__instance);
+            Corpse corpse = (Corpse)corpseField.GetValue(__instance);
 
             float force;
             if (lastDam.DamageType == EDamageType.Bullet)
@@ -1108,7 +1128,7 @@ namespace RealismMod
                 force = 5f;
             }
 
-            AccessTools.Field(typeof(Player), "_corpseAppliedForce").SetValue(__instance, force);
+            corpseAppliedForceField.SetValue(__instance, force);
             corpse.Ragdoll.ApplyImpulse(lastDam.HitCollider, lastDam.Direction, lastDam.HitPoint, force);
 
             return false;

@@ -189,26 +189,20 @@ namespace RealismMod
 
                     if (__instance.CurrentAimingMod != null) 
                     {
-                        Plugin.Parralax = 0.1f * Plugin.ScopeAccuracyFactor;
-                        Logger.LogWarning("Parralax " + Plugin.Parralax);
+                        Plugin.Parralax = 0.07f * Plugin.ScopeAccuracyFactor;
                         string id = (__instance.CurrentAimingMod?.Item?.Id != null) ? __instance.CurrentAimingMod.Item.Id : "";
                         Plugin.ScopeID = id;
                         if (id != null)
                         {
                             if (Plugin.ZeroOffsetDict.TryGetValue(id, out Vector2 offset))
                             {
-                                Logger.LogWarning("found existing sight");
-                                Logger.LogWarning("x " + offset.x);
-                                Logger.LogWarning("y " + offset.y);
                                 Plugin.ZeroRecoilOffset = offset;
                             }
                             else
                             {
-                                Logger.LogWarning("new sight");
                                 Plugin.ZeroRecoilOffset = Vector2.zero;
                                 Plugin.ZeroOffsetDict.Add(id, Plugin.ZeroRecoilOffset);
                             }
-                            Logger.LogWarning(__instance.CurrentAimingMod.Item.Id);
                         }
                     }
                     
@@ -373,10 +367,8 @@ namespace RealismMod
                     Plugin.ZeroRecoilOffset = Vector2.zero;
                     if (Plugin.ZeroOffsetDict.ContainsKey(Plugin.ScopeID))
                     {
-                        Logger.LogWarning("calibrate found sight");
                         Plugin.ZeroOffsetDict[Plugin.ScopeID] = Plugin.ZeroRecoilOffset;
                     }
-                    Logger.LogWarning("distance changed");
                 }
 
                 recordedDistance = distance;
@@ -409,10 +401,8 @@ namespace RealismMod
                     Plugin.ZeroRecoilOffset = Vector2.zero;
                     if (Plugin.ZeroOffsetDict.ContainsKey(Plugin.ScopeID))
                     {
-                        Logger.LogWarning("calibrate found sight");
                         Plugin.ZeroOffsetDict[Plugin.ScopeID] = Plugin.ZeroRecoilOffset;
                     }
-                    Logger.LogWarning("distance changed 2");
                 }
 
                 recordedDistance = distance;

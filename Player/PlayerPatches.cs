@@ -23,7 +23,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(ref EFT.Player.FirearmController __instance)
+        private static void PatchPostfix(EFT.Player.FirearmController __instance)
         {
             Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
