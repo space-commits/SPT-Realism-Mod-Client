@@ -83,5 +83,10 @@ namespace RealismMod
             return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 15) && float.TryParse(armorItem.ConflictingItems[15], out float result) ? result : 1f;
         }
 
+        public static bool HasExtraArmor(Item armorItem)
+        {
+            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 16) && bool.TryParse(armorItem.ConflictingItems[16], out bool result) ? result : false;
+        }
+
     }
 }

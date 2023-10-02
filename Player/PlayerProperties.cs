@@ -32,7 +32,7 @@ namespace RealismMod
 
         public static float BaseSprintSpeed = 1f;
 
-        public static EnvironmentType EnviroType;
+        public static EnvironmentType EnviroType = EnvironmentType.Outdoor;
 
         public static bool IsClearingMalf;
 
@@ -90,6 +90,7 @@ namespace RealismMod
         public static bool HasFullyResetSprintADSPenalties = false;
 
         public static float TotalUnmodifiedWeight = 0f;
+        public static float TotalMousePenalty = 0f;
         public static float TotalModifiedWeight = 0f;
         public static float TotalModifiedWeightMinusWeapon = 0f;
 

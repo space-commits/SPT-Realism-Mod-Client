@@ -97,7 +97,7 @@ namespace RealismMod
             float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
             float recoilFactor = RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil;
             recoilFactor = recoilFactor * dispersionFactor * dampingFactor * convergenceFactor;
-            recoilFactor = fc.Item.WeapClass == "pistol" ? recoilFactor * 0.25f : recoilFactor;
+            recoilFactor = fc.Item.WeapClass == "pistol" ? recoilFactor * 0.1f : recoilFactor;
             float totalRecoilFactor = 1f - ((recoilFactor / 1000f) * RecoilController.ShotCount);
             totalRecoilFactor = Mathf.Clamp(totalRecoilFactor, 0.25f, 1f);
             return totalRecoilFactor;
@@ -166,7 +166,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref MovementContext __instance, bool isAiming)
+        private static bool Prefix(MovementContext __instance, bool isAiming)
         {
             
             Player player = (Player)AccessTools.Field(typeof(MovementContext), "player_0").GetValue(__instance);

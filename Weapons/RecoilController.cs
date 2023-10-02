@@ -60,7 +60,7 @@ namespace RealismMod
 
         public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weapon) 
         {
-            float opticLimit = Plugin.IsAiming && Plugin.HasOptic ? 0.74f : 1f;
+            float opticLimit = Plugin.IsAiming && Plugin.IsOptic ? 0.73f : 1f;
             pwa.HandsContainer.Recoil.Damping = Mathf.Min(RecoilController.BaseTotalRecoilDamping, opticLimit);
             pwa.HandsContainer.HandsPosition.Damping = (float)Math.Round(RecoilController.BaseTotalHandDamping * (PlayerProperties.IsMoving ? 0.5f : 1f), 3);
 

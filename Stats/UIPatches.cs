@@ -64,14 +64,14 @@ namespace RealismMod
                 if (StanceController.IsMounting)
                 {
                     mountingUIImage.color = Color.white;
-                    float scaleAmount = Mathf.Lerp(1f, 1.15f, Mathf.PingPong(Time.time * 0.9f, 1.0f));
+                    float scaleAmount = Mathf.Lerp(1f, 1.15f, Mathf.PingPong(Time.time * 0.9f, 1f));
                     mountingUIRect.sizeDelta = new Vector2(90f, 90f) * scaleAmount;
 
                 }
                 else if (StanceController.IsBracing) 
                 {
                     mountingUIRect.sizeDelta = new Vector2(90f, 90f);
-                    float alpha = Mathf.Lerp(0.2f, 1f, Mathf.PingPong(Time.time * 1f, 1.0f));
+                    float alpha = Mathf.Lerp(0.2f, 1f, Mathf.PingPong(Time.time * 1f, 1f));
                     Color lerpedColor = new Color(1f, 1f, 1f, alpha);
                     mountingUIImage.color = lerpedColor;
                 }
@@ -91,7 +91,7 @@ namespace RealismMod
             return typeof(EFT.UI.BattleUIScreen).GetMethod("Show", BindingFlags.Instance | BindingFlags.NonPublic);
         }
         [PatchPostfix]
-        private static void PatchPostFix(ref EFT.UI.BattleUIScreen __instance)
+        private static void PatchPostFix(EFT.UI.BattleUIScreen __instance)
         {
             if (MountingUI.ActiveUIScreen == __instance.gameObject) 
             {
@@ -394,7 +394,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref Mod __instance, ref string __result)
+        private static bool Prefix(Mod __instance, ref string __result)
         {
             __result = __instance.Ergonomics + "%";
             return false;
@@ -409,7 +409,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(ref BarrelModClass __instance, GClass2483 template)
+        private static void PatchPostfix(BarrelModClass __instance, GClass2483 template)
         {
             float shotDisp = (template.ShotgunDispersion - 1f) * 100f;
 
@@ -449,6 +449,8 @@ namespace RealismMod
             float aimSpeed = AttachmentProperties.AimSpeed(__instance);
             float shotDisp = AttachmentProperties.ModShotDispersion(__instance);
             float conv = AttachmentProperties.ModConvergence(__instance);
+            float meleeDmg = AttachmentProperties.ModMeleeDamage(__instance);
+            float meleePen = AttachmentProperties.ModMeleePen(__instance);
 
             if (Plugin.EnableMalfPatch.Value == true && Plugin.ModConfig.malf_changes == true)
             {
@@ -570,6 +572,24 @@ namespace RealismMod
             convAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             convAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Utils.SafelyAddAttributeToList(convAtt, __instance);
+
+            ItemAttributeClass meleeDmgAtt = new ItemAttributeClass(ENewItemAttributeId.MeleeDamage);
+            meleeDmgAtt.Name = ENewItemAttributeId.MeleeDamage.GetName();
+            meleeDmgAtt.Base = () => meleeDmg;
+            meleeDmgAtt.StringValue = () => $"{meleeDmg}";
+            meleeDmgAtt.LessIsGood = false;
+            meleeDmgAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+            meleeDmgAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
+            Utils.SafelyAddAttributeToList(meleeDmgAtt, __instance);
+
+            ItemAttributeClass meleePenAtt = new ItemAttributeClass(ENewItemAttributeId.MeleePen);
+            meleePenAtt.Name = ENewItemAttributeId.MeleePen.GetName();
+            meleePenAtt.Base = () => meleePen;
+            meleePenAtt.StringValue = () => $"{meleePen}";
+            meleePenAtt.LessIsGood = false;
+            meleePenAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+            meleePenAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
+            Utils.SafelyAddAttributeToList(meleePenAtt, __instance);
         }
 
         public static string getMalfOdds(float malfChance)
@@ -582,7 +602,7 @@ namespace RealismMod
                     return "No Change";
                 case <= 50:
                     return $"{malfChance}%";
-                case <= 100:
+                case <= 99:
                     return "Small Increase";
                 case <= 500:
                     return "Significant Increase";
@@ -607,7 +627,7 @@ namespace RealismMod
 
 
         [PatchPrefix]
-        private static bool Prefix(ref BarrelModClass __instance, ref float __result)
+        private static bool Prefix(BarrelModClass __instance, ref float __result)
         {
             BarrelComponent itemComponent = __instance.GetItemComponent<BarrelComponent>();
             if (itemComponent == null)
@@ -671,9 +691,9 @@ namespace RealismMod
                 camRecoilAtt.Name = ENewItemAttributeId.CameraRecoil.GetName();
                 camRecoilAtt.Range = new Vector2(0f, 50f);
                 camRecoilAtt.LessIsGood = true;
-                camRecoilAtt.Base = () => __instance.Template.CameraRecoil * 100f * (1f + WeaponProperties.CameraReturnSpeed(__instance));
+                camRecoilAtt.Base = () => __instance.Template.CameraRecoil * 100f;
                 camRecoilAtt.Delta = () => CamRecoilDelta(__instance);
-                camRecoilAtt.StringValue = () => Math.Round(DisplayWeaponProperties.CamRecoil * (1f + DisplayWeaponProperties.CamReturnSpeed) * 100f, 2).ToString();
+                camRecoilAtt.StringValue = () => Math.Round(DisplayWeaponProperties.CamRecoil * 100f, 2).ToString();
                 camRecoilAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
                 camRecoilAttList.Add(camRecoilAtt);
             }
@@ -730,7 +750,7 @@ namespace RealismMod
 
 
         [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref float __result)
+        private static bool Prefix(Weapon __instance, ref float __result)
         {
             __result = DisplayWeaponProperties.HRecoilDelta;
             return false;
@@ -746,7 +766,7 @@ namespace RealismMod
 
 
         [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref string __result)
+        private static bool Prefix(Weapon __instance, ref string __result)
         {
             __result = Math.Round(__instance.Template.RecoilForceBack + __instance.Template.RecoilForceBack * DisplayWeaponProperties.HRecoilDelta, 1).ToString();
             return false;
@@ -762,7 +782,7 @@ namespace RealismMod
 
 
         [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref float __result)
+        private static bool Prefix(Weapon __instance, ref float __result)
         {
             __result = DisplayWeaponProperties.VRecoilDelta;
             return false;
@@ -777,9 +797,9 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref string __result)
+        private static bool Prefix(Weapon __instance, ref string __result)
         {
-            __result = Math.Round(__instance.Template.RecoilForceUp + __instance.Template.RecoilForceUp * DisplayWeaponProperties.VRecoilDelta, 1).ToString();
+            __result = Math.Round(__instance.Template.RecoilForceUp + (__instance.Template.RecoilForceUp * DisplayWeaponProperties.VRecoilDelta), 1).ToString();
             return false;
         }
 
@@ -793,7 +813,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref float __result)
+        private static bool Prefix(Weapon __instance, ref float __result)
         {
             float Single_0 = (float)AccessTools.Property(typeof(Weapon), "Single_0").GetValue(__instance);
             MethodInfo method_9 = AccessTools.Method(typeof(Weapon), "method_9");
@@ -813,13 +833,13 @@ namespace RealismMod
         }
          
         [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref string __result)
+        private static bool Prefix(Weapon __instance, ref string __result)
         {
-            __result = ((GetTotalCOI(ref __instance, true) * __instance.GetBarrelDeviation() * 100f / 2.9089f) * 2f).ToString("0.0#") + " " + "moa".Localized(null);
+            __result = ((GetTotalCOI(__instance, true) * __instance.GetBarrelDeviation() * 100f / 2.9089f) * 2f).ToString("0.0#") + " " + "moa".Localized(null);
             return false;
         }
 
-        private static float GetTotalCOI(ref Weapon __instance, bool includeAmmo)
+        private static float GetTotalCOI(Weapon __instance, bool includeAmmo)
         {
             float num = __instance.CenterOfImpactBase * (1f + DisplayWeaponProperties.COIDelta);
             if (!includeAmmo)
@@ -856,7 +876,7 @@ namespace RealismMod
 
 
         [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref float __result)
+        private static bool Prefix(Weapon __instance, ref float __result)
         {
             if (Plugin.EnableStatsDelta.Value == true)
             {
@@ -877,7 +897,7 @@ namespace RealismMod
 
 
         [PatchPrefix]
-        private static bool Prefix(ref Weapon __instance, ref string __result)
+        private static bool Prefix(Weapon __instance, ref string __result)
         {
             StatDeltaDisplay.DisplayDelta(__instance, Logger);
             float ergoTotal = __instance.Template.Ergonomics * (1f + DisplayWeaponProperties.ErgoDelta);
@@ -1008,11 +1028,12 @@ namespace RealismMod
             float pureErgoDelta = 0f;
 
             StatCalc.WeaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref totalRecoilDamping, ref totalRecoilHandDamping, currentCOI, hasShoulderContact, ref totalCOI, ref totalCOIDelta, baseCOI, pureErgo, ref pureErgoDelta, true);
-          
-       /*     float ergoWeight = StatCalc.ErgoWeightCalc(__instance.GetSingleItemTotalWeight(), pureErgoDelta, totalTorque, __instance.WeapClass);
-            float ergoDisp = 80f - ergoWeight;
-            float ergoDispDelta = ergoWeight / -80f;*/
 
+            /*     float ergoWeight = StatCalc.ErgoWeightCalc(__instance.GetSingleItemTotalWeight(), pureErgoDelta, totalTorque, __instance.WeapClass);
+                 float ergoDisp = 80f - ergoWeight;
+                 float ergoDispDelta = ergoWeight / -80f;*/
+
+            DisplayWeaponProperties.TotalConvergence = currentConv;
             DisplayWeaponProperties.HasShoulderContact = hasShoulderContact;
             DisplayWeaponProperties.Dispersion = totalDispersion;
             DisplayWeaponProperties.CamRecoil = totalCamRecoil;

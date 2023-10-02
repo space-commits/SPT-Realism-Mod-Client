@@ -17,12 +17,13 @@ using System.Linq;
 using static EFT.Player;
 using System.ComponentModel;
 using static EFT.ClientPlayer;
+using static RootMotion.FinalIK.Recoil;
 
 namespace RealismMod
 {
 
-    //to find float_9 on new client version, look for: public float AimingSpeed { get{ return this.float_9; } }
-    //to finf float_19 again, it's set to ErgnomicWeight in this method.
+    //to find float_9 on new client version for 3.6.0, look for: public float AimingSpeed { get{ return this.float_9; } }
+    //to find float_19 again, it's set to ErgnomicWeight in this method.
     public class UpdateWeaponVariablesPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -31,7 +32,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
+        private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
             GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
             if (ginterface114 != null && ginterface114.Weapon != null)
@@ -66,6 +67,8 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, aimSpeed);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f)) * PlayerProperties.ErgoDeltaInjuryMulti);
 
+                    Plugin.CurrentlyEquippedWeapon = weapon;    
+
                     if (Plugin.EnableLogging.Value == true) 
                     {
                         Logger.LogWarning("========UpdateWeaponVariables=======");
@@ -90,7 +93,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
+        private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
 
             GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
@@ -100,11 +103,13 @@ namespace RealismMod
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
                 if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
+                    __instance.Overweight = 0;
+                    __instance.CrankRecoil = Plugin.EnableCrank.Value;
+
                     FirearmController firearmController = player.HandsController as FirearmController;
-                    //force ergo weight to update
-                    if (firearmController != null) 
-                    {
-                        float updateErgoWeight = firearmController.ErgonomicWeight;
+                    if (firearmController != null)
+                    {       
+                        float updateErgoWeight = firearmController.ErgonomicWeight; //force ergo weight to update
                         float accuracy = weapon.GetTotalCenterOfImpact(false);
                         AccessTools.Field(typeof(Player.FirearmController), "float_1").SetValue(firearmController, accuracy);
                     }
@@ -115,14 +120,13 @@ namespace RealismMod
                     float stockMulti = weapon.WeapClass != "pistol" && !WeaponProperties.HasShoulderContact ? 0.75f : 1f;
                     float totalSightlessAimSpeed = WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f));
                     float sightSpeedModi = currentAimingMod != null ? AttachmentProperties.AimSpeed(currentAimingMod) : 1f;
+                    sightSpeedModi = currentAimingMod != null && (currentAimingMod.TemplateId == "5c07dd120db834001c39092d" || currentAimingMod.TemplateId == "5c0a2cec0db834001b7ce47d") && __instance.CurrentScope.IsOptic ? 1f : sightSpeedModi;
                     float totalSightedAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)) * stanceMulti * stockMulti, 0.45f, 1.5f);
                     float newAimSpeed = Mathf.Max(totalSightedAimSpeed * PlayerProperties.ADSSprintMulti, 0.3f) * Plugin.GlobalAimSpeedModifier.Value;
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").SetValue(__instance, newAimSpeed); //aimspeed
                     float float_9 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9").GetValue(__instance); //aimspeed
 
-                    /*                    float totalWeight = firearmController.Item.WeapClass == "pistol" ? firearmController.Item.GetSingleItemTotalWeight() * 2 : firearmController.Item.GetSingleItemTotalWeight();
-                    */
-                    Plugin.HasOptic = __instance.CurrentScope.IsOptic ? true : false;
+                    Plugin.IsOptic = __instance.CurrentScope.IsOptic ? true : false;
 
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_19").SetValue(__instance, ergoWeight); 
@@ -133,6 +137,23 @@ namespace RealismMod
                     float breathIntensity;
                     float handsIntensity;
 
+                    //ADS animation/wiggle, this triggers when toggling scope mode :(
+/*                    if (StanceController.IsIdle())
+                    {
+                        __instance.Shootingg.ShotVals[3].Intensity = 0;
+                        __instance.Shootingg.ShotVals[4].Intensity = 0;
+                        Vector3 wiggleDir = new Vector3(-15f, 5f, -10f) * (Plugin.HasOptic ? 0.4f : 1f);
+
+                        if (__instance.IsAiming)
+                        {
+                            StanceController.DoWiggleEffects(player, __instance, wiggleDir * newAimSpeed);
+                        }
+                        else 
+                        {
+                            StanceController.DoWiggleEffects(player, __instance, -wiggleDir * newAimSpeed * 0.3f);
+                        }
+                    }*/
+       
                     if (!WeaponProperties.HasShoulderContact && weapon.WeapClass != "pistol")
                     {
                         breathIntensity = Mathf.Min(0.78f * ergoWeightFactor * playerWeightFactor, 1.01f);
@@ -165,9 +186,26 @@ namespace RealismMod
                         __instance.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity;
                     }
 
-                    __instance.Overweight = 0;
 
-                    __instance.CrankRecoil = Plugin.EnableCrank.Value;
+                    if (__instance.CurrentAimingMod != null) 
+                    {
+                        Plugin.Parralax = 0.07f * Plugin.ScopeAccuracyFactor;
+                        string id = (__instance.CurrentAimingMod?.Item?.Id != null) ? __instance.CurrentAimingMod.Item.Id : "";
+                        Plugin.ScopeID = id;
+                        if (id != null)
+                        {
+                            if (Plugin.ZeroOffsetDict.TryGetValue(id, out Vector2 offset))
+                            {
+                                Plugin.ZeroRecoilOffset = offset;
+                            }
+                            else
+                            {
+                                Plugin.ZeroRecoilOffset = Vector2.zero;
+                                Plugin.ZeroOffsetDict.Add(id, Plugin.ZeroRecoilOffset);
+                            }
+                        }
+                    }
+                    
 
                     if (Plugin.EnableLogging.Value == true)
                     {
@@ -206,7 +244,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
+        private static bool Prefix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
             GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
 
@@ -216,19 +254,20 @@ namespace RealismMod
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
                 if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
+
                     float totalPlayerWeight = PlayerProperties.TotalModifiedWeight - weapon.GetSingleItemTotalWeight();
                     float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
                     bool noShoulderContact = !WeaponProperties.HasShoulderContact && weapon.WeapClass != "pistol";
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));
-                    float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6.5f);
-                    float displacementModifier = noShoulderContact ? Plugin.SwayIntensity.Value * 1f : Plugin.SwayIntensity.Value * 0.5f;//lower = less drag
-                    float aimIntensity = noShoulderContact ? Plugin.SwayIntensity.Value * 1f : Plugin.SwayIntensity.Value * 0.6f;
+                    float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f);
+                    float displacementModifier = noShoulderContact ? Plugin.SwayIntensity.Value * 0.95f : Plugin.SwayIntensity.Value * 0.48f;//lower = less drag
+                    float aimIntensity = noShoulderContact ? Plugin.SwayIntensity.Value * 0.95f : Plugin.SwayIntensity.Value * 0.57f;
 
                     float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight * weightFactor * playerWeightFactor);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_20").SetValue(__instance, swayStrength);
 
                     float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate(ergoWeight * weightFactor);//delay from moving mouse to the weapon moving to center of screen.
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_21").SetValue(__instance, weapDisplacement * weightFactor * displacementModifier * playerWeightFactor);
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_21").SetValue(__instance, -(weapDisplacement * weightFactor * displacementModifier * playerWeightFactor));
 
                     __instance.MotionReact.SwayFactors = new Vector3(swayStrength, __instance.IsAiming ? (swayStrength * 0.3f) : swayStrength, swayStrength) * Mathf.Clamp(aimIntensity * weightFactor * playerWeightFactor, aimIntensity, 1f); // the diving/tiling animation as you move weapon side to side.
 
@@ -258,7 +297,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref EFT.Animations.ProceduralWeaponAnimation __instance, float value)
+        private static bool Prefix(EFT.Animations.ProceduralWeaponAnimation __instance, float value)
         {
             GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
 
@@ -289,7 +328,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref EFT.Animations.ProceduralWeaponAnimation __instance, ref float __result)
+        private static bool Prefix(EFT.Animations.ProceduralWeaponAnimation __instance, ref float __result)
         {
 
             GInterface114 ginterface114 = (GInterface114)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
@@ -304,6 +343,74 @@ namespace RealismMod
                 }
             }
             return true;
+        }
+    }
+
+    public class CalibrationLookAt : ModulePatch
+    {
+        private static float recordedDistance = 0f;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(ProceduralWeaponAnimation).GetMethod("method_7", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        [PatchPrefix]
+        private static void PatchPrefix(ProceduralWeaponAnimation __instance, ref Vector3 point)
+        {
+            if (__instance.CurrentAimingMod != null && !__instance.CurrentScope.IsOptic && Plugin.ScopeID != null && Plugin.ScopeID != "")
+            {
+                float distance = __instance.CurrentAimingMod.GetCurrentOpticCalibrationDistance();
+
+                if (recordedDistance != distance)
+                {
+                    Plugin.ZeroRecoilOffset = Vector2.zero;
+                    if (Plugin.ZeroOffsetDict.ContainsKey(Plugin.ScopeID))
+                    {
+                        Plugin.ZeroOffsetDict[Plugin.ScopeID] = Plugin.ZeroRecoilOffset;
+                    }
+                }
+
+                recordedDistance = distance;
+                float factor = distance / 25f; //need to find default zero
+                Vector3 recoilOffset = new Vector3(Plugin.ZeroRecoilOffset.x * factor, Plugin.ZeroRecoilOffset.y * factor);
+                Vector3 target = point + new Vector3(Plugin.MouseRotation.x * factor * -Plugin.Parralax, Plugin.MouseRotation.y * factor * Plugin.Parralax, 0f);
+                point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
+            }
+        }
+    }
+
+    public class CalibrationLookAtScope : ModulePatch
+    {
+        private static float recordedDistance = 0f;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(ProceduralWeaponAnimation).GetMethod("method_5", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        [PatchPrefix]
+        private static void PatchPrefix(ProceduralWeaponAnimation __instance, ref Vector3 point)
+        {
+            if (__instance.CurrentAimingMod != null && Plugin.ScopeID != null && Plugin.ScopeID != "")
+            {
+                float distance = __instance.CurrentAimingMod.GetCurrentOpticCalibrationDistance();
+
+                if (recordedDistance != distance)
+                {
+                    Plugin.ZeroRecoilOffset = Vector2.zero;
+                    if (Plugin.ZeroOffsetDict.ContainsKey(Plugin.ScopeID))
+                    {
+                        Plugin.ZeroOffsetDict[Plugin.ScopeID] = Plugin.ZeroRecoilOffset;
+                    }
+                }
+
+                recordedDistance = distance;
+                float factor = distance / 50f; //need to find default zero
+                Vector3 recoilOffset = new Vector3(Plugin.ZeroRecoilOffset.x * factor, Plugin.ZeroRecoilOffset.y * factor);
+                Vector3 target = point + new Vector3(Plugin.MouseRotation.x * factor * -Plugin.Parralax, Plugin.MouseRotation.y * factor * Plugin.Parralax, 0f);
+                point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
+            }
         }
     }
 }

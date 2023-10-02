@@ -10,6 +10,7 @@ using System;
 using static EFT.Player;
 using EFT.Interactive;
 using System.Linq;
+using notGreg.UniformAim;
 
 namespace RealismMod
 {
@@ -44,7 +45,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static void Prefix(MovementState __instance, ref Vector2 deltaRotation, bool ignoreClamp)
+        private static void Prefix(MovementState __instance, Vector2 deltaRotation, bool ignoreClamp)
         {
             GClass1667 MovementContext = (GClass1667)movementContextField.GetValue(__instance);
             Player player = (Player)playerField.GetValue(MovementContext);
@@ -67,11 +68,17 @@ namespace RealismMod
                     timer = 0f;
 
                     FirearmController fc = player.HandsController as FirearmController;
-                    float shotCountFactor = (float)Math.Round(Mathf.Min(RecoilController.ShotCount * 0.4f, 1.75f), 2);
-                    float angle = Plugin.RecoilDispersionFactor.Value == 0f ? 0f : ((90f - RecoilController.BaseTotalRecoilAngle) / 50f);
-                    float angleDispFactor = 90f / RecoilController.BaseTotalRecoilAngle;
-                    float dispersion = Mathf.Max(RecoilController.FactoredTotalDispersion * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor * angleDispFactor, 0f);
-                    float dispersionSpeed = Math.Max(Time.time * Plugin.RecoilDispersionSpeed.Value, 0.1f);
+                    float baseAngle = WeaponProperties._WeapClass != "pistol" ? RecoilController.BaseTotalRecoilAngle : RecoilController.BaseTotalRecoilAngle - 5;
+                    float hipfireModifier = !Plugin.IsAiming ? 1.1f : 1f;
+                    float shotCountFactor = (float)Math.Round(Mathf.Min(RecoilController.ShotCount * 0.38f, 1.65f), 2);
+                    float dispersionSpeedFactor = WeaponProperties._WeapClass != "pistol" ? 1f + (-WeaponProperties.TotalDispersionDelta) : 1f;
+                    float dispersionAngleFactor = WeaponProperties._WeapClass != "pistol" ? 1f + (-WeaponProperties.TotalDispersionDelta * 0.035f) : 1f;
+                    float angle = (Plugin.RecoilDispersionFactor.Value == 0f ? 0f : ((90f - (baseAngle * dispersionAngleFactor)) / 50f));
+                    float angleDispFactor = 90f / baseAngle;
+
+                    float dispersion = Mathf.Max(RecoilController.FactoredTotalDispersion * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor * angleDispFactor * hipfireModifier, 0f);
+                    float dispersionSpeed = Math.Max(Time.time * Plugin.RecoilDispersionSpeed.Value * dispersionSpeedFactor, 0.1f);
+                    float recoilClimbMulti = WeaponProperties._WeapClass == "pistol" ? Plugin.PistolRecClimbFactor.Value : Plugin.RecoilClimbFactor.Value;
 
                     float xRotation = 0f;
                     float yRotation = 0f;
@@ -79,22 +86,20 @@ namespace RealismMod
                     if (!RecoilController.IsVector)
                     {
                         xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(dispersionSpeed, 1f)) + angle, 3);
-                        yRotation = (float)Math.Round(Mathf.Min(-RecoilController.FactoredTotalVRecoil * Plugin.RecoilClimbFactor.Value * shotCountFactor * fpsFactor, 0f), 3);
+                        yRotation = (float)Math.Round(Mathf.Min(-RecoilController.FactoredTotalVRecoil * recoilClimbMulti * shotCountFactor * fpsFactor, 0f), 3);
                     }
                     else
                     {
-                        float recoilAmount = RecoilController.FactoredTotalVRecoil * Plugin.RecoilClimbFactor.Value * shotCountFactor * fpsFactor;
+                        float recoilAmount = RecoilController.FactoredTotalVRecoil * recoilClimbMulti * shotCountFactor * fpsFactor;
                         dispersion = Mathf.Max(RecoilController.FactoredTotalDispersion * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor, 0f);
-                        xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(Time.time * 10f, 1f)), 3);
+                        xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(Time.time * 8f, 1f)), 3);
                         yRotation = (float)Math.Round(Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * 4f, 1f)), 3);
-                        Logger.LogWarning(xRotation);
                     }
 
                     //Spiral/circular, could modify x axis with ping pong or something to make it more random or simply use random.range
                     /*              spiralTime += Time.deltaTime * 20f;
                                   float xRotaion = Mathf.Sin(spiralTime * 10f) * 1f;
                                   float yRotation = Mathf.Cos(spiralTime * 10f) * 1f;*/
-
 
                     targetRotation = MovementContext.Rotation + new Vector2(xRotation, yRotation);
 
@@ -108,7 +113,7 @@ namespace RealismMod
                 {
                     float resetSpeed = RecoilController.BaseTotalConvergence * WeaponProperties.ConvergenceDelta * Plugin.ResetSpeed.Value;
 
-                    bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Plugin.ResetSensitivity.Value;
+                    bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Mathf.Clamp(Plugin.ResetSensitivity.Value / 2.5f, 0f, 0.1f);
                     bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= Plugin.ResetSensitivity.Value;
 
                     Vector2 resetTarget = MovementContext.Rotation;
@@ -175,7 +180,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref ShotEffector __instance)
+        private static bool Prefix(ShotEffector __instance)
         {
             IWeapon _weapon = (IWeapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
 
@@ -261,7 +266,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        public static bool Prefix(ref ShotEffector __instance, float str = 1f)
+        public static bool Prefix(ShotEffector __instance, float str = 1f)
         {
             IWeapon iWeapon = (IWeapon)iWeaponField.GetValue(__instance);
 
@@ -271,8 +276,6 @@ namespace RealismMod
                 Vector3 separateIntensityFactors = (Vector3)intensityFactorsField.GetValue(__instance);
                 SkillsClass.GClass1743 buffInfo = (SkillsClass.GClass1743)buffInfoField.GetValue(__instance);
 
-                Plugin.CurrentlyShootingWeapon = weaponClass;
-     
                 float totalPlayerWeight = PlayerProperties.TotalUnmodifiedWeight - WeaponProperties.TotalWeaponWeight;
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 550f);
                 float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 100f);
@@ -287,9 +290,10 @@ namespace RealismMod
                 float baseRecoilAngle = RecoilController.BaseTotalRecoilAngle;
                 float mountingAngleModi = StanceController.IsMounting ? Mathf.Min(baseRecoilAngle + 17f, 90f) : StanceController.IsBracing ? Mathf.Min(baseRecoilAngle + 10f, 90f) : baseRecoilAngle;
 
-                Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
+                Vector3 poseIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
                 float factoredDispersion = RecoilController.BaseTotalDispersion * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff * mountingDispModi * Plugin.DispMulti.Value;
+                RecoilController.FactoredTotalDispersion = factoredDispersion;
 
                 float angle = Mathf.LerpAngle(mountingAngleModi, 90f, buffInfo.RecoilSupression.y);
                 __instance.RecoilDegree = new Vector2(angle - factoredDispersion, angle + factoredDispersion);
@@ -302,24 +306,17 @@ namespace RealismMod
                 __instance.ShotVals[3].Intensity = totalCamRecoil;
                 __instance.ShotVals[4].Intensity = -totalCamRecoil;
 
-                float fovFactor = (Singleton<SharedGameSettingsClass>.Instance.Game.Settings.FieldOfView / 70f) * Plugin.HRecLimitMulti.Value;
-                float opticLimit = Plugin.IsAiming && Plugin.HasOptic ? 15f * fovFactor: 35f * fovFactor;
-                float shotFactor = 1f;
-                if (weaponClass.WeapClass == "pistol" && RecoilController.ShotCount > 1f && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto) 
-                {
-                    shotFactor = 0.5f;
-                }
-
+                float shotFactor = weaponClass.WeapClass == "pistol" && RecoilController.ShotCount > 1f && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto ? 0.5f : 1f;
                 float totalDispersion = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
-                float totalVerticalRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y)  * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * mountingVertModi * shotFactor * Plugin.VertMulti.Value;
-                float totalHorizontalRecoil = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * shotFactor * fovFactor * Plugin.HorzMulti.Value;
-                totalHorizontalRecoil = Mathf.Min(totalHorizontalRecoil, opticLimit);
-
-                RecoilController.FactoredTotalDispersion = totalDispersion;
+                float totalVerticalRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * mountingVertModi * shotFactor * Plugin.VertMulti.Value;
+                float totalHorizontalRecoil = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * shotFactor * Plugin.HorzMulti.Value;
                 RecoilController.FactoredTotalVRecoil = totalVerticalRecoil;
                 RecoilController.FactoredTotalHRecoil = totalHorizontalRecoil;
 
-                __instance.RecoilDirection = new Vector3(-Mathf.Sin(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.x, Mathf.Cos(totalDispersion) * totalVerticalRecoil * _separateIntensityFactors.y, totalHorizontalRecoil * _separateIntensityFactors.z) * __instance.Intensity;
+                float fovFactor = (Singleton<SharedGameSettingsClass>.Instance.Game.Settings.FieldOfView / 70f) * Plugin.HRecLimitMulti.Value;
+                float opticLimit = Plugin.IsAiming && Plugin.IsOptic ? 17f * fovFactor : 25f * fovFactor;
+                totalHorizontalRecoil = Mathf.Min(totalHorizontalRecoil * fovFactor, opticLimit); //put it after setting factored so that visual recoil isn't affected
+                __instance.RecoilDirection = new Vector3(-Mathf.Sin(totalDispersion) * totalVerticalRecoil * poseIntensityFactors.x, Mathf.Cos(totalDispersion) * totalVerticalRecoil * poseIntensityFactors.y, totalHorizontalRecoil * poseIntensityFactors.z) * __instance.Intensity;
                 Vector2 heatDirection = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
                 float heatFactor = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveMult : 0f;
                 float totalRecoilFactor = (__instance.RecoilRadian.x + __instance.RecoilRadian.y) / 2f * ((__instance.RecoilStrengthXy.x + __instance.RecoilStrengthXy.y) / 2f) * heatFactor;
@@ -332,6 +329,30 @@ namespace RealismMod
                     shotVals[i].Process(__instance.RecoilDirection);
                 }
 
+                if (Plugin.ScopeAccuracyFactor > 1f) 
+                {
+                    float chanceFactor = 1f + ((Plugin.ScopeAccuracyFactor - 1f) * 2f);
+                    float gunFactor = weaponClass.TemplateId == "6183afd850224f204c1da514" || weaponClass.TemplateId == "6165ac306ef05c2ce828ef74" ? 2f : 1f;
+                    float shiftRecoilFactor = (factoredDispersion + totalVerticalRecoil + totalHorizontalRecoil) * (1f + (totalCamRecoil * 10f)) * gunFactor;
+                    System.Random rnd = new System.Random();
+                    int num = rnd.Next(1, 10);
+                    if (num <= Mathf.Min(1 + (0.05f * shiftRecoilFactor * chanceFactor), 8))
+                    {
+                        float offsetFactor = (Plugin.ScopeAccuracyFactor - 1f) * (0.0025f * shiftRecoilFactor);
+                        float offsetX = Random.Range(-offsetFactor, offsetFactor);
+                        float offsetY = Random.Range(-offsetFactor, offsetFactor);
+                        Logger.LogWarning(offsetFactor);
+                        Plugin.ZeroRecoilOffset = new Vector2(offsetX, offsetY);
+                        if (Plugin.ScopeID != null && Plugin.ScopeID != "")
+                        {
+                            if (Plugin.ZeroOffsetDict.ContainsKey(Plugin.ScopeID))
+                            {
+                                Plugin.ZeroOffsetDict[Plugin.ScopeID] = Plugin.ZeroRecoilOffset;
+                            }
+                        }
+                    }
+                }
+               
                 RecoilController.ShotCount++;
                 RecoilController.ShotTimer = 0f;
                 RecoilController.WiggleShotTimer = 0f;

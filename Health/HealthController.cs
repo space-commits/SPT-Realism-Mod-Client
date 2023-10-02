@@ -27,53 +27,53 @@ namespace RealismMod
     {
         public static string MedType(Item med)
         {
-            return !Utils.NullCheck(med.ConflictingItems) ? med.ConflictingItems[1] : "Unknown";
+            return !Utils.IsNull(med.ConflictingItems) ? med.ConflictingItems[1] : "Unknown";
 
         }
 
         public static string HBleedHealType(Item med)
         {
-            return !Utils.NullCheck(med.ConflictingItems) ? med.ConflictingItems[2] : "Unknown";
+            return !Utils.IsNull(med.ConflictingItems) ? med.ConflictingItems[2] : "Unknown";
         }
 
         public static float HpPerTick(Item med)
         {
-            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[3], out float result) ? result : 1f;
+            return !Utils.IsNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[3], out float result) ? result : 1f;
         }
 
         public static bool CanBeUsedInRaid(Item med)
         {
-            return !Utils.NullCheck(med.ConflictingItems) && bool.TryParse(med.ConflictingItems[4], out bool result) ? result : false;
+            return !Utils.IsNull(med.ConflictingItems) && bool.TryParse(med.ConflictingItems[4], out bool result) ? result : false;
         }
 
         public static float PainKillerFullDuration(Item med)
         {
-            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[5], out float result) ? result : 1f;
+            return !Utils.IsNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[5], out float result) ? result : 1f;
         }
 
         public static float PainKillerWaitTime(Item med)
         {
-            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[6], out float result) ? result : 1f;
+            return !Utils.IsNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[6], out float result) ? result : 1f;
         }
 
         public static float PainKillerTime(Item med)
         {
-            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[7], out float result) ? result : 1f;
+            return !Utils.IsNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[7], out float result) ? result : 1f;
         }
 
         public static float TunnelVisionStrength(Item med)
         {
-            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[8], out float result) ? result : 1f;
+            return !Utils.IsNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[8], out float result) ? result : 1f;
         }
 
         public static float Delay(Item med)
         {
-            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[9], out float result) ? result : 1f;
+            return !Utils.IsNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[9], out float result) ? result : 1f;
         }
 
         public static float Strength(Item med)
         {
-            return !Utils.NullCheck(med.ConflictingItems) && float.TryParse(med.ConflictingItems[10], out float result) ? result : 0f;
+            return !Utils.IsNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[10], out float result) ? result : 0f;
         }
 
         public static readonly Dictionary<string, Type> EffectTypes = new Dictionary<string, Type>
@@ -896,24 +896,29 @@ namespace RealismMod
             bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
 
             float medHPRes = med.MedKitComponent.HpResource;
-       
-            if (Plugin.GearBlocksEat.Value && medType.Contains("pills") && (mouthBlocked || fsIsON || nvgIsOn)) 
+
+            if (medType == "vas")
             {
-                NotificationManagerClass.DisplayWarningNotification("Can't Take Pills, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
-                canUse = false;
                 return;
             }
+
+            if (medType.Contains("pills")) 
+            {
+                if (Plugin.GearBlocksEat.Value && (mouthBlocked || fsIsON || nvgIsOn))
+                {
+                    NotificationManagerClass.DisplayWarningNotification("Can't Take Pills, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
+                    canUse = false;
+                    return;
+                }
+                return;
+            }
+  
 
             if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear))) 
             {
                 NotificationManagerClass.DisplayWarningNotification("Part " + bodyPart + " Has Gear On, Remove Gear First To Be Able To Heal", EFT.Communications.ENotificationDurationType.Long);
 
                 canUse = false;
-                return;
-            }
-
-            if (medType == "vas") 
-            {
                 return;
             }
 

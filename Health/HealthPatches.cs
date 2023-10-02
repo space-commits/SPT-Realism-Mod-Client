@@ -246,7 +246,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref ActiveHealthControllerClass __instance, EBodyPart bodyPart, float healthPenalty, ref bool __result)
+        private static bool Prefix(ActiveHealthControllerClass __instance, EBodyPart bodyPart, float healthPenalty, ref bool __result)
         {
 
             BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);

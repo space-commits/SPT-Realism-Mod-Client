@@ -377,6 +377,12 @@ namespace RealismMod
 
         public static void ModConditionalStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, ref string position, ref float modChamber, ref float modLoudness, ref float modMalfChance, ref float modDuraBurn, ref float modConv)
         {
+            Mod parent = null;
+            if (mod?.Parent?.Container?.ParentItem !=null)
+            {
+                parent = mod.Parent.Container.ParentItem as Mod;
+            }
+
             if (Utils.IsStock(mod) == true)
             {
                 if (folded)
@@ -503,15 +509,24 @@ namespace RealismMod
                 modAccuracy = 0;
             }
 
-            if (modType == "booster" && weapType != "short_AK")
+            if ((modType == "booster" || Utils.IsSilencer(mod)) && (weapType == "short_AK" || (parent != null && AttachmentProperties.ModType(parent) == "short_barrel")))
             {
-                modAutoROF *= 0.25f;
-                modSemiROF *= 0.25f;
-                modMalfChance *= 0.05f;
-                modDuraBurn = ((modDuraBurn - 1f) * 0.25f) + 1f;
+                if (Utils.IsSilencer(mod))
+                {
+                    modAutoROF *= 2.5f;
+                    modSemiROF *= 2.5f;
+                    modMalfChance *= 3f;
+                    modDuraBurn = ((modDuraBurn - 1f) * 1.15f) + 1f;
+                }
+                else
+                {
+                    modAutoROF *= 3f;
+                    modSemiROF *= 3f;
+                    modMalfChance *= 10f;
+                    modDuraBurn = ((modDuraBurn - 1f) * 3f) + 1f;
+                }
                 return;
             }
-
 
             if (modType == "foregrip_adapter" && mod.Slots[0].ContainedItem != null)
             {
@@ -547,7 +562,7 @@ namespace RealismMod
                 }
                 return;
             }
-
+      
             if (modType == "shot_pump_grip_adapt" && mod.Slots[0].ContainedItem != null)
             {
                 Mod containedMod = mod.Slots[0].ContainedItem as Mod;
@@ -557,7 +572,6 @@ namespace RealismMod
                 }
                 return;
             }
-
 
             if (modType == "grip_stock_adapter")
             {
@@ -580,55 +594,10 @@ namespace RealismMod
                 return;
             }
 
-            if (modType == "gasblock_upgassed")
-            {
-                Mod parent = mod.Parent.Container.ParentItem as Mod;
-                if (AttachmentProperties.ModType(parent) == "short_barrel")
-                {
-                    modDuraBurn = 1.3f;
-                    modHRecoil = 15f;
-                    modCamRecoil = 15f;
-                    modSemiROF = 10f;
-                    modAutoROF = 6f;
-                }
-                return;
-            }
-
-            if (modType == "short_barrel")
-            {
-
-                if (mod.Slots.Length > 0f && mod.Slots[1].ContainedItem != null)
-                {
-                    Mod containedMod = mod.Slots[1].ContainedItem as Mod;
-                    if (AttachmentProperties.ModType(containedMod) == "gasblock_upgassed")
-                    {
-                        modMalfChance = 0f;
-                    }
-                }
-
-                return;
-            }
-
-
-            if (modType == "gasblock_downgassed")
-            {
-                Mod parent = mod.Parent.Container.ParentItem as Mod;
-                if (AttachmentProperties.ModType(parent) == "short_barrel")
-                {
-                    modMalfChance *= 1.25f;
-                    modHRecoil *= 1.25f;
-                    modCamRecoil *= 1.25f;
-                    modSemiROF *= 1.25f;
-                    modAutoROF *= 1.25f;
-                }
-                return;
-            }
-
             if (modType == "sig_taper_brake")
             {
-                if (mod.Parent.Container != null)
+                if (parent != null && mod.Parent.Container != null)
                 {
-                    Mod parent = mod.Parent.Container.ParentItem as Mod;
                     if (parent.Slots[1].ContainedItem != null)
                     {
                         modConv = 0f;
@@ -645,9 +614,8 @@ namespace RealismMod
 
             if (modType == "barrel_2slot")
             {
-                if (mod.Parent.Container != null)
+                if (parent != null && mod.Parent.Container != null)
                 {
-                    Mod parent = mod.Parent.Container.ParentItem as Mod;
                     if (parent.Slots[1].ContainedItem != null)
                     {
                         modConv = 0f;
@@ -661,6 +629,47 @@ namespace RealismMod
                 }
                 return;
             }
+
+            /*            if (modType == "gasblock_upgassed")
+                        {
+                            if (parent != null && AttachmentProperties.ModType(parent) == "short_barrel")
+                            {
+                                modDuraBurn = 1.3f;
+                                modHRecoil = 15f;
+                                modCamRecoil = 15f;
+                                modSemiROF = 10f;
+                                modAutoROF = 6f;
+                            }
+                            return;
+                        }*/
+            /*            if (modType == "short_barrel")
+                        {
+
+                            if (mod.Slots.Length > 0f && mod.Slots[1].ContainedItem != null)
+                            {
+                                Mod containedMod = mod.Slots[1].ContainedItem as Mod;
+                                if (AttachmentProperties.ModType(containedMod) == "gasblock_upgassed")
+                                {
+                                    modMalfChance = 0f;
+                                }
+                            }
+
+                            return;
+                        }
+            */
+
+            /*       if (modType == "gasblock_downgassed")
+                   {
+                       if (AttachmentProperties.ModType(parent) == "short_barrel")
+                       {
+                           modMalfChance *= 1.25f;
+                           modHRecoil *= 1.25f;
+                           modCamRecoil *= 1.25f;
+                           modSemiROF *= 1.25f;
+                           modAutoROF *= 1.25f;
+                       }
+                       return;
+                   }*/
         }
 
         public static string GetModPosition(Mod mod, string weapType, string opType, string modType)

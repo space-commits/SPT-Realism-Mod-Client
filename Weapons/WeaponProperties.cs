@@ -23,6 +23,7 @@ namespace RealismMod
         public static float TotalErgo = 0;
         public static float ErgnomicWeight = 0;
         public static float CamReturnSpeed = 0;
+        public static float TotalConvergence = 0;
     }
 
 
@@ -31,111 +32,111 @@ namespace RealismMod
 
         public static string WeaponType(Weapon weapon)
         {
-            return !Utils.NullCheck(weapon.ConflictingItems) ? weapon.ConflictingItems[1] : "Unknown";
+            return !Utils.IsNull(weapon.ConflictingItems) ? weapon.ConflictingItems[1] : "Unknown";
 
         }
 
         public static float BaseTorqueDistance(Weapon weapon)
         {
-            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[2], out float result) ? result : 0f;
+            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[2], out float result) ? result : 0f;
 
         }
 
         public static bool WepHasShoulderContact(Weapon weapon)
         {
-            return !Utils.NullCheck(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[3], out bool result) ? result : false;
+            return !Utils.IsNull(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[3], out bool result) ? result : false;
 
         }
 
         public static float BaseReloadSpeed(Weapon weapon)
         {
-            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[4], out float result) ? result : 1f;
+            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[4], out float result) ? result : 1f;
 
         }
 
         public static string OperationType(Weapon weapon)
         {
-            return !Utils.NullCheck(weapon.ConflictingItems) ? weapon.ConflictingItems[5] : "Unknown";
+            return !Utils.IsNull(weapon.ConflictingItems) ? weapon.ConflictingItems[5] : "Unknown";
 
         }
 
         public static float WeaponAccuracy(Weapon weapon)
         {
  
-            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[6], out float result) ? result : 0f;
+            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[6], out float result) ? result : 0f;
 
         }
 
         public static float RecoilDamping(Weapon weapon)
         {;
-            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[7], out float result) ? result : 0f;
+            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[7], out float result) ? result : 0f;
 
         }
 
         public static float RecoilHandDamping(Weapon weapon)
         {
-            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[8], out float result) ? result : 0.65f;
+            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[8], out float result) ? result : 0.65f;
 
         }
 
         public static bool WeaponAllowsADS(Weapon weapon)
         {
-            return !Utils.NullCheck(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[9], out bool result) ? result : false;
+            return !Utils.IsNull(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[9], out bool result) ? result : false;
 
         }
 
         public static float BaseChamberSpeed(Weapon weapon)
         {
-            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[10], out float result) ? result : 1f;
+            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[10], out float result) ? result : 1f;
 
         }
 
         public static float MaxChamberSpeed(Weapon weapon)
         {
-            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[11], out float result) ? result : 1.2f;
+            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[11], out float result) ? result : 1.2f;
 
         }
 
 
         public static float MinChamberSpeed(Weapon weapon)
         {
-            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[12], out float result) ? result : 0.7f;
+            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[12], out float result) ? result : 0.7f;
 
         }
 
         public static bool IsManuallyOperated(Weapon weapon)
         {
-            return !Utils.NullCheck(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[13], out bool result) ? result : false;
+            return !Utils.IsNull(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[13], out bool result) ? result : false;
 
         }
 
         public static float MaxReloadSpeed(Weapon weapon)
         {
-            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[14], out float result) ? result : 1.2f;
+            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[14], out float result) ? result : 1.2f;
 
         }
 
         public static float MinReloadSpeed(Weapon weapon)
         {
-            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[15], out float result) ? result : 0.7f;
+            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[15], out float result) ? result : 0.7f;
 
         }
 
         public static float BaseChamberCheckSpeed(Weapon weapon)
         {
-            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[16], out float result) ? result : 1f;
+            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[16], out float result) ? result : 1f;
 
         }
 
         public static float BaseFixSpeed(Weapon weapon)
         {
-            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[17], out float result) ? result : 1f;
+            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[17], out float result) ? result : 1f;
 
         }
 
         public static float CameraReturnSpeed(Weapon weapon)
         {
-            return !Utils.NullCheck(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[18], out float result) ? result : 0.1f;
+            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[18], out float result) ? result : 0.1f;
 
         }
 
@@ -157,6 +158,7 @@ namespace RealismMod
         public static float TotalModDuraBurn = 1;
 
         public static float TotalMalfChance = 0;
+        public static float MalfChanceDelta = 0;
 
         public static bool CanCycleSubs = false;
 
@@ -215,6 +217,7 @@ namespace RealismMod
         public static float TotalCamRecoil = 0f;
 
         public static float TotalDispersion = 0f;
+        public static float TotalDispersionDelta = 1f;
 
         public static float TotalRecoilAngle = 0f;
 
@@ -294,28 +297,8 @@ namespace RealismMod
         public static float CurrentMagReloadSpeed = 1f;
         public static float NewMagReloadSpeed = 1f;
 
-        public static float ConvergenceChangeRate = 0.98f;
-        public static float ConvergenceResetRate = 1.16f;
-        public static float ConvergenceLimit = 0.3f;
-
-        public static float CamRecoilChangeRate = 0.987f;
-        public static float CamRecoilResetRate = 1.17f;
-        public static float CamRecoilLimit = 0.45f;
-
-        public static float VRecoilChangeRate = 1.005f;
-        public static float VRecoilResetRate = 0.91f;
-        public static float VRecoilLimit = 10;
-
-        public static float HRecoilChangeRate = 1.005f;
-        public static float HRecoilResetRate = 0.91f;
-        public static float HRecoilLimit = 10;
-
-        public static float DampingChangeRate = 0.98f;
-        public static float DampingResetRate = 1.07f;
-        public static float DampingLimit = 0.5f;
-
-        public static float DispersionChangeRate = 0.95f;
-        public static float DispersionResetRate = 1.05f;
-        public static float DispersionLimit = 0.5f;
+        public static bool HasBayonet = false;
+        public static float BaseMeleeDamage = 0f;
+        public static float BaseMeleePen = 0f;
     }
 }

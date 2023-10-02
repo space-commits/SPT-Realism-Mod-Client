@@ -69,7 +69,7 @@ namespace RealismMod
             return difference < epsilon;
         }
 
-        public static bool NullCheck(string[] confItemArray)
+        public static bool IsNull(string[] confItemArray)
         {
             if (confItemArray != null && confItemArray.Length > 0)
             {
@@ -153,13 +153,12 @@ namespace RealismMod
 
         public static bool IsSight(Mod mod)
         {
-            if (mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Scope] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[AssaultScope] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[SpecialScope] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[CompactCollimator] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Collimator] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[IronSight])
-            {
-                return true;
-            }
-            return false;
+            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Scope] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[AssaultScope] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[SpecialScope] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[CompactCollimator] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Collimator] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[IronSight];
         }
-
+        public static bool IsMuzzleDevice(Mod mod)
+        {
+            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[MuzzleCombo] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Silencer] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[FlashHider];
+        }
         public static bool IsStock(Mod mod)
         {
             return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Stock];

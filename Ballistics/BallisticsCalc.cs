@@ -75,6 +75,38 @@ namespace RealismMod
             }
             return false;
         }
+
+        public static EBodyPart GetBodyPartFromCol(string hitCollider) 
+        {
+            switch (hitCollider) 
+            {
+                case HitBox.Head:
+                    return EBodyPart.Head;
+                case HitBox.UpperTorso:
+                    return EBodyPart.Chest;
+                case HitBox.LowerTorso:
+                    return EBodyPart.Chest;
+                case HitBox.Pelvis:
+                    return EBodyPart.Stomach;
+                case HitBox.RightForearm:
+                    return EBodyPart.RightArm;
+                case HitBox.LeftForearm:
+                    return EBodyPart.LeftArm;
+                case HitBox.RightUpperArm:
+                    return EBodyPart.RightArm;
+                case HitBox.LeftUpperArm:
+                    return EBodyPart.LeftArm;
+                case HitBox.LeftThigh:
+                    return EBodyPart.LeftLeg;
+                case HitBox.RightThigh:
+                    return EBodyPart.RightLeg;
+                case HitBox.LeftCalf:
+                    return EBodyPart.LeftLeg;
+                case HitBox.RightCalf:
+                    return EBodyPart.RightLeg;
+                default: return EBodyPart.Chest;
+            }
+        }
     }
 
     public static class HitZoneModifiers
@@ -191,7 +223,7 @@ namespace RealismMod
                 float aZoneXMid = -0.17f;
 
                 float topNeckZ = 0.04f;
-                float topNeckX = -0.26f;
+                float topNeckX = -0.25f;
 
                 float rearNeckZ = 0.05f;
                 float rearNeckX = -0.2f;
@@ -329,9 +361,9 @@ namespace RealismMod
                     {
                         if (Plugin.EnableBallisticsLogging.Value == true)
                         {
-                            logger.LogWarning("C-ZONE: TOP HIT");
+                            logger.LogWarning("A-ZONE: TOP HIT");
                         }
-                        return EBodyHitZone.CZone;
+                        return EBodyHitZone.AZone;
                     }
                     if (Plugin.EnableBallisticsLogging.Value == true)
                     {
@@ -355,20 +387,19 @@ namespace RealismMod
             return EBodyHitZone.Unknown;
         }
 
-        public static void GetHitArmorZone(ManualLogSource logger, ArmorComponent ac, string hitPart, Vector3 localPoint, EHitOrientation hitOrientation, bool hasSideArmor, bool hasStomachArmor, bool hasNeckArmor, ref bool hasBypassedArmor, ref bool hitSecondaryArmor)
-        {
-
+        public static void GetHitArmorZone(ManualLogSource logger, ArmorComponent ac, string hitPart, Vector3 localPoint, EHitOrientation hitOrientation, bool hasSideArmor, bool hasStomachArmor, bool hasNeckArmor, bool hasExtraArmor, bool shouldHaveExtraSides, bool hasArmArmor, ref bool hasBypassedArmor, ref bool hitSecondaryArmor)
+        {   
             float topOfPlate = hitOrientation == EHitOrientation.BackHit ? -0.166f : -0.24f;
-            float bottomOfPlate = hitOrientation == EHitOrientation.BackHit || hitOrientation == EHitOrientation.LeftSideHit || hitOrientation == EHitOrientation.LeftSideHit ? -0.22f : -0.13f;
-            float upperSides = hitOrientation == EHitOrientation.BackHit ? 0.125f : 0.13f;
-            float midSides = hitOrientation == EHitOrientation.BackHit ? 0.135f : 0.14f;
+            float bottomOfPlate = hitOrientation == EHitOrientation.BackHit || hitOrientation == EHitOrientation.LeftSideHit || hitOrientation == EHitOrientation.RightSideHit ? -0.21f : -0.13f;
+            float upperSides = hitOrientation == EHitOrientation.BackHit ? 0.13f : 0.13f;
+            float midSides = hitOrientation == EHitOrientation.BackHit ? 0.137f : 0.14f;
             float lowerSides = hitOrientation == EHitOrientation.BackHit ? 0.145f : 0.15f;
             float topOfSidePlates = hitOrientation == EHitOrientation.BackHit ? -0.14f : -0.145f;
             float bottomOfSidePlates = hitOrientation == EHitOrientation.BackHit ? -0.22f : -0.175f;
             float sidesOfStomachArmor = hitOrientation == EHitOrientation.BackHit ? 0.11f : 0.12f;
-            float bottomOfStomachArmorRear = -0.14f;
+            float bottomOfStomachArmorRear = -0.13f;
 
-            if ((ac.Template.ArmorZone.Contains(EBodyPart.LeftArm) || ac.Template.ArmorZone.Contains(EBodyPart.RightArm)))
+            if (hasArmArmor)
             {
                 if ((hitPart == HitBox.RightUpperArm || hitPart == HitBox.LeftUpperArm))
                 {
@@ -377,6 +408,7 @@ namespace RealismMod
                         logger.LogWarning("ARM ARMOR HIT");
                     }
                     hitSecondaryArmor = true;
+                    return;
                 }
                 if ((hitPart == HitBox.RightForearm || hitPart == HitBox.LeftForearm))
                 {
@@ -385,6 +417,7 @@ namespace RealismMod
                         logger.LogWarning("ARM ARMOR BYPASSED");
                     }
                     hasBypassedArmor = true;
+                    return;
                 }
             }
             else if (hitPart == HitBox.RightUpperArm || hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightForearm || hitPart == HitBox.LeftForearm)
@@ -394,6 +427,7 @@ namespace RealismMod
                     logger.LogWarning("ARM HIT DURING ARMROR CHECK WITH NO ARM ARMOR");
                 }
                 hasBypassedArmor = true;
+                return;
             }
 
             if (hitOrientation != EHitOrientation.TopHit && hitOrientation != EHitOrientation.BottomHit)
@@ -402,38 +436,51 @@ namespace RealismMod
                 {
                     if (localPoint.x < topOfPlate)
                     {
-                        if (!hasNeckArmor)
+                        if (hasNeckArmor || hasExtraArmor)
+                        {
+                            if (Plugin.EnableBallisticsLogging.Value == true)
+                            {
+                                logger.LogWarning("NECK/SECONDARY ARMOR HIT");
+                            }
+                            hitSecondaryArmor = true;
+                            return;
+                        }
+                        else
                         {
                             if (Plugin.EnableBallisticsLogging.Value == true)
                             {
                                 logger.LogWarning("ARMOR BYPASSED: NECK/TOP OF PLATE");
                             }
                             hasBypassedArmor = true;
+                            return;
                         }
-                        else
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                logger.LogWarning("NECK ARMOR HIT");
-                            }
-                            hitSecondaryArmor = true;
-                        }
+                    }
 
+                    if (hasExtraArmor && (localPoint.z > -0.142f && localPoint.z < 0.142f && (localPoint.z < -upperSides || localPoint.z > upperSides)))
+                    {
+                        if (Plugin.EnableBallisticsLogging.Value == true)
+                        {
+                            logger.LogWarning("SECONDARY ARMOR HIT: UPPER SIDES");
+                        }
+                        hitSecondaryArmor = true;
+                        return;
                     }
 
                     if (localPoint.z < -upperSides || localPoint.z > upperSides)
                     {
+
                         if (Plugin.EnableBallisticsLogging.Value == true)
                         {
                             logger.LogWarning("ARMOR BYPASSED: UPPER SIDES");
                         }
                         hasBypassedArmor = true;
+                        return;
                     }
                 }
 
                 if (hitPart == HitBox.LowerTorso)
                 {
-                    if (!hasSideArmor)
+                    if (!hasSideArmor && !hasExtraArmor)
                     {
                         if (localPoint.z < -midSides || localPoint.z > midSides)
                         {
@@ -442,24 +489,35 @@ namespace RealismMod
                                 logger.LogWarning("ARMOR BYPASSED: LOWER SIDES");
                             }
                             hasBypassedArmor = true;
+                            return;
                         }
                     }
                     else
                     {
-                        if (localPoint.x < topOfSidePlates && (localPoint.z < -midSides || localPoint.z > midSides))
+                        if ((hasExtraArmor && shouldHaveExtraSides) && !hasSideArmor && localPoint.x > topOfSidePlates && (localPoint.z < -midSides || localPoint.z > midSides))
+                        {
+                            if (Plugin.EnableBallisticsLogging.Value == true)
+                            {
+                                logger.LogWarning("SECONDARY ARMOR HIT: LOWER SIDES");
+                            }
+                            hitSecondaryArmor = true;
+                            return;
+                        }
+                        else if (hasSideArmor && localPoint.x < topOfSidePlates && (localPoint.z < -midSides || localPoint.z > midSides))
                         {
                             if (Plugin.EnableBallisticsLogging.Value == true)
                             {
                                 logger.LogWarning("ARMOR BYPASSED: ABOVE SIDE ARMOR PLATE");
                             }
                             hasBypassedArmor = true;
+                            return;
                         }
                     }
                 }
 
                 if (hitPart == HitBox.Pelvis && (hitOrientation == EHitOrientation.FrontHit || hitOrientation == EHitOrientation.BackHit))
                 {
-                    if (!hasStomachArmor)
+                    if (!hasStomachArmor && !hasExtraArmor)
                     {
                         if (localPoint.x > bottomOfPlate)
                         {
@@ -468,25 +526,28 @@ namespace RealismMod
                                 logger.LogWarning("ARMOR BYPASSED: BELOW PLATE, STOMACH");
                             }
                             hasBypassedArmor = true;
+                            return;
                         }
                     }
                     else
                     {
-                        if (localPoint.z > -sidesOfStomachArmor && localPoint.z < sidesOfStomachArmor && ((hitOrientation == EHitOrientation.BackHit && localPoint.x < bottomOfStomachArmorRear && localPoint.x > bottomOfPlate) || (hitOrientation == EHitOrientation.FrontHit && localPoint.x > bottomOfPlate)))
+                        if ((hasStomachArmor || hasExtraArmor) && localPoint.z > -sidesOfStomachArmor && localPoint.z < sidesOfStomachArmor && ((hitOrientation == EHitOrientation.BackHit && localPoint.x < bottomOfStomachArmorRear && localPoint.x > bottomOfPlate) || (hasStomachArmor && hitOrientation == EHitOrientation.FrontHit && localPoint.x > bottomOfPlate)))
                         {
                             if (Plugin.EnableBallisticsLogging.Value == true)
                             {
-                                logger.LogWarning("STOMACH ARMOR HIT");
+                                logger.LogWarning("STOMACH/SECONDARY ARMOR HIT STOMACH");
                             }
                             hitSecondaryArmor = true;
+                            return;
                         }
                         else if (localPoint.x > bottomOfPlate)
                         {
                             if (Plugin.EnableBallisticsLogging.Value == true)
                             {
-                                logger.LogWarning("ARMOR BYPASSED: STOMACH ARMOR SIDES OR BOTTOM REAR");
+                                logger.LogWarning("ARMOR BYPASSED: STOMACH ARMOR SIDES OR BELLOW PLATE");
                             }
                             hasBypassedArmor = true;
+                            return;
                         }
                     }
                 }
@@ -494,13 +555,14 @@ namespace RealismMod
 
             if (hitPart == HitBox.Pelvis && (hitOrientation == EHitOrientation.LeftSideHit || hitOrientation == EHitOrientation.RightSideHit))
             {
-                if (!hasSideArmor)
+                if (!hasSideArmor && !hasExtraArmor)
                 {
                     if (Plugin.EnableBallisticsLogging.Value == true)
                     {
                         logger.LogWarning("ARMOR BYPASSED: STOMACH SIDES");
                     }
                     hasBypassedArmor = true;
+                    return;
                 }
                 else
                 {
@@ -511,43 +573,67 @@ namespace RealismMod
                             logger.LogWarning("SIDE ARMOR BYPASSED: BELOW SIDE ARMOR PLATE");
                         }
                         hasBypassedArmor = true;
+                        return;
+                    }
+                    else if ((hasExtraArmor && shouldHaveExtraSides) && !hasSideArmor)  
+                    {
+                        if (Plugin.EnableBallisticsLogging.Value == true)
+                        {
+                            logger.LogWarning("SECONDARY ARMOR HIT: UPPER SIDES");
+                        }
+                        hitSecondaryArmor = true;
+                        return; 
                     }
                 }
             }
+
             if (hitOrientation == EHitOrientation.TopHit && hitPart == HitBox.UpperTorso)
             {
                 float neckArmorTopZ = 0.075f;
 
-                if (!hasNeckArmor)
+                if (!hasNeckArmor && !hasExtraArmor)
                 {
                     if (Plugin.EnableBallisticsLogging.Value == true)
                     {
                         logger.LogWarning("ARMOR BYPASSED: TOP HIT");
                     }
                     hasBypassedArmor = true;
+                    return;
                 }
                 else
                 {
-                    if (localPoint.z > -neckArmorTopZ && localPoint.z < neckArmorTopZ)
+                    if (hasNeckArmor && localPoint.z > -neckArmorTopZ && localPoint.z < neckArmorTopZ)
                     {
                         if (Plugin.EnableBallisticsLogging.Value == true)
                         {
                             logger.LogWarning("NECK ARMOR TOP HIT");
                         }
                         hitSecondaryArmor = true;
+                        return;
                     }
                     else
                     {
+                        if (hasExtraArmor && (localPoint.z < -neckArmorTopZ || localPoint.z > neckArmorTopZ)) 
+                        {
+                            if (Plugin.EnableBallisticsLogging.Value == true)
+                            {
+                                logger.LogWarning("SECONDARY ARMOR TOP HIT");
+                            }
+                            hitSecondaryArmor = true;
+                            return;
+                        }
+
                         if (Plugin.EnableBallisticsLogging.Value == true)
                         {
-                            logger.LogWarning("NECK ARMOR BYPASSED TOP HIT");
+                            logger.LogWarning("NECK/SECONDARY ARMOR BYPASSED TOP HIT");
                         }
                         hasBypassedArmor = true;
+                        return;
                     }
                 }
 
             }
-            if (hitOrientation == EHitOrientation.BottomHit && hitPart == HitBox.Pelvis && !hasStomachArmor)
+            if (hitOrientation == EHitOrientation.BottomHit && hitPart == HitBox.Pelvis && !hasStomachArmor && !(hasExtraArmor && shouldHaveExtraSides))
             {
                 if (Plugin.EnableBallisticsLogging.Value == true)
                 {

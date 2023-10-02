@@ -267,7 +267,7 @@ namespace RealismMod
                 chamberSpeed *= Plugin.GlobalCheckChamberSpeedMulti.Value;
             }
 
-            float totalCheckChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.55f, 1.3f);
+            float totalCheckChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.55f, 2f);
           
             __instance.SetAnimationSpeed(totalCheckChamberSpeed);
 
@@ -337,7 +337,6 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(FirearmsAnimator __instance, float fix)
         {
-
             float totalFixSpeed = Mathf.Clamp(fix * WeaponProperties.TotalFixSpeed * PlayerProperties.ReloadInjuryMulti * Plugin.GlobalFixSpeedMulti.Value * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.55f, 1.3f);
             WeaponAnimationSpeedControllerClass.SetSpeedFix(__instance.Animator, totalFixSpeed);
             __instance.SetAnimationSpeed(totalFixSpeed);
@@ -575,6 +574,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
+
             float totalReloadSpeed = Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.45f, 1.3f);
             __instance.SetAnimationSpeed(totalReloadSpeed);
             if (Plugin.EnableLogging.Value == true)
