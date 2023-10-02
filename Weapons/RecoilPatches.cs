@@ -331,15 +331,17 @@ namespace RealismMod
 
                 if (Plugin.ScopeAccuracyFactor > 1f) 
                 {
+                    float chanceFactor = 1f + ((Plugin.ScopeAccuracyFactor - 1f) * 2f);
                     float gunFactor = weaponClass.TemplateId == "6183afd850224f204c1da514" || weaponClass.TemplateId == "6165ac306ef05c2ce828ef74" ? 2f : 1f;
                     float shiftRecoilFactor = (factoredDispersion + totalVerticalRecoil + totalHorizontalRecoil) * (1f + (totalCamRecoil * 10f)) * gunFactor;
                     System.Random rnd = new System.Random();
                     int num = rnd.Next(1, 10);
-                    if (num <= Mathf.Min(1 + (0.1f * shiftRecoilFactor), 8))
+                    if (num <= Mathf.Min(1 + (0.05f * shiftRecoilFactor * chanceFactor), 8))
                     {
-                        float offsetFactor = (Plugin.ScopeAccuracyFactor - 1f) * (0.005f * shiftRecoilFactor);
+                        float offsetFactor = (Plugin.ScopeAccuracyFactor - 1f) * (0.0025f * shiftRecoilFactor);
                         float offsetX = Random.Range(-offsetFactor, offsetFactor);
                         float offsetY = Random.Range(-offsetFactor, offsetFactor);
+                        Logger.LogWarning(offsetFactor);
                         Plugin.ZeroRecoilOffset = new Vector2(offsetX, offsetY);
                         if (Plugin.ScopeID != null && Plugin.ScopeID != "")
                         {
