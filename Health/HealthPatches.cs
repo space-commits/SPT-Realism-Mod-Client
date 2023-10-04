@@ -193,7 +193,6 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             return typeof(EFT.Player).GetMethod("SetQuickSlotItem", BindingFlags.Instance | BindingFlags.Public);
-
         }
         [PatchPrefix]
         private static bool Prefix(EFT.Player __instance, EBoundItem quickSlot)
@@ -248,7 +247,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ActiveHealthControllerClass __instance, EBodyPart bodyPart, float healthPenalty, ref bool __result)
         {
-
             BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);
             SkillsClass skills = (SkillsClass)AccessTools.Field(typeof(ActiveHealthControllerClass), "gclass1742_0").GetValue(__instance);
             Action<EBodyPart, ValueStruct> actionStruct = (Action<EBodyPart, ValueStruct>)AccessTools.Field(typeof(ActiveHealthControllerClass), "action_15").GetValue(__instance);

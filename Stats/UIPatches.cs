@@ -784,7 +784,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            __result = DisplayWeaponProperties.VRecoilDelta;
+            __result = DisplayWeaponProperties.VRecoilDelta - DisplayWeaponProperties.ConvergenceDelta;
             return false;
         }
     }
@@ -799,7 +799,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref string __result)
         {
-            __result = Math.Round(__instance.Template.RecoilForceUp + (__instance.Template.RecoilForceUp * DisplayWeaponProperties.VRecoilDelta), 1).ToString();
+            __result = Math.Round(__instance.Template.RecoilForceUp + (__instance.Template.RecoilForceUp * (DisplayWeaponProperties.VRecoilDelta - DisplayWeaponProperties.ConvergenceDelta)), 1).ToString();
             return false;
         }
 
@@ -1034,6 +1034,7 @@ namespace RealismMod
                  float ergoDispDelta = ergoWeight / -80f;*/
 
             DisplayWeaponProperties.TotalConvergence = currentConv;
+            DisplayWeaponProperties.ConvergenceDelta = (currentConv - baseConv) / baseConv; 
             DisplayWeaponProperties.HasShoulderContact = hasShoulderContact;
             DisplayWeaponProperties.Dispersion = totalDispersion;
             DisplayWeaponProperties.CamRecoil = totalCamRecoil;

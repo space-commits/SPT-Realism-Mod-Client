@@ -179,9 +179,9 @@ namespace RealismMod
             float mountOrientationBonus = StanceController.IsBracingTop ? 0.75f : 1f;
             float mountingRecoilLimit = weapClass == "pistol" ? 0.1f : 0.65f;
 
-            StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 0.8f * mountOrientationBonus, 0.25f);
+            StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 0.7f * mountOrientationBonus, 0.25f);
             StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 0.85f * mountOrientationBonus, 0.25f);
-            StanceController.MountingSwayBonus = Mathf.Clamp(0.55f * mountOrientationBonus, 0.4f, 1f);
+            StanceController.MountingSwayBonus = Mathf.Clamp(0.45f * mountOrientationBonus, 0.4f, 1f);
             StanceController.MountingRecoilBonus = Mathf.Clamp(mountingRecoilLimit * mountOrientationBonus, 0.1f, 1f);
         }
 
@@ -216,8 +216,8 @@ namespace RealismMod
 
                         Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(new Vector3(0f, WeaponProperties.HasBayonet ? -0.4f : -0.3f, 0f));
                         Vector3 meleeDir = meleeStart - linecastDirection * ln;
-                        DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);
-
+/*                        DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);
+*/
                         EBodyPart hitPart = EBodyPart.Chest;
                         BallisticCollider hitBalls = null;
                         RaycastHit raycastHit;
@@ -229,8 +229,6 @@ namespace RealismMod
                             {
                                 hitBalls = baseballComp.Get(raycastHit.point);
                                 hitPart = HitBox.GetBodyPartFromCol(hitBalls.name);
-                                Logger.LogWarning(hitBalls.name);
-                                Logger.LogWarning(hitBalls.TypeOfMaterial);
                             }
 
                             float damage = 5f + WeaponProperties.BaseMeleeDamage * (1f + player.Skills.StrengthBuffMeleePowerInc) * (1f - (WeaponProperties.ErgoFactor / 300f));
@@ -247,7 +245,7 @@ namespace RealismMod
                             {
                                 Random rnd = new Random();
                                 int num = rnd.Next(1, 10);
-                                if (num > (3f + WeaponProperties.BaseMeleeDamage))
+                                if (num > (4f + WeaponProperties.BaseMeleeDamage))
                                 {
                                     shouldSkipHit = true;
                                 }

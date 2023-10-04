@@ -622,7 +622,6 @@ namespace RealismMod
                 bool hasNeckArmor = GearProperties.HasNeckArmor(__instance.Item);
                 bool shouldHaveExtraSides = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance > 50 ? true : false;
                 bool hasArmArmor = __instance.Template.ArmorZone.Contains(EBodyPart.LeftArm) || __instance.Template.ArmorZone.Contains(EBodyPart.RightArm);
-                Logger.LogWarning(shouldHaveExtraSides);
 
                 RaycastHit raycast = (RaycastHit)rayCastField.GetValue(shot);
                 Collider col = raycast.collider;

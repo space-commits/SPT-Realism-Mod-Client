@@ -189,7 +189,7 @@ namespace RealismMod
 
                     if (__instance.CurrentAimingMod != null) 
                     {
-                        Plugin.Parralax = 0.07f * Plugin.ScopeAccuracyFactor;
+                        Plugin.Parralax = 0.04f * Plugin.ScopeAccuracyFactor;
                         string id = (__instance.CurrentAimingMod?.Item?.Id != null) ? __instance.CurrentAimingMod.Item.Id : "";
                         Plugin.ScopeID = id;
                         if (id != null)

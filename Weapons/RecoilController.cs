@@ -60,9 +60,11 @@ namespace RealismMod
 
         public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weapon) 
         {
-            float opticLimit = Plugin.IsAiming && Plugin.IsOptic ? 0.73f : 1f;
-            pwa.HandsContainer.Recoil.Damping = Mathf.Min(RecoilController.BaseTotalRecoilDamping, opticLimit);
-            pwa.HandsContainer.HandsPosition.Damping = (float)Math.Round(RecoilController.BaseTotalHandDamping * (PlayerProperties.IsMoving ? 0.5f : 1f), 3);
+            float dampingUpperLimit = Plugin.IsAiming && Plugin.IsOptic ? 0.74f : 0.9f;
+            float dampingLowerLimit = Plugin.IsAiming && Plugin.IsOptic ? 0.65f : 0.5f;
+            float opticFactor = Plugin.IsAiming && Plugin.IsOptic ? 0.95f : 1f;
+            pwa.HandsContainer.Recoil.Damping = Mathf.Clamp(RecoilController.BaseTotalRecoilDamping * opticFactor, dampingLowerLimit, dampingUpperLimit);
+            pwa.HandsContainer.HandsPosition.Damping = (float)Math.Round(RecoilController.BaseTotalHandDamping * (PlayerProperties.IsMoving ? 0.5f : 1f) * opticFactor, 3);
 
             if (Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !WeaponProperties.HasShoulderContact)))
             {
