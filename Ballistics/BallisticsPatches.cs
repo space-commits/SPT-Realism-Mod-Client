@@ -981,15 +981,11 @@ namespace RealismMod
             {
                 if (damageInfo.PenetrationPower > penDuraFactoredClass)
                 {
-                    Logger.LogWarning("melee pen");
-                    Logger.LogWarning("damageInfo.PenetrationPower " + damageInfo.PenetrationPower);
-                    Logger.LogWarning("penDuraFactoredClass " + penDuraFactoredClass);
                     damageInfo.Damage *= armorStatReductionFactor;
                     damageInfo.PenetrationPower *= armorStatReductionFactor;
                 }
                 else
                 {
-                    Logger.LogWarning("melee hit");
                     damageInfo.Damage = throughputFactoredDamage;
                     damageInfo.StaminaBurnRate = (throughputFactoredDamage / 100f) * 2f;
                     damageInfo.HeavyBleedingDelta = 0f;
