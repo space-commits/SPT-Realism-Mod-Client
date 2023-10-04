@@ -24,6 +24,7 @@ namespace RealismMod
         public static float ErgnomicWeight = 0;
         public static float CamReturnSpeed = 0;
         public static float TotalConvergence = 0;
+        public static float ConvergenceDelta = 0;
     }
 
 

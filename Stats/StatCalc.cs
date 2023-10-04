@@ -344,13 +344,13 @@ namespace RealismMod
             currentSemiROF = currentSemiROF + (currentSemiROF * (modSemiROF / 100f));
             pureErgo = pureErgo + (pureErgo * (modErgo / 100f));
             currentCamReturnSpeed = Mathf.Clamp(currentCamReturnSpeed + (currentCamReturnSpeed * (modCamRecoil / 100f)), 0.1f, 0.5f);
+            currentConv = currentConv + (currentConv * ((modConv / 100f)));
 
             if (isDisplayDelta)
             {
                 return;
             }
 
-            currentConv = currentConv + (currentConv * ((modConv / 100f)));
             currentShotDisp = currentShotDisp + (currentShotDisp * ((-1f * modShotDisp) / 100f));
             currentMalfChance = currentMalfChance + (currentMalfChance * (modMalfChance / 100f));
             currentReloadSpeedMod = currentReloadSpeedMod + modReload;
