@@ -122,13 +122,13 @@ namespace RealismMod
 
         public static void SetStanceStamina(Player player, Player.FirearmController fc)
         {
-            bool isBracing = !IsMounting && IsBracing && Plugin.EnableIdleStamDrain.Value && !IsHighReady && !IsLowReady;
-            if (!PlayerProperties.IsSprinting && !isBracing)
+
+            if (!PlayerProperties.IsSprinting)
             {
                 gotCurrentStam = false;
-
                 if (fc.Item.WeapClass != "pistol")
                 {
+                    bool isActuallyBracing = !IsMounting && IsBracing;
                     if (IsBracing && !IsMounting && !Plugin.EnableIdleStamDrain.Value) 
                     {
                         player.Physical.Aim(0f);
@@ -161,7 +161,7 @@ namespace RealismMod
                         player.Physical.Aim(0f);
                         player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.03f) * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
                     }
-                    else if (IsShortStock && !RecoilController.IsFiring && !Plugin.IsAiming)
+                    else if (isActuallyBracing || (IsShortStock && !RecoilController.IsFiring && !Plugin.IsAiming))
                     {
                         player.Physical.Aim(0f);
                         player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.02f) * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
@@ -1152,7 +1152,7 @@ namespace RealismMod
                     StanceController.DoDampingTimer = true;
                 }
 
-                StanceController.DoWiggleEffects(player, pwa, new Vector3(-4f, -5f, 10f) * movementFactor, true);
+                StanceController.DoWiggleEffects(player, pwa, new Vector3(-3.5f, -4f, 8f) * movementFactor, true);
                 StanceController.DidStanceWiggle = false;
 
                 stanceRotation = Quaternion.identity;
@@ -1225,7 +1225,7 @@ namespace RealismMod
 
                 StanceController.DoResetMelee = true;
                 StanceController.CanDoMeleeDetection = false;
-                StanceController.DoWiggleEffects(player, pwa, new Vector3(5, -5f, -70f), true);
+                StanceController.DoWiggleEffects(player, pwa, new Vector3(5, -5f, -65f), true);
                 stanceRotation = Quaternion.identity;
                 isResettingMelee = false;
                 hasResetMelee = true;

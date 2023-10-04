@@ -197,13 +197,13 @@ namespace RealismMod
             return typeof(FirearmsAnimator).GetMethod("SetHammerArmed", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        [PatchPostfix]
+        [PatchPrefix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
 
             if (RecoilController.IsFiring != true && PlayerProperties.IsInReloadOpertation)
             {
-                float hammerSpeed = Mathf.Clamp(WeaponProperties.TotalChamberSpeed * Plugin.GlobalArmHammerSpeedMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.5f, 1.35f);
+                float hammerSpeed = Mathf.Clamp(WeaponProperties.TotalChamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.4f, 2f) * Plugin.GlobalArmHammerSpeedMulti.Value;
                 __instance.SetAnimationSpeed(hammerSpeed);
                 if (Plugin.EnableLogging.Value == true)
                 {
@@ -295,8 +295,6 @@ namespace RealismMod
 
             if (WeaponProperties._IsManuallyOperated == true || Plugin.LauncherIsActive == true)
             {
-        
-
                 float chamberSpeed = WeaponProperties.TotalFiringChamberSpeed;
                 float stanceModifier = 1f;
                 if (WeaponProperties._WeapClass == "shotgun")
@@ -322,7 +320,6 @@ namespace RealismMod
                     Logger.LogWarning("Set Bolt Action Reload = " + totalChamberSpeed);
                     Logger.LogWarning("=============");
                 }
-      
             }
         }
     }
