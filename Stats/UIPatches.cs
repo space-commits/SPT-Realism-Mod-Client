@@ -11,8 +11,7 @@ using UnityEngine.UI;
 using EFT;
 using BepInEx.Logging;
 using System.IO;
-using static EFT.Player;
-using notGreg.UniformAim;
+using StatAttributeClass = GClass2562;
 
 namespace RealismMod
 {
@@ -190,34 +189,6 @@ namespace RealismMod
                     armorDamAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
                     ammoAttributes.Add(armorDamAtt);
                 }
-            }
-        }
-    }
-
-    public class HeadsetConstructorPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(GClass2540).GetConstructor(new Type[] {typeof(string), typeof(GClass2447) });
-        }
-
-
-        [PatchPostfix]
-        private static void PatchPostfix(GClass2540 __instance)
-        {
-            Item item = __instance as Item;
-
-            float dB = GearProperties.DbLevel(item);
-
-            if (dB > 0) 
-            {
-                List<ItemAttributeClass> dbAtt = item.Attributes;
-                ItemAttributeClass dbAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.NoiseReduction);
-                dbAttClass.Name = ENewItemAttributeId.NoiseReduction.GetName();
-                dbAttClass.Base = () => dB;
-                dbAttClass.StringValue = () => dB.ToString() + " NRR";
-                dbAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                dbAtt.Add(dbAttClass);
             }
         }
     }
@@ -405,11 +376,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(BarrelModClass).GetConstructor(new Type[] { typeof(string), typeof(GClass2483) });
+            return typeof(BarrelModClass).GetConstructor(new Type[] { typeof(string), typeof(GClass2393) });
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(BarrelModClass __instance, GClass2483 template)
+        private static void PatchPostfix(BarrelModClass __instance, GClass2393 template)
         {
             float shotDisp = (template.ShotgunDispersion - 1f) * 100f;
 
@@ -658,7 +629,7 @@ namespace RealismMod
             if (Plugin.ShowBalance.Value == true)
             {
                 List<ItemAttributeClass> balanceAttList = __instance.Attributes;
-                GClass2650 balanceAtt = new GClass2650((EItemAttributeId)ENewItemAttributeId.Balance);
+                StatAttributeClass balanceAtt = new StatAttributeClass((EItemAttributeId)ENewItemAttributeId.Balance);
                 balanceAtt.Name = ENewItemAttributeId.Balance.GetName();
                 balanceAtt.Range = new Vector2(100f, 200f);
                 balanceAtt.LessIsGood = false;
@@ -673,7 +644,7 @@ namespace RealismMod
             if (Plugin.ShowDispersion.Value == true)
             {
                 List<ItemAttributeClass> dispersionAttList = __instance.Attributes;
-                GClass2650 dispersionAtt = new GClass2650((EItemAttributeId)ENewItemAttributeId.Dispersion);
+                StatAttributeClass dispersionAtt = new StatAttributeClass((EItemAttributeId)ENewItemAttributeId.Dispersion);
                 dispersionAtt.Name = ENewItemAttributeId.Dispersion.GetName();
                 dispersionAtt.Range = new Vector2(0f, 50f);
                 dispersionAtt.LessIsGood = true;
@@ -687,7 +658,7 @@ namespace RealismMod
             if (Plugin.ShowCamRecoil.Value == true)
             {
                 List<ItemAttributeClass> camRecoilAttList = __instance.Attributes;
-                GClass2650 camRecoilAtt = new GClass2650((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
+                StatAttributeClass camRecoilAtt = new StatAttributeClass((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
                 camRecoilAtt.Name = ENewItemAttributeId.CameraRecoil.GetName();
                 camRecoilAtt.Range = new Vector2(0f, 50f);
                 camRecoilAtt.LessIsGood = true;

@@ -28,7 +28,7 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                SkillsClass.GClass1743 skillsClass = (SkillsClass.GClass1743)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1743_0").GetValue(__instance);
+                SkillManager.GClass1638 skillsClass = (SkillManager.GClass1638)AccessTools.Field(typeof(EFT.Player.FirearmController), "_buffInfo").GetValue(__instance);
                 PlayerProperties.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
                 PlayerProperties.ReloadSkillMulti = Mathf.Max(1, ((skillsClass.ReloadSpeed - 1f) * 0.5f) + 1f);
                 PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;
@@ -42,7 +42,7 @@ namespace RealismMod
 
     public class PlayerInitPatch : ModulePatch
     {
-        private InventoryClass invClass;
+        private Inventory invClass;
         private Player player;
 
         //this is fucking curesd: it gets called twice, and both times calcWeightPenalties() will somehow be called after getTotalWeight() and the event that called it.
@@ -53,7 +53,7 @@ namespace RealismMod
             this.player = Utils.GetPlayer();
             InventoryControllerClass invController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
             this.invClass = invController.Inventory;
-            invController.Inventory.TotalWeight = new GClass787<float>(new Func<float>(calcWeightPenalties));
+            invController.Inventory.TotalWeight = new GClass675<float>(new Func<float>(calcWeightPenalties));
         }
 
         private float calcWeightPenalties()
@@ -185,7 +185,7 @@ namespace RealismMod
 
         [PatchPrefix]
         private static bool PatchPrefix(BreathEffector __instance, float deltaTime, float ____breathIntensity, float ____shakeIntensity, float ____breathFrequency, 
-        float ____cameraSensetivity, Vector2 ____baseHipRandomAmplitudes, Spring ____recoilRotationSpring, Spring ____handsRotationSpring, AnimationCurve ____lackOfOxygenStrength, GClass2139[] ____processors)
+        float ____cameraSensetivity, Vector2 ____baseHipRandomAmplitudes, Spring ____recoilRotationSpring, Spring ____handsRotationSpring, AnimationCurve ____lackOfOxygenStrength, GClass2038[] ____processors)
         {
             float amplGain = Mathf.Sqrt(__instance.AmplitudeGain.Value);
             __instance.HipXRandom.Amplitude = Mathf.Clamp(____baseHipRandomAmplitudes.x + amplGain, 0f, 3f);
@@ -216,7 +216,7 @@ namespace RealismMod
                 ____cameraSensetivity = Mathf.Lerp(2f, 0f, t) * __instance.Intensity;
             }
 
-            GClass786<float> staminaLevel = __instance.StaminaLevel;
+            GClass674<float> staminaLevel = __instance.StaminaLevel;
             __instance.YRandom.Amplitude = __instance.BreathParams.AmplitudeCurve.Evaluate(staminaLevel);
             float stamFactor = __instance.BreathParams.Delay.Evaluate(staminaLevel);
             __instance.XRandom.MinMaxDelay = (__instance.YRandom.MinMaxDelay = new Vector2(stamFactor / 2f, stamFactor));
@@ -260,7 +260,6 @@ namespace RealismMod
 
     public class PlayerLateUpdatePatch : ModulePatch
     {
-
         private static float sprintCooldownTimer = 0f;
         private static bool doSwayReset = false;
         private static float sprintTimer = 0f;

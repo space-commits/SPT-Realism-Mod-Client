@@ -14,6 +14,9 @@ using UnityEngine.Rendering.PostProcessing;
 using notGreg.UniformAim;
 using static EFT.Interactive.BetterPropagationGroups;
 using BepInEx.Logging;
+using HeadsetClass = GClass2450;
+using HeadsetTemplate = GClass2356;
+using IWeapon = GInterface273;
 
 namespace RealismMod
 {
@@ -85,12 +88,12 @@ namespace RealismMod
             float protectionFactor;
 
             LootItemClass headwear = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;
-            GClass2540 headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as GClass2540) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<GClass2540>().FirstOrDefault<GClass2540>() : null);
+            HeadsetClass headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as HeadsetClass) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<HeadsetClass>().FirstOrDefault<HeadsetClass>() : null);
 
             if (headset != null)
             {
                 Plugin.HasHeadSet = true;
-                GClass2447 headphone = headset.Template;
+                HeadsetTemplate headphone = headset.Template;
                 protectionFactor = Mathf.Clamp(((headphone.DryVolume / 100f) + 1f) * 1.65f, 0.5f, 1f);
             }
             else
@@ -267,9 +270,9 @@ namespace RealismMod
 
         }
         [PatchPrefix]
-        private static bool Prefix(GClass2447 template, BetterAudio __instance)
+        private static bool Prefix(HeadsetTemplate template, BetterAudio __instance)
         {
-            GClass2802.CreateEvent<GClass2789>().Invoke(template);
+            GClass2717.CreateEvent<GClass2704>().Invoke(template);
 
             bool hasHeadsetTemplate = template != null;
             bool isNotHeadset = template?._id == null; //using both bools is redundant now.
@@ -354,7 +357,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance, Item weapon, GClass2870 shot)
+        private static void PatchPostfix(Player.FirearmController __instance, Item weapon, GClass2783 shot)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
 

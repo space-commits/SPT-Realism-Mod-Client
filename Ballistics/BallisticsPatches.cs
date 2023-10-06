@@ -22,6 +22,7 @@ using EFT.Interactive;
 using static System.Net.Mime.MediaTypeNames;
 using static EFT.Player;
 using static Val;
+using ShotClass = GClass2783;
 
 namespace RealismMod
 {
@@ -48,7 +49,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static void Prefix(EFT.Ballistics.BallisticCollider __instance, GClass2870 shot, Vector3 hitPoint)
+        private static void Prefix(EFT.Ballistics.BallisticCollider __instance, ShotClass shot, Vector3 hitPoint)
         {
             if (__instance.name == HitBox.LeftUpperArm || __instance.name == HitBox.RightUpperArm || __instance.name == HitBox.LeftForearm || __instance.name == HitBox.RightForearm )
             {
@@ -62,7 +63,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(GClass2870) });
+            return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(ShotClass) });
         }
 
         private static int rndNum = 0;
@@ -176,7 +177,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, GClass2870 shot)
+        private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, ShotClass shot)
         {
             __instance.DamageType = damageType;
             __instance.Damage = shot.Damage;
@@ -408,7 +409,7 @@ namespace RealismMod
             if (damageInfo.DamageType == EDamageType.Bullet)
             {
                 EquipmentClass equipment = (EquipmentClass)equipmentClassProperty.GetValue(__instance);
-                InventoryClass inventory = (InventoryClass)inventoryClassProperty.GetValue(__instance);
+                Inventory inventory = (Inventory)inventoryClassProperty.GetValue(__instance);
 
                 preAllocatedArmorComponents.Clear();
                 inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
@@ -597,12 +598,12 @@ namespace RealismMod
 
         protected override MethodBase GetTargetMethod()
         {
-            rayCastField = AccessTools.Field(typeof(GClass2870), "raycastHit_0");
+            rayCastField = AccessTools.Field(typeof(ShotClass), "raycastHit_0");
             return typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.SetPenetrationStatus), BindingFlags.Public | BindingFlags.Instance);
         }
 
         [PatchPrefix]
-        private static bool Prefix(GClass2870 shot, ArmorComponent __instance)
+        private static bool Prefix(ShotClass shot, ArmorComponent __instance)
         {
             bool isSteelBodyArmor = __instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !__instance.Template.ArmorZone.Contains(EBodyPart.Head);
             if (__instance.Repairable.Durability <= 0f && !isSteelBodyArmor)
@@ -1046,7 +1047,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, string player, Item weapon, ref GClass2870 __result, float speedFactor, int fragmentIndex = 0)
+        private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, string player, Item weapon, ref ShotClass __result, float speedFactor, int fragmentIndex = 0)
         {
             
    /*         Logger.LogWarning("!!!!!!!!!!! Shot Created!! !!!!!!!!!!!!!!");
@@ -1079,7 +1080,7 @@ namespace RealismMod
             Logger.LogWarning("Round Factored BC = " + bcFactored);
             Logger.LogWarning("==============================================================");*/
 
-            __result = GClass2870.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
+            __result = ShotClass.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
             return false;
 
         }
@@ -1202,7 +1203,7 @@ namespace RealismMod
             }
 
             [PatchPrefix]
-            private static bool Prefix(GClass2870 shot, ref ArmorComponent __instance)
+            private static bool Prefix(GClass2783 shot, ref ArmorComponent __instance)
             {
 
                 float penetrationPower = shot.PenetrationPower;

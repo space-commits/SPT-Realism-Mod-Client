@@ -15,8 +15,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using static ShotEffector;
-using LightStruct = GStruct154;
-using GlobalValues = GClass1710;
+using LightStruct = GStruct155;
 using RootMotion.FinalIK;
 using static EFT.Player;
 
@@ -767,7 +766,7 @@ namespace RealismMod
 
             if (Plugin.EnableTacSprint.Value && (StanceController.IsHighReady || StanceController.WasHighReady) && !PlayerProperties.RightArmRuined)
             {
-                player.BodyAnimatorCommon.SetFloat(GlobalValues.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
+                player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
                 if (!setRunAnim)
                 {
                     setRunAnim = true;
@@ -778,7 +777,7 @@ namespace RealismMod
             {
                 if (!resetRunAnim)
                 {
-                    player.BodyAnimatorCommon.SetFloat(GlobalValues.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
+                    player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
                     resetRunAnim = true;
                     setRunAnim = false;
                 }
