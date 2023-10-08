@@ -695,7 +695,7 @@ namespace RealismMod
             new ToggleHoldingBreathPatch().Enable();
 
             //Movement
-            if (EnableMaterialSpeed.Value) 
+            if (EnableMaterialSpeed.Value)
             {
                 new CalculateSurfacePatch().Enable();
             }
@@ -742,6 +742,7 @@ namespace RealismMod
             }
 
             new BattleUIScreenPatch().Enable();
+
         }
 
         void Update()

@@ -204,6 +204,12 @@ namespace RealismMod
             __instance.IsForwardHit = shot.IsForwardHit;
             __instance.SourceId = shot.Ammo.TemplateId;
 
+            Player victim = Singleton<GameWorld>.Instance.GetPlayerByCollider(__instance.HitCollider);
+            if (victim != null && victim.IsYourPlayer && victim.ProfileId == __instance.Player.iPlayer.ProfileId)
+            {
+                Logger.LogWarning("hit self");
+            }
+
             if (Plugin.EnableBodyHitZones.Value && !__instance.Blunt && (__instance.DamageType == EDamageType.Bullet || __instance.DamageType == EDamageType.Melee)) 
             {
                 string hitCollider = shot.HittedBallisticCollider.name;
@@ -854,7 +860,6 @@ namespace RealismMod
             bool hasBypassedArmor = false;
 
             bool isPlayer = __instance.Item.Owner.ID.StartsWith("pmc") || __instance.Item.Owner.ID.StartsWith("scav");
-
             if (Plugin.EnableArmorHitZones.Value && ((isPlayer && Plugin.EnablePlayerArmorZones.Value) || !isPlayer)) 
             {
                 string hitPart = damageInfo.HittedBallisticCollider.name;
@@ -928,10 +933,12 @@ namespace RealismMod
             }
             else 
             {
+                Weapon weap = damageInfo.Weapon as Weapon;
+                bool isBayonet = !damageInfo.Player.IsAI && WeaponProperties.HasBayonet && weap.WeapClass != "Knife"? true : false;
                 armorDamageActual = damageInfo.ArmorDamage;
-                float meleeDamage = damageInfo.Damage <= 5 ? damageInfo.Damage * 2f : damageInfo.Damage * 0.5f;
-                float velocity = meleeDamage * (1f - (WeaponProperties.ErgoFactor / 100f));
-                KE = (0.5f * (WeaponProperties.TotalWeaponWeight * 1000f) * velocity * velocity) / 1000f;
+                float meleeDamage = isBayonet ? damageInfo.Damage : damageInfo.Damage * 2f;
+                KE = meleeDamage * 50f;
+                Logger.LogWarning("isBayonet " + isBayonet);
             }
 
             float bluntThrput = hitSecondaryArmor == true ? __instance.Template.BluntThroughput * 1.15f : __instance.Template.BluntThroughput;
@@ -980,17 +987,34 @@ namespace RealismMod
 
             if (damageType == EDamageType.Melee) 
             {
-                if (damageInfo.PenetrationPower > penDuraFactoredClass)
+                if (damageInfo.PenetrationPower > armorFactor || hasBypassedArmor)
                 {
+                    if (Plugin.EnableBallisticsLogging.Value)
+                    {
+                        Logger.LogWarning("Melee Penetrated");
+                    }
                     damageInfo.Damage *= armorStatReductionFactor;
                     damageInfo.PenetrationPower *= armorStatReductionFactor;
                 }
                 else
                 {
-                    damageInfo.Damage = throughputFactoredDamage;
+                    if (Plugin.EnableBallisticsLogging.Value)
+                    {
+                        Logger.LogWarning("Melee Blocked");
+                    }
+                    if (!__instance.Template.ArmorZone.Contains(EBodyPart.Head))
+                    {
+                        damageInfo.Damage = throughputFactoredDamage + (damageInfo.Damage / 10f);
+                    }
+                    else 
+                    {
+                        damageInfo.Damage = throughputFactoredDamage;
+                    }
+
                     damageInfo.StaminaBurnRate = (throughputFactoredDamage / 100f) * 2f;
                     damageInfo.HeavyBleedingDelta = 0f;
                     damageInfo.LightBleedingDelta = 0f;
+
                 }
             }
             else if (!(damageInfo.BlockedBy == __instance.Item.Id) && !(damageInfo.DeflectedBy == __instance.Item.Id) && !hasBypassedArmor)
@@ -1028,8 +1052,8 @@ namespace RealismMod
                 Logger.LogWarning("Durability Loss " + durabilityLoss);
                 Logger.LogWarning("Max potential blunt damage " + maxPotentialDuraDamage);
                 Logger.LogWarning("Max potential dura damage " + maxPotentialBluntDamage);
-                Logger.LogWarning("Damage " + damageInfo.Damage);
                 Logger.LogWarning("Throughput Facotred Damage " + throughputFactoredDamage);
+                Logger.LogWarning("Damage " + damageInfo.Damage);
                 Logger.LogWarning("========================== ");
             }
             return false;

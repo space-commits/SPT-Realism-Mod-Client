@@ -152,7 +152,6 @@ namespace RealismMod
             if (__instance.IsYourPlayer == true)
             {
                 MovementSpeedController.CurrentSurface = __result.Item2;
-                Logger.LogWarning("surface = " + MovementSpeedController.CurrentSurface);
             }
         }
     }
@@ -223,7 +222,7 @@ namespace RealismMod
                 float sprintInertia = Mathf.Max(EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(Mathf.Abs((float)rotationFrameSpan.Average)), EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(2.1474836E+09f) * (2f - player.Physical.Inertia));
                 speed = Mathf.Clamp(speed * sprintInertia, 0.1f, speed);
                 __instance.SprintSpeed = Mathf.Clamp(__instance.SprintSpeed + sprintAccel * Mathf.Sign(speed - __instance.SprintSpeed), 0.01f, speed);
-
+                Logger.LogWarning(__instance.SprintSpeed);
                 return false;
             }
             return true;

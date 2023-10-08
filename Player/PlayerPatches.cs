@@ -28,12 +28,12 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                SkillManager.GClass1638 skillsClass = (SkillManager.GClass1638)AccessTools.Field(typeof(EFT.Player.FirearmController), "_buffInfo").GetValue(__instance);
+                SkillManager.GClass1638 weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
                 PlayerProperties.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
-                PlayerProperties.ReloadSkillMulti = Mathf.Max(1, ((skillsClass.ReloadSpeed - 1f) * 0.5f) + 1f);
-                PlayerProperties.FixSkillMulti = skillsClass.FixSpeed;
-                PlayerProperties.WeaponSkillErgo = skillsClass.DeltaErgonomics;
-                PlayerProperties.AimSkillADSBuff = skillsClass.AimSpeed;
+                PlayerProperties.ReloadSkillMulti = Mathf.Max(1, ((weaponInfo.ReloadSpeed - 1f) * 0.5f) + 1f);
+                PlayerProperties.FixSkillMulti = weaponInfo.FixSpeed;
+                PlayerProperties.WeaponSkillErgo = weaponInfo.DeltaErgonomics;
+                PlayerProperties.AimSkillADSBuff = weaponInfo.AimSpeed;
                 PlayerProperties.StressResistanceFactor = player.Skills.StressPain.Value;
             }
         }
@@ -94,7 +94,6 @@ namespace RealismMod
                     player.AddMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor, PlayerProperties.TotalMousePenalty / 100f);
                 }
             }
-
             return modifiedWeight;
         }
 
@@ -382,7 +381,6 @@ namespace RealismMod
             if (Utils.IsReady && __instance.IsYourPlayer)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
-
                 PlayerProperties.IsSprinting = __instance.IsSprintEnabled;
                 PlayerProperties.EnviroType = __instance.Environment;
                 Plugin.IsInInventory = __instance.IsInventoryOpened;
@@ -419,10 +417,8 @@ namespace RealismMod
 
                         StanceController.IsPatrolStance = false;
                     }
-
                     ReloadController.ReloadStateCheck(__instance, fc, Logger);
                     AimController.ADSCheck(__instance, fc, Logger);
-
                     if (Plugin.EnableStanceStamChanges.Value)
                     {
                         StanceController.SetStanceStamina(__instance, fc);
@@ -438,9 +434,9 @@ namespace RealismMod
 
                 __instance.Physical.HandsStamina.Current = Mathf.Max(__instance.Physical.HandsStamina.Current, 1f);
 
-/*                __instance.ProceduralWeaponAnimation.HandsContainer.CameraRotation.ReturnSpeed = WeaponProperties.TotalCameraReturnSpeed; //not sure about this one
-                __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = Plugin.test1.Value;
-*/
+                /*                __instance.ProceduralWeaponAnimation.HandsContainer.CameraRotation.ReturnSpeed = WeaponProperties.TotalCameraReturnSpeed; //not sure about this one
+                                __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = Plugin.test1.Value;
+                */
                 if (!RecoilController.IsFiring)
                 {
                     if (StanceController.CanResetDamping)
@@ -450,7 +446,6 @@ namespace RealismMod
                         {
                             resetSpeed = 1f;
                         }
-
                         __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, resetSpeed);
                     }
                     else
@@ -463,9 +458,8 @@ namespace RealismMod
                     /*                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.5f;
                                         __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.4f;*/
                 }
-                __instance.HandsController.FirearmsAnimator.SetPatrol(StanceController.IsPatrolStance);
+                __instance.MovementContext.SetPatrol(StanceController.IsPatrolStance);
             }
-
         }
     }
 }

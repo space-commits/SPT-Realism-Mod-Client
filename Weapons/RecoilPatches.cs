@@ -190,7 +190,7 @@ namespace RealismMod
             if (_weapon.Item.Owner.ID.StartsWith("pmc") || _weapon.Item.Owner.ID.StartsWith("scav"))
             {
 
-                SkillManager.GClass1638 buffInfo = (SkillManager.GClass1638)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "gclass1638_0").GetValue(__instance);
+                SkillManager.GClass1638 buffInfo = (SkillManager.GClass1638)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
                 WeaponTemplate template = _weapon.WeaponTemplate;
 
                 float vRecoilDelta;
@@ -277,7 +277,7 @@ namespace RealismMod
             {
                 Weapon weaponClass = (Weapon)weaponClassField.GetValue(__instance);
                 Vector3 separateIntensityFactors = (Vector3)intensityFactorsField.GetValue(__instance);
-                SkillManager.GClass1638 buffInfo = (SkillManager.GClass1638)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "gclass1638_0").GetValue(__instance);
+                SkillManager.GClass1638 buffInfo = (SkillManager.GClass1638)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
 
                 float totalPlayerWeight = PlayerProperties.TotalUnmodifiedWeight - WeaponProperties.TotalWeaponWeight;
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 550f);

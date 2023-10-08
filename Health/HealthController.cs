@@ -78,16 +78,16 @@ namespace RealismMod
 
         public static readonly Dictionary<string, Type> EffectTypes = new Dictionary<string, Type>
         {
-            { "Painkiller", typeof(GInterface219) },
-            { "Tremor", typeof(GInterface222) },
-            { "BrokenBone", typeof(GInterface204) },
-            { "TunnelVision", typeof(GInterface224) },
-            { "Contusion", typeof(GInterface214)  },
-            { "HeavyBleeding", typeof(GInterface202) },
-            { "LightBleeding", typeof(GInterface201) },
-            { "Dehydration", typeof(GInterface205) },
-            { "Exhaustion", typeof(GInterface206) },
-            { "Pain", typeof(GInterface218) }
+            { "Painkiller", typeof(GInterface214) },
+            { "Tremor", typeof(GInterface217) },
+            { "BrokenBone", typeof(GInterface199) },
+            { "TunnelVision", typeof(GInterface219) },
+            { "Contusion", typeof(GInterface209)  },
+            { "HeavyBleeding", typeof(GInterface197) },
+            { "LightBleeding", typeof(GInterface196) },
+            { "Dehydration", typeof(GInterface200) },
+            { "Exhaustion", typeof(GInterface201) },
+            { "Pain", typeof(GInterface213) }
         };
     }
 

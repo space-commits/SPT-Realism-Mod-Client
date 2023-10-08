@@ -228,7 +228,7 @@ namespace RealismMod
         private static BodyPartStateWrapper GetBodyPartStateWrapper(ActiveHealthController instance, EBodyPart bodyPart)
         {
 
-            PropertyInfo bodyPartStateProperty = typeof(ActiveHealthController).GetProperty("IReadOnlyDictionary_0", BindingFlags.Instance | BindingFlags.NonPublic);
+            PropertyInfo bodyPartStateProperty = typeof(ActiveHealthController).GetProperty("Dictionary_0", BindingFlags.Instance | BindingFlags.NonPublic);
             var bodyPartStateDict = (IDictionary)bodyPartStateProperty.GetMethod.Invoke(instance, null);
             
             object bodyPartStateInstance;
@@ -266,7 +266,6 @@ namespace RealismMod
             bodyPartStateWrapper.Health = new HealthValue(1f, Mathf.Max(1f, Mathf.Ceil(bodyPartStateWrapper.Health.Maximum * healthPenalty)), 0f);
             syncSurgeryPackets.Invoke(__instance, new object[] { bodyPart, EDamageType.Medicine });
             syncBodypartPackets.Invoke(__instance, new object[] { bodyPart});
-
             Action<EBodyPart, ValueStruct> bodyPartRestoredEvent = bodyPartRestoredField;
             if (bodyPartRestoredEvent != null)
             {
