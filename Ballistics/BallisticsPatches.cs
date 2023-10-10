@@ -204,12 +204,6 @@ namespace RealismMod
             __instance.IsForwardHit = shot.IsForwardHit;
             __instance.SourceId = shot.Ammo.TemplateId;
 
-            Player victim = Singleton<GameWorld>.Instance.GetPlayerByCollider(__instance.HitCollider);
-            if (victim != null && victim.IsYourPlayer && victim.ProfileId == __instance.Player.iPlayer.ProfileId)
-            {
-                Logger.LogWarning("hit self");
-            }
-
             if (Plugin.EnableBodyHitZones.Value && !__instance.Blunt && (__instance.DamageType == EDamageType.Bullet || __instance.DamageType == EDamageType.Melee)) 
             {
                 string hitCollider = shot.HittedBallisticCollider.name;

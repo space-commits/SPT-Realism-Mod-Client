@@ -68,12 +68,11 @@ namespace RealismMod
                     hasReset = false;
                     timer = 0f;
 
-                    FirearmController fc = player.HandsController as FirearmController;
+                    float shotCountFactor = (float)Math.Round(Mathf.Min(RecoilController.ShotCount * 0.38f, 1.65f), 2);
                     float baseAngle = RecoilController.BaseTotalRecoilAngle;
                     float totalRecAngle = StanceController.IsMounting ? Mathf.Min(baseAngle + 15, 90f) : StanceController.IsBracing ? Mathf.Min(baseAngle + 8f, 90f) : baseAngle;
                     totalRecAngle = WeaponProperties._WeapClass != "pistol" ? totalRecAngle : totalRecAngle - 5;
                     float hipfireModifier = !Plugin.IsAiming ? 1.1f : 1f;
-                    float shotCountFactor = (float)Math.Round(Mathf.Min(RecoilController.ShotCount * 0.38f, 1.65f), 2);
                     float dispersionSpeedFactor = WeaponProperties._WeapClass != "pistol" ? 1f + (-WeaponProperties.TotalDispersionDelta) : 1f;
                     float dispersionAngleFactor = WeaponProperties._WeapClass != "pistol" ? 1f + (-WeaponProperties.TotalDispersionDelta * 0.035f) : 1f;
                     float angle = (Plugin.RecoilDispersionFactor.Value == 0f ? 0f : ((90f - (totalRecAngle * dispersionAngleFactor)) / 50f));
@@ -99,11 +98,6 @@ namespace RealismMod
                         yRotation = (float)Math.Round(Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * 4f, 1f)), 3);
                     }
 
-                    //Spiral/circular, could modify x axis with ping pong or something to make it more random or simply use random.range
-                    /*              spiralTime += Time.deltaTime * 20f;
-                                  float xRotaion = Mathf.Sin(spiralTime * 10f) * 1f;
-                                  float yRotation = Mathf.Cos(spiralTime * 10f) * 1f;*/
-
                     targetRotation = movementContext.Rotation + new Vector2(xRotation, yRotation);
 
                     if ((canResetVert && (movementContext.Rotation.y > recordedRotation.y + 2f || deltaRotation.y <= -1f)) || (canResetHorz && Mathf.Abs(deltaRotation.x) >= 1f))
@@ -115,7 +109,7 @@ namespace RealismMod
                 else if (!hasReset && !RecoilController.IsFiring)
                 {
                     float resetSpeed = RecoilController.BaseTotalConvergence * WeaponProperties.ConvergenceDelta * Plugin.ResetSpeed.Value;
-
+                   
                     bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Mathf.Clamp(Plugin.ResetSensitivity.Value / 2.5f, 0f, 0.1f);
                     bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= Plugin.ResetSensitivity.Value;
 

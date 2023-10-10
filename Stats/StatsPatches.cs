@@ -405,7 +405,7 @@ namespace RealismMod
                 WeaponProperties.WeaponCanFSADS = !hasShoulderContact;
             }
 
-            float totalLoudness = ((currentLoudness / 100) + 1f) * StatCalc.CalibreLoudnessFactor(calibre);
+            float totalLoudness = ((currentLoudness / 80) + 1f) * StatCalc.CalibreLoudnessFactor(calibre);
             if (weapType == "bullpup")
             {
                 totalLoudness *= 1.1f;
