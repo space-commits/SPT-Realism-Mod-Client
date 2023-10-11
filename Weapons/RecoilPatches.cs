@@ -273,6 +273,8 @@ namespace RealismMod
                 Vector3 separateIntensityFactors = (Vector3)intensityFactorsField.GetValue(__instance);
                 SkillManager.GClass1638 buffInfo = (SkillManager.GClass1638)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
 
+                str = str > 1 ? str * 1.15f : str;
+
                 float totalPlayerWeight = PlayerProperties.TotalUnmodifiedWeight - WeaponProperties.TotalWeaponWeight;
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 550f);
                 float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 100f);
@@ -373,7 +375,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        public static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
+        public static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance, float str)
         {
             PlayerInterface playerInterface = (PlayerInterface)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_firearmAnimationData").GetValue(__instance);
             if (playerInterface != null && playerInterface.Weapon != null)

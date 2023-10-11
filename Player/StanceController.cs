@@ -1092,11 +1092,11 @@ namespace RealismMod
                     }
                     if (!hasResetHighReady)
                     {
-                        highToActive = 0.6f;
+                        highToActive = 0.7f;
                     }
                     if (!hasResetLowReady)
                     {
-                        lowToActive = 0.7f;
+                        lowToActive = 0.75f;
                     }
                 }
                 else

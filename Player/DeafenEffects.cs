@@ -11,7 +11,6 @@ using static Val;
 using HarmonyLib;
 using Aki.Reflection.Utils;
 using UnityEngine.Rendering.PostProcessing;
-using notGreg.UniformAim;
 using static EFT.Interactive.BetterPropagationGroups;
 using BepInEx.Logging;
 using HeadsetClass = GClass2450;
@@ -152,15 +151,15 @@ namespace RealismMod
 
         public static float GrenadeVolumeLimit = -40f;
         public static float GrenadeDistortionLimit = 50f;
-        public static float GrenadeVignetteDarknessLimit = 0.2f;
+        public static float GrenadeVignetteDarknessLimit = 0.3f;
 
-        public static float GrenadeVolumeDecreaseRate = 0.04f;
+        public static float GrenadeVolumeDecreaseRate = 0.02f;
         public static float GrenadeDistortionIncreaseRate = 0.5f;
         public static float GrenadeVignetteDarknessIncreaseRate = 0.6f;
 
-        public static float GrenadeVolumeResetRate = 0.033f;
+        public static float GrenadeVolumeResetRate = 0.02f;
         public static float GrenadeDistortionResetRate = 0.1f;
-        public static float GrenadeVignetteDarknessResetRate = 0.5f;
+        public static float GrenadeVignetteDarknessResetRate = 0.02f;
 
         public static bool valuesAreReset = false;
 

@@ -30,7 +30,7 @@ namespace RealismMod
 {
     public static class Utils
     {
-        public static Player ClientPlayer;
+        public static Player YourPlayer;
 
         public static bool IsReady = false;
 
@@ -93,6 +93,7 @@ namespace RealismMod
             return true;
         }
 
+        //should not use, use the field instead, checkisready is called once per frame
         public static Player GetPlayer() 
         {
             GameWorld gameWorld = Singleton<GameWorld>.Instance;
@@ -105,11 +106,10 @@ namespace RealismMod
             SessionResultPanel sessionResultPanel = Singleton<SessionResultPanel>.Instance;
 
             Player player = gameWorld?.MainPlayer;
-            if (player != null && player?.HandsController != null)
+            if (player != null)
             {
-                ClientPlayer = player;
-
-                if (player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon)
+                YourPlayer = player;
+                if (player?.HandsController != null && player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon)
                 {
                     Utils.WeaponReady = true;
                 }

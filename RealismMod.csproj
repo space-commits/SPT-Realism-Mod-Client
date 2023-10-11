@@ -29,7 +29,6 @@
 	<Reference Include="UnityEngine.UnityWebRequestAudioModule" />
 	<Reference Include="AnimationSystem.Types" />
 	<Reference Include="Newtonsoft.Json" />
-    <Reference Include="notGreg.UniformAim" />
 	<Reference Include="UnityEngine.AudioModule" />
     <Reference Include="Unity.Postprocessing.Runtime" />
 	<Reference Include="UnityEngine.PhysicsModule" />

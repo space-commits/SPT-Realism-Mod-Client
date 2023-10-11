@@ -267,8 +267,7 @@ namespace RealismMod
                 chamberSpeed *= Plugin.GlobalCheckChamberSpeedMulti.Value;
             }
 
-            float totalCheckChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.55f, 2f);
-          
+            float totalCheckChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.55f, 1.8f);
             __instance.SetAnimationSpeed(totalCheckChamberSpeed);
 
             if (Plugin.EnableLogging.Value == true)
@@ -295,7 +294,9 @@ namespace RealismMod
 
             if (WeaponProperties._IsManuallyOperated == true || Plugin.LauncherIsActive == true)
             {
+                Player.FirearmController fc = Utils.YourPlayer.HandsController as Player.FirearmController;
                 float chamberSpeed = WeaponProperties.TotalFiringChamberSpeed;
+                float ammoFactor = 2f - (1f + (fc.Item.CurrentAmmoTemplate.ammoRec / 200f));
                 float stanceModifier = 1f;
                 if (WeaponProperties._WeapClass == "shotgun")
                 {
@@ -311,7 +312,7 @@ namespace RealismMod
                     chamberSpeed *= Plugin.GlobalBoltSpeedMulti.Value;
                     stanceModifier = StanceController.IsBracing ? 1.2f : StanceController.IsMounting ? 1.4f : StanceController.IsActiveAiming ? 1.15f : 1f;
                 }
-                float totalChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * stanceModifier * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.55f, 1.3f);
+                float totalChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * stanceModifier * ammoFactor * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.55f, 1.3f);
                 __instance.SetAnimationSpeed(totalChamberSpeed);
 
                 if (Plugin.EnableLogging.Value == true)
@@ -367,7 +368,7 @@ namespace RealismMod
                 chamberSpeed *= Plugin.GlobalRechamberSpeedMulti.Value;
             }
             
-            float totalRechamberSpeed = Mathf.Clamp(chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.5f, 1.35f);
+            float totalRechamberSpeed = Mathf.Clamp(chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.75f)), 0.5f, 1.5f);
 
             __instance.SetAnimationSpeed(totalRechamberSpeed);
             if (Plugin.EnableLogging.Value == true)
