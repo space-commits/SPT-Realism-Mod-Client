@@ -296,8 +296,11 @@ namespace RealismMod
             {
                 Player.FirearmController fc = Utils.YourPlayer.HandsController as Player.FirearmController;
                 float chamberSpeed = WeaponProperties.TotalFiringChamberSpeed;
-                float ammoFactor = 2f - (1f + (fc.Item.CurrentAmmoTemplate.ammoRec / 200f));
+                float ammoRec = fc.Item.CurrentAmmoTemplate.ammoRec;
+                float ammoFactor = ammoRec < 0 ? 1f + (ammoRec / 100f) : 1f + (ammoRec / 150f);
+                ammoFactor = 2f - ammoFactor;
                 float stanceModifier = 1f;
+
                 if (WeaponProperties._WeapClass == "shotgun")
                 {
                     chamberSpeed *= Plugin.GlobalShotgunRackSpeedFactor.Value;

@@ -108,10 +108,12 @@ namespace RealismMod
                 }
                 else if (!hasReset && !RecoilController.IsFiring)
                 {
+                    bool isHybrid = Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !WeaponProperties.HasShoulderContact));
                     float resetSpeed = RecoilController.BaseTotalConvergence * WeaponProperties.ConvergenceDelta * Plugin.ResetSpeed.Value;
-                   
-                    bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Mathf.Clamp(Plugin.ResetSensitivity.Value / 2.5f, 0f, 0.1f);
-                    bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= Plugin.ResetSensitivity.Value;
+                    float resetSens = isHybrid ? (float)Math.Round(Plugin.ResetSensitivity.Value * 0.4f, 3) : Plugin.ResetSensitivity.Value;
+
+                    bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Mathf.Clamp(resetSens / 2.5f, 0f, 0.1f);
+                    bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= resetSens;
 
                     Vector2 resetTarget = movementContext.Rotation;
 
@@ -273,7 +275,7 @@ namespace RealismMod
                 Vector3 separateIntensityFactors = (Vector3)intensityFactorsField.GetValue(__instance);
                 SkillManager.GClass1638 buffInfo = (SkillManager.GClass1638)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
 
-                str = str > 1 ? str * 1.15f : str;
+                str = str > 1 ? str * 1.2f : str;
 
                 float totalPlayerWeight = PlayerProperties.TotalUnmodifiedWeight - WeaponProperties.TotalWeaponWeight;
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 550f);

@@ -12,7 +12,6 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-
 namespace RealismMod
 {
     public class SyncWithCharacterSkillsPatch : ModulePatch
@@ -26,7 +25,7 @@ namespace RealismMod
         private static void PatchPostfix(EFT.Player.FirearmController __instance)
         {
             Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
-            if (player.IsYourPlayer == true)
+            if (player.IsYourPlayer)
             {
                 SkillManager.GClass1638 weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
                 PlayerProperties.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
@@ -38,7 +37,6 @@ namespace RealismMod
             }
         }
     }
-
 
     public class PlayerInitPatch : ModulePatch
     {
