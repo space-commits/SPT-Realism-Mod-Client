@@ -7,10 +7,11 @@ using static Systems.Effects.Effects;
 using UnityEngine;
 using System.Linq;
 using BepInEx.Logging;
+using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2233;
+using ExistanceClass = GClass2274;
 
 namespace RealismMod
 {
-
     public enum EHealthEffectType 
     {
         Surgery,
@@ -294,7 +295,7 @@ namespace RealismMod
         }
     }
 
-    public class HealthChange : ActiveHealthControllerClass.GClass2327, IEffect, GInterface196, GInterface211
+    public class HealthChange : EffectClass, IEffect, GInterface191, GInterface211
     {
         protected override void Started()
         {
@@ -311,7 +312,7 @@ namespace RealismMod
                 return;
             }
             this.time -= 3f;
-            base.HealthController.ChangeHealth(bodyPart, this.hpPerTick, GClass2370.Existence);
+            base.HealthController.ChangeHealth(bodyPart, this.hpPerTick, ExistanceClass.Existence);
         }
 
         private float hpPerTick;
@@ -322,7 +323,7 @@ namespace RealismMod
 
     }
 
-    public class ResourceRateChange : ActiveHealthControllerClass.GClass2327, IEffect, GInterface196, GInterface211
+    public class ResourceRateChange : EffectClass, IEffect, GInterface191, GInterface211
     {
         protected override void Started()
         {

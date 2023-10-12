@@ -15,8 +15,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using static ShotEffector;
-using LightStruct = GStruct154;
-using GlobalValues = GClass1710;
+using LightStruct = GStruct155;
 using RootMotion.FinalIK;
 using static EFT.Player;
 
@@ -265,7 +264,7 @@ namespace RealismMod
         {
             MeleeTimer += Time.deltaTime;
 
-            if (MeleeTimer >= 0.25f)
+            if (MeleeTimer >= 0.35f)
             {
                 DoResetMelee = false;
                 CanToggleMelee = true;
@@ -767,7 +766,7 @@ namespace RealismMod
 
             if (Plugin.EnableTacSprint.Value && (StanceController.IsHighReady || StanceController.WasHighReady) && !PlayerProperties.RightArmRuined)
             {
-                player.BodyAnimatorCommon.SetFloat(GlobalValues.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
+                player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
                 if (!setRunAnim)
                 {
                     setRunAnim = true;
@@ -778,7 +777,7 @@ namespace RealismMod
             {
                 if (!resetRunAnim)
                 {
-                    player.BodyAnimatorCommon.SetFloat(GlobalValues.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
+                    player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
                     resetRunAnim = true;
                     setRunAnim = false;
                 }
@@ -1093,11 +1092,11 @@ namespace RealismMod
                     }
                     if (!hasResetHighReady)
                     {
-                        highToActive = 0.6f;
+                        highToActive = 0.7f;
                     }
                     if (!hasResetLowReady)
                     {
-                        lowToActive = 0.7f;
+                        lowToActive = 0.75f;
                     }
                 }
                 else
@@ -1194,13 +1193,19 @@ namespace RealismMod
                 StanceController.StanceBlender.Speed = 12f * stanceMulti * (isThirdPerson ? Plugin.ThirdPersonPositionSpeed.Value : 1f);
                 StanceController.StanceTargetPosition = Vector3.Lerp(StanceController.StanceTargetPosition, meleeTargetPosition, Plugin.StanceTransitionSpeedMulti.Value * stanceMulti * dt);
 
-                if ((StanceController.StanceBlender.Value >= 1f || StanceController.StanceTargetPosition == meleeTargetPosition) && !StanceController.DidStanceWiggle)
+                if ((StanceController.StanceBlender.Value >= 1f || StanceController.StanceTargetPosition == meleeTargetPosition))
                 {
-                    StanceController.DoWiggleEffects(player, pwa, new Vector3(10f, -5f, 10f) * movementFactor, true);
-                    StanceController.DidStanceWiggle = true;
+                    if (!StanceController.DidStanceWiggle) 
+                    {
+                        StanceController.DoWiggleEffects(player, pwa, new Vector3(10f, -5f, 10f) * movementFactor, true);
+                        StanceController.DidStanceWiggle = true;
+                    }
 
-                    StanceController.IsMeleeAttack = false;
-                    StanceController.StanceBlender.Target = 0f;
+                    if (!Input.GetKey(Plugin.MeleeKeybind.Value.MainKey)) 
+                    {
+                        StanceController.IsMeleeAttack = false;
+                        StanceController.StanceBlender.Target = 0f;
+                    }
                 }
             }
             else if (StanceController.StanceBlender.Value > 0f && !hasResetMelee) //&& !StanceController.IsLowReady && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsShortStock && !isResettingActiveAim && !isResettingHighReady && !isResettingLowReady && !isResettingShortStock
@@ -1225,7 +1230,7 @@ namespace RealismMod
 
                 StanceController.DoResetMelee = true;
                 StanceController.CanDoMeleeDetection = false;
-                StanceController.DoWiggleEffects(player, pwa, new Vector3(5, -5f, -65f), true);
+                StanceController.DoWiggleEffects(player, pwa, new Vector3(5, -5f, -70f), true);
                 stanceRotation = Quaternion.identity;
                 isResettingMelee = false;
                 hasResetMelee = true;
@@ -1237,7 +1242,7 @@ namespace RealismMod
         {
             if (playSound)
             {
-                AccessTools.Method(typeof(Player), "method_40").Invoke(player, new object[] { 2f });
+                AccessTools.Method(typeof(Player), "method_41").Invoke(player, new object[] { 2f });
             }
 
             for (int i = 0; i < pwa.Shootingg.ShotVals.Length; i++)
@@ -1251,7 +1256,7 @@ namespace RealismMod
         {
             if (playSound)
             {
-                AccessTools.Method(typeof(Player), "method_40").Invoke(player, new object[] { volume });
+                AccessTools.Method(typeof(Player), "method_41").Invoke(player, new object[] { volume });
             }
 
             for (int i = 0; i < pwa.Shootingg.ShotVals.Length; i++)

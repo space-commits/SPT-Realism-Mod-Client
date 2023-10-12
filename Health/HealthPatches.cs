@@ -20,11 +20,14 @@ using System.Text;
 using Systems.Effects;
 using UnityEngine;
 using UnityEngine.Assertions;
-using static ActiveHealthControllerClass;
 using static CW2.Animations.PhysicsSimulator.Val;
 using static EFT.Player;
 using static RealismMod.Attributes;
 using static Systems.Effects.Effects;
+using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2233;
+using ExistanceClass = GClass2274;
+using StamController = GClass603;
+using MedkitTemplate = GInterface249;
 
 namespace RealismMod
 {
@@ -33,7 +36,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(MedKitComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface255) });
+            return typeof(MedKitComponent).GetConstructor(new Type[] { typeof(Item), typeof(MedkitTemplate) });
         }
 
         private static string getHBTypeString(string type) 
@@ -144,11 +147,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass2330).GetMethod("ApplyItem", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(PlayerHealthController).GetMethod("ApplyItem", BindingFlags.Instance | BindingFlags.Public);
 
         }
         [PatchPrefix]
-        private static bool Prefix(GClass2330 __instance, Item item, EBodyPart bodyPart, ref bool __result)
+        private static bool Prefix(PlayerHealthController __instance, Item item, EBodyPart bodyPart, ref bool __result)
         {
             MedsClass medsClass;
             FoodClass foodClass;
@@ -185,8 +188,6 @@ namespace RealismMod
         }
     }
 
-
-
     //when using quickslot
     public class SetQuickSlotPatch : ModulePatch
     {
@@ -197,7 +198,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(EFT.Player __instance, EBoundItem quickSlot)
         {
-            InventoryControllerClass inventoryCont = (InventoryControllerClass)AccessTools.Property(typeof(EFT.Player), "GClass2659_0").GetValue(__instance);
+            InventoryControllerClass inventoryCont = (InventoryControllerClass)AccessTools.Property(typeof(EFT.Player), "GClass2571_0").GetValue(__instance);
             Item boundItem = inventoryCont.Inventory.FastAccess.GetBoundItem(quickSlot);
             FoodClass food = boundItem as FoodClass;
             if (boundItem != null && (food = (boundItem as FoodClass)) != null)
@@ -220,14 +221,14 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(ActiveHealthControllerClass).GetMethod("RestoreBodyPart", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(ActiveHealthController).GetMethod("RestoreBodyPart", BindingFlags.Instance | BindingFlags.Public);
 
         }
 
-        private static BodyPartStateWrapper GetBodyPartStateWrapper(ActiveHealthControllerClass instance, EBodyPart bodyPart)
+        private static BodyPartStateWrapper GetBodyPartStateWrapper(ActiveHealthController instance, EBodyPart bodyPart)
         {
 
-            PropertyInfo bodyPartStateProperty = typeof(ActiveHealthControllerClass).GetProperty("IReadOnlyDictionary_0", BindingFlags.Instance | BindingFlags.NonPublic);
+            PropertyInfo bodyPartStateProperty = typeof(ActiveHealthController).GetProperty("Dictionary_0", BindingFlags.Instance | BindingFlags.NonPublic);
             var bodyPartStateDict = (IDictionary)bodyPartStateProperty.GetMethod.Invoke(instance, null);
             
             object bodyPartStateInstance;
@@ -245,13 +246,13 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ActiveHealthControllerClass __instance, EBodyPart bodyPart, float healthPenalty, ref bool __result)
+        private static bool Prefix(ActiveHealthController __instance, EBodyPart bodyPart, float healthPenalty, ref bool __result)
         {
             BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);
-            SkillsClass skills = (SkillsClass)AccessTools.Field(typeof(ActiveHealthControllerClass), "gclass1742_0").GetValue(__instance);
-            Action<EBodyPart, ValueStruct> actionStruct = (Action<EBodyPart, ValueStruct>)AccessTools.Field(typeof(ActiveHealthControllerClass), "action_15").GetValue(__instance);
-            MethodInfo method_45 = AccessTools.Method(typeof(ActiveHealthControllerClass), "method_43");
-            MethodInfo method_38 = AccessTools.Method(typeof(ActiveHealthControllerClass), "method_36");
+            SkillManager skills = (SkillManager)AccessTools.Field(typeof(ActiveHealthController), "skillManager_0").GetValue(__instance);
+            Action<EBodyPart, ValueStruct> bodyPartRestoredField = (Action<EBodyPart, ValueStruct>)AccessTools.Field(typeof(ActiveHealthController), "BodyPartRestoredEvent").GetValue(__instance);
+            MethodInfo syncSurgeryPackets = AccessTools.Method(typeof(ActiveHealthController), "method_39");
+            MethodInfo syncBodypartPackets = AccessTools.Method(typeof(ActiveHealthController), "method_32");
 
             if (!bodyPartStateWrapper.IsDestroyed)  
             {
@@ -263,34 +264,32 @@ namespace RealismMod
             bodyPartStateWrapper.IsDestroyed = false;
             healthPenalty += (1f - healthPenalty) * skills.SurgeryReducePenalty;
             bodyPartStateWrapper.Health = new HealthValue(1f, Mathf.Max(1f, Mathf.Ceil(bodyPartStateWrapper.Health.Maximum * healthPenalty)), 0f);
-            method_45.Invoke(__instance, new object[] { bodyPart, EDamageType.Medicine });
-            method_38.Invoke(__instance, new object[] { bodyPart});
-
-            Action<EBodyPart, ValueStruct> action = actionStruct;
-            if (action != null)
+            syncSurgeryPackets.Invoke(__instance, new object[] { bodyPart, EDamageType.Medicine });
+            syncBodypartPackets.Invoke(__instance, new object[] { bodyPart});
+            Action<EBodyPart, ValueStruct> bodyPartRestoredEvent = bodyPartRestoredField;
+            if (bodyPartRestoredEvent != null)
             {
-                action(bodyPart, health.CurrentAndMaximum);
+                bodyPartRestoredEvent(bodyPart, health.CurrentAndMaximum);
             }
             __result = true;
             return false;
         }
     }
 
-
     public class StamRegenRatePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass714).GetMethod("method_21", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(StamController).GetMethod("method_21", BindingFlags.Instance | BindingFlags.NonPublic);
 
         }
         [PatchPrefix]
-        private static bool Prefix(GClass714 __instance, float baseValue, ref float __result)
+        private static bool Prefix(StamController __instance, float baseValue, ref float __result)
         {
-            float[] float_7 = (float[])AccessTools.Field(typeof(GClass714), "float_7").GetValue(__instance);
-            GClass714.EPose epose_0 = (GClass714.EPose)AccessTools.Field(typeof(GClass714), "epose_0").GetValue(__instance);
-            Player player_0 = (Player)AccessTools.Field(typeof(GClass714), "player_0").GetValue(__instance);
-            float Single_0 = (float)AccessTools.Property(typeof(GClass714), "Single_0").GetValue(__instance);
+            float[] float_7 = (float[])AccessTools.Field(typeof(StamController), "float_7").GetValue(__instance);
+            StamController.EPose epose_0 = (StamController.EPose)AccessTools.Field(typeof(GClass603), "epose_0").GetValue(__instance);
+            Player player_0 = (Player)AccessTools.Field(typeof(StamController), "player_0").GetValue(__instance);
+            float Single_0 = (float)AccessTools.Property(typeof(StamController), "Single_0").GetValue(__instance);
 
             __result = baseValue * float_7[(int)epose_0] * Singleton<BackendConfigSettingsClass>.Instance.StaminaRestoration.GetAt(player_0.HealthController.Energy.Normalized) * (player_0.Skills.EnduranceBuffRestoration + 1f) * PlayerProperties.HealthStamRegenFactor / Single_0;
             return false;
@@ -351,13 +350,13 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(ActiveHealthControllerClass).GetMethod("ApplyDamage", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(ActiveHealthController).GetMethod("ApplyDamage", BindingFlags.Instance | BindingFlags.Public);
         }
 
         private static EDamageType[] acceptedDamageTypes = { EDamageType.HeavyBleeding, EDamageType.LightBleeding, EDamageType.Fall, EDamageType.Barbed, EDamageType.Dehydration, EDamageType.Exhaustion };
 
         [PatchPrefix]
-        private static void Prefix(ActiveHealthControllerClass __instance, EBodyPart bodyPart, ref float damage, DamageInfo damageInfo)
+        private static void Prefix(ActiveHealthController __instance, EBodyPart bodyPart, ref float damage, DamageInfo damageInfo)
         {
             if (__instance.Player.IsYourPlayer)
             {
@@ -448,7 +447,7 @@ namespace RealismMod
 
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<GInterface119>), typeof(int), typeof(bool) }, null);
+            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<GInterface116>), typeof(int), typeof(bool) }, null);
         }
 
         [PatchPrefix]

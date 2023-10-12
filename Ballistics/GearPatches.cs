@@ -10,6 +10,13 @@ using System.Runtime.CompilerServices;
 using Comfort.Common;
 using static RealismMod.Attributes;
 using UnityEngine;
+using BPConstructor = GClass2495;
+using BPTemplate = GClass2401;
+using RigConstructor = GClass2496;
+using RigTemplate = GClass2402;
+using HeadsetClass = GClass2450;
+using HeadsetTemplate = GClass2356;
+using ArmorComptemplate = GInterface233;
 
 namespace RealismMod
 {
@@ -18,11 +25,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass2584).GetConstructor(new Type[] { typeof(string), typeof(GClass2491) });
+            return typeof(BPConstructor).GetConstructor(new Type[] { typeof(string), typeof(GClass2401) });
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(GClass2584 __instance)
+        private static void PatchPostfix(BPConstructor __instance)
         {
             Item item = __instance as Item;
 
@@ -49,12 +56,12 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass2585).GetConstructor(new Type[] { typeof(string), typeof(GClass2492) });
+            return typeof(RigConstructor).GetConstructor(new Type[] { typeof(string), typeof(RigTemplate) });
         }
 
 
         [PatchPostfix]
-        private static void PatchPostfix(GClass2585 __instance)
+        private static void PatchPostfix(RigConstructor __instance)
         {
             Item item = __instance as Item;
 
@@ -261,13 +268,40 @@ namespace RealismMod
             }
         }
 
+        public class HeadsetConstructorPatch : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                return typeof(HeadsetClass).GetConstructor(new Type[] { typeof(string), typeof(HeadsetTemplate) });
+            }
+
+
+            [PatchPostfix]
+            private static void PatchPostfix(HeadsetClass __instance)
+            {
+                Item item = __instance as Item;
+
+                float dB = GearProperties.DbLevel(item);
+
+                if (dB > 0)
+                {
+                    List<ItemAttributeClass> dbAtt = item.Attributes;
+                    ItemAttributeClass dbAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.NoiseReduction);
+                    dbAttClass.Name = ENewItemAttributeId.NoiseReduction.GetName();
+                    dbAttClass.Base = () => dB;
+                    dbAttClass.StringValue = () => dB.ToString() + " NRR";
+                    dbAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    dbAtt.Add(dbAttClass);
+                }
+            }
+        }
 
         public class ArmorComponentPatch : ModulePatch
         {
 
             protected override MethodBase GetTargetMethod()
             {
-                return typeof(EFT.InventoryLogic.ArmorComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface239), typeof(RepairableComponent), typeof(BuffComponent) });
+                return typeof(EFT.InventoryLogic.ArmorComponent).GetConstructor(new Type[] { typeof(Item), typeof(ArmorComptemplate), typeof(RepairableComponent), typeof(BuffComponent) });
             }
 
 

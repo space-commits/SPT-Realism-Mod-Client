@@ -11,9 +11,11 @@ using static Val;
 using HarmonyLib;
 using Aki.Reflection.Utils;
 using UnityEngine.Rendering.PostProcessing;
-using notGreg.UniformAim;
 using static EFT.Interactive.BetterPropagationGroups;
 using BepInEx.Logging;
+using HeadsetClass = GClass2450;
+using HeadsetTemplate = GClass2356;
+using IWeapon = GInterface273;
 
 namespace RealismMod
 {
@@ -85,12 +87,12 @@ namespace RealismMod
             float protectionFactor;
 
             LootItemClass headwear = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;
-            GClass2540 headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as GClass2540) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<GClass2540>().FirstOrDefault<GClass2540>() : null);
+            HeadsetClass headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as HeadsetClass) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<HeadsetClass>().FirstOrDefault<HeadsetClass>() : null);
 
             if (headset != null)
             {
                 Plugin.HasHeadSet = true;
-                GClass2447 headphone = headset.Template;
+                HeadsetTemplate headphone = headset.Template;
                 protectionFactor = Mathf.Clamp(((headphone.DryVolume / 100f) + 1f) * 1.65f, 0.5f, 1f);
             }
             else
@@ -135,7 +137,7 @@ namespace RealismMod
 
         public static float VolumeLimit = -30f;
         public static float DistortionLimit = 70f;
-        public static float VignetteDarknessLimit = 0.32f;
+        public static float VignetteDarknessLimit = 0.34f;
 
         //bot
         public static float BotVolume = 0f;
@@ -149,15 +151,15 @@ namespace RealismMod
 
         public static float GrenadeVolumeLimit = -40f;
         public static float GrenadeDistortionLimit = 50f;
-        public static float GrenadeVignetteDarknessLimit = 0.2f;
+        public static float GrenadeVignetteDarknessLimit = 0.3f;
 
         public static float GrenadeVolumeDecreaseRate = 0.02f;
         public static float GrenadeDistortionIncreaseRate = 0.5f;
         public static float GrenadeVignetteDarknessIncreaseRate = 0.6f;
 
-        public static float GrenadeVolumeResetRate = 0.033f;
+        public static float GrenadeVolumeResetRate = 0.02f;
         public static float GrenadeDistortionResetRate = 0.1f;
-        public static float GrenadeVignetteDarknessResetRate = 0.5f;
+        public static float GrenadeVignetteDarknessResetRate = 0.02f;
 
         public static bool valuesAreReset = false;
 
@@ -174,7 +176,7 @@ namespace RealismMod
             }
             else if (!valuesAreReset)
             {
-                ReseDeaftValues(deafFactor, ref VignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafReset.Value, VolumeLimit, ref Distortion, Plugin.DistReset.Value, DistortionLimit, enviroMulti);
+                ResetDeafValues(deafFactor, ref VignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafReset.Value, VolumeLimit, ref Distortion, Plugin.DistReset.Value, DistortionLimit, enviroMulti, true);
             }
 
             if (Plugin.IsBotFiring)
@@ -183,7 +185,7 @@ namespace RealismMod
             }
             else if (!valuesAreReset)
             {
-                ReseDeaftValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafReset.Value, VolumeLimit, ref BotDistortion, Plugin.DistReset.Value, DistortionLimit, enviroMulti);
+                ResetDeafValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafReset.Value, VolumeLimit, ref BotDistortion, Plugin.DistReset.Value, DistortionLimit, enviroMulti, false);
             }
 
             if (Plugin.GrenadeExploded)
@@ -192,7 +194,7 @@ namespace RealismMod
             }
             else if (!valuesAreReset)
             {
-                ReseDeaftValues(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessResetRate, GrenadeVignetteDarknessLimit, ref GrenadeVolume, GrenadeVolumeResetRate, GrenadeVolumeLimit, ref GrenadeDistortion, GrenadeDistortionResetRate, GrenadeDistortionLimit, enviroMulti);
+                ResetDeafValues(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessResetRate, GrenadeVignetteDarknessLimit, ref GrenadeVolume, GrenadeVolumeResetRate, GrenadeVolumeLimit, ref GrenadeDistortion, GrenadeDistortionResetRate, GrenadeDistortionLimit, enviroMulti, false);
             }
 
 
@@ -208,8 +210,8 @@ namespace RealismMod
                 Plugin.PrismEffects.vignetteStrength = totalVignette;   
 /*                Plugin.Vignette.darkness = totalVignette;
 */                Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", totalVolume + Plugin.GunsVolume);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("OcclusionVolume", totalVolume + Plugin.MainVolume);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", totalVolume + Plugin.MainVolume);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("OcclusionVolume", totalVolume + Plugin.DryVolume);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", totalVolume + Plugin.DryVolume);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", totalVolume + Plugin.AmbientVolume);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", totalVolume + Plugin.AmbientOccluded);
 
@@ -250,11 +252,12 @@ namespace RealismMod
             distValue = Mathf.Clamp(distValue + (distIncRate * deafFactor), 0.0f, distLimit);
         }
 
-        private static void ReseDeaftValues(float deafFactor, ref float vigValue, float vigResetRate, float vigLimit, ref float volValue, float volResetRate, float volLimit, ref float distValue, float distResetRate, float distLimit, float enviroMulti)
+        private static void ResetDeafValues(float deafFactor, ref float vigValue, float vigResetRate, float vigLimit, ref float volValue, float volResetRate, float volLimit, ref float distValue, float distResetRate, float distLimit, float enviroMulti, bool wasGunshot)
         {
+            float resetFactor = wasGunshot ? 1f - (deafFactor * 0.1f) : 1f;
             float totalVigLimit = Mathf.Min(vigLimit * deafFactor * enviroMulti, 1.5f);
-            vigValue = Mathf.Clamp(vigValue - vigResetRate, 0.0f, totalVigLimit);
-            volValue = Mathf.Clamp(volValue + volResetRate, volLimit, 0.0f);
+            vigValue = Mathf.Clamp(vigValue - (vigResetRate * resetFactor), 0.0f, totalVigLimit);
+            volValue = Mathf.Clamp(volValue + (volResetRate * resetFactor), volLimit, 0.0f);
             distValue = Mathf.Clamp(distValue - distResetRate, 0.0f, distLimit);
         }
     }
@@ -267,14 +270,14 @@ namespace RealismMod
 
         }
         [PatchPrefix]
-        private static bool Prefix(GClass2447 template, BetterAudio __instance)
+        private static bool Prefix(HeadsetTemplate template, BetterAudio __instance)
         {
-            GClass2802.CreateEvent<GClass2789>().Invoke(template);
+            GClass2717.CreateEvent<GClass2704>().Invoke(template);
 
             bool hasHeadsetTemplate = template != null;
             bool isNotHeadset = template?._id == null; //using both bools is redundant now.
 
-            Plugin.MainVolume = hasHeadsetTemplate && !isNotHeadset ? template.DryVolume : 0f;
+            Plugin.DryVolume = hasHeadsetTemplate && !isNotHeadset ? template.DryVolume : 0f;
             Plugin.Compressor = hasHeadsetTemplate && !isNotHeadset ? template.CompressorVolume : -80f;
             Plugin.AmbientVolume = hasHeadsetTemplate && !isNotHeadset ? template.AmbientVolume : 0f;
             Plugin.AmbientOccluded = hasHeadsetTemplate && !isNotHeadset ? (template.AmbientVolume - 15f) : -5f;
@@ -285,33 +288,29 @@ namespace RealismMod
             Plugin.CompressorLowpass = hasHeadsetTemplate && !isNotHeadset ? template.LowpassFreq : 22000f;
             Plugin.CompressorGain = hasHeadsetTemplate && !isNotHeadset ? Plugin.RealTimeGain.Value : 10f;
 
-            __instance.Master.SetFloat("Compressor", Plugin.Compressor);
-            __instance.Master.SetFloat("OcclusionVolume", Plugin.MainVolume);
-            __instance.Master.SetFloat("EnvironmentVolume", Plugin.MainVolume);
-            __instance.Master.SetFloat("AmbientVolume", Plugin.AmbientVolume);
-            __instance.Master.SetFloat("AmbientOccluded", Plugin.AmbientOccluded);
-            __instance.Master.SetFloat("GunsVolume", Plugin.GunsVolume);
+            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorMixerVolume, Plugin.Compressor);
+            __instance.Master.SetFloat(__instance.AudioMixerData.OcclusionMixerVolume, Plugin.DryVolume);
+            __instance.Master.SetFloat(__instance.AudioMixerData.EnvironmentMixerVolume, Plugin.DryVolume);
+            __instance.Master.SetFloat(__instance.AudioMixerData.AmbientMixerVolume, Plugin.AmbientVolume);
+            __instance.Master.SetFloat(__instance.AudioMixerData.AmbientMixerOcclusionSendLevel, hasHeadsetTemplate && !isNotHeadset ? (template.AmbientVolume - 15f) : -5f);
+            __instance.Master.SetFloat(__instance.AudioMixerData.ReverbMixerVolume, hasHeadsetTemplate && !isNotHeadset ? template.ReverbVolume : -20f);
+            __instance.Master.SetFloat(__instance.AudioMixerData.GunsMixerVolume, Plugin.GunsVolume);
 
-            __instance.Master.SetFloat("CompressorAttack", hasHeadsetTemplate && !isNotHeadset ? template.CompressorAttack : 35f);
-            __instance.Master.SetFloat("CompressorMakeup", Plugin.CompressorGain);
-            __instance.Master.SetFloat("CompressorRelease", hasHeadsetTemplate && !isNotHeadset ? template.CompressorRelease : 215f);
-            __instance.Master.SetFloat("CompressorTreshold", hasHeadsetTemplate && !isNotHeadset ? template.CompressorTreshold : -20f);
-            __instance.Master.SetFloat("CompressorDistortion", Plugin.CompressorDistortion);
-            __instance.Master.SetFloat("CompressorResonance", Plugin.CompressorResonance);
-            __instance.Master.SetFloat("CompressorCutoff", hasHeadsetTemplate && !isNotHeadset ? template.CutoffFreq : 245f);
-            __instance.Master.SetFloat("CompressorLowpass", Plugin.CompressorLowpass);
-
-            __instance.Master.SetFloat("OcclusionVolume", hasHeadsetTemplate && !isNotHeadset ? template.CompressorAttack : 35f);
-            __instance.Master.SetFloat("CompressorHighFrequenciesGain",hasHeadsetTemplate && !isNotHeadset ? template.HighFrequenciesGain : 1f);
+            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorAttack, hasHeadsetTemplate && !isNotHeadset ? template.CompressorAttack : 35f);
+            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorGain, Plugin.CompressorGain);
+            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorRelease, hasHeadsetTemplate && !isNotHeadset ? template.CompressorRelease : 215f);
+            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorThreshold, hasHeadsetTemplate && !isNotHeadset ? template.CompressorTreshold : -20f);
+            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorDistortion, Plugin.CompressorDistortion);
+            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorResonance, Plugin.CompressorResonance);
+            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorCutoff, hasHeadsetTemplate && !isNotHeadset ? template.CutoffFreq : 245f);
+            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorLowpass, Plugin.CompressorLowpass);
+            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorHighFrequenciesGain, hasHeadsetTemplate && !isNotHeadset ? template.HighFrequenciesGain : 1f);
 
             //cursed BSG bull shit, best just replicate it
-            float vol;
-            float vol2;
-            __instance.Master.GetFloat("Tinnitus1", out vol);
-            __instance.Master.GetFloat("Tinnitus2", out vol2);
-            __instance.Master.SetFloat("Tinnitus1", vol);
-            __instance.Master.SetFloat("Tinnitus2", vol2);
-
+            __instance.Master.GetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, out float tin1);
+            __instance.Master.GetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, out float tin2);
+            __instance.Master.SetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, tin1);
+            __instance.Master.SetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, tin2);
 
             return false;
         }
@@ -354,7 +353,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance, Item weapon, GClass2870 shot)
+        private static void PatchPostfix(Player.FirearmController __instance, Item weapon, GClass2783 shot)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
 
@@ -420,7 +419,7 @@ namespace RealismMod
             Player player = Singleton<GameWorld>.Instance.AllAlivePlayersList[0];
             float distanceFromPlayer = Vector3.Distance(grenadePosition, player.Transform.position);
 
-            if (distanceFromPlayer <= 10f)
+            if (distanceFromPlayer <= 15f)
             {
                 Plugin.GrenadeExploded = true;
 

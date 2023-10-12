@@ -13,12 +13,10 @@ using System.Reflection;
 using UnityEngine;
 using static BaseBallistic;
 using static EFT.Player;
-using MovementContext = GClass1667;
-using ValueHandler = GClass765;
-
+using ValueHandler = GClass654;
+using SkillMovementStruct = EFT.SkillManager.GStruct213;
 namespace RealismMod
 {
-
     public static class MovementSpeedController
     {
         private static Dictionary<BaseBallistic.ESurfaceSound, float> SurfaceSpeedModifiers = new Dictionary<BaseBallistic.ESurfaceSound, float>()
@@ -117,7 +115,7 @@ namespace RealismMod
         private static bool Prefix(MovementContext __instance, float speed, ref float __result)
         {
 
-            Player player = (Player)AccessTools.Field(typeof(MovementContext), "player_0").GetValue(__instance);
+            Player player = (Player)AccessTools.Field(typeof(MovementContext), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 float slopeFactor = 1f;
@@ -143,17 +141,17 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player).GetMethod("CalculateMovementSurface", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Player).GetMethod("method_48", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
 
         [PatchPostfix]
-        private static void PatchPostfix(Player __instance, ref ValueTuple<bool, bool, BaseBallistic.ESurfaceSound?> __result)
+        private static void PatchPostfix(Player __instance, ref ValueTuple<bool, BaseBallistic.ESurfaceSound> __result)
         {
 
             if (__instance.IsYourPlayer == true)
             {
-                MovementSpeedController.CurrentSurface = __result.Item3 ?? BaseBallistic.ESurfaceSound.Concrete;
+                MovementSpeedController.CurrentSurface = __result.Item2;
             }
         }
     }
@@ -169,7 +167,7 @@ namespace RealismMod
         private static bool Prefix(MovementContext __instance, bool isAiming)
         {
             
-            Player player = (Player)AccessTools.Field(typeof(MovementContext), "player_0").GetValue(__instance);
+            Player player = (Player)AccessTools.Field(typeof(MovementContext), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 if (isAiming)
@@ -199,11 +197,11 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(MovementContext __instance, float deltaTime)
         {
-            Player player = (Player)AccessTools.Field(typeof(MovementContext), "player_0").GetValue(__instance);
+            Player player = (Player)AccessTools.Field(typeof(MovementContext), "_player").GetValue(__instance);
 
             if (player.IsYourPlayer == true)
             {
-                ValueHandler rotationFrameSpan = (ValueHandler)AccessTools.Field(typeof(MovementContext), "gclass765_0").GetValue(__instance);
+                ValueHandler rotationFrameSpan = (ValueHandler)AccessTools.Field(typeof(MovementContext), "_averageRotationX").GetValue(__instance);
 
                 float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
@@ -224,7 +222,6 @@ namespace RealismMod
                 float sprintInertia = Mathf.Max(EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(Mathf.Abs((float)rotationFrameSpan.Average)), EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(2.1474836E+09f) * (2f - player.Physical.Inertia));
                 speed = Mathf.Clamp(speed * sprintInertia, 0.1f, speed);
                 __instance.SprintSpeed = Mathf.Clamp(__instance.SprintSpeed + sprintAccel * Mathf.Sign(speed - __instance.SprintSpeed), 0.01f, speed);
-
                 return false;
             }
             return true;
@@ -249,7 +246,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref float __result, SkillsClass.GStruct211 movement, SkillsClass __instance)
+        private static bool Prefix(ref float __result, SkillMovementStruct movement, SkillManager __instance)
         {
             float xp = __instance.Settings.Endurance.SprintAction * (1f + __instance.Settings.Endurance.GainPerFatigueStack * movement.Fatigue);
             if (movement.Overweight <= 0f)
@@ -284,7 +281,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref float __result, SkillsClass.GStruct211 movement, SkillsClass __instance)
+        private static bool Prefix(ref float __result, SkillMovementStruct movement, SkillManager __instance)
         {
             float xp = __instance.Settings.Endurance.MovementAction * (1f + __instance.Settings.Endurance.GainPerFatigueStack * movement.Fatigue);
             if (movement.Overweight <= 0f)
@@ -304,7 +301,7 @@ namespace RealismMod
     {
         public static bool IsEnduraStrngthType(Type type)
         {
-            return type.GetField("skillsRelatedToHealth") != null && type.GetField("gclass1742_0") != null;
+            return type.GetField("skillsRelatedToHealth") != null && type.GetField("skillManager_0") != null;
         }
     }
 }

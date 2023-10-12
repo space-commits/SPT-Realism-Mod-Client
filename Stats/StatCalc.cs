@@ -6,7 +6,8 @@ using HarmonyLib.Tools;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static RealismMod.Utils;
+using ArmorTemplate = GClass2351; //to find again, search for HasHinge field
+
 namespace RealismMod
 {
     public static class StatCalc
@@ -60,7 +61,7 @@ namespace RealismMod
         {
             float reloadMulti = 1f;
             bool allowADS = true;
-            InventoryClass inventory = (InventoryClass)AccessTools.Property(typeof(Player), "Inventory").GetValue(player);
+            Inventory inventory = (Inventory)AccessTools.Property(typeof(Player), "Inventory").GetValue(player);
             preAllocatedArmorComponents.Clear();
             inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
 
@@ -73,7 +74,7 @@ namespace RealismMod
                     break;
                 }
                 reloadMulti *= GearProperties.ReloadSpeedMulti(armorComponent.Item);
-                GClass2442 armorTemplate = armorComponent.Template as GClass2442;
+                ArmorTemplate armorTemplate = armorComponent.Template as ArmorTemplate;
 
                 if (!GearProperties.AllowsADS(armorComponent.Item) && !armorTemplate.HasHinge)
                 {
@@ -696,15 +697,15 @@ namespace RealismMod
             }
             if (weapType == "pistol" || weapType == "bullpup")
             {
-                if (weapType == "pistol" && IsMount(mod))
+                if (weapType == "pistol" && Utils.IsMount(mod))
                 {
                     return "front";
                 }
-                if (IsStock(mod) || IsMagazine(mod))
+                if (Utils.IsStock(mod) || Utils.IsMagazine(mod))
                 {
                     return "rear";
                 }
-                if (IsUBGL(mod) || IsHandguard(mod) || IsGasblock(mod) || IsFlashHider(mod) || IsForegrip(mod) || IsMuzzleCombo(mod) || IsSilencer(mod) || IsTacticalCombo(mod) || IsFlashlight(mod) || IsBipod(mod) || IsBarrel(mod))
+                if (Utils.IsUBGL(mod) || Utils.IsHandguard(mod) || Utils.IsGasblock(mod) || Utils.IsFlashHider(mod) || Utils.IsForegrip(mod) || Utils.IsMuzzleCombo(mod) || Utils.IsSilencer(mod) || Utils.IsTacticalCombo(mod) || Utils.IsFlashlight(mod) || Utils.IsBipod(mod) || Utils.IsBarrel(mod))
                 {
                     return "front";
                 }
@@ -715,11 +716,11 @@ namespace RealismMod
             }
             else if (opType == "p90" || opType == "tubefed" || opType == "magForward")
             {
-                if (IsStock(mod))
+                if (Utils.IsStock(mod))
                 {
                     return "rear";
                 }
-                if (IsUBGL(mod) || IsMagazine(mod) || IsHandguard(mod) || IsGasblock(mod) || IsFlashHider(mod) || IsForegrip(mod) || IsMuzzleCombo(mod) || IsSilencer(mod) || IsTacticalCombo(mod) || IsFlashlight(mod) || IsBipod(mod) || IsBarrel(mod))
+                if (Utils.IsUBGL(mod) || Utils.IsMagazine(mod) || Utils.IsHandguard(mod) || Utils.IsGasblock(mod) || Utils.IsFlashHider(mod) || Utils.IsForegrip(mod) || Utils.IsMuzzleCombo(mod) || Utils.IsSilencer(mod) || Utils.IsTacticalCombo(mod) || Utils.IsFlashlight(mod) || Utils.IsBipod(mod) || Utils.IsBarrel(mod))
                 {
                     return "front";
                 }
@@ -730,11 +731,11 @@ namespace RealismMod
             }
             else
             {
-                if (IsStock(mod) || IsPistolGrip(mod))
+                if (Utils.IsStock(mod) || Utils.IsPistolGrip(mod))
                 {
                     return "rear";
                 }
-                if (IsUBGL(mod) || IsTacticalCombo(mod) || IsFlashlight(mod) || IsBipod(mod) || IsHandguard(mod) || IsGasblock(mod) || IsForegrip(mod) || IsMuzzleCombo(mod) || IsFlashHider(mod) || IsSilencer(mod) || IsBarrel(mod))
+                if (Utils.IsUBGL(mod) || Utils.IsTacticalCombo(mod) || Utils.IsFlashlight(mod) || Utils.IsBipod(mod) || Utils.IsHandguard(mod) || Utils.IsGasblock(mod) || Utils.IsForegrip(mod) || Utils.IsMuzzleCombo(mod) || Utils.IsFlashHider(mod) || Utils.IsSilencer(mod) || Utils.IsBarrel(mod))
                 {
                     return "front";
                 }
