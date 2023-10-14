@@ -264,7 +264,7 @@ namespace RealismMod
         {
             MeleeTimer += Time.deltaTime;
 
-            if (MeleeTimer >= 0.35f)
+            if (MeleeTimer >= 0.25f)
             {
                 DoResetMelee = false;
                 CanToggleMelee = true;
@@ -1230,7 +1230,7 @@ namespace RealismMod
 
                 StanceController.DoResetMelee = true;
                 StanceController.CanDoMeleeDetection = false;
-                StanceController.DoWiggleEffects(player, pwa, new Vector3(5, -5f, -70f), true);
+                StanceController.DoWiggleEffects(player, pwa, new Vector3(5, -5f, -75f), true);
                 stanceRotation = Quaternion.identity;
                 isResettingMelee = false;
                 hasResetMelee = true;
@@ -1251,7 +1251,6 @@ namespace RealismMod
             }
         }
 
-        private static bool needToReset = false;
         public static void DoWiggleEffects(Player player, ProceduralWeaponAnimation pwa, Vector3 wiggleDirection, bool playSound = false, float volume = 1f)
         {
             if (playSound)
@@ -1265,13 +1264,14 @@ namespace RealismMod
             }
         }
 
+        private static bool needToReset = false;
         private static Vector3 currentMountedPos = Vector3.zero;
         private static float timer = 0f;
         public static void DoMounting(ManualLogSource Logger, Player player, ProceduralWeaponAnimation pwa, FirearmController fc, ref Vector3 weaponWorldPos, ref Vector3 mountWeapPosition, float dt, Vector3 referencePos)
         {
             bool isMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
 
-            if (StanceController.IsMounting && (isMoving))
+            if (StanceController.IsMounting && isMoving)
             {
                 StanceController.IsMounting = false;
                 DoWiggleEffects(player, pwa, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
@@ -1287,7 +1287,7 @@ namespace RealismMod
                 DoWiggleEffects(player, pwa, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
 
                 float accuracy = fc.Item.GetTotalCenterOfImpact(false); //forces accuracy to update
-                AccessTools.Field(typeof(Player.FirearmController), "float_1").SetValue(fc, accuracy);
+                AccessTools.Field(typeof(Player.FirearmController), "float_2").SetValue(fc, accuracy);
             }
             if (Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && !StanceController.IsBracing && StanceController.IsMounting)
             {

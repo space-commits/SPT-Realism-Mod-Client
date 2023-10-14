@@ -9,18 +9,17 @@ using System.Text;
 using static EFT.Player;
 using UnityEngine;
 using Comfort.Common;
-using LightStruct = GStruct155;
-using PlayerInterface = GInterface113;
-using CastingClass = GClass570;
 using System.Linq;
 using EFT.Ballistics;
 using System.ComponentModel;
 using static RootMotion.FinalIK.AimPoser;
 using Random = System.Random;
+using LightStruct = GStruct155;
+using PlayerInterface = GInterface113;
+using CastingClass = GClass570;
 
 namespace RealismMod 
 {
-
     public class LaserLateUpdatePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -228,10 +227,11 @@ namespace RealismMod
                         RaycastHit[] raycastArr = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
                         Func<RaycastHit, bool> isHitIgnoreTest = (Func<RaycastHit, bool>)hitIgnoreField.GetValue(__instance);
                         Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
-                        Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(new Vector3(0f, WeaponProperties.HasBayonet ? -0.5f : -0.4f, 0f));
-                        Vector3 meleeDir = meleeStart - linecastDirection * ln;
-                        /*                        DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);
-                        */
+                        Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(new Vector3(0, -0.6f, 0.05f));
+                        Vector3 meleeDir = meleeStart - linecastDirection * (ln - (WeaponProperties.HasBayonet? 0.1f : 0.4f));
+/*
+                        DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);*/
+
                         EBodyPart hitPart = EBodyPart.Chest;
                         BallisticCollider hitBalls = null;
                         RaycastHit raycastHit;
@@ -290,7 +290,7 @@ namespace RealismMod
                             }
                             float vol = WeaponProperties.HasBayonet ? 12f : 25f;
                             Singleton<BetterAudio>.Instance.PlayDropItem(baseballComp.SurfaceSound, JsonType.EItemDropSoundType.Rifle, raycastHit.point, vol);
-                            StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, new Vector3(-10f, 10f, 0f), true, 2);
+                            StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, new Vector3(-10f, 10f, 0f), true, 1.5f);
                             player.Physical.ConsumeAsMelee(0.5f + (WeaponProperties.ErgoFactor / 100f));
                             StanceController.DidMelee = true;
                             return;
@@ -391,10 +391,12 @@ namespace RealismMod
 
     public class WeaponOverlappingPatch : ModulePatch
     {
+        private static FieldInfo playerField;
         private static FieldInfo weaponLnField;
 
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
             weaponLnField = AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn");
             return typeof(Player.FirearmController).GetMethod("WeaponOverlapping", BindingFlags.Instance | BindingFlags.Public);
         }
@@ -402,7 +404,7 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(Player.FirearmController __instance)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
 
             if (player.IsYourPlayer)
             {
@@ -420,12 +422,12 @@ namespace RealismMod
                 }
                 else 
                 {
-                    if ((StanceController.IsHighReady || StanceController.IsLowReady || StanceController.IsShortStock))
+                    if (StanceController.IsHighReady || StanceController.IsLowReady || StanceController.IsShortStock)
                     {
                         weaponLnField.SetValue(__instance, WeaponProperties.NewWeaponLength * 0.8f);
                         return;
                     }
-                    if ((StanceController.WasShortStock && Plugin.IsAiming) || StanceController.IsMeleeAttack)
+                    if (StanceController.WasShortStock && Plugin.IsAiming)
                     {
                         weaponLnField.SetValue(__instance, WeaponProperties.NewWeaponLength * 0.7f);
                         return;
@@ -467,7 +469,7 @@ namespace RealismMod
 
     public class ZeroAdjustmentsPatch : ModulePatch
     {
-        private static FieldInfo blindfireStrength;
+        private static FieldInfo blindfireStrengthField;
         private static FieldInfo blindfireRotationField;
         private static PropertyInfo overlappingBlindfireField;
         private static FieldInfo blindfirePositionField;
@@ -476,7 +478,7 @@ namespace RealismMod
 
         protected override MethodBase GetTargetMethod()
         {
-            blindfireStrength = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_blindfireStrength");
+            blindfireStrengthField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_blindfireStrength");
             blindfireRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_blindFireRotation");
             overlappingBlindfireField = AccessTools.Property(typeof(EFT.Animations.ProceduralWeaponAnimation), "Single_3");
             blindfirePositionField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_blindFirePosition");
@@ -510,7 +512,7 @@ namespace RealismMod
                     {
                         Plugin.IsBlindFiring = true;
                         float pitch = ((Mathf.Abs(__instance.Pitch) < 45f) ? 1f : ((90f - Mathf.Abs(__instance.Pitch)) / 45f));
-                        blindfireStrength.SetValue(__instance, pitch);
+                        blindfireStrengthField.SetValue(__instance, pitch);
                         blindfireRotationField.SetValue(__instance, ((blindFireBlendValue > 0f) ? (__instance.BlindFireRotation * blindFireAbs) : (__instance.SideFireRotation * blindFireAbs)));
                         targetPosition = ((blindFireBlendValue > 0f) ? (__instance.BlindFireOffset * blindFireAbs) : (__instance.SideFireOffset * blindFireAbs));
                         targetPosition += StanceController.StanceTargetPosition;
@@ -527,7 +529,7 @@ namespace RealismMod
                     if (stanceAbs > 0f)
                     {
                         float pitch = ((Mathf.Abs(__instance.Pitch) < 45f) ? 1f : ((90f - Mathf.Abs(__instance.Pitch)) / 45f));
-                        blindfireStrength.SetValue(__instance, pitch);
+                        blindfireStrengthField.SetValue(__instance, pitch);
                         targetPosition = StanceController.StanceTargetPosition * stanceAbs;
                         __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * targetPosition;
                         __instance.HandsContainer.HandsRotation.Zero = __instance.RotationZeroSum;

@@ -15,6 +15,7 @@ using static BaseBallistic;
 using static EFT.Player;
 using ValueHandler = GClass654;
 using SkillMovementStruct = EFT.SkillManager.GStruct213;
+
 namespace RealismMod
 {
     public static class MovementSpeedController
