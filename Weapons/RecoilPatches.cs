@@ -275,7 +275,7 @@ namespace RealismMod
                 Vector3 separateIntensityFactors = (Vector3)intensityFactorsField.GetValue(__instance);
                 SkillManager.GClass1638 buffInfo = (SkillManager.GClass1638)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
 
-                str = str > 1 ? str * 1.2f : str;
+                str = str > 1 ? str * 1.1f : str;
 
                 float totalPlayerWeight = PlayerProperties.TotalUnmodifiedWeight - WeaponProperties.TotalWeaponWeight;
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 550f);
@@ -339,7 +339,7 @@ namespace RealismMod
                     int num = rnd.Next(1, 10);
                     if (num <= Mathf.Min(1 + (0.05f * shiftRecoilFactor * chanceFactor), 8))
                     {
-                        float offsetFactor = (Plugin.ScopeAccuracyFactor - 1f) * (0.0025f * shiftRecoilFactor);
+                        float offsetFactor = (Plugin.ScopeAccuracyFactor - 1f) * (0.0027f * shiftRecoilFactor);
                         float offsetX = Random.Range(-offsetFactor, offsetFactor);
                         float offsetY = Random.Range(-offsetFactor, offsetFactor);
                         Plugin.ZeroRecoilOffset = new Vector2(offsetX, offsetY);

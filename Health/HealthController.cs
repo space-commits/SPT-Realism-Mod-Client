@@ -1023,7 +1023,6 @@ namespace RealismMod
             Type fractureType;
             MedProperties.EffectTypes.TryGetValue("BrokenBone", out fractureType);
 
-            //not doing this loop correctly, I am resetting all these values per loop....
             foreach (EBodyPart part in BodyParts) 
             {
                 IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(part);
@@ -1065,7 +1064,6 @@ namespace RealismMod
                 {
                     RealismHealthController.PainStrength += 5;
                 }
-
     
                 if (isLeg || isBody) 
                 {
@@ -1088,8 +1086,6 @@ namespace RealismMod
                         PlayerProperties.RightArmRuined = isArmRuined;
                     }
 
-                    //this makes no sense, loop is per body part so possible that both arms are blacked but loop hasn't done both arms yet. Though this check does happen per tick so it'll sort of still work due to
-                    //global property ArmRuined
 /*                    float ruinedFactor = PlayerProperties.LeftArmRuined ? 0.8f : PlayerProperties.RightArmRuined ? 0.9f : PlayerProperties.LeftArmRuined && PlayerProperties.RightArmRuined ? 0.7f : 1f;
 */                  float armFractureFactor = isLeftArm && hasFracture ? 0.8f : isRightArm && hasFracture ? 0.9f : 1f;
 

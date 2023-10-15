@@ -187,7 +187,7 @@ namespace RealismMod
 
                     if (__instance.CurrentAimingMod != null) 
                     {
-                        Plugin.Parralax = 0.04f * Plugin.ScopeAccuracyFactor;
+                        Plugin.Parralax = Plugin.IsOptic ? 0.04f * Plugin.ScopeAccuracyFactor : 0.045f * Plugin.ScopeAccuracyFactor;
                         string id = (__instance.CurrentAimingMod?.Item?.Id != null) ? __instance.CurrentAimingMod.Item.Id : "";
                         Plugin.ScopeID = id;
                         if (id != null)
@@ -370,6 +370,7 @@ namespace RealismMod
                 float factor = distance / 25f; //need to find default zero
                 Vector3 recoilOffset = new Vector3(Plugin.ZeroRecoilOffset.x * factor, Plugin.ZeroRecoilOffset.y * factor);
                 Vector3 target = point + new Vector3(Plugin.MouseRotation.x * factor * -Plugin.Parralax, Plugin.MouseRotation.y * factor * Plugin.Parralax, 0f);
+                target = Utils.YourPlayer.MovementContext.CurrentState.Name == EPlayerState.Sidestep ? point : target;
                 point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
             }
         }
@@ -404,6 +405,7 @@ namespace RealismMod
                 float factor = distance / 50f; //need to find default zero
                 Vector3 recoilOffset = new Vector3(Plugin.ZeroRecoilOffset.x * factor, Plugin.ZeroRecoilOffset.y * factor);
                 Vector3 target = point + new Vector3(Plugin.MouseRotation.x * factor * -Plugin.Parralax, Plugin.MouseRotation.y * factor * Plugin.Parralax, 0f);
+                target = Utils.YourPlayer.MovementContext.CurrentState.Name == EPlayerState.Sidestep ? point : target;
                 point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
             }
         }
