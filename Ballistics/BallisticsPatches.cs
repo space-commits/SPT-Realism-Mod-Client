@@ -22,7 +22,7 @@ using EFT.Interactive;
 using static System.Net.Mime.MediaTypeNames;
 using static EFT.Player;
 using static Val;
-using ShotClass = GClass2783;
+using ShotClass = GClass2784;
 
 namespace RealismMod
 {

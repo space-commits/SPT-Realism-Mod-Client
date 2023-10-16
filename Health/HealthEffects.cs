@@ -7,8 +7,8 @@ using static Systems.Effects.Effects;
 using UnityEngine;
 using System.Linq;
 using BepInEx.Logging;
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2233;
-using ExistanceClass = GClass2274;
+using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2234;
+using ExistanceClass = GClass2275;
 
 namespace RealismMod
 {

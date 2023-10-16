@@ -18,6 +18,7 @@ using static EFT.Player;
 using System.ComponentModel;
 using static EFT.ClientPlayer;
 using PlayerInterface = GInterface113;
+using WeaponSkillsClass = EFT.SkillManager.GClass1638;
 
 namespace RealismMod
 {
@@ -43,7 +44,7 @@ namespace RealismMod
                     float totalPlayerWeight = PlayerProperties.TotalModifiedWeightMinusWeapon;
                     float playerWeightFactor = 1f - (totalPlayerWeight / 150f);
 
-                    SkillManager.GClass1638 skillsClass = (SkillManager.GClass1638)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_buffInfo").GetValue(__instance);
+                    WeaponSkillsClass skillsClass = (WeaponSkillsClass)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_buffInfo").GetValue(__instance);
                     Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayBlender").GetValue(__instance);
 
                     float singleItemTotalWeight = weapon.GetSingleItemTotalWeight();
@@ -124,7 +125,7 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(__instance, newAimSpeed); //aimspeed
                     float aimingSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").GetValue(__instance); //aimspeed
 
-                    Plugin.IsOptic = __instance.CurrentScope.IsOptic ? true : false;
+                    Plugin.HasOptic = __instance.CurrentScope.IsOptic ? true : false;
 
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_ergonomicWeight").SetValue(__instance, ergoWeight); 
@@ -187,7 +188,7 @@ namespace RealismMod
 
                     if (__instance.CurrentAimingMod != null) 
                     {
-                        Plugin.Parralax = Plugin.IsOptic ? 0.04f * Plugin.ScopeAccuracyFactor : 0.045f * Plugin.ScopeAccuracyFactor;
+                        Plugin.Parralax = Plugin.HasOptic ? 0.04f * Plugin.ScopeAccuracyFactor : 0.045f * Plugin.ScopeAccuracyFactor;
                         string id = (__instance.CurrentAimingMod?.Item?.Id != null) ? __instance.CurrentAimingMod.Item.Id : "";
                         Plugin.ScopeID = id;
                         if (id != null)

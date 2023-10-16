@@ -11,7 +11,8 @@ using UnityEngine.UI;
 using EFT;
 using BepInEx.Logging;
 using System.IO;
-using StatAttributeClass = GClass2562;
+using StatAttributeClass = GClass2563;
+using BarrelTemplateClass = GClass2394;
 
 namespace RealismMod
 {
@@ -376,11 +377,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(BarrelModClass).GetConstructor(new Type[] { typeof(string), typeof(GClass2393) });
+            return typeof(BarrelModClass).GetConstructor(new Type[] { typeof(string), typeof(BarrelTemplateClass) });
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(BarrelModClass __instance, GClass2393 template)
+        private static void PatchPostfix(BarrelModClass __instance, BarrelTemplateClass template)
         {
             float shotDisp = (template.ShotgunDispersion - 1f) * 100f;
 

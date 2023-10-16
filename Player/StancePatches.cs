@@ -17,6 +17,8 @@ using Random = System.Random;
 using LightStruct = GStruct155;
 using PlayerInterface = GInterface113;
 using CastingClass = GClass570;
+using HackShotResult = GClass1560;
+using CollisionLayerClass = GClass2783;
 
 namespace RealismMod 
 {
@@ -235,7 +237,7 @@ namespace RealismMod
                         EBodyPart hitPart = EBodyPart.Chest;
                         BallisticCollider hitBalls = null;
                         RaycastHit raycastHit;
-                        if (CastingClass.Linecast(meleeStart, meleeDir, out raycastHit, GClass2782.HitMask, false, raycastArr, isHitIgnoreTest))
+                        if (CastingClass.Linecast(meleeStart, meleeDir, out raycastHit, CollisionLayerClass.HitMask, false, raycastArr, isHitIgnoreTest))
                         {
                             Collider col = raycastHit.collider;
                             BaseBallistic baseballComp = col.GetComponent<BaseBallistic>();
@@ -286,7 +288,7 @@ namespace RealismMod
                                     IsForwardHit = true,
                                     StaminaBurnRate = 5f
                                 };
-                                GClass1560 result = Singleton<GameWorld>.Instance.HackShot(damageInfo);
+                                HackShotResult result = Singleton<GameWorld>.Instance.HackShot(damageInfo);
                             }
                             float vol = WeaponProperties.HasBayonet ? 12f : 25f;
                             Singleton<BetterAudio>.Instance.PlayDropItem(baseballComp.SurfaceSound, JsonType.EItemDropSoundType.Rifle, raycastHit.point, vol);

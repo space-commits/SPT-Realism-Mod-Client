@@ -24,13 +24,14 @@ using static CW2.Animations.PhysicsSimulator.Val;
 using static EFT.Player;
 using static RealismMod.Attributes;
 using static Systems.Effects.Effects;
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2233;
-using ExistanceClass = GClass2274;
+using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2234;
+using ExistanceClass = GClass2275;
 using StamController = GClass603;
 using MedkitTemplate = GInterface249;
 
 namespace RealismMod
 {
+
 
     public class MedkitConstructorPatch : ModulePatch
     {
@@ -198,7 +199,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(EFT.Player __instance, EBoundItem quickSlot)
         {
-            InventoryControllerClass inventoryCont = (InventoryControllerClass)AccessTools.Property(typeof(EFT.Player), "GClass2571_0").GetValue(__instance);
+            InventoryControllerClass inventoryCont = (InventoryControllerClass)AccessTools.Property(typeof(EFT.Player), Utils.SetQuickSlotItemInvClassRef).GetValue(__instance);
             Item boundItem = inventoryCont.Inventory.FastAccess.GetBoundItem(quickSlot);
             FoodClass food = boundItem as FoodClass;
             if (boundItem != null && (food = (boundItem as FoodClass)) != null)
@@ -287,7 +288,7 @@ namespace RealismMod
         private static bool Prefix(StamController __instance, float baseValue, ref float __result)
         {
             float[] float_7 = (float[])AccessTools.Field(typeof(StamController), "float_7").GetValue(__instance);
-            StamController.EPose epose_0 = (StamController.EPose)AccessTools.Field(typeof(GClass603), "epose_0").GetValue(__instance);
+            StamController.EPose epose_0 = (StamController.EPose)AccessTools.Field(typeof(StamController), "epose_0").GetValue(__instance);
             Player player_0 = (Player)AccessTools.Field(typeof(StamController), "player_0").GetValue(__instance);
             float Single_0 = (float)AccessTools.Property(typeof(StamController), "Single_0").GetValue(__instance);
 

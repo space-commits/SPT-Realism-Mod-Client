@@ -351,7 +351,7 @@ namespace RealismMod
         public static CC_FastVignette Vignette;
         public static PrismEffects PrismEffects;
 
-        public static bool IsOptic = false;
+        public static bool HasOptic = false;
 
         public static float healthControllerTick = 0f;
 

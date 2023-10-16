@@ -18,8 +18,8 @@ using static CW2.Animations.PhysicsSimulator.Val;
 using EFT.Interactive;
 using System.Threading.Tasks;
 using Systems.Effects;
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2233;
-using ExistanceClass = GClass2274;
+using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2234;
+using ExistanceClass = GClass2275;
 
 namespace RealismMod
 {

@@ -12,6 +12,7 @@ using EFT.Interactive;
 using System.Linq;
 using IWeapon = GInterface273;
 using PlayerInterface = GInterface113;
+using WeaponSkillsClass = EFT.SkillManager.GClass1638;
 
 namespace RealismMod
 {
@@ -186,7 +187,7 @@ namespace RealismMod
             if (_weapon.Item.Owner.ID.StartsWith("pmc") || _weapon.Item.Owner.ID.StartsWith("scav"))
             {
 
-                SkillManager.GClass1638 buffInfo = (SkillManager.GClass1638)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
+                WeaponSkillsClass buffInfo = (WeaponSkillsClass)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
                 WeaponTemplate template = _weapon.WeaponTemplate;
 
                 float vRecoilDelta;
@@ -273,7 +274,7 @@ namespace RealismMod
             {
                 Weapon weaponClass = (Weapon)weaponClassField.GetValue(__instance);
                 Vector3 separateIntensityFactors = (Vector3)intensityFactorsField.GetValue(__instance);
-                SkillManager.GClass1638 buffInfo = (SkillManager.GClass1638)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
+                WeaponSkillsClass buffInfo = (WeaponSkillsClass)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
 
                 str = str > 1 ? str * 1.1f : str;
 
@@ -315,7 +316,7 @@ namespace RealismMod
                 RecoilController.FactoredTotalHRecoil = totalHorizontalRecoil;
 
                 float fovFactor = (Singleton<SharedGameSettingsClass>.Instance.Game.Settings.FieldOfView / 70f) * Plugin.HRecLimitMulti.Value;
-                float opticLimit = Plugin.IsAiming && Plugin.IsOptic ? 15f * fovFactor : 25f * fovFactor;
+                float opticLimit = Plugin.IsAiming && Plugin.HasOptic ? 15f * fovFactor : 25f * fovFactor;
                 totalHorizontalRecoil = Mathf.Min(totalHorizontalRecoil * fovFactor, opticLimit); //put it after setting factored so that visual recoil isn't affected
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(totalDispersion) * totalVerticalRecoil * poseIntensityFactors.x, Mathf.Cos(totalDispersion) * totalVerticalRecoil * poseIntensityFactors.y, totalHorizontalRecoil * poseIntensityFactors.z) * __instance.Intensity;
                 Vector2 heatDirection = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
