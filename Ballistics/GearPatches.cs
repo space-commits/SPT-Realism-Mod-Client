@@ -10,13 +10,13 @@ using System.Runtime.CompilerServices;
 using Comfort.Common;
 using static RealismMod.Attributes;
 using UnityEngine;
-using BPConstructor = GClass2495;
-using BPTemplate = GClass2401;
-using RigConstructor = GClass2496;
-using RigTemplate = GClass2402;
-using HeadsetClass = GClass2450;
-using HeadsetTemplate = GClass2356;
-using ArmorComptemplate = GInterface233;
+using BPConstructor = GClass2496;
+using BPTemplate = GClass2402;
+using RigConstructor = GClass2497;
+using RigTemplate = GClass2403;
+using HeadsetClass = GClass2451;
+using HeadsetTemplate = GClass2357;
+using ArmorCompTemplate = GInterface233;
 
 namespace RealismMod
 {
@@ -25,7 +25,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(BPConstructor).GetConstructor(new Type[] { typeof(string), typeof(GClass2401) });
+            return typeof(BPConstructor).GetConstructor(new Type[] { typeof(string), typeof(BPTemplate) });
         }
 
         [PatchPostfix]
@@ -301,7 +301,7 @@ namespace RealismMod
 
             protected override MethodBase GetTargetMethod()
             {
-                return typeof(EFT.InventoryLogic.ArmorComponent).GetConstructor(new Type[] { typeof(Item), typeof(ArmorComptemplate), typeof(RepairableComponent), typeof(BuffComponent) });
+                return typeof(EFT.InventoryLogic.ArmorComponent).GetConstructor(new Type[] { typeof(Item), typeof(ArmorCompTemplate), typeof(RepairableComponent), typeof(BuffComponent) });
             }
 
 

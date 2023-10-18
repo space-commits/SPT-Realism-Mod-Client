@@ -191,7 +191,7 @@ namespace RealismMod
 
         public static float FoldedDispersionFactor = 1.55f;
 
-        public static float FoldedRecoilAngleFactor = 1.35f;
+        public static float FoldedRecoilAngleFactor = 1.15f;
 
         public static float ErgoStatFactor = 7f;
 

@@ -11,6 +11,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using WeaponSkills = EFT.SkillManager.GClass1638;
+using ProcessorClass = GClass2039;
+using StaminaLevelClass = GClass674<float>;
+using WeightClass = GClass675<float>;
 
 namespace RealismMod
 {
@@ -27,7 +31,7 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer)
             {
-                SkillManager.GClass1638 weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
+                WeaponSkills weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
                 PlayerProperties.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
                 PlayerProperties.ReloadSkillMulti = Mathf.Max(1, ((weaponInfo.ReloadSpeed - 1f) * 0.5f) + 1f);
                 PlayerProperties.FixSkillMulti = weaponInfo.FixSpeed;
@@ -51,7 +55,7 @@ namespace RealismMod
             this.player = Utils.GetPlayer();
             InventoryControllerClass invController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
             this.invClass = invController.Inventory;
-            invController.Inventory.TotalWeight = new GClass675<float>(new Func<float>(calcWeightPenalties));
+            invController.Inventory.TotalWeight = new WeightClass(new Func<float>(calcWeightPenalties));
         }
 
         private float calcWeightPenalties()
@@ -182,7 +186,7 @@ namespace RealismMod
 
         [PatchPrefix]
         private static bool PatchPrefix(BreathEffector __instance, float deltaTime, float ____breathIntensity, float ____shakeIntensity, float ____breathFrequency, 
-        float ____cameraSensetivity, Vector2 ____baseHipRandomAmplitudes, Spring ____recoilRotationSpring, Spring ____handsRotationSpring, AnimationCurve ____lackOfOxygenStrength, GClass2038[] ____processors)
+        float ____cameraSensetivity, Vector2 ____baseHipRandomAmplitudes, Spring ____recoilRotationSpring, Spring ____handsRotationSpring, AnimationCurve ____lackOfOxygenStrength, ProcessorClass[] ____processors)
         {
             float amplGain = Mathf.Sqrt(__instance.AmplitudeGain.Value);
             __instance.HipXRandom.Amplitude = Mathf.Clamp(____baseHipRandomAmplitudes.x + amplGain, 0f, 3f);
@@ -213,7 +217,7 @@ namespace RealismMod
                 ____cameraSensetivity = Mathf.Lerp(2f, 0f, t) * __instance.Intensity;
             }
 
-            GClass674<float> staminaLevel = __instance.StaminaLevel;
+            StaminaLevelClass staminaLevel = __instance.StaminaLevel;
             __instance.YRandom.Amplitude = __instance.BreathParams.AmplitudeCurve.Evaluate(staminaLevel);
             float stamFactor = __instance.BreathParams.Delay.Evaluate(staminaLevel);
             __instance.XRandom.MinMaxDelay = (__instance.YRandom.MinMaxDelay = new Vector2(stamFactor / 2f, stamFactor));

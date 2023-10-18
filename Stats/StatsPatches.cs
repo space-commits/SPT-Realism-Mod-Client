@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static EFT.Player;
 using System.Linq;
+using WeaponSkills = EFT.SkillManager.GClass1638;
 
 namespace RealismMod
 {
@@ -80,7 +81,7 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                SkillManager.GClass1638 skillsClass = (SkillManager.GClass1638)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1638_0").GetValue(__instance);
+                WeaponSkills skillsClass = (WeaponSkills)AccessTools.Field(typeof(EFT.Player.FirearmController), Utils.FirearmControllerSkillClassRef).GetValue(__instance);
                 __result = Mathf.Max(0f, __instance.Item.ErgonomicsTotal * (1f + skillsClass.DeltaErgonomics + player.ErgonomicsPenalty));
                 return false;
             }

@@ -9,8 +9,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-
-
 namespace RealismMod
 {
     public static class AimController 
@@ -26,10 +24,13 @@ namespace RealismMod
                 bool isAiming = (bool)AccessTools.Field(typeof(EFT.Player.FirearmController), "_isAiming").GetValue(fc);
                 FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
                 NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
+                ThermalVisionComponent thermComponent = player.ThermalVisionObserver.Component;
                 bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
                 bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
+                bool thermalIsOn = thermComponent != null && (thermComponent.Togglable == null || thermComponent.Togglable.On);
                 bool gearBlocksADS = Plugin.EnableFSPatch.Value && fsIsON && (!WeaponProperties.WeaponCanFSADS && (!GearProperties.AllowsADS(fsComponent.Item) || !PlayerProperties.GearAllowsADS));
-                if (Plugin.ModConfig.recoil_attachment_overhaul && ((Plugin.EnableNVGPatch.Value && nvgIsOn && Plugin.IsOptic) || gearBlocksADS || StanceController.IsMeleeAttack))
+                bool visionDeviceBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && Plugin.HasOptic) || thermalIsOn);
+                if (Plugin.ModConfig.recoil_attachment_overhaul && (visionDeviceBlocksADS || gearBlocksADS))
                 {
                     if (!hasSetCanAds)
                     {

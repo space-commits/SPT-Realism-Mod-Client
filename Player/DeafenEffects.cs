@@ -13,9 +13,12 @@ using Aki.Reflection.Utils;
 using UnityEngine.Rendering.PostProcessing;
 using static EFT.Interactive.BetterPropagationGroups;
 using BepInEx.Logging;
-using HeadsetClass = GClass2450;
-using HeadsetTemplate = GClass2356;
+using HeadsetClass = GClass2451;
+using HeadsetTemplate = GClass2357;
 using IWeapon = GInterface273;
+using CompressorClass = GClass2718;
+using CompressorTemplateClass = GClass2705;
+using ShotClass = GClass2784;
 
 namespace RealismMod
 {
@@ -272,7 +275,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(HeadsetTemplate template, BetterAudio __instance)
         {
-            GClass2717.CreateEvent<GClass2704>().Invoke(template);
+            CompressorClass.CreateEvent<CompressorTemplateClass>().Invoke(template);
 
             bool hasHeadsetTemplate = template != null;
             bool isNotHeadset = template?._id == null; //using both bools is redundant now.
@@ -353,7 +356,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance, Item weapon, GClass2783 shot)
+        private static void PatchPostfix(Player.FirearmController __instance, Item weapon, ShotClass shot)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
 

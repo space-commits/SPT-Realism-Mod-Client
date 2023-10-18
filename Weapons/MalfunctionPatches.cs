@@ -12,7 +12,9 @@ using System.Reflection;
 using UnityEngine;
 using MalfGlobals = BackendConfigSettingsClass.GClass1265;
 using OverheatGlobals = BackendConfigSettingsClass.GClass1266;
-
+using KnowMalfClass = EFT.InventoryLogic.Weapon.GClass2553;
+using MalfStateClass = GClass646<EFT.InventoryLogic.Weapon.EMalfunctionState>;
+using MalfStateStruct = GClass646<EFT.InventoryLogic.Weapon.EMalfunctionState>.GStruct42<float, EFT.InventoryLogic.Weapon.EMalfunctionState>;
 namespace RealismMod
 {
 
@@ -23,7 +25,7 @@ namespace RealismMod
             return typeof(Player.FirearmController).GetMethod("GetSpecificMalfunctionVariants", BindingFlags.Instance | BindingFlags.Public);
         }
         [PatchPrefix]
-        private static bool Prefix(Player.FirearmController __instance, List<GClass646<Weapon.EMalfunctionState>.GStruct42<float, Weapon.EMalfunctionState>> result, BulletClass ammo, Weapon.EMalfunctionSource malfunctionSource, float weaponDurability, bool hasAmmoInMag, bool isMagazineInserted, bool shouldCheckJam)
+        private static bool Prefix(Player.FirearmController __instance, List<MalfStateStruct> result, BulletClass ammo, Weapon.EMalfunctionSource malfunctionSource, float weaponDurability, bool hasAmmoInMag, bool isMagazineInserted, bool shouldCheckJam)
         {
             result.Clear();
             MalfGlobals malfunction = Singleton<BackendConfigSettingsClass>.Instance.Malfunction;
@@ -32,28 +34,28 @@ namespace RealismMod
                 case Weapon.EMalfunctionSource.Durability:
                     if (weaponDurability >= 80f && hasAmmoInMag && isMagazineInserted && __instance.Item.AllowFeed)
                     {
-                        result.Add(new GClass646<Weapon.EMalfunctionState>.GStruct42<float, Weapon.EMalfunctionState>(malfunction.DurFeedWt, Weapon.EMalfunctionState.Feed));
+                        result.Add(new MalfStateStruct(malfunction.DurFeedWt, Weapon.EMalfunctionState.Feed));
                         return false;
                     }
                     if (weaponDurability >= 50f && hasAmmoInMag && __instance.Item.AllowSlide)
                     {
-                        result.Add(new GClass646<Weapon.EMalfunctionState>.GStruct42<float, Weapon.EMalfunctionState>(malfunction.DurSoftSlideWt, Weapon.EMalfunctionState.SoftSlide));
+                        result.Add(new MalfStateStruct(malfunction.DurSoftSlideWt, Weapon.EMalfunctionState.SoftSlide));
                         return false;
                     }
                     if (weaponDurability < 50f && hasAmmoInMag && __instance.Item.AllowSlide)
                     {
                         float hardSlideWeight = Mathf.Lerp(malfunction.DurHardSlideMinWt, malfunction.DurHardSlideMaxWt, 1f - weaponDurability / 5f);
-                        result.Add(new GClass646<Weapon.EMalfunctionState>.GStruct42<float, Weapon.EMalfunctionState>(hardSlideWeight, Weapon.EMalfunctionState.HardSlide));
+                        result.Add(new MalfStateStruct(hardSlideWeight, Weapon.EMalfunctionState.HardSlide));
                         return false;
                     }
                     if (shouldCheckJam && __instance.Item.AllowJam)
                     {
-                        result.Add(new GClass646<Weapon.EMalfunctionState>.GStruct42<float, Weapon.EMalfunctionState>(malfunction.DurJamWt, Weapon.EMalfunctionState.Jam));
+                        result.Add(new MalfStateStruct(malfunction.DurJamWt, Weapon.EMalfunctionState.Jam));
                         return false;
                     }
                     if (__instance.Item.AllowMisfire)
                     {
-                        result.Add(new GClass646<Weapon.EMalfunctionState>.GStruct42<float, Weapon.EMalfunctionState>(malfunction.DurMisfireWt, Weapon.EMalfunctionState.Misfire));
+                        result.Add(new MalfStateStruct(malfunction.DurMisfireWt, Weapon.EMalfunctionState.Misfire));
                         return false;
                     }
                     break;
@@ -61,29 +63,29 @@ namespace RealismMod
                     if (__instance.Item.AllowMisfire)
                     {
                         float ammoWeight = malfunction.AmmoMisfireWt / (ammo.MalfMisfireChance + ammo.MalfFeedChance);
-                        result.Add(new GClass646<Weapon.EMalfunctionState>.GStruct42<float, Weapon.EMalfunctionState>(ammoWeight, Weapon.EMalfunctionState.Misfire));
+                        result.Add(new MalfStateStruct(ammoWeight, Weapon.EMalfunctionState.Misfire));
                         return false;
                     }
                     if (shouldCheckJam && __instance.Item.AllowJam)
                     {
-                        result.Add(new GClass646<Weapon.EMalfunctionState>.GStruct42<float, Weapon.EMalfunctionState>(malfunction.AmmoJamWt, Weapon.EMalfunctionState.Jam));
+                        result.Add(new MalfStateStruct(malfunction.AmmoJamWt, Weapon.EMalfunctionState.Jam));
                         return false;
                     }
                     if (hasAmmoInMag && isMagazineInserted && __instance.Item.AllowFeed)
                     {
-                        result.Add(new GClass646<Weapon.EMalfunctionState>.GStruct42<float, Weapon.EMalfunctionState>(malfunction.AmmoFeedWt, Weapon.EMalfunctionState.Feed));
+                        result.Add(new MalfStateStruct(malfunction.AmmoFeedWt, Weapon.EMalfunctionState.Feed));
                         return false;
                     }
                     break;
                 case Weapon.EMalfunctionSource.Magazine:
                     if (hasAmmoInMag && isMagazineInserted && __instance.Item.AllowFeed)
                     {
-                        result.Add(new GClass646<Weapon.EMalfunctionState>.GStruct42<float, Weapon.EMalfunctionState>(1f, Weapon.EMalfunctionState.Feed));
+                        result.Add(new MalfStateStruct(1f, Weapon.EMalfunctionState.Feed));
                         return false;
                     }
                     if (hasAmmoInMag && isMagazineInserted && __instance.Item.AllowJam)
                     {
-                        result.Add(new GClass646<Weapon.EMalfunctionState>.GStruct42<float, Weapon.EMalfunctionState>(1f, Weapon.EMalfunctionState.Jam));
+                        result.Add(new MalfStateStruct(1f, Weapon.EMalfunctionState.Jam));
                         return false;
                     }
                     break;
@@ -92,12 +94,12 @@ namespace RealismMod
                 case Weapon.EMalfunctionSource.Overheat:
                     if (hasAmmoInMag && __instance.Item.AllowSlide)
                     {
-                        result.Add(new GClass646<Weapon.EMalfunctionState>.GStruct42<float, Weapon.EMalfunctionState>(malfunction.OverheatSoftSlideWt, Weapon.EMalfunctionState.SoftSlide));
+                        result.Add(new MalfStateStruct(malfunction.OverheatSoftSlideWt, Weapon.EMalfunctionState.SoftSlide));
                     }
                     if (weaponDurability <= 50f && hasAmmoInMag && __instance.Item.AllowSlide)
                     {
                         float heatMalfWeight = Mathf.Lerp(malfunction.OverheatHardSlideMinWt, malfunction.OverheatHardSlideMaxWt, 1f - weaponDurability / 5f);
-                        result.Add(new GClass646<Weapon.EMalfunctionState>.GStruct42<float, Weapon.EMalfunctionState>(heatMalfWeight, Weapon.EMalfunctionState.HardSlide));
+                        result.Add(new MalfStateStruct(heatMalfWeight, Weapon.EMalfunctionState.HardSlide));
                         return false;
                     }
                     break;
@@ -292,8 +294,9 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon.GClass2552).GetMethod("IsKnownMalfType", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(KnowMalfClass).GetMethod("IsKnownMalfType", BindingFlags.Instance | BindingFlags.Public);
         }
+
         [PatchPostfix]
         private static void PatchPostfix(ref bool __result)
         {

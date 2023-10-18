@@ -18,6 +18,7 @@ using static EFT.Player;
 using System.ComponentModel;
 using static EFT.ClientPlayer;
 using PlayerInterface = GInterface113;
+using WeaponSkillsClass = EFT.SkillManager.GClass1638;
 
 namespace RealismMod
 {
@@ -43,7 +44,7 @@ namespace RealismMod
                     float totalPlayerWeight = PlayerProperties.TotalModifiedWeightMinusWeapon;
                     float playerWeightFactor = 1f - (totalPlayerWeight / 150f);
 
-                    SkillManager.GClass1638 skillsClass = (SkillManager.GClass1638)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_buffInfo").GetValue(__instance);
+                    WeaponSkillsClass skillsClass = (WeaponSkillsClass)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_buffInfo").GetValue(__instance);
                     Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayBlender").GetValue(__instance);
 
                     float singleItemTotalWeight = weapon.GetSingleItemTotalWeight();
@@ -124,7 +125,7 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(__instance, newAimSpeed); //aimspeed
                     float aimingSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").GetValue(__instance); //aimspeed
 
-                    Plugin.IsOptic = __instance.CurrentScope.IsOptic ? true : false;
+                    Plugin.HasOptic = __instance.CurrentScope.IsOptic ? true : false;
 
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_ergonomicWeight").SetValue(__instance, ergoWeight); 
@@ -187,7 +188,7 @@ namespace RealismMod
 
                     if (__instance.CurrentAimingMod != null) 
                     {
-                        Plugin.Parralax = 0.04f * Plugin.ScopeAccuracyFactor;
+                        Plugin.Parralax = Plugin.HasOptic ? 0.04f * Plugin.ScopeAccuracyFactor : 0.045f * Plugin.ScopeAccuracyFactor;
                         string id = (__instance.CurrentAimingMod?.Item?.Id != null) ? __instance.CurrentAimingMod.Item.Id : "";
                         Plugin.ScopeID = id;
                         if (id != null)
@@ -261,7 +262,7 @@ namespace RealismMod
                     float aimIntensity = noShoulderContact ? Plugin.SwayIntensity.Value * 0.95f : Plugin.SwayIntensity.Value * 0.57f;
 
                     float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate(ergoWeight * weightFactor);//delay from moving mouse to the weapon moving to center of screen.
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_displacementStr").SetValue(__instance, -(weapDisplacement * weightFactor * displacementModifier * playerWeightFactor));
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_displacementStr").SetValue(__instance, weapDisplacement * weightFactor * displacementModifier * playerWeightFactor);
 
                     float swayStrength = EFTHardSettings.Instance.SWAY_STRENGTH_PER_KG.Evaluate(ergoWeight * weightFactor * playerWeightFactor);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_swayStrength").SetValue(__instance, swayStrength);
@@ -370,6 +371,7 @@ namespace RealismMod
                 float factor = distance / 25f; //need to find default zero
                 Vector3 recoilOffset = new Vector3(Plugin.ZeroRecoilOffset.x * factor, Plugin.ZeroRecoilOffset.y * factor);
                 Vector3 target = point + new Vector3(Plugin.MouseRotation.x * factor * -Plugin.Parralax, Plugin.MouseRotation.y * factor * Plugin.Parralax, 0f);
+                target = Utils.YourPlayer.MovementContext.CurrentState.Name == EPlayerState.Sidestep ? point : target;
                 point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
             }
         }
@@ -404,6 +406,7 @@ namespace RealismMod
                 float factor = distance / 50f; //need to find default zero
                 Vector3 recoilOffset = new Vector3(Plugin.ZeroRecoilOffset.x * factor, Plugin.ZeroRecoilOffset.y * factor);
                 Vector3 target = point + new Vector3(Plugin.MouseRotation.x * factor * -Plugin.Parralax, Plugin.MouseRotation.y * factor * Plugin.Parralax, 0f);
+                target = Utils.YourPlayer.MovementContext.CurrentState.Name == EPlayerState.Sidestep ? point : target;
                 point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
             }
         }

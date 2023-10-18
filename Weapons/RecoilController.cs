@@ -43,7 +43,7 @@ namespace RealismMod
         {
             if (RecoilController.IsFiringWiggle)
             {
-                float recoilAmount = (RecoilController.FactoredTotalHRecoil / 20f); 
+                float recoilAmount = RecoilController.FactoredTotalHRecoil / 20f; 
                 float recoilSpeed = Mathf.Max(RecoilController.BaseTotalConvergence * 0.75f, 14f);
                 float totalRecoil = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * recoilSpeed , 1.0f));
                 targetRecoil = new Vector3(0f, totalRecoil, 0f);
@@ -60,9 +60,9 @@ namespace RealismMod
 
         public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weapon) 
         {
-            float dampingUpperLimit = Plugin.IsAiming && Plugin.IsOptic ? 0.74f : 0.9f;
-            float dampingLowerLimit = Plugin.IsAiming && Plugin.IsOptic ? 0.65f : 0.5f;
-            float opticFactor = Plugin.IsAiming && Plugin.IsOptic ? 0.95f : 1f;
+            float dampingUpperLimit = Plugin.IsAiming && Plugin.HasOptic ? 0.74f : 0.9f;
+            float dampingLowerLimit = Plugin.IsAiming && Plugin.HasOptic ? 0.5f : 0.5f;
+            float opticFactor = Plugin.IsAiming && Plugin.HasOptic ? 0.92f : 1f;
             pwa.HandsContainer.Recoil.Damping = Mathf.Clamp(RecoilController.BaseTotalRecoilDamping * opticFactor, dampingLowerLimit, dampingUpperLimit);
             pwa.HandsContainer.HandsPosition.Damping = (float)Math.Round(RecoilController.BaseTotalHandDamping * (PlayerProperties.IsMoving ? 0.5f : 1f) * opticFactor, 3);
 

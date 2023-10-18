@@ -351,7 +351,7 @@ namespace RealismMod
         public static CC_FastVignette Vignette;
         public static PrismEffects PrismEffects;
 
-        public static bool IsOptic = false;
+        public static bool HasOptic = false;
 
         public static float healthControllerTick = 0f;
 
@@ -901,7 +901,7 @@ namespace RealismMod
             RecoilAngleMulti = Config.Bind<float>(recoilSettings, "Recoil Angle Multi", 1.0f, new ConfigDescription("Multiplier For Recoil Angle, Lower = Steeper Angle.", new AcceptableValueRange<float>(0.8f, 1.2f), new ConfigurationManagerAttributes { Order = 2 }));
             ConvergenceMulti = Config.Bind<float>(recoilSettings, "Convergence Multi", 1.0f, new ConfigDescription("AKA Auto-Compensation. Higher = Snappier Recoil, Faster Reset And Tighter Recoil Pattern.", new AcceptableValueRange<float>(0f, 40f), new ConfigurationManagerAttributes { Order = 1 }));
 
-            EnableHybridRecoil = Config.Bind<bool>(advancedRecoilSettings, "Enable Hybrid Recoil System", true, new ConfigDescription("Combines Steady Recoil Climb With Auto-Compensation. If You Do Not Attempt To Control Recoil, Auto-Compensation Will Decrease Resulting In More Muzzle Flip. If You Control The Recoil, Auto-Comp Increases And Muzzle Flip Decreases.", null, new ConfigurationManagerAttributes { Order = 100 }));
+            EnableHybridRecoil = Config.Bind<bool>(advancedRecoilSettings, "Enable Hybrid Recoil System", false, new ConfigDescription("Combines Steady Recoil Climb With Auto-Compensation. If You Do Not Attempt To Control Recoil, Auto-Compensation Will Decrease Resulting In More Muzzle Flip. If You Control The Recoil, Auto-Comp Increases And Muzzle Flip Decreases.", null, new ConfigurationManagerAttributes { Order = 100 }));
             HybridForAll = Config.Bind<bool>(advancedRecoilSettings, "Enable Hybrid Recoil For All Weapons", false, new ConfigDescription("By Default This Hybrid System Is Only Enabled For Pistols And Stockless/Folded Stocked Weapons.", null, new ConfigurationManagerAttributes { Order = 90 }));
             EnableHybridReset = Config.Bind<bool>(advancedRecoilSettings, "Enable Recoil Reset For Hybrid Recoil", true, new ConfigDescription("Enables Recoil Reset For Pistols And Stockless/Folded Stocked Weapons That Are Using Hybrid Recoil, If The Other Reset Options Are Enabled.", null, new ConfigurationManagerAttributes { Order = 90 }));
             PlayerControlMulti = Config.Bind<float>(advancedRecoilSettings, "Player Control Strength.", 100f, new ConfigDescription("How Quickly The Weapon Responds To Mouse Input If Using The Hybrid Recoil System.", new AcceptableValueRange<float>(0f, 200f), new ConfigurationManagerAttributes { Order = 85 }));
@@ -954,7 +954,7 @@ namespace RealismMod
             EnablePlayerArmorZones = Config.Bind<bool>(ballSettings, "Enable Armor Hit Zones For Player.", true, new ConfigDescription("Enables Player To Use New Hit Zones.", null, new ConfigurationManagerAttributes { Order = 20 }));
             EnableArmPen = Config.Bind<bool>(ballSettings, "Enable Increased Arm Penetration", true, new ConfigDescription("Arm 'Armor' Is Reduced to Lvl 1, And Reduces Pen Of Bullets That Pass Through Them By A Lot Less. Arms Soak Up A Lot Less Damage Therefore Damage To Chest Is Increased.", null, new ConfigurationManagerAttributes { Order = 40 }));
             EnableHitSounds = Config.Bind<bool>(ballSettings, "Enable Hit Sounds", true, new ConfigDescription("Enables Additional Sounds To Be Played When Hitting The New Body Zones And Armor Hit Sounds By Material.", null, new ConfigurationManagerAttributes { Order = 50 }));
-            FleshHitSoundMulti = Config.Bind<float>(ballSettings, "FleshHit Sound Multi.", 0.2f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 60 }));
+            FleshHitSoundMulti = Config.Bind<float>(ballSettings, "FleshHit Sound Multi.", 0.15f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 60 }));
             ArmorCloseHitSoundMulti = Config.Bind<float>(ballSettings, "Distant Armor Hit Sound Multi", 1.1f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 70 }));
             ArmorFarHitSoundMulti = Config.Bind<float>(ballSettings, "Close Armor Hit Sound Mutli", 1.2f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 80 }));
             EnableRealArmorClass = Config.Bind<bool>(ballSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 90 }));

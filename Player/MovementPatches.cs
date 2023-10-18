@@ -15,6 +15,7 @@ using static BaseBallistic;
 using static EFT.Player;
 using ValueHandler = GClass654;
 using SkillMovementStruct = EFT.SkillManager.GStruct213;
+
 namespace RealismMod
 {
     public static class MovementSpeedController
@@ -174,7 +175,7 @@ namespace RealismMod
                 {
                     //slow is hard set to 0.33 when called, 0.4-0.43 feels best.
                     float baseSpeed = PlayerProperties.AimMoveSpeedBase * WeaponProperties.AimMoveSpeedWeapModifier * PlayerProperties.AimMoveSpeedInjuryMulti;
-                    float totalSpeed = StanceController.IsActiveAiming ? baseSpeed * 1.55f : baseSpeed;
+                    float totalSpeed = StanceController.IsActiveAiming ? baseSpeed * 1.25f : baseSpeed;
                     totalSpeed = WeaponProperties._WeapClass == "pistol" ? totalSpeed + 0.15f : totalSpeed;
                     __instance.AddStateSpeedLimit(Mathf.Clamp(totalSpeed, 0.3f, 0.9f), Player.ESpeedLimit.Aiming);
 
