@@ -16,7 +16,7 @@ namespace RealismMod
 
         public static float RecoilInjuryMulti = 1f;
 
-        public static float AimMoveSpeedBase = 0.55f;
+        public static float AimMoveSpeedBase = 0.5f;
 
         public static float AimMoveSpeedInjuryMulti = 1f;
 

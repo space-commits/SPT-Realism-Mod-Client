@@ -1267,7 +1267,7 @@ namespace RealismMod
         private static bool needToReset = false;
         private static Vector3 currentMountedPos = Vector3.zero;
         private static float timer = 0f;
-        public static void DoMounting(ManualLogSource Logger, Player player, ProceduralWeaponAnimation pwa, FirearmController fc, ref Vector3 weaponWorldPos, ref Vector3 mountWeapPosition, float dt, Vector3 referencePos)
+        public static void DoMounting(ManualLogSource Logger, Player player, ProceduralWeaponAnimation pwa, Player.FirearmController fc, ref Vector3 weaponWorldPos, ref Vector3 mountWeapPosition, float dt, Vector3 referencePos)
         {
             bool isMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
 

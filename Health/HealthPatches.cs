@@ -31,8 +31,6 @@ using MedkitTemplate = GInterface249;
 
 namespace RealismMod
 {
-
-
     public class MedkitConstructorPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

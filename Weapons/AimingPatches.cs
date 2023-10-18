@@ -29,8 +29,8 @@ namespace RealismMod
                 bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
                 bool thermalIsOn = thermComponent != null && (thermComponent.Togglable == null || thermComponent.Togglable.On);
                 bool gearBlocksADS = Plugin.EnableFSPatch.Value && fsIsON && (!WeaponProperties.WeaponCanFSADS && (!GearProperties.AllowsADS(fsComponent.Item) || !PlayerProperties.GearAllowsADS));
-                bool visionDeviceBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && Plugin.HasOptic) && thermalIsOn);
-                if (Plugin.ModConfig.recoil_attachment_overhaul && (visionDeviceBlocksADS || gearBlocksADS || StanceController.IsMeleeAttack))
+                bool visionDeviceBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && Plugin.HasOptic) || thermalIsOn);
+                if (Plugin.ModConfig.recoil_attachment_overhaul && (visionDeviceBlocksADS || gearBlocksADS))
                 {
                     if (!hasSetCanAds)
                     {

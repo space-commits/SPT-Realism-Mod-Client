@@ -14,7 +14,7 @@ using BPConstructor = GClass2496;
 using BPTemplate = GClass2402;
 using RigConstructor = GClass2497;
 using RigTemplate = GClass2403;
-using HeadsetClass = GClass2452;
+using HeadsetClass = GClass2451;
 using HeadsetTemplate = GClass2357;
 using ArmorCompTemplate = GInterface233;
 

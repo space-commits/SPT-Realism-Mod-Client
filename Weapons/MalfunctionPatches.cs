@@ -296,6 +296,7 @@ namespace RealismMod
         {
             return typeof(KnowMalfClass).GetMethod("IsKnownMalfType", BindingFlags.Instance | BindingFlags.Public);
         }
+
         [PatchPostfix]
         private static void PatchPostfix(ref bool __result)
         {
