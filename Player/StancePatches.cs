@@ -1093,7 +1093,7 @@ namespace RealismMod
                     StanceController.HasResetLowReady = hasResetLowReady;
                     StanceController.HasResetShortStock = hasResetShortStock;
                     StanceController.HasResetPistolPos = hasResetPistolPos;
-                    StanceController.HasResetMelee= hasResetMelee;
+                    StanceController.HasResetMelee = hasResetMelee;
                 }
             }
         }

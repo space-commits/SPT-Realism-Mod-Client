@@ -307,20 +307,23 @@ namespace RealismMod
             switch (duraBurn) 
             {
                 //560 = 5.6
-                case <= 1f:
+                case <= 2f:
                     __result = duraBurn.ToString("P1");
                     break;
-                case <= 6f:
-                    __result = "SIGNIFICANT INCREASE";
+                case <= 4f:
+                    __result = "Significant Increase";
+                    break;
+                case <= 8f:
+                    __result = "Substantial Increase";
                     break;
                 case <= 10f:
-                    __result = "LARGE INCREASE";
+                    __result = "Large Increase";
                     break;
                 case <= 15f:
-                    __result = "VERY LARGE INCREASE";
+                    __result = "Very Large Increase";
                     break;
                 case <= 100f:
-                    __result = "HUGE INCREASE";
+                    __result = "Huge Increase";
                     break;
             }
             return false;
