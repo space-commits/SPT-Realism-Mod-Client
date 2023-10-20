@@ -34,9 +34,12 @@ namespace RealismMod
                 {
                     if (!hasSetCanAds)
                     {
+                        logger.LogWarning("cancel aim");
+                        if (isAiming)
+                        {
+                            fc.ToggleAim();
+                        }
                         PlayerProperties.IsAllowedADS = false;
-                        player.ProceduralWeaponAnimation.IsAiming = false;
-                        AccessTools.Field(typeof(EFT.Player.FirearmController), "_isAiming").SetValue(fc, false);
                         hasSetCanAds = true;
                     }
                 }
@@ -58,7 +61,7 @@ namespace RealismMod
                     }
 
                 }
-                if (!StanceController.IsActiveAiming && hasSetActiveAimADS)
+                else if (!StanceController.IsActiveAiming && hasSetActiveAimADS)
                 {
                     player.MovementContext.SetAimingSlowdown(false, 0.33f);
                     hasSetActiveAimADS = false;
@@ -66,20 +69,21 @@ namespace RealismMod
 
                 if (isAiming)
                 {
+                    logger.LogWarning("is aiming");
                     StanceController.IsPatrolStance = false;
-                    player.MovementContext.SetAimingSlowdown(true, 0.33f);
+ /*                   player.MovementContext.SetAimingSlowdown(true, 0.33f);*/
                 }
 
-     /*           if (StanceController.IsMeleeAttack && isAiming)
+                if (StanceController.IsMeleeAttack && isAiming)
                 {
                     fc.ToggleAim();
                 }
-*/
+
                 if (!wasToggled && (fsIsON || nvgIsOn)) 
                 {
                     wasToggled = true;
                 }
-                if (wasToggled == true && (!fsIsON && !nvgIsOn))
+                if (wasToggled && (!fsIsON && !nvgIsOn))
                 {
                     StanceController.WasActiveAim = false;
                     if (Plugin.ToggleActiveAim.Value)

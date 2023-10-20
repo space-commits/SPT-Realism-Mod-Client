@@ -72,7 +72,7 @@ namespace RealismMod
         public static bool CancelShortStock = false;
         public static bool CancelActiveAim = false;
         public static bool DoResetStances = false;
-        public static bool DoResetMelee = false;
+        public static bool DoMeleeReset = false;
 
         private static bool setRunAnim = false;
         private static bool resetRunAnim = false;
@@ -266,7 +266,7 @@ namespace RealismMod
 
             if (MeleeTimer >= 0.25f)
             {
-                DoResetMelee = false;
+                DoMeleeReset = false;
                 CanToggleMelee = true;
                 MeleeTimer = 0f;
             }
@@ -282,8 +282,7 @@ namespace RealismMod
                     StanceDampingTimer();
                 }
 
-
-                if (DoResetMelee)
+                if (DoMeleeReset)
                 {
                     MeleeCooldownTimer();
                 }
@@ -783,19 +782,6 @@ namespace RealismMod
                 }
             }
 
-            if (!StanceController.IsActiveAiming && !StanceController.IsShortStock)
-            {
-                pwa.Breath.HipPenalty = Mathf.Min(WeaponProperties.BaseHipfireInaccuracy * 1.05f * PlayerProperties.SprintHipfirePenalty, 1.6f);
-            }
-            else if (StanceController.IsActiveAiming)
-            {
-                pwa.Breath.HipPenalty = Mathf.Min(WeaponProperties.BaseHipfireInaccuracy * 0.8f * PlayerProperties.SprintHipfirePenalty, 1.6f);
-            }
-            else if(StanceController.IsShortStock)
-            {
-                pwa.Breath.HipPenalty = Mathf.Min(WeaponProperties.BaseHipfireInaccuracy * 1.4f * PlayerProperties.SprintHipfirePenalty, 1.6f);
-            }
-
             if (Plugin.StanceToggleDevice.Value)
             {
                 if (!toggledLight && (IsHighReady || IsLowReady))
@@ -1228,7 +1214,7 @@ namespace RealismMod
                     StanceController.DoDampingTimer = true;
                 }
 
-                StanceController.DoResetMelee = true;
+                StanceController.DoMeleeReset = true;
                 StanceController.CanDoMeleeDetection = false;
                 StanceController.DoWiggleEffects(player, pwa, new Vector3(5, -5f, -75f), true);
                 stanceRotation = Quaternion.identity;
