@@ -86,10 +86,36 @@ namespace RealismMod
 
     public class PwaWeaponParamsPatch : ModulePatch
     {
+        private static bool didAimWiggle = false;
+
+        private static void DoADSWiggle(ProceduralWeaponAnimation pwa, Player player, float ergoWeightFactor, float playerWeightFactor, float newAimSpeed) 
+        {
+            if (StanceController.IsIdle() && WeaponProperties._WeapClass != "pistol")
+            {
+                pwa.Shootingg.ShotVals[3].Intensity = 0f;
+                pwa.Shootingg.ShotVals[4].Intensity = 0f;
+                Vector3 wiggleDir = new Vector3(-3f, -1.5f, 0f) * ergoWeightFactor * playerWeightFactor * (Plugin.HasOptic ? 0.5f : 1f);
+
+                if (pwa.IsAiming && !didAimWiggle)
+                {
+
+                    StanceController.DoWiggleEffects(player, pwa, wiggleDir * newAimSpeed);
+                    didAimWiggle = true;
+                }
+                else if (!pwa.IsAiming && didAimWiggle)
+                {
+                    StanceController.DoWiggleEffects(player, pwa, -wiggleDir * newAimSpeed * 0.45f);
+                    didAimWiggle = false;
+                }
+            }
+
+        }
+
         protected override MethodBase GetTargetMethod()
         {
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("method_21", BindingFlags.Instance | BindingFlags.NonPublic);
         }
+
 
         [PatchPostfix]
         private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
@@ -136,23 +162,8 @@ namespace RealismMod
                     float breathIntensity;
                     float handsIntensity;
 
-                    //ADS animation/wiggle, this triggers when toggling scope mode :(
-/*                    if (StanceController.IsIdle())
-                    {
-                        __instance.Shootingg.ShotVals[3].Intensity = 0;
-                        __instance.Shootingg.ShotVals[4].Intensity = 0;
-                        Vector3 wiggleDir = new Vector3(-15f, 5f, -10f) * (Plugin.HasOptic ? 0.4f : 1f);
-
-                        if (__instance.IsAiming)
-                        {
-                            StanceController.DoWiggleEffects(player, __instance, wiggleDir * newAimSpeed);
-                        }
-                        else 
-                        {
-                            StanceController.DoWiggleEffects(player, __instance, -wiggleDir * newAimSpeed * 0.3f);
-                        }
-                    }*/
-       
+                    DoADSWiggle(__instance, player, ergoWeightFactor, playerWeightFactor, newAimSpeed);
+          
                     if (!WeaponProperties.HasShoulderContact && weapon.WeapClass != "pistol")
                     {
                         breathIntensity = Mathf.Min(0.78f * ergoWeightFactor * playerWeightFactor, 1.01f);
@@ -169,8 +180,9 @@ namespace RealismMod
                         handsIntensity = Mathf.Min(0.57f * ergoWeightFactor, 0.86f);
                     }
 
-                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * Plugin.SwayIntensity.Value;
-                    float totalInputIntensitry = handsIntensity * handsIntensity * Plugin.SwayIntensity.Value;
+                    float beltFedFactor = weapon.IsBeltMachineGun ? 1.35f : 1f;
+                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * Plugin.SwayIntensity.Value * beltFedFactor;
+                    float totalInputIntensitry = handsIntensity * handsIntensity * Plugin.SwayIntensity.Value * beltFedFactor;
                     PlayerProperties.TotalBreathIntensity = totalBreathIntensity;
                     PlayerProperties.TotalHandsIntensity = totalInputIntensitry;
 
@@ -204,7 +216,6 @@ namespace RealismMod
                             }
                         }
                     }
-                    
 
                     if (Plugin.EnableLogging.Value == true)
                     {
@@ -255,12 +266,13 @@ namespace RealismMod
 
                     float totalPlayerWeight = PlayerProperties.TotalModifiedWeight - weapon.GetSingleItemTotalWeight();
                     float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
+                    float beltFedFactor = weapon.IsBeltMachineGun ? 1.35f : 1f;
                     bool noShoulderContact = !WeaponProperties.HasShoulderContact && weapon.WeapClass != "pistol";
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));
-                    float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f);
+                    float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f) * beltFedFactor;
                     float displacementModifier = noShoulderContact ? Plugin.SwayIntensity.Value * 0.95f : Plugin.SwayIntensity.Value * 0.48f;//lower = less drag
                     float aimIntensity = noShoulderContact ? Plugin.SwayIntensity.Value * 0.95f : Plugin.SwayIntensity.Value * 0.57f;
-
+          
                     float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate(ergoWeight * weightFactor);//delay from moving mouse to the weapon moving to center of screen.
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_displacementStr").SetValue(__instance, weapDisplacement * weightFactor * displacementModifier * playerWeightFactor);
 

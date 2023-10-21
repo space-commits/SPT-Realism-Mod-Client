@@ -54,6 +54,7 @@ namespace RealismMod
 
             if (player.IsYourPlayer)
             {
+                deltaRotation = movementContext.ClampRotation(deltaRotation);
                 float fpsFactor = 144f / (1f / Time.unscaledDeltaTime);
 
                 bool hybridBlocksReset = Plugin.EnableHybridRecoil.Value && !WeaponProperties.HasShoulderContact && !Plugin.EnableHybridReset.Value;

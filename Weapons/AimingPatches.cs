@@ -67,11 +67,9 @@ namespace RealismMod
                     hasSetActiveAimADS = false;
                 }
 
-                if (isAiming)
+                if (isAiming || StanceController.IsMeleeAttack)
                 {
-                    logger.LogWarning("is aiming");
                     StanceController.IsPatrolStance = false;
- /*                   player.MovementContext.SetAimingSlowdown(true, 0.33f);*/
                 }
 
                 if (StanceController.IsMeleeAttack && isAiming)

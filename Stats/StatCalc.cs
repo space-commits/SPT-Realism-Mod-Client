@@ -121,7 +121,7 @@ namespace RealismMod
 
         public static void MagReloadSpeedModifier(Weapon weapon, MagazineClass magazine, bool isNewMag, bool reloadFromNoMag, bool isQuickReload = false)
         {
-            float magWeight = magazine.GetSingleItemTotalWeight() * StatCalc.MagWeightMult;
+            float magWeight = weapon.IsBeltMachineGun ? magazine.GetSingleItemTotalWeight() * StatCalc.MagWeightMult * 0.5f : magazine.GetSingleItemTotalWeight() * StatCalc.MagWeightMult;
             float magWeightFactor = (magWeight / - 100f) + 1f;
             float magSpeed = AttachmentProperties.ReloadSpeed(magazine);
             float reloadSpeedModiLessMag = WeaponProperties.TotalReloadSpeedLessMag;
@@ -257,7 +257,7 @@ namespace RealismMod
             float weaponBaseWeightFactored = FactoredWeight(weaponBaseWeight);
             float weaponBaseTorque = TorqueCalc(WeaponProperties.BaseTorqueDistance(weap), weaponBaseWeightFactored, weap.WeapClass);
 
-            float ergoWeapBaseWeightFactor = WeightStatCalc(ergoWeightMult, weaponBaseWeight) / 100f;
+            float ergoWeapBaseWeightFactor = WeightStatCalc(ergoWeightMult, weap.IsBeltMachineGun ? weaponBaseWeight * 0.5f : weaponBaseWeight) / 100f;
             float vRecoilWeapBaseWeightFactor = WeightStatCalc(vRecoilWeightMult, weaponBaseWeight) / 100f;
             float hRecoilWeapBaseWeightFactor = WeightStatCalc(hRecoilWeightMult, weaponBaseWeight) / 100f;
             float dispersionWeapBaseWeightFactor = WeightStatCalc(dispersionWeightMult, weaponBaseWeight) / 100f;
@@ -325,9 +325,9 @@ namespace RealismMod
         }
 
 
-        public static void ModStatCalc(Mod mod, float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeedMod, float modReload, ref float currentReloadSpeedMod, float modFix, ref float currentFixSpeedMod, float modErgo, ref float currentErgo, float modVRecoil, ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeedMod, float modChamber, bool isDisplayDelta, string weapClass, ref float pureErgo, float modShotDisp, ref float currentShotDisp, float modloudness, ref float currentLoudness, ref float currentMalfChance, float modMalfChance, ref float pureRecoil, ref float currentConv, float modConv, ref float currentCamReturnSpeed)
+        public static void ModStatCalc(Mod mod, float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeedMod, float modReload, ref float currentReloadSpeedMod, float modFix, ref float currentFixSpeedMod, float modErgo, ref float currentErgo, float modVRecoil, ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeedMod, float modChamber, bool isDisplayDelta, string weapClass, ref float pureErgo, float modShotDisp, ref float currentShotDisp, float modloudness, ref float currentLoudness, ref float currentMalfChance, float modMalfChance, ref float pureRecoil, ref float currentConv, float modConv, ref float currentCamReturnSpeed, bool isBeltFed)
         {
-            float ergoWeightFactor = WeightStatCalc(StatCalc.ErgoWeightMult, modWeight) / 100f;
+            float ergoWeightFactor = WeightStatCalc(StatCalc.ErgoWeightMult, isBeltFed ? modWeight * 0.5f : modWeight) / 100f;
             float vRecoilWeightFactor = WeightStatCalc(StatCalc.VRecoilWeightMult, modWeight) / 100f;
             float hRecoilWeightFactor = WeightStatCalc(StatCalc.HRecoilWeightMult, modWeight) / 100f;
             float dispersionWeightFactor = WeightStatCalc(StatCalc.DispersionWeightMult, modWeight) / 100f;
