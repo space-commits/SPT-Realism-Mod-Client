@@ -860,9 +860,9 @@ namespace RealismMod
                 case "Caliber23x75":
                     return 3.35f;
                 case "Caliber12g":
-                    return 3.5f;
+                    return 4f;
                 case "Caliber20g":
-                    return 3f;
+                    return 3.5f;
 
                 case "Caliber30x29":
                     return 2.4f;
