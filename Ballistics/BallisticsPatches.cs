@@ -292,7 +292,7 @@ namespace RealismMod
         {
             float dist = CameraClass.Instance.Distance(pos);
             float volClose = 2f * Plugin.FleshHitSoundMulti.Value;
-            float volDist = 5.6f * Plugin.FleshHitSoundMulti.Value;
+            float volDist = 7f * Plugin.FleshHitSoundMulti.Value;
             float distThreshold = 35f;
 
             if (hitZone == EBodyHitZone.Spine)

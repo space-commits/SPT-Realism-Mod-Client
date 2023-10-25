@@ -241,7 +241,7 @@ namespace RealismMod
         {
             DampingTimer += Time.deltaTime;
 
-            if (DampingTimer >= 0.05f)
+            if (DampingTimer >= 0.01f) //0.05f
             {
                 CanResetDamping = true;
                 DoDampingTimer = false;
@@ -1116,7 +1116,7 @@ namespace RealismMod
 
                 if ((StanceController.StanceBlender.Value >= 1f || StanceController.StanceTargetPosition == activeAimTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-                    StanceController.DoWiggleEffects(player, pwa, new Vector3(-2.5f, -2.5f, 10f) * movementFactor, true);
+                    StanceController.DoWiggleEffects(player, pwa, new Vector3(-2.5f, -2.5f, 10f), true);
                     StanceController.DidStanceWiggle = true;
                 }
             }

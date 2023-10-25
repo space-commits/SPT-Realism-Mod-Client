@@ -202,8 +202,6 @@ namespace RealismMod
                 }
                 if (GearProperties.HasExtraArmor(___armorComponent_0.Item))
                 {
-                    Logger.LogWarning(___armorComponent_0.Item.LocalizedName());
-                    Logger.LogWarning("has secondary armor");
                     parts.Add("SECONDARY ARMOR");
                 }
                 if (GearProperties.HasNeckArmor(___armorComponent_0.Item))

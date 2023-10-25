@@ -416,7 +416,7 @@ namespace RealismMod
             WeaponProperties.TotalModDuraBurn = modBurnRatio;
             WeaponProperties.TotalMalfChance = currentMalfChance;
             WeaponProperties.MalfChanceDelta = (currentMalfChance - baseMalfChance) / baseMalfChance;
-            Deafening.WeaponDeafFactor = totalLoudness;
+            DeafeningController.WeaponDeafFactor = totalLoudness;
             WeaponProperties.CanCycleSubs = canCycleSubs;
             WeaponProperties.HasShoulderContact = hasShoulderContact;
             WeaponProperties.InitTotalErgo = currentErgo;
