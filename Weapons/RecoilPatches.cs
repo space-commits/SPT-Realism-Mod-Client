@@ -101,7 +101,7 @@ namespace RealismMod
 
                     targetRotation = movementContext.Rotation + new Vector2(xRotation, yRotation);
 
-                    if ((canResetVert && (movementContext.Rotation.y > recordedRotation.y + 2f || deltaRotation.y <= -1f)) || (canResetHorz && Mathf.Abs(deltaRotation.x) >= 1f))
+                    if ((canResetVert && (movementContext.Rotation.y > (recordedRotation.y + 2f) * Plugin.NewPOASensitivity.Value || deltaRotation.y <= -1f * Plugin.NewPOASensitivity.Value)) || (canResetHorz && Mathf.Abs(deltaRotation.x) >= 1f * Plugin.NewPOASensitivity.Value))
                     {
                         recordedRotation = movementContext.Rotation;
                     }
@@ -113,7 +113,7 @@ namespace RealismMod
                     float resetSpeed = RecoilController.BaseTotalConvergence * WeaponProperties.ConvergenceDelta * Plugin.ResetSpeed.Value;
                     float resetSens = isHybrid ? (float)Math.Round(Plugin.ResetSensitivity.Value * 0.4f, 3) : Plugin.ResetSensitivity.Value;
 
-                    bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Mathf.Clamp(resetSens / 2.5f, 0f, 0.1f);
+                    bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Mathf.Clamp((float)Math.Round(resetSens / 2.5f, 3), 0f, 0.1f);
                     bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= resetSens;
 
                     Vector2 resetTarget = movementContext.Rotation;
@@ -123,12 +123,12 @@ namespace RealismMod
                         resetTarget = new Vector2(recordedRotation.x, recordedRotation.y);
                         movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, new Vector2(recordedRotation.x, recordedRotation.y), resetSpeed);
                     }
-                    else if (canResetHorz && xIsBelowThreshold)
+                    else if (canResetHorz && xIsBelowThreshold && !canResetVert)
                     {
                         resetTarget = new Vector2(recordedRotation.x, movementContext.Rotation.y);
                         movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, new Vector2(recordedRotation.x, movementContext.Rotation.y), resetSpeed);
                     }
-                    else if (canResetVert && yIsBelowThreshold)
+                    else if (canResetVert && yIsBelowThreshold && !canResetHorz)
                     {
                         resetTarget = new Vector2(movementContext.Rotation.x, recordedRotation.y);
                         movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, new Vector2(movementContext.Rotation.x, recordedRotation.y), resetSpeed);

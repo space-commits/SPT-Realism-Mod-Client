@@ -66,7 +66,7 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(__instance, aimSpeed);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_ergonomicWeight").SetValue(__instance, WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f)) * PlayerProperties.ErgoDeltaInjuryMulti);
 
-                    Plugin.CurrentlyEquippedWeapon = weapon;    
+                    __instance.Shootingg.Intensity = Plugin.RecoilIntensity.Value;
 
                     if (Plugin.EnableLogging.Value == true) 
                     {
