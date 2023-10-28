@@ -33,7 +33,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostFix(PrismEffects __instance)
         {
-            if (__instance.gameObject.name == "FPS Camera") Plugin.PrismEffects = __instance;
+            if (__instance.gameObject.name == "FPS Camera") DeafeningController.PrismEffects = __instance;
         }
     }
 
@@ -48,7 +48,7 @@ namespace RealismMod
         private static void PatchPostfix(EffectsController __instance)
         {
             CC_FastVignette vig = (CC_FastVignette)AccessTools.Field(typeof(EffectsController), "cc_FastVignette_0").GetValue(__instance);
-            Plugin.Vignette = vig;
+            DeafeningController.Vignette = vig;
         }
     }
 
@@ -94,13 +94,13 @@ namespace RealismMod
 
             if (headset != null)
             {
-                Plugin.HasHeadSet = true;
+                DeafeningController.HasHeadSet = true;
                 HeadsetTemplate headphone = headset.Template;
                 protectionFactor = Mathf.Clamp(((headphone.DryVolume / 100f) + 1f) * 1.6f, 0.5f, 1f);
             }
             else
             {
-                Plugin.HasHeadSet = false;
+                DeafeningController.HasHeadSet = false;
                 protectionFactor = 1f;
             }
 
@@ -119,14 +119,28 @@ namespace RealismMod
             if (__instance.IsYourPlayer)
             {
                 EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
-                Deafening.EarProtectionFactor = HeadsetDeafFactor(equipment) * HelmDeafFactor(equipment);
+                DeafeningController.EarProtectionFactor = HeadsetDeafFactor(equipment) * HelmDeafFactor(equipment);
             }
 
         }
     }
 
-    public static class Deafening
+    public static class DeafeningController
     {
+        public static bool HasHeadSet = false;
+        public static CC_FastVignette Vignette;
+        public static PrismEffects PrismEffects;
+
+        public static float DryVolume = 0f;
+        public static float GunsVolume = 0f;
+        public static float AmbientVolume = 0f;
+        public static float AmbientOccluded = 0f;
+        public static float CompressorDistortion = 0f;
+        public static float CompressorResonance = 0f;
+        public static float CompressorLowpass = 0f;
+        public static float Compressor = 0f;
+        public static float CompressorGain = 0f;
+
         public static float EarProtectionFactor;
         public static float AmmoDeafFactor;
         public static float WeaponDeafFactor;
@@ -205,26 +219,26 @@ namespace RealismMod
             float totalDistortion = Mathf.Clamp(Distortion + BotDistortion + GrenadeDistortion, 0.0f, 70.0f);
             float totalVignette = Mathf.Clamp(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 0.0f, 65.0f);
 
-            float headsetAmbientVol = Plugin.AmbientVolume * (1f + ((20f - Plugin.RealTimeGain.Value) / Plugin.HeadsetAmbientMulti.Value));
+            float headsetAmbientVol = DeafeningController.AmbientVolume * (1f + ((20f - Plugin.RealTimeGain.Value) / Plugin.HeadsetAmbientMulti.Value));
              
             //for some reason this prevents the values from being fully reset to 0
             if (totalVolume != 0.0f || totalDistortion != 0.0f || totalVignette != 0.0f)
             {
-                Plugin.PrismEffects.vignetteStrength = totalVignette;   
+                DeafeningController.PrismEffects.vignetteStrength = totalVignette;   
 /*                Plugin.Vignette.darkness = totalVignette;
-*/                Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", totalVolume + Plugin.GunsVolume);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("OcclusionVolume", totalVolume + Plugin.DryVolume);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", totalVolume + Plugin.DryVolume);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", totalVolume + Plugin.AmbientVolume);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", totalVolume + Plugin.AmbientOccluded);
+*/              Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", totalVolume + DeafeningController.GunsVolume);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("OcclusionVolume", totalVolume + DeafeningController.DryVolume);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", totalVolume + DeafeningController.DryVolume);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", totalVolume + DeafeningController.AmbientVolume);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", totalVolume + DeafeningController.AmbientOccluded);
 
 
-                if (!Plugin.HasHeadSet)
+                if (!DeafeningController.HasHeadSet)
                 {
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", totalDistortion + Plugin.CompressorResonance);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", totalDistortion + Plugin.Compressor);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", totalDistortion + Plugin.CompressorDistortion);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", totalDistortion + Plugin.CompressorDistortion);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", totalDistortion + DeafeningController.CompressorResonance);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", totalDistortion + DeafeningController.Compressor);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", totalDistortion + DeafeningController.CompressorDistortion);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", totalDistortion + DeafeningController.CompressorDistortion);
                 }
                 else
                 {
@@ -235,20 +249,20 @@ namespace RealismMod
             }
             else
             {
-                if (Plugin.HasHeadSet)
+                if (DeafeningController.HasHeadSet)
                 {
                     Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol);
 
                 }
-                Plugin.PrismEffects.useVignette = false;
+                DeafeningController.PrismEffects.useVignette = false;
                 valuesAreReset = true;
             }
         }
 
         private static void ChangeDeafValues(float deafFactor, ref float vigValue, float vigIncRate, float vigLimit, ref float volValue, float volDecRate, float volLimit, ref float distValue, float distIncRate, float distLimit, float enviroMulti)
         {
-            Plugin.PrismEffects.useVignette = true;
+            DeafeningController.PrismEffects.useVignette = true;
             float totalVigLimit = Mathf.Min(vigLimit * deafFactor * enviroMulti, 1.5f);
             vigValue = Mathf.Clamp(vigValue + (vigIncRate * deafFactor * enviroMulti), 0.0f, totalVigLimit);
             volValue = Mathf.Clamp(volValue - (volDecRate * deafFactor * enviroMulti), volLimit, 0.0f);
@@ -276,23 +290,22 @@ namespace RealismMod
         private static bool Prefix(HeadsetTemplate template, BetterAudio __instance)
         {
             FieldInfo float_0Field = AccessTools.Field(typeof(BetterAudio), "float_0");
-            float dryVolume = (float)float_0Field.GetValue(__instance);
             bool hasHeadset = template != null;
             float gunT;
             float mainT;
 
             CompressorClass.CreateEvent<CompressorTemplateClass>().Invoke(template);
 
-            Plugin.DryVolume = hasHeadset ? template.DryVolume : 0f;
-            Plugin.Compressor = hasHeadset ? template.CompressorVolume : -80f;
-            Plugin.AmbientVolume = hasHeadset ? template.AmbientVolume : 0f;
-            Plugin.AmbientOccluded = hasHeadset ? (template.AmbientVolume - 15f) : -5f;
-            Plugin.GunsVolume = hasHeadset ? (template.DryVolume) : -5f;
+            DeafeningController.DryVolume = hasHeadset ? template.DryVolume : 0f;
+            DeafeningController.Compressor = hasHeadset ? template.CompressorVolume : -80f;
+            DeafeningController.AmbientVolume = hasHeadset ? template.AmbientVolume : 0f;
+            DeafeningController.AmbientOccluded = hasHeadset ? (template.AmbientVolume - 15f) : -5f;
+            DeafeningController.GunsVolume = hasHeadset ? (template.DryVolume) : -5f;
 
-            Plugin.CompressorDistortion = hasHeadset ? template.Distortion : 0.277f;
-            Plugin.CompressorResonance = hasHeadset ? template.Resonance : 2.47f;
-            Plugin.CompressorLowpass = hasHeadset ? template.LowpassFreq : 22000f;
-            Plugin.CompressorGain = hasHeadset ? Plugin.RealTimeGain.Value : 10f;
+            DeafeningController.CompressorDistortion = hasHeadset ? template.Distortion : 0.277f;
+            DeafeningController.CompressorResonance = hasHeadset ? template.Resonance : 2.47f;
+            DeafeningController.CompressorLowpass = hasHeadset ? template.LowpassFreq : 22000f;
+            DeafeningController.CompressorGain = hasHeadset ? Plugin.RealTimeGain.Value : 10f;
 
             __instance.Master.GetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, out gunT);
             __instance.Master.GetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, out mainT);
@@ -305,7 +318,8 @@ namespace RealismMod
             __instance.Master.SetFloat(__instance.AudioMixerData.AmbientMixerOcclusionSendLevel, hasHeadset ? (template.AmbientVolume - 15f) : -5f);
             __instance.Master.SetFloat(__instance.AudioMixerData.ReverbMixerVolume, hasHeadset ? template.ReverbVolume : -20f);
 
-            float_0Field.SetValue(__instance, (hasHeadset ? template.DryVolume : 0f));
+            float_0Field.SetValue(__instance, (hasHeadset ? DeafeningController.DryVolume : 0f));
+            float dryVolume = (float)float_0Field.GetValue(__instance);
             __instance.Master.SetFloat(__instance.AudioMixerData.GunsMixerVolume, dryVolume);
             if (!hasHeadset)
             {
@@ -321,48 +335,48 @@ namespace RealismMod
             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorLowpass, (float)template.LowpassFreq);
             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorHighFrequenciesGain, template.HighFrequenciesGain);
 
-
-
-
-           /* bool hasHeadsetTemplate = template != null;
-            bool isNotHeadset = template?._id == null; //using both bools is redundant now.
-
-            Plugin.DryVolume = hasHeadsetTemplate && !isNotHeadset ? template.DryVolume : 0f;
-            Plugin.Compressor = hasHeadsetTemplate && !isNotHeadset ? template.CompressorVolume : -80f;
-            Plugin.AmbientVolume = hasHeadsetTemplate && !isNotHeadset ? template.AmbientVolume : 0f;
-            Plugin.AmbientOccluded = hasHeadsetTemplate && !isNotHeadset ? (template.AmbientVolume - 15f) : -5f;
-            Plugin.GunsVolume = hasHeadsetTemplate && !isNotHeadset ? (template.DryVolume) : -5f;
-
-            Plugin.CompressorDistortion = hasHeadsetTemplate && !isNotHeadset ? template.Distortion : 0.277f;
-            Plugin.CompressorResonance = hasHeadsetTemplate && !isNotHeadset ? template.Resonance : 2.47f;
-            Plugin.CompressorLowpass = hasHeadsetTemplate && !isNotHeadset ? template.LowpassFreq : 22000f;
-            Plugin.CompressorGain = hasHeadsetTemplate && !isNotHeadset ? Plugin.RealTimeGain.Value : 10f;
-
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorMixerVolume, Plugin.Compressor);
-            __instance.Master.SetFloat(__instance.AudioMixerData.OcclusionMixerVolume, Plugin.DryVolume);
-            __instance.Master.SetFloat(__instance.AudioMixerData.EnvironmentMixerVolume, Plugin.DryVolume);
-            __instance.Master.SetFloat(__instance.AudioMixerData.AmbientMixerVolume, Plugin.AmbientVolume);
-            __instance.Master.SetFloat(__instance.AudioMixerData.AmbientMixerOcclusionSendLevel, hasHeadsetTemplate && !isNotHeadset ? (template.AmbientVolume - 15f) : -5f);
-            __instance.Master.SetFloat(__instance.AudioMixerData.ReverbMixerVolume, hasHeadsetTemplate && !isNotHeadset ? template.ReverbVolume : -20f);
-            __instance.Master.SetFloat(__instance.AudioMixerData.GunsMixerVolume, Plugin.GunsVolume);
-
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorAttack, hasHeadsetTemplate && !isNotHeadset ? template.CompressorAttack : 35f);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorGain, Plugin.CompressorGain);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorRelease, hasHeadsetTemplate && !isNotHeadset ? template.CompressorRelease : 215f);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorThreshold, hasHeadsetTemplate && !isNotHeadset ? template.CompressorTreshold : -20f);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorDistortion, Plugin.CompressorDistortion);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorResonance, Plugin.CompressorResonance);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorCutoff, hasHeadsetTemplate && !isNotHeadset ? template.CutoffFreq : 245f);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorLowpass, Plugin.CompressorLowpass);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorHighFrequenciesGain, hasHeadsetTemplate && !isNotHeadset ? template.HighFrequenciesGain : 1f);
-
-            //cursed BSG bull shit, best just replicate it
-            __instance.Master.GetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, out float tin1);
-            __instance.Master.GetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, out float tin2);
-            __instance.Master.SetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, tin1);
-            __instance.Master.SetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, tin2);*/
-
             return false;
+
+
+            /* bool hasHeadsetTemplate = template != null;
+             bool isNotHeadset = template?._id == null; //using both bools is redundant now.
+
+             Plugin.DryVolume = hasHeadsetTemplate && !isNotHeadset ? template.DryVolume : 0f;
+             Plugin.Compressor = hasHeadsetTemplate && !isNotHeadset ? template.CompressorVolume : -80f;
+             Plugin.AmbientVolume = hasHeadsetTemplate && !isNotHeadset ? template.AmbientVolume : 0f;
+             Plugin.AmbientOccluded = hasHeadsetTemplate && !isNotHeadset ? (template.AmbientVolume - 15f) : -5f;
+             Plugin.GunsVolume = hasHeadsetTemplate && !isNotHeadset ? (template.DryVolume) : -5f;
+
+             Plugin.CompressorDistortion = hasHeadsetTemplate && !isNotHeadset ? template.Distortion : 0.277f;
+             Plugin.CompressorResonance = hasHeadsetTemplate && !isNotHeadset ? template.Resonance : 2.47f;
+             Plugin.CompressorLowpass = hasHeadsetTemplate && !isNotHeadset ? template.LowpassFreq : 22000f;
+             Plugin.CompressorGain = hasHeadsetTemplate && !isNotHeadset ? Plugin.RealTimeGain.Value : 10f;
+
+             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorMixerVolume, Plugin.Compressor);
+             __instance.Master.SetFloat(__instance.AudioMixerData.OcclusionMixerVolume, Plugin.DryVolume);
+             __instance.Master.SetFloat(__instance.AudioMixerData.EnvironmentMixerVolume, Plugin.DryVolume);
+             __instance.Master.SetFloat(__instance.AudioMixerData.AmbientMixerVolume, Plugin.AmbientVolume);
+             __instance.Master.SetFloat(__instance.AudioMixerData.AmbientMixerOcclusionSendLevel, hasHeadsetTemplate && !isNotHeadset ? (template.AmbientVolume - 15f) : -5f);
+             __instance.Master.SetFloat(__instance.AudioMixerData.ReverbMixerVolume, hasHeadsetTemplate && !isNotHeadset ? template.ReverbVolume : -20f);
+             __instance.Master.SetFloat(__instance.AudioMixerData.GunsMixerVolume, Plugin.GunsVolume);
+
+             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorAttack, hasHeadsetTemplate && !isNotHeadset ? template.CompressorAttack : 35f);
+             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorGain, Plugin.CompressorGain);
+             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorRelease, hasHeadsetTemplate && !isNotHeadset ? template.CompressorRelease : 215f);
+             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorThreshold, hasHeadsetTemplate && !isNotHeadset ? template.CompressorTreshold : -20f);
+             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorDistortion, Plugin.CompressorDistortion);
+             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorResonance, Plugin.CompressorResonance);
+             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorCutoff, hasHeadsetTemplate && !isNotHeadset ? template.CutoffFreq : 245f);
+             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorLowpass, Plugin.CompressorLowpass);
+             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorHighFrequenciesGain, hasHeadsetTemplate && !isNotHeadset ? template.HighFrequenciesGain : 1f);
+
+             //cursed BSG bull shit, best just replicate it
+             __instance.Master.GetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, out float tin1);
+             __instance.Master.GetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, out float tin2);
+             __instance.Master.SetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, tin1);
+             __instance.Master.SetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, tin2);*/
+
+
         }
     }
 
@@ -426,7 +440,7 @@ namespace RealismMod
                         ammoDeafFactor *= 0.6f;
                     }
 
-                    Deafening.AmmoDeafFactor = ammoDeafFactor == 0f ? 1f : ammoDeafFactor;
+                    DeafeningController.AmmoDeafFactor = ammoDeafFactor == 0f ? 1f : ammoDeafFactor;
                 }
                 else
                 {
@@ -448,7 +462,7 @@ namespace RealismMod
                             ammoDeafFactor *= 0.6f;
                         }
                         float totalBotDeafFactor = 1 * calFactor * ammoDeafFactor;
-                        Deafening.BotDeafFactor = totalBotDeafFactor * ((-distanceFromPlayer / 100f) + 1f) * 1.25f;
+                        DeafeningController.BotDeafFactor = totalBotDeafFactor * ((-distanceFromPlayer / 100f) + 1f) * 1.25f;
 
                     }
                 }
@@ -473,7 +487,7 @@ namespace RealismMod
             {
                 Plugin.GrenadeExploded = true;
 
-                Deafening.GrenadeDeafFactor = grenadeItem.Contusion.z * ((-distanceFromPlayer / 100f) + 1f);
+                DeafeningController.GrenadeDeafFactor = grenadeItem.Contusion.z * ((-distanceFromPlayer / 100f) + 1f);
             }
         }
     }
@@ -490,8 +504,8 @@ namespace RealismMod
         {
             ThrowableWeaponClass grenade = __instance.Template as ThrowableWeaponClass;
             Vector3 contusionVect = grenade.Contusion;
-            float intensity = contusionVect.z * (1f - ((1f - Deafening.EarProtectionFactor) * 1.3f));
-            float distance = contusionVect.y * 2f * Deafening.EarProtectionFactor;
+            float intensity = contusionVect.z * (1f - ((1f - DeafeningController.EarProtectionFactor) * 1.3f));
+            float distance = contusionVect.y * 2f * DeafeningController.EarProtectionFactor;
             intensity = PlayerProperties.EnviroType == EnvironmentType.Indoor ? intensity * 1.7f : intensity;
             distance = PlayerProperties.EnviroType == EnvironmentType.Indoor ? distance * 1.7f : distance;
             __result = new Vector3(contusionVect.x, distance, intensity);

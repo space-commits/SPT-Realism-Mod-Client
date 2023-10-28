@@ -66,7 +66,7 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(__instance, aimSpeed);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_ergonomicWeight").SetValue(__instance, WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f)) * PlayerProperties.ErgoDeltaInjuryMulti);
 
-                    Plugin.CurrentlyEquippedWeapon = weapon;    
+                    __instance.Shootingg.Intensity = Plugin.RecoilIntensity.Value;
 
                     if (Plugin.EnableLogging.Value == true) 
                     {
@@ -94,7 +94,7 @@ namespace RealismMod
             {
                 pwa.Shootingg.ShotVals[3].Intensity = 0f;
                 pwa.Shootingg.ShotVals[4].Intensity = 0f;
-                Vector3 wiggleDir = new Vector3(-3f, -1.5f, 0f) * ergoWeightFactor * playerWeightFactor * (Plugin.HasOptic ? 0.5f : 1f);
+                Vector3 wiggleDir = new Vector3(-1.5f, -1.5f, 0f) * ergoWeightFactor * playerWeightFactor * (Plugin.HasOptic ? 0.5f : 1f);
 
                 if (pwa.IsAiming && !didAimWiggle)
                 {
@@ -141,7 +141,7 @@ namespace RealismMod
 
                     Mod currentAimingMod = (__instance.CurrentAimingMod != null) ? __instance.CurrentAimingMod.Item as Mod : null;
 
-                    float stanceMulti = StanceController.IsIdle() ? 1.5f : StanceController.WasActiveAim || StanceController.IsActiveAiming ? 1.5f : StanceController.WasHighReady || StanceController.IsHighReady ? 1.1f : StanceController.WasLowReady || StanceController.IsLowReady ? 1.3f : 1f;
+                    float stanceMulti = StanceController.IsIdle() ? 1.6f : StanceController.WasActiveAim || StanceController.IsActiveAiming ? 1.5f : StanceController.WasHighReady || StanceController.IsHighReady ? 1.1f : StanceController.WasLowReady || StanceController.IsLowReady ? 1.3f : 1f;
                     float stockMulti = weapon.WeapClass != "pistol" && !WeaponProperties.HasShoulderContact ? 0.75f : 1f;
                     float totalSightlessAimSpeed = WeaponProperties.SightlessAimSpeed * PlayerProperties.ADSInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.5f));
                     float sightSpeedModi = currentAimingMod != null ? AttachmentProperties.AimSpeed(currentAimingMod) : 1f;

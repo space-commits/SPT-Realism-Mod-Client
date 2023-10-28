@@ -446,11 +446,11 @@ namespace RealismMod
                 {
                     if (StanceController.CanResetDamping)
                     {
-                        float resetSpeed = 0.02f;
-                        if (PlayerProperties.IsMoving && (StanceController.WasLowReady || StanceController.WasHighReady || StanceController.WasShortStock || StanceController.WasActiveAim))
+                        float resetSpeed = 0.01f;
+          /*              if (PlayerProperties.IsMoving && (StanceController.WasLowReady || StanceController.WasHighReady || StanceController.WasShortStock || StanceController.WasActiveAim))
                         {
                             resetSpeed = 1f;
-                        }
+                        }*/
                         __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, resetSpeed);
                     }
                     else
@@ -459,7 +459,7 @@ namespace RealismMod
                         __instance.ProceduralWeaponAnimation.Shootingg.ShotVals[3].Intensity = 0;
                         __instance.ProceduralWeaponAnimation.Shootingg.ShotVals[4].Intensity = 0;
                     }
-                    __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed, 10f * StanceController.WiggleReturnSpeed, 0.05f);
+                    __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed, 10f * StanceController.WiggleReturnSpeed, 0.01f);
                     /*                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.5f;
                                         __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.4f;*/
                 }

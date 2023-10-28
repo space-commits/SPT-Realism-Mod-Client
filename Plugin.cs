@@ -288,6 +288,7 @@ namespace RealismMod
         public static ConfigEntry<float> RecoilDispersionFactor { get; set; }
         public static ConfigEntry<float> RecoilDispersionSpeed { get; set; }
         public static ConfigEntry<float> RecoilSmoothness { get; set; }
+        public static ConfigEntry<float> NewPOASensitivity { get; set; }
         public static ConfigEntry<float> ResetSensitivity { get; set; }
         public static ConfigEntry<bool> ResetVertical { get; set; }
         public static ConfigEntry<bool> ResetHorizontal { get; set; }
@@ -302,8 +303,6 @@ namespace RealismMod
         public static ConfigEntry<float> test2 { get; set; }
         public static ConfigEntry<float> test3 { get; set; }
         public static ConfigEntry<float> test4 { get; set; }
-
-        public static Weapon CurrentlyEquippedWeapon;
 
         public static Vector3 WeaponOffsetPosition;
 
@@ -325,7 +324,6 @@ namespace RealismMod
 
         public static float BotTimer = 0.0f;
         public static float GrenadeTimer = 0.0f;
-        public static bool LauncherIsActive = false;
 
         public static Dictionary<Enum, Sprite> IconCache = new Dictionary<Enum, Sprite>();
         public static Dictionary<string, AudioClip> LoadedAudioClips = new Dictionary<string, AudioClip>();
@@ -336,20 +334,6 @@ namespace RealismMod
         private string ConfigJson;
         public static ConfigTemplate ModConfig;
         private static bool warnedUser = false;
-
-        public static float DryVolume = 0f;
-        public static float GunsVolume = 0f;
-        public static float AmbientVolume = 0f;
-        public static float AmbientOccluded = 0f;
-        public static float CompressorDistortion = 0f;
-        public static float CompressorResonance = 0f;
-        public static float CompressorLowpass = 0f;
-        public static float Compressor = 0f;
-        public static float CompressorGain = 0f;
-
-        public static bool HasHeadSet = false;
-        public static CC_FastVignette Vignette;
-        public static PrismEffects PrismEffects;
 
         public static bool HasOptic = false;
 
@@ -586,19 +570,16 @@ namespace RealismMod
                     new SetMagTypeNewPatch().Enable();
                     new SetMagInWeaponPatch().Enable();
 
-                    new RechamberSpeedPatch().Enable();
                     new SetMalfRepairSpeedPatch().Enable();
-                    new SetBoltActionReloadPatch().Enable();
+                    new BoltActionReloadPatch().Enable();
 
-                    new CheckChamberPatch().Enable();
                     new SetSpeedParametersPatch().Enable();
-                    new CheckAmmoPatch().Enable();
-                    new SetHammerArmedPatch().Enable();
-                    new SetLauncherPatch().Enable();
+                    /*new SetHammerArmedPatch().Enable();*/ //isn#t getting called anymore
                 }
 
-                new CheckAmmoFirearmControllerPatch().Enable();
-                new CheckChamberFirearmControllerPatch().Enable();
+                new CheckAmmoPatch().Enable();
+                new CheckChamberPatch().Enable();
+                new RechamberPatch().Enable();
 
                 new SetAnimatorAndProceduralValuesPatch().Enable();
                 new OnItemAddedOrRemovedPatch().Enable();
@@ -748,11 +729,11 @@ namespace RealismMod
             if ((int)Time.time % 5 == 0 && !warnedUser)
             {
                 warnedUser = true;
-                if (Chainloader.PluginInfos.ContainsKey("com.servph.realisticrecoil"))
+                if (Chainloader.PluginInfos.ContainsKey("com.servph.realisticrecoil") && ModConfig.recoil_attachment_overhaul)
                 {
                     NotificationManagerClass.DisplayWarningNotification("ERROR: COMBAT OVERHAUL DETECTED, IT IS NOT COMPATIBLE!", EFT.Communications.ENotificationDurationType.Long);
                 }
-                if (Chainloader.PluginInfos.ContainsKey("com.IcyClawz.MunitionsExpert"))
+                if (Chainloader.PluginInfos.ContainsKey("com.IcyClawz.MunitionsExpert") && ModConfig.recoil_attachment_overhaul)
                 {
                     NotificationManagerClass.DisplayWarningNotification("ERROR: MUNITIONS EXPERT DETECTED, IT IS NOT COMPATIBLE!", EFT.Communications.ENotificationDurationType.Long);
                 }
@@ -813,7 +794,7 @@ namespace RealismMod
 
                     if (Plugin.EnableDeafen.Value && ModConfig.headset_changes)
                     {
-                        if (Input.GetKeyDown(Plugin.IncGain.Value.MainKey) && Plugin.HasHeadSet)
+                        if (Input.GetKeyDown(Plugin.IncGain.Value.MainKey) && DeafeningController.HasHeadSet)
                         {
                             if (Plugin.RealTimeGain.Value < 20)
                             {
@@ -821,7 +802,7 @@ namespace RealismMod
                                 Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), Plugin.LoadedAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 1.0f, EOcclusionTest.None, null, false);
                             }
                         }
-                        if (Input.GetKeyDown(Plugin.DecGain.Value.MainKey) && Plugin.HasHeadSet)
+                        if (Input.GetKeyDown(Plugin.DecGain.Value.MainKey) && DeafeningController.HasHeadSet)
                         {
 
                             if (Plugin.RealTimeGain.Value > 0)
@@ -831,9 +812,9 @@ namespace RealismMod
                             }
                         }
 
-                        if (PrismEffects != null)
+                        if (DeafeningController.PrismEffects != null)
                         {
-                            Deafening.DoDeafening();
+                            DeafeningController.DoDeafening();
                         }
 
                         if (Plugin.IsBotFiring)
@@ -901,14 +882,15 @@ namespace RealismMod
             RecoilAngleMulti = Config.Bind<float>(recoilSettings, "Recoil Angle Multi", 1.0f, new ConfigDescription("Multiplier For Recoil Angle, Lower = Steeper Angle.", new AcceptableValueRange<float>(0.8f, 1.2f), new ConfigurationManagerAttributes { Order = 2 }));
             ConvergenceMulti = Config.Bind<float>(recoilSettings, "Convergence Multi", 1.0f, new ConfigDescription("AKA Auto-Compensation. Higher = Snappier Recoil, Faster Reset And Tighter Recoil Pattern.", new AcceptableValueRange<float>(0f, 40f), new ConfigurationManagerAttributes { Order = 1 }));
 
-            EnableHybridRecoil = Config.Bind<bool>(advancedRecoilSettings, "Enable Hybrid Recoil System", false, new ConfigDescription("Combines Steady Recoil Climb With Auto-Compensation. If You Do Not Attempt To Control Recoil, Auto-Compensation Will Decrease Resulting In More Muzzle Flip. If You Control The Recoil, Auto-Comp Increases And Muzzle Flip Decreases.", null, new ConfigurationManagerAttributes { Order = 100 }));
+            EnableHybridRecoil = Config.Bind<bool>(advancedRecoilSettings, "Enable Hybrid Recoil System", true, new ConfigDescription("Combines Steady Recoil Climb With Auto-Compensation. If You Do Not Attempt To Control Recoil, Auto-Compensation Will Decrease Resulting In More Muzzle Flip. If You Control The Recoil, Auto-Comp Increases And Muzzle Flip Decreases.", null, new ConfigurationManagerAttributes { Order = 100 }));
             HybridForAll = Config.Bind<bool>(advancedRecoilSettings, "Enable Hybrid Recoil For All Weapons", false, new ConfigDescription("By Default This Hybrid System Is Only Enabled For Pistols And Stockless/Folded Stocked Weapons.", null, new ConfigurationManagerAttributes { Order = 90 }));
             EnableHybridReset = Config.Bind<bool>(advancedRecoilSettings, "Enable Recoil Reset For Hybrid Recoil", true, new ConfigDescription("Enables Recoil Reset For Pistols And Stockless/Folded Stocked Weapons That Are Using Hybrid Recoil, If The Other Reset Options Are Enabled.", null, new ConfigurationManagerAttributes { Order = 90 }));
             PlayerControlMulti = Config.Bind<float>(advancedRecoilSettings, "Player Control Strength.", 100f, new ConfigDescription("How Quickly The Weapon Responds To Mouse Input If Using The Hybrid Recoil System.", new AcceptableValueRange<float>(0f, 200f), new ConfigurationManagerAttributes { Order = 85 }));
             ResetVertical = Config.Bind<bool>(advancedRecoilSettings, "Enable Vertical Reset", true, new ConfigDescription("Enables Weapon Reseting Back To Original Vertical Position.", null, new ConfigurationManagerAttributes { Order = 80 }));
             ResetHorizontal = Config.Bind<bool>(advancedRecoilSettings, "Enable Horizontal Reset", false, new ConfigDescription("Enables Weapon Reseting Back To Original Horizontal Position.", null, new ConfigurationManagerAttributes { Order = 70 }));
             ResetSpeed = Config.Bind<float>(advancedRecoilSettings, "Reset Speed", 0.005f, new ConfigDescription("How Fast The Weapon's Vertical Position Resets After Firing. Weapon's Convergence Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 60 }));
-            ResetSensitivity = Config.Bind<float>(advancedRecoilSettings, "Reset Sensitvity", 0.14f, new ConfigDescription("The Amount Of Mouse Movement After Firing Needed To Cancel Reseting Back To Weapon's Original Position.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 50 }));
+            ResetSensitivity = Config.Bind<float>(advancedRecoilSettings, "Reset Sensitvity", 0.14f, new ConfigDescription("The Amount Of Mouse Movement Needed After Firing Needed To Cancel Reseting Back To Weapon's Original Position. Lower = Less Movement Needed.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 50 }));
+            NewPOASensitivity = Config.Bind<float>(advancedRecoilSettings, "Reset Position Shift Sensitvity", 0.5f, new ConfigDescription("Multi For The Amount Of Mouse Movement Needed While Firing To Change The Position To Where Aim Will Reset After Firing. Lower = Less Movement Needed.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 45 }));
             RecoilSmoothness = Config.Bind<float>(advancedRecoilSettings, "Recoil Smoothness", 0.05f, new ConfigDescription("How Fast Recoil Moves Weapon While Firing, Higher Value Increases Smoothness.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 40 }));
             RecoilClimbFactor = Config.Bind<float>(advancedRecoilSettings, "Recoil Climb Multi.", 0.15f, new ConfigDescription("Multiplier For How Much Non-Pistols Climbs Vertically Per Shot. Weapon's Vertical Recoil Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 30 }));
             PistolRecClimbFactor = Config.Bind<float>(advancedRecoilSettings, "Pistol Recoil Climb Multi", 0.08f, new ConfigDescription("Multiplier For How Much Pistols Vertically Per Shot. Weapon's Vertical Recoil Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 29 }));
@@ -954,9 +936,9 @@ namespace RealismMod
             EnablePlayerArmorZones = Config.Bind<bool>(ballSettings, "Enable Armor Hit Zones For Player.", true, new ConfigDescription("Enables Player To Use New Hit Zones.", null, new ConfigurationManagerAttributes { Order = 20 }));
             EnableArmPen = Config.Bind<bool>(ballSettings, "Enable Increased Arm Penetration", true, new ConfigDescription("Arm 'Armor' Is Reduced to Lvl 1, And Reduces Pen Of Bullets That Pass Through Them By A Lot Less. Arms Soak Up A Lot Less Damage Therefore Damage To Chest Is Increased.", null, new ConfigurationManagerAttributes { Order = 40 }));
             EnableHitSounds = Config.Bind<bool>(ballSettings, "Enable Hit Sounds", true, new ConfigDescription("Enables Additional Sounds To Be Played When Hitting The New Body Zones And Armor Hit Sounds By Material.", null, new ConfigurationManagerAttributes { Order = 50 }));
-            FleshHitSoundMulti = Config.Bind<float>(ballSettings, "FleshHit Sound Multi..", 0.5f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 60 }));
-            ArmorCloseHitSoundMulti = Config.Bind<float>(ballSettings, "Distant Armor Hit Sound Multi..", 0.5f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 70 }));
-            ArmorFarHitSoundMulti = Config.Bind<float>(ballSettings, "Close Armor Hit Sound Mutli..", 0.75f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 80 }));
+            FleshHitSoundMulti = Config.Bind<float>(ballSettings, "FleshHit Sound Multi.", 0.3f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 60 }));
+            ArmorCloseHitSoundMulti = Config.Bind<float>(ballSettings, "Distant Armor Hit Sound Multi.", 0.75f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 70 }));
+            ArmorFarHitSoundMulti = Config.Bind<float>(ballSettings, "Close Armor Hit Sound Mutli.", 0.25f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 80 }));
             EnableRealArmorClass = Config.Bind<bool>(ballSettings, "Show Real Armor Class", true, new ConfigDescription("Requiures Restart. Instead Of Showing The Armor's Class As A Number, Use The Real Armor Classification Instead.", null, new ConfigurationManagerAttributes { Order = 90 }));
             EnableRagdollFix = Config.Bind<bool>(ballSettings, "Enable Ragdoll Fix (Experimental)", true, new ConfigDescription("Requiures Restart. Enables Fix For Ragdolls Flying Into The Stratosphere.", null, new ConfigurationManagerAttributes { Order = 100 }));
             RagdollForceModifier = Config.Bind<float>(ballSettings, "Ragdoll Force Modifier", 1f, new ConfigDescription("Requires Ragdoll Fix To Be Enabled.", new AcceptableValueRange<float>(0f, 10f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 110 }));
@@ -996,22 +978,22 @@ namespace RealismMod
             EnableDeafen = Config.Bind<bool>(deafSettings, "Enable Deafening", true, new ConfigDescription("Requiures Restart, And For Ballistics And Recoil/Attachment Overhauls To Be Enabled. Enables Gunshots And Explosions Deafening The Player. Requires Headset Changes To Be Enabled In The Config App.", null, new ConfigurationManagerAttributes { Order = 1 }));
 
             EnableReloadPatches = Config.Bind<bool>(speed, "Enable Reload And Chamber Speed Changes", true, new ConfigDescription("Requires Restart. Weapon Weight, Magazine Weight, Attachment Reload And Chamber Speed Stat, Balance, Ergo And Arm Injury Affect Reload And Chamber Speed.", null, new ConfigurationManagerAttributes { Order = 17 }));
-            GlobalAimSpeedModifier = Config.Bind<float>(speed, "Aim Speed Multi.", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16 }));
-            GlobalReloadSpeedMulti = Config.Bind<float>(speed, "Magazine Reload Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15 }));
-            GlobalFixSpeedMulti = Config.Bind<float>(speed, "Malfunction Fix Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14 }));
-            GlobalUBGLReloadMulti = Config.Bind<float>(speed, "UBGL Reload Speed Multi", 1.35f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13, IsAdvanced = true }));
-            RechamberPistolSpeedMulti = Config.Bind<float>(speed, "Pistol Rechamber Speed Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true }));
-            GlobalRechamberSpeedMulti = Config.Bind<float>(speed, "Rechamber Speed Multi", 1.4f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11 }));
-            GlobalBoltSpeedMulti = Config.Bind<float>(speed, "Bolt Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10 }));
-            GlobalShotgunRackSpeedFactor = Config.Bind<float>(speed, "Shotgun Rack Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 9 }));
-            GlobalCheckChamberSpeedMulti = Config.Bind<float>(speed, "Chamber Check Speed Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 8 }));
-            GlobalCheckChamberShotgunSpeedMulti = Config.Bind<float>(speed, "Shotgun Chamber Check Speed Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7, IsAdvanced = true }));
-            GlobalCheckChamberPistolSpeedMulti = Config.Bind<float>(speed, "Pistol Chamber Check Speed Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true }));
-            GlobalCheckAmmoPistolSpeedMulti = Config.Bind<float>(speed, "Pistol Check Ammo Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true }));
-            GlobalCheckAmmoMulti = Config.Bind<float>(speed, "Check Ammo Multi.", 1.3f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4 }));
-            GlobalArmHammerSpeedMulti = Config.Bind<float>(speed, "Arm Hammer, Bolt Release, Slide Release Speed Multi.", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
-            QuickReloadSpeedMulti = Config.Bind<float>(speed, "Quick Reload Multi", 1.4f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
-            InternalMagReloadMulti = Config.Bind<float>(speed, "Internal Magazine Reload", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 5.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1 }));
+            GlobalAimSpeedModifier = Config.Bind<float>(speed, "Aim Speed Multi.", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16 }));
+            GlobalReloadSpeedMulti = Config.Bind<float>(speed, "Magazine Reload Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15 }));
+            GlobalFixSpeedMulti = Config.Bind<float>(speed, "Malfunction Fix Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14 }));
+            GlobalUBGLReloadMulti = Config.Bind<float>(speed, "UBGL Reload Speed Multi", 1.35f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13, IsAdvanced = true }));
+            RechamberPistolSpeedMulti = Config.Bind<float>(speed, "Pistol Rechamber Speed Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true }));
+            GlobalRechamberSpeedMulti = Config.Bind<float>(speed, "Rechamber Speed Multi", 1.4f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11 }));
+            GlobalBoltSpeedMulti = Config.Bind<float>(speed, "Bolt Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10 }));
+            GlobalShotgunRackSpeedFactor = Config.Bind<float>(speed, "Shotgun Rack Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 9 }));
+            GlobalCheckChamberSpeedMulti = Config.Bind<float>(speed, "Chamber Check Speed Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 8 }));
+            GlobalCheckChamberShotgunSpeedMulti = Config.Bind<float>(speed, "Shotgun Chamber Check Speed Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7, IsAdvanced = true }));
+            GlobalCheckChamberPistolSpeedMulti = Config.Bind<float>(speed, "Pistol Chamber Check Speed Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true }));
+            GlobalCheckAmmoPistolSpeedMulti = Config.Bind<float>(speed, "Pistol Check Ammo Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true }));
+            GlobalCheckAmmoMulti = Config.Bind<float>(speed, "Check Ammo Multi.", 1.3f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4 }));
+            GlobalArmHammerSpeedMulti = Config.Bind<float>(speed, "Arm Hammer, Bolt Release, Slide Release Speed Multi.", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
+            QuickReloadSpeedMulti = Config.Bind<float>(speed, "Quick Reload Multi", 1.4f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2 }));
+            InternalMagReloadMulti = Config.Bind<float>(speed, "Internal Magazine Reload", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1 }));
 
             EnableSprintPenalty = Config.Bind<bool>(weapAimAndPos, "Enable Sprint Aim Penalties", true, new ConfigDescription("ADS Out Of Sprint Has A Short Delay, Reduced Aim Speed And Increased Sway. The Longer You Sprint The Bigger The Penalty.", null, new ConfigurationManagerAttributes { Order = 240 }));
             EnableTacSprint = Config.Bind<bool>(weapAimAndPos, "Enable High Ready Sprint Animation", false, new ConfigDescription("Enables Usage Of High Ready Sprint Animation When Sprinting From High Ready Position.", null, new ConfigurationManagerAttributes { Order = 230 }));

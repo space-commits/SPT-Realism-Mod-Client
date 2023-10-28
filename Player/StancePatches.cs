@@ -537,6 +537,10 @@ namespace RealismMod
                         __instance.HandsContainer.HandsRotation.Zero = __instance.RotationZeroSum;
                         return false;
                     }
+                    else 
+                    {
+                        targetPosition = Vector3.zero;
+                    }
 
                     __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + collidingModifier * targetPosition;
                     __instance.HandsContainer.HandsRotation.Zero = __instance.RotationZeroSum;

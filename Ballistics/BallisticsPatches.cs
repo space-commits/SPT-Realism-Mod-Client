@@ -292,7 +292,7 @@ namespace RealismMod
         {
             float dist = CameraClass.Instance.Distance(pos);
             float volClose = 2f * Plugin.FleshHitSoundMulti.Value;
-            float volDist = 5.6f * Plugin.FleshHitSoundMulti.Value;
+            float volDist = 7f * Plugin.FleshHitSoundMulti.Value;
             float distThreshold = 35f;
 
             if (hitZone == EBodyHitZone.Spine)
@@ -406,10 +406,8 @@ namespace RealismMod
                 }
 
                 bool hasArmArmor = false;
-                AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
-                BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
-
                 float KE = 1f;
+                BulletClass ammo = null;
                 if (damageInfo.DamageType == EDamageType.Melee)
                 {
                     Weapon weap = damageInfo.Weapon as Weapon;
@@ -419,6 +417,8 @@ namespace RealismMod
                 }
                 else 
                 {
+                    AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
+                    ammo = new BulletClass("newAmmo", ammoTemp);
                     KE = (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f;
                 }
 
@@ -879,7 +879,6 @@ namespace RealismMod
                 armorDamageActual = damageInfo.ArmorDamage;
                 float meleeDamage = isBayonet ? damageInfo.Damage : damageInfo.Damage * 2f;
                 KE = meleeDamage * 50f;
-                Logger.LogWarning("isBayonet " + isBayonet);
             }
 
             float bluntThrput = hitSecondaryArmor == true ? __instance.Template.BluntThroughput * 1.15f : __instance.Template.BluntThroughput;

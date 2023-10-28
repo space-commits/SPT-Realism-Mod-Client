@@ -157,37 +157,6 @@ namespace RealismMod
         }
     }
 
-    public class SetAimingSlowdownPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(MovementContext).GetMethod("SetAimingSlowdown", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(MovementContext __instance, bool isAiming)
-        {
-            
-            Player player = (Player)AccessTools.Field(typeof(MovementContext), "_player").GetValue(__instance);
-            if (player.IsYourPlayer == true)
-            {
-                if (isAiming)
-                {
-                    //slow is hard set to 0.33 when called, 0.4-0.43 feels best.
-                    float baseSpeed = PlayerProperties.AimMoveSpeedBase * WeaponProperties.AimMoveSpeedWeapModifier * PlayerProperties.AimMoveSpeedInjuryMulti;
-                    float totalSpeed = StanceController.IsActiveAiming ? baseSpeed * 1.25f : baseSpeed;
-                    totalSpeed = WeaponProperties._WeapClass == "pistol" ? totalSpeed + 0.15f : totalSpeed;
-                    __instance.AddStateSpeedLimit(Mathf.Clamp(totalSpeed, 0.3f, 0.9f), Player.ESpeedLimit.Aiming);
-
-                    return false;
-                }
-                __instance.RemoveStateSpeedLimit(Player.ESpeedLimit.Aiming);
-                return false;
-            }
-            return true;
-        }
-    }
-
     public class SprintAccelerationPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
