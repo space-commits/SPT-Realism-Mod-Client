@@ -15,6 +15,7 @@ using WeaponSkills = EFT.SkillManager.GClass1638;
 using ProcessorClass = GClass2039;
 using StaminaLevelClass = GClass674<float>;
 using WeightClass = GClass675<float>;
+using EFT.UI;
 
 namespace RealismMod
 {
