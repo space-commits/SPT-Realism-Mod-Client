@@ -191,6 +191,8 @@ namespace RealismMod
             {
                 bool gearFactorEnabled = Plugin.EnableFSPatch.Value || Plugin.EnableNVGPatch.Value;
 
+                StanceController.CanResetAimDrain = true;
+
                 if (PlayerProperties.SprintBlockADS && !PlayerProperties.TriedToADSFromSprint) 
                 {
                     PlayerProperties.TriedToADSFromSprint = true;

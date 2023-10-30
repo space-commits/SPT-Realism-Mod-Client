@@ -107,6 +107,8 @@ namespace RealismMod
         public static bool DidStanceWiggle = false;
         public static float WiggleReturnSpeed = 1f;
 
+        public static bool CanResetAimDrain = false;
+
         public static Dictionary<string, bool> LightDictionary = new Dictionary<string, bool>();
 
         public static bool toggledLight = false;
@@ -119,30 +121,46 @@ namespace RealismMod
             Target = 0f
         };
 
-        public static void SetStanceStamina(Player player, Player.FirearmController fc)
+        public static void SetStanceStamina(Player player, Player.FirearmController fc, ManualLogSource logger)
         {
-
             if (!PlayerProperties.IsSprinting)
             {
                 gotCurrentStam = false;
                 if (fc.Item.WeapClass != "pistol")
                 {
                     bool isActuallyBracing = !IsMounting && IsBracing;
-                    if (IsBracing && !IsMounting && !Plugin.EnableIdleStamDrain.Value) 
+                    bool isFiringFromStance = RecoilController.IsFiring && (IsHighReady || IsLowReady || IsShortStock);
+                    bool canDoIdleStamDrain = Plugin.EnableIdleStamDrain.Value && !Plugin.IsAiming && !IsActiveAiming && !IsMounting && !IsBracing && !player.IsInPronePose && !isFiringFromStance;
+                    bool canDoHighRegen = IsHighReady && !RecoilController.IsFiring && !Plugin.IsAiming;
+                    bool canDoShortRegen = IsShortStock && !RecoilController.IsFiring && !Plugin.IsAiming;
+                    bool canDoLowRegen = IsLowReady && !RecoilController.IsFiring && !Plugin.IsAiming;
+                    bool canDoActiveAimDrain = IsActiveAiming && Plugin.EnableIdleStamDrain.Value;
+                    bool aiming = Plugin.IsAiming && CanResetAimDrain;
+
+                    if (isActuallyBracing && !Plugin.EnableIdleStamDrain.Value)
                     {
                         player.Physical.Aim(0f);
                     }
-                    else if (Plugin.IsAiming || (Plugin.EnableIdleStamDrain.Value && !IsActiveAiming && !IsMounting && !IsBracing && !player.IsInPronePose && (!IsHighReady && !IsLowReady && !IsShortStock && !RecoilController.IsFiring)))
+                    else if (aiming)
                     {
+                        logger.LogWarning("aimig");
                         player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.8f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
+                        CanResetAimDrain = false;
                     }
-                    else if (IsActiveAiming && Plugin.EnableIdleStamDrain.Value)
+                    else if (canDoIdleStamDrain)
+                    {
+                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.75f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
+                        logger.LogWarning("idle");
+                    }
+                    else if (canDoActiveAimDrain)
                     {
                         player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.2f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                     }
-                    else if (!Plugin.EnableIdleStamDrain.Value)
+                    else if (CanResetAimDrain)
                     {
+                        logger.LogWarning("aimig no idle stam drain");
                         player.Physical.Aim(0f);
+                        CanResetAimDrain = false;
                     }
 
                     if (IsPatrolStance)
@@ -150,17 +168,17 @@ namespace RealismMod
                         player.Physical.Aim(0f);
                         player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.04f) * PlayerProperties.ADSInjuryMulti)), player.Physical.HandsStamina.TotalCapacity);
                     }
-                    else if (IsHighReady && !RecoilController.IsFiring && !Plugin.IsAiming)
+                    else if (canDoHighRegen)
                     {
                         player.Physical.Aim(0f);
                         player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.01f) * PlayerProperties.ADSInjuryMulti)), player.Physical.HandsStamina.TotalCapacity);
                     }
-                    else if (IsMounting || (IsLowReady && !RecoilController.IsFiring && !Plugin.IsAiming))
+                    else if (IsMounting || canDoLowRegen)
                     {
                         player.Physical.Aim(0f);
                         player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.03f) * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
                     }
-                    else if (isActuallyBracing || (IsShortStock && !RecoilController.IsFiring && !Plugin.IsAiming))
+                    else if (isActuallyBracing || canDoShortRegen)
                     {
                         player.Physical.Aim(0f);
                         player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponProperties.ErgonomicWeight / 100f)) * 0.02f) * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
@@ -194,7 +212,7 @@ namespace RealismMod
             }
         }
 
-        public static void ResetStanceStamina(Player player)
+        public static void ResetStanceStamina(Player player, ManualLogSource logger)
         {
             player.Physical.Aim(0f);
             player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (0.04f * PlayerProperties.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);

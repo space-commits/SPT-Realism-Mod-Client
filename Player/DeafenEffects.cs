@@ -79,7 +79,7 @@ namespace RealismMod
                 case "Low":
                     return 0.92f;
                 case "High":
-                    return 0.85f;
+                    return 0.8f;
                 default:
                     return 1f;
             }
@@ -290,7 +290,7 @@ namespace RealismMod
         private static bool Prefix(HeadsetTemplate template, BetterAudio __instance)
         {
             FieldInfo float_0Field = AccessTools.Field(typeof(BetterAudio), "float_0");
-            bool hasHeadset = template != null;
+            bool hasHeadset = template != null && template?._id != null;
             float gunT;
             float mainT;
 
@@ -300,7 +300,7 @@ namespace RealismMod
             DeafeningController.Compressor = hasHeadset ? template.CompressorVolume : -80f;
             DeafeningController.AmbientVolume = hasHeadset ? template.AmbientVolume : 0f;
             DeafeningController.AmbientOccluded = hasHeadset ? (template.AmbientVolume - 15f) : -5f;
-            DeafeningController.GunsVolume = hasHeadset ? (template.DryVolume) : -5f;
+            DeafeningController.GunsVolume = hasHeadset ? template.DryVolume : -5f;
 
             DeafeningController.CompressorDistortion = hasHeadset ? template.Distortion : 0.277f;
             DeafeningController.CompressorResonance = hasHeadset ? template.Resonance : 2.47f;

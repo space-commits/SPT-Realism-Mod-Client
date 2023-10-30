@@ -422,9 +422,10 @@ namespace RealismMod
                     }
                     ReloadController.ReloadStateCheck(__instance, fc, Logger);
                     AimController.ADSCheck(__instance, fc, Logger);
+
                     if (Plugin.EnableStanceStamChanges.Value)
                     {
-                        StanceController.SetStanceStamina(__instance, fc);
+                        StanceController.SetStanceStamina(__instance, fc, Logger);
                     }
 
                     float remainStamPercent = __instance.Physical.HandsStamina.Current / __instance.Physical.HandsStamina.TotalCapacity;
@@ -432,7 +433,7 @@ namespace RealismMod
                 }
                 else if (Plugin.EnableStanceStamChanges.Value)
                 {
-                    StanceController.ResetStanceStamina(__instance);
+                    StanceController.ResetStanceStamina(__instance, Logger);
                 }
 
                 __instance.Physical.HandsStamina.Current = Mathf.Max(__instance.Physical.HandsStamina.Current, 1f);
