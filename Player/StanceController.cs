@@ -656,16 +656,20 @@ namespace RealismMod
             float movementFactor = PlayerProperties.IsMoving ? 1.3f : 1f;
 
             //I've no idea wtf is going on here but it sort of works
-            float targetPos = 0.09f;
-            if (!Plugin.IsBlindFiring && !StanceController.CancelPistolStance)
+
+            if (!WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value)
             {
-                targetPos = Plugin.PistolOffsetX.Value;
+                float targetPosX = 0.09f;
+                if (!Plugin.IsBlindFiring && !StanceController.CancelPistolStance)
+                {
+                    targetPosX = Plugin.PistolOffsetX.Value;
+                }
+
+                currentX = Mathf.Lerp(currentX, targetPosX, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * 0.5f);
+                pwa.HandsContainer.WeaponRoot.localPosition = new Vector3(currentX, pwa.HandsContainer.TrackingTransform.localPosition.y, pwa.HandsContainer.TrackingTransform.localPosition.z);
             }
 
-            currentX = Mathf.Lerp(currentX, targetPos, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * 0.5f);
-            pwa.HandsContainer.WeaponRoot.localPosition = new Vector3(currentX, pwa.HandsContainer.TrackingTransform.localPosition.y, pwa.HandsContainer.TrackingTransform.localPosition.z);
-
-            if (!pwa.IsAiming && !StanceController.CancelPistolStance && !Plugin.IsBlindFiring && !StanceController.PistolIsColliding)
+            if (!pwa.IsAiming && !StanceController.CancelPistolStance && !Plugin.IsBlindFiring && !StanceController.PistolIsColliding && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value)
             {
                 pwa.Breath.HipPenalty = WeaponProperties.BaseHipfireInaccuracy * PlayerProperties.SprintHipfirePenalty;
 

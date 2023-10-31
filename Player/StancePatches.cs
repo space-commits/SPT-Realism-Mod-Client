@@ -1045,7 +1045,7 @@ namespace RealismMod
 
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponWorldPos, weapRotation * rhs * currentRotation);
 
-                    if (isPistol && !WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value && !StanceController.IsPatrolStance)
+                    if (isPistol && !StanceController.IsPatrolStance)
                     {
                         if (StanceController.PistolIsCompressed && !Plugin.IsAiming && !isResettingPistol && !Plugin.IsBlindFiring)
                         {
@@ -1066,11 +1066,6 @@ namespace RealismMod
                         hasResetLowReady = true;
                         hasResetShortStock = true;
                         StanceController.DoPistolStances(false, __instance, ref stanceRotation, dt, ref hasResetPistolPos, player, Logger, ref stanceRotationSpeed, ref isResettingPistol, fc);
-                    }
-                    else if(isPistol && Plugin.EnableAltPistol.Value)
-                    {
-                        StanceController.StanceBlender.Target = 0f;
-                        StanceController.StanceTargetPosition = Vector3.zero;
                     }
                     else if (!isPistol || WeaponProperties.HasShoulderContact)
                     {
