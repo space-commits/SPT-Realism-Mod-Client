@@ -278,7 +278,7 @@ namespace RealismMod
                 Vector3 separateIntensityFactors = (Vector3)intensityFactorsField.GetValue(__instance);
                 WeaponSkillsClass buffInfo = (WeaponSkillsClass)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
 
-                str = str > 1 ? str * 1.04f : str;
+                float factoredStr = str > 1 ? str * 1.04f : str;
 
                 float opticRecoilMulti = allowedCalibers.Contains(weaponClass.AmmoCaliber) && Plugin.IsAiming && Plugin.HasOptic ? 0.93f : 1f;
 
@@ -298,7 +298,7 @@ namespace RealismMod
 
                 Vector3 poseIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
-                float factoredDispersion = RecoilController.BaseTotalDispersion * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff * mountingDispModi * opticRecoilMulti * Plugin.DispMulti.Value;
+                float factoredDispersion = RecoilController.BaseTotalDispersion * factoredStr * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff * mountingDispModi * opticRecoilMulti * Plugin.DispMulti.Value;
                 RecoilController.FactoredTotalDispersion = factoredDispersion;
 
                 float angle = Mathf.LerpAngle(mountingAngleModi, 90f, buffInfo.RecoilSupression.y);
@@ -306,7 +306,7 @@ namespace RealismMod
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
 
                 float camShotFactor = Mathf.Min((RecoilController.ShotCount * 0.25f) + 1f, 1.4f);
-                float totalCamRecoil = RecoilController.BaseTotalCamRecoil * str * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * camShotFactor * opticRecoilMulti * Plugin.CamMulti.Value;
+                float totalCamRecoil = RecoilController.BaseTotalCamRecoil * factoredStr * PlayerProperties.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * camShotFactor * opticRecoilMulti * Plugin.CamMulti.Value;
                 RecoilController.FactoredTotalCamRecoil = totalCamRecoil;
 
                 //try inverting for fun
@@ -315,7 +315,7 @@ namespace RealismMod
 
                 float shotFactor = weaponClass.WeapClass == "pistol" && RecoilController.ShotCount >= 1f && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto ? 0.5f : 1f;
                 float totalDispersion = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
-                float totalVerticalRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * mountingVertModi * shotFactor * opticRecoilMulti * Plugin.VertMulti.Value;
+                float totalVerticalRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * factoredStr * PlayerProperties.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * mountingVertModi * shotFactor * opticRecoilMulti * Plugin.VertMulti.Value;
                 float totalHorizontalRecoil = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * PlayerProperties.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * shotFactor * Plugin.HorzMulti.Value;
                 RecoilController.FactoredTotalVRecoil = totalVerticalRecoil;
                 RecoilController.FactoredTotalHRecoil = totalHorizontalRecoil;

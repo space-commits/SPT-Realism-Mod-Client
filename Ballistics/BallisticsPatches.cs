@@ -203,11 +203,11 @@ namespace RealismMod
             }
         }
 
-        private static void TryDoFalldown(Player player, float kineticEnergy, bool calf, bool isPlayer)
+        private static void TryDoKnockdown(Player player, float kineticEnergy, bool bonusChance, bool isPlayer)
         {
             float rndNumber = UnityEngine.Random.Range(0, 101);
             float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
-            float hitLocationModifier = calf ? 2f : 1f;
+            float hitLocationModifier = bonusChance ? 2f : 1f;
             float totalChance = Mathf.Round(Plugin.FallBaseChance.Value * kineticEnergyFactor * hitLocationModifier);
 
             if (rndNumber <= totalChance)
@@ -330,7 +330,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static void Prefix(Player __instance, ref DamageInfo damageInfo)
+        private static void Prefix(Player __instance, ref DamageInfo damageInfo, EBodyPart bodyPartType)
         {
             if (damageInfo.DamageType == EDamageType.Fall && damageInfo.Damage >= 15f) 
             {
@@ -519,18 +519,23 @@ namespace RealismMod
                     }
                 }
 
-                BodyPartCollider bpc = damageInfo.HittedBallisticCollider as BodyPartCollider;
-                float hitPartHP = __instance.ActiveHealthController.GetBodyPartHealth(bpc.BodyPartType).Current;
+                float hitPartHP = __instance.ActiveHealthController.GetBodyPartHealth(bodyPartType).Current;
                 float toBeHP = hitPartHP - damageInfo.Damage;
+                bool canDoKnockdown = ((!__instance.IsYourPlayer && Plugin.CanFellBot.Value) || (__instance.IsYourPlayer && Plugin.CanFellPlayer.Value));
+                bool canDoDisarm = ((!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value) || (__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value));
 
-                if ((hitUpperArm || hitForearm) && (toBeHP <= 0f) && ((!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value) || (__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value)))
+                if ((hitUpperArm || hitForearm) && toBeHP <= 0f && canDoDisarm)
                 {
                     TryDoDisarm(__instance, KE, hasArmArmor, hitForearm);
                 }
 
-                if ((hitCalf || hitThigh) && (toBeHP <= 0f) && ((!__instance.IsYourPlayer && Plugin.CanFellBot.Value) || (__instance.IsYourPlayer && Plugin.CanFellPlayer.Value))) 
+                bool doLegKnockdown = (hitCalf || hitThigh) && toBeHP <= 0f;
+                bool doHeadshotKnockdown = bodyPartType == EBodyPart.Head && toBeHP > 0f && damageInfo.Damage >= 1;
+                bool hasBonusChance = hitCalf || bodyPartType == EBodyPart.Head;
+
+                if (canDoKnockdown && (doLegKnockdown || doHeadshotKnockdown)) 
                 {
-                    TryDoFalldown(__instance, KE, hitCalf, __instance.IsYourPlayer);    
+                    TryDoKnockdown(__instance, KE, hasBonusChance, __instance.IsYourPlayer);    
                 }
 
             }
