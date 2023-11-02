@@ -129,11 +129,11 @@ namespace RealismMod
                 if (fc.Item.WeapClass != "pistol")
                 {
                     bool isActuallyBracing = !IsMounting && IsBracing;
-                    bool isFiringFromStance = RecoilController.IsFiring && (IsHighReady || IsLowReady || IsShortStock);
-                    bool canDoIdleStamDrain = Plugin.EnableIdleStamDrain.Value && !Plugin.IsAiming && !IsActiveAiming && !IsMounting && !IsBracing && !player.IsInPronePose && !isFiringFromStance;
-                    bool canDoHighRegen = IsHighReady && !RecoilController.IsFiring && !Plugin.IsAiming;
-                    bool canDoShortRegen = IsShortStock && !RecoilController.IsFiring && !Plugin.IsAiming;
-                    bool canDoLowRegen = IsLowReady && !RecoilController.IsFiring && !Plugin.IsAiming;
+                    bool shooting = StanceController.IsFiringFromStance && (IsHighReady || IsLowReady);
+                    bool canDoIdleStamDrain = Plugin.EnableIdleStamDrain.Value && ((!Plugin.IsAiming && !IsActiveAiming && !IsMounting && !IsBracing && !player.IsInPronePose) || shooting);
+                    bool canDoHighRegen = IsHighReady && !StanceController.IsFiringFromStance && !Plugin.IsAiming;
+                    bool canDoShortRegen = IsShortStock && !StanceController.IsFiringFromStance && !Plugin.IsAiming;
+                    bool canDoLowRegen = IsLowReady && !StanceController.IsFiringFromStance && !Plugin.IsAiming;
                     bool canDoActiveAimDrain = IsActiveAiming && Plugin.EnableIdleStamDrain.Value;
                     bool aiming = Plugin.IsAiming && CanResetAimDrain;
 
@@ -143,14 +143,12 @@ namespace RealismMod
                     }
                     else if (aiming)
                     {
-                        logger.LogWarning("aimig");
                         player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.8f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                         CanResetAimDrain = false;
                     }
                     else if (canDoIdleStamDrain)
                     {
                         player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.75f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
-                        logger.LogWarning("idle");
                     }
                     else if (canDoActiveAimDrain)
                     {
@@ -158,7 +156,6 @@ namespace RealismMod
                     }
                     else if (CanResetAimDrain)
                     {
-                        logger.LogWarning("aimig no idle stam drain");
                         player.Physical.Aim(0f);
                         CanResetAimDrain = false;
                     }
@@ -656,7 +653,6 @@ namespace RealismMod
             float movementFactor = PlayerProperties.IsMoving ? 1.3f : 1f;
 
             //I've no idea wtf is going on here but it sort of works
-
             if (!WeaponProperties.HasShoulderContact && Plugin.EnableAltPistol.Value)
             {
                 float targetPosX = 0.09f;

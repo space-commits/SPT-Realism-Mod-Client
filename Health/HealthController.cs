@@ -800,8 +800,6 @@ namespace RealismMod
             AddCustomEffect(surg, false);
         }
 
-
-
         public static void HandleHealtheffects(string medType, MedsClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool canHealHBleed, bool canHealLBleed, bool canHealFract)
         {
             float vitalitySkill = player.Skills.VitalityBuffBleedChanceRed.Value;
