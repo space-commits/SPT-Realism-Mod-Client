@@ -143,16 +143,16 @@ namespace RealismMod
                     }
                     else if (aiming)
                     {
-                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.8f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
+                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.95f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                         CanResetAimDrain = false;
                     }
                     else if (canDoIdleStamDrain)
                     {
-                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.75f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
+                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.9f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                     }
                     else if (canDoActiveAimDrain)
                     {
-                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.2f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
+                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponProperties.ErgonomicWeight * 0.6f * ((1f - PlayerProperties.ADSInjuryMulti) + 1f));
                     }
                     else if (CanResetAimDrain)
                     {

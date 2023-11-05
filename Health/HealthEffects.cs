@@ -89,9 +89,10 @@ namespace RealismMod
         public Player Player { get; }
         public float HpRegened { get; set; }
         public float Delay { get; set; }
-        private bool hasRemovedTrnqt = false;
         public EHealthEffectType EffectType { get; }
         public float HpRegenLimit { get; }
+        private bool hasRemovedTrnqt = false;
+        private bool hasNotified = false;
 
         public SurgeryEffect(float hpTick, float? dur, EBodyPart part, Player player, float delay, float limit)
         {
@@ -110,10 +111,17 @@ namespace RealismMod
         {
             if (Delay <= 0f)
             {
-                if (!hasRemovedTrnqt)
+                if (!hasNotified) 
+                {
+                    NotificationManagerClass.DisplayMessageNotification("Surgery Kit Applied On " + BodyPart + ", Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
+                    hasNotified = true; 
+                }
+
+                if (!hasRemovedTrnqt && RealismMod.RealismHealthController.HasEffectOfType(typeof(TourniquetEffect), BodyPart))
                 {
                     RealismHealthController.RemoveEffectOfType(typeof(TourniquetEffect), BodyPart);
                     hasRemovedTrnqt = true;
+                    NotificationManagerClass.DisplayMessageNotification("Surgical Kit Used, Removing Tourniquet Effect Present On Limb: " + BodyPart, EFT.Communications.ENotificationDurationType.Long);
                 }
 
                 float currentHp = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;

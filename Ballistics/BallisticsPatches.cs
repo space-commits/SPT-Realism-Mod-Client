@@ -291,9 +291,9 @@ namespace RealismMod
         private static void playBodyHitSound(EBodyHitZone hitZone, Vector3 pos, string hitBox)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 2f * Plugin.FleshHitSoundMulti.Value;
-            float volDist = 7f * Plugin.FleshHitSoundMulti.Value;
-            float distThreshold = 35f;
+            float volClose = Plugin.FleshHitSoundMulti.Value;
+            float volDist = 4f * Plugin.FleshHitSoundMulti.Value;
+            float distThreshold = 30f;
 
             if (hitZone == EBodyHitZone.Spine)
             {
@@ -521,7 +521,7 @@ namespace RealismMod
 
                 float hitPartHP = __instance.ActiveHealthController.GetBodyPartHealth(bodyPartType).Current;
                 float toBeHP = hitPartHP - damageInfo.Damage;
-                bool canDoKnockdown = ((!__instance.IsYourPlayer && Plugin.CanFellBot.Value) || (__instance.IsYourPlayer && Plugin.CanFellPlayer.Value));
+                bool canDoKnockdown =  !__instance.IsInPronePose && ((!__instance.IsYourPlayer && Plugin.CanFellBot.Value) || (__instance.IsYourPlayer && Plugin.CanFellPlayer.Value));
                 bool canDoDisarm = ((!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value) || (__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value));
 
                 if ((hitUpperArm || hitForearm) && toBeHP <= 0f && canDoDisarm)
@@ -675,18 +675,17 @@ namespace RealismMod
             Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 40, 4.25f, EOcclusionTest.Regular);
         }
 
-
         private static void playArmorHitSound(EArmorMaterial mat, Vector3 pos, bool isHelm)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 4.65f * Plugin.ArmorCloseHitSoundMulti.Value;
-            float volDist = 5.5f * Plugin.ArmorFarHitSoundMulti.Value;
-            float distThreshold = 35f;
-
+            float volClose = 0.45f * Plugin.ArmorCloseHitSoundMulti.Value;
+            float volDist = 4f * Plugin.ArmorFarHitSoundMulti.Value;
+            float distThreshold = 30f;
+            
             if (mat == EArmorMaterial.Aramid)
             {
                 string audioClip = "aramid_1.wav";
-                if (dist >= 40)
+                if (dist >= distThreshold)
                 {
                     audioClip = rndNum == 0 ? "impact_dist_1.wav" : rndNum == 1 ? "impact_dist_2.wav" : "impact_dist_3.wav";
                 }
@@ -744,7 +743,7 @@ namespace RealismMod
                     audioClip = rndNum == 0 ? "metal_1.wav" : rndNum == 1 ? "metal_2.wav" : "metal_3.wav";
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? 4.3f * Plugin.ArmorFarHitSoundMulti.Value : 2.25f * Plugin.ArmorCloseHitSoundMulti.Value, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist * 0.5f : volClose * 0.75f, EOcclusionTest.Regular);
             }
             else if (mat == EArmorMaterial.Glass)
             {
