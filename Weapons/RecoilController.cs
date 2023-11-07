@@ -39,14 +39,17 @@ namespace RealismMod
         public static float FactoredTotalDispersion;
         public static float FactoredTotalCamRecoil;
 
-        public static void DoCantedRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation) 
+        public static void DoVisualRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation) 
         {
             if (RecoilController.IsFiringWiggle)
             {
-                float recoilAmount = RecoilController.FactoredTotalHRecoil / 20f; 
-                float recoilSpeed = Mathf.Max(RecoilController.BaseTotalConvergence * 0.75f, 14f);
-                float totalRecoil = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * recoilSpeed , 1.0f));
-                targetRecoil = new Vector3(0f, totalRecoil, 0f);
+                float cantedRecoilAmount = RecoilController.FactoredTotalHRecoil / 20f; 
+                float cantedRecoilSpeed = Mathf.Max(RecoilController.BaseTotalConvergence * 0.75f, 14f);
+                float totalCantedRecoil = Mathf.Lerp(-cantedRecoilAmount, cantedRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f));
+
+/*                float totalVertical = Mathf.Lerp(-cantedRecoilAmount, cantedRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed * Plugin.test1.Value, 1.0f));
+*/
+                targetRecoil = new Vector3(0f, totalCantedRecoil, 0f);
             }
             else
             { 

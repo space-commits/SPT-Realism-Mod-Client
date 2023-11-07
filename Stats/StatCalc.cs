@@ -164,7 +164,7 @@ namespace RealismMod
                 float totalTorqueFactorInverse = 1f + (totalTorque > 14 ? totalTorque / 100f : totalTorque / -100f);
                 float ergoFactoredWeight = Math.Max(1f, totalWeight * (1f - ergoDelta));
                 float balancedErgoFactoredWeight = Math.Max(1f, ergoFactoredWeight * totalTorqueFactorInverse);
-                return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 3.2f, 3.2f) + 1f) / 10f, 1f, 80f);
+                return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 3.2f, 3.2f) + 1f) / 10f, 2.5f, 80f);
             }
             else 
             {
@@ -172,7 +172,7 @@ namespace RealismMod
                 float totalTorqueFactorInverse = 1f + (totalTorque / -100f);;
                 float ergoFactoredWeight = Math.Max(1f, totalWeight * (1f - ergoDelta));
                 float balancedErgoFactoredWeight = Math.Max(1f, ergoFactoredWeight * totalTorqueFactorInverse);
-                return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 2.1f, 3.7f) + 1f) / 750f, 1f, 80f);
+                return Mathf.Clamp((float)(Math.Pow(balancedErgoFactoredWeight * 2.1f, 3.7f) + 1f) / 750f, 2.5f, 80f);
             }
         }
 

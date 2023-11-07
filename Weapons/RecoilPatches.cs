@@ -21,6 +21,7 @@ namespace RealismMod
         private static FieldInfo movementContextField;
         private static FieldInfo playerField;
 
+        private static Vector2 initialRotation = Vector3.zero;
         private static Vector2 recordedRotation = Vector3.zero;
         private static Vector2 targetRotation = Vector3.zero;
         private static bool hasReset = false;
@@ -47,14 +48,22 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static void Prefix(MovementState __instance, Vector2 deltaRotation, bool ignoreClamp)
+        private static bool Prefix(MovementState __instance, Vector2 deltaRotation, bool ignoreClamp)
         {
             MovementContext movementContext = (MovementContext)movementContextField.GetValue(__instance);
             Player player = (Player)playerField.GetValue(movementContext);
 
             if (player.IsYourPlayer)
             {
-                deltaRotation = movementContext.ClampRotation(deltaRotation);
+ 
+                Plugin.MouseRotation = movementContext.ClampRotation(deltaRotation);
+
+                if (!StanceController.IsMounting)
+                {
+                    initialRotation = movementContext.Rotation;
+                }
+
+
                 float fpsFactor = 144f / (1f / Time.unscaledDeltaTime);
 
                 bool hybridBlocksReset = Plugin.EnableHybridRecoil.Value && !WeaponProperties.HasShoulderContact && !Plugin.EnableHybridReset.Value;
@@ -168,7 +177,38 @@ namespace RealismMod
                 {
                     RecoilController.PlayerControl = Mathf.Lerp(RecoilController.PlayerControl, 0f, 0.05f);
                 }
+
+                if (StanceController.IsMounting && !ignoreClamp)
+                {
+                    FirearmController fc = player.HandsController as FirearmController;
+
+                    Vector2 currentRotation = movementContext.Rotation;
+
+                    deltaRotation *= (fc.AimingSensitivity * 0.9f);
+
+                    float lowerClampXLimit = StanceController.IsBracingTop ? -17f : StanceController.IsBracingRightSide ? -4f : -15f;
+                    float upperClampXLimit = StanceController.IsBracingTop ? 17f : StanceController.IsBracingRightSide ? 15f : 1f;
+
+                    float lowerClampYLimit = StanceController.IsBracingTop ? -10f : -8f;
+                    float upperClampYLimit = StanceController.IsBracingTop ? 10f : 15f;
+
+                    float relativeLowerXLimit = initialRotation.x + lowerClampXLimit;
+                    float relativeUpperXLimit = initialRotation.x + upperClampXLimit;
+                    float relativeLowerYLimit = initialRotation.y + lowerClampYLimit;
+                    float relativeUpperYLimit = initialRotation.y + upperClampYLimit;
+
+                    float clampedX = Mathf.Clamp(currentRotation.x + deltaRotation.x, relativeLowerXLimit, relativeUpperXLimit);
+                    float clampedY = Mathf.Clamp(currentRotation.y + deltaRotation.y, relativeLowerYLimit, relativeUpperYLimit);
+
+                    deltaRotation = new Vector2(clampedX - currentRotation.x, clampedY - currentRotation.y);
+
+                    deltaRotation = movementContext.ClampRotation(deltaRotation);
+                    movementContext.Rotation += deltaRotation;
+
+                    return false;
+                }
             }
+            return true;
         }
     }
 

@@ -706,7 +706,7 @@ namespace RealismMod
             new WeaponOverlapViewPatch().Enable();
             new CollisionPatch().Enable();
             new OperateStationaryWeaponPatch().Enable();
-            new RotatePatch().Enable();
+     /*       new RotatePatch().Enable();*/
             new SetTiltPatch().Enable();
 
             //Health
