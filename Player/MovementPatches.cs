@@ -56,10 +56,10 @@ namespace RealismMod
             return (float)Math.Round(currentModifier, 3);
         }
 
-        private static float maxSlopeAngle = 5f;
-        private static float maxSlowdownFactor = 0.48f;
+        private static float maxSlopeAngle = 1f;
+        private static float maxSlowdownFactor = 0.1f;
 
-        public static float GetSlope(Player player) 
+        public static float GetSlope(Player player, ManualLogSource logger) 
         {
             Vector3 movementDirecion = player.MovementContext.MovementDirection.normalized;
             Vector3 position = player.Transform.position;
@@ -75,7 +75,6 @@ namespace RealismMod
                 }
             }
             return slowdownFactor;
-
         }
 
         public static float GetFiringMovementSpeedFactor(Player player, ManualLogSource logger) 
@@ -95,9 +94,10 @@ namespace RealismMod
             float dampingFactor = RecoilController.BaseTotalHandDamping + RecoilController.BaseTotalRecoilDamping;
             float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
             float recoilFactor = RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil;
-            recoilFactor = recoilFactor * dispersionFactor * dampingFactor * convergenceFactor;
+            float ergoFactor = 1f - ((80f - WeaponProperties.ErgoFactor) / 100f);
+            recoilFactor = recoilFactor * dispersionFactor * dampingFactor * convergenceFactor * ergoFactor;
             recoilFactor = fc.Item.WeapClass == "pistol" ? recoilFactor * 0.1f : recoilFactor;
-            float totalRecoilFactor = 1f - ((recoilFactor / 1000f) * RecoilController.ShotCount);
+            float totalRecoilFactor = 1f - ((recoilFactor / 400f) * RecoilController.ShotCount);
             totalRecoilFactor = Mathf.Clamp(totalRecoilFactor, 0.25f, 1f);
             return totalRecoilFactor;
         }
@@ -123,13 +123,12 @@ namespace RealismMod
 
                 if (Utils.IsReady && Plugin.EnableSlopeSpeed.Value)
                 {
-                    slopeFactor = MovementSpeedController.GetSlope(player);
+                    slopeFactor = MovementSpeedController.GetSlope(player, Logger);
                 }
 
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float firingMulti = MovementSpeedController.GetFiringMovementSpeedFactor(player, Logger);
                 float stanceFactor = StanceController.IsPatrolStance ? 1.25f : StanceController.IsHighReady || StanceController.IsShortStock ? 0.95f : 1f;
-
                 __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * PlayerProperties.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti * stanceFactor);
                 return false;
             }
@@ -173,7 +172,7 @@ namespace RealismMod
             {
                 ValueHandler rotationFrameSpan = (ValueHandler)AccessTools.Field(typeof(MovementContext), "_averageRotationX").GetValue(__instance);
 
-                float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;
+                float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player, Logger) : 1f;
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float stanceSpeedBonus = StanceController.IsHighReady && Plugin.EnableTacSprint.Value ? 1.15f : 1f;
                 float stanceAccelBonus = StanceController.IsPatrolStance ? 1.5f : StanceController.IsShortStock ? 0.9f : StanceController.IsLowReady ? 1.3f : StanceController.IsHighReady && Plugin.EnableTacSprint.Value ? 1.7f : StanceController.IsHighReady ? 1.3f : 1f;

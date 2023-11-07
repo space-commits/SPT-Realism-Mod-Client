@@ -638,7 +638,8 @@ namespace RealismMod
                 float recoilFactor = 1f + (RecoilController.BaseTotalVRecoil + RecoilController.BaseTotalHRecoil) / 100f;
                 float totalPlayerWeight = PlayerProperties.TotalUnmodifiedWeight - WeaponProperties.TotalWeaponWeight;
                 float playerWeightFactorBuff = 1f + (totalPlayerWeight / 100f);
-                WeaponProperties.BaseHipfireInaccuracy = 0.4f * player.ProceduralWeaponAnimation.Breath.HipPenalty * (1f - WeaponProperties.ErgoDelta) * convergenceFactor * dispersionFactor * recoilFactor * dampingFactor * playerWeightFactorBuff;
+
+                WeaponProperties.BaseHipfireInaccuracy = Mathf.Clamp(0.3f * player.ProceduralWeaponAnimation.Breath.HipPenalty * (1f - WeaponProperties.ErgoDelta) * convergenceFactor * dispersionFactor * recoilFactor * dampingFactor * playerWeightFactorBuff, 0.3f, 1f);
             }
         }
     }
