@@ -42,6 +42,7 @@ namespace RealismMod
         public Player Player { get; }
         public float Delay { get; set; }
         public EHealthEffectType EffectType { get; }
+        private bool haveNotified = false;
 
         public TourniquetEffect(float hpTick, float? dur, EBodyPart part, Player player, float delay)
         {
@@ -58,6 +59,12 @@ namespace RealismMod
         {
             if (Delay <= 0f) 
             {
+                if (!haveNotified) 
+                {
+                    NotificationManagerClass.DisplayWarningNotification("Tourniquet Applied On " + BodyPart + ", You Are Losing Health On This Limb. Use A Surgery Kit To Remove It.", EFT.Communications.ENotificationDurationType.Long);
+                    haveNotified = true;
+                }
+
                 float currentPartHP = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
 
                 TimeExisted += 3f;
@@ -92,7 +99,7 @@ namespace RealismMod
         public EHealthEffectType EffectType { get; }
         public float HpRegenLimit { get; }
         private bool hasRemovedTrnqt = false;
-        private bool hasNotified = false;
+        private bool haveNotified = false;
 
         public SurgeryEffect(float hpTick, float? dur, EBodyPart part, Player player, float delay, float limit)
         {
@@ -111,10 +118,10 @@ namespace RealismMod
         {
             if (Delay <= 0f)
             {
-                if (!hasNotified) 
+                if (!haveNotified) 
                 {
                     NotificationManagerClass.DisplayMessageNotification("Surgery Kit Applied On " + BodyPart + ", Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
-                    hasNotified = true; 
+                    haveNotified = true; 
                 }
 
                 if (!hasRemovedTrnqt && RealismMod.RealismHealthController.HasEffectOfType(typeof(TourniquetEffect), BodyPart))
@@ -160,6 +167,7 @@ namespace RealismMod
         public float Delay { get; set; }
         public EDamageType DamageType { get; }
         public EHealthEffectType EffectType { get; }
+        private bool deductedRecordedDamage = false;
 
         public HealthRegenEffect(float hpTick, float? dur, EBodyPart part, Player player, float delay, float limit, EDamageType damageType)
         {
@@ -179,6 +187,20 @@ namespace RealismMod
         {
             float currentHp = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
             float maxHp = Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Maximum;
+
+            if (!deductedRecordedDamage) 
+            {
+                if (DamageType == EDamageType.HeavyBleeding)
+                {
+                    DamageTracker.TotalHeavyBleedDamage = Mathf.Max(DamageTracker.TotalHeavyBleedDamage - HpRegenLimit, 0f);
+                }
+                if (DamageType == EDamageType.LightBleeding)
+                {
+                    DamageTracker.TotalLightBleedDamage = Mathf.Max(DamageTracker.TotalLightBleedDamage - HpRegenLimit, 0f);
+
+                }
+                deductedRecordedDamage = true;
+            }
 
             if (HpRegened < HpRegenLimit)
             {

@@ -720,10 +720,9 @@ namespace RealismMod
             }
         }
 
-        private static async Task handleHeavyBleedHeal(string medType, MedsClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool isNotLimb, float vitalitySkill, float regenTickRate)
+        private static void handleHeavyBleedHeal(string medType, MedsClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool isNotLimb, float vitalitySkill, float regenTickRate)
         {
             float delay = meds.HealthEffectsComponent.UseTime;
-            await Task.Delay(TimeSpan.FromSeconds(delay));
 
             NotificationManagerClass.DisplayMessageNotification("Heavy Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
             
@@ -733,27 +732,24 @@ namespace RealismMod
 
             if ((hBleedHealType == "combo" || hBleedHealType == "trnqt") && !isNotLimb)
             {
-                NotificationManagerClass.DisplayWarningNotification("Tourniquet Applied On " + bodyPart + ", You Are Losing Health On This Limb. Use A Surgery Kit To Remove It.", EFT.Communications.ENotificationDurationType.Long);
-
-                TourniquetEffect trnqt = new TourniquetEffect(trnqtTickRate, null, bodyPart, player, 0f);
+                TourniquetEffect trnqt = new TourniquetEffect(trnqtTickRate, null, bodyPart, player, delay);
                 AddCustomEffect(trnqt, false);
 
                 if (DamageTracker.TotalHeavyBleedDamage > 0f)
                 {
-                    TrnqtRestoreHPArossBody(player, hpToRestore, 0f, bodyPart, EDamageType.HeavyBleeding, vitalitySkill);
+                    TrnqtRestoreHPArossBody(player, hpToRestore, delay, bodyPart, EDamageType.HeavyBleeding, vitalitySkill);
                 }
             }
             else if (DamageTracker.TotalHeavyBleedDamage > 0f)
             {
-                RestoreHPArossBody(player, hpToRestore, 0f, EDamageType.HeavyBleeding, regenTickRate);
+                RestoreHPArossBody(player, hpToRestore, delay, EDamageType.HeavyBleeding, regenTickRate);
             }
             DamageTracker.TotalHeavyBleedDamage = Mathf.Max(DamageTracker.TotalHeavyBleedDamage - hpToRestore, 0f);
         }
 
-        private static async Task handleLightBleedHeal(string medType, MedsClass meds, EBodyPart bodyPart, Player player, bool isNotLimb, float vitalitySkill, float regenTickRate)
+        private static void handleLightBleedHeal(string medType, MedsClass meds, EBodyPart bodyPart, Player player, bool isNotLimb, float vitalitySkill, float regenTickRate)
         {
             float delay = meds.HealthEffectsComponent.UseTime;
-            await Task.Delay(TimeSpan.FromSeconds(delay));
 
             NotificationManagerClass.DisplayMessageNotification("Light Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
 
@@ -763,19 +759,17 @@ namespace RealismMod
 
             if (medType == "trnqt" && !isNotLimb)
             {
-                NotificationManagerClass.DisplayWarningNotification("Tourniquet Applied On " + bodyPart + ", You Are Losing Health On This Limb. Use A Surgery Kit To Remove It.", EFT.Communications.ENotificationDurationType.Long);
-
-                TourniquetEffect trnqt = new TourniquetEffect(trnqtTickRate, null, bodyPart, player, 0f);
+                TourniquetEffect trnqt = new TourniquetEffect(trnqtTickRate, null, bodyPart, player, delay);
                 AddCustomEffect(trnqt, false);
                 
                 if (DamageTracker.TotalLightBleedDamage > 0f)
                 {
-                    TrnqtRestoreHPArossBody(player, hpToRestore, 0f, bodyPart, EDamageType.LightBleeding, vitalitySkill);
+                    TrnqtRestoreHPArossBody(player, hpToRestore, delay, bodyPart, EDamageType.LightBleeding, vitalitySkill);
                 }
             }
             else if (DamageTracker.TotalLightBleedDamage > 0f)
             {
-                RestoreHPArossBody(player, hpToRestore, 0f, EDamageType.LightBleeding, regenTickRate);
+                RestoreHPArossBody(player, hpToRestore, delay, EDamageType.LightBleeding, regenTickRate);
             }
             DamageTracker.TotalLightBleedDamage = Mathf.Max(DamageTracker.TotalLightBleedDamage - hpToRestore, 0f);
         }
@@ -789,7 +783,16 @@ namespace RealismMod
             AddCustomEffect(surg, false);
         }
 
-        public static void HandleHealtheffects(string medType, MedsClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool canHealHBleed, bool canHealLBleed, bool canHealFract)
+        private static void handleSplint(MedsClass meds, float regenTickRate, EBodyPart bodyPart, Player player) {
+            
+            NotificationManagerClass.DisplayMessageNotification("Fracture On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
+
+            float delay = meds.HealthEffectsComponent.UseTime;
+            HealthRegenEffect regenEffect = new HealthRegenEffect(regenTickRate, null, bodyPart, player, delay, 12f, EDamageType.Impact);
+            AddCustomEffect(regenEffect, false);
+        }
+
+        public static void HandleHealthEffects(string medType, MedsClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool canHealHBleed, bool canHealLBleed, bool canHealFract)
         {
             float vitalitySkill = player.Skills.VitalityBuffBleedChanceRed.Value;
             float surgerySkill = player.Skills.SurgeryReducePenalty.Value;
@@ -809,9 +812,7 @@ namespace RealismMod
 
             if (Plugin.EnableTrnqtEffect.Value && hasHeavyBleed && canHealHBleed)
             {
-#pragma warning disable CS4014
                 handleHeavyBleedHeal(medType, meds, bodyPart, player, hBleedHealType, isNotLimb, vitalitySkill, regenTickRate);
-#pragma warning restore CS4014
             }
 
             if (medType == "surg")
@@ -821,17 +822,12 @@ namespace RealismMod
 
             if (canHealLBleed && hasLightBleed && !hasHeavyBleed && (medType == "trnqt" && !isNotLimb || medType != "trnqt"))
             {
-#pragma warning disable CS4014
                 handleLightBleedHeal(medType, meds, bodyPart, player, isNotLimb, vitalitySkill, regenTickRate);
-#pragma warning restore CS4014
             }
 
             if (canHealFract && hasFracture && (medType == "splint" || (medType == "medkit" && !hasHeavyBleed && !hasLightBleed)))
             {
-                NotificationManagerClass.DisplayMessageNotification("Fracture On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
-                
-                HealthRegenEffect regenEffect = new HealthRegenEffect(regenTickRate, null, bodyPart, player, meds.HealthEffectsComponent.UseTime, 12f, EDamageType.Impact);
-                AddCustomEffect(regenEffect, false);
+                handleSplint(meds, regenTickRate, bodyPart, player);
             }
         }
 
