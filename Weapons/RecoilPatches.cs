@@ -47,6 +47,16 @@ namespace RealismMod
             }
         }
 
+        // this clamps it over time and essentially smoothly forces the camera back to original position over time, not what I need
+/*        private static Vector2 ClampRecoilRotation(Vector2 inputRotation, MovementState movementState) 
+        {
+            if (inputRotation.magnitude > Plugin.test1.Value)
+            {
+                inputRotation *= Plugin.test1.Value / inputRotation.magnitude;
+            }
+            return inputRotation;
+        }
+*/
         [PatchPrefix]
         private static bool Prefix(MovementState __instance, Vector2 deltaRotation, bool ignoreClamp)
         {
@@ -55,8 +65,9 @@ namespace RealismMod
 
             if (player.IsYourPlayer && !ignoreClamp)
             {
- 
-                Plugin.MouseRotation = movementContext.ClampRotation(deltaRotation);
+
+                deltaRotation = movementContext.ClampRotation(deltaRotation);
+                Plugin.MouseRotation = deltaRotation;
 
                 if (!StanceController.IsMounting)
                 {
@@ -107,9 +118,9 @@ namespace RealismMod
                         xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(Time.time * 8f, 1f)), 3);
                         yRotation = (float)Math.Round(Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * 4f, 1f)), 3);
                     }
-
+         
                     targetRotation = movementContext.Rotation + new Vector2(xRotation, yRotation);
-
+     
                     if ((canResetVert && (movementContext.Rotation.y > (recordedRotation.y + 2f) * Plugin.NewPOASensitivity.Value || deltaRotation.y <= -1f * Plugin.NewPOASensitivity.Value)) || (canResetHorz && Mathf.Abs(deltaRotation.x) >= 1f * Plugin.NewPOASensitivity.Value))
                     {
                         recordedRotation = movementContext.Rotation;
@@ -163,15 +174,21 @@ namespace RealismMod
 
                     recordedRotation = movementContext.Rotation;
                 }
-                if (RecoilController.IsFiring)
+
+                if (RecoilController.IsFiring && !targetRotation.IsAnyComponentInfinity() && !targetRotation.IsAnyComponentNaN())
                 {
+                    //is this even necessary, does it cause issues? Should it apply to X value too?
                     if (targetRotation.y <= recordedRotation.y - Plugin.RecoilClimbLimit.Value)
                     {
                         targetRotation.y = movementContext.Rotation.y;
                     }
 
+                    float difference = Mathf.Abs(movementContext.Rotation.x - targetRotation.x);
+                    targetRotation.x = difference <= 2f ? targetRotation.x : movementContext.Rotation.x;
+
                     movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, targetRotation, Plugin.RecoilSmoothness.Value);
                 }
+
                 if (RecoilController.ShotCount == RecoilController.PrevShotCount)
                 {
                     RecoilController.PlayerControl = Mathf.Lerp(RecoilController.PlayerControl, 0f, 0.05f);
