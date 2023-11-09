@@ -46,35 +46,32 @@ namespace RealismMod
         {
             if (ActiveUIScreen != null && Plugin.EnableMountUI.Value)
             {
-                if (!PlayerProperties.IsSprinting) 
+                if (StanceController.IsBracingLeftSide)
                 {
-                    if (StanceController.IsBracingLeftSide)
-                    {
-                        mountingUIImage.sprite = Plugin.LoadedSprites["mountingleft.png"];
-                    }
-                    else if (StanceController.IsBracingRightSide)
-                    {
-                        mountingUIImage.sprite = Plugin.LoadedSprites["mountingright.png"];
-                    }
-                    else
-                    {
-                        mountingUIImage.sprite = Plugin.LoadedSprites["mounting.png"];
-                    }
+                    mountingUIImage.sprite = Plugin.LoadedSprites["mountingleft.png"];
+                }
+                else if (StanceController.IsBracingRightSide)
+                {
+                    mountingUIImage.sprite = Plugin.LoadedSprites["mountingright.png"];
+                }
+                else
+                {
+                    mountingUIImage.sprite = Plugin.LoadedSprites["mounting.png"];
+                }
 
-                    if (StanceController.IsMounting)
-                    {
-                        mountingUIImage.color = Color.white;
-                        float scaleAmount = Mathf.Lerp(1f, 1.15f, Mathf.PingPong(Time.time * 0.9f, 1f));
-                        mountingUIRect.sizeDelta = new Vector2(90f, 90f) * scaleAmount;
+                if (StanceController.IsMounting)
+                {
+                    mountingUIImage.color = Color.white;
+                    float scaleAmount = Mathf.Lerp(1f, 1.15f, Mathf.PingPong(Time.time * 0.9f, 1f));
+                    mountingUIRect.sizeDelta = new Vector2(90f, 90f) * scaleAmount;
 
-                    }
-                    else if (StanceController.IsBracing)
-                    {
-                        mountingUIRect.sizeDelta = new Vector2(90f, 90f);
-                        float alpha = Mathf.Lerp(0.2f, 1f, Mathf.PingPong(Time.time * 1f, 1f));
-                        Color lerpedColor = new Color(1f, 1f, 1f, alpha);
-                        mountingUIImage.color = lerpedColor;
-                    }
+                }
+                else if (StanceController.IsBracing && !PlayerProperties.IsSprinting)
+                {
+                    mountingUIRect.sizeDelta = new Vector2(90f, 90f);
+                    float alpha = Mathf.Lerp(0.2f, 1f, Mathf.PingPong(Time.time * 1f, 1f));
+                    Color lerpedColor = new Color(1f, 1f, 1f, alpha);
+                    mountingUIImage.color = lerpedColor;
                 }
                 else
                 {

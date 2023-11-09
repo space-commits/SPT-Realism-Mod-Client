@@ -53,7 +53,7 @@ namespace RealismMod
             MovementContext movementContext = (MovementContext)movementContextField.GetValue(__instance);
             Player player = (Player)playerField.GetValue(movementContext);
 
-            if (player.IsYourPlayer)
+            if (player.IsYourPlayer && !ignoreClamp)
             {
  
                 Plugin.MouseRotation = movementContext.ClampRotation(deltaRotation);
@@ -172,13 +172,12 @@ namespace RealismMod
 
                     movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, targetRotation, Plugin.RecoilSmoothness.Value);
                 }
-
                 if (RecoilController.ShotCount == RecoilController.PrevShotCount)
                 {
                     RecoilController.PlayerControl = Mathf.Lerp(RecoilController.PlayerControl, 0f, 0.05f);
                 }
 
-                if (StanceController.IsMounting && !ignoreClamp)
+                if (StanceController.IsMounting)
                 {
                     FirearmController fc = player.HandsController as FirearmController;
 
