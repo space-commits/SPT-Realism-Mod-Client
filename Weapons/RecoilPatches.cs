@@ -334,7 +334,7 @@ namespace RealismMod
                 Vector3 separateIntensityFactors = (Vector3)intensityFactorsField.GetValue(__instance);
                 WeaponSkillsClass buffInfo = (WeaponSkillsClass)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
 
-                float factoredStr = str > 1 ? str * 1.04f : str;
+                float factoredStr = str > 1 ? str * 1.02f : str;
 
                 float opticRecoilMulti = allowedCalibers.Contains(weaponClass.AmmoCaliber) && Plugin.IsAiming && Plugin.HasOptic ? 0.93f : 1f;
 

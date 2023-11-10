@@ -773,7 +773,7 @@ namespace RealismMod
             Quaternion meleeRevertQuaternion = Quaternion.Euler(0f, -2f * resetErgoMulti, 1f  * resetErgoMulti);
             Vector3 meleeTargetPosition = new Vector3(0.02f, 0.08f, -0.07f * thirdPersonMulti);
 
-            float movementFactor = PlayerProperties.IsMoving ? 1.3f : 1f;
+            float movementFactor = PlayerProperties.IsMoving ? 1.25f : 1f;
 
             //for setting baseline position
             if (!Plugin.IsBlindFiring)
@@ -1050,7 +1050,7 @@ namespace RealismMod
 
                 if ((StanceController.StanceBlender.Value >= 1f || StanceController.StanceTargetPosition == lowReadyTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-                    StanceController.DoWiggleEffects(player, pwa, new Vector3(5f, 4f, -8f) * movementFactor, true);
+                    StanceController.DoWiggleEffects(player, pwa, new Vector3(5f, 4f, -7f) * movementFactor, true);
                     StanceController.DidStanceWiggle = true;
                 }
             }
