@@ -1040,7 +1040,7 @@ namespace RealismMod
                     currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? aimingQuat : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
                     Quaternion rhs = Quaternion.Euler(pitch * overlappingBlindfire * blindFireRotation);
 
-                    RecoilController.DoCantedRecoil(ref targetRecoil, ref currentRecoil, ref weapRotation);
+                    RecoilController.DoVisualRecoil(ref targetRecoil, ref currentRecoil, ref weapRotation, Logger);
 
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponWorldPos, weapRotation * rhs * currentRotation);
 

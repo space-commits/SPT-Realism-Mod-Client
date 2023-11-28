@@ -39,19 +39,35 @@ namespace RealismMod
         public static float FactoredTotalDispersion;
         public static float FactoredTotalCamRecoil;
 
-        public static void DoCantedRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation) 
+        public static void DoVisualRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation, ManualLogSource logger) 
         {
             if (RecoilController.IsFiringWiggle)
             {
-                float recoilAmount = RecoilController.FactoredTotalHRecoil / 20f; 
-                float recoilSpeed = Mathf.Max(RecoilController.BaseTotalConvergence * 0.75f, 14f);
-                float totalRecoil = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * recoilSpeed , 1.0f));
-                targetRecoil = new Vector3(0f, totalRecoil, 0f);
+                float cantedRecoilAmount = RecoilController.FactoredTotalHRecoil / 20f;
+                float cantedRecoilSpeed = Mathf.Max(RecoilController.BaseTotalConvergence * 0.75f, 14f);
+                float totalCantedRecoil = Mathf.Lerp(-cantedRecoilAmount, cantedRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f));
+
+                if (Plugin.EnableAdditionalRec.Value)
+                {
+                    float additionalRecoilAmount = RecoilController.FactoredTotalDispersion / 18f;
+                    float totalSideRecoil = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f)) * 0.05f;
+                    float totalVertical = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed * 1.5f, 1.0f)) * 0.1f;
+                    targetRecoil = new Vector3(totalVertical, totalCantedRecoil, totalSideRecoil) * Plugin.VisRecoilMulti.Value;
+                }
+                else 
+                {
+                    targetRecoil = new Vector3(0f, totalCantedRecoil, 0f) * Plugin.VisRecoilMulti.Value;
+
+                }
+
+
             }
             else
             { 
                 targetRecoil = Vector3.Lerp(targetRecoil, Vector3.zero, 0.1f);
             }
+
+          
 
             currentRecoil = Vector3.Lerp(currentRecoil, targetRecoil, 1f);
             Quaternion recoilQ = Quaternion.Euler(currentRecoil);

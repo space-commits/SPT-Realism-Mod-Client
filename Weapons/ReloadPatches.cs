@@ -47,7 +47,6 @@ namespace RealismMod
                 PlayerProperties.IsAttemptingRevolverReload = false;
             }
         }
-
     }
 
 

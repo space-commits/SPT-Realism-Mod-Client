@@ -438,7 +438,7 @@ namespace RealismMod
 
                 __instance.Physical.HandsStamina.Current = Mathf.Max(__instance.Physical.HandsStamina.Current, 1f);
 
-                float stanceHipFactor = StanceController.IsActiveAiming ? 0.8f : StanceController.IsShortStock ? 1.4f : 1f;
+                float stanceHipFactor = StanceController.IsActiveAiming ? 0.7f : StanceController.IsShortStock ? 1.35f : 1f;
                 __instance.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponProperties.BaseHipfireInaccuracy * PlayerProperties.SprintHipfirePenalty * stanceHipFactor, 0.2f, 1.6f);
 
                 /*                __instance.ProceduralWeaponAnimation.HandsContainer.CameraRotation.ReturnSpeed = WeaponProperties.TotalCameraReturnSpeed; //not sure about this one

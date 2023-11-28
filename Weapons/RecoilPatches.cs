@@ -21,6 +21,7 @@ namespace RealismMod
         private static FieldInfo movementContextField;
         private static FieldInfo playerField;
 
+        private static Vector2 initialRotation = Vector3.zero;
         private static Vector2 recordedRotation = Vector3.zero;
         private static Vector2 targetRotation = Vector3.zero;
         private static bool hasReset = false;
@@ -47,14 +48,22 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static void Prefix(MovementState __instance, Vector2 deltaRotation, bool ignoreClamp)
+        private static bool Prefix(MovementState __instance, Vector2 deltaRotation, bool ignoreClamp)
         {
             MovementContext movementContext = (MovementContext)movementContextField.GetValue(__instance);
             Player player = (Player)playerField.GetValue(movementContext);
 
-            if (player.IsYourPlayer)
+            if (player.IsYourPlayer && !ignoreClamp)
             {
+
                 deltaRotation = movementContext.ClampRotation(deltaRotation);
+                Plugin.MouseRotation = deltaRotation;
+
+                if (!StanceController.IsMounting)
+                {
+                    initialRotation = movementContext.Rotation;
+                }
+
                 float fpsFactor = 144f / (1f / Time.unscaledDeltaTime);
 
                 bool hybridBlocksReset = Plugin.EnableHybridRecoil.Value && !WeaponProperties.HasShoulderContact && !Plugin.EnableHybridReset.Value;
@@ -98,9 +107,9 @@ namespace RealismMod
                         xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(Time.time * 8f, 1f)), 3);
                         yRotation = (float)Math.Round(Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * 4f, 1f)), 3);
                     }
-
+         
                     targetRotation = movementContext.Rotation + new Vector2(xRotation, yRotation);
-
+     
                     if ((canResetVert && (movementContext.Rotation.y > (recordedRotation.y + 2f) * Plugin.NewPOASensitivity.Value || deltaRotation.y <= -1f * Plugin.NewPOASensitivity.Value)) || (canResetHorz && Mathf.Abs(deltaRotation.x) >= 1f * Plugin.NewPOASensitivity.Value))
                     {
                         recordedRotation = movementContext.Rotation;
@@ -154,12 +163,17 @@ namespace RealismMod
 
                     recordedRotation = movementContext.Rotation;
                 }
-                if (RecoilController.IsFiring)
+
+                if (RecoilController.IsFiring && !targetRotation.IsAnyComponentInfinity() && !targetRotation.IsAnyComponentNaN())
                 {
+                    //is this even necessary, does it cause issues? Should it apply to X value too?
                     if (targetRotation.y <= recordedRotation.y - Plugin.RecoilClimbLimit.Value)
                     {
                         targetRotation.y = movementContext.Rotation.y;
                     }
+
+                    float difference = Mathf.Abs(movementContext.Rotation.x - targetRotation.x);
+                    targetRotation.x = difference <= 2f ? targetRotation.x : movementContext.Rotation.x;
 
                     movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, targetRotation, Plugin.RecoilSmoothness.Value);
                 }
@@ -168,7 +182,38 @@ namespace RealismMod
                 {
                     RecoilController.PlayerControl = Mathf.Lerp(RecoilController.PlayerControl, 0f, 0.05f);
                 }
+
+                if (StanceController.IsMounting)
+                {
+                    FirearmController fc = player.HandsController as FirearmController;
+
+                    Vector2 currentRotation = movementContext.Rotation;
+
+                    deltaRotation *= (fc.AimingSensitivity * 0.9f);
+
+                    float lowerClampXLimit = StanceController.IsBracingTop ? -17f : StanceController.IsBracingRightSide ? -4f : -15f;
+                    float upperClampXLimit = StanceController.IsBracingTop ? 17f : StanceController.IsBracingRightSide ? 15f : 1f;
+
+                    float lowerClampYLimit = StanceController.IsBracingTop ? -10f : -8f;
+                    float upperClampYLimit = StanceController.IsBracingTop ? 10f : 15f;
+
+                    float relativeLowerXLimit = initialRotation.x + lowerClampXLimit;
+                    float relativeUpperXLimit = initialRotation.x + upperClampXLimit;
+                    float relativeLowerYLimit = initialRotation.y + lowerClampYLimit;
+                    float relativeUpperYLimit = initialRotation.y + upperClampYLimit;
+
+                    float clampedX = Mathf.Clamp(currentRotation.x + deltaRotation.x, relativeLowerXLimit, relativeUpperXLimit);
+                    float clampedY = Mathf.Clamp(currentRotation.y + deltaRotation.y, relativeLowerYLimit, relativeUpperYLimit);
+
+                    deltaRotation = new Vector2(clampedX - currentRotation.x, clampedY - currentRotation.y);
+
+                    deltaRotation = movementContext.ClampRotation(deltaRotation);
+                    movementContext.Rotation += deltaRotation;
+
+                    return false;
+                }
             }
+            return true;
         }
     }
 
@@ -278,7 +323,7 @@ namespace RealismMod
                 Vector3 separateIntensityFactors = (Vector3)intensityFactorsField.GetValue(__instance);
                 WeaponSkillsClass buffInfo = (WeaponSkillsClass)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
 
-                float factoredStr = str > 1 ? str * 1.04f : str;
+                float factoredStr = str > 1 ? str * 1.02f : str;
 
                 float opticRecoilMulti = allowedCalibers.Contains(weaponClass.AmmoCaliber) && Plugin.IsAiming && Plugin.HasOptic ? 0.93f : 1f;
 
@@ -289,7 +334,7 @@ namespace RealismMod
                 float activeAimingBonus = StanceController.IsActiveAiming ? 0.9f : 1f;
                 float aimCamRecoilBonus = StanceController.IsActiveAiming || !Plugin.IsAiming ? 0.8f : 1f;
                 float shortStockingDebuff = StanceController.IsShortStock ? 1.15f : 1f;
-                float shortStockingCamBonus = StanceController.IsShortStock ? 0.75f : 1f;
+                float shortStockingCamBonus = StanceController.IsShortStock ? 0.6f : 1f;
 
                 float mountingVertModi = StanceController.IsMounting ? StanceController.MountingRecoilBonus : StanceController.IsBracing ? StanceController.BracingRecoilBonus : 1f;
                 float mountingDispModi = Mathf.Clamp(StanceController.IsMounting ? StanceController.MountingRecoilBonus * 1.25f : StanceController.IsBracing ? StanceController.BracingRecoilBonus * 1.2f : 1f, 0.85f, 1f);

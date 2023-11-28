@@ -66,7 +66,7 @@ namespace RealismMod
                     mountingUIRect.sizeDelta = new Vector2(90f, 90f) * scaleAmount;
 
                 }
-                else if (StanceController.IsBracing)
+                else if (StanceController.IsBracing && !PlayerProperties.IsSprinting)
                 {
                     mountingUIRect.sizeDelta = new Vector2(90f, 90f);
                     float alpha = Mathf.Lerp(0.2f, 1f, Mathf.PingPong(Time.time * 1f, 1f));
