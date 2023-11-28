@@ -47,16 +47,6 @@ namespace RealismMod
             }
         }
 
-        // this clamps it over time and essentially smoothly forces the camera back to original position over time, not what I need
-/*        private static Vector2 ClampRecoilRotation(Vector2 inputRotation, MovementState movementState) 
-        {
-            if (inputRotation.magnitude > Plugin.test1.Value)
-            {
-                inputRotation *= Plugin.test1.Value / inputRotation.magnitude;
-            }
-            return inputRotation;
-        }
-*/
         [PatchPrefix]
         private static bool Prefix(MovementState __instance, Vector2 deltaRotation, bool ignoreClamp)
         {
@@ -73,7 +63,6 @@ namespace RealismMod
                 {
                     initialRotation = movementContext.Rotation;
                 }
-
 
                 float fpsFactor = 144f / (1f / Time.unscaledDeltaTime);
 
@@ -345,7 +334,7 @@ namespace RealismMod
                 float activeAimingBonus = StanceController.IsActiveAiming ? 0.9f : 1f;
                 float aimCamRecoilBonus = StanceController.IsActiveAiming || !Plugin.IsAiming ? 0.8f : 1f;
                 float shortStockingDebuff = StanceController.IsShortStock ? 1.15f : 1f;
-                float shortStockingCamBonus = StanceController.IsShortStock ? 0.75f : 1f;
+                float shortStockingCamBonus = StanceController.IsShortStock ? 0.6f : 1f;
 
                 float mountingVertModi = StanceController.IsMounting ? StanceController.MountingRecoilBonus : StanceController.IsBracing ? StanceController.BracingRecoilBonus : 1f;
                 float mountingDispModi = Mathf.Clamp(StanceController.IsMounting ? StanceController.MountingRecoilBonus * 1.25f : StanceController.IsBracing ? StanceController.BracingRecoilBonus * 1.2f : 1f, 0.85f, 1f);
