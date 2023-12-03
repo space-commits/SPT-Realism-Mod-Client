@@ -129,14 +129,14 @@ namespace RealismMod
             float magSpeedMulti = (magSpeed / 100f) + 1f;
             float totalReloadSpeed = magSpeedMulti * magWeightFactor * reloadSpeedModiLessMag * stockModifier;
 
-            if (reloadFromNoMag == true)
+            if (reloadFromNoMag)
             {
                 WeaponProperties.NewMagReloadSpeed = totalReloadSpeed;
                 WeaponProperties.CurrentMagReloadSpeed = totalReloadSpeed;
             }
             else
             {
-                if (isNewMag == true)
+                if (isNewMag)
                 {
                     WeaponProperties.NewMagReloadSpeed = totalReloadSpeed;
                 }
@@ -146,7 +146,7 @@ namespace RealismMod
                 }
             }
 
-            if (isQuickReload == true)
+            if (isQuickReload)
             {
                 WeaponProperties.NewMagReloadSpeed *= Plugin.QuickReloadSpeedMulti.Value;
                 WeaponProperties.CurrentMagReloadSpeed *= Plugin.QuickReloadSpeedMulti.Value;

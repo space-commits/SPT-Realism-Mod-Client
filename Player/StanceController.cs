@@ -287,7 +287,6 @@ namespace RealismMod
             }
         }
 
-
         public static void StanceState()
         {
             if (Utils.WeaponReady)
