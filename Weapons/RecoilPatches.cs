@@ -55,7 +55,6 @@ namespace RealismMod
 
             if (player.IsYourPlayer && !ignoreClamp)
             {
-
                 deltaRotation = movementContext.ClampRotation(deltaRotation);
                 Plugin.MouseRotation = deltaRotation;
 
@@ -114,7 +113,6 @@ namespace RealismMod
                     {
                         recordedRotation = movementContext.Rotation;
                     }
-
                 }
                 else if (!hasReset && !RecoilController.IsFiring)
                 {

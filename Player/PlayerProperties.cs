@@ -61,7 +61,9 @@ namespace RealismMod
 
         public static float WeaponSkillErgo = 0f;
 
-        public static float RemainingArmStamPercentage = 1f;
+        public static float RemainingArmStamPerc = 1f;
+
+        public static float RemainingArmStamPercReload = 1f;
 
         public static float AimSkillADSBuff = 0f;
 

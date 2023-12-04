@@ -345,7 +345,8 @@ namespace RealismMod
         {
             for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
             {
-                if (activeHealthEffects[i].GetType() == effect && activeHealthEffects[i].BodyPart == bodyPart)
+                IHealthEffect activeHealthEffect = activeHealthEffects[i];
+                if (activeHealthEffect.GetType() == effect && activeHealthEffect.BodyPart == bodyPart)
                 {
                     activeHealthEffects.RemoveAt(i);
                 }
@@ -357,7 +358,8 @@ namespace RealismMod
             bool hasEffect = false;
             for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
             {
-                if (activeHealthEffects[i].GetType() == effect && activeHealthEffects[i].BodyPart == bodyPart)
+                IHealthEffect activeHealthEffect = activeHealthEffects[i];
+                if (activeHealthEffect.GetType() == effect && activeHealthEffect.BodyPart == bodyPart)
                 {
                     hasEffect = true;
                 }
@@ -955,9 +957,11 @@ namespace RealismMod
 
                 for (int i = effectsList.Count - 1; i >= 0; i--)
                 {
-                    Type effectType = effectsList[i].Type;
-                    EBodyPart effectPart = effectsList[i].BodyPart;
+                 
                     EffectClass effect = effectsList[i];
+                    Type effectType = effect.Type;
+                    EBodyPart effectPart = effect.BodyPart;
+
 
                     IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(effectPart);
                     bool hasHeavyBleed = heavyBleedType != null && effects.Any(e => e.Type == heavyBleedType);

@@ -353,28 +353,28 @@ namespace RealismMod
                 Mod mod = __instance.Mods[i];
                 if (!Utils.IsMagazine(mod))
                 {
-                    float modWeight = __instance.Mods[i].Weight;
+                    float modWeight = mod.Weight;
                     float modWeightFactored = StatCalc.FactoredWeight(modWeight);
-                    float modErgo = __instance.Mods[i].Ergonomics;
-                    float modVRecoil = AttachmentProperties.VerticalRecoil(__instance.Mods[i]);
-                    float modHRecoil = AttachmentProperties.HorizontalRecoil(__instance.Mods[i]);
-                    float modAutoROF = AttachmentProperties.AutoROF(__instance.Mods[i]);
-                    float modSemiROF = AttachmentProperties.SemiROF(__instance.Mods[i]);
-                    float modCamRecoil = AttachmentProperties.CameraRecoil(__instance.Mods[i]);
-                    float modConv = AttachmentProperties.ModConvergence(__instance.Mods[i]);
-                    float modDispersion = AttachmentProperties.Dispersion(__instance.Mods[i]);
-                    float modAngle = AttachmentProperties.RecoilAngle(__instance.Mods[i]);
-                    float modAccuracy = __instance.Mods[i].Accuracy;
-                    float modReload = AttachmentProperties.ReloadSpeed(__instance.Mods[i]);
-                    float modChamber = AttachmentProperties.ChamberSpeed(__instance.Mods[i]);
-                    float modAim = AttachmentProperties.AimSpeed(__instance.Mods[i]);
-                    float modShotDisp = AttachmentProperties.ModShotDispersion(__instance.Mods[i]);
-                    string modType = AttachmentProperties.ModType(__instance.Mods[i]);
-                    string position = StatCalc.GetModPosition(__instance.Mods[i], weapType, weapOpType, modType);
-                    float modLoudness = __instance.Mods[i].Loudness;
-                    float modMalfChance = AttachmentProperties.ModMalfunctionChance(__instance.Mods[i]);
-                    float modDuraBurn = __instance.Mods[i].DurabilityBurnModificator;
-                    float modFix = AttachmentProperties.FixSpeed(__instance.Mods[i]);
+                    float modErgo = mod.Ergonomics;
+                    float modVRecoil = AttachmentProperties.VerticalRecoil(mod);
+                    float modHRecoil = AttachmentProperties.HorizontalRecoil(mod);
+                    float modAutoROF = AttachmentProperties.AutoROF(mod);
+                    float modSemiROF = AttachmentProperties.SemiROF(mod);
+                    float modCamRecoil = AttachmentProperties.CameraRecoil(mod);
+                    float modConv = AttachmentProperties.ModConvergence(mod);
+                    float modDispersion = AttachmentProperties.Dispersion(mod);
+                    float modAngle = AttachmentProperties.RecoilAngle(mod);
+                    float modAccuracy = mod.Accuracy;
+                    float modReload = AttachmentProperties.ReloadSpeed(mod);
+                    float modChamber = AttachmentProperties.ChamberSpeed(mod);
+                    float modAim = AttachmentProperties.AimSpeed(mod);
+                    float modShotDisp = AttachmentProperties.ModShotDispersion(mod);
+                    string modType = AttachmentProperties.ModType(mod);
+                    string position = StatCalc.GetModPosition(mod, weapType, weapOpType, modType);
+                    float modLoudness = mod.Loudness;
+                    float modMalfChance = AttachmentProperties.ModMalfunctionChance(mod);
+                    float modDuraBurn = mod.DurabilityBurnModificator;
+                    float modFix = AttachmentProperties.FixSpeed(mod);
                     modVRecoil += modConv > 0f ? modConv * -1f : 0f;
 
                     if (Utils.IsMuzzleDevice(mod))
