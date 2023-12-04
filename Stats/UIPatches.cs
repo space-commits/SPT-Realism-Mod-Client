@@ -11,6 +11,9 @@ using UnityEngine.UI;
 using EFT;
 using BepInEx.Logging;
 using System.IO;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using StatAttributeClass = GClass2563;
 using BarrelTemplateClass = GClass2394;
 
@@ -640,6 +643,10 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
+            if (Plugin.EnableStatsDelta.Value == true)
+            {
+                StatDeltaDisplay.DisplayDelta(__instance);
+            }
             __result = DisplayWeaponProperties.HRecoilDelta;
             return false;
         }
@@ -672,6 +679,10 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
+            if (Plugin.EnableStatsDelta.Value == true)
+            {
+                StatDeltaDisplay.DisplayDelta(__instance);
+            }
             __result = DisplayWeaponProperties.VRecoilDelta - DisplayWeaponProperties.ConvergenceDelta;
             return false;
         }
@@ -766,11 +777,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            if (Plugin.EnableStatsDelta.Value == true)
-            {
-                StatDeltaDisplay.DisplayDelta(__instance, Logger);
-            }
-
+            StatDeltaDisplay.DisplayDelta(__instance);
             __result = DisplayWeaponProperties.ErgoDelta;
             return false;
         }
@@ -787,7 +794,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref string __result)
         {
-            StatDeltaDisplay.DisplayDelta(__instance, Logger);
+            StatDeltaDisplay.DisplayDelta(__instance);
             float ergoTotal = __instance.Template.Ergonomics * (1f + DisplayWeaponProperties.ErgoDelta);
             __result = Mathf.Clamp(ergoTotal, 0f, 100f).ToString("0.##");
             return false;
@@ -796,7 +803,8 @@ namespace RealismMod
 
     public static class StatDeltaDisplay
     {
-        public static void DisplayDelta(Weapon __instance, ManualLogSource logger)
+  
+        public static void DisplayDelta(Weapon __instance)
         {
             float baseCOI = __instance.CenterOfImpactBase;
             float currentCOI = baseCOI;
@@ -866,22 +874,22 @@ namespace RealismMod
             for (int i = 0; i < __instance.Mods.Length; i++)
             {
                 Mod mod = __instance.Mods[i];
-                float modWeight = __instance.Mods[i].Weight;
-                if (Utils.IsMagazine(__instance.Mods[i]))
+                float modWeight = mod.Weight;
+                if (Utils.IsMagazine(mod))
                 {
-                    modWeight = __instance.Mods[i].GetSingleItemTotalWeight();
+                    modWeight = mod.GetSingleItemTotalWeight();
                 }
                 float modWeightFactored = StatCalc.FactoredWeight(modWeight);
-                float modErgo = __instance.Mods[i].Ergonomics;
-                float modVRecoil = AttachmentProperties.VerticalRecoil(__instance.Mods[i]);
-                float modHRecoil = AttachmentProperties.HorizontalRecoil(__instance.Mods[i]);
-                float modAutoROF = AttachmentProperties.AutoROF(__instance.Mods[i]);
-                float modSemiROF = AttachmentProperties.SemiROF(__instance.Mods[i]);
-                float modCamRecoil = AttachmentProperties.CameraRecoil(__instance.Mods[i]);
-                float modConv = AttachmentProperties.ModConvergence(__instance.Mods[i]);
-                float modDispersion = AttachmentProperties.Dispersion(__instance.Mods[i]);
-                float modAngle = AttachmentProperties.RecoilAngle(__instance.Mods[i]);
-                float modAccuracy = __instance.Mods[i].Accuracy;
+                float modErgo = mod.Ergonomics;
+                float modVRecoil = AttachmentProperties.VerticalRecoil(mod);
+                float modHRecoil = AttachmentProperties.HorizontalRecoil(mod);
+                float modAutoROF = AttachmentProperties.AutoROF(mod);
+                float modSemiROF = AttachmentProperties.SemiROF(mod);
+                float modCamRecoil = AttachmentProperties.CameraRecoil(mod);
+                float modConv = AttachmentProperties.ModConvergence(mod);
+                float modDispersion = AttachmentProperties.Dispersion(mod);
+                float modAngle = AttachmentProperties.RecoilAngle(mod);
+                float modAccuracy = mod.Accuracy;
                 float modReload = 0f;
                 float modChamber = 0f;
                 float modAim = 0f;
@@ -889,13 +897,13 @@ namespace RealismMod
                 float modMalfChance = 0f;
                 float modDuraBurn = 0f;
                 float modFix = 0f;
-                string modType = AttachmentProperties.ModType(__instance.Mods[i]);
-                string position = StatCalc.GetModPosition(__instance.Mods[i], weapType, weapOpType, modType);
+                string modType = AttachmentProperties.ModType(mod);
+                string position = StatCalc.GetModPosition(mod, weapType, weapOpType, modType);
 
                 StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, ref modMalfChance, ref modDuraBurn, ref modConv);
                 StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, true, __instance.WeapClass, ref pureErgo, 0, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, __instance.IsBeltMachineGun);
             }
-      
+
 
             float totalTorque = 0;
             float totalErgo = 0;
@@ -916,10 +924,6 @@ namespace RealismMod
             float pureErgoDelta = 0f;
 
             StatCalc.WeaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref totalRecoilDamping, ref totalRecoilHandDamping, currentCOI, hasShoulderContact, ref totalCOI, ref totalCOIDelta, baseCOI, pureErgo, ref pureErgoDelta, true);
-
-            /*     float ergoWeight = StatCalc.ErgoWeightCalc(__instance.GetSingleItemTotalWeight(), pureErgoDelta, totalTorque, __instance.WeapClass);
-                 float ergoDisp = 80f - ergoWeight;
-                 float ergoDispDelta = ergoWeight / -80f;*/
 
             DisplayWeaponProperties.TotalConvergence = currentConv;
             DisplayWeaponProperties.ConvergenceDelta = (currentConv - baseConv) / baseConv; 

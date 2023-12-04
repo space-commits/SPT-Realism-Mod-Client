@@ -110,7 +110,7 @@ namespace RealismMod
             {
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 StatCalc.MagReloadSpeedModifier(weapon, magazine, false, true);
-                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadInjuryMulti * PlayerProperties.ReloadSkillMulti * PlayerProperties.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerProperties.RemainingArmStamPercentage, 0.7f)), 0.45f, 1.3f));
+                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadInjuryMulti * PlayerProperties.ReloadSkillMulti * PlayerProperties.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerProperties.RemainingArmStamPerc, 0.7f)), 0.45f, 1.3f));
             }
             else
             {
@@ -129,14 +129,14 @@ namespace RealismMod
             float magSpeedMulti = (magSpeed / 100f) + 1f;
             float totalReloadSpeed = magSpeedMulti * magWeightFactor * reloadSpeedModiLessMag * stockModifier;
 
-            if (reloadFromNoMag == true)
+            if (reloadFromNoMag)
             {
                 WeaponProperties.NewMagReloadSpeed = totalReloadSpeed;
                 WeaponProperties.CurrentMagReloadSpeed = totalReloadSpeed;
             }
             else
             {
-                if (isNewMag == true)
+                if (isNewMag)
                 {
                     WeaponProperties.NewMagReloadSpeed = totalReloadSpeed;
                 }
@@ -146,7 +146,7 @@ namespace RealismMod
                 }
             }
 
-            if (isQuickReload == true)
+            if (isQuickReload)
             {
                 WeaponProperties.NewMagReloadSpeed *= Plugin.QuickReloadSpeedMulti.Value;
                 WeaponProperties.CurrentMagReloadSpeed *= Plugin.QuickReloadSpeedMulti.Value;
