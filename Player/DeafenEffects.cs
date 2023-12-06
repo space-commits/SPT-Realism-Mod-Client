@@ -219,8 +219,8 @@ namespace RealismMod
             float totalDistortion = Mathf.Clamp(Distortion + BotDistortion + GrenadeDistortion, 0.0f, 70.0f);
             float totalVignette = Mathf.Clamp(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 0.0f, 65.0f);
 
-            float headsetAmbientVol = DeafeningController.AmbientVolume * (1f + ((20f - Plugin.RealTimeGain.Value) / Plugin.HeadsetAmbientMulti.Value));
-             
+            float headsetAmbientVol = Plugin.RealTimeGain.Value == 0f ? -10f :  DeafeningController.AmbientVolume * (1f + (Plugin.RealTimeGain.Value / 15f)) * -Plugin.HeadsetAmbientMulti.Value;
+               
             //for some reason this prevents the values from being fully reset to 0
             if (totalVolume != 0.0f || totalDistortion != 0.0f || totalVignette != 0.0f)
             {
