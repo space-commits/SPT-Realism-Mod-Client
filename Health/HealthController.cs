@@ -323,22 +323,22 @@ namespace RealismMod
             }
         }
 
-        public static void AddCustomEffect(IHealthEffect effect, bool canStack)
+        public static void AddCustomEffect(IHealthEffect newEffect, bool canStack)
         {
             //need to decide if it's better to keep the old effect or to replace it with a new one.
             if (!canStack)
             {
-                foreach (IHealthEffect eff in activeHealthEffects)
+                foreach (IHealthEffect existingEff in activeHealthEffects)
                 {
-                    if (eff.GetType() == effect.GetType() && eff.BodyPart == effect.BodyPart)
+                    if (existingEff.GetType() == newEffect.GetType() && existingEff.BodyPart == newEffect.BodyPart)
                     {
-                        RemoveEffectOfType(effect.GetType(), effect.BodyPart);
+                        RemoveEffectOfType(newEffect.GetType(), newEffect.BodyPart);
                         break;
                     }
                 }
             }
 
-            activeHealthEffects.Add(effect);
+            activeHealthEffects.Add(newEffect);
         }
 
         public static void RemoveEffectOfType(Type effect, EBodyPart bodyPart)
