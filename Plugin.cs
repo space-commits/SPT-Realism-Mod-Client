@@ -33,9 +33,11 @@ namespace RealismMod
         public bool headset_changes { get; set; }
     }
 
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.pluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
+        private const string pluginVersion = "0.14.9";
+
         public static ConfigEntry<bool> EnableParralax { get; set; }
         public static ConfigEntry<float> ResetTime { get; set; }
         public static ConfigEntry<float> ConvergenceSpeedCurve { get; set; }
@@ -85,8 +87,13 @@ namespace RealismMod
         public static ConfigEntry<float> GainCutoff { get; set; }
         public static ConfigEntry<float> RealTimeGain { get; set; }
         public static ConfigEntry<float> HeadsetAmbientMulti { get; set; }
+        public static ConfigEntry<float> GunshotVolume { get; set; }
+        public static ConfigEntry<float> PlayerMovementVolume { get; set; }
+        public static ConfigEntry<float> NPCMovementVolume { get; set; }
+        public static ConfigEntry<float> SharedMovementVolume { get; set; }
         public static ConfigEntry<KeyboardShortcut> IncGain { get; set; }
         public static ConfigEntry<KeyboardShortcut> DecGain { get; set; }
+
 
         public static ConfigEntry<KeyboardShortcut> ActiveAimKeybind { get; set; }
         public static ConfigEntry<KeyboardShortcut> LowReadyKeybind { get; set; }
@@ -671,6 +678,9 @@ namespace RealismMod
                 new RegisterShotPatch().Enable();
                 new ExplosionPatch().Enable();
                 new GrenadeClassContusionPatch().Enable();
+                new CovertMovementVolumePatch().Enable();
+                new CovertMovementVolumeBySpeedPatch().Enable();
+                new CovertEquipmentVolumePatch().Enable();
             }
 
             new ArmorComponentPatch().Enable();
@@ -803,7 +813,7 @@ namespace RealismMod
                     {
                         if (Input.GetKeyDown(Plugin.IncGain.Value.MainKey) && DeafeningController.HasHeadSet)
                         {
-                            if (Plugin.RealTimeGain.Value < 20)
+                            if (Plugin.RealTimeGain.Value < 30)
                             {
                                 Plugin.RealTimeGain.Value += 1f;
                                 Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), Plugin.LoadedAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 1.0f, EOcclusionTest.None, null, false);
@@ -968,16 +978,20 @@ namespace RealismMod
             ShowRecoilAngle = Config.Bind<bool>(statSettings, "Show Recoil Angle Stat", true, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use..", null, new ConfigurationManagerAttributes { Order = 2 }));
             ShowSemiROF = Config.Bind<bool>(statSettings, "Show Semi Auto ROF Stat", true, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 1 }));
 
-            SwayIntensity = Config.Bind<float>(waponSettings, "Sway Intensity.", 1.0f, new ConfigDescription("Changes The Intensity Of Aim Sway And Inertia.", new AcceptableValueRange<float>(0f, 3f), new ConfigurationManagerAttributes { Order = 1 }));
+            SwayIntensity = Config.Bind<float>(waponSettings, "Sway Intensity.", 1.25f, new ConfigDescription("Changes The Intensity Of Aim Sway And Inertia.", new AcceptableValueRange<float>(0f, 3f), new ConfigurationManagerAttributes { Order = 1 }));
             EnableMalfPatch = Config.Bind<bool>(waponSettings, "Enable Malfunctions Changes", true, new ConfigDescription("Requires Restart. Malfunction Changes Must Be Enabled On The Server (Config App). Some Subsonic Ammo Needs Special Mods To Cycle, Malfunctions Can Happen At Any Durability But The Chance Is Significantly Reduced If Above The Durability Threshold.", null, new ConfigurationManagerAttributes { Order = 2 }));
             InspectionlessMalfs = Config.Bind<bool>(waponSettings, "Enable Inspectionless Malfunctions", true, new ConfigDescription("Requires Restart. You Don't Need To Inspect A Malfunction In Order To Clear It.", null, new ConfigurationManagerAttributes { Order = 3 }));
             DuraMalfThreshold = Config.Bind<float>(waponSettings, "Malfunction Durability Threshold", 98f, new ConfigDescription("Malfunction Changes Must Be Enabled On The Server (Config App) And 'Enable Malfunctions Changes' Must Be True. Malfunction Chance Is Significantly Reduced Until This Durability Threshold Is Exceeded.", new AcceptableValueRange<float>(1f, 100f), new ConfigurationManagerAttributes { Order = 4 }));
             enableSGMastering = Config.Bind<bool>(waponSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 5 }));
             IncreaseCOI = Config.Bind<bool>(waponSettings, "Enable Increased Inaccuracy", true, new ConfigDescription("Requires Restart. Increases The Innacuracy Of All Weapons So That MOA/Accuracy Is A More Important Stat.", null, new ConfigurationManagerAttributes { Order = 6 }));
 
-            HeadsetAmbientMulti = Config.Bind<float>(deafSettings, "Headset Ambient Multi", 0.5f, new ConfigDescription("Adjusts The Ambient Volume Reduction From Headsets. Headset Gain Also Affects Ambient Volume. Higher = Louder.", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20 }));
-            RealTimeGain = Config.Bind<float>(deafSettings, "Headset Gain.", 10f, new ConfigDescription("WARNING: DO NOT SET THIS TOO HIGH, IT MAY DAMAGE YOUR HEARING! Most EFT Headsets Are Set To 13 By Default, Don't Make It Much Higher. Adjusts The Gain Of Equipped Headsets In Real Time, Acts Just Like The Volume Control On IRL Ear Defenders.", new AcceptableValueRange<float>(0f, 30f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11 }));
-            GainCutoff = Config.Bind<float>(deafSettings, "Headset Gain Cutoff Multi", 0.75f, new ConfigDescription("How Much Headset Gain Is Reduced By While Firing. 0.75 = 25% Reduction.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10 }));
+            SharedMovementVolume = Config.Bind<float>(deafSettings, "Shared Movement Volume Multi", 1f, new ConfigDescription("Multiplier For Player + NPC Sprint Volume. Has To Be Shared Due To BSG Jank.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 60, IsAdvanced = false }));
+            NPCMovementVolume = Config.Bind<float>(deafSettings, "NPC Movement Volume Multi", 1f, new ConfigDescription("Multiplier For NPC Movement Volume. Includes Walking And Equipment Rattle.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 50, IsAdvanced = false }));
+            PlayerMovementVolume = Config.Bind<float>(deafSettings, "Player Movement Volume Multi", 1f, new ConfigDescription("Multiplier For Player Movment Volume.  Includes Walking And Equipment Rattle.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 40, IsAdvanced = false }));
+            GunshotVolume = Config.Bind<float>(deafSettings, "Gunshot Volume", -5f, new ConfigDescription("Offset For Volume Of Gunshots When Not Using Headsets. Lower = Quieter. Use Gain Cutoff For Headsets", new AcceptableValueRange<float>(-50f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = false }));
+            HeadsetAmbientMulti = Config.Bind<float>(deafSettings, "Headset Ambient Multi", 0.25f, new ConfigDescription("Adjusts The Ambient Volume Reduction From Headsets. Headset Gain Also Affects Ambient Volume. Higher = Louder.", new AcceptableValueRange<float>(-1f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20 }));
+            RealTimeGain = Config.Bind<float>(deafSettings, "Headset Gain", 13f, new ConfigDescription("WARNING: DO NOT SET THIS TOO HIGH, IT MAY DAMAGE YOUR HEARING! Most EFT Headsets Are Set To 13 By Default, Don't Make It Much Higher. Adjusts The Gain Of Equipped Headsets In Real Time, Acts Just Like The Volume Control On IRL Ear Defenders.", new AcceptableValueRange<float>(0f, 30f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11 }));
+            GainCutoff = Config.Bind<float>(deafSettings, "Headset Gain Cutoff Multi", 0.75f, new ConfigDescription("How Much Headset Gain Is Reduced By While Firing. 0.75 = 25% Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10 }));
             DecGain = Config.Bind(deafSettings, "Reduce Gain Keybind", new KeyboardShortcut(KeyCode.KeypadMinus), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 9 }));
             IncGain = Config.Bind(deafSettings, "Increase Gain Keybind", new KeyboardShortcut(KeyCode.KeypadPlus), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 8 }));
             DeafRate = Config.Bind<float>(deafSettings, "Deafen Rate", 0.023f, new ConfigDescription("How Quickly Player Gets Deafened. Higher = Faster.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7, IsAdvanced = true }));
@@ -986,7 +1000,7 @@ namespace RealismMod
             VigReset = Config.Bind<float>(deafSettings, "Tunnel Effect Reset Rate.", 0.035f, new ConfigDescription("How Quickly Player Recovers From Tunnel Vision. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true }));
             DistRate = Config.Bind<float>(deafSettings, "Distortion Rate", 0.02f, new ConfigDescription("How Quickly Player's Hearing Gets Distorted. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
             DistReset = Config.Bind<float>(deafSettings, "Distortion Reset Rate.", 0.25f, new ConfigDescription("How Quickly Player's Hearing Recovers From Distortion. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
-            EnableDeafen = Config.Bind<bool>(deafSettings, "Enable Deafening", true, new ConfigDescription("Requiures Restart, And For Ballistics And Recoil/Attachment Overhauls To Be Enabled. Enables Gunshots And Explosions Deafening The Player. Requires Headset Changes To Be Enabled In The Config App.", null, new ConfigurationManagerAttributes { Order = 1 }));
+            EnableDeafen = Config.Bind<bool>(deafSettings, "Enable Audio Changes", true, new ConfigDescription("Requiures Restart, And For Ballistics And Recoil/Attachment Overhauls To Be Enabled. Enables Gunshots And Explosions Deafening The Player And Changes To How Headsets Work. Requires Headset Changes To Be Enabled In The Config App.", null, new ConfigurationManagerAttributes { Order = 1 }));
 
             EnableReloadPatches = Config.Bind<bool>(speed, "Enable Reload And Chamber Speed Changes", true, new ConfigDescription("Requires Restart. Weapon Weight, Magazine Weight, Attachment Reload And Chamber Speed Stat, Balance, Ergo And Arm Injury Affect Reload And Chamber Speed.", null, new ConfigurationManagerAttributes { Order = 17 }));
             GlobalAimSpeedModifier = Config.Bind<float>(speed, "Aim Speed Multi.", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16 }));
