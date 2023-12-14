@@ -180,7 +180,7 @@ namespace RealismMod
                         handsIntensity = Mathf.Min(0.57f * ergoWeightFactor, 0.86f);
                     }
 
-                    float beltFedFactor = weapon.IsBeltMachineGun ? 1.35f : 1f;
+                    float beltFedFactor = weapon.IsBeltMachineGun ? 1.45f : 1f;
                     float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * Plugin.SwayIntensity.Value * beltFedFactor;
                     float totalInputIntensitry = handsIntensity * handsIntensity * Plugin.SwayIntensity.Value * beltFedFactor;
                     PlayerProperties.TotalBreathIntensity = totalBreathIntensity;
@@ -266,7 +266,7 @@ namespace RealismMod
 
                     float totalPlayerWeight = PlayerProperties.TotalModifiedWeight - weapon.GetSingleItemTotalWeight();
                     float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
-                    float beltFedFactor = weapon.IsBeltMachineGun ? 1.35f : 1f;
+                    float beltFedFactor = weapon.IsBeltMachineGun ? 1.45f : 1f;
                     bool noShoulderContact = !WeaponProperties.HasShoulderContact && weapon.WeapClass != "pistol";
                     float ergoWeight = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));
                     float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f) * beltFedFactor;

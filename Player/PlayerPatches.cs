@@ -381,6 +381,16 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player __instance)
         {
+            if (Plugin.EnableDeafen.Value && Plugin.ModConfig.headset_changes) 
+            {
+                SurfaceSet currentSet = (SurfaceSet)AccessTools.Field(typeof(Player), "_currentSet").GetValue(__instance);
+                currentSet.SprintSoundBank.BaseVolume = Plugin.SharedMovementVolume.Value;
+                currentSet.StopSoundBank.BaseVolume = Plugin.SharedMovementVolume.Value;
+                currentSet.JumpSoundBank.BaseVolume = Plugin.SharedMovementVolume.Value;
+                currentSet.LandingSoundBank.BaseVolume = Plugin.SharedMovementVolume.Value;
+            }
+
+
             if (Utils.IsReady && __instance.IsYourPlayer)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;

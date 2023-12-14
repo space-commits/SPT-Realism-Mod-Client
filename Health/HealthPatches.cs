@@ -505,8 +505,8 @@ namespace RealismMod
                         float wait = MedProperties.PainKillerWaitTime(meds);
                         float intermittentDur = MedProperties.PainKillerTime(meds);
                         float tunnelVisionStr = MedProperties.TunnelVisionStrength(meds);
-                        float painStr = MedProperties.Strength(meds);
-                        PainKillerEffect painKillerEffect = new PainKillerEffect(duration, __instance, delay, wait, intermittentDur, tunnelVisionStr, painStr);
+                        float painKillStr = MedProperties.Strength(meds);
+                        PainKillerEffect painKillerEffect = new PainKillerEffect(duration, __instance, delay, wait, intermittentDur, tunnelVisionStr, painKillStr);
                         RealismHealthController.AddCustomEffect(painKillerEffect, false);
                         return true;
                     }

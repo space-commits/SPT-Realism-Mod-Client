@@ -1016,7 +1016,7 @@ namespace RealismMod
                     }
                     if (!hasResetActiveAim)
                     {
-                        activeToLow = 1f;
+                        activeToLow = 0.85f;
                     }
                 }
                 else

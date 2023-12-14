@@ -20,6 +20,7 @@ namespace RealismMod
         private static GameObject mountingUIGameObject;
         private static Image mountingUIImage;
         private static RectTransform mountingUIRect;
+        private static Vector2 iconSize = new Vector2 (80, 80);
 
         public static void DestroyGameObjects()
         {
@@ -39,7 +40,7 @@ namespace RealismMod
             mountingUIImage.sprite = Plugin.LoadedSprites["mounting.png"];
             mountingUIImage.raycastTarget = false;
             mountingUIImage.color = Color.clear;
-            mountingUIRect.sizeDelta = new Vector2(100, 100);
+            mountingUIRect.sizeDelta = iconSize;
         }
 
         public void Update()
@@ -63,12 +64,12 @@ namespace RealismMod
                 {
                     mountingUIImage.color = Color.white;
                     float scaleAmount = Mathf.Lerp(1f, 1.15f, Mathf.PingPong(Time.time * 0.9f, 1f));
-                    mountingUIRect.sizeDelta = new Vector2(90f, 90f) * scaleAmount;
+                    mountingUIRect.sizeDelta = iconSize * scaleAmount;
 
                 }
                 else if (StanceController.IsBracing && !PlayerProperties.IsSprinting)
                 {
-                    mountingUIRect.sizeDelta = new Vector2(90f, 90f);
+                    mountingUIRect.sizeDelta = iconSize;
                     float alpha = Mathf.Lerp(0.2f, 1f, Mathf.PingPong(Time.time * 1f, 1f));
                     Color lerpedColor = new Color(1f, 1f, 1f, alpha);
                     mountingUIImage.color = lerpedColor;
