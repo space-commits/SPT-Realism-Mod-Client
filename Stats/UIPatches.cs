@@ -683,7 +683,7 @@ namespace RealismMod
             {
                 StatDeltaDisplay.DisplayDelta(__instance);
             }
-            __result = DisplayWeaponProperties.VRecoilDelta - DisplayWeaponProperties.ConvergenceDelta;
+            __result = DisplayWeaponProperties.VRecoilDelta;
             return false;
         }
     }
@@ -698,7 +698,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref string __result)
         {
-            __result = Math.Round(__instance.Template.RecoilForceUp + (__instance.Template.RecoilForceUp * (DisplayWeaponProperties.VRecoilDelta - DisplayWeaponProperties.ConvergenceDelta)), 1).ToString();
+            __result = Math.Round(__instance.Template.RecoilForceUp + (__instance.Template.RecoilForceUp * (DisplayWeaponProperties.VRecoilDelta)), 1).ToString();
             return false;
         }
 
@@ -887,6 +887,7 @@ namespace RealismMod
                 float modSemiROF = AttachmentProperties.SemiROF(mod);
                 float modCamRecoil = AttachmentProperties.CameraRecoil(mod);
                 float modConv = AttachmentProperties.ModConvergence(mod);
+                modVRecoil += modConv > 0f ? modConv * -1f : 0f;
                 float modDispersion = AttachmentProperties.Dispersion(mod);
                 float modAngle = AttachmentProperties.RecoilAngle(mod);
                 float modAccuracy = mod.Accuracy;
