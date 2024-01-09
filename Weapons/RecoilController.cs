@@ -44,7 +44,7 @@ namespace RealismMod
             if (RecoilController.IsFiringWiggle)
             {
                 float cantedRecoilAmount = RecoilController.FactoredTotalHRecoil / 20f;
-                float cantedRecoilSpeed = Mathf.Max(RecoilController.BaseTotalConvergence * 0.75f, 14f);
+                float cantedRecoilSpeed = Mathf.Max(RecoilController.BaseTotalConvergence * 0.85f, 14f);
                 float totalCantedRecoil = Mathf.Lerp(-cantedRecoilAmount, cantedRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f));
 
                 if (Plugin.EnableAdditionalRec.Value)
