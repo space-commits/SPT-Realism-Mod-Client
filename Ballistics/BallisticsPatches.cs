@@ -20,13 +20,226 @@ using HarmonyLib.Tools;
 using System.Collections;
 using EFT.Interactive;
 using static System.Net.Mime.MediaTypeNames;
-using static EFT.Player;
 using static Val;
-using ShotClass = GClass2784;
+/*using ShotClass = GClass2784;*/
 
 namespace RealismMod
 {
-    public class IsShotDeflectedByHeavyArmorPatch : ModulePatch
+
+    public class ApplyArmorDamagePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(ArmorComponent).GetMethod("ApplyDamage", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Postfix(ArmorComponent __instance, ref float __result, ref DamageInfo damageInfo, EBodyPartColliderType colliderType, EArmorPlateCollider armorPlateCollider, bool damageInfoIsLocal, List<ArmorComponent> armorComponents, SkillManager.GClass1769 lightVestsDamageReduction, SkillManager.GClass1769 heavyVestsDamageReduction)
+        {
+            Logger.LogWarning("========ApplyArmorDamage======");
+
+            Logger.LogWarning("hit collider = " + damageInfo.HitCollider.name);
+            Logger.LogWarning("ballistic collider = " + damageInfo.HittedBallisticCollider.name);
+            Logger.LogWarning("colliderType = " + colliderType);
+            Logger.LogWarning("armorPlateCollider = " + armorPlateCollider);
+            Logger.LogWarning("armor name = " + __instance.Item.Template.Name);
+            Logger.LogWarning("armor template id = " + __instance.Item.TemplateId);
+
+            Logger.LogWarning("--stats before calc--");
+            Logger.LogWarning("ammo = " + damageInfo.SourceId);
+            Logger.LogWarning("damageInfo.Damage = " + damageInfo.Damage);
+            Logger.LogWarning("damageInfo.PenetrationPower " + damageInfo.PenetrationPower);
+            Logger.LogWarning("armor durability % = " + __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f);
+            Logger.LogWarning("armor durability = " + __instance.Repairable.Durability);
+            Logger.LogWarning("----");
+
+            EDamageType damageType = damageInfo.DamageType;
+            if (!damageType.IsWeaponInduced() && damageType != EDamageType.GrenadeFragment)
+            {
+                Logger.LogWarning("is not weapon induced");
+                __result = 0f;
+                return false;
+            }
+            Player player = (damageInfo.Player != null) ? Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(damageInfo.Player.iPlayer.ProfileId) : null;
+            if (player != null)
+            {
+                __instance.TryShatter(player, damageInfoIsLocal);
+            }
+            if (__instance.Repairable.Durability <= 0f)
+            {
+                Logger.LogWarning("Durability is 0");
+                __result = 0f;
+                return false;
+            }
+            if (damageInfo.DeflectedBy == __instance.Item.Id)
+            {
+                damageInfo.Damage /= 2f;
+                damageInfo.ArmorDamage /= 2f;
+                damageInfo.PenetrationPower /= 2f;
+                Logger.LogWarning("Deflected");
+            }
+            float num = __instance.Template.BluntThroughput;
+            bool flag;
+            if ((flag = __instance.ShotMatches(colliderType, armorPlateCollider)) && __instance.Template.ArmorType == EArmorType.Heavy)
+            {
+                num *= 1f - heavyVestsDamageReduction;
+            }
+            float penetrationPower = damageInfo.PenetrationPower;
+            float num2 = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f;
+            float num3 = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
+            float num4 = (121f - 5000f / (45f + num2 * 2f)) * num3 * 0.01f;
+            float num5;
+            if (!(damageInfo.BlockedBy == __instance.Item.Id) && !(damageInfo.DeflectedBy == __instance.Item.Id))
+            {
+                Logger.LogWarning("=PENETRATED=");
+                num5 = damageInfo.PenetrationPower * damageInfo.ArmorDamage * Mathf.Clamp(penetrationPower / num3, 0.5f, 0.9f) * Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
+                float num6 = Mathf.Clamp(penetrationPower / (num4 + 12f), 0.6f, 1f);
+                damageInfo.Damage *= num6;
+                if (__instance.Template.ArmorType == EArmorType.Light && damageInfo.DamageType == EDamageType.Melee && flag)
+                {
+                    damageInfo.Damage *= 1f - lightVestsDamageReduction;
+                }
+                damageInfo.PenetrationPower *= num6;
+            }
+            else
+            {
+                Logger.LogWarning("=BLOCKED");
+                num5 = damageInfo.PenetrationPower * damageInfo.ArmorDamage * Mathf.Clamp(penetrationPower / num3, 0.6f, 1.1f) * Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
+                damageInfo.Damage *= num * Mathf.Clamp(1f - 0.03f * (num4 - penetrationPower), 0.2f, 1f);
+                damageInfo.StaminaBurnRate *= ((num > 0f) ? (3f / Mathf.Sqrt(num)) : 1f);
+            }
+            if (__instance.Buff.IsActive && __instance.Buff.BuffType == ERepairBuffType.DamageReduction)
+            {
+                Logger.LogWarning("Repair Bonus Damage Reduction");
+                damageInfo.Damage *= (float)__instance.Buff.DamageReduction;
+            }
+            num5 = Mathf.Max(1f, num5);
+            __instance.ApplyDurabilityDamage(num5, armorComponents);
+            if (armorPlateCollider != (EArmorPlateCollider)0)
+            {
+                Logger.LogWarning("Armor Plate Collider is not equal to value 0");
+                damageInfo.Damage = 0f;
+            }
+            Logger.LogWarning("--stats after calc--");
+            Logger.LogWarning("damageInfo.Damage (blunt damage) = " + damageInfo.Damage);
+            Logger.LogWarning("damageInfo.PenetrationPower " + damageInfo.PenetrationPower);
+            Logger.LogWarning("Armor Damage = " + num5);
+            Logger.LogWarning("armor durability % = " + __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f);
+            Logger.LogWarning("armor durability = " + __instance.Repairable.Durability);
+            Logger.LogWarning("armor class = " + num3);
+            Logger.LogWarning("==============");
+            __result = num5;
+            return false;
+        }
+    }
+
+    public class PenStatusPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(ArmorComponent).GetMethod("SetPenetrationStatus", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Postfix(ArmorComponent __instance, GClass2986 shot)
+        {
+            Logger.LogWarning("=======SetPenetrationStatus=======");
+            Logger.LogWarning("--collider--");
+            Logger.LogWarning("hit collider = " + shot.HitCollider.name);
+            Logger.LogWarning("ballistic collider = " + shot.HittedBallisticCollider.name);
+            Logger.LogWarning("--armor--");
+            Logger.LogWarning("armor name = " + __instance.Item.Template.Name);
+            Logger.LogWarning("armor template id = " + __instance.Item.TemplateId);
+            Logger.LogWarning("--stats--");
+            Logger.LogWarning("ammo = " + shot.Ammo.Template.Name);
+            Logger.LogWarning("damage = " + shot.Damage);
+            Logger.LogWarning("penetrationPower " + shot.PenetrationPower);
+            Logger.LogWarning("armor durability % = " + __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f);
+            Logger.LogWarning("armor durability = " + __instance.Repairable.Durability);
+            Logger.LogWarning("armor class = " + (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance);
+
+            if (__instance.Repairable.Durability <= 0f)
+            {
+                Logger.LogWarning("0 Durability");
+            }
+            float penetrationPower = shot.PenetrationPower;
+            float num = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f;
+            float num2 = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
+            float num3 = (121f - 5000f / (45f + num * 2f)) * num2 * 0.01f;
+            if (((num3 >= penetrationPower + 15f) ? 0f : ((num3 >= penetrationPower) ? (0.4f * (num3 - penetrationPower - 15f) * (num3 - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * num3 - penetrationPower)))) - shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f < 0f)
+            {
+                Logger.LogWarning(">>> Shot blocked by armor piece");
+            }
+            else 
+            {
+                Logger.LogWarning(">>> Shot PENETRATED");
+            }
+            Logger.LogWarning("==============");
+        }
+    }
+
+
+    public class ApplyDamageInfoPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player).GetMethod("ApplyDamageInfo", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Postfix(Player __instance, DamageInfo damageInfo, EBodyPart bodyPartType, EBodyPartColliderType colliderType, float absorbed)
+        {
+            Logger.LogWarning("=======ApplyDamageInfo=======");
+            Logger.LogWarning("hit collider = " + damageInfo.HitCollider.name);
+            Logger.LogWarning("ballistic collider = " + damageInfo.HittedBallisticCollider.name);
+            Logger.LogWarning("colliderType = " + colliderType);
+            Logger.LogWarning("bodyPartType = " + bodyPartType);
+            Logger.LogWarning("--hit");
+            Logger.LogWarning("damage absorbed = " + absorbed);
+            Logger.LogWarning("damage = " + damageInfo.Damage);
+            Logger.LogWarning("pen = " + damageInfo.PenetrationPower);
+            Logger.LogWarning("armor damage = " + damageInfo.ArmorDamage);
+            Logger.LogWarning("did armor damage = " + damageInfo.DidArmorDamage);
+            Logger.LogWarning("did body damage = " + damageInfo.DidBodyDamage);
+            Logger.LogWarning("damage type = " + damageInfo.DamageType);
+            Logger.LogWarning("--armor");
+            Logger.LogWarning("deflected by = " + damageInfo.DeflectedBy);
+            Logger.LogWarning("deflected blocked by = " + damageInfo.BlockedBy);
+            Logger.LogWarning("==============");
+        }
+    }
+
+
+    public class ApplyDamagePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.HealthSystem.ActiveHealthController).GetMethod("ApplyDamage", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Postfix(EFT.HealthSystem.ActiveHealthController __instance, EBodyPart bodyPart, float damage, DamageInfo damageInfo)
+        {
+            Logger.LogWarning("=======ApplyDamage-ActiveHealthController=======");
+            Logger.LogWarning("hit collider = " + damageInfo.HitCollider?.name);
+            Logger.LogWarning("ballistic collider = " + damageInfo.HittedBallisticCollider?.name);
+            Logger.LogWarning("bodyPart = " + bodyPart);
+            Logger.LogWarning("--hit");
+            Logger.LogWarning("damage = " + damageInfo.Damage);
+            Logger.LogWarning("pen = " + damageInfo.PenetrationPower);
+            Logger.LogWarning("armor damage = " + damageInfo.ArmorDamage);
+            Logger.LogWarning("did armor damage = " + damageInfo.DidArmorDamage);
+            Logger.LogWarning("did body damage = " + damageInfo.DidBodyDamage);
+            Logger.LogWarning("damage type = " + damageInfo.DamageType);
+            Logger.LogWarning("--armor");
+            Logger.LogWarning("deflected by = " + damageInfo.DeflectedBy);
+            Logger.LogWarning("deflected blocked by = " + damageInfo.BlockedBy);
+            Logger.LogWarning("==============");
+        }
+    }
+
+
+    /*public class IsShotDeflectedByHeavyArmorPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -360,7 +573,7 @@ namespace RealismMod
 
                 Collider col = damageInfo.HitCollider;
                 Vector3 localPoint = col.transform.InverseTransformPoint(damageInfo.HitPoint);
-                /*Vector3 normalizedPoint = localPoint.normalized;*/
+                *//*Vector3 normalizedPoint = localPoint.normalized;*//*
                 Vector3 hitNormal = damageInfo.HitNormal;
                 string hitPart = damageInfo.HittedBallisticCollider.name;
                 bool hitCalf = hitPart == HitBox.LeftCalf || hitPart == HitBox.RightCalf ? true : false;
@@ -578,7 +791,7 @@ namespace RealismMod
                 RaycastHit raycast = (RaycastHit)rayCastField.GetValue(shot);
                 Collider col = raycast.collider;
                 Vector3 localPoint = col.transform.InverseTransformPoint(raycast.point);
-/*                Vector3 normalizedPoint = localPoint.normalized;*/
+*//*                Vector3 normalizedPoint = localPoint.normalized;*//*
                 Vector3 hitNormal = raycast.normal;
                 string hitPart = shot.HittedBallisticCollider.name;
 
@@ -810,7 +1023,7 @@ namespace RealismMod
                 string hitPart = damageInfo.HittedBallisticCollider.name;
                 Collider col = damageInfo.HitCollider;
                 Vector3 localPoint = col.transform.InverseTransformPoint(damageInfo.HitPoint);
-      /*          Vector3 normalizedPoint = localPoint.normalized;*/
+      *//*          Vector3 normalizedPoint = localPoint.normalized;*//*
                 Vector3 hitNormal = damageInfo.HitNormal;
 
                 bool hasExtraArmor = GearProperties.HasExtraArmor(__instance.Item);
@@ -894,7 +1107,7 @@ namespace RealismMod
             float armorDestructibility = Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
 
             float armorFactor = armorResist * (Mathf.Min(1f, duraPercent * 1.65f));
-            /*          float throughputDuraFactored = Mathf.Min(1f, bluntThrput * (1f + ((duraPercent - 1f) * -1f)));*/
+            *//*          float throughputDuraFactored = Mathf.Min(1f, bluntThrput * (1f + ((duraPercent - 1f) * -1f)));*//*
             float penDuraFactoredClass = Mathf.Max(1f, armorFactor - (penPower / 1.8f));
             float penFactoredClass = Mathf.Max(1f, armorResist - (penPower / 1.8f));
             float maxPotentialDuraDamage = KE / penDuraFactoredClass;
@@ -1018,7 +1231,7 @@ namespace RealismMod
         private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, string player, Item weapon, ref ShotClass __result, float speedFactor, int fragmentIndex = 0)
         {
             
-   /*         Logger.LogWarning("!!!!!!!!!!! Shot Created!! !!!!!!!!!!!!!!");
+   *//*         Logger.LogWarning("!!!!!!!!!!! Shot Created!! !!!!!!!!!!!!!!");
             Logger.LogWarning("========================STARTING BULLET VALUES============================");
             Logger.LogWarning("Round ID = " + ammo.TemplateId);
             Logger.LogWarning("Round Damage = " + ammo.Damage);
@@ -1028,7 +1241,7 @@ namespace RealismMod
             Logger.LogWarning("Round Intial Speed = " + ammo.InitialSpeed);
             Logger.LogWarning("Round SPEED FACTOR = " + speedFactor);
             Logger.LogWarning("Round BC = " + ammo.BallisticCoeficient);
-            Logger.LogWarning("==============================================================");*/
+            Logger.LogWarning("==============================================================");*//*
 
             int randomNum = UnityEngine.Random.Range(0, 512);
             float velocityFactored = ammo.InitialSpeed * speedFactor;
@@ -1038,7 +1251,7 @@ namespace RealismMod
             float penPowerFactored = EFT.Ballistics.BallisticsCalculator.GetAmmoPenetrationPower(ammo, randomNum, __instance.Randoms) * speedFactor;
             float bcFactored = Mathf.Max(ammo.BallisticCoeficient * speedFactor, 0.01f);
 
-/*            Logger.LogWarning("========================AFTER SPEED FACTOR============================");
+*//*            Logger.LogWarning("========================AFTER SPEED FACTOR============================");
             Logger.LogWarning("Round ID = " + ammo.TemplateId);
             Logger.LogWarning("Round Damage = " + damageFactored);
             Logger.LogWarning("Round Penetration Power = " + penPowerFactored);
@@ -1046,7 +1259,7 @@ namespace RealismMod
             Logger.LogWarning("Round Frag Chance = " + fragchanceFactored);
             Logger.LogWarning("Round Factored Speed = " + velocityFactored);
             Logger.LogWarning("Round Factored BC = " + bcFactored);
-            Logger.LogWarning("==============================================================");*/
+            Logger.LogWarning("==============================================================");*//*
 
             __result = ShotClass.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
             return false;
@@ -1117,127 +1330,5 @@ namespace RealismMod
             ___rigidbodySpawner_1.Rigidbody.mass = 100f;
             return true;
         }
-    }
-
-
-    /*    public class AltSetPenetrationStatusPatch : ModulePatch
-        {
-            protected override MethodBase GetTargetMethod()
-            {
-                var result = typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.SetPenetrationStatus), BindingFlags.Public | BindingFlags.Instance);
-
-                return result;
-
-            }
-
-            private static void GetMaterialRandomFactor(EArmorMaterial armorMat, ref float min, ref float max)
-            {
-                switch (armorMat)
-                {
-                    case EArmorMaterial.UHMWPE:
-                        min = 0.97f;
-                        max = 1.03f;
-                        break;
-                    case EArmorMaterial.ArmoredSteel:
-                        min = 1f;
-                        max = 1f;
-                        break;
-                    case EArmorMaterial.Titan:
-                        min = 0.99f;
-                        max = 1.01f;
-                        break;
-                    case EArmorMaterial.Aluminium:
-                        min = 0.98f;
-                        max = 1.02f;
-                        break;
-                    case EArmorMaterial.Glass:
-                        min = 1f;
-                        max = 1f;
-                        break;
-                    case EArmorMaterial.Ceramic:
-                        min = 0.99f;
-                        max = 1.01f;
-                        break;
-                    case EArmorMaterial.Combined:
-                        min = 0.98f;
-                        max = 1.02f;
-                        break;
-                    case EArmorMaterial.Aramid:
-                        min = 0.96f;
-                        max = 1.04f;
-                        break;
-
-                }
-            }
-
-            [PatchPrefix]
-            private static bool Prefix(GClass2783 shot, ref ArmorComponent __instance)
-            {
-
-                float penetrationPower = shot.PenetrationPower;
-                float armorDura = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability;
-                float armorDuraFactor = armorDura;
-                float velocity = shot.VelocityMagnitude;
-                float KE = (0.5f * shot.BulletMassGram * velocity * velocity) / 1000f;
-
-                if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel)
-                {
-                    armorDuraFactor = 1f;
-                }
-                else if (__instance.Template.ArmorMaterial == EArmorMaterial.Titan)
-                {
-                    armorDuraFactor = Mathf.Min(1f, armorDuraFactor * 2f);
-                }
-                else
-                {
-                    armorDuraFactor = Mathf.Min(1f, armorDuraFactor * 1.25f);
-                }
-
-                float minRand = 1f;
-                float maxRand = 1f;
-                GetMaterialRandomFactor(__instance.Template.ArmorMaterial, ref minRand, ref maxRand);
-                float randomFactor = UnityEngine.Random.Range(minRand * armorDura, maxRand * armorDura);
-
-                //need an arm armor proxy or default values
-                float minVel = ArmorProperties.MinVelocity(__instance.Item) * armorDuraFactor * randomFactor;
-                float minKE = ArmorProperties.MinKE(__instance.Item) * armorDuraFactor * randomFactor;
-                float minPen = ArmorProperties.MinPen(__instance.Item) * armorDuraFactor * randomFactor;
-
-                if (isArmArmor == true)
-                {
-                    minVel = 290f * armorDuraFactor * randomFactor;
-                    minKE = 160f * ArmorProperties.MinKE(__instance.Item) * armorDuraFactor * randomFactor;
-                    minPen = 40f * ArmorProperties.MinPen(__instance.Item) * armorDuraFactor * randomFactor;
-                }
-
-                Logger.LogWarning("===========PEN STATUS=============== ");
-                if (KE < minKE || penetrationPower < minPen || penetrationPower < minPen)
-                {
-                    shot.BlockedBy = __instance.Item.Id;
-                    Debug.Log(">>> Shot blocked by armor piece");
-                    if (Plugin.EnableBallisticsLogging.Value == true)
-                    {
-                        Logger.LogWarning("Blocked");
-                    }
-                }
-                else
-                {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
-                    {
-                        Logger.LogWarning("Penetrated");
-                    }
-                }
-
-                Logger.LogWarning("min vel = " + minVel);
-                Logger.LogWarning("min pen = " + minPen);
-                Logger.LogWarning("min KE = " + minKE);
-                Logger.LogWarning("======= ");
-                Logger.LogWarning("vel = " + velocity);
-                Logger.LogWarning("pen = " + penetrationPower);
-                Logger.LogWarning("ke = " + KE);
-                Logger.LogWarning("========================== ");
-
-                return false;
-            }
-        }*/
+    }*/
 }

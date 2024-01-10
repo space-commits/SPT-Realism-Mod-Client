@@ -1,4 +1,4 @@
-﻿using Aki.Reflection.Patching;
+﻿/*using Aki.Reflection.Patching;
 using Aki.Reflection.Utils;
 using AmplifyMotion;
 using BepInEx.Logging;
@@ -648,7 +648,7 @@ namespace RealismMod
         }
     }
 
-/*    //THIS IS DOG SHIT, IT WILL AFFECT BOTS, UNUSED
+*//*    //THIS IS DOG SHIT, IT WILL AFFECT BOTS, UNUSED
     public class EnergyRatePatch : ModulePatch
     {
 
@@ -735,5 +735,6 @@ namespace RealismMod
             }
             return true;
         }
-    }*/
+    }*//*
 }
+*/

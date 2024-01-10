@@ -1,4 +1,4 @@
-﻿using BepInEx.Logging;
+﻿/*using BepInEx.Logging;
 using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
@@ -294,10 +294,10 @@ namespace RealismMod
                 totalCOI *= WeaponProperties.FoldedCOIFactor;
 
                 //don't think his is neccessary anymore as shot dispersion no longer uses COI delta or COI.
-                /*             if (weap.WeapClass != "shotgun")
+                *//*             if (weap.WeapClass != "shotgun")
                              {
                                  totalCOI *= WeaponProperties.FoldedCOIFactor;
-                             }*/
+                             }*//*
             }
 
             totalCOIDelta = (totalCOI - baseCOI) / baseCOI;
@@ -630,7 +630,7 @@ namespace RealismMod
                 return;
             }
 
-            /*            if (modType == "gasblock_upgassed")
+            *//*            if (modType == "gasblock_upgassed")
                         {
                             if (parent != null && AttachmentProperties.ModType(parent) == "short_barrel")
                             {
@@ -669,7 +669,7 @@ namespace RealismMod
                            modAutoROF *= 1.25f;
                        }
                        return;
-                   }*/
+                   }*//*
         }
 
         public static string GetModPosition(Mod mod, string weapType, string opType, string modType)
@@ -921,3 +921,4 @@ namespace RealismMod
         }
     }
 }
+*/

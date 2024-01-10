@@ -1,4 +1,4 @@
-﻿using Aki.Reflection.Patching;
+﻿/*using Aki.Reflection.Patching;
 using Aki.Reflection.Utils;
 using BepInEx.Logging;
 using EFT;
@@ -130,7 +130,7 @@ namespace RealismMod
             if (__instance.IsYourPlayer)
             {
                 //for some reason this makes stances NOT reset
-                /*              StanceController.StanceBlender.Speed = 1f;
+                *//*              StanceController.StanceBlender.Speed = 1f;
                                 StanceController.StanceBlender.Target = 0f;
                                 StanceController.StanceTargetPosition = Vector3.zero;
                                 StanceController.IsLowReady = false;
@@ -146,7 +146,7 @@ namespace RealismMod
                                 StanceController.IsBracing = false;
                                 StanceController.DidStanceWiggle = false;
 
-                                Plugin.PlayerSpawnedIn = true;*/
+                                Plugin.PlayerSpawnedIn = true;*//*
 
                 PlayerInitPatch p = new PlayerInitPatch();
                 StatCalc.SetGearParamaters(__instance);
@@ -452,18 +452,18 @@ namespace RealismMod
                 float stanceHipFactor = StanceController.IsActiveAiming ? 0.7f : StanceController.IsShortStock ? 1.35f : 1f;
                 __instance.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponProperties.BaseHipfireInaccuracy * PlayerProperties.SprintHipfirePenalty * stanceHipFactor, 0.2f, 1.6f);
 
-                /*                __instance.ProceduralWeaponAnimation.HandsContainer.CameraRotation.ReturnSpeed = WeaponProperties.TotalCameraReturnSpeed; //not sure about this one
+                *//*                __instance.ProceduralWeaponAnimation.HandsContainer.CameraRotation.ReturnSpeed = WeaponProperties.TotalCameraReturnSpeed; //not sure about this one
                                 __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = Plugin.test1.Value;
-                */
+                *//*
                 if (!RecoilController.IsFiring)
                 {
                     if (StanceController.CanResetDamping)
                     {
                         float resetSpeed = 0.01f;
-          /*              if (PlayerProperties.IsMoving && (StanceController.WasLowReady || StanceController.WasHighReady || StanceController.WasShortStock || StanceController.WasActiveAim))
+          *//*              if (PlayerProperties.IsMoving && (StanceController.WasLowReady || StanceController.WasHighReady || StanceController.WasShortStock || StanceController.WasActiveAim))
                         {
                             resetSpeed = 1f;
-                        }*/
+                        }*//*
                         __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, resetSpeed);
                     }
                     else
@@ -473,8 +473,8 @@ namespace RealismMod
                         __instance.ProceduralWeaponAnimation.Shootingg.ShotVals[4].Intensity = 0;
                     }
                     __instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.Recoil.ReturnSpeed, 10f * StanceController.WiggleReturnSpeed, 0.01f);
-                    /*                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.5f;
-                                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.4f;*/
+                    *//*                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.5f;
+                                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.4f;*//*
                 }
                 __instance.MovementContext.SetPatrol(StanceController.IsPatrolStance);
             }
@@ -482,3 +482,4 @@ namespace RealismMod
     }
 }
 
+*/

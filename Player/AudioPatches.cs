@@ -1,4 +1,4 @@
-﻿using EFT;
+﻿/*using EFT;
 using System;
 using UnityEngine;
 using System.Linq;
@@ -254,7 +254,7 @@ namespace RealismMod
             return false;
 
 
-            /* bool hasHeadsetTemplate = template != null;
+            *//* bool hasHeadsetTemplate = template != null;
              bool isNotHeadset = template?._id == null; //using both bools is redundant now.
 
              Plugin.DryVolume = hasHeadsetTemplate && !isNotHeadset ? template.DryVolume : 0f;
@@ -290,7 +290,7 @@ namespace RealismMod
              __instance.Master.GetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, out float tin1);
              __instance.Master.GetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, out float tin2);
              __instance.Master.SetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, tin1);
-             __instance.Master.SetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, tin2);*/
+             __instance.Master.SetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, tin2);*//*
 
 
         }
@@ -370,7 +370,7 @@ namespace RealismMod
                         AmmoTemplate currentAmmoTemplate = bullet.Template as AmmoTemplate;
                         float velocityFactor = CalcVelocityFactor(weap);
                         float ammoFactor = CalcAmmoFactor(currentAmmoTemplate);
-                      /*  float muzzleFactor = GetMuzzleLoudness(weap.Mods);*/
+                      *//*  float muzzleFactor = GetMuzzleLoudness(weap.Mods);*//*
                         float calFactor = StatCalc.CalibreLoudnessFactor(weap.AmmoCaliber);
                         float ammoDeafFactor = ammoFactor * velocityFactor;
                         if (bullet.InitialSpeed * weap.SpeedFactor <= 335f)
@@ -432,3 +432,4 @@ namespace RealismMod
 
 
 }
+*/

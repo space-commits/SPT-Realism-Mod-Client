@@ -14,10 +14,8 @@ using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
-using static RealismMod.GearPatches;
 using static RealismMod.Attributes;
 using HarmonyLib;
-using static System.Net.Mime.MediaTypeNames;
 using MonoMod.RuntimeDetour;
 using GPUInstancer;
 
@@ -311,6 +309,12 @@ namespace RealismMod
         public static ConfigEntry<float> test2 { get; set; }
         public static ConfigEntry<float> test3 { get; set; }
         public static ConfigEntry<float> test4 { get; set; }
+        public static ConfigEntry<float> test5 { get; set; }
+        public static ConfigEntry<float> test6 { get; set; }
+        public static ConfigEntry<float> test7 { get; set; }
+        public static ConfigEntry<float> test8 { get; set; }
+        public static ConfigEntry<float> test9 { get; set; }
+        public static ConfigEntry<float> test10 { get; set; }
 
         public static Vector3 WeaponOffsetPosition;
 
@@ -350,7 +354,7 @@ namespace RealismMod
         public static bool IsInThirdPerson = false;
 
         public static GameObject Hook;
-        public static MountingUI MountingUIComponent;
+  /*      public static MountingUI MountingUIComponent;*/
 
         public static bool HasReloadedAudio = false;
 
@@ -497,7 +501,7 @@ namespace RealismMod
 
         void Awake()
         {
-            try
+    /*        try
             {
                 getPaths();
                 configCheck();
@@ -512,235 +516,241 @@ namespace RealismMod
 
             Hook = new GameObject();
             MountingUIComponent = Hook.AddComponent<MountingUI>();
-            DontDestroyOnLoad(Hook);
+            DontDestroyOnLoad(Hook);*/
 
             initConfigs();
 
-            if (ModConfig.recoil_attachment_overhaul)
-            {
-                //Stat assignment patches
-                new COIDeltaPatch().Enable();
-                new TotalShotgunDispersionPatch().Enable();
-                new GetDurabilityLossOnShotPatch().Enable();
-                new AutoFireRatePatch().Enable();
-                new SingleFireRatePatch().Enable();
-                new ErgoDeltaPatch().Enable();
-                new ErgoWeightPatch().Enable();
-                new method_9Patch().Enable();
+            new ApplyArmorDamagePatch().Enable();
+            new PenStatusPatch().Enable();
+            new ApplyDamageInfoPatch().Enable();
+            new ApplyDamagePatch().Enable();
+            new WeaponStatsPatch().Enable();
+            new RecoilIndexPatch().Enable();
+            new GetCurrentRecoilEffectPatch().Enable();
+     /*       new SetStableModePatch().Enable();*/
 
-                new SyncWithCharacterSkillsPatch().Enable();
-                new UpdateWeaponVariablesPatch().Enable();
-                new SetAimingSlowdownPatch().Enable();
 
-                //Sway and Aim Inertia
-                new PwaWeaponParamsPatch().Enable();
-                new UpdateSwayFactorsPatch().Enable();
-                new GetOverweightPatch().Enable();
-                new SetOverweightPatch().Enable();
-                new BreathProcessPatch().Enable();
+            /*  if (ModConfig.recoil_attachment_overhaul)
+              {
+                  //Stat assignment patches
+                  new COIDeltaPatch().Enable();
+                  new TotalShotgunDispersionPatch().Enable();
+                  new GetDurabilityLossOnShotPatch().Enable();
+                  new AutoFireRatePatch().Enable();
+                  new SingleFireRatePatch().Enable();
+                  new ErgoDeltaPatch().Enable();
+                  new ErgoWeightPatch().Enable();
+                  new method_9Patch().Enable();
 
-                //Recoil Patches
-                new OnWeaponParametersChangedPatch().Enable();
-                new ProcessPatch().Enable();
-                new ShootPatch().Enable();
-                new SetCurveParametersPatch().Enable();
-                new RecoilRotatePatch().Enable();
+                  new SyncWithCharacterSkillsPatch().Enable();
+                  new UpdateWeaponVariablesPatch().Enable();
+                  new SetAimingSlowdownPatch().Enable();
 
-                //Aiming Patches
-                new SetAimingPatch().Enable();
-                new ToggleAimPatch().Enable();
+                  //Sway and Aim Inertia
+                  new PwaWeaponParamsPatch().Enable();
+                  new UpdateSwayFactorsPatch().Enable();
+                  new GetOverweightPatch().Enable();
+                  new SetOverweightPatch().Enable();
+                  new BreathProcessPatch().Enable();
 
-                if (Plugin.EnableParralax.Value) 
-                {
-                    new CalibrationLookAt().Enable();
-                    new CalibrationLookAtScope().Enable();
-                }
-  
-                //Malf Patches
-                if (Plugin.EnableMalfPatch.Value && ModConfig.malf_changes)
-                {
-     /*               new GetMalfVariantsPatch().Enable();*/
-                    new GetTotalMalfunctionChancePatch().Enable();
-/*                    new GetMalfunctionStatePatch().Enable();*/
-                }
-                if (Plugin.InspectionlessMalfs.Value)
-                {
-                    new IsKnownMalfTypePatch().Enable();
-                }
+                  //Recoil Patches
+                  new OnWeaponParametersChangedPatch().Enable();
+                  new ProcessPatch().Enable();
+                  new ShootPatch().Enable();
+                  new SetCurveParametersPatch().Enable();
+                  new RecoilRotatePatch().Enable();
 
-                //Reload Patches
-                if (Plugin.EnableReloadPatches.Value)
-                {
-                    new CanStartReloadPatch().Enable();
-                    new ReloadMagPatch().Enable();
-                    new QuickReloadMagPatch().Enable();
-                    new ReloadWithAmmoPatch().Enable();
-                    new ReloadBarrelsPatch().Enable();
-                    new ReloadCylinderMagazinePatch().Enable();
+                  //Aiming Patches
+                  new SetAimingPatch().Enable();
+                  new ToggleAimPatch().Enable();
 
-                    new OnMagInsertedPatch().Enable();
-                    new SetMagTypeCurrentPatch().Enable();
-                    new SetMagTypeNewPatch().Enable();
-                    new SetMagInWeaponPatch().Enable();
+                  if (Plugin.EnableParralax.Value) 
+                  {
+                      new CalibrationLookAt().Enable();
+                      new CalibrationLookAtScope().Enable();
+                  }
 
-                    new SetMalfRepairSpeedPatch().Enable();
-                    new BoltActionReloadPatch().Enable();
+                  //Malf Patches
+                  if (Plugin.EnableMalfPatch.Value && ModConfig.malf_changes)
+                  {
+                      new GetTotalMalfunctionChancePatch().Enable();
+                  }
+                  if (Plugin.InspectionlessMalfs.Value)
+                  {
+                      new IsKnownMalfTypePatch().Enable();
+                  }
 
-                    new SetSpeedParametersPatch().Enable();
-                    /*new SetHammerArmedPatch().Enable();*/ //isn#t getting called anymore
-                }
+                  //Reload Patches
+                  if (Plugin.EnableReloadPatches.Value)
+                  {
+                      new CanStartReloadPatch().Enable();
+                      new ReloadMagPatch().Enable();
+                      new QuickReloadMagPatch().Enable();
+                      new ReloadWithAmmoPatch().Enable();
+                      new ReloadBarrelsPatch().Enable();
+                      new ReloadCylinderMagazinePatch().Enable();
 
-                new CheckAmmoPatch().Enable();
-                new CheckChamberPatch().Enable();
-                new RechamberPatch().Enable();
+                      new OnMagInsertedPatch().Enable();
+                      new SetMagTypeCurrentPatch().Enable();
+                      new SetMagTypeNewPatch().Enable();
+                      new SetMagInWeaponPatch().Enable();
 
-                new SetAnimatorAndProceduralValuesPatch().Enable();
-                new OnItemAddedOrRemovedPatch().Enable();
+                      new SetMalfRepairSpeedPatch().Enable();
+                      new BoltActionReloadPatch().Enable();
 
-                if (Plugin.enableSGMastering.Value == true)
-                {
-                    new SetWeaponLevelPatch().Enable();
-                }
+                      new SetSpeedParametersPatch().Enable();
+                  }
 
-                //Stat Display Patches
-                new ModConstructorPatch().Enable();
-                new WeaponConstructorPatch().Enable();
-                new HRecoilDisplayStringValuePatch().Enable();
-                new HRecoilDisplayDeltaPatch().Enable();
-                new VRecoilDisplayStringValuePatch().Enable();
-                new VRecoilDisplayDeltaPatch().Enable();
-                new ModVRecoilStatDisplayPatchFloat().Enable();
-                new ModVRecoilStatDisplayPatchString().Enable();
-                new ErgoDisplayDeltaPatch().Enable();
-                new ErgoDisplayStringValuePatch().Enable();
-                new COIDisplayDeltaPatch().Enable();
-                new COIDisplayStringValuePatch().Enable();
-                new FireRateDisplayStringValuePatch().Enable();
-                new GetCachedReadonlyQualitiesPatch().Enable();
-                new CenterOfImpactMOAPatch().Enable();
-                new ModErgoStatDisplayPatch().Enable();
-                new GetAttributeIconPatches().Enable();
-                new HeadsetConstructorPatch().Enable();
-                new AmmoDuraBurnDisplayPatch().Enable();
-                new AmmoMalfChanceDisplayPatch().Enable();
-                new MagazineMalfChanceDisplayPatch().Enable();
-                new BarrelModClassPatch().Enable();
+                  new CheckAmmoPatch().Enable();
+                  new CheckChamberPatch().Enable();
+                  new RechamberPatch().Enable();
 
-                if (Plugin.IncreaseCOI.Value == true)
-                {
-                    new GetTotalCenterOfImpactPatch().Enable();
-                }
-            }
+                  new SetAnimatorAndProceduralValuesPatch().Enable();
+                  new OnItemAddedOrRemovedPatch().Enable();
 
-            //Ballistics
-            if (ModConfig.realistic_ballistics)
-            {
-                new CreateShotPatch().Enable();
-                new ApplyDamagePatch().Enable();
-                new DamageInfoPatch().Enable();
-                new ApplyDamageInfoPatch().Enable();
-                new SetPenetrationStatusPatch().Enable();
+                  if (Plugin.enableSGMastering.Value == true)
+                  {
+                      new SetWeaponLevelPatch().Enable();
+                  }
 
-                if (EnableRagdollFix.Value)
-                {
-                    new ApplyCorpseImpulsePatch().Enable();
-                    /*  new RagdollPatch().Enable();*/
-                }
+                  //Stat Display Patches
+                  new ModConstructorPatch().Enable();
+                  new WeaponConstructorPatch().Enable();
+                  new HRecoilDisplayStringValuePatch().Enable();
+                  new HRecoilDisplayDeltaPatch().Enable();
+                  new VRecoilDisplayStringValuePatch().Enable();
+                  new VRecoilDisplayDeltaPatch().Enable();
+                  new ModVRecoilStatDisplayPatchFloat().Enable();
+                  new ModVRecoilStatDisplayPatchString().Enable();
+                  new ErgoDisplayDeltaPatch().Enable();
+                  new ErgoDisplayStringValuePatch().Enable();
+                  new COIDisplayDeltaPatch().Enable();
+                  new COIDisplayStringValuePatch().Enable();
+                  new FireRateDisplayStringValuePatch().Enable();
+                  new GetCachedReadonlyQualitiesPatch().Enable();
+                  new CenterOfImpactMOAPatch().Enable();
+                  new ModErgoStatDisplayPatch().Enable();
+                  new GetAttributeIconPatches().Enable();
+                  new HeadsetConstructorPatch().Enable();
+                  new AmmoDuraBurnDisplayPatch().Enable();
+                  new AmmoMalfChanceDisplayPatch().Enable();
+                  new MagazineMalfChanceDisplayPatch().Enable();
+                  new BarrelModClassPatch().Enable();
 
-                //Armor Class
-                if (Plugin.EnableRealArmorClass.Value == true)
-                {
-                    new ArmorClassDisplayPatch().Enable();
-                }
+                  if (Plugin.IncreaseCOI.Value == true)
+                  {
+                      new GetTotalCenterOfImpactPatch().Enable();
+                  }
+              }
 
-                if (Plugin.EnableArmorHitZones.Value)
-                {
-                    new ArmorZoneBaseDisplayPatch().Enable();
-                    new ArmorZoneSringValueDisplayPatch().Enable();
-                }
+              //Ballistics
+              if (ModConfig.realistic_ballistics)
+              {
+                  new CreateShotPatch().Enable();
+                  new ApplyDamagePatch().Enable();
+                  new DamageInfoPatch().Enable();
+                  new ApplyDamageInfoPatch().Enable();
+                  new SetPenetrationStatusPatch().Enable();
 
-                new IsShotDeflectedByHeavyArmorPatch().Enable();
+                  if (EnableRagdollFix.Value)
+                  {
+                      new ApplyCorpseImpulsePatch().Enable();
+                      *//*  new RagdollPatch().Enable();*//*
+                  }
 
-                if (Plugin.EnableArmPen.Value)
-                {
-                    new IsPenetratedPatch().Enable();
-                }
-            }
+                  //Armor Class
+                  if (Plugin.EnableRealArmorClass.Value == true)
+                  {
+                      new ArmorClassDisplayPatch().Enable();
+                  }
 
-            //Shot Effects
-            if (Plugin.EnableDeafen.Value && ModConfig.headset_changes && ModConfig.realistic_ballistics && ModConfig.recoil_attachment_overhaul)
-            {
-                new PrismEffectsPatch().Enable();
-                new VignettePatch().Enable();
-                new UpdatePhonesPatch().Enable();
-                new SetCompressorPatch().Enable();
-                new RegisterShotPatch().Enable();
-                new ExplosionPatch().Enable();
-                new GrenadeClassContusionPatch().Enable();
-                new CovertMovementVolumePatch().Enable();
-                new CovertMovementVolumeBySpeedPatch().Enable();
-                new CovertEquipmentVolumePatch().Enable();
-            }
+                  if (Plugin.EnableArmorHitZones.Value)
+                  {
+                      new ArmorZoneBaseDisplayPatch().Enable();
+                      new ArmorZoneSringValueDisplayPatch().Enable();
+                  }
 
-            new ArmorComponentPatch().Enable();
-            new RigConstructorPatch().Enable();
-            new BackpackConstructorPatch().Enable();
+                  new IsShotDeflectedByHeavyArmorPatch().Enable();
 
-            //Player
-            new PlayerInitPatch().Enable();
-            new ToggleHoldingBreathPatch().Enable();
+                  if (Plugin.EnableArmPen.Value)
+                  {
+                      new IsPenetratedPatch().Enable();
+                  }
+              }
 
-            //Movement
-            if (EnableMaterialSpeed.Value)
-            {
-                new CalculateSurfacePatch().Enable();
-            }
-            if (EnableMaterialSpeed.Value)
-            {
-                new CalculateSurfacePatch().Enable();
-                new ClampSpeedPatch().Enable();
-            }
-            new SprintAccelerationPatch().Enable();
-            new EnduranceSprintActionPatch().Enable();
-            new EnduranceMovementActionPatch().Enable();
+              //Shot Effects
+              if (Plugin.EnableDeafen.Value && ModConfig.headset_changes && ModConfig.realistic_ballistics && ModConfig.recoil_attachment_overhaul)
+              {
+                  new PrismEffectsPatch().Enable();
+                  new VignettePatch().Enable();
+                  new UpdatePhonesPatch().Enable();
+                  new SetCompressorPatch().Enable();
+                  new RegisterShotPatch().Enable();
+                  new ExplosionPatch().Enable();
+                  new GrenadeClassContusionPatch().Enable();
+                  new CovertMovementVolumePatch().Enable();
+                  new CovertMovementVolumeBySpeedPatch().Enable();
+                  new CovertEquipmentVolumePatch().Enable();
+              }
 
-            //LateUpdate
-            new PlayerLateUpdatePatch().Enable();
+              new ArmorComponentPatch().Enable();
+              new RigConstructorPatch().Enable();
+              new BackpackConstructorPatch().Enable();
 
-            //Stances
-            new ApplyComplexRotationPatch().Enable();
-            new ApplySimpleRotationPatch().Enable();
-            new InitTransformsPatch().Enable();
-            new ZeroAdjustmentsPatch().Enable();
-            new WeaponOverlappingPatch().Enable();
-            new WeaponLengthPatch().Enable();
-            new OnWeaponDrawPatch().Enable();
-            new UpdateHipInaccuracyPatch().Enable();
-            new SetFireModePatch().Enable();
-            new WeaponOverlapViewPatch().Enable();
-            new CollisionPatch().Enable();
-            new OperateStationaryWeaponPatch().Enable();
-     /*       new RotatePatch().Enable();*/
-            new SetTiltPatch().Enable();
+              //Player
+              new PlayerInitPatch().Enable();
+              new ToggleHoldingBreathPatch().Enable();
 
-            //Health
-            if (EnableMedicalOvehaul.Value && ModConfig.med_changes)
-            {
-                new ApplyItemPatch().Enable();
-                new SetQuickSlotPatch().Enable();
-                new ProceedPatch().Enable();
-                new RemoveEffectPatch().Enable();
-                new StamRegenRatePatch().Enable();
-                new MedkitConstructorPatch().Enable();
-                new HCApplyDamagePatch().Enable();
-                new RestoreBodyPartPatch().Enable();
-                new FlyingBulletPatch().Enable();   
-            }
+              //Movement
+              if (EnableMaterialSpeed.Value)
+              {
+                  new CalculateSurfacePatch().Enable();
+              }
+              if (EnableMaterialSpeed.Value)
+              {
+                  new CalculateSurfacePatch().Enable();
+                  new ClampSpeedPatch().Enable();
+              }
+              new SprintAccelerationPatch().Enable();
+              new EnduranceSprintActionPatch().Enable();
+              new EnduranceMovementActionPatch().Enable();
 
-            new BattleUIScreenPatch().Enable();
+              //LateUpdate
+              new PlayerLateUpdatePatch().Enable();
+
+              //Stances
+              new ApplyComplexRotationPatch().Enable();
+              new ApplySimpleRotationPatch().Enable();
+              new InitTransformsPatch().Enable();
+              new ZeroAdjustmentsPatch().Enable();
+              new WeaponOverlappingPatch().Enable();
+              new WeaponLengthPatch().Enable();
+              new OnWeaponDrawPatch().Enable();
+              new UpdateHipInaccuracyPatch().Enable();
+              new SetFireModePatch().Enable();
+              new WeaponOverlapViewPatch().Enable();
+              new CollisionPatch().Enable();
+              new OperateStationaryWeaponPatch().Enable();
+              new SetTiltPatch().Enable();
+
+              //Health
+              if (EnableMedicalOvehaul.Value && ModConfig.med_changes)
+              {
+                  new ApplyItemPatch().Enable();
+                  new SetQuickSlotPatch().Enable();
+                  new ProceedPatch().Enable();
+                  new RemoveEffectPatch().Enable();
+                  new StamRegenRatePatch().Enable();
+                  new MedkitConstructorPatch().Enable();
+                  new HCApplyDamagePatch().Enable();
+                  new RestoreBodyPartPatch().Enable();
+                  new FlyingBulletPatch().Enable();   
+              }
+
+              new BattleUIScreenPatch().Enable();*/
         }
 
-        void Update()
+       /* void Update()
         {
             if ((int)Time.time % 5 == 0 && !warnedUser)
             {
@@ -867,7 +877,7 @@ namespace RealismMod
             {
                 HasReloadedAudio = false;
             }
-        }
+        }*/
 
         private void initConfigs()
         {
@@ -934,15 +944,21 @@ namespace RealismMod
             EnableAdrenaline = Config.Bind<bool>(healthSettings, "Adrenaline", true, new ConfigDescription("If The Player Is Shot or Shot At They Will Get A Painkiller Effect, As Well As Tunnel Vision and Tremors. The Duration And Strength Of These Effects Are Determined By The Stress Resistence Skill.", null, new ConfigurationManagerAttributes { Order = 55 }));
             DropGearKeybind = Config.Bind(healthSettings, "Remove Gear Keybind (Double Press)", new KeyboardShortcut(KeyCode.P), new ConfigDescription("Removes Any Gear That Is Blocking The Healing Of A Wound, It's A Double Press Like Bag Keybind Is.", null, new ConfigurationManagerAttributes { Order = 50 }));
 
-            AddEffectType = Config.Bind<string>(testing, "Effect Type", "", new ConfigDescription("HeavyBleeding, LightBleeding, Fracture.", null, new ConfigurationManagerAttributes { Order = 100, IsAdvanced = true }));
-            AddEffectBodyPart = Config.Bind<int>(testing, "Body Part Index", 1, new ConfigDescription("Head = 0, Chest = 1, Stomach = 2, Letft Arm, Right Arm, Left Leg, Right Leg, Common (whole body)", null, new ConfigurationManagerAttributes { Order = 120, IsAdvanced = true }));
-            AddEffectKeybind = Config.Bind(testing, "Add Effect Keybind", new KeyboardShortcut(KeyCode.JoystickButton6), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 130, IsAdvanced = true }));
-            EnableBallisticsLogging = Config.Bind<bool>(testing, "Enable Ballistics Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 2, IsAdvanced = true }));
-            EnableLogging = Config.Bind<bool>(testing, "Enable Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true }));
             test1 = Config.Bind<float>(testing, "test 1", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 600, IsAdvanced = true }));
             test2 = Config.Bind<float>(testing, "test 2", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 500, IsAdvanced = true }));
             test3 = Config.Bind<float>(testing, "test 3", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 400, IsAdvanced = true }));
             test4 = Config.Bind<float>(testing, "test 4", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 300, IsAdvanced = true }));
+            test5 = Config.Bind<float>(testing, "test 5", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 200, IsAdvanced = true }));
+            test6 = Config.Bind<float>(testing, "test 6", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 100, IsAdvanced = true }));
+            test7 = Config.Bind<float>(testing, "test 7", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 50, IsAdvanced = true }));
+            test8 = Config.Bind<float>(testing, "test 8", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 40, IsAdvanced = true }));
+            test9 = Config.Bind<float>(testing, "test 9", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 30, IsAdvanced = true }));
+            test10 = Config.Bind<float>(testing, "test 10", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 20, IsAdvanced = true }));
+            AddEffectType = Config.Bind<string>(testing, "Effect Type", "", new ConfigDescription("HeavyBleeding, LightBleeding, Fracture.", null, new ConfigurationManagerAttributes { Order = 5, IsAdvanced = true }));
+            AddEffectBodyPart = Config.Bind<int>(testing, "Body Part Index", 1, new ConfigDescription("Head = 0, Chest = 1, Stomach = 2, Letft Arm, Right Arm, Left Leg, Right Leg, Common (whole body)", null, new ConfigurationManagerAttributes { Order = 4, IsAdvanced = true }));
+            AddEffectKeybind = Config.Bind(testing, "Add Effect Keybind", new KeyboardShortcut(KeyCode.JoystickButton6), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 3, IsAdvanced = true }));
+            EnableBallisticsLogging = Config.Bind<bool>(testing, "Enable Ballistics Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 2, IsAdvanced = true }));
+            EnableLogging = Config.Bind<bool>(testing, "Enable Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true }));
 
             EnableStockSlots = Config.Bind<bool>(miscSettings, "Enable Stock Slot Stat Modifiers", true, new ConfigDescription("Requires Restart. For Buffer Tubes That Have Multiple Stock Slots, Each Slot Will Modify The Ergo And Recoil Stats Of The Attached Stock.", null, new ConfigurationManagerAttributes { Order = 3 }));
             EnableFSPatch = Config.Bind<bool>(miscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 4 }));

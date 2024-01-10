@@ -1,4 +1,4 @@
-﻿using BepInEx.Logging;
+﻿/*using BepInEx.Logging;
 using EFT.InventoryLogic;
 using EFT;
 using HarmonyLib;
@@ -113,7 +113,7 @@ namespace RealismMod
                     return;
             }
 
- /*           if (!DamageRecord.ContainsKey(damageType))
+ *//*           if (!DamageRecord.ContainsKey(damageType))
             {
                 DamageRecord[damageType] = new Dictionary<EBodyPart, float>();
             }
@@ -126,7 +126,7 @@ namespace RealismMod
             else
             {
                 innerDict[bodyPart] += damage;
-            }*/
+            }*//*
         }
 
         public static void ResetTracker()
@@ -303,7 +303,7 @@ namespace RealismMod
 
         public static void RemoveBaseEFTEffect(Player player, EBodyPart targetBodyPart, string targetEffect) 
         {
-          /*  IEnumerable<IEffect> commonEffects = player.ActiveHealthController.GetAllActiveEffects(targetBodyPart);*/
+          *//*  IEnumerable<IEffect> commonEffects = player.ActiveHealthController.GetAllActiveEffects(targetBodyPart);*//*
             IReadOnlyList<EffectClass> effectsList = (IReadOnlyList<EffectClass>)AccessTools.Property(typeof(EFT.HealthSystem.ActiveHealthController), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
 
             Type targetType = null;
@@ -430,8 +430,8 @@ namespace RealismMod
 
         public static bool HasBaseEFTEffect(Player player, string targetEffect)
         {
-/*            IEnumerable<IEffect> commonEffects = player.ActiveHealthController.GetAllEffects();
-*/            IReadOnlyList<EffectClass> effectsList = (IReadOnlyList<EffectClass>)AccessTools.Property(typeof(EFT.HealthSystem.ActiveHealthController), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
+*//*            IEnumerable<IEffect> commonEffects = player.ActiveHealthController.GetAllEffects();
+*//*            IReadOnlyList<EffectClass> effectsList = (IReadOnlyList<EffectClass>)AccessTools.Property(typeof(EFT.HealthSystem.ActiveHealthController), "IReadOnlyList_0").GetValue(player.ActiveHealthController);
 
             Type targetType = null;
             if (MedProperties.EffectTypes.TryGetValue(targetEffect, out targetType))
@@ -978,11 +978,11 @@ namespace RealismMod
         public static void PlayerInjuryStateCheck(Player player, ManualLogSource logger)
         {
 
-/*            bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
+*//*            bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
             bool leftArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged);*/
 
 /*            bool hasTremor = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.Tremor);
-            float tremorFactor = hasTremor ? 0.95f : 1f;*/
+            float tremorFactor = hasTremor ? 0.95f : 1f;*//*
 
             float aimMoveSpeedMulti = 1f;
             float ergoDeltaInjuryMulti = 1f;
@@ -1075,8 +1075,8 @@ namespace RealismMod
                         PlayerProperties.RightArmRuined = isArmRuined;
                     }
 
-/*                    float ruinedFactor = PlayerProperties.LeftArmRuined ? 0.8f : PlayerProperties.RightArmRuined ? 0.9f : PlayerProperties.LeftArmRuined && PlayerProperties.RightArmRuined ? 0.7f : 1f;
-*/                  float armFractureFactor = isLeftArm && hasFracture ? 0.8f : isRightArm && hasFracture ? 0.9f : 1f;
+*//*                    float ruinedFactor = PlayerProperties.LeftArmRuined ? 0.8f : PlayerProperties.RightArmRuined ? 0.9f : PlayerProperties.LeftArmRuined && PlayerProperties.RightArmRuined ? 0.7f : 1f;
+*//*                  float armFractureFactor = isLeftArm && hasFracture ? 0.8f : isRightArm && hasFracture ? 0.9f : 1f;
 
                     aimMoveSpeedMulti *= percentHpAimMove * armFractureFactor;
                     ergoDeltaInjuryMulti *= (1f + (1f - percentHp)) * armFractureFactor;
@@ -1132,3 +1132,4 @@ namespace RealismMod
         }
     }
 }
+*/

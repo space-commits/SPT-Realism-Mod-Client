@@ -1,4 +1,4 @@
-﻿using Aki.Reflection.Patching;
+﻿/*using Aki.Reflection.Patching;
 using Comfort.Common;
 using EFT.InventoryLogic;
 using EFT;
@@ -48,7 +48,7 @@ namespace RealismMod
                     Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayBlender").GetValue(__instance);
 
                     float singleItemTotalWeight = weapon.GetSingleItemTotalWeight();
-                    /*                    float ergoWeightFactor = WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));*/
+                    *//*                    float ergoWeightFactor = WeaponProperties.ErgonomicWeight * (1f - (PlayerProperties.StrengthSkillAimBuff * 1.5f));*//*
 
                     float ergoFactor = Mathf.Clamp01(WeaponProperties.TotalErgo / 100f);
                     float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponProperties.TotalErgo) * 1.25f;
@@ -424,3 +424,4 @@ namespace RealismMod
         }
     }
 }
+*/

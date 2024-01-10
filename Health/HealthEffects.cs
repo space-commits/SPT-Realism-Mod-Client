@@ -1,4 +1,4 @@
-﻿using EFT;
+﻿/*using EFT;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -382,3 +382,4 @@ namespace RealismMod
     }
 
 }
+*/

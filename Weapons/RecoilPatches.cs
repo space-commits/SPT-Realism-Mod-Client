@@ -12,10 +12,132 @@ using EFT.Interactive;
 using System.Linq;
 using IWeapon = GInterface273;
 using PlayerInterface = GInterface113;
-using WeaponSkillsClass = EFT.SkillManager.GClass1638;
+using EFT.Animations.Recoil;
+using FitstPersonAnimations.WeaponAnimation.Effectors.Recoil;
+using EFT.Animations;
+/*using WeaponSkillsClass = EFT.SkillManager.GClass1638;*/
 
 namespace RealismMod
 {
+
+    public class WeaponStatsPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Animations.NewRecoil.NewRecoilShotEffect).GetMethod("RecalculateRecoilParamsOnChangeWeapon");
+        }
+
+        [PatchPrefix]
+        public static bool Prefix(EFT.Animations.NewRecoil.NewRecoilShotEffect __instance, WeaponTemplate template, BackendConfigSettingsClass.AimingConfiguration AimingConfig, Player.FirearmController firearmController, float recoilSuppressionX, float recoilSuppressionY, float recoilSuppressionFactor, float modsFactorRecoil)
+        {
+            AccessTools.Field(typeof(EFT.Animations.NewRecoil.NewRecoilShotEffect), "_firearmController").SetValue(__instance, firearmController);
+            __instance.RecoilStableShotIndex = (int)Plugin.test1.Value;
+            __instance.HandRotationRecoil.RecoilReturnTrajectoryOffset = template.RecoilReturnPathOffsetHandRotation * Plugin.test2.Value; //muzzle movement after firing
+            __instance.HandRotationRecoil.StableAngleIncreaseStep = template.RecoilStableAngleIncreaseStep * Plugin.test3.Value; //how ferquently angle changes in stabilization mode
+            __instance.HandRotationRecoil.AfterRecoilOffsetVerticalRange = template.PostRecoilVerticalRangeHandRotation * Plugin.test4.Value; //the maximum deviation of muzzle movement after firing
+            __instance.HandRotationRecoil.AfterRecoilOffsetHorizontalRange = template.PostRecoilHorizontalRangeHandRotation * Plugin.test5.Value; //the maximum deviation of muzzle movement after firing
+            __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = template.ProgressRecoilAngleOnStable * Plugin.test6.Value; //related to stabilization intensity
+            __instance.HandRotationRecoil.ReturnTrajectoryDumping = template.RecoilReturnPathDampingHandRotation * Plugin.test7.Value; //aslo muzzle movement after range, but more pivoting side to side wiggle?
+            __instance.HandRotationRecoil.CategoryIntensityMultiplier = template.RecoilCategoryMultiplierHandRotation * Plugin.test8.Value; //sort of like a general procedural recoil intensity
+            float num = Mathf.Max(0f, (1f + modsFactorRecoil) * (1f - recoilSuppressionX - recoilSuppressionY * recoilSuppressionFactor));
+            __instance.BasicPlayerRecoilRotationStrength = __instance.BasicRecoilRotationStrengthRange * ((template.RecoilForceUp * Plugin.test9.Value * num + AimingConfig.RecoilVertBonus) * __instance.IncomingRotationStrengthMultiplier);
+            __instance.BasicPlayerRecoilPositionStrength = __instance.BasicRecoilPositionStrengthRange * ((template.RecoilForceBack * num + AimingConfig.RecoilBackBonus) * __instance.IncomingRotationStrengthMultiplier);
+            float recoilCamera = template.RecoilCamera;
+            __instance.ShotRecoilProcessValues[3].IntensityMultiplicator = recoilCamera;
+            __instance.ShotRecoilProcessValues[4].IntensityMultiplicator = -recoilCamera;
+
+            return false;
+        }
+    }
+
+    public class RecoilIndexPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Animations.NewRecoil.NewRecoilShotEffect).GetMethod("method_0", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        [PatchPrefix]
+        public static bool Prefix(EFT.Animations.NewRecoil.NewRecoilShotEffect __instance, ref float __result)
+        {
+            float result = 1f;
+            int _autoFireShotIndex = (int)AccessTools.Field(typeof(EFT.Animations.NewRecoil.NewRecoilShotEffect), "_autoFireShotIndex").GetValue(__instance);
+            int recoilStableShotIndex = (int)Plugin.test1.Value;
+
+            if (__instance.ProgressPowerOn && _autoFireShotIndex >= __instance.ProgressPowerShot)
+            {
+                int index = Mathf.Clamp(_autoFireShotIndex, 1, recoilStableShotIndex);
+                result = 1f / (float)recoilStableShotIndex * (float)index;
+            }
+            __result = result * Plugin.test10.Value;
+            return false;
+        }
+    }
+
+    public class SetStableModePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Animations.NewRotationRecoilProcess).GetMethod("SetStableMode", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        public static bool Prefix()
+        {
+            if (Plugin.EnableHybridRecoil.Value)
+            {
+                return false;
+            }
+            else return true;
+    
+        }
+    }
+
+    public class GetCurrentRecoilEffectPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(ShotEffector).GetMethod("get_CurrentRecoilEffect", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        public static bool Prefix(ShotEffector __instance, IRecoilShotEffect __result)
+        {
+            if (Plugin.EnableHybridRecoil.Value)
+            {
+                IRecoilShotEffect _currentRecoilEffect = (IRecoilShotEffect)AccessTools.Field(typeof(ShotEffector), "_currentRecoilEffect").GetValue(__instance);
+
+                if (_currentRecoilEffect == null)
+                {
+                    __instance.SetOldRecoilMode();
+                    Logger.LogWarning("current recoil effect");
+                }
+                __result = _currentRecoilEffect;
+                return false;
+            }
+            return true;
+        }
+    }
+
+    public class method_19Patch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(ProceduralWeaponAnimation).GetMethod("method_19", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        [PatchPrefix]
+        public static bool Prefix(ProceduralWeaponAnimation __instance)
+        {
+            if (Plugin.EnableHybridRecoil.Value)
+            {
+                return false;
+              
+            }
+            return true;
+        }
+    }
+    /*
     public class RecoilRotatePatch : ModulePatch
     {
         private static FieldInfo movementContextField;
@@ -106,9 +228,9 @@ namespace RealismMod
                         xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(Time.time * 8f, 1f)), 3);
                         yRotation = (float)Math.Round(Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * 4f, 1f)), 3);
                     }
-         
+
                     targetRotation = movementContext.Rotation + new Vector2(xRotation, yRotation);
-     
+
                     if ((canResetVert && (movementContext.Rotation.y > (recordedRotation.y + 2f) * Plugin.NewPOASensitivity.Value || deltaRotation.y <= -1f * Plugin.NewPOASensitivity.Value)) || (canResetHorz && Mathf.Abs(deltaRotation.x) >= 1f * Plugin.NewPOASensitivity.Value))
                     {
                         recordedRotation = movementContext.Rotation;
@@ -276,7 +398,7 @@ namespace RealismMod
                 RecoilController.IsVector = _weapon.Item.TemplateId == "5fb64bc92b1b027b1f50bcf2" || _weapon.Item.TemplateId == "5fc3f2d5900b1d5091531e57" ? true : false;
                 WeaponProperties.TotalWeaponWeight = _weapon.Item.GetSingleItemTotalWeight();
 
-                if (WeaponProperties.WeapID != template._id) 
+                if (WeaponProperties.WeapID != template._id)
                 {
                     Plugin.DidWeaponSwap = true;
                 }
@@ -366,7 +488,7 @@ namespace RealismMod
                 float fovFactor = (Singleton<SharedGameSettingsClass>.Instance.Game.Settings.FieldOfView / 70f) * Plugin.HRecLimitMulti.Value;
                 float opticLimit = Plugin.IsAiming && Plugin.HasOptic ? 15f * fovFactor : 25f * fovFactor;
                 totalHorizontalRecoil = Mathf.Min(totalHorizontalRecoil * fovFactor, opticLimit); //put it after setting factored so that visual recoil isn't affected
-               
+
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(totalDispersion) * totalVerticalRecoil * poseIntensityFactors.x, Mathf.Cos(totalDispersion) * totalVerticalRecoil * poseIntensityFactors.y, totalHorizontalRecoil * poseIntensityFactors.z) * Plugin.RecoilIntensity.Value;
                 Vector2 heatDirection = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
                 float heatFactor = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveMult : 0f;
@@ -380,7 +502,7 @@ namespace RealismMod
                     shotVals[i].Process(__instance.RecoilDirection);
                 }
 
-                if (Plugin.ScopeAccuracyFactor > 1f) 
+                if (Plugin.ScopeAccuracyFactor > 1f)
                 {
                     float chanceFactor = 1f + ((Plugin.ScopeAccuracyFactor - 1f) * 2f);
                     float gunFactor = weaponClass.TemplateId == "6183afd850224f204c1da514" || weaponClass.TemplateId == "6165ac306ef05c2ce828ef74" ? 2f : 1f;
@@ -402,7 +524,7 @@ namespace RealismMod
                         }
                     }
                 }
-               
+
                 RecoilController.ShotCount++;
                 RecoilController.ShotTimer = 0f;
                 RecoilController.WiggleShotTimer = 0f;
@@ -462,7 +584,7 @@ namespace RealismMod
                 __instance.ReturnSpeedCurve.AddKey(key);
             }
         }
-    }
+    }*/
 
 }
 

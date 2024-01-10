@@ -1,4 +1,4 @@
-﻿using Aki.Reflection.Patching;
+﻿/*using Aki.Reflection.Patching;
 using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
@@ -205,4 +205,4 @@ namespace RealismMod
             return true;
         }
     }
-}
+}*/

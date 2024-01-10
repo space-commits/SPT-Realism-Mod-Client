@@ -1,4 +1,4 @@
-﻿using EFT;
+﻿/*using EFT;
 
 namespace RealismMod
 {
@@ -99,3 +99,4 @@ namespace RealismMod
         public static bool IsMoving = false;
     }
 }
+*/

@@ -1,4 +1,4 @@
-﻿using Aki.Reflection.Patching;
+﻿/*using Aki.Reflection.Patching;
 using BepInEx.Logging;
 using EFT;
 using EFT.Interactive;
@@ -150,7 +150,7 @@ namespace RealismMod
                 StanceController.CancelLowReady = true;
                 StanceController.CancelShortStock = true;
                 StanceController.CancelActiveAim = true;
-                /*StanceController.CancelPistolStance = true;*/
+                *//*StanceController.CancelPistolStance = true;*//*
             }
         }
     }
@@ -582,27 +582,5 @@ namespace RealismMod
             }
         }
     }
-
-    /*    public class SetHammerArmedPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(FirearmsAnimator).GetMethod("SetHammerArmed", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static void PatchPostfix(FirearmsAnimator __instance)
-        {
-            if (RecoilController.IsFiring != true && PlayerProperties.IsInReloadOpertation)
-            {
-                float hammerSpeed = Mathf.Clamp(WeaponProperties.TotalChamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercReload, 0.7f)), 0.4f, 2f) * Plugin.GlobalArmHammerSpeedMulti.Value;
-                __instance.SetAnimationSpeed(hammerSpeed);
-                if (Plugin.EnableLogging.Value == true)
-                {
-                    Logger.LogWarning("SetHammerArmed = " + hammerSpeed);
-                }
-            }
-        }
-    }*/
-
 }
+*/

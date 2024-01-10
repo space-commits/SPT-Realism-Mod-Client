@@ -1,4 +1,4 @@
-﻿using BepInEx.Logging;
+﻿/*using BepInEx.Logging;
 using EFT.Animations;
 using EFT.InventoryLogic;
 using System;
@@ -94,3 +94,4 @@ namespace RealismMod
         }     
     }
 }
+*/

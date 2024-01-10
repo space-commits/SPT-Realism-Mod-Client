@@ -1,4 +1,4 @@
-﻿using Aki.Reflection.Patching;
+﻿/*using Aki.Reflection.Patching;
 using Aki.Reflection.Utils;
 using Comfort.Common;
 using EFT;
@@ -111,7 +111,7 @@ namespace RealismMod
     }
 
 
-/*    public class GetMalfunctionStatePatch : ModulePatch
+*//*    public class GetMalfunctionStatePatch : ModulePatch
         {
         protected override MethodBase GetTargetMethod()
         {
@@ -189,7 +189,7 @@ namespace RealismMod
             }
 
         }
-    }*/
+    }*//*
 
     public class GetTotalMalfunctionChancePatch : ModulePatch
     {
@@ -217,7 +217,7 @@ namespace RealismMod
                     return false;
                 }
 
-                /*                float ammoHotnessFactor = (1f - ((ammoToFire.ammoRec / 200f) + 1f)) + 1f;*/
+                *//*                float ammoHotnessFactor = (1f - ((ammoToFire.ammoRec / 200f) + 1f)) + 1f;*//*
 
                 float malfDelta = Mathf.Min(WeaponProperties.MalfChanceDelta * 3, 0.99f);
                 if (!WeaponProperties.CanCycleSubs && ammoToFire.ammoHear == 1)
@@ -304,3 +304,4 @@ namespace RealismMod
         }
     }
 }
+*/

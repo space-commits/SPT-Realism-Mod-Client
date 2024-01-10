@@ -1,4 +1,4 @@
-﻿using Aki.Reflection.Patching;
+﻿/*using Aki.Reflection.Patching;
 using BepInEx.Logging;
 using Comfort.Common;
 using CustomPlayerLoopSystem;
@@ -1320,3 +1320,4 @@ namespace RealismMod
         }
     }
 }
+*/

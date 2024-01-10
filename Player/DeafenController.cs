@@ -1,4 +1,4 @@
-﻿using EFT;
+﻿/*using EFT;
 using System;
 using UnityEngine;
 using System.Linq;
@@ -124,8 +124,8 @@ namespace RealismMod
             if (totalVolume != 0.0f || totalDistortion != 0.0f || totalVignette != 0.0f)
             {
                 DeafeningController.PrismEffects.vignetteStrength = totalVignette;
-                /*                Plugin.Vignette.darkness = totalVignette;
-                */
+                *//*                Plugin.Vignette.darkness = totalVignette;
+                *//*
                 Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", totalVolume + DeafeningController.GunsVolume);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("OcclusionVolume", totalVolume + DeafeningController.DryVolume);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", totalVolume + DeafeningController.DryVolume);
@@ -179,3 +179,4 @@ namespace RealismMod
         }
     }
 }
+*/

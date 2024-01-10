@@ -1,4 +1,4 @@
-﻿using Aki.Reflection.Patching;
+﻿/*using Aki.Reflection.Patching;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
@@ -946,3 +946,4 @@ namespace RealismMod
         }
     }
 }
+*/

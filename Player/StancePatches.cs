@@ -1,4 +1,4 @@
-﻿using Aki.Reflection.Patching;
+﻿/*using Aki.Reflection.Patching;
 using EFT.InventoryLogic;
 using EFT;
 using HarmonyLib;
@@ -133,7 +133,7 @@ namespace RealismMod
     }
 
 
-/*    public class SprintAnimPatch : ModulePatch
+*//*    public class SprintAnimPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -146,7 +146,7 @@ namespace RealismMod
             WeaponAnimationSpeedControllerClass.SetSprint(__instance.Animator, Plugin.test1.Value == 1 ? false : true);
             return false;
         }
-    }*/
+    }*//*
 
     public class CollisionPatch : ModulePatch
     {
@@ -231,8 +231,8 @@ namespace RealismMod
                         Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
                         Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(new Vector3(0, -0.6f, 0.05f));
                         Vector3 meleeDir = meleeStart - linecastDirection * (ln - (WeaponProperties.HasBayonet? 0.1f : 0.4f));
-/*
-                        DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);*/
+*//*
+                        DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);*//*
 
                         EBodyPart hitPart = EBodyPart.Chest;
                         BallisticCollider hitBalls = null;
@@ -337,9 +337,9 @@ namespace RealismMod
                     Vector3 leftDirection = startLeft - linecastDirection * ln;
                     Vector3 rightDirection = startRight - linecastDirection * ln;
 
-                    /*          DebugGizmos.SingleObjects.Line(startDown, forwardDirection, Color.red, 0.02f, true, 0.3f, true);
+                    *//*          DebugGizmos.SingleObjects.Line(startDown, forwardDirection, Color.red, 0.02f, true, 0.3f, true);
                               DebugGizmos.SingleObjects.Line(startLeft, leftDirection, Color.green, 0.02f, true, 0.3f, true);
-                              DebugGizmos.SingleObjects.Line(startRight, rightDirection, Color.yellow, 0.02f, true, 0.3f, true);*/
+                              DebugGizmos.SingleObjects.Line(startRight, rightDirection, Color.yellow, 0.02f, true, 0.3f, true);*//*
                     RaycastHit raycastHit;
                     if (CastingClass.Linecast(startDown, forwardDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastArr, isHitIgnoreTest))
                     {                
@@ -1097,3 +1097,4 @@ namespace RealismMod
         }
     }
 }
+*/
