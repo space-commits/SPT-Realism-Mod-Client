@@ -411,7 +411,7 @@ namespace RealismMod
                 if (damageInfo.DamageType == EDamageType.Melee)
                 {
                     Weapon weap = damageInfo.Weapon as Weapon;
-                    bool isBayonet = !damageInfo.Player.IsAI && WeaponProperties.HasBayonet && weap.WeapClass != "Knife" ? true : false;
+                    bool isBayonet = __instance.IsAI && weap != null && WeaponProperties.HasBayonet ? true : false;
                     float meleeDamage = isBayonet ? damageInfo.Damage : damageInfo.Damage * 2f;
                     KE = meleeDamage * 50f;
                 }
@@ -658,7 +658,7 @@ namespace RealismMod
         }
     }
 
-    public class ApplyDamagePatch : ModulePatch
+    public class ApplyArmorDamagePatch : ModulePatch
     {
         private static int rndNum = 0;
 
@@ -879,7 +879,7 @@ namespace RealismMod
             else 
             {
                 Weapon weap = damageInfo.Weapon as Weapon;
-                bool isBayonet = !damageInfo.Player.IsAI && WeaponProperties.HasBayonet && weap.WeapClass != "Knife"? true : false;
+                bool isBayonet = !isPlayer && weap != null && WeaponProperties.HasBayonet ? true : false;
                 armorDamageActual = damageInfo.ArmorDamage;
                 float meleeDamage = isBayonet ? damageInfo.Damage : damageInfo.Damage * 2f;
                 KE = meleeDamage * 50f;

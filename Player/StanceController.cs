@@ -16,7 +16,6 @@ using System.Text;
 using UnityEngine;
 using static ShotEffector;
 using LightStruct = GStruct155;
-using RootMotion.FinalIK;
 using static EFT.Player;
 
 

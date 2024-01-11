@@ -12,7 +12,6 @@ using Comfort.Common;
 using System.Linq;
 using EFT.Ballistics;
 using System.ComponentModel;
-using static RootMotion.FinalIK.AimPoser;
 using Random = System.Random;
 using LightStruct = GStruct155;
 using PlayerInterface = GInterface113;
