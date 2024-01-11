@@ -13,7 +13,6 @@ using System.Reflection;
 using Comfort.Common;
 using HarmonyLib.Tools;
 using static Systems.Effects.Effects;
-using static RootMotion.Warning;
 using static CW2.Animations.PhysicsSimulator.Val;
 using EFT.Interactive;
 using System.Threading.Tasks;
