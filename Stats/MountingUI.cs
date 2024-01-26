@@ -1,4 +1,4 @@
-﻿/*using Aki.Reflection.Patching;
+﻿using Aki.Reflection.Patching;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -20,9 +20,9 @@ namespace RealismMod
         private static GameObject mountingUIGameObject;
         private static Image mountingUIImage;
         private static RectTransform mountingUIRect;
-        private static Vector2 iconSize = new Vector2 (80, 80);
+        private static Vector2 iconSize = new Vector2(80, 80);
 
-        public static void DestroyGameObjects()
+        public static void DestroyGameObject()
         {
             if (mountingUIGameObject != null)
             {
@@ -30,7 +30,7 @@ namespace RealismMod
             }
         }
 
-        public static void CreateGameObjects(UnityEngine.Transform parent)
+        public static void CreateGameObject(UnityEngine.Transform parent)
         {
             mountingUIGameObject = new GameObject("MountingUI");
             mountingUIRect = mountingUIGameObject.AddComponent<RectTransform>();
@@ -67,7 +67,7 @@ namespace RealismMod
                     mountingUIRect.sizeDelta = iconSize * scaleAmount;
 
                 }
-                else if (StanceController.IsBracing && !PlayerProperties.IsSprinting)
+                else if (StanceController.IsBracing && !PlayerStats.IsSprinting)
                 {
                     mountingUIRect.sizeDelta = iconSize;
                     float alpha = Mathf.Lerp(0.2f, 1f, Mathf.PingPong(Time.time * 1f, 1f));
@@ -87,19 +87,18 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.UI.BattleUIScreen).GetMethod("Show", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(EFT.UI.BattleUIScreen).GetMethod("Show", BindingFlags.Instance | BindingFlags.Public);
         }
         [PatchPostfix]
-        private static void PatchPostFix(EFT.UI.BattleUIScreen __instance)
+        private static void PatchPostFix(EFT.UI.BattleUIScreen __instance, GamePlayerOwner owner)
         {
             if (MountingUI.ActiveUIScreen == __instance.gameObject)
             {
                 return;
             }
             MountingUI.ActiveUIScreen = __instance.gameObject;
-            MountingUI.DestroyGameObjects();
-            MountingUI.CreateGameObjects(__instance.transform);
+            MountingUI.DestroyGameObject();
+            MountingUI.CreateGameObject(__instance.transform);
         }
     }
 }
-*/

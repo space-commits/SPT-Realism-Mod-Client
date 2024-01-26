@@ -6,7 +6,7 @@ using System.Text;
 
 namespace RealismMod
 {
-    public static class GearProperties
+    public static class GearStats
     {
         public static bool AllowsADS(Item armorItem)
         {

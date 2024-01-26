@@ -1,4 +1,4 @@
-/*
+
 using Aki.Reflection.Patching;
 using Comfort.Common;
 using EFT;
@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static EFT.Player;
 using System.Linq;
-using WeaponSkills = EFT.SkillManager.GClass1638;
+using WeaponSkills = EFT.SkillManager.GClass1768;
 
 namespace RealismMod
 {
@@ -30,7 +30,7 @@ namespace RealismMod
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
-                __result = (currentAmmoTemplate != null) ? (int)(WeaponProperties.SemiFireRate * currentAmmoTemplate.casingMass) : WeaponProperties.SemiFireRate;
+                __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.SemiFireRate * currentAmmoTemplate.casingMass) : WeaponStats.SemiFireRate;
                 return false;
             }
             else
@@ -53,7 +53,7 @@ namespace RealismMod
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
-                __result = (currentAmmoTemplate != null) ? (int)(WeaponProperties.AutoFireRate * currentAmmoTemplate.casingMass) : WeaponProperties.AutoFireRate;
+                __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.AutoFireRate * currentAmmoTemplate.casingMass) : WeaponStats.AutoFireRate;
                 return false;
             }
             else
@@ -69,12 +69,12 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player.FirearmController).GetMethod("method_9", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Player.FirearmController).GetMethod("method_9", BindingFlags.Instance | BindingFlags.Public);
 
         }
         [PatchPrefix]
         private static bool Prefix(Player.FirearmController __instance, ref float __result)
-        {   
+        {
             //to find this method again, look for this._player.MovementContext.PhysicalConditionContainsAny(EPhysicalCondition.LeftArmDamaged | EPhysicalCondition.RightArmDamaged)
             //return Mathf.Max(0f, this.Item.ErgonomicsTotal * (1f + this.gclass1560_0.DeltaErgonomics + this._player.ErgonomicsPenalty));
 
@@ -106,7 +106,7 @@ namespace RealismMod
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
                 ErgoDeltaPatch p = new ErgoDeltaPatch();
-                if (PlayerProperties.IsInReloadOpertation)
+                if (PlayerStats.IsInReloadOpertation)
                 {
                     __result = FinalStatCalc(__instance);
                 }
@@ -125,13 +125,13 @@ namespace RealismMod
 
         public static float FinalStatCalc(Weapon __instance)
         {
-            WeaponProperties._WeapClass = __instance.WeapClass;
-            bool isManual = WeaponProperties.IsManuallyOperated(__instance);
-            WeaponProperties._IsManuallyOperated = isManual;
+            WeaponStats._WeapClass = __instance.WeapClass;
+            bool isManual = WeaponStats.IsManuallyOperated(__instance);
+            WeaponStats._IsManuallyOperated = isManual;
 
             float totalWeight = __instance.GetSingleItemTotalWeight();
-            string weapType = WeaponProperties.WeaponType(__instance);
-            string weapOpType = WeaponProperties.OperationType(__instance);
+            string weapType = WeaponStats.WeaponType(__instance);
+            string weapOpType = WeaponStats.OperationType(__instance);
 
             Mod magazine = __instance.GetCurrentMagazine();
             float magErgo = 0;
@@ -150,34 +150,34 @@ namespace RealismMod
 
             float weapWeightLessMag = totalWeight - magWeight;
 
-            float totalReloadSpeedMod = WeaponProperties.SDReloadSpeedModifier;
+            float totalReloadSpeedMod = WeaponStats.SDReloadSpeedModifier;
 
-            float totalChamberSpeedMod = WeaponProperties.SDChamberSpeedModifier;
+            float totalChamberSpeedMod = WeaponStats.SDChamberSpeedModifier;
 
-            float recoilDamping = WeaponProperties.RecoilDamping(__instance);
-            float recoilHandDamping = WeaponProperties.RecoilHandDamping(__instance);
+            float recoilDamping = WeaponStats.RecoilDamping(__instance);
+            float recoilHandDamping = WeaponStats.RecoilHandDamping(__instance);
 
             float baseErgo = __instance.Template.Ergonomics;
             float ergoWeightFactor = StatCalc.WeightStatCalc(StatCalc.ErgoWeightMult, __instance.IsBeltMachineGun ? magWeight * 0.5f : magWeight) / 100;
-            float currentErgo = WeaponProperties.InitTotalErgo + (WeaponProperties.InitTotalErgo * ((magErgo / 100f) + ergoWeightFactor));
-            float currentPureErgo = WeaponProperties.InitPureErgo + (WeaponProperties.InitPureErgo * (magErgo / 100f));
+            float currentErgo = WeaponStats.InitTotalErgo + (WeaponStats.InitTotalErgo * ((magErgo / 100f) + ergoWeightFactor));
+            float currentPureErgo = WeaponStats.InitPureErgo + (WeaponStats.InitPureErgo * (magErgo / 100f));
 
             float baseVRecoil = __instance.Template.RecoilForceUp;
             float vRecoilWeightFactor = StatCalc.WeightStatCalc(StatCalc.VRecoilWeightMult, magWeight) / 100;
-            float currentVRecoil = WeaponProperties.InitTotalVRecoil + (WeaponProperties.InitTotalVRecoil * vRecoilWeightFactor);
+            float currentVRecoil = WeaponStats.InitTotalVRecoil + (WeaponStats.InitTotalVRecoil * vRecoilWeightFactor);
 
             float baseHRecoil = __instance.Template.RecoilForceBack;
             float hRecoilWeightFactor = StatCalc.WeightStatCalc(StatCalc.HRecoilWeightMult, magWeight) / 100;
-            float currentHRecoil = WeaponProperties.InitTotalHRecoil + (WeaponProperties.InitTotalHRecoil * hRecoilWeightFactor);
+            float currentHRecoil = WeaponStats.InitTotalHRecoil + (WeaponStats.InitTotalHRecoil * hRecoilWeightFactor);
 
             float dispersionWeightFactor = StatCalc.WeightStatCalc(StatCalc.DispersionWeightMult, magWeight) / 100;
-            float currentDispersion = WeaponProperties.InitDispersion + (WeaponProperties.InitDispersion * dispersionWeightFactor);
+            float currentDispersion = WeaponStats.InitDispersion + (WeaponStats.InitDispersion * dispersionWeightFactor);
 
-            float currentCamRecoil = WeaponProperties.InitCamRecoil;
-            float currentRecoilAngle = WeaponProperties.InitRecoilAngle;
+            float currentCamRecoil = WeaponStats.InitCamRecoil;
+            float currentRecoilAngle = WeaponStats.InitRecoilAngle;
 
             float magazineTorque = currentTorque;
-            currentTorque = WeaponProperties.InitBalance + currentTorque;
+            currentTorque = WeaponStats.InitBalance + currentTorque;
 
             float totalTorque = 0f;
             float totalErgo = 0f;
@@ -198,13 +198,13 @@ namespace RealismMod
             float totalCOIDelta = 0f;
 
 
-            StatCalc.WeaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref recoilDamping, ref recoilHandDamping, WeaponProperties.InitTotalCOI, WeaponProperties.HasShoulderContact, ref totalCOI, ref totalCOIDelta, __instance.CenterOfImpactBase, currentPureErgo, ref totalPureErgoDelta,  false);
+            StatCalc.WeaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref recoilDamping, ref recoilHandDamping, WeaponStats.InitTotalCOI, WeaponStats.HasShoulderContact, ref totalCOI, ref totalCOIDelta, __instance.CenterOfImpactBase, currentPureErgo, ref totalPureErgoDelta, false);
 
             float ergonomicWeight = StatCalc.ErgoWeightCalc(totalWeight, totalPureErgoDelta, totalTorque, __instance.WeapClass);
-      *//*      float ergonomicWeightLessMag = StatCalc.ErgoWeightCalc(weapWeightLessMag, totalPureErgoDelta, totalTorque, __instance.WeapClass);*//*
+            float ergonomicWeightLessMag = StatCalc.ErgoWeightCalc(weapWeightLessMag, totalPureErgoDelta, totalTorque, __instance.WeapClass);
 
             float ergoFactor = Mathf.Max(1, 80f - totalErgo); //as an experiment, use total ergo as ergonomicWeight
-            float ergoFactorLessMag = Mathf.Max(1, 80f - WeaponProperties.InitTotalErgo);  //as an experiment, use total ergo as ergonomicWeight
+            float ergoFactorLessMag = Mathf.Max(1, 80f - WeaponStats.InitTotalErgo);  //as an experiment, use total ergo as ergonomicWeight
 
             Utils.HasRunErgoWeightCalc = true;
 
@@ -217,12 +217,12 @@ namespace RealismMod
 
             StatCalc.SpeedStatCalc(__instance, ergoFactor, ergoFactorLessMag, totalChamberSpeedMod, totalReloadSpeedMod, ref totalReloadSpeedLessMag, ref totalChamberSpeed, ref totalAimMoveSpeedFactor, ref totalFiringChamberSpeed, ref totalChamberCheckSpeed, ref totalFixSpeed);
 
-            WeaponProperties.TotalFixSpeed = totalFixSpeed;
-            WeaponProperties.TotalChamberCheckSpeed = totalChamberCheckSpeed;
-            WeaponProperties.TotalReloadSpeedLessMag = totalReloadSpeedLessMag;
-            WeaponProperties.TotalChamberSpeed = totalChamberSpeed;
-            WeaponProperties.TotalFiringChamberSpeed = totalFiringChamberSpeed;
-            WeaponProperties.AimMoveSpeedWeapModifier = totalAimMoveSpeedFactor;
+            WeaponStats.TotalFixSpeed = totalFixSpeed;
+            WeaponStats.TotalChamberCheckSpeed = totalChamberCheckSpeed;
+            WeaponStats.TotalReloadSpeedLessMag = totalReloadSpeedLessMag;
+            WeaponStats.TotalChamberSpeed = totalChamberSpeed;
+            WeaponStats.TotalFiringChamberSpeed = totalFiringChamberSpeed;
+            WeaponStats.AimMoveSpeedWeapModifier = totalAimMoveSpeedFactor;
 
             if (hasMag == true)
             {
@@ -240,36 +240,36 @@ namespace RealismMod
             }
 
 
-            WeaponProperties.TotalDispersion = totalDispersion;
-            WeaponProperties.TotalDispersionDelta = (totalDispersion - __instance.Template.RecolDispersion) / __instance.Template.RecolDispersion;
-            WeaponProperties.TotalCamRecoil = totalCamRecoil;
-            WeaponProperties.TotalRecoilAngle = Mathf.Max(totalRecoilAngle, 65f);
-            WeaponProperties.TotalVRecoil = totalVRecoil;
-            WeaponProperties.TotalHRecoil = totalHRecoil;
-            WeaponProperties.Balance = totalTorque;
-            WeaponProperties.TotalErgo = totalErgo;
-            WeaponProperties.ErgoDelta = totalErgoDelta;
-            WeaponProperties.VRecoilDelta = totalVRecoilDelta;
-            WeaponProperties.HRecoilDelta = totalHRecoilDelta;
-            WeaponProperties.ErgoFactor = Mathf.Max(1, 80f - totalErgo);  //as an experiment, use total ergo as ergonomicWeight
-            WeaponProperties.ErgonomicWeight = ergonomicWeight;
-            WeaponProperties.TotalRecoilDamping = totalRecoilDamping;
-            WeaponProperties.TotalRecoilHandDamping = totalRecoilHandDamping;
-            WeaponProperties.COIDelta = totalCOIDelta;
-            WeaponProperties.PureErgoDelta = totalPureErgoDelta;
+            WeaponStats.TotalDispersion = totalDispersion;
+            WeaponStats.TotalDispersionDelta = (totalDispersion - __instance.Template.RecolDispersion) / __instance.Template.RecolDispersion;
+            WeaponStats.TotalCamRecoil = totalCamRecoil;
+            WeaponStats.TotalRecoilAngle = Mathf.Max(totalRecoilAngle, 65f);
+            WeaponStats.TotalVRecoil = totalVRecoil;
+            WeaponStats.TotalHRecoil = totalHRecoil;
+            WeaponStats.Balance = totalTorque;
+            WeaponStats.TotalErgo = totalErgo;
+            WeaponStats.ErgoDelta = totalErgoDelta;
+            WeaponStats.VRecoilDelta = totalVRecoilDelta;
+            WeaponStats.HRecoilDelta = totalHRecoilDelta;
+            WeaponStats.ErgoFactor = Mathf.Max(1, 80f - totalErgo);  //as an experiment, use total ergo as ergonomicWeight
+            WeaponStats.ErgonomicWeight = ergonomicWeight;
+            WeaponStats.TotalRecoilDamping = totalRecoilDamping;
+            WeaponStats.TotalRecoilHandDamping = totalRecoilHandDamping;
+            WeaponStats.COIDelta = totalCOIDelta;
+            WeaponStats.PureErgoDelta = totalPureErgoDelta;
             return totalErgoDelta;
         }
 
         public static void InitialStaCalc(Weapon __instance)
         {
-            WeaponProperties._WeapClass = __instance.WeapClass;
-            bool isManual = WeaponProperties.IsManuallyOperated(__instance);
-            WeaponProperties._IsManuallyOperated = isManual;
+            WeaponStats._WeapClass = __instance.WeapClass;
+            bool isManual = WeaponStats.IsManuallyOperated(__instance);
+            WeaponStats._IsManuallyOperated = isManual;
 
-            WeaponProperties.ShouldGetSemiIncrease = false;
+            WeaponStats.ShouldGetSemiIncrease = false;
             if (__instance.WeapClass != "pistol" || __instance.WeapClass != "shotgun" || __instance.WeapClass != "sniperRifle" || __instance.WeapClass != "smg")
             {
-                WeaponProperties.ShouldGetSemiIncrease = true;
+                WeaponStats.ShouldGetSemiIncrease = true;
             }
 
             float baseCOI = __instance.CenterOfImpactBase;
@@ -281,13 +281,13 @@ namespace RealismMod
             float baseSemiROF = Mathf.Max(__instance.Template.SingleFireRate, 240);
             float currentSemiROF = baseSemiROF;
 
-            float baseCamRecoil = __instance.Template.CameraRecoil;
+            float baseCamRecoil = __instance.Template.RecoilCamera;
             float currentCamRecoil = baseCamRecoil;
 
-            float baseCamReturnSpeed = WeaponProperties.CameraReturnSpeed(__instance);
+            float baseCamReturnSpeed = WeaponStats.CameraReturnSpeed(__instance);
             float currentCamReturnSpeed = baseCamReturnSpeed;
 
-            float baseConv = __instance.Template.Convergence;
+            float baseConv = __instance.Template.RecoilReturnSpeedHandRotation;
             float currentConv = baseConv;
 
             float baseDispersion = __instance.Template.RecolDispersion;
@@ -323,17 +323,17 @@ namespace RealismMod
             float baseMalfChance = __instance.BaseMalfunctionChance;
             float currentMalfChance = baseMalfChance;
 
-            string weapOpType = WeaponProperties.OperationType(__instance);
-            string weapType = WeaponProperties.WeaponType(__instance);
+            string weapOpType = WeaponStats.OperationType(__instance);
+            string weapType = WeaponStats.WeaponType(__instance);
 
             string calibre = __instance.Template.ammoCaliber;
             float currentLoudness = 0;
 
-            bool weaponAllowsFSADS = WeaponProperties.WeaponAllowsADS(__instance);
+            bool weaponAllowsFSADS = WeaponStats.WeaponAllowsADS(__instance);
             bool stockAllowsFSADS = false;
 
             bool folded = __instance.Folded;
-            WeaponProperties.Folded = folded;
+            WeaponStats.Folded = folded;
 
             bool hasShoulderContact = false;
 
@@ -341,16 +341,15 @@ namespace RealismMod
 
             float currentFixSpeedMod = 0f;
 
-            if (WeaponProperties.WepHasShoulderContact(__instance) && !folded)
+            if (WeaponStats.WepHasShoulderContact(__instance) && !folded)
             {
                 hasShoulderContact = true;
             }
-            WeaponProperties.BaseMeleeDamage = 0f; //reset the melee dmg
-            WeaponProperties.BaseMeleePen = 0f;
-            WeaponProperties.HasBayonet = false;
-            for (int i = 0; i < __instance.Mods.Length; i++)
+            WeaponStats.BaseMeleeDamage = 0f; //reset the melee dmg
+            WeaponStats.BaseMeleePen = 0f;
+            WeaponStats.HasBayonet = false;
+            foreach (Mod mod in __instance.Mods)
             {
-                Mod mod = __instance.Mods[i];
                 if (!Utils.IsMagazine(mod))
                 {
                     float modWeight = mod.Weight;
@@ -379,18 +378,18 @@ namespace RealismMod
 
                     if (Utils.IsMuzzleDevice(mod))
                     {
-                        if (modType == "bayonet") 
+                        if (modType == "bayonet")
                         {
-                            WeaponProperties.HasBayonet = true;
+                            WeaponStats.HasBayonet = true;
                         }
 
-                        WeaponProperties.BaseMeleeDamage = AttachmentProperties.ModMeleeDamage(mod);
-                        WeaponProperties.BaseMeleePen = AttachmentProperties.ModMeleePen(mod);
+                        WeaponStats.BaseMeleeDamage = AttachmentProperties.ModMeleeDamage(mod);
+                        WeaponStats.BaseMeleePen = AttachmentProperties.ModMeleePen(mod);
                     }
 
                     StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, ref modMalfChance, ref modDuraBurn, ref modConv);
                     StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeedMod, modReload, ref currentReloadSpeedMod, modFix, ref currentFixSpeedMod, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeedMod, modChamber, false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, __instance.IsBeltMachineGun);
-                    if (AttachmentProperties.CanCylceSubs(__instance.Mods[i]))
+                    if (AttachmentProperties.CanCylceSubs(mod))
                     {
                         canCycleSubs = true;
                     }
@@ -399,11 +398,11 @@ namespace RealismMod
             }
             if (weaponAllowsFSADS == true || stockAllowsFSADS == true)
             {
-                WeaponProperties.WeaponCanFSADS = true;
+                WeaponStats.WeaponCanFSADS = true;
             }
             else
             {
-                WeaponProperties.WeaponCanFSADS = !hasShoulderContact;
+                WeaponStats.WeaponCanFSADS = !hasShoulderContact;
             }
 
             float totalLoudness = ((currentLoudness / 80) + 1f) * StatCalc.CalibreLoudnessFactor(calibre);
@@ -413,32 +412,32 @@ namespace RealismMod
             }
 
             float pureRecoilDelta = ((baseVRecoil + baseHRecoil) - pureRecoil) / ((baseVRecoil + baseHRecoil) * -1f);
-            WeaponProperties.TotalModDuraBurn = modBurnRatio;
-            WeaponProperties.TotalMalfChance = currentMalfChance;
-            WeaponProperties.MalfChanceDelta = (currentMalfChance - baseMalfChance) / baseMalfChance;
+            WeaponStats.TotalModDuraBurn = modBurnRatio;
+            WeaponStats.TotalMalfChance = currentMalfChance;
+            WeaponStats.MalfChanceDelta = (currentMalfChance - baseMalfChance) / baseMalfChance;
             DeafeningController.WeaponDeafFactor = totalLoudness;
-            WeaponProperties.CanCycleSubs = canCycleSubs;
-            WeaponProperties.HasShoulderContact = hasShoulderContact;
-            WeaponProperties.InitTotalErgo = currentErgo;
-            WeaponProperties.InitTotalVRecoil = currentVRecoil;
-            WeaponProperties.InitTotalHRecoil = currentHRecoil;
-            WeaponProperties.InitBalance = currentTorque;
-            WeaponProperties.InitCamRecoil = currentCamRecoil;
-            WeaponProperties.InitDispersion = currentDispersion;
-            WeaponProperties.InitRecoilAngle = currentRecoilAngle;
-            WeaponProperties.SDReloadSpeedModifier = currentReloadSpeedMod;
-            WeaponProperties.SDChamberSpeedModifier = currentChamberSpeedMod;
-            WeaponProperties.SDFixSpeedModifier = currentFixSpeedMod;
-            WeaponProperties.ModAimSpeedModifier = currentAimSpeedMod / 100f;
-            WeaponProperties.AutoFireRate = Mathf.Max(300, (int)currentAutoROF);
-            WeaponProperties.SemiFireRate = Mathf.Max(200, (int)currentSemiROF);
-            WeaponProperties.InitTotalCOI = currentCOI;
-            WeaponProperties.InitPureErgo = pureErgo;
-            WeaponProperties.PureRecoilDelta = pureRecoilDelta;
-            WeaponProperties.ShotDispDelta = (baseShotDisp - currentShotDisp) / (baseShotDisp * -1f);
-            WeaponProperties.TotalCameraReturnSpeed = currentCamReturnSpeed;
-            WeaponProperties.TotalModdedConv = currentConv;
-            WeaponProperties.ConvergenceDelta = currentConv / __instance.Template.Convergence;
+            WeaponStats.CanCycleSubs = canCycleSubs;
+            WeaponStats.HasShoulderContact = hasShoulderContact;
+            WeaponStats.InitTotalErgo = currentErgo;
+            WeaponStats.InitTotalVRecoil = currentVRecoil;
+            WeaponStats.InitTotalHRecoil = currentHRecoil;
+            WeaponStats.InitBalance = currentTorque;
+            WeaponStats.InitCamRecoil = currentCamRecoil;
+            WeaponStats.InitDispersion = currentDispersion;
+            WeaponStats.InitRecoilAngle = currentRecoilAngle;
+            WeaponStats.SDReloadSpeedModifier = currentReloadSpeedMod;
+            WeaponStats.SDChamberSpeedModifier = currentChamberSpeedMod;
+            WeaponStats.SDFixSpeedModifier = currentFixSpeedMod;
+            WeaponStats.ModAimSpeedModifier = currentAimSpeedMod / 100f;
+            WeaponStats.AutoFireRate = Mathf.Max(300, (int)currentAutoROF);
+            WeaponStats.SemiFireRate = Mathf.Max(200, (int)currentSemiROF);
+            WeaponStats.InitTotalCOI = currentCOI;
+            WeaponStats.InitPureErgo = pureErgo;
+            WeaponStats.PureRecoilDelta = pureRecoilDelta;
+            WeaponStats.ShotDispDelta = (baseShotDisp - currentShotDisp) / (baseShotDisp * -1f);
+            WeaponStats.TotalCameraReturnSpeed = currentCamReturnSpeed;
+            WeaponStats.TotalModdedConv = currentConv;
+            WeaponStats.ConvergenceDelta = currentConv / __instance.Template.RecoilReturnSpeedHandRotation;
         }
     }
 
@@ -455,7 +454,7 @@ namespace RealismMod
 
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
-                __result = WeaponProperties.COIDelta;
+                __result = WeaponStats.COIDelta;
                 return false;
             }
             else
@@ -484,7 +483,7 @@ namespace RealismMod
                     int iterations = 0;
                     Player player = Utils.GetPlayer();
                     Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
-                   
+
                     if (currentAimingMod != null)
                     {
                         if (AttachmentProperties.ModType(currentAimingMod) == "sight")
@@ -500,7 +499,7 @@ namespace RealismMod
                                 currentSightFactor += (mod.Accuracy / 100f);
                             }
                             iterations++;
-                            if (iterations >= 5) 
+                            if (iterations >= 5)
                             {
                                 break;
                             }
@@ -512,7 +511,7 @@ namespace RealismMod
                 bool isBracingTop = StanceController.IsBracingTop;
                 float mountingFactor = StanceController.IsBracing && isBracingTop ? 1.05f : StanceController.IsBracing && !isBracingTop ? 1.025f : StanceController.IsMounting && isBracingTop ? 1.1f : StanceController.IsMounting && !isBracingTop ? 1.075f : 1f;
                 float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * currentSightFactor * mountingFactor;
-               
+
                 if (!includeAmmo)
                 {
                     __result = totalCoi;
@@ -540,7 +539,7 @@ namespace RealismMod
         {
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
-                float shotDispLessAmmo = __instance.ShotgunDispersionBase * (1f + WeaponProperties.ShotDispDelta);
+                float shotDispLessAmmo = __instance.ShotgunDispersionBase * (1f + WeaponStats.ShotDispDelta);
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
                 float totalShotDisp = shotDispLessAmmo * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
 
@@ -569,7 +568,7 @@ namespace RealismMod
 
             if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
             {
-                modsBurnRatio = WeaponProperties.TotalModDuraBurn;
+                modsBurnRatio = WeaponStats.TotalModDuraBurn;
                 __result = (float)__instance.Repairable.TemplateDurability / __instance.Template.OperatingResource * __instance.DurabilityBurnRatio * (modsBurnRatio * ammoBurnRatio) * overheatFactor * (1f - skillWeaponTreatmentFactor); ;
                 return false;
             }
@@ -585,7 +584,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player.FirearmController).GetMethod("get_ErgonomicWeight", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            return typeof(Player.FirearmController).GetMethod("get_ErgonomicWeight", BindingFlags.Instance | BindingFlags.Public | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -594,9 +593,9 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                __result = WeaponProperties.ErgonomicWeight * PlayerProperties.ErgoDeltaInjuryMulti * (1f - PlayerProperties.StrengthSkillAimBuff * 1.5f);
+                __result = WeaponStats.ErgonomicWeight * PlayerStats.ErgoDeltaInjuryMulti * (1f - PlayerStats.StrengthSkillAimBuff * 1.5f);
 
-                if (!Utils.HasRunErgoWeightCalc) 
+                if (!Utils.HasRunErgoWeightCalc)
                 {
                     __result = 0;
                     return false;
@@ -606,7 +605,7 @@ namespace RealismMod
                 {
                     Logger.LogWarning("===ErgonomicWeight===");
                     Logger.LogWarning("total ergo weight = " + __result);
-                    Logger.LogWarning("base ergo weight = " + WeaponProperties.ErgoFactor);
+                    Logger.LogWarning("base ergo weight = " + WeaponStats.ErgoFactor);
                 }
 
                 return false;
@@ -636,12 +635,11 @@ namespace RealismMod
                 float dampingFactor = (RecoilController.BaseTotalHandDamping + RecoilController.BaseTotalRecoilDamping);
                 float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
                 float recoilFactor = 1f + (RecoilController.BaseTotalVRecoil + RecoilController.BaseTotalHRecoil) / 100f;
-                float totalPlayerWeight = PlayerProperties.TotalUnmodifiedWeight - WeaponProperties.TotalWeaponWeight;
+                float totalPlayerWeight = PlayerStats.TotalUnmodifiedWeight - WeaponStats.TotalWeaponWeight;
                 float playerWeightFactorBuff = 1f + (totalPlayerWeight / 100f);
 
-                WeaponProperties.BaseHipfireInaccuracy = Mathf.Clamp(0.3f * player.ProceduralWeaponAnimation.Breath.HipPenalty * (1f - WeaponProperties.ErgoDelta) * convergenceFactor * dispersionFactor * recoilFactor * dampingFactor * playerWeightFactorBuff, 0.3f, 1f);
+                WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(0.3f * player.ProceduralWeaponAnimation.Breath.HipPenalty * (1f - WeaponStats.ErgoDelta) * convergenceFactor * dispersionFactor * recoilFactor * dampingFactor * playerWeightFactorBuff, 0.3f, 1f);
             }
         }
     }
 }
-*/

@@ -5,7 +5,7 @@ namespace RealismMod
 {
 
 
-    public static class DisplayWeaponProperties
+    public static class UIWeaponStats
     {
         public static float ErgoDelta = 0;
         public static int AutoFireRate = 0;
@@ -28,7 +28,7 @@ namespace RealismMod
     }
 
 
-    public static class WeaponProperties
+    public static class WeaponStats
     {
 
         public static string WeaponType(Weapon weapon)
@@ -98,7 +98,6 @@ namespace RealismMod
 
         }
 
-
         public static float MinChamberSpeed(Weapon weapon)
         {
             return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[12], out float result) ? result : 0.7f;
@@ -141,6 +140,81 @@ namespace RealismMod
 
         }
 
+        public static float AdapterPistolGripBonusVRecoil
+        {
+            get { return -1f; }
+        }
+
+        public static float AdapterPistolGripBonusHRecoil
+        {
+            get { return -2f; }
+        }
+
+        public static float AdapterPistolGripBonusDispersion
+        {
+            get { return -1f; }
+        }
+
+        public static float AdapterPistolGripBonusChamber
+        {
+            get { return 10f; }
+        }
+
+        public static float AdapterPistolGripBonusErgo
+        {
+            get { return 2f; }
+        }
+
+        public static float PumpGripReloadBonus
+        {
+            get { return 18f; }
+        }
+
+        public static float FoldedErgoFactor
+        {
+            get { return 1f; }
+        }
+
+        public static float FoldedHRecoilFactor
+        {
+            get { return 1.15f; }
+        }
+
+        public static float FoldedVRecoilFactor
+        {
+            get { return 1.5f; }
+        }
+
+        public static float FoldedCOIFactor
+        {
+            get { return 2f; }
+        }
+
+        public static float FoldedCamRecoilFactor
+        {
+            get { return 0.4f; }
+        }
+
+        public static float FoldedDispersionFactor
+        {
+            get { return 1.55f; }
+        }
+
+        public static float FoldedRecoilAngleFactor
+        {
+            get { return 1.15f; }
+        }
+
+        public static float ErgoStatFactor
+        {
+            get { return 7f; }
+        }
+
+        public static float RecoilStatFactor
+        {
+            get { return 3.5f; }
+        }
+
         public static float TotalWeaponWeight = 0f;
 
         public static float TotalCameraReturnSpeed = 0.1f;
@@ -166,36 +240,6 @@ namespace RealismMod
         public static string _WeapClass = "";
 
         public static bool ShouldGetSemiIncrease = false;
-
-        public static float AdapterPistolGripBonusVRecoil = -1;
-
-        public static float AdapterPistolGripBonusHRecoil = -2;
-
-        public static float AdapterPistolGripBonusDispersion = -1;
-
-        public static float AdapterPistolGripBonusChamber = 10;
-
-        public static float AdapterPistolGripBonusErgo = 2;
-
-        public static float PumpGripReloadBonus = 18f;
-
-        public static float FoldedErgoFactor = 1.0f;
-
-        public static float FoldedHRecoilFactor = 1.15f;
-
-        public static float FoldedVRecoilFactor = 1.5f;
-
-        public static float FoldedCOIFactor = 2f;
-
-        public static float FoldedCamRecoilFactor = 0.4f;
-
-        public static float FoldedDispersionFactor = 1.55f;
-
-        public static float FoldedRecoilAngleFactor = 1.15f;
-
-        public static float ErgoStatFactor = 7f;
-
-        public static float RecoilStatFactor = 3.5f;
 
         public static float ErgoDelta = 0f;
 

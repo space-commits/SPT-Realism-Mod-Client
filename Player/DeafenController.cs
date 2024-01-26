@@ -1,4 +1,4 @@
-﻿/*using EFT;
+﻿using EFT;
 using System;
 using UnityEngine;
 using System.Linq;
@@ -13,13 +13,6 @@ using Aki.Reflection.Utils;
 using UnityEngine.Rendering.PostProcessing;
 using static EFT.Interactive.BetterPropagationGroups;
 using BepInEx.Logging;
-using HeadsetClass = GClass2451;
-using HeadsetTemplate = GClass2357;
-using IWeapon = GInterface273;
-using CompressorClass = GClass2718;
-using CompressorTemplateClass = GClass2705;
-using ShotClass = GClass2784;
-
 
 namespace RealismMod
 {
@@ -81,7 +74,7 @@ namespace RealismMod
 
         public static void DoDeafening()
         {
-            float enviroMulti = PlayerProperties.EnviroType == EnvironmentType.Indoor ? 1.3f : 1.05f;
+            float enviroMulti = PlayerStats.EnviroType == EnvironmentType.Indoor ? 1.3f : 1.05f;
             float deafFactor = AmmoDeafFactor * WeaponDeafFactor * EarProtectionFactor;
             float botDeafFactor = BotDeafFactor * EarProtectionFactor;
             float grenadeDeafFactor = GrenadeDeafFactor * EarProtectionFactor;
@@ -124,8 +117,7 @@ namespace RealismMod
             if (totalVolume != 0.0f || totalDistortion != 0.0f || totalVignette != 0.0f)
             {
                 DeafeningController.PrismEffects.vignetteStrength = totalVignette;
-                *//*                Plugin.Vignette.darkness = totalVignette;
-                *//*
+
                 Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", totalVolume + DeafeningController.GunsVolume);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("OcclusionVolume", totalVolume + DeafeningController.DryVolume);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", totalVolume + DeafeningController.DryVolume);
@@ -179,4 +171,3 @@ namespace RealismMod
         }
     }
 }
-*/

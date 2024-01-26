@@ -1,4 +1,4 @@
-﻿/*using Aki.Reflection.Patching;
+﻿using Aki.Reflection.Patching;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
@@ -14,8 +14,8 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using StatAttributeClass = GClass2563;
-using BarrelTemplateClass = GClass2394;
+using StatAttributeClass = GClass2748;
+using BarrelTemplateClass = GClass2575;
 
 namespace RealismMod
 {
@@ -112,10 +112,10 @@ namespace RealismMod
 
     public class AmmoMalfChanceDisplayPatch : ModulePatch
     {
-   
+
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(AmmoTemplate).GetMethod("method_12", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(AmmoTemplate).GetMethod("method_12", BindingFlags.Instance | BindingFlags.Public);
         }
 
         private static string[] malfChancesKeys = new string[]
@@ -163,7 +163,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(MagazineClass).GetMethod("method_39", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(MagazineClass).GetMethod("method_39", BindingFlags.Instance | BindingFlags.Public);
         }
 
         private static string[] malfChancesKeys = new string[]
@@ -176,7 +176,7 @@ namespace RealismMod
         "Malfunction/VeryHighChance"
         };
 
-        [PatchPrefix] 
+        [PatchPrefix]
         private static bool Prefix(MagazineClass __instance, ref string __result)
         {
             float malfChance = __instance.MalfunctionChance;
@@ -211,7 +211,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(AmmoTemplate).GetMethod("method_16", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(AmmoTemplate).GetMethod("method_16", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
@@ -220,7 +220,7 @@ namespace RealismMod
         {
             float duraBurn = __instance.DurabilityBurnModificator - 1f;
 
-            switch (duraBurn) 
+            switch (duraBurn)
             {
                 //560 = 5.6
                 case <= 2f:
@@ -250,7 +250,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Mod).GetMethod("method_15", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Mod).GetMethod("method_16", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
@@ -266,7 +266,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Mod).GetMethod("method_16", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Mod).GetMethod("method_17", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -281,7 +281,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Mod).GetMethod("method_18", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Mod).GetMethod("method_19", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -555,7 +555,7 @@ namespace RealismMod
                 balanceAtt.LessIsGood = false;
                 balanceAtt.Base = () => 150;
                 balanceAtt.Delta = () => BalanceDelta();
-                balanceAtt.StringValue = () => Math.Round(DisplayWeaponProperties.Balance, 1).ToString();
+                balanceAtt.StringValue = () => Math.Round(UIWeaponStats.Balance, 1).ToString();
                 balanceAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
                 balanceAttList.Add(balanceAtt);
 
@@ -570,7 +570,7 @@ namespace RealismMod
                 dispersionAtt.LessIsGood = true;
                 dispersionAtt.Base = () => __instance.Template.RecolDispersion;
                 dispersionAtt.Delta = () => DispersionDelta(__instance);
-                dispersionAtt.StringValue = () => Math.Round(DisplayWeaponProperties.Dispersion, 1).ToString();
+                dispersionAtt.StringValue = () => Math.Round(UIWeaponStats.Dispersion, 1).ToString();
                 dispersionAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
                 dispersionAttList.Add(dispersionAtt);
             }
@@ -582,9 +582,9 @@ namespace RealismMod
                 camRecoilAtt.Name = ENewItemAttributeId.CameraRecoil.GetName();
                 camRecoilAtt.Range = new Vector2(0f, 50f);
                 camRecoilAtt.LessIsGood = true;
-                camRecoilAtt.Base = () => __instance.Template.CameraRecoil * 100f;
+                camRecoilAtt.Base = () => __instance.Template.RecoilCamera * 100f;
                 camRecoilAtt.Delta = () => CamRecoilDelta(__instance);
-                camRecoilAtt.StringValue = () => Math.Round(DisplayWeaponProperties.CamRecoil * 100f, 2).ToString();
+                camRecoilAtt.StringValue = () => Math.Round(UIWeaponStats.CamRecoil * 100f, 2).ToString();
                 camRecoilAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
                 camRecoilAttList.Add(camRecoilAtt);
             }
@@ -594,8 +594,8 @@ namespace RealismMod
                 List<ItemAttributeClass> recoilAngleAttList = __instance.Attributes;
                 ItemAttributeClass recoilAngleAtt = new ItemAttributeClass(ENewItemAttributeId.RecoilAngle);
                 recoilAngleAtt.Name = ENewItemAttributeId.RecoilAngle.GetName();
-                recoilAngleAtt.Base = () => DisplayWeaponProperties.RecoilAngle;
-                recoilAngleAtt.StringValue = () => Math.Round(DisplayWeaponProperties.RecoilAngle).ToString();
+                recoilAngleAtt.Base = () => UIWeaponStats.RecoilAngle;
+                recoilAngleAtt.StringValue = () => Math.Round(UIWeaponStats.RecoilAngle).ToString();
                 recoilAngleAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
                 recoilAngleAttList.Add(recoilAngleAtt);
             }
@@ -605,8 +605,8 @@ namespace RealismMod
                 List<ItemAttributeClass> semiROFAttList = __instance.Attributes;
                 ItemAttributeClass semiROFAtt = new ItemAttributeClass(ENewItemAttributeId.SemiROF);
                 semiROFAtt.Name = ENewItemAttributeId.SemiROF.GetName();
-                semiROFAtt.Base = () => DisplayWeaponProperties.SemiFireRate;
-                semiROFAtt.StringValue = () => DisplayWeaponProperties.SemiFireRate.ToString() + " " + "RPM".Localized(null);
+                semiROFAtt.Base = () => UIWeaponStats.SemiFireRate;
+                semiROFAtt.StringValue = () => UIWeaponStats.SemiFireRate.ToString() + " " + "RPM".Localized(null);
                 semiROFAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
                 semiROFAttList.Add(semiROFAtt);
             }
@@ -615,19 +615,19 @@ namespace RealismMod
 
         private static float BalanceDelta()
         {
-            float currentBalance = 150f - (DisplayWeaponProperties.Balance * -1f);
+            float currentBalance = 150f - (UIWeaponStats.Balance * -1f);
             return (150f - currentBalance) / (150f * -1f);
         }
 
         private static float DispersionDelta(Weapon __instance)
         {
-            return (__instance.Template.RecolDispersion - DisplayWeaponProperties.Dispersion) / (__instance.Template.RecolDispersion * -1f);
+            return (__instance.Template.RecolDispersion - UIWeaponStats.Dispersion) / (__instance.Template.RecolDispersion * -1f);
         }
 
         private static float CamRecoilDelta(Weapon __instance)
         {
-            float tempalteCam = __instance.Template.CameraRecoil * 100f;
-            return (tempalteCam - (DisplayWeaponProperties.CamRecoil * 100f)) / (tempalteCam * -1f);
+            float tempalteCam = __instance.Template.RecoilCamera * 100f;
+            return (tempalteCam - (UIWeaponStats.CamRecoil * 100f)) / (tempalteCam * -1f);
         }
 
     }
@@ -636,7 +636,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_25", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_25", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
@@ -647,7 +647,7 @@ namespace RealismMod
             {
                 StatDeltaDisplay.DisplayDelta(__instance);
             }
-            __result = DisplayWeaponProperties.HRecoilDelta;
+            __result = UIWeaponStats.HRecoilDelta;
             return false;
         }
     }
@@ -656,14 +656,14 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_26", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_27", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref string __result)
         {
-            __result = Math.Round(__instance.Template.RecoilForceBack + __instance.Template.RecoilForceBack * DisplayWeaponProperties.HRecoilDelta, 1).ToString();
+            __result = Math.Round(__instance.Template.RecoilForceBack + __instance.Template.RecoilForceBack * UIWeaponStats.HRecoilDelta, 1).ToString();
             return false;
         }
     }
@@ -672,7 +672,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_22", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_22", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
@@ -683,7 +683,7 @@ namespace RealismMod
             {
                 StatDeltaDisplay.DisplayDelta(__instance);
             }
-            __result = DisplayWeaponProperties.VRecoilDelta;
+            __result = UIWeaponStats.VRecoilDelta;
             return false;
         }
     }
@@ -692,13 +692,13 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_23", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_24", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref string __result)
         {
-            __result = Math.Round(__instance.Template.RecoilForceUp + (__instance.Template.RecoilForceUp * (DisplayWeaponProperties.VRecoilDelta)), 1).ToString();
+            __result = Math.Round(__instance.Template.RecoilForceUp + (__instance.Template.RecoilForceUp * (UIWeaponStats.VRecoilDelta)), 1).ToString();
             return false;
         }
 
@@ -708,18 +708,15 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_17", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_18", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            float Single_0 = (float)AccessTools.Property(typeof(Weapon), "Single_0").GetValue(__instance);
-            MethodInfo method_9 = AccessTools.Method(typeof(Weapon), "method_9");
-
-            float num = (float)method_9.Invoke(__instance, new object[] { __instance.Repairable.TemplateDurability });
-            float num2 = (__instance.GetBarrelDeviation() - num) / (Single_0 - num);
-            __result = DisplayWeaponProperties.COIDelta + num2;
+            float num = __instance.method_10((float)__instance.Repairable.TemplateDurability);
+            float num2 = (__instance.GetBarrelDeviation() - num) / (__instance.Single_0 - num);
+            __result = UIWeaponStats.COIDelta + num2;
             return false;
         }
     }
@@ -728,9 +725,9 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_18", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_19", BindingFlags.Instance | BindingFlags.Public);
         }
-         
+
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref string __result)
         {
@@ -740,7 +737,7 @@ namespace RealismMod
 
         private static float GetTotalCOI(Weapon __instance, bool includeAmmo)
         {
-            float num = __instance.CenterOfImpactBase * (1f + DisplayWeaponProperties.COIDelta);
+            float num = __instance.CenterOfImpactBase * (1f + UIWeaponStats.COIDelta);
             if (!includeAmmo)
             {
                 return num;
@@ -754,14 +751,14 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_35", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_36", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
         [PatchPrefix]
         private static bool Prefix(ref string __result)
         {
-            __result = DisplayWeaponProperties.AutoFireRate.ToString() + " " + "RPM".Localized(null);
+            __result = UIWeaponStats.AutoFireRate.ToString() + " " + "RPM".Localized(null);
             return false;
         }
     }
@@ -770,7 +767,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_14", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_15", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
@@ -778,7 +775,7 @@ namespace RealismMod
         private static bool Prefix(Weapon __instance, ref float __result)
         {
             StatDeltaDisplay.DisplayDelta(__instance);
-            __result = DisplayWeaponProperties.ErgoDelta;
+            __result = UIWeaponStats.ErgoDelta;
             return false;
         }
     }
@@ -787,7 +784,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_15", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Weapon).GetMethod("method_16", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
@@ -795,7 +792,7 @@ namespace RealismMod
         private static bool Prefix(Weapon __instance, ref string __result)
         {
             StatDeltaDisplay.DisplayDelta(__instance);
-            float ergoTotal = __instance.Template.Ergonomics * (1f + DisplayWeaponProperties.ErgoDelta);
+            float ergoTotal = __instance.Template.Ergonomics * (1f + UIWeaponStats.ErgoDelta);
             __result = Mathf.Clamp(ergoTotal, 0f, 100f).ToString("0.##");
             return false;
         }
@@ -803,7 +800,7 @@ namespace RealismMod
 
     public static class StatDeltaDisplay
     {
-  
+
         public static void DisplayDelta(Weapon __instance)
         {
             float baseCOI = __instance.CenterOfImpactBase;
@@ -815,13 +812,13 @@ namespace RealismMod
             float baseSemiROF = Mathf.Max(__instance.Template.SingleFireRate, 240);
             float currentSemiROF = baseSemiROF;
 
-            float baseCamReturnSpeed = WeaponProperties.CameraReturnSpeed(__instance);
+            float baseCamReturnSpeed = WeaponStats.CameraReturnSpeed(__instance);
             float currentCamReturnSpeed = baseCamReturnSpeed;
 
-            float baseCamRecoil = __instance.Template.CameraRecoil;
+            float baseCamRecoil = __instance.Template.RecoilCamera;
             float currentCamRecoil = baseCamRecoil;
 
-            float baseConv = __instance.Template.Convergence;
+            float baseConv = __instance.Template.RecoilCategoryMultiplierHandRotation;
             float currentConv = baseConv;
 
             float baseDispersion = __instance.Template.RecolDispersion;
@@ -854,8 +851,8 @@ namespace RealismMod
 
             float currentFixSpeed = 0f;
 
-            string weapOpType = WeaponProperties.OperationType(__instance);
-            string weapType = WeaponProperties.WeaponType(__instance);
+            string weapOpType = WeaponStats.OperationType(__instance);
+            string weapType = WeaponStats.WeaponType(__instance);
 
             float currentLoudness = 0;
 
@@ -866,14 +863,13 @@ namespace RealismMod
             bool stockAllowsFSADS = false;
 
 
-            if (WeaponProperties.WepHasShoulderContact(__instance) && !folded)
+            if (WeaponStats.WepHasShoulderContact(__instance) && !folded)
             {
                 hasShoulderContact = true;
             }
 
-            for (int i = 0; i < __instance.Mods.Length; i++)
+            foreach (Mod mod in __instance.Mods)
             {
-                Mod mod = __instance.Mods[i];
                 float modWeight = mod.Weight;
                 if (Utils.IsMagazine(mod))
                 {
@@ -926,24 +922,23 @@ namespace RealismMod
 
             StatCalc.WeaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref totalRecoilDamping, ref totalRecoilHandDamping, currentCOI, hasShoulderContact, ref totalCOI, ref totalCOIDelta, baseCOI, pureErgo, ref pureErgoDelta, true);
 
-            DisplayWeaponProperties.TotalConvergence = currentConv;
-            DisplayWeaponProperties.ConvergenceDelta = (currentConv - baseConv) / baseConv; 
-            DisplayWeaponProperties.HasShoulderContact = hasShoulderContact;
-            DisplayWeaponProperties.Dispersion = totalDispersion;
-            DisplayWeaponProperties.CamRecoil = totalCamRecoil;
-            DisplayWeaponProperties.RecoilAngle = totalRecoilAngle;
-            DisplayWeaponProperties.TotalVRecoil = totalVRecoil;
-            DisplayWeaponProperties.TotalHRecoil = totalHRecoil;
-            DisplayWeaponProperties.Balance = totalTorque;
-            DisplayWeaponProperties.TotalErgo = totalErgo; 
-            DisplayWeaponProperties.ErgoDelta = totalErgoDelta;
-            DisplayWeaponProperties.VRecoilDelta = totalVRecoilDelta;
-            DisplayWeaponProperties.HRecoilDelta = totalHRecoilDelta;
-            DisplayWeaponProperties.AutoFireRate = Mathf.Max(300, (int)currentAutoROF);
-            DisplayWeaponProperties.SemiFireRate = Mathf.Max(200, (int)currentSemiROF);
-            DisplayWeaponProperties.COIDelta = totalCOIDelta;
-            DisplayWeaponProperties.CamReturnSpeed = currentCamReturnSpeed;
+            UIWeaponStats.TotalConvergence = currentConv;
+            UIWeaponStats.ConvergenceDelta = (currentConv - baseConv) / baseConv;
+            UIWeaponStats.HasShoulderContact = hasShoulderContact;
+            UIWeaponStats.Dispersion = totalDispersion;
+            UIWeaponStats.CamRecoil = totalCamRecoil;
+            UIWeaponStats.RecoilAngle = totalRecoilAngle;
+            UIWeaponStats.TotalVRecoil = totalVRecoil;
+            UIWeaponStats.TotalHRecoil = totalHRecoil;
+            UIWeaponStats.Balance = totalTorque;
+            UIWeaponStats.TotalErgo = totalErgo;
+            UIWeaponStats.ErgoDelta = totalErgoDelta;
+            UIWeaponStats.VRecoilDelta = totalVRecoilDelta;
+            UIWeaponStats.HRecoilDelta = totalHRecoilDelta;
+            UIWeaponStats.AutoFireRate = Mathf.Max(300, (int)currentAutoROF);
+            UIWeaponStats.SemiFireRate = Mathf.Max(200, (int)currentSemiROF);
+            UIWeaponStats.COIDelta = totalCOIDelta;
+            UIWeaponStats.CamReturnSpeed = currentCamReturnSpeed;
         }
     }
 }
-*/

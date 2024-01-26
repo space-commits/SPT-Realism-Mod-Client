@@ -1,8 +1,8 @@
-﻿/*using EFT;
+﻿using EFT;
 
 namespace RealismMod
 {
-    public static class PlayerProperties
+    public static class PlayerStats
     {
         public static float FixSkillMulti = 1f;
 
@@ -34,7 +34,7 @@ namespace RealismMod
 
         public static EnvironmentType EnviroType = EnvironmentType.Outdoor;
 
-        public static bool IsClearingMalf;
+        public static bool IsClearingMalf = false;
 
         public static bool IsAllowedAim = true;
 
@@ -99,4 +99,3 @@ namespace RealismMod
         public static bool IsMoving = false;
     }
 }
-*/

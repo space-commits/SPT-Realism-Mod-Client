@@ -10,8 +10,8 @@ using System;
 using static EFT.Player;
 using EFT.Interactive;
 using System.Linq;
-using IWeapon = GInterface273;
-using PlayerInterface = GInterface113;
+/*using IWeapon = GInterface273;*/
+using PlayerInterface = GInterface127;
 using EFT.Animations.Recoil;
 using FitstPersonAnimations.WeaponAnimation.Effectors.Recoil;
 using EFT.Animations;
@@ -19,6 +19,38 @@ using EFT.Animations;
 
 namespace RealismMod
 {
+
+    public class ShootPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("Shoot");
+        }
+
+        [PatchPostfix]
+        public static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance, float str)
+        {
+            PlayerInterface playerInterface = (PlayerInterface)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_firearmAnimationData").GetValue(__instance);
+            if (playerInterface != null && playerInterface.Weapon != null)
+            {
+                Weapon weapon = playerInterface.Weapon;
+                Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
+                if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
+                {
+                    RecoilController.ShotCount++;
+                    RecoilController.ShotTimer = 0f;
+                    RecoilController.WiggleShotTimer = 0f;
+                    RecoilController.MovementSpeedShotTimer = 0f;
+                    StanceController.StanceShotTime = 0f;
+                    RecoilController.IsFiring = true;
+                    RecoilController.IsFiringWiggle = true;
+                    RecoilController.IsFiringMovement = true;
+                    StanceController.IsFiringFromStance = true;
+
+                }
+            }
+        }
+    }
 
     public class WeaponStatsPatch : ModulePatch
     {
@@ -119,24 +151,6 @@ namespace RealismMod
         }
     }
 
-    public class method_19Patch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(ProceduralWeaponAnimation).GetMethod("method_19", BindingFlags.Instance | BindingFlags.NonPublic);
-        }
-
-        [PatchPrefix]
-        public static bool Prefix(ProceduralWeaponAnimation __instance)
-        {
-            if (Plugin.EnableHybridRecoil.Value)
-            {
-                return false;
-              
-            }
-            return true;
-        }
-    }
     /*
     public class RecoilRotatePatch : ModulePatch
     {

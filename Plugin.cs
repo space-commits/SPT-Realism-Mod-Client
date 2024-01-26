@@ -33,7 +33,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.pluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string pluginVersion = "0.14.11";
+        private const string pluginVersion = "0.15.0";
 
         public static ConfigEntry<bool> EnableParralax { get; set; }
         public static ConfigEntry<float> ResetTime { get; set; }
@@ -354,7 +354,7 @@ namespace RealismMod
         public static bool IsInThirdPerson = false;
 
         public static GameObject Hook;
-  /*      public static MountingUI MountingUIComponent;*/
+        public static MountingUI MountingUIComponent;
 
         public static bool HasReloadedAudio = false;
 
@@ -501,7 +501,7 @@ namespace RealismMod
 
         void Awake()
         {
-    /*        try
+            try
             {
                 getPaths();
                 configCheck();
@@ -516,241 +516,253 @@ namespace RealismMod
 
             Hook = new GameObject();
             MountingUIComponent = Hook.AddComponent<MountingUI>();
-            DontDestroyOnLoad(Hook);*/
+            DontDestroyOnLoad(Hook);
 
             initConfigs();
 
+            new DamageInfoPatch().Enable();
             new ApplyArmorDamagePatch().Enable();
             new PenStatusPatch().Enable();
             new ApplyDamageInfoPatch().Enable();
-            new ApplyDamagePatch().Enable();
-            new WeaponStatsPatch().Enable();
-            new RecoilIndexPatch().Enable();
-            new GetCurrentRecoilEffectPatch().Enable();
-     /*       new SetStableModePatch().Enable();*/
+            new IsPenetratedPatch().Enable();
+            new ShouldFragPatch().Enable();
+
+            new ApplyComplexRotationPatch().Enable();
+            new SetTiltPatch().Enable();
+            new RotatePatch().Enable();
+            new ZeroAdjustmentsPatch().Enable();
+            new InitTransformsPatch().Enable();
+            new OnWeaponDrawPatch().Enable();
+
+            new ShootPatch().Enable();
+
+            /*            new SetSkinPatch().Enable();*/
 
 
-            /*  if (ModConfig.recoil_attachment_overhaul)
-              {
-                  //Stat assignment patches
-                  new COIDeltaPatch().Enable();
-                  new TotalShotgunDispersionPatch().Enable();
-                  new GetDurabilityLossOnShotPatch().Enable();
-                  new AutoFireRatePatch().Enable();
-                  new SingleFireRatePatch().Enable();
-                  new ErgoDeltaPatch().Enable();
-                  new ErgoWeightPatch().Enable();
-                  new method_9Patch().Enable();
 
-                  new SyncWithCharacterSkillsPatch().Enable();
-                  new UpdateWeaponVariablesPatch().Enable();
-                  new SetAimingSlowdownPatch().Enable();
 
-                  //Sway and Aim Inertia
-                  new PwaWeaponParamsPatch().Enable();
-                  new UpdateSwayFactorsPatch().Enable();
-                  new GetOverweightPatch().Enable();
-                  new SetOverweightPatch().Enable();
-                  new BreathProcessPatch().Enable();
+            if (ModConfig.recoil_attachment_overhaul)
+            {
+                //Stat assignment patches
+                new COIDeltaPatch().Enable();
+                new TotalShotgunDispersionPatch().Enable();
+                new GetDurabilityLossOnShotPatch().Enable();
+                new AutoFireRatePatch().Enable();
+                new SingleFireRatePatch().Enable();
+                new ErgoDeltaPatch().Enable();
+                new ErgoWeightPatch().Enable();
+                new method_9Patch().Enable();
 
-                  //Recoil Patches
-                  new OnWeaponParametersChangedPatch().Enable();
-                  new ProcessPatch().Enable();
-                  new ShootPatch().Enable();
-                  new SetCurveParametersPatch().Enable();
-                  new RecoilRotatePatch().Enable();
+  /*              new SyncWithCharacterSkillsPatch().Enable();
+                new UpdateWeaponVariablesPatch().Enable();
+                new SetAimingSlowdownPatch().Enable();
 
-                  //Aiming Patches
-                  new SetAimingPatch().Enable();
-                  new ToggleAimPatch().Enable();
+                //Sway and Aim Inertia
+                new PwaWeaponParamsPatch().Enable();
+                new UpdateSwayFactorsPatch().Enable();
+                new GetOverweightPatch().Enable();
+                new SetOverweightPatch().Enable();
+                new BreathProcessPatch().Enable();
 
-                  if (Plugin.EnableParralax.Value) 
-                  {
-                      new CalibrationLookAt().Enable();
-                      new CalibrationLookAtScope().Enable();
-                  }
+                //Recoil Patches
+                new OnWeaponParametersChangedPatch().Enable();
+                new ProcessPatch().Enable();*/
+                new ShootPatch().Enable();
+/*                new SetCurveParametersPatch().Enable();
+                new RecoilRotatePatch().Enable();
 
-                  //Malf Patches
-                  if (Plugin.EnableMalfPatch.Value && ModConfig.malf_changes)
-                  {
-                      new GetTotalMalfunctionChancePatch().Enable();
-                  }
-                  if (Plugin.InspectionlessMalfs.Value)
-                  {
-                      new IsKnownMalfTypePatch().Enable();
-                  }
+                //Aiming Patches
+                new SetAimingPatch().Enable();
+                new ToggleAimPatch().Enable();
 
-                  //Reload Patches
-                  if (Plugin.EnableReloadPatches.Value)
-                  {
-                      new CanStartReloadPatch().Enable();
-                      new ReloadMagPatch().Enable();
-                      new QuickReloadMagPatch().Enable();
-                      new ReloadWithAmmoPatch().Enable();
-                      new ReloadBarrelsPatch().Enable();
-                      new ReloadCylinderMagazinePatch().Enable();
+                if (Plugin.EnableParralax.Value)
+                {
+                    new CalibrationLookAt().Enable();
+                    new CalibrationLookAtScope().Enable();
+                }
 
-                      new OnMagInsertedPatch().Enable();
-                      new SetMagTypeCurrentPatch().Enable();
-                      new SetMagTypeNewPatch().Enable();
-                      new SetMagInWeaponPatch().Enable();
+                //Malf Patches
+                if (Plugin.EnableMalfPatch.Value && ModConfig.malf_changes)
+                {
+                    new GetTotalMalfunctionChancePatch().Enable();
+                }
+                if (Plugin.InspectionlessMalfs.Value)
+                {
+                    new IsKnownMalfTypePatch().Enable();
+                }*/
 
-                      new SetMalfRepairSpeedPatch().Enable();
-                      new BoltActionReloadPatch().Enable();
+    /*            //Reload Patches
+                if (Plugin.EnableReloadPatches.Value)
+                {
+                    new CanStartReloadPatch().Enable();
+                    new ReloadMagPatch().Enable();
+                    new QuickReloadMagPatch().Enable();
+                    new ReloadWithAmmoPatch().Enable();
+                    new ReloadBarrelsPatch().Enable();
+                    new ReloadCylinderMagazinePatch().Enable();
 
-                      new SetSpeedParametersPatch().Enable();
-                  }
+                    new OnMagInsertedPatch().Enable();
+                    new SetMagTypeCurrentPatch().Enable();
+                    new SetMagTypeNewPatch().Enable();
+                    new SetMagInWeaponPatch().Enable();
 
-                  new CheckAmmoPatch().Enable();
-                  new CheckChamberPatch().Enable();
-                  new RechamberPatch().Enable();
+                    new SetMalfRepairSpeedPatch().Enable();
+                    new BoltActionReloadPatch().Enable();
 
-                  new SetAnimatorAndProceduralValuesPatch().Enable();
-                  new OnItemAddedOrRemovedPatch().Enable();
+                    new SetSpeedParametersPatch().Enable();
+                }
 
-                  if (Plugin.enableSGMastering.Value == true)
-                  {
-                      new SetWeaponLevelPatch().Enable();
-                  }
+                new CheckAmmoPatch().Enable();
+                new CheckChamberPatch().Enable();
+                new RechamberPatch().Enable();
 
-                  //Stat Display Patches
-                  new ModConstructorPatch().Enable();
-                  new WeaponConstructorPatch().Enable();
-                  new HRecoilDisplayStringValuePatch().Enable();
-                  new HRecoilDisplayDeltaPatch().Enable();
-                  new VRecoilDisplayStringValuePatch().Enable();
-                  new VRecoilDisplayDeltaPatch().Enable();
-                  new ModVRecoilStatDisplayPatchFloat().Enable();
-                  new ModVRecoilStatDisplayPatchString().Enable();
-                  new ErgoDisplayDeltaPatch().Enable();
-                  new ErgoDisplayStringValuePatch().Enable();
-                  new COIDisplayDeltaPatch().Enable();
-                  new COIDisplayStringValuePatch().Enable();
-                  new FireRateDisplayStringValuePatch().Enable();
-                  new GetCachedReadonlyQualitiesPatch().Enable();
-                  new CenterOfImpactMOAPatch().Enable();
-                  new ModErgoStatDisplayPatch().Enable();
-                  new GetAttributeIconPatches().Enable();
-                  new HeadsetConstructorPatch().Enable();
-                  new AmmoDuraBurnDisplayPatch().Enable();
-                  new AmmoMalfChanceDisplayPatch().Enable();
-                  new MagazineMalfChanceDisplayPatch().Enable();
-                  new BarrelModClassPatch().Enable();
+                new SetAnimatorAndProceduralValuesPatch().Enable();
+                new OnItemAddedOrRemovedPatch().Enable();
 
-                  if (Plugin.IncreaseCOI.Value == true)
-                  {
-                      new GetTotalCenterOfImpactPatch().Enable();
-                  }
-              }
+                if (Plugin.enableSGMastering.Value == true)
+                {
+                    new SetWeaponLevelPatch().Enable();
+                }
+*/
+                //Stat Display Patches
+                new ModConstructorPatch().Enable();
+                new WeaponConstructorPatch().Enable();
+                new HRecoilDisplayStringValuePatch().Enable();
+                new HRecoilDisplayDeltaPatch().Enable();
+                new VRecoilDisplayStringValuePatch().Enable();
+                new VRecoilDisplayDeltaPatch().Enable();
+                new ModVRecoilStatDisplayPatchFloat().Enable();
+                new ModVRecoilStatDisplayPatchString().Enable();
+                new ErgoDisplayDeltaPatch().Enable();
+                new ErgoDisplayStringValuePatch().Enable();
+                new COIDisplayDeltaPatch().Enable();
+                new COIDisplayStringValuePatch().Enable();
+                new FireRateDisplayStringValuePatch().Enable();
+                new GetCachedReadonlyQualitiesPatch().Enable();
+                new CenterOfImpactMOAPatch().Enable();
+                new ModErgoStatDisplayPatch().Enable();
+                new GetAttributeIconPatches().Enable();
+                new AmmoDuraBurnDisplayPatch().Enable();
+                new AmmoMalfChanceDisplayPatch().Enable();
+                new MagazineMalfChanceDisplayPatch().Enable();
+                new BarrelModClassPatch().Enable();
 
-              //Ballistics
-              if (ModConfig.realistic_ballistics)
-              {
-                  new CreateShotPatch().Enable();
-                  new ApplyDamagePatch().Enable();
-                  new DamageInfoPatch().Enable();
-                  new ApplyDamageInfoPatch().Enable();
-                  new SetPenetrationStatusPatch().Enable();
+/*                new HeadsetConstructorPatch().Enable();*/
 
-                  if (EnableRagdollFix.Value)
-                  {
-                      new ApplyCorpseImpulsePatch().Enable();
-                      *//*  new RagdollPatch().Enable();*//*
-                  }
+                if (Plugin.IncreaseCOI.Value == true)
+                {
+                    new GetTotalCenterOfImpactPatch().Enable();
+                }
+            }
 
-                  //Armor Class
-                  if (Plugin.EnableRealArmorClass.Value == true)
-                  {
-                      new ArmorClassDisplayPatch().Enable();
-                  }
+            //Ballistics
+            if (ModConfig.realistic_ballistics)
+            {
+       /*         new CreateShotPatch().Enable();*/
+                new ApplyDamagePatch().Enable();
+                new DamageInfoPatch().Enable();
+                new ApplyDamageInfoPatch().Enable();
+/*                new SetPenetrationStatusPatch().Enable();
 
-                  if (Plugin.EnableArmorHitZones.Value)
-                  {
-                      new ArmorZoneBaseDisplayPatch().Enable();
-                      new ArmorZoneSringValueDisplayPatch().Enable();
-                  }
+                if (EnableRagdollFix.Value)
+                {
+                    new ApplyCorpseImpulsePatch().Enable();
+                    new RagdollPatch().Enable();
+                }*/
 
-                  new IsShotDeflectedByHeavyArmorPatch().Enable();
+             /*   //Armor Class
+                if (Plugin.EnableRealArmorClass.Value == true)
+                {
+                    new ArmorClassDisplayPatch().Enable();
+                }
 
-                  if (Plugin.EnableArmPen.Value)
-                  {
-                      new IsPenetratedPatch().Enable();
-                  }
-              }
+                if (Plugin.EnableArmorHitZones.Value)
+                {
+                    new ArmorZoneBaseDisplayPatch().Enable();
+                    new ArmorZoneSringValueDisplayPatch().Enable();
+                }
 
-              //Shot Effects
-              if (Plugin.EnableDeafen.Value && ModConfig.headset_changes && ModConfig.realistic_ballistics && ModConfig.recoil_attachment_overhaul)
-              {
-                  new PrismEffectsPatch().Enable();
-                  new VignettePatch().Enable();
-                  new UpdatePhonesPatch().Enable();
-                  new SetCompressorPatch().Enable();
-                  new RegisterShotPatch().Enable();
-                  new ExplosionPatch().Enable();
-                  new GrenadeClassContusionPatch().Enable();
-                  new CovertMovementVolumePatch().Enable();
-                  new CovertMovementVolumeBySpeedPatch().Enable();
-                  new CovertEquipmentVolumePatch().Enable();
-              }
+                new IsShotDeflectedByHeavyArmorPatch().Enable();*/
 
-              new ArmorComponentPatch().Enable();
-              new RigConstructorPatch().Enable();
-              new BackpackConstructorPatch().Enable();
+                if (Plugin.EnableArmPen.Value)
+                {
+                    new IsPenetratedPatch().Enable();
+                }
+            }
 
-              //Player
-              new PlayerInitPatch().Enable();
-              new ToggleHoldingBreathPatch().Enable();
+/*            //Shot Effects
+            if (Plugin.EnableDeafen.Value && ModConfig.headset_changes && ModConfig.realistic_ballistics && ModConfig.recoil_attachment_overhaul)
+            {
+                new PrismEffectsPatch().Enable();
+                new VignettePatch().Enable();
+                new UpdatePhonesPatch().Enable();
+                new SetCompressorPatch().Enable();
+                new RegisterShotPatch().Enable();
+                new ExplosionPatch().Enable();
+                new GrenadeClassContusionPatch().Enable();
+                new CovertMovementVolumePatch().Enable();
+                new CovertMovementVolumeBySpeedPatch().Enable();
+                new CovertEquipmentVolumePatch().Enable();
+            }
 
-              //Movement
-              if (EnableMaterialSpeed.Value)
-              {
-                  new CalculateSurfacePatch().Enable();
-              }
-              if (EnableMaterialSpeed.Value)
-              {
-                  new CalculateSurfacePatch().Enable();
-                  new ClampSpeedPatch().Enable();
-              }
-              new SprintAccelerationPatch().Enable();
-              new EnduranceSprintActionPatch().Enable();
-              new EnduranceMovementActionPatch().Enable();
+            new ArmorComponentPatch().Enable();
+            new RigConstructorPatch().Enable();
+            new BackpackConstructorPatch().Enable();*/
 
-              //LateUpdate
-              new PlayerLateUpdatePatch().Enable();
+            /*            //Player
+                        new PlayerInitPatch().Enable();
+                        new ToggleHoldingBreathPatch().Enable();*/
 
-              //Stances
-              new ApplyComplexRotationPatch().Enable();
-              new ApplySimpleRotationPatch().Enable();
-              new InitTransformsPatch().Enable();
-              new ZeroAdjustmentsPatch().Enable();
-              new WeaponOverlappingPatch().Enable();
-              new WeaponLengthPatch().Enable();
-              new OnWeaponDrawPatch().Enable();
-              new UpdateHipInaccuracyPatch().Enable();
-              new SetFireModePatch().Enable();
-              new WeaponOverlapViewPatch().Enable();
-              new CollisionPatch().Enable();
-              new OperateStationaryWeaponPatch().Enable();
-              new SetTiltPatch().Enable();
+            /*           //Movement
+                       if (EnableMaterialSpeed.Value)
+                       {
+                           new CalculateSurfacePatch().Enable();
+                       }
+                       if (EnableMaterialSpeed.Value)
+                       {
+                           new CalculateSurfacePatch().Enable();
+                           new ClampSpeedPatch().Enable();
+                       }
+                       new SprintAccelerationPatch().Enable();
+                       new EnduranceSprintActionPatch().Enable();
+                       new EnduranceMovementActionPatch().Enable();*/
 
-              //Health
-              if (EnableMedicalOvehaul.Value && ModConfig.med_changes)
-              {
-                  new ApplyItemPatch().Enable();
-                  new SetQuickSlotPatch().Enable();
-                  new ProceedPatch().Enable();
-                  new RemoveEffectPatch().Enable();
-                  new StamRegenRatePatch().Enable();
-                  new MedkitConstructorPatch().Enable();
-                  new HCApplyDamagePatch().Enable();
-                  new RestoreBodyPartPatch().Enable();
-                  new FlyingBulletPatch().Enable();   
-              }
+            //LateUpdate
+            new PlayerLateUpdatePatch().Enable();
 
-              new BattleUIScreenPatch().Enable();*/
+            //Stances
+            new ApplyComplexRotationPatch().Enable();
+         /*   new ApplySimpleRotationPatch().Enable();*/
+            new InitTransformsPatch().Enable();
+            new ZeroAdjustmentsPatch().Enable();
+/*            new WeaponOverlappingPatch().Enable();
+            new WeaponLengthPatch().Enable();*/
+            new OnWeaponDrawPatch().Enable();
+            new UpdateHipInaccuracyPatch().Enable();
+/*            new SetFireModePatch().Enable();
+            new WeaponOverlapViewPatch().Enable();
+            new CollisionPatch().Enable();
+            new OperateStationaryWeaponPatch().Enable();*/
+            new SetTiltPatch().Enable();
+
+         /*   //Health
+            if (EnableMedicalOvehaul.Value && ModConfig.med_changes)
+            {
+                new ApplyItemPatch().Enable();
+                new SetQuickSlotPatch().Enable();
+                new ProceedPatch().Enable();
+                new RemoveEffectPatch().Enable();
+                new StamRegenRatePatch().Enable();
+                new MedkitConstructorPatch().Enable();
+                new HCApplyDamagePatch().Enable();
+                new RestoreBodyPartPatch().Enable();
+                new FlyingBulletPatch().Enable();
+            }*/
+
+       /*     new BattleUIScreenPatch().Enable();*/
         }
 
-       /* void Update()
+        void Update()
         {
             if ((int)Time.time % 5 == 0 && !warnedUser)
             {
@@ -771,52 +783,56 @@ namespace RealismMod
 
             if (Utils.CheckIsReady())
             {
-                if (!Plugin.HasReloadedAudio) 
+                /*    if (!Plugin.HasReloadedAudio)
+                    {
+                        loadAudioClips();
+                        Plugin.HasReloadedAudio = true;
+                    }
+    */
+                if (RecoilController.ShotCount > RecoilController.PrevShotCount)
                 {
-                    loadAudioClips();
-                    Plugin.HasReloadedAudio = true;
+                    RecoilController.IsFiring = true;
+                    RecoilController.IsFiringWiggle = true;
+                    StanceController.IsFiringFromStance = true;
+                    RecoilController.IsFiringMovement = true;
+                    RecoilController.PrevShotCount = RecoilController.ShotCount;
                 }
 
-                if (ModConfig.recoil_attachment_overhaul)
+                if (RecoilController.ShotCount == RecoilController.PrevShotCount)
                 {
-                    if (RecoilController.ShotCount > RecoilController.PrevShotCount)
+                    RecoilController.WiggleShotTimer += Time.deltaTime;
+                    RecoilController.ShotTimer += Time.deltaTime;
+                    RecoilController.MovementSpeedShotTimer += Time.deltaTime;
+
+                    if (RecoilController.ShotTimer >= Plugin.ResetTime.Value)
                     {
-                        RecoilController.IsFiring = true;
-                        RecoilController.IsFiringWiggle = true;
-                        StanceController.IsFiringFromStance = true;
-                        RecoilController.IsFiringMovement = true;
-                        RecoilController.PrevShotCount = RecoilController.ShotCount;
+                        RecoilController.IsFiring = false;
+                        RecoilController.ShotCount = 0;
+                        RecoilController.PrevShotCount = 0;
+                        RecoilController.ShotTimer = 0f;
                     }
 
-                    if (RecoilController.ShotCount == RecoilController.PrevShotCount)
+                    if (RecoilController.WiggleShotTimer >= 0.1f)
                     {
-                        RecoilController.WiggleShotTimer += Time.deltaTime;
-                        RecoilController.ShotTimer += Time.deltaTime;
-                        RecoilController.MovementSpeedShotTimer += Time.deltaTime;
-
-                        if (RecoilController.ShotTimer >= Plugin.ResetTime.Value)
-                        {
-                            RecoilController.IsFiring = false;
-                            RecoilController.ShotCount = 0;
-                            RecoilController.PrevShotCount = 0;
-                            RecoilController.ShotTimer = 0f;
-                        }
-
-                        if (RecoilController.WiggleShotTimer >= 0.1f)
-                        {
-                            RecoilController.IsFiringWiggle = false;
-                            RecoilController.WiggleShotTimer = 0f;
-                        }
-
-                        if (RecoilController.MovementSpeedShotTimer >= 0.5f)
-                        {
-                            RecoilController.IsFiringMovement = false;
-                            RecoilController.MovementSpeedShotTimer = 0f;
-                        }
-
-        
-                        StanceController.StanceShotTimer();
+                        RecoilController.IsFiringWiggle = false;
+                        RecoilController.WiggleShotTimer = 0f;
                     }
+
+                    if (RecoilController.MovementSpeedShotTimer >= 0.5f)
+                    {
+                        RecoilController.IsFiringMovement = false;
+                        RecoilController.MovementSpeedShotTimer = 0f;
+                    }
+
+
+                    StanceController.StanceShotTimer();
+                }
+
+                StanceController.StanceState();
+
+               /* if (ModConfig.recoil_attachment_overhaul)
+                {
+
 
                     if (Plugin.EnableDeafen.Value && ModConfig.headset_changes && ModConfig.realistic_ballistics && ModConfig.recoil_attachment_overhaul)
                     {
@@ -865,19 +881,19 @@ namespace RealismMod
                     }
                 }
 
-                StanceController.StanceState();
+
 
                 if (Plugin.EnableMedicalOvehaul.Value && ModConfig.med_changes)
                 {
                     healthControllerTick += Time.deltaTime;
                     RealismHealthController.HealthController(Logger);
-                }
+                }*/
             }
             else
             {
                 HasReloadedAudio = false;
             }
-        }*/
+        }
 
         private void initConfigs()
         {

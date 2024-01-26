@@ -1,4 +1,4 @@
-﻿/*using Aki.Reflection.Patching;
+﻿using Aki.Reflection.Patching;
 using EFT.InventoryLogic;
 using EFT;
 using HarmonyLib;
@@ -14,15 +14,15 @@ using EFT.Ballistics;
 using System.ComponentModel;
 using static RootMotion.FinalIK.AimPoser;
 using Random = System.Random;
-using LightStruct = GStruct155;
-using PlayerInterface = GInterface113;
-using CastingClass = GClass570;
+/*using LightStruct = GStruct155;*/
+using PlayerInterface = GInterface127;
+/*using CastingClass = GClass570;
 using HackShotResult = GClass1560;
-using CollisionLayerClass = GClass2783;
+using CollisionLayerClass = GClass2783;*/
 
-namespace RealismMod 
+namespace RealismMod
 {
-    public class LaserLateUpdatePatch : ModulePatch
+  /*  public class LaserLateUpdatePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -53,7 +53,7 @@ namespace RealismMod
             }
         }
     }
-
+*/
     public class OnWeaponDrawPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -71,7 +71,7 @@ namespace RealismMod
         }
     }
 
-    public class SetFireModePatch : ModulePatch
+  /*  public class SetFireModePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -90,9 +90,9 @@ namespace RealismMod
             }
             return false;
         }
-    }
+    }*/
 
-    public class WeaponLengthPatch : ModulePatch
+   /* public class WeaponLengthPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -131,9 +131,9 @@ namespace RealismMod
             }
         }
     }
+*/
 
-
-*//*    public class SprintAnimPatch : ModulePatch
+/*    public class SprintAnimPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -146,9 +146,9 @@ namespace RealismMod
             WeaponAnimationSpeedControllerClass.SetSprint(__instance.Animator, Plugin.test1.Value == 1 ? false : true);
             return false;
         }
-    }*//*
-
-    public class CollisionPatch : ModulePatch
+    }
+*/
+/*    public class CollisionPatch : ModulePatch
     {
         private static FieldInfo playerField;
         private static FieldInfo hitIgnoreField;
@@ -156,7 +156,7 @@ namespace RealismMod
 
         private static int timer = 0;
         private static MaterialType[] allowedMats = { MaterialType.Helmet, MaterialType.BodyArmor, MaterialType.Body, MaterialType.Glass, MaterialType.GlassShattered, MaterialType.GlassVisor };
-        
+
         private static void setMountingStatus(bool isTop, bool isRightide)
         {
             if (isTop)
@@ -230,9 +230,9 @@ namespace RealismMod
                         Func<RaycastHit, bool> isHitIgnoreTest = (Func<RaycastHit, bool>)hitIgnoreField.GetValue(__instance);
                         Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
                         Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(new Vector3(0, -0.6f, 0.05f));
-                        Vector3 meleeDir = meleeStart - linecastDirection * (ln - (WeaponProperties.HasBayonet? 0.1f : 0.4f));
-*//*
-                        DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);*//*
+                        Vector3 meleeDir = meleeStart - linecastDirection * (ln - (WeaponProperties.HasBayonet ? 0.1f : 0.4f));
+
+                        DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);
 
                         EBodyPart hitPart = EBodyPart.Chest;
                         BallisticCollider hitBalls = null;
@@ -275,7 +275,7 @@ namespace RealismMod
                                 DamageInfo damageInfo = new DamageInfo
                                 {
                                     DamageType = EDamageType.Melee,
-                                    Damage = damage, 
+                                    Damage = damage,
                                     PenetrationPower = pen,
                                     ArmorDamage = 10f + (damage / 10f),
                                     Direction = shotDirection.normalized,
@@ -337,12 +337,12 @@ namespace RealismMod
                     Vector3 leftDirection = startLeft - linecastDirection * ln;
                     Vector3 rightDirection = startRight - linecastDirection * ln;
 
-                    *//*          DebugGizmos.SingleObjects.Line(startDown, forwardDirection, Color.red, 0.02f, true, 0.3f, true);
-                              DebugGizmos.SingleObjects.Line(startLeft, leftDirection, Color.green, 0.02f, true, 0.3f, true);
-                              DebugGizmos.SingleObjects.Line(startRight, rightDirection, Color.yellow, 0.02f, true, 0.3f, true);*//*
+                    DebugGizmos.SingleObjects.Line(startDown, forwardDirection, Color.red, 0.02f, true, 0.3f, true);
+                    DebugGizmos.SingleObjects.Line(startLeft, leftDirection, Color.green, 0.02f, true, 0.3f, true);
+                    DebugGizmos.SingleObjects.Line(startRight, rightDirection, Color.yellow, 0.02f, true, 0.3f, true);
                     RaycastHit raycastHit;
                     if (CastingClass.Linecast(startDown, forwardDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastArr, isHitIgnoreTest))
-                    {                
+                    {
                         doStability(true, false, weapClass);
                         StanceController.CoverWiggleDirection = new Vector3(wiggleAmount, 0f, 0f);
                         StanceController.CoverDirection = new Vector3(0f, -moveToCoverOffset, 0f);
@@ -369,9 +369,9 @@ namespace RealismMod
                 }
             }
         }
-    }
+    }*/
 
-    public class WeaponOverlapViewPatch : ModulePatch
+/*    public class WeaponOverlapViewPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -422,7 +422,7 @@ namespace RealismMod
                     }
                     return;
                 }
-                else 
+                else
                 {
                     if (StanceController.IsHighReady || StanceController.IsLowReady || StanceController.IsShortStock)
                     {
@@ -440,7 +440,7 @@ namespace RealismMod
             }
         }
     }
-
+*/
 
     public class InitTransformsPatch : ModulePatch
     {
@@ -537,7 +537,7 @@ namespace RealismMod
                         __instance.HandsContainer.HandsRotation.Zero = __instance.RotationZeroSum;
                         return false;
                     }
-                    else 
+                    else
                     {
                         targetPosition = Vector3.zero;
                     }
@@ -653,7 +653,7 @@ namespace RealismMod
         }
     }
 
-    public class ApplySimpleRotationPatch : ModulePatch
+    /*public class ApplySimpleRotationPatch : ModulePatch
     {
         private static FieldInfo aimSpeedField;
         private static FieldInfo blindFireStrength;
@@ -677,7 +677,7 @@ namespace RealismMod
         private static bool isResettingHighReady = false;
         private static bool isResettingShortStock = false;
         private static bool isResettingPistol = false;
-        private static bool isResettingMelee= false;
+        private static bool isResettingMelee = false;
 
         private static Quaternion currentRotation = Quaternion.identity;
         private static Quaternion stanceRotation = Quaternion.identity;
@@ -768,7 +768,7 @@ namespace RealismMod
                             hasResetShortStock = true;
                             StanceController.DoPistolStances(true, __instance, ref stanceRotation, dt, ref hasResetPistolPos, player, Logger, ref stanceRotationSpeed, ref isResettingPistol, fc);
                         }
-                        else if(!isPistol || WeaponProperties.HasShoulderContact)
+                        else if (!isPistol || WeaponProperties.HasShoulderContact)
                         {
                             if ((!isInStance && allStancesReset) || (cancelBecauseShooting && !isInShootableStance) || Plugin.IsAiming || cancelStance || Plugin.IsBlindFiring)
                             {
@@ -925,7 +925,7 @@ namespace RealismMod
                 }
             }
         }
-    }
+    }*/
 
     public class ApplyComplexRotationPatch : ModulePatch
     {
@@ -1014,7 +1014,7 @@ namespace RealismMod
                     StanceController.DoMounting(Logger, player, __instance, fc, ref weaponWorldPos, ref mountWeapPosition, dt, __instance.HandsContainer.WeaponRoot.position);
 
                     __instance.DeferredRotateWithCustomOrder(__instance.HandsContainer.WeaponRootAnim, weapRootPivot, handsRotation);
-                    Vector3 recoilVector = __instance.HandsContainer.Recoil.Get();
+                    Vector3 recoilVector = __instance.Shootingg.CurrentRecoilEffect.GetHandRotationRecoil();
                     if (recoilVector.magnitude > 1E-45f)
                     {
                         if (fovScale < 1f && __instance.ShotNeedsFovAdjustments)
@@ -1034,7 +1034,7 @@ namespace RealismMod
                     bool isInShootableStance = StanceController.IsShortStock || StanceController.IsActiveAiming || isPistol || StanceController.IsMeleeAttack;
                     bool cancelBecauseShooting = StanceController.IsFiringFromStance && !isInShootableStance;
                     bool doStanceRotation = (isInStance || !allStancesReset || StanceController.PistolIsCompressed) && !cancelBecauseShooting;
-                    bool allowActiveAimReload = Plugin.ActiveAimReload.Value && PlayerProperties.IsInReloadOpertation && !PlayerProperties.IsAttemptingToReloadInternalMag && !PlayerProperties.IsQuickReloading;
+                    bool allowActiveAimReload = Plugin.ActiveAimReload.Value && PlayerStats.IsInReloadOpertation && !PlayerStats.IsAttemptingToReloadInternalMag && !PlayerStats.IsQuickReloading;
                     bool cancelStance = (StanceController.CancelActiveAim && StanceController.IsActiveAiming && !allowActiveAimReload) || (StanceController.CancelHighReady && StanceController.IsHighReady) || (StanceController.CancelLowReady && StanceController.IsLowReady) || (StanceController.CancelShortStock && StanceController.IsShortStock) || (StanceController.CancelPistolStance && StanceController.PistolIsCompressed);
 
                     currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? aimingQuat : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
@@ -1066,7 +1066,7 @@ namespace RealismMod
                         hasResetShortStock = true;
                         StanceController.DoPistolStances(false, __instance, ref stanceRotation, dt, ref hasResetPistolPos, player, Logger, ref stanceRotationSpeed, ref isResettingPistol, fc);
                     }
-                    else if (!isPistol || WeaponProperties.HasShoulderContact)
+                    else if (!isPistol || WeaponStats.HasShoulderContact)
                     {
                         if ((!isInStance && allStancesReset) || (cancelBecauseShooting && !isInShootableStance) || Plugin.IsAiming || cancelStance || Plugin.IsBlindFiring)
                         {
@@ -1097,4 +1097,3 @@ namespace RealismMod
         }
     }
 }
-*/
