@@ -43,13 +43,13 @@ namespace RealismMod
         {
             if (RecoilController.IsFiringWiggle)
             {
-                float cantedRecoilAmount = Plugin.test1.Value / 20f; // h
-                float cantedRecoilSpeed = Mathf.Max(Plugin.test2.Value * 0.85f, 14f); // conv
+                float cantedRecoilAmount = FactoredTotalHRecoil / 20f;
+                float cantedRecoilSpeed = Mathf.Max(BaseTotalConvergence * 0.85f, 14f);
                 float totalCantedRecoil = Mathf.Lerp(-cantedRecoilAmount, cantedRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f));
 
                 if (Plugin.EnableAdditionalRec.Value)
                 {
-                    float additionalRecoilAmount = Plugin.test3.Value / 18f; //disp
+                    float additionalRecoilAmount = FactoredTotalDispersion / 18f;
                     float totalSideRecoil = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f)) * 0.05f;
                     float totalVertical = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed * 1.5f, 1.0f)) * 0.1f;
                     targetRecoil = new Vector3(totalVertical, totalCantedRecoil, totalSideRecoil) * Plugin.VisRecoilMulti.Value;
@@ -69,9 +69,9 @@ namespace RealismMod
             weapRotation *= recoilQ;
         }
 
-   /*     public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weapon)
+        public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weapon)
         {
-            float dampingUpperLimit = Plugin.IsAiming && Plugin.HasOptic ? 0.74f : 0.9f;
+   /*         float dampingUpperLimit = Plugin.IsAiming && Plugin.HasOptic ? 0.74f : 0.9f;
             float dampingLowerLimit = Plugin.IsAiming && Plugin.HasOptic ? 0.5f : 0.5f;
             float opticFactor = Plugin.IsAiming && Plugin.HasOptic ? 0.92f : 1f;
             pwa.HandsContainer.Recoil.Damping = Mathf.Clamp(RecoilController.BaseTotalRecoilDamping * opticFactor, dampingLowerLimit, dampingUpperLimit);
@@ -84,8 +84,10 @@ namespace RealismMod
             else
             {
                 pwa.HandsContainer.Recoil.ReturnSpeed = RecoilController.BaseTotalConvergence;
-            }
+            }*/
 
-        }*/
+            pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = RecoilController.BaseTotalConvergence;
+
+        }
     }
 }

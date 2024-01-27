@@ -1,13 +1,17 @@
-﻿/*using Aki.Reflection.Patching;
+﻿using Aki.Reflection.Patching;
 using BepInEx.Logging;
+using Comfort.Common;
 using EFT;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using static EFT.Player;
+using static CW2.Animations.PhysicsSimulator.Val;
+using MagReloadClass = EFT.Player.FirearmController.GClass1607;
+using RechamberClass = EFT.Player.FirearmController.GClass1619;
 
 namespace RealismMod
 {
@@ -15,24 +19,24 @@ namespace RealismMod
     {
         public static void ReloadStateCheck(Player player, EFT.Player.FirearmController fc, ManualLogSource logger)
         {
-            PlayerProperties.IsInReloadOpertation = fc.IsInReloadOperation();
+            PlayerStats.IsInReloadOpertation = fc.IsInReloadOperation();
 
-            if (PlayerProperties.IsInReloadOpertation)
+            if (PlayerStats.IsInReloadOpertation)
             {
                 StanceController.IsPatrolStance = false;
                 StanceController.CancelShortStock = true;
                 StanceController.CancelPistolStance = true;
                 StanceController.CancelActiveAim = true;
 
-                if (PlayerProperties.IsAttemptingToReloadInternalMag == true)
+                if (PlayerStats.IsAttemptingToReloadInternalMag == true)
                 {
                     StanceController.CancelHighReady = fc.Item.WeapClass != "shotgun" ? true : false;
                     StanceController.CancelLowReady = fc.Item.WeapClass == "shotgun" || fc.Item.WeapClass == "pistol" ? true : false;
 
                     float highReadyBonus = fc.Item.WeapClass == "shotgun" && StanceController.IsHighReady == true ? StanceController.HighReadyManipBuff : 1f;
                     float lowReadyBonus = fc.Item.WeapClass != "shotgun" && StanceController.IsLowReady == true ? StanceController.LowReadyManipBuff : 1f;
-         
-                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * (Mathf.Max(PlayerProperties.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.4f);
+
+                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerStats.ReloadSkillMulti * PlayerStats.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.4f);
                     player.HandsAnimator.SetAnimationSpeed(IntenralMagReloadSpeed);
 
                     if (Plugin.EnableLogging.Value == true)
@@ -43,8 +47,8 @@ namespace RealismMod
             }
             else
             {
-                PlayerProperties.IsAttemptingToReloadInternalMag = false;
-                PlayerProperties.IsAttemptingRevolverReload = false;
+                PlayerStats.IsAttemptingToReloadInternalMag = false;
+                PlayerStats.IsAttemptingRevolverReload = false;
             }
         }
     }
@@ -54,7 +58,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(FirearmsAnimator).GetMethod("SetSpeedParameters", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(FirearmsAnimator).GetMethod("SetSpeedParameters", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
@@ -103,7 +107,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance, float weaponLevel)
         {
-            if (WeaponProperties._WeapClass == "shotgun")
+            if (WeaponStats._WeapClass == "shotgun")
             {
                 if (weaponLevel < 3)
                 {
@@ -128,15 +132,15 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer)
             {
-                if (Plugin.EnableReloadPatches.Value) 
+                if (Plugin.EnableReloadPatches.Value)
                 {
                     float bonus = Plugin.GlobalCheckAmmoMulti.Value;
-                    if (WeaponProperties._WeapClass == "pistol")
+                    if (WeaponStats._WeapClass == "pistol")
                     {
                         bonus = Plugin.GlobalCheckAmmoPistolSpeedMulti.Value;
                     }
 
-                    float totalCheckAmmoPatch = Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * StanceController.HighReadyManipBuff * (Mathf.Max(PlayerProperties.RemainingArmStamPercReload, 0.7f)) * bonus, 0.6f, 1.3f);
+                    float totalCheckAmmoPatch = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerStats.ReloadSkillMulti * PlayerStats.ReloadInjuryMulti * StanceController.HighReadyManipBuff * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)) * bonus, 0.6f, 1.3f);
                     __instance.FirearmsAnimator.SetAnimationSpeed(totalCheckAmmoPatch);
 
                     if (Plugin.EnableLogging.Value == true)
@@ -150,7 +154,7 @@ namespace RealismMod
                 StanceController.CancelLowReady = true;
                 StanceController.CancelShortStock = true;
                 StanceController.CancelActiveAim = true;
-                *//*StanceController.CancelPistolStance = true;*//*
+                StanceController.CancelPistolStance = true;
             }
         }
     }
@@ -170,12 +174,12 @@ namespace RealismMod
             {
                 if (Plugin.EnableReloadPatches.Value)
                 {
-                    float chamberSpeed = WeaponProperties.TotalChamberCheckSpeed;
-                    if (WeaponProperties._WeapClass == "pistol")
+                    float chamberSpeed = WeaponStats.TotalChamberCheckSpeed;
+                    if (WeaponStats._WeapClass == "pistol")
                     {
                         chamberSpeed *= Plugin.GlobalCheckChamberPistolSpeedMulti.Value;
                     }
-                    else if (WeaponProperties._WeapClass == "shotgun")
+                    else if (WeaponStats._WeapClass == "shotgun")
                     {
                         chamberSpeed *= Plugin.GlobalCheckChamberShotgunSpeedMulti.Value;
                     }
@@ -184,7 +188,7 @@ namespace RealismMod
                         chamberSpeed *= Plugin.GlobalCheckChamberSpeedMulti.Value;
                     }
 
-                    float totalCheckChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.8f);
+                    float totalCheckChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerStats.FixSkillMulti * PlayerStats.ReloadInjuryMulti * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.8f);
                     __instance.FirearmsAnimator.SetAnimationSpeed(totalCheckChamberSpeed);
 
                     if (Plugin.EnableLogging.Value == true)
@@ -208,22 +212,22 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player.FirearmController).GetMethod("InitiateShot", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Player.FirearmController).GetMethod("InitiateShot", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static void PatchPrefix(Player.FirearmController __instance)
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
-            if (player.IsYourPlayer && ((WeaponProperties._IsManuallyOperated || __instance.Item.IsGrenadeLauncher || __instance.Item.IsUnderBarrelDeviceActive)))
+            if (player.IsYourPlayer && ((WeaponStats._IsManuallyOperated || __instance.Item.IsGrenadeLauncher || __instance.Item.IsUnderBarrelDeviceActive)))
             {
-                float chamberSpeed = WeaponProperties.TotalFiringChamberSpeed;
+                float chamberSpeed = WeaponStats.TotalFiringChamberSpeed;
                 float ammoRec = __instance.Item.CurrentAmmoTemplate.ammoRec;
                 float ammoFactor = ammoRec < 0 ? 1f + (ammoRec / 100f) : 1f + (ammoRec / 150f);
                 ammoFactor = 2f - ammoFactor;
                 float stanceModifier = 1f;
 
-                if (WeaponProperties._WeapClass == "shotgun")
+                if (WeaponStats._WeapClass == "shotgun")
                 {
                     chamberSpeed *= Plugin.GlobalShotgunRackSpeedFactor.Value;
                     stanceModifier = StanceController.IsBracing ? 1.1f : StanceController.IsMounting ? 1.2f : StanceController.IsActiveAiming ? 1.35f : 1f;
@@ -232,12 +236,12 @@ namespace RealismMod
                 {
                     chamberSpeed *= Plugin.GlobalUBGLReloadMulti.Value;
                 }
-                if (WeaponProperties._WeapClass == "sniperRifle")
+                if (WeaponStats._WeapClass == "sniperRifle")
                 {
                     chamberSpeed *= Plugin.GlobalBoltSpeedMulti.Value;
                     stanceModifier = StanceController.IsBracing ? 1.2f : StanceController.IsMounting ? 1.4f : StanceController.IsActiveAiming ? 1.15f : 1f;
                 }
-                float totalChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * stanceModifier * ammoFactor * (Mathf.Max(PlayerProperties.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.3f);
+                float totalChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerStats.ReloadSkillMulti * PlayerStats.ReloadInjuryMulti * stanceModifier * ammoFactor * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.3f);
                 __instance.FirearmsAnimator.SetAnimationSpeed(totalChamberSpeed);
 
                 if (Plugin.EnableLogging.Value == true)
@@ -254,13 +258,13 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(FirearmsAnimator).GetMethod("SetMalfRepairSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(FirearmsAnimator).GetMethod("SetMalfRepairSpeed", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static void Prefix(FirearmsAnimator __instance, float fix)
         {
-            float totalFixSpeed = Mathf.Clamp(fix * WeaponProperties.TotalFixSpeed * PlayerProperties.ReloadInjuryMulti * Plugin.GlobalFixSpeedMulti.Value * (Mathf.Max(PlayerProperties.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.15f);
+            float totalFixSpeed = Mathf.Clamp(fix * WeaponStats.TotalFixSpeed * PlayerStats.ReloadInjuryMulti * Plugin.GlobalFixSpeedMulti.Value * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.15f);
             WeaponAnimationSpeedControllerClass.SetSpeedFix(__instance.Animator, totalFixSpeed);
             __instance.SetAnimationSpeed(totalFixSpeed);
 
@@ -277,20 +281,20 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player.FirearmController.GClass1510).GetMethod("Start", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(RechamberClass).GetMethod("Start", new Type[] { typeof(BulletClass), typeof(Callback) });
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController.GClass1510 __instance)
+        private static void PatchPostfix(RechamberClass __instance)
         {
-            Player player = (Player)AccessTools.Field(typeof(Player.FirearmController.GClass1472), "player_0").GetValue(__instance);
+            Player player = (Player)AccessTools.Field(typeof(Player.FirearmController.GClass1581), "player_0").GetValue(__instance);
             if (player.IsYourPlayer)
             {
                 if (Plugin.EnableReloadPatches.Value)
                 {
 
-                    float chamberSpeed = WeaponProperties.TotalFixSpeed;
-                    if (WeaponProperties._WeapClass == "pistol")
+                    float chamberSpeed = WeaponStats.TotalFixSpeed;
+                    if (WeaponStats._WeapClass == "pistol")
                     {
                         chamberSpeed *= Plugin.RechamberPistolSpeedMulti.Value;
                     }
@@ -299,9 +303,9 @@ namespace RealismMod
                         chamberSpeed *= Plugin.GlobalRechamberSpeedMulti.Value;
                     }
 
-                    float totalRechamberSpeed = Mathf.Clamp(chamberSpeed * PlayerProperties.FixSkillMulti * PlayerProperties.ReloadInjuryMulti * (Mathf.Max(PlayerProperties.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.5f);
+                    float totalRechamberSpeed = Mathf.Clamp(chamberSpeed * PlayerStats.FixSkillMulti * PlayerStats.ReloadInjuryMulti * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.5f);
 
-                    FirearmsAnimator fa = (FirearmsAnimator)AccessTools.Field(typeof(Player.FirearmController.GClass1472), "firearmsAnimator_0").GetValue(__instance);
+                    FirearmsAnimator fa = (FirearmsAnimator)AccessTools.Field(typeof(Player.FirearmController.GClass1581), "firearmsAnimator_0").GetValue(__instance);
                     fa.SetAnimationSpeed(totalRechamberSpeed);
 
                     if (Plugin.EnableLogging.Value == true)
@@ -335,11 +339,11 @@ namespace RealismMod
                 {
                     if (__instance.Item.GetCurrentMagazine() == null)
                     {
-                        PlayerProperties.NoCurrentMagazineReload = true;
+                        PlayerStats.NoCurrentMagazineReload = true;
                     }
                     else
                     {
-                        PlayerProperties.NoCurrentMagazineReload = false;
+                        PlayerStats.NoCurrentMagazineReload = false;
                     }
                 }
             }
@@ -386,7 +390,7 @@ namespace RealismMod
             if (player.IsYourPlayer == true)
             {
                 StatCalc.SetMagReloadSpeeds(__instance, magazine, true);
-                PlayerProperties.IsQuickReloading = true;
+                PlayerStats.IsQuickReloading = true;
 
                 if (Plugin.EnableLogging.Value == true)
                 {
@@ -410,8 +414,8 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                PlayerProperties.IsAttemptingToReloadInternalMag = true;
-                PlayerProperties.IsAttemptingRevolverReload = true;
+                PlayerStats.IsAttemptingToReloadInternalMag = true;
+                PlayerStats.IsAttemptingRevolverReload = true;
 
                 if (Plugin.EnableLogging.Value == true)
                 {
@@ -435,7 +439,7 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                PlayerProperties.IsAttemptingToReloadInternalMag = true;
+                PlayerStats.IsAttemptingToReloadInternalMag = true;
 
                 if (Plugin.EnableLogging.Value == true)
                 {
@@ -459,7 +463,7 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                PlayerProperties.IsAttemptingToReloadInternalMag = true;
+                PlayerStats.IsAttemptingToReloadInternalMag = true;
 
                 if (Plugin.EnableLogging.Value == true)
                 {
@@ -475,18 +479,18 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player.FirearmController.GClass1498).GetMethod("Start", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(MagReloadClass).GetMethod("Start", new Type[] { typeof(Player.FirearmController.GClass1573), typeof(Callback) });
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController.GClass1498 __instance)
+        private static void PatchPostfix(MagReloadClass __instance)
         {
-            Player player = (Player)AccessTools.Field(typeof(Player.FirearmController.GClass1472), "player_0").GetValue(__instance);
-            if (player.IsYourPlayer) 
+            Player player = (Player)AccessTools.Field(typeof(Player.FirearmController.GClass1581), "player_0").GetValue(__instance);
+            if (player.IsYourPlayer)
             {
-                FirearmsAnimator fa = (FirearmsAnimator)AccessTools.Field(typeof(Player.FirearmController.GClass1472), "firearmsAnimator_0").GetValue(__instance);
+                FirearmsAnimator fa = (FirearmsAnimator)AccessTools.Field(typeof(Player.FirearmController.GClass1581), "firearmsAnimator_0").GetValue(__instance);
 
-                float totalReloadSpeed = Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerProperties.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.3f);
+                float totalReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerStats.ReloadSkillMulti * PlayerStats.ReloadInjuryMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.3f);
                 fa.SetAnimationSpeed(totalReloadSpeed);
 
                 if (Plugin.EnableLogging.Value == true)
@@ -510,7 +514,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            float totalReloadSpeed = Mathf.Clamp(WeaponProperties.CurrentMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerProperties.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.3f);
+            float totalReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerStats.ReloadSkillMulti * PlayerStats.ReloadInjuryMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.3f);
             __instance.SetAnimationSpeed(totalReloadSpeed);
 
             if (Plugin.EnableLogging.Value == true)
@@ -533,24 +537,24 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            if (PlayerProperties.IsMagReloading == true)
+            if (PlayerStats.IsMagReloading == true)
             {
-                float totalReloadSpeed = Mathf.Clamp(WeaponProperties.NewMagReloadSpeed * PlayerProperties.ReloadSkillMulti * PlayerProperties.ReloadInjuryMulti * PlayerProperties.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerProperties.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.3f);
+                float totalReloadSpeed = Mathf.Clamp(WeaponStats.NewMagReloadSpeed * PlayerStats.ReloadSkillMulti * PlayerStats.ReloadInjuryMulti * PlayerStats.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.3f);
                 __instance.SetAnimationSpeed(totalReloadSpeed);
 
                 if (Plugin.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===SetMagInWeapon===");
                     Logger.LogWarning("SetMagInWeapon = " + totalReloadSpeed);
-                    Logger.LogWarning("ReloadSkillMulti = " + PlayerProperties.ReloadSkillMulti);
-                    Logger.LogWarning("ReloadInjuryMulti = " + PlayerProperties.ReloadInjuryMulti);
-                    Logger.LogWarning("GearReloadMulti = " + PlayerProperties.GearReloadMulti);
+                    Logger.LogWarning("ReloadSkillMulti = " + PlayerStats.ReloadSkillMulti);
+                    Logger.LogWarning("ReloadInjuryMulti = " + PlayerStats.ReloadInjuryMulti);
+                    Logger.LogWarning("GearReloadMulti = " + PlayerStats.GearReloadMulti);
                     Logger.LogWarning("HighReadyManipBuff = " + StanceController.HighReadyManipBuff);
-                    Logger.LogWarning("RemainingArmStamPercReload = " + (Mathf.Max(PlayerProperties.RemainingArmStamPercReload, 0.7f)));
-                    Logger.LogWarning("NewMagReloadSpeed = " + WeaponProperties.NewMagReloadSpeed);
+                    Logger.LogWarning("RemainingArmStamPercReload = " + (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)));
+                    Logger.LogWarning("NewMagReloadSpeed = " + WeaponStats.NewMagReloadSpeed);
                     Logger.LogWarning("=============");
                 }
-     
+
             }
         }
     }
@@ -560,7 +564,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player.FirearmController).GetMethod("method_47", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Player.FirearmController).GetMethod("method_47", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
@@ -570,8 +574,8 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                PlayerProperties.IsMagReloading = false;
-                PlayerProperties.IsQuickReloading = false;
+                PlayerStats.IsMagReloading = false;
+                PlayerStats.IsQuickReloading = false;
                 player.HandsAnimator.SetAnimationSpeed(1);
 
                 if (Plugin.EnableLogging.Value == true)
@@ -583,4 +587,3 @@ namespace RealismMod
         }
     }
 }
-*/

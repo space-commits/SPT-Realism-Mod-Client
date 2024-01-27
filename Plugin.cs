@@ -37,7 +37,6 @@ namespace RealismMod
 
         public static ConfigEntry<bool> EnableParralax { get; set; }
         public static ConfigEntry<float> ResetTime { get; set; }
-        public static ConfigEntry<float> ConvergenceSpeedCurve { get; set; }
         public static ConfigEntry<float> SwayIntensity { get; set; }
         public static ConfigEntry<float> RecoilIntensity { get; set; }
         public static ConfigEntry<float> VertMulti { get; set; }
@@ -520,27 +519,6 @@ namespace RealismMod
 
             initConfigs();
 
-            new DamageInfoPatch().Enable();
-            new ApplyArmorDamagePatch().Enable();
-            new PenStatusPatch().Enable();
-            new ApplyDamageInfoPatch().Enable();
-            new IsPenetratedPatch().Enable();
-            new ShouldFragPatch().Enable();
-
-            new ApplyComplexRotationPatch().Enable();
-            new SetTiltPatch().Enable();
-            new RotatePatch().Enable();
-            new ZeroAdjustmentsPatch().Enable();
-            new InitTransformsPatch().Enable();
-            new OnWeaponDrawPatch().Enable();
-
-            new ShootPatch().Enable();
-
-            /*            new SetSkinPatch().Enable();*/
-
-
-
-
             if (ModConfig.recoil_attachment_overhaul)
             {
                 //Stat assignment patches
@@ -551,31 +529,32 @@ namespace RealismMod
                 new SingleFireRatePatch().Enable();
                 new ErgoDeltaPatch().Enable();
                 new ErgoWeightPatch().Enable();
-                new method_9Patch().Enable();
+                new PlayerErgoPatch().Enable();
 
-  /*              new SyncWithCharacterSkillsPatch().Enable();
-                new UpdateWeaponVariablesPatch().Enable();
+                new SyncWithCharacterSkillsPatch().Enable();
+/*                new UpdateWeaponVariablesPatch().Enable();*/
                 new SetAimingSlowdownPatch().Enable();
 
-                //Sway and Aim Inertia
+/*                //Sway and Aim Inertia
                 new PwaWeaponParamsPatch().Enable();
                 new UpdateSwayFactorsPatch().Enable();
                 new GetOverweightPatch().Enable();
                 new SetOverweightPatch().Enable();
-                new BreathProcessPatch().Enable();
+                new BreathProcessPatch().Enable();*/
 
                 //Recoil Patches
                 new OnWeaponParametersChangedPatch().Enable();
-                new ProcessPatch().Enable();*/
+                new ProcessPatch().Enable();
+                new RecoilAnglesPatch().Enable();
                 new ShootPatch().Enable();
-/*                new SetCurveParametersPatch().Enable();
-                new RecoilRotatePatch().Enable();
+                /*new RecoilRotatePatch().Enable();*/
+
 
                 //Aiming Patches
                 new SetAimingPatch().Enable();
                 new ToggleAimPatch().Enable();
 
-                if (Plugin.EnableParralax.Value)
+       /*         if (Plugin.EnableParralax.Value)
                 {
                     new CalibrationLookAt().Enable();
                     new CalibrationLookAtScope().Enable();
@@ -591,7 +570,7 @@ namespace RealismMod
                     new IsKnownMalfTypePatch().Enable();
                 }*/
 
-    /*            //Reload Patches
+                //Reload Patches
                 if (Plugin.EnableReloadPatches.Value)
                 {
                     new CanStartReloadPatch().Enable();
@@ -623,7 +602,7 @@ namespace RealismMod
                 {
                     new SetWeaponLevelPatch().Enable();
                 }
-*/
+
                 //Stat Display Patches
                 new ModConstructorPatch().Enable();
                 new WeaponConstructorPatch().Enable();
@@ -659,9 +638,9 @@ namespace RealismMod
             if (ModConfig.realistic_ballistics)
             {
        /*         new CreateShotPatch().Enable();*/
-                new ApplyDamagePatch().Enable();
+/*                new ApplyDamagePatch().Enable();
                 new DamageInfoPatch().Enable();
-                new ApplyDamageInfoPatch().Enable();
+                new ApplyDamageInfoPatch().Enable();*/
 /*                new SetPenetrationStatusPatch().Enable();
 
                 if (EnableRagdollFix.Value)
@@ -686,47 +665,47 @@ namespace RealismMod
 
                 if (Plugin.EnableArmPen.Value)
                 {
-                    new IsPenetratedPatch().Enable();
+              /*      new IsPenetratedPatch().Enable();*/
                 }
             }
 
-/*            //Shot Effects
-            if (Plugin.EnableDeafen.Value && ModConfig.headset_changes && ModConfig.realistic_ballistics && ModConfig.recoil_attachment_overhaul)
+            /*            //Deafen Effects
+                        if (Plugin.EnableDeafen.Value && ModConfig.headset_changes && ModConfig.realistic_ballistics && ModConfig.recoil_attachment_overhaul)
+                        {
+                            new PrismEffectsPatch().Enable();
+                            new VignettePatch().Enable();
+                            new UpdatePhonesPatch().Enable();
+                            new SetCompressorPatch().Enable();
+                            new RegisterShotPatch().Enable();
+                            new ExplosionPatch().Enable();
+                            new GrenadeClassContusionPatch().Enable();
+                            new CovertMovementVolumePatch().Enable();
+                            new CovertMovementVolumeBySpeedPatch().Enable();
+                            new CovertEquipmentVolumePatch().Enable();
+                        }
+
+                        new ArmorComponentPatch().Enable();
+                        new RigConstructorPatch().Enable();
+                        new BackpackConstructorPatch().Enable();*/
+
+            //Player
+            new PlayerInitPatch().Enable();
+            new ToggleHoldingBreathPatch().Enable();
+
+/*            //Movement
+            if (EnableMaterialSpeed.Value)
             {
-                new PrismEffectsPatch().Enable();
-                new VignettePatch().Enable();
-                new UpdatePhonesPatch().Enable();
-                new SetCompressorPatch().Enable();
-                new RegisterShotPatch().Enable();
-                new ExplosionPatch().Enable();
-                new GrenadeClassContusionPatch().Enable();
-                new CovertMovementVolumePatch().Enable();
-                new CovertMovementVolumeBySpeedPatch().Enable();
-                new CovertEquipmentVolumePatch().Enable();
+                new CalculateSurfacePatch().Enable();
             }
-
-            new ArmorComponentPatch().Enable();
-            new RigConstructorPatch().Enable();
-            new BackpackConstructorPatch().Enable();*/
-
-            /*            //Player
-                        new PlayerInitPatch().Enable();
-                        new ToggleHoldingBreathPatch().Enable();*/
-
-            /*           //Movement
-                       if (EnableMaterialSpeed.Value)
-                       {
-                           new CalculateSurfacePatch().Enable();
-                       }
-                       if (EnableMaterialSpeed.Value)
-                       {
-                           new CalculateSurfacePatch().Enable();
-                           new ClampSpeedPatch().Enable();
-                       }
-                       new SprintAccelerationPatch().Enable();
-                       new EnduranceSprintActionPatch().Enable();
-                       new EnduranceMovementActionPatch().Enable();*/
-
+            if (EnableMaterialSpeed.Value)
+            {
+                new CalculateSurfacePatch().Enable();
+                new ClampSpeedPatch().Enable();
+            }
+            new SprintAccelerationPatch().Enable();
+            new EnduranceSprintActionPatch().Enable();
+            new EnduranceMovementActionPatch().Enable();
+*/
             //LateUpdate
             new PlayerLateUpdatePatch().Enable();
 
@@ -944,7 +923,6 @@ namespace RealismMod
             RecoilDispersionSpeed = Config.Bind<float>(advancedRecoilSettings, "S-Pattern Speed Multi", 2f, new ConfigDescription("Increases The Speed At Which Recoil Makes The Classic S Pattern.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 10 }));
             RandomnessMulti = Config.Bind<float>(advancedRecoilSettings, "Randomness Multi", 0.0f, new ConfigDescription("Recoil Amount Shot-To-Shot Is 'Random' Within A Range, Lower Value = Less Randomness.", new AcceptableValueRange<float>(0f, 1.9f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 7 }));
             HRecLimitMulti = Config.Bind<float>(advancedRecoilSettings, "Rearward Recoil Limit Multi", 1.0f, new ConfigDescription("Max Rearward Recoil Limit Multi.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 6 }));
-            ConvergenceSpeedCurve = Config.Bind<float>(advancedRecoilSettings, "Convergence Curve Multi", 1f, new ConfigDescription("The Convergence Curve. Lower Means More Recoil.", new AcceptableValueRange<float>(0.01f, 1.5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 5 }));
             ResetTime = Config.Bind<float>(advancedRecoilSettings, "Reset Delay", 0.14f, new ConfigDescription("The Time In Seconds That Has To Be Elapsed Before Firing Is Considered Over, Recoil Will Not Reset Until It Is Over.", new AcceptableValueRange<float>(0.01f, 0.5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 4 }));
             EnableCrank = Config.Bind<bool>(advancedRecoilSettings, "Rearward Recoil", true, new ConfigDescription("Makes Recoil Go Towards Player's Shoulder Instead Of Forward.", null, new ConfigurationManagerAttributes { IsAdvanced = true, Order = 3 }));
             HandsDampingMulti = Config.Bind<float>(advancedRecoilSettings, "Rearward Recoil Wiggle Multi", 1f, new ConfigDescription("The Amount Of Rearward Wiggle After Firing.", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 2 }));

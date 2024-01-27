@@ -27,7 +27,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref int __result)
         {
-            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
+            if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
                 __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.SemiFireRate * currentAmmoTemplate.casingMass) : WeaponStats.SemiFireRate;
@@ -50,7 +50,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref int __result)
         {
-            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
+            if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
                 __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.AutoFireRate * currentAmmoTemplate.casingMass) : WeaponStats.AutoFireRate;
@@ -65,7 +65,7 @@ namespace RealismMod
 
 
     //this method sets player weapon ergo value. For some reason I've removed the injury penalty? Probably because I already apply injury mulit myself 
-    public class method_9Patch : ModulePatch
+    public class PlayerErgoPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -81,7 +81,7 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                WeaponSkills skillsClass = (WeaponSkills)AccessTools.Field(typeof(EFT.Player.FirearmController), Utils.FirearmControllerSkillClassRef).GetValue(__instance);
+                WeaponSkills skillsClass = (WeaponSkills)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1768_0").GetValue(__instance);
                 __result = Mathf.Max(0f, __instance.Item.ErgonomicsTotal * (1f + skillsClass.DeltaErgonomics + player.ErgonomicsPenalty));
                 return false;
             }
@@ -103,8 +103,9 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
+            if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
+                Logger.LogWarning("===============ERGO DELTA================");
                 ErgoDeltaPatch p = new ErgoDeltaPatch();
                 if (PlayerStats.IsInReloadOpertation)
                 {
@@ -125,6 +126,7 @@ namespace RealismMod
 
         public static float FinalStatCalc(Weapon __instance)
         {
+            Logger.LogWarning("===============FinalStatCalc================");
             WeaponStats._WeapClass = __instance.WeapClass;
             bool isManual = WeaponStats.IsManuallyOperated(__instance);
             WeaponStats._IsManuallyOperated = isManual;
@@ -262,6 +264,7 @@ namespace RealismMod
 
         public static void InitialStaCalc(Weapon __instance)
         {
+            Logger.LogWarning("===============InitialStaCalc================");
             WeaponStats._WeapClass = __instance.WeapClass;
             bool isManual = WeaponStats.IsManuallyOperated(__instance);
             WeaponStats._IsManuallyOperated = isManual;
@@ -452,7 +455,7 @@ namespace RealismMod
         private static bool Prefix(Weapon __instance, ref float __result)
         {
 
-            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
+            if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 __result = WeaponStats.COIDelta;
                 return false;
@@ -475,7 +478,7 @@ namespace RealismMod
         private static bool Prefix(Weapon __instance, ref float __result, bool includeAmmo)
         {
 
-            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
+            if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 float currentSightFactor = 1f;
                 if (Utils.IsReady)
@@ -537,7 +540,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
+            if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 float shotDispLessAmmo = __instance.ShotgunDispersionBase * (1f + WeaponStats.ShotDispDelta);
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
@@ -566,7 +569,7 @@ namespace RealismMod
         private static bool Prefix(Weapon __instance, ref float __result, float ammoBurnRatio, float overheatFactor, float skillWeaponTreatmentFactor, out float modsBurnRatio)
         {
 
-            if (__instance?.Owner?.ID != null && (__instance.Owner.ID.StartsWith("pmc") || __instance.Owner.ID.StartsWith("scav")))
+            if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 modsBurnRatio = WeaponStats.TotalModDuraBurn;
                 __result = (float)__instance.Repairable.TemplateDurability / __instance.Template.OperatingResource * __instance.DurabilityBurnRatio * (modsBurnRatio * ammoBurnRatio) * overheatFactor * (1f - skillWeaponTreatmentFactor); ;
@@ -632,13 +635,12 @@ namespace RealismMod
             if (player.IsYourPlayer == true)
             {
                 float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
-                float dampingFactor = (RecoilController.BaseTotalHandDamping + RecoilController.BaseTotalRecoilDamping);
                 float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
                 float recoilFactor = 1f + (RecoilController.BaseTotalVRecoil + RecoilController.BaseTotalHRecoil) / 100f;
                 float totalPlayerWeight = PlayerStats.TotalUnmodifiedWeight - WeaponStats.TotalWeaponWeight;
                 float playerWeightFactorBuff = 1f + (totalPlayerWeight / 100f);
 
-                WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(0.3f * player.ProceduralWeaponAnimation.Breath.HipPenalty * (1f - WeaponStats.ErgoDelta) * convergenceFactor * dispersionFactor * recoilFactor * dampingFactor * playerWeightFactorBuff, 0.3f, 1f);
+                WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(0.3f * player.ProceduralWeaponAnimation.Breath.HipPenalty * (1f - WeaponStats.ErgoDelta) * convergenceFactor * dispersionFactor * recoilFactor * playerWeightFactorBuff, 0.3f, 1f);
             }
         }
     }

@@ -13,7 +13,6 @@ namespace RealismMod
         public static bool HasRunErgoWeightCalc = false;
 
         public static string SetQuickSlotItemInvClassRef = "GClass2572_0";
-        public static string FirearmControllerSkillClassRef = "gclass1638_0";
 
         public static string Silencer = "550aa4cd4bdc2dd8348b456c";
         public static string FlashHider = "550aa4bf4bdc2dd6348b456b";

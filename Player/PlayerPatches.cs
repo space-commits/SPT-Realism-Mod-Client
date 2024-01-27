@@ -11,15 +11,14 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-/*using WeaponSkills = EFT.SkillManager.GClass1638;
-using ProcessorClass = GClass2039;
-using StaminaLevelClass = GClass674<float>;
-using WeightClass = GClass675<float>;*/
-using EFT.UI;
+using WeaponSkills = EFT.SkillManager.GClass1768;
+using StaminaLevelClass = GClass750<float>;
+using WeightClass = GClass751<float>;
+/*using ProcessorClass = GClass2039;*/
 
 namespace RealismMod
 {
-    /*public class SyncWithCharacterSkillsPatch : ModulePatch
+    public class SyncWithCharacterSkillsPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -33,12 +32,12 @@ namespace RealismMod
             if (player.IsYourPlayer)
             {
                 WeaponSkills weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
-                PlayerProperties.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
-                PlayerProperties.ReloadSkillMulti = Mathf.Max(1, ((weaponInfo.ReloadSpeed - 1f) * 0.5f) + 1f);
-                PlayerProperties.FixSkillMulti = weaponInfo.FixSpeed;
-                PlayerProperties.WeaponSkillErgo = weaponInfo.DeltaErgonomics;
-                PlayerProperties.AimSkillADSBuff = weaponInfo.AimSpeed;
-                PlayerProperties.StressResistanceFactor = player.Skills.StressPain.Value;
+                PlayerStats.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
+                PlayerStats.ReloadSkillMulti = Mathf.Max(1, ((weaponInfo.ReloadSpeed - 1f) * 0.5f) + 1f);
+                PlayerStats.FixSkillMulti = weaponInfo.FixSpeed;
+                PlayerStats.WeaponSkillErgo = weaponInfo.DeltaErgonomics;
+                PlayerStats.AimSkillADSBuff = weaponInfo.AimSpeed;
+                PlayerStats.StressResistanceFactor = player.Skills.StressPain.Value;
             }
         }
     }
@@ -72,7 +71,7 @@ namespace RealismMod
                     trueWeight += itemTotalWeight;
                     if (equipmentSlot == EquipmentSlot.Backpack || equipmentSlot == EquipmentSlot.TacticalVest)
                     {
-                        float modifier = GearProperties.ComfortModifier(item);
+                        float modifier = GearStats.ComfortModifier(item);
                         float containedItemsModifiedWeight = (itemTotalWeight - item.Weight) * modifier;
                         modifiedWeight += item.Weight + containedItemsModifiedWeight;
                     }
@@ -83,18 +82,18 @@ namespace RealismMod
                 }
             }
 
-            PlayerProperties.TotalModifiedWeight = modifiedWeight;
-            PlayerProperties.TotalUnmodifiedWeight = trueWeight;
-            PlayerProperties.TotalMousePenalty = (-modifiedWeight / 10f);
+            PlayerStats.TotalModifiedWeight = modifiedWeight;
+            PlayerStats.TotalUnmodifiedWeight = trueWeight;
+            PlayerStats.TotalMousePenalty = (-modifiedWeight / 10f);
             float weaponWeight = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item.GetSingleItemTotalWeight() : 1f;
-            PlayerProperties.TotalModifiedWeightMinusWeapon = PlayerProperties.TotalModifiedWeight - weaponWeight;
+            PlayerStats.TotalModifiedWeightMinusWeapon = PlayerStats.TotalModifiedWeight - weaponWeight;
 
             if (Plugin.EnableMouseSensPenalty.Value)
             {
                 player.RemoveMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor);
-                if (PlayerProperties.TotalMousePenalty < 0f)
+                if (PlayerStats.TotalMousePenalty < 0f)
                 {
-                    player.AddMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor, PlayerProperties.TotalMousePenalty / 100f);
+                    player.AddMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor, PlayerStats.TotalMousePenalty / 100f);
                 }
             }
             return modifiedWeight;
@@ -120,7 +119,7 @@ namespace RealismMod
 
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player).GetMethod("Init", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Player).GetMethod("Init", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
@@ -130,23 +129,23 @@ namespace RealismMod
             if (__instance.IsYourPlayer)
             {
                 //for some reason this makes stances NOT reset
-                StanceController.StanceBlender.Speed = 1f;
-                StanceController.StanceBlender.Target = 0f;
-                StanceController.StanceTargetPosition = Vector3.zero;
-                StanceController.IsLowReady = false;
-                StanceController.WasLowReady = false;
-                StanceController.IsHighReady = false;
-                StanceController.WasHighReady = false;
-                StanceController.IsActiveAiming = false;
-                StanceController.WasActiveAim = false;
-                StanceController.IsShortStock = false;
-                StanceController.WasShortStock = false;
-                StanceController.IsPatrolStance = false;
-                StanceController.IsMounting = false;
-                StanceController.IsBracing = false;
-                StanceController.DidStanceWiggle = false;
+                /*                StanceController.StanceBlender.Speed = 1f;
+                                StanceController.StanceBlender.Target = 0f;
+                                StanceController.StanceTargetPosition = Vector3.zero;
+                                StanceController.IsLowReady = false;
+                                StanceController.WasLowReady = false;
+                                StanceController.IsHighReady = false;
+                                StanceController.WasHighReady = false;
+                                StanceController.IsActiveAiming = false;
+                                StanceController.WasActiveAim = false;
+                                StanceController.IsShortStock = false;
+                                StanceController.WasShortStock = false;
+                                StanceController.IsPatrolStance = false;
+                                StanceController.IsMounting = false;
+                                StanceController.IsBracing = false;
+                                StanceController.DidStanceWiggle = false;*/
 
-                Plugin.PlayerSpawnedIn = true;
+                /*       Plugin.PlayerSpawned = true;*/
 
                 PlayerInitPatch p = new PlayerInitPatch();
                 StatCalc.SetGearParamaters(__instance);
@@ -163,7 +162,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player).GetMethod("OnItemAddedOrRemoved", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Player).GetMethod("OnItemAddedOrRemoved", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
@@ -177,7 +176,7 @@ namespace RealismMod
         }
     }
 
-
+    /*    
     public class BreathProcessPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -254,8 +253,8 @@ namespace RealismMod
             {
                 ____recoilRotationSpring.Zero = breathVector;
             }
-            ____processors[0].ProcessRaw(____breathFrequency, PlayerProperties.TotalBreathIntensity * 0.15f);
-            ____processors[1].ProcessRaw(____breathFrequency, PlayerProperties.TotalBreathIntensity * 0.15f * ____cameraSensetivity);
+            ____processors[0].ProcessRaw(____breathFrequency, PlayerStats.TotalBreathIntensity * 0.15f);
+            ____processors[1].ProcessRaw(____breathFrequency, PlayerStats.TotalBreathIntensity * 0.15f * ____cameraSensetivity);
             return false;
         }
     }*/
@@ -280,10 +279,10 @@ namespace RealismMod
                 float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi, 1.05f);
                 pwa.Breath.Intensity = breathIntensity;
                 pwa.HandsContainer.HandsRotation.InputIntensity = inputIntensitry;
-                PlayerProperties.SprintTotalBreathIntensity = breathIntensity;
-                PlayerProperties.SprintTotalHandsIntensity = inputIntensitry;
-                PlayerProperties.SprintHipfirePenalty = Mathf.Min(1f + (sprintTimer / 100f), 1.25f);
-                PlayerProperties.ADSSprintMulti = Mathf.Max(1f - (sprintTimer / 12f), 0.3f);
+                PlayerStats.SprintTotalBreathIntensity = breathIntensity;
+                PlayerStats.SprintTotalHandsIntensity = inputIntensitry;
+                PlayerStats.SprintHipfirePenalty = Mathf.Min(1f + (sprintTimer / 100f), 1.25f);
+                PlayerStats.ADSSprintMulti = Mathf.Max(1f - (sprintTimer / 12f), 0.3f);
 
 
                 didSprintPenalties = true;
@@ -292,15 +291,15 @@ namespace RealismMod
 
             if (sprintCooldownTimer >= 0.35f)
             {
-                PlayerProperties.SprintBlockADS = false;
-                if (PlayerProperties.TriedToADSFromSprint)
+                PlayerStats.SprintBlockADS = false;
+                if (PlayerStats.TriedToADSFromSprint)
                 {
                     fc.ToggleAim();
                 }
             }
             if (sprintCooldownTimer >= 4f)
             {
-                PlayerProperties.WasSprinting = false;
+                PlayerStats.WasSprinting = false;
                 doSwayReset = true;
                 sprintCooldownTimer = 0f;
                 sprintTimer = 0f;
@@ -311,18 +310,18 @@ namespace RealismMod
         {
             float resetSwaySpeed = 0.05f;
             float resetSpeed = 0.5f;
-            PlayerProperties.SprintTotalBreathIntensity = Mathf.Lerp(PlayerProperties.SprintTotalBreathIntensity, PlayerProperties.TotalBreathIntensity, resetSwaySpeed);
-            PlayerProperties.SprintTotalHandsIntensity = Mathf.Lerp(PlayerProperties.SprintTotalHandsIntensity, PlayerProperties.TotalHandsIntensity, resetSwaySpeed);
-            PlayerProperties.ADSSprintMulti = Mathf.Lerp(PlayerProperties.ADSSprintMulti, 1f, resetSpeed);
-            PlayerProperties.SprintHipfirePenalty = Mathf.Lerp(PlayerProperties.SprintHipfirePenalty, 1f, resetSpeed);
+            PlayerStats.SprintTotalBreathIntensity = Mathf.Lerp(PlayerStats.SprintTotalBreathIntensity, PlayerStats.TotalBreathIntensity, resetSwaySpeed);
+            PlayerStats.SprintTotalHandsIntensity = Mathf.Lerp(PlayerStats.SprintTotalHandsIntensity, PlayerStats.TotalHandsIntensity, resetSwaySpeed);
+            PlayerStats.ADSSprintMulti = Mathf.Lerp(PlayerStats.ADSSprintMulti, 1f, resetSpeed);
+            PlayerStats.SprintHipfirePenalty = Mathf.Lerp(PlayerStats.SprintHipfirePenalty, 1f, resetSpeed);
 
             if (!RecoilController.IsFiring)
             {
-                pwa.Breath.Intensity = PlayerProperties.SprintTotalBreathIntensity * mountingBonus;
-                pwa.HandsContainer.HandsRotation.InputIntensity = PlayerProperties.SprintTotalHandsIntensity * mountingBonus;
+                pwa.Breath.Intensity = PlayerStats.SprintTotalBreathIntensity * mountingBonus;
+                pwa.HandsContainer.HandsRotation.InputIntensity = PlayerStats.SprintTotalHandsIntensity * mountingBonus;
             }
 
-            if (Utils.AreFloatsEqual(1f, PlayerProperties.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerProperties.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerProperties.TotalHandsIntensity))
+            if (Utils.AreFloatsEqual(1f, PlayerStats.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerStats.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerStats.TotalHandsIntensity))
             {
                 doSwayReset = false;
             }
@@ -335,14 +334,14 @@ namespace RealismMod
                 sprintTimer += Time.deltaTime;
                 if (sprintTimer >= 1f)
                 {
-                    PlayerProperties.SprintBlockADS = true;
-                    PlayerProperties.WasSprinting = true;
+                    PlayerStats.SprintBlockADS = true;
+                    PlayerStats.WasSprinting = true;
                     didSprintPenalties = false;
                 }
             }
             else
             {
-                if (PlayerProperties.WasSprinting)
+                if (PlayerStats.WasSprinting)
                 {
                     doSprintTimer(player.ProceduralWeaponAnimation, fc);
                 }
@@ -352,13 +351,13 @@ namespace RealismMod
                 }
             }
 
-            if (!doSwayReset && !PlayerProperties.WasSprinting)
+            if (!doSwayReset && !PlayerStats.WasSprinting)
             {
-                PlayerProperties.HasFullyResetSprintADSPenalties = true;
+                PlayerStats.HasFullyResetSprintADSPenalties = true;
             }
             else
             {
-                PlayerProperties.HasFullyResetSprintADSPenalties = false;
+                PlayerStats.HasFullyResetSprintADSPenalties = false;
             }
 
             if (RecoilController.IsFiring)
@@ -378,7 +377,9 @@ namespace RealismMod
             return typeof(Player).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        [PatchPostfix]
+        [PatchPostfix] 
+
+
         private static void PatchPostfix(Player __instance)
         {
             if (Plugin.EnableDeafen.Value && Plugin.ModConfig.headset_changes)
@@ -415,7 +416,8 @@ namespace RealismMod
                 {
                     if (RecoilController.IsFiring)
                     {
-                        if (Plugin.IsAiming)
+                        //did this due to weird weapon movement while firing, might not be necessary anymore
+                  /*      if (Plugin.IsAiming)
                         {
                             __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerStats.TotalBreathIntensity * mountingSwayBonus * 0.01f;
                             __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerStats.TotalHandsIntensity * mountingSwayBonus * 0.01f;
@@ -424,15 +426,15 @@ namespace RealismMod
                         {
                             __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerStats.TotalBreathIntensity * mountingSwayBonus;
                             __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerStats.TotalHandsIntensity * mountingSwayBonus;
-                        }
+                        }*/
 
-/*                        RecoilController.SetRecoilParams(__instance.ProceduralWeaponAnimation, fc.Item);
-*/
+                        RecoilController.SetRecoilParams(__instance.ProceduralWeaponAnimation, fc.Item);
+
                         StanceController.IsPatrolStance = false;
                     }
-/*
+
                     ReloadController.ReloadStateCheck(__instance, fc, Logger);
-                    AimController.ADSCheck(__instance, fc, Logger);*/
+                    AimController.ADSCheck(__instance, fc, Logger);
 
                     if (Plugin.EnableStanceStamChanges.Value)
                     {
@@ -453,8 +455,8 @@ namespace RealismMod
                 float stanceHipFactor = StanceController.IsActiveAiming ? 0.7f : StanceController.IsShortStock ? 1.35f : 1f;
                 __instance.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerStats.SprintHipfirePenalty * stanceHipFactor, 0.2f, 1.6f);
 
-                __instance.ProceduralWeaponAnimation.HandsContainer.CameraRotation.ReturnSpeed = WeaponStats.TotalCameraReturnSpeed; //not sure about this one
-                __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = Plugin.test1.Value;
+/*                __instance.ProceduralWeaponAnimation.HandsContainer.CameraRotation.ReturnSpeed = WeaponStats.TotalCameraReturnSpeed; //not sure about this one
+                __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = Plugin.test1.Value;*/
 
                 if (!RecoilController.IsFiring)
                 {
@@ -465,17 +467,17 @@ namespace RealismMod
                         {
                             resetSpeed = 1f;
                         }
-                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, resetSpeed);
-                    }
+/*                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, resetSpeed);
+*/                    }
                     else
                     {
-                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.75f;
+             /*           __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.75f;
                         __instance.ProceduralWeaponAnimation.Shootingg.OldShotRecoil.ShotRecoilProcessValues[3].IntensityMultiplicator = 0;
-                        __instance.ProceduralWeaponAnimation.Shootingg.OldShotRecoil.ShotRecoilProcessValues[4].IntensityMultiplicator = 0;
+                        __instance.ProceduralWeaponAnimation.Shootingg.OldShotRecoil.ShotRecoilProcessValues[4].IntensityMultiplicator = 0;*/
                     }
                     __instance.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(__instance.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, 10f * StanceController.WiggleReturnSpeed, 0.01f);
-                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.5f;
-                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.4f;
+/*                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.5f;
+                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.4f;*/
                 }
                 __instance.MovementContext.SetPatrol(StanceController.IsPatrolStance);
             }

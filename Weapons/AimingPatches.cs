@@ -1,4 +1,4 @@
-﻿/*using Aki.Reflection.Patching;
+﻿using Aki.Reflection.Patching;
 using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace RealismMod
 {
-    public static class AimController 
+    public static class AimController
     {
         private static bool hasSetCanAds = false;
         private static bool hasSetActiveAimADS = false;
@@ -28,7 +28,7 @@ namespace RealismMod
                 bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
                 bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
                 bool thermalIsOn = thermComponent != null && (thermComponent.Togglable == null || thermComponent.Togglable.On);
-                bool gearBlocksADS = Plugin.EnableFSPatch.Value && fsIsON && (!WeaponProperties.WeaponCanFSADS && (!GearProperties.AllowsADS(fsComponent.Item) || !PlayerProperties.GearAllowsADS));
+                bool gearBlocksADS = Plugin.EnableFSPatch.Value && fsIsON && (!WeaponStats.WeaponCanFSADS && (!GearStats.AllowsADS(fsComponent.Item) || !PlayerStats.GearAllowsADS));
                 bool visionDeviceBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && Plugin.HasOptic) || thermalIsOn);
                 if (Plugin.ModConfig.recoil_attachment_overhaul && (visionDeviceBlocksADS || gearBlocksADS))
                 {
@@ -38,13 +38,13 @@ namespace RealismMod
                         {
                             fc.ToggleAim();
                         }
-                        PlayerProperties.IsAllowedADS = false;
+                        PlayerStats.IsAllowedADS = false;
                         hasSetCanAds = true;
                     }
                 }
                 else
-                { 
-                    PlayerProperties.IsAllowedADS = true;
+                {
+                    PlayerStats.IsAllowedADS = true;
                     hasSetCanAds = false;
                 }
 
@@ -65,7 +65,7 @@ namespace RealismMod
                     hasSetActiveAimADS = false;
                 }
 
-      
+
                 if (isAiming || StanceController.IsMeleeAttack)
                 {
                     StanceController.IsPatrolStance = false;
@@ -76,7 +76,7 @@ namespace RealismMod
                     fc.ToggleAim();
                 }
 
-                if (!wasToggled && (fsIsON || nvgIsOn)) 
+                if (!wasToggled && (fsIsON || nvgIsOn))
                 {
                     wasToggled = true;
                 }
@@ -122,9 +122,9 @@ namespace RealismMod
                 if (isAiming)
                 {
                     //slow is hard set to 0.33 when called, 0.4-0.43 feels best.
-                    float baseSpeed = PlayerProperties.AimMoveSpeedBase * WeaponProperties.AimMoveSpeedWeapModifier * PlayerProperties.AimMoveSpeedInjuryMulti;
+                    float baseSpeed = PlayerStats.AimMoveSpeedBase * WeaponStats.AimMoveSpeedWeapModifier * PlayerStats.AimMoveSpeedInjuryMulti;
                     float totalSpeed = StanceController.IsActiveAiming ? baseSpeed * 1.3f : baseSpeed;
-                    totalSpeed = WeaponProperties._WeapClass == "pistol" ? totalSpeed + 0.15f : totalSpeed;
+                    totalSpeed = WeaponStats._WeapClass == "pistol" ? totalSpeed + 0.15f : totalSpeed;
                     __instance.AddStateSpeedLimit(Mathf.Clamp(totalSpeed, 0.3f, 0.9f), Player.ESpeedLimit.Aiming);
                     return false;
                 }
@@ -161,7 +161,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player.FirearmController).GetMethod("set_IsAiming", BindingFlags.NonPublic | BindingFlags.Instance);
+            return typeof(EFT.Player.FirearmController).GetMethod("set_IsAiming", BindingFlags.Public | BindingFlags.Instance);
         }
 
         [PatchPostfix]
@@ -187,22 +187,22 @@ namespace RealismMod
         {
             Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
 
-            if (player.IsYourPlayer) 
+            if (player.IsYourPlayer)
             {
                 bool gearFactorEnabled = Plugin.EnableFSPatch.Value || Plugin.EnableNVGPatch.Value;
 
                 StanceController.CanResetAimDrain = true;
 
-                if (PlayerProperties.SprintBlockADS && !PlayerProperties.TriedToADSFromSprint) 
+                if (PlayerStats.SprintBlockADS && !PlayerStats.TriedToADSFromSprint)
                 {
-                    PlayerProperties.TriedToADSFromSprint = true;
+                    PlayerStats.TriedToADSFromSprint = true;
                     return false;
                 }
 
-                PlayerProperties.TriedToADSFromSprint = false;
-                return gearFactorEnabled ? PlayerProperties.IsAllowedADS : true;
+                PlayerStats.TriedToADSFromSprint = false;
+                return gearFactorEnabled ? PlayerStats.IsAllowedADS : true;
             }
             return true;
         }
     }
-}*/
+}

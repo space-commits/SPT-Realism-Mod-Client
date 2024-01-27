@@ -636,7 +636,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_25", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Weapon).GetMethod("method_26", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
@@ -672,7 +672,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_22", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Weapon).GetMethod("method_23", BindingFlags.Instance | BindingFlags.Public);
         }
 
 

@@ -64,7 +64,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(SkillManager __instance, Item item)
         {
-            if (item?.Owner?.ID != null && (item.Owner.ID.StartsWith("pmc") || item.Owner.ID.StartsWith("scav")))
+            if (item?.Owner?.ID != null && item.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 Plugin.DidWeaponSwap = true;
             }
