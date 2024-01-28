@@ -172,14 +172,17 @@ namespace RealismMod
 
                 if (RecoilController.IsFiring && !targetRotation.IsAnyComponentInfinity() && !targetRotation.IsAnyComponentNaN())
                 {
-                    //is this even necessary, does it cause issues? Should it apply to X value too?
+
                     if (targetRotation.y <= recordedRotation.y - Plugin.RecoilClimbLimit.Value)
                     {
                         targetRotation.y = movementContext.Rotation.y;
                     }
 
-                    float difference = Mathf.Abs(movementContext.Rotation.x - targetRotation.x);
-                    targetRotation.x = difference <= 2f ? targetRotation.x : movementContext.Rotation.x;
+                    float differenceX = Mathf.Abs(movementContext.Rotation.x - targetRotation.x);
+                    targetRotation.x = differenceX <= 2f ? targetRotation.x : movementContext.Rotation.x;
+
+                    float differenceY = Mathf.Abs(movementContext.Rotation.y - targetRotation.y);
+                    targetRotation.y = differenceY <= 2f ? targetRotation.y : movementContext.Rotation.y;
 
                     movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, targetRotation, Plugin.RecoilSmoothness.Value);
                 }

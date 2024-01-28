@@ -699,8 +699,8 @@ namespace RealismMod
                 }
                 if ((StanceController.StanceBlender.Value >= 1f && StanceController.StanceTargetPosition == pistolTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-/*                    StanceController.DoWiggleEffects(player, pwa, new Vector3(-20f, 1f, 10f) * movementFactor);
-*/                    StanceController.DidStanceWiggle = true;
+                    StanceController.DoWiggleEffects(player, pwa, new Vector3(-20f, 1f, 30f) * movementFactor);
+                    StanceController.DidStanceWiggle = true;
                 }
 
             }
@@ -720,8 +720,8 @@ namespace RealismMod
                     StanceController.DoDampingTimer = true;
                 }
 
-/*                StanceController.DoWiggleEffects(player, pwa, new Vector3(10f, 1f, -10f) * movementFactor);
-*/
+                StanceController.DoWiggleEffects(player, pwa, new Vector3(10f, 1f, -30f) * movementFactor);
+
                 isResettingPistol = false;
                 StanceController.PistolIsCompressed = false;
                 stanceRotation = Quaternion.identity;
@@ -871,8 +871,8 @@ namespace RealismMod
 
                 if ((StanceController.StanceBlender.Value >= 1f || StanceController.StanceTargetPosition == shortStockTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-/*                    StanceController.DoWiggleEffects(player, pwa, new Vector3(10f, -5f, 10f) * movementFactor, true);
-*/                    StanceController.DidStanceWiggle = true;
+                    StanceController.DoWiggleEffects(player, pwa, new Vector3(10f, -5f, 10f) * movementFactor, true);
+                    StanceController.DidStanceWiggle = true;
                 }
             }
             else if (StanceController.StanceBlender.Value > 0f && !hasResetShortStock && !StanceController.IsLowReady && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !isResettingActiveAim && !isResettingHighReady && !isResettingLowReady && !isResettingMelee)
@@ -890,8 +890,8 @@ namespace RealismMod
                     StanceController.DoDampingTimer = true;
                 }
 
-/*                StanceController.DoWiggleEffects(player, pwa, new Vector3(5, -5f, -10f) * movementFactor, true);
-*/                stanceRotation = Quaternion.identity;
+                StanceController.DoWiggleEffects(player, pwa, new Vector3(5, -5f, -10f) * movementFactor, true);
+                stanceRotation = Quaternion.identity;
                 isResettingShortStock = false;
                 hasResetShortStock = true;
             }
@@ -965,8 +965,8 @@ namespace RealismMod
 
                 if ((StanceController.StanceBlender.Value >= 1f || StanceController.StanceTargetPosition == highReadyTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-/*                    StanceController.DoWiggleEffects(player, pwa, new Vector3(5f, 5f, 5f) * movementFactor, true);
-*/                    StanceController.DidStanceWiggle = true;
+                    StanceController.DoWiggleEffects(player, pwa, new Vector3(5f, 5f, 15f) * movementFactor, true);
+                    StanceController.DidStanceWiggle = true;
                 }
             }
             else if (StanceController.StanceBlender.Value > 0f && !hasResetHighReady && !StanceController.IsLowReady && !StanceController.IsActiveAiming && !StanceController.IsShortStock && !isResettingActiveAim && !isResettingLowReady && !isResettingShortStock && !isResettingMelee)
@@ -985,8 +985,8 @@ namespace RealismMod
                     StanceController.DoDampingTimer = true;
                 }
 
-/*                StanceController.DoWiggleEffects(player, pwa, new Vector3(-12f, 6f, -12f) * movementFactor, true);
-*/                StanceController.DidStanceWiggle = false;
+                StanceController.DoWiggleEffects(player, pwa, new Vector3(-12f, 6f, -36f) * movementFactor, true);
+                StanceController.DidStanceWiggle = false;
 
                 stanceRotation = Quaternion.identity;
 
@@ -1050,8 +1050,8 @@ namespace RealismMod
 
                 if ((StanceController.StanceBlender.Value >= 1f || StanceController.StanceTargetPosition == lowReadyTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-/*                    StanceController.DoWiggleEffects(player, pwa, new Vector3(5f, 4f, -7f) * movementFactor, true);
-*/                    StanceController.DidStanceWiggle = true;
+                    StanceController.DoWiggleEffects(player, pwa, new Vector3(5f, 4f, -23f) * movementFactor, true);
+                    StanceController.DidStanceWiggle = true;
                 }
             }
             else if (StanceController.StanceBlender.Value > 0f && !hasResetLowReady && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsShortStock && !isResettingActiveAim && !isResettingHighReady && !isResettingShortStock && !isResettingMelee)
@@ -1071,8 +1071,8 @@ namespace RealismMod
                     StanceController.DoDampingTimer = true;
                 }
 
-/*                StanceController.DoWiggleEffects(player, pwa, new Vector3(6f, 3f, 10f) * movementFactor, true);
-*/                StanceController.DidStanceWiggle = false;
+                StanceController.DoWiggleEffects(player, pwa, new Vector3(6f, 3f, 30f) * movementFactor, true);
+                StanceController.DidStanceWiggle = false;
                 stanceRotation = Quaternion.identity;
                 isResettingLowReady = false;
                 hasResetLowReady = true;
@@ -1134,8 +1134,8 @@ namespace RealismMod
 
                 if ((StanceController.StanceBlender.Value >= 1f || StanceController.StanceTargetPosition == activeAimTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-/*                    StanceController.DoWiggleEffects(player, pwa, new Vector3(-2.5f, -2.5f, 10f), true);
-*/                    StanceController.DidStanceWiggle = true;
+                    StanceController.DoWiggleEffects(player, pwa, new Vector3(-2.5f, -2.5f, 30f), true);
+                    StanceController.DidStanceWiggle = true;
                 }
             }
             else if (StanceController.StanceBlender.Value > 0f && !hasResetActiveAim && !StanceController.IsLowReady && !StanceController.IsHighReady && !StanceController.IsShortStock && !isResettingLowReady && !isResettingHighReady && !isResettingShortStock && !isResettingMelee)
@@ -1155,8 +1155,8 @@ namespace RealismMod
                     StanceController.DoDampingTimer = true;
                 }
 
-/*                StanceController.DoWiggleEffects(player, pwa, new Vector3(-3.5f, -4f, 8f) * movementFactor, true);
-*/                StanceController.DidStanceWiggle = false;
+                StanceController.DoWiggleEffects(player, pwa, new Vector3(-3.5f, -4f, 24f) * movementFactor, true);
+                StanceController.DidStanceWiggle = false;
 
                 stanceRotation = Quaternion.identity;
 
@@ -1201,8 +1201,8 @@ namespace RealismMod
                 {
                     if (!StanceController.DidStanceWiggle)
                     {
-/*                        StanceController.DoWiggleEffects(player, pwa, new Vector3(10f, -5f, 10f) * movementFactor, true);
-*/                        StanceController.DidStanceWiggle = true;
+                        StanceController.DoWiggleEffects(player, pwa, new Vector3(10f, -5f, 30f) * movementFactor, true);
+                        StanceController.DidStanceWiggle = true;
                     }
 
                     if (!Input.GetKey(Plugin.MeleeKeybind.Value.MainKey))
@@ -1234,8 +1234,8 @@ namespace RealismMod
 
                 StanceController.DoMeleeReset = true;
                 StanceController.CanDoMeleeDetection = false;
-/*                StanceController.DoWiggleEffects(player, pwa, new Vector3(5, -5f, -75f), true);
-*/                stanceRotation = Quaternion.identity;
+                StanceController.DoWiggleEffects(player, pwa, new Vector3(5, -5f, -75f), true);
+                stanceRotation = Quaternion.identity;
                 isResettingMelee = false;
                 hasResetMelee = true;
             }
@@ -1254,20 +1254,20 @@ namespace RealismMod
                 pwa.Shootingg.OldShotRecoil.ShotRecoilProcessValues[i].Process(wiggleDirection);
             }
         }
-/*
+
         public static void DoWiggleEffects(Player player, ProceduralWeaponAnimation pwa, Vector3 wiggleDirection, bool playSound = false, float volume = 1f)
         {
             if (playSound)
             {
-                AccessTools.Method(typeof(Player), "method_41").Invoke(player, new object[] { volume });
+                AccessTools.Method(typeof(Player), "method_46").Invoke(player, new object[] { volume });
             }
 
-            for (int i = 0; i < pwa.Shootingg.OldShotRecoil.ShotRecoilProcessValues.Length; i++)
+            for (int i = 0; i < pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues.Length; i++)
             {
-                pwa.Shootingg.OldShotRecoil.ShotRecoilProcessValues[i].Process(wiggleDirection);
+                pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues[i].Process(wiggleDirection);
             }
         }
-*/
+
         private static bool needToReset = false;
         private static Vector3 currentMountedPos = Vector3.zero;
         private static float timer = 0f;
@@ -1278,8 +1278,8 @@ namespace RealismMod
             if (StanceController.IsMounting && isMoving)
             {
                 StanceController.IsMounting = false;
-/*                DoWiggleEffects(player, pwa, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
-*/            }
+                DoWiggleEffects(player, pwa, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
+            }
             if (Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && StanceController.IsBracing && player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire)
             {
                 StanceController.IsMounting = !StanceController.IsMounting;
@@ -1288,16 +1288,16 @@ namespace RealismMod
                     mountWeapPosition = weaponWorldPos + StanceController.CoverDirection; // + StanceController.CoverDirection
                 }
 
-/*                DoWiggleEffects(player, pwa, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
-*/
+                DoWiggleEffects(player, pwa, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
+
                 float accuracy = fc.Item.GetTotalCenterOfImpact(false); //forces accuracy to update
-                AccessTools.Field(typeof(Player.FirearmController), "float_2").SetValue(fc, accuracy);
+                AccessTools.Field(typeof(Player.FirearmController), "float_3").SetValue(fc, accuracy);
             }
             if (Input.GetKeyDown(Plugin.MountKeybind.Value.MainKey) && !StanceController.IsBracing && StanceController.IsMounting)
             {
                 StanceController.IsMounting = false;
-/*                DoWiggleEffects(player, pwa, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
-*/            }
+                DoWiggleEffects(player, pwa, StanceController.IsMounting ? StanceController.CoverWiggleDirection : StanceController.CoverWiggleDirection * -1f, true);
+            }
 
             if (StanceController.IsMounting)
             {

@@ -11,6 +11,7 @@ using UnityEngine.UI;
 using EFT;
 using BepInEx.Logging;
 using System.IO;
+using Comfort.Common;
 
 namespace RealismMod
 {
@@ -87,10 +88,10 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.UI.BattleUIScreen).GetMethod("Show", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(EFT.UI.BattleUIScreen).GetMethod("Show", new Type[] { typeof(GamePlayerOwner) });
         }
         [PatchPostfix]
-        private static void PatchPostFix(EFT.UI.BattleUIScreen __instance, GamePlayerOwner owner)
+        private static void PatchPostFix(EFT.UI.BattleUIScreen __instance)
         {
             if (MountingUI.ActiveUIScreen == __instance.gameObject)
             {

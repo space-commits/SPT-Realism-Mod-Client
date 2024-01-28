@@ -711,34 +711,34 @@ namespace RealismMod
 
             //Stances
             new ApplyComplexRotationPatch().Enable();
-         /*   new ApplySimpleRotationPatch().Enable();*/
+            new ApplySimpleRotationPatch().Enable();
             new InitTransformsPatch().Enable();
             new ZeroAdjustmentsPatch().Enable();
-/*            new WeaponOverlappingPatch().Enable();
-            new WeaponLengthPatch().Enable();*/
+            new WeaponOverlappingPatch().Enable();
+            new WeaponLengthPatch().Enable();
             new OnWeaponDrawPatch().Enable();
             new UpdateHipInaccuracyPatch().Enable();
-/*            new SetFireModePatch().Enable();
+            new SetFireModePatch().Enable();
             new WeaponOverlapViewPatch().Enable();
             new CollisionPatch().Enable();
-            new OperateStationaryWeaponPatch().Enable();*/
+            new OperateStationaryWeaponPatch().Enable();
             new SetTiltPatch().Enable();
 
-         /*   //Health
-            if (EnableMedicalOvehaul.Value && ModConfig.med_changes)
-            {
-                new ApplyItemPatch().Enable();
-                new SetQuickSlotPatch().Enable();
-                new ProceedPatch().Enable();
-                new RemoveEffectPatch().Enable();
-                new StamRegenRatePatch().Enable();
-                new MedkitConstructorPatch().Enable();
-                new HCApplyDamagePatch().Enable();
-                new RestoreBodyPartPatch().Enable();
-                new FlyingBulletPatch().Enable();
-            }*/
+            /*   //Health
+               if (EnableMedicalOvehaul.Value && ModConfig.med_changes)
+               {
+                   new ApplyItemPatch().Enable();
+                   new SetQuickSlotPatch().Enable();
+                   new ProceedPatch().Enable();
+                   new RemoveEffectPatch().Enable();
+                   new StamRegenRatePatch().Enable();
+                   new MedkitConstructorPatch().Enable();
+                   new HCApplyDamagePatch().Enable();
+                   new RestoreBodyPartPatch().Enable();
+                   new FlyingBulletPatch().Enable();
+               }*/
 
-       /*     new BattleUIScreenPatch().Enable();*/
+            new BattleUIScreenPatch().Enable();
         }
 
         void Update()

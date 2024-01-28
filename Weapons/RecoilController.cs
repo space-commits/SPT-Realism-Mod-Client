@@ -43,13 +43,13 @@ namespace RealismMod
         {
             if (RecoilController.IsFiringWiggle)
             {
-                float cantedRecoilAmount = FactoredTotalHRecoil / Plugin.test4.Value;
-                float cantedRecoilSpeed = Mathf.Max(BaseTotalConvergence * Plugin.test5.Value, 14f);
+                float cantedRecoilAmount = FactoredTotalHRecoil / 30f;
+                float cantedRecoilSpeed = Mathf.Max(BaseTotalConvergence, 14f);
                 float totalCantedRecoil = Mathf.Lerp(-cantedRecoilAmount, cantedRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f));
 
                 if (Plugin.EnableAdditionalRec.Value)
                 {
-                    float additionalRecoilAmount = FactoredTotalDispersion / Plugin.test6.Value;
+                    float additionalRecoilAmount = FactoredTotalDispersion / 18f;
                     float totalSideRecoil = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f)) * 0.05f;
                     float totalVertical = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed * 1.5f, 1.0f)) * 0.1f;
                     targetRecoil = new Vector3(totalVertical, totalCantedRecoil, totalSideRecoil) * Plugin.VisRecoilMulti.Value;
