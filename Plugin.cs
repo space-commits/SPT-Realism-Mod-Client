@@ -543,11 +543,11 @@ namespace RealismMod
                 new BreathProcessPatch().Enable();*/
 
                 //Recoil Patches
-                new OnWeaponParametersChangedPatch().Enable();
-                new ProcessPatch().Enable();
+                new RecalcWeaponParametersPatch().Enable();
+                new AddRecoilForcePatch().Enable();
                 new RecoilAnglesPatch().Enable();
                 new ShootPatch().Enable();
-                /*new RecoilRotatePatch().Enable();*/
+                new RecoilRotatePatch().Enable();
 
 
                 //Aiming Patches
