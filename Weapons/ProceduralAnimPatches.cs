@@ -33,6 +33,10 @@ namespace RealismMod
         {
 
             FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController").GetValue(__instance);
+            if (firearmController == null)
+            {
+                return;
+            }
             Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
 
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
@@ -116,6 +120,10 @@ namespace RealismMod
         {
 
             FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController").GetValue(__instance);
+            if (firearmController == null)
+            {
+                return;
+            }
             Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
 
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
@@ -250,6 +258,10 @@ namespace RealismMod
         private static bool Prefix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
             FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController").GetValue(__instance);
+            if (firearmController == null)
+            {
+                return false;
+            }
             Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
 
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
@@ -300,6 +312,10 @@ namespace RealismMod
         private static bool Prefix(EFT.Animations.ProceduralWeaponAnimation __instance, float value)
         {
             FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController").GetValue(__instance);
+            if (firearmController == null) 
+            {
+                return false;
+            }
             Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
 
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
@@ -328,6 +344,10 @@ namespace RealismMod
         private static bool Prefix(EFT.Animations.ProceduralWeaponAnimation __instance, ref float __result)
         {
             FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController").GetValue(__instance);
+            if (firearmController == null)
+            {
+                return false;
+            }
             Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
@@ -351,6 +371,10 @@ namespace RealismMod
         private static void PatchPrefix(ProceduralWeaponAnimation __instance, ref Vector3 point)
         {
             FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController").GetValue(__instance);
+            if (firearmController == null)
+            {
+                return;
+            }
             Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
@@ -391,6 +415,10 @@ namespace RealismMod
         private static void PatchPrefix(ProceduralWeaponAnimation __instance, ref Vector3 point)
         {
             FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController").GetValue(__instance);
+            if (firearmController == null)
+            {
+                return;
+            }
             Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {

@@ -75,19 +75,16 @@ namespace RealismMod
             float dampingLowerLimit = Plugin.IsAiming && Plugin.HasOptic ? 0.5f : 0.5f;
             float opticFactor = Plugin.IsAiming && Plugin.HasOptic ? 0.92f : 1f;
             pwa.HandsContainer.Recoil.Damping = Mathf.Clamp(RecoilController.BaseTotalRecoilDamping * opticFactor, dampingLowerLimit, dampingUpperLimit);
-            pwa.HandsContainer.HandsPosition.Damping = (float)Math.Round(RecoilController.BaseTotalHandDamping * (PlayerProperties.IsMoving ? 0.5f : 1f) * opticFactor, 3);
+            pwa.HandsContainer.HandsPosition.Damping = (float)Math.Round(RecoilController.BaseTotalHandDamping * (PlayerProperties.IsMoving ? 0.5f : 1f) * opticFactor, 3);*/
 
-            if (Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !WeaponProperties.HasShoulderContact)))
+            if (Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !WeaponStats.HasShoulderContact)))
             {
-                pwa.HandsContainer.Recoil.ReturnSpeed = Mathf.Clamp((RecoilController.BaseTotalConvergence - Mathf.Clamp(25f + RecoilController.ShotCount, 0, 100f)) + Mathf.Clamp(15f + RecoilController.PlayerControl, 0f, 100f), 2f, RecoilController.BaseTotalConvergence);
+                pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Clamp((RecoilController.BaseTotalConvergence - Mathf.Clamp(25f + RecoilController.ShotCount, 0, 100f)) + Mathf.Clamp(15f + RecoilController.PlayerControl, 0f, 100f), 2f, RecoilController.BaseTotalConvergence);
             }
             else
             {
-                pwa.HandsContainer.Recoil.ReturnSpeed = RecoilController.BaseTotalConvergence;
-            }*/
-
-            pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = RecoilController.BaseTotalConvergence;
-
+                pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = RecoilController.BaseTotalConvergence;
+            }
         }
     }
 }

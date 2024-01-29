@@ -300,17 +300,11 @@ namespace RealismMod
                 timer += 1;
                 if (timer >= 60)
                 {
-                    Logger.LogWarning("1");
-
                     RaycastHit[] raycastArr = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
-                    Logger.LogWarning("2");
                     Func<RaycastHit, bool> isHitIgnoreTest = (Func<RaycastHit, bool>)hitIgnoreField.GetValue(__instance);
-                    Logger.LogWarning("3");
                     Transform weapTransform = player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim;
-                    Logger.LogWarning("4");
                     Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
                     timer = 0;
-                    Logger.LogWarning("5");
 
                     string weapClass = __instance.Item.WeapClass;
 

@@ -1306,10 +1306,10 @@ namespace RealismMod
                 weaponWorldPos = new Vector3(mountWeapPosition.x, mountWeapPosition.y, weaponWorldPos.z); //this makes it feel less clamped to cover but allows h recoil + StanceController.CoverDirection
                 currentMountedPos = weaponWorldPos;
             }
-            else if (!isMoving && needToReset && mountWeapPosition != referencePos && timer < 0.3f)
+            else if (!isMoving && needToReset && mountWeapPosition != referencePos && timer < 0.3f) //0.3
             {
                 timer += dt;
-                currentMountedPos = Vector3.Lerp(currentMountedPos, referencePos, 0.2f);
+                currentMountedPos = Vector3.Lerp(currentMountedPos, referencePos, 0.2f); //0.2
                 weaponWorldPos = currentMountedPos;
             }
             else

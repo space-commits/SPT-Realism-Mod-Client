@@ -1,4 +1,4 @@
-﻿/*using Aki.Reflection.Patching;
+﻿using Aki.Reflection.Patching;
 using Aki.Reflection.Utils;
 using Comfort.Common;
 using EFT;
@@ -10,11 +10,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using MalfGlobals = BackendConfigSettingsClass.GClass1265;
-using OverheatGlobals = BackendConfigSettingsClass.GClass1266;
-using KnowMalfClass = EFT.InventoryLogic.Weapon.GClass2553;
-using MalfStateClass = GClass646<EFT.InventoryLogic.Weapon.EMalfunctionState>;
-using MalfStateStruct = GClass646<EFT.InventoryLogic.Weapon.EMalfunctionState>.GStruct42<float, EFT.InventoryLogic.Weapon.EMalfunctionState>;
+using MalfGlobals = BackendConfigSettingsClass.GClass1367;
+using OverheatGlobals = BackendConfigSettingsClass.GClass1368;
+using KnowMalfClass = EFT.InventoryLogic.Weapon.GClass2738;
+using MalfStateStruct = GClass722<EFT.InventoryLogic.Weapon.EMalfunctionState>.GStruct42<float, EFT.InventoryLogic.Weapon.EMalfunctionState>;
+
 namespace RealismMod
 {
 
@@ -111,8 +111,8 @@ namespace RealismMod
     }
 
 
-*//*    public class GetMalfunctionStatePatch : ModulePatch
-        {
+   /* public class GetMalfunctionStatePatch : ModulePatch
+    {
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Player.FirearmController).GetMethod("GetMalfunctionState", BindingFlags.Instance | BindingFlags.Public);
@@ -143,7 +143,7 @@ namespace RealismMod
             //instead of getting a total malf chance, roll chance to malf per malf type that's above 0
             //if nothing gets rolled then return 0
             //make sure each malf source has a unique malf type
-            
+
 
             if (randomFloat > totalMalfunctionChance) // get rid of this
             {
@@ -166,7 +166,7 @@ namespace RealismMod
 
             /////////////////////////////
             malfunctionSource = Weapon.EMalfunctionSource.Durability;
-            switch (Plugin.test4.Value) 
+            switch (Plugin.test4.Value)
             {
                 case 1:
                     __result = Weapon.EMalfunctionState.Misfire;
@@ -189,8 +189,8 @@ namespace RealismMod
             }
 
         }
-    }*//*
-
+    }
+*/
     public class GetTotalMalfunctionChancePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -210,17 +210,17 @@ namespace RealismMod
                 overheatMalfChance = 0f;
                 weaponDurability = 0f;
 
- 
+
                 if (!__instance.Item.AllowMalfunction)
                 {
                     __result = 0f;
                     return false;
                 }
 
-                *//*                float ammoHotnessFactor = (1f - ((ammoToFire.ammoRec / 200f) + 1f)) + 1f;*//*
+                float ammoHotnessFactor = (1f - ((ammoToFire.ammoRec / 200f) + 1f)) + 1f;
 
-                float malfDelta = Mathf.Min(WeaponProperties.MalfChanceDelta * 3, 0.99f);
-                if (!WeaponProperties.CanCycleSubs && ammoToFire.ammoHear == 1)
+                float malfDelta = Mathf.Min(WeaponStats.MalfChanceDelta * 3, 0.99f);
+                if (!WeaponStats.CanCycleSubs && ammoToFire.ammoHear == 1)
                 {
 
                     if (ammoToFire.Caliber == "762x39")
@@ -243,10 +243,10 @@ namespace RealismMod
                 MagazineClass currentMagazine = __instance.Item.GetCurrentMagazine();
                 magMalfChance = ((currentMagazine == null) ? 0f : (currentMagazine.MalfunctionChance * magazineMalfChanceMult));
                 ammoMalfChance = ((ammoToFire != null) ? ((ammoToFire.MalfMisfireChance + ammoToFire.MalfFeedChance) * ammoMalfChanceMult) : 0f);
-                float weaponMalfChance = WeaponProperties.TotalMalfChance;
+                float weaponMalfChance = WeaponStats.TotalMalfChance;
                 float durability = __instance.Item.Repairable.Durability / (float)__instance.Item.Repairable.TemplateDurability * 100f;
                 weaponDurability = Mathf.Floor(durability);
-      
+
                 if (weaponDurability >= Plugin.DuraMalfThreshold.Value)
                 {
                     magMalfChance *= 0.1f;
@@ -304,4 +304,3 @@ namespace RealismMod
         }
     }
 }
-*/

@@ -560,7 +560,7 @@ namespace RealismMod
                     new CalibrationLookAtScope().Enable();
                 }
 
-/*                //Malf Patches
+                //Malf Patches
                 if (Plugin.EnableMalfPatch.Value && ModConfig.malf_changes)
                 {
                     new GetTotalMalfunctionChancePatch().Enable();
@@ -568,7 +568,7 @@ namespace RealismMod
                 if (Plugin.InspectionlessMalfs.Value)
                 {
                     new IsKnownMalfTypePatch().Enable();
-                }*/
+                }
 
                 //Reload Patches
                 if (Plugin.EnableReloadPatches.Value)
