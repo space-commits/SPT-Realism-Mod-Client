@@ -128,25 +128,6 @@ namespace RealismMod
 
             if (__instance.IsYourPlayer)
             {
-                //for some reason this makes stances NOT reset
-                /*                StanceController.StanceBlender.Speed = 1f;
-                                StanceController.StanceBlender.Target = 0f;
-                                StanceController.StanceTargetPosition = Vector3.zero;
-                                StanceController.IsLowReady = false;
-                                StanceController.WasLowReady = false;
-                                StanceController.IsHighReady = false;
-                                StanceController.WasHighReady = false;
-                                StanceController.IsActiveAiming = false;
-                                StanceController.WasActiveAim = false;
-                                StanceController.IsShortStock = false;
-                                StanceController.WasShortStock = false;
-                                StanceController.IsPatrolStance = false;
-                                StanceController.IsMounting = false;
-                                StanceController.IsBracing = false;
-                                StanceController.DidStanceWiggle = false;*/
-
-                /*       Plugin.PlayerSpawned = true;*/
-
                 PlayerInitPatch p = new PlayerInitPatch();
                 StatCalc.SetGearParamaters(__instance);
                 InventoryControllerClass invController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(__instance);
@@ -267,7 +248,7 @@ namespace RealismMod
         private static bool didSprintPenalties = false;
         private static bool resetSwayAfterFiring = false;
 
- /*       private static void doSprintTimer(ProceduralWeaponAnimation pwa, Player.FirearmController fc)
+        private static void doSprintTimer(ProceduralWeaponAnimation pwa, Player.FirearmController fc)
         {
             sprintCooldownTimer += Time.deltaTime;
 
@@ -371,7 +352,7 @@ namespace RealismMod
                 doSwayReset = true;
             }
         }
-*/
+
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Player).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.Public);
@@ -401,10 +382,10 @@ namespace RealismMod
                 float mountingSwayBonus = StanceController.IsMounting ? StanceController.MountingSwayBonus : StanceController.BracingSwayBonus;
                 PlayerStats.IsMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
 
-             /*   if (Plugin.EnableSprintPenalty.Value)
+                if (Plugin.EnableSprintPenalty.Value)
                 {
                     DoSprintPenalty(__instance, fc, mountingSwayBonus);
-                }*/
+                }
 
                 if (!RecoilController.IsFiring && PlayerStats.HasFullyResetSprintADSPenalties)
                 {
@@ -460,11 +441,11 @@ namespace RealismMod
                     if (StanceController.CanResetDamping)
                     {
                         float resetSpeed = 0.01f;
-                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f * Plugin.test9.Value, resetSpeed);
+                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, resetSpeed);
                     }
                     else
                     {
-                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.75f * Plugin.test10.Value;
+                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.75f;
                         __instance.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0;
                         __instance.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
                     }

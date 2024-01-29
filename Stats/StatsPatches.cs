@@ -105,7 +105,6 @@ namespace RealismMod
         {
             if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
-                Logger.LogWarning("===============ERGO DELTA================");
                 ErgoDeltaPatch p = new ErgoDeltaPatch();
                 if (PlayerStats.IsInReloadOpertation)
                 {
@@ -126,7 +125,6 @@ namespace RealismMod
 
         public static float FinalStatCalc(Weapon __instance)
         {
-            Logger.LogWarning("===============FinalStatCalc================");
             WeaponStats._WeapClass = __instance.WeapClass;
             bool isManual = WeaponStats.IsManuallyOperated(__instance);
             WeaponStats._IsManuallyOperated = isManual;
@@ -264,7 +262,6 @@ namespace RealismMod
 
         public static void InitialStaCalc(Weapon __instance)
         {
-            Logger.LogWarning("===============InitialStaCalc================");
             WeaponStats._WeapClass = __instance.WeapClass;
             bool isManual = WeaponStats.IsManuallyOperated(__instance);
             WeaponStats._IsManuallyOperated = isManual;

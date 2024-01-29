@@ -256,8 +256,6 @@ namespace RealismMod
                 RecoilController.BaseTotalRecoilAngle = (float)Math.Round(angle, 2);
                 RecoilController.BaseTotalDispersion = (float)Math.Round(dispersion, 2);
 
-                Logger.LogWarning("angle " + WeaponStats.TotalRecoilAngle);
-
                 return false;
             }
             return true;
@@ -307,7 +305,6 @@ namespace RealismMod
                 __instance.ShotRecoilProcessValues[3].IntensityMultiplicator = cameraRecoil;
                 __instance.ShotRecoilProcessValues[4].IntensityMultiplicator = -cameraRecoil;
                 RecoilController.BaseTotalCamRecoil = cameraRecoil;
-                Logger.LogWarning("cameraRecoil " + cameraRecoil);
 
                 RecoilController.BaseTotalVRecoil = (float)Math.Round(__instance.BasicPlayerRecoilRotationStrength.y, 3);
                 RecoilController.BaseTotalHRecoil = (float)Math.Round(__instance.BasicPlayerRecoilPositionStrength.y, 3);

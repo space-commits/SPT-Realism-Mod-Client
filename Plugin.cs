@@ -532,15 +532,15 @@ namespace RealismMod
                 new PlayerErgoPatch().Enable();
 
                 new SyncWithCharacterSkillsPatch().Enable();
-/*                new UpdateWeaponVariablesPatch().Enable();*/
+                new UpdateWeaponVariablesPatch().Enable();
                 new SetAimingSlowdownPatch().Enable();
 
-/*                //Sway and Aim Inertia
+                //Sway and Aim Inertia
                 new PwaWeaponParamsPatch().Enable();
                 new UpdateSwayFactorsPatch().Enable();
                 new GetOverweightPatch().Enable();
                 new SetOverweightPatch().Enable();
-                new BreathProcessPatch().Enable();*/
+/*                new BreathProcessPatch().Enable();*/
 
                 //Recoil Patches
                 new RecalcWeaponParametersPatch().Enable();
@@ -554,13 +554,13 @@ namespace RealismMod
                 new SetAimingPatch().Enable();
                 new ToggleAimPatch().Enable();
 
-       /*         if (Plugin.EnableParralax.Value)
+                if (Plugin.EnableParralax.Value)
                 {
                     new CalibrationLookAt().Enable();
                     new CalibrationLookAtScope().Enable();
                 }
 
-                //Malf Patches
+/*                //Malf Patches
                 if (Plugin.EnableMalfPatch.Value && ModConfig.malf_changes)
                 {
                     new GetTotalMalfunctionChancePatch().Enable();
@@ -762,12 +762,12 @@ namespace RealismMod
 
             if (Utils.CheckIsReady())
             {
-                /*    if (!Plugin.HasReloadedAudio)
-                    {
-                        loadAudioClips();
-                        Plugin.HasReloadedAudio = true;
-                    }
-    */
+                if (!Plugin.HasReloadedAudio)
+                {
+                    loadAudioClips();
+                    Plugin.HasReloadedAudio = true;
+                }
+
                 if (RecoilController.ShotCount > RecoilController.PrevShotCount)
                 {
                     RecoilController.IsFiring = true;
