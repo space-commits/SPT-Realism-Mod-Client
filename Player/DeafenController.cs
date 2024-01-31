@@ -23,6 +23,11 @@ namespace RealismMod
         public static CC_FastVignette Vignette;
         public static PrismEffects PrismEffects;
 
+        public static bool IsBotFiring = false;
+        public static bool GrenadeExploded = false;
+        public static float BotTimer = 0.0f;
+        public static float GrenadeTimer = 0.0f;
+
         public static float DryVolume = 0f;
         public static float GunsVolume = 0f;
         public static float AmbientVolume = 0f;
@@ -88,7 +93,7 @@ namespace RealismMod
                 ResetDeafValues(deafFactor, ref VignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafReset.Value, VolumeLimit, ref Distortion, Plugin.DistReset.Value, DistortionLimit, enviroMulti, true);
             }
 
-            if (Plugin.IsBotFiring)
+            if (IsBotFiring)
             {
                 ChangeDeafValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafRate.Value, VolumeLimit, ref BotDistortion, Plugin.DistRate.Value, DistortionLimit, enviroMulti);
             }
@@ -97,7 +102,7 @@ namespace RealismMod
                 ResetDeafValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafReset.Value, VolumeLimit, ref BotDistortion, Plugin.DistReset.Value, DistortionLimit, enviroMulti, false);
             }
 
-            if (Plugin.GrenadeExploded)
+            if (GrenadeExploded)
             {
                 ChangeDeafValues(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessIncreaseRate, GrenadeVignetteDarknessLimit, ref GrenadeVolume, GrenadeVolumeDecreaseRate, GrenadeVolumeLimit, ref GrenadeDistortion, GrenadeDistortionIncreaseRate, GrenadeDistortionLimit, enviroMulti);
             }

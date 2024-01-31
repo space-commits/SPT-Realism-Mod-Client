@@ -64,7 +64,7 @@ namespace RealismMod
             if (player.IsYourPlayer && !ignoreClamp)
             {
                 deltaRotation = movementContext.ClampRotation(deltaRotation);
-                Plugin.MouseRotation = deltaRotation;
+                StanceController.MouseRotation = deltaRotation;
 
                 if (!StanceController.IsMounting)
                 {
@@ -89,7 +89,7 @@ namespace RealismMod
                     float baseAngle = RecoilController.BaseTotalRecoilAngle;
                     float totalRecAngle = StanceController.IsMounting ? Mathf.Min(baseAngle + 15, 90f) : StanceController.IsBracing ? Mathf.Min(baseAngle + 8f, 90f) : baseAngle;
                     totalRecAngle = WeaponStats._WeapClass != "pistol" ? totalRecAngle : totalRecAngle - 5;
-                    float hipfireModifier = !Plugin.IsAiming ? 1.1f : 1f;
+                    float hipfireModifier = !StanceController.IsAiming ? 1.1f : 1f;
                     float dispersionSpeedFactor = WeaponStats._WeapClass != "pistol" ? 1f + (-WeaponStats.TotalDispersionDelta) : 1f;
                     float dispersionAngleFactor = WeaponStats._WeapClass != "pistol" ? 1f + (-WeaponStats.TotalDispersionDelta * 0.035f) : 1f;
                     float angle = (Plugin.RecoilDispersionFactor.Value == 0f ? 0f : ((90f - (totalRecAngle * dispersionAngleFactor)) / 50f));
@@ -320,7 +320,7 @@ namespace RealismMod
 
                 if (WeaponStats.WeapID != template._id)
                 {
-                    Plugin.DidWeaponSwap = true;
+                    StanceController.DidWeaponSwap = true;
                 }
                 WeaponStats.WeapID = template._id;
 
@@ -366,7 +366,7 @@ namespace RealismMod
                 float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 100f);
 
                 float activeAimingBonus = StanceController.IsActiveAiming ? 0.9f : 1f;
-                float aimCamRecoilBonus = StanceController.IsActiveAiming || !Plugin.IsAiming ? 0.8f : 1f;
+                float aimCamRecoilBonus = StanceController.IsActiveAiming || !StanceController.IsAiming ? 0.8f : 1f;
                 float shortStockingDebuff = StanceController.IsShortStock ? 1.15f : 1f;
                 float shortStockingCamBonus = StanceController.IsShortStock ? 0.6f : 1f;
 
@@ -375,9 +375,9 @@ namespace RealismMod
                 float baseRecoilAngle = RecoilController.BaseTotalRecoilAngle;
                 float mountingAngleModi = StanceController.IsMounting ? Mathf.Min(baseRecoilAngle + 15f, 90f) : StanceController.IsBracing ? Mathf.Min(baseRecoilAngle + 8f, 90f) : baseRecoilAngle;
                 
-                float opticRecoilMulti = allowedCalibers.Contains(firearmController.Weapon.AmmoCaliber) && Plugin.IsAiming && Plugin.HasOptic ? 0.93f : 1f;
+                float opticRecoilMulti = allowedCalibers.Contains(firearmController.Weapon.AmmoCaliber) && StanceController.IsAiming && WeaponStats.HasOptic ? 0.93f : 1f;
                 float fovFactor = (Singleton<SharedGameSettingsClass>.Instance.Game.Settings.FieldOfView / 70f) * Plugin.HRecLimitMulti.Value;
-                float opticLimit = Plugin.IsAiming && Plugin.HasOptic ? 15f * fovFactor : 25f * fovFactor;
+                float opticLimit = StanceController.IsAiming && WeaponStats.HasOptic ? 15f * fovFactor : 25f * fovFactor;
 
                 float shotFactor = firearmController.Weapon.WeapClass == "pistol" && RecoilController.ShotCount >= 1f && firearmController.Weapon.SelectedFireMode == Weapon.EFireMode.fullauto ? 0.5f : 1f;
 
@@ -440,24 +440,24 @@ namespace RealismMod
                 }
 
                 //Calculate offest for zero shift
-                if (Plugin.ScopeAccuracyFactor > 1f)
+                if (WeaponStats.ScopeAccuracyFactor > 1f)
                 {
-                    float chanceFactor = 1f + ((Plugin.ScopeAccuracyFactor - 1f) * 2f);
+                    float chanceFactor = 1f + ((WeaponStats.ScopeAccuracyFactor - 1f) * 2f);
                     float gunFactor = firearmController.Weapon.TemplateId == "6183afd850224f204c1da514" || firearmController.Weapon.TemplateId == "6165ac306ef05c2ce828ef74" ? 2f : 1f;
                     float shiftRecoilFactor = (RecoilController.FactoredTotalCamRecoil + RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil) * (1f + (totalCamRecoil * 10f)) * gunFactor;
                     System.Random rnd = new System.Random();
                     int num = rnd.Next(1, 10);
                     if (num <= Mathf.Min(1 + (0.05f * shiftRecoilFactor * chanceFactor), 8))
                     {
-                        float offsetFactor = (Plugin.ScopeAccuracyFactor - 1f) * (0.0027f * shiftRecoilFactor);
+                        float offsetFactor = (WeaponStats.ScopeAccuracyFactor - 1f) * (0.0027f * shiftRecoilFactor);
                         float offsetX = Random.Range(-offsetFactor, offsetFactor);
                         float offsetY = Random.Range(-offsetFactor, offsetFactor);
-                        Plugin.ZeroRecoilOffset = new Vector2(offsetX, offsetY);
-                        if (Plugin.ScopeID != null && Plugin.ScopeID != "")
+                        WeaponStats.ZeroRecoilOffset = new Vector2(offsetX, offsetY);
+                        if (WeaponStats.ScopeID != null && WeaponStats.ScopeID != "")
                         {
-                            if (Plugin.ZeroOffsetDict.ContainsKey(Plugin.ScopeID))
+                            if (WeaponStats.ZeroOffsetDict.ContainsKey(WeaponStats.ScopeID))
                             {
-                                Plugin.ZeroOffsetDict[Plugin.ScopeID] = Plugin.ZeroRecoilOffset;
+                                WeaponStats.ZeroOffsetDict[WeaponStats.ScopeID] = WeaponStats.ZeroRecoilOffset;
                             }
                         }
                     }

@@ -66,7 +66,7 @@ namespace RealismMod
         public static ConfigEntry<bool> EnableNVGPatch { get; set; }
         public static ConfigEntry<bool> EnableMalfPatch { get; set; }
         public static ConfigEntry<bool> InspectionlessMalfs { get; set; }
-        public static ConfigEntry<bool> enableSGMastering { get; set; }
+        public static ConfigEntry<bool> EnableSGMastering { get; set; }
         public static ConfigEntry<bool> EnableStockSlots { get; set; }
         public static ConfigEntry<bool> EnableAmmoStats { get; set; }
         public static ConfigEntry<bool> EnableReloadPatches { get; set; }
@@ -232,7 +232,7 @@ namespace RealismMod
         public static ConfigEntry<float> ShortStockReadyRotationX { get; set; }
         public static ConfigEntry<float> ShortStockReadyRotationY { get; set; }
         public static ConfigEntry<float> ShortStockReadyRotationZ { get; set; }
-      
+
         public static ConfigEntry<float> GlobalAimSpeedModifier { get; set; }
         public static ConfigEntry<float> GlobalReloadSpeedMulti { get; set; }
         public static ConfigEntry<float> GlobalFixSpeedMulti { get; set; }
@@ -315,46 +315,19 @@ namespace RealismMod
         public static ConfigEntry<float> test9 { get; set; }
         public static ConfigEntry<float> test10 { get; set; }
 
-        public static Vector3 WeaponOffsetPosition;
-
-        public static Dictionary<string, Vector2> ZeroOffsetDict = new Dictionary<string, Vector2>();
-        public static Vector2 MouseRotation;
-        public static Vector2 ZeroRecoilOffset;
-        public static string ScopeID;
-        public static float ScopeAccuracyFactor = 0f;
-        public static float Parralax = 0.07f;
-
-        public static bool DidWeaponSwap = false;
-        public static bool IsInInventory = false;
-
-        public static bool IsBotFiring = false;
-        public static bool GrenadeExploded = false;
-        public static bool IsAiming = false;
-        public static bool IsBlindFiring = false;
-        public static bool WasMisfeed = false;
-
-        public static float BotTimer = 0.0f;
-        public static float GrenadeTimer = 0.0f;
-
         public static Dictionary<Enum, Sprite> IconCache = new Dictionary<Enum, Sprite>();
         public static Dictionary<string, AudioClip> LoadedAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, Sprite> LoadedSprites = new Dictionary<string, Sprite>();
 
-        private string ModPath;
-        private string ConfigFilePath;
-        private string ConfigJson;
-        public static ConfigTemplate ModConfig;
-        private static bool warnedUser = false;
-
-        public static bool HasOptic = false;
-
-        public static float healthControllerTick = 0f;
-
-        public static bool IsInThirdPerson = false;
-
         public static GameObject Hook;
         public static MountingUI MountingUIComponent;
 
+        private string ModPath;
+        private string ConfigFilePath;
+        private string ConfigJson;
+        public static ConfigTemplate ServerConfig;
+
+        private static bool warnedUser = false;
         public static bool HasReloadedAudio = false;
 
         private void getPaths()
@@ -367,7 +340,7 @@ namespace RealismMod
         private void configCheck()
         {
             ConfigJson = File.ReadAllText(ConfigFilePath);
-            ModConfig = JsonConvert.DeserializeObject<ConfigTemplate>(ConfigJson);
+            ServerConfig = JsonConvert.DeserializeObject<ConfigTemplate>(ConfigJson);
         }
 
         private async void cacheIcons()
@@ -519,17 +492,16 @@ namespace RealismMod
 
             initConfigs();
 
-
             /*    new SetSkinPatch().Enable();*/
-/*            new ShouldFragPatch().Enable();
+            new ShouldFragPatch().Enable();
             new DamageInfoPatch().Enable();
             new IsPenetratedPatch().Enable();
             new PenStatusPatch().Enable();
             new ApplyDamageInfoPatch().Enable();
             new ApplyDamagePatch().Enable();
-            new ApplyArmorDamagePatch().Enable();*/
+            new ApplyArmorDamagePatch().Enable();
 
-            if (ModConfig.recoil_attachment_overhaul)
+            if (ServerConfig.recoil_attachment_overhaul)
             {
                 //Stat assignment patches
                 new COIDeltaPatch().Enable();
@@ -563,24 +535,24 @@ namespace RealismMod
                 new SetAimingPatch().Enable();
                 new ToggleAimPatch().Enable();
 
-                if (Plugin.EnableParralax.Value)
+                if (EnableParralax.Value)
                 {
                     new CalibrationLookAt().Enable();
                     new CalibrationLookAtScope().Enable();
                 }
 
                 //Malf Patches
-                if (Plugin.EnableMalfPatch.Value && ModConfig.malf_changes)
+                if (EnableMalfPatch.Value && ServerConfig.malf_changes)
                 {
                     new GetTotalMalfunctionChancePatch().Enable();
                 }
-                if (Plugin.InspectionlessMalfs.Value)
+                if (InspectionlessMalfs.Value)
                 {
                     new IsKnownMalfTypePatch().Enable();
                 }
 
                 //Reload Patches
-                if (Plugin.EnableReloadPatches.Value)
+                if (EnableReloadPatches.Value)
                 {
                     new CanStartReloadPatch().Enable();
                     new ReloadMagPatch().Enable();
@@ -607,7 +579,7 @@ namespace RealismMod
                 new SetAnimatorAndProceduralValuesPatch().Enable();
                 new OnItemAddedOrRemovedPatch().Enable();
 
-                if (Plugin.enableSGMastering.Value == true)
+                if (EnableSGMastering.Value == true)
                 {
                     new SetWeaponLevelPatch().Enable();
                 }
@@ -637,14 +609,14 @@ namespace RealismMod
 
 /*                new HeadsetConstructorPatch().Enable();*/
 
-                if (Plugin.IncreaseCOI.Value == true)
+                if (IncreaseCOI.Value == true)
                 {
                     new GetTotalCenterOfImpactPatch().Enable();
                 }
             }
 
             //Ballistics
-            if (ModConfig.realistic_ballistics)
+            if (ServerConfig.realistic_ballistics)
             {
        /*         new CreateShotPatch().Enable();*/
 /*                new ApplyDamagePatch().Enable();
@@ -672,7 +644,7 @@ namespace RealismMod
 
                 new IsShotDeflectedByHeavyArmorPatch().Enable();*/
 
-                if (Plugin.EnableArmPen.Value)
+                if (EnableArmPen.Value)
                 {
               /*      new IsPenetratedPatch().Enable();*/
                 }
@@ -755,11 +727,11 @@ namespace RealismMod
             if ((int)Time.time % 5 == 0 && !warnedUser)
             {
                 warnedUser = true;
-                if (Chainloader.PluginInfos.ContainsKey("com.servph.realisticrecoil") && ModConfig.recoil_attachment_overhaul)
+                if (Chainloader.PluginInfos.ContainsKey("com.servph.realisticrecoil") && ServerConfig.recoil_attachment_overhaul)
                 {
                     NotificationManagerClass.DisplayWarningNotification("ERROR: COMBAT OVERHAUL DETECTED, IT IS NOT COMPATIBLE!", EFT.Communications.ENotificationDurationType.Long);
                 }
-                if (Chainloader.PluginInfos.ContainsKey("com.IcyClawz.MunitionsExpert") && ModConfig.recoil_attachment_overhaul)
+                if (Chainloader.PluginInfos.ContainsKey("com.IcyClawz.MunitionsExpert") && ServerConfig.recoil_attachment_overhaul)
                 {
                     NotificationManagerClass.DisplayWarningNotification("ERROR: MUNITIONS EXPERT DETECTED, IT IS NOT COMPATIBLE!", EFT.Communications.ENotificationDurationType.Long);
                 }
@@ -792,7 +764,7 @@ namespace RealismMod
                     RecoilController.ShotTimer += Time.deltaTime;
                     RecoilController.MovementSpeedShotTimer += Time.deltaTime;
 
-                    if (RecoilController.ShotTimer >= Plugin.ResetTime.Value)
+                    if (RecoilController.ShotTimer >= ResetTime.Value)
                     {
                         RecoilController.IsFiring = false;
                         RecoilController.ShotCount = 0;
@@ -1000,7 +972,7 @@ namespace RealismMod
             EnableMalfPatch = Config.Bind<bool>(waponSettings, "Enable Malfunctions Changes", true, new ConfigDescription("Requires Restart. Malfunction Changes Must Be Enabled On The Server (Config App). Some Subsonic Ammo Needs Special Mods To Cycle, Malfunctions Can Happen At Any Durability But The Chance Is Significantly Reduced If Above The Durability Threshold.", null, new ConfigurationManagerAttributes { Order = 2 }));
             InspectionlessMalfs = Config.Bind<bool>(waponSettings, "Enable Inspectionless Malfunctions", true, new ConfigDescription("Requires Restart. You Don't Need To Inspect A Malfunction In Order To Clear It.", null, new ConfigurationManagerAttributes { Order = 3 }));
             DuraMalfThreshold = Config.Bind<float>(waponSettings, "Malfunction Durability Threshold", 98f, new ConfigDescription("Malfunction Changes Must Be Enabled On The Server (Config App) And 'Enable Malfunctions Changes' Must Be True. Malfunction Chance Is Significantly Reduced Until This Durability Threshold Is Exceeded.", new AcceptableValueRange<float>(1f, 100f), new ConfigurationManagerAttributes { Order = 4 }));
-            enableSGMastering = Config.Bind<bool>(waponSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 5 }));
+            EnableSGMastering = Config.Bind<bool>(waponSettings, "Enable Increased Shotgun Mastery", true, new ConfigDescription("Requires Restart. Shotguns Will Get Set To Base Lvl 2 Mastery For Reload Animations, Giving Them Better Pump Animations. ADS while Reloading Is Unaffected.", null, new ConfigurationManagerAttributes { Order = 5 }));
             IncreaseCOI = Config.Bind<bool>(waponSettings, "Enable Increased Inaccuracy", true, new ConfigDescription("Requires Restart. Increases The Innacuracy Of All Weapons So That MOA/Accuracy Is A More Important Stat.", null, new ConfigurationManagerAttributes { Order = 6 }));
 
             SharedMovementVolume = Config.Bind<float>(deafSettings, "Shared Movement Volume Multi", 1f, new ConfigDescription("Multiplier For Player + NPC Sprint Volume. Has To Be Shared Due To BSG Jank.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 60, IsAdvanced = false }));
@@ -1080,7 +1052,7 @@ namespace RealismMod
             ActiveAimRotationX = Config.Bind<float>(activeAim, "Active Aim Rotation X-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 122, IsAdvanced = true }));
             ActiveAimRotationY = Config.Bind<float>(activeAim, "Active Aim Rotation Y-Axis", -35.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 121, IsAdvanced = true }));
             ActiveAimRotationZ = Config.Bind<float>(activeAim, "Active Aim Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 120, IsAdvanced = true }));
-            
+
             ActiveAimAdditionalRotationX = Config.Bind<float>(activeAim, "Active Aiming Additional Rotation X-Axis", -1.5f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 111, IsAdvanced = true }));
             ActiveAimAdditionalRotationY = Config.Bind<float>(activeAim, "Active Aiming Additional Rotation Y-Axis", -70f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true }));
             ActiveAimAdditionalRotationZ = Config.Bind<float>(activeAim, "Active Aiming Additional Rotation Z-Axis", 2f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true }));

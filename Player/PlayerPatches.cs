@@ -372,7 +372,7 @@ namespace RealismMod
 
         private static void PatchPostfix(Player __instance)
         {
-            if (Plugin.EnableDeafen.Value && Plugin.ModConfig.headset_changes)
+            if (Plugin.EnableDeafen.Value && Plugin.ServerConfig.headset_changes)
             {
                 SurfaceSet currentSet = (SurfaceSet)AccessTools.Field(typeof(Player), "_currentSet").GetValue(__instance);
                 currentSet.SprintSoundBank.BaseVolume = Plugin.SharedMovementVolume.Value;
@@ -387,7 +387,7 @@ namespace RealismMod
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
                 PlayerStats.IsSprinting = __instance.IsSprintEnabled;
                 PlayerStats.EnviroType = __instance.Environment;
-                Plugin.IsInInventory = __instance.IsInventoryOpened;
+                StanceController.IsInInventory = __instance.IsInventoryOpened;
                 float mountingSwayBonus = StanceController.IsMounting ? StanceController.MountingSwayBonus : StanceController.BracingSwayBonus;
                 PlayerStats.IsMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
 

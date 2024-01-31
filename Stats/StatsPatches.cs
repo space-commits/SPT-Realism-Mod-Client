@@ -507,7 +507,7 @@ namespace RealismMod
                     }
                 }
 
-                Plugin.ScopeAccuracyFactor = currentSightFactor > 1f ? 1f - ((currentSightFactor - 1f) * 4f) : 2f - currentSightFactor;
+                WeaponStats.ScopeAccuracyFactor = currentSightFactor > 1f ? 1f - ((currentSightFactor - 1f) * 4f) : 2f - currentSightFactor;
                 bool isBracingTop = StanceController.IsBracingTop;
                 float mountingFactor = StanceController.IsBracing && isBracingTop ? 1.05f : StanceController.IsBracing && !isBracingTop ? 1.025f : StanceController.IsMounting && isBracingTop ? 1.1f : StanceController.IsMounting && !isBracingTop ? 1.075f : 1f;
                 float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * currentSightFactor * mountingFactor;

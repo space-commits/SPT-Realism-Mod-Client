@@ -343,7 +343,7 @@ namespace RealismMod
             float meleeDmg = AttachmentProperties.ModMeleeDamage(__instance);
             float meleePen = AttachmentProperties.ModMeleePen(__instance);
 
-            if (Plugin.EnableMalfPatch.Value == true && Plugin.ModConfig.malf_changes == true)
+            if (Plugin.EnableMalfPatch.Value == true && Plugin.ServerConfig.malf_changes == true)
             {
                 ItemAttributeClass malfAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.MalfunctionChance);
                 malfAtt.Name = ENewItemAttributeId.MalfunctionChance.GetName();

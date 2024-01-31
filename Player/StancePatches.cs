@@ -65,7 +65,7 @@ namespace RealismMod
         {
             if (item?.Owner?.ID != null && item.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
-                Plugin.DidWeaponSwap = true;
+                StanceController.DidWeaponSwap = true;
             }
         }
     }
@@ -412,7 +412,7 @@ namespace RealismMod
                         weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.8f);
                         return;
                     }
-                    if (StanceController.WasShortStock && Plugin.IsAiming)
+                    if (StanceController.WasShortStock && StanceController.IsAiming)
                     {
                         weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.7f);
                         return;
@@ -443,7 +443,7 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
             if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
             {
-                Plugin.WeaponOffsetPosition = __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value);
+                StanceController.WeaponOffsetPosition = __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value);
                 __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value);
             }
         }
@@ -493,7 +493,7 @@ namespace RealismMod
                 float blindFireBlendValue = __instance.BlindfireBlender.Value;
                 if (Mathf.Abs(blindFireBlendValue) > 0f)
                 {
-                    Plugin.IsBlindFiring = true;
+                    StanceController.IsBlindFiring = true;
                     float strength = ((Mathf.Abs(__instance.Pitch) < 45f) ? 1f : ((90f - Mathf.Abs(__instance.Pitch)) / 45f));
                     blindfireStrengthField.SetValue(__instance, strength);
                     __instance.BlindFireEndPosition = ((blindFireBlendValue > 0f) ? __instance.BlindFireOffset : __instance.SideFireOffset);
@@ -501,7 +501,7 @@ namespace RealismMod
                 }
                 else 
                 {
-                    Plugin.IsBlindFiring = false;
+                    StanceController.IsBlindFiring = false;
                     blindfirePositionField.SetValue(__instance, Vector3.zero);
                     blindfireRotationField.SetValue(__instance, Vector3.zero);
                 }
@@ -551,7 +551,7 @@ namespace RealismMod
             if (player.IsYourPlayer)
             {
 
-                Plugin.MouseRotation = movementContext.ClampRotation(deltaRotation);
+                StanceController.MouseRotation = movementContext.ClampRotation(deltaRotation);
 
                 if (!StanceController.IsMounting)
                 {
@@ -697,7 +697,7 @@ namespace RealismMod
 
                 if (player.IsYourPlayer)
                 {
-                    Plugin.IsInThirdPerson = true;
+                    StanceController.IsInThirdPerson = true;
 
                     float aimSpeed = (float)aimSpeedField.GetValue(__instance);
                     bool isAiming = (bool)isAimingField.GetValue(__instance);
@@ -720,7 +720,7 @@ namespace RealismMod
 
                     if (isPistol && !WeaponStats.HasShoulderContact && Plugin.EnableAltPistol.Value && !StanceController.IsPatrolStance)
                     {
-                        if (StanceController.PistolIsCompressed && !Plugin.IsAiming && !isResettingPistol && !Plugin.IsBlindFiring)
+                        if (StanceController.PistolIsCompressed && !StanceController.IsAiming && !isResettingPistol && !StanceController.IsBlindFiring)
                         {
                             StanceController.StanceBlender.Target = 1f;
                         }
@@ -729,7 +729,7 @@ namespace RealismMod
                             StanceController.StanceBlender.Target = 0f;
                         }
 
-                        if ((!StanceController.PistolIsCompressed && !Plugin.IsAiming && !isResettingPistol) || (Plugin.IsBlindFiring))
+                        if ((!StanceController.PistolIsCompressed && !StanceController.IsAiming && !isResettingPistol) || (StanceController.IsBlindFiring))
                         {
                             StanceController.StanceTargetPosition = Vector3.Lerp(StanceController.StanceTargetPosition, Vector3.zero, 5f * dt);
                         }
@@ -742,7 +742,7 @@ namespace RealismMod
                     }
                     else if (!isPistol || WeaponStats.HasShoulderContact)
                     {
-                        if ((!isInStance && allStancesReset) || (cancelBecauseShooting && !isInShootableStance) || Plugin.IsAiming || cancelStance || Plugin.IsBlindFiring)
+                        if ((!isInStance && allStancesReset) || (cancelBecauseShooting && !isInShootableStance) || StanceController.IsAiming || cancelStance || StanceController.IsBlindFiring)
                         {
                             StanceController.StanceBlender.Target = 0f;
                         }
@@ -751,7 +751,7 @@ namespace RealismMod
                             StanceController.StanceBlender.Target = 1f;
                         }
 
-                        if (((!isInStance && allStancesReset) && !cancelBecauseShooting && !Plugin.IsAiming) || (Plugin.IsBlindFiring))
+                        if (((!isInStance && allStancesReset) && !cancelBecauseShooting && !StanceController.IsAiming) || (StanceController.IsBlindFiring))
                         {
                             StanceController.StanceTargetPosition = Vector3.Lerp(StanceController.StanceTargetPosition, Vector3.zero, 5f * dt);
                         }
@@ -960,7 +960,7 @@ namespace RealismMod
             {
                 FirearmController fc = player.HandsController as FirearmController;
 
-                Plugin.IsInThirdPerson = false;
+                StanceController.IsInThirdPerson = false;
 
                 float aimSpeed = (float)aimSpeedField.GetValue(__instance);
                 float fovScale = (float)fovScaleField.GetValue(__instance);
@@ -1012,7 +1012,7 @@ namespace RealismMod
 
                 if (isPistol && !StanceController.IsPatrolStance)
                 {
-                    if (StanceController.PistolIsCompressed && !Plugin.IsAiming && !isResettingPistol && !Plugin.IsBlindFiring && !__instance.LeftStance)
+                    if (StanceController.PistolIsCompressed && !StanceController.IsAiming && !isResettingPistol && !StanceController.IsBlindFiring && !__instance.LeftStance)
                     {
                         StanceController.StanceBlender.Target = 1f;
                     }
@@ -1021,7 +1021,7 @@ namespace RealismMod
                         StanceController.StanceBlender.Target = 0f;
                     }
 
-                    if ((!StanceController.PistolIsCompressed && !Plugin.IsAiming && !isResettingPistol) || Plugin.IsBlindFiring || __instance.LeftStance)
+                    if ((!StanceController.PistolIsCompressed && !StanceController.IsAiming && !isResettingPistol) || StanceController.IsBlindFiring || __instance.LeftStance)
                     {
                         StanceController.StanceTargetPosition = Vector3.Lerp(StanceController.StanceTargetPosition, Vector3.zero, 5f * dt);
                     }
@@ -1034,7 +1034,7 @@ namespace RealismMod
                 }
                 else if (!isPistol || WeaponStats.HasShoulderContact)
                 {
-                    if ((!isInStance && allStancesReset) || (cancelBecauseShooting && !isInShootableStance) || Plugin.IsAiming || cancelStance || Plugin.IsBlindFiring || __instance.LeftStance)
+                    if ((!isInStance && allStancesReset) || (cancelBecauseShooting && !isInShootableStance) || StanceController.IsAiming || cancelStance || StanceController.IsBlindFiring || __instance.LeftStance)
                     {
                         StanceController.StanceBlender.Target = 0f;
                     }
@@ -1043,7 +1043,7 @@ namespace RealismMod
                         StanceController.StanceBlender.Target = 1f;
                     }
 
-                    if (((!isInStance && allStancesReset) && !cancelBecauseShooting && !Plugin.IsAiming) || Plugin.IsBlindFiring || __instance.LeftStance)
+                    if (((!isInStance && allStancesReset) && !cancelBecauseShooting && !StanceController.IsAiming) || StanceController.IsBlindFiring || __instance.LeftStance)
                     {
                         StanceController.StanceTargetPosition = Vector3.Lerp(StanceController.StanceTargetPosition, Vector3.zero, 5f * dt);
                     }

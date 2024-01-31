@@ -96,7 +96,7 @@ namespace RealismMod
             {
                 pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0f;
                 pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0f;
-                Vector3 wiggleDir = new Vector3(-1.5f, -1.5f, 0f) * ergoWeightFactor * playerWeightFactor * (Plugin.HasOptic ? 0.5f : 1f);
+                Vector3 wiggleDir = new Vector3(-1.5f, -1.5f, 0f) * ergoWeightFactor * playerWeightFactor * (WeaponStats.HasOptic ? 0.5f : 1f);
 
                 if (pwa.IsAiming && !didAimWiggle)
                 {
@@ -150,7 +150,7 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(__instance, newAimSpeed); //aimspeed
                     float aimingSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").GetValue(__instance); //aimspeed
 
-                    Plugin.HasOptic = __instance.CurrentScope.IsOptic ? true : false;
+                    WeaponStats.HasOptic = __instance.CurrentScope.IsOptic ? true : false;
 
                     float ergoWeight = WeaponStats.ErgonomicWeight * PlayerStats.ErgoDeltaInjuryMulti * (1f - (PlayerStats.StrengthSkillAimBuff * 1.5f));
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_ergonomicWeight").SetValue(__instance, ergoWeight);
@@ -197,19 +197,19 @@ namespace RealismMod
 
                     if (__instance.CurrentAimingMod != null)
                     {
-                        Plugin.Parralax = Plugin.HasOptic ? 0.04f * Plugin.ScopeAccuracyFactor : 0.045f * Plugin.ScopeAccuracyFactor;
+                        WeaponStats.Parralax = WeaponStats.HasOptic ? 0.04f * WeaponStats.ScopeAccuracyFactor : 0.045f * WeaponStats.ScopeAccuracyFactor;
                         string id = (__instance.CurrentAimingMod?.Item?.Id != null) ? __instance.CurrentAimingMod.Item.Id : "";
-                        Plugin.ScopeID = id;
+                        WeaponStats.ScopeID = id;
                         if (id != null)
                         {
-                            if (Plugin.ZeroOffsetDict.TryGetValue(id, out Vector2 offset))
+                            if (WeaponStats.ZeroOffsetDict.TryGetValue(id, out Vector2 offset))
                             {
-                                Plugin.ZeroRecoilOffset = offset;
+                                WeaponStats.ZeroRecoilOffset = offset;
                             }
                             else
                             {
-                                Plugin.ZeroRecoilOffset = Vector2.zero;
-                                Plugin.ZeroOffsetDict.Add(id, Plugin.ZeroRecoilOffset);
+                                WeaponStats.ZeroRecoilOffset = Vector2.zero;
+                                WeaponStats.ZeroOffsetDict.Add(id, WeaponStats.ZeroRecoilOffset);
                             }
                         }
                     }
@@ -376,23 +376,23 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
-                if (__instance.CurrentAimingMod != null && !__instance.CurrentScope.IsOptic && Plugin.ScopeID != null && Plugin.ScopeID != "")
+                if (__instance.CurrentAimingMod != null && !__instance.CurrentScope.IsOptic && WeaponStats.ScopeID != null && WeaponStats.ScopeID != "")
                 {
                     float distance = __instance.CurrentAimingMod.GetCurrentOpticCalibrationDistance();
 
                     if (recordedDistance != distance)
                     {
-                        Plugin.ZeroRecoilOffset = Vector2.zero;
-                        if (Plugin.ZeroOffsetDict.ContainsKey(Plugin.ScopeID))
+                        WeaponStats.ZeroRecoilOffset = Vector2.zero;
+                        if (WeaponStats.ZeroOffsetDict.ContainsKey(WeaponStats.ScopeID))
                         {
-                            Plugin.ZeroOffsetDict[Plugin.ScopeID] = Plugin.ZeroRecoilOffset;
+                            WeaponStats.ZeroOffsetDict[WeaponStats.ScopeID] = WeaponStats.ZeroRecoilOffset;
                         }
                     }
 
                     recordedDistance = distance;
                     float factor = distance / 25f; //need to find default zero
-                    Vector3 recoilOffset = new Vector3(Plugin.ZeroRecoilOffset.x * factor, Plugin.ZeroRecoilOffset.y * factor);
-                    Vector3 target = point + new Vector3(Plugin.MouseRotation.x * factor * -Plugin.Parralax, Plugin.MouseRotation.y * factor * Plugin.Parralax, 0f);
+                    Vector3 recoilOffset = new Vector3(WeaponStats.ZeroRecoilOffset.x * factor, WeaponStats.ZeroRecoilOffset.y * factor);
+                    Vector3 target = point + new Vector3(StanceController.MouseRotation.x * factor * -WeaponStats.Parralax, StanceController.MouseRotation.y * factor * WeaponStats.Parralax, 0f);
                     target = Utils.YourPlayer.MovementContext.CurrentState.Name == EPlayerState.Sidestep ? point : target;
                     point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
                 }
@@ -420,23 +420,23 @@ namespace RealismMod
             Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
-                if (__instance.CurrentAimingMod != null && Plugin.ScopeID != null && Plugin.ScopeID != "")
+                if (__instance.CurrentAimingMod != null && WeaponStats.ScopeID != null && WeaponStats.ScopeID != "")
                 {
                     float distance = __instance.CurrentAimingMod.GetCurrentOpticCalibrationDistance();
 
                     if (recordedDistance != distance)
                     {
-                        Plugin.ZeroRecoilOffset = Vector2.zero;
-                        if (Plugin.ZeroOffsetDict.ContainsKey(Plugin.ScopeID))
+                        WeaponStats.ZeroRecoilOffset = Vector2.zero;
+                        if (WeaponStats.ZeroOffsetDict.ContainsKey(WeaponStats.ScopeID))
                         {
-                            Plugin.ZeroOffsetDict[Plugin.ScopeID] = Plugin.ZeroRecoilOffset;
+                            WeaponStats.ZeroOffsetDict[WeaponStats.ScopeID] = WeaponStats.ZeroRecoilOffset;
                         }
                     }
 
                     recordedDistance = distance;
                     float factor = distance / 50f; //need to find default zero
-                    Vector3 recoilOffset = new Vector3(Plugin.ZeroRecoilOffset.x * factor, Plugin.ZeroRecoilOffset.y * factor);
-                    Vector3 target = point + new Vector3(Plugin.MouseRotation.x * factor * -Plugin.Parralax, Plugin.MouseRotation.y * factor * Plugin.Parralax, 0f);
+                    Vector3 recoilOffset = new Vector3(WeaponStats.ZeroRecoilOffset.x * factor, WeaponStats.ZeroRecoilOffset.y * factor);
+                    Vector3 target = point + new Vector3(StanceController.MouseRotation.x * factor * -WeaponStats.Parralax, StanceController.MouseRotation.y * factor * WeaponStats.Parralax, 0f);
                     target = Utils.YourPlayer.MovementContext.CurrentState.Name == EPlayerState.Sidestep ? point : target;
                     point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
                 }

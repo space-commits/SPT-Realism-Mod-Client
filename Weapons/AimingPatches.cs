@@ -29,8 +29,8 @@ namespace RealismMod
                 bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
                 bool thermalIsOn = thermComponent != null && (thermComponent.Togglable == null || thermComponent.Togglable.On);
                 bool gearBlocksADS = Plugin.EnableFSPatch.Value && fsIsON && (!WeaponStats.WeaponCanFSADS && (!GearStats.AllowsADS(fsComponent.Item) || !PlayerStats.GearAllowsADS));
-                bool visionDeviceBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && Plugin.HasOptic) || thermalIsOn);
-                if (Plugin.ModConfig.recoil_attachment_overhaul && (visionDeviceBlocksADS || gearBlocksADS))
+                bool visionDeviceBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && WeaponStats.HasOptic) || thermalIsOn);
+                if (Plugin.ServerConfig.recoil_attachment_overhaul && (visionDeviceBlocksADS || gearBlocksADS))
                 {
                     if (!hasSetCanAds)
                     {
@@ -93,7 +93,7 @@ namespace RealismMod
 
                 if (player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire)
                 {
-                    Plugin.IsAiming = isAiming;
+                    StanceController.IsAiming = isAiming;
                     StanceController.PistolIsColliding = false;
                 }
                 else if (fc.Item.WeapClass == "pistol")

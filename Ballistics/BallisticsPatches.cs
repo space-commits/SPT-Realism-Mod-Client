@@ -625,7 +625,7 @@ namespace RealismMod
                 float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
                 float hitArmArmorFactor = hitArmArmor ? 0.5f : 1f;
                 float hitLocationModifier = forearm ? 1.5f : 1f;
-                float totalChance = Mathf.Round(Plugin.DisarmBaseChance.Value * kineticEnergyFactor * hitArmArmorFactor * hitLocationModifier);
+                float totalChance = Mathf.Round(Plugin.ClientConfig.DisarmBaseChance.Value * kineticEnergyFactor * hitArmArmorFactor * hitLocationModifier);
 
                 if (rndNumber <= totalChance)
                 {
@@ -647,12 +647,12 @@ namespace RealismMod
             float rndNumber = UnityEngine.Random.Range(0, 101);
             float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
             float hitLocationModifier = bonusChance ? 2f : 1f;
-            float totalChance = Mathf.Round(Plugin.FallBaseChance.Value * kineticEnergyFactor * hitLocationModifier);
+            float totalChance = Mathf.Round(Plugin.ClientConfig.FallBaseChance.Value * kineticEnergyFactor * hitLocationModifier);
 
             if (rndNumber <= totalChance)
             {
                 player.ToggleProne();
-                if ((isPlayer && Plugin.CanDisarmPlayer.Value) || (!isPlayer && Plugin.CanDisarmBot.Value)) 
+                if ((isPlayer && Plugin.ClientConfig.CanDisarmPlayer.Value) || (!isPlayer && Plugin.ClientConfig.CanDisarmBot.Value)) 
                 {
                     TryDoDisarm(player, kineticEnergy * 0.25f, false, false);
                 }
@@ -730,28 +730,28 @@ namespace RealismMod
         private static void playBodyHitSound(EBodyHitZone hitZone, Vector3 pos, string hitBox)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = Plugin.FleshHitSoundMulti.Value;
-            float volDist = 4f * Plugin.FleshHitSoundMulti.Value;
+            float volClose = Plugin.ClientConfig.FleshHitSoundMulti.Value;
+            float volDist = 4f * Plugin.ClientConfig.FleshHitSoundMulti.Value;
             float distThreshold = 30f;
 
             if (hitZone == EBodyHitZone.Spine)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["spine.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips["spine.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, volClose, EOcclusionTest.Regular);
                 return;
             }
             if (hitBox == HitBox.Head)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, volClose * 0.6f, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, volClose * 0.6f, EOcclusionTest.Regular);
                 return;
             }
             if (hitZone == EBodyHitZone.Heart)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["heart.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips["heart.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, volClose, EOcclusionTest.Regular);
                 return;
             }
             if (hitZone == EBodyHitZone.AssZone)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["ass_impact.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, 0.5f, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips["ass_impact.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, 0.5f, EOcclusionTest.Regular);
                 return;
             }
 
@@ -765,7 +765,7 @@ namespace RealismMod
                 audioClip = rndNum == 0 ? "flesh_1.wav" : rndNum == 1 ? "flesh_2.wav" : "flesh_3.wav";
             }
 
-            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
         }
 
         [PatchPrefix]
@@ -774,7 +774,7 @@ namespace RealismMod
             if (damageInfo.DamageType == EDamageType.Fall && damageInfo.Damage >= 15f) 
             {
                 __instance.ToggleProne();
-                if ((__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value) ||  (!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value)) 
+                if ((__instance.IsYourPlayer && Plugin.ClientConfig.CanDisarmPlayer.Value) ||  (!__instance.IsYourPlayer && Plugin.ClientConfig.CanDisarmBot.Value)) 
                 {
                     TryDoDisarm(__instance, damageInfo.Damage * 50f, false, false);
                 }
@@ -814,7 +814,7 @@ namespace RealismMod
                     hitOrientation = BallisticsController.GetHitOrientation(hitNormal, col.transform, Logger);
                 }
 
-                if (Plugin.EnableBodyHitZones.Value && !damageInfo.Blunt)
+                if (Plugin.ClientConfig.EnableBodyHitZones.Value && !damageInfo.Blunt)
                 {
                     string hitCollider = damageInfo.HittedBallisticCollider.name;
                     if (HitBox.HitValidCollider(hitCollider))
@@ -822,14 +822,14 @@ namespace RealismMod
                         EBodyHitZone hitZone = BallisticsController.GetHitBodyZone(Logger, hitCollider, localPoint, hitOrientation);
                         modifyDamageByHitZone(hitCollider, hitZone, ref damageInfo);
 
-                        if (Plugin.EnableHitSounds.Value && !__instance.IsYourPlayer)
+                        if (Plugin.ClientConfig.EnableHitSounds.Value && !__instance.IsYourPlayer)
                         {
                             System.Random rnd = new System.Random();
                             rndNum = rnd.Next(0, 2);
                             playBodyHitSound(hitZone, col.transform.position, hitCollider);
                         }
 
-                        if (Plugin.EnableBallisticsLogging.Value)
+                        if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
                         {
                             Logger.LogWarning("=========Hitzone Damage Info==========");
                             Logger.LogWarning("hit collider = " + hitCollider);
@@ -906,7 +906,7 @@ namespace RealismMod
                         float splitSpallingDmg = factoredSpallingDamage / bodyParts.Count;
 
 
-                        if (Plugin.EnableBallisticsLogging.Value)
+                        if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
                         {
                             Logger.LogWarning("===========SPALLING=============== ");
                             Logger.LogWarning("Spall Reduction " + spallReduction);
@@ -945,7 +945,7 @@ namespace RealismMod
                                 bleedFactor *= 0.5f;
                             }
 
-                            if (Plugin.EnableBallisticsLogging.Value)
+                            if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
                             {
                                 Logger.LogWarning("Part Hit " + part);
                                 Logger.LogWarning("Damage " + damage);
@@ -960,8 +960,8 @@ namespace RealismMod
 
                 float hitPartHP = __instance.ActiveHealthController.GetBodyPartHealth(bodyPartType).Current;
                 float toBeHP = hitPartHP - damageInfo.Damage;
-                bool canDoKnockdown =  !__instance.IsInPronePose && ((!__instance.IsYourPlayer && Plugin.CanFellBot.Value) || (__instance.IsYourPlayer && Plugin.CanFellPlayer.Value));
-                bool canDoDisarm = ((!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value) || (__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value));
+                bool canDoKnockdown =  !__instance.IsInPronePose && ((!__instance.IsYourPlayer && Plugin.ClientConfig.CanFellBot.Value) || (__instance.IsYourPlayer && Plugin.ClientConfig.CanFellPlayer.Value));
+                bool canDoDisarm = ((!__instance.IsYourPlayer && Plugin.ClientConfig.CanDisarmBot.Value) || (__instance.IsYourPlayer && Plugin.ClientConfig.CanDisarmPlayer.Value));
 
                 if ((hitUpperArm || hitForearm) && toBeHP <= 0f && canDoDisarm)
                 {
@@ -1005,7 +1005,7 @@ namespace RealismMod
             bool hasBypassedArmor = false;
 
             bool isPlayer = __instance.Item.Owner.ID.StartsWith("pmc") || __instance.Item.Owner.ID.StartsWith("scav");
-            if (Plugin.EnableArmorHitZones.Value && ((isPlayer && Plugin.EnablePlayerArmorZones.Value) || !isPlayer)) 
+            if (Plugin.ClientConfig.EnableArmorHitZones.Value && ((isPlayer && Plugin.ClientConfig.EnablePlayerArmorZones.Value) || !isPlayer)) 
             {
                 bool hasExtraArmor = GearProperties.HasExtraArmor(__instance.Item);
                 bool hasSideArmor = GearProperties.HasSideArmor(__instance.Item);
@@ -1033,7 +1033,7 @@ namespace RealismMod
                     BallisticsController.GetHitArmorZone(Logger, __instance, hitPart, localPoint, hitOrientation, hasSideArmor, hasStomachArmor, hasNeckArmor, hasExtraArmor, shouldHaveExtraSides, hasArmArmor, ref hasBypassedArmor, ref hitSecondaryArmor);
                 }
 
-                if (Plugin.EnableBallisticsLogging.Value)
+                if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
                 {
                     Logger.LogWarning("=============SetPenStatus: Hit Zone ===============");
                     Logger.LogWarning("collider = " + shot.HittedBallisticCollider.name);
@@ -1076,7 +1076,7 @@ namespace RealismMod
             {
                 shot.BlockedBy = __instance.Item.Id;
                 Debug.Log(">>> Shot blocked by armor piece");
-                if (Plugin.EnableBallisticsLogging.Value)
+                if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
                 {
                     Logger.LogWarning("===========PEN STATUS=============== ");
                     Logger.LogWarning("Blocked");
@@ -1085,7 +1085,7 @@ namespace RealismMod
             }
             else
             {
-                if (Plugin.EnableBallisticsLogging.Value == true)
+                if (Plugin.ClientConfig.EnableBallisticsLogging.Value == true)
                 {
                     Logger.LogWarning("============PEN STATUS============== ");
                     Logger.LogWarning("Penetrated");
@@ -1111,14 +1111,14 @@ namespace RealismMod
             float dist = CameraClass.Instance.Distance(pos);
             string audioClip = rndNum == 0 ? "ric_1.wav" : rndNum == 1 ? "ric_2.wav" : "ric_3.wav";
 
-            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 40, 4.25f, EOcclusionTest.Regular);
+            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 40, 4.25f, EOcclusionTest.Regular);
         }
 
         private static void playArmorHitSound(EArmorMaterial mat, Vector3 pos, bool isHelm)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 0.45f * Plugin.ArmorCloseHitSoundMulti.Value;
-            float volDist = 4f * Plugin.ArmorFarHitSoundMulti.Value;
+            float volClose = 0.45f * Plugin.ClientConfig.ArmorCloseHitSoundMulti.Value;
+            float volDist = 4f * Plugin.ClientConfig.ArmorFarHitSoundMulti.Value;
             float distThreshold = 30f;
             
             if (mat == EArmorMaterial.Aramid)
@@ -1140,7 +1140,7 @@ namespace RealismMod
                     }
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
             }
             else if (mat == EArmorMaterial.Ceramic)
             {
@@ -1154,7 +1154,7 @@ namespace RealismMod
                     audioClip = rndNum == 0 ? "ceramic_1.wav" : rndNum == 1 ? "ceramic_2.wav" : "ceramic_3.wav";
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
             }
             else if (mat == EArmorMaterial.UHMWPE || mat == EArmorMaterial.Combined)
             {
@@ -1168,7 +1168,7 @@ namespace RealismMod
                     audioClip = rndNum == 0 ? "uhmwpe_1.wav" : rndNum == 1 ? "uhmwpe_2.wav" : "uhmwpe_3.wav";
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
             }
             else if (mat == EArmorMaterial.Titan || mat == EArmorMaterial.ArmoredSteel)
             {
@@ -1182,7 +1182,7 @@ namespace RealismMod
                     audioClip = rndNum == 0 ? "metal_1.wav" : rndNum == 1 ? "metal_2.wav" : "metal_3.wav";
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist * 0.5f : volClose * 0.75f, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist * 0.5f : volClose * 0.75f, EOcclusionTest.Regular);
             }
             else if (mat == EArmorMaterial.Glass)
             {
@@ -1195,7 +1195,7 @@ namespace RealismMod
                 {
                     audioClip = rndNum == 0 ? "glass_1.wav" : rndNum == 1 ? "glass_2.wav" : "glass_3.wav";
                 }
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
             }
             else
             {
@@ -1208,7 +1208,7 @@ namespace RealismMod
                 {
                     audioClip = rndNum == 0 ? "impact_1.wav" : rndNum == 1 ? "impact_2.wav" : "impact_3.wav";
                 }
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
             }
         }
 
@@ -1244,7 +1244,7 @@ namespace RealismMod
             bool hasBypassedArmor = false;
 
             bool isPlayer = __instance.Item.Owner.ID.StartsWith("pmc") || __instance.Item.Owner.ID.StartsWith("scav");
-            if (Plugin.EnableArmorHitZones.Value && ((isPlayer && Plugin.EnablePlayerArmorZones.Value) || !isPlayer)) 
+            if (Plugin.ClientConfig.EnableArmorHitZones.Value && ((isPlayer && Plugin.ClientConfig.EnablePlayerArmorZones.Value) || !isPlayer)) 
             {
                 string hitPart = damageInfo.HittedBallisticCollider.name;
                 Collider col = damageInfo.HitCollider;
@@ -1271,7 +1271,7 @@ namespace RealismMod
                 }
 
      
-                if (Plugin.EnableBallisticsLogging.Value)
+                if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
                 {
                     Logger.LogWarning("============ApplyDamagePatch: Hit Zone ============== ");
                     Logger.LogWarning("collider = " + hitPart);
@@ -1296,7 +1296,7 @@ namespace RealismMod
                     __result = 0f;
                     return false;
                 }
-                else if (!isPlayer && Plugin.EnableHitSounds.Value)
+                else if (!isPlayer && Plugin.ClientConfig.EnableHitSounds.Value)
                 {
                     playArmorHitSound(__instance.Template.ArmorMaterial, col.transform.position, __instance.Template.ArmorZone.Contains(EBodyPart.Head));
                 }
@@ -1372,7 +1372,7 @@ namespace RealismMod
             {
                 if (damageInfo.PenetrationPower > armorFactor || hasBypassedArmor)
                 {
-                    if (Plugin.EnableBallisticsLogging.Value)
+                    if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
                     {
                         Logger.LogWarning("Melee Penetrated");
                     }
@@ -1381,7 +1381,7 @@ namespace RealismMod
                 }
                 else
                 {
-                    if (Plugin.EnableBallisticsLogging.Value)
+                    if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
                     {
                         Logger.LogWarning("Melee Blocked");
                     }
@@ -1422,7 +1422,7 @@ namespace RealismMod
             __instance.ApplyDurabilityDamage(durabilityLoss);
             __result = durabilityLoss;
 
-            if (Plugin.EnableBallisticsLogging.Value)
+            if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
             {
                 Logger.LogWarning("===========ARMOR DAMAGE=============== ");
                 Logger.LogWarning("KE " + KE);
@@ -1520,7 +1520,7 @@ namespace RealismMod
                 AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[lastDam.SourceId];
                 BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
                 float KE = ((0.5f * ammo.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
-                force = (-Mathf.Max(1f, KE / 1000f)) * Plugin.RagdollForceModifier.Value;
+                force = (-Mathf.Max(1f, KE / 1000f)) * Plugin.ClientConfig.RagdollForceModifier.Value;
             }
             else if (lastDam.DamageType == EDamageType.Explosion)
             {

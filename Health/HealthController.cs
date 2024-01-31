@@ -142,6 +142,9 @@ namespace RealismMod
 
     public static class RealismHealthController
     {
+
+        public static float healthControllerTick = 0f;
+
         public static EBodyPart[] BodyParts = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm };
        
         private static List<IHealthEffect> activeHealthEffects = new List<IHealthEffect>();
