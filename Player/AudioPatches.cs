@@ -146,9 +146,9 @@ namespace RealismMod
             switch (deafStr)
             {
                 case "Low":
-                    return 0.92f;
+                    return 0.95f;
                 case "High":
-                    return 0.8f;
+                    return 0.75f;
                 default:
                     return 1f;
             }

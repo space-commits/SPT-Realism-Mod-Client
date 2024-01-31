@@ -180,9 +180,9 @@ namespace RealismMod
 
                     float differenceX = Mathf.Abs(movementContext.Rotation.x - targetRotation.x);
                     targetRotation.x = differenceX <= 2f ? targetRotation.x : movementContext.Rotation.x;
-
+/*
                     float differenceY = Mathf.Abs(movementContext.Rotation.y - targetRotation.y);
-                    targetRotation.y = differenceY <= 2f ? targetRotation.y : movementContext.Rotation.y;
+                    targetRotation.y = differenceY <= 2f ? targetRotation.y : movementContext.Rotation.y;*/
 
                     movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, targetRotation, Plugin.RecoilSmoothness.Value);
                 }
@@ -278,6 +278,9 @@ namespace RealismMod
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
 
+                //force stats to be calculated 
+                float calcStats = firearmController.Weapon.ErgonomicsDelta;
+
                 AccessTools.Field(typeof(NewRecoilShotEffect), "_firearmController").SetValue(__instance, firearmController);
                 __instance.RecoilStableShotIndex = (int)Plugin.test1.Value;
                 __instance.HandRotationRecoil.RecoilReturnTrajectoryOffset = template.RecoilReturnPathOffsetHandRotation;
@@ -320,6 +323,15 @@ namespace RealismMod
                     Plugin.DidWeaponSwap = true;
                 }
                 WeaponStats.WeapID = template._id;
+
+                if (Plugin.EnableLogging.Value)
+                {
+                    Logger.LogWarning("============RecalcWeapParams========");
+                    Logger.LogWarning("vert recoil " + __instance.BasicPlayerRecoilRotationStrength);
+                    Logger.LogWarning("horz recoil " + __instance.BasicPlayerRecoilPositionStrength);
+                    Logger.LogWarning("cam recoil " + cameraRecoil);
+                    Logger.LogWarning("====================");
+                }
 
                 return false;
             }
@@ -418,11 +430,13 @@ namespace RealismMod
 
                 if (Plugin.EnableLogging.Value) 
                 {
+                    Logger.LogWarning("==========shoot==========");
                     Logger.LogWarning("camFactor " + (incomingForce * PlayerStats.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti));
                     Logger.LogWarning("vertFactor " + vertFactor);
                     Logger.LogWarning("horzFactor " + horzFactor);
                     Logger.LogWarning("dispFactor " + dispFactor);
                     Logger.LogWarning("mounting " + mountingVertModi);
+                    Logger.LogWarning("====================");
                 }
 
                 //Calculate offest for zero shift

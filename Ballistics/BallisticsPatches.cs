@@ -208,9 +208,9 @@ namespace RealismMod
         [PatchPostfix]
         private static void PostFix(ref DamageInfo __instance, EDamageType damageType, ShotClass shot)
         {
-            Logger.LogWarning(" base " + shot.HitCollider.GetType().BaseType);
+/*            Logger.LogWarning(" base " + shot.HitCollider.GetType().BaseType);
             Logger.LogWarning(" type " + shot.HitCollider.GetType());
-            Logger.LogWarning(" name " + shot.HitCollider.GetType().Name);
+            Logger.LogWarning(" name " + shot.HitCollider.GetType().Name);*/
 
             if (shot.HitCollider is BoxCollider) 
             {
@@ -226,11 +226,11 @@ namespace RealismMod
             }
 
             Logger.LogWarning("========Damage Info PostFix==========");
-            Logger.LogWarning("id " + shot.Ammo.Id);
+           /* Logger.LogWarning("id " + shot.Ammo.Id);
             Logger.LogWarning("pen " + __instance.PenetrationPower);
             Logger.LogWarning("damage " + __instance.Damage);
             Logger.LogWarning("hit collider = " + __instance.HitCollider.name);
-            Logger.LogWarning("ballistic collider = " + __instance.HittedBallisticCollider.name);
+            Logger.LogWarning("ballistic collider = " + __instance.HittedBallisticCollider.name);*/
             Logger.LogWarning("=================");
         }
     }
@@ -252,11 +252,11 @@ namespace RealismMod
         private static void Postfix(EFT.Ballistics.BallisticCollider __instance, ShotClass shot, bool __result)
         {
             Logger.LogWarning("========Collider Set Pen Status==========");
-            Logger.LogWarning("id " + shot.Ammo.Id);
+/*            Logger.LogWarning("id " + shot.Ammo.Id);
             Logger.LogWarning("name " + __instance.name);
             Logger.LogWarning("material " + __instance.TypeOfMaterial);
             Logger.LogWarning("pen level " + __instance.PenetrationLevel);
-            Logger.LogWarning("pen chance " + __instance.PenetrationChance);
+            Logger.LogWarning("pen chance " + __instance.PenetrationChance);*/
             Logger.LogWarning("has penned = " + __result);
             Logger.LogWarning("==================");
 
@@ -279,20 +279,19 @@ namespace RealismMod
             Logger.LogWarning("colliderType = " + colliderType);
             Logger.LogWarning("armorPlateCollider = " + armorPlateCollider);
             Logger.LogWarning("armor name = " + __instance.Item.Template.Name);
-            Logger.LogWarning("armor template id = " + __instance.Item.TemplateId);
+/*            Logger.LogWarning("armor template id = " + __instance.Item.TemplateId);*/
 
-            Logger.LogWarning("--stats before calc--");
-            Logger.LogWarning("ammo = " + damageInfo.SourceId);
-            Logger.LogWarning("damageInfo.Damage = " + damageInfo.Damage);
-            Logger.LogWarning("damageInfo.PenetrationPower " + damageInfo.PenetrationPower);
+            Logger.LogWarning("-------Before--------");
+/*            Logger.LogWarning("ammo = " + damageInfo.SourceId);*/
+            Logger.LogWarning("Damage = " + damageInfo.Damage);
+            Logger.LogWarning("PenetrationPower " + damageInfo.PenetrationPower);
             Logger.LogWarning("armor durability % = " + __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f);
             Logger.LogWarning("armor durability = " + __instance.Repairable.Durability);
-            Logger.LogWarning("----");
+            Logger.LogWarning("-------------");
 
             EDamageType damageType = damageInfo.DamageType;
             if (!damageType.IsWeaponInduced() && damageType != EDamageType.GrenadeFragment)
             {
-                Logger.LogWarning("is not weapon induced");
                 __result = 0f;
                 return false;
             }
@@ -346,19 +345,19 @@ namespace RealismMod
             }
             if (__instance.Buff.IsActive && __instance.Buff.BuffType == ERepairBuffType.DamageReduction)
             {
-                Logger.LogWarning("Repair Bonus Damage Reduction");
+               /* Logger.LogWarning("Repair Bonus Damage Reduction");*/
                 damageInfo.Damage *= (float)__instance.Buff.DamageReduction;
             }
             num5 = Mathf.Max(1f, num5);
             __instance.ApplyDurabilityDamage(num5, armorComponents);
             if (armorPlateCollider != (EArmorPlateCollider)0)
             {
-                Logger.LogWarning("Armor Plate Collider is not equal to value 0");
+  /*              Logger.LogWarning("Armor Plate Collider is not equal to value 0");*/
                 damageInfo.Damage = 0f;
             }
-            Logger.LogWarning("--stats after calc--");
-            Logger.LogWarning("damageInfo.Damage (blunt damage) = " + damageInfo.Damage);
-            Logger.LogWarning("damageInfo.PenetrationPower " + damageInfo.PenetrationPower);
+            Logger.LogWarning("--After--");
+            Logger.LogWarning("Damage = " + damageInfo.Damage);
+            Logger.LogWarning("Penetration " + damageInfo.PenetrationPower);
             Logger.LogWarning("Armor Damage = " + num5);
             Logger.LogWarning("armor durability % = " + __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f);
             Logger.LogWarning("armor durability = " + __instance.Repairable.Durability);
@@ -380,13 +379,11 @@ namespace RealismMod
         private static void Postfix(ArmorComponent __instance, ShotClass shot)
         {
             Logger.LogWarning("=======SetPenetrationStatus=======");
-            Logger.LogWarning("shot ID = " + shot.Ammo.Id);
             Logger.LogWarning("--collider--");
             Logger.LogWarning("hit collider = " + shot.HitCollider.name);
             Logger.LogWarning("ballistic collider = " + shot.HittedBallisticCollider.name);
             Logger.LogWarning("--armor--");
             Logger.LogWarning("armor name = " + __instance.Item.Template.Name);
-            Logger.LogWarning("armor template id = " + __instance.Item.TemplateId);
             Logger.LogWarning("--stats--");
             Logger.LogWarning("ammo = " + shot.Ammo.Template.Name);
             Logger.LogWarning("damage = " + shot.Damage);
@@ -427,21 +424,13 @@ namespace RealismMod
         private static void Postfix(Player __instance, DamageInfo damageInfo, EBodyPart bodyPartType, EBodyPartColliderType colliderType, float absorbed)
         {
             Logger.LogWarning("=======ApplyDamageInfo=======");
-            Logger.LogWarning("hit collider = " + damageInfo.HitCollider.name);
-            Logger.LogWarning("ballistic collider = " + damageInfo.HittedBallisticCollider.name);
-            Logger.LogWarning("colliderType = " + colliderType);
-            Logger.LogWarning("bodyPartType = " + bodyPartType);
             Logger.LogWarning("--hit");
             Logger.LogWarning("damage absorbed = " + absorbed);
             Logger.LogWarning("damage = " + damageInfo.Damage);
             Logger.LogWarning("pen = " + damageInfo.PenetrationPower);
-            Logger.LogWarning("armor damage = " + damageInfo.ArmorDamage);
-            Logger.LogWarning("did armor damage = " + damageInfo.DidArmorDamage);
-            Logger.LogWarning("did body damage = " + damageInfo.DidBodyDamage);
-            Logger.LogWarning("damage type = " + damageInfo.DamageType);
             Logger.LogWarning("--armor");
             Logger.LogWarning("deflected by = " + damageInfo.DeflectedBy);
-            Logger.LogWarning("deflected blocked by = " + damageInfo.BlockedBy);
+            Logger.LogWarning("blocked by = " + damageInfo.BlockedBy);
             Logger.LogWarning("==============");
         }
     }
@@ -458,19 +447,19 @@ namespace RealismMod
         private static void Postfix(EFT.HealthSystem.ActiveHealthController __instance, EBodyPart bodyPart, float damage, DamageInfo damageInfo)
         {
             Logger.LogWarning("=======ApplyDamage-ActiveHealthController=======");
-            Logger.LogWarning("hit collider = " + damageInfo.HitCollider?.name);
+/*            Logger.LogWarning("hit collider = " + damageInfo.HitCollider?.name);
             Logger.LogWarning("ballistic collider = " + damageInfo.HittedBallisticCollider?.name);
             Logger.LogWarning("bodyPart = " + bodyPart);
-            Logger.LogWarning("--hit");
+            Logger.LogWarning("--hit");*/
             Logger.LogWarning("damage = " + damageInfo.Damage);
-            Logger.LogWarning("pen = " + damageInfo.PenetrationPower);
+/*            Logger.LogWarning("pen = " + damageInfo.PenetrationPower);
             Logger.LogWarning("armor damage = " + damageInfo.ArmorDamage);
             Logger.LogWarning("did armor damage = " + damageInfo.DidArmorDamage);
             Logger.LogWarning("did body damage = " + damageInfo.DidBodyDamage);
             Logger.LogWarning("damage type = " + damageInfo.DamageType);
             Logger.LogWarning("--armor");
             Logger.LogWarning("deflected by = " + damageInfo.DeflectedBy);
-            Logger.LogWarning("deflected blocked by = " + damageInfo.BlockedBy);
+            Logger.LogWarning("deflected blocked by = " + damageInfo.BlockedBy);*/
             Logger.LogWarning("==============");
         }
     }

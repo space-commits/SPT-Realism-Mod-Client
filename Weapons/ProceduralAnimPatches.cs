@@ -86,6 +86,10 @@ namespace RealismMod
     {
         private static bool didAimWiggle = false;
 
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("method_23", BindingFlags.Instance | BindingFlags.Public);
+        }
         private static void DoADSWiggle(ProceduralWeaponAnimation pwa, Player player, float ergoWeightFactor, float playerWeightFactor, float newAimSpeed)
         {
             if (StanceController.IsIdle() && WeaponStats._WeapClass != "pistol")
@@ -106,12 +110,6 @@ namespace RealismMod
                     didAimWiggle = false;
                 }
             }
-
-        }
-
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("method_23", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
@@ -162,8 +160,6 @@ namespace RealismMod
                     float mountingBonus = StanceController.IsMounting ? StanceController.MountingSwayBonus : StanceController.BracingSwayBonus;
                     float breathIntensity;
                     float handsIntensity;
-
-                    DoADSWiggle(__instance, player, ergoWeightFactor, playerWeightFactor, newAimSpeed);
 
                     if (!WeaponStats.HasShoulderContact && weapon.WeapClass != "pistol")
                     {
@@ -217,6 +213,8 @@ namespace RealismMod
                             }
                         }
                     }
+
+                    DoADSWiggle(__instance, player, ergoWeightFactor, playerWeightFactor, newAimSpeed);
 
                     if (Plugin.EnableLogging.Value == true)
                     {

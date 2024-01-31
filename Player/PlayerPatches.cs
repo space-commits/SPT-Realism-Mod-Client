@@ -96,6 +96,15 @@ namespace RealismMod
                     player.AddMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor, PlayerStats.TotalMousePenalty / 100f);
                 }
             }
+            if (Plugin.EnableLogging.Value) 
+            {
+                Logger.LogWarning("Total Modified Weight " + modifiedWeight);
+                Logger.LogWarning("Total Unmodified Weight " + trueWeight);
+                Logger.LogWarning("Total Mouse Penalty" + PlayerStats.TotalMousePenalty);
+                Logger.LogWarning("Total Modified Weight MinusWeapon " + PlayerStats.TotalModifiedWeightMinusWeapon);
+            }
+      
+
             return modifiedWeight;
         }
 
@@ -450,7 +459,6 @@ namespace RealismMod
                         __instance.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
                     }
                     __instance.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(__instance.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, 10f * StanceController.WiggleReturnSpeed, 0.01f);
-
                 }
                 __instance.MovementContext.SetPatrol(StanceController.IsPatrolStance);
             }

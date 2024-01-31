@@ -519,6 +519,16 @@ namespace RealismMod
 
             initConfigs();
 
+
+            /*    new SetSkinPatch().Enable();*/
+/*            new ShouldFragPatch().Enable();
+            new DamageInfoPatch().Enable();
+            new IsPenetratedPatch().Enable();
+            new PenStatusPatch().Enable();
+            new ApplyDamageInfoPatch().Enable();
+            new ApplyDamagePatch().Enable();
+            new ApplyArmorDamagePatch().Enable();*/
+
             if (ModConfig.recoil_attachment_overhaul)
             {
                 //Stat assignment patches
@@ -548,7 +558,6 @@ namespace RealismMod
                 new RecoilAnglesPatch().Enable();
                 new ShootPatch().Enable();
                 new RecoilRotatePatch().Enable();
-
 
                 //Aiming Patches
                 new SetAimingPatch().Enable();

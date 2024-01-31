@@ -655,7 +655,7 @@ namespace RealismMod
             if (!WeaponStats.HasShoulderContact && Plugin.EnableAltPistol.Value)
             {
                 float targetPosX = 0.09f;
-                if (!Plugin.IsBlindFiring && !StanceController.CancelPistolStance)
+                if (!Plugin.IsBlindFiring && !StanceController.CancelPistolStance && !pwa.LeftStance)
                 {
                     targetPosX = Plugin.PistolOffsetX.Value;
                 }
@@ -664,7 +664,7 @@ namespace RealismMod
                 pwa.HandsContainer.WeaponRoot.localPosition = new Vector3(currentX, pwa.HandsContainer.TrackingTransform.localPosition.y, pwa.HandsContainer.TrackingTransform.localPosition.z);
             }
 
-            if (!pwa.IsAiming && !StanceController.CancelPistolStance && !Plugin.IsBlindFiring && !StanceController.PistolIsColliding && !WeaponStats.HasShoulderContact && Plugin.EnableAltPistol.Value)
+            if (!pwa.IsAiming && !StanceController.CancelPistolStance && !Plugin.IsBlindFiring && !pwa.LeftStance && !StanceController.PistolIsColliding && !WeaponStats.HasShoulderContact && Plugin.EnableAltPistol.Value)
             {
                 pwa.Breath.HipPenalty = WeaponStats.BaseHipfireInaccuracy * PlayerStats.SprintHipfirePenalty;
 
@@ -729,7 +729,7 @@ namespace RealismMod
             }
         }
 
-        public static void DoRifleStances(ManualLogSource logger, Player player, Player.FirearmController fc, bool isThirdPerson, EFT.Animations.ProceduralWeaponAnimation pwa, float pitch, ref Quaternion stanceRotation, float dt, ref bool isResettingShortStock, ref bool hasResetShortStock, ref bool hasResetLowReady, ref bool hasResetActiveAim, ref bool hasResetHighReady, ref bool isResettingHighReady, ref bool isResettingLowReady, ref bool isResettingActiveAim, ref float rotationSpeed, ref bool hasResetMelee, ref bool isResettingMelee)
+        public static void DoRifleStances(ManualLogSource logger, Player player, Player.FirearmController fc, bool isThirdPerson, EFT.Animations.ProceduralWeaponAnimation pwa, ref Quaternion stanceRotation, float dt, ref bool isResettingShortStock, ref bool hasResetShortStock, ref bool hasResetLowReady, ref bool hasResetActiveAim, ref bool hasResetHighReady, ref bool isResettingHighReady, ref bool isResettingLowReady, ref bool isResettingActiveAim, ref float rotationSpeed, ref bool hasResetMelee, ref bool isResettingMelee)
         {
             float totalPlayerWeight = PlayerStats.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 150f);
@@ -776,7 +776,7 @@ namespace RealismMod
             float beltfedFactor = fc.Item.IsBeltMachineGun ? 0.9f : 1f;
 
             //for setting baseline position
-            if (!Plugin.IsBlindFiring)
+            if (!Plugin.IsBlindFiring && !pwa.LeftStance)
             {
                 pwa.HandsContainer.WeaponRoot.localPosition = Plugin.WeaponOffsetPosition;
             }
@@ -815,7 +815,7 @@ namespace RealismMod
             }*/
 
             ////short-stock////
-            if (StanceController.IsShortStock && !StanceController.IsMeleeAttack && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsLowReady && !pwa.IsAiming && !StanceController.CancelShortStock && !Plugin.IsBlindFiring && !PlayerStats.IsSprinting)
+            if (StanceController.IsShortStock && !StanceController.IsMeleeAttack && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsLowReady && !pwa.IsAiming && !StanceController.CancelShortStock && !Plugin.IsBlindFiring && !pwa.LeftStance && !PlayerStats.IsSprinting)
             {
                 float activeToShort = 1f;
                 float highToShort = 1f;
@@ -897,7 +897,7 @@ namespace RealismMod
             }
 
             ////high ready////
-            if (StanceController.IsHighReady && !StanceController.IsMeleeAttack && !StanceController.IsActiveAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !pwa.IsAiming && !StanceController.IsFiringFromStance && !StanceController.CancelHighReady && !Plugin.IsBlindFiring)
+            if (StanceController.IsHighReady && !StanceController.IsMeleeAttack && !StanceController.IsActiveAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !pwa.IsAiming && !StanceController.IsFiringFromStance && !StanceController.CancelHighReady && !Plugin.IsBlindFiring && !pwa.LeftStance)
             {
                 float shortToHighMulti = 1.0f;
                 float lowToHighMulti = 1.0f;
@@ -995,7 +995,7 @@ namespace RealismMod
             }
 
             ////low ready////
-            if (StanceController.IsLowReady && !StanceController.IsMeleeAttack && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsShortStock && !pwa.IsAiming && !StanceController.IsFiringFromStance && !StanceController.CancelLowReady && !Plugin.IsBlindFiring)
+            if (StanceController.IsLowReady && !StanceController.IsMeleeAttack && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsShortStock && !pwa.IsAiming && !StanceController.IsFiringFromStance && !StanceController.CancelLowReady && !Plugin.IsBlindFiring && !pwa.LeftStance)
             {
                 float highToLow = 1.0f;
                 float shortToLow = 1.0f;
@@ -1079,7 +1079,7 @@ namespace RealismMod
             }
 
             ////active aiming////
-            if (StanceController.IsActiveAiming && !StanceController.IsMeleeAttack && !pwa.IsAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !StanceController.IsHighReady && !StanceController.CancelActiveAim && !Plugin.IsBlindFiring)
+            if (StanceController.IsActiveAiming && !StanceController.IsMeleeAttack && !pwa.IsAiming && !StanceController.IsLowReady && !StanceController.IsShortStock && !StanceController.IsHighReady && !StanceController.CancelActiveAim && !Plugin.IsBlindFiring && !pwa.LeftStance)
             {
                 float shortToActive = 1f;
                 float highToActive = 1f;
@@ -1165,7 +1165,7 @@ namespace RealismMod
             }
 
             ////Melee////
-            if (StanceController.IsMeleeAttack && !StanceController.IsShortStock && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsLowReady && !pwa.IsAiming && !Plugin.IsBlindFiring && !PlayerStats.IsSprinting)
+            if (StanceController.IsMeleeAttack && !StanceController.IsShortStock && !StanceController.IsActiveAiming && !StanceController.IsHighReady && !StanceController.IsLowReady && !pwa.IsAiming && !Plugin.IsBlindFiring && !pwa.LeftStance && !PlayerStats.IsSprinting)
             {
                 StanceController.CanDoMeleeDetection = false;
                 StanceController.DidMelee = false;
