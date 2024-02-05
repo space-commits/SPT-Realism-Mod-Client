@@ -135,28 +135,6 @@ namespace RealismMod
         }
     }
 
-    public class ToggleHoldingBreathPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player).GetMethod("ToggleHoldingBreath", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(Player __instance)
-        {
-            if (__instance.IsYourPlayer == true)
-            {
-                if (!Plugin.EnableHoldBreath.Value)
-                {
-                    return false;
-                }
-                return true;
-            }
-            return true;
-        }
-    }
-
     public class SetAimingPatch : ModulePatch
     {
         private static FieldInfo playerField;

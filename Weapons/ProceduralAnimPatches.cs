@@ -59,7 +59,7 @@ namespace RealismMod
                 float ergoFactor = Mathf.Clamp01(WeaponStats.TotalErgo / 100f);
                 float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo) * 1.25f;
                 float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (1f + WeaponStats.ModAimSpeedModifier) * playerWeightFactor, 0.55f, 1.4f);
-                valueBlender.Speed = __instance.SwayFalloff / aimSpeed;
+                valueBlender.Speed = (__instance.SwayFalloff / aimSpeed);
 
                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayStrength").SetValue(__instance, Mathf.InverseLerp(3f, 10f, singleItemTotalWeight * (1f - ergoFactor)));
 
@@ -107,7 +107,10 @@ namespace RealismMod
             {
                 pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0f;
                 pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0f;
-                Vector3 wiggleDir = new Vector3(-1.5f, -1.5f, 0f) * ergoWeightFactor * playerWeightFactor * (WeaponStats.HasOptic ? 0.5f : 1f);
+                Vector3 wiggleDir = new Vector3(-2.5f, -5f, 0f) * ergoWeightFactor * playerWeightFactor * (WeaponStats.HasOptic ? 0.85f : 1f);
+
+                Logger.LogWarning("ergoWeightFactor " + ergoWeightFactor);
+                Logger.LogWarning("playerWeightFactor " + playerWeightFactor);
 
                 if (pwa.IsAiming && !didAimWiggle)
                 {
@@ -165,7 +168,7 @@ namespace RealismMod
 
                     float ergoWeight = WeaponStats.ErgonomicWeight * PlayerStats.ErgoDeltaInjuryMulti * (1f - (PlayerStats.StrengthSkillAimBuff * 1.5f));
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_ergonomicWeight").SetValue(__instance, ergoWeight);
-                    float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f);
+                    float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 4.5f);
                     float totalPlayerWeight = PlayerStats.TotalModifiedWeightMinusWeapon;
                     float playerWeightFactor = 1f + (totalPlayerWeight / 300f);
                     float breathIntensity;
@@ -285,7 +288,7 @@ namespace RealismMod
                 float beltFedFactor = weapon.IsBeltMachineGun ? 1.45f : 1f;
                 bool noShoulderContact = !WeaponStats.HasShoulderContact && weapon.WeapClass != "pistol";
                 float ergoWeight = WeaponStats.ErgonomicWeight * PlayerStats.ErgoDeltaInjuryMulti * (1f - (PlayerStats.StrengthSkillAimBuff * 1.5f));
-                float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f) * beltFedFactor;
+                float weightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 4.5f) * beltFedFactor;
                 float displacementModifier = noShoulderContact ? Plugin.SwayIntensity.Value * 0.95f : Plugin.SwayIntensity.Value * 0.48f;//lower = less drag
                 float aimIntensity = noShoulderContact ? Plugin.SwayIntensity.Value * 0.95f : Plugin.SwayIntensity.Value * 0.57f;
 
