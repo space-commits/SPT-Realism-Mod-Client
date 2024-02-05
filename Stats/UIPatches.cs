@@ -645,7 +645,7 @@ namespace RealismMod
         {
             if (Plugin.EnableStatsDelta.Value == true)
             {
-                StatDeltaDisplay.DisplayDelta(__instance);
+                StatDeltaDisplay.DisplayDelta(__instance, Logger);
             }
             __result = UIWeaponStats.HRecoilDelta;
             return false;
@@ -681,7 +681,7 @@ namespace RealismMod
         {
             if (Plugin.EnableStatsDelta.Value == true)
             {
-                StatDeltaDisplay.DisplayDelta(__instance);
+                StatDeltaDisplay.DisplayDelta(__instance, Logger);
             }
             __result = UIWeaponStats.VRecoilDelta;
             return false;
@@ -774,7 +774,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            StatDeltaDisplay.DisplayDelta(__instance);
+            StatDeltaDisplay.DisplayDelta(__instance, Logger);
             __result = UIWeaponStats.ErgoDelta;
             return false;
         }
@@ -791,7 +791,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref string __result)
         {
-            StatDeltaDisplay.DisplayDelta(__instance);
+            StatDeltaDisplay.DisplayDelta(__instance, Logger);
             float ergoTotal = __instance.Template.Ergonomics * (1f + UIWeaponStats.ErgoDelta);
             __result = Mathf.Clamp(ergoTotal, 0f, 100f).ToString("0.##");
             return false;
@@ -801,7 +801,7 @@ namespace RealismMod
     public static class StatDeltaDisplay
     {
 
-        public static void DisplayDelta(Weapon __instance)
+        public static void DisplayDelta(Weapon __instance, ManualLogSource Logger)
         {
             float baseCOI = __instance.CenterOfImpactBase;
             float currentCOI = baseCOI;
@@ -856,13 +856,10 @@ namespace RealismMod
 
             float currentLoudness = 0;
 
-            bool folded = __instance.Folded;
-
-            bool hasShoulderContact = false;
-
             bool stockAllowsFSADS = false;
 
-
+            bool folded = __instance.Folded;
+            bool hasShoulderContact = false;
             if (WeaponStats.WepHasShoulderContact(__instance) && !folded)
             {
                 hasShoulderContact = true;
@@ -896,7 +893,6 @@ namespace RealismMod
                 float modFix = 0f;
                 string modType = AttachmentProperties.ModType(mod);
                 string position = StatCalc.GetModPosition(mod, weapType, weapOpType, modType);
-
                 StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, ref modMalfChance, ref modDuraBurn, ref modConv);
                 StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, true, __instance.WeapClass, ref pureErgo, 0, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, __instance.IsBeltMachineGun);
             }
@@ -939,6 +935,20 @@ namespace RealismMod
             UIWeaponStats.SemiFireRate = Mathf.Max(200, (int)currentSemiROF);
             UIWeaponStats.COIDelta = totalCOIDelta;
             UIWeaponStats.CamReturnSpeed = currentCamReturnSpeed;
+
+            if (Plugin.EnableLogging.Value == true)
+            {
+                Logger.LogWarning("Shoulder = " + hasShoulderContact);
+                Logger.LogWarning("Total Ergo = " + totalErgo);
+                Logger.LogWarning("Total Ergo D = " + totalErgoDelta);
+                Logger.LogWarning("Dispersion = " + totalDispersion);
+                Logger.LogWarning("Dispersion Delta = " + (totalDispersion - __instance.Template.RecolDispersion));
+                Logger.LogWarning("Cam Recoil = " + totalCamRecoil);
+                Logger.LogWarning("Total V Recoil = " + totalVRecoil);
+                Logger.LogWarning("Total H Recoil = " + totalHRecoil);
+                Logger.LogWarning("Balance = " + totalTorque);
+                Logger.LogWarning("COIDelta = " + totalCOIDelta);
+            }
         }
     }
 }

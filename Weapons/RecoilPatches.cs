@@ -24,7 +24,7 @@ using System.IO;
 namespace RealismMod
 {
 
-    public class RecoilRotatePatch : ModulePatch
+    public class RotatePatch : ModulePatch
     {
         private static FieldInfo movementContextField;
         private static FieldInfo playerField;
@@ -200,11 +200,11 @@ namespace RealismMod
 
                     deltaRotation *= (fc.AimingSensitivity * 0.9f);
 
-                    float lowerClampXLimit = StanceController.IsBracingTop ? -17f : StanceController.IsBracingRightSide ? -4f : -15f;
-                    float upperClampXLimit = StanceController.IsBracingTop ? 17f : StanceController.IsBracingRightSide ? 15f : 1f;
+                    float lowerClampXLimit = StanceController.BracingDirection == EBracingDirection.Top ? -17f : StanceController.BracingDirection == EBracingDirection.Right ? -4f : -15f;
+                    float upperClampXLimit = StanceController.BracingDirection == EBracingDirection.Top ? 17f : StanceController.BracingDirection == EBracingDirection.Right ? 15f : 1f;
 
-                    float lowerClampYLimit = StanceController.IsBracingTop ? -10f : -8f;
-                    float upperClampYLimit = StanceController.IsBracingTop ? 10f : 15f;
+                    float lowerClampYLimit = StanceController.BracingDirection == EBracingDirection.Top ? -10f : -8f;
+                    float upperClampYLimit = StanceController.BracingDirection == EBracingDirection.Top ? 10f : 15f;
 
                     float relativeLowerXLimit = initialRotation.x + lowerClampXLimit;
                     float relativeUpperXLimit = initialRotation.x + upperClampXLimit;
@@ -282,7 +282,7 @@ namespace RealismMod
                 float calcStats = firearmController.Weapon.ErgonomicsDelta;
 
                 AccessTools.Field(typeof(NewRecoilShotEffect), "_firearmController").SetValue(__instance, firearmController);
-                __instance.RecoilStableShotIndex = (int)Plugin.test1.Value;
+                __instance.RecoilStableShotIndex = (int)Plugin.test10.Value;
                 __instance.HandRotationRecoil.RecoilReturnTrajectoryOffset = template.RecoilReturnPathOffsetHandRotation;
                 __instance.HandRotationRecoil.StableAngleIncreaseStep = template.RecoilStableAngleIncreaseStep;
                 __instance.HandRotationRecoil.AfterRecoilOffsetVerticalRange = template.PostRecoilVerticalRangeHandRotation;

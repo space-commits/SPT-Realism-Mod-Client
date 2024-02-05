@@ -314,8 +314,6 @@ namespace RealismMod
 
         public static bool WeaponCanFSADS = false;
 
-        public static bool Folded = false;
-
         public static float SDReloadSpeedModifier = 1f;
 
         public static float SDFixSpeedModifier = 1f;

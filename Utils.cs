@@ -7,7 +7,6 @@ namespace RealismMod
 {
     public static class Utils
     {
-        public static Player YourPlayer;
         public static bool IsReady = false;
         public static bool WeaponReady = false;
         public static bool HasRunErgoWeightCalc = false;
@@ -83,7 +82,6 @@ namespace RealismMod
             Player player = gameWorld?.MainPlayer;
             if (player != null)
             {
-                YourPlayer = player;
                 if (player?.HandsController != null && player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon)
                 {
                     Utils.WeaponReady = true;

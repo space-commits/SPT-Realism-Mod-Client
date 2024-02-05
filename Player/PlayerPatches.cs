@@ -14,21 +14,25 @@ using UnityEngine;
 using WeaponSkills = EFT.SkillManager.GClass1768;
 using StaminaLevelClass = GClass750<float>;
 using WeightClass = GClass751<float>;
+using Comfort.Common;
 /*using ProcessorClass = GClass2039;*/
 
 namespace RealismMod
 {
     public class SyncWithCharacterSkillsPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
             return typeof(EFT.Player.FirearmController).GetMethod("SyncWithCharacterSkills", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(EFT.Player.FirearmController __instance)
         {
-            Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
                 WeaponSkills weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
@@ -42,29 +46,33 @@ namespace RealismMod
         }
     }
 
-    public class PlayerInitPatch : ModulePatch
+    public class TotalWeightPatch : ModulePatch
     {
-        private Inventory invClass;
-        private Player player;
+        private static float newWeight = 0f;
+        private static string[] stashIDs = { 
+            "5fe49444ae6628187a2e78b8", 
+            "5fe4977574f15b4ad31b66b6", 
+            "5fe49cdfa19cac3fa9054115", 
+            "5fe49a0e2694b0755a504876", 
+            "5fe4a9285a72d07b663029e2", 
+            "5fe4a9fcf5aec236ec3836f7",
+            "5fe4a66e40ca750fd72b595a",
+            "5fe4ab2240ca750fd72bbe1c"
+        };
 
-        //this is fucking curesd: it gets called twice, and both times calcWeightPenalties() will somehow be called after getTotalWeight() and the event that called it.
-        //remove event will have calcWeightPenalties be called twice, but the add event will only have it called once despite getTotalWeight being called twice.
-        //DO NOT RELY ON SETTING VALUES IN getTotalWeight()! Only set them inside calcWeightPenalties()!
-        private void getTotalWeight()
+        private static void getTotalWeight(Inventory inventory, bool isInStash)
         {
-            this.player = Utils.GetPlayer();
-            InventoryControllerClass invController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
-            this.invClass = invController.Inventory;
-            invController.Inventory.TotalWeight = new WeightClass(new Func<float>(calcWeightPenalties));
+            newWeight = calcWeightPenalties(inventory, isInStash);
+            inventory.TotalWeight = new WeightClass(new Func<float>(() => newWeight));
         }
 
-        private float calcWeightPenalties()
+        private static float calcWeightPenalties(Inventory invClass, bool isInStash)
         {
             float modifiedWeight = 0f;
             float trueWeight = 0f;
             foreach (EquipmentSlot equipmentSlot in EquipmentClass.AllSlotNames)
             {
-                IEnumerable<Item> items = this.invClass.Equipment.GetSlot(equipmentSlot).Items;
+                IEnumerable<Item> items = invClass.Equipment.GetSlot(equipmentSlot).Items;
                 foreach (Item item in items)
                 {
                     float itemTotalWeight = item.GetSingleItemTotalWeight();
@@ -82,50 +90,102 @@ namespace RealismMod
                 }
             }
 
-            PlayerStats.TotalModifiedWeight = modifiedWeight;
-            PlayerStats.TotalUnmodifiedWeight = trueWeight;
-            PlayerStats.TotalMousePenalty = (-modifiedWeight / 10f);
-            float weaponWeight = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item.GetSingleItemTotalWeight() : 1f;
-            PlayerStats.TotalModifiedWeightMinusWeapon = PlayerStats.TotalModifiedWeight - weaponWeight;
-
-            if (Plugin.EnableMouseSensPenalty.Value)
+            if (!isInStash) 
             {
-                player.RemoveMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor);
-                if (PlayerStats.TotalMousePenalty < 0f)
+                Player player = Utils.GetPlayer();
+                PlayerStats.TotalModifiedWeight = modifiedWeight;
+                PlayerStats.TotalUnmodifiedWeight = trueWeight;
+                PlayerStats.TotalMousePenalty = (-modifiedWeight / 10f);
+                float weaponWeight = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item.GetSingleItemTotalWeight() : 1f;
+                PlayerStats.TotalModifiedWeightMinusWeapon = PlayerStats.TotalModifiedWeight - weaponWeight;
+
+                if (Plugin.EnableMouseSensPenalty.Value)
                 {
-                    player.AddMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor, PlayerStats.TotalMousePenalty / 100f);
+                    player.RemoveMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor);
+                    if (PlayerStats.TotalMousePenalty < 0f)
+                    {
+                        player.AddMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor, PlayerStats.TotalMousePenalty / 100f);
+                    }
                 }
             }
-            if (Plugin.EnableLogging.Value) 
+
+            if (Plugin.EnableLogging.Value)
             {
                 Logger.LogWarning("Total Modified Weight " + modifiedWeight);
                 Logger.LogWarning("Total Unmodified Weight " + trueWeight);
                 Logger.LogWarning("Total Mouse Penalty" + PlayerStats.TotalMousePenalty);
                 Logger.LogWarning("Total Modified Weight MinusWeapon " + PlayerStats.TotalModifiedWeightMinusWeapon);
             }
-      
 
             return modifiedWeight;
         }
 
-        private void HandleAddItemEvent(GEventArgs2 args)
+        protected override MethodBase GetTargetMethod()
         {
-            PlayerInitPatch p = new PlayerInitPatch();
-            p.getTotalWeight();
+            return typeof(Inventory).GetMethod("UpdateTotalWeight", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private void HandleRemoveItemEvent(GEventArgs3 args)
+        [PatchPostfix]
+        private static void PatchPostFix(Inventory __instance, EventArgs args)
         {
-            PlayerInitPatch p = new PlayerInitPatch();
-            p.getTotalWeight();
-        }
+            try 
+            {
 
-        private void RefreshItemEvent(GEventArgs22 args)
-        {
-            PlayerInitPatch p = new PlayerInitPatch();
-            p.getTotalWeight();
-        }
+                /*   if ((geventArgs = (args as GEventArgs1)) != null)
+                   {
+                       Logger.LogWarning("args is not null");
+                   }
+                   else 
+                   {
+                       Logger.LogWarning("args is null");
+                   }
 
+   */
+                /*       __instance.Stash.OriginalAddress.GetOwner().ID*/
+
+                Logger.LogWarning("1");
+                GEventArgs1 geventArgs;
+                Logger.LogWarning("2");
+                bool world = Singleton<GameWorld>.Instance != null;
+                Logger.LogWarning("3");
+                bool player = Singleton<GameWorld>.Instance?.MainPlayer != null;
+                Logger.LogWarning("4");
+                bool profile = Singleton<GameWorld>.Instance?.MainPlayer?.ProfileId != null;
+                Logger.LogWarning("5");
+                bool notNull = (geventArgs = (args as GEventArgs1)) != null;
+                Logger.LogWarning("6");
+                bool item = geventArgs?.Item != null;
+                Logger.LogWarning("7");
+                bool owner = geventArgs?.Item?.Owner != null;
+                Logger.LogWarning("8");
+                bool ownerID = geventArgs?.Item?.Owner?.ID != null;
+                Logger.LogWarning("9");
+                if (notNull && world && player && profile && item && owner && ownerID && geventArgs.Item.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
+                {
+                    Logger.LogWarning("match");
+                    getTotalWeight(__instance, false);
+                }
+                else 
+                {
+                    //only way to differentiate player scav from pmc while in menu
+                    //player scav has random stash id, possible pmc stash id's are known beforehand
+                    if (stashIDs.Contains(__instance.Stash.Id)) 
+                    {
+                        Logger.LogWarning("stash");
+                        getTotalWeight(__instance, true);
+                    }          
+                }
+            }
+            catch 
+            {
+                Logger.LogWarning("null ref");
+                //somehow null check failed
+            }
+        }
+    }
+
+    public class PlayerInitPatch : ModulePatch
+    {
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Player).GetMethod("Init", BindingFlags.Instance | BindingFlags.Public);
@@ -137,13 +197,8 @@ namespace RealismMod
 
             if (__instance.IsYourPlayer)
             {
-                PlayerInitPatch p = new PlayerInitPatch();
+                Logger.LogWarning("init");
                 StatCalc.SetGearParamaters(__instance);
-                InventoryControllerClass invController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(__instance);
-                invController.AddItemEvent += p.HandleAddItemEvent;
-                invController.RemoveItemEvent += p.HandleRemoveItemEvent;
-                invController.RefreshItemEvent += p.RefreshItemEvent;
-                p.getTotalWeight();
             }
         }
     }
@@ -159,7 +214,7 @@ namespace RealismMod
         private static void PatchPostfix(Player __instance)
         {
 
-            if (__instance.IsYourPlayer == true)
+            if (__instance.IsYourPlayer)
             {
                 StatCalc.SetGearParamaters(__instance);
             }
@@ -388,8 +443,8 @@ namespace RealismMod
                 PlayerStats.IsSprinting = __instance.IsSprintEnabled;
                 PlayerStats.EnviroType = __instance.Environment;
                 StanceController.IsInInventory = __instance.IsInventoryOpened;
-                float mountingSwayBonus = StanceController.IsMounting ? StanceController.MountingSwayBonus : StanceController.BracingSwayBonus;
                 PlayerStats.IsMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
+                float mountingSwayBonus = StanceController.IsMounting ? StanceController.MountingSwayBonus: StanceController.BracingSwayBonus;
 
                 if (Plugin.EnableSprintPenalty.Value)
                 {

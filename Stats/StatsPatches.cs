@@ -231,12 +231,20 @@ namespace RealismMod
 
             if (Plugin.EnableLogging.Value == true)
             {
+                Logger.LogWarning("Shoulder = " + WeaponStats.HasShoulderContact);
                 Logger.LogWarning("Total Ergo = " + totalErgo);
                 Logger.LogWarning("Total Ergo D = " + totalErgoDelta);
                 Logger.LogWarning("Ergo factor = " + ergoFactor);
                 Logger.LogWarning("Pure Ergo = " + currentPureErgo);
                 Logger.LogWarning("Pure Ergo D = " + totalPureErgoDelta);
-                Logger.LogWarning("Torque = " + totalTorque);
+
+                Logger.LogWarning("Dispersion = " + totalDispersion);
+                Logger.LogWarning("Dispersion Delta = " + (totalDispersion - __instance.Template.RecolDispersion));
+                Logger.LogWarning("Cam Recoil = " + totalCamRecoil);
+                Logger.LogWarning("Total V Recoil = " + totalVRecoil);
+                Logger.LogWarning("Total H Recoil = " + totalHRecoil);
+                Logger.LogWarning("Balance = " + totalTorque);
+                Logger.LogWarning("COIDelta = " + totalCOIDelta);
             }
 
 
@@ -332,15 +340,12 @@ namespace RealismMod
             bool weaponAllowsFSADS = WeaponStats.WeaponAllowsADS(__instance);
             bool stockAllowsFSADS = false;
 
-            bool folded = __instance.Folded;
-            WeaponStats.Folded = folded;
-
-            bool hasShoulderContact = false;
-
             bool canCycleSubs = false;
 
             float currentFixSpeedMod = 0f;
 
+            bool folded = __instance.Folded;
+            bool hasShoulderContact = false;
             if (WeaponStats.WepHasShoulderContact(__instance) && !folded)
             {
                 hasShoulderContact = true;
@@ -508,7 +513,7 @@ namespace RealismMod
                 }
 
                 WeaponStats.ScopeAccuracyFactor = currentSightFactor > 1f ? 1f - ((currentSightFactor - 1f) * 4f) : 2f - currentSightFactor;
-                bool isBracingTop = StanceController.IsBracingTop;
+                bool isBracingTop = StanceController.BracingDirection == EBracingDirection.Top;
                 float mountingFactor = StanceController.IsBracing && isBracingTop ? 1.05f : StanceController.IsBracing && !isBracingTop ? 1.025f : StanceController.IsMounting && isBracingTop ? 1.1f : StanceController.IsMounting && !isBracingTop ? 1.075f : 1f;
                 float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * currentSightFactor * mountingFactor;
 

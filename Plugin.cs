@@ -319,8 +319,8 @@ namespace RealismMod
         public static Dictionary<string, AudioClip> LoadedAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, Sprite> LoadedSprites = new Dictionary<string, Sprite>();
 
-        public static GameObject Hook;
-        public static MountingUI MountingUIComponent;
+        public GameObject Hook;
+        public MountingUI MountingUIComponent;
 
         private string ModPath;
         private string ConfigFilePath;
@@ -486,20 +486,25 @@ namespace RealismMod
                 Logger.LogError(exception);
             }
 
-            Hook = new GameObject();
-            MountingUIComponent = Hook.AddComponent<MountingUI>();
-            DontDestroyOnLoad(Hook);
+            if (Hook == null)
+            {
+                Hook = new GameObject();
+                MountingUIComponent = Hook.AddComponent<MountingUI>();
+                DontDestroyOnLoad(Hook);
+            }
 
             initConfigs();
 
+            new TotalWeightPatch().Enable();
+
             /*    new SetSkinPatch().Enable();*/
-            new ShouldFragPatch().Enable();
-            new DamageInfoPatch().Enable();
-            new IsPenetratedPatch().Enable();
-            new PenStatusPatch().Enable();
-            new ApplyDamageInfoPatch().Enable();
-            new ApplyDamagePatch().Enable();
-            new ApplyArmorDamagePatch().Enable();
+            /*           new ShouldFragPatch().Enable();
+                       new DamageInfoPatch().Enable();
+                       new IsPenetratedPatch().Enable();
+                       new PenStatusPatch().Enable();
+                       new ApplyDamageInfoPatch().Enable();
+                       new ApplyDamagePatch().Enable();
+                       new ApplyArmorDamagePatch().Enable();*/
 
             if (ServerConfig.recoil_attachment_overhaul)
             {
@@ -529,7 +534,7 @@ namespace RealismMod
                 new AddRecoilForcePatch().Enable();
                 new RecoilAnglesPatch().Enable();
                 new ShootPatch().Enable();
-                new RecoilRotatePatch().Enable();
+                new RotatePatch().Enable();
 
                 //Aiming Patches
                 new SetAimingPatch().Enable();

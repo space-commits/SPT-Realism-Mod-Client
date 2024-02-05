@@ -157,7 +157,6 @@ namespace RealismMod
                     float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f);
                     float totalPlayerWeight = PlayerStats.TotalModifiedWeight - weapon.GetSingleItemTotalWeight();
                     float playerWeightFactor = 1f + (totalPlayerWeight / 300f);
-                    float mountingBonus = StanceController.IsMounting ? StanceController.MountingSwayBonus : StanceController.BracingSwayBonus;
                     float breathIntensity;
                     float handsIntensity;
 
@@ -393,7 +392,7 @@ namespace RealismMod
                     float factor = distance / 25f; //need to find default zero
                     Vector3 recoilOffset = new Vector3(WeaponStats.ZeroRecoilOffset.x * factor, WeaponStats.ZeroRecoilOffset.y * factor);
                     Vector3 target = point + new Vector3(StanceController.MouseRotation.x * factor * -WeaponStats.Parralax, StanceController.MouseRotation.y * factor * WeaponStats.Parralax, 0f);
-                    target = Utils.YourPlayer.MovementContext.CurrentState.Name == EPlayerState.Sidestep ? point : target;
+                    target = player.MovementContext.CurrentState.Name == EPlayerState.Sidestep ? point : target;
                     point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
                 }
             }
@@ -437,7 +436,7 @@ namespace RealismMod
                     float factor = distance / 50f; //need to find default zero
                     Vector3 recoilOffset = new Vector3(WeaponStats.ZeroRecoilOffset.x * factor, WeaponStats.ZeroRecoilOffset.y * factor);
                     Vector3 target = point + new Vector3(StanceController.MouseRotation.x * factor * -WeaponStats.Parralax, StanceController.MouseRotation.y * factor * WeaponStats.Parralax, 0f);
-                    target = Utils.YourPlayer.MovementContext.CurrentState.Name == EPlayerState.Sidestep ? point : target;
+                    target = player.MovementContext.CurrentState.Name == EPlayerState.Sidestep ? point : target;
                     point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
                 }
             }

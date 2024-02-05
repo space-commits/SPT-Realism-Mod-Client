@@ -17,6 +17,7 @@ using CastingClass = GClass646;
 using HackShotResult = GClass1673;
 using CollisionLayerClass = GClass2987;
 using EFT.Animations;
+using ChartAndGraph;
 /*using LightStruct = GStruct155;*/
 
 namespace RealismMod
@@ -140,54 +141,162 @@ namespace RealismMod
         private static int timer = 0;
         private static MaterialType[] allowedMats = { MaterialType.Helmet, MaterialType.BodyArmor, MaterialType.Body, MaterialType.Glass, MaterialType.GlassShattered, MaterialType.GlassVisor };
 
-        private static void setMountingStatus(bool isTop, bool isRightide)
-        {
-            if (isTop)
-            {
-                StanceController.IsBracingTop = true;
-                StanceController.IsBracingSide = false;
-                StanceController.IsBracingRightSide = false;
-                StanceController.IsBracingLeftSide = false;
-            }
-            else
-            {
-                StanceController.IsBracingSide = true;
-                StanceController.IsBracingTop = false;
+        private static Vector3 startLeftDir = new Vector3(0.1f, 0f, 0f);
+        private static Vector3 startRightDir = new Vector3(-0.1f, 0f, 0f);
+        private static Vector3 startDownDir = new Vector3(0f, 0f, -0.12f);
 
-                if (isRightide)
+        private static void setMountingStatus(EBracingDirection coverDir, string weapClass)
+        {
+            if (!StanceController.IsMounting)
+            {
+                StanceController.BracingDirection = coverDir;
+            }
+            StanceController.IsBracing = true;
+        }
+
+        private static Vector3 getWiggleDir(EBracingDirection coverDir) 
+        {
+            {
+                switch(coverDir) 
                 {
-                    StanceController.IsBracingRightSide = true;
-                    StanceController.IsBracingLeftSide = false;
-                }
-                else
-                {
-                    StanceController.IsBracingRightSide = false;
-                    StanceController.IsBracingLeftSide = true;
+                    case EBracingDirection.Right:
+                        return new Vector3(2.5f, -7.5f, -10f);
+                    case EBracingDirection.Left:
+                        return new Vector3(2.5f, 7.5f, -10f);
+                    case EBracingDirection.Top:
+                        return new Vector3(7.5f, 2.5f, -10f);
+                    default: return Vector3.zero;
                 }
             }
         }
 
-        private static void doStability(bool isTop, bool isRightide, string weapClass)
+        private static Vector3 getCoverOffset(EBracingDirection coverDir)
         {
-            if (!StanceController.IsMounting)
             {
-                setMountingStatus(isTop, isRightide);
+                switch (coverDir)
+                {
+                    case EBracingDirection.Right:
+                        return new Vector3(-0.005f, 0, 0);
+                    case EBracingDirection.Left:
+                        return new Vector3(0.005f, 0, 0f);
+                    case EBracingDirection.Top:
+                        return new Vector3(0, -0.005f, 0);
+                    default: return Vector3.zero;
+                }
             }
+        }
 
-            StanceController.IsBracing = true;
-
-            float mountOrientationBonus = StanceController.IsBracingTop ? 0.75f : 1f;
-            float mountingRecoilLimit = weapClass == "pistol" ? 0.1f : 0.65f;
-
-            StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 0.7f * mountOrientationBonus, 0.25f);
-            StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 0.85f * mountOrientationBonus, 0.25f);
-            StanceController.MountingSwayBonus = Mathf.Clamp(0.45f * mountOrientationBonus, 0.4f, 1f);
-            StanceController.MountingRecoilBonus = Mathf.Clamp(mountingRecoilLimit * mountOrientationBonus, 0.1f, 1f);
+        private static bool checkForCoverCollision(EBracingDirection coverDir, Vector3 start, Vector3 direction, out RaycastHit raycastHit, RaycastHit[] raycastArr, Func<RaycastHit, bool> isHitIgnoreTest, string weapClass)
+        {
+            if (CastingClass.Linecast(start, direction, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastArr, isHitIgnoreTest))
+            {
+                setMountingStatus(coverDir, weapClass);
+                StanceController.CoverWiggleDirection = getWiggleDir(coverDir);
+                StanceController.CoverOffset = getCoverOffset(coverDir);
+                return true;
+            }
+            return false;
         }
 
         private static void doMeleeSkill()
         {
             player.Skills.FistfightAction.Complete(1f);
+        }
+
+        private static void doMelee(Player.FirearmController fc, float ln)
+        {
+            if (!PlayerStats.IsSprinting && !StanceController.DidMelee)
+            {
+                Transform weapTransform = player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim;
+                if (StanceController.CanDoMeleeDetection)
+                {
+                    RaycastHit[] raycastArr = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
+                    Func<RaycastHit, bool> isHitIgnoreTest = (Func<RaycastHit, bool>)hitIgnoreField.GetValue(fc);
+                    Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
+                    Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(new Vector3(0, -0.6f, 0.05f));
+                    Vector3 meleeDir = meleeStart - linecastDirection * (ln - (WeaponStats.HasBayonet ? 0.1f : 0.4f));
+
+                    /*                        DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);
+                    */
+                    EBodyPart hitPart = EBodyPart.Chest;
+                    BallisticCollider hitBalls = null;
+                    RaycastHit raycastHit;
+                    if (CastingClass.Linecast(meleeStart, meleeDir, out raycastHit, CollisionLayerClass.HitMask, false, raycastArr, isHitIgnoreTest))
+                    {
+                        Collider col = raycastHit.collider;
+                        BaseBallistic baseballComp = col.GetComponent<BaseBallistic>();
+                        if (baseballComp != null)
+                        {
+                            hitBalls = baseballComp.Get(raycastHit.point);
+                            hitPart = HitBox.GetBodyPartFromCol(hitBalls.name);
+                        }
+                        float damage = 8f + WeaponStats.BaseMeleeDamage * (1f + player.Skills.StrengthBuffMeleePowerInc) * (1f - (WeaponStats.ErgoFactor / 300f));
+                        damage = player.Physical.HandsStamina.Exhausted ? damage * Singleton<BackendConfigSettingsClass>.Instance.Stamina.ExhaustedMeleeDamageMultiplier : damage;
+                        float pen = 15f + WeaponStats.BaseMeleePen * (1f - (WeaponStats.ErgoFactor / 300f));
+                        bool shouldSkipHit = false;
+                        if (hitBalls as BodyPartCollider != null)
+                        {
+                            player.ExecuteSkill(new Action(doMeleeSkill));
+                        }
+
+                        if (hitBalls.TypeOfMaterial == MaterialType.Glass || hitBalls.TypeOfMaterial == MaterialType.GlassShattered)
+                        {
+                            Random rnd = new Random();
+                            int rndNum = rnd.Next(1, 10);
+                            if (rndNum > (4f + WeaponStats.BaseMeleeDamage))
+                            {
+                                shouldSkipHit = true;
+                            }
+                        }
+
+                        if (WeaponStats.HasBayonet || (allowedMats.Contains(hitBalls.TypeOfMaterial) && !shouldSkipHit))
+                        {
+                            Vector3 position = fc.CurrentFireport.position;
+                            Vector3 vector = fc.WeaponDirection;
+                            Vector3 shotPosition = position;
+                            fc.AdjustShotVectors(ref shotPosition, ref vector);
+                            Vector3 shotDirection = vector;
+                            DamageInfo damageInfo = new DamageInfo
+                            {
+                                DamageType = EDamageType.Melee,
+                                Damage = damage,
+                                PenetrationPower = pen,
+                                ArmorDamage = 10f + (damage / 10f),
+                                Direction = shotDirection.normalized,
+                                HitCollider = col,
+                                HitPoint = raycastHit.point,
+                                Player = Singleton<GameWorld>.Instance.GetAlivePlayerBridgeByProfileID(player.ProfileId),
+                                HittedBallisticCollider = hitBalls,
+                                HitNormal = raycastHit.normal,
+                                Weapon = fc.Item as Item,
+                                IsForwardHit = true,
+                                StaminaBurnRate = 5f
+                            };
+                            HackShotResult result = Singleton<GameWorld>.Instance.HackShot(damageInfo);
+                        }
+                        float vol = WeaponStats.HasBayonet ? 12f : 25f;
+                        Singleton<BetterAudio>.Instance.PlayDropItem(baseballComp.SurfaceSound, JsonType.EItemDropSoundType.Rifle, raycastHit.point, vol);
+                        StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, new Vector3(-10f, 10f, 0f), true, 1.5f);
+                        player.Physical.ConsumeAsMelee(0.5f + (WeaponStats.ErgoFactor / 100f));
+                        StanceController.DidMelee = true;
+                        return;
+                    }
+                }
+                else if (StanceController.HasResetMelee)
+                {
+                    if (WeaponStats.HasBayonet)
+                    {
+                        Random rnd = new Random();
+                        int rndNum = rnd.Next(1, 10);
+                        string track = rndNum <= 5 ? "knife_1.wav" : "knife_2.wav";
+                        Singleton<BetterAudio>.Instance.PlayAtPoint(weapTransform.position, Plugin.LoadedAudioClips[track], 2, BetterAudio.AudioSourceGroupType.Distant, 100, 2, EOcclusionTest.Continuous);
+                    }
+                    StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, new Vector3(0f, 0f, 0f), true, 4);
+                    player.Physical.ConsumeAsMelee(2f + (WeaponStats.ErgoFactor / 100f));
+                    StanceController.DidMelee = true;
+                    return;
+                }
+            }
         }
 
         protected override MethodBase GetTargetMethod()
@@ -204,116 +313,22 @@ namespace RealismMod
             player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
-                if (!PlayerStats.IsSprinting && !StanceController.DidMelee)
-                {
-                    Transform weapTransform = player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim;
-                    if (StanceController.CanDoMeleeDetection)
-                    {
-                        RaycastHit[] raycastArr = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
-                        Func<RaycastHit, bool> isHitIgnoreTest = (Func<RaycastHit, bool>)hitIgnoreField.GetValue(__instance);
-                        Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
-                        Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(new Vector3(0, -0.6f, 0.05f));
-                        Vector3 meleeDir = meleeStart - linecastDirection * (ln - (WeaponStats.HasBayonet ? 0.1f : 0.4f));
-
-/*                        DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);
-*/
-                        EBodyPart hitPart = EBodyPart.Chest;
-                        BallisticCollider hitBalls = null;
-                        RaycastHit raycastHit;
-                        if (CastingClass.Linecast(meleeStart, meleeDir, out raycastHit, CollisionLayerClass.HitMask, false, raycastArr, isHitIgnoreTest))
-                        {
-                            Collider col = raycastHit.collider;
-                            BaseBallistic baseballComp = col.GetComponent<BaseBallistic>();
-                            if (baseballComp != null)
-                            {
-                                hitBalls = baseballComp.Get(raycastHit.point);
-                                hitPart = HitBox.GetBodyPartFromCol(hitBalls.name);
-                            }
-                            float damage = 8f + WeaponStats.BaseMeleeDamage * (1f + player.Skills.StrengthBuffMeleePowerInc) * (1f - (WeaponStats.ErgoFactor / 300f));
-                            damage = player.Physical.HandsStamina.Exhausted ? damage * Singleton<BackendConfigSettingsClass>.Instance.Stamina.ExhaustedMeleeDamageMultiplier : damage;
-                            float pen = 15f + WeaponStats.BaseMeleePen * (1f - (WeaponStats.ErgoFactor / 300f));
-                            bool shouldSkipHit = false;
-                            if (hitBalls as BodyPartCollider != null)
-                            {
-                                player.ExecuteSkill(new Action(doMeleeSkill));
-                            }
-
-                            if (hitBalls.TypeOfMaterial == MaterialType.Glass || hitBalls.TypeOfMaterial == MaterialType.GlassShattered)
-                            {
-                                Random rnd = new Random();
-                                int rndNum = rnd.Next(1, 10);
-                                if (rndNum > (4f + WeaponStats.BaseMeleeDamage))
-                                {
-                                    shouldSkipHit = true;
-                                }
-                            }
-
-                            if (WeaponStats.HasBayonet || (allowedMats.Contains(hitBalls.TypeOfMaterial) && !shouldSkipHit))
-                            {
-                                Vector3 position = __instance.CurrentFireport.position;
-                                Vector3 vector = __instance.WeaponDirection;
-                                Vector3 shotPosition = position;
-                                __instance.AdjustShotVectors(ref shotPosition, ref vector);
-                                Vector3 shotDirection = vector;
-                                DamageInfo damageInfo = new DamageInfo
-                                {
-                                    DamageType = EDamageType.Melee,
-                                    Damage = damage,
-                                    PenetrationPower = pen,
-                                    ArmorDamage = 10f + (damage / 10f),
-                                    Direction = shotDirection.normalized,
-                                    HitCollider = col,
-                                    HitPoint = raycastHit.point,
-                                    Player = Singleton<GameWorld>.Instance.GetAlivePlayerBridgeByProfileID(player.ProfileId),
-                                    HittedBallisticCollider = hitBalls,
-                                    HitNormal = raycastHit.normal,
-                                    Weapon = __instance.Item as Item,
-                                    IsForwardHit = true,
-                                    StaminaBurnRate = 5f
-                                };
-                                HackShotResult result = Singleton<GameWorld>.Instance.HackShot(damageInfo);
-                            }
-                            float vol = WeaponStats.HasBayonet ? 12f : 25f;
-                            Singleton<BetterAudio>.Instance.PlayDropItem(baseballComp.SurfaceSound, JsonType.EItemDropSoundType.Rifle, raycastHit.point, vol);
-                            StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, new Vector3(-10f, 10f, 0f), true, 1.5f);
-                            player.Physical.ConsumeAsMelee(0.5f + (WeaponStats.ErgoFactor / 100f));
-                            StanceController.DidMelee = true;
-                            return;
-                        }
-                    }
-                    else if (StanceController.HasResetMelee)
-                    {
-                        if (WeaponStats.HasBayonet)
-                        {
-                            Random rnd = new Random();
-                            int rndNum = rnd.Next(1, 10);
-                            string track = rndNum <= 5 ? "knife_1.wav" : "knife_2.wav";
-                            Singleton<BetterAudio>.Instance.PlayAtPoint(weapTransform.position, Plugin.LoadedAudioClips[track], 2, BetterAudio.AudioSourceGroupType.Distant, 100, 2, EOcclusionTest.Continuous);
-                        }
-                        StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, new Vector3(0f, 0f, 0f), true, 4);
-                        player.Physical.ConsumeAsMelee(2f + (WeaponStats.ErgoFactor / 100f));
-                        StanceController.DidMelee = true;
-                        return;
-                    }
-                }
-
+                doMelee(__instance, ln);
+  
                 timer += 1;
                 if (timer >= 60)
                 {
+                    timer = 0;
                     RaycastHit[] raycastArr = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
                     Func<RaycastHit, bool> isHitIgnoreTest = (Func<RaycastHit, bool>)hitIgnoreField.GetValue(__instance);
                     Transform weapTransform = player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim;
                     Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
-                    timer = 0;
 
                     string weapClass = __instance.Item.WeapClass;
 
-                    float wiggleAmount = 6f;
-                    float moveToCoverOffset = 0.006f;
-
-                    Vector3 startDown = weapTransform.position + weapTransform.TransformDirection(new Vector3(0f, 0f, -0.12f));
-                    Vector3 startLeft = weapTransform.position + weapTransform.TransformDirection(new Vector3(0.1f, 0f, 0f));
-                    Vector3 startRight = weapTransform.position + weapTransform.TransformDirection(new Vector3(-0.1f, 0f, 0f));
+                    Vector3 startDown = weapTransform.position + weapTransform.TransformDirection(startDownDir);
+                    Vector3 startLeft = weapTransform.position + weapTransform.TransformDirection(startLeftDir);
+                    Vector3 startRight = weapTransform.position + weapTransform.TransformDirection(startRightDir);
 
                     Vector3 forwardDirection = startDown - linecastDirection * ln;
                     Vector3 leftDirection = startLeft - linecastDirection * ln;
@@ -324,31 +339,38 @@ namespace RealismMod
                                         DebugGizmos.SingleObjects.Line(startRight, rightDirection, Color.yellow, 0.02f, true, 0.3f, true);*/
         
                     RaycastHit raycastHit;
-                    if (CastingClass.Linecast(startDown, forwardDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastArr, isHitIgnoreTest))
+
+                    if (checkForCoverCollision(EBracingDirection.Top, startDown, forwardDirection, out raycastHit, raycastArr, isHitIgnoreTest, weapClass) ||
+                        checkForCoverCollision(EBracingDirection.Left, startLeft, leftDirection, out raycastHit, raycastArr, isHitIgnoreTest, weapClass) ||
+                        checkForCoverCollision(EBracingDirection.Right, startRight, rightDirection, out raycastHit, raycastArr, isHitIgnoreTest, weapClass)) 
                     {
-                        doStability(true, false, weapClass);
-                        StanceController.CoverWiggleDirection = new Vector3(wiggleAmount, 0f, 0f);
-                        StanceController.CoverDirection = new Vector3(0f, -moveToCoverOffset, 0f);
                         return;
                     }
-                    if (CastingClass.Linecast(startLeft, leftDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastArr, isHitIgnoreTest))
-                    {
-                        doStability(false, false, weapClass);
-                        StanceController.CoverWiggleDirection = new Vector3(0f, wiggleAmount, 0f);
-                        StanceController.CoverDirection = new Vector3(moveToCoverOffset, 0f, 0f);
-                        return;
-                    }
-                    if (CastingClass.Linecast(startRight, rightDirection, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastArr, isHitIgnoreTest))
-                    {
-                        doStability(false, true, weapClass);
-                        StanceController.CoverWiggleDirection = new Vector3(0f, -wiggleAmount, 0f);
-                        StanceController.CoverDirection = new Vector3(-moveToCoverOffset, 0f, 0f);
-                        return;
-                    }
-          
-                    StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 1f, 0.5f);
-                    StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 1f, 0.5f);
+
                     StanceController.IsBracing = false;
+                }
+
+                if (StanceController.IsBracing) 
+                {
+                    float mountOrientationBonus = StanceController.BracingDirection == EBracingDirection.Top ? 0.75f : 1f;
+                    float mountingRecoilLimit = __instance.Item.WeapClass == "pistol" ? 0.1f : 0.65f;
+
+                    if (!StanceController.BlockBraceSwayBonus)
+                    {
+                        StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 0.75f * mountOrientationBonus, 0.04f);
+                    }
+                    StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 0.85f * mountOrientationBonus, 0.04f);
+                    StanceController.MountingRecoilBonus = Mathf.Clamp(mountingRecoilLimit * mountOrientationBonus, 0.1f, 1f);
+                    StanceController.MountingSwayBonus = Mathf.Lerp(StanceController.MountingSwayBonus, 0.5f * mountOrientationBonus, 0.1f);
+                }
+                else 
+                {
+                    if (!StanceController.BlockBraceSwayBonus)
+                    {
+                        StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 1f, 0.05f);
+                    }
+
+                    StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 1f, 0.05f);
                 }
             }
         }
@@ -524,69 +546,6 @@ namespace RealismMod
                 __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + targetPosition + (Vector3)blindfirePositionField.GetValue(__instance) * (float)blindfireStrengthField.GetValue(__instance) * collidingModifier;
                 __instance.HandsContainer.HandsRotation.Zero = __instance.RotationZeroSum;
                 return false;
-            }
-            return true;
-        }
-    }
-
-    public class RotatePatch : ModulePatch
-    {
-        private static FieldInfo movementContextField;
-        private static FieldInfo playerField;
-        private static Vector2 initialRotation = Vector3.zero;
-
-        protected override MethodBase GetTargetMethod()
-        {
-            movementContextField = AccessTools.Field(typeof(MovementState), "MovementContext");
-            playerField = AccessTools.Field(typeof(MovementContext), "_player");
-            return typeof(MovementState).GetMethod("Rotate", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(MovementState __instance, ref Vector2 deltaRotation, bool ignoreClamp)
-        {
-            MovementContext movementContext = (MovementContext)movementContextField.GetValue(__instance);
-            Player player = (Player)playerField.GetValue(movementContext);
-
-            if (player.IsYourPlayer)
-            {
-
-                StanceController.MouseRotation = movementContext.ClampRotation(deltaRotation);
-
-                if (!StanceController.IsMounting)
-                {
-                    initialRotation = movementContext.Rotation;
-                }
-
-                if (StanceController.IsMounting && !ignoreClamp)
-                {
-                    FirearmController fc = player.HandsController as FirearmController;
-
-                    Vector2 currentRotation = movementContext.Rotation;
-
-                    deltaRotation *= (fc.AimingSensitivity * 0.9f);
-
-                    float lowerClampXLimit = StanceController.IsBracingTop ? -17f : StanceController.IsBracingRightSide ? -4f : -15f;
-                    float upperClampXLimit = StanceController.IsBracingTop ? 17f : StanceController.IsBracingRightSide ? 15f : 1f;
-
-                    float lowerClampYLimit = StanceController.IsBracingTop ? -10f : -8f;
-                    float upperClampYLimit = StanceController.IsBracingTop ? 10f : 15f;
-
-                    float relativeLowerXLimit = initialRotation.x + lowerClampXLimit;
-                    float relativeUpperXLimit = initialRotation.x + upperClampXLimit;
-                    float relativeLowerYLimit = initialRotation.y + lowerClampYLimit;
-                    float relativeUpperYLimit = initialRotation.y + upperClampYLimit;
-
-                    float clampedX = Mathf.Clamp(currentRotation.x + deltaRotation.x, relativeLowerXLimit, relativeUpperXLimit);
-                    float clampedY = Mathf.Clamp(currentRotation.y + deltaRotation.y, relativeLowerYLimit, relativeUpperYLimit);
-
-                    deltaRotation = new Vector2(clampedX - currentRotation.x, clampedY - currentRotation.y);
-
-                    deltaRotation = movementContext.ClampRotation(deltaRotation);
-                    movementContext.Rotation += deltaRotation;
-
-                    return false;
-                }
             }
             return true;
         }
@@ -902,10 +861,9 @@ namespace RealismMod
         private static FieldInfo aimSpeedField;
         private static FieldInfo fovScaleField;
         private static FieldInfo displacementStrField;
-/*        private static FieldInfo blindfireRotationField;*/
         private static FieldInfo aimingQuatField;
-        private static FieldInfo weapLocalRotationField;
-        private static FieldInfo weapRotationField;
+        private static FieldInfo weapTempRotationField;
+        private static FieldInfo weapTempPositionField;
         private static FieldInfo isAimingField;
         private static FieldInfo firearmControllerField;
         private static FieldInfo playerField;
@@ -938,8 +896,8 @@ namespace RealismMod
             fovScaleField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_compensatoryScale");
             displacementStrField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_displacementStr");
             aimingQuatField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_targetScopeRotation");
-            weapLocalRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_local");
-            weapRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryRotation");
+            weapTempPositionField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryPosition");
+            weapTempRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryRotation");
             isAimingField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_isAiming");
             firearmControllerField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
             playerField = AccessTools.Field(typeof(FirearmController), "_player");
@@ -966,8 +924,8 @@ namespace RealismMod
                 float fovScale = (float)fovScaleField.GetValue(__instance);
                 float displacementStr = (float)displacementStrField.GetValue(__instance);
                 Quaternion aimingQuat = (Quaternion)aimingQuatField.GetValue(__instance);
-                Quaternion weapLocalRotation = (Quaternion)weapLocalRotationField.GetValue(__instance);
-                Quaternion weapRotation = (Quaternion)weapRotationField.GetValue(__instance);
+                Vector3 weapTempPosition = (Vector3)weapTempPositionField.GetValue(__instance);
+                Quaternion weapTempRotation = (Quaternion)weapTempRotationField.GetValue(__instance);
                 bool isAiming = (bool)isAimingField.GetValue(__instance);
 
                 Vector3 handsRotation = __instance.HandsContainer.HandsRotation.Get();
@@ -976,11 +934,13 @@ namespace RealismMod
                 handsRotation += sway;
                 Vector3 rotationCenter = __instance._shouldMoveWeaponCloser ? __instance.HandsContainer.RotationCenterWoStock : __instance.HandsContainer.RotationCenter;
                 Vector3 weapRootPivot = __instance.HandsContainer.WeaponRootAnim.TransformPoint(rotationCenter);
-                Vector3 weaponWorldPos = __instance.HandsContainer.WeaponRootAnim.position;
 
-                StanceController.DoMounting(Logger, player, __instance, fc, ref weaponWorldPos, ref mountWeapPosition, dt, __instance.HandsContainer.WeaponRoot.position);
+                StanceController.DoMounting(Logger, player, __instance, fc, ref weapTempPosition, ref mountWeapPosition, dt, __instance.HandsContainer.WeaponRoot.position);
+                weapTempPositionField.SetValue(__instance, weapTempPosition);
 
                 __instance.DeferredRotateWithCustomOrder(__instance.HandsContainer.WeaponRootAnim, weapRootPivot, handsRotation);
+                weapTempPosition = (Vector3)weapTempPositionField.GetValue(__instance);
+
                 Vector3 recoilVector = __instance.Shootingg.CurrentRecoilEffect.GetHandRotationRecoil();
                 if (recoilVector.magnitude > 1E-45f)
                 {
@@ -989,8 +949,9 @@ namespace RealismMod
                         recoilVector.x = Mathf.Atan(Mathf.Tan(recoilVector.x * 0.017453292f) * fovScale) * 57.29578f;
                         recoilVector.z = Mathf.Atan(Mathf.Tan(recoilVector.z * 0.017453292f) * fovScale) * 57.29578f;
                     }
-                    Vector3 recoilPivot = weaponWorldPos + weapRotation * __instance.HandsContainer.RecoilPivot;
-                    __instance.DeferredRotate(__instance.HandsContainer.WeaponRootAnim, recoilPivot, weapRotation * recoilVector);
+                    Vector3 recoilPivot = weapTempPosition + weapTempRotation * __instance.HandsContainer.RecoilPivot;
+                    __instance.DeferredRotate(__instance.HandsContainer.WeaponRootAnim, recoilPivot, weapTempRotation * recoilVector);
+                    weapTempPosition = (Vector3)weapTempPositionField.GetValue(__instance);
                 }
 
                 __instance.ApplyAimingAlignment(dt);
@@ -1006,9 +967,9 @@ namespace RealismMod
 
                 currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? aimingQuat : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
 
-                RecoilController.DoVisualRecoil(ref targetRecoil, ref currentRecoil, ref weapRotation, Logger);
+                RecoilController.DoVisualRecoil(ref targetRecoil, ref currentRecoil, ref weapTempRotation, Logger);
 
-                __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponWorldPos, weapRotation * currentRotation);
+                __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weapTempPosition, weapTempRotation * currentRotation);
 
                 if (isPistol && !StanceController.IsPatrolStance)
                 {

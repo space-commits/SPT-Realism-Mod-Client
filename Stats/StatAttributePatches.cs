@@ -13,10 +13,10 @@ namespace RealismMod
         {
             return typeof(StaticIcons).GetMethod("GetAttributeIcon", BindingFlags.Instance | BindingFlags.Public);
         }
+
         [PatchPrefix]
         private static bool Prefix(ref Sprite __result, Enum id)
         {
-
             if (id == null || !Plugin.IconCache.ContainsKey(id))
             {
                 return true;

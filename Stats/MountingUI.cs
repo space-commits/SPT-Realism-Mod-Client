@@ -48,11 +48,11 @@ namespace RealismMod
         {
             if (ActiveUIScreen != null && Plugin.EnableMountUI.Value)
             {
-                if (StanceController.IsBracingLeftSide)
+                if (StanceController.BracingDirection == EBracingDirection.Left)
                 {
                     mountingUIImage.sprite = Plugin.LoadedSprites["mountingleft.png"];
                 }
-                else if (StanceController.IsBracingRightSide)
+                else if (StanceController.BracingDirection == EBracingDirection.Right)
                 {
                     mountingUIImage.sprite = Plugin.LoadedSprites["mountingright.png"];
                 }
