@@ -54,15 +54,29 @@ namespace RealismMod
 
         public static float MagWeightMult = 16f;
 
-        private static List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(10);
+        public static void CalcPlayerWeightStats(Player player)
+        {
+            float playerWeight = player.Inventory.TotalWeight;
+            float weaponWeight = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item.GetSingleItemTotalWeight() : 1f;
+            PlayerStats.TotalModifiedWeightMinusWeapon = playerWeight - weaponWeight;
+            PlayerStats.TotalMousePenalty = (-playerWeight / 10f);
+            PlayerStats.TotalModifiedWeight = playerWeight;
+            if (Plugin.EnableMouseSensPenalty.Value)
+            {
+                player.RemoveMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor);
+                if (PlayerStats.TotalMousePenalty < 0f)
+                {
+                    player.AddMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor, PlayerStats.TotalMousePenalty / 100f);
+                }
+            }
+        }
 
         public static void SetGearParamaters(Player player)
         {
             float reloadMulti = 1f;
             bool allowADS = true;
-            Inventory inventory = (Inventory)AccessTools.Property(typeof(Player), "Inventory").GetValue(player);
-            preAllocatedArmorComponents.Clear();
-            inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
+            List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(20);
+            player.Inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
 
             reloadMulti *= StatCalc.GetRigReloadSpeed(player);
 
@@ -87,8 +101,7 @@ namespace RealismMod
 
         public static float GetRigReloadSpeed(Player player)
         {
-            EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(player);
-            LootItemClass tacVest = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as LootItemClass;
+            LootItemClass tacVest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as LootItemClass;
 
             if (tacVest != null)
             {

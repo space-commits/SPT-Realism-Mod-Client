@@ -91,9 +91,8 @@ namespace RealismMod
 
         public static bool HasFullyResetSprintADSPenalties = false;
 
-        public static float TotalUnmodifiedWeight = 1f;
-        public static float TotalMousePenalty = 0f;
         public static float TotalModifiedWeight = 1f;
+        public static float TotalMousePenalty = 1f;
         public static float TotalModifiedWeightMinusWeapon = 1f;
 
         public static bool IsMoving = false;

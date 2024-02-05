@@ -2,6 +2,7 @@
 using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
+using EFT.Animations;
 using EFT.Interactive;
 using EFT.InventoryLogic;
 using HarmonyLib;
@@ -10,6 +11,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using static CW2.Animations.PhysicsSimulator.Val;
+using static EFT.Player;
 using MagReloadClass = EFT.Player.FirearmController.GClass1607;
 using RechamberClass = EFT.Player.FirearmController.GClass1619;
 
@@ -76,15 +78,18 @@ namespace RealismMod
 
     public class SetAnimatorAndProceduralValuesPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             return typeof(EFT.Player.FirearmController).GetMethod("SetAnimatorAndProceduralValues", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(EFT.Player.FirearmController __instance)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 StanceController.DoResetStances = true;
@@ -121,15 +126,18 @@ namespace RealismMod
 
     public class CheckAmmoPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             return typeof(EFT.Player.FirearmController).GetMethod("CheckAmmo", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(EFT.Player.FirearmController __instance)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
                 if (Plugin.EnableReloadPatches.Value)
@@ -161,15 +169,18 @@ namespace RealismMod
 
     public class CheckChamberPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             return typeof(EFT.Player.FirearmController).GetMethod("CheckChamber", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(EFT.Player.FirearmController __instance)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
                 if (Plugin.EnableReloadPatches.Value)
@@ -210,15 +221,18 @@ namespace RealismMod
 
     public class BoltActionReloadPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             return typeof(Player.FirearmController).GetMethod("InitiateShot", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static void PatchPrefix(Player.FirearmController __instance)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer && ((WeaponStats._IsManuallyOperated || __instance.Item.IsGrenadeLauncher || __instance.Item.IsUnderBarrelDeviceActive)))
             {
                 float chamberSpeed = WeaponStats.TotalFiringChamberSpeed;
@@ -279,15 +293,18 @@ namespace RealismMod
 
     public class RechamberPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             return typeof(RechamberClass).GetMethod("Start", new Type[] { typeof(BulletClass), typeof(Callback) });
         }
 
         [PatchPostfix]
         private static void PatchPostfix(RechamberClass __instance)
         {
-            Player player = (Player)AccessTools.Field(typeof(Player.FirearmController.GClass1581), "player_0").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
                 if (Plugin.EnableReloadPatches.Value)
@@ -324,15 +341,18 @@ namespace RealismMod
 
     public class CanStartReloadPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             return typeof(Player.FirearmController).GetMethod("CanStartReload", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance, bool __result)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 if (__result == true)
@@ -352,15 +372,18 @@ namespace RealismMod
 
     public class ReloadMagPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             return typeof(Player.FirearmController).GetMethod("ReloadMag", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance, MagazineClass magazine)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 StatCalc.SetMagReloadSpeeds(__instance, magazine);
@@ -378,15 +401,18 @@ namespace RealismMod
 
     public class QuickReloadMagPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             return typeof(Player.FirearmController).GetMethod("QuickReloadMag", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance, MagazineClass magazine)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 StatCalc.SetMagReloadSpeeds(__instance, magazine, true);
@@ -403,15 +429,18 @@ namespace RealismMod
 
     public class ReloadCylinderMagazinePatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             return typeof(Player.FirearmController).GetMethod("ReloadCylinderMagazine", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 PlayerStats.IsAttemptingToReloadInternalMag = true;
@@ -428,15 +457,18 @@ namespace RealismMod
 
     public class ReloadWithAmmoPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             return typeof(Player.FirearmController).GetMethod("ReloadWithAmmo", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 PlayerStats.IsAttemptingToReloadInternalMag = true;
@@ -452,15 +484,18 @@ namespace RealismMod
 
     public class ReloadBarrelsPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             return typeof(Player.FirearmController).GetMethod("ReloadBarrels", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 PlayerStats.IsAttemptingToReloadInternalMag = true;
@@ -477,18 +512,23 @@ namespace RealismMod
 
     public class SetMagTypeNewPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+        private static FieldInfo faField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(Player.FirearmController.GClass1581), "player_0");
+            faField = AccessTools.Field(typeof(Player.FirearmController.GClass1581), "firearmsAnimator_0");
             return typeof(MagReloadClass).GetMethod("Start", new Type[] { typeof(Player.FirearmController.GClass1573), typeof(Callback) });
         }
 
         [PatchPostfix]
         private static void PatchPostfix(MagReloadClass __instance)
         {
-            Player player = (Player)AccessTools.Field(typeof(Player.FirearmController.GClass1581), "player_0").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
-                FirearmsAnimator fa = (FirearmsAnimator)AccessTools.Field(typeof(Player.FirearmController.GClass1581), "firearmsAnimator_0").GetValue(__instance);
+                FirearmsAnimator fa = (FirearmsAnimator)faField.GetValue(__instance);
 
                 float totalReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerStats.ReloadSkillMulti * PlayerStats.ReloadInjuryMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.3f);
                 fa.SetAnimationSpeed(totalReloadSpeed);
@@ -562,8 +602,11 @@ namespace RealismMod
 
     public class OnMagInsertedPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             return typeof(Player.FirearmController).GetMethod("method_47", BindingFlags.Instance | BindingFlags.Public);
         }
 
@@ -571,7 +614,7 @@ namespace RealismMod
         private static void PatchPostfix(ref Player.FirearmController __instance)
         {
             //to find this again, look for private void method_47(){ this.CurrentOperation.OnMagInsertedToWeapon(); }
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 PlayerStats.IsMagReloading = false;

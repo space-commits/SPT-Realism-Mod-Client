@@ -17,7 +17,7 @@ namespace RealismMod
         private static bool hasSetActiveAimADS = false;
         private static bool wasToggled = false;
 
-        public static void ADSCheck(Player player, EFT.Player.FirearmController fc, ManualLogSource logger)
+        public static void ADSCheck(Player player, EFT.Player.FirearmController fc)
         {
             if (!player.IsAI && fc.Item != null)
             {
@@ -159,15 +159,17 @@ namespace RealismMod
 
     public class SetAimingPatch : ModulePatch
     {
+        private static FieldInfo playerField;
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player");
             return typeof(EFT.Player.FirearmController).GetMethod("set_IsAiming", BindingFlags.Public | BindingFlags.Instance);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(EFT.Player.FirearmController __instance, bool value, ref bool ____isAiming)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer && __instance.Item.WeapClass == "pistol")
             {
                 player.Physical.Aim((!____isAiming || !(player.MovementContext.StationaryWeapon == null)) ? 0f : __instance.ErgonomicWeight * 0.2f);
@@ -177,15 +179,17 @@ namespace RealismMod
 
     public class ToggleAimPatch : ModulePatch
     {
+        private static FieldInfo playerField;
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player");
             return typeof(EFT.Player.FirearmController).GetMethod("ToggleAim", BindingFlags.Public | BindingFlags.Instance);
         }
 
         [PatchPrefix]
         private static bool Prefix(EFT.Player.FirearmController __instance)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
 
             if (player.IsYourPlayer)
             {

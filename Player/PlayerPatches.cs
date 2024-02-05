@@ -48,25 +48,12 @@ namespace RealismMod
 
     public class TotalWeightPatch : ModulePatch
     {
-        private static float newWeight = 0f;
-        private static string[] stashIDs = { 
-            "5fe49444ae6628187a2e78b8", 
-            "5fe4977574f15b4ad31b66b6", 
-            "5fe49cdfa19cac3fa9054115", 
-            "5fe49a0e2694b0755a504876", 
-            "5fe4a9285a72d07b663029e2", 
-            "5fe4a9fcf5aec236ec3836f7",
-            "5fe4a66e40ca750fd72b595a",
-            "5fe4ab2240ca750fd72bbe1c"
-        };
-
-        private static void getTotalWeight(Inventory inventory, bool isInStash)
+        protected override MethodBase GetTargetMethod()
         {
-            newWeight = calcWeightPenalties(inventory, isInStash);
-            inventory.TotalWeight = new WeightClass(new Func<float>(() => newWeight));
+            return typeof(Inventory).GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static float calcWeightPenalties(Inventory invClass, bool isInStash)
+        private static float getTotalWeight(Inventory invClass)
         {
             float modifiedWeight = 0f;
             float trueWeight = 0f;
@@ -90,97 +77,20 @@ namespace RealismMod
                 }
             }
 
-            if (!isInStash) 
-            {
-                Player player = Utils.GetPlayer();
-                PlayerStats.TotalModifiedWeight = modifiedWeight;
-                PlayerStats.TotalUnmodifiedWeight = trueWeight;
-                PlayerStats.TotalMousePenalty = (-modifiedWeight / 10f);
-                float weaponWeight = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item.GetSingleItemTotalWeight() : 1f;
-                PlayerStats.TotalModifiedWeightMinusWeapon = PlayerStats.TotalModifiedWeight - weaponWeight;
-
-                if (Plugin.EnableMouseSensPenalty.Value)
-                {
-                    player.RemoveMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor);
-                    if (PlayerStats.TotalMousePenalty < 0f)
-                    {
-                        player.AddMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor, PlayerStats.TotalMousePenalty / 100f);
-                    }
-                }
-            }
-
             if (Plugin.EnableLogging.Value)
             {
                 Logger.LogWarning("Total Modified Weight " + modifiedWeight);
                 Logger.LogWarning("Total Unmodified Weight " + trueWeight);
-                Logger.LogWarning("Total Mouse Penalty" + PlayerStats.TotalMousePenalty);
-                Logger.LogWarning("Total Modified Weight MinusWeapon " + PlayerStats.TotalModifiedWeightMinusWeapon);
             }
 
             return modifiedWeight;
         }
 
-        protected override MethodBase GetTargetMethod()
+        [PatchPrefix]
+        private static bool PatchPrefix(Inventory __instance, ref float __result)
         {
-            return typeof(Inventory).GetMethod("UpdateTotalWeight", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostFix(Inventory __instance, EventArgs args)
-        {
-            try 
-            {
-
-                /*   if ((geventArgs = (args as GEventArgs1)) != null)
-                   {
-                       Logger.LogWarning("args is not null");
-                   }
-                   else 
-                   {
-                       Logger.LogWarning("args is null");
-                   }
-
-   */
-                /*       __instance.Stash.OriginalAddress.GetOwner().ID*/
-
-                Logger.LogWarning("1");
-                GEventArgs1 geventArgs;
-                Logger.LogWarning("2");
-                bool world = Singleton<GameWorld>.Instance != null;
-                Logger.LogWarning("3");
-                bool player = Singleton<GameWorld>.Instance?.MainPlayer != null;
-                Logger.LogWarning("4");
-                bool profile = Singleton<GameWorld>.Instance?.MainPlayer?.ProfileId != null;
-                Logger.LogWarning("5");
-                bool notNull = (geventArgs = (args as GEventArgs1)) != null;
-                Logger.LogWarning("6");
-                bool item = geventArgs?.Item != null;
-                Logger.LogWarning("7");
-                bool owner = geventArgs?.Item?.Owner != null;
-                Logger.LogWarning("8");
-                bool ownerID = geventArgs?.Item?.Owner?.ID != null;
-                Logger.LogWarning("9");
-                if (notNull && world && player && profile && item && owner && ownerID && geventArgs.Item.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
-                {
-                    Logger.LogWarning("match");
-                    getTotalWeight(__instance, false);
-                }
-                else 
-                {
-                    //only way to differentiate player scav from pmc while in menu
-                    //player scav has random stash id, possible pmc stash id's are known beforehand
-                    if (stashIDs.Contains(__instance.Stash.Id)) 
-                    {
-                        Logger.LogWarning("stash");
-                        getTotalWeight(__instance, true);
-                    }          
-                }
-            }
-            catch 
-            {
-                Logger.LogWarning("null ref");
-                //somehow null check failed
-            }
+            __result = getTotalWeight(__instance);
+            return false;
         }
     }
 
@@ -197,7 +107,7 @@ namespace RealismMod
 
             if (__instance.IsYourPlayer)
             {
-                Logger.LogWarning("init");
+                StatCalc.CalcPlayerWeightStats(__instance);
                 StatCalc.SetGearParamaters(__instance);
             }
         }
@@ -216,6 +126,7 @@ namespace RealismMod
 
             if (__instance.IsYourPlayer)
             {
+                StatCalc.CalcPlayerWeightStats(__instance);
                 StatCalc.SetGearParamaters(__instance);
             }
         }
@@ -306,6 +217,8 @@ namespace RealismMod
 
     public class PlayerLateUpdatePatch : ModulePatch
     {
+        private static FieldInfo surfaceField;
+
         private static float sprintCooldownTimer = 0f;
         private static bool doSwayReset = false;
         private static float sprintTimer = 0f;
@@ -419,6 +332,8 @@ namespace RealismMod
 
         protected override MethodBase GetTargetMethod()
         {
+            surfaceField = AccessTools.Field(typeof(Player), "_currentSet");
+
             return typeof(Player).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.Public);
         }
 
@@ -429,7 +344,7 @@ namespace RealismMod
         {
             if (Plugin.EnableDeafen.Value && Plugin.ServerConfig.headset_changes)
             {
-                SurfaceSet currentSet = (SurfaceSet)AccessTools.Field(typeof(Player), "_currentSet").GetValue(__instance);
+                SurfaceSet currentSet = (SurfaceSet)surfaceField.GetValue(__instance);
                 currentSet.SprintSoundBank.BaseVolume = Plugin.SharedMovementVolume.Value;
                 currentSet.StopSoundBank.BaseVolume = Plugin.SharedMovementVolume.Value;
                 currentSet.JumpSoundBank.BaseVolume = Plugin.SharedMovementVolume.Value;
@@ -479,11 +394,11 @@ namespace RealismMod
                     }
 
                     ReloadController.ReloadStateCheck(__instance, fc, Logger);
-                    AimController.ADSCheck(__instance, fc, Logger);
+                    AimController.ADSCheck(__instance, fc);
 
                     if (Plugin.EnableStanceStamChanges.Value)
                     {
-                        StanceController.SetStanceStamina(__instance, fc, Logger);
+                        StanceController.SetStanceStamina(__instance, fc);
                     }
 
                     float remainStamPercent = __instance.Physical.HandsStamina.Current / __instance.Physical.HandsStamina.TotalCapacity;
@@ -492,7 +407,7 @@ namespace RealismMod
                 }
                 else if (Plugin.EnableStanceStamChanges.Value)
                 {
-                    StanceController.ResetStanceStamina(__instance, Logger);
+                    StanceController.ResetStanceStamina(__instance);
                 }
 
                 __instance.Physical.HandsStamina.Current = Mathf.Max(__instance.Physical.HandsStamina.Current, 1f);

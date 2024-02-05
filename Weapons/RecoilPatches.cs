@@ -13,11 +13,9 @@ using System.Linq;
 /*using IWeapon = GInterface273;*/
 using PlayerInterface = GInterface127;
 using EFT.Animations.Recoil;
-using FitstPersonAnimations.WeaponAnimation.Effectors.Recoil;
 using EFT.Animations;
 using EFT.Animations.NewRecoil;
 using System.Collections.Generic;
-using static RootMotion.FinalIK.InteractionTrigger;
 using System.IO;
 /*using WeaponSkillsClass = EFT.SkillManager.GClass1638;*/
 
@@ -32,6 +30,7 @@ namespace RealismMod
         private static Vector2 initialRotation = Vector3.zero;
         private static Vector2 recordedRotation = Vector3.zero;
         private static Vector2 targetRotation = Vector3.zero;
+        private static Vector2 resetTarget = Vector3.zero;
         private static bool hasReset = false;
         private static float timer = 0.0f;
         private static float resetTime = 0.5f;
@@ -115,7 +114,9 @@ namespace RealismMod
                         yRotation = (float)Math.Round(Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * 4f, 1f)), 3);
                     }
 
-                    targetRotation = movementContext.Rotation + new Vector2(xRotation, yRotation);
+                    targetRotation = movementContext.Rotation;
+                    targetRotation.x += xRotation;
+                    targetRotation.y += yRotation;
 
                     if ((canResetVert && (movementContext.Rotation.y > (recordedRotation.y + 2f) * Plugin.NewPOASensitivity.Value || deltaRotation.y <= -1f * Plugin.NewPOASensitivity.Value)) || (canResetHorz && Mathf.Abs(deltaRotation.x) >= 1f * Plugin.NewPOASensitivity.Value))
                     {
@@ -131,22 +132,23 @@ namespace RealismMod
                     bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Mathf.Clamp((float)Math.Round(resetSens / 2.5f, 3), 0f, 0.1f);
                     bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= resetSens;
 
-                    Vector2 resetTarget = movementContext.Rotation;
-
                     if (canResetVert && canResetHorz && xIsBelowThreshold && yIsBelowThreshold)
                     {
-                        resetTarget = new Vector2(recordedRotation.x, recordedRotation.y);
-                        movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, new Vector2(recordedRotation.x, recordedRotation.y), resetSpeed);
+                        resetTarget.x = recordedRotation.x;
+                        resetTarget.y = recordedRotation.y;
+                        movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, resetTarget, resetSpeed);
                     }
                     else if (canResetHorz && xIsBelowThreshold && !canResetVert)
                     {
-                        resetTarget = new Vector2(recordedRotation.x, movementContext.Rotation.y);
-                        movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, new Vector2(recordedRotation.x, movementContext.Rotation.y), resetSpeed);
+                        resetTarget.x = recordedRotation.x;
+                        resetTarget.y = movementContext.Rotation.y;
+                        movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, resetTarget, resetSpeed);
                     }
                     else if (canResetVert && yIsBelowThreshold && !canResetHorz)
                     {
-                        resetTarget = new Vector2(movementContext.Rotation.x, recordedRotation.y);
-                        movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, new Vector2(movementContext.Rotation.x, recordedRotation.y), resetSpeed);
+                        resetTarget.x = movementContext.Rotation.x;
+                        resetTarget.y = recordedRotation.y;
+                        movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, resetTarget, resetSpeed);
                     }
                     else
                     {
@@ -214,7 +216,8 @@ namespace RealismMod
                     float clampedX = Mathf.Clamp(currentRotation.x + deltaRotation.x, relativeLowerXLimit, relativeUpperXLimit);
                     float clampedY = Mathf.Clamp(currentRotation.y + deltaRotation.y, relativeLowerYLimit, relativeUpperYLimit);
 
-                    deltaRotation = new Vector2(clampedX - currentRotation.x, clampedY - currentRotation.y);
+                    deltaRotation.x = clampedX - currentRotation.x;
+                    deltaRotation.y = clampedY - currentRotation.y;
 
                     deltaRotation = movementContext.ClampRotation(deltaRotation);
                     movementContext.Rotation += deltaRotation;
@@ -230,16 +233,21 @@ namespace RealismMod
 
     public class RecoilAnglesPatch : ModulePatch
     {
+        private static FieldInfo fcField;
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            fcField = AccessTools.Field(typeof(NewRecoilShotEffect), "_firearmController");
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             return typeof(NewRecoilShotEffect).GetMethod("CalculateBaseRecoilParameters");
         }
 
         [PatchPrefix]
         public static bool Prefix(NewRecoilShotEffect __instance, float recoilSuspensionY, List<ShotsGroupSettings> shotsGroupSettingsList)
         {
-            FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(NewRecoilShotEffect), "_firearmController").GetValue(__instance);
-            Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
+            FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
+            Player player = (Player)playerField.GetValue(firearmController);
 
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary) 
             {
@@ -264,8 +272,13 @@ namespace RealismMod
 
     public class RecalcWeaponParametersPatch : ModulePatch
     {
+        private static FieldInfo fcField;
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            fcField = AccessTools.Field(typeof(NewRecoilShotEffect), "_firearmController");
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             return typeof(NewRecoilShotEffect).GetMethod("RecalculateRecoilParamsOnChangeWeapon", BindingFlags.Instance | BindingFlags.Public);
         }
 
@@ -273,7 +286,7 @@ namespace RealismMod
         private static bool Prefix(NewRecoilShotEffect __instance, WeaponTemplate template, BackendConfigSettingsClass.AimingConfiguration AimingConfig, Player.FirearmController firearmController, float recoilSuppressionX, float recoilSuppressionY, float recoilSuppressionFactor, float modsFactorRecoil)
         {
             //make sure the firearmcontroller is instatiated before using it to determine IsYourPlayer, make sure it's set correctly
-            Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
+            Player player = (Player)playerField.GetValue(firearmController);
 
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
@@ -281,7 +294,7 @@ namespace RealismMod
                 //force stats to be calculated 
                 float calcStats = firearmController.Weapon.ErgonomicsDelta;
 
-                AccessTools.Field(typeof(NewRecoilShotEffect), "_firearmController").SetValue(__instance, firearmController);
+                fcField.SetValue(__instance, firearmController);
                 __instance.RecoilStableShotIndex = (int)Plugin.test10.Value;
                 __instance.HandRotationRecoil.RecoilReturnTrajectoryOffset = template.RecoilReturnPathOffsetHandRotation;
                 __instance.HandRotationRecoil.StableAngleIncreaseStep = template.RecoilStableAngleIncreaseStep;
@@ -344,9 +357,13 @@ namespace RealismMod
         private static string[] allowedCalibers = { "Caliber556x45NATO", "Caliber545x39", "Caliber762x39", "Caliber9x39", "Caliber762x35" };
 
         private static FieldInfo shotIndexField;
+        private static FieldInfo fcField;
+        private static FieldInfo playerField;
 
         protected override MethodBase GetTargetMethod()
         {
+            fcField = AccessTools.Field(typeof(NewRecoilShotEffect), "_firearmController");
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             shotIndexField = AccessTools.Field(typeof(NewRecoilShotEffect), "_autoFireShotIndex");
 
             return typeof(NewRecoilShotEffect).GetMethod("AddRecoilForce");
@@ -355,13 +372,13 @@ namespace RealismMod
         [PatchPrefix]
         public static bool Prefix(NewRecoilShotEffect __instance, float incomingForce)
         {
-            FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(NewRecoilShotEffect), "_firearmController").GetValue(__instance);
-            Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
+            FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
+            Player player = (Player)playerField.GetValue(firearmController);
 
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 //Conditional recoil modifiers 
-                float totalPlayerWeight = PlayerStats.TotalUnmodifiedWeight - WeaponStats.TotalWeaponWeight;
+                float totalPlayerWeight = PlayerStats.TotalModifiedWeightMinusWeapon;
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 550f);
                 float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 100f);
 
@@ -482,16 +499,21 @@ namespace RealismMod
 
     public class ShootPatch : ModulePatch
     {
+        private static FieldInfo fcField;
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             return typeof(ProceduralWeaponAnimation).GetMethod("Shoot");
         }
 
         [PatchPostfix]
         public static void PatchPostfix(ProceduralWeaponAnimation __instance, float str)
         {
-            FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController").GetValue(__instance);
-            Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
+            FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
+            Player player = (Player)playerField.GetValue(firearmController);
 
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {

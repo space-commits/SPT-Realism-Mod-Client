@@ -319,7 +319,7 @@ namespace RealismMod
         public static Dictionary<string, AudioClip> LoadedAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, Sprite> LoadedSprites = new Dictionary<string, Sprite>();
 
-        public GameObject Hook;
+        public static GameObject Hook;
         public MountingUI MountingUIComponent;
 
         private string ModPath;
@@ -494,8 +494,6 @@ namespace RealismMod
             }
 
             initConfigs();
-
-            new TotalWeightPatch().Enable();
 
             /*    new SetSkinPatch().Enable();*/
             /*           new ShouldFragPatch().Enable();
@@ -677,21 +675,22 @@ namespace RealismMod
             //Player
             new PlayerInitPatch().Enable();
             new ToggleHoldingBreathPatch().Enable();
+            new TotalWeightPatch().Enable();
 
-/*            //Movement
-            if (EnableMaterialSpeed.Value)
-            {
-                new CalculateSurfacePatch().Enable();
-            }
-            if (EnableMaterialSpeed.Value)
-            {
-                new CalculateSurfacePatch().Enable();
-                new ClampSpeedPatch().Enable();
-            }
-            new SprintAccelerationPatch().Enable();
-            new EnduranceSprintActionPatch().Enable();
-            new EnduranceMovementActionPatch().Enable();
-*/
+            /*            //Movement
+                        if (EnableMaterialSpeed.Value)
+                        {
+                            new CalculateSurfacePatch().Enable();
+                        }
+                        if (EnableMaterialSpeed.Value)
+                        {
+                            new CalculateSurfacePatch().Enable();
+                            new ClampSpeedPatch().Enable();
+                        }
+                        new SprintAccelerationPatch().Enable();
+                        new EnduranceSprintActionPatch().Enable();
+                        new EnduranceMovementActionPatch().Enable();
+            */
             //LateUpdate
             new PlayerLateUpdatePatch().Enable();
 

@@ -645,7 +645,7 @@ namespace RealismMod
         {
             if (Plugin.EnableStatsDelta.Value == true)
             {
-                StatDeltaDisplay.DisplayDelta(__instance, Logger);
+                StatDeltaDisplay.DisplayDelta(__instance);
             }
             __result = UIWeaponStats.HRecoilDelta;
             return false;
@@ -681,7 +681,7 @@ namespace RealismMod
         {
             if (Plugin.EnableStatsDelta.Value == true)
             {
-                StatDeltaDisplay.DisplayDelta(__instance, Logger);
+                StatDeltaDisplay.DisplayDelta(__instance);
             }
             __result = UIWeaponStats.VRecoilDelta;
             return false;
@@ -774,7 +774,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            StatDeltaDisplay.DisplayDelta(__instance, Logger);
+            StatDeltaDisplay.DisplayDelta(__instance);
             __result = UIWeaponStats.ErgoDelta;
             return false;
         }
@@ -791,7 +791,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref string __result)
         {
-            StatDeltaDisplay.DisplayDelta(__instance, Logger);
+            StatDeltaDisplay.DisplayDelta(__instance);
             float ergoTotal = __instance.Template.Ergonomics * (1f + UIWeaponStats.ErgoDelta);
             __result = Mathf.Clamp(ergoTotal, 0f, 100f).ToString("0.##");
             return false;
@@ -801,7 +801,7 @@ namespace RealismMod
     public static class StatDeltaDisplay
     {
 
-        public static void DisplayDelta(Weapon __instance, ManualLogSource Logger)
+        public static void DisplayDelta(Weapon __instance)
         {
             float baseCOI = __instance.CenterOfImpactBase;
             float currentCOI = baseCOI;
@@ -935,20 +935,6 @@ namespace RealismMod
             UIWeaponStats.SemiFireRate = Mathf.Max(200, (int)currentSemiROF);
             UIWeaponStats.COIDelta = totalCOIDelta;
             UIWeaponStats.CamReturnSpeed = currentCamReturnSpeed;
-
-            if (Plugin.EnableLogging.Value == true)
-            {
-                Logger.LogWarning("Shoulder = " + hasShoulderContact);
-                Logger.LogWarning("Total Ergo = " + totalErgo);
-                Logger.LogWarning("Total Ergo D = " + totalErgoDelta);
-                Logger.LogWarning("Dispersion = " + totalDispersion);
-                Logger.LogWarning("Dispersion Delta = " + (totalDispersion - __instance.Template.RecolDispersion));
-                Logger.LogWarning("Cam Recoil = " + totalCamRecoil);
-                Logger.LogWarning("Total V Recoil = " + totalVRecoil);
-                Logger.LogWarning("Total H Recoil = " + totalHRecoil);
-                Logger.LogWarning("Balance = " + totalTorque);
-                Logger.LogWarning("COIDelta = " + totalCOIDelta);
-            }
         }
     }
 }

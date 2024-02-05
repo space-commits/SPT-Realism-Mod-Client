@@ -23,8 +23,13 @@ namespace RealismMod
 {
     public class UpdateWeaponVariablesPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+        private static FieldInfo fcField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
+            fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("UpdateWeaponVariables", BindingFlags.Instance | BindingFlags.Public);
         }
 
@@ -32,12 +37,12 @@ namespace RealismMod
         private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
 
-            FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController").GetValue(__instance);
+            FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
             if (firearmController == null)
             {
                 return;
             }
-            Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
+            Player player = (Player)playerField.GetValue(firearmController);
 
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
@@ -85,9 +90,15 @@ namespace RealismMod
     public class PwaWeaponParamsPatch : ModulePatch
     {
         private static bool didAimWiggle = false;
+        private static FieldInfo playerField;
+        private static FieldInfo fcField;
+        private static FieldInfo float3Field;
 
         protected override MethodBase GetTargetMethod()
         {
+            float3Field = AccessTools.Field(typeof(Player.FirearmController), "float_3");
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
+            fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("method_23", BindingFlags.Instance | BindingFlags.Public);
         }
         private static void DoADSWiggle(ProceduralWeaponAnimation pwa, Player player, float ergoWeightFactor, float playerWeightFactor, float newAimSpeed)
@@ -117,12 +128,12 @@ namespace RealismMod
         private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
 
-            FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController").GetValue(__instance);
+            FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
             if (firearmController == null)
             {
                 return;
             }
-            Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
+            Player player = (Player)playerField.GetValue(firearmController);
 
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
@@ -136,7 +147,7 @@ namespace RealismMod
                     float updateErgoWeight = firearmController.ErgonomicWeight; //force ergo weight to update
 
                     float accuracy = weapon.GetTotalCenterOfImpact(false);
-                    AccessTools.Field(typeof(Player.FirearmController), "float_3").SetValue(firearmController, accuracy); //update accuracy value
+                    float3Field.SetValue(firearmController, accuracy); //update accuracy value
 
                     Mod currentAimingMod = (__instance.CurrentAimingMod != null) ? __instance.CurrentAimingMod.Item as Mod : null;
 
@@ -155,7 +166,7 @@ namespace RealismMod
                     float ergoWeight = WeaponStats.ErgonomicWeight * PlayerStats.ErgoDeltaInjuryMulti * (1f - (PlayerStats.StrengthSkillAimBuff * 1.5f));
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_ergonomicWeight").SetValue(__instance, ergoWeight);
                     float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 6f);
-                    float totalPlayerWeight = PlayerStats.TotalModifiedWeight - weapon.GetSingleItemTotalWeight();
+                    float totalPlayerWeight = PlayerStats.TotalModifiedWeightMinusWeapon;
                     float playerWeightFactor = 1f + (totalPlayerWeight / 300f);
                     float breathIntensity;
                     float handsIntensity;
@@ -246,20 +257,25 @@ namespace RealismMod
 
     public class UpdateSwayFactorsPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+        private static FieldInfo fcField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
+            fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("UpdateSwayFactors", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static bool Prefix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
-            FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController").GetValue(__instance);
+            FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
             if (firearmController == null)
             {
                 return false;
             }
-            Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
+            Player player = (Player)playerField.GetValue(firearmController);
 
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
@@ -300,20 +316,25 @@ namespace RealismMod
 
     public class SetOverweightPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+        private static FieldInfo fcField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
+            fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("set_Overweight", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static bool Prefix(EFT.Animations.ProceduralWeaponAnimation __instance, float value)
         {
-            FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController").GetValue(__instance);
+            FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
             if (firearmController == null) 
             {
                 return false;
             }
-            Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
+            Player player = (Player)playerField.GetValue(firearmController);
 
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
@@ -332,20 +353,25 @@ namespace RealismMod
 
     public class GetOverweightPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+        private static FieldInfo fcField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
+            fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("get_Overweight", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static bool Prefix(EFT.Animations.ProceduralWeaponAnimation __instance, ref float __result)
         {
-            FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController").GetValue(__instance);
+            FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
             if (firearmController == null)
             {
                 return false;
             }
-            Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
+            Player player = (Player)playerField.GetValue(firearmController);
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 __result = 0;
@@ -358,21 +384,27 @@ namespace RealismMod
     public class CalibrationLookAt : ModulePatch
     {
         private static float recordedDistance = 0f;
+        private static Vector3 recoilOffset = Vector3.zero;
+        private static Vector3 target = Vector3.zero;
+        private static FieldInfo playerField;
+        private static FieldInfo fcField;
 
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
+            fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
             return typeof(ProceduralWeaponAnimation).GetMethod("method_7", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static void PatchPrefix(ProceduralWeaponAnimation __instance, ref Vector3 point)
         {
-            FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController").GetValue(__instance);
+            FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
             if (firearmController == null)
             {
                 return;
             }
-            Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
+            Player player = (Player)playerField.GetValue(firearmController);
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 if (__instance.CurrentAimingMod != null && !__instance.CurrentScope.IsOptic && WeaponStats.ScopeID != null && WeaponStats.ScopeID != "")
@@ -390,8 +422,10 @@ namespace RealismMod
 
                     recordedDistance = distance;
                     float factor = distance / 25f; //need to find default zero
-                    Vector3 recoilOffset = new Vector3(WeaponStats.ZeroRecoilOffset.x * factor, WeaponStats.ZeroRecoilOffset.y * factor);
-                    Vector3 target = point + new Vector3(StanceController.MouseRotation.x * factor * -WeaponStats.Parralax, StanceController.MouseRotation.y * factor * WeaponStats.Parralax, 0f);
+                    recoilOffset.x = WeaponStats.ZeroRecoilOffset.x * factor;
+                    recoilOffset.y = WeaponStats.ZeroRecoilOffset.y * factor;
+                    target.x = point.x + (StanceController.MouseRotation.x * factor * -WeaponStats.Parralax);
+                    target.y = point.y + (StanceController.MouseRotation.y * factor * WeaponStats.Parralax);
                     target = player.MovementContext.CurrentState.Name == EPlayerState.Sidestep ? point : target;
                     point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
                 }
@@ -402,21 +436,27 @@ namespace RealismMod
     public class CalibrationLookAtScope : ModulePatch
     {
         private static float recordedDistance = 0f;
+        private static Vector3 recoilOffset = Vector3.zero;
+        private static Vector3 target = Vector3.zero;
+        private static FieldInfo playerField;
+        private static FieldInfo fcField;
 
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
+            fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
             return typeof(ProceduralWeaponAnimation).GetMethod("method_5", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static void PatchPrefix(ProceduralWeaponAnimation __instance, ref Vector3 point)
         {
-            FirearmController firearmController = (FirearmController)AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController").GetValue(__instance);
+            FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
             if (firearmController == null)
             {
                 return;
             }
-            Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController);
+            Player player = (Player)playerField.GetValue(firearmController);
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 if (__instance.CurrentAimingMod != null && WeaponStats.ScopeID != null && WeaponStats.ScopeID != "")
@@ -434,8 +474,10 @@ namespace RealismMod
 
                     recordedDistance = distance;
                     float factor = distance / 50f; //need to find default zero
-                    Vector3 recoilOffset = new Vector3(WeaponStats.ZeroRecoilOffset.x * factor, WeaponStats.ZeroRecoilOffset.y * factor);
-                    Vector3 target = point + new Vector3(StanceController.MouseRotation.x * factor * -WeaponStats.Parralax, StanceController.MouseRotation.y * factor * WeaponStats.Parralax, 0f);
+                    recoilOffset.x = WeaponStats.ZeroRecoilOffset.x * factor;
+                    recoilOffset.y = WeaponStats.ZeroRecoilOffset.y * factor;
+                    target.x = point.x + (StanceController.MouseRotation.x * factor * -WeaponStats.Parralax);
+                    target.y = point.y + (StanceController.MouseRotation.y * factor * WeaponStats.Parralax);
                     target = player.MovementContext.CurrentState.Name == EPlayerState.Sidestep ? point : target;
                     point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
                 }

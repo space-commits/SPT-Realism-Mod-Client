@@ -24,19 +24,18 @@ namespace RealismMod
             return typeof(Weapon).GetMethod("get_SingleFireRate", BindingFlags.Instance | BindingFlags.Public);
 
         }
+
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref int __result)
         {
             if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
+                Logger.LogWarning("single fire");
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
                 __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.SemiFireRate * currentAmmoTemplate.casingMass) : WeaponStats.SemiFireRate;
                 return false;
             }
-            else
-            {
                 return true;
-            }
         }
     }
 
@@ -47,6 +46,7 @@ namespace RealismMod
             return typeof(Weapon).GetMethod("get_FireRate", BindingFlags.Instance | BindingFlags.Public);
 
         }
+
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref int __result)
         {
@@ -56,10 +56,7 @@ namespace RealismMod
                 __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.AutoFireRate * currentAmmoTemplate.casingMass) : WeaponStats.AutoFireRate;
                 return false;
             }
-            else
-            {
-                return true;
-            }
+            return true;
         }
     }
 
@@ -67,8 +64,11 @@ namespace RealismMod
     //this method sets player weapon ergo value. For some reason I've removed the injury penalty? Probably because I already apply injury mulit myself 
     public class PlayerErgoPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
             return typeof(Player.FirearmController).GetMethod("method_9", BindingFlags.Instance | BindingFlags.Public);
 
         }
@@ -78,7 +78,7 @@ namespace RealismMod
             //to find this method again, look for this._player.MovementContext.PhysicalConditionContainsAny(EPhysicalCondition.LeftArmDamaged | EPhysicalCondition.RightArmDamaged)
             //return Mathf.Max(0f, this.Item.ErgonomicsTotal * (1f + this.gclass1560_0.DeltaErgonomics + this._player.ErgonomicsPenalty));
 
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 WeaponSkills skillsClass = (WeaponSkills)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1768_0").GetValue(__instance);
@@ -105,7 +105,6 @@ namespace RealismMod
         {
             if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
-                ErgoDeltaPatch p = new ErgoDeltaPatch();
                 if (PlayerStats.IsInReloadOpertation)
                 {
                     __result = FinalStatCalc(__instance);
@@ -587,15 +586,18 @@ namespace RealismMod
 
     public class ErgoWeightPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
             return typeof(Player.FirearmController).GetMethod("get_ErgonomicWeight", BindingFlags.Instance | BindingFlags.Public | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static bool Prefix(Player.FirearmController __instance, ref float __result)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 __result = WeaponStats.ErgonomicWeight * PlayerStats.ErgoDeltaInjuryMulti * (1f - PlayerStats.StrengthSkillAimBuff * 1.5f);
@@ -625,21 +627,24 @@ namespace RealismMod
 
     public class UpdateHipInaccuracyPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
             return typeof(EFT.Player.FirearmController).GetMethod("UpdateHipInaccuracy", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
                 float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
                 float recoilFactor = 1f + (RecoilController.BaseTotalVRecoil + RecoilController.BaseTotalHRecoil) / 100f;
-                float totalPlayerWeight = PlayerStats.TotalUnmodifiedWeight - WeaponStats.TotalWeaponWeight;
+                float totalPlayerWeight = PlayerStats.TotalModifiedWeightMinusWeapon;
                 float playerWeightFactorBuff = 1f + (totalPlayerWeight / 100f);
 
                 WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(0.3f * player.ProceduralWeaponAnimation.Breath.HipPenalty * (1f - WeaponStats.ErgoDelta) * convergenceFactor * dispersionFactor * recoilFactor * playerWeightFactorBuff, 0.3f, 1f);
