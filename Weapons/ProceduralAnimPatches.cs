@@ -101,26 +101,20 @@ namespace RealismMod
             fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("method_23", BindingFlags.Instance | BindingFlags.Public);
         }
-        private static void DoADSWiggle(ProceduralWeaponAnimation pwa, Player player, float ergoWeightFactor, float playerWeightFactor, float newAimSpeed)
+        private static void DoADSWiggle(ProceduralWeaponAnimation pwa, Player player, FirearmController fc, float ergoWeightFactor, float playerWeightFactor, float newAimSpeed)
         {
             if (StanceController.IsIdle() && WeaponStats._WeapClass != "pistol")
             {
-                pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0f;
-                pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0f;
                 Vector3 wiggleDir = new Vector3(-2.5f, -5f, 0f) * ergoWeightFactor * playerWeightFactor * (WeaponStats.HasOptic ? 0.85f : 1f);
-
-                Logger.LogWarning("ergoWeightFactor " + ergoWeightFactor);
-                Logger.LogWarning("playerWeightFactor " + playerWeightFactor);
 
                 if (pwa.IsAiming && !didAimWiggle)
                 {
-
-                    StanceController.DoWiggleEffects(player, pwa, wiggleDir * newAimSpeed);
+                    StanceController.DoWiggleEffects(player, pwa, fc, wiggleDir * newAimSpeed);
                     didAimWiggle = true;
                 }
                 else if (!pwa.IsAiming && didAimWiggle)
                 {
-                    StanceController.DoWiggleEffects(player, pwa, -wiggleDir * newAimSpeed * 0.45f);
+                    StanceController.DoWiggleEffects(player, pwa, fc, - wiggleDir * newAimSpeed * 0.45f);
                     didAimWiggle = false;
                 }
             }
@@ -227,7 +221,7 @@ namespace RealismMod
                         }
                     }
 
-                    DoADSWiggle(__instance, player, ergoWeightFactor, playerWeightFactor, newAimSpeed);
+                    DoADSWiggle(__instance, player, firearmController, ergoWeightFactor, playerWeightFactor, newAimSpeed);
 
                     if (Plugin.EnableLogging.Value == true)
                     {

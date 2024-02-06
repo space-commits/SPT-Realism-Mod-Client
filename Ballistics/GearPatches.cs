@@ -1,4 +1,4 @@
-﻿/*using Aki.Reflection.Patching;
+﻿using Aki.Reflection.Patching;
 using Aki.Reflection.Utils;
 using System;
 using System.Reflection;
@@ -10,13 +10,13 @@ using System.Runtime.CompilerServices;
 using Comfort.Common;
 using static RealismMod.Attributes;
 using UnityEngine;
-using BPConstructor = GClass2496;
-using BPTemplate = GClass2402;
-using RigConstructor = GClass2497;
-using RigTemplate = GClass2403;
-using HeadsetClass = GClass2451;
-using HeadsetTemplate = GClass2357;
-using ArmorCompTemplate = GInterface233;
+using BPConstructor = GClass2680;
+using BPTemplate = GClass2583;
+using RigConstructor = GClass2681;
+using RigTemplate = GClass2584;
+using HeadsetClass = GClass2635;
+using HeadsetTemplate = GClass2538;
+using ArmorCompTemplate = GInterface280;
 
 namespace RealismMod
 {
@@ -33,7 +33,7 @@ namespace RealismMod
         {
             Item item = __instance as Item;
 
-            float comfortModifier = GearProperties.ComfortModifier(item);
+            float comfortModifier = GearStats.ComfortModifier(item);
             float comfortPercent = -1f * (float)Math.Round((comfortModifier - 1f) * 100f);
 
             if (comfortModifier > 0f && comfortModifier != 1f)
@@ -65,10 +65,10 @@ namespace RealismMod
         {
             Item item = __instance as Item;
 
-            float gearReloadSpeed = GearProperties.ReloadSpeedMulti(item);
+            float gearReloadSpeed = GearStats.ReloadSpeedMulti(item);
             float reloadSpeedPercent = (float)Math.Round((gearReloadSpeed - 1f) * 100f);
 
-            float comfortModifier = GearProperties.ComfortModifier(item);
+            float comfortModifier = GearStats.ComfortModifier(item);
             float comfortPercent = -1f * (float)Math.Round((comfortModifier - 1f) * 100f);
 
             if (gearReloadSpeed > 0f && gearReloadSpeed != 1f)
@@ -84,7 +84,7 @@ namespace RealismMod
                 reloadAtt.Add(reloadAttClass);
             }
 
-            if (comfortModifier > 0f && comfortModifier != 1f) 
+            if (comfortModifier > 0f && comfortModifier != 1f)
             {
                 List<ItemAttributeClass> comfortAtt = item.Attributes;
                 ItemAttributeClass comfortAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.Comfort);
@@ -99,265 +99,116 @@ namespace RealismMod
         }
     }
 
-    public class GearPatches
+    public class HeadsetConstructorPatch : ModulePatch
     {
-
-        public class ArmorZoneBaseDisplayPatch : ModulePatch
+        protected override MethodBase GetTargetMethod()
         {
-
-            private static Type _targetType;
-            private static MethodInfo _method_0;
-
-            public ArmorZoneBaseDisplayPatch()
-            {
-                _targetType = PatchConstants.EftTypes.Single(IsType);
-                _method_0 = _targetType.GetMethod("method_0", BindingFlags.FlattenHierarchy | BindingFlags.NonPublic | BindingFlags.Instance);
-            }
-
-            protected override MethodBase GetTargetMethod()
-            {
-                return _method_0;
-            }
-
-            private static bool IsType(Type type)
-            {
-                return type.GetField("armorComponent_0") != null && type.GetField("item") != null;
-            }
-
-            private static string GetItemClass(CompositeArmorComponent x)
-            {
-                return x.Item.ShortName.Localized(null) + ": " + GearProperties.ArmorClass(x.Item);
-            }
-
-            [PatchPrefix]
-            private static bool Prefix(ref float __result, ref EFT.InventoryLogic.ArmorComponent ___armorComponent_0)
-            {
-                float armorElementsToAdd = 0;
-
-                if (GearProperties.HasExtraArmor(___armorComponent_0.Item))
-                {
-                    armorElementsToAdd += 1;
-                }
-                if (GearProperties.HasNeckArmor(___armorComponent_0.Item)) 
-                {
-                    armorElementsToAdd += 1;
-                }
-                if (GearProperties.HasSideArmor(___armorComponent_0.Item))
-                {
-                    armorElementsToAdd += 1;
-                }
-                if (GearProperties.HasStomachArmor(___armorComponent_0.Item))
-                {
-                    armorElementsToAdd += 1;
-                }
-  
-                __result = ___armorComponent_0.ArmorZone.Contains(EBodyPart.Stomach) ? (float)___armorComponent_0.ArmorZone.Length + armorElementsToAdd - 1f : (float)___armorComponent_0.ArmorZone.Length + armorElementsToAdd;
-                return false;
-            }
-        }
-
-        public class ArmorZoneSringValueDisplayPatch : ModulePatch
-        {
-
-            private static Type _targetType;    
-            private static MethodInfo _method_1;
-
-            public ArmorZoneSringValueDisplayPatch()
-            {
-                _targetType = PatchConstants.EftTypes.Single(IsType);
-                _method_1 = _targetType.GetMethod("method_1", BindingFlags.FlattenHierarchy | BindingFlags.NonPublic | BindingFlags.Instance);
-            }
-
-            protected override MethodBase GetTargetMethod()
-            {
-                return _method_1;
-            }
-
-            private static bool IsType(Type type)
-            {
-                return type.GetField("armorComponent_0") != null && type.GetField("item") != null;
-            }
-
-            private static string GetItemClass(CompositeArmorComponent x)
-            {
-                return x.Item.ShortName.Localized(null) + ": " + GearProperties.ArmorClass(x.Item);
-            }
-
-            [PatchPrefix]
-            private static bool Prefix(ref string __result, ref EFT.InventoryLogic.ArmorComponent ___armorComponent_0)
-            {
-                if (___armorComponent_0.ArmorZone.Contains(EBodyPart.Head)) 
-                {
-                    return true;
-                }
-
-                List<string> parts = new List<string>();
-
-                foreach (EBodyPart e in ___armorComponent_0.ArmorZone) 
-                {
-                    if (e != EBodyPart.Stomach) 
-                    {
-                        parts.Add(e.ToString());
-                    }
-                }
-                if (GearProperties.HasExtraArmor(___armorComponent_0.Item))
-                {
-                    parts.Add("SECONDARY ARMOR");
-                }
-                if (GearProperties.HasNeckArmor(___armorComponent_0.Item))
-                {
-                    parts.Add("NECK");
-                }
-                if (GearProperties.HasSideArmor(___armorComponent_0.Item))
-                {
-                    parts.Add("SIDES");
-                }
-                if (GearProperties.HasStomachArmor(___armorComponent_0.Item))
-                {
-                    parts.Add("STOMACH");
-                }
-
-                __result =  Enumerable.Cast<object>(parts).CastToStringValue("\n", true);
-                return false;
-            }
+            return typeof(HeadsetClass).GetConstructor(new Type[] { typeof(string), typeof(HeadsetTemplate) });
         }
 
 
-        public class ArmorClassDisplayPatch : ModulePatch
+        [PatchPostfix]
+        private static void PatchPostfix(HeadsetClass __instance)
         {
+            Item item = __instance as Item;
 
-            private static Type _targetType;
-            private static MethodInfo _method_4;
+            float dB = GearStats.DbLevel(item);
 
-            public ArmorClassDisplayPatch()
+            if (dB > 0)
             {
-                _targetType = PatchConstants.EftTypes.Single(IsType);
-                _method_4 = _targetType.GetMethod("method_4", BindingFlags.FlattenHierarchy | BindingFlags.NonPublic | BindingFlags.Instance);
-            }
-
-            protected override MethodBase GetTargetMethod()
-            {
-                return _method_4;
-            }
-
-            private static bool IsType(Type type)
-            {
-                return type.GetField("armorComponent_0") != null && type.GetField("item") != null;
-            }
-
-            private static string GetItemClass(CompositeArmorComponent x)
-            {
-                return x.Item.ShortName.Localized(null) + ": " + GearProperties.ArmorClass(x.Item);
-            }
-
-            [PatchPrefix]
-            private static bool Prefix(ref string __result, ref EFT.InventoryLogic.ArmorComponent ___armorComponent_0)
-            {
-                CompositeArmorComponent[] array = ___armorComponent_0.Item.GetItemComponentsInChildren<CompositeArmorComponent>(true).ToArray<CompositeArmorComponent>();
-
-                if (array.Length > 1)
-                {
-                    __result = array.Select(new Func<CompositeArmorComponent, string>(GetItemClass)).CastToStringValue("\n", true);
-                    return false;
-                }
-
-                __result = GearProperties.ArmorClass(___armorComponent_0.Item);
-                return false;
+                List<ItemAttributeClass> dbAtt = item.Attributes;
+                ItemAttributeClass dbAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.NoiseReduction);
+                dbAttClass.Name = ENewItemAttributeId.NoiseReduction.GetName();
+                dbAttClass.Base = () => dB;
+                dbAttClass.StringValue = () => dB.ToString() + " NRR";
+                dbAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                dbAtt.Add(dbAttClass);
             }
         }
+    }
 
-        public class HeadsetConstructorPatch : ModulePatch
+    public class ArmorLevelDisplayPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
         {
-            protected override MethodBase GetTargetMethod()
-            {
-                return typeof(HeadsetClass).GetConstructor(new Type[] { typeof(string), typeof(HeadsetTemplate) });
-            }
-
-
-            [PatchPostfix]
-            private static void PatchPostfix(HeadsetClass __instance)
-            {
-                Item item = __instance as Item;
-
-                float dB = GearProperties.DbLevel(item);
-
-                if (dB > 0)
-                {
-                    List<ItemAttributeClass> dbAtt = item.Attributes;
-                    ItemAttributeClass dbAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.NoiseReduction);
-                    dbAttClass.Name = ENewItemAttributeId.NoiseReduction.GetName();
-                    dbAttClass.Base = () => dB;
-                    dbAttClass.StringValue = () => dB.ToString() + " NRR";
-                    dbAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                    dbAtt.Add(dbAttClass);
-                }
-            }
+            return typeof(GClass2516).GetMethod("FormatArmorClassIcon", BindingFlags.Static | BindingFlags.Public);
         }
 
-        public class ArmorComponentPatch : ModulePatch
+        [PatchPrefix]
+        private static bool PatchPrefix(GClass2516 __instance, ref string __result, int armorClass)
         {
+            Logger.LogWarning("FormatArmorClassIcon");
+            __result = "Lvl " + armorClass.ToString();
+            return false;
+        }
+    }
 
-            protected override MethodBase GetTargetMethod()
+    public class ArmorLevelUIPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GClass2516).GetMethod("FormatArmorPlateTooltip", BindingFlags.Static | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void PatchPrefix(GClass2516 __instance)
+        {
+            Logger.LogWarning("FormatArmorPlateTooltip");
+        }
+    }
+
+
+    public class ArmorComponentPatch : ModulePatch
+    {
+        private static EBodyPartColliderType[] heads = { EBodyPartColliderType.Eyes, EBodyPartColliderType.Ears, EBodyPartColliderType.Jaw, EBodyPartColliderType.BackHead, EBodyPartColliderType.NeckFront, EBodyPartColliderType.HeadCommon, EBodyPartColliderType.ParietalHead };
+
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.InventoryLogic.ArmorComponent).GetConstructor(new Type[] { typeof(Item), typeof(ArmorCompTemplate), typeof(RepairableComponent), typeof(BuffComponent) });
+        }
+
+
+        [PatchPostfix]
+        private static void PatchPostfix(ArmorComponent __instance)
+        {
+            if (__instance.ArmorColliders.Intersect(heads).Any())
             {
-                return typeof(EFT.InventoryLogic.ArmorComponent).GetConstructor(new Type[] { typeof(Item), typeof(ArmorCompTemplate), typeof(RepairableComponent), typeof(BuffComponent) });
+                List<ItemAttributeClass> canADSAtt = __instance.Item.Attributes;
+                ItemAttributeClass canADSAttAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanAds);
+                canADSAttAttClass.Name = ENewItemAttributeId.CanAds.GetName();
+                canADSAttAttClass.StringValue = () => GearStats.AllowsADS(__instance.Item).ToString();
+                canADSAttAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                canADSAtt.Add(canADSAttAttClass);
             }
 
-
-            [PatchPostfix]
-            private static void PatchPostfix(ArmorComponent __instance)
+            if (Plugin.ServerConfig.realistic_ballistics)
             {
+                bool canSpall = GearStats.CanSpall(__instance.Item);
 
-                bool showADS = false;
-                EBodyPart[] zones = __instance.ArmorZone;
+                List<ItemAttributeClass> bluntAtt = __instance.Item.Attributes;
+                ItemAttributeClass bluntAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.BluntThroughput);
+                bluntAttClass.Name = ENewItemAttributeId.BluntThroughput.GetName();
+                bluntAttClass.StringValue = () => ((1 - __instance.BluntThroughput) * 100).ToString() + " %";
+                bluntAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                bluntAtt.Add(bluntAttClass);
 
-                foreach (EBodyPart part in zones)
+                List<ItemAttributeClass> canSpallAtt = __instance.Item.Attributes;
+                ItemAttributeClass canSpallAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanSpall);
+                canSpallAttClass.Name = ENewItemAttributeId.CanSpall.GetName();
+                canSpallAttClass.StringValue = () => canSpall.ToString();
+                canSpallAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                canSpallAtt.Add(canSpallAttClass);
+
+                if (canSpall)
                 {
-                    if (part == EBodyPart.Head)
-                    {
-                        showADS = true;
-                    }
-                }
-
-                if (showADS == true)
-                {
-                    List<ItemAttributeClass> canADSAtt = __instance.Item.Attributes;
-                    ItemAttributeClass canADSAttAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanAds);
-                    canADSAttAttClass.Name = ENewItemAttributeId.CanAds.GetName();
-                    canADSAttAttClass.StringValue = () => GearProperties.AllowsADS(__instance.Item).ToString();
-                    canADSAttAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                    canADSAtt.Add(canADSAttAttClass);
-                }
-
-                if (Plugin.ModConfig.realistic_ballistics == true)
-                {
-                    bool canSpall = GearProperties.CanSpall(__instance.Item);
-
-                    List<ItemAttributeClass> bluntAtt = __instance.Item.Attributes;
-                    ItemAttributeClass bluntAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.BluntThroughput);
-                    bluntAttClass.Name = ENewItemAttributeId.BluntThroughput.GetName();
-                    bluntAttClass.StringValue = () => ((1 - __instance.BluntThroughput) * 100).ToString() + " %";
-                    bluntAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                    bluntAtt.Add(bluntAttClass);
-
-                    List<ItemAttributeClass> canSpallAtt = __instance.Item.Attributes;
-                    ItemAttributeClass canSpallAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanSpall);
-                    canSpallAttClass.Name = ENewItemAttributeId.CanSpall.GetName();
-                    canSpallAttClass.StringValue = () => canSpall.ToString();
-                    canSpallAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                    canSpallAtt.Add(canSpallAttClass);
-
-                    if (canSpall == true)
-                    {
-                        List<ItemAttributeClass> spallReductAtt = __instance.Item.Attributes;
-                        ItemAttributeClass spallReductAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.SpallReduction);
-                        spallReductAttClass.Name = ENewItemAttributeId.SpallReduction.GetName();
-                        spallReductAttClass.StringValue = () => ((1 - GearProperties.SpallReduction(__instance.Item)) * 100).ToString() + " %";
-                        spallReductAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                        spallReductAtt.Add(spallReductAttClass);
-                    }
+                    List<ItemAttributeClass> spallReductAtt = __instance.Item.Attributes;
+                    ItemAttributeClass spallReductAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.SpallReduction);
+                    spallReductAttClass.Name = ENewItemAttributeId.SpallReduction.GetName();
+                    spallReductAttClass.StringValue = () => ((1 - GearStats.SpallReduction(__instance.Item)) * 100).ToString() + " %";
+                    spallReductAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    spallReductAtt.Add(spallReductAttClass);
                 }
             }
         }
     }
 }
-*/

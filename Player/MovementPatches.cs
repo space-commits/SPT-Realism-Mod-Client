@@ -1,4 +1,4 @@
-﻿/*using Aki.Reflection.Patching;
+﻿using Aki.Reflection.Patching;
 using Aki.Reflection.Utils;
 using BepInEx.Logging;
 using Comfort.Common;
@@ -13,24 +13,25 @@ using System.Reflection;
 using UnityEngine;
 using static BaseBallistic;
 using static EFT.Player;
-using ValueHandler = GClass654;
-using SkillMovementStruct = EFT.SkillManager.GStruct213;
+using ValueHandler = GClass730;
+using SkillMovementStruct = EFT.SkillManager.GStruct227;
 
 namespace RealismMod
 {
     public class ClampSpeedPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(MovementContext), "_player");
             return typeof(MovementContext).GetMethod("ClampSpeed", BindingFlags.Instance | BindingFlags.Public);
         }
-
 
         [PatchPrefix]
         private static bool Prefix(MovementContext __instance, float speed, ref float __result)
         {
-
-            Player player = (Player)AccessTools.Field(typeof(MovementContext), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
                 float slopeFactor = 1f;
@@ -43,7 +44,7 @@ namespace RealismMod
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float firingMulti = MovementSpeedController.GetFiringMovementSpeedFactor(player, Logger);
                 float stanceFactor = StanceController.IsPatrolStance ? 1.25f : StanceController.IsHighReady || StanceController.IsShortStock ? 0.95f : 1f;
-                __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * PlayerProperties.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti * stanceFactor);
+                __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * PlayerStats.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti * stanceFactor);
                 return false;
             }
             return true;
@@ -55,7 +56,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player).GetMethod("method_48", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(Player).GetMethod("method_53", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
@@ -72,26 +73,30 @@ namespace RealismMod
 
     public class SprintAccelerationPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+        private static FieldInfo rotationFrameSpanField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(MovementContext), "_player");
+            rotationFrameSpanField = AccessTools.Field(typeof(MovementContext), "_averageRotationX");
             return typeof(MovementContext).GetMethod("SprintAcceleration", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static bool Prefix(MovementContext __instance, float deltaTime)
         {
-            Player player = (Player)AccessTools.Field(typeof(MovementContext), "_player").GetValue(__instance);
-
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
-                ValueHandler rotationFrameSpan = (ValueHandler)AccessTools.Field(typeof(MovementContext), "_averageRotationX").GetValue(__instance);
+                ValueHandler rotationFrameSpan = (ValueHandler)rotationFrameSpanField.GetValue(__instance);
 
                 float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player, Logger) : 1f;
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float stanceSpeedBonus = StanceController.IsHighReady && Plugin.EnableTacSprint.Value ? 1.15f : 1f;
                 float stanceAccelBonus = StanceController.IsPatrolStance ? 1.5f : StanceController.IsShortStock ? 0.9f : StanceController.IsLowReady ? 1.3f : StanceController.IsHighReady && Plugin.EnableTacSprint.Value ? 1.7f : StanceController.IsHighReady ? 1.3f : 1f;
 
-                if (surfaceMulti < 1.0f) 
+                if (surfaceMulti < 1.0f)
                 {
                     surfaceMulti = Mathf.Max(surfaceMulti * 0.85f, 0.2f);
                 }
@@ -100,8 +105,8 @@ namespace RealismMod
                     surfaceMulti = Mathf.Max(surfaceMulti * 0.85f, 0.2f);
                 }
 
-                float sprintAccel = player.Physical.SprintAcceleration * stanceAccelBonus * PlayerProperties.HealthSprintAccelFactor * surfaceMulti * slopeFactor * deltaTime;
-                float speed = (player.Physical.SprintSpeed * __instance.SprintingSpeed + 1f) * __instance.StateSprintSpeedLimit * stanceSpeedBonus * PlayerProperties.HealthSprintSpeedFactor * surfaceMulti * slopeFactor;
+                float sprintAccel = player.Physical.SprintAcceleration * stanceAccelBonus * PlayerStats.HealthSprintAccelFactor * surfaceMulti * slopeFactor * deltaTime;
+                float speed = (player.Physical.SprintSpeed * __instance.SprintingSpeed + 1f) * __instance.StateSprintSpeedLimit * stanceSpeedBonus * PlayerStats.HealthSprintSpeedFactor * surfaceMulti * slopeFactor;
                 float sprintInertia = Mathf.Max(EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(Mathf.Abs((float)rotationFrameSpan.Average)), EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(2.1474836E+09f) * (2f - player.Physical.Inertia));
                 speed = Mathf.Clamp(speed * sprintInertia, 0.1f, speed);
                 __instance.SprintSpeed = Mathf.Clamp(__instance.SprintSpeed + sprintAccel * Mathf.Sign(speed - __instance.SprintSpeed), 0.01f, speed);
@@ -119,8 +124,8 @@ namespace RealismMod
 
         public EnduranceSprintActionPatch()
         {
-            _targetType = PatchConstants.EftTypes.Single(PlayerHelper.IsEnduraStrngthType);
-            _method_0 = _targetType.GetMethod("method_0", BindingFlags.FlattenHierarchy | BindingFlags.NonPublic | BindingFlags.Instance);
+            _targetType = PatchConstants.EftTypes.Single(EndurancePatchHelper.IsEnduraStrngthType);
+            _method_0 = _targetType.GetMethod("method_0", BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
         }
 
         protected override MethodBase GetTargetMethod()
@@ -153,8 +158,8 @@ namespace RealismMod
 
         public EnduranceMovementActionPatch()
         {
-            _targetType = PatchConstants.EftTypes.Single(PlayerHelper.IsEnduraStrngthType);
-            _method_1 = _targetType.GetMethod("method_1", BindingFlags.FlattenHierarchy | BindingFlags.NonPublic | BindingFlags.Instance);
+            _targetType = PatchConstants.EftTypes.Single(EndurancePatchHelper.IsEnduraStrngthType);
+            _method_1 = _targetType.GetMethod("method_1", BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance);
         }
 
 
@@ -180,7 +185,7 @@ namespace RealismMod
         }
     }
 
-    public static class PlayerHelper
+    public static class EndurancePatchHelper
     {
         public static bool IsEnduraStrngthType(Type type)
         {
@@ -188,4 +193,3 @@ namespace RealismMod
         }
     }
 }
-*/

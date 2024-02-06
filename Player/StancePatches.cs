@@ -285,7 +285,7 @@ namespace RealismMod
                         }
                         float vol = WeaponStats.HasBayonet ? 12f : 25f;
                         Singleton<BetterAudio>.Instance.PlayDropItem(baseballComp.SurfaceSound, JsonType.EItemDropSoundType.Rifle, raycastHit.point, vol);
-                        StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, new Vector3(-10f, 10f, 0f), true, 1.5f);
+                        StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc, new Vector3(-10f, 10f, 0f), true, 1.5f);
                         player.Physical.ConsumeAsMelee(0.5f + (WeaponStats.ErgoFactor / 100f));
                         StanceController.DidMelee = true;
                         return;
@@ -300,7 +300,7 @@ namespace RealismMod
                         string track = rndNum <= 5 ? "knife_1.wav" : "knife_2.wav";
                         Singleton<BetterAudio>.Instance.PlayAtPoint(weapTransform.position, Plugin.LoadedAudioClips[track], 2, BetterAudio.AudioSourceGroupType.Distant, 100, 2, EOcclusionTest.Continuous);
                     }
-                    StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, new Vector3(0f, 0f, 0f), true, 4);
+                    StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc, new Vector3(0f, 0f, 0f), true, 4);
                     player.Physical.ConsumeAsMelee(2f + (WeaponStats.ErgoFactor / 100f));
                     StanceController.DidMelee = true;
                     return;

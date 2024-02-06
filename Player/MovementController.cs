@@ -1,4 +1,4 @@
-﻿/*using BepInEx.Logging;
+﻿using BepInEx.Logging;
 using EFT;
 using System;
 using System.Collections.Generic;
@@ -83,7 +83,7 @@ namespace RealismMod
             float dampingFactor = RecoilController.BaseTotalHandDamping + RecoilController.BaseTotalRecoilDamping;
             float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
             float recoilFactor = RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil;
-            float ergoFactor = 1f - ((80f - WeaponProperties.ErgoFactor) / 100f);
+            float ergoFactor = 1f - ((80f - WeaponStats.ErgoFactor) / 100f);
             recoilFactor = recoilFactor * dispersionFactor * dampingFactor * convergenceFactor * ergoFactor;
             recoilFactor = fc.Item.WeapClass == "pistol" ? recoilFactor * 0.1f : recoilFactor;
             float totalRecoilFactor = 1f - ((recoilFactor / 400f) * RecoilController.ShotCount);
@@ -92,4 +92,3 @@ namespace RealismMod
         }
     }
 }
-*/

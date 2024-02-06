@@ -610,8 +610,6 @@ namespace RealismMod
                 new MagazineMalfChanceDisplayPatch().Enable();
                 new BarrelModClassPatch().Enable();
 
-/*                new HeadsetConstructorPatch().Enable();*/
-
                 if (IncreaseCOI.Value == true)
                 {
                     new GetTotalCenterOfImpactPatch().Enable();
@@ -633,17 +631,7 @@ namespace RealismMod
                     new RagdollPatch().Enable();
                 }*/
 
-             /*   //Armor Class
-                if (Plugin.EnableRealArmorClass.Value == true)
-                {
-                    new ArmorClassDisplayPatch().Enable();
-                }
-
-                if (Plugin.EnableArmorHitZones.Value)
-                {
-                    new ArmorZoneBaseDisplayPatch().Enable();
-                    new ArmorZoneSringValueDisplayPatch().Enable();
-                }
+             /*
 
                 new IsShotDeflectedByHeavyArmorPatch().Enable();*/
 
@@ -653,43 +641,48 @@ namespace RealismMod
                 }
             }
 
-            /*            //Deafen Effects
-                        if (Plugin.EnableDeafen.Value && ModConfig.headset_changes && ModConfig.realistic_ballistics && ModConfig.recoil_attachment_overhaul)
-                        {
-                            new PrismEffectsPatch().Enable();
-                            new VignettePatch().Enable();
-                            new UpdatePhonesPatch().Enable();
-                            new SetCompressorPatch().Enable();
-                            new RegisterShotPatch().Enable();
-                            new ExplosionPatch().Enable();
-                            new GrenadeClassContusionPatch().Enable();
-                            new CovertMovementVolumePatch().Enable();
-                            new CovertMovementVolumeBySpeedPatch().Enable();
-                            new CovertEquipmentVolumePatch().Enable();
-                        }
+            //Deafen Effects
+            if (Plugin.EnableDeafen.Value && ServerConfig.headset_changes && ServerConfig.realistic_ballistics && ServerConfig.recoil_attachment_overhaul)
+            {
+                new PrismEffectsEnablePatch().Enable();
+                new PrismEffectsDisablePatch().Enable();
+                new UpdatePhonesPatch().Enable();
+                new SetCompressorPatch().Enable();
+                new RegisterShotPatch().Enable();
+                new ExplosionPatch().Enable();
+                new GrenadeClassContusionPatch().Enable();
+                new CovertMovementVolumePatch().Enable();
+                new CovertMovementVolumeBySpeedPatch().Enable();
+                new CovertEquipmentVolumePatch().Enable();
 
-                        new ArmorComponentPatch().Enable();
-                        new RigConstructorPatch().Enable();
-                        new BackpackConstructorPatch().Enable();*/
+                new HeadsetConstructorPatch().Enable();
+            }
+
+            new ArmorComponentPatch().Enable();
+            new RigConstructorPatch().Enable();
+            new BackpackConstructorPatch().Enable();
+            new ArmorLevelDisplayPatch().Enable();
+            new ArmorLevelUIPatch().Enable();
+            
 
             //Player
             new PlayerInitPatch().Enable();
             new TotalWeightPatch().Enable();
 
-            /*            //Movement
-                        if (EnableMaterialSpeed.Value)
-                        {
-                            new CalculateSurfacePatch().Enable();
-                        }
-                        if (EnableMaterialSpeed.Value)
-                        {
-                            new CalculateSurfacePatch().Enable();
-                            new ClampSpeedPatch().Enable();
-                        }
-                        new SprintAccelerationPatch().Enable();
-                        new EnduranceSprintActionPatch().Enable();
-                        new EnduranceMovementActionPatch().Enable();
-            */
+            //Movement
+            if (EnableMaterialSpeed.Value)
+            {
+                new CalculateSurfacePatch().Enable();
+            }
+            if (EnableMaterialSpeed.Value)
+            {
+                new CalculateSurfacePatch().Enable();
+                new ClampSpeedPatch().Enable();
+            }
+            new SprintAccelerationPatch().Enable();
+            new EnduranceSprintActionPatch().Enable();
+            new EnduranceMovementActionPatch().Enable();
+
             //LateUpdate
             new PlayerLateUpdatePatch().Enable();
 
@@ -1042,9 +1035,9 @@ namespace RealismMod
             ThirdPersonPositionSpeed = Config.Bind<float>(weapAimAndPos, "Third Person Position Speed Multi", 1.0f, new ConfigDescription("Speed Of Stance Position Change In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 143, IsAdvanced = true }));
             ThirdPersonRotationMulti = Config.Bind<float>(weapAimAndPos, "Third Person Rotation Multi", 2.0f, new ConfigDescription("Increases The Rotation Of High Ready And Low Ready Stances.", new AcceptableValueRange<float>(1f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 140, IsAdvanced = true }));
 
-            ActiveAimAdditionalRotationSpeedMulti = Config.Bind<float>(activeAim, "Active Aim Additonal Rotation Speed Multi.", 1.15f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true }));
-            ActiveAimResetRotationSpeedMulti = Config.Bind<float>(activeAim, "Active Aim Reset Rotation Speed Multi.", 4f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true }));
-            ActiveAimRotationMulti = Config.Bind<float>(activeAim, "Active Aim Rotation Speed Multi.", 5.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 144, IsAdvanced = true }));
+            ActiveAimAdditionalRotationSpeedMulti = Config.Bind<float>(activeAim, "Active Aim Additonal Rotation Speed Multi.", 0.55f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true }));
+            ActiveAimResetRotationSpeedMulti = Config.Bind<float>(activeAim, "Active Aim Reset Rotation Speed Multi.", 5f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true }));
+            ActiveAimRotationMulti = Config.Bind<float>(activeAim, "Active Aim Rotation Speed Multi.", 6.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 144, IsAdvanced = true }));
             ActiveAimSpeedMulti = Config.Bind<float>(activeAim, "Active Aim Speed Multi", 10.0f, new ConfigDescription("", new AcceptableValueRange<float>(1f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 143, IsAdvanced = true }));
             ActiveAimResetSpeedMulti = Config.Bind<float>(activeAim, "Active Aim Reset Speed Multi", 11.0f, new ConfigDescription("", new AcceptableValueRange<float>(1f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 142, IsAdvanced = true }));
 

@@ -20,7 +20,6 @@ namespace RealismMod
     public static class DeafeningController
     {
         public static bool HasHeadSet = false;
-        public static CC_FastVignette Vignette;
         public static PrismEffects PrismEffects;
 
         public static bool IsBotFiring = false;
@@ -35,7 +34,7 @@ namespace RealismMod
         public static float CompressorDistortion = 0f;
         public static float CompressorResonance = 0f;
         public static float CompressorLowpass = 0f;
-        public static float Compressor = 0f;
+        public static float CompressorVolume = 0f;
         public static float CompressorGain = 0f;
 
         public static float EarProtectionFactor;
@@ -133,12 +132,16 @@ namespace RealismMod
                 if (!DeafeningController.HasHeadSet)
                 {
                     Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", totalDistortion + DeafeningController.CompressorResonance);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", totalDistortion + DeafeningController.Compressor);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", totalDistortion + DeafeningController.CompressorVolume);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", totalDistortion + DeafeningController.CompressorDistortion);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", totalDistortion + DeafeningController.CompressorDistortion);
+                    /*                 Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorLowpass", totalDistortion + DeafeningController.CompressorDistortion);*/
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", DeafeningController.AmbientVolume);
                 }
                 else
                 {
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorResonance", DeafeningController.CompressorResonance);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("Compressor", DeafeningController.CompressorVolume);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorDistortion", DeafeningController.CompressorDistortion);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value * Plugin.GainCutoff.Value);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol * (1f + (1f - Plugin.GainCutoff.Value)));
                 }

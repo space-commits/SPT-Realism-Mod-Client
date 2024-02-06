@@ -17,6 +17,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Sprite __result, Enum id)
         {
+            Logger.LogWarning(id);
             if (id == null || !Plugin.IconCache.ContainsKey(id))
             {
                 return true;
