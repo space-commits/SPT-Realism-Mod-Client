@@ -11,11 +11,13 @@ namespace RealismMod
     public class RecoilController
     {
         public static bool IsFiring = false;
+        public static bool IsFiringDeafen = false;
         public static bool IsFiringMovement = false;
         public static bool IsFiringWiggle = false;
         public static float ShotCount = 0f;
         public static float PrevShotCount = ShotCount;
         public static float ShotTimer = 0.0f;
+        public static float DeafenShotTimer = 0.0f;
         public static float WiggleShotTimer = 0.0f;
         public static float MovementSpeedShotTimer = 0.0f;
 

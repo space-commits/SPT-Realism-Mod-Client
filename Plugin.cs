@@ -748,6 +748,7 @@ namespace RealismMod
                 if (RecoilController.ShotCount > RecoilController.PrevShotCount)
                 {
                     RecoilController.IsFiring = true;
+                    RecoilController.IsFiringDeafen = true;
                     RecoilController.IsFiringWiggle = true;
                     StanceController.IsFiringFromStance = true;
                     RecoilController.IsFiringMovement = true;
@@ -756,6 +757,7 @@ namespace RealismMod
 
                 if (RecoilController.ShotCount == RecoilController.PrevShotCount)
                 {
+                    RecoilController.DeafenShotTimer += Time.deltaTime;
                     RecoilController.WiggleShotTimer += Time.deltaTime;
                     RecoilController.ShotTimer += Time.deltaTime;
                     RecoilController.MovementSpeedShotTimer += Time.deltaTime;
@@ -766,6 +768,12 @@ namespace RealismMod
                         RecoilController.ShotCount = 0;
                         RecoilController.PrevShotCount = 0;
                         RecoilController.ShotTimer = 0f;
+                    }
+
+                    if (RecoilController.DeafenShotTimer >= 0.2f)
+                    {
+                        RecoilController.IsFiringDeafen = false;
+                        RecoilController.DeafenShotTimer = 0f;
                     }
 
                     if (RecoilController.WiggleShotTimer >= 0.1f)
@@ -786,11 +794,9 @@ namespace RealismMod
 
                 StanceController.StanceState();
 
-               /* if (ModConfig.recoil_attachment_overhaul)
+                if (ServerConfig.recoil_attachment_overhaul)
                 {
-
-
-                    if (Plugin.EnableDeafen.Value && ModConfig.headset_changes && ModConfig.realistic_ballistics && ModConfig.recoil_attachment_overhaul)
+                    if (Plugin.EnableDeafen.Value && ServerConfig.headset_changes && ServerConfig.realistic_ballistics && ServerConfig.recoil_attachment_overhaul)
                     {
                         if (Input.GetKeyDown(Plugin.IncGain.Value.MainKey) && DeafeningController.HasHeadSet)
                         {
@@ -815,31 +821,29 @@ namespace RealismMod
                             DeafeningController.DoDeafening();
                         }
 
-                        if (Plugin.IsBotFiring)
+                        if (DeafeningController.IsBotFiring)
                         {
-                            Plugin.BotTimer += Time.deltaTime;
-                            if (Plugin.BotTimer >= 0.5f)
+                            DeafeningController.BotTimer += Time.deltaTime;
+                            if (DeafeningController.BotTimer >= 0.5f)
                             {
-                                Plugin.IsBotFiring = false;
-                                Plugin.BotTimer = 0f;
+                                DeafeningController.IsBotFiring = false;
+                                DeafeningController.BotTimer = 0f;
                             }
                         }
 
-                        if (Plugin.GrenadeExploded)
+                        if (DeafeningController.GrenadeExploded)
                         {
-                            Plugin.GrenadeTimer += Time.deltaTime;
-                            if (Plugin.GrenadeTimer >= 0.7f)
+                            DeafeningController.GrenadeTimer += Time.deltaTime;
+                            if (DeafeningController.GrenadeTimer >= 0.7f)
                             {
-                                Plugin.GrenadeExploded = false;
-                                Plugin.GrenadeTimer = 0f;
+                                DeafeningController.GrenadeExploded = false;
+                                DeafeningController.GrenadeTimer = 0f;
                             }
                         }
                     }
                 }
 
-
-
-                if (Plugin.EnableMedicalOvehaul.Value && ModConfig.med_changes)
+          /*      if (Plugin.EnableMedicalOvehaul.Value && ServerConfig.med_changes)
                 {
                     healthControllerTick += Time.deltaTime;
                     RealismHealthController.HealthController(Logger);

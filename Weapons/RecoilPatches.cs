@@ -483,10 +483,12 @@ namespace RealismMod
                 //update or reset firing state
                 RecoilController.ShotCount++;
                 RecoilController.ShotTimer = 0f;
+                RecoilController.DeafenShotTimer = 0f;
                 RecoilController.WiggleShotTimer = 0f;
                 RecoilController.MovementSpeedShotTimer = 0f;
                 StanceController.StanceShotTime = 0f;
                 RecoilController.IsFiring = true;
+                RecoilController.IsFiringDeafen = true;
                 RecoilController.IsFiringWiggle = true;
                 RecoilController.IsFiringMovement = true;
                 StanceController.IsFiringFromStance = true;

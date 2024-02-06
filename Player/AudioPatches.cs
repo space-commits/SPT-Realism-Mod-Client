@@ -236,15 +236,13 @@ namespace RealismMod
             DeafeningController.AmbientVolume = hasHeadset ? template.AmbientVolume : 0f;
             DeafeningController.AmbientOccluded = hasHeadset ? (template.AmbientVolume - 15f) : -5f;
             DeafeningController.GunsVolume = hasHeadset ? template.DryVolume + Plugin.GunshotVolume.Value : Plugin.GunshotVolume.Value;
-
+            DeafeningController.CompressorLowpass = hasHeadset ? template.LowpassFreq : 2200;
             DeafeningController.CompressorDistortion = hasHeadset ? template.Distortion : 0.277f;
             DeafeningController.CompressorResonance = hasHeadset ? template.Resonance : 2.47f;
 
-            float value;
-            __instance.Master.GetFloat(__instance.AudioMixerData.CompressorResonance, out value);
-            Logger.LogWarning("Resonance " + value);
-            __instance.Master.GetFloat(__instance.AudioMixerData.CompressorDistortion, out value);
-            Logger.LogWarning("CompressorDistortion " + value);
+            float val;
+            __instance.Master.GetFloat(__instance.AudioMixerData.CompressorLowpass, out val);
+            Logger.LogWarning(val);
 
             __instance.Master.GetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, out gunT);
             __instance.Master.GetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, out mainT);
@@ -290,28 +288,33 @@ namespace RealismMod
             return typeof(Player.FirearmController).GetMethod("RegisterShot", BindingFlags.Instance | BindingFlags.Public);
         }
 
-/*        private static float GetMuzzleLoudness(IEnumerable<Mod> mods)
-        {
-            float loudness = 0f;
-
-            foreach (Mod mod in mods.OfType<Mod>())
-            {
-                if (mod.Slots.Length > 0 && mod.Slots[0].ContainedItem != null && Utils.IsSilencer((Mod)mod.Slots[0].ContainedItem))
+        /*        private static float GetMuzzleLoudness(IEnumerable<Mod> mods)
                 {
-                    continue;
-                }
-                else
-                {
-                    loudness += mod.Template.Loudness;
-                }
-            }
-            return (loudness / 100) + 1f;
+                    float loudness = 0f;
 
-        }*/
+                    foreach (Mod mod in mods.OfType<Mod>())
+                    {
+                        if (mod.Slots.Length > 0 && mod.Slots[0].ContainedItem != null && Utils.IsSilencer((Mod)mod.Slots[0].ContainedItem))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            loudness += mod.Template.Loudness;
+                        }
+                    }
+                    return (loudness / 100) + 1f;
 
-        private static float CalcVelocityFactor(Weapon weap)
+                }*/
+
+        private static float CalcAmmoFactor(float ammoRec)
         {
-            return ((weap.SpeedFactor - 1f) * -2f) + 1f;
+            return Math.Min((ammoRec / 100f) + 1f, 2f);
+        }
+
+        private static float CalcVelocityFactor(float speedFactor)
+        {
+            return ((speedFactor - 1f) * -2f) + 1f;
         }
 
         [PatchPostfix]
@@ -325,13 +328,15 @@ namespace RealismMod
                 Weapon weap = __instance.Weapon;
                 if (player.IsYourPlayer == true)
                 {
-                    float velocityFactor = CalcVelocityFactor(weap);
+                    float velocityFactor = CalcVelocityFactor(weap.SpeedFactor);
+                    float ammoFactor = CalcAmmoFactor((shot.Ammo as BulletClass).ammoRec);
+                    float deafenFactor = velocityFactor * ammoFactor;
                     if (shot.InitialSpeed * weap.SpeedFactor <= 335f)
                     {
-                        velocityFactor *= 0.6f;
+                        deafenFactor *= 0.6f;
                     }
 
-                    DeafeningController.AmmoDeafFactor = velocityFactor == 0f ? 1f : velocityFactor;
+                    DeafeningController.AmmoDeafFactor = deafenFactor == 0f ? 1f : deafenFactor;
                 }
                 else
                 {
@@ -341,7 +346,7 @@ namespace RealismMod
                     if (distanceFromPlayer <= 15f)
                     {
                         DeafeningController.IsBotFiring = true;;
-                        float velocityFactor = CalcVelocityFactor(weap);
+                        float velocityFactor = CalcVelocityFactor(weap.SpeedFactor);
                         float muzzleFactor = __instance.IsSilenced ? 0.4f : 1f;
                         float calFactor = StatCalc.CalibreLoudnessFactor(weap.AmmoCaliber);
                         if (shot.InitialSpeed * weap.SpeedFactor <= 335f)
