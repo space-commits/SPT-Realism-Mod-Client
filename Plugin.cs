@@ -78,8 +78,6 @@ namespace RealismMod
         public static ConfigEntry<float> DeafReset { get; set; }
         public static ConfigEntry<float> VigRate { get; set; }
         public static ConfigEntry<float> VigReset { get; set; }
-        public static ConfigEntry<float> DistRate { get; set; }
-        public static ConfigEntry<float> DistReset { get; set; }
         public static ConfigEntry<float> GainCutoff { get; set; }
         public static ConfigEntry<float> RealTimeGain { get; set; }
         public static ConfigEntry<float> HeadsetAmbientMulti { get; set; }
@@ -988,8 +986,6 @@ namespace RealismMod
             DeafReset = Config.Bind<float>(deafSettings, "Deafen Reset Rate.", 0.042f, new ConfigDescription("How Quickly Player Regains Hearing. Higher = Faster.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true }));
             VigRate = Config.Bind<float>(deafSettings, "Tunnel Effect Rate", 0.02f, new ConfigDescription("How Quickly Player Gets Tunnel Vission. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true }));
             VigReset = Config.Bind<float>(deafSettings, "Tunnel Effect Reset Rate.", 0.035f, new ConfigDescription("How Quickly Player Recovers From Tunnel Vision. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true }));
-            DistRate = Config.Bind<float>(deafSettings, "Distortion Rate", 0.02f, new ConfigDescription("How Quickly Player's Hearing Gets Distorted. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true }));
-            DistReset = Config.Bind<float>(deafSettings, "Distortion Reset Rate.", 0.25f, new ConfigDescription("How Quickly Player's Hearing Recovers From Distortion. Higher = Faster", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true }));
             EnableDeafen = Config.Bind<bool>(deafSettings, "Enable Audio Changes", true, new ConfigDescription("Requiures Restart, And For Ballistics And Recoil/Attachment Overhauls To Be Enabled. Enables Gunshots And Explosions Deafening The Player And Changes To How Headsets Work. Requires Headset Changes To Be Enabled In The Config App.", null, new ConfigurationManagerAttributes { Order = 1 }));
 
             EnableReloadPatches = Config.Bind<bool>(speed, "Enable Reload And Chamber Speed Changes", true, new ConfigDescription("Requires Restart. Weapon Weight, Magazine Weight, Attachment Reload And Chamber Speed Stat, Balance, Ergo And Arm Injury Affect Reload And Chamber Speed.", null, new ConfigurationManagerAttributes { Order = 17 }));

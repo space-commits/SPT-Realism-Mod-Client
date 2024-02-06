@@ -80,14 +80,14 @@ namespace RealismMod
             }
 
             float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
-            float dampingFactor = RecoilController.BaseTotalHandDamping + RecoilController.BaseTotalRecoilDamping;
             float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
             float recoilFactor = RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil;
             float ergoFactor = 1f - ((80f - WeaponStats.ErgoFactor) / 100f);
-            recoilFactor = recoilFactor * dispersionFactor * dampingFactor * convergenceFactor * ergoFactor;
+            recoilFactor = recoilFactor * dispersionFactor * convergenceFactor * ergoFactor;
             recoilFactor = fc.Item.WeapClass == "pistol" ? recoilFactor * 0.1f : recoilFactor;
+            float recoilLimit = 1f - (recoilFactor / 100f);
             float totalRecoilFactor = 1f - ((recoilFactor / 400f) * RecoilController.ShotCount);
-            totalRecoilFactor = Mathf.Clamp(totalRecoilFactor, 0.25f, 1f);
+            totalRecoilFactor = Mathf.Clamp(totalRecoilFactor, 0.6f * recoilLimit, 1f);
             return totalRecoilFactor;
         }
     }

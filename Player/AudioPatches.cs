@@ -240,10 +240,6 @@ namespace RealismMod
             DeafeningController.CompressorDistortion = hasHeadset ? template.Distortion : 0.277f;
             DeafeningController.CompressorResonance = hasHeadset ? template.Resonance : 2.47f;
 
-            float val;
-            __instance.Master.GetFloat(__instance.AudioMixerData.CompressorLowpass, out val);
-            Logger.LogWarning(val);
-
             __instance.Master.GetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, out gunT);
             __instance.Master.GetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, out mainT);
             __instance.Master.SetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, gunT);

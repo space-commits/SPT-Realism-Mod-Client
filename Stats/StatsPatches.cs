@@ -30,12 +30,11 @@ namespace RealismMod
         {
             if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
-                Logger.LogWarning("single fire");
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
                 __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.SemiFireRate * currentAmmoTemplate.casingMass) : WeaponStats.SemiFireRate;
                 return false;
             }
-                return true;
+            return true;
         }
     }
 
