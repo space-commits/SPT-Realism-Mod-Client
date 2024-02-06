@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using Comfort.Common;
 using static RealismMod.Attributes;
 using UnityEngine;
+using UnityEngine.UI;
 using BPConstructor = GClass2680;
 using BPTemplate = GClass2583;
 using RigConstructor = GClass2681;
@@ -17,6 +18,8 @@ using RigTemplate = GClass2584;
 using HeadsetClass = GClass2635;
 using HeadsetTemplate = GClass2538;
 using ArmorCompTemplate = GInterface280;
+using HarmonyLib;
+using Diz.LanguageExtensions;
 
 namespace RealismMod
 {
@@ -147,13 +150,18 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass2516).GetMethod("FormatArmorPlateTooltip", BindingFlags.Static | BindingFlags.Public);
+            return typeof(ItemViewStats).GetMethod("method_1", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        [PatchPrefix]
-        private static void PatchPrefix(GClass2516 __instance)
+        [PatchPostfix]
+        private static void PatchPrefix(ItemViewStats __instance, GClass2629 armorPlate)
         {
-            Logger.LogWarning("FormatArmorPlateTooltip");
+            Image armorClassImage = (Image)AccessTools.Field(typeof(ItemViewStats), "_armorClassIcon").GetValue(__instance);
+            if (armorPlate.Armor.Template.ArmorClass > 6) 
+            {
+                string armorClass = string.Format("{0}.png", armorPlate.Armor.Template.ArmorClass);
+                armorClassImage.sprite = Plugin.LoadedSprites[armorClass];
+            }
         }
     }
 

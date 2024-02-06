@@ -107,8 +107,10 @@ namespace RealismMod
 
     public class SetAimingSlowdownPatch : ModulePatch
     {
+        private static FieldInfo playerField;
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(MovementContext), "_player");
             return typeof(MovementContext).GetMethod("SetAimingSlowdown", BindingFlags.Instance | BindingFlags.Public);
         }
 
@@ -116,7 +118,7 @@ namespace RealismMod
         private static bool Prefix(MovementContext __instance, bool isAiming)
         {
 
-            Player player = (Player)AccessTools.Field(typeof(MovementContext), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 if (isAiming)

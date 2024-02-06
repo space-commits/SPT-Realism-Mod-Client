@@ -661,9 +661,9 @@ namespace RealismMod
             new ArmorComponentPatch().Enable();
             new RigConstructorPatch().Enable();
             new BackpackConstructorPatch().Enable();
-            new ArmorLevelDisplayPatch().Enable();
             new ArmorLevelUIPatch().Enable();
-            
+            new ArmorLevelDisplayPatch().Enable();
+
 
             //Player
             new PlayerInitPatch().Enable();
