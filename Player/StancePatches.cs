@@ -222,11 +222,11 @@ namespace RealismMod
                     Func<RaycastHit, bool> isHitIgnoreTest = (Func<RaycastHit, bool>)hitIgnoreField.GetValue(fc);
                     Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
                     Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(startMeleeDir);
-                    Vector3 meleeDir = meleeStart - linecastDirection * (ln - (WeaponStats.HasBayonet ? 0.1f : 0.4f));
+                    Vector3 meleeDir = meleeStart - linecastDirection * (ln - (WeaponStats.HasBayonet ? 0.1f : 0.25f));
 
                     /*                        DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);
                     */
-                    EBodyPart hitPart = EBodyPart.Chest;
+   
                     BallisticCollider hitBalls = null;
                     RaycastHit raycastHit;
                     if (CastingClass.Linecast(meleeStart, meleeDir, out raycastHit, CollisionLayerClass.HitMask, false, raycastArr, isHitIgnoreTest))
@@ -236,7 +236,6 @@ namespace RealismMod
                         if (baseballComp != null)
                         {
                             hitBalls = baseballComp.Get(raycastHit.point);
-                            hitPart = HitBox.GetBodyPartFromCol(hitBalls.name);
                         }
                         float damage = 8f + WeaponStats.BaseMeleeDamage * (1f + player.Skills.StrengthBuffMeleePowerInc) * (1f - (WeaponStats.ErgoFactor / 300f));
                         damage = player.Physical.HandsStamina.Exhausted ? damage * Singleton<BackendConfigSettingsClass>.Instance.Stamina.ExhaustedMeleeDamageMultiplier : damage;

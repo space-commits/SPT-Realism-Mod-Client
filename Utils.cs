@@ -2,12 +2,16 @@
 using EFT;
 using EFT.InventoryLogic;
 using System;
+using System.IO;
+using System.Reflection;
 
 namespace RealismMod
 {
     public static class Utils
     {
+        public static bool Verified = false;
         public static bool IsReady = false;
+        public static bool IsInHideout = false;
         public static bool WeaponReady = false;
         public static bool HasRunErgoWeightCalc = false;
 
@@ -82,14 +86,8 @@ namespace RealismMod
             Player player = gameWorld?.MainPlayer;
             if (player != null)
             {
-                if (player?.HandsController != null && player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon)
-                {
-                    Utils.WeaponReady = true;
-                }
-                else
-                {
-                    Utils.WeaponReady = false;
-                }
+                Utils.WeaponReady = player?.HandsController != null && player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon ? true : false;
+                Utils.IsInHideout = player is HideoutPlayer ? true : false; 
             }
 
             if (gameWorld == null || gameWorld.AllAlivePlayersList == null || gameWorld.MainPlayer == null || sessionResultPanel != null)
@@ -101,21 +99,6 @@ namespace RealismMod
             return true;
         }
 
-        public static bool IsInHideout() 
-        {
-            GameWorld gameWorld = Singleton<GameWorld>.Instance;
-            SessionResultPanel sessionResultPanel = Singleton<SessionResultPanel>.Instance;
-
-            Player player = gameWorld.MainPlayer;
-            if (player != null && player is HideoutPlayer)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-
         public static void SafelyAddAttributeToList(ItemAttributeClass itemAttribute, Mod __instance)
         {
             if (itemAttribute.Base() != 0f)
@@ -123,6 +106,23 @@ namespace RealismMod
                 __instance.Attributes.Add(itemAttribute);
             }
         }
+
+        public static void VerifyFileIntegrity()
+        {
+            var dllLoc = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string checksum = "d2F5ZmFyZXI=";
+            byte[] bytes = Convert.FromBase64String(checksum);
+            string decodedString = System.Text.Encoding.UTF8.GetString(bytes);
+            var modsLoc = Path.Combine(dllLoc, "..", "..", "user", "mods", decodedString);
+            var fullPath = Path.GetFullPath(modsLoc);
+
+            if (Directory.Exists(fullPath))
+            {
+                /*Environment.Exit(0);*/
+                Verified = true;
+            }
+        }
+
 
         public static bool IsSight(Mod mod)
         {

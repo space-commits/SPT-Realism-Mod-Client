@@ -17,7 +17,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Sprite __result, Enum id)
         {
-            Logger.LogWarning(id);
             if (id == null || !Plugin.IconCache.ContainsKey(id))
             {
                 return true;
@@ -73,7 +72,8 @@ namespace RealismMod
             Comfort,
             PainKillerStrength,
             MeleeDamage,
-            MeleePen
+            MeleePen,
+            BallisticCoefficient
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -108,6 +108,8 @@ namespace RealismMod
                     return "CHAMBER SPEED";
                 case ENewItemAttributeId.Firerate:
                     return "FIRE RATE";
+                case ENewItemAttributeId.BallisticCoefficient:
+                    return "BALLISTIC COEFFICIENT";
                 case ENewItemAttributeId.Damage:
                     return "DAMAGE";
                 case ENewItemAttributeId.Penetration:
@@ -117,7 +119,7 @@ namespace RealismMod
                 case ENewItemAttributeId.FragmentationChance:
                     return "FRAGMENTATION CHANCE";
                 case ENewItemAttributeId.BluntThroughput:
-                    return "BLUNT DAMAGE REDUCTION";
+                    return "AVG. BLUNT DAMAGE REDUCTION";
                 case ENewItemAttributeId.ShotDispersion:
                     return "SHOT SPREAD REDUCTION";
                 case ENewItemAttributeId.CanSpall:

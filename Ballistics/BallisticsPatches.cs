@@ -25,444 +25,189 @@ using EFT.Visual;
 namespace RealismMod
 {
 
-    public class SetSkinPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
+    /*    public class SetSkinPatch : ModulePatch
         {
-            return typeof(PlayerBody).GetMethod("SetSkin", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-
-        [PatchPostfix]
-        private static void Prefix(PlayerBody __instance, KeyValuePair<EBodyModelPart, ResourceKey> part, Skeleton skeleton)
-        {
-            __instance.BodySkins[part.Key].Unskin();
-        }
-    }
-
-    public class ShouldFragPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(ShotClass).GetMethod("method_9", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-
-        [PatchPostfix]
-        private static void PostFix(ShotClass __instance, bool __result)
-        {
-            Logger.LogWarning("========Should Frag Patch==========");
-            if (__result)
+            protected override MethodBase GetTargetMethod()
             {
-                Logger.LogWarning("=================");
-                Logger.LogWarning("=================");
-                Logger.LogWarning("FRAGMENTATION");
-                Logger.LogWarning("=================");
-                Logger.LogWarning("=================");
+                return typeof(PlayerBody).GetMethod("SetSkin", BindingFlags.Instance | BindingFlags.Public);
             }
 
-            Logger.LogWarning("=================");
-        }
-    }
 
-
-
-    public class DamageInfoPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(ShotClass) });
-        }
-
-        [PatchPrefix]
-        private static void Prefix()
-        {
-            Logger.LogWarning("========Damage Info Prefix==========");
-        }
-
-        static UnityEngine.Color getColor(string colliderName) 
-        {
-            float opacity = Plugin.test2.Value;
-            if (colliderName.Contains("SpineTopChest")) return new UnityEngine.Color(1, 0, 0, opacity);
-            if (colliderName.Contains("SpineLowerChest")) return new UnityEngine.Color(0, 1, 0, opacity);
-            if (colliderName.Contains("PelvisBack")) return new UnityEngine.Color(0, 0, 1, opacity);
-            if (colliderName.Contains("SideChestDown")) return new UnityEngine.Color(0.5f, 1f, 0, opacity);
-            if (colliderName.Contains("SideChestUp")) return new UnityEngine.Color(0, 0.5f, 1f, opacity);
-            if (colliderName.Contains("HumanSpine2")) return new UnityEngine.Color(1f, 0f, 0.5f, opacity);
-            if (colliderName.Contains("HumanSpine3")) return new UnityEngine.Color(1f, 1f, 1f, opacity);
-            if (colliderName.Contains("HumanPelvis")) return new UnityEngine.Color(0.5f, 1f, 0.5f, opacity);
-            if (colliderName.ToLower().Contains("leg")) return new UnityEngine.Color(0f, 0f, 1f, opacity);
-            if (colliderName.ToLower().Contains("arm")) return new UnityEngine.Color(1f, 0f, 0f, opacity);
-            if (colliderName.ToLower().Contains("eye")) return new UnityEngine.Color(0f, 1f, 0f, opacity);
-            if (colliderName.ToLower().Contains("jaw")) return new UnityEngine.Color(0f, 1f, 0f, opacity);
-            if (colliderName.ToLower().Contains("ear")) return new UnityEngine.Color(1f, 1f, 1f, opacity);
-            if (colliderName.ToLower().Contains("head")) return new UnityEngine.Color(1f, 0f, 0f, opacity);
-            return new UnityEngine.Color(0, 0, 1, opacity);
-        }
-
-        static void VisualizeSphereCollider(SphereCollider sphereCollider, string colliderName)
-        {
-            // Create a sphere primitive to represent the collider.
-            GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-
-            // Disable the sphere's collider component.
-            UnityEngine.Object.Destroy(sphere.GetComponent<Collider>());
-
-            // Set the sphere's position to match the sphere collider.
-            Transform colliderTransform = sphereCollider.transform;
-            sphere.transform.position = colliderTransform.TransformPoint(sphereCollider.center);
-
-            // Calculate the correct scale for the sphere. Unity's default sphere has a radius of 0.5 units.
-            float actualScale = sphereCollider.radius / 0.5f;
-            Vector3 scale = new Vector3(actualScale, actualScale, actualScale);
-
-            // Apply global scale and additional scale factor if needed.
-            sphere.transform.localScale = Vector3.Scale(colliderTransform.localScale, scale) * Plugin.test1.Value;
-
-            // Set a transparent material to the sphere, so it doesn't obstruct the view.
-            Material transparentMaterial = new Material(Shader.Find("Standard"));
-            transparentMaterial.color = getColor(colliderName); // Set to desired semi-transparent color
-            sphere.GetComponent<Renderer>().material = transparentMaterial;
-
-            // Parent the sphere to the collider's GameObject to maintain relative positioning.
-            sphere.transform.SetParent(colliderTransform, true);
-        }
-
-        static void VisualizeBoxCollider(BoxCollider boxCollider, string colliderName)
-        {
-            // Create a cube primitive to represent the collider.
-            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-
-            // Disable the cube's collider component.
-            UnityEngine.Object.Destroy(cube.GetComponent<Collider>());
-
-            // Set the cube's position and scale to match the box collider.
-            Transform colliderTransform = boxCollider.transform;
-            cube.transform.position = colliderTransform.TransformPoint(boxCollider.center);
-            cube.transform.localScale = Vector3.Scale(colliderTransform.localScale, boxCollider.size) * Plugin.test1.Value;
-
-            // Optionally, set the cube's rotation to match the collider's GameObject.
-            cube.transform.rotation = colliderTransform.rotation;
-
-            // Set a transparent material to the cube, so it doesn't obstruct the view.
-            Material transparentMaterial = new Material(Shader.Find("Transparent/Diffuse"));
-            transparentMaterial.color = getColor(colliderName); // Red semi-transparent
-            cube.GetComponent<Renderer>().material = transparentMaterial;
-
-            // Parent the cube to the collider's GameObject to maintain relative positioning.
-            cube.transform.SetParent(colliderTransform, true);
-        }
-
-        static void VisualizeCapsuleCollider(CapsuleCollider capsuleCollider, string colliderName)
-        {
-            // Create a capsule primitive to represent the collider.
-            GameObject capsule = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-
-            // Disable the capsule's collider component.
-            UnityEngine.Object.Destroy(capsule.GetComponent<Collider>());
-
-            // Set the capsule's position to match the capsule collider.
-            Transform colliderTransform = capsuleCollider.transform;
-            capsule.transform.position = colliderTransform.TransformPoint(capsuleCollider.center);
-
-            // Calculate the correct scale for the capsule.
-            float capsuleDefaultHeight = 2.0f; // Default Unity capsule height
-            float capsuleDefaultRadius = 0.5f; // Default Unity capsule radius
-            float actualScaleHeight = (capsuleCollider.height - 2 * capsuleCollider.radius) / capsuleDefaultHeight;
-            float actualScaleRadius = capsuleCollider.radius / capsuleDefaultRadius;
-
-            // Adjust the scale and rotation based on the collider's direction.
-            Vector3 scale = Vector3.one;
-            Quaternion rotation = Quaternion.identity;
-            switch (capsuleCollider.direction)
+            [PatchPostfix]
+            private static void Prefix(PlayerBody __instance, KeyValuePair<EBodyModelPart, ResourceKey> part, Skeleton skeleton)
             {
-                case 0: // x-axis
-                    scale = new Vector3(actualScaleHeight, actualScaleRadius, actualScaleRadius);
-                    rotation = Quaternion.Euler(0, 0, 90); // Rotate to align with x-axis
-                    break;
-                case 1: // y-axis
-                    scale = new Vector3(actualScaleRadius, actualScaleHeight, actualScaleRadius);
-                    break;
-                case 2: // z-axis
-                    scale = new Vector3(actualScaleRadius, actualScaleRadius, actualScaleHeight);
-                    rotation = Quaternion.Euler(90, 0, 0); // Rotate to align with z-axis
-                    break;
+                __instance.BodySkins[part.Key].Unskin();
             }
+        }*/
 
-            // Apply the rotation and scale.
-            capsule.transform.rotation = colliderTransform.rotation * rotation;
-            capsule.transform.localScale = Vector3.Scale(colliderTransform.localScale, scale) * Plugin.test1.Value;
+    /*public class DamageInfoPatch : ModulePatch
+      {
+          protected override MethodBase GetTargetMethod()
+          {
+              return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(ShotClass) });
+          }
 
-            // Set a transparent material to the capsule, so it doesn't obstruct the view.
-            Material transparentMaterial = new Material(Shader.Find("Transparent/Diffuse"));
-            transparentMaterial.color = getColor(colliderName); // Red semi-transparent
-            capsule.GetComponent<Renderer>().material = transparentMaterial;
+          [PatchPrefix]
+          private static void Prefix()
+          {
+              Logger.LogWarning("========Damage Info Prefix==========");
+          }
 
-            // Parent the capsule to the collider's GameObject to maintain relative positioning.
-            capsule.transform.SetParent(colliderTransform, true);
-        }
+          static UnityEngine.Color getColor(string colliderName) 
+          {
+              float opacity = Plugin.test2.Value;
+              if (colliderName.Contains("SpineTopChest")) return new UnityEngine.Color(1, 0, 0, opacity);
+              if (colliderName.Contains("SpineLowerChest")) return new UnityEngine.Color(0, 1, 0, opacity);
+              if (colliderName.Contains("PelvisBack")) return new UnityEngine.Color(0, 0, 1, opacity);
+              if (colliderName.Contains("SideChestDown")) return new UnityEngine.Color(0.5f, 1f, 0, opacity);
+              if (colliderName.Contains("SideChestUp")) return new UnityEngine.Color(0, 0.5f, 1f, opacity);
+              if (colliderName.Contains("HumanSpine2")) return new UnityEngine.Color(1f, 0f, 0.5f, opacity);
+              if (colliderName.Contains("HumanSpine3")) return new UnityEngine.Color(1f, 1f, 1f, opacity);
+              if (colliderName.Contains("HumanPelvis")) return new UnityEngine.Color(0.5f, 1f, 0.5f, opacity);
+              if (colliderName.ToLower().Contains("leg")) return new UnityEngine.Color(0f, 0f, 1f, opacity);
+              if (colliderName.ToLower().Contains("arm")) return new UnityEngine.Color(1f, 0f, 0f, opacity);
+              if (colliderName.ToLower().Contains("eye")) return new UnityEngine.Color(0f, 1f, 0f, opacity);
+              if (colliderName.ToLower().Contains("jaw")) return new UnityEngine.Color(0f, 1f, 0f, opacity);
+              if (colliderName.ToLower().Contains("ear")) return new UnityEngine.Color(1f, 1f, 1f, opacity);
+              if (colliderName.ToLower().Contains("head")) return new UnityEngine.Color(1f, 0f, 0f, opacity);
+              return new UnityEngine.Color(0, 0, 1, opacity);
+          }
 
-        [PatchPostfix]
-        private static void PostFix(ref DamageInfo __instance, EDamageType damageType, ShotClass shot)
-        {
-/*            Logger.LogWarning(" base " + shot.HitCollider.GetType().BaseType);
-            Logger.LogWarning(" type " + shot.HitCollider.GetType());
-            Logger.LogWarning(" name " + shot.HitCollider.GetType().Name);*/
+          static void VisualizeSphereCollider(SphereCollider sphereCollider, string colliderName)
+          {
+              // Create a sphere primitive to represent the collider.
+              GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 
-            if (shot.HitCollider is BoxCollider) 
-            {
-                VisualizeBoxCollider(shot.HitCollider as BoxCollider, __instance.HitCollider.name);
-            }
-            if (shot.HitCollider is CapsuleCollider)
-            {
-                VisualizeCapsuleCollider(shot.HitCollider as CapsuleCollider, __instance.HitCollider.name);
-            }
-            if (shot.HitCollider is SphereCollider)
-            {
-                VisualizeSphereCollider(shot.HitCollider as SphereCollider, __instance.HitCollider.name);
-            }
+              // Disable the sphere's collider component.
+              UnityEngine.Object.Destroy(sphere.GetComponent<Collider>());
 
-            Logger.LogWarning("========Damage Info PostFix==========");
-           /* Logger.LogWarning("id " + shot.Ammo.Id);
-            Logger.LogWarning("pen " + __instance.PenetrationPower);
-            Logger.LogWarning("damage " + __instance.Damage);
-            Logger.LogWarning("hit collider = " + __instance.HitCollider.name);
-            Logger.LogWarning("ballistic collider = " + __instance.HittedBallisticCollider.name);*/
-            Logger.LogWarning("=================");
-        }
-    }
+              // Set the sphere's position to match the sphere collider.
+              Transform colliderTransform = sphereCollider.transform;
+              sphere.transform.position = colliderTransform.TransformPoint(sphereCollider.center);
 
-    public class IsPenetratedPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(EFT.Ballistics.BallisticCollider).GetMethod("IsPenetrated", BindingFlags.Instance | BindingFlags.Public);
-        }
+              // Calculate the correct scale for the sphere. Unity's default sphere has a radius of 0.5 units.
+              float actualScale = sphereCollider.radius / 0.5f;
+              Vector3 scale = new Vector3(actualScale, actualScale, actualScale);
 
-        [PatchPrefix]
-        private static void Prefix()
-        {
-            Logger.LogWarning("========Collider Set Pen Status Prefix==========");
-        }
+              // Apply global scale and additional scale factor if needed.
+              sphere.transform.localScale = Vector3.Scale(colliderTransform.localScale, scale) * Plugin.test1.Value;
 
-        [PatchPostfix]
-        private static void Postfix(EFT.Ballistics.BallisticCollider __instance, ShotClass shot, bool __result)
-        {
-            Logger.LogWarning("========Collider Set Pen Status==========");
-/*            Logger.LogWarning("id " + shot.Ammo.Id);
-            Logger.LogWarning("name " + __instance.name);
-            Logger.LogWarning("material " + __instance.TypeOfMaterial);
-            Logger.LogWarning("pen level " + __instance.PenetrationLevel);
-            Logger.LogWarning("pen chance " + __instance.PenetrationChance);*/
-            Logger.LogWarning("has penned = " + __result);
-            Logger.LogWarning("==================");
+              // Set a transparent material to the sphere, so it doesn't obstruct the view.
+              Material transparentMaterial = new Material(Shader.Find("Standard"));
+              transparentMaterial.color = getColor(colliderName); // Set to desired semi-transparent color
+              sphere.GetComponent<Renderer>().material = transparentMaterial;
 
-        }
-    }
+              // Parent the sphere to the collider's GameObject to maintain relative positioning.
+              sphere.transform.SetParent(colliderTransform, true);
+          }
 
-    public class ApplyArmorDamagePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(ArmorComponent).GetMethod("ApplyDamage", BindingFlags.Instance | BindingFlags.Public);
-        }
+          static void VisualizeBoxCollider(BoxCollider boxCollider, string colliderName)
+          {
+              // Create a cube primitive to represent the collider.
+              GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
-        [PatchPrefix]
-        private static bool Postfix(ArmorComponent __instance, ref float __result, ref DamageInfo damageInfo, EBodyPartColliderType colliderType, EArmorPlateCollider armorPlateCollider, bool damageInfoIsLocal, List<ArmorComponent> armorComponents, SkillManager.GClass1771 lightVestsDamageReduction, SkillManager.GClass1771 heavyVestsDamageReduction)
-        {
-            Logger.LogWarning("========ApplyArmorDamage======");
-            Logger.LogWarning("hit collider = " + damageInfo.HitCollider.name);
-            Logger.LogWarning("ballistic collider = " + damageInfo.HittedBallisticCollider.name);
-            Logger.LogWarning("colliderType = " + colliderType);
-            Logger.LogWarning("armorPlateCollider = " + armorPlateCollider);
-            Logger.LogWarning("armor name = " + __instance.Item.Template.Name);
-/*            Logger.LogWarning("armor template id = " + __instance.Item.TemplateId);*/
+              // Disable the cube's collider component.
+              UnityEngine.Object.Destroy(cube.GetComponent<Collider>());
 
-            Logger.LogWarning("-------Before--------");
-/*            Logger.LogWarning("ammo = " + damageInfo.SourceId);*/
-            Logger.LogWarning("Damage = " + damageInfo.Damage);
-            Logger.LogWarning("PenetrationPower " + damageInfo.PenetrationPower);
-            Logger.LogWarning("armor durability % = " + __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f);
-            Logger.LogWarning("armor durability = " + __instance.Repairable.Durability);
-            Logger.LogWarning("-------------");
+              // Set the cube's position and scale to match the box collider.
+              Transform colliderTransform = boxCollider.transform;
+              cube.transform.position = colliderTransform.TransformPoint(boxCollider.center);
+              cube.transform.localScale = Vector3.Scale(colliderTransform.localScale, boxCollider.size) * Plugin.test1.Value;
 
-            EDamageType damageType = damageInfo.DamageType;
-            if (!damageType.IsWeaponInduced() && damageType != EDamageType.GrenadeFragment)
-            {
-                __result = 0f;
-                return false;
-            }
-            Player player = (damageInfo.Player != null) ? Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(damageInfo.Player.iPlayer.ProfileId) : null;
-            if (player != null)
-            {
-                __instance.TryShatter(player, damageInfoIsLocal);
-            }
-            if (__instance.Repairable.Durability <= 0f)
-            {
-                Logger.LogWarning("Durability is 0");
-                __result = 0f;
-                return false;
-            }
-            if (damageInfo.DeflectedBy == __instance.Item.Id)
-            {
-                damageInfo.Damage /= 2f;
-                damageInfo.ArmorDamage /= 2f;
-                damageInfo.PenetrationPower /= 2f;
-                Logger.LogWarning("Deflected");
-            }
-            float num = __instance.Template.BluntThroughput;
-            bool flag;
-            if ((flag = __instance.ShotMatches(colliderType, armorPlateCollider)) && __instance.Template.ArmorType == EArmorType.Heavy)
-            {
-                num *= 1f - heavyVestsDamageReduction;
-            }
-            float penetrationPower = damageInfo.PenetrationPower;
-            float num2 = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f;
-            float num3 = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
-            float num4 = (121f - 5000f / (45f + num2 * 2f)) * num3 * 0.01f;
-            float num5;
-            if (!(damageInfo.BlockedBy == __instance.Item.Id) && !(damageInfo.DeflectedBy == __instance.Item.Id))
-            {
-                Logger.LogWarning("=PENETRATED=");
-                num5 = damageInfo.PenetrationPower * damageInfo.ArmorDamage * Mathf.Clamp(penetrationPower / num3, 0.5f, 0.9f) * Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
-                float num6 = Mathf.Clamp(penetrationPower / (num4 + 12f), 0.6f, 1f);
-                damageInfo.Damage *= num6;
-                if (__instance.Template.ArmorType == EArmorType.Light && damageInfo.DamageType == EDamageType.Melee && flag)
-                {
-                    damageInfo.Damage *= 1f - lightVestsDamageReduction;
-                }
-                damageInfo.PenetrationPower *= num6;
-            }
-            else
-            {
-                Logger.LogWarning("=BLOCKED");
-                num5 = damageInfo.PenetrationPower * damageInfo.ArmorDamage * Mathf.Clamp(penetrationPower / num3, 0.6f, 1.1f) * Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
-                damageInfo.Damage *= num * Mathf.Clamp(1f - 0.03f * (num4 - penetrationPower), 0.2f, 1f);
-                damageInfo.StaminaBurnRate *= ((num > 0f) ? (3f / Mathf.Sqrt(num)) : 1f);
-            }
-            if (__instance.Buff.IsActive && __instance.Buff.BuffType == ERepairBuffType.DamageReduction)
-            {
-               /* Logger.LogWarning("Repair Bonus Damage Reduction");*/
-                damageInfo.Damage *= (float)__instance.Buff.DamageReduction;
-            }
-            num5 = Mathf.Max(1f, num5);
-            __instance.ApplyDurabilityDamage(num5, armorComponents);
-            if (armorPlateCollider != (EArmorPlateCollider)0)
-            {
-  /*              Logger.LogWarning("Armor Plate Collider is not equal to value 0");*/
-                damageInfo.Damage = 0f;
-            }
-            Logger.LogWarning("--After--");
-            Logger.LogWarning("Damage = " + damageInfo.Damage);
-            Logger.LogWarning("Penetration " + damageInfo.PenetrationPower);
-            Logger.LogWarning("Armor Damage = " + num5);
-            Logger.LogWarning("armor durability % = " + __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f);
-            Logger.LogWarning("armor durability = " + __instance.Repairable.Durability);
-            Logger.LogWarning("armor class = " + num3);
-            Logger.LogWarning("==============");
-            __result = num5;
-            return false;
-        }
-    }
+              // Optionally, set the cube's rotation to match the collider's GameObject.
+              cube.transform.rotation = colliderTransform.rotation;
 
-    public class PenStatusPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(ArmorComponent).GetMethod("SetPenetrationStatus", BindingFlags.Instance | BindingFlags.Public);
-        }
+              // Set a transparent material to the cube, so it doesn't obstruct the view.
+              Material transparentMaterial = new Material(Shader.Find("Transparent/Diffuse"));
+              transparentMaterial.color = getColor(colliderName); // Red semi-transparent
+              cube.GetComponent<Renderer>().material = transparentMaterial;
 
-        [PatchPrefix]
-        private static void Postfix(ArmorComponent __instance, ShotClass shot)
-        {
-            Logger.LogWarning("=======SetPenetrationStatus=======");
-            Logger.LogWarning("--collider--");
-            Logger.LogWarning("hit collider = " + shot.HitCollider.name);
-            Logger.LogWarning("ballistic collider = " + shot.HittedBallisticCollider.name);
-            Logger.LogWarning("--armor--");
-            Logger.LogWarning("armor name = " + __instance.Item.Template.Name);
-            Logger.LogWarning("--stats--");
-            Logger.LogWarning("ammo = " + shot.Ammo.Template.Name);
-            Logger.LogWarning("damage = " + shot.Damage);
-            Logger.LogWarning("penetrationPower " + shot.PenetrationPower);
-            Logger.LogWarning("armor durability % = " + __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f);
-            Logger.LogWarning("armor durability = " + __instance.Repairable.Durability);
-            Logger.LogWarning("armor class = " + (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance);
+              // Parent the cube to the collider's GameObject to maintain relative positioning.
+              cube.transform.SetParent(colliderTransform, true);
+          }
 
-            if (__instance.Repairable.Durability <= 0f)
-            {
-                Logger.LogWarning("0 Durability");
-            }
-            float penetrationPower = shot.PenetrationPower;
-            float num = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f;
-            float num2 = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
-            float num3 = (121f - 5000f / (45f + num * 2f)) * num2 * 0.01f;
-            if (((num3 >= penetrationPower + 15f) ? 0f : ((num3 >= penetrationPower) ? (0.4f * (num3 - penetrationPower - 15f) * (num3 - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * num3 - penetrationPower)))) - shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f < 0f)
-            {
-                Logger.LogWarning(">>> Shot blocked by armor piece");
-            }
-            else 
-            {
-                Logger.LogWarning(">>> Shot PENETRATED");
-            }
-            Logger.LogWarning("==============");
-        }
-    }
+          static void VisualizeCapsuleCollider(CapsuleCollider capsuleCollider, string colliderName)
+          {
+              // Create a capsule primitive to represent the collider.
+              GameObject capsule = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+
+              // Disable the capsule's collider component.
+              UnityEngine.Object.Destroy(capsule.GetComponent<Collider>());
+
+              // Set the capsule's position to match the capsule collider.
+              Transform colliderTransform = capsuleCollider.transform;
+              capsule.transform.position = colliderTransform.TransformPoint(capsuleCollider.center);
+
+              // Calculate the correct scale for the capsule.
+              float capsuleDefaultHeight = 2.0f; // Default Unity capsule height
+              float capsuleDefaultRadius = 0.5f; // Default Unity capsule radius
+              float actualScaleHeight = (capsuleCollider.height - 2 * capsuleCollider.radius) / capsuleDefaultHeight;
+              float actualScaleRadius = capsuleCollider.radius / capsuleDefaultRadius;
+
+              // Adjust the scale and rotation based on the collider's direction.
+              Vector3 scale = Vector3.one;
+              Quaternion rotation = Quaternion.identity;
+              switch (capsuleCollider.direction)
+              {
+                  case 0: // x-axis
+                      scale = new Vector3(actualScaleHeight, actualScaleRadius, actualScaleRadius);
+                      rotation = Quaternion.Euler(0, 0, 90); // Rotate to align with x-axis
+                      break;
+                  case 1: // y-axis
+                      scale = new Vector3(actualScaleRadius, actualScaleHeight, actualScaleRadius);
+                      break;
+                  case 2: // z-axis
+                      scale = new Vector3(actualScaleRadius, actualScaleRadius, actualScaleHeight);
+                      rotation = Quaternion.Euler(90, 0, 0); // Rotate to align with z-axis
+                      break;
+              }
+
+              // Apply the rotation and scale.
+              capsule.transform.rotation = colliderTransform.rotation * rotation;
+              capsule.transform.localScale = Vector3.Scale(colliderTransform.localScale, scale) * Plugin.test1.Value;
+
+              // Set a transparent material to the capsule, so it doesn't obstruct the view.
+              Material transparentMaterial = new Material(Shader.Find("Transparent/Diffuse"));
+              transparentMaterial.color = getColor(colliderName); // Red semi-transparent
+              capsule.GetComponent<Renderer>().material = transparentMaterial;
+
+              // Parent the capsule to the collider's GameObject to maintain relative positioning.
+              capsule.transform.SetParent(colliderTransform, true);
+          }
+
+          [PatchPostfix]
+          private static void PostFix(ref DamageInfo __instance, EDamageType damageType, ShotClass shot)
+          {
+  *//*            Logger.LogWarning(" base " + shot.HitCollider.GetType().BaseType);
+              Logger.LogWarning(" type " + shot.HitCollider.GetType());
+              Logger.LogWarning(" name " + shot.HitCollider.GetType().Name);*//*
+
+              if (shot.HitCollider is BoxCollider) 
+              {
+                  VisualizeBoxCollider(shot.HitCollider as BoxCollider, __instance.HitCollider.name);
+              }
+              if (shot.HitCollider is CapsuleCollider)
+              {
+                  VisualizeCapsuleCollider(shot.HitCollider as CapsuleCollider, __instance.HitCollider.name);
+              }
+              if (shot.HitCollider is SphereCollider)
+              {
+                  VisualizeSphereCollider(shot.HitCollider as SphereCollider, __instance.HitCollider.name);
+              }
+
+              Logger.LogWarning("========Damage Info PostFix==========");
+             *//* Logger.LogWarning("id " + shot.Ammo.Id);
+              Logger.LogWarning("pen " + __instance.PenetrationPower);
+              Logger.LogWarning("damage " + __instance.Damage);
+              Logger.LogWarning("hit collider = " + __instance.HitCollider.name);
+              Logger.LogWarning("ballistic collider = " + __instance.HittedBallisticCollider.name);*//*
+              Logger.LogWarning("=================");
+          }
+      }*/
 
 
-    public class ApplyDamageInfoPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player).GetMethod("ApplyDamageInfo", BindingFlags.Instance | BindingFlags.Public);
-        }
 
-        [PatchPrefix]
-        private static void Postfix(Player __instance, DamageInfo damageInfo, EBodyPart bodyPartType, EBodyPartColliderType colliderType, float absorbed)
-        {
-            Logger.LogWarning("=======ApplyDamageInfo=======");
-            Logger.LogWarning("--hit");
-            Logger.LogWarning("damage absorbed = " + absorbed);
-            Logger.LogWarning("damage = " + damageInfo.Damage);
-            Logger.LogWarning("pen = " + damageInfo.PenetrationPower);
-            Logger.LogWarning("--armor");
-            Logger.LogWarning("deflected by = " + damageInfo.DeflectedBy);
-            Logger.LogWarning("blocked by = " + damageInfo.BlockedBy);
-            Logger.LogWarning("==============");
-        }
-    }
-
-
-    public class ApplyDamagePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(EFT.HealthSystem.ActiveHealthController).GetMethod("ApplyDamage", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static void Postfix(EFT.HealthSystem.ActiveHealthController __instance, EBodyPart bodyPart, float damage, DamageInfo damageInfo)
-        {
-            Logger.LogWarning("=======ApplyDamage-ActiveHealthController=======");
-/*            Logger.LogWarning("hit collider = " + damageInfo.HitCollider?.name);
-            Logger.LogWarning("ballistic collider = " + damageInfo.HittedBallisticCollider?.name);
-            Logger.LogWarning("bodyPart = " + bodyPart);
-            Logger.LogWarning("--hit");*/
-            Logger.LogWarning("damage = " + damageInfo.Damage);
-/*            Logger.LogWarning("pen = " + damageInfo.PenetrationPower);
-            Logger.LogWarning("armor damage = " + damageInfo.ArmorDamage);
-            Logger.LogWarning("did armor damage = " + damageInfo.DidArmorDamage);
-            Logger.LogWarning("did body damage = " + damageInfo.DidBodyDamage);
-            Logger.LogWarning("damage type = " + damageInfo.DamageType);
-            Logger.LogWarning("--armor");
-            Logger.LogWarning("deflected by = " + damageInfo.DeflectedBy);
-            Logger.LogWarning("deflected blocked by = " + damageInfo.BlockedBy);*/
-            Logger.LogWarning("==============");
-        }
-    }
-
-
-    /*public class IsShotDeflectedByHeavyArmorPatch : ModulePatch
+    public class IsShotDeflectedByHeavyArmorPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -473,11 +218,11 @@ namespace RealismMod
         private static bool Prefix(bool __result)
         {
             __result = false;
-            return false;  
+            return false;
         }
     }
 
-    public class IsPenetratedPatch : ModulePatch 
+/*    public class IsPenetratedPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -487,13 +232,13 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(EFT.Ballistics.BallisticCollider __instance, ShotClass shot, Vector3 hitPoint)
         {
-            if (__instance.name == HitBox.LeftUpperArm || __instance.name == HitBox.RightUpperArm || __instance.name == HitBox.LeftForearm || __instance.name == HitBox.RightForearm )
+            if (__instance.name == HitBox.LeftUpperArm || __instance.name == HitBox.RightUpperArm || __instance.name == HitBox.LeftForearm || __instance.name == HitBox.RightForearm)
             {
                 __instance.PenetrationLevel = 10f;
                 __instance.PenetrationChance = 0.5f;
-            } 
+            }
         }
-    }
+    }*/
 
     public class DamageInfoPatch : ModulePatch
     {
@@ -520,7 +265,7 @@ namespace RealismMod
             {
                 __instance.ArmorDamage = shot.VelocityMagnitude;
             }
-            else 
+            else
             {
                 __instance.ArmorDamage = shot.ArmorDamage;
             }
@@ -563,32 +308,10 @@ namespace RealismMod
         private static PropertyInfo inventoryClassProperty;
         private static PropertyInfo equipmentClassProperty;
 
-        protected override MethodBase GetTargetMethod()
-        {
-            inventoryControllerField = AccessTools.Field(typeof(Player), "_inventoryController");
-            inventoryClassProperty = AccessTools.Property(typeof(Player), "Inventory");
-            equipmentClassProperty = AccessTools.Property(typeof(Player), "Equipment");
-
-            return typeof(Player).GetMethod("ApplyDamageInfo", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        private static float armorClass;
-        private static float currentDura;
-        private static float maxDura;
         private static int rndNum = 0;
-
-        private static List<EBodyPart> bodyParts = new List<EBodyPart> { EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.LeftLeg, EBodyPart.RightLeg, EBodyPart.Head, EBodyPart.Common, EBodyPart.Common };
-        
         private static System.Random randNum = new System.Random();
-
-        private static List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(10);
-
-        private static void SetArmorStats(ArmorComponent armor)
-        {
-            armorClass = armor.ArmorClass * 10f;
-            currentDura = armor.Repairable.Durability;
-            maxDura = armor.Repairable.TemplateDurability;
-        }
+        private static List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(20);
+        private static List<EBodyPart> bodyParts = new List<EBodyPart> { EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.LeftLeg, EBodyPart.RightLeg, EBodyPart.Head, EBodyPart.Common, EBodyPart.Common };
 
         private static float GetBleedFactor(EBodyPart part)
         {
@@ -607,7 +330,7 @@ namespace RealismMod
             }
         }
 
-        private static void TryDoDisarm(Player player, float kineticEnergy, bool hitArmArmor, bool forearm) 
+        private static void TryDoDisarm(Player player, float kineticEnergy, bool hitArmArmor, bool forearm)
         {
             Player.ItemHandsController itemHandsController = player.HandsController as Player.ItemHandsController;
             if (itemHandsController != null && itemHandsController.CurrentCompassState)
@@ -616,18 +339,18 @@ namespace RealismMod
                 return;
             }
 
-            if (player.MovementContext.StationaryWeapon == null && !player.HandsController.IsPlacingBeacon() && !player.HandsController.IsInInteractionStrictCheck() && player.CurrentStateName != EPlayerState.BreachDoor && !player.IsSprintEnabled) 
+            if (player.MovementContext.StationaryWeapon == null && !player.HandsController.IsPlacingBeacon() && !player.HandsController.IsInInteractionStrictCheck() && player.CurrentStateName != EPlayerState.BreachDoor && !player.IsSprintEnabled)
             {
                 float rndNumber = UnityEngine.Random.Range(0, 101);
                 float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
                 float hitArmArmorFactor = hitArmArmor ? 0.5f : 1f;
                 float hitLocationModifier = forearm ? 1.5f : 1f;
-                float totalChance = Mathf.Round(Plugin.ClientConfig.DisarmBaseChance.Value * kineticEnergyFactor * hitArmArmorFactor * hitLocationModifier);
+                float totalChance = Mathf.Round(Plugin.DisarmBaseChance.Value * kineticEnergyFactor * hitArmArmorFactor * hitLocationModifier);
 
                 if (rndNumber <= totalChance)
                 {
                     InventoryControllerClass inventoryController = (InventoryControllerClass)inventoryControllerField.GetValue(player);
-                    if (player.HandsController as Player.FirearmController != null) 
+                    if (player.HandsController as Player.FirearmController != null)
                     {
                         Player.FirearmController fc = player.HandsController as Player.FirearmController;
                         if (fc.Item != null && inventoryController.CanThrow(fc.Item))
@@ -644,111 +367,28 @@ namespace RealismMod
             float rndNumber = UnityEngine.Random.Range(0, 101);
             float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
             float hitLocationModifier = bonusChance ? 2f : 1f;
-            float totalChance = Mathf.Round(Plugin.ClientConfig.FallBaseChance.Value * kineticEnergyFactor * hitLocationModifier);
+            float totalChance = Mathf.Round(Plugin.FallBaseChance.Value * kineticEnergyFactor * hitLocationModifier);
 
             if (rndNumber <= totalChance)
             {
                 player.ToggleProne();
-                if ((isPlayer && Plugin.ClientConfig.CanDisarmPlayer.Value) || (!isPlayer && Plugin.ClientConfig.CanDisarmBot.Value)) 
+                if ((isPlayer && Plugin.CanDisarmPlayer.Value) || (!isPlayer && Plugin.CanDisarmBot.Value))
                 {
                     TryDoDisarm(player, kineticEnergy * 0.25f, false, false);
                 }
             }
         }
 
-        private static void modifyDamageByHitZone(string hitPart, EBodyHitZone hitZone, ref DamageInfo di)
-        {
-            bool hitCalf = hitPart == HitBox.LeftCalf || hitPart == HitBox.RightCalf ? true : false;
-            bool hitThigh = hitPart == HitBox.LeftThigh || hitPart == HitBox.RightThigh ? true : false;
-            bool hitUpperArm = hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightUpperArm ? true : false;
-            bool hitForearm = hitPart == HitBox.LeftForearm || hitPart == HitBox.RightForearm ? true : false;
-
-            if (hitCalf == true)
-            {
-                di.Damage *= HitZoneModifiers.Calf;
-                di.HeavyBleedingDelta *= 0.5f;
-                return;
-            }
-            if (hitThigh == true)
-            {
-                di.Damage *= HitZoneModifiers.Thigh;
-                di.HeavyBleedingDelta *= 1.25f;
-                return;
-            }
-            if (hitForearm == true)
-            {
-                di.Damage *= HitZoneModifiers.Forearm;
-                di.HeavyBleedingDelta *= 0.5f;
-                return;
-            }
-            if (hitUpperArm == true)
-            {
-                di.Damage *= HitZoneModifiers.UpperArm;
-                di.HeavyBleedingDelta *= 0.8f;
-                return;
-            }
-            if (hitZone == EBodyHitZone.AZone)
-            {
-                di.Damage *= HitZoneModifiers.AZone;
-                di.HeavyBleedingDelta *= 1.5f;
-                return;
-            }
-            if (hitZone == EBodyHitZone.CZone)
-            {
-                di.Damage *= HitZoneModifiers.CZone;
-                return;
-            }
-            if (hitZone == EBodyHitZone.DZone)
-            {
-                di.Damage *= HitZoneModifiers.DZone;
-                di.HeavyBleedingDelta *= 0.5f;
-                return;
-            }
-            if (hitZone == EBodyHitZone.Neck)
-            {
-                di.Damage += HitZoneModifiers.Neck;
-                di.HeavyBleedingDelta *= 1.5f;
-                return;
-            }
-            if (hitZone == EBodyHitZone.Heart)
-            {
-                di.Damage += HitZoneModifiers.Heart;
-                di.HeavyBleedingDelta *= 1.5f;
-                return;
-            }
-            if (hitZone == EBodyHitZone.Spine)
-            {
-                di.Damage += HitZoneModifiers.Spine;
-                di.HeavyBleedingDelta *= 1.25f;
-                return;
-            }
-        }
-
-        private static void playBodyHitSound(EBodyHitZone hitZone, Vector3 pos, string hitBox)
+        private static void playBodyHitSound(EBodyPart part, Vector3 pos)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = Plugin.ClientConfig.FleshHitSoundMulti.Value;
-            float volDist = 4f * Plugin.ClientConfig.FleshHitSoundMulti.Value;
-            float distThreshold = 30f;
+            float volClose = Plugin.FleshHitSoundMulti.Value;
+            float volDist = 4f * Plugin.FleshHitSoundMulti.Value;
+            float distThreshold = 1f; //30f
 
-            if (hitZone == EBodyHitZone.Spine)
+            if (part == EBodyPart.Head)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips["spine.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, volClose, EOcclusionTest.Regular);
-                return;
-            }
-            if (hitBox == HitBox.Head)
-            {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, volClose * 0.6f, EOcclusionTest.Regular);
-                return;
-            }
-            if (hitZone == EBodyHitZone.Heart)
-            {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips["heart.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, volClose, EOcclusionTest.Regular);
-                return;
-            }
-            if (hitZone == EBodyHitZone.AssZone)
-            {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips["ass_impact.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, 0.5f, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, volClose * 0.6f, EOcclusionTest.Regular);
                 return;
             }
 
@@ -762,16 +402,29 @@ namespace RealismMod
                 audioClip = rndNum == 0 ? "flesh_1.wav" : rndNum == 1 ? "flesh_2.wav" : "flesh_3.wav";
             }
 
-            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+        }
+
+        protected override MethodBase GetTargetMethod()
+        {
+            inventoryControllerField = AccessTools.Field(typeof(Player), "_inventoryController");
+            inventoryClassProperty = AccessTools.Property(typeof(Player), "Inventory");
+            equipmentClassProperty = AccessTools.Property(typeof(Player), "Equipment");
+
+            return typeof(Player).GetMethod("ApplyDamageInfo", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static void Prefix(Player __instance, ref DamageInfo damageInfo, EBodyPart bodyPartType)
         {
-            if (damageInfo.DamageType == EDamageType.Fall && damageInfo.Damage >= 15f) 
+            Logger.LogWarning(damageInfo.HittedBallisticCollider.name);
+            Logger.LogWarning(damageInfo.HittedBallisticCollider.TypeOfMaterial);
+            Logger.LogWarning(damageInfo.BodyPartColliderType);
+
+            if (damageInfo.DamageType == EDamageType.Fall && damageInfo.Damage >= 15f)
             {
                 __instance.ToggleProne();
-                if ((__instance.IsYourPlayer && Plugin.ClientConfig.CanDisarmPlayer.Value) ||  (!__instance.IsYourPlayer && Plugin.ClientConfig.CanDisarmBot.Value)) 
+                if ((__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value) || (!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value))
                 {
                     TryDoDisarm(__instance, damageInfo.Damage * 50f, false, false);
                 }
@@ -779,104 +432,63 @@ namespace RealismMod
 
             if (damageInfo.DamageType == EDamageType.Bullet || damageInfo.DamageType == EDamageType.Melee)
             {
+                Logger.LogWarning("blunt or melee");
+
                 EquipmentClass equipment = (EquipmentClass)equipmentClassProperty.GetValue(__instance);
                 Inventory inventory = (Inventory)inventoryClassProperty.GetValue(__instance);
 
+                bool hasArmArmor = false;
+                bool hasFaceProtection = false;
+                bool hasLegProtection = false;
                 preAllocatedArmorComponents.Clear();
                 inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
                 ArmorComponent armor = null;
-
                 foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
                 {
                     if (armorComponent.Item.Id == damageInfo.BlockedBy || armorComponent.Item.Id == damageInfo.DeflectedBy)
                     {
                         armor = armorComponent;
                     }
+
+                    hasArmArmor = armorComponent.Template.ArmorColliders.Any(x => BallisticsController.ArmCollidors.Contains(x));
+                    hasFaceProtection = armorComponent.Template.ArmorColliders.Any(x => BallisticsController.FaceSpallProtectionCollidors.Contains(x));
+                    hasLegProtection = armorComponent.Template.ArmorColliders.Any(x => BallisticsController.LegSpallProtectionCollidors.Contains(x));
                 }
 
-                Collider col = damageInfo.HitCollider;
-                Vector3 localPoint = col.transform.InverseTransformPoint(damageInfo.HitPoint);
-                *//*Vector3 normalizedPoint = localPoint.normalized;*//*
-                Vector3 hitNormal = damageInfo.HitNormal;
-                string hitPart = damageInfo.HittedBallisticCollider.name;
-                bool hitCalf = hitPart == HitBox.LeftCalf || hitPart == HitBox.RightCalf ? true : false;
-                bool hitThigh = hitPart == HitBox.LeftThigh || hitPart == HitBox.RightThigh ? true : false;
-                bool hitUpperArm = hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightUpperArm ? true : false;
-                bool hitForearm = hitPart == HitBox.LeftForearm || hitPart == HitBox.RightForearm ? true : false;
-
-                EHitOrientation hitOrientation = EHitOrientation.UnknownOrientation;
-
-                if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis)
+                if (!damageInfo.Blunt && Plugin.EnableHitSounds.Value && !__instance.IsYourPlayer)
                 {
-                    hitOrientation = BallisticsController.GetHitOrientation(hitNormal, col.transform, Logger);
+                    Logger.LogWarning("play sound");
+                    System.Random rnd = new System.Random();
+                    rndNum = rnd.Next(0, 2);
+                    playBodyHitSound(bodyPartType, damageInfo.HittedBallisticCollider.transform.position);
                 }
 
-                if (Plugin.ClientConfig.EnableBodyHitZones.Value && !damageInfo.Blunt)
-                {
-                    string hitCollider = damageInfo.HittedBallisticCollider.name;
-                    if (HitBox.HitValidCollider(hitCollider))
-                    {
-                        EBodyHitZone hitZone = BallisticsController.GetHitBodyZone(Logger, hitCollider, localPoint, hitOrientation);
-                        modifyDamageByHitZone(hitCollider, hitZone, ref damageInfo);
+                BallisticsController.ModifyDamageByHitZone(damageInfo.BodyPartColliderType, ref damageInfo);
 
-                        if (Plugin.ClientConfig.EnableHitSounds.Value && !__instance.IsYourPlayer)
-                        {
-                            System.Random rnd = new System.Random();
-                            rndNum = rnd.Next(0, 2);
-                            playBodyHitSound(hitZone, col.transform.position, hitCollider);
-                        }
-
-                        if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
-                        {
-                            Logger.LogWarning("=========Hitzone Damage Info==========");
-                            Logger.LogWarning("hit collider = " + hitCollider);
-                            Logger.LogWarning("hit orientation = " + hitOrientation);
-                            Logger.LogWarning("hit zone = " + hitZone);
-                            Logger.LogWarning("damage = " + damageInfo.Damage);
-                            Logger.LogWarning("x = " + localPoint.x);
-                            Logger.LogWarning("y = " + localPoint.y);
-                            Logger.LogWarning("z = " + localPoint.z);
-                            Logger.LogWarning("===================");
-                        }
-                    }
-                }
-
-                bool hasArmArmor = false;
                 float KE = 1f;
                 BulletClass ammo = null;
+                AmmoTemplate ammoTemp = null;
                 if (damageInfo.DamageType == EDamageType.Melee)
                 {
                     Weapon weap = damageInfo.Weapon as Weapon;
-                    bool isBayonet = !damageInfo.Player.IsAI && WeaponProperties.HasBayonet && weap.WeapClass != "Knife" ? true : false;
+                    bool isBayonet = !damageInfo.Player.IsAI && WeaponStats.HasBayonet && weap.WeapClass != "Knife" ? true : false;
                     float meleeDamage = isBayonet ? damageInfo.Damage : damageInfo.Damage * 2f;
                     KE = meleeDamage * 50f;
                 }
-                else 
+                else
                 {
-                    AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
+                    ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
                     ammo = new BulletClass("newAmmo", ammoTemp);
                     KE = (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f;
                 }
 
                 if (armor != null && damageInfo.DamageType != EDamageType.Melee)
                 {
-                    bool hitSecondaryArmor = false;
-                    bool hasBypassedArmor = false;
-                    bool hasExtraArmor = GearProperties.HasExtraArmor(armor.Item);
-                    bool hasSideArmor = GearProperties.HasSideArmor(armor.Item);
-                    bool hasStomachArmor = GearProperties.HasStomachArmor(armor.Item);
-                    bool hasNeckArmor = GearProperties.HasNeckArmor(armor.Item);
-                    hasArmArmor = armor.Template.ArmorZone.Contains(EBodyPart.LeftArm) || armor.Template.ArmorZone.Contains(EBodyPart.RightArm);
-                    bool shouldHaveExtraSides = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(armor.ArmorClass).Resistance > 50 ? true : false;
+                    Logger.LogWarning("armor not null");
 
-                    if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis || hitPart == HitBox.LeftForearm || hitPart == HitBox.RightForearm || hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightUpperArm)
+                    if (damageInfo.Blunt && GearStats.CanSpall(armor.Item) && (bodyPartType == EBodyPart.Chest || bodyPartType == EBodyPart.Stomach))
                     {
-                        BallisticsController.GetHitArmorZone(Logger, armor, hitPart, localPoint, hitOrientation, hasSideArmor, hasStomachArmor, hasNeckArmor, hasExtraArmor, shouldHaveExtraSides, hasArmArmor, ref hasBypassedArmor, ref hitSecondaryArmor);
-                    }
-
-                    if (damageInfo.Blunt && GearProperties.CanSpall(armor.Item) && (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso) && !hasBypassedArmor && !hitSecondaryArmor)
-                    {
-                        SetArmorStats(armor);
+                        Logger.LogWarning("can do spalling");
                         damageInfo.BleedBlock = false;
                         bool isMetalArmor = armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel || armor.Template.ArmorMaterial == EArmorMaterial.Titan ? true : false;
                         float bluntDamage = damageInfo.Damage;
@@ -885,14 +497,14 @@ namespace RealismMod
                         float lightBleedChance = damageInfo.LightBleedingDelta;
                         float heavyBleedChance = damageInfo.HeavyBleedingDelta;
                         float ricochetChance = ammo.RicochetChance * speedFactor;
-                        float spallReduction = GearProperties.SpallReduction(armor.Item);
+                        float spallReduction = GearStats.SpallReduction(armor.Item);
                         float armorDamageActual = ammo.ArmorDamage * speedFactor;
                         float penPower = damageInfo.PenetrationPower;
 
-                        float duraPercent = currentDura / maxDura;
-                        float armorFactor = armorClass * (Mathf.Min(1f, duraPercent * 2f));
+                        float duraPercent = armor.Repairable.Durability / armor.Repairable.TemplateDurability;
+                        float armorFactor = armor.ArmorClass * 10f * (Mathf.Min(1f, duraPercent * 2f));
                         float penDuraFactoredClass = Mathf.Max(1f, armorFactor - (penPower / 1.8f));
-                        float penFactoredClass = Mathf.Max(1f, armorClass - (penPower / 1.8f));
+                        float penFactoredClass = Mathf.Max(1f, (armor.ArmorClass * 10f) - (penPower / 1.8f));
                         float maxPotentialDuraDamage = KE / penDuraFactoredClass;
                         float maxPotentialBluntDamage = KE / penFactoredClass;
 
@@ -903,7 +515,7 @@ namespace RealismMod
                         float splitSpallingDmg = factoredSpallingDamage / bodyParts.Count;
 
 
-                        if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
+                        if (Plugin.EnableBallisticsLogging.Value)
                         {
                             Logger.LogWarning("===========SPALLING=============== ");
                             Logger.LogWarning("Spall Reduction " + spallReduction);
@@ -926,23 +538,25 @@ namespace RealismMod
                             float damage = splitSpallingDmg;
                             float bleedFactor = GetBleedFactor(part);
 
-                            if (part == EBodyPart.Head && (hitOrientation == EHitOrientation.LeftSideHit || hitOrientation == EHitOrientation.RightSideHit))
+                            if (part == EBodyPart.Head)
                             {
-                                continue;
-                            }
-                            else if (part == EBodyPart.Head) 
-                            {
-                                damage = hasNeckArmor == true ? Mathf.Min(10, splitSpallingDmg * 0.5f) : Mathf.Min(10, splitSpallingDmg);
-                                bleedFactor = hasNeckArmor == true ? 0f : bleedFactor;
+                                damage = hasFaceProtection == true ? Mathf.Min(10, splitSpallingDmg * 0.5f) : Mathf.Min(10, splitSpallingDmg);
+                                bleedFactor = hasFaceProtection == true ? 0f : bleedFactor;
                             }
 
                             if ((part == EBodyPart.LeftArm || part == EBodyPart.RightArm) && hasArmArmor)
                             {
                                 damage *= 0.5f;
-                                bleedFactor *= 0.5f;
+                                bleedFactor *= 0.25f;
                             }
 
-                            if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
+                            if ((part == EBodyPart.LeftLeg || part == EBodyPart.RightLeg) && hasLegProtection)
+                            {
+                                damage *= 0.5f;
+                                bleedFactor *= 0.25f;
+                            }
+
+                            if (Plugin.EnableBallisticsLogging.Value)
                             {
                                 Logger.LogWarning("Part Hit " + part);
                                 Logger.LogWarning("Damage " + damage);
@@ -957,10 +571,13 @@ namespace RealismMod
 
                 float hitPartHP = __instance.ActiveHealthController.GetBodyPartHealth(bodyPartType).Current;
                 float toBeHP = hitPartHP - damageInfo.Damage;
-                bool canDoKnockdown =  !__instance.IsInPronePose && ((!__instance.IsYourPlayer && Plugin.ClientConfig.CanFellBot.Value) || (__instance.IsYourPlayer && Plugin.ClientConfig.CanFellPlayer.Value));
-                bool canDoDisarm = ((!__instance.IsYourPlayer && Plugin.ClientConfig.CanDisarmBot.Value) || (__instance.IsYourPlayer && Plugin.ClientConfig.CanDisarmPlayer.Value));
+                bool canDoKnockdown = !__instance.IsInPronePose && ((!__instance.IsYourPlayer && Plugin.CanFellBot.Value) || (__instance.IsYourPlayer && Plugin.CanFellPlayer.Value));
+                bool canDoDisarm = ((!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value) || (__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value));
+                bool hitForearm = damageInfo.BodyPartColliderType == EBodyPartColliderType.LeftForearm || damageInfo.BodyPartColliderType == EBodyPartColliderType.RightForearm;
+                bool hitCalf = damageInfo.BodyPartColliderType == EBodyPartColliderType.LeftCalf || damageInfo.BodyPartColliderType == EBodyPartColliderType.RightCalf;
+                bool hitThigh= damageInfo.BodyPartColliderType == EBodyPartColliderType.LeftThigh || damageInfo.BodyPartColliderType == EBodyPartColliderType.RightThigh;
 
-                if ((hitUpperArm || hitForearm) && toBeHP <= 0f && canDoDisarm)
+                if (hitForearm && toBeHP <= 0f && canDoDisarm)
                 {
                     TryDoDisarm(__instance, KE, hasArmArmor, hitForearm);
                 }
@@ -969,11 +586,12 @@ namespace RealismMod
                 bool doHeadshotKnockdown = bodyPartType == EBodyPart.Head && toBeHP > 0f && damageInfo.Damage >= 1;
                 bool hasBonusChance = hitCalf || bodyPartType == EBodyPart.Head;
 
-                if (canDoKnockdown && (doLegKnockdown || doHeadshotKnockdown)) 
+                if (canDoKnockdown && (doLegKnockdown || doHeadshotKnockdown))
                 {
-                    TryDoKnockdown(__instance, KE, hasBonusChance, __instance.IsYourPlayer);    
+                    TryDoKnockdown(__instance, KE, hasBonusChance, __instance.IsYourPlayer);
                 }
 
+                ammo = null;
             }
         }
     }
@@ -981,72 +599,18 @@ namespace RealismMod
 
     public class SetPenetrationStatusPatch : ModulePatch
     {
-        private static FieldInfo rayCastField;
-
         protected override MethodBase GetTargetMethod()
         {
-            rayCastField = AccessTools.Field(typeof(ShotClass), "raycastHit_0");
             return typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.SetPenetrationStatus), BindingFlags.Public | BindingFlags.Instance);
         }
 
         [PatchPrefix]
         private static bool Prefix(ShotClass shot, ArmorComponent __instance)
         {
-            bool isSteelBodyArmor = __instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !__instance.Template.ArmorZone.Contains(EBodyPart.Head);
+            bool isSteelBodyArmor = __instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !__instance.Template.ArmorColliders.Any(x => BallisticsController.HeadCollidors.Contains(x));
             if (__instance.Repairable.Durability <= 0f && !isSteelBodyArmor)
             {
                 return false;
-            }
-
-            bool hitSecondaryArmor = false;
-            bool hasBypassedArmor = false;
-
-            bool isPlayer = __instance.Item.Owner.ID.StartsWith("pmc") || __instance.Item.Owner.ID.StartsWith("scav");
-            if (Plugin.ClientConfig.EnableArmorHitZones.Value && ((isPlayer && Plugin.ClientConfig.EnablePlayerArmorZones.Value) || !isPlayer)) 
-            {
-                bool hasExtraArmor = GearProperties.HasExtraArmor(__instance.Item);
-                bool hasSideArmor = GearProperties.HasSideArmor(__instance.Item);
-                bool hasStomachArmor = GearProperties.HasStomachArmor(__instance.Item);
-                bool hasNeckArmor = GearProperties.HasNeckArmor(__instance.Item);
-                bool shouldHaveExtraSides = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance > 50 ? true : false;
-                bool hasArmArmor = __instance.Template.ArmorZone.Contains(EBodyPart.LeftArm) || __instance.Template.ArmorZone.Contains(EBodyPart.RightArm);
-
-                RaycastHit raycast = (RaycastHit)rayCastField.GetValue(shot);
-                Collider col = raycast.collider;
-                Vector3 localPoint = col.transform.InverseTransformPoint(raycast.point);
-*//*                Vector3 normalizedPoint = localPoint.normalized;*//*
-                Vector3 hitNormal = raycast.normal;
-                string hitPart = shot.HittedBallisticCollider.name;
-
-                EHitOrientation hitOrientation = EHitOrientation.UnknownOrientation;
-
-                if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis)
-                {
-                    hitOrientation = BallisticsController.GetHitOrientation(hitNormal, col.transform, Logger);
-                }
-
-                if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis || hitPart == HitBox.LeftForearm || hitPart == HitBox.RightForearm || hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightUpperArm) 
-                {
-                    BallisticsController.GetHitArmorZone(Logger, __instance, hitPart, localPoint, hitOrientation, hasSideArmor, hasStomachArmor, hasNeckArmor, hasExtraArmor, shouldHaveExtraSides, hasArmArmor, ref hasBypassedArmor, ref hitSecondaryArmor);
-                }
-
-                if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
-                {
-                    Logger.LogWarning("=============SetPenStatus: Hit Zone ===============");
-                    Logger.LogWarning("collider = " + shot.HittedBallisticCollider.name);
-                    Logger.LogWarning("orientation = " + hitOrientation);
-                    Logger.LogWarning("has bypassed armor = " + hasBypassedArmor);
-                    Logger.LogWarning("has secondary armor = " + hitSecondaryArmor);
-                    Logger.LogWarning("hit x = " + localPoint.x);
-                    Logger.LogWarning("hit y = " + localPoint.y);
-                    Logger.LogWarning("hit z = " + localPoint.z);
-                    Logger.LogWarning("============================");
-                }
-
-                if (hasBypassedArmor == true)
-                {
-                    return false;
-                }
             }
 
             float penetrationPower = shot.PenetrationPower;
@@ -1060,20 +624,19 @@ namespace RealismMod
             {
                 armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 1.8f);
             }
-            else 
+            else
             {
                 armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 1.15f);
             }
 
             float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
             float secondaryArmorResist = armorResist <= 50 ? armorResist : Mathf.Clamp(armorResist - 40f, 35f, 45f);
-            armorResist = hitSecondaryArmor ? secondaryArmorResist : armorResist;
             float armorFactor = (121f - 5000f / (45f + armorDuraPercent * 2f)) * armorResist * 0.01f;
             if (((armorFactor >= penetrationPower + 15f) ? 0f : ((armorFactor >= penetrationPower) ? (0.4f * (armorFactor - penetrationPower - 15f) * (armorFactor - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * armorFactor - penetrationPower)))) - shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f < 0f)
             {
                 shot.BlockedBy = __instance.Item.Id;
                 Debug.Log(">>> Shot blocked by armor piece");
-                if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
+                if (Plugin.EnableBallisticsLogging.Value)
                 {
                     Logger.LogWarning("===========PEN STATUS=============== ");
                     Logger.LogWarning("Blocked");
@@ -1082,7 +645,7 @@ namespace RealismMod
             }
             else
             {
-                if (Plugin.ClientConfig.EnableBallisticsLogging.Value == true)
+                if (Plugin.EnableBallisticsLogging.Value == true)
                 {
                     Logger.LogWarning("============PEN STATUS============== ");
                     Logger.LogWarning("Penetrated");
@@ -1108,16 +671,16 @@ namespace RealismMod
             float dist = CameraClass.Instance.Distance(pos);
             string audioClip = rndNum == 0 ? "ric_1.wav" : rndNum == 1 ? "ric_2.wav" : "ric_3.wav";
 
-            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 40, 4.25f, EOcclusionTest.Regular);
+            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 40, 4.25f, EOcclusionTest.Regular);
         }
 
         private static void playArmorHitSound(EArmorMaterial mat, Vector3 pos, bool isHelm)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 0.45f * Plugin.ClientConfig.ArmorCloseHitSoundMulti.Value;
-            float volDist = 4f * Plugin.ClientConfig.ArmorFarHitSoundMulti.Value;
+            float volClose = 0.45f * Plugin.ArmorCloseHitSoundMulti.Value;
+            float volDist = 4f * Plugin.ArmorFarHitSoundMulti.Value;
             float distThreshold = 30f;
-            
+
             if (mat == EArmorMaterial.Aramid)
             {
                 string audioClip = "aramid_1.wav";
@@ -1137,7 +700,7 @@ namespace RealismMod
                     }
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
             }
             else if (mat == EArmorMaterial.Ceramic)
             {
@@ -1151,7 +714,7 @@ namespace RealismMod
                     audioClip = rndNum == 0 ? "ceramic_1.wav" : rndNum == 1 ? "ceramic_2.wav" : "ceramic_3.wav";
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
             }
             else if (mat == EArmorMaterial.UHMWPE || mat == EArmorMaterial.Combined)
             {
@@ -1165,7 +728,7 @@ namespace RealismMod
                     audioClip = rndNum == 0 ? "uhmwpe_1.wav" : rndNum == 1 ? "uhmwpe_2.wav" : "uhmwpe_3.wav";
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
             }
             else if (mat == EArmorMaterial.Titan || mat == EArmorMaterial.ArmoredSteel)
             {
@@ -1179,7 +742,7 @@ namespace RealismMod
                     audioClip = rndNum == 0 ? "metal_1.wav" : rndNum == 1 ? "metal_2.wav" : "metal_3.wav";
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist * 0.5f : volClose * 0.75f, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist * 0.5f : volClose * 0.75f, EOcclusionTest.Regular);
             }
             else if (mat == EArmorMaterial.Glass)
             {
@@ -1192,7 +755,7 @@ namespace RealismMod
                 {
                     audioClip = rndNum == 0 ? "glass_1.wav" : rndNum == 1 ? "glass_2.wav" : "glass_3.wav";
                 }
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
             }
             else
             {
@@ -1205,14 +768,22 @@ namespace RealismMod
                 {
                     audioClip = rndNum == 0 ? "impact_1.wav" : rndNum == 1 ? "impact_2.wav" : "impact_3.wav";
                 }
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.ClientConfig.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
             }
         }
 
         [PatchPrefix]
-        private static bool Prefix(ArmorComponent __instance, ref DamageInfo damageInfo, bool damageInfoIsLocal, ref float __result)
+        private static bool Prefix(ArmorComponent __instance, ref DamageInfo damageInfo, ref float __result, EBodyPartColliderType colliderType, EArmorPlateCollider armorPlateCollider, bool damageInfoIsLocal, List<ArmorComponent> armorComponents)
         {
+            Logger.LogWarning("1");
             EDamageType damageType = damageInfo.DamageType;
+            bool isHead = __instance.Template.ArmorColliders.Any(x => BallisticsController.HeadCollidors.Contains(x));
+            Logger.LogWarning("2");
+            bool isSteelBodyArmor = __instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !isHead;
+            bool roundPenetrated = damageInfo.BlockedBy != __instance.Item.Id && damageInfo.DeflectedBy != __instance.Item.Id;
+            float speedFactor = 1f;
+            float armorDamageActual = 1f;
+            float KE = 1f;
 
             if (!damageType.IsWeaponInduced() && damageType != EDamageType.GrenadeFragment)
             {
@@ -1221,6 +792,7 @@ namespace RealismMod
             }
 
             Player player = (damageInfo.Player != null) ? Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(damageInfo.Player.iPlayer.ProfileId) : null;
+            Logger.LogWarning("3");
             if (player != null)
             {
                 __instance.TryShatter(player, damageInfoIsLocal);
@@ -1237,100 +809,52 @@ namespace RealismMod
                 return true;
             }
 
-            bool hitSecondaryArmor = false;
-            bool hasBypassedArmor = false;
-
             bool isPlayer = __instance.Item.Owner.ID.StartsWith("pmc") || __instance.Item.Owner.ID.StartsWith("scav");
-            if (Plugin.ClientConfig.EnableArmorHitZones.Value && ((isPlayer && Plugin.ClientConfig.EnablePlayerArmorZones.Value) || !isPlayer)) 
+            Logger.LogWarning("4");
+            if (!isPlayer && Plugin.EnableHitSounds.Value) 
             {
-                string hitPart = damageInfo.HittedBallisticCollider.name;
-                Collider col = damageInfo.HitCollider;
-                Vector3 localPoint = col.transform.InverseTransformPoint(damageInfo.HitPoint);
-      *//*          Vector3 normalizedPoint = localPoint.normalized;*//*
-                Vector3 hitNormal = damageInfo.HitNormal;
-
-                bool hasExtraArmor = GearProperties.HasExtraArmor(__instance.Item);
-                bool hasSideArmor = GearProperties.HasSideArmor(__instance.Item);
-                bool hasStomachArmor = GearProperties.HasStomachArmor(__instance.Item);
-                bool hasNeckArmor = GearProperties.HasNeckArmor(__instance.Item);
-                bool shouldHaveExtraSides = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance > 50 ? true : false;
-                bool hasArmArmor = __instance.Template.ArmorZone.Contains(EBodyPart.LeftArm) || __instance.Template.ArmorZone.Contains(EBodyPart.RightArm);
-
-                EHitOrientation hitOrientation = EHitOrientation.UnknownOrientation;
-                if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis)
-                {
-                    hitOrientation = BallisticsController.GetHitOrientation(hitNormal, col.transform, Logger);
-                }
-
-                if (hitPart == HitBox.UpperTorso || hitPart == HitBox.LowerTorso || hitPart == HitBox.Pelvis || hitPart == HitBox.LeftForearm || hitPart == HitBox.RightForearm || hitPart == HitBox.LeftUpperArm || hitPart == HitBox.RightUpperArm)
-                {
-                    BallisticsController.GetHitArmorZone(Logger, __instance, hitPart, localPoint, hitOrientation, hasSideArmor, hasStomachArmor, hasNeckArmor, hasExtraArmor, shouldHaveExtraSides, hasArmArmor, ref hasBypassedArmor, ref hitSecondaryArmor);
-                }
-
-     
-                if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
-                {
-                    Logger.LogWarning("============ApplyDamagePatch: Hit Zone ============== ");
-                    Logger.LogWarning("collider = " + hitPart);
-                    Logger.LogWarning("Has Bypassed Armor = " + hasBypassedArmor);
-                    Logger.LogWarning("Has Hit Secondary Armor = " + hitSecondaryArmor);
-                    Logger.LogWarning("hit x = " + localPoint.x);
-                    Logger.LogWarning("hit y = " + localPoint.y);
-                    Logger.LogWarning("hit z = " + localPoint.z);
-                    Logger.LogWarning("========================== ");
-                }
-
                 System.Random rnd = new System.Random();
                 rndNum = rnd.Next(0, 2);
-
                 if (damageInfo.DeflectedBy == __instance.Item.Id)
                 {
-                    playRicochetSound(col.transform.position);
+                    playRicochetSound(damageInfo.HittedBallisticCollider.transform.position);
                 }
-
-                if (hasBypassedArmor)
+                else 
                 {
-                    __result = 0f;
-                    return false;
-                }
-                else if (!isPlayer && Plugin.ClientConfig.EnableHitSounds.Value)
-                {
-                    playArmorHitSound(__instance.Template.ArmorMaterial, col.transform.position, __instance.Template.ArmorZone.Contains(EBodyPart.Head));
+                    playArmorHitSound(__instance.Template.ArmorMaterial, damageInfo.HittedBallisticCollider.transform.position, isHead);
                 }
             }
-
-            float speedFactor = 1f;
-            float armorDamageActual = 1f;
-            float KE = 1f;
+            Logger.LogWarning("5");
 
             BulletClass ammo = null;
+            AmmoTemplate ammoTemp = null;
             if (damageType != EDamageType.Melee)
             {
-                AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
+                ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
                 ammo = new BulletClass("newAmmo", ammoTemp);
                 speedFactor = ammo.GetBulletSpeed / damageInfo.ArmorDamage;
                 armorDamageActual = ammo.ArmorDamage * speedFactor;
                 KE = (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f;
+                Logger.LogWarning("6");
             }
-            else 
+            else
             {
                 Weapon weap = damageInfo.Weapon as Weapon;
-                bool isBayonet = !damageInfo.Player.IsAI && WeaponProperties.HasBayonet && weap.WeapClass != "Knife"? true : false;
+                bool isBayonet = !damageInfo.Player.IsAI && WeaponStats.HasBayonet && weap.WeapClass != "Knife" ? true : false;
                 armorDamageActual = damageInfo.ArmorDamage;
                 float meleeDamage = isBayonet ? damageInfo.Damage : damageInfo.Damage * 2f;
                 KE = meleeDamage * 50f;
             }
 
-            float bluntThrput = hitSecondaryArmor == true ? __instance.Template.BluntThroughput * 1.15f : __instance.Template.BluntThroughput;
+            float bluntThrput = __instance.Template.BluntThroughput;
             float penPower = damageInfo.PenetrationPower;
             float duraPercent = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability;
             float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
             float secondaryArmorResist = armorResist <= 50 ? armorResist : Mathf.Clamp(armorResist - 40f, 35f, 45f);
-            armorResist = hitSecondaryArmor == true ? secondaryArmorResist : armorResist;
             float armorDestructibility = Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
-
+            Logger.LogWarning("7");
             float armorFactor = armorResist * (Mathf.Min(1f, duraPercent * 1.65f));
-            *//*          float throughputDuraFactored = Mathf.Min(1f, bluntThrput * (1f + ((duraPercent - 1f) * -1f)));*//*
+            float throughputDuraFactored = Mathf.Min(1f, bluntThrput * (1f + ((duraPercent - 1f) * -1f)));
             float penDuraFactoredClass = Mathf.Max(1f, armorFactor - (penPower / 1.8f));
             float penFactoredClass = Mathf.Max(1f, armorResist - (penPower / 1.8f));
             float maxPotentialDuraDamage = KE / penDuraFactoredClass;
@@ -1345,12 +869,12 @@ namespace RealismMod
                 damageInfo.ArmorDamage *= 0.5f * armorStatReductionFactor;
                 damageInfo.PenetrationPower *= 0.5f * armorStatReductionFactor;
             }
-
-            if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !__instance.Template.ArmorZone.Contains(EBodyPart.Head))
+            Logger.LogWarning("8");
+            if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !isHead)
             {
                 throughputFactoredDamage = Math.Min(damageInfo.Damage, maxPotentialBluntDamage * bluntThrput) * (armorDamageActual <= 2f ? 0.1f : 1f);
             }
-            if ((__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel || __instance.Template.ArmorMaterial == EArmorMaterial.Titan) && __instance.Template.ArmorZone.Contains(EBodyPart.Head))
+            if ((__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel || __instance.Template.ArmorMaterial == EArmorMaterial.Titan) && isHead)
             {
                 armorDestructibility = 0.1f;
             }
@@ -1358,18 +882,18 @@ namespace RealismMod
             float durabilityLoss = 1f;
             if (damageType != EDamageType.Melee)
             {
-                durabilityLoss = (maxPotentialBluntDamage / 24f) * Mathf.Clamp(ammo.BulletDiameterMilimeters / 7.62f, 1f, 2f) * armorDamageActual * armorDestructibility * (hitSecondaryArmor ? 0.25f : 1f);
+                durabilityLoss = (maxPotentialBluntDamage / 24f) * Mathf.Clamp(ammo.BulletDiameterMilimeters / 7.62f, 1f, 2f) * armorDamageActual * armorDestructibility;
             }
-            else 
+            else
             {
-                durabilityLoss = (maxPotentialBluntDamage / 24f) * Mathf.Clamp(9f / 7.62f, 1f, 2f) * armorDamageActual * armorDestructibility * (hitSecondaryArmor ? 0.25f : 1f);
+                durabilityLoss = (maxPotentialBluntDamage / 24f) * Mathf.Clamp(9f / 7.62f, 1f, 2f) * armorDamageActual * armorDestructibility;
             }
 
-            if (damageType == EDamageType.Melee) 
+            if (damageType == EDamageType.Melee)
             {
-                if (damageInfo.PenetrationPower > armorFactor || hasBypassedArmor)
+                if (damageInfo.PenetrationPower > armorFactor)
                 {
-                    if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
+                    if (Plugin.EnableBallisticsLogging.Value)
                     {
                         Logger.LogWarning("Melee Penetrated");
                     }
@@ -1378,15 +902,15 @@ namespace RealismMod
                 }
                 else
                 {
-                    if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
+                    if (Plugin.EnableBallisticsLogging.Value)
                     {
                         Logger.LogWarning("Melee Blocked");
                     }
-                    if (!__instance.Template.ArmorZone.Contains(EBodyPart.Head))
+                    if (!isHead)
                     {
                         damageInfo.Damage = throughputFactoredDamage + (damageInfo.Damage / 10f);
                     }
-                    else 
+                    else
                     {
                         damageInfo.Damage = throughputFactoredDamage;
                     }
@@ -1397,29 +921,36 @@ namespace RealismMod
 
                 }
             }
-            else if (!(damageInfo.BlockedBy == __instance.Item.Id) && !(damageInfo.DeflectedBy == __instance.Item.Id) && !hasBypassedArmor)
+            else if (roundPenetrated)
             {
                 durabilityLoss *= (1 - (penPower / 100f));
                 damageInfo.Damage *= armorStatReductionFactor;
                 damageInfo.PenetrationPower *= armorStatReductionFactor;
             }
-            else if(!hasBypassedArmor)
+            else
             {
                 damageInfo.Damage = throughputFactoredDamage;
                 damageInfo.StaminaBurnRate = (throughputFactoredDamage / 100f) * 2f;
             }
 
-            if ((damageInfo.BlockedBy == __instance.Item.Id || damageInfo.DeflectedBy == __instance.Item.Id) && !hasBypassedArmor) 
+            if (!roundPenetrated)
             {
-                damageInfo.HeavyBleedingDelta =  0f;
+                damageInfo.HeavyBleedingDelta = 0f;
                 damageInfo.LightBleedingDelta = 0f;
             }
-            
+            Logger.LogWarning("9");
             durabilityLoss = Math.Max(durabilityLoss, 0.05f);
-            __instance.ApplyDurabilityDamage(durabilityLoss);
+            __instance.ApplyDurabilityDamage(durabilityLoss, armorComponents);
             __result = durabilityLoss;
 
-            if (Plugin.ClientConfig.EnableBallisticsLogging.Value)
+            //BSG nullifies all damage on plate collidor hit for both penetration and blunt, to account for double hits
+            //I do not believe this is necessary for blunt damge
+            if (armorPlateCollider != (EArmorPlateCollider)0 && roundPenetrated)
+            {
+                damageInfo.Damage = 0f;
+            }
+            Logger.LogWarning("10");
+            if (Plugin.EnableBallisticsLogging.Value)
             {
                 Logger.LogWarning("===========ARMOR DAMAGE=============== ");
                 Logger.LogWarning("KE " + KE);
@@ -1436,6 +967,8 @@ namespace RealismMod
                 Logger.LogWarning("Damage " + damageInfo.Damage);
                 Logger.LogWarning("========================== ");
             }
+            ammo = null;
+            ammoTemp = null;
             return false;
         }
 
@@ -1445,7 +978,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            var result = typeof(EFT.Ballistics.BallisticsCalculator).GetMethod("CreateShot", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var result = typeof(EFT.Ballistics.BallisticsCalculator).GetMethod("CreateShot", BindingFlags.Instance | BindingFlags.Public | BindingFlags.Public);
 
             return result;
         }
@@ -1453,19 +986,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, string player, Item weapon, ref ShotClass __result, float speedFactor, int fragmentIndex = 0)
         {
-            
-   *//*         Logger.LogWarning("!!!!!!!!!!! Shot Created!! !!!!!!!!!!!!!!");
-            Logger.LogWarning("========================STARTING BULLET VALUES============================");
-            Logger.LogWarning("Round ID = " + ammo.TemplateId);
-            Logger.LogWarning("Round Damage = " + ammo.Damage);
-            Logger.LogWarning("Round Penetration Power = " + ammo.PenetrationPower);
-            Logger.LogWarning("Round Penetration Chance = " + ammo.PenetrationChance);
-            Logger.LogWarning("Round Frag Chance = " + ammo.FragmentationChance);
-            Logger.LogWarning("Round Intial Speed = " + ammo.InitialSpeed);
-            Logger.LogWarning("Round SPEED FACTOR = " + speedFactor);
-            Logger.LogWarning("Round BC = " + ammo.BallisticCoeficient);
-            Logger.LogWarning("==============================================================");*//*
-
             int randomNum = UnityEngine.Random.Range(0, 512);
             float velocityFactored = ammo.InitialSpeed * speedFactor;
             float penChanceFactored = ammo.PenetrationChance * speedFactor;
@@ -1473,16 +993,6 @@ namespace RealismMod
             float fragchanceFactored = Mathf.Max(ammo.FragmentationChance * speedFactor, 0);
             float penPowerFactored = EFT.Ballistics.BallisticsCalculator.GetAmmoPenetrationPower(ammo, randomNum, __instance.Randoms) * speedFactor;
             float bcFactored = Mathf.Max(ammo.BallisticCoeficient * speedFactor, 0.01f);
-
-*//*            Logger.LogWarning("========================AFTER SPEED FACTOR============================");
-            Logger.LogWarning("Round ID = " + ammo.TemplateId);
-            Logger.LogWarning("Round Damage = " + damageFactored);
-            Logger.LogWarning("Round Penetration Power = " + penPowerFactored);
-            Logger.LogWarning("Round Penetration Chance = " + penChanceFactored);
-            Logger.LogWarning("Round Frag Chance = " + fragchanceFactored);
-            Logger.LogWarning("Round Factored Speed = " + velocityFactored);
-            Logger.LogWarning("Round Factored BC = " + bcFactored);
-            Logger.LogWarning("==============================================================");*//*
 
             __result = ShotClass.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
             return false;
@@ -1502,7 +1012,7 @@ namespace RealismMod
             corpseField = AccessTools.Field(typeof(Player), "Corpse");
             corpseAppliedForceField = AccessTools.Field(typeof(Player), "_corpseAppliedForce");
 
-            return typeof(Player).GetMethod("ApplyCorpseImpulse", BindingFlags.Instance | BindingFlags.NonPublic); ;
+            return typeof(Player).GetMethod("ApplyCorpseImpulse", BindingFlags.Instance | BindingFlags.Public); ;
         }
 
         [PatchPrefix]
@@ -1517,13 +1027,15 @@ namespace RealismMod
                 AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[lastDam.SourceId];
                 BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
                 float KE = ((0.5f * ammo.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
-                force = (-Mathf.Max(1f, KE / 1000f)) * Plugin.ClientConfig.RagdollForceModifier.Value;
+                force = (-Mathf.Max(1f, KE / 1000f)) * Plugin.RagdollForceModifier.Value;
+                ammo = null;
+                ammoTemp = null;
             }
             else if (lastDam.DamageType == EDamageType.Explosion)
             {
                 force = 150f;
             }
-            else 
+            else
             {
                 force = 5f;
             }
@@ -1534,24 +1046,4 @@ namespace RealismMod
             return false;
         }
     }
-
-    public class RagdollPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            var result = typeof(RagdollClass).GetMethod("method_8", BindingFlags.Instance | BindingFlags.NonPublic);
-
-            return result;
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(RagdollClass __instance, RigidbodySpawner ___rigidbodySpawner_1)
-        {
-            Logger.LogWarning("mass " + ___rigidbodySpawner_1.Rigidbody.mass);
-            Logger.LogWarning("drag " + ___rigidbodySpawner_1.Rigidbody.mass);
-
-            ___rigidbodySpawner_1.Rigidbody.mass = 100f;
-            return true;
-        }
-    }*/
 }

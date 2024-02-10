@@ -1,4 +1,4 @@
-﻿/*using Aki.Reflection.Patching;
+﻿using Aki.Reflection.Patching;
 using Aki.Reflection.Utils;
 using AmplifyMotion;
 using BepInEx.Logging;
@@ -24,10 +24,10 @@ using static CW2.Animations.PhysicsSimulator.Val;
 using static EFT.Player;
 using static RealismMod.Attributes;
 using static Systems.Effects.Effects;
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2234;
-using ExistanceClass = GClass2275;
-using StamController = GClass603;
-using MedkitTemplate = GInterface249;
+using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2411;
+using ExistanceClass = GClass2452;
+using StamController = GClass679;
+using MedkitTemplate = GInterface296;
 
 namespace RealismMod
 {
@@ -38,13 +38,13 @@ namespace RealismMod
             return typeof(MedKitComponent).GetConstructor(new Type[] { typeof(Item), typeof(MedkitTemplate) });
         }
 
-        private static string getHBTypeString(string type) 
+        private static string getHBTypeString(string type)
         {
-            switch (type) 
+            switch (type)
             {
                 case "trnqt":
                     return "TOURNIQUET";
-                case "surg": 
+                case "surg":
                     return "SURGICAL";
                 case "combo":
                     return "TOURNIQUET + CHEST SEAL";
@@ -82,7 +82,7 @@ namespace RealismMod
                 string hBleedType = MedProperties.HBleedHealType(item);
                 float hpPerTick = medType != "surg" ? -MedProperties.HpPerTick(item) : MedProperties.HpPerTick(item);
 
-                if (hBleedType != "none") 
+                if (hBleedType != "none")
                 {
                     List<ItemAttributeClass> hbAtt = item.Attributes;
                     ItemAttributeClass hbAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.HBleedType);
@@ -111,7 +111,7 @@ namespace RealismMod
                         trnqtClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                         trqntAtt.Add(trnqtClass);
                     }
-                    else if(hpPerTick != 0)
+                    else if (hpPerTick != 0)
                     {
                         List<ItemAttributeClass> hpTickAtt = item.Attributes;
                         ItemAttributeClass hpAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.LimbHpPerTick);
@@ -157,25 +157,25 @@ namespace RealismMod
             bool canUse = true;
             if (__instance.Player.IsYourPlayer && __instance.CanApplyItem(item, bodyPart))
             {
-                if (((medsClass = (item as MedsClass)) != null)) 
+                if (((medsClass = (item as MedsClass)) != null))
                 {
-                    if (Plugin.EnableLogging.Value) 
+                    if (Plugin.EnableLogging.Value)
                     {
                         Logger.LogWarning("ApplyItem Med");
                     }
 
-                    RealismHealthController.CanUseMedItem(Logger, __instance.Player, bodyPart, item, ref canUse);
+                    Plugin.RealHealthController.CanUseMedItem(__instance.Player, bodyPart, item, ref canUse);
                 }
-                if((foodClass = (item as FoodClass)) != null)
+                if ((foodClass = (item as FoodClass)) != null)
                 {
                     if (Plugin.EnableLogging.Value)
                     {
                         Logger.LogWarning("ApplyItem Food");
                     }
-           
-                    if (Plugin.GearBlocksEat.Value) 
+
+                    if (Plugin.GearBlocksEat.Value)
                     {
-                        RealismHealthController.CanConsume(Logger, __instance.Player, item, ref canUse);
+                        Plugin.RealHealthController.CanConsume(__instance.Player, item, ref canUse);
                     }
                 }
 
@@ -203,7 +203,7 @@ namespace RealismMod
             if (boundItem != null && (food = (boundItem as FoodClass)) != null)
             {
                 bool canUse = true;
-                RealismHealthController.CanConsume(Logger, __instance, boundItem, ref canUse);
+                Plugin.RealHealthController.CanConsume(__instance, boundItem, ref canUse);
                 if (Plugin.EnableLogging.Value)
                 {
                     Logger.LogWarning("qucik slot, can use = " + canUse);
@@ -227,9 +227,9 @@ namespace RealismMod
         private static BodyPartStateWrapper GetBodyPartStateWrapper(ActiveHealthController instance, EBodyPart bodyPart)
         {
 
-            PropertyInfo bodyPartStateProperty = typeof(ActiveHealthController).GetProperty("Dictionary_0", BindingFlags.Instance | BindingFlags.NonPublic);
+            PropertyInfo bodyPartStateProperty = typeof(ActiveHealthController).GetProperty("Dictionary_0", BindingFlags.Instance | BindingFlags.Public);
             var bodyPartStateDict = (IDictionary)bodyPartStateProperty.GetMethod.Invoke(instance, null);
-            
+
             object bodyPartStateInstance;
             if (bodyPartStateDict.Contains(bodyPart))
             {
@@ -250,10 +250,10 @@ namespace RealismMod
             BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);
             SkillManager skills = (SkillManager)AccessTools.Field(typeof(ActiveHealthController), "skillManager_0").GetValue(__instance);
             Action<EBodyPart, ValueStruct> bodyPartRestoredField = (Action<EBodyPart, ValueStruct>)AccessTools.Field(typeof(ActiveHealthController), "BodyPartRestoredEvent").GetValue(__instance);
-            MethodInfo syncSurgeryPackets = AccessTools.Method(typeof(ActiveHealthController), "method_39");
+            MethodInfo syncSurgeryPackets = AccessTools.Method(typeof(ActiveHealthController), "method_40");
             MethodInfo syncBodypartPackets = AccessTools.Method(typeof(ActiveHealthController), "method_32");
 
-            if (!bodyPartStateWrapper.IsDestroyed)  
+            if (!bodyPartStateWrapper.IsDestroyed)
             {
                 __result = false;
                 return false;
@@ -264,7 +264,7 @@ namespace RealismMod
             healthPenalty += (1f - healthPenalty) * skills.SurgeryReducePenalty;
             bodyPartStateWrapper.Health = new HealthValue(1f, Mathf.Max(1f, Mathf.Ceil(bodyPartStateWrapper.Health.Maximum * healthPenalty)), 0f);
             syncSurgeryPackets.Invoke(__instance, new object[] { bodyPart, EDamageType.Medicine });
-            syncBodypartPackets.Invoke(__instance, new object[] { bodyPart});
+            syncBodypartPackets.Invoke(__instance, new object[] { bodyPart });
             Action<EBodyPart, ValueStruct> bodyPartRestoredEvent = bodyPartRestoredField;
             if (bodyPartRestoredEvent != null)
             {
@@ -279,7 +279,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(StamController).GetMethod("method_21", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(StamController).GetMethod("method_21", BindingFlags.Instance | BindingFlags.Public);
 
         }
         [PatchPrefix]
@@ -290,7 +290,7 @@ namespace RealismMod
             Player player_0 = (Player)AccessTools.Field(typeof(StamController), "player_0").GetValue(__instance);
             float Single_0 = (float)AccessTools.Property(typeof(StamController), "Single_0").GetValue(__instance);
 
-            __result = baseValue * float_7[(int)epose_0] * Singleton<BackendConfigSettingsClass>.Instance.StaminaRestoration.GetAt(player_0.HealthController.Energy.Normalized) * (player_0.Skills.EnduranceBuffRestoration + 1f) * PlayerProperties.HealthStamRegenFactor / Single_0;
+            __result = baseValue * float_7[(int)epose_0] * Singleton<BackendConfigSettingsClass>.Instance.StaminaRestoration.GetAt(player_0.HealthController.Energy.Normalized) * (player_0.Skills.EnduranceBuffRestoration + 1f) * PlayerStats.HealthStamRegenFactor / Single_0;
             return false;
         }
     }
@@ -320,7 +320,7 @@ namespace RealismMod
                 Logger.LogWarning("Cancelling Meds");
             }
 
-            RealismHealthController.CancelEffects();
+            Plugin.RealHealthController.CancelEffects();
         }
     }
 
@@ -328,7 +328,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(FlyingBulletSoundPlayer).GetMethod("method_3", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(FlyingBulletSoundPlayer).GetMethod("method_3", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
@@ -339,7 +339,7 @@ namespace RealismMod
             float painkillerDuration = (float)Math.Round(10f * (1f + stressResist), 2);
             float negativeEffectDuration = (float)Math.Round(15f * (1f - stressResist), 2);
             float negativeEffectStrength = (float)Math.Round(0.9f * (1f - stressResist), 2);
-            RealismHealthController.AddAdrenaline(player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
+            Plugin.RealHealthController.AddAdrenaline(player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
         }
     }
 
@@ -359,7 +359,7 @@ namespace RealismMod
         {
             if (__instance.Player.IsYourPlayer)
             {
-                if (Plugin.EnableLogging.Value) 
+                if (Plugin.EnableLogging.Value)
                 {
                     Logger.LogWarning("=========");
                     Logger.LogWarning("part = " + bodyPart);
@@ -374,8 +374,8 @@ namespace RealismMod
                 {
                     float currentHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Current;
                     float maxHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;
-                    float remainingHp = currentHp / maxHp;  
-                   
+                    float remainingHp = currentHp / maxHp;
+
                     if (remainingHp <= 0.5f && (damageType == EDamageType.Dehydration || damageType == EDamageType.Exhaustion))
                     {
                         damage = 0;
@@ -383,56 +383,56 @@ namespace RealismMod
                     }
 
                     if (currentHp <= 10f && (bodyPart == EBodyPart.Head || bodyPart == EBodyPart.Chest) && (damageType == EDamageType.LightBleeding))
-                    { 
+                    {
                         damage = 0;
                         return;
                     }
 
                     float vitalitySkill = __instance.Player.Skills.VitalityBuffSurviobilityInc.Value;
                     float stressResist = __instance.Player.Skills.StressPain.Value;
-                    float delay = (float)Math.Round(15f * (1f - vitalitySkill), 2);
+                    int delay = (int)Math.Round(15f * (1f - vitalitySkill), 2);
                     float tickRate = (float)Math.Round(0.22f * (1f + vitalitySkill), 2);
 
                     if (damageType == EDamageType.Dehydration)
                     {
-                        DamageTracker.TotalDehydrationDamage += damage;
+                        Plugin.RealHealthController.DmgTracker.TotalDehydrationDamage += damage;
                         return;
                     }
                     if (damageType == EDamageType.Exhaustion)
                     {
-                        DamageTracker.TotalExhaustionDamage += damage;
+                        Plugin.RealHealthController.DmgTracker.TotalExhaustionDamage += damage;
                         return;
                     }
                     if ((damageType == EDamageType.Fall && damage <= 12f))
                     {
-                        RealismHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage, damageType);
+                        Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage, damageType);
                         return;
                     }
                     if (damageType == EDamageType.Barbed)
                     {
-                        RealismHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
+                        Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
                         return;
                     }
                     if (damageType == EDamageType.Blunt && damage <= 5f)
                     {
-                        RealismHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
+                        Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
                         return;
                     }
                     if (damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding)
                     {
-                        DamageTracker.UpdateDamage(damageType, bodyPart, damage);
+                        Plugin.RealHealthController.DmgTracker.UpdateDamage(damageType, bodyPart, damage);
                         return;
                     }
-                    if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= 16f) || (damageType == EDamageType.Blunt && damage >= 10f)) 
+                    if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= 16f) || (damageType == EDamageType.Blunt && damage >= 10f))
                     {
-                        RealismHealthController.RemoveEffectsOfType(EHealthEffectType.HealthRegen);
+                        Plugin.RealHealthController.RemoveEffectsOfType(EHealthEffectType.HealthRegen);
                     }
                     if (damageType == EDamageType.Bullet || damageType == EDamageType.Blunt || damageType == EDamageType.Melee || damageType == EDamageType.Sniper)
                     {
-                        float painkillerDuration = (float)Math.Round(20f * (1f + (stressResist /2)), 2);
+                        float painkillerDuration = (float)Math.Round(20f * (1f + (stressResist / 2)), 2);
                         float negativeEffectDuration = (float)Math.Round(25f * (1f - (stressResist / 2)), 2);
                         float negativeEffectStrength = (float)Math.Round(0.95f * (1f - (stressResist / 2)), 2);
-                        RealismHealthController.AddAdrenaline(__instance.Player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
+                        Plugin.RealHealthController.AddAdrenaline(__instance.Player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
 
                     }
                 }
@@ -446,7 +446,7 @@ namespace RealismMod
 
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<GInterface116>), typeof(int), typeof(bool) }, null);
+            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<GInterface130>), typeof(int), typeof(bool) }, null);
         }
 
         [PatchPrefix]
@@ -483,7 +483,7 @@ namespace RealismMod
                     Item tacrig = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
                     Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
 
-                    bool mouthBlocked = RealismHealthController.MouthIsBlocked(head, face, equipment);
+                    bool mouthBlocked = Plugin.RealHealthController.MouthIsBlocked(head, face, equipment);
 
                     bool hasBodyGear = vest != null || tacrig != null || bag != null;
                     bool hasHeadGear = head != null || ears != null || face != null;
@@ -500,17 +500,17 @@ namespace RealismMod
                     }
                     if (medType.Contains("pain"))
                     {
-                        float duration = MedProperties.PainKillerFullDuration(meds);
-                        float delay = MedProperties.Delay(meds);
-                        float wait = MedProperties.PainKillerWaitTime(meds);
-                        float intermittentDur = MedProperties.PainKillerTime(meds);
+                        int duration = MedProperties.PainKillerFullDuration(meds);
+                        int delay = MedProperties.Delay(meds);
+                        int wait = MedProperties.PainKillerWaitTime(meds);
+                        int intermittentDur = MedProperties.PainKillerTime(meds);
                         float tunnelVisionStr = MedProperties.TunnelVisionStrength(meds);
                         float painKillStr = MedProperties.Strength(meds);
                         PainKillerEffect painKillerEffect = new PainKillerEffect(duration, __instance, delay, wait, intermittentDur, tunnelVisionStr, painKillStr);
-                        RealismHealthController.AddCustomEffect(painKillerEffect, false);
+                        Plugin.RealHealthController.AddCustomEffect(painKillerEffect, false);
                         return true;
                     }
-                    if (medType.Contains("pills") || medType.Contains("drug")) 
+                    if (medType.Contains("pills") || medType.Contains("drug"))
                     {
                         return true;
                     }
@@ -522,19 +522,19 @@ namespace RealismMod
                     MedProperties.EffectTypes.TryGetValue("LightBleeding", out lightBleedType);
                     MedProperties.EffectTypes.TryGetValue("BrokenBone", out fractureType);
 
-                    foreach (EBodyPart part in RealismHealthController.BodyParts)
+                    foreach (EBodyPart part in Plugin.RealHealthController.BodyParts)
                     {
                         bool isHead = false;
                         bool isBody = false;
                         bool isNotLimb = false;
 
-                        RealismHealthController.GetBodyPartType(part, ref isNotLimb, ref isHead, ref isBody);
+                        Plugin.RealHealthController.GetBodyPartType(part, ref isNotLimb, ref isHead, ref isBody);
 
                         bool hasHeavyBleed = false;
                         bool hasLightBleed = false;
                         bool hasFracture = false;
 
-                        IEnumerable<IEffect> effects = RealismHealthController.GetInjuriesOnBodyPart(__instance, part, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
+                        IEnumerable<IEffect> effects = Plugin.RealHealthController.GetInjuriesOnBodyPart(__instance, part, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
 
                         float currentHp = __instance.ActiveHealthController.GetBodyPartHealth(part).Current;
                         float maxHp = __instance.ActiveHealthController.GetBodyPartHealth(part).Maximum;
@@ -559,7 +559,7 @@ namespace RealismMod
                             if (canHealHBleed && effect.Type == heavyBleedType)
                             {
                                 if (!isNotLimb)
-                                {                          
+                                {
                                     bodyPart = part;
                                     break;
                                 }
@@ -595,7 +595,7 @@ namespace RealismMod
                                 {
                                     continue;
                                 }
-              
+
                                 bodyPart = part;
                                 break;
                             }
@@ -612,7 +612,7 @@ namespace RealismMod
 
                                     continue;
                                 }
-      
+
                                 bodyPart = part;
                                 break;
                             }
@@ -624,23 +624,23 @@ namespace RealismMod
                         }
                     }
 
-                    if (bodyPart == EBodyPart.Common) 
+                    if (bodyPart == EBodyPart.Common)
                     {
-                        if (medType == "vas") 
+                        if (medType == "vas")
                         {
                             return true;
                         }
 
                         NotificationManagerClass.DisplayWarningNotification("No Suitable Bodypart Was Found For Healing, Gear May Be Covering The Wound.", EFT.Communications.ENotificationDurationType.Long);
-                        
-                         return false;
+
+                        return false;
                     }
                 }
 
                 //determine if any effects should be applied based on what is being healed
                 if (bodyPart != EBodyPart.Common)
                 {
-                   RealismHealthController.HandleHealthEffects(medType, meds, bodyPart, __instance, hBleedHealType, canHealHBleed, canHealLBleed, canHealFract);
+                    Plugin.RealHealthController.HandleHealthEffects(medType, meds, bodyPart, __instance, hBleedHealType, canHealHBleed, canHealLBleed, canHealFract);
                 }
             }
 
@@ -648,7 +648,7 @@ namespace RealismMod
         }
     }
 
-*//*    //THIS IS DOG SHIT, IT WILL AFFECT BOTS, UNUSED
+   /* //THIS IS DOG SHIT, IT WILL AFFECT BOTS, UNUSED
     public class EnergyRatePatch : ModulePatch
     {
 
@@ -679,11 +679,11 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref float __result)
         {
-            if (Utils.IsReady && !Utils.IsInHideout()) 
+            if (Utils.IsReady && !Utils.IsInHideout())
             {
                 Player player = Utils.GetPlayer();
                 float num = 1f - player.Skills.HealthHydration;
-                __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num * PlayerProperties.HealthResourceRateFactor / GetDecayRate(player);
+                __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num * PlayerStats.HealthResourceRateFactor / GetDecayRate(player);
                 if (Plugin.EnableLogging.Value)
                 {
                     Logger.LogWarning("modified energy decay = " + __result);
@@ -692,11 +692,11 @@ namespace RealismMod
                 return false;
             }
             return true;
- 
-        }
-    }
 
-    //THIS IS DOG SHIT, IT WILL AFFECT BOTS, UNUSED
+        }
+    }*/
+
+/*    //THIS IS DOG SHIT, IT WILL AFFECT BOTS, UNUSED
     public class HydoRatePatch : ModulePatch
     {
         private static Type _targetType;
@@ -730,11 +730,10 @@ namespace RealismMod
             {
                 Player player = Utils.GetPlayer();
                 float num = 1f - player.Skills.HealthHydration;
-                __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.HydrationDamage * num * PlayerProperties.HealthResourceRateFactor / GetDecayRate(player);
+                __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.HydrationDamage * num * PlayerStats.HealthResourceRateFactor / GetDecayRate(player);
                 return false;
             }
             return true;
         }
-    }*//*
+    }*/
 }
-*/

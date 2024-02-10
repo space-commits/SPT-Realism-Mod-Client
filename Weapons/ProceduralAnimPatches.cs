@@ -101,6 +101,7 @@ namespace RealismMod
             fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("method_23", BindingFlags.Instance | BindingFlags.Public);
         }
+
         private static void DoADSWiggle(ProceduralWeaponAnimation pwa, Player player, FirearmController fc, float ergoWeightFactor, float playerWeightFactor, float newAimSpeed)
         {
             if (StanceController.IsIdle() && WeaponStats._WeapClass != "pistol")
@@ -124,7 +125,6 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
-
             FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
             if (firearmController == null)
             {
@@ -204,7 +204,7 @@ namespace RealismMod
 
                     if (__instance.CurrentAimingMod != null)
                     {
-                        WeaponStats.Parralax = WeaponStats.HasOptic ? 0.04f * WeaponStats.ScopeAccuracyFactor : 0.045f * WeaponStats.ScopeAccuracyFactor;
+                        WeaponStats.ScopeParallax *= WeaponStats.HasOptic ? 0.04f : 0.045f * WeaponStats.ScopeAccuracyFactor;
                         string id = (__instance.CurrentAimingMod?.Item?.Id != null) ? __instance.CurrentAimingMod.Item.Id : "";
                         WeaponStats.ScopeID = id;
                         if (id != null)
@@ -421,8 +421,8 @@ namespace RealismMod
                     float factor = distance / 25f; //need to find default zero
                     recoilOffset.x = WeaponStats.ZeroRecoilOffset.x * factor;
                     recoilOffset.y = WeaponStats.ZeroRecoilOffset.y * factor;
-                    target.x = point.x + (StanceController.MouseRotation.x * factor * -WeaponStats.Parralax);
-                    target.y = point.y + (StanceController.MouseRotation.y * factor * WeaponStats.Parralax);
+                    target.x = point.x + (StanceController.MouseRotation.x * factor * -WeaponStats.ScopeParallax);
+                    target.y = point.y + (StanceController.MouseRotation.y * factor * WeaponStats.ScopeParallax);
                     target = player.MovementContext.CurrentState.Name == EPlayerState.Sidestep ? point : target;
                     point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
                 }
@@ -473,8 +473,8 @@ namespace RealismMod
                     float factor = distance / 50f; //need to find default zero
                     recoilOffset.x = WeaponStats.ZeroRecoilOffset.x * factor;
                     recoilOffset.y = WeaponStats.ZeroRecoilOffset.y * factor;
-                    target.x = point.x + (StanceController.MouseRotation.x * factor * -WeaponStats.Parralax);
-                    target.y = point.y + (StanceController.MouseRotation.y * factor * WeaponStats.Parralax);
+                    target.x = point.x + (StanceController.MouseRotation.x * factor * -WeaponStats.ScopeParallax);
+                    target.y = point.y + (StanceController.MouseRotation.y * factor * WeaponStats.ScopeParallax);
                     target = player.MovementContext.CurrentState.Name == EPlayerState.Sidestep ? point : target;
                     point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
                 }

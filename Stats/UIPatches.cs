@@ -19,6 +19,41 @@ using BarrelTemplateClass = GClass2575;
 
 namespace RealismMod
 {
+
+    public class ArmorLevelDisplayPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GClass2516).GetMethod("FormatArmorClassIcon", BindingFlags.Static | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool PatchPrefix(GClass2516 __instance, ref string __result, int armorClass)
+        {
+            __result = "Lvl " + armorClass.ToString();
+            return false;
+        }
+    }
+
+    public class ArmorLevelUIPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(ItemViewStats).GetMethod("method_1", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPrefix(ItemViewStats __instance, GClass2629 armorPlate)
+        {
+            Image armorClassImage = (Image)AccessTools.Field(typeof(ItemViewStats), "_armorClassIcon").GetValue(__instance);
+            if (armorPlate.Armor.Template.ArmorClass > 6)
+            {
+                string armorClass = string.Format("{0}.png", armorPlate.Armor.Template.ArmorClass);
+                armorClassImage.sprite = Plugin.LoadedSprites[armorClass];
+            }
+        }
+    }
+
     public class GetCachedReadonlyQualitiesPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -95,6 +130,16 @@ namespace RealismMod
                     penAtt.StringValue = () => $"{ammoTemplate.PenetrationPower}";
                     penAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
                     ammoAttributes.Add(penAtt);
+                }
+
+                if (ammoTemplate.BallisticCoeficient > 0f)
+                {
+                    ItemAttributeClass bcAtt = new ItemAttributeClass(ENewItemAttributeId.BallisticCoefficient);
+                    bcAtt.Name = ENewItemAttributeId.Penetration.GetName();
+                    bcAtt.Base = () => ammoTemplate.BallisticCoeficient;
+                    bcAtt.StringValue = () => $"{ammoTemplate.BallisticCoeficient}";
+                    bcAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    ammoAttributes.Add(bcAtt);
                 }
 
                 if (ammoTemplate.ArmorDamage > 0f)

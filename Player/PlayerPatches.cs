@@ -62,9 +62,10 @@ namespace RealismMod
                 IEnumerable<Item> items = invClass.Equipment.GetSlot(equipmentSlot).Items;
                 foreach (Item item in items)
                 {
+                   /* Logger.LogWarning(item.LocalizedName());*/
                     float itemTotalWeight = item.GetSingleItemTotalWeight();
                     trueWeight += itemTotalWeight;
-                    if (equipmentSlot == EquipmentSlot.Backpack || equipmentSlot == EquipmentSlot.TacticalVest)
+                    if (equipmentSlot == EquipmentSlot.Backpack || equipmentSlot == EquipmentSlot.TacticalVest || equipmentSlot == EquipmentSlot.ArmorVest || equipmentSlot == EquipmentSlot.Headwear)
                     {
                         float modifier = GearStats.ComfortModifier(item);
                         float containedItemsModifiedWeight = (itemTotalWeight - item.Weight) * modifier;

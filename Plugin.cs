@@ -319,6 +319,7 @@ namespace RealismMod
 
         public static GameObject Hook;
         public MountingUI MountingUIComponent;
+        public static RealismHealthController RealHealthController;
 
         private string ModPath;
         private string ConfigFilePath;
@@ -327,6 +328,8 @@ namespace RealismMod
 
         private static bool warnedUser = false;
         public static bool HasReloadedAudio = false;
+
+        private float time = 0f;
 
         private void getPaths()
         {
@@ -358,6 +361,7 @@ namespace RealismMod
             IconCache.Add(ENewItemAttributeId.Firerate, Resources.Load<Sprite>("characteristics/icons/bFirerate"));
             IconCache.Add(ENewItemAttributeId.Damage, Resources.Load<Sprite>("characteristics/icons/icon_info_bulletspeed"));
             IconCache.Add(ENewItemAttributeId.Penetration, Resources.Load<Sprite>("characteristics/icons/armorClass"));
+            IconCache.Add(ENewItemAttributeId.BallisticCoefficient, Resources.Load<Sprite>("characteristics/icons/SightingRange"));
             IconCache.Add(ENewItemAttributeId.ArmorDamage, Resources.Load<Sprite>("characteristics/icons/armorMaterial"));
             IconCache.Add(ENewItemAttributeId.FragmentationChance, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss"));
             IconCache.Add(ENewItemAttributeId.MalfunctionChance, Resources.Load<Sprite>("characteristics/icons/icon_info_raidmoddable"));
@@ -478,6 +482,7 @@ namespace RealismMod
                 loadSprites();
                 loadAudioClips();
                 cacheIcons();
+                Utils.VerifyFileIntegrity();    
             }
             catch (Exception exception)
             {
@@ -491,16 +496,11 @@ namespace RealismMod
                 DontDestroyOnLoad(Hook);
             }
 
-            initConfigs();
+            DamageTracker dmgTracker = new DamageTracker();
+            RealismHealthController healthController = new RealismHealthController(dmgTracker, Logger);
+            RealHealthController = healthController;    
 
-            /*    new SetSkinPatch().Enable();*/
-            /*           new ShouldFragPatch().Enable();
-                       new DamageInfoPatch().Enable();
-                       new IsPenetratedPatch().Enable();
-                       new PenStatusPatch().Enable();
-                       new ApplyDamageInfoPatch().Enable();
-                       new ApplyDamagePatch().Enable();
-                       new ApplyArmorDamagePatch().Enable();*/
+            initConfigs();
 
             if (ServerConfig.recoil_attachment_overhaul)
             {
@@ -617,25 +617,16 @@ namespace RealismMod
             //Ballistics
             if (ServerConfig.realistic_ballistics)
             {
-       /*         new CreateShotPatch().Enable();*/
-/*                new ApplyDamagePatch().Enable();
+                new CreateShotPatch().Enable();
+                new ApplyDamagePatch().Enable();
                 new DamageInfoPatch().Enable();
-                new ApplyDamageInfoPatch().Enable();*/
-/*                new SetPenetrationStatusPatch().Enable();
+                new ApplyDamageInfoPatch().Enable();
+                new SetPenetrationStatusPatch().Enable();
+                new IsShotDeflectedByHeavyArmorPatch().Enable();
 
                 if (EnableRagdollFix.Value)
                 {
                     new ApplyCorpseImpulsePatch().Enable();
-                    new RagdollPatch().Enable();
-                }*/
-
-             /*
-
-                new IsShotDeflectedByHeavyArmorPatch().Enable();*/
-
-                if (EnableArmPen.Value)
-                {
-              /*      new IsPenetratedPatch().Enable();*/
                 }
             }
 
@@ -656,9 +647,8 @@ namespace RealismMod
                 new HeadsetConstructorPatch().Enable();
             }
 
-            new ArmorComponentPatch().Enable();
             new RigConstructorPatch().Enable();
-            new BackpackConstructorPatch().Enable();
+            new EquipmentPenaltyComponentPatch().Enable();
             new ArmorLevelUIPatch().Enable();
             new ArmorLevelDisplayPatch().Enable();
 
@@ -699,26 +689,27 @@ namespace RealismMod
             new OperateStationaryWeaponPatch().Enable();
             new SetTiltPatch().Enable();
 
-            /*   //Health
-               if (EnableMedicalOvehaul.Value && ModConfig.med_changes)
-               {
-                   new ApplyItemPatch().Enable();
-                   new SetQuickSlotPatch().Enable();
-                   new ProceedPatch().Enable();
-                   new RemoveEffectPatch().Enable();
-                   new StamRegenRatePatch().Enable();
-                   new MedkitConstructorPatch().Enable();
-                   new HCApplyDamagePatch().Enable();
-                   new RestoreBodyPartPatch().Enable();
-                   new FlyingBulletPatch().Enable();
-               }*/
+            //Health
+            if (EnableMedicalOvehaul.Value && ServerConfig.med_changes)
+            {
+                new ApplyItemPatch().Enable();
+                new SetQuickSlotPatch().Enable();
+                new ProceedPatch().Enable();
+                new RemoveEffectPatch().Enable();
+                new StamRegenRatePatch().Enable();
+                new MedkitConstructorPatch().Enable();
+                new HCApplyDamagePatch().Enable();
+                new RestoreBodyPartPatch().Enable();
+                new FlyingBulletPatch().Enable();
+            }
 
             new BattleUIScreenPatch().Enable();
         }
 
         void Update()
         {
-            if ((int)Time.time % 5 == 0 && !warnedUser)
+            time += Time.deltaTime;
+            if (!warnedUser && (int)Time.time % 5 == 0)
             {
                 warnedUser = true;
                 if (Chainloader.PluginInfos.ContainsKey("com.servph.realisticrecoil") && ServerConfig.recoil_attachment_overhaul)
@@ -730,12 +721,18 @@ namespace RealismMod
                     NotificationManagerClass.DisplayWarningNotification("ERROR: MUNITIONS EXPERT DETECTED, IT IS NOT COMPATIBLE!", EFT.Communications.ENotificationDurationType.Long);
                 }
             }
-            if ((int)Time.time % 5 != 0)
+            if (warnedUser && (int)Time.time % 5 != 0)
             {
                 warnedUser = false;
             }
 
-            if (Utils.CheckIsReady())
+            if (time > 1f) 
+            {
+                Utils.CheckIsReady();
+                time = 0f;
+            }
+
+            if (Utils.IsReady)
             {
                 if (!Plugin.HasReloadedAudio)
                 {
@@ -840,16 +837,14 @@ namespace RealismMod
                         }
                     }
                 }
-
-          /*      if (Plugin.EnableMedicalOvehaul.Value && ServerConfig.med_changes)
-                {
-                    healthControllerTick += Time.deltaTime;
-                    RealismHealthController.HealthController(Logger);
-                }*/
             }
             else
             {
                 HasReloadedAudio = false;
+            }
+            if (Plugin.EnableMedicalOvehaul.Value && ServerConfig.med_changes)
+            {
+                RealHealthController.ControllerUpdate();
             }
         }
 

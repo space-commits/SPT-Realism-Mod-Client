@@ -177,7 +177,7 @@ namespace RealismMod
             return typeof(EFT.Player.FirearmController).GetMethod("CheckChamber", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        [PatchPostfix]
+        [PatchPrefix]
         private static void PatchPostfix(EFT.Player.FirearmController __instance)
         {
             Player player = (Player)playerField.GetValue(__instance);
@@ -201,6 +201,7 @@ namespace RealismMod
 
                     float totalCheckChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerStats.FixSkillMulti * PlayerStats.ReloadInjuryMulti * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.8f);
                     __instance.FirearmsAnimator.SetAnimationSpeed(totalCheckChamberSpeed);
+
 
                     if (Plugin.EnableLogging.Value == true)
                     {
