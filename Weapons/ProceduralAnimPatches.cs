@@ -204,7 +204,6 @@ namespace RealismMod
 
                     if (__instance.CurrentAimingMod != null)
                     {
-                        WeaponStats.ScopeParallax *= WeaponStats.HasOptic ? 0.04f : 0.045f * WeaponStats.ScopeAccuracyFactor;
                         string id = (__instance.CurrentAimingMod?.Item?.Id != null) ? __instance.CurrentAimingMod.Item.Id : "";
                         WeaponStats.ScopeID = id;
                         if (id != null)
@@ -221,8 +220,8 @@ namespace RealismMod
                         }
                     }
 
-                    DoADSWiggle(__instance, player, firearmController, ergoWeightFactor, playerWeightFactor, newAimSpeed);
-
+/*                    DoADSWiggle(__instance, player, firearmController, ergoWeightFactor, playerWeightFactor, newAimSpeed);
+*/
                     if (Plugin.EnableLogging.Value == true)
                     {
                         Logger.LogWarning("=====method_23========");
@@ -421,10 +420,7 @@ namespace RealismMod
                     float factor = distance / 25f; //need to find default zero
                     recoilOffset.x = WeaponStats.ZeroRecoilOffset.x * factor;
                     recoilOffset.y = WeaponStats.ZeroRecoilOffset.y * factor;
-                    target.x = point.x + (StanceController.MouseRotation.x * factor * -WeaponStats.ScopeParallax);
-                    target.y = point.y + (StanceController.MouseRotation.y * factor * WeaponStats.ScopeParallax);
-                    target = player.MovementContext.CurrentState.Name == EPlayerState.Sidestep ? point : target;
-                    point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
+                    point += recoilOffset;
                 }
             }
         }
@@ -473,10 +469,7 @@ namespace RealismMod
                     float factor = distance / 50f; //need to find default zero
                     recoilOffset.x = WeaponStats.ZeroRecoilOffset.x * factor;
                     recoilOffset.y = WeaponStats.ZeroRecoilOffset.y * factor;
-                    target.x = point.x + (StanceController.MouseRotation.x * factor * -WeaponStats.ScopeParallax);
-                    target.y = point.y + (StanceController.MouseRotation.y * factor * WeaponStats.ScopeParallax);
-                    target = player.MovementContext.CurrentState.Name == EPlayerState.Sidestep ? point : target;
-                    point = Vector3.Lerp(point, target, 0.35f) + recoilOffset;
+                    point += recoilOffset;
                 }
             }
         }

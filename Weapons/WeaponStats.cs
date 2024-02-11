@@ -348,7 +348,6 @@ namespace RealismMod
         public static Dictionary<string, Vector2> ZeroOffsetDict = new Dictionary<string, Vector2>();
         public static Vector2 ZeroRecoilOffset = Vector2.zero;
         public static float ScopeAccuracyFactor = 0f;
-        public static float ScopeParallax = 0.07f;
         public static string ScopeID = "";
         public static bool HasOptic;
 

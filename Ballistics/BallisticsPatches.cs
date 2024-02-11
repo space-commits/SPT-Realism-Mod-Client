@@ -438,8 +438,8 @@ namespace RealismMod
                 Inventory inventory = (Inventory)inventoryClassProperty.GetValue(__instance);
 
                 bool hasArmArmor = false;
-                bool hasFaceProtection = false;
                 bool hasLegProtection = false;
+                int faceProtectionCount = 0;
                 preAllocatedArmorComponents.Clear();
                 inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
                 ArmorComponent armor = null;
@@ -449,11 +449,17 @@ namespace RealismMod
                     {
                         armor = armorComponent;
                     }
-
-                    hasArmArmor = armorComponent.Template.ArmorColliders.Any(x => BallisticsController.ArmCollidors.Contains(x));
-                    hasFaceProtection = armorComponent.Template.ArmorColliders.Any(x => BallisticsController.FaceSpallProtectionCollidors.Contains(x));
-                    hasLegProtection = armorComponent.Template.ArmorColliders.Any(x => BallisticsController.LegSpallProtectionCollidors.Contains(x));
+                    if (armorComponent.Template.ArmorColliders.Any(x => BallisticsController.ArmCollidors.Contains(x))) 
+                    {
+                        hasArmArmor = true;
+                    }
+                    if (armorComponent.Template.ArmorColliders.Any(x => BallisticsController.LegSpallProtectionCollidors.Contains(x)))
+                    {
+                        hasLegProtection = true;
+                    }
+                    faceProtectionCount += armorComponent.Template.ArmorColliders.Count(x => BallisticsController.FaceSpallProtectionCollidors.Contains(x));
                 }
+                preAllocatedArmorComponents.Clear();
 
                 if (!damageInfo.Blunt && Plugin.EnableHitSounds.Value && !__instance.IsYourPlayer)
                 {
@@ -540,8 +546,9 @@ namespace RealismMod
 
                             if (part == EBodyPart.Head)
                             {
-                                damage = hasFaceProtection == true ? Mathf.Min(10, splitSpallingDmg * 0.5f) : Mathf.Min(10, splitSpallingDmg);
-                                bleedFactor = hasFaceProtection == true ? 0f : bleedFactor;
+                                float damageMulti = 1f - (faceProtectionCount / 5f);
+                                damage = Mathf.Min(10, splitSpallingDmg * damageMulti);
+                                bleedFactor = bleedFactor * damageMulti;
                             }
 
                             if ((part == EBodyPart.LeftArm || part == EBodyPart.RightArm) && hasArmArmor)

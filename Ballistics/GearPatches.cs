@@ -37,7 +37,7 @@ namespace RealismMod
             {
                 return 0f;
             }
-            return listofComps.Average(sumPredicate);
+            return (float)Math.Round(listofComps.Average(sumPredicate), 2);
         }
 
         private static float getAverageBlunt(Item item)
@@ -115,27 +115,26 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(RigConstructor __instance, RigTemplate template)
         {
+            Item item = __instance as Item;
+
+            float gearReloadSpeed = GearStats.ReloadSpeedMulti(item);
+            if (gearReloadSpeed > 0f && gearReloadSpeed != 1f)
+            {
+                float reloadSpeedPercent = (float)Math.Round((gearReloadSpeed - 1f) * 100f);
+                List<ItemAttributeClass> reloadAtt = item.Attributes;
+                ItemAttributeClass reloadAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.GearReloadSpeed);
+                reloadAttClass.Name = ENewItemAttributeId.GearReloadSpeed.GetName();
+                reloadAttClass.Base = () => reloadSpeedPercent;
+                reloadAttClass.StringValue = () => reloadSpeedPercent.ToString() + " %";
+                reloadAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                reloadAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                reloadAttClass.LessIsGood = false;
+                reloadAtt.Add(reloadAttClass);
+            }
+
             if (template.ArmorType == EArmorType.None) 
             {
-                Item item = __instance as Item;
-
-                float gearReloadSpeed = GearStats.ReloadSpeedMulti(item);
                 float comfortModifier = GearStats.ComfortModifier(item);
-
-                if (gearReloadSpeed > 0f && gearReloadSpeed != 1f)
-                {
-                    float reloadSpeedPercent = (float)Math.Round((gearReloadSpeed - 1f) * 100f);
-                    List<ItemAttributeClass> reloadAtt = item.Attributes;
-                    ItemAttributeClass reloadAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.GearReloadSpeed);
-                    reloadAttClass.Name = ENewItemAttributeId.GearReloadSpeed.GetName();
-                    reloadAttClass.Base = () => reloadSpeedPercent;
-                    reloadAttClass.StringValue = () => reloadSpeedPercent.ToString() + " %";
-                    reloadAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                    reloadAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
-                    reloadAttClass.LessIsGood = false;
-                    reloadAtt.Add(reloadAttClass);
-                }
-
                 if (comfortModifier > 0f && comfortModifier != 1f)
                 {
                     float comfortPercent = -1f * (float)Math.Round((comfortModifier - 1f) * 100f);
@@ -177,6 +176,31 @@ namespace RealismMod
                 dbAttClass.StringValue = () => dB.ToString() + " NRR";
                 dbAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                 dbAtt.Add(dbAttClass);
+            }
+        }
+    }
+
+    public class ArmorComponentPatch : ModulePatch
+    {
+        private static EBodyPartColliderType[] heads = { EBodyPartColliderType.Eyes, EBodyPartColliderType.Ears, EBodyPartColliderType.Jaw, EBodyPartColliderType.BackHead, EBodyPartColliderType.NeckFront, EBodyPartColliderType.HeadCommon, EBodyPartColliderType.ParietalHead };
+
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.InventoryLogic.ArmorComponent).GetConstructor(new Type[] { typeof(Item), typeof(ArmorCompTemplate), typeof(RepairableComponent), typeof(BuffComponent) });
+        }
+
+
+        [PatchPostfix]
+        private static void PatchPostfix(ArmorComponent __instance)
+        {
+            if (__instance.ArmorColliders.Intersect(heads).Any())
+            {
+                List<ItemAttributeClass> canADSAtt = __instance.Item.Attributes;
+                ItemAttributeClass canADSAttAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanAds);
+                canADSAttAttClass.Name = ENewItemAttributeId.CanAds.GetName();
+                canADSAttAttClass.StringValue = () => GearStats.AllowsADS(__instance.Item).ToString();
+                canADSAttAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                canADSAtt.Add(canADSAttAttClass);
             }
         }
     }

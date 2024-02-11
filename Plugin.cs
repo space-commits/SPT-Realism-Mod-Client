@@ -35,7 +35,7 @@ namespace RealismMod
     {
         private const string pluginVersion = "0.15.0";
 
-        public static ConfigEntry<bool> EnableParralax { get; set; }
+        public static ConfigEntry<bool> EnableZeroShift { get; set; }
         public static ConfigEntry<float> ResetTime { get; set; }
         public static ConfigEntry<float> SwayIntensity { get; set; }
         public static ConfigEntry<float> RecoilIntensity { get; set; }
@@ -482,7 +482,7 @@ namespace RealismMod
                 loadSprites();
                 loadAudioClips();
                 cacheIcons();
-                Utils.VerifyFileIntegrity();    
+                Utils.VerifyFileIntegrity(Logger);    
             }
             catch (Exception exception)
             {
@@ -536,7 +536,7 @@ namespace RealismMod
                 new SetAimingPatch().Enable();
                 new ToggleAimPatch().Enable();
 
-                if (EnableParralax.Value)
+                if (EnableZeroShift.Value)
                 {
                     new CalibrationLookAt().Enable();
                     new CalibrationLookAtScope().Enable();
@@ -648,6 +648,7 @@ namespace RealismMod
             }
 
             new RigConstructorPatch().Enable();
+            new ArmorComponentPatch().Enable(); 
             new EquipmentPenaltyComponentPatch().Enable();
             new ArmorLevelUIPatch().Enable();
             new ArmorLevelDisplayPatch().Enable();
@@ -933,7 +934,7 @@ namespace RealismMod
             EnableNVGPatch = Config.Bind<bool>(miscSettings, "Enable NVG ADS Patch", true, new ConfigDescription("Magnified Optics Block ADS When Using NVGs.", null, new ConfigurationManagerAttributes { Order = 5 }));
             EnableHoldBreath = Config.Bind<bool>(miscSettings, "Enable Hold Breath", false, new ConfigDescription("Re-Enabled Hold Breath. This Mod Is Balanced Around Not Being Able To Hold Breath.", null, new ConfigurationManagerAttributes { Order = 10 }));
             EnableMouseSensPenalty = Config.Bind<bool>(miscSettings, "Enable Weight Mouse Sensitivity Penalty", true, new ConfigDescription("Instead Of Using Gear Mouse Sens Penalty Stats, It Is Calculated Based On The Gear + Content's Weight As Modified By The Comfort Stat.", null, new ConfigurationManagerAttributes { Order = 20 }));
-            EnableParralax = Config.Bind<bool>(miscSettings, "Enable Parralax And Zero Shift", true, new ConfigDescription("Sights Simulate Parralax And Their Zero Can Shift While Firing. Both Are Determined By The Scope Accuracy Stat. Zero Shift Is Also Affected By Mount Accuracy And Weapon Recoil. SCAR-H Has Worse Zero-Shift.", null, new ConfigurationManagerAttributes { Order = 30 }));
+            EnableZeroShift = Config.Bind<bool>(miscSettings, "Enable Zero Shift", true, new ConfigDescription("Sights Simulate Losing Zero While Firing. The Reticle Has A Chance To Move Off Target. The Chance Is Determined By The Scope And Its Mount's Accuracy Stat, And The Weapon's Recoil. High Quality Scopes And Mounts Won't Lose Zero. SCAR-H Has Worse Zero-Shift.", null, new ConfigurationManagerAttributes { Order = 30 }));
 
             EnableArmorHitZones = Config.Bind<bool>(ballSettings, "Enable Armor Hit Zones", true, new ConfigDescription("Armor Protection Is Limited To Wear Plates Would Be, Adds Neck And Side Armor Zones. Arm And Stomach Armor Has Limited Protection.", null, new ConfigurationManagerAttributes { Order = 1 }));
             EnableBodyHitZones = Config.Bind<bool>(ballSettings, "Enable Body Hit Zones", true, new ConfigDescription("Divides Body Into A, C and D Hit Zones Like On IPSC Targets. In Addtion, There Are Upper Arm, Forearm, Thigh, Calf, Neck, Spine And Heart Hit Zones. Each Zone Modifies Damage And Bleed Chance. ", null, new ConfigurationManagerAttributes { Order = 10 }));
@@ -1062,11 +1063,11 @@ namespace RealismMod
             HighReadyOffsetY = Config.Bind<float>(highReady, "High Ready Position Y-Axis", 0.04f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 84, IsAdvanced = true }));
             HighReadyOffsetZ = Config.Bind<float>(highReady, "High Ready Position Z-Axis", -0.04f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 83, IsAdvanced = true }));
 
-            HighReadyRotationX = Config.Bind<float>(highReady, "High Ready Rotation X-Axis", -7.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 72, IsAdvanced = true }));
+            HighReadyRotationX = Config.Bind<float>(highReady, "High Ready Rotation X-Axis", -5.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 72, IsAdvanced = true }));
             HighReadyRotationY = Config.Bind<float>(highReady, "High Ready Rotation Y-Axis", 3.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 71, IsAdvanced = true }));
             HighReadyRotationZ = Config.Bind<float>(highReady, "High Ready Rotation Z-Axis", 2.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 70, IsAdvanced = true }));
 
-            HighReadyAdditionalRotationX = Config.Bind<float>(highReady, "High Ready Additional Rotation X-Axis", -10.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 69, IsAdvanced = true }));
+            HighReadyAdditionalRotationX = Config.Bind<float>(highReady, "High Ready Additional Rotation X-Axis", -5.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 69, IsAdvanced = true }));
             HighReadyAdditionalRotationY = Config.Bind<float>(highReady, "High Ready Additiona Rotation Y-Axis", 5f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 68, IsAdvanced = true }));
             HighReadyAdditionalRotationZ = Config.Bind<float>(highReady, "High Ready Additional Rotation Z-Axis", 1f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 67, IsAdvanced = true }));
 

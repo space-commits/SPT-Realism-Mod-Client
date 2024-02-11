@@ -457,16 +457,17 @@ namespace RealismMod
                 }
 
                 //Calculate offest for zero shift
-                if (WeaponStats.ScopeAccuracyFactor > 1f)
+                if (WeaponStats.ScopeAccuracyFactor <= 1f)
                 {
-                    float chanceFactor = 1f + ((WeaponStats.ScopeAccuracyFactor - 1f) * 2f);
-                    float gunFactor = firearmController.Weapon.TemplateId == "6183afd850224f204c1da514" || firearmController.Weapon.TemplateId == "6165ac306ef05c2ce828ef74" ? 2f : 1f;
-                    float shiftRecoilFactor = (RecoilController.FactoredTotalCamRecoil + RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil) * (1f + (totalCamRecoil * 10f)) * gunFactor;
+                    float gunFactor = firearmController.Weapon.TemplateId == "6183afd850224f204c1da514" || firearmController.Weapon.TemplateId == "6165ac306ef05c2ce828ef74" ? 4f : 1f;
+                    float shiftRecoilFactor = (RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil) * (1f + totalCamRecoil) * gunFactor;
+                    float scopeFactor = ((1f - WeaponStats.ScopeAccuracyFactor) + (shiftRecoilFactor * 0.002f));
                     System.Random rnd = new System.Random();
-                    int num = rnd.Next(1, 10);
-                    if (num <= Mathf.Min(1 + (0.05f * shiftRecoilFactor * chanceFactor), 8))
+                    int num = rnd.Next(1, 20);
+                    if (scopeFactor * 10f > num)
                     {
-                        float offsetFactor = (WeaponStats.ScopeAccuracyFactor - 1f) * (0.0027f * shiftRecoilFactor);
+                        Logger.LogWarning("shift");
+                        float offsetFactor = scopeFactor * Plugin.test1.Value;
                         float offsetX = Random.Range(-offsetFactor, offsetFactor);
                         float offsetY = Random.Range(-offsetFactor, offsetFactor);
                         WeaponStats.ZeroRecoilOffset = new Vector2(offsetX, offsetY);

@@ -213,95 +213,79 @@ namespace RealismMod
 
         private static void doMelee(Player.FirearmController fc, float ln, Player player)
         {
-            if (!PlayerStats.IsSprinting && !StanceController.DidMelee)
+            if (!PlayerStats.IsSprinting && StanceController.IsMeleeAttack && StanceController.CanDoMeleeDetection)
             {
                 Transform weapTransform = player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim;
-                if (StanceController.CanDoMeleeDetection)
-                {
-                    RaycastHit[] raycastArr = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
-                    Func<RaycastHit, bool> isHitIgnoreTest = (Func<RaycastHit, bool>)hitIgnoreField.GetValue(fc);
-                    Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
-                    Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(startMeleeDir);
-                    Vector3 meleeDir = meleeStart - linecastDirection * (ln - (WeaponStats.HasBayonet ? 0.1f : 0.25f));
+                RaycastHit[] raycastArr = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
+                Func<RaycastHit, bool> isHitIgnoreTest = (Func<RaycastHit, bool>)hitIgnoreField.GetValue(fc);
+                Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
+                Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(startMeleeDir);
+                Vector3 meleeDir = meleeStart - linecastDirection * (ln - (WeaponStats.HasBayonet ? 0.1f : 0.25f));
 
-                    /*                        DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);
-                    */
-   
-                    BallisticCollider hitBalls = null;
-                    RaycastHit raycastHit;
-                    if (CastingClass.Linecast(meleeStart, meleeDir, out raycastHit, CollisionLayerClass.HitMask, false, raycastArr, isHitIgnoreTest))
+                /*                        DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);
+                */
+
+                BallisticCollider hitBalls = null;
+                RaycastHit raycastHit;
+                if (CastingClass.Linecast(meleeStart, meleeDir, out raycastHit, CollisionLayerClass.HitMask, false, raycastArr, isHitIgnoreTest))
+                {
+                    Collider col = raycastHit.collider;
+                    BaseBallistic baseballComp = col.GetComponent<BaseBallistic>();
+                    if (baseballComp != null)
                     {
-                        Collider col = raycastHit.collider;
-                        BaseBallistic baseballComp = col.GetComponent<BaseBallistic>();
-                        if (baseballComp != null)
-                        {
-                            hitBalls = baseballComp.Get(raycastHit.point);
-                        }
-                        float damage = 8f + WeaponStats.BaseMeleeDamage * (1f + player.Skills.StrengthBuffMeleePowerInc) * (1f - (WeaponStats.ErgoFactor / 300f));
-                        damage = player.Physical.HandsStamina.Exhausted ? damage * Singleton<BackendConfigSettingsClass>.Instance.Stamina.ExhaustedMeleeDamageMultiplier : damage;
-                        float pen = 15f + WeaponStats.BaseMeleePen * (1f - (WeaponStats.ErgoFactor / 300f));
-                        bool shouldSkipHit = false;
-
-                        if (hitBalls as BodyPartCollider != null)
-                        {
-                            player.Skills.FistfightAction.Complete(1f);
-                        }
-
-                        if (hitBalls.TypeOfMaterial == MaterialType.Glass || hitBalls.TypeOfMaterial == MaterialType.GlassShattered)
-                        {
-                            Random rnd = new Random();
-                            int rndNum = rnd.Next(1, 10);
-                            if (rndNum > (4f + WeaponStats.BaseMeleeDamage))
-                            {
-                                shouldSkipHit = true;
-                            }
-                        }
-
-                        if (WeaponStats.HasBayonet || (allowedMats.Contains(hitBalls.TypeOfMaterial) && !shouldSkipHit))
-                        {
-                            Vector3 position = fc.CurrentFireport.position;
-                            Vector3 vector = fc.WeaponDirection;
-                            Vector3 shotPosition = position;
-                            fc.AdjustShotVectors(ref shotPosition, ref vector);
-                            Vector3 shotDirection = vector;
-                            DamageInfo damageInfo = new DamageInfo
-                            {
-                                DamageType = EDamageType.Melee,
-                                Damage = damage,
-                                PenetrationPower = pen,
-                                ArmorDamage = 10f + (damage / 10f),
-                                Direction = shotDirection.normalized,
-                                HitCollider = col,
-                                HitPoint = raycastHit.point,
-                                Player = Singleton<GameWorld>.Instance.GetAlivePlayerBridgeByProfileID(player.ProfileId),
-                                HittedBallisticCollider = hitBalls,
-                                HitNormal = raycastHit.normal,
-                                Weapon = fc.Item as Item,
-                                IsForwardHit = true,
-                                StaminaBurnRate = 5f
-                            };
-                            HackShotResult result = Singleton<GameWorld>.Instance.HackShot(damageInfo);
-                        }
-                        float vol = WeaponStats.HasBayonet ? 12f : 25f;
-                        Singleton<BetterAudio>.Instance.PlayDropItem(baseballComp.SurfaceSound, JsonType.EItemDropSoundType.Rifle, raycastHit.point, vol);
-                        StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc, new Vector3(-10f, 10f, 0f), true, 1.5f);
-                        player.Physical.ConsumeAsMelee(0.5f + (WeaponStats.ErgoFactor / 100f));
-                        StanceController.DidMelee = true;
-                        return;
+                        hitBalls = baseballComp.Get(raycastHit.point);
                     }
-                }
-                else if (StanceController.HasResetMelee)
-                {
-                    if (WeaponStats.HasBayonet)
+                    float damage = 8f + WeaponStats.BaseMeleeDamage * (1f + player.Skills.StrengthBuffMeleePowerInc) * (1f - (WeaponStats.ErgoFactor / 300f));
+                    damage = player.Physical.HandsStamina.Exhausted ? damage * Singleton<BackendConfigSettingsClass>.Instance.Stamina.ExhaustedMeleeDamageMultiplier : damage;
+                    float pen = 15f + WeaponStats.BaseMeleePen * (1f - (WeaponStats.ErgoFactor / 300f));
+                    bool shouldSkipHit = false;
+
+                    if (hitBalls as BodyPartCollider != null)
+                    {
+                        player.Skills.FistfightAction.Complete(1f);
+                    }
+
+                    if (hitBalls.TypeOfMaterial == MaterialType.Glass || hitBalls.TypeOfMaterial == MaterialType.GlassShattered)
                     {
                         Random rnd = new Random();
                         int rndNum = rnd.Next(1, 10);
-                        string track = rndNum <= 5 ? "knife_1.wav" : "knife_2.wav";
-                        Singleton<BetterAudio>.Instance.PlayAtPoint(weapTransform.position, Plugin.LoadedAudioClips[track], 2, BetterAudio.AudioSourceGroupType.Distant, 100, 2, EOcclusionTest.Continuous);
+                        if (rndNum > (4f + WeaponStats.BaseMeleeDamage))
+                        {
+                            shouldSkipHit = true;
+                        }
                     }
-                    StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc, new Vector3(0f, 0f, 0f), true, 4);
-                    player.Physical.ConsumeAsMelee(2f + (WeaponStats.ErgoFactor / 100f));
-                    StanceController.DidMelee = true;
+
+                    if (WeaponStats.HasBayonet || (allowedMats.Contains(hitBalls.TypeOfMaterial) && !shouldSkipHit))
+                    {
+                        Vector3 position = fc.CurrentFireport.position;
+                        Vector3 vector = fc.WeaponDirection;
+                        Vector3 shotPosition = position;
+                        fc.AdjustShotVectors(ref shotPosition, ref vector);
+                        Vector3 shotDirection = vector;
+                        DamageInfo damageInfo = new DamageInfo
+                        {
+                            DamageType = EDamageType.Melee,
+                            Damage = damage,
+                            PenetrationPower = pen,
+                            ArmorDamage = 10f + (damage / 10f),
+                            Direction = shotDirection.normalized,
+                            HitCollider = col,
+                            HitPoint = raycastHit.point,
+                            Player = Singleton<GameWorld>.Instance.GetAlivePlayerBridgeByProfileID(player.ProfileId),
+                            HittedBallisticCollider = hitBalls,
+                            HitNormal = raycastHit.normal,
+                            Weapon = fc.Item as Item,
+                            IsForwardHit = true,
+                            StaminaBurnRate = 5f
+                        };
+                        HackShotResult result = Singleton<GameWorld>.Instance.HackShot(damageInfo);
+                    }
+                    float vol = WeaponStats.HasBayonet ? 10f : 12f;
+                    Singleton<BetterAudio>.Instance.PlayDropItem(baseballComp.SurfaceSound, JsonType.EItemDropSoundType.Rifle, raycastHit.point, vol);
+/*                  StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc, new Vector3(-10f, 10f, 0f), true, 1.5f);
+*/                  player.Physical.ConsumeAsMelee(0.3f + (WeaponStats.ErgoFactor / 100f));
+
+                    StanceController.CanDoMeleeDetection = false;
                     return;
                 }
             }

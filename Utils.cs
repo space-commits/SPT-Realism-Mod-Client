@@ -1,4 +1,5 @@
-﻿using Comfort.Common;
+﻿using BepInEx.Logging;
+using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using System;
@@ -107,7 +108,7 @@ namespace RealismMod
             }
         }
 
-        public static void VerifyFileIntegrity()
+        public static void VerifyFileIntegrity(ManualLogSource Logger)
         {
             var dllLoc = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string checksum = "d2F5ZmFyZXI=";
@@ -120,6 +121,7 @@ namespace RealismMod
             {
                 /*Environment.Exit(0);*/
                 Verified = true;
+                Logger.LogWarning("Verification Checksum: {0}" + checksum);
             }
         }
 

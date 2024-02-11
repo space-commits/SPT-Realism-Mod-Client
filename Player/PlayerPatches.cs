@@ -59,17 +59,15 @@ namespace RealismMod
             float trueWeight = 0f;
             foreach (EquipmentSlot equipmentSlot in EquipmentClass.AllSlotNames)
             {
-                IEnumerable<Item> items = invClass.Equipment.GetSlot(equipmentSlot).Items;
+                Slot slot = invClass.Equipment.GetSlot(equipmentSlot);
+                IEnumerable<Item> items = slot.Items;
                 foreach (Item item in items)
                 {
-                   /* Logger.LogWarning(item.LocalizedName());*/
                     float itemTotalWeight = item.GetSingleItemTotalWeight();
                     trueWeight += itemTotalWeight;
                     if (equipmentSlot == EquipmentSlot.Backpack || equipmentSlot == EquipmentSlot.TacticalVest || equipmentSlot == EquipmentSlot.ArmorVest || equipmentSlot == EquipmentSlot.Headwear)
                     {
-                        float modifier = GearStats.ComfortModifier(item);
-                        float containedItemsModifiedWeight = (itemTotalWeight - item.Weight) * modifier;
-                        modifiedWeight += item.Weight + containedItemsModifiedWeight;
+                        modifiedWeight += itemTotalWeight * GearStats.ComfortModifier(item);
                     }
                     else
                     {
@@ -191,7 +189,7 @@ namespace RealismMod
             }
             else
             {
-                float holdBreathBonus = __instance.Physical.HoldingBreath ? 0.25f : 1f;
+                float holdBreathBonus = __instance.Physical.HoldingBreath ? 0.5f : 1f;
                 float t = lackOfOxygenStrength.Evaluate(__instance.OxygenLevel);
                 float b = __instance.IsAiming ? 0.75f : 1f;
                 breathIntensityField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, b, t), 1f, 1.5f) * __instance.Intensity * holdBreathBonus);

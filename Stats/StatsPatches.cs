@@ -482,7 +482,6 @@ namespace RealismMod
             if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 float currentSightFactor = 1f;
-                float currentParallaxFactor = 1f;
                 if (Utils.IsReady)
                 {
                     int iterations = 0;
@@ -494,7 +493,6 @@ namespace RealismMod
                         if (AttachmentProperties.ModType(currentAimingMod) == "sight")
                         {
                             currentSightFactor += currentAimingMod.Accuracy / 100f;
-                            currentParallaxFactor = (currentAimingMod.Accuracy * 1.25f) / 100f;
                         }
                         IEnumerable<Item> parents = currentAimingMod.GetAllParentItems();
                         foreach (Item item in parents)
@@ -505,16 +503,15 @@ namespace RealismMod
                                 currentSightFactor += (mod.Accuracy / 100f);
                             }
                             iterations++;
-                            if (iterations >= 5)
+                            if (iterations >= 5 || !(item is Mod))
                             {
                                 break;
                             }
                         }
                     }
                 }
-
-                WeaponStats.ScopeAccuracyFactor = currentSightFactor > 1f ? 1f - ((currentSightFactor - 1f) * 4f) : 2f - currentSightFactor;
-                WeaponStats.ScopeParallax = currentParallaxFactor > 1f ? 1f - ((currentParallaxFactor - 1f) * 4f) : 2f - currentParallaxFactor;
+                Logger.LogWarning(currentSightFactor);
+                WeaponStats.ScopeAccuracyFactor = currentSightFactor;
                 bool isBracingTop = StanceController.BracingDirection == EBracingDirection.Top;
                 float mountingFactor = StanceController.IsBracing && isBracingTop ? 1.05f : StanceController.IsBracing && !isBracingTop ? 1.025f : StanceController.IsMounting && isBracingTop ? 1.1f : StanceController.IsMounting && !isBracingTop ? 1.075f : 1f;
                 float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * currentSightFactor * mountingFactor;
