@@ -148,7 +148,7 @@ namespace RealismMod
         private static Vector3 startLeftDir = new Vector3(0.1f, 0f, 0f);
         private static Vector3 startRightDir = new Vector3(-0.1f, 0f, 0f);
         private static Vector3 startDownDir = new Vector3(0f, 0f, -0.12f);
-        private static Vector3 startMeleeDir = new Vector3(0, -0.6f, 0.05f);
+
 
         private static Vector3 wiggleLeftDir = new Vector3(2.5f, 7.5f, -10f);
         private static Vector3 wiggleRightDir = new Vector3(2.5f, -7.5f, -10f);
@@ -219,11 +219,11 @@ namespace RealismMod
                 RaycastHit[] raycastArr = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
                 Func<RaycastHit, bool> isHitIgnoreTest = (Func<RaycastHit, bool>)hitIgnoreField.GetValue(fc);
                 Vector3 linecastDirection = weapTransform.TransformDirection(Vector3.up);
+                Vector3 startMeleeDir = new Vector3(0, -0.5f, -0.025f); 
                 Vector3 meleeStart = weapTransform.position + weapTransform.TransformDirection(startMeleeDir);
                 Vector3 meleeDir = meleeStart - linecastDirection * (ln - (WeaponStats.HasBayonet ? 0.1f : 0.25f));
 
-                /*                        DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);
-                */
+                DebugGizmos.SingleObjects.Line(meleeStart, meleeDir, Color.red, 0.02f, true, 0.3f, true);
 
                 BallisticCollider hitBalls = null;
                 RaycastHit raycastHit;

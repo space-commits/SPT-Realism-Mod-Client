@@ -30,14 +30,14 @@ namespace RealismMod
             return typeof(EquipmentPenaltyComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface282), typeof(bool) });
         }
 
-        private static float getAverage(Func<CompositeArmorComponent, float> sumPredicate, Item item)
+        private static float getAverage(Func<CompositeArmorComponent, float> predicate, Item item)
         {
             List<CompositeArmorComponent> listofComps = item.GetItemComponentsInChildren<CompositeArmorComponent>(true).ToList();
             if (!listofComps.Any()) 
             {
                 return 0f;
             }
-            return (float)Math.Round(listofComps.Average(sumPredicate), 2);
+            return (float)Math.Round(listofComps.Average(predicate), 2);
         }
 
         private static float getAverageBlunt(Item item)
@@ -68,9 +68,20 @@ namespace RealismMod
                 comfortAtt.Add(comfortAttClass);
             }
 
-            ArmorComponent armorComp; 
+            ArmorComponent armorComp;
             if (anyArmorPlateSlots || item.TryGetItemComponent<ArmorComponent>(out armorComp)) 
             {
+                bool blocksADS = GearStats.AllowsADS(item);
+                if (!blocksADS)
+                {
+                    List<ItemAttributeClass> canADSAtt = __instance.Item.Attributes;
+                    ItemAttributeClass canADSAttAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanAds);
+                    canADSAttAttClass.Name = ENewItemAttributeId.CanAds.GetName();
+                    canADSAttAttClass.StringValue = () => "";
+                    canADSAttAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    canADSAtt.Add(canADSAttAttClass);
+                }
+
                 List<ItemAttributeClass> bluntAtt = item.Attributes;
                 ItemAttributeClass bluntAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.BluntThroughput);
                 bluntAttClass.Name = ENewItemAttributeId.BluntThroughput.GetName();
@@ -176,31 +187,6 @@ namespace RealismMod
                 dbAttClass.StringValue = () => dB.ToString() + " NRR";
                 dbAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                 dbAtt.Add(dbAttClass);
-            }
-        }
-    }
-
-    public class ArmorComponentPatch : ModulePatch
-    {
-        private static EBodyPartColliderType[] heads = { EBodyPartColliderType.Eyes, EBodyPartColliderType.Ears, EBodyPartColliderType.Jaw, EBodyPartColliderType.BackHead, EBodyPartColliderType.NeckFront, EBodyPartColliderType.HeadCommon, EBodyPartColliderType.ParietalHead };
-
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(EFT.InventoryLogic.ArmorComponent).GetConstructor(new Type[] { typeof(Item), typeof(ArmorCompTemplate), typeof(RepairableComponent), typeof(BuffComponent) });
-        }
-
-
-        [PatchPostfix]
-        private static void PatchPostfix(ArmorComponent __instance)
-        {
-            if (__instance.ArmorColliders.Intersect(heads).Any())
-            {
-                List<ItemAttributeClass> canADSAtt = __instance.Item.Attributes;
-                ItemAttributeClass canADSAttAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanAds);
-                canADSAttAttClass.Name = ENewItemAttributeId.CanAds.GetName();
-                canADSAttAttClass.StringValue = () => GearStats.AllowsADS(__instance.Item).ToString();
-                canADSAttAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                canADSAtt.Add(canADSAttAttClass);
             }
         }
     }

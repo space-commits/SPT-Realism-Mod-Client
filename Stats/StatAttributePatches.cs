@@ -129,7 +129,7 @@ namespace RealismMod
                 case ENewItemAttributeId.GearReloadSpeed:
                     return "RELOAD SPEED";
                 case ENewItemAttributeId.CanAds:
-                    return "ALLOWS ADS";
+                    return "BLOCKS AIMING DOWN SIGHTS";
                 case ENewItemAttributeId.NoiseReduction:
                     return "NOISE REDUCTION RATING";
                 case ENewItemAttributeId.ProjectileCount:

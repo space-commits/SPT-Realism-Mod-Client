@@ -467,7 +467,7 @@ namespace RealismMod
                     if (scopeFactor * 10f > num)
                     {
                         Logger.LogWarning("shift");
-                        float offsetFactor = scopeFactor * Plugin.test1.Value;
+                        float offsetFactor = scopeFactor * 0.2f;
                         float offsetX = Random.Range(-offsetFactor, offsetFactor);
                         float offsetY = Random.Range(-offsetFactor, offsetFactor);
                         WeaponStats.ZeroRecoilOffset = new Vector2(offsetX, offsetY);
