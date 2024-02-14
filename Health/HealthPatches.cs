@@ -65,7 +65,7 @@ namespace RealismMod
                     return "WEAK";
                 case <= 10:
                     return "MILD";
-                case <= 15:
+                case >= 15:
                     return "STRONG";
                 default:
                     return "NONE";
@@ -506,8 +506,16 @@ namespace RealismMod
                         int intermittentDur = MedProperties.PainKillerTime(meds);
                         float tunnelVisionStr = MedProperties.TunnelVisionStrength(meds);
                         float painKillStr = MedProperties.Strength(meds);
-                        PainKillerEffect painKillerEffect = new PainKillerEffect(duration, __instance, delay, wait, intermittentDur, tunnelVisionStr, painKillStr);
-                        Plugin.RealHealthController.AddCustomEffect(painKillerEffect, false);
+
+                        Logger.LogWarning("duration " + duration);
+                        Logger.LogWarning("delay " + delay);
+                        Logger.LogWarning("wait " + wait);
+                        Logger.LogWarning("intermittentDur " + intermittentDur);
+                        Logger.LogWarning("tunnelVisionStr " + tunnelVisionStr);
+                        Logger.LogWarning("painKillStr " + painKillStr);
+
+                        PainKillerEffect painKillerEffect = new PainKillerEffect(duration, __instance, delay, wait, intermittentDur, tunnelVisionStr, painKillStr, Logger);
+                        Plugin.RealHealthController.AddCustomEffect(painKillerEffect, true);
                         return true;
                     }
                     if (medType.Contains("pills") || medType.Contains("drug"))

@@ -786,7 +786,7 @@ namespace RealismMod
             Quaternion shortStockRevertQuaternion = Quaternion.Euler(Plugin.ShortStockResetRotationX.Value * resetErgoMulti, Plugin.ShortStockResetRotationY.Value * resetErgoMulti, Plugin.ShortStockResetRotationZ.Value * resetErgoMulti);
            
             Vector3 meleeTargetPosition = new Vector3(0f, -0.05f, 0f); //new Vector3(0.02f, 0.08f, -0.07f);
-            Quaternion meleeTargetQuaternion = Quaternion.Euler(new Vector3(-1f * resetErgoMulti, -5f * resetErgoMulti, -1f)); //-3 * resetErgoMulti, -15f * resetErgoMulti, -1f
+            Quaternion meleeTargetQuaternion = Quaternion.Euler(new Vector3(-5f * resetErgoMulti, -15f * resetErgoMulti, -2f)); //-1f * resetErgoMulti, -5f * resetErgoMulti, -1f)
 
             float movementFactor = PlayerStats.IsMoving ? 1.25f : 1f;
             float beltfedFactor = fc.Item.IsBeltMachineGun ? 0.9f : 1f;

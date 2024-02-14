@@ -643,19 +643,8 @@ namespace RealismMod
                 return;
             }
 
-            if (modType == "gasblock_upgassed")
-            {
-                if (parent != null && AttachmentProperties.ModType(parent) == "short_barrel")
-                {
-                    modDuraBurn = 1.3f;
-                    modHRecoil = 15f;
-                    modCamRecoil = 15f;
-                    modSemiROF = 10f;
-                    modAutoROF = 6f;
-                }
-                return;
-            }
-            if (modType == "short_barrel")
+
+/*            if (modType == "short_barrel")
             {
 
                 if (mod.Slots.Length > 0f && mod.Slots[1].ContainedItem != null)
@@ -668,21 +657,31 @@ namespace RealismMod
                 }
 
                 return;
-            }
-
-
-            if (modType == "gasblock_downgassed")
+            }*/
+            /*            if (modType == "gasblock_upgassed")
             {
-                if (AttachmentProperties.ModType(parent) == "short_barrel")
+                if (parent != null && AttachmentProperties.ModType(parent) == "short_barrel")
                 {
-                    modMalfChance *= 1.25f;
-                    modHRecoil *= 1.25f;
-                    modCamRecoil *= 1.25f;
-                    modSemiROF *= 1.25f;
-                    modAutoROF *= 1.25f;
+                    modDuraBurn = 1.3f;
+                    modHRecoil = 15f;
+                    modCamRecoil = 15f;
+                    modSemiROF = 10f;
+                    modAutoROF = 6f;
                 }
                 return;
-            }
+            }*/
+            /*            if (modType == "gasblock_downgassed")
+                        {
+                            if (AttachmentProperties.ModType(parent) == "short_barrel")
+                            {
+                                modMalfChance *= 1.25f;
+                                modHRecoil *= 1.25f;
+                                modCamRecoil *= 1.25f;
+                                modSemiROF *= 1.25f;
+                                modAutoROF *= 1.25f;
+                            }
+                            return;
+                        }*/
         }
 
         public static string GetModPosition(Mod mod, string weapType, string opType, string modType)

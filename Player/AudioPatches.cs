@@ -327,10 +327,11 @@ namespace RealismMod
                     float velocityFactor = CalcVelocityFactor(weap.SpeedFactor);
                     float ammoFactor = CalcAmmoFactor((shot.Ammo as BulletClass).ammoRec);
                     float deafenFactor = velocityFactor * ammoFactor;
-                    if (shot.InitialSpeed * weap.SpeedFactor <= 335f)
+
+             /*       if (shot.InitialSpeed * weap.SpeedFactor <= 335f)
                     {
                         deafenFactor *= 0.6f;
-                    }
+                    }*/
 
                     DeafeningController.AmmoDeafFactor = deafenFactor == 0f ? 1f : deafenFactor;
                 }

@@ -71,8 +71,8 @@ namespace RealismMod
             ArmorComponent armorComp;
             if (anyArmorPlateSlots || item.TryGetItemComponent<ArmorComponent>(out armorComp)) 
             {
-                bool blocksADS = GearStats.AllowsADS(item);
-                if (!blocksADS)
+                bool allowADS = GearStats.AllowsADS(item);
+                if (!allowADS)
                 {
                     List<ItemAttributeClass> canADSAtt = __instance.Item.Attributes;
                     ItemAttributeClass canADSAttAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanAds);

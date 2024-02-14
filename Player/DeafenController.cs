@@ -20,6 +20,7 @@ namespace RealismMod
     public static class DeafeningController
     {
         private static bool valuesAreReset = false;
+        private static bool headsetValuesAreReset = false;
 
         public static bool HasHeadSet = false;
         public static PrismEffects PrismEffects;
@@ -39,11 +40,11 @@ namespace RealismMod
         public static float CompressorVolume = 0f;
         public static float CompressorGain = 0f;
 
-        public static float EarProtectionFactor;
-        public static float AmmoDeafFactor;
-        public static float WeaponDeafFactor;
-        public static float BotDeafFactor;
-        public static float GrenadeDeafFactor;
+        public static float EarProtectionFactor = 1f;
+        public static float AmmoDeafFactor = 1f;
+        public static float WeaponDeafFactor = 1f;
+        public static float BotDeafFactor = 1f;
+        public static float GrenadeDeafFactor = 1f;
 
         //player
         public static float Volume = 0f;
@@ -65,39 +66,41 @@ namespace RealismMod
         public static float GrenadeVolumeResetRate = 0.02f;
         public static float GrenadeVignetteDarknessResetRate = 0.02f;
 
-
         public static void DoDeafening()
         {
-            float enviroMulti = PlayerStats.EnviroType == EnvironmentType.Indoor ? 1.3f : 1.05f;
+            float enviroMulti = PlayerStats.EnviroType == EnvironmentType.Indoor ? 1.3f : 1f;
             float deafFactor = AmmoDeafFactor * WeaponDeafFactor * EarProtectionFactor;
+            float drugsFactor = (1f + (Plugin.RealHealthController.PainReliefStrength / 100f));
             float botDeafFactor = BotDeafFactor * EarProtectionFactor;
             float grenadeDeafFactor = GrenadeDeafFactor * EarProtectionFactor;
+            float totalVigLimit = Mathf.Min(0.3f * deafFactor * enviroMulti, 1.5f);
+            float grenadeVigLimit = Mathf.Min(GrenadeVignetteDarknessLimit * deafFactor * enviroMulti, 1.5f);
 
             if (RecoilController.IsFiringDeafen)
             {
-                ChangeDeafValues(deafFactor, ref VignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafRate.Value, VolumeLimit, enviroMulti);
+                ChangeDeafValues(deafFactor, ref VignetteDarkness, Plugin.VigRate.Value, totalVigLimit, ref Volume, Plugin.DeafRate.Value, VolumeLimit, enviroMulti);
             }
             else if (!valuesAreReset)
             {
-                ResetDeafValues(deafFactor, ref VignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref Volume, Plugin.DeafReset.Value, VolumeLimit, enviroMulti, true);
+                ResetDeafValues(ref VignetteDarkness, Plugin.VigReset.Value, totalVigLimit, ref Volume, Plugin.DeafReset.Value, VolumeLimit);
             }
 
             if (IsBotFiring)
             {
-                ChangeDeafValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigRate.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafRate.Value, VolumeLimit, enviroMulti);
+                ChangeDeafValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigRate.Value, totalVigLimit, ref BotVolume, Plugin.DeafRate.Value, VolumeLimit, enviroMulti);
             }
             else if (!valuesAreReset)
             {
-                ResetDeafValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigReset.Value, VignetteDarknessLimit, ref BotVolume, Plugin.DeafReset.Value, VolumeLimit, enviroMulti, false);
+                ResetDeafValues(ref BotVignetteDarkness, Plugin.VigReset.Value, totalVigLimit, ref BotVolume, Plugin.DeafReset.Value, VolumeLimit);
             }
 
             if (GrenadeExploded)
             {
-                ChangeDeafValues(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessIncreaseRate, GrenadeVignetteDarknessLimit, ref GrenadeVolume, GrenadeVolumeDecreaseRate, GrenadeVolumeLimit, enviroMulti);
+                ChangeDeafValues(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessIncreaseRate, grenadeVigLimit, ref GrenadeVolume, GrenadeVolumeDecreaseRate, GrenadeVolumeLimit, enviroMulti);
             }
             else if (!valuesAreReset)
             {
-                ResetDeafValues(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessResetRate, GrenadeVignetteDarknessLimit, ref GrenadeVolume, GrenadeVolumeResetRate, GrenadeVolumeLimit, enviroMulti, false);
+                ResetDeafValues(ref GrenadeVignetteDarkness, GrenadeVignetteDarknessResetRate, grenadeVigLimit, ref GrenadeVolume, GrenadeVolumeResetRate, GrenadeVolumeLimit);
             }
 
             float totalVolume = Mathf.Clamp(Volume + BotVolume + GrenadeVolume, -40.0f, 0.0f);
@@ -121,38 +124,49 @@ namespace RealismMod
 
                 valuesAreReset = false;
             }
-            else
+            else if (!valuesAreReset)
             {
                 DeafeningController.PrismEffects.useVignette = false;
                 valuesAreReset = true;
+                if (!DeafeningController.HasHeadSet)
+                {
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", DeafeningController.GunsVolume);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("OcclusionVolume", DeafeningController.DryVolume);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", DeafeningController.DryVolume);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", DeafeningController.AmbientOccluded);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", DeafeningController.AmbientVolume);
+                }
             }
 
-            if (DeafeningController.HasHeadSet && RecoilController.IsFiringDeafen)
+            if (DeafeningController.HasHeadSet)
             {
-                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value * Plugin.GainCutoff.Value);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol * (1f + (1f - Plugin.GainCutoff.Value)));
-            }
-            else 
-            {
-                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol);
+                if (RecoilController.IsFiringDeafen)
+                {
+                    headsetValuesAreReset = false;
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value * Plugin.GainCutoff.Value);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol * (1f + (1f - Plugin.GainCutoff.Value)));
+                }
+                else if(!headsetValuesAreReset)
+                {
+                    headsetValuesAreReset = true;
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol);
+                }
             }
         }
 
         private static void ChangeDeafValues(float deafFactor, ref float vigValue, float vigIncRate, float vigLimit, ref float volValue, float volDecRate, float volLimit, float enviroMulti)
         {
             DeafeningController.PrismEffects.useVignette = true;
-            float totalVigLimit = Mathf.Min(vigLimit * deafFactor * enviroMulti, 1.5f);
-            vigValue = Mathf.Clamp(vigValue + (vigIncRate * deafFactor * enviroMulti), 0.0f, totalVigLimit);
+            vigValue = Mathf.Clamp(vigValue + (vigIncRate * deafFactor * enviroMulti), 0.0f, vigLimit);
             volValue = Mathf.Clamp(volValue - (volDecRate * deafFactor * enviroMulti), volLimit, 0.0f);
         }
 
-        private static void ResetDeafValues(float deafFactor, ref float vigValue, float vigResetRate, float vigLimit, ref float volValue, float volResetRate, float volLimit, float enviroMulti, bool wasGunshot)
+        private static void ResetDeafValues(ref float vigValue, float vigResetRate, float vigLimit, ref float volValue, float volResetRate, float volLimit)
         {
-            float resetFactor = wasGunshot ? 1f - (deafFactor * 0.1f) : 1f;
-            float totalVigLimit = Mathf.Min(vigLimit * deafFactor * enviroMulti, 1.5f);
-            vigValue = Mathf.Clamp(vigValue - (vigResetRate * resetFactor), 0.0f, totalVigLimit);
-            volValue = Mathf.Clamp(volValue + (volResetRate * resetFactor), volLimit, 0.0f);
+
+            vigValue = Mathf.Clamp(vigValue - vigResetRate, 0.0f, vigLimit);
+            volValue = Mathf.Clamp(volValue + volResetRate, volLimit, 0.0f);
         }
     }
 }
