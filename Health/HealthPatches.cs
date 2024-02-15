@@ -320,7 +320,7 @@ namespace RealismMod
                 Logger.LogWarning("Cancelling Meds");
             }
 
-            Plugin.RealHealthController.CancelEffects();
+            Plugin.RealHealthController.CancelCustomEffects();
         }
     }
 

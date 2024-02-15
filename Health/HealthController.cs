@@ -151,7 +151,7 @@ namespace RealismMod
 
         private float healthControllerTime = 0f;
         private float effectsTime = 0f;
-        private float reliefWaitTime = 0f;
+        private float reliefWaitTimer = 0f;
 
         public EBodyPart[] BodyParts = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm };
 
@@ -202,7 +202,7 @@ namespace RealismMod
             {
                 healthControllerTime += Time.deltaTime;
                 effectsTime += Time.deltaTime;
-                reliefWaitTime += Time.deltaTime;
+                reliefWaitTimer += Time.deltaTime;
                 ControllerTick();
 
                 if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
@@ -377,7 +377,7 @@ namespace RealismMod
                 {
                     if (existingEff.GetType() == newEffect.GetType() && existingEff.BodyPart == newEffect.BodyPart)
                     {
-                        RemoveEffectOfType(newEffect.GetType(), newEffect.BodyPart);
+                        RemoveCustomEffectOfType(newEffect.GetType(), newEffect.BodyPart);
                         break;
                     }
                 }
@@ -386,7 +386,7 @@ namespace RealismMod
             activeHealthEffects.Add(newEffect);
         }
 
-        public void RemoveEffectOfType(Type effect, EBodyPart bodyPart)
+        public void RemoveCustomEffectOfType(Type effect, EBodyPart bodyPart)
         {
             for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
             {
@@ -398,7 +398,7 @@ namespace RealismMod
             }
         }
 
-        public bool HasEffectOfType(Type effect, EBodyPart bodyPart)
+        public bool HasCustomEffectOfType(Type effect, EBodyPart bodyPart)
         {
             bool hasEffect = false;
             for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
@@ -412,7 +412,7 @@ namespace RealismMod
             return hasEffect;
         }
 
-        public void CancelEffects()
+        public void CancelCustomEffects()
         {
             for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
             {
@@ -533,16 +533,49 @@ namespace RealismMod
 
         private void PainReliefCheck(Player player) 
         {
-            if (reliefWaitTime >= ReliefWaitDuration && PainReliefStrength >= PainStrength && !HasBaseEFTEffect(player, "PainKiller"))
+            if (reliefWaitTimer >= ReliefWaitDuration)
             {
-                Logger.LogWarning("==relieving pain==");
-                AddBasesEFTEffect(player, "PainKiller", EBodyPart.Head, 0f, ReliefDuration, 1f, 1f);
-                AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 0f, ReliefDuration, 1f, PainTunnelStrength);
-                reliefWaitTime = 0f;
+                if (PainReliefStrength >= PainStrength && !HasBaseEFTEffect(player, "PainKiller")) 
+                {
+                    Logger.LogWarning("==relieving pain==");
+                    AddBasesEFTEffect(player, "PainKiller", EBodyPart.Head, 0f, ReliefDuration, 1f, 1f);
+                }
+                Logger.LogWarning("==adding tunnel==");
+                AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 0f, reliefWaitDuration, 1f, PainTunnelStrength);
+                reliefWaitTimer = 0f;
             }
 
         }
 
+        private void TickEffects() 
+        {
+            for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
+            {
+                IHealthEffect effect = activeHealthEffects[i];
+                if (Plugin.EnableLogging.Value)
+                {
+                    Logger.LogWarning("Type = " + effect.GetType().ToString());
+                    Logger.LogWarning("Delay = " + effect.Delay);
+                }
+
+                effect.Delay = Math.Max(effect.Delay - 1, 0);
+
+                if (effect.Duration == null || effect.Duration > 0f)
+                {
+                    effect.Tick();
+                }
+                else
+                {
+                    if (Plugin.EnableLogging.Value)
+                    {
+                        Logger.LogWarning("Removing Effect Due to Duration");
+                    }
+                    activeHealthEffects.RemoveAt(i);
+                }
+            }
+        }
+
+        //replace all this logic with a schedular class to control execution timing
         public void ControllerTick()
         {
             Player player = Singleton<GameWorld>.Instance.MainPlayer;
@@ -563,6 +596,7 @@ namespace RealismMod
             }
             if (healthControllerTime >= 3f && !Reset4)
             {
+                Logger.LogWarning("calling regen");
                 PlayerInjuryStateCheck(player);
                 Reset4 = true;
             }
@@ -570,31 +604,7 @@ namespace RealismMod
             if (effectsTime >= 1f)
             {
                 PainReliefCheck(player);
-
-                for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
-                {
-                    IHealthEffect effect = activeHealthEffects[i];
-                    if (Plugin.EnableLogging.Value)
-                    {
-                        Logger.LogWarning("Type = " + effect.GetType().ToString());
-                        Logger.LogWarning("Delay = " + effect.Delay);
-                    }
-
-                    effect.Delay = Math.Max(effect.Delay - 1, 0);
-
-                    if (effect.Duration == null || effect.Duration > 0f)
-                    {
-                        effect.Tick();
-                    }
-                    else
-                    {
-                        if (Plugin.EnableLogging.Value)
-                        {
-                            Logger.LogWarning("Removing Effect Due to Duration");
-                        }
-                        activeHealthEffects.RemoveAt(i);
-                    }
-                }
+                TickEffects();
                 effectsTime = 0f;
             }
             
@@ -769,7 +779,7 @@ namespace RealismMod
 
         public void DoPassiveRegen(float tickRate, EBodyPart bodyPart, Player player, int delay, float hpToRestore, EDamageType damageType)
         {
-            if (!HasEffectOfType(typeof(TourniquetEffect), bodyPart))
+            if (!HasCustomEffectOfType(typeof(TourniquetEffect), bodyPart))
             {
                 HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, bodyPart, player, delay, hpToRestore, damageType);
                 AddCustomEffect(regenEffect, false);
@@ -783,7 +793,7 @@ namespace RealismMod
 
             foreach (EBodyPart part in BodyParts)
             {
-                if (!HasEffectOfType(typeof(TourniquetEffect), part))
+                if (!HasCustomEffectOfType(typeof(TourniquetEffect), part))
                 {
                     HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, part, player, delay, hpToRestore, damageType);
                     AddCustomEffect(regenEffect, false);
@@ -798,7 +808,7 @@ namespace RealismMod
 
             foreach (EBodyPart part in BodyParts)
             {
-                if (part != bodyPart && !HasEffectOfType(typeof(TourniquetEffect), part))
+                if (part != bodyPart && !HasCustomEffectOfType(typeof(TourniquetEffect), part))
                 {
                     HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, part, player, delay, hpToRestore, damageType);
                     AddCustomEffect(regenEffect, false);
@@ -871,9 +881,7 @@ namespace RealismMod
 
         private void handleSplint(MedsClass meds, float regenTickRate, EBodyPart bodyPart, Player player)
         {
-
             NotificationManagerClass.DisplayMessageNotification("Fracture On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
-
             int delay = (int)meds.HealthEffectsComponent.UseTime;
             HealthRegenEffect regenEffect = new HealthRegenEffect(regenTickRate, null, bodyPart, player, delay, 12f, EDamageType.Impact);
             AddCustomEffect(regenEffect, false);
@@ -1076,7 +1084,8 @@ namespace RealismMod
             float stamRegenInjuryMulti = 1f;
             float resourceRateInjuryMulti = 1f;
 
-            float painReliefFactor = PainReliefStrength / 100f;
+            float painReliefFactor = (PainReliefStrength * 2f) / 100f;
+            float resourcePainReliefFactor = (PainReliefStrength * 4f) / 100f;
 
             float currentEnergy = player.ActiveHealthController.Energy.Current;
             float maxEnergy = player.ActiveHealthController.Energy.Maximum;
@@ -1169,10 +1178,8 @@ namespace RealismMod
                 }
             }
 
-  
-
             float totalHpPercent = totalCurrentHp / totalMaxHp;
-            resourceRateInjuryMulti = Mathf.Min(1f - (totalHpPercent * 1.25f), 1f);
+            resourceRateInjuryMulti = Mathf.Clamp(1f - totalHpPercent, 0f, 1f);
 
             if (totalHpPercent <= 0.5f)
             {
@@ -1193,28 +1200,26 @@ namespace RealismMod
             float percentEnergyErgo = 1f - ((1f - percentEnergyFactor) / 2f);
             float percentEnergyStamRegen = 1f - ((1f - percentEnergyFactor) / 10f);
 
-            float percentHydroLowerLimit = (1f - ((1f - percentHydro) / 4f)) * (1f - painReliefFactor);
-            float percentHydroLimitRecoil = (1f + ((1f - percentHydro) / 20f)) * (1f + painReliefFactor);
+            float percentHydroLowerLimit = (1f - ((1f - percentHydro) / 4f));
+            float percentHydroLimitRecoil = (1f + ((1f - percentHydro) / 20f));
 
-            PlayerStats.AimMoveSpeedInjuryMulti = Mathf.Max(aimMoveSpeedMulti, 0.6f * percentHydroLowerLimit);
-            PlayerStats.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)), 3.5f);
-            PlayerStats.ADSInjuryMulti = Mathf.Max(adsInjuryMulti * percentEnergyADS, 0.35f * percentHydroLowerLimit);
-            PlayerStats.StanceInjuryMulti = Mathf.Max(stanceInjuryMulti * percentEnergyStance, 0.45f * percentHydroLowerLimit);
-            PlayerStats.ReloadInjuryMulti = Mathf.Max(reloadInjuryMulti * percentEnergyReload, 0.75f * percentHydroLowerLimit);
-            PlayerStats.RecoilInjuryMulti = Mathf.Min(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)), 1.15f * percentHydroLimitRecoil);
-            PlayerStats.HealthSprintSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
-            PlayerStats.HealthSprintAccelFactor = Mathf.Max(sprintAccelInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
-            PlayerStats.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk, 0.6f * percentHydroLowerLimit);
-            PlayerStats.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen, 0.5f * percentHydroLowerLimit);
+            PlayerStats.AimMoveSpeedInjuryMulti = Mathf.Max(aimMoveSpeedMulti * (1f - painReliefFactor), 0.6f * percentHydroLowerLimit);
+            PlayerStats.ADSInjuryMulti = Mathf.Max(adsInjuryMulti * percentEnergyADS * (1f - painReliefFactor), 0.35f * percentHydroLowerLimit);
+            PlayerStats.StanceInjuryMulti = Mathf.Max(stanceInjuryMulti * percentEnergyStance * (1f - painReliefFactor), 0.45f * percentHydroLowerLimit);
+            PlayerStats.ReloadInjuryMulti = Mathf.Max(reloadInjuryMulti * percentEnergyReload * (1f - painReliefFactor), 0.75f * percentHydroLowerLimit);
+            PlayerStats.HealthSprintSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergySprint * (1f - painReliefFactor), 0.4f * percentHydroLowerLimit);
+            PlayerStats.HealthSprintAccelFactor = Mathf.Max(sprintAccelInjuryMulti * percentEnergySprint * (1f - painReliefFactor), 0.4f * percentHydroLowerLimit);
+            PlayerStats.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk * (1f - painReliefFactor), 0.6f * percentHydroLowerLimit);
+            PlayerStats.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen * (1f - painReliefFactor), 0.5f * percentHydroLowerLimit);
+            PlayerStats.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * (1f + painReliefFactor), 3.5f);
+            PlayerStats.RecoilInjuryMulti = Mathf.Min(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * (1f + painReliefFactor), 1.15f * percentHydroLimitRecoil);
 
-            ResourceRateEffect resEffect = new ResourceRateEffect(resourceRateInjuryMulti * (1f + painReliefFactor), null, player, 0);
-            AddCustomEffect(resEffect, true);
-            Logger.LogWarning("painReliefFactor " + painReliefFactor);
-            Logger.LogWarning("resourceRateInjuryMulti " + resourceRateInjuryMulti);
-            Logger.LogWarning("totalCurrentHp " + totalCurrentHp);
-            Logger.LogWarning("totalMaxHp " + totalMaxHp);
-
-
+            if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach)) 
+            {
+                Logger.LogWarning("adding regen effect");
+                ResourceRateEffect resEffect = new ResourceRateEffect(resourceRateInjuryMulti + resourcePainReliefFactor, null, player, 0, Logger);
+                AddCustomEffect(resEffect, false);
+            }
         }
     }
 }

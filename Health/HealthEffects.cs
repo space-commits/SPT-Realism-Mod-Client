@@ -122,9 +122,9 @@ namespace RealismMod
                     haveNotified = true;
                 }
 
-                if (!hasRemovedTrnqt && RealismMod.Plugin.RealHealthController.HasEffectOfType(typeof(TourniquetEffect), BodyPart))
+                if (!hasRemovedTrnqt && RealismMod.Plugin.RealHealthController.HasCustomEffectOfType(typeof(TourniquetEffect), BodyPart))
                 {
-                    Plugin.RealHealthController.RemoveEffectOfType(typeof(TourniquetEffect), BodyPart);
+                    Plugin.RealHealthController.RemoveCustomEffectOfType(typeof(TourniquetEffect), BodyPart);
                     hasRemovedTrnqt = true;
                     NotificationManagerClass.DisplayMessageNotification("Surgical Kit Used, Removing Tourniquet Effect Present On Limb: " + BodyPart, EFT.Communications.ENotificationDurationType.Long);
                 }
@@ -222,8 +222,9 @@ namespace RealismMod
         public Player _Player { get; }
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
+        private ManualLogSource Logger;
 
-        public ResourceRateEffect(float resourcePerTick, int? dur, Player player, int delay)
+        public ResourceRateEffect(float resourcePerTick, int? dur, Player player, int delay, ManualLogSource logger)
         {
             TimeExisted = 0;
             Duration = dur;
@@ -232,6 +233,7 @@ namespace RealismMod
             EffectType = EHealthEffectType.ResourceRate;
             BodyPart = EBodyPart.Stomach;
             ResourcePerTick = resourcePerTick;
+            Logger = logger;
         }
 
         public void Tick()
@@ -285,7 +287,7 @@ namespace RealismMod
                 Duration--;
                 if (Duration <= 0)
                 {
-                    logger.LogWarning("removing effect");
+                    logger.LogWarning("removing PK effect");
                     Plugin.RealHealthController.PainReliefStrength -= PainKillerStrength;
                     Plugin.RealHealthController.PainTunnelStrength -= TunnelVisionStrength;
                     Plugin.RealHealthController.ReliefDuration -= IntermittentEffectDur;
@@ -293,7 +295,7 @@ namespace RealismMod
                 }
                 else if (!addedEffect)
                 {
-                    logger.LogWarning("adding effect");
+                    logger.LogWarning("adding PK effect");
                     addedEffect = true;
                     Plugin.RealHealthController.PainReliefStrength += PainKillerStrength;
                     Plugin.RealHealthController.PainTunnelStrength += TunnelVisionStrength;

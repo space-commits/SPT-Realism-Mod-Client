@@ -450,9 +450,6 @@ namespace RealismMod
                     //Melee
                     if (MeleeIsToggleable && Input.GetKeyDown(Plugin.MeleeKeybind.Value.MainKey))
                     {
-                        StanceBlender.Target = 1f;
-                        IsMeleeAttack = true;
-                        MeleeIsToggleable = false;
                         IsHighReady = false;
                         IsLowReady = false;
                         IsActiveAiming = false;
@@ -463,6 +460,9 @@ namespace RealismMod
                         WasLowReady = IsLowReady;
                         WasShortStock = IsShortStock;
                         DidStanceWiggle = false;
+                        StanceBlender.Target = 1f;
+                        IsMeleeAttack = true;
+                        MeleeIsToggleable = false;
                     }
 
                     //short-stock
