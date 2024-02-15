@@ -213,7 +213,7 @@ namespace RealismMod
 
         private static void doMelee(Player.FirearmController fc, float ln, Player player)
         {
-            if (!PlayerStats.IsSprinting && StanceController.IsMeleeAttack && StanceController.CanDoMeleeDetection)
+            if (!PlayerStats.IsSprinting && StanceController.IsMeleeAttack && StanceController.CanDoMeleeDetection && !StanceController.MeleeHitSomething)
             {
                 Transform weapTransform = player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim;
                 RaycastHit[] raycastArr = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
@@ -289,6 +289,7 @@ namespace RealismMod
 */                  player.Physical.ConsumeAsMelee(0.3f + (WeaponStats.ErgoFactor / 100f));
 
                     StanceController.CanDoMeleeDetection = false;
+                    StanceController.MeleeHitSomething = true;
                     return;
                 }
             }

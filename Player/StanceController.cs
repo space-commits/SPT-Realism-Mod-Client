@@ -73,6 +73,7 @@ namespace RealismMod
 
         public static bool MeleeIsToggleable = true;
         public static bool CanDoMeleeDetection = false;
+        public static bool MeleeHitSomething = false;
         public static bool IsFiringFromStance = false;
         public static float StanceShotTime = 0.0f;
         public static float ManipTime = 0.0f;
@@ -464,6 +465,7 @@ namespace RealismMod
                         StanceBlender.Target = 1f;
                         IsMeleeAttack = true;
                         MeleeIsToggleable = false;
+                        MeleeHitSomething = false;
                     }
 
                     //short-stock
@@ -786,8 +788,8 @@ namespace RealismMod
             Quaternion shortStockMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.ShortStockAdditionalRotationX.Value * resetErgoMulti, Plugin.ShortStockAdditionalRotationY.Value * resetErgoMulti, Plugin.ShortStockAdditionalRotationZ.Value * resetErgoMulti));
             Quaternion shortStockRevertQuaternion = Quaternion.Euler(Plugin.ShortStockResetRotationX.Value * resetErgoMulti, Plugin.ShortStockResetRotationY.Value * resetErgoMulti, Plugin.ShortStockResetRotationZ.Value * resetErgoMulti);
            
-            Vector3 meleeTargetPosition = new Vector3(0f, -0.05f, 0f); //new Vector3(0.02f, 0.08f, -0.07f);
-            Quaternion meleeTargetQuaternion = Quaternion.Euler(new Vector3(-5f * resetErgoMulti, -15f * resetErgoMulti, -2f)); //-1f * resetErgoMulti, -5f * resetErgoMulti, -1f)
+            Vector3 meleeTargetPosition = new Vector3(0f, -0.0275f, 0f); //new Vector3(0.02f, 0.08f, -0.07f);
+            Quaternion meleeTargetQuaternion = Quaternion.Euler(new Vector3(-1.5f * resetErgoMulti, -5f * resetErgoMulti, -0.5f)); //-1f * resetErgoMulti, -5f * resetErgoMulti, -1f)
 
             float movementFactor = PlayerStats.IsMoving ? 1.25f : 1f;
             float beltfedFactor = fc.Item.IsBeltMachineGun ? 0.9f : 1f;
@@ -1235,8 +1237,8 @@ namespace RealismMod
                 {
                     StanceController.CanDoMeleeDetection = true;
                 }
-
-                if (StanceController.StanceBlender.Value >= 1f) 
+                float distance = Vector3.Distance(StanceController.StanceTargetPosition, meleeTargetPosition);
+                if (StanceController.StanceBlender.Value >= 1f && distance <= 0.001f) 
                 {
                     StanceController.IsMeleeAttack = false;
                     StanceBlender.Target = 0f;
