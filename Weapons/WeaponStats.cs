@@ -141,80 +141,22 @@ namespace RealismMod
 
         }
 
-        public static float AdapterPistolGripBonusVRecoil
-        {
-            get { return -1f; }
-        }
 
-        public static float AdapterPistolGripBonusHRecoil
-        {
-            get { return -2f; }
-        }
-
-        public static float AdapterPistolGripBonusDispersion
-        {
-            get { return -1f; }
-        }
-
-        public static float AdapterPistolGripBonusChamber
-        {
-            get { return 10f; }
-        }
-
-        public static float AdapterPistolGripBonusErgo
-        {
-            get { return 2f; }
-        }
-
-        public static float PumpGripReloadBonus
-        {
-            get { return 18f; }
-        }
-
-        public static float FoldedErgoFactor
-        {
-            get { return 1f; }
-        }
-
-        public static float FoldedHRecoilFactor
-        {
-            get { return 1.15f; }
-        }
-
-        public static float FoldedVRecoilFactor
-        {
-            get { return 1.5f; }
-        }
-
-        public static float FoldedCOIFactor
-        {
-            get { return 2f; }
-        }
-
-        public static float FoldedCamRecoilFactor
-        {
-            get { return 0.4f; }
-        }
-
-        public static float FoldedDispersionFactor
-        {
-            get { return 1.55f; }
-        }
-
-        public static float FoldedRecoilAngleFactor
-        {
-            get { return 1.15f; }
-        }
-
-        public static float ErgoStatFactor
-        {
-            get { return 7f; }
-        }
-
-        public static float RecoilStatFactor
-        {
-            get { return 3.5f; }
-        }
+        public const float AdapterPistolGripBonusVRecoil = -1f;
+        public const float AdapterPistolGripBonusHRecoil = -2f;
+        public const float AdapterPistolGripBonusDispersion = -1f;
+        public const float AdapterPistolGripBonusChamber = 10f;
+        public const float AdapterPistolGripBonusErgo = 2f;
+        public const float PumpGripReloadBonus = 18f;
+        public const float FoldedErgoFactor = 1f;
+        public const float FoldedHRecoilFactor = 1.15f;
+        public const float FoldedVRecoilFactor = 1.5f;
+        public const float FoldedCOIFactor = 2f;
+        public const float FoldedCamRecoilFactor = 0.4f;
+        public const float FoldedDispersionFactor = 1.55f;
+        public const float FoldedRecoilAngleFactor = 1.15f;
+        public const float ErgoStatFactor = 7f;
+        public const float RecoilStatFactor = 3.5f;
 
         public static float TotalWeaponWeight = 0f;
 

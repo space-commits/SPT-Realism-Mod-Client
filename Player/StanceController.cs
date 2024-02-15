@@ -54,7 +54,7 @@ namespace RealismMod
         private static Quaternion pistolMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.PistolAdditionalRotationX.Value, Plugin.PistolAdditionalRotationY.Value, Plugin.PistolAdditionalRotationZ.Value));
         private static Quaternion activeAimTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.ActiveAimRotationX.Value, Plugin.ActiveAimRotationY.Value, Plugin.ActiveAimRotationZ.Value));
 
-        private static float clickDelay = 0.2f;
+        private const float clickDelay = 0.2f;
         private static float doubleClickTime = 0f;
         private static bool clickTriggered = true;
         public static int SelectedStance = 0;
@@ -316,6 +316,7 @@ namespace RealismMod
 
         public static void StanceState()
         {
+
             if (Utils.WeaponReady)
             {
                 if (DoDampingTimer)
@@ -388,7 +389,7 @@ namespace RealismMod
                             WasShortStock = IsShortStock;
                             DidStanceWiggle = false;
 
-                            if (IsHighReady == true && (PlayerStats.RightArmRuined == true || PlayerStats.LeftArmRuined == true))
+                            if (IsHighReady && Plugin.RealHealthController.ArmAreIncapacitated)
                             {
                                 DoHighReadyInjuredAnim = true;
                             }
@@ -497,7 +498,7 @@ namespace RealismMod
                         WasShortStock = IsShortStock;
                         DidStanceWiggle = false;
 
-                        if (IsHighReady == true && (PlayerStats.RightArmRuined == true || PlayerStats.LeftArmRuined == true))
+                        if (IsHighReady && Plugin.RealHealthController.ArmAreIncapacitated)
                         {
                             DoHighReadyInjuredAnim = true;
                         }
@@ -558,7 +559,7 @@ namespace RealismMod
                         }
                     }
 
-                    if ((PlayerStats.LeftArmRuined || PlayerStats.RightArmRuined) && !IsAiming && !IsShortStock && !IsActiveAiming && !IsHighReady)
+                    if (Plugin.RealHealthController.ArmAreIncapacitated && !IsAiming && !IsShortStock && !IsActiveAiming && !IsHighReady)
                     {
                         StanceBlender.Target = 1f;
                         IsLowReady = true;
@@ -797,7 +798,7 @@ namespace RealismMod
                 pwa.HandsContainer.WeaponRoot.localPosition = WeaponOffsetPosition;
             }
 
-            if (Plugin.EnableTacSprint.Value && (StanceController.IsHighReady || StanceController.WasHighReady) && !PlayerStats.RightArmRuined)
+            if (Plugin.EnableTacSprint.Value && (StanceController.IsHighReady || StanceController.WasHighReady) && !Plugin.RealHealthController.ArmAreIncapacitated)
             {
                 player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
                 if (!setRunAnim)

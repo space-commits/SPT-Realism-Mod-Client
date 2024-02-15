@@ -177,12 +177,12 @@ namespace RealismMod
             __instance.HipZRandom.Amplitude = Mathf.Clamp(baseHipRandomAmplitudes.y + amplGain, 0f, 3f);
             __instance.HipXRandom.Hardness = (__instance.HipZRandom.Hardness = __instance.Hardness.Value);
             shakeIntensityField.SetValue(__instance, 1f);
-            bool isInjured = __instance.TremorOn || __instance.Fracture;
+            bool isInjured = __instance.TremorOn || __instance.Fracture || Plugin.RealHealthController.ArmAreIncapacitated;
             float intensityHolder = 1f;
 
             if (Time.time < __instance.StiffUntill)
             {
-                float intensity = Mathf.Clamp(-__instance.StiffUntill + Time.time + 1f, isInjured ? 0.5f : 0.3f, 1f);
+                float intensity = Mathf.Clamp(-__instance.StiffUntill + Time.time + 1f, isInjured ? 0.75f : 0.3f, 1f);
                 breathIntensityField.SetValue(__instance, intensity * __instance.Intensity);
                 shakeIntensityField.SetValue(__instance, intensity);
                 intensityHolder = intensity;
@@ -220,7 +220,7 @@ namespace RealismMod
                 float tremorXRandom = __instance.TremorXRandom.GetValue(tremorSpeed);
                 float tremorYRandom = __instance.TremorYRandom.GetValue(tremorSpeed);
                 float tremorZRnadom = __instance.TremorZRandom.GetValue(tremorSpeed);
-                if (__instance.Fracture && !__instance.IsAiming)
+                if ((__instance.Fracture || Plugin.RealHealthController.PainStrength >= RealismHealthController.PainReliefThreshold) && !__instance.IsAiming)
                 {
                     tremorXRandom += Mathf.Max(0f, randomY) * Mathf.Lerp(1f, 100f / __instance.EnergyFractureLimit, staminaLevel);
                 }
