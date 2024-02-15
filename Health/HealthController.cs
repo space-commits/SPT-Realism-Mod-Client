@@ -1,25 +1,15 @@
 ﻿using BepInEx.Logging;
-using EFT.InventoryLogic;
+using Comfort.Common;
 using EFT;
+using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Collections;
-using static System.Net.Mime.MediaTypeNames;
-using UnityEngine;
 using System.Reflection;
-using Comfort.Common;
-using HarmonyLib.Tools;
-using static Systems.Effects.Effects;
-using static CW2.Animations.PhysicsSimulator.Val;
-using EFT.Interactive;
-using System.Threading.Tasks;
-using Systems.Effects;
+using UnityEngine;
 using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2411;
 using ExistanceClass = GClass2452;
-using EFT.HealthSystem;
 
 namespace RealismMod
 {
@@ -46,17 +36,17 @@ namespace RealismMod
             return !Utils.IsNull(med.ConflictingItems) && bool.TryParse(med.ConflictingItems[4], out bool result) ? result : false;
         }
 
-        public static int PainKillerFullDuration(Item med)
+        public static int PainKillerDuration(Item med)
         {
             return !Utils.IsNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[5], out int result) ? result : 1;
         }
 
-        public static int PainKillerWaitTime(Item med)
+        public static int Unused1(Item med)
         {
             return !Utils.IsNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[6], out int result) ? result : 1;
         }
 
-        public static int PainKillerTime(Item med)
+        public static int Unused2(Item med)
         {
             return !Utils.IsNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[7], out int result) ? result : 1;
         }
@@ -164,44 +154,40 @@ namespace RealismMod
         private float adrenalineCooldownTime = 60f * (1f - PlayerStats.StressResistanceFactor);
         public bool AdrenalineCooldownActive = false;
 
-        public bool Reset1 = false;
-        public bool Reset2 = false;
-        public bool Reset3 = false;
-        public bool Reset4 = false;
-        public bool Reset5 = false;
-        public bool Reset6 = false;
+        //temporary solution
+        private bool reset1 = false;
+        private bool reset2 = false;
+        private bool reset3 = false;
+        private bool reset4 = false;
 
         public float PainStrength = 0f;
         public float PainReliefStrength = 0f;
         public float PainTunnelStrength = 0f;
         public int ReliefDuration = 0;
 
-        public const float PainThreshold = 20f;
-        public const float PainReliefThreshold = 40f;
+        public const float PainThreshold = 30f;
+        public const float PainReliefThreshold = 30f;
+        public const float OverdoseThreshold = 30f;
         private bool rightArmRuined = false;
         private bool leftArmRuined = false;
 
-        public bool ArmAreIncapacitated 
+        public bool ArmsAreIncapacitated 
         {
             get 
             {
-                return rightArmRuined || leftArmRuined || PainReliefStrength > PainReliefThreshold || PainReliefStrength > PainThreshold;
+                return rightArmRuined || leftArmRuined || (PainStrength > PainThreshold && PainStrength > PainReliefStrength);
             }
         }
 
-        private const int baseReliefWaitDuration = 60;
-        private int reliefWaitDuration = baseReliefWaitDuration;
-        public int ReliefWaitDuration
+        public bool HasOverdosed
         {
-            get 
+            get
             {
-                return reliefWaitDuration;
-            }
-            set 
-            {
-                reliefWaitDuration = (int)Mathf.Clamp(value, 0, 60);
+                return PainReliefStrength > OverdoseThreshold;
             }
         }
+
+        private const int painReliefInterval = 15;
 
         public RealismHealthController(DamageTracker dmgTracker, ManualLogSource logger) 
         {
@@ -458,7 +444,6 @@ namespace RealismMod
             PainReliefStrength = 0f;
             PainTunnelStrength = 0f;
             ReliefDuration = 0;
-            ReliefWaitDuration = baseReliefWaitDuration;
         }
 
         public void ResetBleedDamageRecord(Player player)
@@ -546,18 +531,31 @@ namespace RealismMod
 
         private void PainReliefCheck(Player player) 
         {
-            if (reliefWaitTimer >= ReliefWaitDuration)
+            ReliefDuration = Math.Max(ReliefDuration - 1, 0);
+            if (ReliefDuration > 0) 
             {
-                if (PainReliefStrength >= PainStrength && !HasBaseEFTEffect(player, "PainKiller")) 
+                if (PainReliefStrength >= PainStrength)
                 {
+                    Logger.LogWarning("Pain Relief Strength " + PainReliefStrength);
                     Logger.LogWarning("==relieving pain==");
-                    AddBasesEFTEffect(player, "PainKiller", EBodyPart.Head, 0f, ReliefDuration, 1f, 1f);
+                    AddBaseEFTEffectIfNoneExisting(player, "PainKiller", EBodyPart.Head, 1f, ReliefDuration, 5f, 1f);
                 }
-                Logger.LogWarning("==adding tunnel==");
-                AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 0f, reliefWaitDuration, 1f, PainTunnelStrength);
-                reliefWaitTimer = 0f;
-            }
 
+                if (reliefWaitTimer >= painReliefInterval)
+                {
+                    Logger.LogWarning("==adding tunnel==");
+                    AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, painReliefInterval, 5f, PainTunnelStrength);
+
+                    if (HasOverdosed)
+                    {
+                        Logger.LogWarning("==OVERDOSE==");
+                        AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 1f, painReliefInterval, 5f, 0.35f);
+                        AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 1f, painReliefInterval, 5f, 1);
+                    }
+
+                    reliefWaitTimer = 0f;
+                }
+            }
         }
 
         private void TickEffects() 
@@ -592,26 +590,26 @@ namespace RealismMod
         public void ControllerTick()
         {
             Player player = Singleton<GameWorld>.Instance.MainPlayer;
-            if (healthControllerTime >= 0.5f && !Reset1)
+            if (healthControllerTime >= 0.5f && !reset1)
             {
                 ResetBleedDamageRecord(player);
-                Reset1 = true;
+                reset1 = true;
             }
-            if (healthControllerTime >= 1f && !Reset2)
+            if (healthControllerTime >= 1f && !reset2)
             {
                 ResourceRegenCheck(player);
-                Reset2 = true;
+                reset2 = true;
             }
-            if (healthControllerTime >= 2f && !Reset3)
+            if (healthControllerTime >= 2f && !reset3)
             {
                 DoubleBleedCheck(player);
-                Reset3 = true;
+                reset3 = true;
             }
-            if (healthControllerTime >= 3f && !Reset4)
+            if (healthControllerTime >= 3f && !reset4)
             {
                 Logger.LogWarning("calling regen");
                 PlayerInjuryStateCheck(player);
-                Reset4 = true;
+                reset4 = true;
             }
 
             if (effectsTime >= 1f)
@@ -624,12 +622,10 @@ namespace RealismMod
             if (healthControllerTime >= 3f) 
             {
                 healthControllerTime = 0f;
-                Reset1 = false;
-                Reset2 = false;
-                Reset3 = false;
-                Reset4 = false;
-                Reset5 = false;
-                Reset6 = false;
+                reset1 = false;
+                reset2 = false;
+                reset3 = false;
+                reset4 = false;
             }
         }
 
@@ -1147,15 +1143,15 @@ namespace RealismMod
                 float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 2f : 3.5f));
                 float percentHpRecoil = 1f - ((1f - percentHp) / (isLeftArm ? 10f : 20f));
 
-                if (percentHp <= 0.5f)
-                {
-                    AddBaseEFTEffectIfNoneExisting(player, "Pain", part, 0f, 10f, 1f, 1f);
-                    PainStrength += 2f;
-                }
 
                 if (currentHp <= 0f)
                 {
                     PainStrength += 10f;
+                }
+                else if (percentHp <= 0.5f)
+                {
+                    AddBaseEFTEffectIfNoneExisting(player, "Pain", part, 0f, 10f, 1f, 1f);
+                    PainStrength += 2f;
                 }
 
                 if (isLeg || isBody)
@@ -1172,14 +1168,13 @@ namespace RealismMod
                     bool isArmRuined = (currentHp <= 0f || hasFracture) && !HasBaseEFTEffect(player, "PainKiller");
                     if (isLeftArm)
                     {
-                        PlayerStats.LeftArmRuined = isArmRuined;
+                        leftArmRuined = isArmRuined;
                     }
                     if (isRightArm)
                     {
-                        PlayerStats.RightArmRuined = isArmRuined;
+                        rightArmRuined = isArmRuined;
                     }
 
-                    float ruinedFactor = PlayerStats.LeftArmRuined ? 0.8f : PlayerStats.RightArmRuined ? 0.9f : PlayerStats.LeftArmRuined && PlayerStats.RightArmRuined ? 0.7f : 1f;
                     float armFractureFactor = isLeftArm && hasFracture ? 0.8f : isRightArm && hasFracture ? 0.9f : 1f;
 
                     aimMoveSpeedMulti *= percentHpAimMove * armFractureFactor;
@@ -1197,7 +1192,7 @@ namespace RealismMod
             if (totalHpPercent <= 0.5f)
             {
                 AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 10f, 1f, 1f);
-                PainStrength += 5f;
+                PainStrength += 10f;
             }
 
             float percentEnergyFactor = Mathf.Max(percentEnergy * 1.2f * (1f - painReliefFactor), 0.01f);
@@ -1212,10 +1207,11 @@ namespace RealismMod
             float percentEnergyErgo = 1f - ((1f - percentEnergyFactor) / 2f);
             float percentEnergyStamRegen = 1f - ((1f - percentEnergyFactor) / 10f);
 
-            float percentHydroLowerLimit = (1f - ((1f - percentHydro) / 4f));
-            float percentHydroLimitRecoil = (1f + ((1f - percentHydro) / 20f));
+            float percentHydroLowerLimit = (1f - ((1f - percentHydro) / 4f)) * (1f - (painReliefFactor / 5));
+            float percentHydroLimitRecoil = (1f + ((1f - percentHydro) / 20f)) * (1f - (painReliefFactor / 5));
+            float percentHydroLimitErgo = (1f + ((1f - percentHydro) / 4f)) * (1f - (painReliefFactor / 5));
 
-            PlayerStats.AimMoveSpeedInjuryMulti = Mathf.Max(aimMoveSpeedMulti, 0.6f * percentHydroLowerLimit);
+            PlayerStats.AimMoveSpeedInjuryMulti = Mathf.Max(aimMoveSpeedMulti * percentEnergyAimMove, 0.6f * percentHydroLowerLimit);
             PlayerStats.ADSInjuryMulti = Mathf.Max(adsInjuryMulti * percentEnergyADS, 0.35f * percentHydroLowerLimit);
             PlayerStats.StanceInjuryMulti = Mathf.Max(stanceInjuryMulti * percentEnergyStance, 0.45f * percentHydroLowerLimit);
             PlayerStats.ReloadInjuryMulti = Mathf.Max(reloadInjuryMulti * percentEnergyReload, 0.75f * percentHydroLowerLimit);
@@ -1223,7 +1219,7 @@ namespace RealismMod
             PlayerStats.HealthSprintAccelFactor = Mathf.Max(sprintAccelInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
             PlayerStats.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk, 0.6f * percentHydroLowerLimit);
             PlayerStats.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen, 0.5f * percentHydroLowerLimit);
-            PlayerStats.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)), 3.5f);
+            PlayerStats.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)), 3.5f * percentHydroLimitErgo);
             PlayerStats.RecoilInjuryMulti = Mathf.Min(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)), 1.15f * percentHydroLimitRecoil);
 
             if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach)) 
@@ -1235,3 +1231,4 @@ namespace RealismMod
         }
     }
 }
+ 

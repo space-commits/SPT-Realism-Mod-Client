@@ -259,13 +259,11 @@ namespace RealismMod
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
         public float TunnelVisionStrength { get; }
-        public int IntermittentWaitDur { get; }
-        public int IntermittentEffectDur { get; }
         public float PainKillerStrength { get; set; }
         private bool addedEffect = false;
         private ManualLogSource logger;
 
-        public PainKillerEffect(int? dur, Player player, int delay, int intermittentWaitDur, int intermittentEffectDur, float tunnelStrength, float painKillerStrength, ManualLogSource logger)
+        public PainKillerEffect(int? dur, Player player, int delay, float tunnelStrength, float painKillerStrength, ManualLogSource logger)
         {
             TimeExisted = 0;
             Duration = dur;
@@ -273,8 +271,6 @@ namespace RealismMod
             _Player = player;
             Delay = delay;
             EffectType = EHealthEffectType.PainKiller;
-            IntermittentWaitDur = intermittentWaitDur;
-            IntermittentEffectDur = intermittentEffectDur;
             TunnelVisionStrength = tunnelStrength;
             PainKillerStrength = painKillerStrength;
             this.logger = logger;
@@ -287,26 +283,23 @@ namespace RealismMod
                 Duration--;
                 if (Duration <= 0)
                 {
-                    logger.LogWarning("removing PK effect");
+                    logger.LogWarning("removing PK stats");
                     Plugin.RealHealthController.PainReliefStrength -= PainKillerStrength;
                     Plugin.RealHealthController.PainTunnelStrength -= TunnelVisionStrength;
-                    Plugin.RealHealthController.ReliefDuration -= IntermittentEffectDur;
-                    Plugin.RealHealthController.ReliefWaitDuration += IntermittentWaitDur;
                 }
                 else if (!addedEffect)
                 {
-                    logger.LogWarning("adding PK effect");
+                    logger.LogWarning("adding PK stats");
                     addedEffect = true;
                     Plugin.RealHealthController.PainReliefStrength += PainKillerStrength;
                     Plugin.RealHealthController.PainTunnelStrength += TunnelVisionStrength;
-                    Plugin.RealHealthController.ReliefDuration += IntermittentEffectDur;
-                    Plugin.RealHealthController.ReliefWaitDuration -= IntermittentWaitDur;
+                    Plugin.RealHealthController.ReliefDuration += (int)Duration;
 
-                    if (!Plugin.RealHealthController.HasBaseEFTEffect(_Player, "PainKiller"))
+          /*          if (!Plugin.RealHealthController.HasBaseEFTEffect(_Player, "PainKiller"))
                     {
-                        Plugin.RealHealthController.AddBasesEFTEffect(_Player, "PainKiller", EBodyPart.Head, 0f, IntermittentEffectDur, 1f, 1f);
-                        Plugin.RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 0f, IntermittentEffectDur, 1f, TunnelVisionStrength);
-                    }
+                        Plugin.RealHealthController.AddBasesEFTEffect(_Player, "PainKiller", EBodyPart.Head, 0f, (float)Duration, 1f, 1f);
+                        Plugin.RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 0f, (float)Duration, 1f, TunnelVisionStrength);
+                    }*/
                 }
             }
             else 

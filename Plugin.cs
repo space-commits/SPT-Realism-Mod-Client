@@ -692,7 +692,7 @@ namespace RealismMod
             if (EnableMedicalOvehaul.Value && ServerConfig.med_changes)
             {
                 new ApplyItemPatch().Enable();
-                new SetQuickSlotPatch().Enable();
+                new BreathIsAudiblePatch().Enable();
                 new ProceedPatch().Enable();
                 new RemoveEffectPatch().Enable();
                 new StamRegenRatePatch().Enable();

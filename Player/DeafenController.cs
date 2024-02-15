@@ -70,7 +70,6 @@ namespace RealismMod
         {
             float enviroMulti = PlayerStats.EnviroType == EnvironmentType.Indoor ? 1.3f : 1f;
             float deafFactor = AmmoDeafFactor * WeaponDeafFactor * EarProtectionFactor;
-            float drugsFactor = (1f + (Plugin.RealHealthController.PainReliefStrength / 100f));
             float botDeafFactor = BotDeafFactor * EarProtectionFactor;
             float grenadeDeafFactor = GrenadeDeafFactor * EarProtectionFactor;
             float totalVigLimit = Mathf.Min(0.3f * deafFactor * enviroMulti, 1.5f);

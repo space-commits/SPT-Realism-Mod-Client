@@ -27,6 +27,7 @@ using static Systems.Effects.Effects;
 using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2411;
 using ExistanceClass = GClass2452;
 using StamController = GClass679;
+using PhysicalClass = GClass678;
 using MedkitTemplate = GInterface296;
 
 namespace RealismMod
@@ -140,6 +141,20 @@ namespace RealismMod
         }
     }
 
+
+    public class BreathIsAudiblePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(PhysicalClass).GetMethod("get_BreathIsAudible", BindingFlags.Instance | BindingFlags.Public);
+        }
+        [PatchPrefix]
+        private static bool Prefix(PhysicalClass __instance,ref bool __result)
+        {
+            __result = !__instance.HoldingBreath && ((__instance.StaminaParameters.StaminaExhaustionStartsBreathSound && __instance.Stamina.Exhausted) || __instance.Oxygen.Exhausted || Plugin.RealHealthController.HasOverdosed);
+            return false;
+        }
+    }
 
     //in-raid healing
     public class ApplyItemPatch : ModulePatch
@@ -500,21 +515,17 @@ namespace RealismMod
                     }
                     if (medType.Contains("pain"))
                     {
-                        int duration = MedProperties.PainKillerFullDuration(meds);
+                        int duration = MedProperties.PainKillerDuration(meds);
                         int delay = MedProperties.Delay(meds);
-                        int wait = MedProperties.PainKillerWaitTime(meds);
-                        int intermittentDur = MedProperties.PainKillerTime(meds);
                         float tunnelVisionStr = MedProperties.TunnelVisionStrength(meds);
                         float painKillStr = MedProperties.Strength(meds);
 
                         Logger.LogWarning("duration " + duration);
                         Logger.LogWarning("delay " + delay);
-                        Logger.LogWarning("wait " + wait);
-                        Logger.LogWarning("intermittentDur " + intermittentDur);
                         Logger.LogWarning("tunnelVisionStr " + tunnelVisionStr);
                         Logger.LogWarning("painKillStr " + painKillStr);
 
-                        PainKillerEffect painKillerEffect = new PainKillerEffect(duration, __instance, delay, wait, intermittentDur, tunnelVisionStr, painKillStr, Logger);
+                        PainKillerEffect painKillerEffect = new PainKillerEffect(duration, __instance, delay, tunnelVisionStr, painKillStr, Logger);
                         Plugin.RealHealthController.AddCustomEffect(painKillerEffect, true);
                         return true;
                     }

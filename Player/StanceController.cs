@@ -389,7 +389,7 @@ namespace RealismMod
                             WasShortStock = IsShortStock;
                             DidStanceWiggle = false;
 
-                            if (IsHighReady && Plugin.RealHealthController.ArmAreIncapacitated)
+                            if (IsHighReady && (Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed))
                             {
                                 DoHighReadyInjuredAnim = true;
                             }
@@ -498,7 +498,7 @@ namespace RealismMod
                         WasShortStock = IsShortStock;
                         DidStanceWiggle = false;
 
-                        if (IsHighReady && Plugin.RealHealthController.ArmAreIncapacitated)
+                        if (IsHighReady && (Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed))
                         {
                             DoHighReadyInjuredAnim = true;
                         }
@@ -559,7 +559,7 @@ namespace RealismMod
                         }
                     }
 
-                    if (Plugin.RealHealthController.ArmAreIncapacitated && !IsAiming && !IsShortStock && !IsActiveAiming && !IsHighReady)
+                    if ((Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed) && !IsAiming && !IsShortStock && !IsActiveAiming && !IsHighReady)
                     {
                         StanceBlender.Target = 1f;
                         IsLowReady = true;
@@ -798,7 +798,7 @@ namespace RealismMod
                 pwa.HandsContainer.WeaponRoot.localPosition = WeaponOffsetPosition;
             }
 
-            if (Plugin.EnableTacSprint.Value && (StanceController.IsHighReady || StanceController.WasHighReady) && !Plugin.RealHealthController.ArmAreIncapacitated)
+            if (Plugin.EnableTacSprint.Value && (StanceController.IsHighReady || StanceController.WasHighReady) && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed)
             {
                 player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
                 if (!setRunAnim)

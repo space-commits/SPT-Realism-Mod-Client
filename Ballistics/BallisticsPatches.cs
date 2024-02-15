@@ -421,9 +421,24 @@ namespace RealismMod
             Logger.LogWarning(damageInfo.HittedBallisticCollider.TypeOfMaterial);
             Logger.LogWarning(damageInfo.BodyPartColliderType);
 
+            if (__instance.IsYourPlayer && Plugin.RealHealthController.HasOverdosed && damageInfo.Damage > 10f) 
+            {
+                if (!__instance.IsInPronePose && Plugin.CanFellPlayer.Value)
+                {
+                    __instance.ToggleProne();
+                }
+                if (Plugin.CanDisarmPlayer.Value)
+                {
+                    TryDoDisarm(__instance, damageInfo.Damage * 50f, false, false);
+                }
+            }
+
             if (damageInfo.DamageType == EDamageType.Fall && damageInfo.Damage >= 15f)
             {
-                __instance.ToggleProne();
+                if (!__instance.IsInPronePose) 
+                {
+                    __instance.ToggleProne();
+                }
                 if ((__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value) || (!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value))
                 {
                     TryDoDisarm(__instance, damageInfo.Damage * 50f, false, false);
