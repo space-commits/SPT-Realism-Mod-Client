@@ -239,8 +239,9 @@ namespace RealismMod
             {
                 shotEffector.CurrentRecoilEffect.HandRotationRecoilEffect.Offset = breathVector;
             }
-            processors[0].ProcessRaw(breathFrequency, PlayerStats.TotalBreathIntensity * (StanceController.BlockBreathEffect? 0 : 1f)); //set this to 0 when mounted, lerp back to original value after mounting
-            processors[1].ProcessRaw(breathFrequency, PlayerStats.TotalBreathIntensity * cameraSensetivity * (StanceController.BlockBreathEffect ? 0 : 1f));
+            float breathFactor = StanceController.BlockBreathEffect ? 0f : StanceController.MountingBreathReduction;
+            processors[0].ProcessRaw(breathFrequency, PlayerStats.TotalBreathIntensity * breathFactor); 
+            processors[1].ProcessRaw(breathFrequency, PlayerStats.TotalBreathIntensity * cameraSensetivity * breathFactor);
             return false;
         }
     }

@@ -351,13 +351,21 @@ namespace RealismMod
                     float mountOrientationBonus = StanceController.BracingDirection == EBracingDirection.Top ? 0.75f : 1f;
                     float mountingRecoilLimit = __instance.Item.WeapClass == "pistol" ? 0.1f : 0.65f;
 
-                    StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 0.75f * mountOrientationBonus, 0.04f);
-                    StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 0.85f * mountOrientationBonus * (StanceController.IsMounting ? 0.75f : 1f), 0.04f);
+                    if (!StanceController.BlockBreathEffect) 
+                    {
+                        StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 0.75f * mountOrientationBonus, 0.04f);
+                    }
+
+                    StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 0.85f * mountOrientationBonus, 0.04f);
                     StanceController.MountingRecoilBonus = Mathf.Clamp(mountingRecoilLimit * mountOrientationBonus, 0.1f, 1f);
+                    StanceController.MountingBreathReduction = Mathf.Lerp(StanceController.MountingBreathReduction, 0f, 0.2f);
                 }
-                else 
+                else
                 {
-                    StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 1f, 0.05f);
+                    if (!StanceController.BlockBreathEffect)
+                    {
+                        StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 1f, 0.05f);
+                    }
                     StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 1f, 0.05f);
                 }
             }

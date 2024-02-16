@@ -117,6 +117,7 @@ namespace RealismMod
         public static EBracingDirection BracingDirection = EBracingDirection.None;
         public static float BracingSwayBonus = 1f;
         public static float BracingRecoilBonus = 1f;
+        public static float MountingBreathReduction = 1f;
         public static float MountingRecoilBonus = 1f;
         public static bool BlockBreathEffect = false;
         public static bool IsBracing = false;
@@ -1290,6 +1291,7 @@ namespace RealismMod
         public static void DoMounting(Player player, ProceduralWeaponAnimation pwa, Player.FirearmController fc, ref Vector3 weaponWorldPos, ref Vector3 mountWeapPosition, float dt, Vector3 referencePos)
         {
             bool isMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
+            float resetTime = isMoving ? 0.1f : 0.5f;
 
             if (StanceController.IsMounting && isMoving)
             {
@@ -1314,6 +1316,9 @@ namespace RealismMod
 
             if (StanceController.IsMounting)
             {
+                StanceController.MountingBreathReduction = Mathf.Lerp(StanceController.MountingBreathReduction, 0f, 0.2f);
+                float mountOrientationBonus = StanceController.BracingDirection == EBracingDirection.Top ? 0.75f : 1f;
+                StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 0.4f * mountOrientationBonus, 0.2f);
                 StanceController.BlockBreathEffect = true;
                 hasNotReset = true;
                 AccessTools.Field(typeof(TurnAwayEffector), "_turnAwayThreshold").SetValue(pwa.TurnAway, 1f);
@@ -1324,21 +1329,22 @@ namespace RealismMod
 
                 weaponWorldPos = currentMountedPos; //this makes it feel less clamped to cover but allows h recoil + StanceController.CoverDirection
             }
-            else if (hasNotReset && resetTimer < Plugin.test1.Value)
+            else if (hasNotReset && resetTimer < resetTime)
             {
+                StanceController.BracingSwayBonus = 0f;
                 resetTimer += dt;
-                currentMountedPos = Vector3.Lerp(currentMountedPos, referencePos, Plugin.test2.Value);
+                currentMountedPos = Vector3.Lerp(currentMountedPos, referencePos, 0.15f);
                 weaponWorldPos = currentMountedPos;
             }
             else 
             {
+                StanceController.MountingBreathReduction = Mathf.Lerp(StanceController.MountingBreathReduction, 1f, 0.001f);
                 hasNotReset = false;
                 resetTimer = 0f;
-        
                 if (StanceController.BlockBreathEffect)
                 {
                     breathTimer += dt;
-                    if (breathTimer >= Plugin.test3.Value) 
+                    if (breathTimer >= 2f)
                     {
                         breathTimer = 0f;
                         StanceController.BlockBreathEffect = false;
