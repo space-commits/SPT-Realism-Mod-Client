@@ -192,8 +192,8 @@ namespace RealismMod
 
                     if (PlayerStats.HasFullyResetSprintADSPenalties)
                     {
-                        __instance.Breath.Intensity = PlayerStats.TotalBreathIntensity;
-                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerStats.TotalHandsIntensity;
+                        __instance.Breath.Intensity = PlayerStats.TotalBreathIntensity * StanceController.BracingSwayBonus;
+                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerStats.TotalHandsIntensity * StanceController.BracingSwayBonus;
                     }
                     else
                     {

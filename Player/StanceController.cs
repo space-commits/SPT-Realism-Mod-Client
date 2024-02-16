@@ -116,10 +116,9 @@ namespace RealismMod
 
         public static EBracingDirection BracingDirection = EBracingDirection.None;
         public static float BracingSwayBonus = 1f;
-        public static float MountingSwayBonus = 1f;
         public static float BracingRecoilBonus = 1f;
         public static float MountingRecoilBonus = 1f;
-        public static bool BlockBraceSwayBonus = false;
+        public static bool BlockBreathEffect = false;
         public static bool IsBracing = false;
         public static bool IsMounting = false;
         public static float DismountTimer = 0.0f;
@@ -1285,7 +1284,9 @@ namespace RealismMod
         }
 
         private static Vector3 currentMountedPos = Vector3.zero;
-        private static float timer = 0f;
+        private static float resetTimer = 0f;
+        private static float breathTimer = 0f;
+        private static bool hasNotReset = false;
         public static void DoMounting(Player player, ProceduralWeaponAnimation pwa, Player.FirearmController fc, ref Vector3 weaponWorldPos, ref Vector3 mountWeapPosition, float dt, Vector3 referencePos)
         {
             bool isMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
@@ -1313,7 +1314,8 @@ namespace RealismMod
 
             if (StanceController.IsMounting)
             {
-                StanceController.BlockBraceSwayBonus = true;
+                StanceController.BlockBreathEffect = true;
+                hasNotReset = true;
                 AccessTools.Field(typeof(TurnAwayEffector), "_turnAwayThreshold").SetValue(pwa.TurnAway, 1f);
 
                 currentMountedPos.x = mountWeapPosition.x;
@@ -1322,18 +1324,26 @@ namespace RealismMod
 
                 weaponWorldPos = currentMountedPos; //this makes it feel less clamped to cover but allows h recoil + StanceController.CoverDirection
             }
-            else if (StanceController.BlockBraceSwayBonus && timer < 0.1f) 
+            else if (hasNotReset && resetTimer < Plugin.test1.Value)
             {
-                timer += dt;
-                currentMountedPos = Vector3.Lerp(currentMountedPos, referencePos, 0.2f); 
+                resetTimer += dt;
+                currentMountedPos = Vector3.Lerp(currentMountedPos, referencePos, Plugin.test2.Value);
                 weaponWorldPos = currentMountedPos;
-                StanceController.BlockBraceSwayBonus = true;
-                StanceController.BracingSwayBonus = 0;
             }
-            else
+            else 
             {
-                StanceController.BlockBraceSwayBonus = false;
-                timer = 0f;
+                hasNotReset = false;
+                resetTimer = 0f;
+        
+                if (StanceController.BlockBreathEffect)
+                {
+                    breathTimer += dt;
+                    if (breathTimer >= Plugin.test3.Value) 
+                    {
+                        breathTimer = 0f;
+                        StanceController.BlockBreathEffect = false;
+                    }
+                }
             }
         }  
     }

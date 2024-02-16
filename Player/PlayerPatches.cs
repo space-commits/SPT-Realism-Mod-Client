@@ -239,8 +239,8 @@ namespace RealismMod
             {
                 shotEffector.CurrentRecoilEffect.HandRotationRecoilEffect.Offset = breathVector;
             }
-            processors[0].ProcessRaw(breathFrequency, PlayerStats.TotalBreathIntensity);
-            processors[1].ProcessRaw(breathFrequency, PlayerStats.TotalBreathIntensity * cameraSensetivity);
+            processors[0].ProcessRaw(breathFrequency, PlayerStats.TotalBreathIntensity * (StanceController.BlockBreathEffect? 0 : 1f)); //set this to 0 when mounted, lerp back to original value after mounting
+            processors[1].ProcessRaw(breathFrequency, PlayerStats.TotalBreathIntensity * cameraSensetivity * (StanceController.BlockBreathEffect ? 0 : 1f));
             return false;
         }
     }
@@ -255,7 +255,7 @@ namespace RealismMod
         private static bool didSprintPenalties = false;
         private static bool resetSwayAfterFiring = false;
 
-        private static void doSprintTimer(ProceduralWeaponAnimation pwa, Player.FirearmController fc)
+        private static void doSprintTimer(ProceduralWeaponAnimation pwa, Player.FirearmController fc, float mountingBonus)
         {
             sprintCooldownTimer += Time.deltaTime;
 
@@ -265,8 +265,8 @@ namespace RealismMod
 
                 float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi, 3f);
                 float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi, 1.05f);
-                pwa.Breath.Intensity = breathIntensity;
-                pwa.HandsContainer.HandsRotation.InputIntensity = inputIntensitry;
+                pwa.Breath.Intensity = breathIntensity * mountingBonus;
+                pwa.HandsContainer.HandsRotation.InputIntensity = inputIntensitry * mountingBonus;
                 PlayerStats.SprintTotalBreathIntensity = breathIntensity;
                 PlayerStats.SprintTotalHandsIntensity = inputIntensitry;
                 PlayerStats.SprintHipfirePenalty = Mathf.Min(1f + (sprintTimer / 100f), 1.25f);
@@ -331,7 +331,7 @@ namespace RealismMod
             {
                 if (PlayerStats.WasSprinting)
                 {
-                    doSprintTimer(player.ProceduralWeaponAnimation, fc);
+                    doSprintTimer(player.ProceduralWeaponAnimation, fc, mountingBonus);
                 }
                 if (doSwayReset)
                 {
@@ -389,17 +389,16 @@ namespace RealismMod
                 PlayerStats.EnviroType = __instance.Environment;
                 StanceController.IsInInventory = __instance.IsInventoryOpened;
                 PlayerStats.IsMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
-                float mountingSwayBonus = StanceController.IsMounting ? StanceController.MountingSwayBonus: StanceController.BracingSwayBonus;
 
                 if (Plugin.EnableSprintPenalty.Value)
                 {
-                    DoSprintPenalty(__instance, fc, mountingSwayBonus);
+                    DoSprintPenalty(__instance, fc, StanceController.BracingSwayBonus);
                 }
 
                 if (!RecoilController.IsFiring && PlayerStats.HasFullyResetSprintADSPenalties)
                 {
-                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerStats.TotalBreathIntensity * mountingSwayBonus;
-                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerStats.TotalHandsIntensity * mountingSwayBonus;
+                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerStats.TotalBreathIntensity * StanceController.BracingSwayBonus;
+                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerStats.TotalHandsIntensity * StanceController.BracingSwayBonus;
                 }
 
                 if (fc != null)
