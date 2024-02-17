@@ -22,18 +22,81 @@ using System.IO;
 namespace RealismMod
 {
 
+
+    public class AutoFireModePatch : ModulePatch
+    {
+        private static FieldInfo autoFireField;
+        private static FieldInfo fcField;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            autoFireField = AccessTools.Field(typeof(NewRecoilShotEffect), "_autoFireOn");
+            fcField = AccessTools.Field(typeof(NewRecoilShotEffect), "_firearmController");
+            return typeof(NewRecoilShotEffect).GetMethod("method_5");
+        }
+
+        [PatchPostfix]
+        public static void PatchPostfix(NewRecoilShotEffect __instance)
+        {
+            if ((FirearmController)fcField.GetValue(__instance) != null)
+            {
+                autoFireField.SetValue(__instance, false);
+                __instance.HandRotationRecoil.SetAutoFireMode(false);
+            }
+        }
+    }
+
+    public class IndexPatch : ModulePatch
+    {
+        private static FieldInfo index;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            index = AccessTools.Field(typeof(NewRecoilShotEffect), "_autoFireShotIndex");
+            return typeof(NewRecoilShotEffect).GetMethod("FixedUpdate");
+        }
+
+        [PatchPostfix]
+        public static void PatchPrefix(NewRecoilShotEffect __instance)
+        {
+
+            Logger.LogWarning("index " + (int)index.GetValue(__instance));
+        }
+    }
+
+    public class StabilizePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(NewRotationRecoilProcess).GetMethod("SetStableMode");
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(NewRotationRecoilProcess __instance)
+        {
+            __instance.CurrentAngleAdd = 0f;
+            __instance.StableOn = false;
+            return false;
+        }
+    }
+
     public class RotatePatch : ModulePatch
     {
         private static FieldInfo movementContextField;
         private static FieldInfo playerField;
 
-        private static Vector2 initialRotation = Vector3.zero;
-        private static Vector2 recordedRotation = Vector3.zero;
-        private static Vector2 targetRotation = Vector3.zero;
-        private static Vector2 resetTarget = Vector3.zero;
+        private static Vector2 initialRotation = Vector2.zero;
+        private static Vector2 recordedRotation = Vector2.zero;
+        private static Vector2 targetRotation = Vector2.zero;
+        private static Vector2 currentRotation = Vector2.zero;
+        private static Vector2 resetTarget = Vector2.zero;
         private static bool hasReset = false;
         private static float timer = 0.0f;
         private static float resetTime = 0.5f;
+
+        private static Queue<float> distanceHistory = new Queue<float>();
+        private static int historySize = 10;
+        private static float maxIncreasePercentage = 1.25f;
 
         protected override MethodBase GetTargetMethod()
         {
@@ -52,6 +115,33 @@ namespace RealismMod
             {
                 hasReset = true;
             }
+        }
+
+        private static float calculateAverageDistance()
+        {
+            float sum = 0f;
+            foreach (float dist in distanceHistory)
+            {
+                sum += dist;
+            }
+            return sum / distanceHistory.Count;
+        }
+
+        private static void adjustTargetVector(float averageDistance, float proposedDistance)
+        {
+            float desiredDistance = averageDistance;
+            float adjustmentFactor = desiredDistance / proposedDistance;
+            Vector2 direction = (targetRotation - currentRotation).normalized;
+            targetRotation = currentRotation + direction * (proposedDistance * adjustmentFactor);
+        }
+
+        private static void updateDistanceHistory(float distance)
+        {
+            if (distanceHistory.Count >= historySize)
+            {
+                distanceHistory.Dequeue();
+            }
+            distanceHistory.Enqueue(distance);
         }
 
         [PatchPrefix]
@@ -84,7 +174,7 @@ namespace RealismMod
                     hasReset = false;
                     timer = 0f;
 
-                    float shotCountFactor = (float)Math.Round(Mathf.Min(RecoilController.ShotCount * 0.4f, 1.65f), 2);
+                    float shotCountFactor = (float)Math.Round(Mathf.Min(RecoilController.ShotCount * 0.4f, 1.2f), 2);
                     float baseAngle = RecoilController.BaseTotalRecoilAngle;
                     float totalRecAngle = StanceController.IsMounting ? Mathf.Min(baseAngle + 15, 90f) : StanceController.IsBracing ? Mathf.Min(baseAngle + 8f, 90f) : baseAngle;
                     totalRecAngle = WeaponStats._WeapClass != "pistol" ? totalRecAngle : totalRecAngle - 5;
@@ -123,7 +213,7 @@ namespace RealismMod
                         recordedRotation = movementContext.Rotation;
                     }
                 }
-                else if (!hasReset && !RecoilController.IsFiring)
+                else if ((canResetHorz || canResetVert) && !hasReset && !RecoilController.IsFiring)
                 {
                     bool isHybrid = Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !WeaponStats.HasShoulderContact));
                     float resetSpeed = RecoilController.BaseTotalConvergence * WeaponStats.ConvergenceDelta * Plugin.ResetSpeed.Value;
@@ -172,21 +262,41 @@ namespace RealismMod
                     recordedRotation = movementContext.Rotation;
                 }
 
-                if (RecoilController.IsFiring && !targetRotation.IsAnyComponentInfinity() && !targetRotation.IsAnyComponentNaN())
+                if (RecoilController.IsFiring)
                 {
 
                     if (targetRotation.y <= recordedRotation.y - Plugin.RecoilClimbLimit.Value)
                     {
+                        Logger.LogWarning("====HIT MAX====");
                         targetRotation.y = movementContext.Rotation.y;
                     }
 
                     float differenceX = Mathf.Abs(movementContext.Rotation.x - targetRotation.x);
                     targetRotation.x = differenceX <= 2f ? targetRotation.x : movementContext.Rotation.x;
-/*
-                    float differenceY = Mathf.Abs(movementContext.Rotation.y - targetRotation.y);
-                    targetRotation.y = differenceY <= 2f ? targetRotation.y : movementContext.Rotation.y;*/
+
+                    /*
+                                        float differenceY = Mathf.Abs(movementContext.Rotation.y - targetRotation.y);
+                                        targetRotation.y = differenceY <= 2f ? targetRotation.y : movementContext.Rotation.y;*/
+
+                    currentRotation = movementContext.Rotation;
+                    float proposedDistance = Vector2.Distance(currentRotation, targetRotation);
+                    updateDistanceHistory(proposedDistance);
+                    float averageDistance = calculateAverageDistance();
+
+                    if (proposedDistance > averageDistance * maxIncreasePercentage)
+                    {
+                        Logger.LogWarning("TARGET EXCEEDS PERSMISSABLE DIFFERENCE");
+                        adjustTargetVector(averageDistance, proposedDistance);
+                    }
+
+                    Logger.LogWarning("Distance Before " + proposedDistance);
+                    Logger.LogWarning("Distance After " + Vector2.Distance(currentRotation, targetRotation));
 
                     movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, targetRotation, Plugin.RecoilSmoothness.Value);
+                }
+                else 
+                {
+                    distanceHistory.Clear();
                 }
 
                 if (RecoilController.ShotCount == RecoilController.PrevShotCount)

@@ -106,9 +106,12 @@ namespace RealismMod
         {
             if (StanceController.IsIdle() && WeaponStats._WeapClass != "pistol")
             {
-                float factor = ergoWeightFactor * playerWeightFactor * (WeaponStats.HasOptic ? 0.85f : 1f);
-                int rnd = UnityEngine.Random.Range(1, (int)(2.5 * factor));
-                Vector3 wiggleDir = new Vector3(-rnd, -5f, 0f) * factor;
+                Logger.LogWarning("ergoWeightFactor " + ergoWeightFactor);
+                Logger.LogWarning("playerWeightFactor " + playerWeightFactor);
+                float factor = ergoWeightFactor * playerWeightFactor;
+                int rndX = UnityEngine.Random.Range(1, (int)(5f * factor));
+                int rndY = UnityEngine.Random.Range(1, (int)(5f * factor));
+                Vector3 wiggleDir = new Vector3(-rndX, -rndY, 0f) * factor;
 
                 if (pwa.IsAiming && !didAimWiggle)
                 {
@@ -166,7 +169,7 @@ namespace RealismMod
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_ergonomicWeight").SetValue(__instance, ergoWeight);
                     float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(ergoWeight, 4.5f);
                     float totalPlayerWeight = PlayerStats.TotalModifiedWeightMinusWeapon;
-                    float playerWeightFactor = 1f + (totalPlayerWeight / 300f);
+                    float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
                     float breathIntensity;
                     float handsIntensity;
 

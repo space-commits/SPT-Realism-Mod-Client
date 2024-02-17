@@ -162,8 +162,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(BreathEffector __instance, float deltaTime)
         {
-           float breathIntensity = (float)AccessTools.Field(typeof(BreathEffector), "_breathIntensity").GetValue(__instance);
-           float shakeIntensity = (float)AccessTools.Field(typeof(BreathEffector), "_shakeIntensity").GetValue(__instance);
            float breathFrequency = (float)AccessTools.Field(typeof(BreathEffector), "_breathFrequency").GetValue(__instance);
            float cameraSensetivity = (float)AccessTools.Field(typeof(BreathEffector), "_cameraSensetivity").GetValue(__instance);
            Vector2 baseHipRandomAmplitudes = (Vector2)AccessTools.Field(typeof(BreathEffector), "_baseHipRandomAmplitudes").GetValue(__instance);
@@ -189,7 +187,7 @@ namespace RealismMod
             }
             else
             {
-                float holdBreathBonus = __instance.Physical.HoldingBreath ? 0.5f : 1f;
+                float holdBreathBonus = __instance.Physical.HoldingBreath ? 0.65f : 1f;
                 float t = lackOfOxygenStrength.Evaluate(__instance.OxygenLevel);
                 float b = __instance.IsAiming ? 0.75f : 1f;
                 breathIntensityField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, b, t), 1f, 1.5f) * __instance.Intensity * holdBreathBonus);
@@ -200,9 +198,6 @@ namespace RealismMod
                 cameraSensetivity = (float)AccessTools.Field(typeof(BreathEffector), "_cameraSensetivity").GetValue(__instance);
             }
 
-            shakeIntensity = (float)AccessTools.Field(typeof(BreathEffector), "_shakeIntensity").GetValue(__instance);
-            breathIntensity = (float)AccessTools.Field(typeof(BreathEffector), "_breathIntensity").GetValue(__instance);
-
             StaminaLevelClass staminaLevel = __instance.StaminaLevel;
             __instance.YRandom.Amplitude = __instance.BreathParams.AmplitudeCurve.Evaluate(staminaLevel);
             float stamFactor = __instance.BreathParams.Delay.Evaluate(staminaLevel);
@@ -210,7 +205,7 @@ namespace RealismMod
             __instance.YRandom.Hardness = __instance.BreathParams.Hardness.Evaluate(staminaLevel);
             float randomY = __instance.YRandom.GetValue(deltaTime);
             float randomX = __instance.XRandom.GetValue(deltaTime);
-            handsRotationSpring.AddAcceleration(new Vector3(Mathf.Max(0f, -randomY) * (1f - staminaLevel) * 2f, randomY, randomX) * (shakeIntensity * __instance.Intensity));
+            handsRotationSpring.AddAcceleration(new Vector3(Mathf.Max(0f, -randomY) * (1f - staminaLevel) * 2f, randomY, randomX) * ((float)shakeIntensityField.GetValue(__instance) * __instance.Intensity));
             Vector3 breathVector = Vector3.zero;
           
             if (isInjured)
@@ -416,10 +411,13 @@ namespace RealismMod
                     player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.75f;
                 }
                 player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, 10f * StanceController.WiggleReturnSpeed, 0.01f);
-                player.ProceduralWeaponAnimation.CameraToWeaponAngleSpeedRange = Vector2.zero;
-                player.ProceduralWeaponAnimation.CameraToWeaponAngleStep = 0f;
                 player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0;
                 player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
+                if (!RecoilController.IsFiringMovement) 
+                {
+                    player.ProceduralWeaponAnimation.CameraToWeaponAngleSpeedRange = Vector2.zero;
+                    player.ProceduralWeaponAnimation.CameraToWeaponAngleStep = 0f;
+                }
             }
             player.MovementContext.SetPatrol(StanceController.IsPatrolStance);
         }
