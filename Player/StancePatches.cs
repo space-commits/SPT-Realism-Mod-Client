@@ -250,8 +250,7 @@ namespace RealismMod
 
                     if (hitBalls.TypeOfMaterial == MaterialType.Glass || hitBalls.TypeOfMaterial == MaterialType.GlassShattered)
                     {
-                        Random rnd = new Random();
-                        int rndNum = rnd.Next(1, 10);
+                        int rndNum = UnityEngine.Random.Range(1, 10);
                         if (rndNum > (4f + WeaponStats.BaseMeleeDamage))
                         {
                             shouldSkipHit = true;
@@ -354,17 +353,18 @@ namespace RealismMod
                     if (!StanceController.BlockBreathEffect) 
                     {
                         StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 0.75f * mountOrientationBonus, 0.04f);
+                        StanceController.MountingBreathReduction = Mathf.Lerp(StanceController.MountingBreathReduction, 0.2f, 0.04f);
                     }
 
                     StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 0.85f * mountOrientationBonus, 0.04f);
                     StanceController.MountingRecoilBonus = Mathf.Clamp(mountingRecoilLimit * mountOrientationBonus, 0.1f, 1f);
-                    StanceController.MountingBreathReduction = Mathf.Lerp(StanceController.MountingBreathReduction, 0f, 0.2f);
                 }
                 else
                 {
                     if (!StanceController.BlockBreathEffect)
                     {
                         StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, 1f, 0.05f);
+                        StanceController.MountingBreathReduction = Mathf.Lerp(StanceController.MountingBreathReduction, 1f, 0.005f);
                     }
                     StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 1f, 0.05f);
                 }

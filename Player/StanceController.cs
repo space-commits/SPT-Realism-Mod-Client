@@ -307,8 +307,8 @@ namespace RealismMod
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
             if (WeaponStats.HasBayonet)
             {
-                Random rnd = new Random();
-                int rndNum = rnd.Next(1, 10);
+
+                int rndNum = UnityEngine.Random.Range(1, 10);
                 string track = rndNum <= 5 ? "knife_1.wav" : "knife_2.wav";
                 Singleton<BetterAudio>.Instance.PlayAtPoint(player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim.position, Plugin.LoadedAudioClips[track], 2, BetterAudio.AudioSourceGroupType.Distant, 100, 2, EOcclusionTest.Continuous);
             }
@@ -1338,13 +1338,13 @@ namespace RealismMod
             }
             else 
             {
-                StanceController.MountingBreathReduction = Mathf.Lerp(StanceController.MountingBreathReduction, 1f, 0.001f);
-                hasNotReset = false;
+/*                StanceController.MountingBreathReduction = Mathf.Lerp(StanceController.MountingBreathReduction, 1f, 0.001f);
+*/              hasNotReset = false;
                 resetTimer = 0f;
                 if (StanceController.BlockBreathEffect)
                 {
                     breathTimer += dt;
-                    if (breathTimer >= 2f)
+                    if (breathTimer >= 1.25f)
                     {
                         breathTimer = 0f;
                         StanceController.BlockBreathEffect = false;

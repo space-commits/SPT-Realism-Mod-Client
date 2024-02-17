@@ -462,8 +462,8 @@ namespace RealismMod
                     float gunFactor = firearmController.Weapon.TemplateId == "6183afd850224f204c1da514" || firearmController.Weapon.TemplateId == "6165ac306ef05c2ce828ef74" ? 4f : 1f;
                     float shiftRecoilFactor = (RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil) * (1f + totalCamRecoil) * gunFactor;
                     float scopeFactor = ((1f - WeaponStats.ScopeAccuracyFactor) + (shiftRecoilFactor * 0.002f));
-                    System.Random rnd = new System.Random();
-                    int num = rnd.Next(1, 20);
+
+                    int num = UnityEngine.Random.Range(1, 20);
                     if (scopeFactor * 10f > num)
                     {
                         Logger.LogWarning("shift");

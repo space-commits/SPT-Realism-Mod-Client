@@ -135,7 +135,7 @@ namespace RealismMod
                 if (ammoTemplate.BallisticCoeficient > 0f)
                 {
                     ItemAttributeClass bcAtt = new ItemAttributeClass(ENewItemAttributeId.BallisticCoefficient);
-                    bcAtt.Name = ENewItemAttributeId.Penetration.GetName();
+                    bcAtt.Name = ENewItemAttributeId.BallisticCoefficient.GetName();
                     bcAtt.Base = () => ammoTemplate.BallisticCoeficient;
                     bcAtt.StringValue = () => $"{ammoTemplate.BallisticCoeficient}";
                     bcAtt.DisplayType = () => EItemAttributeDisplayType.Compact;

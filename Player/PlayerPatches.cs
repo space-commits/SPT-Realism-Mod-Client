@@ -226,7 +226,7 @@ namespace RealismMod
                 }
                 breathVector = new Vector3(tremorXRandom, tremorYRandom, tremorZRnadom) * __instance.Intensity;
             }
-            else if (!__instance.IsAiming)
+            else if (!__instance.IsAiming && RecoilController.IsFiring)
             {
                 breathVector = new Vector3(__instance.HipXRandom.GetValue(deltaTime), 0f, __instance.HipZRandom.GetValue(deltaTime)) * (__instance.Intensity * __instance.HipPenalty);
             }
@@ -240,8 +240,8 @@ namespace RealismMod
                 shotEffector.CurrentRecoilEffect.HandRotationRecoilEffect.Offset = breathVector;
             }
             float breathFactor = StanceController.BlockBreathEffect ? 0f : StanceController.MountingBreathReduction;
-            processors[0].ProcessRaw(breathFrequency, PlayerStats.TotalBreathIntensity * breathFactor); 
-            processors[1].ProcessRaw(breathFrequency, PlayerStats.TotalBreathIntensity * cameraSensetivity * breathFactor);
+            processors[0].ProcessRaw(breathFrequency, (float)breathIntensityField.GetValue(__instance) * breathFactor); 
+            processors[1].ProcessRaw(breathFrequency, (float)breathIntensityField.GetValue(__instance) * cameraSensetivity * breathFactor);
             return false;
         }
     }
@@ -361,16 +361,76 @@ namespace RealismMod
             }
         }
 
+        private static void PWAUpdate(Player player, Player.FirearmController fc) 
+        {
+            if (fc != null)
+            {
+                if (RecoilController.IsFiring)
+                {
+                    //did this due to weird weapon movement while firing, might not be necessary anymore
+                    /*      if (Plugin.IsAiming)
+                          {
+                              __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerStats.TotalBreathIntensity * mountingSwayBonus * 0.01f;
+                              __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerStats.TotalHandsIntensity * mountingSwayBonus * 0.01f;
+                          }
+                          else
+                          {
+                              __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerStats.TotalBreathIntensity * mountingSwayBonus;
+                              __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerStats.TotalHandsIntensity * mountingSwayBonus;
+                          }*/
+
+                    RecoilController.SetRecoilParams(player.ProceduralWeaponAnimation, fc.Item);
+                    StanceController.IsPatrolStance = false;
+                }
+
+                ReloadController.ReloadStateCheck(player, fc, Logger);
+                AimController.ADSCheck(player, fc);
+
+                if (Plugin.EnableStanceStamChanges.Value)
+                {
+                    StanceController.SetStanceStamina(player, fc);
+                }
+
+                float remainStamPercent = player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity;
+                PlayerStats.RemainingArmStamPerc = 1f - ((1f - remainStamPercent) / 3f);
+                PlayerStats.RemainingArmStamPercReload = 1f - ((1f - remainStamPercent) / 4f);
+            }
+            else if (Plugin.EnableStanceStamChanges.Value)
+            {
+                StanceController.ResetStanceStamina(player);
+            }
+
+            player.Physical.HandsStamina.Current = Mathf.Max(player.Physical.HandsStamina.Current, 1f);
+
+            float stanceHipFactor = StanceController.IsActiveAiming ? 0.7f : StanceController.IsShortStock ? 1.35f : 1f;
+            player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerStats.SprintHipfirePenalty * stanceHipFactor, 0.2f, 1.6f);
+
+            if (!RecoilController.IsFiring)
+            {
+                if (StanceController.CanResetDamping)
+                {
+                    player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, 0.01f);
+                }
+                else
+                {
+                    player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.75f;
+                }
+                player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, 10f * StanceController.WiggleReturnSpeed, 0.01f);
+                player.ProceduralWeaponAnimation.CameraToWeaponAngleSpeedRange = Vector2.zero;
+                player.ProceduralWeaponAnimation.CameraToWeaponAngleStep = 0f;
+                player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0;
+                player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
+            }
+            player.MovementContext.SetPatrol(StanceController.IsPatrolStance);
+        }
+
         protected override MethodBase GetTargetMethod()
         {
             surfaceField = AccessTools.Field(typeof(Player), "_currentSet");
-
             return typeof(Player).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix] 
-
-
         private static void PatchPostfix(Player __instance)
         {
             if (Plugin.EnableDeafen.Value && Plugin.ServerConfig.headset_changes)
@@ -396,68 +456,13 @@ namespace RealismMod
                     DoSprintPenalty(__instance, fc, StanceController.BracingSwayBonus);
                 }
 
-                if (!RecoilController.IsFiring && PlayerStats.HasFullyResetSprintADSPenalties)
+                if (PlayerStats.HasFullyResetSprintADSPenalties) //!RecoilController.IsFiring && 
                 {
                     __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerStats.TotalBreathIntensity * StanceController.BracingSwayBonus;
                     __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerStats.TotalHandsIntensity * StanceController.BracingSwayBonus;
                 }
 
-                if (fc != null)
-                {
-                    if (RecoilController.IsFiring)
-                    {
-                        //did this due to weird weapon movement while firing, might not be necessary anymore
-                  /*      if (Plugin.IsAiming)
-                        {
-                            __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerStats.TotalBreathIntensity * mountingSwayBonus * 0.01f;
-                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerStats.TotalHandsIntensity * mountingSwayBonus * 0.01f;
-                        }
-                        else
-                        {
-                            __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerStats.TotalBreathIntensity * mountingSwayBonus;
-                            __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerStats.TotalHandsIntensity * mountingSwayBonus;
-                        }*/
-
-                        RecoilController.SetRecoilParams(__instance.ProceduralWeaponAnimation, fc.Item);
-
-                        StanceController.IsPatrolStance = false;
-                    }
-
-                    ReloadController.ReloadStateCheck(__instance, fc, Logger);
-                    AimController.ADSCheck(__instance, fc);
-
-                    if (Plugin.EnableStanceStamChanges.Value)
-                    {
-                        StanceController.SetStanceStamina(__instance, fc);
-                    }
-
-                    float remainStamPercent = __instance.Physical.HandsStamina.Current / __instance.Physical.HandsStamina.TotalCapacity;
-                    PlayerStats.RemainingArmStamPerc = 1f - ((1f - remainStamPercent) / 3f);
-                    PlayerStats.RemainingArmStamPercReload = 1f - ((1f - remainStamPercent) / 4f);
-                }
-                else if (Plugin.EnableStanceStamChanges.Value)
-                {
-                    StanceController.ResetStanceStamina(__instance);
-                }
-
-                __instance.Physical.HandsStamina.Current = Mathf.Max(__instance.Physical.HandsStamina.Current, 1f);
-
-                float stanceHipFactor = StanceController.IsActiveAiming ? 0.7f : StanceController.IsShortStock ? 1.35f : 1f;
-                __instance.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerStats.SprintHipfirePenalty * stanceHipFactor, 0.2f, 1.6f);
-
-                if (!RecoilController.IsFiring)
-                {
-                    if (StanceController.CanResetDamping)
-                    {
-                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(__instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, 0.01f);
-                    }
-                    else
-                    {
-                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.75f;
-                    }
-                    __instance.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(__instance.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, 10f * StanceController.WiggleReturnSpeed, 0.01f);
-                }
-                __instance.MovementContext.SetPatrol(StanceController.IsPatrolStance);
+                PWAUpdate(__instance, fc);
             }
         }
     }

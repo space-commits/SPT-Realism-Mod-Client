@@ -1,4 +1,5 @@
 ﻿using BepInEx.Logging;
+using EFT;
 using EFT.Animations;
 using EFT.InventoryLogic;
 using System;
@@ -87,6 +88,8 @@ namespace RealismMod
             {
                 pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = RecoilController.BaseTotalConvergence;
             }
+            pwa.CameraToWeaponAngleSpeedRange = weapon.Template.CameraToWeaponAngleSpeedRange;
+            pwa.CameraToWeaponAngleStep = weapon.Template.CameraToWeaponAngleStep;
         }
     }
 }

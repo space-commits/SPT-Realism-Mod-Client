@@ -89,10 +89,10 @@ namespace RealismMod
 
     public class PwaWeaponParamsPatch : ModulePatch
     {
-        private static bool didAimWiggle = false;
         private static FieldInfo playerField;
         private static FieldInfo fcField;
         private static FieldInfo float3Field;
+        private static bool didAimWiggle = false;
 
         protected override MethodBase GetTargetMethod()
         {
@@ -106,7 +106,9 @@ namespace RealismMod
         {
             if (StanceController.IsIdle() && WeaponStats._WeapClass != "pistol")
             {
-                Vector3 wiggleDir = new Vector3(-2.5f, -5f, 0f) * ergoWeightFactor * playerWeightFactor * (WeaponStats.HasOptic ? 0.85f : 1f);
+                float factor = ergoWeightFactor * playerWeightFactor * (WeaponStats.HasOptic ? 0.85f : 1f);
+                int rnd = UnityEngine.Random.Range(1, (int)(2.5 * factor));
+                Vector3 wiggleDir = new Vector3(-rnd, -5f, 0f) * factor;
 
                 if (pwa.IsAiming && !didAimWiggle)
                 {
@@ -220,8 +222,8 @@ namespace RealismMod
                         }
                     }
 
-/*                    DoADSWiggle(__instance, player, firearmController, ergoWeightFactor, playerWeightFactor, newAimSpeed);
-*/
+                    DoADSWiggle(__instance, player, firearmController, ergoWeightFactor, playerWeightFactor, newAimSpeed);
+
                     if (Plugin.EnableLogging.Value == true)
                     {
                         Logger.LogWarning("=====method_23========");
