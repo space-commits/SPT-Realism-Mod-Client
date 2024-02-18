@@ -261,9 +261,8 @@ namespace RealismMod
         public float TunnelVisionStrength { get; }
         public float PainKillerStrength { get; set; }
         private bool addedEffect = false;
-        private ManualLogSource logger;
 
-        public PainKillerEffect(int? dur, Player player, int delay, float tunnelStrength, float painKillerStrength, ManualLogSource logger)
+        public PainKillerEffect(int? dur, Player player, int delay, float tunnelStrength, float painKillerStrength)
         {
             TimeExisted = 0;
             Duration = dur;
@@ -273,7 +272,6 @@ namespace RealismMod
             EffectType = EHealthEffectType.PainKiller;
             TunnelVisionStrength = tunnelStrength;
             PainKillerStrength = painKillerStrength;
-            this.logger = logger;
         }
 
         public void Tick()
@@ -283,13 +281,11 @@ namespace RealismMod
                 Duration--;
                 if (Duration <= 0)
                 {
-                    logger.LogWarning("removing PK stats");
                     Plugin.RealHealthController.PainReliefStrength -= PainKillerStrength;
                     Plugin.RealHealthController.PainTunnelStrength -= TunnelVisionStrength;
                 }
                 else if (!addedEffect)
                 {
-                    logger.LogWarning("adding PK stats");
                     addedEffect = true;
                     Plugin.RealHealthController.PainReliefStrength += PainKillerStrength;
                     Plugin.RealHealthController.PainTunnelStrength += TunnelVisionStrength;
@@ -301,10 +297,6 @@ namespace RealismMod
                         Plugin.RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 0f, (float)Duration, 1f, TunnelVisionStrength);
                     }*/
                 }
-            }
-            else 
-            {
-                logger.LogWarning("delay " + Delay);
             }
         }
     }

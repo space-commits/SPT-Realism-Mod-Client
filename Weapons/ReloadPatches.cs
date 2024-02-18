@@ -27,7 +27,7 @@ namespace RealismMod
             {
                 StanceController.IsPatrolStance = false;
                 StanceController.CancelShortStock = true;
-                StanceController.CancelPistolStance = true;
+                // StanceController.CancelPistolStance = true;
                 StanceController.CancelActiveAim = true;
 
                 if (PlayerStats.IsAttemptingToReloadInternalMag == true)
@@ -162,7 +162,7 @@ namespace RealismMod
                 StanceController.CancelLowReady = true;
                 StanceController.CancelShortStock = true;
                 StanceController.CancelActiveAim = true;
-                StanceController.CancelPistolStance = true;
+                // StanceController.CancelPistolStance = true;
             }
         }
     }
@@ -335,7 +335,7 @@ namespace RealismMod
                 }
 
                 StanceController.CancelShortStock = true;
-                StanceController.CancelPistolStance = true;
+                // StanceController.CancelPistolStance = true;
             }
         }
     }

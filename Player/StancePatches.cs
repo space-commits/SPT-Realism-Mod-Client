@@ -926,22 +926,22 @@ namespace RealismMod
                 Quaternion weapTempRotation = (Quaternion)weapTempRotationField.GetValue(__instance);
                 bool isAiming = (bool)isAimingField.GetValue(__instance);
 
-/*                Vector3 handsRotation = __instance.HandsContainer.HandsRotation.Get();
+                Vector3 handsRotation = __instance.HandsContainer.HandsRotation.Get();
                 Vector3 sway = __instance.HandsContainer.SwaySpring.Value;
                 handsRotation += displacementStr * (isAiming ? __instance.AimingDisplacementStr : 1f) * new Vector3(sway.x, 0f, sway.z);
                 handsRotation += sway;
                 Vector3 rotationCenter = __instance._shouldMoveWeaponCloser ? __instance.HandsContainer.RotationCenterWoStock : __instance.HandsContainer.RotationCenter;
                 Vector3 weapRootPivot = __instance.HandsContainer.WeaponRootAnim.TransformPoint(rotationCenter);
-*/
+
                 StanceController.DoMounting(player, __instance, fc, ref weapTempPosition, ref mountWeapPosition, dt, __instance.HandsContainer.WeaponRoot.position);
                 weapTempPositionField.SetValue(__instance, weapTempPosition);
 
 /*                __instance.DeferredRotateWithCustomOrder(__instance.HandsContainer.WeaponRootAnim, weapRootPivot, handsRotation);
-*/                /*                weapTempPosition = (Vector3)weapTempPositionField.GetValue(__instance);
-                                weapTempRotation = (Quaternion)weapTempRotationField.GetValue(__instance);*/
+*//*                weapTempPosition = (Vector3)weapTempPositionField.GetValue(__instance);
+                weapTempRotation = (Quaternion)weapTempRotationField.GetValue(__instance);*//*
 
                 //is it even necessary to do this at all?
-/*                Vector3 recoilVector = __instance.Shootingg.CurrentRecoilEffect.GetHandRotationRecoil();
+                Vector3 recoilVector = __instance.Shootingg.CurrentRecoilEffect.GetHandRotationRecoil();
                 if (recoilVector.magnitude > 1E-45f)
                 {
                     if (compensatoryScale < 1f && __instance.ShotNeedsFovAdjustments)
@@ -951,22 +951,22 @@ namespace RealismMod
                     }
                     Vector3 recoilPivot = weapTempPosition + weapTempRotation * __instance.HandsContainer.RecoilPivot;
                     __instance.DeferredRotate(__instance.HandsContainer.WeaponRootAnim, recoilPivot, weapTempRotation * recoilVector);
-                    weapTempPosition = (Vector3)weapTempPositionField.GetValue(__instance);
-                    weapTempRotation = (Quaternion)weapTempRotationField.GetValue(__instance);
+*//*                    weapTempPosition = (Vector3)weapTempPositionField.GetValue(__instance);
+                    weapTempRotation = (Quaternion)weapTempRotationField.GetValue(__instance);*//*
                 }*/
 
                /* __instance.ApplyAimingAlignment(dt);*/
 
                 bool isPistol = fc.Item.WeapClass == "pistol";
-                bool allStancesReset = hasResetActiveAim && hasResetLowReady && hasResetHighReady && hasResetShortStock && hasResetPistolPos;
+                bool allStancesAreReset = hasResetActiveAim && hasResetLowReady && hasResetHighReady && hasResetShortStock && hasResetPistolPos;
                 bool isInStance = StanceController.IsHighReady || StanceController.IsLowReady || StanceController.IsShortStock || StanceController.IsActiveAiming || StanceController.IsMeleeAttack;
                 bool isInShootableStance = StanceController.IsShortStock || StanceController.IsActiveAiming || isPistol || StanceController.IsMeleeAttack;
                 bool cancelBecauseShooting = StanceController.IsFiringFromStance && !isInShootableStance;
-                bool doStanceRotation = (isInStance || !allStancesReset || StanceController.PistolIsCompressed) && !cancelBecauseShooting;
+                bool doStanceRotation = (isInStance || !allStancesAreReset || StanceController.PistolIsCompressed) && !cancelBecauseShooting;
                 bool allowActiveAimReload = Plugin.ActiveAimReload.Value && PlayerStats.IsInReloadOpertation && !PlayerStats.IsAttemptingToReloadInternalMag && !PlayerStats.IsQuickReloading;
                 bool cancelStance = (StanceController.CancelActiveAim && StanceController.IsActiveAiming && !allowActiveAimReload) || (StanceController.CancelHighReady && StanceController.IsHighReady) || (StanceController.CancelLowReady && StanceController.IsLowReady) || (StanceController.CancelShortStock && StanceController.IsShortStock) || (StanceController.CancelPistolStance && StanceController.PistolIsCompressed);
 
-                currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? aimingQuat : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
+                currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesAreReset ? aimingQuat : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
 
                 RecoilController.DoVisualRecoil(ref targetRecoil, ref currentRecoil, ref weapTempRotation, Logger);
     
@@ -997,7 +997,7 @@ namespace RealismMod
                 }
                 else if (!isPistol || WeaponStats.HasShoulderContact)
                 {
-                    if ((!isInStance && allStancesReset) || (cancelBecauseShooting && !isInShootableStance) || StanceController.IsAiming || cancelStance || StanceController.IsBlindFiring || __instance.LeftStance)
+                    if ((!isInStance && allStancesAreReset) || (cancelBecauseShooting && !isInShootableStance) || StanceController.IsAiming || cancelStance || StanceController.IsBlindFiring || __instance.LeftStance)
                     {
                         StanceController.StanceBlender.Target = 0f;
                     }
@@ -1006,7 +1006,7 @@ namespace RealismMod
                         StanceController.StanceBlender.Target = 1f;
                     }
 
-                    if (((!isInStance && allStancesReset) && !cancelBecauseShooting && !StanceController.IsAiming) || StanceController.IsBlindFiring || __instance.LeftStance)
+                    if (((!isInStance && allStancesAreReset) && !cancelBecauseShooting && !StanceController.IsAiming) || StanceController.IsBlindFiring || __instance.LeftStance)
                     {
                         StanceController.StanceTargetPosition = Vector3.Lerp(StanceController.StanceTargetPosition, Vector3.zero, 5f * dt);
                     }

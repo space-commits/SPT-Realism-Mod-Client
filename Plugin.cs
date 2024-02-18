@@ -329,8 +329,6 @@ namespace RealismMod
         private static bool warnedUser = false;
         public static bool HasReloadedAudio = false;
 
-        private float time = 0f;
-
         private void getPaths()
         {
             var mod = RequestHandler.GetJson($"/RealismMod/GetInfo");
@@ -500,7 +498,6 @@ namespace RealismMod
             DamageTracker dmgTracker = new DamageTracker();
             RealismHealthController healthController = new RealismHealthController(dmgTracker, Logger);
             RealHealthController = healthController;
-            Utils.Logger = Logger;
 
             initConfigs();
 
@@ -709,7 +706,6 @@ namespace RealismMod
 
         void Update()
         {
-            time += Time.deltaTime;
             if (!warnedUser && (int)Time.time % 5 == 0)
             {
                 warnedUser = true;
@@ -727,12 +723,7 @@ namespace RealismMod
                 warnedUser = false;
             }
 
-            if (time > 1f) 
-            {
-                Utils.CheckIsReady();
-                time = 0f;
-            }
-
+            Utils.CheckIsReady();
             if (Utils.IsReady)
             {
                 if (!Plugin.HasReloadedAudio)

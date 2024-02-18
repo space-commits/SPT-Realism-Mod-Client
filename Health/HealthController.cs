@@ -273,7 +273,6 @@ namespace RealismMod
                 return;
             }
 
-            Logger.LogWarning("effect = " + effect);
             Type effectType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType(effect, BindingFlags.NonPublic | BindingFlags.Instance);
             if (effectType == null)
             {
@@ -536,19 +535,15 @@ namespace RealismMod
             {
                 if (PainReliefStrength >= PainStrength)
                 {
-                    Logger.LogWarning("Pain Relief Strength " + PainReliefStrength);
-                    Logger.LogWarning("==relieving pain==");
                     AddBaseEFTEffectIfNoneExisting(player, "PainKiller", EBodyPart.Head, 1f, ReliefDuration, 5f, 1f);
                 }
 
                 if (reliefWaitTimer >= painReliefInterval)
                 {
-                    Logger.LogWarning("==adding tunnel==");
                     AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, painReliefInterval, 5f, PainTunnelStrength);
 
                     if (HasOverdosed)
                     {
-                        Logger.LogWarning("==OVERDOSE==");
                         AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 1f, painReliefInterval, 5f, 0.35f);
                         AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 1f, painReliefInterval, 5f, 1);
                     }
@@ -607,7 +602,6 @@ namespace RealismMod
             }
             if (healthControllerTime >= 3f && !reset4)
             {
-                Logger.LogWarning("calling regen");
                 PlayerInjuryStateCheck(player);
                 reset4 = true;
             }

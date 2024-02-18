@@ -510,7 +510,7 @@ namespace RealismMod
                         }
                     }
                 }
-                Logger.LogWarning(currentSightFactor);
+
                 WeaponStats.ScopeAccuracyFactor = currentSightFactor;
                 bool isBracingTop = StanceController.BracingDirection == EBracingDirection.Top;
                 float mountingFactor = StanceController.IsBracing && isBracingTop ? 1.05f : StanceController.IsBracing && !isBracingTop ? 1.025f : StanceController.IsMounting && isBracingTop ? 1.1f : StanceController.IsMounting && !isBracingTop ? 1.075f : 1f;

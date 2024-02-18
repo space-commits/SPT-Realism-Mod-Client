@@ -676,7 +676,7 @@ namespace RealismMod
             if (!WeaponStats.HasShoulderContact && Plugin.EnableAltPistol.Value)
             {
                 float targetPosX = 0.09f;
-                if (!IsBlindFiring && !StanceController.CancelPistolStance && !pwa.LeftStance)
+                if (!IsBlindFiring && !pwa.LeftStance) // !StanceController.CancelPistolStance
                 {
                     targetPosX = Plugin.PistolOffsetX.Value;
                 }
@@ -688,7 +688,7 @@ namespace RealismMod
                 pwa.HandsContainer.WeaponRoot.localPosition = pistolLocalPosition;
             }
 
-            if (!pwa.IsAiming && !StanceController.CancelPistolStance && !IsBlindFiring && !pwa.LeftStance && !StanceController.PistolIsColliding && !WeaponStats.HasShoulderContact && Plugin.EnableAltPistol.Value)
+            if (!pwa.IsAiming && !IsBlindFiring && !pwa.LeftStance && !StanceController.PistolIsColliding && !WeaponStats.HasShoulderContact && Plugin.EnableAltPistol.Value) //!StanceController.CancelPistolStance
             {
                 pwa.Breath.HipPenalty = WeaponStats.BaseHipfireInaccuracy * PlayerStats.SprintHipfirePenalty;
 
@@ -1274,9 +1274,6 @@ namespace RealismMod
             {
                 AccessTools.Method(typeof(Player), "method_46").Invoke(player, new object[] { volume });
             }
-            Utils.Logger.LogWarning("do wiggle");
-  /*          pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0f;
-            pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0f;*/
 
             for (int i = 0; i < pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues.Length; i++)
             {

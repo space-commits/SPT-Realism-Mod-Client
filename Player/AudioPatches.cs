@@ -110,12 +110,9 @@ namespace RealismMod
             {
                 if (DeafeningController.PrismEffects == __instance)
                 {
-                    Logger.LogWarning("Already Set Prism Effects");
                     return;
                 }
                 DeafeningController.PrismEffects = __instance;
-                Logger.LogWarning("Enabling Prism Effects");
-
             }
         }
     }
@@ -133,7 +130,6 @@ namespace RealismMod
             if (__instance.gameObject.name == "FPS Camera" && DeafeningController.PrismEffects == __instance)
             {
                 DeafeningController.PrismEffects = null;
-                Logger.LogWarning("Disabling Prism Effects");
             }
         }
     }

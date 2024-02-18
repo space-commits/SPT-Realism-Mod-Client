@@ -520,12 +520,7 @@ namespace RealismMod
                         float tunnelVisionStr = MedProperties.TunnelVisionStrength(meds);
                         float painKillStr = MedProperties.Strength(meds);
 
-                        Logger.LogWarning("duration " + duration);
-                        Logger.LogWarning("delay " + delay);
-                        Logger.LogWarning("tunnelVisionStr " + tunnelVisionStr);
-                        Logger.LogWarning("painKillStr " + painKillStr);
-
-                        PainKillerEffect painKillerEffect = new PainKillerEffect(duration, __instance, delay, tunnelVisionStr, painKillStr, Logger);
+                        PainKillerEffect painKillerEffect = new PainKillerEffect(duration, __instance, delay, tunnelVisionStr, painKillStr);
                         Plugin.RealHealthController.AddCustomEffect(painKillerEffect, true);
                         return true;
                     }

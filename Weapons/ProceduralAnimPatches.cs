@@ -104,10 +104,8 @@ namespace RealismMod
 
         private static void DoADSWiggle(ProceduralWeaponAnimation pwa, Player player, FirearmController fc, float ergoWeightFactor, float playerWeightFactor, float newAimSpeed)
         {
-            if (StanceController.IsIdle() && WeaponStats._WeapClass != "pistol")
+            if (StanceController.IsIdle() && WeaponStats._WeapClass.ToLower() != "pistol")
             {
-                Logger.LogWarning("ergoWeightFactor " + ergoWeightFactor);
-                Logger.LogWarning("playerWeightFactor " + playerWeightFactor);
                 float factor = ergoWeightFactor * playerWeightFactor;
                 int rndX = UnityEngine.Random.Range(1, (int)(5f * factor));
                 int rndY = UnityEngine.Random.Range(1, (int)(5f * factor));

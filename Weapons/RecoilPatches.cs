@@ -21,65 +21,6 @@ using System.IO;
 
 namespace RealismMod
 {
-
-
-    public class AutoFireModePatch : ModulePatch
-    {
-        private static FieldInfo autoFireField;
-        private static FieldInfo fcField;
-
-        protected override MethodBase GetTargetMethod()
-        {
-            autoFireField = AccessTools.Field(typeof(NewRecoilShotEffect), "_autoFireOn");
-            fcField = AccessTools.Field(typeof(NewRecoilShotEffect), "_firearmController");
-            return typeof(NewRecoilShotEffect).GetMethod("method_5");
-        }
-
-        [PatchPostfix]
-        public static void PatchPostfix(NewRecoilShotEffect __instance)
-        {
-            if ((FirearmController)fcField.GetValue(__instance) != null)
-            {
-                autoFireField.SetValue(__instance, false);
-                __instance.HandRotationRecoil.SetAutoFireMode(false);
-            }
-        }
-    }
-
-    public class IndexPatch : ModulePatch
-    {
-        private static FieldInfo index;
-
-        protected override MethodBase GetTargetMethod()
-        {
-            index = AccessTools.Field(typeof(NewRecoilShotEffect), "_autoFireShotIndex");
-            return typeof(NewRecoilShotEffect).GetMethod("FixedUpdate");
-        }
-
-        [PatchPostfix]
-        public static void PatchPrefix(NewRecoilShotEffect __instance)
-        {
-
-            Logger.LogWarning("index " + (int)index.GetValue(__instance));
-        }
-    }
-
-    public class StabilizePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(NewRotationRecoilProcess).GetMethod("SetStableMode");
-        }
-
-        [PatchPrefix]
-        public static bool PatchPrefix(NewRotationRecoilProcess __instance)
-        {
-            __instance.CurrentAngleAdd = 0f;
-            __instance.StableOn = false;
-            return false;
-        }
-    }
-
     public class RotatePatch : ModulePatch
     {
         private static FieldInfo movementContextField;
@@ -285,12 +226,8 @@ namespace RealismMod
 
                     if (proposedDistance > averageDistance * maxIncreasePercentage)
                     {
-        /*                Logger.LogWarning("TARGET EXCEEDS PERSMISSABLE DIFFERENCE");*/
                         adjustTargetVector(averageDistance, proposedDistance);
                     }
-
-/*                    Logger.LogWarning("Distance Before " + proposedDistance);
-                    Logger.LogWarning("Distance After " + Vector2.Distance(currentRotation, targetRotation));*/
 
                     movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, targetRotation, Plugin.RecoilSmoothness.Value);
                 }
@@ -581,7 +518,6 @@ namespace RealismMod
                     int num = UnityEngine.Random.Range(1, 20);
                     if (scopeFactor * 10f > num)
                     {
-                        Logger.LogWarning("shift");
                         float offsetFactor = scopeFactor * 0.2f;
                         float offsetX = Random.Range(-offsetFactor, offsetFactor);
                         float offsetY = Random.Range(-offsetFactor, offsetFactor);

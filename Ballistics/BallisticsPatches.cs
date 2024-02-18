@@ -415,10 +415,6 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(Player __instance, ref DamageInfo damageInfo, EBodyPart bodyPartType)
         {
-            Logger.LogWarning(damageInfo.HittedBallisticCollider.name);
-            Logger.LogWarning(damageInfo.HittedBallisticCollider.TypeOfMaterial);
-            Logger.LogWarning(damageInfo.BodyPartColliderType);
-
             if (__instance.IsYourPlayer && Plugin.RealHealthController.HasOverdosed && damageInfo.Damage > 10f) 
             {
                 if (!__instance.IsInPronePose && Plugin.CanFellPlayer.Value)
@@ -445,8 +441,6 @@ namespace RealismMod
 
             if (damageInfo.DamageType == EDamageType.Bullet || damageInfo.DamageType == EDamageType.Melee)
             {
-                Logger.LogWarning("blunt or melee");
-
                 EquipmentClass equipment = (EquipmentClass)equipmentClassProperty.GetValue(__instance);
                 Inventory inventory = (Inventory)inventoryClassProperty.GetValue(__instance);
 
@@ -476,7 +470,6 @@ namespace RealismMod
 
                 if (!damageInfo.Blunt && Plugin.EnableHitSounds.Value && !__instance.IsYourPlayer)
                 {
-                    Logger.LogWarning("play sound");
                     playBodyHitSound(bodyPartType, damageInfo.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
                 }
 
@@ -501,11 +494,8 @@ namespace RealismMod
 
                 if (armor != null && damageInfo.DamageType != EDamageType.Melee)
                 {
-                    Logger.LogWarning("armor not null");
-
                     if (damageInfo.Blunt && GearStats.CanSpall(armor.Item) && (bodyPartType == EBodyPart.Chest || bodyPartType == EBodyPart.Stomach))
                     {
-                        Logger.LogWarning("can do spalling");
                         damageInfo.BleedBlock = false;
                         bool isMetalArmor = armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel || armor.Template.ArmorMaterial == EArmorMaterial.Titan ? true : false;
                         float bluntDamage = damageInfo.Damage;
@@ -832,8 +822,6 @@ namespace RealismMod
                     playArmorHitSound(__instance.Template.ArmorMaterial, damageInfo.HittedBallisticCollider.transform.position, isHead, UnityEngine.Random.Range(0, 2));
                 }
             }
-            Logger.LogWarning("5");
-
             BulletClass ammo = null;
             AmmoTemplate ammoTemp = null;
             if (damageType != EDamageType.Melee)
