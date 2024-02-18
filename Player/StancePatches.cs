@@ -857,7 +857,7 @@ namespace RealismMod
     public class ApplyComplexRotationPatch : ModulePatch
     {
         private static FieldInfo aimSpeedField;
-        private static FieldInfo fovScaleField;
+        private static FieldInfo compensatoryField;
         private static FieldInfo displacementStrField;
         private static FieldInfo aimingQuatField;
         private static FieldInfo weapTempRotationField;
@@ -891,7 +891,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             aimSpeedField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed");
-            fovScaleField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_compensatoryScale");
+            compensatoryField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_compensatoryScale");
             displacementStrField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_displacementStr");
             aimingQuatField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_targetScopeRotation");
             weapTempPositionField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryPosition");
@@ -919,40 +919,43 @@ namespace RealismMod
                 StanceController.IsInThirdPerson = false;
 
                 float aimSpeed = (float)aimSpeedField.GetValue(__instance);
-                float fovScale = (float)fovScaleField.GetValue(__instance);
+                float compensatoryScale = (float)compensatoryField.GetValue(__instance);
                 float displacementStr = (float)displacementStrField.GetValue(__instance);
                 Quaternion aimingQuat = (Quaternion)aimingQuatField.GetValue(__instance);
                 Vector3 weapTempPosition = (Vector3)weapTempPositionField.GetValue(__instance);
                 Quaternion weapTempRotation = (Quaternion)weapTempRotationField.GetValue(__instance);
                 bool isAiming = (bool)isAimingField.GetValue(__instance);
 
-                Vector3 handsRotation = __instance.HandsContainer.HandsRotation.Get();
+/*                Vector3 handsRotation = __instance.HandsContainer.HandsRotation.Get();
                 Vector3 sway = __instance.HandsContainer.SwaySpring.Value;
                 handsRotation += displacementStr * (isAiming ? __instance.AimingDisplacementStr : 1f) * new Vector3(sway.x, 0f, sway.z);
                 handsRotation += sway;
                 Vector3 rotationCenter = __instance._shouldMoveWeaponCloser ? __instance.HandsContainer.RotationCenterWoStock : __instance.HandsContainer.RotationCenter;
                 Vector3 weapRootPivot = __instance.HandsContainer.WeaponRootAnim.TransformPoint(rotationCenter);
-
+*/
                 StanceController.DoMounting(player, __instance, fc, ref weapTempPosition, ref mountWeapPosition, dt, __instance.HandsContainer.WeaponRoot.position);
                 weapTempPositionField.SetValue(__instance, weapTempPosition);
 
-                __instance.DeferredRotateWithCustomOrder(__instance.HandsContainer.WeaponRootAnim, weapRootPivot, handsRotation);
-                weapTempPosition = (Vector3)weapTempPositionField.GetValue(__instance);
+/*                __instance.DeferredRotateWithCustomOrder(__instance.HandsContainer.WeaponRootAnim, weapRootPivot, handsRotation);
+*/                /*                weapTempPosition = (Vector3)weapTempPositionField.GetValue(__instance);
+                                weapTempRotation = (Quaternion)weapTempRotationField.GetValue(__instance);*/
 
-                Vector3 recoilVector = __instance.Shootingg.CurrentRecoilEffect.GetHandRotationRecoil();
+                //is it even necessary to do this at all?
+/*                Vector3 recoilVector = __instance.Shootingg.CurrentRecoilEffect.GetHandRotationRecoil();
                 if (recoilVector.magnitude > 1E-45f)
                 {
-                    if (fovScale < 1f && __instance.ShotNeedsFovAdjustments)
+                    if (compensatoryScale < 1f && __instance.ShotNeedsFovAdjustments)
                     {
-                        recoilVector.x = Mathf.Atan(Mathf.Tan(recoilVector.x * 0.017453292f) * fovScale) * 57.29578f;
-                        recoilVector.z = Mathf.Atan(Mathf.Tan(recoilVector.z * 0.017453292f) * fovScale) * 57.29578f;
+                        recoilVector.x = Mathf.Atan(Mathf.Tan(recoilVector.x * 0.017453292f) * compensatoryScale) * 57.29578f;
+                        recoilVector.z = Mathf.Atan(Mathf.Tan(recoilVector.z * 0.017453292f) * compensatoryScale) * 57.29578f;
                     }
                     Vector3 recoilPivot = weapTempPosition + weapTempRotation * __instance.HandsContainer.RecoilPivot;
                     __instance.DeferredRotate(__instance.HandsContainer.WeaponRootAnim, recoilPivot, weapTempRotation * recoilVector);
                     weapTempPosition = (Vector3)weapTempPositionField.GetValue(__instance);
-                }
+                    weapTempRotation = (Quaternion)weapTempRotationField.GetValue(__instance);
+                }*/
 
-                __instance.ApplyAimingAlignment(dt);
+               /* __instance.ApplyAimingAlignment(dt);*/
 
                 bool isPistol = fc.Item.WeapClass == "pistol";
                 bool allStancesReset = hasResetActiveAim && hasResetLowReady && hasResetHighReady && hasResetShortStock && hasResetPistolPos;
@@ -966,7 +969,7 @@ namespace RealismMod
                 currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? aimingQuat : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
 
                 RecoilController.DoVisualRecoil(ref targetRecoil, ref currentRecoil, ref weapTempRotation, Logger);
-
+    
                 __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weapTempPosition, weapTempRotation * currentRotation);
 
                 if (isPistol && !StanceController.IsPatrolStance)
@@ -989,6 +992,7 @@ namespace RealismMod
                     hasResetHighReady = true;
                     hasResetLowReady = true;
                     hasResetShortStock = true;
+                    hasResetMelee = true;
                     StanceController.DoPistolStances(false, __instance, ref stanceRotation, dt, ref hasResetPistolPos, player, ref stanceRotationSpeed, ref isResettingPistol, fc);
                 }
                 else if (!isPistol || WeaponStats.HasShoulderContact)

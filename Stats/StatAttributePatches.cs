@@ -61,7 +61,8 @@ namespace RealismMod
             GearReloadSpeed,
             CanSpall,
             SpallReduction,
-            CanAds,
+            CantADS,
+            CanADS,
             NoiseReduction,
             ProjectileCount,
             Convergence,
@@ -128,8 +129,10 @@ namespace RealismMod
                     return "SPALLING REDUCTION";
                 case ENewItemAttributeId.GearReloadSpeed:
                     return "RELOAD SPEED";
-                case ENewItemAttributeId.CanAds:
+                case ENewItemAttributeId.CantADS:
                     return "BLOCKS AIMING DOWN SIGHTS";
+                case ENewItemAttributeId.CanADS:
+                    return "ALLOWS AIMING WITH FACESHIELD";
                 case ENewItemAttributeId.NoiseReduction:
                     return "NOISE REDUCTION RATING";
                 case ENewItemAttributeId.ProjectileCount:

@@ -152,7 +152,7 @@ namespace RealismMod
 
             if (player.IsYourPlayer && !ignoreClamp)
             {
-                deltaRotation = movementContext.ClampRotation(deltaRotation);
+                /*deltaRotation = movementContext.ClampRotation(deltaRotation);*/
                 StanceController.MouseRotation = deltaRotation;
 
                 if (!StanceController.IsMounting)
@@ -285,12 +285,12 @@ namespace RealismMod
 
                     if (proposedDistance > averageDistance * maxIncreasePercentage)
                     {
-                        Logger.LogWarning("TARGET EXCEEDS PERSMISSABLE DIFFERENCE");
+        /*                Logger.LogWarning("TARGET EXCEEDS PERSMISSABLE DIFFERENCE");*/
                         adjustTargetVector(averageDistance, proposedDistance);
                     }
 
-                    Logger.LogWarning("Distance Before " + proposedDistance);
-                    Logger.LogWarning("Distance After " + Vector2.Distance(currentRotation, targetRotation));
+/*                    Logger.LogWarning("Distance Before " + proposedDistance);
+                    Logger.LogWarning("Distance After " + Vector2.Distance(currentRotation, targetRotation));*/
 
                     movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, targetRotation, Plugin.RecoilSmoothness.Value);
                 }
@@ -405,14 +405,19 @@ namespace RealismMod
                 float calcStats = firearmController.Weapon.ErgonomicsDelta;
 
                 fcField.SetValue(__instance, firearmController);
-                __instance.RecoilStableShotIndex = (int)Plugin.test10.Value;
+
+                bool isStockedPistol = WeaponStats.HasShoulderContact && template.weapClass.ToLower() == "pistol";
+                float stockedPistolFactor = isStockedPistol ? 0.75f : 1f; 
+
+                __instance.RecoilStableShotIndex = 1;
                 __instance.HandRotationRecoil.RecoilReturnTrajectoryOffset = template.RecoilReturnPathOffsetHandRotation;
-                __instance.HandRotationRecoil.StableAngleIncreaseStep = template.RecoilStableAngleIncreaseStep;
-                __instance.HandRotationRecoil.AfterRecoilOffsetVerticalRange = template.PostRecoilVerticalRangeHandRotation;
-                __instance.HandRotationRecoil.AfterRecoilOffsetHorizontalRange = template.PostRecoilHorizontalRangeHandRotation;
-                __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = template.ProgressRecoilAngleOnStable;
-                __instance.HandRotationRecoil.ReturnTrajectoryDumping = template.RecoilReturnPathDampingHandRotation;
-                __instance.HandRotationRecoil.CategoryIntensityMultiplier = template.RecoilCategoryMultiplierHandRotation * Plugin.RecoilIntensity.Value;
+                __instance.HandRotationRecoil.StableAngleIncreaseStep = template.RecoilStableAngleIncreaseStep; 
+                __instance.HandRotationRecoil.AfterRecoilOffsetVerticalRange = Vector2.zero;
+                __instance.HandRotationRecoil.AfterRecoilOffsetHorizontalRange = Vector2.zero;
+                __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = template.weapClass.ToLower() == "pistol" ? new Vector2(0f, 25f) : new Vector2(30f, 30f); 
+                __instance.HandRotationRecoil.ReturnTrajectoryDumping = template.RecoilReturnPathDampingHandRotation * Plugin.HandsDampingMulti.Value;
+                __instance.HandRotationRecoilEffect.Damping = template.RecoilDampingHandRotation * Plugin.RecoilDampingMulti.Value; 
+                __instance.HandRotationRecoil.CategoryIntensityMultiplier =  template.RecoilCategoryMultiplierHandRotation * Plugin.RecoilIntensity.Value * stockedPistolFactor; 
 
                 float totalVRecoilDelta = Mathf.Max(0f, (1f + WeaponStats.VRecoilDelta) * (1f - recoilSuppressionX - recoilSuppressionY * recoilSuppressionFactor));
                 float totalHRecoilDelta = Mathf.Max(0f, (1f + WeaponStats.HRecoilDelta) * (1f - recoilSuppressionX - recoilSuppressionY * recoilSuppressionFactor));

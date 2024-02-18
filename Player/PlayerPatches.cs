@@ -362,18 +362,6 @@ namespace RealismMod
             {
                 if (RecoilController.IsFiring)
                 {
-                    //did this due to weird weapon movement while firing, might not be necessary anymore
-                    /*      if (Plugin.IsAiming)
-                          {
-                              __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerStats.TotalBreathIntensity * mountingSwayBonus * 0.01f;
-                              __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerStats.TotalHandsIntensity * mountingSwayBonus * 0.01f;
-                          }
-                          else
-                          {
-                              __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerStats.TotalBreathIntensity * mountingSwayBonus;
-                              __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerStats.TotalHandsIntensity * mountingSwayBonus;
-                          }*/
-
                     RecoilController.SetRecoilParams(player.ProceduralWeaponAnimation, fc.Item);
                     StanceController.IsPatrolStance = false;
                 }
@@ -413,11 +401,11 @@ namespace RealismMod
                 player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, 10f * StanceController.WiggleReturnSpeed, 0.01f);
                 player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0;
                 player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
-                if (!RecoilController.IsFiringMovement) 
+         /*       if (!RecoilController.IsFiringMovement) 
                 {
                     player.ProceduralWeaponAnimation.CameraToWeaponAngleSpeedRange = Vector2.zero;
                     player.ProceduralWeaponAnimation.CameraToWeaponAngleStep = 0f;
-                }
+                }*/
             }
             player.MovementContext.SetPatrol(StanceController.IsPatrolStance);
         }

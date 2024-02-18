@@ -401,6 +401,16 @@ namespace RealismMod
             }
 
 
+            if (AttachmentProperties.StockAllowADS(__instance))
+            {
+                ItemAttributeClass canADSAttAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanADS);
+                canADSAttAttClass.Name = ENewItemAttributeId.CanADS.GetName();
+                canADSAttAttClass.Base = () => 1;
+                canADSAttAttClass.StringValue = () => "";
+                canADSAttAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                Utils.SafelyAddAttributeToList(canADSAttAttClass, __instance);
+            }
+
             ItemAttributeClass hRecoilAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.HorizontalRecoil);
             hRecoilAtt.Name = ENewItemAttributeId.HorizontalRecoil.GetName();
             hRecoilAtt.Base = () => hRecoil;

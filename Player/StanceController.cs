@@ -1274,9 +1274,9 @@ namespace RealismMod
             {
                 AccessTools.Method(typeof(Player), "method_46").Invoke(player, new object[] { volume });
             }
-
-            pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0f;
-            pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0f;
+            Utils.Logger.LogWarning("do wiggle");
+  /*          pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0f;
+            pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0f;*/
 
             for (int i = 0; i < pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues.Length; i++)
             {

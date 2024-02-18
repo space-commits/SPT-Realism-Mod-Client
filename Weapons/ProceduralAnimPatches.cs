@@ -227,6 +227,10 @@ namespace RealismMod
 
                     DoADSWiggle(__instance, player, firearmController, ergoWeightFactor, playerWeightFactor, newAimSpeed);
 
+                    __instance.CameraSmoothRecoil = 1;
+                    __instance.CameraToWeaponAngleSpeedRange = Vector2.zero;
+                    __instance.CameraToWeaponAngleStep = 0;
+
                     if (Plugin.EnableLogging.Value == true)
                     {
                         Logger.LogWarning("=====method_23========");

@@ -75,8 +75,8 @@ namespace RealismMod
                 if (!allowADS)
                 {
                     List<ItemAttributeClass> canADSAtt = __instance.Item.Attributes;
-                    ItemAttributeClass canADSAttAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanAds);
-                    canADSAttAttClass.Name = ENewItemAttributeId.CanAds.GetName();
+                    ItemAttributeClass canADSAttAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CantADS);
+                    canADSAttAttClass.Name = ENewItemAttributeId.CantADS.GetName();
                     canADSAttAttClass.StringValue = () => "";
                     canADSAttAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                     canADSAtt.Add(canADSAttAttClass);

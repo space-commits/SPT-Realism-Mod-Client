@@ -88,8 +88,6 @@ namespace RealismMod
             {
                 pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = RecoilController.BaseTotalConvergence;
             }
-            pwa.CameraToWeaponAngleSpeedRange = weapon.Template.CameraToWeaponAngleSpeedRange;
-            pwa.CameraToWeaponAngleStep = weapon.Template.CameraToWeaponAngleStep;
         }
     }
 }
