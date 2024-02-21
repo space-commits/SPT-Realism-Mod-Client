@@ -157,16 +157,16 @@ namespace RealismMod
                     }
                     else if (aiming)
                     {
-                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponStats.ErgonomicWeight * 0.95f * ((1f - PlayerStats.ADSInjuryMulti) + 1f));
+                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponStats.ErgoFactor * 0.95f * ((1f - PlayerStats.ADSInjuryMulti) + 1f));
                         CanResetAimDrain = false;
                     }
                     else if (canDoIdleStamDrain)
                     {
-                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponStats.ErgonomicWeight * 0.9f * ((1f - PlayerStats.ADSInjuryMulti) + 1f));
+                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponStats.ErgoFactor * 0.9f * ((1f - PlayerStats.ADSInjuryMulti) + 1f));
                     }
                     else if (canDoActiveAimDrain)
                     {
-                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponStats.ErgonomicWeight * 0.6f * ((1f - PlayerStats.ADSInjuryMulti) + 1f));
+                        player.Physical.Aim(!(player.MovementContext.StationaryWeapon == null) ? 0f : WeaponStats.ErgoFactor * 0.6f * ((1f - PlayerStats.ADSInjuryMulti) + 1f));
                     }
                     else if (CanResetAimDrain)
                     {
@@ -177,22 +177,22 @@ namespace RealismMod
                     if (IsPatrolStance)
                     {
                         player.Physical.Aim(0f);
-                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((((1f - (WeaponStats.ErgonomicWeight / 100f)) * 0.04f) * PlayerStats.ADSInjuryMulti)), player.Physical.HandsStamina.TotalCapacity);
+                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((((1f - (WeaponStats.ErgoFactor / 100f)) * 0.04f) * PlayerStats.ADSInjuryMulti)), player.Physical.HandsStamina.TotalCapacity);
                     }
                     else if (canDoHighRegen)
                     {
                         player.Physical.Aim(0f);
-                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((((1f - (WeaponStats.ErgonomicWeight / 100f)) * 0.01f) * PlayerStats.ADSInjuryMulti)), player.Physical.HandsStamina.TotalCapacity);
+                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + ((((1f - (WeaponStats.ErgoFactor / 100f)) * 0.01f) * PlayerStats.ADSInjuryMulti)), player.Physical.HandsStamina.TotalCapacity);
                     }
                     else if (IsMounting || canDoLowRegen)
                     {
                         player.Physical.Aim(0f);
-                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponStats.ErgonomicWeight / 100f)) * 0.03f) * PlayerStats.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
+                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponStats.ErgoFactor / 100f)) * 0.03f) * PlayerStats.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
                     }
                     else if (isActuallyBracing || canDoShortRegen)
                     {
                         player.Physical.Aim(0f);
-                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponStats.ErgonomicWeight / 100f)) * 0.02f) * PlayerStats.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
+                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponStats.ErgoFactor / 100f)) * 0.02f) * PlayerStats.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
                     }
                 }
                 else
@@ -200,7 +200,7 @@ namespace RealismMod
                     if (!IsAiming)
                     {
                         player.Physical.Aim(0f);
-                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponStats.ErgonomicWeight / 100f)) * 0.025f) * PlayerStats.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
+                        player.Physical.HandsStamina.Current = Mathf.Min(player.Physical.HandsStamina.Current + (((1f - (WeaponStats.ErgoFactor / 100f)) * 0.025f) * PlayerStats.ADSInjuryMulti), player.Physical.HandsStamina.TotalCapacity);
                     }
                 }
             }

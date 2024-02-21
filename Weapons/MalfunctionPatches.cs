@@ -72,24 +72,11 @@ namespace RealismMod
                     return false;
                 }
 
-                float ammoHotnessFactor = (1f - ((ammoToFire.ammoRec / 200f) + 1f)) + 1f;
+/*                float ammoHotnessFactor = (1f - ((ammoToFire.ammoRec / 200f) + 1f)) + 1f;*/
 
                 float malfDelta = Mathf.Min(WeaponStats.MalfChanceDelta * 3, 0.99f);
-                if (!WeaponStats.CanCycleSubs && ammoToFire.ammoHear == 1)
-                {
-
-                    if (ammoToFire.Caliber == "762x39")
-                    {
-                        __result = 0.2f * (1f - malfDelta);
-                    }
-                    else
-                    {
-                        __result = 0.35f * (1f - malfDelta);
-                    }
-
-                    return false;
-                }
-
+                float subFactor = 1f;
+     
                 BackendConfigSettingsClass instance = Singleton<BackendConfigSettingsClass>.Instance;
                 MalfGlobals malfunctionGlobals = instance.Malfunction;
                 OverheatGlobals overheatGlobals = instance.Overheat;
@@ -126,9 +113,24 @@ namespace RealismMod
                 {
                     durabilityMalfChance *= 0.25f;
                 }
-                durabilityMalfChance *= (double)(float)__instance.Item.Buff.MalfunctionProtections;
-                durabilityMalfChance = (double)Mathf.Clamp01((float)durabilityMalfChance);
-                float totalMalfChance = Mathf.Clamp01((float)Math.Round(durabilityMalfChance + (double)((ammoMalfChance + magMalfChance + overheatMalfChance) / 500f), 5));
+
+                if (!WeaponStats.CanCycleSubs && ammoToFire.ammoHear == 1)
+                {
+                    float suppFactor = __instance.IsSilenced ? 0.25f : 1f;
+                    if (ammoToFire.Caliber == "762x39")
+                    {
+                        subFactor = 2500f * (1f - malfDelta) * suppFactor;
+                    }
+                    else
+                    {
+                        subFactor = 3f * (1f - malfDelta) * suppFactor;
+                    }
+                }
+
+                durabilityMalfChance *= subFactor;
+                durabilityMalfChance *= __instance.Item.Buff.MalfunctionProtections;
+                durabilityMalfChance = Mathf.Clamp01((float)durabilityMalfChance);
+                float totalMalfChance = Mathf.Clamp01((float)Math.Round(durabilityMalfChance + ((ammoMalfChance + magMalfChance + overheatMalfChance) / 500f), 5));
 
                 __result = totalMalfChance;
                 return false;

@@ -101,14 +101,15 @@ namespace RealismMod
                     initialRotation = movementContext.Rotation;
                 }
 
-                float fpsFactor = 144f / (1f / Time.unscaledDeltaTime);
-
                 bool hybridBlocksReset = Plugin.EnableHybridRecoil.Value && !WeaponStats.HasShoulderContact && !Plugin.EnableHybridReset.Value;
                 bool canResetVert = Plugin.ResetVertical.Value && !hybridBlocksReset;
                 bool canResetHorz = Plugin.ResetHorizontal.Value && !hybridBlocksReset;
 
                 if (RecoilController.ShotCount > RecoilController.PrevShotCount)
                 {
+                    float fpsFactor = 144f / (1f / Time.unscaledDeltaTime);
+                    Logger.LogWarning("fpsFactor " + fpsFactor);
+
                     float controlFactor = RecoilController.ShotCount <= 3f ? Plugin.PlayerControlMulti.Value * 3 : Plugin.PlayerControlMulti.Value;
                     RecoilController.PlayerControl += Mathf.Abs(deltaRotation.y) * controlFactor;
 

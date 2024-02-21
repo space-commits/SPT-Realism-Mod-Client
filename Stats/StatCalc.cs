@@ -12,9 +12,9 @@ namespace RealismMod
 {
     public static class StatCalc
     {
-        public static float ErgoWeightMult = 13f;
-        public static float ErgoTorqueMult = 0.8f;
-        public static float PistolErgoWeightMult = 12f;
+        public static float ErgoWeightMult = 13.65f;
+        public static float ErgoTorqueMult = 0.84f;
+        public static float PistolErgoWeightMult = 12.6f;
         public static float PistolErgoTorqueMult = 1.0f;
 
         public static float VRecoilWeightMult = 2f;
@@ -191,16 +191,8 @@ namespace RealismMod
 
         public static float ProceduralIntensityFactorCalc(float weapWeight, float idealWeapWeight)
         {
-            float weightFactor = 1f;
-
             //get percentage differenecne between weapon weight and a chosen minimum/threshold weight. Apply that % difference as a multiplier 
-
-            if (weapWeight >= idealWeapWeight)
-            {
-                weightFactor = Mathf.Max((((weapWeight - idealWeapWeight) / idealWeapWeight) * 0.1f) + 1f, 1f);
-            }
-
-            return weightFactor;
+            return ((weapWeight - idealWeapWeight) / idealWeapWeight) +1f; 
         }
 
         public static void SpeedStatCalc(Weapon weap, float ergoWeight, float ergonomicWeightLessMag, float chamberSpeedMod, float reloadSpeedMod, ref float totalReloadSpeedLessMag, ref float totalChamberSpeed, ref float totalAimMoveSpeedFactor, ref float totalFiringChamberSpeed, ref float totalChamberCheckSpeed, ref float totalFixSpeed)

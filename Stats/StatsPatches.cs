@@ -573,7 +573,7 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                __result = WeaponStats.ErgonomicWeight * PlayerStats.ErgoDeltaInjuryMulti * (1f - PlayerStats.StrengthSkillAimBuff * 1.5f);
+                __result = WeaponStats.ErgoFactor * PlayerStats.ErgoDeltaInjuryMulti * (1f - PlayerStats.StrengthSkillAimBuff * 1.5f);
 
                 if (!Utils.HasRunErgoWeightCalc)
                 {
@@ -586,6 +586,7 @@ namespace RealismMod
                     Logger.LogWarning("===ErgonomicWeight===");
                     Logger.LogWarning("total ergo weight = " + __result);
                     Logger.LogWarning("base ergo weight = " + WeaponStats.ErgoFactor);
+                    Logger.LogWarning("ergoweight ergo weight = " + WeaponStats.ErgonomicWeight);
                 }
 
                 return false;

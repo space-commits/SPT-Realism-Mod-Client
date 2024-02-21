@@ -234,9 +234,10 @@ namespace RealismMod
             {
                 shotEffector.CurrentRecoilEffect.HandRotationRecoilEffect.Offset = breathVector;
             }
+
             float breathFactor = StanceController.BlockBreathEffect ? 0f : StanceController.MountingBreathReduction;
-            processors[0].ProcessRaw(breathFrequency, (float)breathIntensityField.GetValue(__instance) * breathFactor); 
-            processors[1].ProcessRaw(breathFrequency, (float)breathIntensityField.GetValue(__instance) * cameraSensetivity * breathFactor);
+            processors[0].ProcessRaw(breathFrequency, (float)breathIntensityField.GetValue(__instance) * breathFactor * 0.7f); 
+            processors[1].ProcessRaw(breathFrequency, (float)breathIntensityField.GetValue(__instance) * cameraSensetivity * breathFactor * 0.7f);
             return false;
         }
     }
@@ -427,7 +428,6 @@ namespace RealismMod
                 currentSet.JumpSoundBank.BaseVolume = Plugin.SharedMovementVolume.Value;
                 currentSet.LandingSoundBank.BaseVolume = Plugin.SharedMovementVolume.Value;
             }
-
 
             if (Utils.IsReady && __instance.IsYourPlayer)
             {
