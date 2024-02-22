@@ -187,7 +187,7 @@ namespace RealismMod
             }
             else
             {
-                float holdBreathBonus = __instance.Physical.HoldingBreath ? 0.65f : 1f;
+                float holdBreathBonus = __instance.Physical.HoldingBreath ? 0.55f : 1f;
                 float t = lackOfOxygenStrength.Evaluate(__instance.OxygenLevel);
                 float b = __instance.IsAiming ? 0.75f : 1f;
                 breathIntensityField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, b, t), 1f, 1.5f) * __instance.Intensity * holdBreathBonus);
@@ -293,18 +293,15 @@ namespace RealismMod
 
         private static void resetSwayParams(ProceduralWeaponAnimation pwa, float mountingBonus)
         {
-            float resetSwaySpeed = 0.05f;
-            float resetSpeed = 0.5f;
+            float resetSwaySpeed = 0.035f;
+            float resetSpeed = 0.4f;
             PlayerStats.SprintTotalBreathIntensity = Mathf.Lerp(PlayerStats.SprintTotalBreathIntensity, PlayerStats.TotalBreathIntensity, resetSwaySpeed);
             PlayerStats.SprintTotalHandsIntensity = Mathf.Lerp(PlayerStats.SprintTotalHandsIntensity, PlayerStats.TotalHandsIntensity, resetSwaySpeed);
             PlayerStats.ADSSprintMulti = Mathf.Lerp(PlayerStats.ADSSprintMulti, 1f, resetSpeed);
             PlayerStats.SprintHipfirePenalty = Mathf.Lerp(PlayerStats.SprintHipfirePenalty, 1f, resetSpeed);
 
-            if (!RecoilController.IsFiring)
-            {
-                pwa.Breath.Intensity = PlayerStats.SprintTotalBreathIntensity * mountingBonus;
-                pwa.HandsContainer.HandsRotation.InputIntensity = PlayerStats.SprintTotalHandsIntensity * mountingBonus;
-            }
+            pwa.Breath.Intensity = PlayerStats.SprintTotalBreathIntensity * mountingBonus;
+            pwa.HandsContainer.HandsRotation.InputIntensity = PlayerStats.SprintTotalHandsIntensity * mountingBonus;
 
             if (Utils.AreFloatsEqual(1f, PlayerStats.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerStats.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerStats.TotalHandsIntensity))
             {

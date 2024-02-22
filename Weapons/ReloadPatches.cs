@@ -5,10 +5,13 @@ using EFT;
 using EFT.Animations;
 using EFT.Interactive;
 using EFT.InventoryLogic;
+using EFT.UI;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 using UnityEngine;
 using static CW2.Animations.PhysicsSimulator.Val;
 using static EFT.Player;
@@ -51,6 +54,34 @@ namespace RealismMod
             {
                 PlayerStats.IsAttemptingToReloadInternalMag = false;
                 PlayerStats.IsAttemptingRevolverReload = false;
+            }
+        }
+    }
+
+
+    public class ChamberCheckUIPatch : ModulePatch
+    {
+        private static FieldInfo ammoCountPanelField;
+        protected override MethodBase GetTargetMethod()
+        {
+            ammoCountPanelField = AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel");
+            return typeof(Player.FirearmController).GetMethod("CheckChamber", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(Player.FirearmController __instance)
+        {
+            AmmoCountPanel panelUI = (AmmoCountPanel)ammoCountPanelField.GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
+            Slot slot = __instance.Weapon.Chambers.FirstOrDefault<Slot>();
+            BulletClass bulletClass = (slot == null) ? null : (slot.ContainedItem as BulletClass);
+            if (bulletClass != null)
+            {
+                string name = bulletClass.LocalizedName();
+                panelUI.Show("", name);
+            }
+            else 
+            {
+                panelUI.Show("Empty");
             }
         }
     }

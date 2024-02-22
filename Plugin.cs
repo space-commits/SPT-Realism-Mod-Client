@@ -570,13 +570,15 @@ namespace RealismMod
                     new BoltActionReloadPatch().Enable();
 
                     new SetSpeedParametersPatch().Enable();
+
+                    new CheckAmmoPatch().Enable();
+                    new CheckChamberPatch().Enable();
+                    new RechamberPatch().Enable();
+
+                    new SetAnimatorAndProceduralValuesPatch().Enable();
                 }
 
-                new CheckAmmoPatch().Enable();
-                new CheckChamberPatch().Enable();
-                new RechamberPatch().Enable();
-
-                new SetAnimatorAndProceduralValuesPatch().Enable();
+                new ChamberCheckUIPatch().Enable();
                 new OnItemAddedOrRemovedPatch().Enable();
 
                 if (EnableSGMastering.Value == true)
