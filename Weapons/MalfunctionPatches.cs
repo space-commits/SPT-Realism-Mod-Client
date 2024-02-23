@@ -123,7 +123,7 @@ namespace RealismMod
                     }
                     else
                     {
-                        subFactor = 3f * (1f - malfDelta) * suppFactor;
+                        subFactor = 3500f * (1f - malfDelta) * suppFactor;
                     }
                 }
 

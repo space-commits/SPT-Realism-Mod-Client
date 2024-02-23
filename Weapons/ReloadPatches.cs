@@ -537,23 +537,18 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(RechamberClass).GetMethod("Start", new Type[] { typeof(BulletClass), typeof(Callback) });
+            return typeof(FirearmsAnimator).GetMethod("Rechamber");
         }
 
-        [PatchPostfix]
-        private static void PatchPostfix(RechamberClass __instance)
+        [PatchPrefix]
+        private static void PatchPrefix(FirearmsAnimator __instance)
         {
             Player player = Utils.GetPlayer();
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
             if (fc.FirearmsAnimator == __instance)
             {
-
-            }
-            if (player.IsYourPlayer)
-            {
                 if (Plugin.EnableReloadPatches.Value)
                 {
-
                     float chamberSpeed = WeaponStats.TotalFixSpeed;
                     if (WeaponStats._WeapClass == "pistol")
                     {
@@ -566,8 +561,7 @@ namespace RealismMod
 
                     float totalRechamberSpeed = Mathf.Clamp(chamberSpeed * PlayerStats.FixSkillMulti * PlayerStats.ReloadInjuryMulti * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.5f);
 
-                    FirearmsAnimator fa = (FirearmsAnimator)AccessTools.Field(typeof(Player.FirearmController.GClass1581), "firearmsAnimator_0").GetValue(__instance);
-                    fa.SetAnimationSpeed(totalRechamberSpeed);
+                    fc.FirearmsAnimator.SetAnimationSpeed(totalRechamberSpeed);
 
                     if (Plugin.EnableLogging.Value == true)
                     {
@@ -579,7 +573,7 @@ namespace RealismMod
 
                 StanceController.CancelShortStock = true;
                 // StanceController.CancelPistolStance = true;
-            }
+            } 
         }
     }
 

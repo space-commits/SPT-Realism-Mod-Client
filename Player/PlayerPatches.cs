@@ -361,19 +361,6 @@ namespace RealismMod
             {
                 if (Input.GetKeyDown(KeyCode.Y))
                 {
-                    float chamberSpeed = WeaponStats.TotalFixSpeed;
-                    if (WeaponStats._WeapClass == "pistol")
-                    {
-                        chamberSpeed *= Plugin.RechamberPistolSpeedMulti.Value;
-                    }
-                    else
-                    {
-                        chamberSpeed *= Plugin.GlobalRechamberSpeedMulti.Value;
-                    }
-
-                    float totalRechamberSpeed = Mathf.Clamp(chamberSpeed * PlayerStats.FixSkillMulti * PlayerStats.ReloadInjuryMulti * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.5f);
-                    fc.FirearmsAnimator.SetAnimationSpeed(totalRechamberSpeed);
-
                     Logger.LogWarning("Y");
                     Plugin.CanLoadChamber = true;
                     int currentMagazineCount = fc.Weapon.GetCurrentMagazineCount();
@@ -407,10 +394,9 @@ namespace RealismMod
                 if (Plugin.startTimer)
                 {
                     Plugin.timer += Time.deltaTime;
-                    if (Plugin.timer >= Plugin.test10.Value)
+                    if (Plugin.timer >= 0.5f)
                     {
                         fc.FirearmsAnimator.Rechamber(false);
-                        fc.FirearmsAnimator.SetAnimationSpeed(1);
                         Plugin.startTimer = false;
                         Plugin.timer = 0f;
                     }
