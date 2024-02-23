@@ -740,7 +740,6 @@ namespace RealismMod
         }
 
         public static bool canDoCock = false;
-        public static bool didRechamber = false;
 
         void Update()
         {

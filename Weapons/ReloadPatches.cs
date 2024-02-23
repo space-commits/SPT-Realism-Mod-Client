@@ -140,17 +140,21 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static void Prefix(FirearmController.GClass1584 __instance, Player.FirearmController.GClass1574 reloadExternalMagResult)
+        private static void Prefix(FirearmController.GClass1584 __instance)
         {
-            Logger.LogWarning("StartPatch 1584 Pre");
-            AccessTools.Field(typeof(FirearmController.GClass1584), "bool_6").SetValue(Plugin.EnableHybridRecoil.Value, __instance) ;
+            var firearmController_0 = (FirearmController)AccessTools.Field(typeof(FirearmController.GClass1584), "weapon_0").GetValue(__instance);
+            var _player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController_0);
 
+            Logger.LogWarning("StartPatch 1584 Pre");
+            Plugin.canDoCock = true;
+            Logger.LogWarning("chamber count " + firearmController_0.Weapon.ChamberAmmoCount);
+/*            AccessTools.Field(typeof(FirearmController.GClass1584), "bool_6").SetValue(__instance, Plugin.EnableHybridRecoil.Value) ;
+*/
         }
         [PatchPostfix]
         private static void PostFix(FirearmController.GClass1584 __instance)
         {
             Logger.LogWarning("StartPatch 1584 Post");
-            AccessTools.Field(typeof(FirearmController.GClass1584), "bool_6").SetValue(Plugin.EnableHybridRecoil.Value, __instance);
         }
     }
 
