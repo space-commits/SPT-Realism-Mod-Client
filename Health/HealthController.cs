@@ -995,7 +995,7 @@ namespace RealismMod
 
             if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
             {
-                NotificationManagerClass.DisplayWarningNotification("Part " + bodyPart + " Has Gear On, Remove Gear First To Be Able To Heal", EFT.Communications.ENotificationDurationType.Long);
+                NotificationManagerClass.DisplayWarningNotification(bodyPart + " Has Gear On, Remove Gear First To Be Able To Heal", EFT.Communications.ENotificationDurationType.Long);
 
                 canUse = false;
                 return;
@@ -1144,7 +1144,7 @@ namespace RealismMod
                 }
                 else if (percentHp <= 0.5f)
                 {
-                    AddBaseEFTEffectIfNoneExisting(player, "Pain", part, 0f, 10f, 1f, 1f);
+                    AddBaseEFTEffectIfNoneExisting(player, "Pain", part, 0f, 15f, 1f, 1f);
                     PainStrength += 2f;
                 }
 
@@ -1185,7 +1185,7 @@ namespace RealismMod
 
             if (totalHpPercent <= 0.5f)
             {
-                AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 10f, 1f, 1f);
+                AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 15f, 1f, 1f);
                 PainStrength += 10f;
             }
 
@@ -1218,7 +1218,6 @@ namespace RealismMod
 
             if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach)) 
             {
-                Logger.LogWarning("adding regen effect");
                 ResourceRateEffect resEffect = new ResourceRateEffect(resourceRateInjuryMulti + resourcePainReliefFactor, null, player, 0, Logger);
                 AddCustomEffect(resEffect, false);
             }

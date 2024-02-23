@@ -29,8 +29,8 @@ namespace RealismMod
                 bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
                 bool thermalIsOn = thermComponent != null && (thermComponent.Togglable == null || thermComponent.Togglable.On);
                 bool gearBlocksADS = Plugin.EnableFSPatch.Value && fsIsON && (!WeaponStats.WeaponCanFSADS && (!GearStats.AllowsADS(fsComponent.Item) || !PlayerStats.GearAllowsADS));
-                bool visionDeviceBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && WeaponStats.HasOptic) || thermalIsOn);
-                if (Plugin.ServerConfig.recoil_attachment_overhaul && (visionDeviceBlocksADS || gearBlocksADS))
+                bool toobBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && WeaponStats.HasOptic) || thermalIsOn);
+                if (Plugin.ServerConfig.recoil_attachment_overhaul && (toobBlocksADS || gearBlocksADS))
                 {
                     if (!hasSetCanAds)
                     {
@@ -104,6 +104,31 @@ namespace RealismMod
             }
         }
     }
+
+    //to prevent players toggling on device while drinking/eating to bypass restriction
+    //look for ecommand.togglegoggles
+    public class ToggleHeadDevicePatch : ModulePatch
+    {
+        private static FieldInfo playerField;
+        protected override MethodBase GetTargetMethod()
+        {
+            playerField = AccessTools.Field(typeof(MovementContext), "_player");
+            return typeof(Player).GetMethod("method_17", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(Player __instance)
+        {
+            if (__instance.IsYourPlayer == true)
+            {
+                Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
+                bool isIdling = fc.FirearmsAnimator.IsIdling();
+                return isIdling;
+            }
+            return true;
+        }
+    }
+
 
     public class SetAimingSlowdownPatch : ModulePatch
     {

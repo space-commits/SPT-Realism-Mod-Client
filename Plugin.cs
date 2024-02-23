@@ -701,6 +701,7 @@ namespace RealismMod
                 new HCApplyDamagePatch().Enable();
                 new RestoreBodyPartPatch().Enable();
                 new FlyingBulletPatch().Enable();
+                new ToggleHeadDevicePatch().Enable();   
             }
 
             new BattleUIScreenPatch().Enable();

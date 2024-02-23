@@ -81,7 +81,10 @@ namespace RealismMod
             }
             else 
             {
-                panelUI.Show("Empty");
+                if (__instance.Weapon.Chambers.Length == 1) 
+                {
+                    panelUI.Show("Empty");
+                }
             }
         }
     }
