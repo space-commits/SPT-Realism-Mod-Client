@@ -106,8 +106,8 @@ namespace RealismMod
         {
             if (StanceController.IsIdle() && WeaponStats._WeapClass.ToLower() != "pistol")
             {
-                int rndX = UnityEngine.Random.Range(1, (int)(5f * factor));
-                int rndY = UnityEngine.Random.Range(1, (int)(5f * factor));
+                int rndX = UnityEngine.Random.Range((int)factor, (int)(5f * factor));
+                int rndY = UnityEngine.Random.Range((int)factor, (int)(5f * factor));
                 Vector3 wiggleDir = new Vector3(-rndX, -rndY, 0f) * factor;
 
                 if (pwa.IsAiming && !didAimWiggle)

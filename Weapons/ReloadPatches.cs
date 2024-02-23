@@ -20,6 +20,518 @@ using RechamberClass = EFT.Player.FirearmController.GClass1619;
 
 namespace RealismMod
 {
+    public class OnAddAmmoInChamber1623Patch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1623).GetMethod("OnAddAmmoInChamber", BindingFlags.Public | BindingFlags.Instance);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmController.GClass1623 __instance)
+        {
+            var firearmController_0 = (FirearmController)AccessTools.Field(typeof(FirearmController.GClass1623), "firearmController_0").GetValue(__instance);
+            int chamberAmmoCount = firearmController_0.Weapon.ChamberAmmoCount - (int)Plugin.test1.Value;
+            int currentMagazineCount = firearmController_0.Weapon.GetCurrentMagazineCount() - (int)Plugin.test2.Value;
+
+            Logger.LogWarning("==");
+            Logger.LogWarning("OnAddAmmoInChamber");
+            Logger.LogWarning("chamberAmmoCount " + chamberAmmoCount);
+            Logger.LogWarning("currentMagazineCount " + currentMagazineCount);
+            Logger.LogWarning("==");
+        }
+    }
+
+    public class Start1623Patch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1623).GetMethods(BindingFlags.Public | BindingFlags.Instance).First(m =>
+            m.GetParameters().Length == 1
+            && m.GetParameters()[0].Name == "onWeaponAppear");
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(FirearmController.GClass1623 __instance, Action onWeaponAppear)
+        {
+            var firearmController_0 = (FirearmController)AccessTools.Field(typeof(FirearmController.GClass1623), "firearmController_0").GetValue( __instance);
+            var _player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController_0);
+/*            var action_0 = (Action)AccessTools.Field(typeof(FirearmController.GClass1623), "action_0").GetValue(__instance);
+*/            var magazine = (MagazineClass)AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2665_0").GetValue(__instance);
+            var bool_1 = (bool)AccessTools.Field(typeof(FirearmController.GClass1623), "bool_1").GetValue(__instance);
+            var bullet = (BulletClass)AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2732_0").GetValue(__instance);
+            var gclass1665_0 = (GClass1665)AccessTools.Field(typeof(FirearmController.GClass1623), "gclass1665_0").GetValue(__instance);
+
+
+            /*  _player.Logger.LogInfo("SpawnOperation.Start()", Array.Empty<object>());*/
+      /*      action_0 = onWeaponAppear;*/
+
+            AccessTools.Field(typeof(FirearmController.GClass1623), "action_0").SetValue(__instance, onWeaponAppear);
+            __instance.Start();
+            firearmController_0.FirearmsAnimator.SetActiveParam(true, true);
+            firearmController_0.FirearmsAnimator.SetLayerWeight(firearmController_0.FirearmsAnimator.LACTIONS_LAYER_INDEX, 0);
+            _player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)firearmController_0.Weapon.CalculateCellSize().X);
+
+            int chamberAmmoCount = firearmController_0.Weapon.ChamberAmmoCount - (int)Plugin.test1.Value;
+            int currentMagazineCount = firearmController_0.Weapon.GetCurrentMagazineCount() - (int)Plugin.test2.Value;
+            
+            magazine = firearmController_0.Weapon.GetCurrentMagazine();
+
+            AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2665_0").SetValue(__instance, magazine);
+            firearmController_0.AmmoInChamberOnSpawn = chamberAmmoCount;
+     
+
+            Logger.LogWarning("chamberAmmoCount " + chamberAmmoCount);
+            Logger.LogWarning("currentMagazineCount " + currentMagazineCount);
+
+            if (chamberAmmoCount == 0) 
+            {
+                Plugin.canDoCock = false;
+            }
+
+            if (firearmController_0.Weapon.HasChambers)
+            {
+                firearmController_0.FirearmsAnimator.SetAmmoInChamber((float)chamberAmmoCount);
+            }
+
+            firearmController_0.FirearmsAnimator.SetAmmoOnMag(currentMagazineCount);
+
+            _player.BodyAnimatorCommon.SetFloat(PlayerAnimator.RELOAD_FLOAT_PARAM_HASH, 1f);
+            _player.Skills.OnWeaponDraw(firearmController_0.Weapon);
+            bool flag = magazine == null || magazine.IsAmmoCompatible(firearmController_0.Weapon.Chambers);
+
+            bool_1 = flag;
+            AccessTools.Field(typeof(FirearmController.GClass1623), "bool_1").SetValue(__instance, flag);
+
+            Logger.LogWarning("ammo is compatible " + flag);
+
+            firearmController_0.FirearmsAnimator.SetAmmoCompatible(flag);
+
+            if (Plugin.canDoCock && magazine != null && chamberAmmoCount == 0 && currentMagazineCount > 0 && flag && firearmController_0.Item.Chambers.Length != 0)
+            {
+                Weapon.EMalfunctionState state = firearmController_0.Item.MalfState.State;
+                GStruct413<GInterface322> gstruct = magazine.Cartridges.PopTo(_player.GClass2757_0, new GClass2763(firearmController_0.Item.Chambers[0]));
+                firearmController_0.Item.MalfState.ChangeStateSilent(state);
+                if (gstruct.Value == null)
+                {
+                    Logger.LogWarning("gstruct is null ");
+                    return false;
+                }
+                Logger.LogWarning("remove all shells ");
+                gclass1665_0.RemoveAllShells();
+                _player.UpdatePhones();
+                bullet = (BulletClass)gstruct.Value.ResultItem;
+                AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2732_0").SetValue(__instance, bullet);
+            }
+            return false;
+
+        }
+    }
+
+
+    public class Start1584Patch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1584).GetMethods(BindingFlags.Public | BindingFlags.Instance).First(m =>
+            m.GetParameters().Length == 2
+            && m.GetParameters()[0].Name == "reloadExternalMagResult"
+            && m.GetParameters()[1].Name == "callback");
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmController.GClass1584 __instance, Player.FirearmController.GClass1574 reloadExternalMagResult)
+        {
+            Logger.LogWarning("StartPatch 1584 Pre");
+            AccessTools.Field(typeof(FirearmController.GClass1584), "bool_6").SetValue(Plugin.EnableHybridRecoil.Value, __instance) ;
+
+        }
+        [PatchPostfix]
+        private static void PostFix(FirearmController.GClass1584 __instance)
+        {
+            Logger.LogWarning("StartPatch 1584 Post");
+            AccessTools.Field(typeof(FirearmController.GClass1584), "bool_6").SetValue(Plugin.EnableHybridRecoil.Value, __instance);
+        }
+    }
+
+
+    public class CanStartReload2Patch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController).GetMethod("CanStartReload", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void Prefix(FirearmController __instance, bool __result)
+        {
+            Logger.LogWarning("CanStartReload " + __result);
+        }
+    }
+
+
+    public class mmethod_11Patch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1598).GetMethod("method_11", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmController.GClass1598 __instance)
+        {
+            Logger.LogWarning("method_11");
+        }
+    }
+
+    public class method_10Patch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1598).GetMethod("method_10", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmController.GClass1598 __instance)
+        {
+            Logger.LogWarning("method_10");
+        }
+    }
+
+    public class method_12Patch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1598).GetMethod("method_12", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmController.GClass1598 __instance)
+        {
+            Logger.LogWarning("method_12");
+        }
+    }
+
+    public class method_13Patch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1598).GetMethod("method_13", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmController.GClass1598 __instance)
+        {
+            Logger.LogWarning("method_13");
+        }
+    }
+
+    public class OnFireEndEventPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1598).GetMethod("OnFireEndEvent", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmController.GClass1598 __instance)
+        {
+            Logger.LogWarning("OnFireEndEvent");
+        }
+    }
+
+    public class OnAddAmmoInChamberPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1598).GetMethod("OnAddAmmoInChamber", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmController.GClass1598 __instance)
+        {
+            Logger.LogWarning("OnAddAmmoInChamber");
+        }
+    }
+
+    public class SetTriggerPressedFCPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController).GetMethod("SetTriggerPressed", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(FirearmController __instance, bool pressed)
+        {
+            Logger.LogWarning("FirearmController SetTriggerPressed " + pressed);
+            return true;
+        }
+    }
+
+    public class SetTriggerPressedPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1598).GetMethod("SetTriggerPressed", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmController.GClass1598 __instance, bool pressed)
+        {
+            Logger.LogWarning("SetTriggerPressed " + pressed);
+        }
+    }
+
+    public class SetTriggerPressed1599Patch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1599).GetMethod("SetTriggerPressed", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmController.GClass1599 __instance, bool pressed)
+        {
+            Logger.LogWarning("1599 SetTriggerPressed " + pressed);
+        }
+    }
+
+    public class SetBoltActionReloadPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetBoltActionReload", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmsAnimator __instance, bool boltActionReload)
+        {
+            Logger.LogWarning("SetBoltActionReload boltActionReload " + boltActionReload);
+        }
+    }
+
+    public class PrepareShotPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1598).GetMethod("PrepareShot", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmController.GClass1598 __instance)
+        {
+            Logger.LogWarning("PrepareShot");
+        }
+    }
+
+    public class OnFireEventPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1598).GetMethod("OnFireEvent", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmController.GClass1598 __instance)
+        {
+            Logger.LogWarning("OnFireEvent");
+        }
+    }
+
+    public class OnShellEjectEventPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1598).GetMethod("OnShellEjectEvent", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmController.GClass1598 __instance)
+        {
+            Logger.LogWarning("OnShellEjectEvent");
+        }
+    }
+
+    public class StartFireAnimationPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1598).GetMethod("StartFireAnimation", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmController.GClass1598 __instance)
+        {
+            Logger.LogWarning("StartFireAnimation");
+        }
+    }
+
+    public class RemoveAmmoFromChamberPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1598).GetMethod("RemoveAmmoFromChamber", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmController.GClass1598 __instance)
+        {
+            Logger.LogWarning("RemoveAmmoFromChamber");
+        }
+    }
+
+    public class StartPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmController.GClass1598).GetMethod("Start", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmController.GClass1598 __instance)
+        {
+            Logger.LogWarning("Start");
+        }
+    }
+
+    public class SetHammerArmedPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetHammerArmed", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmsAnimator __instance)
+        {
+            Logger.LogWarning("SetHammerArmed");
+        }
+    }
+
+    public class SetAmmoInChamberPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetAmmoInChamber", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmsAnimator __instance, ref float count)
+        {
+            Logger.LogWarning("SetAmmoInChamber");
+/*            if (!Plugin.canDoCock)
+            {
+                count = 0;
+            }*/
+        }
+    }
+
+    public class Rechamber2Patch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("Rechamber", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmsAnimator __instance)
+        {
+            Logger.LogWarning("Rechamber");
+        }
+    }
+
+    public class SetShellsInWeaponPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetShellsInWeapon", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmsAnimator __instance)
+        {
+            Logger.LogWarning("SetShellsInWeapon");
+        }
+    }
+
+
+    public class SetAmmoCompatiblePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetAmmoCompatible", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmsAnimator __instance, ref bool compatible)
+        {
+            Logger.LogWarning("SetAmmoCompatible " + compatible);
+            if (!Plugin.canDoCock)
+            {
+                Logger.LogWarning("SetAmmoCompatible canDoCock");
+
+                compatible = false;
+            }
+        }
+    }
+
+    public class SetCanReloadPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetCanReload", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmsAnimator __instance)
+        {
+            Logger.LogWarning("SetCanReload");
+        }
+    }
+
+    public class SetBoltCatchPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetBoltCatch", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmsAnimator __instance)
+        {
+            Logger.LogWarning("SetBoltCatch");
+        }
+    }
+
+    public class ReloadPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("Reload", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmsAnimator __instance)
+        {
+            Logger.LogWarning("Reload");
+        }
+    }
+
+    public class SetPatronInWeaponVisiblePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(FirearmsAnimator).GetMethod("SetPatronInWeaponVisible", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void Prefix(FirearmsAnimator __instance, bool visible)
+        {
+            Logger.LogWarning("SetPatronInWeaponVisible " + visible);
+        }
+    }
+
     public static class ReloadController
     {
         public static void ReloadStateCheck(Player player, EFT.Player.FirearmController fc, ManualLogSource logger)

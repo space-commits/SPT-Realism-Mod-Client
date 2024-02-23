@@ -1228,7 +1228,7 @@ namespace RealismMod
                     if (!StanceController.DidStanceWiggle)
                     {
                         doMeleeEffect();
-                        StanceController.DoWiggleEffects(player, pwa, fc, new Vector3(-20f, -10f, -100f) * movementFactor, true, 3f);
+                        StanceController.DoWiggleEffects(player, pwa, fc, new Vector3(-20f, -10f, -90f) * movementFactor, true, 3f);
                         StanceController.DidStanceWiggle = true;
                     }
                 }

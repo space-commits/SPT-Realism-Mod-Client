@@ -206,6 +206,23 @@ namespace RealismMod
       }*/
 
 
+    /*    public class IsPenetratedPatch : ModulePatch
+        {
+            protected override MethodBase GetTargetMethod()
+            {
+                return typeof(EFT.Ballistics.BallisticCollider).GetMethod("IsPenetrated", BindingFlags.Instance | BindingFlags.Public);
+            }
+
+            [PatchPrefix]
+            private static void Prefix(EFT.Ballistics.BallisticCollider __instance, ShotClass shot, Vector3 hitPoint)
+            {
+                if (__instance.name == HitBox.LeftUpperArm || __instance.name == HitBox.RightUpperArm || __instance.name == HitBox.LeftForearm || __instance.name == HitBox.RightForearm)
+                {
+                    __instance.PenetrationLevel = 10f;
+                    __instance.PenetrationChance = 0.5f;
+                }
+            }
+        }*/
 
     public class IsShotDeflectedByHeavyArmorPatch : ModulePatch
     {
@@ -221,24 +238,6 @@ namespace RealismMod
             return false;
         }
     }
-
-/*    public class IsPenetratedPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(EFT.Ballistics.BallisticCollider).GetMethod("IsPenetrated", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static void Prefix(EFT.Ballistics.BallisticCollider __instance, ShotClass shot, Vector3 hitPoint)
-        {
-            if (__instance.name == HitBox.LeftUpperArm || __instance.name == HitBox.RightUpperArm || __instance.name == HitBox.LeftForearm || __instance.name == HitBox.RightForearm)
-            {
-                __instance.PenetrationLevel = 10f;
-                __instance.PenetrationChance = 0.5f;
-            }
-        }
-    }*/
 
     public class DamageInfoPatch : ModulePatch
     {
@@ -852,7 +851,7 @@ namespace RealismMod
             float penDuraFactoredClass = Mathf.Max(1f, armorFactor - (penPower / 1.8f));
             float penFactoredClass = Mathf.Max(1f, armorResist - (penPower / 1.8f));
             float maxPotentialDuraDamage = KE / penDuraFactoredClass;
-            float maxPotentialBluntDamage = KE / penFactoredClass;
+            float maxPotentialBluntDamage = KE / penDuraFactoredClass; // KE / penFactoredClass changing it be factored by durability, might be better overall
             float throughputFactoredDamage = Math.Min(damageInfo.Damage, maxPotentialDuraDamage * bluntThrput) * (armorDamageActual <= 2f ? 0.5f : 1f);
             float armorStatReductionFactor = Mathf.Max((1 - (penDuraFactoredClass / 100f)), 0.1f);
 

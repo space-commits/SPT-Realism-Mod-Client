@@ -16,6 +16,7 @@ using StaminaLevelClass = GClass750<float>;
 using WeightClass = GClass751<float>;
 using Comfort.Common;
 using ProcessorClass = GClass2210;
+using static EFT.Player;
 
 namespace RealismMod
 {
@@ -358,6 +359,32 @@ namespace RealismMod
         {
             if (fc != null)
             {
+                if (Input.GetKeyDown(KeyCode.Y))
+                {
+                    Logger.LogWarning("Y");
+                    Plugin.canDoCock = true;
+                    int currentMagazineCount = fc.Weapon.GetCurrentMagazineCount();
+                    MagazineClass mag = fc.Weapon.GetCurrentMagazine();
+                    fc.FirearmsAnimator.SetAmmoInChamber(0);
+                    fc.FirearmsAnimator.SetAmmoOnMag(currentMagazineCount);
+                    fc.FirearmsAnimator.SetAmmoCompatible(true);
+                    GStruct413<GInterface322> gstruct = mag.Cartridges.PopTo(player.GClass2757_0, new GClass2763(fc.Item.Chambers[0]));
+                    var gclass1665_0 = (GClass1665)AccessTools.Field(typeof(FirearmController), "gclass1665_0").GetValue(fc);
+                    gclass1665_0.RemoveAllShells();
+                    BulletClass bullet = (BulletClass)gstruct.Value.ResultItem;
+                    fc.FirearmsAnimator.SetAmmoInChamber(1);
+                    fc.FirearmsAnimator.SetAmmoOnMag(fc.Weapon.GetCurrentMagazineCount());
+                    gclass1665_0.SetRoundIntoWeapon(bullet, 0);
+                    fc.FirearmsAnimator.Rechamber(true);
+                }
+                if (Input.GetKeyDown(KeyCode.N))
+                {
+                    Plugin.canDoCock = false;
+                    Logger.LogWarning("N");
+                    fc.FirearmsAnimator.Rechamber(false);
+                }
+
+
                 if (RecoilController.IsFiring)
                 {
                     RecoilController.SetRecoilParams(player.ProceduralWeaponAnimation, fc.Item);
