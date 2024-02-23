@@ -501,37 +501,10 @@ namespace RealismMod
 
             initConfigs();
 
-            new OnAddAmmoInChamberPatch().Enable();
-            new PrepareShotPatch().Enable();
-            new StartPatch().Enable();
-            new StartFireAnimationPatch().Enable();
-            new OnFireEventPatch().Enable();
-            new SetTriggerPressedPatch().Enable();
-            new OnAddAmmoInChamberPatch().Enable();
-            new OnFireEndEventPatch().Enable();
-            new method_13Patch().Enable();
-            new method_12Patch().Enable();
-            new method_10Patch().Enable();
-            new mmethod_11Patch().Enable();
-            new SetTriggerPressed1599Patch().Enable();
-            new SetBoltActionReloadPatch().Enable();
-            new RemoveAmmoFromChamberPatch().Enable();
-            new OnShellEjectEventPatch().Enable();
-            new SetTriggerPressedFCPatch().Enable();
-
-            new SetPatronInWeaponVisiblePatch().Enable();
-/*            new ReloadPatch().Enable();
-*/            new SetBoltCatchPatch().Enable();
-            new SetCanReloadPatch().Enable();
             new SetAmmoCompatiblePatch().Enable();
-            new SetShellsInWeaponPatch().Enable();
-            new Rechamber2Patch().Enable();
-            new SetAmmoInChamberPatch().Enable();
-            new SetHammerArmedPatch().Enable();
-            new Start1584Patch().Enable();
-            new Start1623Patch().Enable();
-            new CanStartReload2Patch().Enable();
-            new OnAddAmmoInChamber1623Patch().Enable();
+            new StartReloadPatch().Enable();
+            new StartEquipWeapPatch().Enable();
+            new SetAmmoOnMagPatch().Enable();
 
             if (ServerConfig.recoil_attachment_overhaul)
             {
@@ -738,8 +711,6 @@ namespace RealismMod
 
             new BattleUIScreenPatch().Enable();
         }
-
-        public static bool canDoCock = false;
 
         void Update()
         {

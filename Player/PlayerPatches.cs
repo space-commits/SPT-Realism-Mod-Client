@@ -355,56 +355,11 @@ namespace RealismMod
             }
         }
 
-        static bool startTimer = false;
-        static float timer = 0f;
         private static void PWAUpdate(Player player, Player.FirearmController fc) 
         {
             if (fc != null)
             {
-                if (Input.GetKeyDown(KeyCode.Y))
-                {
-                    Logger.LogWarning("Y");
-                    Plugin.canDoCock = true;
-                    int currentMagazineCount = fc.Weapon.GetCurrentMagazineCount();
-                    MagazineClass mag = fc.Weapon.GetCurrentMagazine();
-                    Logger.LogWarning("1");
-                    fc.FirearmsAnimator.SetAmmoInChamber(0);
-                    fc.FirearmsAnimator.SetAmmoOnMag(currentMagazineCount);
-                    fc.FirearmsAnimator.SetAmmoCompatible(true);
-                    Logger.LogWarning("2");
-                    GStruct413<GInterface322> gstruct = mag.Cartridges.PopTo(player.GClass2757_0, new GClass2763(fc.Item.Chambers[0]));
-                    Logger.LogWarning("3");
-                    var gclass1665_0 = (GClass1665)AccessTools.Field(typeof(FirearmController), "gclass1665_0").GetValue(fc);
-                    Logger.LogWarning("4");
-                    gclass1665_0.RemoveAllShells();
-                    Logger.LogWarning("5");
-                    BulletClass bullet = (BulletClass)gstruct.Value.ResultItem;
-                    Logger.LogWarning("6");
-                    fc.FirearmsAnimator.SetAmmoInChamber(1);
-                    fc.FirearmsAnimator.SetAmmoOnMag(fc.Weapon.GetCurrentMagazineCount());
-                    gclass1665_0.SetRoundIntoWeapon(bullet, 0);
-                    fc.FirearmsAnimator.Rechamber(true);
-                    Logger.LogWarning("7");
-                    startTimer = true;
-                    timer = 0f;
-                }
-                if (Input.GetKeyDown(KeyCode.N))
-                {
-                    Plugin.canDoCock = false;
-                    Logger.LogWarning("N");
-                }
-                if (startTimer) 
-                {
-                    timer += Time.deltaTime;
-                    if (timer >= Plugin.test10.Value) 
-                    {
-                        fc.FirearmsAnimator.Rechamber(false);
-                        startTimer = false;
-                        timer = 0f;
-                    }
-                }
-
-
+          
                 if (RecoilController.IsFiring)
                 {
                     RecoilController.SetRecoilParams(player.ProceduralWeaponAnimation, fc.Item);
@@ -412,6 +367,7 @@ namespace RealismMod
                 }
 
                 ReloadController.ReloadStateCheck(player, fc, Logger);
+                ReloadController.ChamberStateCheck(Logger, fc, player);
                 AimController.ADSCheck(player, fc);
 
                 if (Plugin.EnableStanceStamChanges.Value)

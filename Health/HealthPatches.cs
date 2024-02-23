@@ -9,7 +9,6 @@ using EFT.HealthSystem;
 using EFT.InventoryLogic;
 using EFT.UI.Health;
 using HarmonyLib;
-using RealismMod.Health;
 using System;
 using System.Collections;
 using System.Collections.Generic;
