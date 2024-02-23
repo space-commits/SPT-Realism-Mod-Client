@@ -359,7 +359,63 @@ namespace RealismMod
         {
             if (fc != null)
             {
-          
+                if (Input.GetKeyDown(KeyCode.Y))
+                {
+                    float chamberSpeed = WeaponStats.TotalFixSpeed;
+                    if (WeaponStats._WeapClass == "pistol")
+                    {
+                        chamberSpeed *= Plugin.RechamberPistolSpeedMulti.Value;
+                    }
+                    else
+                    {
+                        chamberSpeed *= Plugin.GlobalRechamberSpeedMulti.Value;
+                    }
+
+                    float totalRechamberSpeed = Mathf.Clamp(chamberSpeed * PlayerStats.FixSkillMulti * PlayerStats.ReloadInjuryMulti * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.5f);
+                    fc.FirearmsAnimator.SetAnimationSpeed(totalRechamberSpeed);
+
+                    Logger.LogWarning("Y");
+                    Plugin.CanLoadChamber = true;
+                    int currentMagazineCount = fc.Weapon.GetCurrentMagazineCount();
+                    MagazineClass mag = fc.Weapon.GetCurrentMagazine();
+                    Logger.LogWarning("1");
+                    fc.FirearmsAnimator.SetAmmoInChamber(0);
+                    fc.FirearmsAnimator.SetAmmoOnMag(currentMagazineCount);
+                    fc.FirearmsAnimator.SetAmmoCompatible(true);
+                    Logger.LogWarning("2");
+                    GStruct413<GInterface322> gstruct = mag.Cartridges.PopTo(player.GClass2757_0, new GClass2763(fc.Item.Chambers[0]));
+                    Logger.LogWarning("3");
+                    var gclass1665_0 = (GClass1665)AccessTools.Field(typeof(FirearmController), "gclass1665_0").GetValue(fc);
+                    Logger.LogWarning("4");
+                    gclass1665_0.RemoveAllShells();
+                    Logger.LogWarning("5");
+                    BulletClass bullet = (BulletClass)gstruct.Value.ResultItem;
+                    Logger.LogWarning("6");
+                    fc.FirearmsAnimator.SetAmmoInChamber(1);
+                    fc.FirearmsAnimator.SetAmmoOnMag(fc.Weapon.GetCurrentMagazineCount());
+                    gclass1665_0.SetRoundIntoWeapon(bullet, 0);
+                    fc.FirearmsAnimator.Rechamber(true);
+                    Logger.LogWarning("7");
+                    Plugin.startTimer = true;
+                    Plugin.timer = 0f;
+                }
+                if (Input.GetKeyDown(KeyCode.N))
+                {
+                    Plugin.CanLoadChamber = false;
+                    Logger.LogWarning("N");
+                }
+                if (Plugin.startTimer)
+                {
+                    Plugin.timer += Time.deltaTime;
+                    if (Plugin.timer >= Plugin.test10.Value)
+                    {
+                        fc.FirearmsAnimator.Rechamber(false);
+                        fc.FirearmsAnimator.SetAnimationSpeed(1);
+                        Plugin.startTimer = false;
+                        Plugin.timer = 0f;
+                    }
+                }
+
                 if (RecoilController.IsFiring)
                 {
                     RecoilController.SetRecoilParams(player.ProceduralWeaponAnimation, fc.Item);
@@ -367,7 +423,6 @@ namespace RealismMod
                 }
 
                 ReloadController.ReloadStateCheck(player, fc, Logger);
-                ReloadController.ChamberStateCheck(Logger, fc, player);
                 AimController.ADSCheck(player, fc);
 
                 if (Plugin.EnableStanceStamChanges.Value)

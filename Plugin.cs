@@ -471,6 +471,10 @@ namespace RealismMod
                 return audioclip;
             }
         }
+        public static bool startTimer = false;
+        public static float timer = 0f;
+        public static bool CanLoadChamber = false;
+        public static bool BlockChambering = false;
 
         void Awake()
         {
@@ -505,6 +509,7 @@ namespace RealismMod
             new StartReloadPatch().Enable();
             new StartEquipWeapPatch().Enable();
             new SetAmmoOnMagPatch().Enable();
+            new method_15Patch().Enable();
 
             if (ServerConfig.recoil_attachment_overhaul)
             {
