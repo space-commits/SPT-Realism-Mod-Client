@@ -17,9 +17,51 @@ using WeightClass = GClass751<float>;
 using Comfort.Common;
 using ProcessorClass = GClass2210;
 using static EFT.Player;
+using EFT.InputSystem;
+using EFT.Animations.NewRecoil;
 
 namespace RealismMod
 {
+
+    public class KeyInputPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Class1452).GetMethod("TranslateCommand", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(Class1452 __instance, ECommand command)
+        {
+
+            if (command == ECommand.ChamberUnload)
+            {
+                Player player = Utils.GetPlayer();
+                FirearmController fc = player.HandsController as FirearmController;
+                if (!Plugin.CanLoadChamber && fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1 && fc.Weapon.ChamberAmmoCount == 0 && fc.Weapon.GetCurrentMagazine() != null)
+                {
+                    Plugin.CanLoadChamber = true;
+                    int currentMagazineCount = fc.Weapon.GetCurrentMagazineCount();
+                    MagazineClass mag = fc.Weapon.GetCurrentMagazine();
+                    fc.FirearmsAnimator.SetAmmoInChamber(0);
+                    fc.FirearmsAnimator.SetAmmoOnMag(currentMagazineCount);
+                    fc.FirearmsAnimator.SetAmmoCompatible(true);
+                    GStruct413<GInterface322> gstruct = mag.Cartridges.PopTo(player.GClass2757_0, new GClass2763(fc.Item.Chambers[0]));
+                    var gclass1665_0 = (GClass1665)AccessTools.Field(typeof(FirearmController), "gclass1665_0").GetValue(fc);
+                    gclass1665_0.RemoveAllShells();
+                    BulletClass bullet = (BulletClass)gstruct.Value.ResultItem;
+                    fc.FirearmsAnimator.SetAmmoInChamber(1);
+                    fc.FirearmsAnimator.SetAmmoOnMag(fc.Weapon.GetCurrentMagazineCount());
+                    gclass1665_0.SetRoundIntoWeapon(bullet, 0);
+                    fc.FirearmsAnimator.Rechamber(true);
+                    Plugin.startRechamberTimer = true;
+                    Plugin.chamberTimer = 0f;
+                }
+            }
+        }
+    }
+
+
     public class SyncWithCharacterSkillsPatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -252,6 +294,7 @@ namespace RealismMod
         private static float sprintTimer = 0f;
         private static bool didSprintPenalties = false;
         private static bool resetSwayAfterFiring = false;
+        private static bool resetRecoilValues = false;
 
         private static void doSprintTimer(ProceduralWeaponAnimation pwa, Player.FirearmController fc, float mountingBonus)
         {
@@ -359,46 +402,14 @@ namespace RealismMod
         {
             if (fc != null)
             {
-                if (Input.GetKeyDown(KeyCode.Y))
+                if (Plugin.startRechamberTimer)
                 {
-                    Logger.LogWarning("Y");
-                    Plugin.CanLoadChamber = true;
-                    int currentMagazineCount = fc.Weapon.GetCurrentMagazineCount();
-                    MagazineClass mag = fc.Weapon.GetCurrentMagazine();
-                    Logger.LogWarning("1");
-                    fc.FirearmsAnimator.SetAmmoInChamber(0);
-                    fc.FirearmsAnimator.SetAmmoOnMag(currentMagazineCount);
-                    fc.FirearmsAnimator.SetAmmoCompatible(true);
-                    Logger.LogWarning("2");
-                    GStruct413<GInterface322> gstruct = mag.Cartridges.PopTo(player.GClass2757_0, new GClass2763(fc.Item.Chambers[0]));
-                    Logger.LogWarning("3");
-                    var gclass1665_0 = (GClass1665)AccessTools.Field(typeof(FirearmController), "gclass1665_0").GetValue(fc);
-                    Logger.LogWarning("4");
-                    gclass1665_0.RemoveAllShells();
-                    Logger.LogWarning("5");
-                    BulletClass bullet = (BulletClass)gstruct.Value.ResultItem;
-                    Logger.LogWarning("6");
-                    fc.FirearmsAnimator.SetAmmoInChamber(1);
-                    fc.FirearmsAnimator.SetAmmoOnMag(fc.Weapon.GetCurrentMagazineCount());
-                    gclass1665_0.SetRoundIntoWeapon(bullet, 0);
-                    fc.FirearmsAnimator.Rechamber(true);
-                    Logger.LogWarning("7");
-                    Plugin.startTimer = true;
-                    Plugin.timer = 0f;
-                }
-                if (Input.GetKeyDown(KeyCode.N))
-                {
-                    Plugin.CanLoadChamber = false;
-                    Logger.LogWarning("N");
-                }
-                if (Plugin.startTimer)
-                {
-                    Plugin.timer += Time.deltaTime;
-                    if (Plugin.timer >= 0.5f)
+                    Plugin.chamberTimer += Time.deltaTime;
+                    if (Plugin.chamberTimer >= 0.5f)
                     {
                         fc.FirearmsAnimator.Rechamber(false);
-                        Plugin.startTimer = false;
-                        Plugin.timer = 0f;
+                        Plugin.startRechamberTimer = false;
+                        Plugin.chamberTimer = 0f;
                     }
                 }
 
@@ -406,6 +417,7 @@ namespace RealismMod
                 {
                     RecoilController.SetRecoilParams(player.ProceduralWeaponAnimation, fc.Item);
                     StanceController.IsPatrolStance = false;
+                    resetRecoilValues = false;
                 }
 
                 ReloadController.ReloadStateCheck(player, fc, Logger);
@@ -419,37 +431,57 @@ namespace RealismMod
                 float remainStamPercent = player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity;
                 PlayerStats.RemainingArmStamPerc = 1f - ((1f - remainStamPercent) / 3f);
                 PlayerStats.RemainingArmStamPercReload = 1f - ((1f - remainStamPercent) / 4f);
+
+                if (!RecoilController.IsFiring)
+                {
+                    if (StanceController.CanResetDamping)
+                    {
+                        Logger.LogWarning("CanResetDamping");
+                        player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, 0.01f);
+                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, RecoilController.BaseTotalConvergence, 0.1f);
+
+                        if (!resetRecoilValues)
+                        {
+                            Logger.LogWarning("reset values");
+
+                            NewRecoilShotEffect newRecoil = player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
+                            newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = fc.Weapon.Template.RecoilCategoryMultiplierHandRotation;
+                            newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = fc.Weapon.Template.RecoilReturnPathDampingHandRotation;
+                            player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.Damping = fc.Weapon.Template.RecoilDampingHandRotation;
+                            resetRecoilValues = true;
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogWarning("else");
+                        player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.75f;
+                        NewRecoilShotEffect newRecoil = player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
+                        newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = Plugin.test5.Value; //0.4
+                        newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = Plugin.test6.Value; //0.85
+                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.Damping = Plugin.test7.Value; //0.5
+                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, 10f * StanceController.WiggleReturnSpeed, 0.01f);
+                    }
+
+                    player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0;
+                    player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
+
+                    /*       if (!RecoilController.IsFiringMovement) 
+                           {
+                               player.ProceduralWeaponAnimation.CameraToWeaponAngleSpeedRange = Vector2.zero;
+                               player.ProceduralWeaponAnimation.CameraToWeaponAngleStep = 0f;
+                           }*/
+                }
+                player.MovementContext.SetPatrol(StanceController.IsPatrolStance);
+
             }
             else if (Plugin.EnableStanceStamChanges.Value)
             {
                 StanceController.ResetStanceStamina(player);
+                player.Physical.HandsStamina.Current = Mathf.Max(player.Physical.HandsStamina.Current, 1f);
             }
-
-            player.Physical.HandsStamina.Current = Mathf.Max(player.Physical.HandsStamina.Current, 1f);
 
             float stanceHipFactor = StanceController.IsActiveAiming ? 0.7f : StanceController.IsShortStock ? 1.35f : 1f;
             player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerStats.SprintHipfirePenalty * stanceHipFactor, 0.2f, 1.6f);
-
-            if (!RecoilController.IsFiring)
-            {
-                if (StanceController.CanResetDamping)
-                {
-                    player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, 0.01f);
-                }
-                else
-                {
-                    player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.75f;
-                }
-                player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, 10f * StanceController.WiggleReturnSpeed, 0.01f);
-                player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0;
-                player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
-         /*       if (!RecoilController.IsFiringMovement) 
-                {
-                    player.ProceduralWeaponAnimation.CameraToWeaponAngleSpeedRange = Vector2.zero;
-                    player.ProceduralWeaponAnimation.CameraToWeaponAngleStep = 0f;
-                }*/
-            }
-            player.MovementContext.SetPatrol(StanceController.IsPatrolStance);
         }
 
         protected override MethodBase GetTargetMethod()

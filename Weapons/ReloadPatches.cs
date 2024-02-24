@@ -20,7 +20,7 @@ using RechamberClass = EFT.Player.FirearmController.GClass1619;
 
 namespace RealismMod
 {
-    public class method_15Patch : ModulePatch
+    public class PreChamberLoadPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -30,9 +30,9 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(FirearmController __instance)
         {
-            Logger.LogWarning("==method_15==");
-            if (__instance.Weapon.ChamberAmmoCount == 0) 
+            if (__instance.Weapon.HasChambers && __instance.Weapon.Chambers.Length == 1 && __instance.Weapon.ChamberAmmoCount == 0)
             {
+                Logger.LogWarning("==method_15==");
                 Logger.LogWarning("blocking");
                 Plugin.BlockChambering = true;
             }
@@ -51,72 +51,77 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(FirearmController.GClass1623 __instance, Action onWeaponAppear)
         {
-            var firearmController_0 = (FirearmController)AccessTools.Field(typeof(FirearmController.GClass1623), "firearmController_0").GetValue( __instance);
-            var _player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController_0);
-            var magazine = (MagazineClass)AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2665_0").GetValue(__instance);
-            var bool_1 = (bool)AccessTools.Field(typeof(FirearmController.GClass1623), "bool_1").GetValue(__instance);
-            var bullet = (BulletClass)AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2732_0").GetValue(__instance);
-            var gclass1665_0 = (GClass1665)AccessTools.Field(typeof(FirearmController.GClass1623), "gclass1665_0").GetValue(__instance);
-
-            AccessTools.Field(typeof(FirearmController.GClass1623), "action_0").SetValue(__instance, onWeaponAppear);
-            __instance.Start();
-            firearmController_0.FirearmsAnimator.SetActiveParam(true, true);
-            firearmController_0.FirearmsAnimator.SetLayerWeight(firearmController_0.FirearmsAnimator.LACTIONS_LAYER_INDEX, 0);
-            _player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)firearmController_0.Weapon.CalculateCellSize().X);
-
-            int chamberAmmoCount = firearmController_0.Weapon.ChamberAmmoCount - (int)Plugin.test1.Value;
-            int currentMagazineCount = firearmController_0.Weapon.GetCurrentMagazineCount() - (int)Plugin.test2.Value;
-            
-            magazine = firearmController_0.Weapon.GetCurrentMagazine();
-
-            AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2665_0").SetValue(__instance, magazine);
-            firearmController_0.AmmoInChamberOnSpawn = chamberAmmoCount;
-            Logger.LogWarning("==Start==");
-            Logger.LogWarning("chamberAmmoCount " + chamberAmmoCount);
-            Logger.LogWarning("currentMagazineCount " + currentMagazineCount);
-
-            if (chamberAmmoCount == 0)
+            var fc = (FirearmController)AccessTools.Field(typeof(FirearmController.GClass1623), "firearmController_0").GetValue( __instance);
+            var player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(fc);
+            if (player.IsYourPlayer) 
             {
-                Plugin.CanLoadChamber = false;
-                Plugin.BlockChambering = true;
-            }
-
-            if (firearmController_0.Weapon.HasChambers)
-            {
-                firearmController_0.FirearmsAnimator.SetAmmoInChamber((float)chamberAmmoCount);
-            }
-
-            firearmController_0.FirearmsAnimator.SetAmmoOnMag(currentMagazineCount);
-
-            _player.BodyAnimatorCommon.SetFloat(PlayerAnimator.RELOAD_FLOAT_PARAM_HASH, 1f);
-            _player.Skills.OnWeaponDraw(firearmController_0.Weapon);
-            bool flag = magazine == null || magazine.IsAmmoCompatible(firearmController_0.Weapon.Chambers);
-
-            bool_1 = flag;
-            AccessTools.Field(typeof(FirearmController.GClass1623), "bool_1").SetValue(__instance, flag);
-
-            Logger.LogWarning("ammo is compatible " + flag);
-
-            firearmController_0.FirearmsAnimator.SetAmmoCompatible(flag);
-
-            if (Plugin.CanLoadChamber && magazine != null && chamberAmmoCount == 0 && currentMagazineCount > 0 && flag && firearmController_0.Item.Chambers.Length != 0)
-            {
-                Weapon.EMalfunctionState state = firearmController_0.Item.MalfState.State;
-                GStruct413<GInterface322> gstruct = magazine.Cartridges.PopTo(_player.GClass2757_0, new GClass2763(firearmController_0.Item.Chambers[0]));
-                firearmController_0.Item.MalfState.ChangeStateSilent(state);
-                if (gstruct.Value == null)
+                if (fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1) 
                 {
-                    Logger.LogWarning("gstruct is null ");
+                    var magazine = (MagazineClass)AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2665_0").GetValue(__instance);
+                    var ammoIsCompatible = (bool)AccessTools.Field(typeof(FirearmController.GClass1623), "bool_1").GetValue(__instance);
+                    var bullet = (BulletClass)AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2732_0").GetValue(__instance);
+                    var chamberState = (GClass1665)AccessTools.Field(typeof(FirearmController.GClass1623), "gclass1665_0").GetValue(__instance);
+
+                    AccessTools.Field(typeof(FirearmController.GClass1623), "action_0").SetValue(__instance, onWeaponAppear);
+                    __instance.Start();
+                    fc.FirearmsAnimator.SetActiveParam(true, true);
+                    fc.FirearmsAnimator.SetLayerWeight(fc.FirearmsAnimator.LACTIONS_LAYER_INDEX, 0);
+                    player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Weapon.CalculateCellSize().X);
+
+                    int chamberAmmoCount = fc.Weapon.ChamberAmmoCount;
+                    int currentMagazineCount = fc.Weapon.GetCurrentMagazineCount();
+
+                    magazine = fc.Weapon.GetCurrentMagazine();
+
+                    AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2665_0").SetValue(__instance, magazine);
+                    fc.AmmoInChamberOnSpawn = chamberAmmoCount;
+                    Logger.LogWarning("==Start==");
+                    Logger.LogWarning("chamberAmmoCount " + chamberAmmoCount);
+                    Logger.LogWarning("currentMagazineCount " + currentMagazineCount);
+
+                    if (fc.Weapon.ChamberAmmoCount == 0)
+                    {
+                        Plugin.CanLoadChamber = false;
+                        Plugin.BlockChambering = true;
+                    }
+    
+
+                    if (fc.Weapon.HasChambers)
+                    {
+                        fc.FirearmsAnimator.SetAmmoInChamber((float)chamberAmmoCount);
+                    }
+
+                    fc.FirearmsAnimator.SetAmmoOnMag(currentMagazineCount);
+
+                    player.BodyAnimatorCommon.SetFloat(PlayerAnimator.RELOAD_FLOAT_PARAM_HASH, 1f);
+                    player.Skills.OnWeaponDraw(fc.Weapon);
+                    ammoIsCompatible = magazine == null || magazine.IsAmmoCompatible(fc.Weapon.Chambers);
+                    AccessTools.Field(typeof(FirearmController.GClass1623), "bool_1").SetValue(__instance, ammoIsCompatible);
+
+                    Logger.LogWarning("ammo is compatible " + ammoIsCompatible);
+
+                    fc.FirearmsAnimator.SetAmmoCompatible(ammoIsCompatible);
+
+                    if (Plugin.CanLoadChamber && magazine != null && chamberAmmoCount == 0 && currentMagazineCount > 0 && ammoIsCompatible && fc.Item.Chambers.Length != 0)
+                    {
+                        Weapon.EMalfunctionState state = fc.Item.MalfState.State;
+                        GStruct413<GInterface322> gstruct = magazine.Cartridges.PopTo(player.GClass2757_0, new GClass2763(fc.Item.Chambers[0]));
+                        fc.Item.MalfState.ChangeStateSilent(state);
+                        if (gstruct.Value == null)
+                        {
+                            Logger.LogWarning("gstruct is null ");
+                            return false;
+                        }
+                        Logger.LogWarning("remove all shells ");
+                        chamberState.RemoveAllShells();
+                        player.UpdatePhones();
+                        bullet = (BulletClass)gstruct.Value.ResultItem;
+                        AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2732_0").SetValue(__instance, bullet);
+                    }
                     return false;
                 }
-                Logger.LogWarning("remove all shells ");
-                gclass1665_0.RemoveAllShells();
-                _player.UpdatePhones();
-                bullet = (BulletClass)gstruct.Value.ResultItem;
-                AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2732_0").SetValue(__instance, bullet);
             }
-            return false;
-
+            return true;
         }
     }
 
@@ -134,20 +139,15 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(FirearmController.GClass1584 __instance, Player.FirearmController.GClass1574 reloadExternalMagResult)
         {
-            var firearmController_0 = (FirearmController)AccessTools.Field(typeof(FirearmController.GClass1584), "firearmController_0").GetValue(__instance);
-            var _player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(firearmController_0);
+            var fc = (FirearmController)AccessTools.Field(typeof(FirearmController.GClass1584), "firearmController_0").GetValue(__instance);
+            var player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(fc);
 
-            Logger.LogWarning("StartPatch 1584 Pre");
-            Plugin.CanLoadChamber = true;
-            Plugin.BlockChambering = false;
-            Logger.LogWarning("chamber count " + firearmController_0.Weapon.ChamberAmmoCount);
-/*            AccessTools.Field(typeof(FirearmController.GClass1584), "bool_6").SetValue(__instance, Plugin.EnableHybridRecoil.Value) ;
-*/
-        }
-        [PatchPostfix]
-        private static void PostFix(FirearmController.GClass1584 __instance)
-        {
-            Logger.LogWarning("StartPatch 1584 Post");
+            if (player.IsYourPlayer)
+            {
+                Logger.LogWarning("==StartPatch 1584==");
+                Plugin.CanLoadChamber = true;
+                Plugin.BlockChambering = false;
+            }
         }
     }
 

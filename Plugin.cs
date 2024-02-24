@@ -471,8 +471,8 @@ namespace RealismMod
                 return audioclip;
             }
         }
-        public static bool startTimer = false;
-        public static float timer = 0f;
+        public static bool startRechamberTimer = false;
+        public static float chamberTimer = 0f;
         public static bool CanLoadChamber = false;
         public static bool BlockChambering = false;
 
@@ -502,6 +502,7 @@ namespace RealismMod
             DamageTracker dmgTracker = new DamageTracker();
             RealismHealthController healthController = new RealismHealthController(dmgTracker, Logger);
             RealHealthController = healthController;
+            Utils.Logger = Logger;
 
             initConfigs();
 
@@ -509,7 +510,8 @@ namespace RealismMod
             new StartReloadPatch().Enable();
             new StartEquipWeapPatch().Enable();
             new SetAmmoOnMagPatch().Enable();
-            new method_15Patch().Enable();
+            new PreChamberLoadPatch().Enable();
+            new KeyInputPatch().Enable();
 
             if (ServerConfig.recoil_attachment_overhaul)
             {

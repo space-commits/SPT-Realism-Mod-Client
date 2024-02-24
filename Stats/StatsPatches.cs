@@ -352,6 +352,7 @@ namespace RealismMod
             WeaponStats.BaseMeleeDamage = 0f; //reset the melee dmg
             WeaponStats.BaseMeleePen = 0f;
             WeaponStats.HasBayonet = false;
+            WeaponStats.HasBooster = false; 
             foreach (Mod mod in __instance.Mods)
             {
                 if (!Utils.IsMagazine(mod))
@@ -382,11 +383,9 @@ namespace RealismMod
 
                     if (Utils.IsMuzzleDevice(mod))
                     {
-                        if (modType == "bayonet")
-                        {
-                            WeaponStats.HasBayonet = true;
-                        }
-
+                        if (modType == "bayonet") WeaponStats.HasBayonet = true;
+                        if (modType == "booster") WeaponStats.HasBooster = true;
+            
                         WeaponStats.BaseMeleeDamage = AttachmentProperties.ModMeleeDamage(mod);
                         WeaponStats.BaseMeleePen = AttachmentProperties.ModMeleePen(mod);
                     }

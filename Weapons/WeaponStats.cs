@@ -179,6 +179,7 @@ namespace RealismMod
         public static float MalfChanceDelta = 0;
 
         public static bool CanCycleSubs = false;
+        public static bool HasBooster = false;
 
         public static string _WeapClass = "";
 

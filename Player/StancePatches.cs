@@ -619,6 +619,7 @@ namespace RealismMod
         private static bool isResettingShortStock = false;
         private static bool isResettingPistol = false;
         private static bool isResettingMelee = false;
+        private static bool didHalfMeleeAnim = false;
 
         private static Quaternion currentRotation = Quaternion.identity;
         private static Quaternion stanceRotation = Quaternion.identity;
@@ -738,7 +739,7 @@ namespace RealismMod
                         }
 
                         hasResetPistolPos = true;
-                        StanceController.DoRifleStances(player, firearmController, true, __instance, ref stanceRotation, dt, ref isResettingShortStock, ref hasResetShortStock, ref hasResetLowReady, ref hasResetActiveAim, ref hasResetHighReady, ref isResettingHighReady, ref isResettingLowReady, ref isResettingActiveAim, ref stanceRotationSpeed, ref hasResetMelee, ref isResettingMelee);
+                        StanceController.DoRifleStances(player, firearmController, true, __instance, ref stanceRotation, dt, ref isResettingShortStock, ref hasResetShortStock, ref hasResetLowReady, ref hasResetActiveAim, ref hasResetHighReady, ref isResettingHighReady, ref isResettingLowReady, ref isResettingActiveAim, ref stanceRotationSpeed, ref hasResetMelee, ref isResettingMelee, ref didHalfMeleeAnim);
                     }
 
                     StanceController.HasResetActiveAim = hasResetActiveAim;
@@ -879,6 +880,7 @@ namespace RealismMod
         private static bool isResettingShortStock = false;
         private static bool isResettingPistol = false;
         private static bool isResettingMelee = false;
+        private static bool didHalfMeleeAnim = false;
 
         private static Quaternion currentRotation = Quaternion.identity;
         private static Quaternion stanceRotation = Quaternion.identity;
@@ -1012,7 +1014,7 @@ namespace RealismMod
                     }
 
                     hasResetPistolPos = true;
-                    StanceController.DoRifleStances(player, fc, false, __instance, ref stanceRotation, dt, ref isResettingShortStock, ref hasResetShortStock, ref hasResetLowReady, ref hasResetActiveAim, ref hasResetHighReady, ref isResettingHighReady, ref isResettingLowReady, ref isResettingActiveAim, ref stanceRotationSpeed, ref hasResetMelee, ref isResettingMelee);
+                    StanceController.DoRifleStances(player, fc, false, __instance, ref stanceRotation, dt, ref isResettingShortStock, ref hasResetShortStock, ref hasResetLowReady, ref hasResetActiveAim, ref hasResetHighReady, ref isResettingHighReady, ref isResettingLowReady, ref isResettingActiveAim, ref stanceRotationSpeed, ref hasResetMelee, ref isResettingMelee, ref didHalfMeleeAnim);
                 }
 
                 StanceController.HasResetActiveAim = hasResetActiveAim;

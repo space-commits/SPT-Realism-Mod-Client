@@ -10,6 +10,8 @@ namespace RealismMod
 {
     public static class Utils
     {
+        public static ManualLogSource Logger;
+
         public static bool Verified = false;
         public static bool IsReady = false;
         public static bool IsInHideout = false;

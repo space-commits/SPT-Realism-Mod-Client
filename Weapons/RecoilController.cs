@@ -1,6 +1,7 @@
 ﻿using BepInEx.Logging;
 using EFT;
 using EFT.Animations;
+using EFT.Animations.NewRecoil;
 using EFT.InventoryLogic;
 using System;
 using System.Collections.Generic;
@@ -74,11 +75,11 @@ namespace RealismMod
 
         public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weapon)
         {
-   /*         float dampingUpperLimit = Plugin.IsAiming && Plugin.HasOptic ? 0.74f : 0.9f;
-            float dampingLowerLimit = Plugin.IsAiming && Plugin.HasOptic ? 0.5f : 0.5f;
-            float opticFactor = Plugin.IsAiming && Plugin.HasOptic ? 0.92f : 1f;
-            pwa.HandsContainer.Recoil.Damping = Mathf.Clamp(RecoilController.BaseTotalRecoilDamping * opticFactor, dampingLowerLimit, dampingUpperLimit);
-            pwa.HandsContainer.HandsPosition.Damping = (float)Math.Round(RecoilController.BaseTotalHandDamping * (PlayerProperties.IsMoving ? 0.5f : 1f) * opticFactor, 3);*/
+            /*         float dampingUpperLimit = Plugin.IsAiming && Plugin.HasOptic ? 0.74f : 0.9f;
+                     float dampingLowerLimit = Plugin.IsAiming && Plugin.HasOptic ? 0.5f : 0.5f;
+                     float opticFactor = Plugin.IsAiming && Plugin.HasOptic ? 0.92f : 1f;
+                     pwa.HandsContainer.Recoil.Damping = Mathf.Clamp(RecoilController.BaseTotalRecoilDamping * opticFactor, dampingLowerLimit, dampingUpperLimit);
+                     pwa.HandsContainer.HandsPosition.Damping = (float)Math.Round(RecoilController.BaseTotalHandDamping * (PlayerProperties.IsMoving ? 0.5f : 1f) * opticFactor, 3);*/
 
             if (Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !WeaponStats.HasShoulderContact)))
             {
@@ -88,6 +89,11 @@ namespace RealismMod
             {
                 pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = RecoilController.BaseTotalConvergence;
             }
+
+            NewRecoilShotEffect newRecoil = pwa.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
+            newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = weapon.Template.RecoilCategoryMultiplierHandRotation;
+            newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = weapon.Template.RecoilReturnPathDampingHandRotation;
+            pwa.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.Damping = weapon.Template.RecoilDampingHandRotation;
         }
     }
 }
