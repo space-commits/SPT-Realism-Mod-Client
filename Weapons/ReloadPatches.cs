@@ -161,26 +161,18 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(FirearmsAnimator __instance, int count)
         {
-            /*       Player player = Utils.GetPlayer();
-                   Player.FirearmController fc = player.HandsController as Player.FirearmController;*/
-            /*     if (fc.FirearmsAnimator == __instance)
-                 {
+            Player player = Utils.GetPlayer();
+            if (player == null) return true;
+            FirearmController fc = player.HandsController as FirearmController;
+            if (player.HandsAnimator == __instance as ObjectInHandsAnimator || fc == null)
+            {
+                Logger.LogWarning("==SetAmmoOnMag== " + count);
+                bool blocked = !Plugin.BlockChambering;
+                Plugin.BlockChambering = false;
+                return blocked;
+            }
+            return true;
 
-
-                 }
-                 return true;*/
-
-            /*            Logger.LogWarning("fc.Weapon.ChamberAmmoCount " + fc.Weapon.ChamberAmmoCount);
-                        if (fc.Weapon.ChamberAmmoCount == 0)
-                        {
-                            return false;
-                        }
-                        Logger.LogWarning("SetAmmoOnMag " + count);
-                        return Plugin.BlockChambering;*/
-            Logger.LogWarning("==SetAmmoOnMag== " + count);
-            bool blocked = !Plugin.BlockChambering;
-            Plugin.BlockChambering = false;
-            return blocked; 
         }
     }
 
@@ -194,17 +186,18 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(FirearmsAnimator __instance, ref bool compatible)
         {
-          /*  Player player = Utils.GetPlayer();*/
-/*            Player.FirearmController fc = player.HandsController as Player.FirearmController;
+            Player player = Utils.GetPlayer();
+            if (player == null) return;
+            Player.FirearmController fc = player.HandsController as Player.FirearmController;
+            if (fc == null) return;
             if (fc.FirearmsAnimator == __instance)
             {
-            
-            }*/
-            Logger.LogWarning("SetAmmoCompatible " + compatible);
-            if (!Plugin.CanLoadChamber)
-            {
-                Logger.LogWarning("SetAmmoCompatible can't Do Cock");
-                compatible = false;
+                Logger.LogWarning("SetAmmoCompatible " + compatible);
+                if (!Plugin.CanLoadChamber)
+                {
+                    Logger.LogWarning("SetAmmoCompatible can't Do Cock");
+                    compatible = false;
+                }
             }
         }
     }
@@ -220,7 +213,7 @@ namespace RealismMod
             {
                 StanceController.IsPatrolStance = false;
                 StanceController.CancelShortStock = true;
-                // StanceController.CancelPistolStance = true;
+                StanceController.CancelPistolStance = true;
                 StanceController.CancelActiveAim = true;
 
                 if (PlayerStats.IsAttemptingToReloadInternalMag == true)
@@ -291,17 +284,17 @@ namespace RealismMod
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
             Player player = Utils.GetPlayer();
-        /*    Player.FirearmController fc = player.HandsController as Player.FirearmController;
+            if (player == null) return;
+            Player.FirearmController fc = player.HandsController as Player.FirearmController;
+            if (fc == null) return;
             if (fc.FirearmsAnimator == __instance)
             {
-           
-            }*/
-            __instance.SetAnimationSpeed(1);
-
-            if (Plugin.EnableLogging.Value == true)
-            {
-                Logger.LogWarning("===SetSpeedParameters===");
-                Logger.LogWarning("=============");
+                __instance.SetAnimationSpeed(1);
+                if (Plugin.EnableLogging.Value == true)
+                {
+                    Logger.LogWarning("===SetSpeedParameters===");
+                    Logger.LogWarning("=============");
+                }
             }
         }
     }
@@ -343,19 +336,21 @@ namespace RealismMod
         private static void PatchPostfix(FirearmsAnimator __instance, float weaponLevel)
         {
             Player player = Utils.GetPlayer();
-  /*          Player.FirearmController fc = player.HandsController as Player.FirearmController;
+            if (player == null) return;
+            Player.FirearmController fc = player.HandsController as Player.FirearmController;
+            if (fc == null) return;
             if (fc.FirearmsAnimator == __instance)
             {
-           
-            }*/
-            if (WeaponStats._WeapClass == "shotgun")
-            {
-                if (weaponLevel < 3)
+                if (WeaponStats._WeapClass == "shotgun")
                 {
-                    weaponLevel += 1;
+                    if (weaponLevel < 3)
+                    {
+                        weaponLevel += 1;
+                    }
+                    WeaponAnimationSpeedControllerClass.SetWeaponLevel(__instance.Animator, weaponLevel);
                 }
-                WeaponAnimationSpeedControllerClass.SetWeaponLevel(__instance.Animator, weaponLevel);
             }
+ 
         }
     }
 
@@ -397,7 +392,7 @@ namespace RealismMod
                 StanceController.CancelLowReady = true;
                 StanceController.CancelShortStock = true;
                 StanceController.CancelActiveAim = true;
-                // StanceController.CancelPistolStance = true;
+                StanceController.CancelPistolStance = true;
             }
         }
     }
@@ -450,6 +445,7 @@ namespace RealismMod
                 StanceController.CancelHighReady = true;
                 StanceController.CancelShortStock = true;
                 StanceController.CancelActiveAim = true;
+                StanceController.CancelPistolStance = true;
             }
         }
     }
@@ -514,21 +510,22 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(FirearmsAnimator __instance, float fix)
         {
-     /*       Player player = Utils.GetPlayer();
+            Player player = Utils.GetPlayer();
+            if (player == null) return;
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
+            if (fc == null) return;
             if (fc.FirearmsAnimator == __instance)
             {
-          
-            }*/
-            float totalFixSpeed = Mathf.Clamp(fix * WeaponStats.TotalFixSpeed * PlayerStats.ReloadInjuryMulti * Plugin.GlobalFixSpeedMulti.Value * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.15f);
-            WeaponAnimationSpeedControllerClass.SetSpeedFix(__instance.Animator, totalFixSpeed);
-            __instance.SetAnimationSpeed(totalFixSpeed);
-
-            if (Plugin.EnableLogging.Value == true)
-            {
-                Logger.LogWarning("===SetMalfRepairSpeed===");
-                Logger.LogWarning("SetMalfRepairSpeed = " + totalFixSpeed);
-                Logger.LogWarning("=============");
+                float totalFixSpeed = Mathf.Clamp(fix * WeaponStats.TotalFixSpeed * PlayerStats.ReloadInjuryMulti * Plugin.GlobalFixSpeedMulti.Value * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.15f);
+                WeaponAnimationSpeedControllerClass.SetSpeedFix(__instance.Animator, totalFixSpeed);
+                __instance.SetAnimationSpeed(totalFixSpeed);
+                StanceController.CancelPistolStance = true;
+                if (Plugin.EnableLogging.Value == true)
+                {
+                    Logger.LogWarning("===SetMalfRepairSpeed===");
+                    Logger.LogWarning("SetMalfRepairSpeed = " + totalFixSpeed);
+                    Logger.LogWarning("=============");
+                }
             }
         }
     }
@@ -544,7 +541,9 @@ namespace RealismMod
         private static void PatchPrefix(FirearmsAnimator __instance)
         {
             Player player = Utils.GetPlayer();
+            if (player == null) return;
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
+            if (fc == null) return;
             if (fc.FirearmsAnimator == __instance)
             {
                 if (Plugin.EnableReloadPatches.Value)
@@ -572,8 +571,8 @@ namespace RealismMod
                 }
 
                 StanceController.CancelShortStock = true;
-                // StanceController.CancelPistolStance = true;
-            } 
+                StanceController.CancelPistolStance = true;
+            }
         }
     }
 
@@ -792,20 +791,21 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-       /*     Player player = Utils.GetPlayer();
+            Player player = Utils.GetPlayer();
+            if (player == null) return;
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
+            if (fc == null) return;
             if (fc.FirearmsAnimator == __instance)
             {
-            
-            }*/
-            float totalReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerStats.ReloadSkillMulti * PlayerStats.ReloadInjuryMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.3f);
-            __instance.SetAnimationSpeed(totalReloadSpeed);
+                float totalReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerStats.ReloadSkillMulti * PlayerStats.ReloadInjuryMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.3f);
+                __instance.SetAnimationSpeed(totalReloadSpeed);
 
-            if (Plugin.EnableLogging.Value == true)
-            {
-                Logger.LogWarning("===SetMagTypeCurrent===");
-                Logger.LogWarning("SetMagTypeCurrent = " + totalReloadSpeed);
-                Logger.LogWarning("=============");
+                if (Plugin.EnableLogging.Value == true)
+                {
+                    Logger.LogWarning("===SetMagTypeCurrent===");
+                    Logger.LogWarning("SetMagTypeCurrent = " + totalReloadSpeed);
+                    Logger.LogWarning("=============");
+                }
             }
         }
     }

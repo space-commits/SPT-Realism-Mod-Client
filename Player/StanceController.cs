@@ -544,6 +544,7 @@ namespace RealismMod
                         IsHighReady = WasHighReady;
                         IsShortStock = WasShortStock;
                         IsActiveAiming = WasActiveAim;
+                        DidStanceWiggle = false;
                         HaveSetAiming = false;
                     }
 
@@ -719,14 +720,15 @@ namespace RealismMod
                     StanceController.CanResetDamping = false;
                 }
 
-                if (StanceController.StanceBlender.Value < 0.95f)
+                if (StanceController.StanceBlender.Value < 0.95f || StanceController.CancelPistolStance)
                 {
                     DidStanceWiggle = false;
                 }
                 if ((StanceController.StanceBlender.Value >= 1f && StanceController.StanceTargetPosition == pistolTargetPosition) && !StanceController.DidStanceWiggle)
                 {
-                    StanceController.DoWiggleEffects(player, pwa, fc, new Vector3(-20f, 1f, 30f) * movementFactor);
+                    StanceController.DoWiggleEffects(player, pwa, fc, new Vector3(-25f, 10f, 0f) * movementFactor);
                     StanceController.DidStanceWiggle = true;
+                    StanceController.CancelPistolStance = false;
                 }
 
             }
@@ -1220,7 +1222,7 @@ namespace RealismMod
                     StanceController.CanResetDamping = false;
                 }
 
-                rotationSpeed = 15f * Mathf.Clamp(stanceMulti, 0.8f, 1f) * dt * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
+                rotationSpeed = 10f * Mathf.Clamp(stanceMulti, 0.8f, 1f) * dt * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
 
                 float initialPosDistance = Vector3.Distance(StanceController.StanceTargetPosition, meleeTargetPosition);
                 float finalPosDistance = Vector3.Distance(StanceController.StanceTargetPosition, meleeTargetPosition2);
@@ -1283,15 +1285,20 @@ namespace RealismMod
 
         public static void DoWiggleEffects(Player player, ProceduralWeaponAnimation pwa, Player.FirearmController fc, Vector3 wiggleDirection, bool playSound = false, float volume = 1f)
         {
+            Utils.Logger.LogWarning("wiggle effects");
+
             if (playSound)
             {
                 AccessTools.Method(typeof(Player), "method_46").Invoke(player, new object[] { volume });
             }
-
+            player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0;
+            player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
             for (int i = 0; i < pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues.Length; i++)
             {
                 pwa.Shootingg.CurrentRecoilEffect.RecoilProcessValues[i].Process(wiggleDirection);
             }
+            player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0;
+            player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
         }
 
         private static Vector3 currentMountedPos = Vector3.zero;

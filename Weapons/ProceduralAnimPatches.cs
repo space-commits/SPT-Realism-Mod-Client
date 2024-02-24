@@ -102,24 +102,26 @@ namespace RealismMod
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("method_23", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static void DoADSWiggle(ProceduralWeaponAnimation pwa, Player player, FirearmController fc, float factor, float newAimSpeed)
+        private static void DoADSWiggle(ProceduralWeaponAnimation pwa, Player player, FirearmController fc, float factor)
         {
             if (StanceController.IsIdle() && WeaponStats._WeapClass.ToLower() != "pistol")
             {
-                int rndX = UnityEngine.Random.Range((int)factor, (int)(5f * factor));
-                int rndY = UnityEngine.Random.Range((int)factor, (int)(3.5f * factor));
-                Vector3 wiggleDir = new Vector3(-rndX, -rndY, 0f) * factor;
+                StanceController.CanResetDamping = false;
+                float rndX = UnityEngine.Random.Range(10f * 0.5f * factor, (10f * factor));
+                float rndY = UnityEngine.Random.Range(10f * 0.5f * factor, (10f * factor));
+                Vector3 wiggleDir = new Vector3(-rndX, -rndY, 0f);
 
                 if (pwa.IsAiming && !didAimWiggle)
                 {
-                    StanceController.DoWiggleEffects(player, pwa, fc, wiggleDir * newAimSpeed);
+                    StanceController.DoWiggleEffects(player, pwa, fc, wiggleDir, false);
                     didAimWiggle = true;
                 }
                 else if (!pwa.IsAiming && didAimWiggle)
                 {
-                    StanceController.DoWiggleEffects(player, pwa, fc, - wiggleDir * newAimSpeed * 0.45f);
+                    StanceController.DoWiggleEffects(player, pwa, fc, -wiggleDir * 0.45f, false);
                     didAimWiggle = false;
                 }
+                StanceController.DoDampingTimer = true;
             }
         }
 
@@ -223,7 +225,7 @@ namespace RealismMod
                         }
                     }
 
-                    DoADSWiggle(__instance, player, firearmController, totalErgoFactor, newAimSpeed);
+                    DoADSWiggle(__instance, player, firearmController, totalErgoFactor);
 
                     __instance.CameraSmoothRecoil = 1;
                     __instance.CameraToWeaponAngleSpeedRange = Vector2.zero;

@@ -294,7 +294,6 @@ namespace RealismMod
         private static float sprintTimer = 0f;
         private static bool didSprintPenalties = false;
         private static bool resetSwayAfterFiring = false;
-        private static bool resetRecoilValues = false;
 
         private static void doSprintTimer(ProceduralWeaponAnimation pwa, Player.FirearmController fc, float mountingBonus)
         {
@@ -417,7 +416,6 @@ namespace RealismMod
                 {
                     RecoilController.SetRecoilParams(player.ProceduralWeaponAnimation, fc.Item);
                     StanceController.IsPatrolStance = false;
-                    resetRecoilValues = false;
                 }
 
                 ReloadController.ReloadStateCheck(player, fc, Logger);
@@ -432,44 +430,28 @@ namespace RealismMod
                 PlayerStats.RemainingArmStamPerc = 1f - ((1f - remainStamPercent) / 3f);
                 PlayerStats.RemainingArmStamPercReload = 1f - ((1f - remainStamPercent) / 4f);
 
-                if (!RecoilController.IsFiring)
+                if (!RecoilController.IsFiringMovement)
                 {
                     if (StanceController.CanResetDamping)
                     {
-                        Logger.LogWarning("CanResetDamping");
-                        player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, 0.01f);
-                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, RecoilController.BaseTotalConvergence, 0.1f);
-
-                        if (!resetRecoilValues)
-                        {
-                            Logger.LogWarning("reset values");
-
-                            NewRecoilShotEffect newRecoil = player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
-                            newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = fc.Weapon.Template.RecoilCategoryMultiplierHandRotation;
-                            newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = fc.Weapon.Template.RecoilReturnPathDampingHandRotation;
-                            player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.Damping = fc.Weapon.Template.RecoilDampingHandRotation;
-                            resetRecoilValues = true;
-                        }
+                        NewRecoilShotEffect newRecoil = player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
+                        newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = Mathf.Lerp(newRecoil.HandRotationRecoil.CategoryIntensityMultiplier, fc.Weapon.Template.RecoilCategoryMultiplierHandRotation, Plugin.test1.Value);
+                        newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = Mathf.Lerp(newRecoil.HandRotationRecoil.ReturnTrajectoryDumping, fc.Weapon.Template.RecoilReturnPathDampingHandRotation, Plugin.test1.Value);
+                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping, fc.Weapon.Template.RecoilDampingHandRotation, Plugin.test1.Value);
+                        player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, Plugin.test1.Value);
+                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, RecoilController.BaseTotalConvergence, Plugin.test1.Value);
                     }
                     else
                     {
-                        Logger.LogWarning("else");
                         player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.75f;
                         NewRecoilShotEffect newRecoil = player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
-                        newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = Plugin.test5.Value; //0.4
-                        newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = Plugin.test6.Value; //0.85
-                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.Damping = Plugin.test7.Value; //0.5
-                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, 10f * StanceController.WiggleReturnSpeed, 0.01f);
+                        newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = WeaponStats._WeapClass == "pistol" ? 0.4f : 0.3f;
+                        newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = 0.8f; 
+                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = 0.8f; 
+                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = 10f * StanceController.WiggleReturnSpeed;
                     }
-
                     player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0;
                     player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
-
-                    /*       if (!RecoilController.IsFiringMovement) 
-                           {
-                               player.ProceduralWeaponAnimation.CameraToWeaponAngleSpeedRange = Vector2.zero;
-                               player.ProceduralWeaponAnimation.CameraToWeaponAngleStep = 0f;
-                           }*/
                 }
                 player.MovementContext.SetPatrol(StanceController.IsPatrolStance);
 
