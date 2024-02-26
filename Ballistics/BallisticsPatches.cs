@@ -304,11 +304,15 @@ namespace RealismMod
     public class ApplyDamageInfoPatch : ModulePatch
     {
         private static FieldInfo inventoryControllerField;
-        private static PropertyInfo inventoryClassProperty;
-        private static PropertyInfo equipmentClassProperty;
-
         private static List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(20);
         private static List<EBodyPart> bodyParts = new List<EBodyPart> { EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.LeftLeg, EBodyPart.RightLeg, EBodyPart.Head, EBodyPart.Common, EBodyPart.Common };
+
+
+        protected override MethodBase GetTargetMethod()
+        {
+            inventoryControllerField = AccessTools.Field(typeof(Player), "_inventoryController");
+            return typeof(Player).GetMethod("ApplyDamageInfo", BindingFlags.Instance | BindingFlags.Public);
+        }
 
         private static float GetBleedFactor(EBodyPart part)
         {
@@ -402,15 +406,6 @@ namespace RealismMod
             Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
         }
 
-        protected override MethodBase GetTargetMethod()
-        {
-            inventoryControllerField = AccessTools.Field(typeof(Player), "_inventoryController");
-            inventoryClassProperty = AccessTools.Property(typeof(Player), "Inventory");
-            equipmentClassProperty = AccessTools.Property(typeof(Player), "Equipment");
-
-            return typeof(Player).GetMethod("ApplyDamageInfo", BindingFlags.Instance | BindingFlags.Public);
-        }
-
         [PatchPrefix]
         private static void Prefix(Player __instance, ref DamageInfo damageInfo, EBodyPart bodyPartType)
         {
@@ -440,14 +435,11 @@ namespace RealismMod
 
             if (damageInfo.DamageType == EDamageType.Bullet || damageInfo.DamageType == EDamageType.Melee)
             {
-                EquipmentClass equipment = (EquipmentClass)equipmentClassProperty.GetValue(__instance);
-                Inventory inventory = (Inventory)inventoryClassProperty.GetValue(__instance);
-
                 bool hasArmArmor = false;
                 bool hasLegProtection = false;
                 int faceProtectionCount = 0;
                 preAllocatedArmorComponents.Clear();
-                inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
+                __instance.Inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
                 ArmorComponent armor = null;
                 foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
                 {

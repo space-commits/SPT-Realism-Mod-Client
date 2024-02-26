@@ -691,7 +691,7 @@ namespace RealismMod
                     bool cancelBecauseShooting = StanceController.IsFiringFromStance && !isInShootableStance;
                     bool doStanceRotation = (isInStance || !allStancesReset || StanceController.PistolIsCompressed) && !cancelBecauseShooting;
                     bool allowActiveAimReload = Plugin.ActiveAimReload.Value && PlayerStats.IsInReloadOpertation && !PlayerStats.IsAttemptingToReloadInternalMag && !PlayerStats.IsQuickReloading;
-                    bool cancelStance = (StanceController.CancelActiveAim && StanceController.IsActiveAiming && !allowActiveAimReload) || (StanceController.CancelHighReady && StanceController.IsHighReady) || (StanceController.CancelLowReady && StanceController.IsLowReady) || (StanceController.CancelShortStock && StanceController.IsShortStock) || (StanceController.CancelPistolStance && StanceController.PistolIsCompressed);
+                    bool cancelStance = (StanceController.CancelActiveAim && StanceController.IsActiveAiming && !allowActiveAimReload) || (StanceController.CancelHighReady && StanceController.IsHighReady) || (StanceController.CancelLowReady && StanceController.IsLowReady) || (StanceController.CancelShortStock && StanceController.IsShortStock); //|| (StanceController.CancelPistolStance && StanceController.PistolIsCompressed)
 
                     StanceController.DoMounting(player, __instance, firearmController, ref weaponPosition, ref mountWeapPosition, dt, __instance.HandsContainer.WeaponRoot.position);
                     weaponPositionField.SetValue(__instance, weaponPosition);
@@ -966,7 +966,7 @@ namespace RealismMod
                 bool cancelBecauseShooting = StanceController.IsFiringFromStance && !isInShootableStance;
                 bool doStanceRotation = (isInStance || !allStancesAreReset || StanceController.PistolIsCompressed) && !cancelBecauseShooting;
                 bool allowActiveAimReload = Plugin.ActiveAimReload.Value && PlayerStats.IsInReloadOpertation && !PlayerStats.IsAttemptingToReloadInternalMag && !PlayerStats.IsQuickReloading;
-                bool cancelStance = (StanceController.CancelActiveAim && StanceController.IsActiveAiming && !allowActiveAimReload) || (StanceController.CancelHighReady && StanceController.IsHighReady) || (StanceController.CancelLowReady && StanceController.IsLowReady) || (StanceController.CancelShortStock && StanceController.IsShortStock) || (StanceController.CancelPistolStance && StanceController.PistolIsCompressed);
+                bool cancelStance = (StanceController.CancelActiveAim && StanceController.IsActiveAiming && !allowActiveAimReload) || (StanceController.CancelHighReady && StanceController.IsHighReady) || (StanceController.CancelLowReady && StanceController.IsLowReady) || (StanceController.CancelShortStock && StanceController.IsShortStock); // || (StanceController.CancelPistolStance && StanceController.PistolIsCompressed)
 
                 currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesAreReset ? aimingQuat : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
 

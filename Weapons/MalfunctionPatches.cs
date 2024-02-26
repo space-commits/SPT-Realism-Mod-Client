@@ -14,9 +14,66 @@ using MalfGlobals = BackendConfigSettingsClass.GClass1367;
 using OverheatGlobals = BackendConfigSettingsClass.GClass1368;
 using KnowMalfClass = EFT.InventoryLogic.Weapon.GClass2738;
 using MalfStateStruct = GClass722<EFT.InventoryLogic.Weapon.EMalfunctionState>.GStruct42<float, EFT.InventoryLogic.Weapon.EMalfunctionState>;
+using Systems.Effects;
 
 namespace RealismMod
 {
+    public class GetMalfunctionStatePatch : ModulePatch
+    {
+        private static FieldInfo playerField;
+        protected override MethodBase GetTargetMethod()
+        {
+            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
+            return typeof(Player.FirearmController).GetMethod("GetMalfunctionState", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        private static void ExplodeWeapon(Player.FirearmController fc, Player player, ref Weapon.EMalfunctionState __result) 
+        {
+            __result = Weapon.EMalfunctionState.SoftSlide;
+            Singleton<Effects>.Instance.EmitGrenade("Grenade_new2", fc.CurrentFireport.Original.position, Vector3.up, 1f);
+            fc.Weapon.Repairable.Durability = 0f;
+            fc.Weapon.Repairable.MaxDurability = 0f;
+
+            if (player.ActiveHealthController != null)
+            {
+                InventoryControllerClass inventoryController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
+                Plugin.RealHealthController.AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 0f, 10f, 5f, 1f);
+                Plugin.RealHealthController.AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 0f, 10f, 5f, 1f);
+                Plugin.RealHealthController.AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 0f, 10f, 5f, 1f);
+                Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.Head, null, null, null, null);
+                Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.RightArm, null, null, null, null);
+                player.ActiveHealthController.ApplyDamage(EBodyPart.Head, 5f, GClass2452.Existence);
+                player.ActiveHealthController.ApplyDamage(EBodyPart.RightArm, 20f, GClass2452.Existence);
+
+                inventoryController.TryThrowItem(fc.Item, null);
+            }
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(Player.FirearmController __instance, ref Weapon.EMalfunctionState __result, BulletClass ammoToFire)
+        {
+            Player player = (Player)playerField.GetValue(__instance);
+
+            if (player.IsYourPlayer == true)
+            {
+                if (__instance.Weapon.Repairable.MaxDurability <= 0f || (__instance.Weapon.AmmoCaliber == "762x35" && ammoToFire.Caliber == "556x45NATO") || (__instance.Weapon.AmmoCaliber == "68x51" && ammoToFire.Caliber == "762x51"))
+                {
+                    __result = Weapon.EMalfunctionState.Misfire;
+                    return false;
+                }
+
+                Logger.LogWarning("__instance.Weapon.AmmoCaliber " + __instance.Weapon.AmmoCaliber);
+                Logger.LogWarning("ammoToFire.Caliber " + ammoToFire.Caliber);
+
+                if ((__instance.Weapon.AmmoCaliber == "5.56x45" && ammoToFire.Caliber == "762x35") || __instance.Weapon.AmmoCaliber == "762x51" && ammoToFire.Caliber == "68x51")
+                {
+                    ExplodeWeapon(__instance, player, ref __result);
+                }
+            }
+            return true;
+        }
+    }
+
 
     public class GetDurabilityLossOnShotPatch : ModulePatch
     {
@@ -29,11 +86,10 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result, float ammoBurnRatio, float overheatFactor, float skillWeaponTreatmentFactor, out float modsBurnRatio)
         {
-
             if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 modsBurnRatio = WeaponStats.TotalModDuraBurn;
-                __result = (float)__instance.Repairable.TemplateDurability / __instance.Template.OperatingResource * __instance.DurabilityBurnRatio * (modsBurnRatio * ammoBurnRatio) * overheatFactor * (1f - skillWeaponTreatmentFactor); ;
+                __result = (float)__instance.Repairable.TemplateDurability / __instance.Template.OperatingResource * __instance.DurabilityBurnRatio * (modsBurnRatio * ammoBurnRatio) * overheatFactor * (1f - skillWeaponTreatmentFactor);
                 return false;
             }
             else
@@ -65,14 +121,19 @@ namespace RealismMod
                 overheatMalfChance = 0f;
                 weaponDurability = 0f;
 
-
                 if (!__instance.Item.AllowMalfunction)
                 {
                     __result = 0f;
                     return false;
                 }
 
-/*                float ammoHotnessFactor = (1f - ((ammoToFire.ammoRec / 200f) + 1f)) + 1f;*/
+                if (__instance.Weapon.AmmoCaliber == "762x35" && ammoToFire.Caliber == "556x45NATO")
+                {
+                    __result = 10000f;
+                    return false;
+                }
+
+                /*                float ammoHotnessFactor = (1f - ((ammoToFire.ammoRec / 200f) + 1f)) + 1f;*/
 
                 float malfDelta = Mathf.Min(WeaponStats.MalfChanceDelta * 3, 0.99f);
                 float subFactor = 1f;

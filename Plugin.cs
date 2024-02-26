@@ -620,6 +620,9 @@ namespace RealismMod
                 new AmmoMalfChanceDisplayPatch().Enable();
                 new MagazineMalfChanceDisplayPatch().Enable();
                 new BarrelModClassPatch().Enable();
+                new AmmoCaliberPatch().Enable();
+
+                new GetMalfunctionStatePatch().Enable();
 
                 if (IncreaseCOI.Value == true)
                 {

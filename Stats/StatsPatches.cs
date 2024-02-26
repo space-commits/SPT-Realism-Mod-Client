@@ -352,7 +352,8 @@ namespace RealismMod
             WeaponStats.BaseMeleeDamage = 0f; //reset the melee dmg
             WeaponStats.BaseMeleePen = 0f;
             WeaponStats.HasBayonet = false;
-            WeaponStats.HasBooster = false; 
+            WeaponStats.HasBooster = false;
+
             foreach (Mod mod in __instance.Mods)
             {
                 if (!Utils.IsMagazine(mod))

@@ -101,12 +101,19 @@ namespace RealismMod
                     Logger.LogWarning("ammo is compatible " + ammoIsCompatible);
 
                     fc.FirearmsAnimator.SetAmmoCompatible(ammoIsCompatible);
-
+                    if (ammoIsCompatible && magazine != null && magazine.Count > 0 && fc.Weapon.Chambers.Length != 0 && fc.Weapon.MalfState.State == Weapon.EMalfunctionState.Misfire)
+                    {
+                        fc.FirearmsAnimator.SetLayerWeight(fc.FirearmsAnimator.MALFUNCTION_LAYER_INDEX, 0);
+                    }
                     if (Plugin.CanLoadChamber && magazine != null && chamberAmmoCount == 0 && currentMagazineCount > 0 && ammoIsCompatible && fc.Item.Chambers.Length != 0)
                     {
-                        Weapon.EMalfunctionState state = fc.Item.MalfState.State;
+                        Weapon.EMalfunctionState malfState = fc.Item.MalfState.State;
+                        if (malfState == Weapon.EMalfunctionState.Misfire)
+                        {
+                            fc.Weapon.MalfState.ChangeStateSilent(Weapon.EMalfunctionState.None);
+                        }
                         GStruct413<GInterface322> gstruct = magazine.Cartridges.PopTo(player.GClass2757_0, new GClass2763(fc.Item.Chambers[0]));
-                        fc.Item.MalfState.ChangeStateSilent(state);
+                        fc.Item.MalfState.ChangeStateSilent(malfState);
                         if (gstruct.Value == null)
                         {
                             Logger.LogWarning("gstruct is null ");
@@ -213,9 +220,8 @@ namespace RealismMod
             {
                 StanceController.IsPatrolStance = false;
                 StanceController.CancelShortStock = true;
-                StanceController.CancelPistolStance = true;
                 StanceController.CancelActiveAim = true;
-
+         
                 if (PlayerStats.IsAttemptingToReloadInternalMag == true)
                 {
                     StanceController.CancelHighReady = fc.Item.WeapClass != "shotgun" ? true : false;
@@ -392,7 +398,6 @@ namespace RealismMod
                 StanceController.CancelLowReady = true;
                 StanceController.CancelShortStock = true;
                 StanceController.CancelActiveAim = true;
-                StanceController.CancelPistolStance = true;
             }
         }
     }
@@ -445,7 +450,6 @@ namespace RealismMod
                 StanceController.CancelHighReady = true;
                 StanceController.CancelShortStock = true;
                 StanceController.CancelActiveAim = true;
-                StanceController.CancelPistolStance = true;
             }
         }
     }
@@ -518,8 +522,7 @@ namespace RealismMod
             {
                 float totalFixSpeed = Mathf.Clamp(fix * WeaponStats.TotalFixSpeed * PlayerStats.ReloadInjuryMulti * Plugin.GlobalFixSpeedMulti.Value * (Mathf.Max(PlayerStats.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.15f);
                 WeaponAnimationSpeedControllerClass.SetSpeedFix(__instance.Animator, totalFixSpeed);
-                __instance.SetAnimationSpeed(totalFixSpeed);
-                StanceController.CancelPistolStance = true;
+                __instance.SetAnimationSpeed(totalFixSpeed);         
                 if (Plugin.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===SetMalfRepairSpeed===");
@@ -571,7 +574,6 @@ namespace RealismMod
                 }
 
                 StanceController.CancelShortStock = true;
-                StanceController.CancelPistolStance = true;
             }
         }
     }
@@ -863,7 +865,7 @@ namespace RealismMod
                 PlayerStats.IsMagReloading = false;
                 PlayerStats.IsQuickReloading = false;
                 player.HandsAnimator.SetAnimationSpeed(1);
-
+      
                 if (Plugin.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===OnMagInsertedPatch/method_47===");

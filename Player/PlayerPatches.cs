@@ -230,7 +230,7 @@ namespace RealismMod
             }
             else
             {
-                float holdBreathBonus = __instance.Physical.HoldingBreath ? 0.55f : 1f;
+                float holdBreathBonus = __instance.Physical.HoldingBreath ? 0.6f : 1f;
                 float t = lackOfOxygenStrength.Evaluate(__instance.OxygenLevel);
                 float b = __instance.IsAiming ? 0.75f : 1f;
                 breathIntensityField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, b, t), 1f, 1.5f) * __instance.Intensity * holdBreathBonus);
@@ -279,8 +279,8 @@ namespace RealismMod
             }
 
             float breathFactor = StanceController.BlockBreathEffect ? 0f : StanceController.MountingBreathReduction;
-            processors[0].ProcessRaw(breathFrequency, (float)breathIntensityField.GetValue(__instance) * breathFactor * 0.7f); 
-            processors[1].ProcessRaw(breathFrequency, (float)breathIntensityField.GetValue(__instance) * cameraSensetivity * breathFactor * 0.7f);
+            processors[0].ProcessRaw(breathFrequency, (float)breathIntensityField.GetValue(__instance) * breathFactor * 0.75f); 
+            processors[1].ProcessRaw(breathFrequency, (float)breathIntensityField.GetValue(__instance) * cameraSensetivity * breathFactor * 0.75f);
             return false;
         }
     }

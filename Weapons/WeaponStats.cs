@@ -148,15 +148,13 @@ namespace RealismMod
         public const float AdapterPistolGripBonusChamber = 10f;
         public const float AdapterPistolGripBonusErgo = 2f;
         public const float PumpGripReloadBonus = 18f;
-        public const float FoldedErgoFactor = 1f;
-        public const float FoldedHRecoilFactor = 1.15f;
-        public const float FoldedVRecoilFactor = 1.5f;
-        public const float FoldedCOIFactor = 2f;
-        public const float FoldedCamRecoilFactor = 0.4f;
-        public const float FoldedDispersionFactor = 1.55f;
+        public const float FoldedErgoFactor = 0.85f;
+        public const float FoldedHRecoilFactor = 1.1f;
+        public const float FoldedVRecoilFactor = 1.6f;
+        public const float FoldedCOIFactor = 2.5f;
+        public const float FoldedCamRecoilFactor = 0.5f;
+        public const float FoldedDispersionFactor = 1.6f;
         public const float FoldedRecoilAngleFactor = 1.15f;
-        public const float ErgoStatFactor = 7f;
-        public const float RecoilStatFactor = 3.5f;
 
         public static float TotalWeaponWeight = 0f;
 

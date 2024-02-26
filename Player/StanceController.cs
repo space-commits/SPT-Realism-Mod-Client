@@ -249,7 +249,6 @@ namespace RealismMod
             IsPatrolStance = false;
         }
 
-
         private static void stanceManipCancelTimer()
         {
             ManipTime += Time.deltaTime;
