@@ -352,7 +352,14 @@ namespace RealismMod
         {
             return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod) == "308";
         }
-
+        private static bool IsMulti300(Mod mod)
+        {
+            return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod) == "300";
+        }
+        private static bool IsMulti762x39(Mod mod)
+        {
+            return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod) == "762x39";
+        }
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref string __result)
         {
@@ -361,9 +368,19 @@ namespace RealismMod
                 __result = "556x45NATO";
                 return false;
             }
+            if (__instance.Mods.Any(IsMulti300))
+            {
+                __result = "762x35";
+                return false;
+            }
             if (__instance.Mods.Any(IsMulti308))
             {
                 __result = "762x51";
+                return false;
+            }
+            if (__instance.Mods.Any(IsMulti762x39))
+            {
+                __result = "762x39";
                 return false;
             }
             return true;

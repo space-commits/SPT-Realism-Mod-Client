@@ -341,7 +341,7 @@ namespace RealismMod
                         DeafeningController.IsBotFiring = true;;
                         float velocityFactor = CalcVelocityFactor(weap.SpeedFactor);
                         float muzzleFactor = __instance.IsSilenced ? 0.4f : 1f;
-                        float calFactor = StatCalc.CalibreLoudnessFactor(weap.AmmoCaliber);
+                        float calFactor = StatCalc.CaliberLoudnessFactor(weap.AmmoCaliber);
                         if (shot.InitialSpeed * weap.SpeedFactor <= 335f)
                         {
                             velocityFactor *= 0.6f;

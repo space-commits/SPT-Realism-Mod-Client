@@ -37,13 +37,16 @@ namespace RealismMod
             if (player.ActiveHealthController != null)
             {
                 InventoryControllerClass inventoryController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
-                Plugin.RealHealthController.AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 0f, 10f, 5f, 1f);
-                Plugin.RealHealthController.AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 0f, 10f, 5f, 1f);
-                Plugin.RealHealthController.AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 0f, 10f, 5f, 1f);
-                Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.Head, null, null, null, null);
-                Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.RightArm, null, null, null, null);
-                player.ActiveHealthController.ApplyDamage(EBodyPart.Head, 5f, GClass2452.Existence);
-                player.ActiveHealthController.ApplyDamage(EBodyPart.RightArm, 20f, GClass2452.Existence);
+                if (player.IsYourPlayer) 
+                {
+                    Plugin.RealHealthController.AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 0f, 10f, 5f, 1f);
+                    Plugin.RealHealthController.AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 0f, 10f, 5f, 1f);
+                    Plugin.RealHealthController.AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 0f, 10f, 5f, 1f);
+                    Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.Head, null, null, null, null);
+                    Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.RightArm, null, null, null, null);
+                }
+                player.ActiveHealthController.ApplyDamage(EBodyPart.Head, UnityEngine.Random.Range(5, 20), GClass2452.Existence);
+                player.ActiveHealthController.ApplyDamage(EBodyPart.RightArm, UnityEngine.Random.Range(20, 60), GClass2452.Existence);
 
                 inventoryController.TryThrowItem(fc.Item, null);
             }
@@ -54,20 +57,31 @@ namespace RealismMod
         {
             Player player = (Player)playerField.GetValue(__instance);
 
-            if (player.IsYourPlayer == true)
+            if (player.IsYourPlayer)
             {
-                if (__instance.Weapon.Repairable.MaxDurability <= 0f || (__instance.Weapon.AmmoCaliber == "762x35" && ammoToFire.Caliber == "556x45NATO") || (__instance.Weapon.AmmoCaliber == "68x51" && ammoToFire.Caliber == "762x51"))
+                if (__instance.Weapon.AmmoCaliber != ammoToFire.Caliber)
                 {
-                    __result = Weapon.EMalfunctionState.Misfire;
-                    return false;
+                    if (__instance.Weapon.Repairable.MaxDurability <= 0f || (__instance.Weapon.AmmoCaliber == "762x35" && ammoToFire.Caliber == "556x45NATO") || (__instance.Weapon.AmmoCaliber == "68x51" && ammoToFire.Caliber == "762x51") || (__instance.Weapon.AmmoCaliber == "762x39" && ammoToFire.Caliber == "366TKM"))
+                    {
+                        __result = Weapon.EMalfunctionState.Misfire;
+                        return false;
+                    }
+
+                    if ((__instance.Weapon.AmmoCaliber == "366TKM" && ammoToFire.Caliber == "762x39") || (__instance.Weapon.AmmoCaliber == "556x45NATO" && ammoToFire.Caliber == "762x35") || __instance.Weapon.AmmoCaliber == "762x51" && ammoToFire.Caliber == "68x51")
+                    {
+                        ExplodeWeapon(__instance, player, ref __result);
+                    }
                 }
-
-                Logger.LogWarning("__instance.Weapon.AmmoCaliber " + __instance.Weapon.AmmoCaliber);
-                Logger.LogWarning("ammoToFire.Caliber " + ammoToFire.Caliber);
-
-                if ((__instance.Weapon.AmmoCaliber == "5.56x45" && ammoToFire.Caliber == "762x35") || __instance.Weapon.AmmoCaliber == "762x51" && ammoToFire.Caliber == "68x51")
+            }
+            else
+            {
+                if (__instance.Weapon.AmmoCaliber == "366TKM" && ammoToFire.Caliber == "762x39")
                 {
                     ExplodeWeapon(__instance, player, ref __result);
+                }
+                if (__instance.Weapon.AmmoCaliber == "762x39" && ammoToFire.Caliber == "366TKM") 
+                {
+                    __result = Weapon.EMalfunctionState.Misfire;
                 }
             }
             return true;

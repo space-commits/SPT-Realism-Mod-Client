@@ -333,7 +333,7 @@ namespace RealismMod
             string weapOpType = WeaponStats.OperationType(__instance);
             string weapType = WeaponStats.WeaponType(__instance);
 
-            string calibre = __instance.Template.ammoCaliber;
+            string caliber = __instance.AmmoCaliber;
             float currentLoudness = 0;
 
             bool weaponAllowsFSADS = WeaponStats.WeaponAllowsADS(__instance);
@@ -409,10 +409,12 @@ namespace RealismMod
                 WeaponStats.WeaponCanFSADS = !hasShoulderContact;
             }
 
-            float totalLoudness = ((currentLoudness / 80) + 1f) * StatCalc.CalibreLoudnessFactor(calibre);
+            float totalLoudness = ((currentLoudness / 80) + 1f) * StatCalc.CaliberLoudnessFactor(caliber);
+            Logger.LogWarning("caliber " + caliber);
+            Logger.LogWarning("loudness " + totalLoudness);
             if (weapType == "bullpup")
             {
-                totalLoudness *= 1.1f;
+                totalLoudness *= 1.15f;
             }
 
             float pureRecoilDelta = ((baseVRecoil + baseHRecoil) - pureRecoil) / ((baseVRecoil + baseHRecoil) * -1f);

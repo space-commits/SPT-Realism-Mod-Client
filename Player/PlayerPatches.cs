@@ -38,7 +38,7 @@ namespace RealismMod
             {
                 Player player = Utils.GetPlayer();
                 FirearmController fc = player.HandsController as FirearmController;
-                if (!Plugin.CanLoadChamber && fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1 && fc.Weapon.ChamberAmmoCount == 0 && fc.Weapon.GetCurrentMagazine() != null)
+                if (!Plugin.CanLoadChamber && fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1 && fc.Weapon.ChamberAmmoCount == 0 && fc.Weapon.GetCurrentMagazine() != null && fc.Weapon.GetCurrentMagazine().Count > 0)
                 {
                     Plugin.CanLoadChamber = true;
                     int currentMagazineCount = fc.Weapon.GetCurrentMagazineCount();

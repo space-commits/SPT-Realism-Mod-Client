@@ -813,68 +813,68 @@ namespace RealismMod
             }
         }
 
-        public static float CalibreLoudnessFactor(string calibre)
+        public static float CaliberLoudnessFactor(string caliber)
         {
-            switch (calibre)
+            switch (caliber)
             {
-                case "Caliber9x18PM":
+                case "9x18PM":
                     return 2.2f;
-                case "Caliber57x28":
+                case "57x28":
                     return 2.4f;
-                case "Caliber46x30":
+                case "46x30":
                     return 2.3f;
-                case "Caliber9x21":
+                case "9x21":
                     return 2.35f;
-                case "Caliber762x25TT":
+                case "762x25TT":
                     return 2.55f;
-                case "Caliber1143x23ACP":
+                case "1143x23ACP":
                     return 2.3f;
-                case "Caliber9x19PARA":
+                case "9x19PARA":
                     return 2.4f;
-                case "Caliber9x33R":
+                case "9x33R":
                     return 3.3f;
 
-                case "Caliber762x35":
-                    return 2.3f;
-                case "Caliber9x39":
-                    return 2.2f;
+                case "762x35":
+                    return 2f;
+                case "9x39":
+                    return 1.9f;
 
-                case "Caliber762x39":
+                case "762x39":
                     return 2.6f;
-                case "Caliber545x39":
+                case "545x39":
                     return 2.63f;
-                case "Caliber556x45NATO":
+                case "556x45NATO":
                     return 2.65f;
-                case "Caliber366TKM":
+                case "366TKM":
                     return 2.68f;
 
-                case "Caliber762x51":
+                case "762x51":
                     return 2.8f;
-                case "Caliber762x54R":
+                case "762x54R":
                     return 2.82f;
-                case "Caliber68x51":
+                case "68x51":
                     return 3f;
 
 
-                case "Caliber127x55":
+                case "127x55":
                     return 3.8f;
-                case "Caliber86x70":
+                case "86x70":
                     return 4f;
-                case "Caliber127x108":
+                case "127x108":
                     return 4f;
                     
-                case "Caliber23x75":
+                case "23x75":
                     return 3.35f;
-                case "Caliber12g":
+                case "12g":
                     return 3f;
-                case "Caliber20g":
+                case "20g":
                     return 2.9f;
 
-                case "Caliber30x29":
+                case "30x29":
                     return 2.4f;
-                case "Caliber40x46":
+                case "40x46":
                     return 2.5f;
-                case "Caliber40x53":
+                case "40x53":
                     return 2.5f;
                 default:
                     return 1f;
