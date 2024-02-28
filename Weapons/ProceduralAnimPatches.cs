@@ -154,9 +154,9 @@ namespace RealismMod
 
                     float stanceMulti = 
                         StanceController.IsIdle() ? 1.6f 
-                        : StanceController.WasActiveAim || StanceController.CurrentStance == EStance.IsActiveAiming ? 1.5f 
-                        : StanceController.CurrentStance == EStance.IsHighReady || StanceController.CurrentStance == EStance.IsHighReady ? 1.1f 
-                        : StanceController.StoredStance == EStance.IsLowReady || StanceController.CurrentStance == EStance.IsLowReady ? 1.3f 
+                        : StanceController.WasActiveAim || StanceController.CurrentStance == EStance.ActiveAiming ? 1.5f 
+                        : StanceController.CurrentStance == EStance.HighReady || StanceController.CurrentStance == EStance.HighReady ? 1.1f 
+                        : StanceController.StoredStance == EStance.LowReady || StanceController.CurrentStance == EStance.LowReady ? 1.3f 
                         : 1f;
                     float stockMulti = weapon.WeapClass != "pistol" && !WeaponStats.HasShoulderContact ? 0.75f : 1f;
                     float totalSightlessAimSpeed = WeaponStats.SightlessAimSpeed * PlayerState.ADSInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.5f));

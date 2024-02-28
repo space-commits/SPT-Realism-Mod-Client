@@ -181,6 +181,8 @@ namespace RealismMod
 
         public static string _WeapClass = "";
 
+        public static bool IsStocklessPistol = false;
+
         public static bool ShouldGetSemiIncrease = false;
 
         public static float ErgoDelta = 0f;

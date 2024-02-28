@@ -435,10 +435,10 @@ namespace RealismMod
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 550f);
                 float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 100f);
 
-                float activeAimingBonus = StanceController.CurrentStance == EStance.IsActiveAiming ? 0.9f : 1f;
-                float aimCamRecoilBonus = StanceController.CurrentStance == EStance.IsActiveAiming || !StanceController.IsAiming ? 0.8f : 1f;
-                float shortStockingDebuff = StanceController.CurrentStance == EStance.IsShortStock ? 1.15f : 1f;
-                float shortStockingCamBonus = StanceController.CurrentStance == EStance.IsShortStock ? 0.6f : 1f;
+                float activeAimingBonus = StanceController.CurrentStance == EStance.ActiveAiming ? 0.9f : 1f;
+                float aimCamRecoilBonus = StanceController.CurrentStance == EStance.ActiveAiming || !StanceController.IsAiming ? 0.8f : 1f;
+                float shortStockingDebuff = StanceController.CurrentStance == EStance.ShortStock ? 1.15f : 1f;
+                float shortStockingCamBonus = StanceController.CurrentStance == EStance.ShortStock ? 0.6f : 1f;
 
                 float mountingVertModi = StanceController.IsMounting ? StanceController.MountingRecoilBonus : StanceController.IsBracing ? StanceController.BracingRecoilBonus : 1f;
                 float mountingDispModi = Mathf.Clamp(StanceController.IsMounting ? StanceController.MountingRecoilBonus * 1.25f : StanceController.IsBracing ? StanceController.BracingRecoilBonus * 1.2f : 1f, 0.85f, 1f);

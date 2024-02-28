@@ -544,8 +544,8 @@ namespace RealismMod
                 new RotatePatch().Enable();
 
                 //Aiming Patches
-                new SetAimingPatch().Enable();
-                new ToggleAimPatch().Enable();
+/*                new SetAimingPatch().Enable();
+*/                new ToggleAimPatch().Enable();
 
                 if (EnableZeroShift.Value)
                 {
@@ -703,9 +703,6 @@ namespace RealismMod
             new CollisionPatch().Enable();
             new OperateStationaryWeaponPatch().Enable();
             new SetTiltPatch().Enable();
-
-            new HandStamDrainPatch().Enable();
-            new HandStamRegenPatch().Enable();
 
             //Health
             if (EnableMedicalOvehaul.Value && ServerConfig.med_changes)

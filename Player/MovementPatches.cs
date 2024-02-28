@@ -43,7 +43,7 @@ namespace RealismMod
 
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float firingMulti = MovementSpeedController.GetFiringMovementSpeedFactor(player, Logger);
-                float stanceFactor = StanceController.CurrentStance == EStance.IsPatrolStance ? 1.25f : StanceController.CurrentStance == EStance.IsHighReady || StanceController.CurrentStance == EStance.IsShortStock ? 0.95f : 1f;
+                float stanceFactor = StanceController.CurrentStance == EStance.PatrolStance ? 1.25f : StanceController.CurrentStance == EStance.HighReady || StanceController.CurrentStance == EStance.ShortStock ? 0.95f : 1f;
                 __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * PlayerState.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti * stanceFactor);
                 return false;
             }
@@ -91,11 +91,11 @@ namespace RealismMod
             {
                 ValueHandler rotationFrameSpan = (ValueHandler)rotationFrameSpanField.GetValue(__instance);
 
-                bool canDoHighReadyBonus = StanceController.CurrentStance == EStance.IsHighReady && Plugin.EnableTacSprint.Value && !Plugin.RealHealthController.ArmsAreIncapacitated && Plugin.RealHealthController.HasOverdosed;
+                bool canDoHighReadyBonus = StanceController.CurrentStance == EStance.HighReady && Plugin.EnableTacSprint.Value && !Plugin.RealHealthController.ArmsAreIncapacitated && Plugin.RealHealthController.HasOverdosed;
                 float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player, Logger) : 1f;
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float stanceSpeedBonus = canDoHighReadyBonus ? 1.15f : 1f;
-                float stanceAccelBonus = StanceController.CurrentStance == EStance.IsPatrolStance ? 1.5f : StanceController.CurrentStance == EStance.IsShortStock ? 0.9f : StanceController.CurrentStance == EStance.IsLowReady ? 1.3f : canDoHighReadyBonus ? 1.3f : 1f;
+                float stanceAccelBonus = StanceController.CurrentStance == EStance.PatrolStance ? 1.5f : StanceController.CurrentStance == EStance.ShortStock ? 0.9f : StanceController.CurrentStance == EStance.LowReady ? 1.3f : canDoHighReadyBonus ? 1.3f : 1f;
 
                 if (surfaceMulti < 1.0f)
                 {

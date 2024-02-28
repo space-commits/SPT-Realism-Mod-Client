@@ -23,116 +23,6 @@ using static RootMotion.FinalIK.FBIKChain;
 
 namespace RealismMod
 {
-    public class HandStamRegenPatch : ModulePatch
-    {
-        private static FieldInfo playerField;
-
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(GClass679).GetMethod("GetHandsRestorationFunc", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        private static float getRestoreRate()
-        {
-            float baseRestoreRate = 0;
-            if (StanceController.CurrentStance == EStance.IsPatrolStance || StanceController.IsMounting)
-            {
-                Logger.LogWarning("is patrol or mounting");
-                baseRestoreRate = Plugin.test4.Value;
-            }
-            else if (StanceController.CurrentStance == EStance.IsLowReady || StanceController.IsBracing)
-            {
-                Logger.LogWarning("is low or bracing");
-                baseRestoreRate = Plugin.test5.Value;
-            }
-            else if (StanceController.CurrentStance == EStance.IsShortStock || StanceController.CurrentStance == EStance.PistolIsCompressed)
-            {
-                Logger.LogWarning("is short or compressed");
-                baseRestoreRate = Plugin.test6.Value;
-            }
-            else if (StanceController.CurrentStance == EStance.IsHighReady)
-            {
-                Logger.LogWarning("is high");
-                baseRestoreRate = Plugin.test7.Value;
-            }
-            else
-            {
-                Logger.LogWarning("is idle or inventory");
-                baseRestoreRate = Plugin.test8.Value;
-            }
-            return (1f - (WeaponStats.ErgoFactor / 100f)) * baseRestoreRate * PlayerState.ADSInjuryMulti;
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(GClass679 __instance, ref float __result)
-        {
-            var player = (Player)AccessTools.Field(typeof(GClass679), "player_0").GetValue(__instance);
-            if (player.IsYourPlayer) 
-            {
-                Logger.LogWarning("stam regen///////////////////////////////////////");
-                __result *= getRestoreRate();
-            }
-        }
-    }
-
-
-    public class HandStamDrainPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(GClass679.Class381).GetMethod("method_10", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        private static float getDrainRate() 
-        {
-            float baseDrainRate = 0;
-            if (StanceController.IsAiming)
-            {
-                Logger.LogWarning("is aiming");
-                baseDrainRate = Plugin.test1.Value;
-            }
-            else if (StanceController.CurrentStance == EStance.IsActiveAiming)
-            {
-                Logger.LogWarning("is active aiming");
-                baseDrainRate = Plugin.test2.Value;
-            }
-            else if (PlayerState.IsSprinting)
-            {
-                Logger.LogWarning("is sprinting");
-                baseDrainRate = 0f;
-            }
-            else
-            {
-                Logger.LogWarning("is idle draining");
-                baseDrainRate = Plugin.test3.Value;
-            }
-
-            return WeaponStats.ErgoFactor * baseDrainRate * ((1f - PlayerState.ADSInjuryMulti) + 1f);
-        }
-
-        [PatchPrefix]
-        private static bool PatchPrefix(GClass679.Class381 __instance, ref float __result)
-        {
-            var player = (Player)AccessTools.Field(typeof(GClass679), "player_0").GetValue(__instance.gclass679_0);
-            var pose = (GClass679.EPose)AccessTools.Field(typeof(GClass679), "epose_0").GetValue(__instance.gclass679_0);
-            var consumptionValues = (float[])AccessTools.Field(typeof(GClass679), "float_6").GetValue(__instance.gclass679_0);
-
-            if (player.IsYourPlayer)
-            {
-                Logger.LogWarning("stam drain///////////////////////////////////////");
-                MovementContext movementContext = player.MovementContext;
-                float num = movementContext.PhysicalConditionIs(EPhysicalCondition.OnPainkillers) ? 1f : (movementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged | EPhysicalCondition.RightArmDamaged) ? 2f : (movementContext.PhysicalConditionContainsAny(EPhysicalCondition.LeftArmDamaged | EPhysicalCondition.RightArmDamaged) ? 1.5f : 1f));
-                float num2 = __instance.gclass679_0.StaminaParameters.AimDrainRate;
-                if (player.HandsController is PortableRangeFinderController)
-                {
-                    num2 = __instance.gclass679_0.StaminaParameters.AimRangeFinderDrainRate;
-                }
-                __result = Mathf.Sqrt(getDrainRate()) * num2 * num * consumptionValues[(int)pose] * (1f - player.Skills.StrengthBuffAimFatigue) * __instance.gclass679_0.Single_0;
-            }
-            return false;
-        }
-    }
-
     public class KeyInputPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -529,7 +419,7 @@ namespace RealismMod
                 if (RecoilController.IsFiring)
                 {
                     RecoilController.SetRecoilParams(player.ProceduralWeaponAnimation, fc.Item);
-                    if (StanceController.CurrentStance == EStance.IsPatrolStance)
+                    if (StanceController.CurrentStance == EStance.PatrolStance)
                     {
                         StanceController.CurrentStance = EStance.None;
                     }
@@ -570,15 +460,14 @@ namespace RealismMod
                     player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0;
                     player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
                 }
-                player.MovementContext.SetPatrol(StanceController.CurrentStance == EStance.IsPatrolStance ? true : false);
-
+                player.MovementContext.SetPatrol(StanceController.CurrentStance == EStance.PatrolStance ? true : false);
             }
-            else if (Plugin.EnableStanceStamChanges.Value)
+            else if (Plugin.EnableStanceStamChanges.Value && !StanceController.HaveResetStamDrain)
             {
                 StanceController.UnarmedStanceStamina(player);
             }
 
-            float stanceHipFactor = StanceController.CurrentStance == EStance.IsActiveAiming ? 0.7f : StanceController.CurrentStance == EStance.IsShortStock ? 1.35f : 1f;
+            float stanceHipFactor = StanceController.CurrentStance == EStance.ActiveAiming ? 0.7f : StanceController.CurrentStance == EStance.ShortStock ? 1.35f : 1f;
             player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.2f, 1.6f);
         }
 

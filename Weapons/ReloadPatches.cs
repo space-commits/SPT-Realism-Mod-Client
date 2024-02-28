@@ -218,7 +218,7 @@ namespace RealismMod
 
             if (PlayerState.IsInReloadOpertation)
             {
-                if (StanceController.CurrentStance == EStance.IsPatrolStance) 
+                if (StanceController.CurrentStance == EStance.PatrolStance) 
                 {
                     StanceController.CurrentStance = EStance.None;
                 }
@@ -230,8 +230,8 @@ namespace RealismMod
                     StanceController.CancelHighReady = fc.Item.WeapClass != "shotgun" ? true : false;
                     StanceController.CancelLowReady = fc.Item.WeapClass == "shotgun" || fc.Item.WeapClass == "pistol" ? true : false;
 
-                    float highReadyBonus = fc.Item.WeapClass == "shotgun" && StanceController.CurrentStance == EStance.IsHighReady == true ? StanceController.HighReadyManipBuff : 1f;
-                    float lowReadyBonus = fc.Item.WeapClass != "shotgun" && StanceController.CurrentStance == EStance.IsLowReady == true ? StanceController.LowReadyManipBuff : 1f;
+                    float highReadyBonus = fc.Item.WeapClass == "shotgun" && StanceController.CurrentStance == EStance.HighReady == true ? StanceController.HighReadyManipBuff : 1f;
+                    float lowReadyBonus = fc.Item.WeapClass != "shotgun" && StanceController.CurrentStance == EStance.LowReady == true ? StanceController.LowReadyManipBuff : 1f;
 
                     float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.4f);
                     player.HandsAnimator.SetAnimationSpeed(IntenralMagReloadSpeed);
@@ -483,7 +483,7 @@ namespace RealismMod
                 if (WeaponStats._WeapClass == "shotgun")
                 {
                     chamberSpeed *= Plugin.GlobalShotgunRackSpeedFactor.Value;
-                    stanceModifier = StanceController.IsBracing ? 1.1f : StanceController.IsMounting ? 1.2f : StanceController.CurrentStance == EStance.IsActiveAiming ? 1.35f : 1f;
+                    stanceModifier = StanceController.IsBracing ? 1.1f : StanceController.IsMounting ? 1.2f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.35f : 1f;
                 }
                 if (__instance.Item.IsGrenadeLauncher || __instance.Item.IsUnderBarrelDeviceActive)
                 {
@@ -492,7 +492,7 @@ namespace RealismMod
                 if (WeaponStats._WeapClass == "sniperRifle")
                 {
                     chamberSpeed *= Plugin.GlobalBoltSpeedMulti.Value;
-                    stanceModifier = StanceController.IsBracing ? 1.2f : StanceController.IsMounting ? 1.4f : StanceController.CurrentStance == EStance.IsActiveAiming ? 1.15f : 1f;
+                    stanceModifier = StanceController.IsBracing ? 1.2f : StanceController.IsMounting ? 1.4f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.15f : 1f;
                 }
                 float totalChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * stanceModifier * ammoFactor * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.3f);
                 __instance.FirearmsAnimator.SetAnimationSpeed(totalChamberSpeed);

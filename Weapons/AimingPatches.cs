@@ -72,12 +72,12 @@ namespace RealismMod
                     HeadDeviceStateChanged = false;
                 }
 
-                if (StanceController.CurrentStance == EStance.IsActiveAiming && !hasSetActiveAimADS)
+                if (StanceController.CurrentStance == EStance.ActiveAiming && !hasSetActiveAimADS)
                 {
                     player.MovementContext.SetAimingSlowdown(true, 0.33f);
                     hasSetActiveAimADS = true;
                 }
-                else if (StanceController.CurrentStance != EStance.IsActiveAiming && hasSetActiveAimADS)
+                else if (StanceController.CurrentStance != EStance.ActiveAiming && hasSetActiveAimADS)
                 {
                     player.MovementContext.SetAimingSlowdown(false, 0.33f);
                     if (isAiming)
@@ -88,22 +88,22 @@ namespace RealismMod
                     hasSetActiveAimADS = false;
                 }
 
-                if (isAiming || StanceController.CurrentStance == EStance.IsMeleeAttack)
+                if (isAiming && StanceController.CurrentStance == EStance.PatrolStance)
                 {
-                    StanceController.CurrentStance = EStance.IsPatrolStance;
+                    StanceController.CurrentStance = EStance.None;
                 }
 
-                if (StanceController.CurrentStance == EStance.IsMeleeAttack && isAiming)
+      /*          if (isAiming && StanceController.CurrentStance == EStance.Melee)
                 {
                     fc.ToggleAim();
-                }
+                }*/
 
                 if (player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire)
                 {
                     StanceController.IsAiming = isAiming;
                     StanceController.PistolIsColliding = false;
                 }
-                else if (fc.Item.WeapClass == "pistol")
+                else if (WeaponStats.IsStocklessPistol)
                 {
                     StanceController.PistolIsColliding = true;
                 }
@@ -156,7 +156,7 @@ namespace RealismMod
                 {
                     //slow is hard set to 0.33 when called, 0.4-0.43 feels best.
                     float baseSpeed = PlayerState.AimMoveSpeedBase * WeaponStats.AimMoveSpeedWeapModifier * PlayerState.AimMoveSpeedInjuryMulti;
-                    float totalSpeed = StanceController.CurrentStance == EStance.IsActiveAiming ? baseSpeed * 1.3f : baseSpeed;
+                    float totalSpeed = StanceController.CurrentStance == EStance.ActiveAiming ? baseSpeed * 1.3f : baseSpeed;
                     totalSpeed = WeaponStats._WeapClass == "pistol" ? totalSpeed + 0.15f : totalSpeed;
                     __instance.AddStateSpeedLimit(Mathf.Clamp(totalSpeed, 0.3f, 0.9f), Player.ESpeedLimit.Aiming);
                     return false;
@@ -168,7 +168,7 @@ namespace RealismMod
         }
     }
 
-    public class SetAimingPatch : ModulePatch
+ /*   public class SetAimingPatch : ModulePatch
     {
         private static FieldInfo playerField;
         protected override MethodBase GetTargetMethod()
@@ -187,7 +187,7 @@ namespace RealismMod
                 player.Physical.Aim((!____isAiming || !(player.MovementContext.StationaryWeapon == null)) ? 0f : __instance.ErgonomicWeight * 0.2f);
             }
         }
-    }
+    }*/
 
     public class ToggleAimPatch : ModulePatch
     {
