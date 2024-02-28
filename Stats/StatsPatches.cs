@@ -105,7 +105,7 @@ namespace RealismMod
         {
             if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
-                if (PlayerStats.IsInReloadOpertation)
+                if (PlayerState.IsInReloadOpertation)
                 {
                     __result = FinalStatCalc(__instance);
                 }
@@ -575,7 +575,7 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                __result = WeaponStats.ErgoFactor * PlayerStats.ErgoDeltaInjuryMulti * (1f - PlayerStats.StrengthSkillAimBuff * 1.5f);
+                __result = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - PlayerState.StrengthSkillAimBuff * 1.5f);
 
                 if (!Utils.HasRunErgoWeightCalc)
                 {
@@ -620,7 +620,7 @@ namespace RealismMod
                 float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
                 float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
                 float recoilFactor = 1f + (RecoilController.BaseTotalVRecoil + RecoilController.BaseTotalHRecoil) / 100f;
-                float totalPlayerWeight = PlayerStats.TotalModifiedWeightMinusWeapon;
+                float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
                 float playerWeightFactorBuff = 1f + (totalPlayerWeight / 100f);
 
                 WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(0.3f * player.ProceduralWeaponAnimation.Breath.HipPenalty * (1f - WeaponStats.ErgoDelta) * convergenceFactor * dispersionFactor * recoilFactor * playerWeightFactorBuff, 0.3f, 1f);

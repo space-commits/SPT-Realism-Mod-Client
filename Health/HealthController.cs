@@ -151,7 +151,7 @@ namespace RealismMod
         private float timeSinceLastClicked = 0f;
         private bool clickTriggered = false;
 
-        private float adrenalineCooldownTime = 60f * (1f - PlayerStats.StressResistanceFactor);
+        private float adrenalineCooldownTime = 60f * (1f - PlayerState.StressResistanceFactor);
         public bool AdrenalineCooldownActive = false;
 
         //temporary solution
@@ -250,7 +250,7 @@ namespace RealismMod
             }
             if (AdrenalineCooldownActive && adrenalineCooldownTime <= 0.0f)
             {
-                adrenalineCooldownTime = 60f * (1f - PlayerStats.StressResistanceFactor);
+                adrenalineCooldownTime = 60f * (1f - PlayerState.StressResistanceFactor);
                 AdrenalineCooldownActive = false;
             }
         }
@@ -1205,16 +1205,16 @@ namespace RealismMod
             float percentHydroLimitRecoil = (1f + ((1f - percentHydro) / 20f)) * (1f - (painReliefFactor / 5));
             float percentHydroLimitErgo = (1f + ((1f - percentHydro) / 4f)) * (1f - (painReliefFactor / 5));
 
-            PlayerStats.AimMoveSpeedInjuryMulti = Mathf.Max(aimMoveSpeedMulti * percentEnergyAimMove, 0.6f * percentHydroLowerLimit);
-            PlayerStats.ADSInjuryMulti = Mathf.Max(adsInjuryMulti * percentEnergyADS, 0.35f * percentHydroLowerLimit);
-            PlayerStats.StanceInjuryMulti = Mathf.Max(stanceInjuryMulti * percentEnergyStance, 0.45f * percentHydroLowerLimit);
-            PlayerStats.ReloadInjuryMulti = Mathf.Max(reloadInjuryMulti * percentEnergyReload, 0.75f * percentHydroLowerLimit);
-            PlayerStats.HealthSprintSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
-            PlayerStats.HealthSprintAccelFactor = Mathf.Max(sprintAccelInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
-            PlayerStats.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk, 0.6f * percentHydroLowerLimit);
-            PlayerStats.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen, 0.5f * percentHydroLowerLimit);
-            PlayerStats.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)), 3.5f * percentHydroLimitErgo);
-            PlayerStats.RecoilInjuryMulti = Mathf.Min(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)), 1.15f * percentHydroLimitRecoil);
+            PlayerState.AimMoveSpeedInjuryMulti = Mathf.Max(aimMoveSpeedMulti * percentEnergyAimMove, 0.6f * percentHydroLowerLimit);
+            PlayerState.ADSInjuryMulti = Mathf.Max(adsInjuryMulti * percentEnergyADS, 0.35f * percentHydroLowerLimit);
+            PlayerState.StanceInjuryMulti = Mathf.Max(stanceInjuryMulti * percentEnergyStance, 0.45f * percentHydroLowerLimit);
+            PlayerState.ReloadInjuryMulti = Mathf.Max(reloadInjuryMulti * percentEnergyReload, 0.75f * percentHydroLowerLimit);
+            PlayerState.HealthSprintSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
+            PlayerState.HealthSprintAccelFactor = Mathf.Max(sprintAccelInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
+            PlayerState.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk, 0.6f * percentHydroLowerLimit);
+            PlayerState.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen, 0.5f * percentHydroLowerLimit);
+            PlayerState.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)), 3.5f * percentHydroLimitErgo);
+            PlayerState.RecoilInjuryMulti = Mathf.Min(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)), 1.15f * percentHydroLimitRecoil);
 
             if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach)) 
             {

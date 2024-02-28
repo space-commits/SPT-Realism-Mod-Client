@@ -704,6 +704,9 @@ namespace RealismMod
             new OperateStationaryWeaponPatch().Enable();
             new SetTiltPatch().Enable();
 
+            new HandStamDrainPatch().Enable();
+            new HandStamRegenPatch().Enable();
+
             //Health
             if (EnableMedicalOvehaul.Value && ServerConfig.med_changes)
             {

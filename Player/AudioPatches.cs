@@ -390,8 +390,8 @@ namespace RealismMod
             Vector3 contusionVect = grenade.Contusion;
             float intensity = contusionVect.z * (1f - ((1f - DeafeningController.EarProtectionFactor) * 1.3f));
             float distance = contusionVect.y * 2f * DeafeningController.EarProtectionFactor;
-            intensity = PlayerStats.EnviroType == EnvironmentType.Indoor ? intensity * 1.7f : intensity;
-            distance = PlayerStats.EnviroType == EnvironmentType.Indoor ? distance * 1.7f : distance;
+            intensity = PlayerState.EnviroType == EnvironmentType.Indoor ? intensity * 1.7f : intensity;
+            distance = PlayerState.EnviroType == EnvironmentType.Indoor ? distance * 1.7f : distance;
             __result = new Vector3(contusionVect.x, distance, intensity);
             return false;
         }

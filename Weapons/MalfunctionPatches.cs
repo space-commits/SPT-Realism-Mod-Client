@@ -75,11 +75,11 @@ namespace RealismMod
             }
             else
             {
-                if (__instance.Weapon.AmmoCaliber == "366TKM" && ammoToFire.Caliber == "762x39")
+                if ((__instance.Weapon.AmmoCaliber == "366TKM" && ammoToFire.Caliber == "762x39") || (__instance.Weapon.AmmoCaliber == "556x45NATO" && ammoToFire.Caliber == "762x35"))
                 {
                     ExplodeWeapon(__instance, player, ref __result);
                 }
-                if (__instance.Weapon.AmmoCaliber == "762x39" && ammoToFire.Caliber == "366TKM") 
+                if ((__instance.Weapon.AmmoCaliber == "762x39" && ammoToFire.Caliber == "366TKM") || (__instance.Weapon.AmmoCaliber == "762x35" && ammoToFire.Caliber == "556x45NATO")) 
                 {
                     __result = Weapon.EMalfunctionState.Misfire;
                 }

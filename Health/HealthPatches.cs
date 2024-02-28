@@ -304,7 +304,7 @@ namespace RealismMod
             Player player_0 = (Player)AccessTools.Field(typeof(StamController), "player_0").GetValue(__instance);
             float Single_0 = (float)AccessTools.Property(typeof(StamController), "Single_0").GetValue(__instance);
 
-            __result = baseValue * float_7[(int)epose_0] * Singleton<BackendConfigSettingsClass>.Instance.StaminaRestoration.GetAt(player_0.HealthController.Energy.Normalized) * (player_0.Skills.EnduranceBuffRestoration + 1f) * PlayerStats.HealthStamRegenFactor / Single_0;
+            __result = baseValue * float_7[(int)epose_0] * Singleton<BackendConfigSettingsClass>.Instance.StaminaRestoration.GetAt(player_0.HealthController.Energy.Normalized) * (player_0.Skills.EnduranceBuffRestoration + 1f) * PlayerState.HealthStamRegenFactor / Single_0;
             return false;
         }
     }

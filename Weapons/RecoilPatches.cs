@@ -431,14 +431,14 @@ namespace RealismMod
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 //Conditional recoil modifiers 
-                float totalPlayerWeight = PlayerStats.TotalModifiedWeightMinusWeapon;
+                float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 550f);
                 float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 100f);
 
-                float activeAimingBonus = StanceController.IsActiveAiming ? 0.9f : 1f;
-                float aimCamRecoilBonus = StanceController.IsActiveAiming || !StanceController.IsAiming ? 0.8f : 1f;
-                float shortStockingDebuff = StanceController.IsShortStock ? 1.15f : 1f;
-                float shortStockingCamBonus = StanceController.IsShortStock ? 0.6f : 1f;
+                float activeAimingBonus = StanceController.CurrentStance == EStance.IsActiveAiming ? 0.9f : 1f;
+                float aimCamRecoilBonus = StanceController.CurrentStance == EStance.IsActiveAiming || !StanceController.IsAiming ? 0.8f : 1f;
+                float shortStockingDebuff = StanceController.CurrentStance == EStance.IsShortStock ? 1.15f : 1f;
+                float shortStockingCamBonus = StanceController.CurrentStance == EStance.IsShortStock ? 0.6f : 1f;
 
                 float mountingVertModi = StanceController.IsMounting ? StanceController.MountingRecoilBonus : StanceController.IsBracing ? StanceController.BracingRecoilBonus : 1f;
                 float mountingDispModi = Mathf.Clamp(StanceController.IsMounting ? StanceController.MountingRecoilBonus * 1.25f : StanceController.IsBracing ? StanceController.BracingRecoilBonus * 1.2f : 1f, 0.85f, 1f);
@@ -466,8 +466,8 @@ namespace RealismMod
                 __instance.method_2(incomingForce, out rotationRecoilPower, out positionRecoilPower);
 
                 //Modify Vert and Horz recoil based on various factors
-                float vertFactor = PlayerStats.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * mountingVertModi * shotFactor * opticRecoilMulti * Plugin.VertMulti.Value;
-                float horzFactor = PlayerStats.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * shotFactor * Plugin.HorzMulti.Value;
+                float vertFactor = PlayerState.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * mountingVertModi * shotFactor * opticRecoilMulti * Plugin.VertMulti.Value;
+                float horzFactor = PlayerState.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * shotFactor * Plugin.HorzMulti.Value;
                 RecoilController.FactoredTotalVRecoil = vertFactor * RecoilController.BaseTotalVRecoil;
                 RecoilController.FactoredTotalHRecoil = horzFactor * RecoilController.BaseTotalHRecoil;
                 horzFactor = Mathf.Min(horzFactor * fovFactor, opticLimit); //I put it here after setting FactoredTotalHRecoil so that visual recoil isn't affected
@@ -475,7 +475,7 @@ namespace RealismMod
                 positionRecoilPower *= horzFactor;
 
                 //Recalculate and modify dispersion
-                float dispFactor = incomingForce * PlayerStats.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff * mountingDispModi * opticRecoilMulti * Plugin.DispMulti.Value;
+                float dispFactor = incomingForce * PlayerState.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff * mountingDispModi * opticRecoilMulti * Plugin.DispMulti.Value;
                 RecoilController.FactoredTotalDispersion = RecoilController.BaseTotalDispersion * dispFactor;
                 __instance.BasicPlayerRecoilDegreeRange = new Vector2(RecoilController.BaseTotalRecoilAngle - RecoilController.FactoredTotalDispersion, RecoilController.BaseTotalRecoilAngle + RecoilController.FactoredTotalDispersion);
                 __instance.BasicRecoilRadian = __instance.BasicPlayerRecoilDegreeRange * 0.017453292f;
@@ -485,7 +485,7 @@ namespace RealismMod
 
                 //Reset camera recoil values and modify by various factors
                 /*float camShotFactor = Mathf.Min((RecoilController.ShotCount * 0.25f) + 1f, 1.4f);*/
-                float totalCamRecoil = RecoilController.BaseTotalCamRecoil * incomingForce * PlayerStats.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti * Plugin.CamMulti.Value; // * camShotFactor
+                float totalCamRecoil = RecoilController.BaseTotalCamRecoil * incomingForce * PlayerState.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti * Plugin.CamMulti.Value; // * camShotFactor
                 RecoilController.FactoredTotalCamRecoil = totalCamRecoil;
                 __instance.ShotRecoilProcessValues[3].IntensityMultiplicator = totalCamRecoil;
                 __instance.ShotRecoilProcessValues[4].IntensityMultiplicator = -totalCamRecoil;
@@ -501,7 +501,7 @@ namespace RealismMod
                 if (Plugin.EnableLogging.Value) 
                 {
                     Logger.LogWarning("==========shoot==========");
-                    Logger.LogWarning("camFactor " + (incomingForce * PlayerStats.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti));
+                    Logger.LogWarning("camFactor " + (incomingForce * PlayerState.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti));
                     Logger.LogWarning("vertFactor " + vertFactor);
                     Logger.LogWarning("horzFactor " + horzFactor);
                     Logger.LogWarning("dispFactor " + dispFactor);

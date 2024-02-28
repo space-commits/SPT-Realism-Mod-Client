@@ -43,8 +43,8 @@ namespace RealismMod
 
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float firingMulti = MovementSpeedController.GetFiringMovementSpeedFactor(player, Logger);
-                float stanceFactor = StanceController.IsPatrolStance ? 1.25f : StanceController.IsHighReady || StanceController.IsShortStock ? 0.95f : 1f;
-                __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * PlayerStats.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti * stanceFactor);
+                float stanceFactor = StanceController.CurrentStance == EStance.IsPatrolStance ? 1.25f : StanceController.CurrentStance == EStance.IsHighReady || StanceController.CurrentStance == EStance.IsShortStock ? 0.95f : 1f;
+                __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * PlayerState.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti * stanceFactor);
                 return false;
             }
             return true;
@@ -91,11 +91,11 @@ namespace RealismMod
             {
                 ValueHandler rotationFrameSpan = (ValueHandler)rotationFrameSpanField.GetValue(__instance);
 
-                bool canDoHighReadyBonus = StanceController.IsHighReady && Plugin.EnableTacSprint.Value && !Plugin.RealHealthController.ArmsAreIncapacitated && Plugin.RealHealthController.HasOverdosed;
+                bool canDoHighReadyBonus = StanceController.CurrentStance == EStance.IsHighReady && Plugin.EnableTacSprint.Value && !Plugin.RealHealthController.ArmsAreIncapacitated && Plugin.RealHealthController.HasOverdosed;
                 float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player, Logger) : 1f;
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float stanceSpeedBonus = canDoHighReadyBonus ? 1.15f : 1f;
-                float stanceAccelBonus = StanceController.IsPatrolStance ? 1.5f : StanceController.IsShortStock ? 0.9f : StanceController.IsLowReady ? 1.3f : canDoHighReadyBonus ? 1.3f : 1f;
+                float stanceAccelBonus = StanceController.CurrentStance == EStance.IsPatrolStance ? 1.5f : StanceController.CurrentStance == EStance.IsShortStock ? 0.9f : StanceController.CurrentStance == EStance.IsLowReady ? 1.3f : canDoHighReadyBonus ? 1.3f : 1f;
 
                 if (surfaceMulti < 1.0f)
                 {
@@ -106,8 +106,8 @@ namespace RealismMod
                     surfaceMulti = Mathf.Max(surfaceMulti * 0.85f, 0.2f);
                 }
 
-                float sprintAccel = player.Physical.SprintAcceleration * stanceAccelBonus * PlayerStats.HealthSprintAccelFactor * surfaceMulti * slopeFactor * deltaTime;
-                float speed = (player.Physical.SprintSpeed * __instance.SprintingSpeed + 1f) * __instance.StateSprintSpeedLimit * stanceSpeedBonus * PlayerStats.HealthSprintSpeedFactor * surfaceMulti * slopeFactor;
+                float sprintAccel = player.Physical.SprintAcceleration * stanceAccelBonus * PlayerState.HealthSprintAccelFactor * surfaceMulti * slopeFactor * deltaTime;
+                float speed = (player.Physical.SprintSpeed * __instance.SprintingSpeed + 1f) * __instance.StateSprintSpeedLimit * stanceSpeedBonus * PlayerState.HealthSprintSpeedFactor * surfaceMulti * slopeFactor;
                 float sprintInertia = Mathf.Max(EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(Mathf.Abs((float)rotationFrameSpan.Average)), EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(2.1474836E+09f) * (2f - player.Physical.Inertia));
                 speed = Mathf.Clamp(speed * sprintInertia, 0.1f, speed);
                 __instance.SprintSpeed = Mathf.Clamp(__instance.SprintSpeed + sprintAccel * Mathf.Sign(speed - __instance.SprintSpeed), 0.01f, speed);

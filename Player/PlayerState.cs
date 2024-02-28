@@ -2,7 +2,7 @@
 
 namespace RealismMod
 {
-    public static class PlayerStats
+    public static class PlayerState
     {
         public static float FixSkillMulti = 1f;
 

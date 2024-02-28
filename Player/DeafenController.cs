@@ -68,7 +68,7 @@ namespace RealismMod
 
         public static void DoDeafening()
         {
-            float enviroMulti = PlayerStats.EnviroType == EnvironmentType.Indoor ? 1.3f : 1f;
+            float enviroMulti = PlayerState.EnviroType == EnvironmentType.Indoor ? 1.3f : 1f;
             float deafFactor = AmmoDeafFactor * WeaponDeafFactor * EarProtectionFactor;
             float botDeafFactor = BotDeafFactor * EarProtectionFactor;
             float grenadeDeafFactor = GrenadeDeafFactor * EarProtectionFactor;

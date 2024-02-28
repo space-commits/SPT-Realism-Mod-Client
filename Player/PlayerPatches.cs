@@ -19,9 +19,119 @@ using ProcessorClass = GClass2210;
 using static EFT.Player;
 using EFT.InputSystem;
 using EFT.Animations.NewRecoil;
+using static RootMotion.FinalIK.FBIKChain;
 
 namespace RealismMod
 {
+    public class HandStamRegenPatch : ModulePatch
+    {
+        private static FieldInfo playerField;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GClass679).GetMethod("GetHandsRestorationFunc", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        private static float getRestoreRate()
+        {
+            float baseRestoreRate = 0;
+            if (StanceController.CurrentStance == EStance.IsPatrolStance || StanceController.IsMounting)
+            {
+                Logger.LogWarning("is patrol or mounting");
+                baseRestoreRate = Plugin.test4.Value;
+            }
+            else if (StanceController.CurrentStance == EStance.IsLowReady || StanceController.IsBracing)
+            {
+                Logger.LogWarning("is low or bracing");
+                baseRestoreRate = Plugin.test5.Value;
+            }
+            else if (StanceController.CurrentStance == EStance.IsShortStock || StanceController.CurrentStance == EStance.PistolIsCompressed)
+            {
+                Logger.LogWarning("is short or compressed");
+                baseRestoreRate = Plugin.test6.Value;
+            }
+            else if (StanceController.CurrentStance == EStance.IsHighReady)
+            {
+                Logger.LogWarning("is high");
+                baseRestoreRate = Plugin.test7.Value;
+            }
+            else
+            {
+                Logger.LogWarning("is idle or inventory");
+                baseRestoreRate = Plugin.test8.Value;
+            }
+            return (1f - (WeaponStats.ErgoFactor / 100f)) * baseRestoreRate * PlayerState.ADSInjuryMulti;
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(GClass679 __instance, ref float __result)
+        {
+            var player = (Player)AccessTools.Field(typeof(GClass679), "player_0").GetValue(__instance);
+            if (player.IsYourPlayer) 
+            {
+                Logger.LogWarning("stam regen///////////////////////////////////////");
+                __result *= getRestoreRate();
+            }
+        }
+    }
+
+
+    public class HandStamDrainPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GClass679.Class381).GetMethod("method_10", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        private static float getDrainRate() 
+        {
+            float baseDrainRate = 0;
+            if (StanceController.IsAiming)
+            {
+                Logger.LogWarning("is aiming");
+                baseDrainRate = Plugin.test1.Value;
+            }
+            else if (StanceController.CurrentStance == EStance.IsActiveAiming)
+            {
+                Logger.LogWarning("is active aiming");
+                baseDrainRate = Plugin.test2.Value;
+            }
+            else if (PlayerState.IsSprinting)
+            {
+                Logger.LogWarning("is sprinting");
+                baseDrainRate = 0f;
+            }
+            else
+            {
+                Logger.LogWarning("is idle draining");
+                baseDrainRate = Plugin.test3.Value;
+            }
+
+            return WeaponStats.ErgoFactor * baseDrainRate * ((1f - PlayerState.ADSInjuryMulti) + 1f);
+        }
+
+        [PatchPrefix]
+        private static bool PatchPrefix(GClass679.Class381 __instance, ref float __result)
+        {
+            var player = (Player)AccessTools.Field(typeof(GClass679), "player_0").GetValue(__instance.gclass679_0);
+            var pose = (GClass679.EPose)AccessTools.Field(typeof(GClass679), "epose_0").GetValue(__instance.gclass679_0);
+            var consumptionValues = (float[])AccessTools.Field(typeof(GClass679), "float_6").GetValue(__instance.gclass679_0);
+
+            if (player.IsYourPlayer)
+            {
+                Logger.LogWarning("stam drain///////////////////////////////////////");
+                MovementContext movementContext = player.MovementContext;
+                float num = movementContext.PhysicalConditionIs(EPhysicalCondition.OnPainkillers) ? 1f : (movementContext.PhysicalConditionIs(EPhysicalCondition.LeftArmDamaged | EPhysicalCondition.RightArmDamaged) ? 2f : (movementContext.PhysicalConditionContainsAny(EPhysicalCondition.LeftArmDamaged | EPhysicalCondition.RightArmDamaged) ? 1.5f : 1f));
+                float num2 = __instance.gclass679_0.StaminaParameters.AimDrainRate;
+                if (player.HandsController is PortableRangeFinderController)
+                {
+                    num2 = __instance.gclass679_0.StaminaParameters.AimRangeFinderDrainRate;
+                }
+                __result = Mathf.Sqrt(getDrainRate()) * num2 * num * consumptionValues[(int)pose] * (1f - player.Skills.StrengthBuffAimFatigue) * __instance.gclass679_0.Single_0;
+            }
+            return false;
+        }
+    }
 
     public class KeyInputPatch : ModulePatch
     {
@@ -58,6 +168,10 @@ namespace RealismMod
                     Plugin.chamberTimer = 0f;
                 }
             }
+            if (command == ECommand.ToggleGoggles) 
+            {
+                AimController.HeadDeviceStateChanged = true;
+            }
         }
     }
 
@@ -79,12 +193,12 @@ namespace RealismMod
             if (player.IsYourPlayer)
             {
                 WeaponSkills weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
-                PlayerStats.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
-                PlayerStats.ReloadSkillMulti = Mathf.Max(1, ((weaponInfo.ReloadSpeed - 1f) * 0.5f) + 1f);
-                PlayerStats.FixSkillMulti = weaponInfo.FixSpeed;
-                PlayerStats.WeaponSkillErgo = weaponInfo.DeltaErgonomics;
-                PlayerStats.AimSkillADSBuff = weaponInfo.AimSpeed;
-                PlayerStats.StressResistanceFactor = player.Skills.StressPain.Value;
+                PlayerState.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
+                PlayerState.ReloadSkillMulti = Mathf.Max(1, ((weaponInfo.ReloadSpeed - 1f) * 0.5f) + 1f);
+                PlayerState.FixSkillMulti = weaponInfo.FixSpeed;
+                PlayerState.WeaponSkillErgo = weaponInfo.DeltaErgonomics;
+                PlayerState.AimSkillADSBuff = weaponInfo.AimSpeed;
+                PlayerState.StressResistanceFactor = player.Skills.StressPain.Value;
             }
         }
     }
@@ -307,10 +421,10 @@ namespace RealismMod
                 float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi, 1.05f);
                 pwa.Breath.Intensity = breathIntensity * mountingBonus;
                 pwa.HandsContainer.HandsRotation.InputIntensity = inputIntensitry * mountingBonus;
-                PlayerStats.SprintTotalBreathIntensity = breathIntensity;
-                PlayerStats.SprintTotalHandsIntensity = inputIntensitry;
-                PlayerStats.SprintHipfirePenalty = Mathf.Min(1f + (sprintTimer / 100f), 1.25f);
-                PlayerStats.ADSSprintMulti = Mathf.Max(1f - (sprintTimer / 12f), 0.3f);
+                PlayerState.SprintTotalBreathIntensity = breathIntensity;
+                PlayerState.SprintTotalHandsIntensity = inputIntensitry;
+                PlayerState.SprintHipfirePenalty = Mathf.Min(1f + (sprintTimer / 100f), 1.25f);
+                PlayerState.ADSSprintMulti = Mathf.Max(1f - (sprintTimer / 12f), 0.3f);
 
 
                 didSprintPenalties = true;
@@ -319,15 +433,15 @@ namespace RealismMod
 
             if (sprintCooldownTimer >= 0.35f)
             {
-                PlayerStats.SprintBlockADS = false;
-                if (PlayerStats.TriedToADSFromSprint)
+                PlayerState.SprintBlockADS = false;
+                if (PlayerState.TriedToADSFromSprint)
                 {
                     fc.ToggleAim();
                 }
             }
             if (sprintCooldownTimer >= 4f)
             {
-                PlayerStats.WasSprinting = false;
+                PlayerState.WasSprinting = false;
                 doSwayReset = true;
                 sprintCooldownTimer = 0f;
                 sprintTimer = 0f;
@@ -338,15 +452,15 @@ namespace RealismMod
         {
             float resetSwaySpeed = 0.035f;
             float resetSpeed = 0.4f;
-            PlayerStats.SprintTotalBreathIntensity = Mathf.Lerp(PlayerStats.SprintTotalBreathIntensity, PlayerStats.TotalBreathIntensity, resetSwaySpeed);
-            PlayerStats.SprintTotalHandsIntensity = Mathf.Lerp(PlayerStats.SprintTotalHandsIntensity, PlayerStats.TotalHandsIntensity, resetSwaySpeed);
-            PlayerStats.ADSSprintMulti = Mathf.Lerp(PlayerStats.ADSSprintMulti, 1f, resetSpeed);
-            PlayerStats.SprintHipfirePenalty = Mathf.Lerp(PlayerStats.SprintHipfirePenalty, 1f, resetSpeed);
+            PlayerState.SprintTotalBreathIntensity = Mathf.Lerp(PlayerState.SprintTotalBreathIntensity, PlayerState.TotalBreathIntensity, resetSwaySpeed);
+            PlayerState.SprintTotalHandsIntensity = Mathf.Lerp(PlayerState.SprintTotalHandsIntensity, PlayerState.TotalHandsIntensity, resetSwaySpeed);
+            PlayerState.ADSSprintMulti = Mathf.Lerp(PlayerState.ADSSprintMulti, 1f, resetSpeed);
+            PlayerState.SprintHipfirePenalty = Mathf.Lerp(PlayerState.SprintHipfirePenalty, 1f, resetSpeed);
 
-            pwa.Breath.Intensity = PlayerStats.SprintTotalBreathIntensity * mountingBonus;
-            pwa.HandsContainer.HandsRotation.InputIntensity = PlayerStats.SprintTotalHandsIntensity * mountingBonus;
+            pwa.Breath.Intensity = PlayerState.SprintTotalBreathIntensity * mountingBonus;
+            pwa.HandsContainer.HandsRotation.InputIntensity = PlayerState.SprintTotalHandsIntensity * mountingBonus;
 
-            if (Utils.AreFloatsEqual(1f, PlayerStats.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerStats.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerStats.TotalHandsIntensity))
+            if (Utils.AreFloatsEqual(1f, PlayerState.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerState.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerState.TotalHandsIntensity))
             {
                 doSwayReset = false;
             }
@@ -359,14 +473,14 @@ namespace RealismMod
                 sprintTimer += Time.deltaTime;
                 if (sprintTimer >= 1f)
                 {
-                    PlayerStats.SprintBlockADS = true;
-                    PlayerStats.WasSprinting = true;
+                    PlayerState.SprintBlockADS = true;
+                    PlayerState.WasSprinting = true;
                     didSprintPenalties = false;
                 }
             }
             else
             {
-                if (PlayerStats.WasSprinting)
+                if (PlayerState.WasSprinting)
                 {
                     doSprintTimer(player.ProceduralWeaponAnimation, fc, mountingBonus);
                 }
@@ -376,13 +490,13 @@ namespace RealismMod
                 }
             }
 
-            if (!doSwayReset && !PlayerStats.WasSprinting)
+            if (!doSwayReset && !PlayerState.WasSprinting)
             {
-                PlayerStats.HasFullyResetSprintADSPenalties = true;
+                PlayerState.HasFullyResetSprintADSPenalties = true;
             }
             else
             {
-                PlayerStats.HasFullyResetSprintADSPenalties = false;
+                PlayerState.HasFullyResetSprintADSPenalties = false;
             }
 
             if (RecoilController.IsFiring)
@@ -415,7 +529,10 @@ namespace RealismMod
                 if (RecoilController.IsFiring)
                 {
                     RecoilController.SetRecoilParams(player.ProceduralWeaponAnimation, fc.Item);
-                    StanceController.IsPatrolStance = false;
+                    if (StanceController.CurrentStance == EStance.IsPatrolStance)
+                    {
+                        StanceController.CurrentStance = EStance.None;
+                    }
                 }
 
                 ReloadController.ReloadStateCheck(player, fc, Logger);
@@ -427,19 +544,19 @@ namespace RealismMod
                 }
 
                 float remainStamPercent = player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity;
-                PlayerStats.RemainingArmStamPerc = 1f - ((1f - remainStamPercent) / 3f);
-                PlayerStats.RemainingArmStamPercReload = 1f - ((1f - remainStamPercent) / 4f);
+                PlayerState.RemainingArmStamPerc = 1f - ((1f - remainStamPercent) / 3f);
+                PlayerState.RemainingArmStamPercReload = 1f - ((1f - remainStamPercent) / 4f);
 
                 if (!RecoilController.IsFiringMovement)
                 {
                     if (StanceController.CanResetDamping)
                     {
                         NewRecoilShotEffect newRecoil = player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
-                        newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = Mathf.Lerp(newRecoil.HandRotationRecoil.CategoryIntensityMultiplier, fc.Weapon.Template.RecoilCategoryMultiplierHandRotation, Plugin.test1.Value);
-                        newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = Mathf.Lerp(newRecoil.HandRotationRecoil.ReturnTrajectoryDumping, fc.Weapon.Template.RecoilReturnPathDampingHandRotation, Plugin.test1.Value);
-                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping, fc.Weapon.Template.RecoilDampingHandRotation, Plugin.test1.Value);
-                        player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, Plugin.test1.Value);
-                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, RecoilController.BaseTotalConvergence, Plugin.test1.Value);
+                        newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = Mathf.Lerp(newRecoil.HandRotationRecoil.CategoryIntensityMultiplier, fc.Weapon.Template.RecoilCategoryMultiplierHandRotation, 0.01f);
+                        newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = Mathf.Lerp(newRecoil.HandRotationRecoil.ReturnTrajectoryDumping, fc.Weapon.Template.RecoilReturnPathDampingHandRotation, 0.01f);
+                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping, fc.Weapon.Template.RecoilDampingHandRotation, 0.01f);
+                        player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, 0.01f);
+                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, RecoilController.BaseTotalConvergence, 0.01f);
                     }
                     else
                     {
@@ -453,17 +570,16 @@ namespace RealismMod
                     player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0;
                     player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
                 }
-                player.MovementContext.SetPatrol(StanceController.IsPatrolStance);
+                player.MovementContext.SetPatrol(StanceController.CurrentStance == EStance.IsPatrolStance ? true : false);
 
             }
             else if (Plugin.EnableStanceStamChanges.Value)
             {
-                StanceController.ResetStanceStamina(player);
-                player.Physical.HandsStamina.Current = Mathf.Max(player.Physical.HandsStamina.Current, 1f);
+                StanceController.UnarmedStanceStamina(player);
             }
 
-            float stanceHipFactor = StanceController.IsActiveAiming ? 0.7f : StanceController.IsShortStock ? 1.35f : 1f;
-            player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerStats.SprintHipfirePenalty * stanceHipFactor, 0.2f, 1.6f);
+            float stanceHipFactor = StanceController.CurrentStance == EStance.IsActiveAiming ? 0.7f : StanceController.CurrentStance == EStance.IsShortStock ? 1.35f : 1f;
+            player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.2f, 1.6f);
         }
 
         protected override MethodBase GetTargetMethod()
@@ -487,20 +603,20 @@ namespace RealismMod
             if (Utils.IsReady && __instance.IsYourPlayer)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
-                PlayerStats.IsSprinting = __instance.IsSprintEnabled;
-                PlayerStats.EnviroType = __instance.Environment;
+                PlayerState.IsSprinting = __instance.IsSprintEnabled;
+                PlayerState.EnviroType = __instance.Environment;
                 StanceController.IsInInventory = __instance.IsInventoryOpened;
-                PlayerStats.IsMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
+                PlayerState.IsMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
 
                 if (Plugin.EnableSprintPenalty.Value)
                 {
                     DoSprintPenalty(__instance, fc, StanceController.BracingSwayBonus);
                 }
 
-                if (PlayerStats.HasFullyResetSprintADSPenalties) //!RecoilController.IsFiring && 
+                if (PlayerState.HasFullyResetSprintADSPenalties) //!RecoilController.IsFiring && 
                 {
-                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerStats.TotalBreathIntensity * StanceController.BracingSwayBonus;
-                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerStats.TotalHandsIntensity * StanceController.BracingSwayBonus;
+                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerState.TotalBreathIntensity * StanceController.BracingSwayBonus;
+                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerState.TotalHandsIntensity * StanceController.BracingSwayBonus;
                 }
 
                 PWAUpdate(__instance, fc);

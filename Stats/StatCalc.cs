@@ -58,15 +58,15 @@ namespace RealismMod
         {
             float playerWeight = player.Inventory.TotalWeight;
             float weaponWeight = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item.GetSingleItemTotalWeight() : 1f;
-            PlayerStats.TotalModifiedWeightMinusWeapon = playerWeight - weaponWeight;
-            PlayerStats.TotalMousePenalty = (-playerWeight / 10f);
-            PlayerStats.TotalModifiedWeight = playerWeight;
+            PlayerState.TotalModifiedWeightMinusWeapon = playerWeight - weaponWeight;
+            PlayerState.TotalMousePenalty = (-playerWeight / 10f);
+            PlayerState.TotalModifiedWeight = playerWeight;
             if (Plugin.EnableMouseSensPenalty.Value)
             {
                 player.RemoveMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor);
-                if (PlayerStats.TotalMousePenalty < 0f)
+                if (PlayerState.TotalMousePenalty < 0f)
                 {
-                    player.AddMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor, PlayerStats.TotalMousePenalty / 100f);
+                    player.AddMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor, PlayerState.TotalMousePenalty / 100f);
                 }
             }
         }
@@ -95,8 +95,8 @@ namespace RealismMod
                 }
             }
 
-            PlayerStats.GearReloadMulti = reloadMulti;
-            PlayerStats.GearAllowsADS = allowADS;
+            PlayerState.GearReloadMulti = reloadMulti;
+            PlayerState.GearAllowsADS = allowADS;
         }
 
         public static float GetRigReloadSpeed(Player player)
@@ -115,15 +115,15 @@ namespace RealismMod
 
         public static void SetMagReloadSpeeds(Player.FirearmController __instance, MagazineClass magazine, bool isQuickReload = false)
         {
-            PlayerStats.IsMagReloading = true;
+            PlayerState.IsMagReloading = true;
             StanceController.CancelLowReady = true;
             Weapon weapon = __instance.Item;
 
-            if (PlayerStats.NoCurrentMagazineReload)
+            if (PlayerState.NoCurrentMagazineReload)
             {
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 StatCalc.MagReloadSpeedModifier(weapon, magazine, false, true);
-                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerStats.ReloadInjuryMulti * PlayerStats.ReloadSkillMulti * PlayerStats.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerStats.RemainingArmStamPerc, 0.7f)), 0.45f, 1.3f));
+                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadInjuryMulti * PlayerState.ReloadSkillMulti * PlayerState.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.7f)), 0.45f, 1.3f));
             }
             else
             {
