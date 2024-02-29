@@ -154,8 +154,8 @@ namespace RealismMod
 
                     float stanceMulti = 
                         StanceController.IsIdle() ? 1.6f 
-                        : StanceController.WasActiveAim || StanceController.CurrentStance == EStance.ActiveAiming ? 1.5f 
-                        : StanceController.CurrentStance == EStance.HighReady || StanceController.CurrentStance == EStance.HighReady ? 1.1f 
+                        : StanceController.WasActiveAim || StanceController.CurrentStance == EStance.ActiveAiming ? 1.6f 
+                        : StanceController.CurrentStance == EStance.HighReady || StanceController.CurrentStance == EStance.HighReady ? 1.25f 
                         : StanceController.StoredStance == EStance.LowReady || StanceController.CurrentStance == EStance.LowReady ? 1.3f 
                         : 1f;
                     float stockMulti = weapon.WeapClass != "pistol" && !WeaponStats.HasShoulderContact ? 0.75f : 1f;
@@ -169,6 +169,7 @@ namespace RealismMod
 
                     WeaponStats.HasOptic = __instance.CurrentScope.IsOptic ? true : false;
 
+                    float formfactor = WeaponStats.IsBullpup ? 0.75f : 1f;
                     float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f));
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_ergonomicWeight").SetValue(__instance, ergoWeight);
                     float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
@@ -190,8 +191,8 @@ namespace RealismMod
                     }
                     else
                     {
-                        breathIntensity = Mathf.Clamp(0.45f * totalErgoFactor, 0.35f, 0.81f);
-                        handsIntensity = Mathf.Clamp(0.45f * totalErgoFactor, 0.35f, 0.86f);
+                        breathIntensity = Mathf.Clamp(0.45f * totalErgoFactor * formfactor, 0.35f, 0.81f);
+                        handsIntensity = Mathf.Clamp(0.45f * totalErgoFactor * formfactor, 0.35f, 0.86f);
                     }
 
                     float beltFedFactor = weapon.IsBeltMachineGun ? 1.45f : 1f;
@@ -294,13 +295,14 @@ namespace RealismMod
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 Weapon weapon = firearmController.Weapon;
+                float formfactor = WeaponStats.IsBullpup ? 0.75f : 1f;
                 float weapWeight = weapon.GetSingleItemTotalWeight();
                 float totalPlayerWeight = PlayerState.TotalModifiedWeight - weapWeight;
                 float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
-                float beltFedFactor = weapon.IsBeltMachineGun ? 1.45f : 1f;
+                float beltFedFactor = weapon.IsBeltMachineGun ? 1.4f : 1f;
                 bool noShoulderContact = !WeaponStats.HasShoulderContact && weapon.WeapClass != "pistol";
-                float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f));
-                float weightFactor = StatCalc.ProceduralIntensityFactorCalc(weapWeight, weapon.WeapClass == "pistol" ? 1f : 4f) * beltFedFactor;
+                float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * formfactor * beltFedFactor;
+                float weightFactor = StatCalc.ProceduralIntensityFactorCalc(weapWeight, weapon.WeapClass == "pistol" ? 1f : 4f);
                 float displacementModifier = noShoulderContact ? Plugin.SwayIntensity.Value * 0.95f : Plugin.SwayIntensity.Value * 0.48f;//lower = less drag
                 float aimIntensity = noShoulderContact ? Plugin.SwayIntensity.Value * 0.95f : Plugin.SwayIntensity.Value * 0.57f;
 

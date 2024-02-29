@@ -73,6 +73,8 @@ namespace RealismMod
         private static Quaternion pistolTargetQuaternion = Quaternion.Euler(pistolTargetRotation);
         private static Quaternion pistolMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.PistolAdditionalRotationX.Value, Plugin.PistolAdditionalRotationY.Value, Plugin.PistolAdditionalRotationZ.Value));
         private static Quaternion activeAimTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.ActiveAimRotationX.Value, Plugin.ActiveAimRotationY.Value, Plugin.ActiveAimRotationZ.Value));
+        private static Vector3 meleeTargetPosition = new Vector3(0f, 0.06f, 0f);
+        private static Vector3 meleeTargetPosition2 = new Vector3(0f, -0.0275f, 0f);
 
         private const float clickDelay = 0.2f;
         private static float doubleClickTime = 0f;
@@ -177,8 +179,8 @@ namespace RealismMod
                 Utils.Logger.LogWarning("regen type not found");
                 baseRestoreRate = 4f;
             }
-
-            return (1f - (WeaponStats.ErgoFactor / 100f)) * baseRestoreRate * PlayerState.ADSInjuryMulti;
+            float formfactor = WeaponStats.IsBullpup ? 0.9f : 1f;
+            return (1f - ((WeaponStats.ErgoFactor * formfactor) / 100f)) * baseRestoreRate * PlayerState.ADSInjuryMulti;
         }
 
         private static float getDrainRate()
@@ -196,8 +198,8 @@ namespace RealismMod
             {
                 baseDrainRate = 0.125f;
             }
-
-            return WeaponStats.ErgoFactor * baseDrainRate * ((1f - PlayerState.ADSInjuryMulti) + 1f);
+            float formfactor = WeaponStats.IsBullpup ? 0.6f : 1f;
+            return WeaponStats.ErgoFactor * formfactor * baseDrainRate * ((1f - PlayerState.ADSInjuryMulti) + 1f);
         }
 
         public static void SetStanceStamina(Player player, Player.FirearmController fc)
@@ -750,7 +752,10 @@ namespace RealismMod
             Quaternion shortStockTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.ShortStockRotationX.Value * stanceMulti, Plugin.ShortStockRotationY.Value * stanceMulti, Plugin.ShortStockRotationZ.Value * stanceMulti));
             Quaternion shortStockMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.ShortStockAdditionalRotationX.Value * resetErgoMulti, Plugin.ShortStockAdditionalRotationY.Value * resetErgoMulti, Plugin.ShortStockAdditionalRotationZ.Value * resetErgoMulti));
             Quaternion shortStockRevertQuaternion = Quaternion.Euler(Plugin.ShortStockResetRotationX.Value * resetErgoMulti, Plugin.ShortStockResetRotationY.Value * resetErgoMulti, Plugin.ShortStockResetRotationZ.Value * resetErgoMulti);
-           
+
+            Quaternion meleeTargetQuaternion = Quaternion.Euler(new Vector3(2.5f * resetErgoMulti, -15f * resetErgoMulti, -1f));
+            Quaternion meleeTargetQuaternion2 = Quaternion.Euler(new Vector3(-1.5f * resetErgoMulti, -5f * resetErgoMulti, -0.5f));
+
             float movementFactor = PlayerState.IsMoving ? 1.25f : 1f;
             float beltfedFactor = fc.Item.IsBeltMachineGun ? 0.9f : 1f;
 
@@ -1040,7 +1045,7 @@ namespace RealismMod
 
                 if ((StanceBlender.Value >= 1f || StanceTargetPosition == lowReadyTargetPosition) && !DidStanceWiggle)
                 {
-                    DoWiggleEffects(player, pwa, fc, new Vector3(5f, -5f, -50f) * movementFactor, true);
+                    DoWiggleEffects(player, pwa, fc, new Vector3(7f, -7f, -50f) * movementFactor, true);
                     DidStanceWiggle = true;
                 }
             }
@@ -1157,12 +1162,6 @@ namespace RealismMod
                 isResettingActiveAim = false;
                 hasResetActiveAim = true;
             }
-
-            Vector3 meleeTargetPosition = new Vector3(0f, 0.06f, 0f);
-            Quaternion meleeTargetQuaternion = Quaternion.Euler(new Vector3(2.5f * resetErgoMulti, -15f * resetErgoMulti, -1f)); //-1f * resetErgoMulti, -5f * resetErgoMulti, -1f)
-            Vector3 meleeTargetPosition2 = new Vector3(0f, -0.0275f, 0f); //new Vector3(0.02f, 0.08f, -0.07f);
-            Quaternion meleeTargetQuaternion2 = Quaternion.Euler(new Vector3(-1.5f * resetErgoMulti, -5f * resetErgoMulti, -0.5f)); //-1f * resetErgoMulti, -5f * resetErgoMulti, -1f)
-
 
             ////Melee////
             if (CurrentStance == EStance.Melee && !pwa.IsAiming && !IsBlindFiring && !pwa.LeftStance && !PlayerState.IsSprinting)

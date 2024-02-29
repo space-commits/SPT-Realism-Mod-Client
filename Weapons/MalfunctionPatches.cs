@@ -55,33 +55,40 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Player.FirearmController __instance, ref Weapon.EMalfunctionState __result, BulletClass ammoToFire)
         {
-            Player player = (Player)playerField.GetValue(__instance);
-
-            if (player.IsYourPlayer)
+            if (__instance.Weapon.AmmoCaliber != ammoToFire.Caliber)
             {
-                if (__instance.Weapon.AmmoCaliber != ammoToFire.Caliber)
+                Player player = (Player)playerField.GetValue(__instance);
+                bool explosiveMismatch = (__instance.Weapon.AmmoCaliber == "366TKM" && ammoToFire.Caliber == "762x39") || (__instance.Weapon.AmmoCaliber == "556x45NATO" && ammoToFire.Caliber == "762x35") || (__instance.Weapon.AmmoCaliber == "762x51" && ammoToFire.Caliber == "68x51") || (__instance.Weapon.AmmoCaliber == "762x39" && ammoToFire.Caliber == "366TKM");
+                bool malfMismatch = (__instance.Weapon.AmmoCaliber == "762x35" && ammoToFire.Caliber == "556x45NATO") || (__instance.Weapon.AmmoCaliber == "68x51" && ammoToFire.Caliber == "762x51");
+
+                if (player.IsYourPlayer)
                 {
-                    if (__instance.Weapon.Repairable.MaxDurability <= 0f || (__instance.Weapon.AmmoCaliber == "762x35" && ammoToFire.Caliber == "556x45NATO") || (__instance.Weapon.AmmoCaliber == "68x51" && ammoToFire.Caliber == "762x51") || (__instance.Weapon.AmmoCaliber == "762x39" && ammoToFire.Caliber == "366TKM"))
+                    if (__instance.Weapon.Repairable.MaxDurability <= 0f || malfMismatch)
                     {
                         __result = Weapon.EMalfunctionState.Misfire;
                         return false;
                     }
 
-                    if ((__instance.Weapon.AmmoCaliber == "366TKM" && ammoToFire.Caliber == "762x39") || (__instance.Weapon.AmmoCaliber == "556x45NATO" && ammoToFire.Caliber == "762x35") || __instance.Weapon.AmmoCaliber == "762x51" && ammoToFire.Caliber == "68x51")
+                    if (explosiveMismatch)
                     {
                         ExplodeWeapon(__instance, player, ref __result);
+                        __result = Weapon.EMalfunctionState.HardSlide;
+                        return false;
                     }
                 }
-            }
-            else
-            {
-                if ((__instance.Weapon.AmmoCaliber == "366TKM" && ammoToFire.Caliber == "762x39") || (__instance.Weapon.AmmoCaliber == "556x45NATO" && ammoToFire.Caliber == "762x35"))
+                else
                 {
-                    ExplodeWeapon(__instance, player, ref __result);
-                }
-                if ((__instance.Weapon.AmmoCaliber == "762x39" && ammoToFire.Caliber == "366TKM") || (__instance.Weapon.AmmoCaliber == "762x35" && ammoToFire.Caliber == "556x45NATO")) 
-                {
-                    __result = Weapon.EMalfunctionState.Misfire;
+                    if (explosiveMismatch)
+                    {
+                        ExplodeWeapon(__instance, player, ref __result);
+                        __result = Weapon.EMalfunctionState.HardSlide;
+                        return false;
+                    }
+                    if (__instance.Weapon.Repairable.MaxDurability <= 0f || malfMismatch)
+                    {
+                        __result = Weapon.EMalfunctionState.Misfire;
+                        return false;
+                    }
                 }
             }
             return true;

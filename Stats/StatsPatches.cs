@@ -417,7 +417,9 @@ namespace RealismMod
             if (weapType == "bullpup")
             {
                 totalLoudness *= 1.15f;
+                WeaponStats.IsBullpup = true;
             }
+            else WeaponStats.IsBullpup = false;
 
             float pureRecoilDelta = ((baseVRecoil + baseHRecoil) - pureRecoil) / ((baseVRecoil + baseHRecoil) * -1f);
             WeaponStats.TotalModDuraBurn = modBurnRatio;
