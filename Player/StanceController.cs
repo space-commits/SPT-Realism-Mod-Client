@@ -18,14 +18,6 @@ using Random = System.Random;
 
 namespace RealismMod
 {
-    public enum EStaminaState
-    {
-        None,
-        Idle,
-        Drain,
-        Regen
-    }
-
     public enum EBracingDirection 
     {
         Top,
@@ -183,12 +175,16 @@ namespace RealismMod
             return (1f - ((WeaponStats.ErgoFactor * formfactor) / 100f)) * baseRestoreRate * PlayerState.ADSInjuryMulti;
         }
 
-        private static float getDrainRate()
+        private static float getDrainRate(Player player)
         {
             float baseDrainRate = 0f;
-            if (IsAiming)
+            if (player.Physical.HoldingBreath)
             {
-                baseDrainRate = 0.25f;
+                baseDrainRate = IsMounting ? 0.07f : IsBracing ? 0.1f : 0.35f;
+            }
+            else if (IsAiming)
+            {
+                baseDrainRate = 0.2f;
             }
             else if (CurrentStance == EStance.ActiveAiming)
             {
@@ -202,10 +198,10 @@ namespace RealismMod
             return WeaponStats.ErgoFactor * formfactor * baseDrainRate * ((1f - PlayerState.ADSInjuryMulti) + 1f);
         }
 
-        public static void SetStanceStamina(Player player, Player.FirearmController fc)
+        public static void SetStanceStamina(Player player)
         {
             bool isInRegenableStance = CurrentStance == EStance.HighReady || CurrentStance == EStance.LowReady || CurrentStance == EStance.PatrolStance || CurrentStance == EStance.ShortStock;
-            bool isInRegenerableState = IsMounting || IsBracing || player.IsInPronePose || CurrentStance == EStance.PistolCompressed || player.IsInventoryOpened;
+            bool isInRegenerableState = (!player.Physical.HoldingBreath && (IsMounting || IsBracing)) || player.IsInPronePose || CurrentStance == EStance.PistolCompressed || player.IsInventoryOpened;
             bool doRegen = ((isInRegenableStance && !IsAiming && !IsFiringFromStance) || isInRegenerableState) && !PlayerState.IsSprinting;
             bool shouldInterruptRegen = isInRegenableStance && (IsAiming || IsFiringFromStance);
             bool doDrain = (shouldInterruptRegen || !isInRegenableStance) && !isInRegenerableState && !PlayerState.IsSprinting && Plugin.EnableIdleStamDrain.Value;
@@ -233,7 +229,7 @@ namespace RealismMod
             //drain
             if (doDrain)
             {
-                player.Physical.HandsStamina.Multiplier = getDrainRate();
+                player.Physical.HandsStamina.Multiplier = getDrainRate(player);
             }
             //regen
             else if (doRegen)
@@ -957,7 +953,7 @@ namespace RealismMod
 
                 if ((StanceBlender.Value >= 1f || StanceTargetPosition == highReadyTargetPosition) && !DidStanceWiggle)
                 {
-                    DoWiggleEffects(player, pwa, fc, new Vector3(10f, 5f, 50f) * movementFactor, true);
+                    DoWiggleEffects(player, pwa, fc, new Vector3(11f, 5.5f, 50f) * movementFactor, true);
                     DidStanceWiggle = true;
                 }
             }

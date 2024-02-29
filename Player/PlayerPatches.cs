@@ -430,7 +430,7 @@ namespace RealismMod
 
                 if (Plugin.EnableStanceStamChanges.Value)
                 {
-                    StanceController.SetStanceStamina(player, fc);
+                    StanceController.SetStanceStamina(player);
                 }
 
                 float remainStamPercent = player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity;
