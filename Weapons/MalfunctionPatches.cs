@@ -27,9 +27,8 @@ namespace RealismMod
             return typeof(Player.FirearmController).GetMethod("GetMalfunctionState", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static void ExplodeWeapon(Player.FirearmController fc, Player player, ref Weapon.EMalfunctionState __result) 
+        private static void ExplodeWeapon(Player.FirearmController fc, Player player) 
         {
-            __result = Weapon.EMalfunctionState.SoftSlide;
             Singleton<Effects>.Instance.EmitGrenade("Grenade_new2", fc.CurrentFireport.Original.position, Vector3.up, 1f);
             fc.Weapon.Repairable.Durability = 0f;
             fc.Weapon.Repairable.MaxDurability = 0f;
@@ -55,9 +54,22 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Player.FirearmController __instance, ref Weapon.EMalfunctionState __result, BulletClass ammoToFire)
         {
+            Player player = (Player)playerField.GetValue(__instance);
+
+            if (__instance.Weapon.AmmoCaliber == "9x18PM" && ammoToFire.Template._id == "57371aab2459775a77142f22")
+            {
+                __instance.Weapon.Repairable.Durability = Mathf.Max(__instance.Weapon.Repairable.Durability - (__instance.Weapon.DurabilityBurnRatio * ammoToFire.DurabilityBurnModificator), 0f);
+                int rnd = UnityEngine.Random.Range(1, 10);
+                float dura = 2f - (__instance.Weapon.Repairable.Durability / __instance.Weapon.Repairable.MaxDurability);
+                if (__instance.Weapon.Repairable.Durability <= 75f && rnd <= 4 * dura)
+                {
+                    ExplodeWeapon(__instance, player);
+                    __result = Weapon.EMalfunctionState.HardSlide;
+                    return false;
+                }
+            }
             if (__instance.Weapon.AmmoCaliber != ammoToFire.Caliber)
             {
-                Player player = (Player)playerField.GetValue(__instance);
                 bool explosiveMismatch = (__instance.Weapon.AmmoCaliber == "366TKM" && ammoToFire.Caliber == "762x39") || (__instance.Weapon.AmmoCaliber == "556x45NATO" && ammoToFire.Caliber == "762x35") || (__instance.Weapon.AmmoCaliber == "762x51" && ammoToFire.Caliber == "68x51") || (__instance.Weapon.AmmoCaliber == "762x39" && ammoToFire.Caliber == "366TKM");
                 bool malfMismatch = (__instance.Weapon.AmmoCaliber == "762x35" && ammoToFire.Caliber == "556x45NATO") || (__instance.Weapon.AmmoCaliber == "68x51" && ammoToFire.Caliber == "762x51");
 
@@ -71,16 +83,30 @@ namespace RealismMod
 
                     if (explosiveMismatch)
                     {
-                        ExplodeWeapon(__instance, player, ref __result);
+                        ExplodeWeapon(__instance, player);
                         __result = Weapon.EMalfunctionState.HardSlide;
                         return false;
+                    }
+                    Logger.LogWarning("AmmoCaliber " + __instance.Weapon.AmmoCaliber);
+                    Logger.LogWarning("highP " + WeaponStats.WeaponType(__instance.Weapon));
+                    Logger.LogWarning("highP " + ammoToFire.Template._id);
+                    if (__instance.Weapon.AmmoCaliber == "9x18PM" && ammoToFire.Template._id == "57371aab2459775a77142f22")
+                    {
+                        Logger.LogWarning("match");
+                        __instance.Weapon.Repairable.Durability = Mathf.Min(__instance.Weapon.Repairable.Durability - (2f * __instance.Weapon.DurabilityBurnRatio * ammoToFire.DurabilityBurnModificator), 0f);
+                        if (__instance.Weapon.Repairable.MaxDurability <= 25f)
+                        {
+                            ExplodeWeapon(__instance, player);
+                            __result = Weapon.EMalfunctionState.HardSlide;
+                            return false;
+                        }
                     }
                 }
                 else
                 {
                     if (explosiveMismatch)
                     {
-                        ExplodeWeapon(__instance, player, ref __result);
+                        ExplodeWeapon(__instance, player);
                         __result = Weapon.EMalfunctionState.HardSlide;
                         return false;
                     }

@@ -85,7 +85,6 @@ namespace RealismMod
                         Plugin.BlockChambering = true;
                     }
     
-
                     if (fc.Weapon.HasChambers)
                     {
                         fc.FirearmsAnimator.SetAmmoInChamber((float)chamberAmmoCount);
@@ -222,6 +221,8 @@ namespace RealismMod
                 {
                     StanceController.CurrentStance = EStance.None;
                 }
+
+                StanceController.ModifyHighReady = true;
                 StanceController.CancelShortStock = true;
                 StanceController.CancelActiveAim = true;
          
@@ -401,6 +402,8 @@ namespace RealismMod
                 StanceController.CancelLowReady = true;
                 StanceController.CancelShortStock = true;
                 StanceController.CancelActiveAim = true;
+                StanceController.ModifyHighReady = true;
+                StanceController.ManipTimer = 0f;
             }
         }
     }

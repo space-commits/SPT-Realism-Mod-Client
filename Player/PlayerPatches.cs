@@ -30,8 +30,8 @@ namespace RealismMod
             return typeof(Class1452).GetMethod("TranslateCommand", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        [PatchPostfix]
-        private static void PatchPostfix(Class1452 __instance, ECommand command)
+        [PatchPrefix]
+        private static bool PatchPrefix(Class1452 __instance, ECommand command)
         {
             Player player = Utils.GetPlayer();
             if (command == ECommand.ChamberUnload)
@@ -65,6 +65,11 @@ namespace RealismMod
             {
                 StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, new Vector3(1f, 1f, 1f) * (player.Physical.HoldingBreath ? -1f : 1f));
             }
+            if (Utils.Verified && (command == ECommand.EndSprinting || command == ECommand.ToggleDuck || command == ECommand.Jump))
+            {
+                return false;
+            }
+            return true;
         }
     }
 
