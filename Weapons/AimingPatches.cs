@@ -26,7 +26,6 @@ namespace RealismMod
                 bool isAiming = (bool)AccessTools.Field(typeof(EFT.Player.FirearmController), "_isAiming").GetValue(fc);
                 if (AimStateChanged || HeadDeviceStateChanged) 
                 {
-                    Utils.Logger.LogWarning("ADS Check");
                     FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
                     NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
                     ThermalVisionComponent thermComponent = player.ThermalVisionObserver.Component;
@@ -168,27 +167,6 @@ namespace RealismMod
         }
     }
 
- /*   public class SetAimingPatch : ModulePatch
-    {
-        private static FieldInfo playerField;
-        protected override MethodBase GetTargetMethod()
-        {
-            playerField = AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player");
-            return typeof(EFT.Player.FirearmController).GetMethod("set_IsAiming", BindingFlags.Public | BindingFlags.Instance);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(EFT.Player.FirearmController __instance, bool value, ref bool ____isAiming)
-        {
-            Logger.LogWarning("set_IsAiming");
-            Player player = (Player)playerField.GetValue(__instance);
-            if (player.IsYourPlayer && __instance.Item.WeapClass == "pistol")
-            {
-                player.Physical.Aim((!____isAiming || !(player.MovementContext.StationaryWeapon == null)) ? 0f : __instance.ErgonomicWeight * 0.2f);
-            }
-        }
-    }*/
-
     public class ToggleAimPatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -205,7 +183,6 @@ namespace RealismMod
 
             if (player.IsYourPlayer)
             {
-                Utils.Logger.LogWarning("Toggle ADS");
                 AimController.AimStateChanged = true;
                 bool gearFactorEnabled = Plugin.EnableFSPatch.Value || Plugin.EnableNVGPatch.Value;
 

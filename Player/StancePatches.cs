@@ -684,7 +684,6 @@ namespace RealismMod
                     float aimSpeed = (float)aimSpeedField.GetValue(__instance);
                     bool isAiming = (bool)isAimingField.GetValue(__instance);
 
-                    bool isPistol = WeaponStats.IsStocklessPistol;
                     bool allStancesReset = hasResetActiveAim && hasResetLowReady && hasResetHighReady && hasResetShortStock && hasResetPistolPos;
                     bool isInStance = 
                         StanceController.CurrentStance == EStance.HighReady || 
@@ -695,7 +694,7 @@ namespace RealismMod
                     bool isInShootableStance = 
                         StanceController.CurrentStance == EStance.ShortStock || 
                         StanceController.CurrentStance == EStance.ActiveAiming ||
-                        isPistol  || 
+                        WeaponStats.IsStocklessPistol || 
                         StanceController.CurrentStance == EStance.Melee;
                     bool cancelBecauseShooting = StanceController.IsFiringFromStance && !isInShootableStance;
                     bool doStanceRotation = (isInStance || !allStancesReset || StanceController.CurrentStance == EStance.PistolCompressed) && !cancelBecauseShooting;
@@ -712,7 +711,7 @@ namespace RealismMod
 
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponPosition, weapRotation * currentRotation);
 
-                    if (isPistol && Plugin.EnableAltPistol.Value && StanceController.CurrentStance != EStance.PatrolStance)
+                    if (WeaponStats.IsStocklessPistol && Plugin.EnableAltPistol.Value && StanceController.CurrentStance != EStance.PatrolStance)
                     {
                         if (StanceController.CurrentStance == EStance.PistolCompressed && !StanceController.IsAiming && !isResettingPistol && !StanceController.IsBlindFiring)
                         {
@@ -734,7 +733,7 @@ namespace RealismMod
                         hasResetShortStock = true;
                         StanceController.DoPistolStances(true, __instance, ref stanceRotation, dt, ref hasResetPistolPos, player, ref stanceRotationSpeed, ref isResettingPistol, firearmController);
                     }
-                    else if (!isPistol || WeaponStats.HasShoulderContact)
+                    else if (!WeaponStats.IsStocklessPistol || WeaponStats.HasShoulderContact)
                     {
                         if ((!isInStance && allStancesReset) || (cancelBecauseShooting && !isInShootableStance) || StanceController.IsAiming || cancelStance || StanceController.IsBlindFiring)
                         {
@@ -971,7 +970,6 @@ namespace RealismMod
 
                /* __instance.ApplyAimingAlignment(dt);*/
 
-                bool isPistol = fc.Item.WeapClass == "pistol";
                 bool allStancesAreReset = hasResetActiveAim && hasResetLowReady && hasResetHighReady && hasResetShortStock && hasResetPistolPos;
                 bool isInStance = 
                     StanceController.CurrentStance == EStance.HighReady || 
@@ -981,8 +979,8 @@ namespace RealismMod
                     StanceController.CurrentStance == EStance.Melee;
                 bool isInShootableStance = 
                     StanceController.CurrentStance == EStance.ShortStock || 
-                    StanceController.CurrentStance == EStance.ActiveAiming || 
-                    isPistol || 
+                    StanceController.CurrentStance == EStance.ActiveAiming ||
+                    WeaponStats.IsStocklessPistol || 
                     StanceController.CurrentStance == EStance.Melee;
                 bool cancelBecauseShooting = StanceController.IsFiringFromStance && !isInShootableStance;
                 bool doStanceRotation = (isInStance || !allStancesAreReset || StanceController.CurrentStance == EStance.PistolCompressed) && !cancelBecauseShooting;
@@ -999,7 +997,7 @@ namespace RealismMod
     
                 __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weapTempPosition, weapTempRotation * currentRotation);
 
-                if (isPistol && StanceController.CurrentStance != EStance.PatrolStance)
+                if (WeaponStats.IsStocklessPistol && StanceController.CurrentStance != EStance.PatrolStance)
                 {
                     if (StanceController.CurrentStance == EStance.PistolCompressed && !StanceController.IsAiming && !isResettingPistol && !StanceController.IsBlindFiring && !__instance.LeftStance)
                     {
@@ -1022,7 +1020,7 @@ namespace RealismMod
                     hasResetMelee = true;
                     StanceController.DoPistolStances(false, __instance, ref stanceRotation, dt, ref hasResetPistolPos, player, ref stanceRotationSpeed, ref isResettingPistol, fc);
                 }
-                else if (!isPistol || WeaponStats.HasShoulderContact)
+                else if (!WeaponStats.IsStocklessPistol || WeaponStats.HasShoulderContact)
                 {
                     if ((!isInStance && allStancesAreReset) || (cancelBecauseShooting && !isInShootableStance) || StanceController.IsAiming || cancelStance || StanceController.IsBlindFiring || __instance.LeftStance)
                     {

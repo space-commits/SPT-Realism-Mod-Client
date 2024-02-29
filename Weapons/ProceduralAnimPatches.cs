@@ -107,18 +107,18 @@ namespace RealismMod
             if (StanceController.IsIdle() && WeaponStats._WeapClass.ToLower() != "pistol")
             {
                 StanceController.CanResetDamping = false;
-                float rndX = UnityEngine.Random.Range(10f * 0.5f * factor, (10f * factor));
-                float rndY = UnityEngine.Random.Range(10f * 0.5f * factor, (10f * factor));
+                float rndX = UnityEngine.Random.Range(8f * 0.5f * factor, (8f * factor));
+                float rndY = UnityEngine.Random.Range(8f * 0.5f * factor, (8f * factor));
                 Vector3 wiggleDir = new Vector3(-rndX, -rndY, 0f);
 
                 if (pwa.IsAiming && !didAimWiggle)
                 {
-                    StanceController.DoWiggleEffects(player, pwa, fc, wiggleDir, false);
+                    StanceController.DoWiggleEffects(player, pwa, wiggleDir, false);
                     didAimWiggle = true;
                 }
                 else if (!pwa.IsAiming && didAimWiggle)
                 {
-                    StanceController.DoWiggleEffects(player, pwa, fc, -wiggleDir * 0.45f, false);
+                    StanceController.DoWiggleEffects(player, pwa, -wiggleDir * 0.45f, false);
                     didAimWiggle = false;
                 }
                 StanceController.DoDampingTimer = true;
@@ -181,18 +181,18 @@ namespace RealismMod
 
                     if (!WeaponStats.HasShoulderContact && weapon.WeapClass != "pistol")
                     {
-                        breathIntensity = Mathf.Clamp(0.55f * totalErgoFactor, 0.45f, 1.01f);
-                        handsIntensity = Mathf.Clamp(0.55f * totalErgoFactor, 0.45f, 1.05f);
+                        breathIntensity = Mathf.Clamp(0.6f * totalErgoFactor, 0.45f, 1.01f);
+                        handsIntensity = Mathf.Clamp(0.6f * totalErgoFactor, 0.45f, 1.05f);
                     }
                     else if (!WeaponStats.HasShoulderContact && weapon.WeapClass == "pistol")
                     {
-                        breathIntensity = Mathf.Clamp(0.5f * totalErgoFactor, 0.4f, 0.9f);
-                        handsIntensity = Mathf.Clamp(0.5f * totalErgoFactor, 0.4f, 0.95f);
+                        breathIntensity = Mathf.Clamp(0.55f * totalErgoFactor, 0.4f, 0.9f);
+                        handsIntensity = Mathf.Clamp(0.55f * totalErgoFactor, 0.4f, 0.95f);
                     }
                     else
                     {
-                        breathIntensity = Mathf.Clamp(0.45f * totalErgoFactor * formfactor, 0.35f, 0.81f);
-                        handsIntensity = Mathf.Clamp(0.45f * totalErgoFactor * formfactor, 0.35f, 0.86f);
+                        breathIntensity = Mathf.Clamp(0.5f * totalErgoFactor * formfactor, 0.35f, 0.81f);
+                        handsIntensity = Mathf.Clamp(0.5f * totalErgoFactor * formfactor, 0.35f, 0.86f);
                     }
 
                     float beltFedFactor = weapon.IsBeltMachineGun ? 1.45f : 1f;

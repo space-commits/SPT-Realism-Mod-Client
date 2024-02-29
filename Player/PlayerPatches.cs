@@ -33,10 +33,9 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Class1452 __instance, ECommand command)
         {
-
+            Player player = Utils.GetPlayer();
             if (command == ECommand.ChamberUnload)
             {
-                Player player = Utils.GetPlayer();
                 FirearmController fc = player.HandsController as FirearmController;
                 if (!Plugin.CanLoadChamber && fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1 && fc.Weapon.ChamberAmmoCount == 0 && fc.Weapon.GetCurrentMagazine() != null && fc.Weapon.GetCurrentMagazine().Count > 0)
                 {
@@ -61,6 +60,10 @@ namespace RealismMod
             if (command == ECommand.ToggleGoggles) 
             {
                 AimController.HeadDeviceStateChanged = true;
+            }
+            if (command == ECommand.ToggleBreathing)
+            {
+                StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, new Vector3(1f, 1f, 1f) * (player.Physical.HoldingBreath ? -1f : 1f));
             }
         }
     }
