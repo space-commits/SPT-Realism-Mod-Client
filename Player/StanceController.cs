@@ -762,7 +762,7 @@ namespace RealismMod
             Quaternion meleeTargetQuaternion2 = Quaternion.Euler(new Vector3(-1.5f * resetErgoMulti, -5f * resetErgoMulti, -0.5f));
 
             float movementFactor = PlayerState.IsMoving ? 1.25f : 1f;
-            float beltfedFactor = fc.Item.IsBeltMachineGun ? 0.87f : 1f;
+            float beltfedFactor = fc.Item.IsBeltMachineGun ? 0.85f : 1f;
 
             //for setting baseline position
             if (!IsBlindFiring && !pwa.LeftStance)
@@ -1195,13 +1195,13 @@ namespace RealismMod
                 if (initialPosDistance > 0.001f && !didHalfMeleeAnim) 
                 {
                     stanceRotation = meleeTargetQuaternion;
-                    StanceTargetPosition = Vector3.Lerp(StanceTargetPosition, meleeTargetPosition, Plugin.StanceTransitionSpeedMulti.Value * Mathf.Clamp(stanceMulti, 0.8f, 1f) * dt * 1.5f);
+                    StanceTargetPosition = Vector3.Lerp(StanceTargetPosition, meleeTargetPosition, Plugin.StanceTransitionSpeedMulti.Value * Mathf.Clamp(stanceMulti, 0.75f, 1f) * dt * 2f * beltfedFactor);
                 }
                 else
                 {
                     didHalfMeleeAnim = true;
                     stanceRotation = meleeTargetQuaternion2;
-                    StanceTargetPosition = Vector3.Lerp(StanceTargetPosition, meleeTargetPosition2, Plugin.StanceTransitionSpeedMulti.Value * Mathf.Clamp(stanceMulti, 0.8f, 1f) * dt * 1.5f);
+                    StanceTargetPosition = Vector3.Lerp(StanceTargetPosition, meleeTargetPosition2, Plugin.StanceTransitionSpeedMulti.Value * Mathf.Clamp(stanceMulti, 0.75f, 1f) * dt * 2f * beltfedFactor);
                 }
 
                 StanceBlender.Speed = 50f * (isThirdPerson ? Plugin.ThirdPersonPositionSpeed.Value : 1f);
