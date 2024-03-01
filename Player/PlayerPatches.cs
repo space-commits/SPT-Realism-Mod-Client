@@ -34,7 +34,7 @@ namespace RealismMod
         private static bool PatchPrefix(Class1452 __instance, ECommand command)
         {
             Player player = Utils.GetPlayer();
-            if (command == ECommand.ChamberUnload)
+            if (command == ECommand.ChamberUnload && Plugin.ServerConfig.manual_chambering)
             {
                 FirearmController fc = player.HandsController as FirearmController;
                 if (!Plugin.CanLoadChamber && fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1 && fc.Weapon.ChamberAmmoCount == 0 && fc.Weapon.GetCurrentMagazine() != null && fc.Weapon.GetCurrentMagazine().Count > 0)
@@ -61,7 +61,7 @@ namespace RealismMod
             {
                 AimController.HeadDeviceStateChanged = true;
             }
-            if (command == ECommand.ToggleBreathing)
+            if (command == ECommand.ToggleBreathing && Plugin.ServerConfig.recoil_attachment_overhaul)
             {
                 StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, new Vector3(1f, 1f, 1f) * (player.Physical.HoldingBreath ? -1f : 1f));
             }
@@ -470,7 +470,7 @@ namespace RealismMod
                 }
                 player.MovementContext.SetPatrol(StanceController.CurrentStance == EStance.PatrolStance ? true : false);
             }
-            else if (Plugin.EnableStanceStamChanges.Value && !StanceController.HaveResetStamDrain)
+            else if (Plugin.ServerConfig.enable_stances && Plugin.EnableStanceStamChanges.Value && !StanceController.HaveResetStamDrain)
             {
                 StanceController.UnarmedStanceStamina(player);
             }
@@ -488,7 +488,7 @@ namespace RealismMod
         [PatchPostfix] 
         private static void PatchPostfix(Player __instance)
         {
-            if (Plugin.EnableDeafen.Value && Plugin.ServerConfig.headset_changes)
+            if (Plugin.ServerConfig.headset_changes)
             {
                 SurfaceSet currentSet = (SurfaceSet)surfaceField.GetValue(__instance);
                 currentSet.SprintSoundBank.BaseVolume = Plugin.SharedMovementVolume.Value;
@@ -505,18 +505,20 @@ namespace RealismMod
                 StanceController.IsInInventory = __instance.IsInventoryOpened;
                 PlayerState.IsMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
 
-                if (Plugin.EnableSprintPenalty.Value)
+                if (Plugin.EnableSprintPenalty.Value && Plugin.ServerConfig.enable_stances)
                 {
                     DoSprintPenalty(__instance, fc, StanceController.BracingSwayBonus);
+                    if (PlayerState.HasFullyResetSprintADSPenalties) //!RecoilController.IsFiring && 
+                    {
+                        __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerState.TotalBreathIntensity * StanceController.BracingSwayBonus;
+                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerState.TotalHandsIntensity * StanceController.BracingSwayBonus;
+                    }
                 }
-
-                if (PlayerState.HasFullyResetSprintADSPenalties) //!RecoilController.IsFiring && 
+                if (Plugin.ServerConfig.recoil_attachment_overhaul)
                 {
-                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerState.TotalBreathIntensity * StanceController.BracingSwayBonus;
-                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerState.TotalHandsIntensity * StanceController.BracingSwayBonus;
+                    PWAUpdate(__instance, fc);
                 }
 
-                PWAUpdate(__instance, fc);
             }
         }
     }

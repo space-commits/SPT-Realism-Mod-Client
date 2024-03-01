@@ -32,8 +32,6 @@ namespace RealismMod
         {
             if (__instance.Weapon.HasChambers && __instance.Weapon.Chambers.Length == 1 && __instance.Weapon.ChamberAmmoCount == 0)
             {
-                Logger.LogWarning("==method_15==");
-                Logger.LogWarning("blocking");
                 Plugin.BlockChambering = true;
             }
         }
@@ -75,9 +73,6 @@ namespace RealismMod
 
                     AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2665_0").SetValue(__instance, magazine);
                     fc.AmmoInChamberOnSpawn = chamberAmmoCount;
-                    Logger.LogWarning("==Start==");
-                    Logger.LogWarning("chamberAmmoCount " + chamberAmmoCount);
-                    Logger.LogWarning("currentMagazineCount " + currentMagazineCount);
 
                     if (fc.Weapon.ChamberAmmoCount == 0)
                     {
@@ -96,8 +91,6 @@ namespace RealismMod
                     player.Skills.OnWeaponDraw(fc.Weapon);
                     ammoIsCompatible = magazine == null || magazine.IsAmmoCompatible(fc.Weapon.Chambers);
                     AccessTools.Field(typeof(FirearmController.GClass1623), "bool_1").SetValue(__instance, ammoIsCompatible);
-
-                    Logger.LogWarning("ammo is compatible " + ammoIsCompatible);
 
                     fc.FirearmsAnimator.SetAmmoCompatible(ammoIsCompatible);
                     if (ammoIsCompatible && magazine != null && magazine.Count > 0 && fc.Weapon.Chambers.Length != 0 && fc.Weapon.MalfState.State == Weapon.EMalfunctionState.Misfire)
@@ -150,7 +143,6 @@ namespace RealismMod
 
             if (player.IsYourPlayer)
             {
-                Logger.LogWarning("==StartPatch 1584==");
                 Plugin.CanLoadChamber = true;
                 Plugin.BlockChambering = false;
             }
@@ -172,7 +164,6 @@ namespace RealismMod
             FirearmController fc = player.HandsController as FirearmController;
             if (player.HandsAnimator == __instance as ObjectInHandsAnimator || fc == null)
             {
-                Logger.LogWarning("==SetAmmoOnMag== " + count);
                 bool blocked = !Plugin.BlockChambering;
                 Plugin.BlockChambering = false;
                 return blocked;
@@ -198,10 +189,8 @@ namespace RealismMod
             if (fc == null) return;
             if (fc.FirearmsAnimator == __instance)
             {
-                Logger.LogWarning("SetAmmoCompatible " + compatible);
                 if (!Plugin.CanLoadChamber)
                 {
-                    Logger.LogWarning("SetAmmoCompatible can't Do Cock");
                     compatible = false;
                 }
             }
@@ -226,7 +215,7 @@ namespace RealismMod
                 StanceController.CancelShortStock = true;
                 StanceController.CancelActiveAim = true;
          
-                if (PlayerState.IsAttemptingToReloadInternalMag == true)
+                if (PlayerState.IsAttemptingToReloadInternalMag && Plugin.ServerConfig.reload_changes)
                 {
                     StanceController.CancelHighReady = fc.Item.WeapClass != "shotgun" ? true : false;
                     StanceController.CancelLowReady = fc.Item.WeapClass == "shotgun" || fc.Item.WeapClass == "pistol" ? true : false;
@@ -303,7 +292,6 @@ namespace RealismMod
                 if (Plugin.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===SetSpeedParameters===");
-                    Logger.LogWarning("=============");
                 }
             }
         }
@@ -380,7 +368,7 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
-                if (Plugin.EnableReloadPatches.Value)
+                if (Plugin.ServerConfig.reload_changes)
                 {
                     float bonus = Plugin.GlobalCheckAmmoMulti.Value;
                     if (WeaponStats._WeapClass == "pistol")
@@ -424,7 +412,7 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
-                if (Plugin.EnableReloadPatches.Value)
+                if (Plugin.ServerConfig.reload_changes)
                 {
                     float chamberSpeed = WeaponStats.TotalChamberCheckSpeed;
                     if (WeaponStats._WeapClass == "pistol")
@@ -555,7 +543,7 @@ namespace RealismMod
             if (fc == null) return;
             if (fc.FirearmsAnimator == __instance)
             {
-                if (Plugin.EnableReloadPatches.Value)
+                if (Plugin.ServerConfig.reload_changes)
                 {
                     float chamberSpeed = WeaponStats.TotalFixSpeed;
                     if (WeaponStats._WeapClass == "pistol")
@@ -629,7 +617,7 @@ namespace RealismMod
         private static void PatchPostfix(Player.FirearmController __instance, MagazineClass magazine)
         {
             Player player = (Player)playerField.GetValue(__instance);
-            if (player.IsYourPlayer == true)
+            if (player.IsYourPlayer && Plugin.ServerConfig.reload_changes)
             {
                 StatCalc.SetMagReloadSpeeds(__instance, magazine);
 
@@ -658,9 +646,13 @@ namespace RealismMod
         private static void PatchPostfix(Player.FirearmController __instance, MagazineClass magazine)
         {
             Player player = (Player)playerField.GetValue(__instance);
-            if (player.IsYourPlayer == true)
+            if (player.IsYourPlayer )
             {
-                StatCalc.SetMagReloadSpeeds(__instance, magazine, true);
+                if (Plugin.ServerConfig.reload_changes)
+                {
+                    StatCalc.SetMagReloadSpeeds(__instance, magazine, true);
+                }
+
                 PlayerState.IsQuickReloading = true;
 
                 if (Plugin.EnableLogging.Value == true)

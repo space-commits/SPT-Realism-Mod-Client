@@ -87,20 +87,6 @@ namespace RealismMod
                         __result = Weapon.EMalfunctionState.HardSlide;
                         return false;
                     }
-                    Logger.LogWarning("AmmoCaliber " + __instance.Weapon.AmmoCaliber);
-                    Logger.LogWarning("highP " + WeaponStats.WeaponType(__instance.Weapon));
-                    Logger.LogWarning("highP " + ammoToFire.Template._id);
-                    if (__instance.Weapon.AmmoCaliber == "9x18PM" && ammoToFire.Template._id == "57371aab2459775a77142f22")
-                    {
-                        Logger.LogWarning("match");
-                        __instance.Weapon.Repairable.Durability = Mathf.Min(__instance.Weapon.Repairable.Durability - (2f * __instance.Weapon.DurabilityBurnRatio * ammoToFire.DurabilityBurnModificator), 0f);
-                        if (__instance.Weapon.Repairable.MaxDurability <= 25f)
-                        {
-                            ExplodeWeapon(__instance, player);
-                            __result = Weapon.EMalfunctionState.HardSlide;
-                            return false;
-                        }
-                    }
                 }
                 else
                 {

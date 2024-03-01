@@ -440,10 +440,7 @@ namespace RealismMod
 
                     }
 
-                    if (Plugin.EnableStockSlots.Value)
-                    {
-                        StatCalc.StockPositionChecker(mod, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
-                    }
+                    StatCalc.StockPositionChecker(mod, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
 
                     if (modType == "buffer_adapter" || modType == "stock_adapter")
                     {
@@ -462,21 +459,11 @@ namespace RealismMod
                             {
                                 return;
                             }
-                            if (!Plugin.EnableStockSlots.Value)
+                            for (int i = 0; i < containedMod.Slots.Length; i++)
                             {
-                                if (containedMod.Slots.Length > 0 && (containedMod.Slots[0].ContainedItem != null))
+                                if (containedMod.Slots[i].ContainedItem != null)
                                 {
                                     return;
-                                }
-                            }
-                            else
-                            {
-                                for (int i = 0; i < containedMod.Slots.Length; i++)
-                                {
-                                    if (containedMod.Slots[i].ContainedItem != null)
-                                    {
-                                        return;
-                                    }
                                 }
                             }
                         }

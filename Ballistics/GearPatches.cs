@@ -53,21 +53,24 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(EquipmentPenaltyComponent __instance, Item item, bool anyArmorPlateSlots)
         {
-            float comfortModifier = GearStats.ComfortModifier(item);
-            if (comfortModifier > 0f && comfortModifier != 1f)
+            if (Plugin.ServerConfig.gear_weight)
             {
-                float comfortPercent = -1f * (float)Math.Round((comfortModifier - 1f) * 100f);
-                List<ItemAttributeClass> comfortAtt = item.Attributes;
-                ItemAttributeClass comfortAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.Comfort);
-                comfortAttClass.Name = ENewItemAttributeId.Comfort.GetName();
-                comfortAttClass.Base = () => comfortPercent;
-                comfortAttClass.StringValue = () => comfortPercent.ToString() + " %";
-                comfortAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                comfortAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
-                comfortAttClass.LessIsGood = false;
-                comfortAtt.Add(comfortAttClass);
+                float comfortModifier = GearStats.ComfortModifier(item);
+                if (comfortModifier > 0f && comfortModifier != 1f)
+                {
+                    float comfortPercent = -1f * (float)Math.Round((comfortModifier - 1f) * 100f);
+                    List<ItemAttributeClass> comfortAtt = item.Attributes;
+                    ItemAttributeClass comfortAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.Comfort);
+                    comfortAttClass.Name = ENewItemAttributeId.Comfort.GetName();
+                    comfortAttClass.Base = () => comfortPercent;
+                    comfortAttClass.StringValue = () => comfortPercent.ToString() + " %";
+                    comfortAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    comfortAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                    comfortAttClass.LessIsGood = false;
+                    comfortAtt.Add(comfortAttClass);
+                }
             }
-
+     
             ArmorComponent armorComp;
             if (anyArmorPlateSlots || item.TryGetItemComponent<ArmorComponent>(out armorComp)) 
             {
@@ -128,36 +131,42 @@ namespace RealismMod
         {
             Item item = __instance as Item;
 
-            float gearReloadSpeed = GearStats.ReloadSpeedMulti(item);
-            if (gearReloadSpeed > 0f && gearReloadSpeed != 1f)
+            if (Plugin.ServerConfig.reload_changes) 
             {
-                float reloadSpeedPercent = (float)Math.Round((gearReloadSpeed - 1f) * 100f);
-                List<ItemAttributeClass> reloadAtt = item.Attributes;
-                ItemAttributeClass reloadAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.GearReloadSpeed);
-                reloadAttClass.Name = ENewItemAttributeId.GearReloadSpeed.GetName();
-                reloadAttClass.Base = () => reloadSpeedPercent;
-                reloadAttClass.StringValue = () => reloadSpeedPercent.ToString() + " %";
-                reloadAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                reloadAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
-                reloadAttClass.LessIsGood = false;
-                reloadAtt.Add(reloadAttClass);
+                float gearReloadSpeed = GearStats.ReloadSpeedMulti(item);
+                if (gearReloadSpeed > 0f && gearReloadSpeed != 1f)
+                {
+                    float reloadSpeedPercent = (float)Math.Round((gearReloadSpeed - 1f) * 100f);
+                    List<ItemAttributeClass> reloadAtt = item.Attributes;
+                    ItemAttributeClass reloadAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.GearReloadSpeed);
+                    reloadAttClass.Name = ENewItemAttributeId.GearReloadSpeed.GetName();
+                    reloadAttClass.Base = () => reloadSpeedPercent;
+                    reloadAttClass.StringValue = () => reloadSpeedPercent.ToString() + " %";
+                    reloadAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    reloadAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                    reloadAttClass.LessIsGood = false;
+                    reloadAtt.Add(reloadAttClass);
+                }
             }
 
-            if (template.ArmorType == EArmorType.None) 
+            if (Plugin.ServerConfig.gear_weight) 
             {
-                float comfortModifier = GearStats.ComfortModifier(item);
-                if (comfortModifier > 0f && comfortModifier != 1f)
+                if (template.ArmorType == EArmorType.None)
                 {
-                    float comfortPercent = -1f * (float)Math.Round((comfortModifier - 1f) * 100f);
-                    List<ItemAttributeClass> comfortAtt = item.Attributes;
-                    ItemAttributeClass comfortAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.Comfort);
-                    comfortAttClass.Name = ENewItemAttributeId.Comfort.GetName();
-                    comfortAttClass.Base = () => comfortPercent;
-                    comfortAttClass.StringValue = () => comfortPercent.ToString() + " %";
-                    comfortAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                    comfortAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
-                    comfortAttClass.LessIsGood = false;
-                    comfortAtt.Add(comfortAttClass);
+                    float comfortModifier = GearStats.ComfortModifier(item);
+                    if (comfortModifier > 0f && comfortModifier != 1f)
+                    {
+                        float comfortPercent = -1f * (float)Math.Round((comfortModifier - 1f) * 100f);
+                        List<ItemAttributeClass> comfortAtt = item.Attributes;
+                        ItemAttributeClass comfortAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.Comfort);
+                        comfortAttClass.Name = ENewItemAttributeId.Comfort.GetName();
+                        comfortAttClass.Base = () => comfortPercent;
+                        comfortAttClass.StringValue = () => comfortPercent.ToString() + " %";
+                        comfortAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                        comfortAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                        comfortAttClass.LessIsGood = false;
+                        comfortAtt.Add(comfortAttClass);
+                    }
                 }
             }
         }

@@ -438,7 +438,7 @@ namespace RealismMod
             float meleeDmg = AttachmentProperties.ModMeleeDamage(__instance);
             float meleePen = AttachmentProperties.ModMeleePen(__instance);
 
-            if (Plugin.EnableMalfPatch.Value == true && Plugin.ServerConfig.malf_changes == true)
+            if (Plugin.ServerConfig.malf_changes == true)
             {
                 ItemAttributeClass malfAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.MalfunctionChance);
                 malfAtt.Name = ENewItemAttributeId.MalfunctionChance.GetName();
@@ -748,10 +748,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            if (Plugin.EnableStatsDelta.Value == true)
-            {
-                StatDeltaDisplay.DisplayDelta(__instance);
-            }
+            StatDeltaDisplay.DisplayDelta(__instance);
             __result = UIWeaponStats.HRecoilDelta;
             return false;
         }
@@ -784,10 +781,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            if (Plugin.EnableStatsDelta.Value == true)
-            {
-                StatDeltaDisplay.DisplayDelta(__instance);
-            }
+            StatDeltaDisplay.DisplayDelta(__instance);
             __result = UIWeaponStats.VRecoilDelta;
             return false;
         }
