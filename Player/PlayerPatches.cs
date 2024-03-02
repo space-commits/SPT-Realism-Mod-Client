@@ -39,6 +39,7 @@ namespace RealismMod
                 FirearmController fc = player.HandsController as FirearmController;
                 if (!Plugin.CanLoadChamber && fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1 && fc.Weapon.ChamberAmmoCount == 0 && fc.Weapon.GetCurrentMagazine() != null && fc.Weapon.GetCurrentMagazine().Count > 0)
                 {
+         
                     Plugin.CanLoadChamber = true;
                     int currentMagazineCount = fc.Weapon.GetCurrentMagazineCount();
                     MagazineClass mag = fc.Weapon.GetCurrentMagazine();
@@ -55,6 +56,7 @@ namespace RealismMod
                     fc.FirearmsAnimator.Rechamber(true);
                     Plugin.startRechamberTimer = true;
                     Plugin.chamberTimer = 0f;
+                    return false;
                 }
             }
             if (command == ECommand.ToggleGoggles) 
@@ -416,7 +418,7 @@ namespace RealismMod
                 if (Plugin.startRechamberTimer)
                 {
                     Plugin.chamberTimer += Time.deltaTime;
-                    if (Plugin.chamberTimer >= 0.5f)
+                    if (Plugin.chamberTimer >= 5f)
                     {
                         fc.FirearmsAnimator.Rechamber(false);
                         Plugin.startRechamberTimer = false;
