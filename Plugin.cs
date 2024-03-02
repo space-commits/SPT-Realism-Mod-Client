@@ -610,6 +610,7 @@ namespace RealismMod
             //Deafen Effects
             if (ServerConfig.headset_changes)
             {
+                Logger.LogWarning("audio patches");
                 new PrismEffectsEnablePatch().Enable();
                 new PrismEffectsDisablePatch().Enable();
                 new UpdatePhonesPatch().Enable();
@@ -755,11 +756,6 @@ namespace RealismMod
                     StanceController.StanceShotTimer();
                 }
 
-                if (ServerConfig.enable_stances) 
-                {
-                    StanceController.StanceState();
-                }
-
                 if (ServerConfig.headset_changes)
                 {
                     if (Input.GetKeyDown(Plugin.IncGain.Value.MainKey) && DeafeningController.HasHeadSet)
@@ -805,6 +801,12 @@ namespace RealismMod
                         }
                     }
                 }
+
+                if (ServerConfig.enable_stances) 
+                {
+                    StanceController.StanceState();
+                }
+
             }
             else
             {

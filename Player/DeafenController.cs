@@ -20,7 +20,6 @@ namespace RealismMod
     public static class DeafeningController
     {
         private static bool valuesAreReset = false;
-        private static bool headsetValuesAreReset = false;
 
         public static bool HasHeadSet = false;
         public static PrismEffects PrismEffects;
@@ -105,13 +104,12 @@ namespace RealismMod
             float totalVolume = Mathf.Clamp(Volume + BotVolume + GrenadeVolume, -40.0f, 0.0f);
             float totalVignette = Mathf.Clamp(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 0.0f, 65.0f);
 
-            float headsetAmbientVol = Plugin.RealTimeGain.Value == 0f ? -10f : DeafeningController.AmbientVolume * (1f + (Plugin.RealTimeGain.Value / 15f)) * -Plugin.HeadsetAmbientMulti.Value;
-
+            float headsetAmbientVol = DeafeningController.AmbientVolume * (1f + (Plugin.RealTimeGain.Value / 15f)) * -Plugin.HeadsetAmbientMulti.Value;
             //for some reason this prevents the values from being fully reset to 0
             if (totalVolume != 0.0f || totalVignette != 0.0f)
             {
                 DeafeningController.PrismEffects.vignetteStrength = totalVignette;
-
+                DeafeningController.PrismEffects.vignetteColor = Color.red;   
                 if (!DeafeningController.HasHeadSet)
                 {
                     Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", totalVolume + DeafeningController.GunsVolume);
@@ -119,6 +117,11 @@ namespace RealismMod
                     Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", totalVolume + DeafeningController.DryVolume);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", totalVolume + DeafeningController.AmbientOccluded);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", totalVolume + DeafeningController.AmbientVolume);
+                }
+                else
+                {
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value * Plugin.GainCutoff.Value);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol * (1f + (1f - Plugin.GainCutoff.Value)));
                 }
 
                 valuesAreReset = false;
@@ -136,21 +139,10 @@ namespace RealismMod
                     Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", DeafeningController.AmbientVolume);
                 }
             }
-
-            if (DeafeningController.HasHeadSet)
+            else 
             {
-                if (RecoilController.IsFiringDeafen)
-                {
-                    headsetValuesAreReset = false;
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value * Plugin.GainCutoff.Value);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol * (1f + (1f - Plugin.GainCutoff.Value)));
-                }
-                else if(!headsetValuesAreReset)
-                {
-                    headsetValuesAreReset = true;
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol);
-                }
+                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol);
             }
         }
 

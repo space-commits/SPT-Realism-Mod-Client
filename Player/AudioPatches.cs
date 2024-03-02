@@ -226,7 +226,7 @@ namespace RealismMod
             float mainT;
 
             ActionClass.CreateEvent<CompressorTemplateClass>().Invoke(template);
-
+            Utils.Logger.LogWarning("SetCompressor");
             DeafeningController.DryVolume = hasHeadset ? template.DryVolume : 0f;
             DeafeningController.CompressorVolume = hasHeadset ? template.CompressorVolume : -80f;
             DeafeningController.AmbientVolume = hasHeadset ? template.AmbientVolume : 0f;

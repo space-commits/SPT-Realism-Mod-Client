@@ -418,7 +418,7 @@ namespace RealismMod
                 if (Plugin.startRechamberTimer)
                 {
                     Plugin.chamberTimer += Time.deltaTime;
-                    if (Plugin.chamberTimer >= 5f)
+                    if (Plugin.chamberTimer >= Plugin.test1.Value)
                     {
                         fc.FirearmsAnimator.Rechamber(false);
                         Plugin.startRechamberTimer = false;
