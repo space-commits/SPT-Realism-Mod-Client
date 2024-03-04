@@ -205,7 +205,9 @@ namespace RealismMod
         private bool rightArmRuined = false;
         private bool leftArmRuined = false;
 
-        public bool StimHasOverdosed = false;  
+        public bool StimHasOverdosed = false;
+
+        public float ResourcePerTick = 0;
 
         public bool ArmsAreIncapacitated 
         {
@@ -1159,7 +1161,7 @@ namespace RealismMod
 
             float drugFactor = StimHasOverdosed ? 100f + PainReliefStrength : PainReliefStrength;
             float painReliefFactor = Mathf.Min((drugFactor * 2.2f) / 100f, 0.99f);
-            float resourcePainReliefFactor = (drugFactor * 4.5f) / 100f;
+            float resourcePainReliefFactor = drugFactor / 100f;
 
             float currentEnergy = player.ActiveHealthController.Energy.Current;
             float maxEnergy = player.ActiveHealthController.Energy.Maximum;
@@ -1287,11 +1289,19 @@ namespace RealismMod
             PlayerState.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)), 3.5f * percentHydroLimitErgo);
             PlayerState.RecoilInjuryMulti = Mathf.Min(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)), 1.15f * percentHydroLimitRecoil);
 
-            if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach)) 
+            if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach))
             {
-                float sprintFactor = PlayerState.IsSprinting ? 2f : 0f;
-                ResourceRateEffect resEffect = new ResourceRateEffect((resourceRateInjuryMulti + resourcePainReliefFactor) * sprintFactor, null, player, 0);
+                ResourceRateEffect resEffect = new ResourceRateEffect(null, player, 0);
                 AddCustomEffect(resEffect, false);
+            }
+            else 
+            {
+                float playerWeightFactor = PlayerState.TotalModifiedWeight / 20f;
+                float sprintMulti = PlayerState.IsSprinting ? 2f : 1f;
+                float sprintFactor = PlayerState.IsSprinting ? 0.1f : 0f;
+                float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti;
+                ResourcePerTick = totalResourceRate;
+                Utils.Logger.LogWarning("ResourcePerTick " + ResourcePerTick);
             }
         }
     }

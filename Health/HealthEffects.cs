@@ -219,12 +219,12 @@ namespace RealismMod
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }
         public int TimeExisted { get; set; }
-        public float ResourcePerTick { get; }
         public Player _Player { get; }
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
+        private bool addedEffect = false;
 
-        public ResourceRateEffect(float resourcePerTick, int? dur, Player player, int delay)
+        public ResourceRateEffect(int? dur, Player player, int delay)
         {
             TimeExisted = 0;
             Duration = dur;
@@ -232,19 +232,14 @@ namespace RealismMod
             Delay = delay;
             EffectType = EHealthEffectType.ResourceRate;
             BodyPart = EBodyPart.Stomach;
-            ResourcePerTick = resourcePerTick;
         }
 
         public void Tick()
         {
-            if (Delay <= 0)
+            if (!addedEffect) 
             {
-                TimeExisted++;
-                if (TimeExisted % 3 == 0) 
-                {
-                    _Player.ActiveHealthController.AddEffect<ResourceRateChange>(BodyPart, 0f, 3f, 0f, ResourcePerTick, null);
-                    Duration = 0;                
-                }
+                _Player.ActiveHealthController.AddEffect<ResourceRateChange>(BodyPart, 0f, null, 0f, 0f, null);
+                addedEffect = false;
             }
         }
     }
@@ -303,7 +298,6 @@ namespace RealismMod
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
         public EStimType StimType { get; }
-        private bool addedEffect = false;
 
         public StimShellEffect(Player player, int? dur, int delay, EStimType stimType)
         {
@@ -358,7 +352,7 @@ namespace RealismMod
     {
         public override void Started()
         {
-            this.resourcePerTick = base.Strength;
+            this.resourcePerTick = Plugin.RealHealthController.ResourcePerTick;
             this.bodyPart = base.BodyPart;
             this.SetHealthRatesPerSecond(0f, -this.resourcePerTick, -this.resourcePerTick, 0f);
         }
@@ -371,8 +365,12 @@ namespace RealismMod
                 return;
             }
             this.time -= 3f;
+            Utils.Logger.LogWarning("tick");
+            Utils.Logger.LogWarning("resourcePerTick " + resourcePerTick);
+            this.resourcePerTick = Plugin.RealHealthController.ResourcePerTick;
             base.HealthController.ChangeEnergy(-this.resourcePerTick);
             base.HealthController.ChangeHydration(-this.resourcePerTick);
+            this.SetHealthRatesPerSecond(0f, -this.resourcePerTick, -this.resourcePerTick, 0f);
         }
 
         private float resourcePerTick;
