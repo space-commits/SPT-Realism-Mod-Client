@@ -28,6 +28,8 @@ using ExistanceClass = GClass2452;
 using StamController = GClass679;
 using PhysicalClass = GClass678;
 using MedkitTemplate = GInterface296;
+using static EFT.HealthSystem.ActiveHealthController;
+using static GClass2413;
 
 namespace RealismMod
 {
@@ -140,6 +142,24 @@ namespace RealismMod
         }
     }
 
+
+    public class StimStackPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
+            Type genericType = typeof(Class1885<>); //declare generic type
+            Type constructedType = genericType.MakeGenericType(new Type[] { nestedType }); //construct type at runtime using nested type
+            return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(ref bool __result) //can use dynamic type for instance
+        {
+            __result = false;
+            return false;
+        }
+    }
 
     public class BreathIsAudiblePatch : ModulePatch
     {
@@ -261,24 +281,27 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ActiveHealthController __instance, EBodyPart bodyPart, float healthPenalty, ref bool __result)
         {
-            BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);
+
+
+            //I had to do this previously due to the type being protected, no longer is the case. Keeping for reference.
+            /* BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);*/
+
+            GClass2412<ActiveHealthController.GClass2411>.BodyPartState bodyPartState = __instance.Dictionary_0[bodyPart];
             SkillManager skills = (SkillManager)AccessTools.Field(typeof(ActiveHealthController), "skillManager_0").GetValue(__instance);
             Action<EBodyPart, ValueStruct> bodyPartRestoredField = (Action<EBodyPart, ValueStruct>)AccessTools.Field(typeof(ActiveHealthController), "BodyPartRestoredEvent").GetValue(__instance);
-            MethodInfo syncSurgeryPackets = AccessTools.Method(typeof(ActiveHealthController), "method_40");
-            MethodInfo syncBodypartPackets = AccessTools.Method(typeof(ActiveHealthController), "method_32");
 
-            if (!bodyPartStateWrapper.IsDestroyed)
+            if (!bodyPartState.IsDestroyed)
             {
                 __result = false;
                 return false;
             }
 
-            HealthValue health = bodyPartStateWrapper.Health;
-            bodyPartStateWrapper.IsDestroyed = false;
+            HealthValue health = bodyPartState.Health;
+            bodyPartState.IsDestroyed = false;
             healthPenalty += (1f - healthPenalty) * skills.SurgeryReducePenalty;
-            bodyPartStateWrapper.Health = new HealthValue(1f, Mathf.Max(1f, Mathf.Ceil(bodyPartStateWrapper.Health.Maximum * healthPenalty)), 0f);
-            syncSurgeryPackets.Invoke(__instance, new object[] { bodyPart, EDamageType.Medicine });
-            syncBodypartPackets.Invoke(__instance, new object[] { bodyPart });
+            bodyPartState.Health = new HealthValue(1f, Mathf.Max(1f, Mathf.Ceil(bodyPartState.Health.Maximum * healthPenalty)), 0f);
+            __instance.method_40(bodyPart, EDamageType.Medicine);
+            __instance.method_32(bodyPart);
             Action<EBodyPart, ValueStruct> bodyPartRestoredEvent = bodyPartRestoredField;
             if (bodyPartRestoredEvent != null)
             {
@@ -334,7 +357,7 @@ namespace RealismMod
                 Logger.LogWarning("Cancelling Meds");
             }
 
-            Plugin.RealHealthController.CancelCustomEffects();
+            Plugin.RealHealthController.CancelPendingEffects();
         }
     }
 
@@ -466,9 +489,22 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
         {
-            string medType = MedProperties.MedType(meds);
-            if (__instance.IsYourPlayer && meds.Template._parent != "5448f3a64bdc2d60728b456a")
+
+            if (meds.Template._parent == "5448f3a64bdc2d60728b456a") 
             {
+                Logger.LogWarning("================================STIM");
+                Logger.LogWarning("dur " + meds.HealthEffectsComponent.BuffSettings[0].Duration);
+                Logger.LogWarning("delay " + meds.HealthEffectsComponent.BuffSettings[0].Delay);
+                Logger.LogWarning("dur 2" + meds.HealthEffectsComponent.BuffSettings[meds.HealthEffectsComponent.BuffSettings.Length - 1].Duration);
+                Logger.LogWarning("delay 2" + meds.HealthEffectsComponent.BuffSettings[meds.HealthEffectsComponent.BuffSettings.Length - 1].Delay);
+                StimShellEffect stimEffect = new StimShellEffect(__instance, 600, 5, Plugin.RealHealthController.GetStimType(meds.Template._id));
+                Plugin.RealHealthController.AddCustomEffect(stimEffect, true);
+                return true;
+            }
+
+            if (__instance.IsYourPlayer)
+            {
+                string medType = MedProperties.MedType(meds);
 
                 if (MedProperties.CanBeUsedInRaid(meds) == false)
                 {
@@ -476,8 +512,7 @@ namespace RealismMod
                     return false;
                 }
 
-                MedsClass med = meds as MedsClass;
-                float medHPRes = med.MedKitComponent.HpResource;
+                float medHPRes = meds.MedKitComponent.HpResource;
 
                 string hBleedHealType = MedProperties.HBleedHealType(meds);
 
@@ -661,7 +696,7 @@ namespace RealismMod
         }
     }
 
-   /* //THIS IS DOG SHIT, IT WILL AFFECT BOTS, UNUSED
+   /* //IT WILL AFFECT BOTS, UNUSED
     public class EnergyRatePatch : ModulePatch
     {
 
@@ -709,7 +744,7 @@ namespace RealismMod
         }
     }*/
 
-/*    //THIS IS DOG SHIT, IT WILL AFFECT BOTS, UNUSED
+/*    //IT WILL AFFECT BOTS, UNUSED
     public class HydoRatePatch : ModulePatch
     {
         private static Type _targetType;

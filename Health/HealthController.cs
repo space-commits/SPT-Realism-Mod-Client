@@ -133,15 +133,46 @@ namespace RealismMod
         }
     }
 
+    public enum EStimType 
+    {
+        Regenerative,
+        Combat,
+        Adrenal,
+        Clotting,
+        Other
+    }
 
     public class RealismHealthController
     {
+
+        public Dictionary<string, EStimType> StimTypes = new Dictionary<string, EStimType>()
+        {
+            {"5c10c8fd86f7743d7d706df3", EStimType.Adrenal},
+            {"5ed515e03a40a50460332579", EStimType.Adrenal},
+            {"637b620db7afa97bfc3d7009", EStimType.Adrenal},
+            {"5c0e533786f7747fa23f4d47", EStimType.Clotting},
+            {"5ed515f6915ec335206e4152", EStimType.Clotting},
+            {"5ed515ece452db0eb56fc028", EStimType.Combat},
+            {"5ed5160a87bb8443d10680b5", EStimType.Other},
+            {"637b6251104668754b72f8f9", EStimType.Other},
+            {"5c0e530286f7747fa1419862", EStimType.Regenerative},
+            {"637b6179104668754b72f8f5", EStimType.Regenerative},
+            {"5c0e534186f7747fa1419867", EStimType.Regenerative},
+            {"SJ0", EStimType.Regenerative},
+            {"5c0e531286f7747fa54205c2", EStimType.Combat},
+            {"5c0e531d86f7747fa23f4d42", EStimType.Combat},
+            {"637b612fb7afa97bfc3d7005", EStimType.Other},
+            {"5fca13ca637ee0341a484f46", EStimType.Other},
+            {"637b60c3b7afa97bfc3d7001", EStimType.Other},
+            {"5ed5166ad380ab312177c100", EStimType.Other}
+        };
+
         public DamageTracker DmgTracker { get; }
         public ManualLogSource Logger { get; }
 
         private float healthControllerTime = 0f;
         private float effectsTime = 0f;
-        private float reliefWaitTimer = 0f;
+        private float reliefWaitTime = 0f;
 
         public EBodyPart[] BodyParts = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm };
 
@@ -159,6 +190,7 @@ namespace RealismMod
         private bool reset2 = false;
         private bool reset3 = false;
         private bool reset4 = false;
+        private bool reset5 = false;
 
         public float PainStrength = 0f;
         public float PainReliefStrength = 0f;
@@ -167,9 +199,11 @@ namespace RealismMod
 
         public const float PainThreshold = 30f;
         public const float PainReliefThreshold = 30f;
-        public const float OverdoseThreshold = 30f;
+        public const float PKOverdoseThreshold = 30f;
         private bool rightArmRuined = false;
         private bool leftArmRuined = false;
+
+        public bool StimHasOverdosed = false;  
 
         public bool ArmsAreIncapacitated 
         {
@@ -183,7 +217,7 @@ namespace RealismMod
         {
             get
             {
-                return PainReliefStrength > OverdoseThreshold;
+                return PainReliefStrength > PKOverdoseThreshold || StimHasOverdosed;
             }
         }
 
@@ -201,7 +235,7 @@ namespace RealismMod
             {
                 healthControllerTime += Time.deltaTime;
                 effectsTime += Time.deltaTime;
-                reliefWaitTimer += Time.deltaTime;
+                reliefWaitTime += Time.deltaTime;
                 ControllerTick();
 
                 if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
@@ -288,7 +322,6 @@ namespace RealismMod
             MethodInfo effectMethod = GetAddBaseEFTEffectMethodInfo();
             effectMethod.MakeGenericMethod(typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType(effect, BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { bodyPart, delayTime, duration, residueTime, strength, null });
         }
-
 
         public void AddBaseEFTEffectIfNoneExisting(Player player, string effect, EBodyPart bodyPart, float delayTime, float duration, float residueTime, float strength)
         {
@@ -410,7 +443,7 @@ namespace RealismMod
             return hasEffect;
         }
 
-        public void CancelCustomEffects()
+        public void CancelPendingEffects()
         {
             for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
             {
@@ -498,6 +531,31 @@ namespace RealismMod
             return false;
         }
 
+        public void EvaluateActiveStims() 
+        {
+            IEnumerable<StimShellEffect> stimTypes = activeHealthEffects.OfType<StimShellEffect>();
+
+            var groups = stimTypes.GroupBy(effect => effect.StimType);
+            var duplicateGroups = groups.Where(group => group.Count() > 1);
+            int totalDuplicates = duplicateGroups.Sum(group => group.Count());
+
+            foreach (var group in duplicateGroups) // use this to count duplicates per category
+            {
+            Utils.Logger.LogWarning($"Property value: {group.Key}, Count: {group.Count()}");
+            }
+            Utils.Logger.LogWarning("duplicates " + totalDuplicates);
+            if (totalDuplicates > 1)
+            {
+                StimHasOverdosed = true;
+            }
+            else StimHasOverdosed = false;
+        }
+
+        public EStimType GetStimType(string id) 
+        {
+            return StimTypes.TryGetValue(id, out EStimType type) ? type : EStimType.Other;
+        }
+
         public void ResourceRegenCheck(Player player)
         {
             float vitalitySkill = player.Skills.VitalityBuffSurviobilityInc.Value;
@@ -538,7 +596,7 @@ namespace RealismMod
                     AddBaseEFTEffectIfNoneExisting(player, "PainKiller", EBodyPart.Head, 1f, ReliefDuration, 5f, 1f);
                 }
 
-                if (reliefWaitTimer >= painReliefInterval)
+                if (reliefWaitTime >= painReliefInterval)
                 {
                     AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, painReliefInterval, 5f, PainTunnelStrength);
 
@@ -548,10 +606,11 @@ namespace RealismMod
                         AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 1f, painReliefInterval, 5f, 1);
                     }
 
-                    reliefWaitTimer = 0f;
+                    reliefWaitTime = 0f;
                 }
             }
         }
+
 
         private void TickEffects() 
         {
@@ -600,10 +659,15 @@ namespace RealismMod
                 DoubleBleedCheck(player);
                 reset3 = true;
             }
-            if (healthControllerTime >= 3f && !reset4)
+            if (healthControllerTime >= 2.5f && !reset4)
+            {
+                EvaluateActiveStims();
+                reset4 = true;
+            }
+            if (healthControllerTime >= 3f && !reset5)
             {
                 PlayerInjuryStateCheck(player);
-                reset4 = true;
+                reset5 = true;
             }
 
             if (effectsTime >= 1f)
@@ -620,6 +684,7 @@ namespace RealismMod
                 reset2 = false;
                 reset3 = false;
                 reset4 = false;
+                reset5 = false;
             }
         }
 
@@ -788,7 +853,6 @@ namespace RealismMod
                 AddCustomEffect(regenEffect, false);
             }
         }
-
 
         public void RestoreHPArossBody(Player player, float hpToRestore, int delay, EDamageType damageType, float tickRate)
         {
@@ -1218,7 +1282,7 @@ namespace RealismMod
 
             if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach)) 
             {
-                ResourceRateEffect resEffect = new ResourceRateEffect(resourceRateInjuryMulti + resourcePainReliefFactor, null, player, 0, Logger);
+                ResourceRateEffect resEffect = new ResourceRateEffect(resourceRateInjuryMulti + resourcePainReliefFactor, null, player, 0);
                 AddCustomEffect(resEffect, false);
             }
         }

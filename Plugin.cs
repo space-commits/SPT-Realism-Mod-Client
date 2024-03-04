@@ -678,7 +678,8 @@ namespace RealismMod
                 new HCApplyDamagePatch().Enable();
                 new RestoreBodyPartPatch().Enable();
                 new FlyingBulletPatch().Enable();
-                new ToggleHeadDevicePatch().Enable();   
+                new ToggleHeadDevicePatch().Enable();
+                new StimStackPatch().Enable();
             }
         }
 

@@ -43,6 +43,7 @@ namespace RealismMod
                     Plugin.RealHealthController.AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 0f, 10f, 5f, 1f);
                     Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.Head, null, null, null, null);
                     Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.RightArm, null, null, null, null);
+                    NotificationManagerClass.DisplayWarningNotification("Catastrophic Failure. Wrong Ammo/Weapon Caliber Combination.", EFT.Communications.ENotificationDurationType.Long);
                 }
                 player.ActiveHealthController.ApplyDamage(EBodyPart.Head, UnityEngine.Random.Range(5, 20), GClass2452.Existence);
                 player.ActiveHealthController.ApplyDamage(EBodyPart.RightArm, UnityEngine.Random.Range(20, 60), GClass2452.Existence);

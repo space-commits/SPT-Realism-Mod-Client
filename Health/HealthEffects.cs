@@ -19,7 +19,8 @@ namespace RealismMod
         HealthRegen,
         Adrenaline,
         ResourceRate,
-        PainKiller
+        PainKiller,
+        Stim
     }
 
     public interface IHealthEffect
@@ -222,9 +223,8 @@ namespace RealismMod
         public Player _Player { get; }
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
-        private ManualLogSource Logger;
 
-        public ResourceRateEffect(float resourcePerTick, int? dur, Player player, int delay, ManualLogSource logger)
+        public ResourceRateEffect(float resourcePerTick, int? dur, Player player, int delay)
         {
             TimeExisted = 0;
             Duration = dur;
@@ -233,7 +233,6 @@ namespace RealismMod
             EffectType = EHealthEffectType.ResourceRate;
             BodyPart = EBodyPart.Stomach;
             ResourcePerTick = resourcePerTick;
-            Logger = logger;
         }
 
         public void Tick()
@@ -296,6 +295,40 @@ namespace RealismMod
                         Plugin.RealHealthController.AddBasesEFTEffect(_Player, "PainKiller", EBodyPart.Head, 0f, (float)Duration, 1f, 1f);
                         Plugin.RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 0f, (float)Duration, 1f, TunnelVisionStrength);
                     }*/
+                }
+            }
+        }
+    }
+
+    public class StimShellEffect : IHealthEffect
+    {
+        public EBodyPart BodyPart { get; set; }
+        public int? Duration { get; set; }
+        public int TimeExisted { get; set; }
+        public Player _Player { get; }
+        public int Delay { get; set; }
+        public EHealthEffectType EffectType { get; }
+        public EStimType StimType { get; }
+
+        public StimShellEffect(Player player, int? dur, int delay, EStimType stimType)
+        {
+            TimeExisted = 0;
+            Duration = dur;
+            _Player = player;
+            Delay = delay;
+            EffectType = EHealthEffectType.Stim;
+            BodyPart = EBodyPart.Head;
+            StimType = stimType;
+        }
+
+        public void Tick()
+        {
+            if (Delay <= 0)
+            {
+                TimeExisted++;
+                if (TimeExisted >= Duration)
+                {
+                    Duration = 0;
                 }
             }
         }

@@ -108,8 +108,7 @@ namespace RealismMod
             //for some reason this prevents the values from being fully reset to 0
             if (totalVolume != 0.0f || totalVignette != 0.0f)
             {
-                DeafeningController.PrismEffects.vignetteStrength = totalVignette;
-                DeafeningController.PrismEffects.vignetteColor = Color.red;   
+                DeafeningController.PrismEffects.vignetteStrength = totalVignette;  
                 if (!DeafeningController.HasHeadSet)
                 {
                     Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", totalVolume + DeafeningController.GunsVolume);
@@ -139,7 +138,7 @@ namespace RealismMod
                     Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", DeafeningController.AmbientVolume);
                 }
             }
-            else 
+            else if(DeafeningController.HasHeadSet)
             {
                 Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol);
