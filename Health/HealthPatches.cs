@@ -492,12 +492,9 @@ namespace RealismMod
 
             if (meds.Template._parent == "5448f3a64bdc2d60728b456a") 
             {
-                Logger.LogWarning("================================STIM");
-                Logger.LogWarning("dur " + meds.HealthEffectsComponent.BuffSettings[0].Duration);
-                Logger.LogWarning("delay " + meds.HealthEffectsComponent.BuffSettings[0].Delay);
-                Logger.LogWarning("dur 2" + meds.HealthEffectsComponent.BuffSettings[meds.HealthEffectsComponent.BuffSettings.Length - 1].Duration);
-                Logger.LogWarning("delay 2" + meds.HealthEffectsComponent.BuffSettings[meds.HealthEffectsComponent.BuffSettings.Length - 1].Delay);
-                StimShellEffect stimEffect = new StimShellEffect(__instance, 600, 5, Plugin.RealHealthController.GetStimType(meds.Template._id));
+                int duration = (int)meds.HealthEffectsComponent.BuffSettings[0].Duration * 2;
+                int delay = (int)meds.HealthEffectsComponent.BuffSettings[0].Delay;
+                StimShellEffect stimEffect = new StimShellEffect(__instance, duration, delay, Plugin.RealHealthController.GetStimType(meds.Template._id));
                 Plugin.RealHealthController.AddCustomEffect(stimEffect, true);
                 return true;
             }

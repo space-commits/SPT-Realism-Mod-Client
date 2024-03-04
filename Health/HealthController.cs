@@ -173,6 +173,7 @@ namespace RealismMod
         private float healthControllerTime = 0f;
         private float effectsTime = 0f;
         private float reliefWaitTime = 0f;
+        private float stimWaitTime = 0f;
 
         public EBodyPart[] BodyParts = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm };
 
@@ -197,6 +198,7 @@ namespace RealismMod
         public float PainTunnelStrength = 0f;
         public int ReliefDuration = 0;
 
+        private const int painReliefInterval = 15;
         public const float PainThreshold = 30f;
         public const float PainReliefThreshold = 30f;
         public const float PKOverdoseThreshold = 30f;
@@ -221,7 +223,6 @@ namespace RealismMod
             }
         }
 
-        private const int painReliefInterval = 15;
 
         public RealismHealthController(DamageTracker dmgTracker, ManualLogSource logger) 
         {
@@ -236,6 +237,7 @@ namespace RealismMod
                 healthControllerTime += Time.deltaTime;
                 effectsTime += Time.deltaTime;
                 reliefWaitTime += Time.deltaTime;
+                stimWaitTime += Time.deltaTime;
                 ControllerTick();
 
                 if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
@@ -476,6 +478,7 @@ namespace RealismMod
             PainReliefStrength = 0f;
             PainTunnelStrength = 0f;
             ReliefDuration = 0;
+            StimHasOverdosed = false;
         }
 
         public void ResetBleedDamageRecord(Player player)
@@ -531,22 +534,25 @@ namespace RealismMod
             return false;
         }
 
-        public void EvaluateActiveStims() 
+        public void EvaluateActiveStims(Player player) 
         {
-            IEnumerable<StimShellEffect> stimTypes = activeHealthEffects.OfType<StimShellEffect>();
+            IEnumerable<StimShellEffect> stims = activeHealthEffects.OfType<StimShellEffect>();
+            var stimTypeGroups = stims.GroupBy(effect => effect.StimType);
+            var duplicatesGrouping = stimTypeGroups.Where(group => group.Count() > 1);
+            int totalDuplicates = duplicatesGrouping.Sum(group => group.Count());
 
-            var groups = stimTypes.GroupBy(effect => effect.StimType);
-            var duplicateGroups = groups.Where(group => group.Count() > 1);
-            int totalDuplicates = duplicateGroups.Sum(group => group.Count());
-
-            foreach (var group in duplicateGroups) // use this to count duplicates per category
+  /*          foreach (var group in duplicateGroups) // use this to count duplicates per category
             {
             Utils.Logger.LogWarning($"Property value: {group.Key}, Count: {group.Count()}");
-            }
+            }*/
+
             Utils.Logger.LogWarning("duplicates " + totalDuplicates);
-            if (totalDuplicates > 1)
+            if (totalDuplicates > 1 && stimWaitTime >= painReliefInterval)
             {
                 StimHasOverdosed = true;
+                AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, painReliefInterval, 5f, 1);
+                AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 1f, painReliefInterval, 5f, 1f);
+                AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 1f, painReliefInterval, 5f, 1);
             }
             else StimHasOverdosed = false;
         }
@@ -661,7 +667,7 @@ namespace RealismMod
             }
             if (healthControllerTime >= 2.5f && !reset4)
             {
-                EvaluateActiveStims();
+                EvaluateActiveStims(player);
                 reset4 = true;
             }
             if (healthControllerTime >= 3f && !reset5)
@@ -1151,8 +1157,9 @@ namespace RealismMod
             float stamRegenInjuryMulti = 1f;
             float resourceRateInjuryMulti = 1f;
 
-            float painReliefFactor = Mathf.Min((PainReliefStrength * 2f) / 100f, 0.99f);
-            float resourcePainReliefFactor = (PainReliefStrength * 4f) / 100f;
+            float drugFactor = StimHasOverdosed ? 100f + PainReliefStrength : PainReliefStrength;
+            float painReliefFactor = Mathf.Min((drugFactor * 2.2f) / 100f, 0.99f);
+            float resourcePainReliefFactor = (drugFactor * 4.5f) / 100f;
 
             float currentEnergy = player.ActiveHealthController.Energy.Current;
             float maxEnergy = player.ActiveHealthController.Energy.Maximum;
@@ -1265,9 +1272,9 @@ namespace RealismMod
             float percentEnergyErgo = 1f - ((1f - percentEnergyFactor) / 2f);
             float percentEnergyStamRegen = 1f - ((1f - percentEnergyFactor) / 10f);
 
-            float percentHydroLowerLimit = (1f - ((1f - percentHydro) / 4f)) * (1f - (painReliefFactor / 5));
-            float percentHydroLimitRecoil = (1f + ((1f - percentHydro) / 20f)) * (1f - (painReliefFactor / 5));
-            float percentHydroLimitErgo = (1f + ((1f - percentHydro) / 4f)) * (1f - (painReliefFactor / 5));
+            float percentHydroLowerLimit = (1f - ((1f - percentHydro) / 4f)) * (1f - (painReliefFactor / 4));
+            float percentHydroLimitRecoil = (1f + ((1f - percentHydro) / 20f)) * (1f - (painReliefFactor / 4));
+            float percentHydroLimitErgo = (1f + ((1f - percentHydro) / 4f)) * (1f - (painReliefFactor / 4));
 
             PlayerState.AimMoveSpeedInjuryMulti = Mathf.Max(aimMoveSpeedMulti * percentEnergyAimMove, 0.6f * percentHydroLowerLimit);
             PlayerState.ADSInjuryMulti = Mathf.Max(adsInjuryMulti * percentEnergyADS, 0.35f * percentHydroLowerLimit);
@@ -1282,7 +1289,8 @@ namespace RealismMod
 
             if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach)) 
             {
-                ResourceRateEffect resEffect = new ResourceRateEffect(resourceRateInjuryMulti + resourcePainReliefFactor, null, player, 0);
+                float sprintFactor = PlayerState.IsSprinting ? 2f : 0f;
+                ResourceRateEffect resEffect = new ResourceRateEffect((resourceRateInjuryMulti + resourcePainReliefFactor) * sprintFactor, null, player, 0);
                 AddCustomEffect(resEffect, false);
             }
         }

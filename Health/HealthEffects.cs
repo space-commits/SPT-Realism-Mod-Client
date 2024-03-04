@@ -289,12 +289,6 @@ namespace RealismMod
                     Plugin.RealHealthController.PainReliefStrength += PainKillerStrength;
                     Plugin.RealHealthController.PainTunnelStrength += TunnelVisionStrength;
                     Plugin.RealHealthController.ReliefDuration += (int)Duration;
-
-          /*          if (!Plugin.RealHealthController.HasBaseEFTEffect(_Player, "PainKiller"))
-                    {
-                        Plugin.RealHealthController.AddBasesEFTEffect(_Player, "PainKiller", EBodyPart.Head, 0f, (float)Duration, 1f, 1f);
-                        Plugin.RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 0f, (float)Duration, 1f, TunnelVisionStrength);
-                    }*/
                 }
             }
         }
@@ -309,6 +303,7 @@ namespace RealismMod
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
         public EStimType StimType { get; }
+        private bool addedEffect = false;
 
         public StimShellEffect(Player player, int? dur, int delay, EStimType stimType)
         {
@@ -325,11 +320,8 @@ namespace RealismMod
         {
             if (Delay <= 0)
             {
-                TimeExisted++;
-                if (TimeExisted >= Duration)
-                {
-                    Duration = 0;
-                }
+                Duration--;
+                if (Duration <= 0) Duration = 0;
             }
         }
     }
