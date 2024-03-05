@@ -492,11 +492,17 @@ namespace RealismMod
 
             if (meds.Template._parent == "5448f3a64bdc2d60728b456a") 
             {
+
                 int duration = (int)meds.HealthEffectsComponent.BuffSettings[0].Duration * 2;
                 int delay = (int)meds.HealthEffectsComponent.BuffSettings[0].Delay;
                 StimShellEffect stimEffect = new StimShellEffect(__instance, duration, delay, Plugin.RealHealthController.GetStimType(meds.Template._id));
                 Plugin.RealHealthController.AddCustomEffect(stimEffect, true);
-                return true;
+                Logger.LogWarning("//////////////////parent " + meds.Parent);
+                Logger.LogWarning("//////////////////temp parent " + meds.Template.Parent);
+
+    
+/*                __instance.HealthController.ApplyItem(meds, EBodyPart.Head, null);
+*/                return true;
             }
 
             if (__instance.IsYourPlayer)

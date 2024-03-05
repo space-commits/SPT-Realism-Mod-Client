@@ -521,10 +521,25 @@ namespace RealismMod
                     }
                 }
 
+
+                if (IsFiringFromStance)
+                {
+                    bool cancelStance = 
+                        CurrentStance == EStance.HighReady || 
+                        (CurrentStance == EStance.LowReady && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed) ||
+                        CurrentStance == EStance.PatrolStance;
+                    if (cancelStance) 
+                    {
+                        CurrentStance = EStance.None;
+                        StoredStance = EStance.None;
+                        StanceBlender.Target = 0f;
+                    }
+                }
+
                 if (DoHighReadyInjuredAnim)
                 {
                     HighReadyBlackedArmTime += Time.deltaTime;
-                    if (HighReadyBlackedArmTime >= 0.4f)
+                    if (HighReadyBlackedArmTime >= 0.5f)
                     {
                         DoHighReadyInjuredAnim = false;
                         CurrentStance = EStance.LowReady;
@@ -538,6 +553,8 @@ namespace RealismMod
                     StanceBlender.Target = 1f;
                     CurrentStance = EStance.LowReady;
                     StoredStance = EStance.LowReady;
+                    WasActiveAim = false;
+                    DidStanceWiggle = false;
                 }
             }
 

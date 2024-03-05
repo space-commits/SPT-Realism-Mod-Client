@@ -127,6 +127,10 @@ namespace RealismMod
             }
         }
 
+        public static string GenId()
+        {
+            return Guid.NewGuid().ToString();
+        }
 
         public static bool IsSight(Mod mod)
         {

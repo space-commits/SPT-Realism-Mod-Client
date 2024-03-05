@@ -17,6 +17,7 @@ namespace RealismMod
         Surgery,
         Tourniquet,
         HealthRegen,
+        HealthDrain,
         Adrenaline,
         ResourceRate,
         PainKiller,
@@ -78,7 +79,7 @@ namespace RealismMod
 
                 if (currentPartHP > 25f && TimeExisted % 3 == 0) 
                 {
-                    _Player.ActiveHealthController.AddEffect<HealthChange>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
+                    _Player.ActiveHealthController.AddEffect<HealthRegen>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
                 }
             }
         }
@@ -136,7 +137,7 @@ namespace RealismMod
 
                 if (HpRegened < maxHpRegen && TimeExisted % 3 == 0)
                 {
-                    _Player.ActiveHealthController.AddEffect<HealthChange>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
+                    _Player.ActiveHealthController.AddEffect<HealthRegen>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
                     HpRegened += HpPerTick;
                 }
 
@@ -146,6 +147,49 @@ namespace RealismMod
                     Duration = 0;
                     return;
                 }
+            }
+        }
+    }
+
+    public class HealthDrainEffect : IHealthEffect
+    {
+        public EBodyPart BodyPart { get; set; }
+        public int? Duration { get; set; }
+        public int TimeExisted { get; set; }
+        public float HpPerTick { get; }
+        public Player _Player { get; }
+        public float HpDrained { get; set; }
+        public float HpDrainLimit { get; }
+        public int Delay { get; set; }
+        public EHealthEffectType EffectType { get; }
+
+        public HealthDrainEffect(float hpTick, Player player, int delay, float limit)
+        {
+            TimeExisted = 0;
+            HpDrained = 0;
+            HpDrainLimit = limit;
+            HpPerTick = hpTick;
+            _Player = player;
+            Delay = delay;
+            EffectType = EHealthEffectType.HealthDrain;
+            BodyPart = EBodyPart.Common;
+        }
+
+        public void Tick()
+        {
+            TimeExisted++;
+            if (HpDrained < HpDrainLimit)
+            {
+                if (Delay <= 0 && TimeExisted % 3 == 0)
+                {
+                    _Player.ActiveHealthController.AddEffect<HealthDrain>( 0f, 3f, 1f, HpPerTick, null);
+                    HpDrained += HpPerTick;
+                }
+            }
+
+            if (HpDrained >= HpDrainLimit)
+            {
+                Duration = 0;
             }
         }
     }
@@ -202,7 +246,7 @@ namespace RealismMod
             {
                 if (Delay <= 0 && TimeExisted % 3 == 0)
                 {
-                    _Player.ActiveHealthController.AddEffect<HealthChange>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
+                    _Player.ActiveHealthController.AddEffect<HealthRegen>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
                     HpRegened += HpPerTick;
                 }
             }
@@ -320,7 +364,42 @@ namespace RealismMod
         }
     }
 
-    public class HealthChange : EffectClass, IEffect, GInterface235, GInterface250
+    public class HealthDrain : EffectClass, IEffect, GInterface235, GInterface250
+    {
+        public override void Started()
+        {
+            this.hpPerTick = base.Strength;
+            this.SetHealthRatesPerSecond(this.hpPerTick / bodyParts.Count(), 0f, 0f, 0f);
+            this.bodyPart = base.BodyPart;
+        }
+
+        public override void RegularUpdate(float deltaTime)
+        {
+            this.time += deltaTime;
+            if (this.time < 3f)
+            {
+                return;
+            }
+            this.time -= 3f;
+            foreach (EBodyPart part in bodyParts)
+            {
+                if (this.HealthController.GetBodyPartHealth(part).Current > 0f) 
+                {
+                    this.HealthController.ApplyDamage(part, this.hpPerTick / bodyParts.Count(), ExistanceClass.PoisonDamage);
+                }
+            }
+        }
+
+        private float hpPerTick;
+
+        private float time;
+
+        private EBodyPart bodyPart;
+        private EBodyPart[] bodyParts = { EBodyPart.Chest, EBodyPart.Stomach };
+    }
+
+
+    public class HealthRegen : EffectClass, IEffect, GInterface235, GInterface250
     {
         public override void Started()
         {

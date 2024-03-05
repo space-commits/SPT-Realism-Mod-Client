@@ -479,7 +479,7 @@ namespace RealismMod
                 else
                 {
                     ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
-                    ammo = new BulletClass("newAmmo", ammoTemp);
+                    ammo = new BulletClass(Utils.GenId(), ammoTemp);
                     KE = (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f;
                 }
 
@@ -491,7 +491,7 @@ namespace RealismMod
                         bool isMetalArmor = armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel || armor.Template.ArmorMaterial == EArmorMaterial.Titan ? true : false;
                         float bluntDamage = damageInfo.Damage;
                         float speedFactor = damageInfo.ArmorDamage / ammo.GetBulletSpeed;
-                        float fragChance = ammo.FragmentationChance * speedFactor;
+                        float fragChance = ammoTemp.FragmentationChance * speedFactor;
                         float lightBleedChance = damageInfo.LightBleedingDelta;
                         float heavyBleedChance = damageInfo.HeavyBleedingDelta;
                         float ricochetChance = ammo.RicochetChance * speedFactor;
@@ -818,7 +818,7 @@ namespace RealismMod
             if (damageType != EDamageType.Melee)
             {
                 ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
-                ammo = new BulletClass("newAmmo", ammoTemp);
+                ammo = new BulletClass(Utils.GenId(), ammoTemp);
                 speedFactor = ammo.GetBulletSpeed / damageInfo.ArmorDamage;
                 armorDamageActual = ammo.ArmorDamage * speedFactor;
                 KE = (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f;
@@ -1010,7 +1010,7 @@ namespace RealismMod
             if (lastDam.DamageType == EDamageType.Bullet)
             {
                 AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[lastDam.SourceId];
-                BulletClass ammo = new BulletClass("newAmmo", ammoTemp);
+                BulletClass ammo = new BulletClass(Utils.GenId(), ammoTemp);
                 float KE = ((0.5f * ammo.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
                 force = (-Mathf.Max(1f, KE / 1000f)) * Plugin.RagdollForceModifier.Value;
                 ammo = null;

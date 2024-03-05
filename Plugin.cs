@@ -472,7 +472,7 @@ namespace RealismMod
             }
 
             DamageTracker dmgTracker = new DamageTracker();
-            RealismHealthController healthController = new RealismHealthController(dmgTracker, Logger);
+            RealismHealthController healthController = new RealismHealthController(dmgTracker);
             RealHealthController = healthController;
             Utils.Logger = Logger;
 
