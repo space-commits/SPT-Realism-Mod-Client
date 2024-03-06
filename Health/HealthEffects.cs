@@ -444,8 +444,6 @@ namespace RealismMod
                 return;
             }
             this.time -= 3f;
-            Utils.Logger.LogWarning("tick");
-            Utils.Logger.LogWarning("resourcePerTick " + resourcePerTick);
             this.resourcePerTick = Plugin.RealHealthController.ResourcePerTick;
             base.HealthController.ChangeEnergy(-this.resourcePerTick);
             base.HealthController.ChangeHydration(-this.resourcePerTick);

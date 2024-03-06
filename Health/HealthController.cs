@@ -142,7 +142,7 @@ namespace RealismMod
         Clotting,
         Temperature,
         Performance,
-        Other,
+        Generic,
         Weight
     }
 
@@ -159,17 +159,17 @@ namespace RealismMod
             {"5ed515ece452db0eb56fc028", EStimType.Damage},
             {"5ed5160a87bb8443d10680b5", EStimType.Performance},
             {"5ed515c8d380ab312177c0fa", EStimType.Performance},
-            {"637b6251104668754b72f8f9", EStimType.Other},
+            {"637b6251104668754b72f8f9", EStimType.Generic},
             {"5c0e530286f7747fa1419862", EStimType.Regenerative},
             {"637b6179104668754b72f8f5", EStimType.Damage},
             {"5c0e534186f7747fa1419867", EStimType.Regenerative},
             {"SJ0", EStimType.Regenerative},
             {"5c0e531286f7747fa54205c2", EStimType.Performance},
             {"5c0e531d86f7747fa23f4d42", EStimType.Performance},
-            {"637b612fb7afa97bfc3d7005", EStimType.Other},
-            {"5fca13ca637ee0341a484f46", EStimType.Other},
-            {"637b60c3b7afa97bfc3d7001", EStimType.Other},
-            {"5ed5166ad380ab312177c100", EStimType.Other},
+            {"637b612fb7afa97bfc3d7005", EStimType.Generic},
+            {"5fca13ca637ee0341a484f46", EStimType.Generic},
+            {"637b60c3b7afa97bfc3d7001", EStimType.Generic},
+            {"5ed5166ad380ab312177c100", EStimType.Generic},
             {"5ed51652f6c34d2cc26336a1", EStimType.Weight }
         };
 
@@ -250,9 +250,11 @@ namespace RealismMod
 
                 if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
                 {
+           
                     GameWorld gameWorld = Singleton<GameWorld>.Instance;
                     if (gameWorld?.MainPlayer != null)
                     {
+                        AddStimDebuffs(gameWorld.MainPlayer, "");
                         TestAddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, gameWorld.MainPlayer, Plugin.AddEffectType.Value);
                         NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + Plugin.AddEffectType.Value + " To Part " + (EBodyPart)Plugin.AddEffectBodyPart.Value);
                     }
@@ -543,44 +545,64 @@ namespace RealismMod
 
         private void AddStimDebuffs(Player player, string debuffId)
         {
-            MedsClass placeHolderItem = (MedsClass)Singleton<ItemFactory>.Instance.CreateItem(Utils.GenId(), "debuffId", null);
+            MedsClass placeHolderItem = (MedsClass)Singleton<ItemFactory>.Instance.CreateItem(Utils.GenId(), debuffId, null);
             placeHolderItem.CurrentAddress = player.GClass2757_0.FindQuestGridToPickUp(placeHolderItem); //item needs an address to be valid, this is a hacky workaround
+            Utils.Logger.LogWarning("is null " + (placeHolderItem == null));
+            Utils.Logger.LogWarning("" + placeHolderItem.HealthEffectsComponent.StimulatorBuffs);
             player.ActiveHealthController.DoMedEffect(placeHolderItem, EBodyPart.Head, null);
+            Utils.Logger.LogWarning("added " + debuffId);
         }
 
-        private void EvaluateStimGroups(Player player, IEnumerable<IGrouping<EStimType, StimShellEffect>> stimGroups) 
+        private void EvaluateStimSingles(Player player, IEnumerable<IGrouping<EStimType, StimShellEffect>> stimGroups)
         {
-            float duration = 600f;
-            float skillBuff = player.Skills.ImmunityPainKiller.Value;
-            Utils.Logger.LogWarning($"skillBuff " + skillBuff); //0.24 at lvl 40 immunity
+            foreach (var group in stimGroups) 
+            {
+                switch (group.Key)
+                {
+                    case EStimType.Adrenal:
+                        activeStimOverdoses.Remove(EStimType.Adrenal);
+                        break;
+                    case EStimType.Regenerative:
+                        activeStimOverdoses.Remove(EStimType.Regenerative);
+                        break;
+                    case EStimType.Damage:
+                        activeStimOverdoses.Remove(EStimType.Damage);
+                        break;
+                    case EStimType.Clotting:
+                        activeStimOverdoses.Remove(EStimType.Clotting);
+                        break;
+                    case EStimType.Weight:
+                        activeStimOverdoses.Remove(EStimType.Weight);
+                        break;
+                    case EStimType.Performance:
+                        activeStimOverdoses.Remove(EStimType.Performance);
+                        break;
+                    case EStimType.Generic:
+                        activeStimOverdoses.Remove(EStimType.Generic);
+                        break;
+                }
+            }
+        }
 
-
+        private void EvaluateStimDuplicates(Player player, IEnumerable<IGrouping<EStimType, StimShellEffect>> stimGroups) 
+        {
             foreach (var group in stimGroups) // use this to count duplicates per category
             {
-                Utils.Logger.LogWarning($"Property value: {group.Key}, Count: {group.Count()}");
                 switch (group.Key)
                 {
                     case EStimType.Adrenal:
                         if (!activeStimOverdoses.Contains(EStimType.Adrenal)) //if no active adrenal overdose
                         {
-                            activeStimOverdoses.Add(EStimType.Adrenal); 
-                            AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, duration, 5f, 1);
-                            AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 1f, duration, 5f, 1);
-                            player.ActiveHealthController.Player.Physical.CapacityBuff -= 50f;
-                            player.ActiveHealthController.Player.Physical.RestoreRateBuff -= 5f;
+                            activeStimOverdoses.Add(EStimType.Adrenal);
+                            AddStimDebuffs(player, "adrenal_debuff");
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Adrenal Stims", EFT.Communications.ENotificationDurationType.Long);
-
                         }
                         break;
                     case EStimType.Regenerative:
                         if (!activeStimOverdoses.Contains(EStimType.Regenerative)) 
                         {
                             activeStimOverdoses.Add(EStimType.Regenerative);
-                            activeStimOverdoses.Add(EStimType.Regenerative);
-                            AddBasesEFTEffect(player, "Pain", EBodyPart.Head, 1f, duration, 5f, 1);
-                            AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 1f, duration, 5f, 1);
-                            AddBasesEFTEffect(player, "DamageModifier", EBodyPart.Head, 1f, duration, 5f, 6f);
-
+                            AddStimDebuffs(player, "regen_debuff");
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Regenerative Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
@@ -588,13 +610,7 @@ namespace RealismMod
                         if (!activeStimOverdoses.Contains(EStimType.Damage))
                         {
                             activeStimOverdoses.Add(EStimType.Damage);
-                            AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 1f, duration, 5f, 1);
-                            AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 1f, duration, 5f, 1);
-                            player.Skills.Perception.Buff -= 20;
-                            player.Skills.Attention.Buff -= 20;
-                            player.Skills.Vitality.Buff -= 20;
-                            HealthDrainEffect regenEffect = new HealthDrainEffect(-3f, player, 0, 30);
-                            AddCustomEffect(regenEffect, true);
+                            AddStimDebuffs(player, "damage_debuff");
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Combat Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
@@ -602,13 +618,7 @@ namespace RealismMod
                         if (!activeStimOverdoses.Contains(EStimType.Clotting))
                         {
                             activeStimOverdoses.Add(EStimType.Clotting);
-                            AddBasesEFTEffect(player, "Pain", EBodyPart.Head, 1f, duration, 5f, 1);
-                            AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 1f, duration, 5f, 1);
-                            player.Skills.Health.Buff -= 20;
-                            player.Skills.Vitality.Buff -= 20;
-                            player.Skills.Immunity.Buff -= 20;
-                            player.ActiveHealthController.Player.Physical.CapacityBuff -= 30f;
-                            player.ActiveHealthController.Player.Physical.RestoreRateBuff -= 4f;
+                            AddStimDebuffs(player, "clotting_debuff");
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Coagulating Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
 
@@ -617,13 +627,7 @@ namespace RealismMod
                         if (!activeStimOverdoses.Contains(EStimType.Weight))
                         {
                             activeStimOverdoses.Add(EStimType.Weight);
-                            AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, duration, 5f, 1);
-                            AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 1f, duration, 5f, 1);
-                            player.Skills.Strength.Buff -= 20;
-                            player.Skills.Endurance.Buff -= 20;
-                            player.Skills.Metabolism.Buff -= 20;
-                            player.ActiveHealthController.Player.Physical.CapacityBuff -= 10f;
-                            player.ActiveHealthController.Player.Physical.RestoreRateBuff -= 6f;
+                            AddStimDebuffs(player, "weight_debuff");
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Weight-Reducing Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
@@ -631,28 +635,15 @@ namespace RealismMod
                         if (!activeStimOverdoses.Contains(EStimType.Performance))
                         {
                             activeStimOverdoses.Add(EStimType.Performance);
-                            AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, duration, 5f, 1);
-                            AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 1f, duration, 5f, 1);
-                            AddBasesEFTEffect(player, "Endurance", EBodyPart.Head, 1f, duration, 5f, -0.5f);
-                            player.Skills.StressResistance.Buff -= 40;
-                            player.ActiveHealthController.Player.Physical.CapacityBuff -= 40f;
-                            player.ActiveHealthController.Player.Physical.RestoreRateBuff -= 5f;
+                            AddStimDebuffs(player, "performance_debuff");
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Performance-Enhancing Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
-                    case EStimType.Other:
-                        if (!activeStimOverdoses.Contains(EStimType.Other))
+                    case EStimType.Generic:
+                        if (!activeStimOverdoses.Contains(EStimType.Generic))
                         {
-                            activeStimOverdoses.Add(EStimType.Other);
-                            AddBasesEFTEffect(player, "Pain", EBodyPart.Head, 1f, duration, 5f, 1);
-                            AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 1f, duration, 5f, 1);
-                            AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 1f, duration, 5f, 1);
-                            AddBasesEFTEffect(player, "BodyTemperature", EBodyPart.Head, 1f, duration, 5f, 10);
-                            player.Skills.Health.Buff -= 40;
-                            player.Skills.Metabolism.Buff -= 40;
-                            player.Skills.Vitality.Buff -= 40;
-                            player.Skills.Immunity.Buff -= 40;
-                            player.Skills.StressResistance.Buff -= 40;
+                            activeStimOverdoses.Add(EStimType.Generic);
+                            AddStimDebuffs(player, "generic_debuff");
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
@@ -665,10 +656,10 @@ namespace RealismMod
             IEnumerable<StimShellEffect> stims = activeHealthEffects.OfType<StimShellEffect>();
             var stimTypeGroups = stims.GroupBy(effect => effect.StimType);
             var duplicatesGrouping = stimTypeGroups.Where(group => group.Count() > 1);
-            int totalDuplicates = duplicatesGrouping.Sum(group => group.Count());
-
-            EvaluateStimGroups(player, duplicatesGrouping);
-            Utils.Logger.LogWarning("duplicates " + totalDuplicates);
+/*            var singlesGrouping = stimTypeGroups.Where(group => group.Count() <= 1);
+*/            int totalDuplicates = duplicatesGrouping.Sum(group => group.Count());
+            EvaluateStimDuplicates(player, duplicatesGrouping);
+       /*     EvaluateStimSingles(player, singlesGrouping);*/
             if (totalDuplicates > 1)
             {
                 HasOverdosedBaseStim = true;
@@ -678,7 +669,7 @@ namespace RealismMod
 
         public EStimType GetStimType(string id) 
         {
-            return StimTypes.TryGetValue(id, out EStimType type) ? type : EStimType.Other;
+            return StimTypes.TryGetValue(id, out EStimType type) ? type : EStimType.Generic;
         }
 
         public void ResourceRegenCheck(Player player)
@@ -1413,12 +1404,11 @@ namespace RealismMod
             }
             else 
             {
-                float playerWeightFactor = PlayerState.TotalModifiedWeight / 200f;
+                float playerWeightFactor = PlayerState.TotalModifiedWeight > 10f ? PlayerState.TotalModifiedWeight / 200f : 0f;
                 float sprintMulti = PlayerState.IsSprinting ? 2f : 1f;
                 float sprintFactor = PlayerState.IsSprinting ? 0.2f : 0f;
                 float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti;
                 ResourcePerTick = totalResourceRate;
-                Utils.Logger.LogWarning("ResourcePerTick " + ResourcePerTick);
             }
         }
     }
