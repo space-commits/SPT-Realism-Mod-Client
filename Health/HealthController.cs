@@ -180,7 +180,10 @@ namespace RealismMod
         private float healthControllerTime = 0f;
         private float effectsTime = 0f;
         private float reliefWaitTime = 0f;
-        private float stimWaitTime = 0f;
+
+        private float stimOverdoseWaitTime = 0f;
+        private bool doStimOverdoseTimer = false;
+        private string overdoseEffectToAdd = "";
 
         public EBodyPart[] BodyParts = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm };
 
@@ -245,30 +248,20 @@ namespace RealismMod
                 healthControllerTime += Time.deltaTime;
                 effectsTime += Time.deltaTime;
                 reliefWaitTime += Time.deltaTime;
-                stimWaitTime += Time.deltaTime;
                 ControllerTick();
 
                 if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
                 {
-           
-                    GameWorld gameWorld = Singleton<GameWorld>.Instance;
-                    if (gameWorld?.MainPlayer != null)
-                    {
-                        AddStimDebuffs(gameWorld.MainPlayer, "");
-                        TestAddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, gameWorld.MainPlayer, Plugin.AddEffectType.Value);
-                        NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + Plugin.AddEffectType.Value + " To Part " + (EBodyPart)Plugin.AddEffectBodyPart.Value);
-                    }
+                    AddStimDebuffs(Utils.GetPlayer(), Plugin.AddEffectType.Value);
+                    TestAddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, Utils.GetPlayer(), Plugin.AddEffectType.Value);
+                    NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + Plugin.AddEffectType.Value + " To Part " + (EBodyPart)Plugin.AddEffectBodyPart.Value);
                 }
 
                 if (Input.GetKeyDown(Plugin.DropGearKeybind.Value.MainKey))
                 {
                     if (clickTriggered)
                     {
-                        GameWorld gameWorld = Singleton<GameWorld>.Instance;
-                        if (gameWorld?.MainPlayer != null)
-                        {
-                            DropBlockingGear(gameWorld.MainPlayer);
-                        }
+                        DropBlockingGear(Utils.GetPlayer());
                         clickTriggered = false;
                     }
                     else
@@ -281,6 +274,17 @@ namespace RealismMod
                 if (timeSinceLastClicked > doubleClickTime)
                 {
                     clickTriggered = false;
+                }
+
+                if (doStimOverdoseTimer)
+                {
+                    stimOverdoseWaitTime += Time.deltaTime;
+                    if (stimOverdoseWaitTime >= 10f)
+                    {
+                        AddStimDebuffs(Utils.GetPlayer(), overdoseEffectToAdd);
+                        doStimOverdoseTimer = false;
+                        stimOverdoseWaitTime = 0f;
+                    }
                 }
             }
 
@@ -593,8 +597,10 @@ namespace RealismMod
                     case EStimType.Adrenal:
                         if (!activeStimOverdoses.Contains(EStimType.Adrenal)) //if no active adrenal overdose
                         {
+                        
                             activeStimOverdoses.Add(EStimType.Adrenal);
-                            AddStimDebuffs(player, "adrenal_debuff");
+                            doStimOverdoseTimer = true;
+                            overdoseEffectToAdd = "adrenal_debuff";
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Adrenal Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
@@ -602,7 +608,8 @@ namespace RealismMod
                         if (!activeStimOverdoses.Contains(EStimType.Regenerative)) 
                         {
                             activeStimOverdoses.Add(EStimType.Regenerative);
-                            AddStimDebuffs(player, "regen_debuff");
+                            doStimOverdoseTimer = true;
+                            overdoseEffectToAdd = "regen_debuff";
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Regenerative Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
@@ -610,7 +617,8 @@ namespace RealismMod
                         if (!activeStimOverdoses.Contains(EStimType.Damage))
                         {
                             activeStimOverdoses.Add(EStimType.Damage);
-                            AddStimDebuffs(player, "damage_debuff");
+                            doStimOverdoseTimer = true;
+                            overdoseEffectToAdd = "damage_debuff";
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Combat Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
@@ -627,7 +635,8 @@ namespace RealismMod
                         if (!activeStimOverdoses.Contains(EStimType.Weight))
                         {
                             activeStimOverdoses.Add(EStimType.Weight);
-                            AddStimDebuffs(player, "weight_debuff");
+                            doStimOverdoseTimer = true;
+                            overdoseEffectToAdd = "weight_debuff";
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Weight-Reducing Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
@@ -635,7 +644,8 @@ namespace RealismMod
                         if (!activeStimOverdoses.Contains(EStimType.Performance))
                         {
                             activeStimOverdoses.Add(EStimType.Performance);
-                            AddStimDebuffs(player, "performance_debuff");
+                            doStimOverdoseTimer = true;
+                            overdoseEffectToAdd = "performance_debuff";
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Performance-Enhancing Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
@@ -643,7 +653,8 @@ namespace RealismMod
                         if (!activeStimOverdoses.Contains(EStimType.Generic))
                         {
                             activeStimOverdoses.Add(EStimType.Generic);
-                            AddStimDebuffs(player, "generic_debuff");
+                            doStimOverdoseTimer = true;
+                            overdoseEffectToAdd = "generic_debuff";
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
