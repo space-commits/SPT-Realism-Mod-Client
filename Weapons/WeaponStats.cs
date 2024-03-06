@@ -135,7 +135,7 @@ namespace RealismMod
 
         }
 
-        public static float CameraReturnSpeed(Weapon weapon)
+        public static float VisualRecoilMulti(Weapon weapon)
         {
             return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[18], out float result) ? result : 0.1f;
 
@@ -288,6 +288,8 @@ namespace RealismMod
         public static bool HasBayonet = false;
         public static float BaseMeleeDamage = 0f;
         public static float BaseMeleePen = 0f;
+
+        public static float CurrentVisualRecoilMulti = 1f;
 
         public static Dictionary<string, Vector2> ZeroOffsetDict = new Dictionary<string, Vector2>();
         public static Vector2 ZeroRecoilOffset = Vector2.zero;

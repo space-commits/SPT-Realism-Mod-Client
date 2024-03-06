@@ -133,18 +133,8 @@ namespace RealismMod
                     float xRotation = 0f;
                     float yRotation = 0f;
 
-                    if (!RecoilController.IsKrissVector)
-                    {
-                        xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(dispersionSpeed, 1f)) + angle, 3);
-                        yRotation = (float)Math.Round(Mathf.Min(-RecoilController.FactoredTotalVRecoil * recoilClimbMulti * shotCountFactor * fpsFactor, 0f), 3);
-                    }
-                    else
-                    {
-                        float recoilAmount = RecoilController.FactoredTotalVRecoil * recoilClimbMulti * shotCountFactor * fpsFactor;
-                        dispersion = Mathf.Max(RecoilController.FactoredTotalDispersion * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor, 0f);
-                        xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(Time.time * 8f, 1f)), 3);
-                        yRotation = (float)Math.Round(Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * 4f, 1f)), 3);
-                    }
+                    xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(dispersionSpeed, 1f)) + angle, 3);
+                    yRotation = (float)Math.Round(Mathf.Min(-RecoilController.FactoredTotalVRecoil * recoilClimbMulti * shotCountFactor * fpsFactor, 0f), 3);
 
                     targetRotation = movementContext.Rotation;
                     targetRotation.x += xRotation;
@@ -381,7 +371,6 @@ namespace RealismMod
 
                 RecoilController.BaseTotalRecoilDamping = (float)Math.Round(WeaponStats.TotalRecoilDamping * Plugin.RecoilDampingMulti.Value, 3);
                 RecoilController.BaseTotalHandDamping = (float)Math.Round(WeaponStats.TotalRecoilHandDamping * Plugin.HandsDampingMulti.Value, 3);
-                RecoilController.IsKrissVector = firearmController.Weapon.TemplateId == "5fb64bc92b1b027b1f50bcf2" || firearmController.Weapon.TemplateId == "5fc3f2d5900b1d5091531e57" ? true : false;
                 WeaponStats.TotalWeaponWeight = firearmController.Weapon.GetSingleItemTotalWeight();
 
                 if (WeaponStats.WeapID != template._id)

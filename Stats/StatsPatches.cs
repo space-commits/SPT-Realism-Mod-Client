@@ -264,6 +264,7 @@ namespace RealismMod
             WeaponStats.TotalRecoilHandDamping = totalRecoilHandDamping;
             WeaponStats.COIDelta = totalCOIDelta;
             WeaponStats.PureErgoDelta = totalPureErgoDelta;
+            WeaponStats.CurrentVisualRecoilMulti = WeaponStats.VisualRecoilMulti(__instance);
             return totalErgoDelta;
         }
 
@@ -291,7 +292,7 @@ namespace RealismMod
             float baseCamRecoil = __instance.Template.RecoilCamera;
             float currentCamRecoil = baseCamRecoil;
 
-            float baseCamReturnSpeed = WeaponStats.CameraReturnSpeed(__instance);
+            float baseCamReturnSpeed = WeaponStats.VisualRecoilMulti(__instance);
             float currentCamReturnSpeed = baseCamReturnSpeed;
 
             float baseConv = __instance.Template.RecoilReturnSpeedHandRotation;

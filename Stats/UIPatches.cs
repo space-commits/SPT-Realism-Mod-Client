@@ -911,7 +911,7 @@ namespace RealismMod
             float baseSemiROF = Mathf.Max(__instance.Template.SingleFireRate, 240);
             float currentSemiROF = baseSemiROF;
 
-            float baseCamReturnSpeed = WeaponStats.CameraReturnSpeed(__instance);
+            float baseCamReturnSpeed = WeaponStats.VisualRecoilMulti(__instance);
             float currentCamReturnSpeed = baseCamReturnSpeed;
 
             float baseCamRecoil = __instance.Template.RecoilCamera;
