@@ -411,6 +411,8 @@ namespace RealismMod
             }
 
             WeaponStats.IsStocklessPistol = !hasShoulderContact && __instance.WeapClass == "pistol" ? true : false;
+            WeaponStats.IsStockedPistol = hasShoulderContact && __instance.WeapClass == "pistol" ? true : false;
+
 
             float totalLoudness = ((currentLoudness / 80) + 1f) * StatCalc.CaliberLoudnessFactor(caliber);
             Logger.LogWarning("caliber " + caliber);

@@ -33,13 +33,13 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(Class1452 __instance, ECommand command)
         {
-            Player player = Utils.GetPlayer();
+
             if (command == ECommand.ChamberUnload && Plugin.ServerConfig.manual_chambering)
             {
+                Player player = Utils.GetPlayer();
                 FirearmController fc = player.HandsController as FirearmController;
                 if (!Plugin.CanLoadChamber && fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1 && fc.Weapon.ChamberAmmoCount == 0 && fc.Weapon.GetCurrentMagazine() != null && fc.Weapon.GetCurrentMagazine().Count > 0)
                 {
-         
                     Plugin.CanLoadChamber = true;
                     int currentMagazineCount = fc.Weapon.GetCurrentMagazineCount();
                     MagazineClass mag = fc.Weapon.GetCurrentMagazine();
@@ -65,7 +65,9 @@ namespace RealismMod
             }
             if (command == ECommand.ToggleBreathing && Plugin.ServerConfig.recoil_attachment_overhaul)
             {
-                StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, new Vector3(1f, 1f, 1f) * (player.Physical.HoldingBreath ? -1f : 1f));
+                Player player = Utils.GetPlayer();
+                FirearmController fc = player.HandsController as FirearmController;
+                StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(1f, 1f, 1f) * (player.Physical.HoldingBreath ? -1f : 1f));
             }
             if (Utils.Verified && (command == ECommand.EndSprinting || command == ECommand.ToggleDuck || command == ECommand.Jump))
             {
@@ -451,10 +453,11 @@ namespace RealismMod
                 {
                     if (StanceController.CanResetDamping)
                     {
+                        float stockedPistolFactor = WeaponStats.IsStockedPistol ? 0.75f : 1f;
                         NewRecoilShotEffect newRecoil = player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
-                        newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = Mathf.Lerp(newRecoil.HandRotationRecoil.CategoryIntensityMultiplier, fc.Weapon.Template.RecoilCategoryMultiplierHandRotation, 0.01f);
-                        newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = Mathf.Lerp(newRecoil.HandRotationRecoil.ReturnTrajectoryDumping, fc.Weapon.Template.RecoilReturnPathDampingHandRotation, 0.01f);
-                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping, fc.Weapon.Template.RecoilDampingHandRotation, 0.01f);
+                        newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = Mathf.Lerp(newRecoil.HandRotationRecoil.CategoryIntensityMultiplier, fc.Weapon.Template.RecoilCategoryMultiplierHandRotation * Plugin.RecoilIntensity.Value * stockedPistolFactor, 0.01f);
+                        newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = Mathf.Lerp(newRecoil.HandRotationRecoil.ReturnTrajectoryDumping, fc.Weapon.Template.RecoilReturnPathDampingHandRotation * Plugin.HandsDampingMulti.Value, 0.01f);
+                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping * Plugin.RecoilDampingMulti.Value, fc.Weapon.Template.RecoilDampingHandRotation, 0.01f);
                         player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, 0.01f);
                         player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, RecoilController.BaseTotalConvergence, 0.01f);
                     }

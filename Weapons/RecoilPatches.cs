@@ -334,8 +334,7 @@ namespace RealismMod
 
                 fcField.SetValue(__instance, firearmController);
 
-                bool isStockedPistol = WeaponStats.HasShoulderContact && template.weapClass.ToLower() == "pistol";
-                float stockedPistolFactor = isStockedPistol ? 0.75f : 1f; 
+                float stockedPistolFactor = WeaponStats.IsStockedPistol ? 0.75f : 1f;
 
                 __instance.RecoilStableShotIndex = 1;
                 __instance.HandRotationRecoil.RecoilReturnTrajectoryOffset = template.RecoilReturnPathOffsetHandRotation;
@@ -343,7 +342,7 @@ namespace RealismMod
                 __instance.HandRotationRecoil.AfterRecoilOffsetVerticalRange = Vector2.zero;
                 __instance.HandRotationRecoil.AfterRecoilOffsetHorizontalRange = Vector2.zero;
                 __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = template.weapClass.ToLower() == "pistol" ? new Vector2(0f, 25f) : new Vector2(30f, 30f); 
-                __instance.HandRotationRecoil.ReturnTrajectoryDumping = template.RecoilReturnPathDampingHandRotation * Plugin.HandsDampingMulti.Value;
+                __instance.HandRotationRecoil.ReturnTrajectoryDumping = template.RecoilReturnPathDampingHandRotation ;
                 __instance.HandRotationRecoilEffect.Damping = template.RecoilDampingHandRotation * Plugin.RecoilDampingMulti.Value; 
                 __instance.HandRotationRecoil.CategoryIntensityMultiplier =  template.RecoilCategoryMultiplierHandRotation * Plugin.RecoilIntensity.Value * stockedPistolFactor; 
 

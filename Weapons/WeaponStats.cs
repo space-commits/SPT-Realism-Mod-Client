@@ -182,6 +182,7 @@ namespace RealismMod
         public static string _WeapClass = "";
 
         public static bool IsStocklessPistol = false;
+        public static bool IsStockedPistol = false;
         public static bool IsBullpup = false;
 
         public static bool ShouldGetSemiIncrease = false;
