@@ -18,6 +18,7 @@ using static RealismMod.Attributes;
 using HarmonyLib;
 using MonoMod.RuntimeDetour;
 using GPUInstancer;
+using BSG.CameraEffects;
 
 namespace RealismMod
 {
@@ -59,6 +60,8 @@ namespace RealismMod
         public static ConfigEntry<float> HorzMulti { get; set; }
         public static ConfigEntry<float> DispMulti { get; set; }
         public static ConfigEntry<float> CamMulti { get; set; }
+        public static ConfigEntry<float> CamWiggle { get; set; }
+        public static ConfigEntry<float> CamReturn { get; set; }
         public static ConfigEntry<bool> EnableAngle { get; set; }
         public static ConfigEntry<float> RecoilAngleMulti { get; set; }
         public static ConfigEntry<float> ConvergenceMulti { get; set; }
@@ -166,6 +169,7 @@ namespace RealismMod
         public static ConfigEntry<bool> EnableIdleStamDrain { get; set; }
         public static ConfigEntry<bool> EnableStanceStamChanges { get; set; }
         public static ConfigEntry<bool> EnableTacSprint { get; set; }
+        public static ConfigEntry<bool> BlockFiring { get; set; }
         public static ConfigEntry<bool> EnableSprintPenalty { get; set; }
         public static ConfigEntry<bool> EnableMouseSensPenalty { get; set; }
         public static ConfigEntry<float> WeapOffsetX { get; set; }
@@ -489,6 +493,7 @@ namespace RealismMod
                     new StartReloadPatch().Enable();
                     new StartEquipWeapPatch().Enable();
                     new SetAmmoOnMagPatch().Enable();
+                    new IsKnownMalfTypePatch().Enable();
                     new PreChamberLoadPatch().Enable();
                 }
             }
@@ -557,6 +562,7 @@ namespace RealismMod
                     new GetTotalCenterOfImpactPatch().Enable();
                 }
                 //Recoil Patches
+                new GetCameraRotationRecoilPatch().Enable();
                 new RecalcWeaponParametersPatch().Enable();
                 new AddRecoilForcePatch().Enable();
                 new RecoilAnglesPatch().Enable();
@@ -742,7 +748,7 @@ namespace RealismMod
                         RecoilController.DeafenShotTimer = 0f;
                     }
 
-                    if (RecoilController.WiggleShotTimer >= 0.1f)
+                    if (RecoilController.WiggleShotTimer >= 0.12f)
                     {
                         RecoilController.IsFiringWiggle = false;
                         RecoilController.WiggleShotTimer = 0f;
@@ -862,8 +868,10 @@ namespace RealismMod
             CamMulti = Config.Bind<float>(recoilSettings, "Camera Recoil Multi", 1.0f, new ConfigDescription("Visual Camera Recoil.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 10, Browsable = ServerConfig.recoil_attachment_overhaul }));
             EnableAngle = Config.Bind<bool>(recoilSettings, "Enable Recoil Angle", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Weapons Will Recoil At Different Angles, And Weight Out Front Will Make The Angle More Steep. If Disabled All Recoil Will Be At 90 Degrees.", null, new ConfigurationManagerAttributes { Order = 3, Browsable = ServerConfig.recoil_attachment_overhaul }));
             RecoilAngleMulti = Config.Bind<float>(recoilSettings, "Recoil Angle Multi", 1.0f, new ConfigDescription("Multiplier For Recoil Angle, Lower = Steeper Angle.", new AcceptableValueRange<float>(0.8f, 1.2f), new ConfigurationManagerAttributes { Order = 2, Browsable = ServerConfig.recoil_attachment_overhaul }));
-            ConvergenceMulti = Config.Bind<float>(recoilSettings, "Convergence Multi", 0.75f, new ConfigDescription("AKA Auto-Compensation. Higher = Snappier Recoil, Faster Reset And Tighter Recoil Pattern.", new AcceptableValueRange<float>(0f, 40f), new ConfigurationManagerAttributes { Order = 1, Browsable = ServerConfig.recoil_attachment_overhaul }));
+            ConvergenceMulti = Config.Bind<float>(recoilSettings, "Convergence Multi", 1.0f, new ConfigDescription("AKA Auto-Compensation. Higher = Snappier Recoil, Faster Reset And Tighter Recoil Pattern.", new AcceptableValueRange<float>(0f, 40f), new ConfigurationManagerAttributes { Order = 1, Browsable = ServerConfig.recoil_attachment_overhaul }));
 
+            CamReturn = Config.Bind<float>(advancedRecoilSettings, "Camera Recoil Speed", 0.07f, new ConfigDescription("Higher = More Faster Camera Recoil", new AcceptableValueRange<float>(0f, 0.5f), new ConfigurationManagerAttributes { Order = 130, Browsable = ServerConfig.recoil_attachment_overhaul }));
+            CamWiggle = Config.Bind<float>(advancedRecoilSettings, "Camera Recoil Wiggle", 0.8f, new ConfigDescription("Higher = More Camera Wiggle", new AcceptableValueRange<float>(0f, 0.9f), new ConfigurationManagerAttributes { Order = 130, Browsable = ServerConfig.recoil_attachment_overhaul }));
             EnableAdditionalRec = Config.Bind<bool>(advancedRecoilSettings, "Enable Additional Visual Recoil", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("The Mod Already Adds Some New Visual Recoil Elements, This Options Adds Even More. Makes THe Weapon Vibrate More While Firing, Doesn't Have A Significant Effect On Spread.", null, new ConfigurationManagerAttributes { Order = 120, Browsable = ServerConfig.recoil_attachment_overhaul }));
             VisRecoilMulti = Config.Bind<float>(advancedRecoilSettings, "Visual Recoil Multi", 1f, new ConfigDescription("Multi For All Of The Mod's Visual Recoil Elements, Makes The Weapon Vibrate More While Firing. Visual Recoil Is Affected By Weapon Stats.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 110, Browsable = ServerConfig.recoil_attachment_overhaul }));
             EnableHybridRecoil = Config.Bind<bool>(advancedRecoilSettings, "Enable Hybrid Recoil System", false, new ConfigDescription("Combines Steady Recoil Climb With Auto-Compensation. If You Do Not Attempt To Control Recoil, Auto-Compensation Will Decrease Resulting In More Muzzle Flip. If You Control The Recoil, Auto-Comp Increases And Muzzle Flip Decreases.", null, new ConfigurationManagerAttributes { Order = 100, Browsable = ServerConfig.recoil_attachment_overhaul }));
@@ -903,7 +911,7 @@ namespace RealismMod
 
             EnableBodyHitZones = Config.Bind<bool>(ballSettings, "Enable Body Hit Zones", ServerConfig.realistic_ballistics, new ConfigDescription("Divides Body Into A, C and D Hit Zones Like On IPSC Targets. In Addtion, There Are Upper Arm, Forearm, Thigh, Calf, Neck, Spine And Heart Hit Zones. Each Zone Modifies Damage And Bleed Chance. ", null, new ConfigurationManagerAttributes { Order = 10, Browsable = ServerConfig.realistic_ballistics }));
             EnableHitSounds = Config.Bind<bool>(ballSettings, "Enable Hit Sounds", ServerConfig.realistic_ballistics, new ConfigDescription("Enables Additional Sounds To Be Played When Hitting The New Body Zones And Armor Hit Sounds By Material.", null, new ConfigurationManagerAttributes { Order = 50, Browsable = ServerConfig.realistic_ballistics }));
-            FleshHitSoundMulti = Config.Bind<float>(ballSettings, "FleshHit Sound Multi", 1f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 60, Browsable = ServerConfig.realistic_ballistics }));
+            FleshHitSoundMulti = Config.Bind<float>(ballSettings, "Flesh Hit Sound Multi", 1f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 60, Browsable = ServerConfig.realistic_ballistics }));
             ArmorCloseHitSoundMulti = Config.Bind<float>(ballSettings, "Close Armor Hit Sound Multi", 1f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 70, Browsable = ServerConfig.realistic_ballistics }));
             ArmorFarHitSoundMulti = Config.Bind<float>(ballSettings, "Distant Armor Hit Sound Mutli", 1f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 80, Browsable = ServerConfig.realistic_ballistics }));
             EnableRagdollFix = Config.Bind<bool>(ballSettings, "Enable Ragdoll Fix (Experimental)", ServerConfig.realistic_ballistics, new ConfigDescription("Requiures Restart. Enables Fix For Ragdolls Flying Into The Stratosphere.", null, new ConfigurationManagerAttributes { Order = 100, Browsable = ServerConfig.realistic_ballistics }));
@@ -929,10 +937,10 @@ namespace RealismMod
             SharedMovementVolume = Config.Bind<float>(deafSettings, "Shared Movement Volume Multi", 1f, new ConfigDescription("Multiplier For Player + NPC Sprint Volume. Has To Be Shared Due To BSG Jank.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 60, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
             NPCMovementVolume = Config.Bind<float>(deafSettings, "NPC Movement Volume Multi", 1f, new ConfigDescription("Multiplier For NPC Movement Volume. Includes Walking And Equipment Rattle.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 50, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
             PlayerMovementVolume = Config.Bind<float>(deafSettings, "Player Movement Volume Multi", 1f, new ConfigDescription("Multiplier For Player Movment Volume.  Includes Walking And Equipment Rattle.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 40, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
-            GunshotVolume = Config.Bind<float>(deafSettings, "Gunshot Volume", -5f, new ConfigDescription("Offset For Volume Of Gunshots When Not Using Headsets. Lower = Quieter. Use Gain Cutoff For Headsets", new AcceptableValueRange<float>(-50f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
+            GunshotVolume = Config.Bind<float>(deafSettings, "Gunshot Volume", 0f, new ConfigDescription("Offset For Volume Of Gunshots When Not Using Headsets. Lower = Quieter. Use Gain Cutoff For Headsets", new AcceptableValueRange<float>(-50f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
             HeadsetAmbientMulti = Config.Bind<float>(deafSettings, "Headset Ambient Multi", 0.25f, new ConfigDescription("Adjusts The Ambient Volume Reduction From Headsets. Headset Gain Also Affects Ambient Volume. Higher = Louder.", new AcceptableValueRange<float>(-10f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, Browsable = ServerConfig.headset_changes }));
-            RealTimeGain = Config.Bind<float>(deafSettings, "Headset Gain", 13f, new ConfigDescription("WARNING: DO NOT SET THIS TOO HIGH, IT MAY DAMAGE YOUR HEARING! Most EFT Headsets Are Set To 13 By Default, Don't Make It Much Higher. Adjusts The Gain Of Equipped Headsets In Real Time, Acts Just Like The Volume Control On IRL Ear Defenders.", new AcceptableValueRange<float>(0f, 30f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, Browsable = ServerConfig.headset_changes }));
-            GainCutoff = Config.Bind<float>(deafSettings, "Headset Gain Cutoff Multi", 0.75f, new ConfigDescription("How Much Headset Gain Is Reduced By While Firing. 0.75 = 25% Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, Browsable = ServerConfig.headset_changes }));
+            RealTimeGain = Config.Bind<float>(deafSettings, "Headset Gain", 14f, new ConfigDescription("WARNING: DO NOT SET THIS TOO HIGH, IT MAY DAMAGE YOUR HEARING! Most EFT Headsets Are Set To 13 By Default, Don't Make It Much Higher. Adjusts The Gain Of Equipped Headsets In Real Time, Acts Just Like The Volume Control On IRL Ear Defenders.", new AcceptableValueRange<float>(0f, 30f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, Browsable = ServerConfig.headset_changes }));
+            GainCutoff = Config.Bind<float>(deafSettings, "Headset Gain Cutoff Multi", 1f, new ConfigDescription("How Much Headset Gain Is Reduced By While Firing. 0.75 = 25% Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, Browsable = ServerConfig.headset_changes }));
             DecGain = Config.Bind(deafSettings, "Reduce Gain Keybind", new KeyboardShortcut(KeyCode.KeypadMinus), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 9, Browsable = ServerConfig.headset_changes }));
             IncGain = Config.Bind(deafSettings, "Increase Gain Keybind", new KeyboardShortcut(KeyCode.KeypadPlus), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 8, Browsable = ServerConfig.headset_changes }));
             DeafRate = Config.Bind<float>(deafSettings, "Deafen Rate", 0.023f, new ConfigDescription("How Quickly Player Gets Deafened. Higher = Faster.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7, IsAdvanced = true, Browsable = ServerConfig.headset_changes }));
@@ -956,6 +964,7 @@ namespace RealismMod
             QuickReloadSpeedMulti = Config.Bind<float>(speed, "Quick Reload Multi", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, Browsable = ServerConfig.recoil_attachment_overhaul }));
             InternalMagReloadMulti = Config.Bind<float>(speed, "Internal Magazine Reload", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, Browsable = ServerConfig.recoil_attachment_overhaul }));
 
+            BlockFiring = Config.Bind<bool>(weapAimAndPos, "Block Shooting While In Stance", ServerConfig.enable_stances, new ConfigDescription("Blocks Firing While In A Stance, Will Cancel Stance If Attempting To Fire.", null, new ConfigurationManagerAttributes { Order = 250, Browsable = ServerConfig.enable_stances }));
             EnableSprintPenalty = Config.Bind<bool>(weapAimAndPos, "Enable Sprint Aim Penalties", ServerConfig.enable_stances, new ConfigDescription("ADS Out Of Sprint Has A Short Delay, Reduced Aim Speed And Increased Sway. The Longer You Sprint The Bigger The Penalty.", null, new ConfigurationManagerAttributes { Order = 240, Browsable = ServerConfig.enable_stances }));
             EnableTacSprint = Config.Bind<bool>(weapAimAndPos, "Enable High Ready Sprint Animation", ServerConfig.enable_stances, new ConfigDescription("Enables Usage Of High Ready Sprint Animation When Sprinting From High Ready Position.", null, new ConfigurationManagerAttributes { Order = 230, Browsable = ServerConfig.enable_stances }));
             EnableAltPistol = Config.Bind<bool>(weapAimAndPos, "Enable Alternative Pistol Position And ADS", ServerConfig.enable_stances, new ConfigDescription("Pistol Will Be Held Centered And In A Compressed Stance. ADS Will Be Animated.", null, new ConfigurationManagerAttributes { Order = 229, Browsable = ServerConfig.enable_stances }));
@@ -1003,8 +1012,8 @@ namespace RealismMod
             ActiveAimAdditionalRotationZ = Config.Bind<float>(activeAim, "Active Aiming Additional Rotation Z-Axis", 0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
             ActiveAimResetRotationX = Config.Bind<float>(activeAim, "Active Aiming Reset Rotation X-Axis", 0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 102, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            ActiveAimResetRotationY = Config.Bind<float>(activeAim, "Active Aiming Reset Rotation Y-Axis.", 50.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 101, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            ActiveAimResetRotationZ = Config.Bind<float>(activeAim, "Active Aiming Reset Rotation Z-Axis", 2.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            ActiveAimResetRotationY = Config.Bind<float>(activeAim, "Active Aiming Reset Rotation Y-Axis.", 25.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 101, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            ActiveAimResetRotationZ = Config.Bind<float>(activeAim, "Active Aiming Reset Rotation Z-Axis", 1.25f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
             HighReadyAdditionalRotationSpeedMulti = Config.Bind<float>(highReady, "High Ready Additonal Rotation Speed Multi.", 2.5f, new ConfigDescription("How Fast The Weapon Rotates Going Out Of Stance.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 94, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             HighReadyResetRotationMulti = Config.Bind<float>(highReady, "High Ready Reset Rotation Speed Multi.", 2.5f, new ConfigDescription("How Fast The Weapon Rotates Going Out Of Stance.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 93, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));

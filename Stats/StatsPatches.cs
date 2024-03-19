@@ -14,6 +14,7 @@ using UnityEngine;
 using static EFT.Player;
 using System.Linq;
 using WeaponSkills = EFT.SkillManager.GClass1768;
+using EFT.Visual;
 
 namespace RealismMod
 {
@@ -605,33 +606,5 @@ namespace RealismMod
                 return true;
             }
         }
-    }
-
-
-    public class UpdateHipInaccuracyPatch : ModulePatch
-    {
-        private static FieldInfo playerField;
-
-        protected override MethodBase GetTargetMethod()
-        {
-            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
-            return typeof(EFT.Player.FirearmController).GetMethod("UpdateHipInaccuracy", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance)
-        {
-            Player player = (Player)playerField.GetValue(__instance);
-            if (player.IsYourPlayer == true)
-            {
-                float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
-                float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
-                float recoilFactor = 1f + (RecoilController.BaseTotalVRecoil + RecoilController.BaseTotalHRecoil) / 100f;
-                float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
-                float playerWeightFactorBuff = 1f + (totalPlayerWeight / 100f);
-
-                WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(0.3f * player.ProceduralWeaponAnimation.Breath.HipPenalty * (1f - WeaponStats.ErgoDelta) * convergenceFactor * dispersionFactor * recoilFactor * playerWeightFactorBuff, 0.3f, 1f);
-            }
-        }
-    }
+    }    
 }

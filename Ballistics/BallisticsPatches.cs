@@ -383,9 +383,9 @@ namespace RealismMod
         private static void playBodyHitSound(EBodyPart part, Vector3 pos, int rndNum)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = Plugin.FleshHitSoundMulti.Value;
+            float volClose = 0.8f * Plugin.FleshHitSoundMulti.Value;
             float volDist = 4f * Plugin.FleshHitSoundMulti.Value;
-            float distThreshold = 1f; //30f
+            float distThreshold = 20f; //30f
 
             if (part == EBodyPart.Head)
             {
@@ -500,13 +500,12 @@ namespace RealismMod
                         float penPower = damageInfo.PenetrationPower;
 
                         float duraPercent = armor.Repairable.Durability / armor.Repairable.TemplateDurability;
-                        float armorFactor = armor.ArmorClass * 10f * (Mathf.Min(1f, duraPercent * 2f));
-                        float penDuraFactoredClass = Mathf.Max(1f, armorFactor - (penPower / 1.8f));
-                        float penFactoredClass = Mathf.Max(1f, (armor.ArmorClass * 10f) - (penPower / 1.8f));
-                        float maxPotentialDuraDamage = KE / penDuraFactoredClass;
-                        float maxPotentialBluntDamage = KE / penFactoredClass;
-
-                        float maxSpallingDamage = isMetalArmor ? maxPotentialBluntDamage - bluntDamage : maxPotentialDuraDamage - bluntDamage;
+                        float armorFactor = armor.ArmorClass * 10f * duraPercent;
+                        float penDuraFactoredClass = 10f + Mathf.Max(1f, armorFactor - (penPower / 1.8f));
+                        float maxPotentialSpallDamage = KE / penDuraFactoredClass;
+     
+   
+                        float maxSpallingDamage = Mathf.Max(7f, maxPotentialSpallDamage - bluntDamage);
                         float factoredSpallingDamage = maxSpallingDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction * (isMetalArmor ? (1f - duraPercent) + 1f : 1f);
                         float splitSpallingDmg = factoredSpallingDamage / bodyParts.Count;
 
@@ -515,8 +514,8 @@ namespace RealismMod
                             Logger.LogWarning("===========SPALLING=============== ");
                             Logger.LogWarning("Spall Reduction " + spallReduction);
                             Logger.LogWarning("Dura Percent " + duraPercent);
-                            Logger.LogWarning("Max Dura Factored Damage " + maxPotentialDuraDamage);
-                            Logger.LogWarning("Max Blunt Damage " + maxPotentialBluntDamage);
+                            Logger.LogWarning("Armor factorPercent " + duraPercent);
+                            Logger.LogWarning("Max Dura Factored Damage " + maxPotentialSpallDamage);
                             Logger.LogWarning("Max Spalling Damage " + maxSpallingDamage);
                             Logger.LogWarning("Factored Spalling Damage " + factoredSpallingDamage);
                             Logger.LogWarning("Split Spalling Dmg " + splitSpallingDmg);
@@ -536,7 +535,7 @@ namespace RealismMod
 
                             if (part == EBodyPart.Head)
                             {
-                                float damageMulti = 1f - (faceProtectionCount / 5f);
+                                float damageMulti = Mathf.Clamp(1f - (faceProtectionCount / 10f), 0.1f, 1f);
                                 damage = Mathf.Min(10, splitSpallingDmg * damageMulti);
                                 bleedFactor = bleedFactor * damageMulti;
                             }
@@ -627,7 +626,6 @@ namespace RealismMod
             }
 
             float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
-            float secondaryArmorResist = armorResist <= 50 ? armorResist : Mathf.Clamp(armorResist - 40f, 35f, 45f);
             float armorFactor = (121f - 5000f / (45f + armorDuraPercent * 2f)) * armorResist * 0.01f;
             if (((armorFactor >= penetrationPower + 15f) ? 0f : ((armorFactor >= penetrationPower) ? (0.4f * (armorFactor - penetrationPower - 15f) * (armorFactor - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * armorFactor - penetrationPower)))) - shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f < 0f)
             {
@@ -656,11 +654,6 @@ namespace RealismMod
 
     public class ApplyDamagePatch : ModulePatch
     {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.ApplyDamage), BindingFlags.Public | BindingFlags.Instance);
-        }
-
         private static void playRicochetSound(Vector3 pos, int rndNum)
         {
             float dist = CameraClass.Instance.Distance(pos);
@@ -672,9 +665,9 @@ namespace RealismMod
         private static void playArmorHitSound(EArmorMaterial mat, Vector3 pos, bool isHelm, int rndNum)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 0.45f * Plugin.ArmorCloseHitSoundMulti.Value;
+            float volClose = 0.3f * Plugin.ArmorCloseHitSoundMulti.Value;
             float volDist = 4f * Plugin.ArmorFarHitSoundMulti.Value;
-            float distThreshold = 30f;
+            float distThreshold = 20f;
 
             if (mat == EArmorMaterial.Aramid)
             {
@@ -737,7 +730,7 @@ namespace RealismMod
                     audioClip = rndNum == 0 ? "metal_1.wav" : rndNum == 1 ? "metal_2.wav" : "metal_3.wav";
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist * 0.5f : volClose * 0.75f, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist * 0.35f : volClose * 0.5f, EOcclusionTest.Regular);
             }
             else if (mat == EArmorMaterial.Glass)
             {
@@ -767,6 +760,11 @@ namespace RealismMod
             }
         }
 
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(ArmorComponent).GetMethod(nameof(ArmorComponent.ApplyDamage), BindingFlags.Public | BindingFlags.Instance);
+        }
+
         [PatchPrefix]
         private static bool Prefix(ArmorComponent __instance, ref DamageInfo damageInfo, ref float __result, EBodyPartColliderType colliderType, EArmorPlateCollider armorPlateCollider, bool damageInfoIsLocal, List<ArmorComponent> armorComponents)
         {
@@ -774,6 +772,7 @@ namespace RealismMod
             bool isHead = __instance.Template.ArmorColliders.Any(x => BallisticsController.HeadCollidors.Contains(x));
             bool isSteelBodyArmor = __instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !isHead;
             bool roundPenetrated = damageInfo.BlockedBy != __instance.Item.Id && damageInfo.DeflectedBy != __instance.Item.Id;
+            float startingDamage = damageInfo.Damage;
             float speedFactor = 1f;
             float armorDamageActual = 1f;
             float KE = 1f;
@@ -819,12 +818,17 @@ namespace RealismMod
             {
                 ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
                 ammo = new BulletClass(Utils.GenId(), ammoTemp);
+                bool canDoShotgunBonus = ammoTemp != null && !isHead && BallisticsController.BonusDamageCalibers.Contains(ammoTemp.Caliber);
+                bool isSlug = canDoShotgunBonus && ammoTemp.ProjectileCount <= 2;
+                bool isShot = canDoShotgunBonus && ammoTemp.ProjectileCount > 2;
                 speedFactor = ammo.GetBulletSpeed / damageInfo.ArmorDamage;
                 armorDamageActual = ammo.ArmorDamage * speedFactor;
+                armorDamageActual *= isShot ? 4f : isSlug ? 2f : 1f;
                 KE = (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f;
             }
             else
             {
+
                 Weapon weap = damageInfo.Weapon as Weapon;
                 bool isBayonet = !damageInfo.Player.IsAI && WeaponStats.HasBayonet && weap.WeapClass != "Knife" ? true : false;
                 armorDamageActual = damageInfo.ArmorDamage;
@@ -838,7 +842,7 @@ namespace RealismMod
             float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
             float secondaryArmorResist = armorResist <= 50 ? armorResist : Mathf.Clamp(armorResist - 40f, 35f, 45f);
             float armorDestructibility = Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
-            float armorFactor = armorResist * (Mathf.Min(1f, duraPercent * 1.65f));
+            float armorFactor = armorResist * duraPercent * 1.65f;
             float throughputDuraFactored = Mathf.Min(1f, bluntThrput * (1f + ((duraPercent - 1f) * -1f)));
             float penDuraFactoredClass = Mathf.Max(1f, armorFactor - (penPower / 1.8f));
             float penFactoredClass = Mathf.Max(1f, armorResist - (penPower / 1.8f));
@@ -849,10 +853,10 @@ namespace RealismMod
 
             if (damageInfo.DeflectedBy == __instance.Item.Id)
             {
-                damageInfo.Damage *= 0.5f * armorStatReductionFactor;
-                armorDamageActual *= 0.5f * armorStatReductionFactor;
-                damageInfo.ArmorDamage *= 0.5f * armorStatReductionFactor;
-                damageInfo.PenetrationPower *= 0.5f * armorStatReductionFactor;
+                damageInfo.Damage *= 0.2f * armorStatReductionFactor;
+                armorDamageActual *= 0.2f * armorStatReductionFactor;
+                damageInfo.ArmorDamage *= 0.2f * armorStatReductionFactor;
+                damageInfo.PenetrationPower *= 0.2f * armorStatReductionFactor;
             }
 
             if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !isHead)
@@ -908,7 +912,7 @@ namespace RealismMod
             }
             else if (roundPenetrated)
             {
-                durabilityLoss *= (1 - (penPower / 100f));
+                durabilityLoss *= (1f - (penPower / 100f)); 
                 damageInfo.Damage *= armorStatReductionFactor;
                 damageInfo.PenetrationPower *= armorStatReductionFactor;
             }
@@ -934,6 +938,8 @@ namespace RealismMod
             {
                 damageInfo.Damage = 0f;
             }
+
+            damageInfo.Damage = Mathf.Min(damageInfo.Damage, startingDamage);
 
             if (Plugin.EnableBallisticsLogging.Value)
             {

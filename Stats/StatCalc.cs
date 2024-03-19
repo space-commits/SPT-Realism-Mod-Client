@@ -12,50 +12,51 @@ namespace RealismMod
 {
     public static class StatCalc
     {
-        public static float ErgoWeightMult = 13.65f;
-        public static float ErgoTorqueMult = 0.82f;
-        public static float PistolErgoWeightMult = 12.6f;
-        public static float PistolErgoTorqueMult = 1.0f;
+        public const float ErgoWeightMult = 13.55f;
+        public const float ErgoTorqueMult = 0.82f;
+        public const float PistolErgoWeightMult = 12.6f;
+        public const float PistolErgoTorqueMult = 1.0f;
 
-        public static float VRecoilWeightMult = 2f;
-        public static float VRecoilTorqueMult = 0.9f;
-        public static float PistolVRecoilWeightMult = 1.5f;
-        public static float PistolVRecoilTorqueMult = 1.5f;
+        public const float VRecoilWeightMult = 2f;
+        public const float VRecoilTorqueMult = 0.9f;
+        public const float PistolVRecoilWeightMult = 1.5f;
+        public const float PistolVRecoilTorqueMult = 1.5f;
 
-        public static float HRecoilWeightMult = 3.55f;
-        public static float HRecoilTorqueMult = 0.4f;
-        public static float PistolHRecoilWeightMult = 3.5f;
-        public static float PistolHRecoilTorqueMult = 0.8f;
+        public const float HRecoilWeightMult = 3.55f;
+        public const float HRecoilTorqueMult = 0.4f;
+        public const float PistolHRecoilWeightMult = 3.5f;
+        public const float PistolHRecoilTorqueMult = 0.8f;
 
-        public static float DispersionWeightMult = 1.5f;
-        public static float DispersionTorqueMult = 1.2f;
-        public static float PistolDispersionWeightMult = 0.8f;
-        public static float PistolDispersionTorqueMult = 1.5f;
+        public const float DispersionWeightMult = 1.5f;
+        public const float DispersionTorqueMult = 1.2f;
+        public const float PistolDispersionWeightMult = 0.8f;
+        public const float PistolDispersionTorqueMult = 1.5f;
 
-        public static float CamWeightMult = 5f;
-        public static float CamTorqueMult = 0.2f;
+        public const float CamWeightMult = 5f;
+        public const float CamTorqueMult = 0.2f;
 
-        public static float AngleTorqueMult = 0.39f;
-        public static float PistolAngleTorqueMult = 0.3f;
+        public const float AngleTorqueMult = 0.39f;
+        public const float PistolAngleTorqueMult = 0.3f;
 
-        public static float DampingWeightMult = 0.04f;
-        public static float DampingTorqueMult = 0.055f;
-        public static float DampingMin = 0.2f;
-        public static float DampingMax = 0.9f;
-        public static float DampingPistolMin = 0.2f;
-        public static float DampingPistolMax = 0.9f;
+        public const float DampingWeightMult = 0.04f;
+        public const float DampingTorqueMult = 0.055f;
+        public const float DampingMin = 0.2f;
+        public const float DampingMax = 0.9f;
+        public const float DampingPistolMin = 0.2f;
+        public const float DampingPistolMax = 0.9f;
 
-        public static float HandDampingWeightMult = 0.07f;
-        public static float HandDampingTorqueMult = 0.04f;
-        public static float HandDampingMin = 0.2f;
-        public static float HandDampingMax = 0.9f;
-        public static float HandDampingPistolMin = 0.2f;
-        public static float HandDampingPistolMax = 0.9f;
+        public const float HandDampingWeightMult = 0.07f;
+        public const float HandDampingTorqueMult = 0.04f;
+        public const float HandDampingMin = 0.2f;
+        public const float HandDampingMax = 0.9f;
+        public const float HandDampingPistolMin = 0.2f;
+        public const float HandDampingPistolMax = 0.9f;
 
-        public static float MagWeightMult = 16f;
+        public const float MagWeightMult = 16f;
 
         public static void CalcPlayerWeightStats(Player player)
         {
+            player.Inventory.UpdateTotalWeight();
             float playerWeight = player.Inventory.TotalWeight;
             float weaponWeight = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item.GetSingleItemTotalWeight() : 1f;
             PlayerState.TotalModifiedWeightMinusWeapon = playerWeight - weaponWeight;
@@ -535,7 +536,7 @@ namespace RealismMod
                 }
                 if (WeaponStats.WeaponType(weap) == "DI")
                 {
-                    modDuraBurn = ((modDuraBurn - 1f) * 1.3f) + 1f;
+                    modDuraBurn *= 1.17f;
                 }
             }
 
@@ -544,12 +545,12 @@ namespace RealismMod
                 Mod containedMod = mod.Slots[0].ContainedItem as Mod;
                 if (Utils.IsSilencer(containedMod))
                 {
-                    modConv = 0f;
-                    modVRecoil = 0f;
-                    modHRecoil = 0f;
-                    modCamRecoil = 0f;
-                    modDispersion = 0f;
-                    modAngle = 0f;
+                    modConv *= 0.1f;
+                    modVRecoil *= 0.1f;
+                    modHRecoil *= 0.1f;
+                    modCamRecoil *= 0.1f;
+                    modDispersion *= 0.1f;
+                    modAngle *= 0.1f;
                     modLoudness = 0f;
                 }
                 return;
@@ -592,12 +593,12 @@ namespace RealismMod
                 {
                     if (parent.Slots[1].ContainedItem != null)
                     {
-                        modConv = 0f;
-                        modVRecoil = 0f;
-                        modHRecoil = 0f;
-                        modCamRecoil = 0f;
-                        modDispersion = 0f;
-                        modAngle = 0f;
+                        modConv *= 0.1f;
+                        modVRecoil *= 0.1f;
+                        modHRecoil *= 0.1f;
+                        modCamRecoil *= 0.1f;
+                        modDispersion *= 0.1f;
+                        modAngle *= 0.1f;
                         modLoudness = 0f;
                     }
                 }
@@ -610,12 +611,12 @@ namespace RealismMod
                 {
                     if (parent.Slots[1].ContainedItem != null)
                     {
-                        modConv = 0f;
-                        modVRecoil = 0f;
-                        modHRecoil = 0f;
-                        modCamRecoil = 0f;
-                        modDispersion = 0f;
-                        modAngle = 0f;
+                        modConv *= 0.1f;
+                        modVRecoil *= 0.1f;
+                        modHRecoil *= 0.1f;
+                        modCamRecoil *= 0.1f;
+                        modDispersion *= 0.1f;
+                        modAngle *= 0.1f;
                         modLoudness = 0f;
                     }
                 }

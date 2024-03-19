@@ -993,8 +993,11 @@ namespace RealismMod
 
                 currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesAreReset ? aimingQuat : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
 
-                RecoilController.DoVisualRecoil(ref targetRecoil, ref currentRecoil, ref weapTempRotation, Logger);
-    
+                if (Plugin.EnableAdditionalRec.Value)
+                {
+                    RecoilController.DoVisualRecoil(ref targetRecoil, ref currentRecoil, ref weapTempRotation, Logger);
+                }
+
                 __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weapTempPosition, weapTempRotation * currentRotation);
 
                 if (WeaponStats.IsStocklessPistol && StanceController.CurrentStance != EStance.PatrolStance)

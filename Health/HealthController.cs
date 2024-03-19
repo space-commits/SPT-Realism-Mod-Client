@@ -19,7 +19,6 @@ namespace RealismMod
         public static string MedType(Item med)
         {
             return !Utils.IsNull(med.ConflictingItems) ? med.ConflictingItems[1] : "Unknown";
-
         }
 
         public static string HBleedHealType(Item med)
@@ -215,7 +214,7 @@ namespace RealismMod
         private bool rightArmRuined = false;
         private bool leftArmRuined = false;
 
-        public bool HasOverdosedBaseStim = false;
+        private bool HasOverdosedStim = false;
 
         public float ResourcePerTick = 0;
 
@@ -231,7 +230,7 @@ namespace RealismMod
         {
             get
             {
-                return PainReliefStrength > PKOverdoseThreshold || HasOverdosedBaseStim;
+                return PainReliefStrength > PKOverdoseThreshold || HasOverdosedStim;
             }
         }
 
@@ -490,7 +489,7 @@ namespace RealismMod
             PainReliefStrength = 0f;
             PainTunnelStrength = 0f;
             ReliefDuration = 0;
-            HasOverdosedBaseStim = false;
+            HasOverdosedStim = false;
         }
 
         public void ResetBleedDamageRecord(Player player)
@@ -673,9 +672,9 @@ namespace RealismMod
        /*     EvaluateStimSingles(player, singlesGrouping);*/
             if (totalDuplicates > 1)
             {
-                HasOverdosedBaseStim = true;
+                HasOverdosedStim = true;
             }
-            else HasOverdosedBaseStim = false;
+            else HasOverdosedStim = false;
         }
 
         public EStimType GetStimType(string id) 
@@ -1278,7 +1277,7 @@ namespace RealismMod
             float stamRegenInjuryMulti = 1f;
             float resourceRateInjuryMulti = 1f;
 
-            float drugFactor = HasOverdosedBaseStim ? 100f + PainReliefStrength : PainReliefStrength;
+            float drugFactor = HasOverdosedStim ? 100f + PainReliefStrength : PainReliefStrength;
             float painReliefFactor = Mathf.Min((drugFactor * 2.2f) / 100f, 0.99f);
             float resourcePainReliefFactor = drugFactor / 100f;
 
@@ -1415,10 +1414,13 @@ namespace RealismMod
             }
             else 
             {
-                float playerWeightFactor = PlayerState.TotalModifiedWeight > 10f ? PlayerState.TotalModifiedWeight / 200f : 0f;
+                float playerWeightFactor = PlayerState.TotalModifiedWeight >= 10f ? PlayerState.TotalModifiedWeight / 400f : 0f;
                 float sprintMulti = PlayerState.IsSprinting ? 2f : 1f;
                 float sprintFactor = PlayerState.IsSprinting ? 0.2f : 0f;
                 float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti;
+
+                Utils.Logger.LogWarning("playerWeightFactor " + playerWeightFactor);
+
                 ResourcePerTick = totalResourceRate;
             }
         }

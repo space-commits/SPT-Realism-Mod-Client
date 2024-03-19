@@ -17,10 +17,188 @@ using EFT.Animations;
 using EFT.Animations.NewRecoil;
 using System.Collections.Generic;
 using System.IO;
+using EFT.Visual;
 /*using WeaponSkillsClass = EFT.SkillManager.GClass1638;*/
 
 namespace RealismMod
 {
+    public class UpdateHipInaccuracyPatch : ModulePatch
+    {
+        private static FieldInfo playerField;
+        private static FieldInfo tacticalModesField;
+
+
+        protected override MethodBase GetTargetMethod()
+        {
+            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
+            tacticalModesField = AccessTools.Field(typeof(TacticalComboVisualController), "list_0");
+            return typeof(EFT.Player.FirearmController).GetMethod("UpdateHipInaccuracy", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        private static bool CheckVisibleLaser(List<Transform> tacticalModes)
+        {
+            foreach (Transform tacticalMode in tacticalModes)
+            {
+                // Skip disabled modes
+                if (!tacticalMode.gameObject.activeInHierarchy) continue;
+
+                // Try to find a "light" under the mode, here's hoping BSG stay consistent
+                foreach (Transform child in tacticalMode.GetChildren())
+                {
+                    if (child.name.StartsWith("VIS_"))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private static bool CheckIRLight(List<Transform> tacticalModes)
+        {
+            foreach (Transform tacticalMode in tacticalModes)
+            {
+                // Skip disabled modes
+                if (!tacticalMode.gameObject.activeInHierarchy) continue;
+
+                // Try to find a "VolumetricLight", hopefully only visible flashlights have these
+                IkLight irLight = tacticalMode.GetComponentInChildren<IkLight>();
+                if (irLight != null)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static bool CheckIRLaser(List<Transform> tacticalModes)
+        {
+            foreach (Transform tacticalMode in tacticalModes)
+            {
+                // Skip disabled modes
+                if (!tacticalMode.gameObject.activeInHierarchy) continue;
+
+                // Try to find a "light" under the mode, here's hoping BSG stay consistent
+                foreach (Transform child in tacticalMode.GetChildren())
+                {
+                    if (child.name.StartsWith("IR_"))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private static bool CheckWhiteLight(List<Transform> tacticalModes)
+        {
+            foreach (Transform tacticalMode in tacticalModes)
+            {
+                // Skip disabled modes
+                if (!tacticalMode.gameObject.activeInHierarchy) continue;
+
+                // Try to find a "VolumetricLight", hopefully only visible flashlights have these
+                VolumetricLight volumetricLight = tacticalMode.GetComponentInChildren<VolumetricLight>();
+                if (volumetricLight != null)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        private static void CheckDevice(FirearmController firearmController, FieldInfo tacticalModesField)
+        {
+            if (tacticalModesField == null)
+            {
+                Logger.LogError("Could find not find _tacticalModesField");
+                return;
+            }
+
+            // Get the list of tacticalComboVisualControllers for the current weapon (One should exist for every flashlight, laser, or combo device)
+            Transform weaponRoot = firearmController.WeaponRoot;
+            List<TacticalComboVisualController> tacticalComboVisualControllers = weaponRoot.GetComponentsInChildrenActiveIgnoreFirstLevel<TacticalComboVisualController>();
+            if (tacticalComboVisualControllers == null)
+            {
+                Logger.LogError("Could find not find tacticalComboVisualControllers");
+                return;
+            }
+
+            PlayerState.WhiteLightActive = false;
+            PlayerState.LaserActive = false;
+            PlayerState.IRLightActive = false;
+            PlayerState.IRLaserActive = false;
+
+            // Loop through all of the tacticalComboVisualControllers, then its modes, then that modes children, and look for a light
+            foreach (TacticalComboVisualController tacticalComboVisualController in tacticalComboVisualControllers)
+            {
+                List<Transform> tacticalModes = tacticalModesField.GetValue(tacticalComboVisualController) as List<Transform>;
+                if (CheckWhiteLight(tacticalModes)) PlayerState.WhiteLightActive = true;
+                if (CheckVisibleLaser(tacticalModes)) PlayerState.LaserActive = true;
+                if (CheckIRLight(tacticalModes)) PlayerState.IRLightActive = true;
+                if (CheckIRLaser(tacticalModes)) PlayerState.IRLaserActive = true;
+            }
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(Player.FirearmController __instance)
+        {
+            Player player = (Player)playerField.GetValue(__instance);
+            if (player.IsYourPlayer == true)
+            {
+
+                //move the actual value calc to player update so injuries etc. can be properly taken into account, where stance is taken into account.
+                //factor in weapon ergo, player weight, HP injury, energy + hydration, overdose, stance, factored recoil, laser vs. light and if it is currently visible (IR)
+                //if NVG + vis light, there should be a debuff. Lasers give a bigger boost than lights. Bonus shouldn't be massive.
+
+
+                if (__instance.AimingDevices.Length > 0 && __instance.AimingDevices.Any(x => x.Light.IsActive))
+                {
+                    CheckDevice(__instance, tacticalModesField);
+                    PlayerState.HasActiveDevice = true;
+
+                    NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
+                    bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
+
+                    if (nvgIsOn)
+                    {
+                        float bonus = PlayerState.IRLaserActive || PlayerState.LaserActive ? 0.5f : PlayerState.IRLightActive ? 0.65f : 1f;
+                        PlayerState.DeviceBonus = PlayerState.WhiteLightActive ? 1f : bonus;
+                    }
+                    else
+                    {
+                        PlayerState.DeviceBonus = PlayerState.LaserActive ? 0.5f : PlayerState.WhiteLightActive ? 0.65f : 1f;
+                    }
+                }
+                else
+                {
+                    PlayerState.HasActiveDevice = false;
+                    PlayerState.DeviceBonus = 1f;
+                    return;
+                }
+            }
+        }
+    }
+
+    public class GetCameraRotationRecoilPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(NewRecoilShotEffect).GetMethod("GetCameraRotationRecoil", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(NewRecoilShotEffect __instance, ref Vector3 __result)
+        {
+            Vector3 currentCameraRotation = __instance.CameraRotationRecoil.GetRecoil(false);
+            currentCameraRotation.y *= 0.5f;
+            __result = currentCameraRotation;
+            return false;
+
+        }
+    }
+
     public class RotatePatch : ModulePatch
     {
         private static FieldInfo movementContextField;
@@ -267,8 +445,6 @@ namespace RealismMod
         }
     }
 
-
-
     public class RecoilAnglesPatch : ModulePatch
     {
         private static FieldInfo fcField;
@@ -336,12 +512,14 @@ namespace RealismMod
 
                 float stockedPistolFactor = WeaponStats.IsStockedPistol ? 0.75f : 1f;
 
-                __instance.RecoilStableShotIndex = 1;
+                __instance.RecoilStableShotIndex = 1; // try different value for pistols
                 __instance.HandRotationRecoil.RecoilReturnTrajectoryOffset = template.RecoilReturnPathOffsetHandRotation;
                 __instance.HandRotationRecoil.StableAngleIncreaseStep = template.RecoilStableAngleIncreaseStep; 
                 __instance.HandRotationRecoil.AfterRecoilOffsetVerticalRange = Vector2.zero;
                 __instance.HandRotationRecoil.AfterRecoilOffsetHorizontalRange = Vector2.zero;
-                __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = template.weapClass.ToLower() == "pistol" ? new Vector2(0f, 25f) : new Vector2(30f, 30f); 
+
+                __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = new Vector2(0f, RecoilController.BaseTotalDispersion * 6f);
+
                 __instance.HandRotationRecoil.ReturnTrajectoryDumping = template.RecoilReturnPathDampingHandRotation ;
                 __instance.HandRotationRecoilEffect.Damping = template.RecoilDampingHandRotation * Plugin.RecoilDampingMulti.Value; 
                 __instance.HandRotationRecoil.CategoryIntensityMultiplier =  template.RecoilCategoryMultiplierHandRotation * Plugin.RecoilIntensity.Value * stockedPistolFactor; 
@@ -349,13 +527,17 @@ namespace RealismMod
                 float totalVRecoilDelta = Mathf.Max(0f, (1f + WeaponStats.VRecoilDelta) * (1f - recoilSuppressionX - recoilSuppressionY * recoilSuppressionFactor));
                 float totalHRecoilDelta = Mathf.Max(0f, (1f + WeaponStats.HRecoilDelta) * (1f - recoilSuppressionX - recoilSuppressionY * recoilSuppressionFactor));
 
-         
+
                 //this may not be the right reference
                 //need to figure out a sensible way to represent recoil of underbarrel
-/*                if (firearmController.Weapon.IsUnderBarrelDeviceActive) 
-                {
-                }
-*/
+                /*                if (firearmController.Weapon.IsUnderBarrelDeviceActive) 
+                                {
+                                }
+                */
+
+                __instance.BasicRecoilRotationStrengthRange = new Vector2(0.95f, 1.05f); //should mess around with this, consider making it unique per weapon
+                __instance.BasicRecoilPositionStrengthRange = new Vector2(0.95f, 1.05f); //should mess around with this
+
                 __instance.BasicPlayerRecoilRotationStrength = __instance.BasicRecoilRotationStrengthRange * ((template.RecoilForceUp * totalVRecoilDelta + AimingConfig.RecoilVertBonus) * __instance.IncomingRotationStrengthMultiplier);
                 __instance.BasicPlayerRecoilPositionStrength = __instance.BasicRecoilPositionStrengthRange * ((template.RecoilForceBack * totalHRecoilDelta + AimingConfig.RecoilBackBonus) * __instance.IncomingRotationStrengthMultiplier);
               
@@ -420,8 +602,8 @@ namespace RealismMod
             {
                 //Conditional recoil modifiers 
                 float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
-                float playerWeightFactorBuff = 1f - (totalPlayerWeight / 550f);
-                float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 100f);
+                float playerWeightFactorBuff = 1f - (totalPlayerWeight / 400f);
+                float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 150f);
 
                 float activeAimingBonus = StanceController.CurrentStance == EStance.ActiveAiming ? 0.9f : 1f;
                 float aimCamRecoilBonus = StanceController.CurrentStance == EStance.ActiveAiming || !StanceController.IsAiming ? 0.8f : 1f;
@@ -433,7 +615,7 @@ namespace RealismMod
                 float baseRecoilAngle = RecoilController.BaseTotalRecoilAngle;
                 float mountingAngleModi = StanceController.IsMounting ? Mathf.Min(baseRecoilAngle + 15f, 90f) : StanceController.IsBracing ? Mathf.Min(baseRecoilAngle + 8f, 90f) : baseRecoilAngle;
                 
-                float opticRecoilMulti = allowedCalibers.Contains(firearmController.Weapon.AmmoCaliber) && StanceController.IsAiming && WeaponStats.HasOptic ? 0.93f : 1f;
+                float opticRecoilMulti = allowedCalibers.Contains(firearmController.Weapon.AmmoCaliber) && StanceController.IsAiming && WeaponStats.HasOptic ? 0.9f : 1f;
                 float fovFactor = (Singleton<SharedGameSettingsClass>.Instance.Game.Settings.FieldOfView / 70f) * Plugin.HRecLimitMulti.Value;
                 float opticLimit = StanceController.IsAiming && WeaponStats.HasOptic ? 15f * fovFactor : 25f * fovFactor;
 
@@ -465,15 +647,18 @@ namespace RealismMod
                 //Recalculate and modify dispersion
                 float dispFactor = incomingForce * PlayerState.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff * mountingDispModi * opticRecoilMulti * Plugin.DispMulti.Value;
                 RecoilController.FactoredTotalDispersion = RecoilController.BaseTotalDispersion * dispFactor;
-                __instance.BasicPlayerRecoilDegreeRange = new Vector2(RecoilController.BaseTotalRecoilAngle - RecoilController.FactoredTotalDispersion, RecoilController.BaseTotalRecoilAngle + RecoilController.FactoredTotalDispersion);
+
+                __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = new Vector2(0f, RecoilController.FactoredTotalDispersion * 6f);
+
+                __instance.BasicPlayerRecoilDegreeRange = new Vector2(RecoilController.BaseTotalRecoilAngle, RecoilController.BaseTotalRecoilAngle);
                 __instance.BasicRecoilRadian = __instance.BasicPlayerRecoilDegreeRange * 0.017453292f;
 
                 Vector2 finalRecoilRadian;
                 __instance.method_3(out finalRecoilRadian);
 
                 //Reset camera recoil values and modify by various factors
-                /*float camShotFactor = Mathf.Min((RecoilController.ShotCount * 0.25f) + 1f, 1.4f);*/
-                float totalCamRecoil = RecoilController.BaseTotalCamRecoil * incomingForce * PlayerState.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti * Plugin.CamMulti.Value; // * camShotFactor
+                float camShotFactor = RecoilController.ShotCount > 1 ? Mathf.Min((RecoilController.ShotCount * 0.1f) + 1f, 1.4f) : 1f;
+                float totalCamRecoil = RecoilController.BaseTotalCamRecoil * incomingForce * PlayerState.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti * camShotFactor * Plugin.CamMulti.Value; 
                 RecoilController.FactoredTotalCamRecoil = totalCamRecoil;
                 __instance.ShotRecoilProcessValues[3].IntensityMultiplicator = totalCamRecoil;
                 __instance.ShotRecoilProcessValues[4].IntensityMultiplicator = -totalCamRecoil;
@@ -504,8 +689,8 @@ namespace RealismMod
                     float shiftRecoilFactor = (RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil) * (1f + totalCamRecoil) * gunFactor;
                     float scopeFactor = ((1f - WeaponStats.ScopeAccuracyFactor) + (shiftRecoilFactor * 0.002f));
 
-                    int num = UnityEngine.Random.Range(1, 20);
-                    if (scopeFactor * 10f > num)
+                    int rnd = UnityEngine.Random.Range(1, 20);
+                    if (scopeFactor * 10f > rnd)
                     {
                         float offsetFactor = scopeFactor * 0.2f;
                         float offsetX = Random.Range(-offsetFactor, offsetFactor);

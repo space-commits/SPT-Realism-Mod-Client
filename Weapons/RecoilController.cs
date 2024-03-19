@@ -16,7 +16,7 @@ namespace RealismMod
         public static bool IsFiringDeafen = false;
         public static bool IsFiringMovement = false;
         public static bool IsFiringWiggle = false;
-        public static float ShotCount = 0f;
+        public static int ShotCount = 0;
         public static float PrevShotCount = ShotCount;
         public static float ShotTimer = 0.0f;
         public static float DeafenShotTimer = 0.0f;
@@ -43,23 +43,16 @@ namespace RealismMod
 
         public static void DoVisualRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation, ManualLogSource logger)
         {
+            float cantedRecoilSpeed = Mathf.Min(BaseTotalConvergence, 16f);
+
             if (RecoilController.IsFiringWiggle)
             {
-                float cantedRecoilAmount = FactoredTotalHRecoil / 32f;
-                float cantedRecoilSpeed = Mathf.Max(BaseTotalConvergence, 16f);
+                float cantedRecoilAmount = FactoredTotalHRecoil / 31.5f;
                 float totalCantedRecoil = Mathf.Lerp(-cantedRecoilAmount, cantedRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f));
-
-                if (Plugin.EnableAdditionalRec.Value)
-                {
-                    float additionalRecoilAmount = FactoredTotalDispersion / 18f;
-                    float totalSideRecoil = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f)) * 0.05f;
-                    float totalVertical = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed * 1.5f, 1.0f)) * 0.1f;
-                    targetRecoil = new Vector3(totalVertical * 0.95f, totalCantedRecoil, totalSideRecoil * 0.89f) * Plugin.VisRecoilMulti.Value * WeaponStats.CurrentVisualRecoilMulti;
-                }
-                else
-                {
-                    targetRecoil = new Vector3(0f, totalCantedRecoil, 0f) * Plugin.VisRecoilMulti.Value * WeaponStats.CurrentVisualRecoilMulti;
-                }
+                float additionalRecoilAmount = FactoredTotalDispersion / 18f;
+                float totalSideRecoil = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f)) * 0.05f;
+                float totalVertical = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed * 1.5f, 1.0f)) * 0.1f;
+                targetRecoil = new Vector3(totalVertical * 0.95f, totalCantedRecoil, totalSideRecoil * 0.89f) * Plugin.VisRecoilMulti.Value * WeaponStats.CurrentVisualRecoilMulti;
             }
             else
             {
@@ -73,11 +66,25 @@ namespace RealismMod
 
         public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weapon)
         {
-            float stockedPistolFactor = WeaponStats.IsStockedPistol ? 0.75f : 1f;
             NewRecoilShotEffect newRecoil = pwa.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
+            float stockedPistolFactor = WeaponStats.IsStockedPistol ? 0.75f : 1f;
+            float opticFactorRear = StanceController.IsAiming && WeaponStats.HasOptic ? 0.8f : 1f;
+            float opticFactorVert = StanceController.IsAiming && WeaponStats.HasOptic ? 0.95f : 1f;
+
             newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = weapon.Template.RecoilCategoryMultiplierHandRotation * Plugin.RecoilIntensity.Value * stockedPistolFactor;
-            newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = weapon.Template.RecoilReturnPathDampingHandRotation * Plugin.HandsDampingMulti.Value;
-            pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = weapon.Template.RecoilDampingHandRotation * Plugin.RecoilDampingMulti.Value;
+       
+            newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = weapon.Template.RecoilReturnPathDampingHandRotation * Plugin.HandsDampingMulti.Value * opticFactorRear;
+            pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = weapon.Template.RecoilDampingHandRotation * Plugin.RecoilDampingMulti.Value * opticFactorVert;
+
+            pwa.Shootingg.CurrentRecoilEffect.CameraRotationRecoilEffect.Damping = Plugin.CamWiggle.Value;
+            pwa.Shootingg.CurrentRecoilEffect.CameraRotationRecoilEffect.ReturnSpeed = Plugin.CamReturn.Value; 
+            pwa.Shootingg.CurrentRecoilEffect.CameraRotationRecoilEffect.Intensity = 1; 
+
+            pwa.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.Damping = 0.61f; // 0.77
+            pwa.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.ReturnSpeed = 0.15f; //0.15
+
+            newRecoil.HandRotationRecoil.NextStablePointDistanceRange.x = 0.1f;
+            newRecoil.HandRotationRecoil.NextStablePointDistanceRange.y = 6f;
 
             if (Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !WeaponStats.HasShoulderContact)))
             {

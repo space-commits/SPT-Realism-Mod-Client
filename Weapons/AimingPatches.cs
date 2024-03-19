@@ -1,5 +1,6 @@
 ﻿using Aki.Reflection.Patching;
 using BepInEx.Logging;
+using BSG.CameraEffects;
 using Comfort.Common;
 using EFT;
 using EFT.InputSystem;
@@ -34,6 +35,9 @@ namespace RealismMod
                     bool thermalIsOn = thermComponent != null && (thermComponent.Togglable == null || thermComponent.Togglable.On);
                     bool gearBlocksADS = Plugin.EnableFSPatch.Value && fsIsON && (!WeaponStats.WeaponCanFSADS && (!GearStats.AllowsADS(fsComponent.Item) || !PlayerState.GearAllowsADS));
                     bool toobBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && WeaponStats.HasOptic) || thermalIsOn);
+
+                    fc.UpdateHipInaccuracy(); //update hipfire to take NVG toggle into account
+  
                     if (Plugin.ServerConfig.recoil_attachment_overhaul && (toobBlocksADS || gearBlocksADS))
                     {
                         if (!hasSetCanAds)
@@ -124,9 +128,10 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Player __instance)
         {
-            if (__instance.IsYourPlayer == true)
+            if (__instance.IsYourPlayer)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
+                if (fc == null) return true;
                 bool isIdling = fc.FirearmsAnimator.IsIdling();
                 return isIdling;
             }
@@ -155,7 +160,7 @@ namespace RealismMod
                 {
                     //slow is hard set to 0.33 when called, 0.4-0.43 feels best.
                     float baseSpeed = PlayerState.AimMoveSpeedBase * WeaponStats.AimMoveSpeedWeapModifier * PlayerState.AimMoveSpeedInjuryMulti;
-                    float totalSpeed = StanceController.CurrentStance == EStance.ActiveAiming ? baseSpeed * 1.3f : baseSpeed;
+                    float totalSpeed = StanceController.CurrentStance == EStance.ActiveAiming ? baseSpeed * 1.45f : baseSpeed;
                     totalSpeed = WeaponStats._WeapClass == "pistol" ? totalSpeed + 0.15f : totalSpeed;
                     __instance.AddStateSpeedLimit(Mathf.Clamp(totalSpeed, 0.3f, 0.9f), Player.ESpeedLimit.Aiming);
                     return false;

@@ -18,6 +18,7 @@ using static EFT.Player;
 using System.ComponentModel;
 using static EFT.ClientPlayer;
 using WeaponSkillsClass = EFT.SkillManager.GClass1768;
+using EFT.Animations.NewRecoil;
 
 namespace RealismMod
 {
@@ -54,7 +55,7 @@ namespace RealismMod
 
                 float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo) * 1.25f;
                 float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (1f + WeaponStats.ModAimSpeedModifier), 0.55f, 1.4f);
-                valueBlender.Speed = __instance.SwayFalloff * aimSpeed * 4f;
+                valueBlender.Speed = __instance.SwayFalloff * aimSpeed * 4.35f;
 
                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayStrength").SetValue(__instance, Mathf.InverseLerp(1f, 18f, weapon.GetSingleItemTotalWeight() * (1f - WeaponStats.PureErgoDelta)));
 
@@ -86,6 +87,7 @@ namespace RealismMod
         private static FieldInfo float3Field;
         private static bool didAimWiggle = false;
 
+
         protected override MethodBase GetTargetMethod()
         {
             float3Field = AccessTools.Field(typeof(Player.FirearmController), "float_3");
@@ -106,18 +108,18 @@ namespace RealismMod
 
                 if (pwa.IsAiming && !didAimWiggle)
                 {
+                    Logger.LogWarning("doing ADS wiggle");
                     StanceController.DoWiggleEffects(player, pwa, fc.Weapon, wiggleDir, wiggleFactor: factor, isADS: true);
                     didAimWiggle = true;
                 }
                 else if (!pwa.IsAiming && didAimWiggle)
                 {
-                    StanceController.DoWiggleEffects(player, pwa, fc.Weapon, - wiggleDir * 0.4f, wiggleFactor: factor, isADS: true);
+                    Logger.LogWarning("doing ADS UNwiggle");
                     didAimWiggle = false;
                 }
                 StanceController.DoDampingTimer = true;
             }
         }
-
 
         [PatchPostfix]
         private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
@@ -227,10 +229,6 @@ namespace RealismMod
 
                     DoADSWiggle(__instance, player, firearmController, totalErgoFactor);
 
-                    __instance.CameraSmoothRecoil = 1;
-                    __instance.CameraToWeaponAngleSpeedRange = Vector2.zero;
-                    __instance.CameraToWeaponAngleStep = 0;
-
                     if (Plugin.EnableLogging.Value == true)
                     {
                         Logger.LogWarning("=====method_23========");
@@ -298,7 +296,7 @@ namespace RealismMod
                 float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * formfactor * beltFedFactor;
                 float weightFactor = StatCalc.ProceduralIntensityFactorCalc(weapWeight, weapon.WeapClass == "pistol" ? 1f : 4f);
                 float displacementModifier = noShoulderContact ? Plugin.SwayIntensity.Value * 0.95f : Plugin.SwayIntensity.Value * 0.48f;//lower = less drag
-                float aimIntensity = noShoulderContact ? Plugin.SwayIntensity.Value * 0.95f : Plugin.SwayIntensity.Value * 0.57f;
+                float aimIntensity = noShoulderContact ? Plugin.SwayIntensity.Value * 0.86f : Plugin.SwayIntensity.Value * 0.51f;
 
                 float weapDisplacement = EFTHardSettings.Instance.DISPLACEMENT_STRENGTH_PER_KG.Evaluate(ergoWeight * weightFactor);//delay from moving mouse to the weapon moving to center of screen.
                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_displacementStr").SetValue(__instance, weapDisplacement * displacementModifier * playerWeightFactor);

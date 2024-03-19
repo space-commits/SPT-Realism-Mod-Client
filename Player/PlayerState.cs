@@ -92,5 +92,13 @@ namespace RealismMod
         public static float TotalModifiedWeightMinusWeapon = 1f;
 
         public static bool IsMoving = false;
+
+        public static float DeviceBonus = 1f;
+        public static bool HasActiveDevice = false;
+        public static bool IRLaserActive = false;
+        public static bool IRLightActive = false;
+        public static bool LaserActive = false;
+        public static bool WhiteLightActive = false;
+
     }
 }
