@@ -10,10 +10,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using MalfGlobals = BackendConfigSettingsClass.GClass1367;
-using OverheatGlobals = BackendConfigSettingsClass.GClass1368;
-using KnowMalfClass = EFT.InventoryLogic.Weapon.GClass2738;
-using MalfStateStruct = GClass722<EFT.InventoryLogic.Weapon.EMalfunctionState>.GStruct42<float, EFT.InventoryLogic.Weapon.EMalfunctionState>;
+using MalfGlobals = BackendConfigSettingsClass.GClass1370;
+using OverheatGlobals = BackendConfigSettingsClass.GClass1371;
+using KnowMalfClass = EFT.InventoryLogic.Weapon.GClass2742;
+using DamageTypeClass = GClass2456;
 using Systems.Effects;
 
 namespace RealismMod
@@ -45,8 +45,8 @@ namespace RealismMod
                     Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.RightArm, null, null, null, null);
                     NotificationManagerClass.DisplayWarningNotification("Catastrophic Failure. Wrong Ammo/Weapon Caliber Combination.", EFT.Communications.ENotificationDurationType.Long);
                 }
-                player.ActiveHealthController.ApplyDamage(EBodyPart.Head, UnityEngine.Random.Range(5, 20), GClass2452.Existence);
-                player.ActiveHealthController.ApplyDamage(EBodyPart.RightArm, UnityEngine.Random.Range(20, 60), GClass2452.Existence);
+                player.ActiveHealthController.ApplyDamage(EBodyPart.Head, UnityEngine.Random.Range(5, 20), DamageTypeClass.Existence);
+                player.ActiveHealthController.ApplyDamage(EBodyPart.RightArm, UnityEngine.Random.Range(20, 60), DamageTypeClass.Existence);
 
                 inventoryController.TryThrowItem(fc.Item, null);
             }

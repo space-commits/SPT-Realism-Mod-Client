@@ -17,7 +17,7 @@ using System.Linq;
 using static EFT.Player;
 using System.ComponentModel;
 using static EFT.ClientPlayer;
-using WeaponSkillsClass = EFT.SkillManager.GClass1768;
+using WeaponSkillsClass = EFT.SkillManager.GClass1771;
 using EFT.Animations.NewRecoil;
 
 namespace RealismMod
@@ -51,13 +51,13 @@ namespace RealismMod
                 WeaponSkillsClass skillsClass = (WeaponSkillsClass)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_buffInfo").GetValue(__instance);
                 Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayBlender").GetValue(__instance);
 
-                float ergoWeightFactor = WeaponStats.ErgoFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f));
+                float ergoWeightFactor = weapon.GetSingleItemTotalWeight() * (1f - WeaponStats.PureErgoDelta) * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f));
 
                 float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo) * 1.25f;
                 float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (1f + WeaponStats.ModAimSpeedModifier), 0.55f, 1.4f);
                 valueBlender.Speed = __instance.SwayFalloff * aimSpeed * 4.35f;
 
-                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayStrength").SetValue(__instance, Mathf.InverseLerp(1f, 18f, weapon.GetSingleItemTotalWeight() * (1f - WeaponStats.PureErgoDelta)));
+                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayStrength").SetValue(__instance, Mathf.InverseLerp(1f, 18f, ergoWeightFactor));
 
                 __instance.UpdateSwayFactors();
 

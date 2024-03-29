@@ -74,11 +74,16 @@ namespace RealismMod
             return true;
         }
 
-        //should not use, use the field instead, checkisready is called once per frame
-        public static Player GetPlayer() 
+        public static Player GetYourPlayer() 
         {
             GameWorld gameWorld = Singleton<GameWorld>.Instance;
-            return gameWorld.MainPlayer != null ? gameWorld.MainPlayer : null;
+            return gameWorld.MainPlayer;
+        }
+
+        public static Player GetPlayerByID(string id)
+        {
+            GameWorld gameWorld = Singleton<GameWorld>.Instance;
+            return gameWorld.GetAlivePlayerByProfileID(id);   
         }
 
         public static bool CheckIsReady()

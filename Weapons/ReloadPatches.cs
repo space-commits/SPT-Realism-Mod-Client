@@ -15,8 +15,16 @@ using System.Xml.Linq;
 using UnityEngine;
 using static CW2.Animations.PhysicsSimulator.Val;
 using static EFT.Player;
-using MagReloadClass = EFT.Player.FirearmController.GClass1607;
-using RechamberClass = EFT.Player.FirearmController.GClass1619;
+using MagReloadClass = EFT.Player.FirearmController.GClass1610;
+using RechamberClass = EFT.Player.FirearmController.GClass1622;
+using StatusStruct = GStruct414<GInterface324>;
+using ItemEventClass = GClass2767;
+using WeaponStateClass = GClass1668;
+using ChamberWeaponClass = EFT.Player.FirearmController.GClass1626;
+using ReloadWeaponClass = EFT.Player.FirearmController.GClass1587;
+using WeaponEventClass = EFT.Player.FirearmController.GClass1577;
+using WeaponEventHandlerClass = EFT.Player.FirearmController.GClass1576;
+using WeaponStatSubclass = EFT.Player.FirearmController.GClass1584;
 
 namespace RealismMod
 {
@@ -41,26 +49,26 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(FirearmController.GClass1623).GetMethods(BindingFlags.Public | BindingFlags.Instance).First(m =>
+            return typeof(ChamberWeaponClass).GetMethods(BindingFlags.Public | BindingFlags.Instance).First(m =>
             m.GetParameters().Length == 1
             && m.GetParameters()[0].Name == "onWeaponAppear");
         }
 
         [PatchPrefix]
-        private static bool Prefix(FirearmController.GClass1623 __instance, Action onWeaponAppear)
+        private static bool Prefix(ChamberWeaponClass __instance, Action onWeaponAppear)
         {
-            var fc = (FirearmController)AccessTools.Field(typeof(FirearmController.GClass1623), "firearmController_0").GetValue( __instance);
+            var fc = (FirearmController)AccessTools.Field(typeof(ChamberWeaponClass), "firearmController_0").GetValue( __instance);
             var player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(fc);
             if (player.IsYourPlayer) 
             {
                 if (fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1) 
                 {
-                    var magazine = (MagazineClass)AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2665_0").GetValue(__instance);
-                    var ammoIsCompatible = (bool)AccessTools.Field(typeof(FirearmController.GClass1623), "bool_1").GetValue(__instance);
-                    var bullet = (BulletClass)AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2732_0").GetValue(__instance);
-                    var chamberState = (GClass1665)AccessTools.Field(typeof(FirearmController.GClass1623), "gclass1665_0").GetValue(__instance);
+                    var magazine = (MagazineClass)AccessTools.Field(typeof(ChamberWeaponClass), "gclass2669_0").GetValue(__instance);
+                    var ammoIsCompatible = (bool)AccessTools.Field(typeof(ChamberWeaponClass), "bool_1").GetValue(__instance);
+                    var bullet = (BulletClass)AccessTools.Field(typeof(ChamberWeaponClass), "gclass2736_0").GetValue(__instance);
+                    var chamberState = (WeaponStateClass)AccessTools.Field(typeof(ChamberWeaponClass), "gclass1668_0").GetValue(__instance);
 
-                    AccessTools.Field(typeof(FirearmController.GClass1623), "action_0").SetValue(__instance, onWeaponAppear);
+                    AccessTools.Field(typeof(ChamberWeaponClass), "action_0").SetValue(__instance, onWeaponAppear);
                     __instance.Start();
                     fc.FirearmsAnimator.SetActiveParam(true, true);
                     fc.FirearmsAnimator.SetLayerWeight(fc.FirearmsAnimator.LACTIONS_LAYER_INDEX, 0);
@@ -70,8 +78,8 @@ namespace RealismMod
                     int currentMagazineCount = fc.Weapon.GetCurrentMagazineCount();
 
                     magazine = fc.Weapon.GetCurrentMagazine();
-
-                    AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2665_0").SetValue(__instance, magazine);
+                    AccessTools.Field(typeof(ChamberWeaponClass), "gclass2669_0").SetValue(__instance, magazine);
+                   
                     fc.AmmoInChamberOnSpawn = chamberAmmoCount;
 
                     if (fc.Weapon.ChamberAmmoCount == 0)
@@ -90,7 +98,7 @@ namespace RealismMod
                     player.BodyAnimatorCommon.SetFloat(PlayerAnimator.RELOAD_FLOAT_PARAM_HASH, 1f);
                     player.Skills.OnWeaponDraw(fc.Weapon);
                     ammoIsCompatible = magazine == null || magazine.IsAmmoCompatible(fc.Weapon.Chambers);
-                    AccessTools.Field(typeof(FirearmController.GClass1623), "bool_1").SetValue(__instance, ammoIsCompatible);
+                    AccessTools.Field(typeof(ChamberWeaponClass), "bool_1").SetValue(__instance, ammoIsCompatible);
 
                     fc.FirearmsAnimator.SetAmmoCompatible(ammoIsCompatible);
                     if (ammoIsCompatible && magazine != null && magazine.Count > 0 && fc.Weapon.Chambers.Length != 0 && fc.Weapon.MalfState.State == Weapon.EMalfunctionState.Misfire)
@@ -104,18 +112,16 @@ namespace RealismMod
                         {
                             fc.Weapon.MalfState.ChangeStateSilent(Weapon.EMalfunctionState.None);
                         }
-                        GStruct413<GInterface322> gstruct = magazine.Cartridges.PopTo(player.GClass2757_0, new GClass2763(fc.Item.Chambers[0]));
+                        StatusStruct gstruct = magazine.Cartridges.PopTo(player.GClass2761_0, new ItemEventClass(fc.Item.Chambers[0]));
                         fc.Item.MalfState.ChangeStateSilent(malfState);
                         if (gstruct.Value == null)
                         {
-                            Logger.LogWarning("gstruct is null ");
                             return false;
                         }
-                        Logger.LogWarning("remove all shells ");
                         chamberState.RemoveAllShells();
                         player.UpdatePhones();
                         bullet = (BulletClass)gstruct.Value.ResultItem;
-                        AccessTools.Field(typeof(FirearmController.GClass1623), "gclass2732_0").SetValue(__instance, bullet);
+                        AccessTools.Field(typeof(ChamberWeaponClass), "gclass2736_0").SetValue(__instance, bullet);
                     }
                     return false;
                 }
@@ -129,16 +135,16 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(FirearmController.GClass1584).GetMethods(BindingFlags.Public | BindingFlags.Instance).First(m =>
+            return typeof(ReloadWeaponClass).GetMethods(BindingFlags.Public | BindingFlags.Instance).First(m =>
             m.GetParameters().Length == 2
             && m.GetParameters()[0].Name == "reloadExternalMagResult"
             && m.GetParameters()[1].Name == "callback");
         }
 
         [PatchPrefix]
-        private static void Prefix(FirearmController.GClass1584 __instance, Player.FirearmController.GClass1574 reloadExternalMagResult)
+        private static void Prefix(ReloadWeaponClass __instance, WeaponEventClass reloadExternalMagResult)
         {
-            var fc = (FirearmController)AccessTools.Field(typeof(FirearmController.GClass1584), "firearmController_0").GetValue(__instance);
+            var fc = (FirearmController)AccessTools.Field(typeof(ReloadWeaponClass), "firearmController_0").GetValue(__instance);
             var player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(fc);
 
             if (player.IsYourPlayer)
@@ -159,7 +165,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(FirearmsAnimator __instance, int count)
         {
-            Player player = Utils.GetPlayer();
+            Player player = Utils.GetYourPlayer();
             if (player == null) return true;
             FirearmController fc = player.HandsController as FirearmController;
             if (player.HandsAnimator == __instance as ObjectInHandsAnimator || fc == null)
@@ -183,7 +189,7 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(FirearmsAnimator __instance, ref bool compatible)
         {
-            Player player = Utils.GetPlayer();
+            Player player = Utils.GetYourPlayer();
             if (player == null) return;
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
             if (fc == null) return;
@@ -282,7 +288,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            Player player = Utils.GetPlayer();
+            Player player = Utils.GetYourPlayer();
             if (player == null) return;
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
             if (fc == null) return;
@@ -333,7 +339,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance, float weaponLevel)
         {
-            Player player = Utils.GetPlayer();
+            Player player = Utils.GetYourPlayer();
             if (player == null) return;
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
             if (fc == null) return;
@@ -508,7 +514,7 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(FirearmsAnimator __instance, float fix)
         {
-            Player player = Utils.GetPlayer();
+            Player player = Utils.GetYourPlayer();
             if (player == null) return;
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
             if (fc == null) return;
@@ -537,7 +543,7 @@ namespace RealismMod
         [PatchPrefix]
         private static void PatchPrefix(FirearmsAnimator __instance)
         {
-            Player player = Utils.GetPlayer();
+            Player player = Utils.GetYourPlayer();
             if (player == null) return;
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
             if (fc == null) return;
@@ -754,9 +760,9 @@ namespace RealismMod
 
         protected override MethodBase GetTargetMethod()
         {
-            playerField = AccessTools.Field(typeof(Player.FirearmController.GClass1581), "player_0");
-            faField = AccessTools.Field(typeof(Player.FirearmController.GClass1581), "firearmsAnimator_0");
-            return typeof(MagReloadClass).GetMethod("Start", new Type[] { typeof(Player.FirearmController.GClass1573), typeof(Callback) });
+            playerField = AccessTools.Field(typeof(WeaponStatSubclass), "player_0");
+            faField = AccessTools.Field(typeof(WeaponStatSubclass), "firearmsAnimator_0");
+            return typeof(MagReloadClass).GetMethod("Start", new Type[] { typeof(WeaponEventHandlerClass), typeof(Callback) });
         }
 
         [PatchPostfix]
@@ -791,7 +797,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance)
         {
-            Player player = Utils.GetPlayer();
+            Player player = Utils.GetYourPlayer();
             if (player == null) return;
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
             if (fc == null) return;

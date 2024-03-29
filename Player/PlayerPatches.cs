@@ -11,15 +11,19 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using WeaponSkills = EFT.SkillManager.GClass1768;
-using StaminaLevelClass = GClass750<float>;
-using WeightClass = GClass751<float>;
+using WeaponSkills = EFT.SkillManager.GClass1771;
+using StaminaLevelClass = GClass753<float>;
+using WeightClass = GClass754<float>;
 using Comfort.Common;
-using ProcessorClass = GClass2210;
+using ProcessorClass = GClass2213;
+using InputClass = Class1451;
 using static EFT.Player;
+using StatusStruct = GStruct414<GInterface324>;
+using ItemEventClass = GClass2767;
+using WeaponStateClass = GClass1668;
 using EFT.InputSystem;
 using EFT.Animations.NewRecoil;
-using static RootMotion.FinalIK.FBIKChain;
+
 
 namespace RealismMod
 {
@@ -27,7 +31,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Class1452).GetMethod("TranslateCommand", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(InputClass).GetMethod("TranslateCommand", BindingFlags.Instance | BindingFlags.Public);
         }
 
         private static void RechamberRound(FirearmController fc, Player player) 
@@ -38,13 +42,13 @@ namespace RealismMod
             fc.FirearmsAnimator.SetAmmoInChamber(0);
             fc.FirearmsAnimator.SetAmmoOnMag(currentMagazineCount);
             fc.FirearmsAnimator.SetAmmoCompatible(true);
-            GStruct413<GInterface322> gstruct = mag.Cartridges.PopTo(player.GClass2757_0, new GClass2763(fc.Item.Chambers[0]));
-            var gclass1665_0 = (GClass1665)AccessTools.Field(typeof(FirearmController), "gclass1665_0").GetValue(fc);
-            gclass1665_0.RemoveAllShells();
+            StatusStruct gstruct = mag.Cartridges.PopTo(player.GClass2761_0, new ItemEventClass(fc.Item.Chambers[0]));
+            WeaponStateClass weaponStateClass = (WeaponStateClass)AccessTools.Field(typeof(FirearmController), "gclass1668_0").GetValue(fc);
+            weaponStateClass.RemoveAllShells();
             BulletClass bullet = (BulletClass)gstruct.Value.ResultItem;
             fc.FirearmsAnimator.SetAmmoInChamber(1);
             fc.FirearmsAnimator.SetAmmoOnMag(fc.Weapon.GetCurrentMagazineCount());
-            gclass1665_0.SetRoundIntoWeapon(bullet, 0);
+            weaponStateClass.SetRoundIntoWeapon(bullet, 0);
             fc.FirearmsAnimator.Rechamber(true);
             Plugin.startRechamberTimer = true;
             Plugin.chamberTimer = 0f;
@@ -52,11 +56,11 @@ namespace RealismMod
 
 
         [PatchPrefix]
-        private static bool PatchPrefix(Class1452 __instance, ECommand command)
+        private static bool PatchPrefix(InputClass __instance, ECommand command)
         {
             if (command == ECommand.ChamberUnload && Plugin.ServerConfig.manual_chambering)
             {
-                Player player = Utils.GetPlayer();
+                Player player = Utils.GetYourPlayer();
                 FirearmController fc = player.HandsController as FirearmController;
                 if (!Plugin.CanLoadChamber && fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1 && fc.Weapon.ChamberAmmoCount == 0 && fc.Weapon.GetCurrentMagazine() != null && fc.Weapon.GetCurrentMagazine().Count > 0)
                 {
@@ -68,11 +72,12 @@ namespace RealismMod
             {
                 AimController.HeadDeviceStateChanged = true;
             }
-            if (command == ECommand.ToggleBreathing && Plugin.ServerConfig.recoil_attachment_overhaul)
+            if (command == ECommand.ToggleBreathing && Plugin.ServerConfig.recoil_attachment_overhaul && StanceController.IsAiming)
             {
-                Player player = Utils.GetPlayer();
+                Player player = Utils.GetYourPlayer();
+                if (player.Physical.HoldingBreath) return true;
                 FirearmController fc = player.HandsController as FirearmController;
-                StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(1f, 1f, 1f) * (player.Physical.HoldingBreath ? -1f : 1f));
+                StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.5f, 0.5f, 1f));
             }
             if (Plugin.BlockFiring.Value && command == ECommand.ToggleShooting && StanceController.CurrentStance != EStance.None && StanceController.CurrentStance != EStance.ActiveAiming && StanceController.CurrentStance != EStance.ShortStock && StanceController.CurrentStance != EStance.PistolCompressed)
             {
@@ -259,12 +264,13 @@ namespace RealismMod
             }
             else
             {
-                float holdBreathBonus = __instance.Physical.HoldingBreath ? 0.5f : 1f;
+                float holdBreathBonusSway = __instance.Physical.HoldingBreath ? 0.4f : 1f;
+                float holdBreathBonusUpDown = __instance.Physical.HoldingBreath ? 0.3f : 1f;
                 float t = lackOfOxygenStrength.Evaluate(__instance.OxygenLevel);
                 float b = __instance.IsAiming ? 0.75f : 1f;
-                breathIntensityField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, b, t), 1f, 1.5f) * __instance.Intensity * holdBreathBonus);
-                breathFrequencyField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, 1f, t), 1f, 2.5f) * deltaTime * holdBreathBonus);
-                shakeIntensityField.SetValue(__instance, holdBreathBonus);
+                breathIntensityField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, b, t), 1f, 1.5f) * __instance.Intensity * holdBreathBonusUpDown);
+                breathFrequencyField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, 1f, t), 1f, 2.5f) * deltaTime * holdBreathBonusSway);
+                shakeIntensityField.SetValue(__instance, holdBreathBonusSway);
                 cameraSensetivityField.SetValue(__instance, Mathf.Lerp(2f, 0f, t) * __instance.Intensity);
                 breathFrequency = (float)AccessTools.Field(typeof(BreathEffector), "_breathFrequency").GetValue(__instance);
                 cameraSensetivity = (float)AccessTools.Field(typeof(BreathEffector), "_cameraSensetivity").GetValue(__instance);
@@ -428,7 +434,7 @@ namespace RealismMod
 
         private static void CalcBaseHipfireAccuracy(Player player)
         {
-            float baseValue = 0.25f;
+            float baseValue = 0.4f;
             float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
             float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
             float recoilFactor = 1f + ((RecoilController.BaseTotalVRecoil + RecoilController.BaseTotalHRecoil) / 100f);
@@ -437,7 +443,7 @@ namespace RealismMod
             float healthFactor = PlayerState.RecoilInjuryMulti * (Plugin.RealHealthController.HasOverdosed ? 1.5f : 1f);
             float ergoFactor = 1f + (WeaponStats.ErgoFactor / 200f);
            
-            WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(baseValue * PlayerState.DeviceBonus * ergoFactor * healthFactor * convergenceFactor * dispersionFactor * recoilFactor * playerWeightFactor, 0.3f, 1f);
+            WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(baseValue * PlayerState.DeviceBonus * ergoFactor * healthFactor * convergenceFactor * dispersionFactor * recoilFactor * playerWeightFactor, 0.2f, 1f);
         }
 
         private static void PWAUpdate(Player player, Player.FirearmController fc) 

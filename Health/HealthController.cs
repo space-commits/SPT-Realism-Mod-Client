@@ -9,8 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2411;
-using ExistanceClass = GClass2452;
+using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2415;
+using ExistanceClass = GClass2456;
 
 namespace RealismMod
 {
@@ -251,8 +251,8 @@ namespace RealismMod
 
                 if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
                 {
-                    AddStimDebuffs(Utils.GetPlayer(), Plugin.AddEffectType.Value);
-                    TestAddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, Utils.GetPlayer(), Plugin.AddEffectType.Value);
+                    AddStimDebuffs(Utils.GetYourPlayer(), Plugin.AddEffectType.Value);
+                    TestAddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, Utils.GetYourPlayer(), Plugin.AddEffectType.Value);
                     NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + Plugin.AddEffectType.Value + " To Part " + (EBodyPart)Plugin.AddEffectBodyPart.Value);
                 }
 
@@ -260,7 +260,7 @@ namespace RealismMod
                 {
                     if (clickTriggered)
                     {
-                        DropBlockingGear(Utils.GetPlayer());
+                        DropBlockingGear(Utils.GetYourPlayer());
                         clickTriggered = false;
                     }
                     else
@@ -280,7 +280,7 @@ namespace RealismMod
                     stimOverdoseWaitTime += Time.deltaTime;
                     if (stimOverdoseWaitTime >= 10f)
                     {
-                        AddStimDebuffs(Utils.GetPlayer(), overdoseEffectToAdd);
+                        AddStimDebuffs(Utils.GetYourPlayer(), overdoseEffectToAdd);
                         doStimOverdoseTimer = false;
                         stimOverdoseWaitTime = 0f;
                     }
@@ -549,7 +549,7 @@ namespace RealismMod
         private void AddStimDebuffs(Player player, string debuffId)
         {
             MedsClass placeHolderItem = (MedsClass)Singleton<ItemFactory>.Instance.CreateItem(Utils.GenId(), debuffId, null);
-            placeHolderItem.CurrentAddress = player.GClass2757_0.FindQuestGridToPickUp(placeHolderItem); //item needs an address to be valid, this is a hacky workaround
+            placeHolderItem.CurrentAddress = player.GClass2761_0.FindQuestGridToPickUp(placeHolderItem); //item needs an address to be valid, this is a hacky workaround
             Utils.Logger.LogWarning("is null " + (placeHolderItem == null));
             Utils.Logger.LogWarning("" + placeHolderItem.HealthEffectsComponent.StimulatorBuffs);
             player.ActiveHealthController.DoMedEffect(placeHolderItem, EBodyPart.Head, null);

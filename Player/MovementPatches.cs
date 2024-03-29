@@ -13,8 +13,8 @@ using System.Reflection;
 using UnityEngine;
 using static BaseBallistic;
 using static EFT.Player;
-using ValueHandler = GClass730;
-using SkillMovementStruct = EFT.SkillManager.GStruct227;
+using ValueHandler = GClass733;
+using SkillMovementStruct = EFT.SkillManager.GStruct228;
 
 namespace RealismMod
 {

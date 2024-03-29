@@ -11,12 +11,12 @@ using Comfort.Common;
 using static RealismMod.Attributes;
 using UnityEngine;
 using UnityEngine.UI;
-using BPConstructor = GClass2680;
-using BPTemplate = GClass2583;
-using RigConstructor = GClass2681;
-using RigTemplate = GClass2584; 
-using HeadsetClass = GClass2635;
-using HeadsetTemplate = GClass2538;
+using BPConstructor = GClass2684;
+using BPTemplate = GClass2587;
+using RigConstructor = GClass2685;
+using RigTemplate = GClass2588; 
+using HeadsetClass = GClass2639;
+using HeadsetTemplate = GClass2542;
 using ArmorCompTemplate = GInterface280;
 using HarmonyLib;
 

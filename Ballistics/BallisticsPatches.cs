@@ -18,9 +18,9 @@ using System.IO;
 using HarmonyLib.Tools;
 using System.Collections;
 using EFT.Interactive;
-using ShotClass = GClass2988;
 using Diz.Skinning;
 using EFT.Visual;
+using Diz.LanguageExtensions;
 
 namespace RealismMod
 {
@@ -243,11 +243,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(ShotClass) });
+            return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(EftBulletClass) });
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, ShotClass shot)
+        private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, EftBulletClass shot)
         {
             __instance.DamageType = damageType;
             __instance.Damage = shot.Damage;
@@ -592,6 +592,77 @@ namespace RealismMod
         }
     }
 
+    public class RealResistancePatch : ModulePatch
+    {
+        private static FieldInfo armorCompsField;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            armorCompsField = AccessTools.Field(typeof(Player), "_preAllocatedArmorComponents");
+
+            return typeof(BodyPartCollider.ObserverBridge).GetMethod("SetShotStatus", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(BodyPartCollider.ObserverBridge __instance, bool __result, BodyPartCollider bodypart, EftBulletClass shot, Vector3 hitpoint, Vector3 shotNormal, Vector3 shotDirection)
+        {
+
+            Player player = Utils.GetPlayerByID(__instance.iPlayer.ProfileId);
+            List<ArmorComponent> armors = (List<ArmorComponent>)armorCompsField.GetValue(player);
+            armors.Clear();
+            player.Inventory.GetPutOnArmorsNonAlloc(armors);
+            ArmorPlateCollider armorPlateCollider = bodypart as ArmorPlateCollider;
+            EArmorPlateCollider armorPlateCollider2 = (armorPlateCollider == null) ? ((EArmorPlateCollider)0) : armorPlateCollider.ArmorPlateColliderType;
+            for (int i = 0; i < armors.Count; i++)
+            {
+                ArmorComponent armorComponent = armors[i];
+                if (armorComponent.ShotMatches(bodypart.BodyPartColliderType, armorPlateCollider2))
+                {
+                    bool isSteelBodyArmor = armorComponent.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !armorComponent.Template.ArmorColliders.Any(x => BallisticsController.HeadCollidors.Contains(x));
+
+                    if (armorComponent.Template.RicochetVals.x > 0f)
+                    {
+                        float shotAngle = Vector3.Angle(-shotDirection, shotNormal);
+                        if (shotAngle > armorComponent.Template.RicochetVals.z)
+                        {
+                            float t = Mathf.InverseLerp(90f, armorComponent.Template.RicochetVals.z, shotAngle);
+                            float factoredAngle = Mathf.Lerp(armorComponent.Template.RicochetVals.x, armorComponent.Template.RicochetVals.y, t);
+                            if (shot.Randoms.GetRandomFloat(shot.RandomSeed) < factoredAngle)
+                            {
+                                shot.DeflectedBy = armorComponent.Item.Id;
+                                __result = true;
+                            }
+                        }
+                    }
+                    if (string.IsNullOrEmpty(shot.BlockedBy) && (armorComponent.Repairable.Durability > 0f || isSteelBodyArmor))
+                    {
+                        float penetrationPower = shot.PenetrationPower;
+                        float armorDuraPercent = armorComponent.Repairable.Durability / (float)armorComponent.Repairable.TemplateDurability * 100f;
+
+                        if (armorComponent.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel)
+                        {
+                            armorDuraPercent = 100f;
+                        }
+                        else if (armorComponent.Template.ArmorMaterial == EArmorMaterial.Titan)
+                        {
+                            armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 1.5f);
+                        }
+
+                        float realResistance = GClass566.RealResistance(armorDuraPercent, (float)armorComponent.Repairable.TemplateDurability, armorComponent.ArmorClass, penetrationPower).RealResistance;
+                        float factoredResistance = (realResistance >= penetrationPower + 15f) ? 0f : ((realResistance >= penetrationPower) ? (0.4f * (realResistance - penetrationPower - 15f) * (realResistance - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * realResistance - penetrationPower)));
+                        if (shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f > factoredResistance)
+                        {
+                            shot.BlockedBy = armorComponent.Item.Id;
+                        }
+                    }
+                    __result = true;
+                    return false;
+                }
+            }
+            __result = false;
+            return false;
+        }
+    }
 
     public class SetPenetrationStatusPatch : ModulePatch
     {
@@ -601,7 +672,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ShotClass shot, ArmorComponent __instance)
+        private static bool Prefix(EftBulletClass shot, ArmorComponent __instance)
         {
             bool isSteelBodyArmor = __instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !__instance.Template.ArmorColliders.Any(x => BallisticsController.HeadCollidors.Contains(x));
             if (__instance.Repairable.Durability <= 0f && !isSteelBodyArmor)
@@ -618,16 +689,12 @@ namespace RealismMod
             }
             else if (__instance.Template.ArmorMaterial == EArmorMaterial.Titan)
             {
-                armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 1.8f);
-            }
-            else
-            {
-                armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 1.15f);
+                armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 1.5f);
             }
 
             float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
-            float armorFactor = (121f - 5000f / (45f + armorDuraPercent * 2f)) * armorResist * 0.01f;
-            if (((armorFactor >= penetrationPower + 15f) ? 0f : ((armorFactor >= penetrationPower) ? (0.4f * (armorFactor - penetrationPower - 15f) * (armorFactor - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * armorFactor - penetrationPower)))) - shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f < 0f)
+            float realResistance = (121f - 5000f / (45f + armorDuraPercent * 2f)) * armorResist * 0.01f;
+            if (((realResistance >= penetrationPower + 15f) ? 0f : ((realResistance >= penetrationPower) ? (0.4f * (realResistance - penetrationPower - 15f) * (realResistance - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * realResistance - penetrationPower)))) - shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f < 0f)
             {
                 shot.BlockedBy = __instance.Item.Id;
                 Debug.Log(">>> Shot blocked by armor piece");
@@ -836,7 +903,17 @@ namespace RealismMod
                 KE = meleeDamage * 50f;
             }
 
+
             float bluntThrput = __instance.Template.BluntThroughput;
+            float softArmorPenReduction = 1f;
+            GClass2767 slot;
+            GClass2511 softArmorSlot;
+            if ((slot = (__instance.Item.CurrentAddress as GClass2767)) != null && (softArmorSlot = (slot.Slot as GClass2511)) != null && softArmorSlot.BluntDamageReduceFromSoftArmor)
+            {
+                bluntThrput *= 0.8f;
+                softArmorPenReduction = 0.8f;
+            }
+
             float penPower = damageInfo.PenetrationPower;
             float duraPercent = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability;
             float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
@@ -912,9 +989,13 @@ namespace RealismMod
             }
             else if (roundPenetrated)
             {
+                if (armorPlateCollider != (EArmorPlateCollider)0)
+                {
+                    damageInfo.Damage = 0f;
+                }
                 durabilityLoss *= (1f - (penPower / 100f)); 
                 damageInfo.Damage *= armorStatReductionFactor;
-                damageInfo.PenetrationPower *= armorStatReductionFactor;
+                damageInfo.PenetrationPower *= armorStatReductionFactor * softArmorPenReduction;
             }
             else
             {
@@ -931,14 +1012,6 @@ namespace RealismMod
             durabilityLoss = Math.Max(durabilityLoss, 0.05f);
             __instance.ApplyDurabilityDamage(durabilityLoss, armorComponents);
             __result = durabilityLoss;
-
-            //BSG nullifies all damage on plate collidor hit for both penetration and blunt, to account for double hits
-            //I do not believe this is necessary for blunt damge
-            if (armorPlateCollider != (EArmorPlateCollider)0 && roundPenetrated)
-            {
-                damageInfo.Damage = 0f;
-            }
-
             damageInfo.Damage = Mathf.Min(damageInfo.Damage, startingDamage);
 
             if (Plugin.EnableBallisticsLogging.Value)
@@ -969,13 +1042,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            var result = typeof(EFT.Ballistics.BallisticsCalculator).GetMethod("CreateShot", BindingFlags.Instance | BindingFlags.Public | BindingFlags.Public);
-
-            return result;
+            return typeof(EFT.Ballistics.BallisticsCalculator).GetMethod("CreateShot", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, string player, Item weapon, ref ShotClass __result, float speedFactor, int fragmentIndex = 0)
+        private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, string player, Item weapon, ref EftBulletClass __result, float speedFactor, int fragmentIndex = 0)
         {
             int randomNum = UnityEngine.Random.Range(0, 512);
             float velocityFactored = ammo.InitialSpeed * speedFactor;
@@ -985,7 +1056,7 @@ namespace RealismMod
             float penPowerFactored = EFT.Ballistics.BallisticsCalculator.GetAmmoPenetrationPower(ammo, randomNum, __instance.Randoms) * speedFactor;
             float bcFactored = Mathf.Max(ammo.BallisticCoeficient * speedFactor, 0.01f);
 
-            __result = ShotClass.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
+            __result = EftBulletClass.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
             return false;
 
         }

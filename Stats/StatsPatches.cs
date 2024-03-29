@@ -13,8 +13,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using static EFT.Player;
 using System.Linq;
-using WeaponSkills = EFT.SkillManager.GClass1768;
+using WeaponSkills = EFT.SkillManager.GClass1771;
 using EFT.Visual;
+using static EFT.SkillManager;
 
 namespace RealismMod
 {
@@ -82,7 +83,7 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                WeaponSkills skillsClass = (WeaponSkills)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1768_0").GetValue(__instance);
+                WeaponSkills skillsClass = (WeaponSkills)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1771_0").GetValue(__instance);
                 __result = Mathf.Max(0f, __instance.Item.ErgonomicsTotal * (1f + skillsClass.DeltaErgonomics + player.ErgonomicsPenalty));
                 return false;
             }
@@ -259,7 +260,7 @@ namespace RealismMod
             WeaponStats.ErgoDelta = totalErgoDelta;
             WeaponStats.VRecoilDelta = totalVRecoilDelta;
             WeaponStats.HRecoilDelta = totalHRecoilDelta;
-            WeaponStats.ErgoFactor = Mathf.Max(1, 80f - totalErgo);  //as an experiment, use total ergo as ergonomicWeight
+            WeaponStats.ErgoFactor = Mathf.Clamp(80f - totalErgo, 1f, 80f);  //as an experiment, use total ergo as ergonomicWeight
             WeaponStats.ErgonomicWeight = ergonomicWeight;
             WeaponStats.TotalRecoilDamping = totalRecoilDamping;
             WeaponStats.TotalRecoilHandDamping = totalRecoilHandDamping;
@@ -495,7 +496,7 @@ namespace RealismMod
                 if (Utils.IsReady)
                 {
                     int iterations = 0;
-                    Player player = Utils.GetPlayer();
+                    Player player = Utils.GetYourPlayer();
                     Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
 
                     if (currentAimingMod != null)

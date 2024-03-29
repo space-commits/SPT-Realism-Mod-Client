@@ -14,9 +14,10 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using StatAttributeClass = GClass2748;
-using BarrelTemplateClass = GClass2575;
-
+using StatAttributeClass = GClass2752;
+using BarrelTemplateClass = GClass2579;
+using ArmorPlateUIClass = GClass2633;
+using FormatArmorClass = GClass2520;
 namespace RealismMod
 {
 
@@ -24,11 +25,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass2516).GetMethod("FormatArmorClassIcon", BindingFlags.Static | BindingFlags.Public);
+            return typeof(FormatArmorClass).GetMethod("FormatArmorClassIcon", BindingFlags.Static | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool PatchPrefix(GClass2516 __instance, ref string __result, int armorClass)
+        private static bool PatchPrefix(FormatArmorClass __instance, ref string __result, int armorClass)
         {
             __result = "Lvl " + armorClass.ToString();
             return false;
@@ -43,7 +44,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPrefix(ItemViewStats __instance, GClass2629 armorPlate)
+        private static void PatchPrefix(ItemViewStats __instance, ArmorPlateUIClass armorPlate)
         {
             Image armorClassImage = (Image)AccessTools.Field(typeof(ItemViewStats), "_armorClassIcon").GetValue(__instance);
             if (armorPlate.Armor.Template.ArmorClass > 6)

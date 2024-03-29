@@ -23,13 +23,13 @@ using static CW2.Animations.PhysicsSimulator.Val;
 using static EFT.Player;
 using static RealismMod.Attributes;
 using static Systems.Effects.Effects;
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2411;
-using ExistanceClass = GClass2452;
-using StamController = GClass679;
-using PhysicalClass = GClass678;
-using MedkitTemplate = GInterface296;
+using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2415;
+using ExistanceClass = GClass2456;
+using StamController = GClass682;
+using PhysicalClass = GClass681;
+using HealthStateClass = GClass2416<EFT.HealthSystem.ActiveHealthController.GClass2415>;
+using MedkitTemplate = IMedkitResource;
 using static EFT.HealthSystem.ActiveHealthController;
-using static GClass2413;
 
 namespace RealismMod
 {
@@ -281,12 +281,10 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ActiveHealthController __instance, EBodyPart bodyPart, float healthPenalty, ref bool __result)
         {
-
-
             //I had to do this previously due to the type being protected, no longer is the case. Keeping for reference.
             /* BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);*/
 
-            GClass2412<ActiveHealthController.GClass2411>.BodyPartState bodyPartState = __instance.Dictionary_0[bodyPart];
+            HealthStateClass.BodyPartState bodyPartState = __instance.Dictionary_0[bodyPart];
             SkillManager skills = (SkillManager)AccessTools.Field(typeof(ActiveHealthController), "skillManager_0").GetValue(__instance);
             Action<EBodyPart, ValueStruct> bodyPartRestoredField = (Action<EBodyPart, ValueStruct>)AccessTools.Field(typeof(ActiveHealthController), "BodyPartRestoredEvent").GetValue(__instance);
 
@@ -371,7 +369,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(FlyingBulletSoundPlayer __instance)
         {
-            Player player = Utils.GetPlayer();
+            Player player = Utils.GetYourPlayer();
             float stressResist = player.Skills.StressPain.Value;
             float painkillerDuration = (float)Math.Round(10f * (1f + stressResist), 2);
             float negativeEffectDuration = (float)Math.Round(15f * (1f - stressResist), 2);

@@ -13,12 +13,10 @@ using Aki.Reflection.Utils;
 using UnityEngine.Rendering.PostProcessing;
 using static EFT.Interactive.BetterPropagationGroups;
 using BepInEx.Logging;
-using HeadsetClass = GClass2635;
-using HeadsetTemplate = GClass2538;
-using IWeapon = GInterface320;
-using ActionClass = GClass2911;
-using CompressorTemplateClass = GClass2897;
-using ShotClass = GClass2988;
+using HeadsetClass = GClass2639;
+using HeadsetTemplate = GClass2542;
+using IWeapon = GInterface322;
+using CompressorTemplateClass = GClass2901;
 using System.Collections;
 using EFT.NextObservedPlayer;
 using System.Collections.Generic;
@@ -219,13 +217,13 @@ namespace RealismMod
         }
         [PatchPrefix]
         private static bool Prefix(HeadsetTemplate template, BetterAudio __instance)
-        {
+        { 
 
             bool hasHeadset = template != null && template?._id != null;
             float gunT;
             float mainT;
 
-            ActionClass.CreateEvent<CompressorTemplateClass>().Invoke(template);
+            GlobalEventHandlerClass.CreateEvent<CompressorTemplateClass>().Invoke(template);
             Utils.Logger.LogWarning("SetCompressor");
             DeafeningController.DryVolume = hasHeadset ? template.DryVolume : 0f;
             DeafeningController.CompressorVolume = hasHeadset ? template.CompressorVolume : -80f;
@@ -310,7 +308,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance, ShotClass shot)
+        private static void PatchPostfix(Player.FirearmController __instance, EftBulletClass shot)
         {
             Player player = (Player)playerField.GetValue(__instance);
 

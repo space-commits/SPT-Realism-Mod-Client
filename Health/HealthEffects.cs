@@ -7,8 +7,10 @@ using static Systems.Effects.Effects;
 using UnityEngine;
 using System.Linq;
 using BepInEx.Logging;
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2411;
-using ExistanceClass = GClass2452;
+using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2415;
+using ExistanceClass = GClass2456;
+using InterfaceOne = GInterface237;
+using InterfaceTwo = GInterface252;
 
 namespace RealismMod
 {
@@ -364,7 +366,7 @@ namespace RealismMod
         }
     }
 
-    public class HealthDrain : EffectClass, IEffect, GInterface235, GInterface250
+    public class HealthDrain : EffectClass, IEffect, InterfaceOne, InterfaceTwo
     {
         public override void Started()
         {
@@ -399,7 +401,7 @@ namespace RealismMod
     }
 
 
-    public class HealthRegen : EffectClass, IEffect, GInterface235, GInterface250
+    public class HealthRegen : EffectClass, IEffect, InterfaceOne, InterfaceTwo
     {
         public override void Started()
         {
@@ -427,7 +429,7 @@ namespace RealismMod
 
     }
 
-    public class ResourceRateChange : EffectClass, IEffect, GInterface235, GInterface250
+    public class ResourceRateChange : EffectClass, IEffect, InterfaceOne, InterfaceTwo
     {
         public override void Started()
         {

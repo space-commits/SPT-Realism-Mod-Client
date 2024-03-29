@@ -13,8 +13,8 @@ using System.Linq;
 using EFT.Ballistics;
 using System.ComponentModel;
 using Random = System.Random;
-using CastingClass = GClass646;
-using HackShotResult = GClass1673;
+using CastingClass = GClass649;
+using HackShotResult = GClass1676;
 using CollisionLayerClass = GClass2987;
 using EFT.Animations;
 using ChartAndGraph;
@@ -22,38 +22,66 @@ using ChartAndGraph;
 
 namespace RealismMod
 {
-  /*  public class LaserLateUpdatePatch : ModulePatch
+    /*  public class LaserLateUpdatePatch : ModulePatch
+      {
+          protected override MethodBase GetTargetMethod()
+          {
+              return typeof(LaserBeam).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.Public);
+          }
+
+          [PatchPrefix]
+          private static bool Prefix(LaserBeam __instance)
+          {
+              if (Utils.IsReady)
+              {
+                  if ((StanceController.IsHighReady || StanceController.IsLowReady) && !Plugin.IsAiming)
+                  {
+                      Vector3 playerPos = Singleton<GameWorld>.Instance.AllAlivePlayersList[0].Transform.position;
+                      Vector3 lightPos = __instance.gameObject.transform.position;
+                      float distanceFromPlayer = Vector3.Distance(lightPos, playerPos);
+                      if (distanceFromPlayer <= 1.8f)
+                      {
+                          return false;
+                      }
+                      return true;
+                  }
+                  return true;
+              }
+              else
+              {
+                  return true;
+              }
+          }
+      }
+  */
+
+    public class MuzzleSmokePatch : ModulePatch
     {
+        private static Vector3 target = Vector3.zero;
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(LaserBeam).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(MuzzleSmoke).GetMethod("LateUpdateValues", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(LaserBeam __instance)
+        private static void Prefix(MuzzleSmoke __instance)
         {
-            if (Utils.IsReady)
+            if (WeaponStats._WeapClass == "pistol" && (!WeaponStats.HasShoulderContact || (Plugin.WeapOffsetX.Value != 0f && WeaponStats.HasShoulderContact)))
             {
-                if ((StanceController.IsHighReady || StanceController.IsLowReady) && !Plugin.IsAiming)
-                {
-                    Vector3 playerPos = Singleton<GameWorld>.Instance.AllAlivePlayersList[0].Transform.position;
-                    Vector3 lightPos = __instance.gameObject.transform.position;
-                    float distanceFromPlayer = Vector3.Distance(lightPos, playerPos);
-                    if (distanceFromPlayer <= 1.8f)
-                    {
-                        return false;
-                    }
-                    return true;
-                }
-                return true;
+                target = new Vector3(-0.2f, -0.2f, -0.2f);
             }
             else
             {
-                return true;
+                target = new Vector3(0f, 0f, -0.2f);
             }
+
+            Transform transform = (Transform)AccessTools.Field(typeof(MuzzleSmoke), "transform_0").GetValue(__instance);
+            Vector3 pos = (Vector3)AccessTools.Field(typeof(MuzzleSmoke), "vector3_0").GetValue(__instance);
+            pos = Vector3.Slerp(pos, transform.position + target, 0.125f); // left/right, up/down, in/out
+            AccessTools.Field(typeof(MuzzleSmoke), "vector3_0").SetValue(__instance, pos);
         }
     }
-*/
+
     public class OnWeaponDrawPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -238,9 +266,10 @@ namespace RealismMod
                     {
                         hitBalls = baseballComp.Get(raycastHit.point);
                     }
-                    float damage = 8f + WeaponStats.BaseMeleeDamage * (1f + player.Skills.StrengthBuffMeleePowerInc) * (1f - (WeaponStats.ErgoFactor / 300f));
+                    float weaponWeight = fc.Weapon.GetSingleItemTotalWeight();
+                    float damage = 8f + WeaponStats.BaseMeleeDamage * (1f + player.Skills.StrengthBuffMeleePowerInc) * (1f + (weaponWeight / 10f));
                     damage = player.Physical.HandsStamina.Exhausted ? damage * Singleton<BackendConfigSettingsClass>.Instance.Stamina.ExhaustedMeleeDamageMultiplier : damage;
-                    float pen = 15f + WeaponStats.BaseMeleePen * (1f - (WeaponStats.ErgoFactor / 300f));
+                    float pen = 15f + WeaponStats.BaseMeleePen * (1f + (weaponWeight / 10f));
                     bool shouldSkipHit = false;
 
                     if (hitBalls as BodyPartCollider != null)
@@ -285,7 +314,7 @@ namespace RealismMod
                     float vol = WeaponStats.HasBayonet ? 10f : 12f;
                     Singleton<BetterAudio>.Instance.PlayDropItem(baseballComp.SurfaceSound, JsonType.EItemDropSoundType.Rifle, raycastHit.point, vol);
 /*                  StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc, new Vector3(-10f, 10f, 0f), true, 1.5f);
-*/                  player.Physical.ConsumeAsMelee(0.3f + (WeaponStats.ErgoFactor / 100f));
+*/                  player.Physical.ConsumeAsMelee(0.3f + (weaponWeight / 10f));
 
                     StanceController.CanDoMeleeDetection = false;
                     StanceController.MeleeHitSomething = true;

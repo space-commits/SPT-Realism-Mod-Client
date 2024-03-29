@@ -6,7 +6,7 @@ using HarmonyLib.Tools;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using ArmorTemplate = GClass2532; //to find again, search for HasHinge field
+using ArmorTemplate = GClass2536; //to find again, search for HasHinge field
 
 namespace RealismMod
 {

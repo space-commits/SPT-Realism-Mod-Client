@@ -10,15 +10,12 @@ using System;
 using static EFT.Player;
 using EFT.Interactive;
 using System.Linq;
-/*using IWeapon = GInterface273;*/
-using PlayerInterface = GInterface127;
 using EFT.Animations.Recoil;
 using EFT.Animations;
 using EFT.Animations.NewRecoil;
 using System.Collections.Generic;
 using System.IO;
 using EFT.Visual;
-/*using WeaponSkillsClass = EFT.SkillManager.GClass1638;*/
 
 namespace RealismMod
 {
@@ -163,13 +160,22 @@ namespace RealismMod
 
                     if (nvgIsOn)
                     {
-                        float bonus = PlayerState.IRLaserActive || PlayerState.LaserActive ? 0.5f : PlayerState.IRLightActive ? 0.65f : 1f;
+                        float bonus = 
+                            PlayerState.IRLaserActive || PlayerState.LaserActive ? 0.5f : 
+                            PlayerState.IRLightActive && (PlayerState.IRLaserActive || PlayerState.LaserActive) ? 0.4f :
+                            PlayerState.IRLightActive ? 0.6f : 1f;
+
                         PlayerState.DeviceBonus = PlayerState.WhiteLightActive ? 1f : bonus;
                     }
                     else
                     {
-                        PlayerState.DeviceBonus = PlayerState.LaserActive ? 0.5f : PlayerState.WhiteLightActive ? 0.65f : 1f;
+                        PlayerState.DeviceBonus = 
+                        PlayerState.LaserActive ? 0.5f : 
+                        PlayerState.WhiteLightActive && PlayerState.LaserActive ? 0.4f :
+                        PlayerState.WhiteLightActive ? 0.6f : 1f;
                     }
+
+                    Logger.LogWarning("PlayerState.DeviceBonus " + PlayerState.DeviceBonus);
                 }
                 else
                 {

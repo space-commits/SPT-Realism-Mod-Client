@@ -21,8 +21,8 @@ namespace RealismMod
             {BaseBallistic.ESurfaceSound.Slate, 0.85f },
             {BaseBallistic.ESurfaceSound.Tile, 0.8f },
             {BaseBallistic.ESurfaceSound.Plastic, 0.95f },
-            {BaseBallistic.ESurfaceSound.Glass, 0.9f },
-            {BaseBallistic.ESurfaceSound.WholeGlass, 0.85f },
+            {BaseBallistic.ESurfaceSound.Glass, 0.85f },
+            {BaseBallistic.ESurfaceSound.WholeGlass, 0.9f },
             {BaseBallistic.ESurfaceSound.Wood, 0.95f},
             {BaseBallistic.ESurfaceSound.WoodThick, 0.95f },
             {BaseBallistic.ESurfaceSound.WoodThin, 0.95f },
@@ -82,7 +82,7 @@ namespace RealismMod
             float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
             float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
             float recoilFactor = RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil;
-            float ergoFactor = 1f - ((80f - WeaponStats.ErgoFactor) / 100f);
+            float ergoFactor = Mathf.Clamp(1f - ((80f - WeaponStats.ErgoFactor) / 100f), 0.1f, 1f);
             recoilFactor = recoilFactor * dispersionFactor * convergenceFactor * ergoFactor;
             recoilFactor = fc.Item.WeapClass == "pistol" ? recoilFactor * 0.1f : recoilFactor;
             float recoilLimit = 1f - (recoilFactor / 100f);

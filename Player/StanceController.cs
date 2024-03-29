@@ -164,15 +164,15 @@ namespace RealismMod
             }
             else if (CurrentStance == EStance.LowReady || CurrentStance == EStance.PistolCompressed || IsBracing)
             {
-                baseRestoreRate = 2f;
+                baseRestoreRate = 2.4f;
             }
             else if (CurrentStance == EStance.HighReady)
             {
-                baseRestoreRate = 1.5f;
+                baseRestoreRate = 1.85f;
             }
             else if (CurrentStance == EStance.ShortStock)
             {
-                baseRestoreRate = 1f;
+                baseRestoreRate = 1.25f;
             }
             else 
             {
@@ -187,19 +187,19 @@ namespace RealismMod
             float baseDrainRate = 0f;
             if (player.Physical.HoldingBreath)
             {
-                baseDrainRate = IsMounting ? 0.07f : IsBracing ? 0.1f : 0.35f;
+                baseDrainRate = IsMounting ? 0.025f : IsBracing ? 0.05f : 0.3f;
             }
             else if (IsAiming)
             {
-                baseDrainRate = 0.2f;
+                baseDrainRate = 0.15f;
             }
             else if (CurrentStance == EStance.ActiveAiming)
             {
-                baseDrainRate = 0.07f; 
+                baseDrainRate = 0.05f; 
             }
             else
             {
-                baseDrainRate = 0.125f;
+                baseDrainRate = 0.1f;
             }
             float formfactor = WeaponStats.IsBullpup ? 0.4f : 1f;
             return WeaponStats.ErgoFactor * formfactor * baseDrainRate * ((1f - PlayerState.ADSInjuryMulti) + 1f);
@@ -210,8 +210,9 @@ namespace RealismMod
             bool isInRegenableStance = CurrentStance == EStance.HighReady || CurrentStance == EStance.LowReady || CurrentStance == EStance.PatrolStance || CurrentStance == EStance.ShortStock;
             bool isInRegenableState = (!player.Physical.HoldingBreath && (IsMounting || IsBracing)) || player.IsInPronePose || CurrentStance == EStance.PistolCompressed || player.IsInventoryOpened;
             bool doRegen = ((isInRegenableStance && !IsAiming && !IsFiringFromStance) || isInRegenableState) && !PlayerState.IsSprinting;
+            bool shouldDoIdleDrain = IsIdle() && Plugin.EnableIdleStamDrain.Value;
             bool shouldInterruptRegen = isInRegenableStance && (IsAiming || IsFiringFromStance);
-            bool doDrain = (shouldInterruptRegen || !isInRegenableStance) && !isInRegenableState && !PlayerState.IsSprinting && Plugin.EnableIdleStamDrain.Value;
+            bool doDrain = (shouldInterruptRegen || !isInRegenableStance || shouldDoIdleDrain) && !isInRegenableState && !PlayerState.IsSprinting;
             bool doNeutral = PlayerState.IsSprinting;
             EStance stance = CurrentStance;
 
@@ -673,7 +674,7 @@ namespace RealismMod
                 currentPistolXPos = Mathf.Lerp(currentPistolXPos, targetPosX, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * 0.5f);
                 pistolLocalPosition.x = currentPistolXPos;
                 pistolLocalPosition.y = pwa.HandsContainer.TrackingTransform.localPosition.y;
-                pistolLocalPosition.z = pwa.HandsContainer.TrackingTransform.localPosition.z;
+                pistolLocalPosition.z = pwa.HandsContainer.TrackingTransform.localPosition.z;  
                 pwa.HandsContainer.WeaponRoot.localPosition = pistolLocalPosition;
             }
 
@@ -749,7 +750,7 @@ namespace RealismMod
             float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 150f);
             float ergoMulti = Mathf.Clamp(WeaponStats.ErgoStanceSpeed * 1.15f, 0.55f, 1.2f);
-            float stanceMulti = Mathf.Max(ergoMulti * PlayerState.StanceInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.65f)), 0.35f);
+            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.65f)), 0.35f, 1.25f);
             float resetErgoMulti = (1f - stanceMulti) + 1f;
 
             float wiggleErgoMulti = Mathf.Clamp((WeaponStats.ErgoStanceSpeed * 0.5f), 0.1f, 1f);
