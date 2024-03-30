@@ -47,9 +47,9 @@ namespace RealismMod
 
             if (RecoilController.IsFiringWiggle)
             {
-                float cantedRecoilAmount = FactoredTotalHRecoil / 31f;
+                float cantedRecoilAmount = FactoredTotalHRecoil / 34f;
                 float totalCantedRecoil = Mathf.Lerp(-cantedRecoilAmount, cantedRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f));
-                float additionalRecoilAmount = FactoredTotalDispersion / 19f;
+                float additionalRecoilAmount = FactoredTotalDispersion / 15f;
                 float totalSideRecoil = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f)) * 0.05f;
                 float totalVertical = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed * 1.5f, 1.0f)) * 0.1f;
                 targetRecoil = new Vector3(totalVertical * 0.95f, totalCantedRecoil, totalSideRecoil * 0.89f) * Plugin.VisRecoilMulti.Value * WeaponStats.CurrentVisualRecoilMulti;
@@ -83,8 +83,8 @@ namespace RealismMod
             pwa.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.Damping = 0.61f; // 0.77
             pwa.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.ReturnSpeed = 0.15f; //0.15
 
-            newRecoil.HandRotationRecoil.NextStablePointDistanceRange.x = 0.1f;
-            newRecoil.HandRotationRecoil.NextStablePointDistanceRange.y = 6f;
+            newRecoil.HandRotationRecoil.NextStablePointDistanceRange.x = 1f;
+            newRecoil.HandRotationRecoil.NextStablePointDistanceRange.y = 4f;
 
             if (Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !WeaponStats.HasShoulderContact)))
             {

@@ -319,7 +319,7 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                StanceController.DoResetStances = true;
+                StanceController.ShouldResetStances = true;
 
                 if (Plugin.EnableLogging.Value == true)
                 {

@@ -77,7 +77,7 @@ namespace RealismMod
                 Player player = Utils.GetYourPlayer();
                 if (player.Physical.HoldingBreath) return true;
                 FirearmController fc = player.HandsController as FirearmController;
-                StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.5f, 0.5f, 1f));
+                StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.75f, 0.75f, 1.25f));
             }
             if (Plugin.BlockFiring.Value && command == ECommand.ToggleShooting && StanceController.CurrentStance != EStance.None && StanceController.CurrentStance != EStance.ActiveAiming && StanceController.CurrentStance != EStance.ShortStock && StanceController.CurrentStance != EStance.PistolCompressed)
             {
@@ -456,6 +456,7 @@ namespace RealismMod
                     if (Plugin.chamberTimer >= 1f)
                     {
                         fc.FirearmsAnimator.Rechamber(false);
+                        fc.SetAnimatorAndProceduralValues();
                         Plugin.startRechamberTimer = false;
                         Plugin.chamberTimer = 0f;
                     }
@@ -519,6 +520,7 @@ namespace RealismMod
             CalcBaseHipfireAccuracy(player);
             float stanceHipFactor = StanceController.CurrentStance == EStance.ActiveAiming ? 0.7f : StanceController.CurrentStance == EStance.ShortStock ? 1.35f : 1.05f;
             player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.2f, 1.6f);
+            Logger.LogWarning(player.ProceduralWeaponAnimation.Breath.HipPenalty);
         }
 
         protected override MethodBase GetTargetMethod()

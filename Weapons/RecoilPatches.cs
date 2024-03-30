@@ -524,7 +524,7 @@ namespace RealismMod
                 __instance.HandRotationRecoil.AfterRecoilOffsetVerticalRange = Vector2.zero;
                 __instance.HandRotationRecoil.AfterRecoilOffsetHorizontalRange = Vector2.zero;
 
-                __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = new Vector2(0f, RecoilController.BaseTotalDispersion * 6f);
+                __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = new Vector2(RecoilController.FactoredTotalDispersion * 1.2f, 0f);
 
                 __instance.HandRotationRecoil.ReturnTrajectoryDumping = template.RecoilReturnPathDampingHandRotation ;
                 __instance.HandRotationRecoilEffect.Damping = template.RecoilDampingHandRotation * Plugin.RecoilDampingMulti.Value; 
@@ -541,8 +541,8 @@ namespace RealismMod
                                 }
                 */
 
-                __instance.BasicRecoilRotationStrengthRange = new Vector2(0.95f, 1.05f); //should mess around with this, consider making it unique per weapon
-                __instance.BasicRecoilPositionStrengthRange = new Vector2(0.95f, 1.05f); //should mess around with this
+                __instance.BasicRecoilRotationStrengthRange = new Vector2(0.97f, 1.03f); //should mess around with this, consider making it unique per weapon
+                __instance.BasicRecoilPositionStrengthRange = new Vector2(0.98f, 1.02f); //should mess around with this
 
                 __instance.BasicPlayerRecoilRotationStrength = __instance.BasicRecoilRotationStrengthRange * ((template.RecoilForceUp * totalVRecoilDelta + AimingConfig.RecoilVertBonus) * __instance.IncomingRotationStrengthMultiplier);
                 __instance.BasicPlayerRecoilPositionStrength = __instance.BasicRecoilPositionStrengthRange * ((template.RecoilForceBack * totalHRecoilDelta + AimingConfig.RecoilBackBonus) * __instance.IncomingRotationStrengthMultiplier);
@@ -654,7 +654,7 @@ namespace RealismMod
                 float dispFactor = incomingForce * PlayerState.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff * mountingDispModi * opticRecoilMulti * Plugin.DispMulti.Value;
                 RecoilController.FactoredTotalDispersion = RecoilController.BaseTotalDispersion * dispFactor;
 
-                __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = new Vector2(0f, RecoilController.FactoredTotalDispersion * 6f);
+                __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = new Vector2(RecoilController.FactoredTotalDispersion * 1.2f, 0f);
 
                 __instance.BasicPlayerRecoilDegreeRange = new Vector2(RecoilController.BaseTotalRecoilAngle, RecoilController.BaseTotalRecoilAngle);
                 __instance.BasicRecoilRadian = __instance.BasicPlayerRecoilDegreeRange * 0.017453292f;
@@ -663,7 +663,7 @@ namespace RealismMod
                 __instance.method_3(out finalRecoilRadian);
 
                 //Reset camera recoil values and modify by various factors
-                float camShotFactor = RecoilController.ShotCount > 1 ? Mathf.Min((RecoilController.ShotCount * 0.1f) + 1f, 1.4f) : 1f;
+                float camShotFactor = RecoilController.ShotCount > 1 ? Mathf.Min((RecoilController.ShotCount * 0.1f) + 1f, 1.5f) : 1f;
                 float totalCamRecoil = RecoilController.BaseTotalCamRecoil * incomingForce * PlayerState.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti * camShotFactor * Plugin.CamMulti.Value; 
                 RecoilController.FactoredTotalCamRecoil = totalCamRecoil;
                 __instance.ShotRecoilProcessValues[3].IntensityMultiplicator = totalCamRecoil;

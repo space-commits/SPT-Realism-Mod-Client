@@ -79,7 +79,7 @@ namespace RealismMod
         public static bool MeleeHitSomething = false;
         public static bool IsFiringFromStance = false;
         public static float StanceShotTime = 0.0f;
-        public static float ManipTime = 0.0f;
+        private static float ManipTime = 0.0f;
         public static float ManipTimer = 0.25f;
         public static float DampingTimer = 0.0f;
         public static float MeleeTimer = 0.0f;
@@ -103,7 +103,7 @@ namespace RealismMod
         public static bool CancelLowReady = false;
         public static bool CancelShortStock = false;
         public static bool CancelActiveAim = false;
-        public static bool DoResetStances = false;
+        public static bool ShouldResetStances = false;
         public static bool DoMeleeReset = false;
 
         private static bool setRunAnim = false;
@@ -193,7 +193,7 @@ namespace RealismMod
             {
                 baseDrainRate = 0.15f;
             }
-            else if (CurrentStance == EStance.ActiveAiming)
+            else if (CurrentStance == EStance.ActiveAiming && Plugin.EnableIdleStamDrain.Value)
             {
                 baseDrainRate = 0.05f; 
             }
@@ -207,7 +207,7 @@ namespace RealismMod
 
         public static void SetStanceStamina(Player player)
         {
-            bool isInRegenableStance = CurrentStance == EStance.HighReady || CurrentStance == EStance.LowReady || CurrentStance == EStance.PatrolStance || CurrentStance == EStance.ShortStock;
+            bool isInRegenableStance = CurrentStance == EStance.HighReady || CurrentStance == EStance.LowReady || CurrentStance == EStance.PatrolStance || CurrentStance == EStance.ShortStock || (IsIdle() && !Plugin.EnableIdleStamDrain.Value);
             bool isInRegenableState = (!player.Physical.HoldingBreath && (IsMounting || IsBracing)) || player.IsInPronePose || CurrentStance == EStance.PistolCompressed || player.IsInventoryOpened;
             bool doRegen = ((isInRegenableStance && !IsAiming && !IsFiringFromStance) || isInRegenableState) && !PlayerState.IsSprinting;
             bool shouldDoIdleDrain = IsIdle() && Plugin.EnableIdleStamDrain.Value;
@@ -298,7 +298,7 @@ namespace RealismMod
                 CancelShortStock = false;
                 CancelPistolStance = false;
                 CancelActiveAim = false;
-                DoResetStances = false;
+                ShouldResetStances = false;
                 ManipTimer = 0.25f;
                 ManipTime = 0f;
             }
@@ -568,7 +568,7 @@ namespace RealismMod
             ActiveAimManipBuff = CurrentStance == EStance.ActiveAiming && Plugin.ActiveAimReload.Value ? 1.25f : 1f;
             LowReadyManipBuff = CurrentStance == EStance.LowReady ? 1.2f : 1f;
 
-            if (DoResetStances)
+            if (ShouldResetStances)
             {
                 stanceManipCancelTimer();
             }
