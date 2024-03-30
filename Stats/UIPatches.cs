@@ -980,7 +980,7 @@ namespace RealismMod
                 float modSemiROF = AttachmentProperties.SemiROF(mod);
                 float modCamRecoil = AttachmentProperties.CameraRecoil(mod);
                 float modConv = AttachmentProperties.ModConvergence(mod);
-                modVRecoil += modConv > 0f ? modConv * -1f : 0f;
+                modVRecoil += modConv > 0f ? modConv * StatCalc.convVRecoilConversion : 0f;
                 float modDispersion = AttachmentProperties.Dispersion(mod);
                 float modAngle = AttachmentProperties.RecoilAngle(mod);
                 float modAccuracy = mod.Accuracy;

@@ -383,7 +383,7 @@ namespace RealismMod
                     float modMalfChance = AttachmentProperties.ModMalfunctionChance(mod);
                     float modDuraBurn = mod.DurabilityBurnModificator;
                     float modFix = AttachmentProperties.FixSpeed(mod);
-                    modVRecoil += modConv > 0f ? modConv * -1f : 0f;
+                    modVRecoil += modConv > 0f ? modConv * StatCalc.convVRecoilConversion : 0f;
 
                     if (Utils.IsMuzzleDevice(mod))
                     {

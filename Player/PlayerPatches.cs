@@ -520,7 +520,6 @@ namespace RealismMod
             CalcBaseHipfireAccuracy(player);
             float stanceHipFactor = StanceController.CurrentStance == EStance.ActiveAiming ? 0.7f : StanceController.CurrentStance == EStance.ShortStock ? 1.35f : 1.05f;
             player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.2f, 1.6f);
-            Logger.LogWarning(player.ProceduralWeaponAnimation.Breath.HipPenalty);
         }
 
         protected override MethodBase GetTargetMethod()

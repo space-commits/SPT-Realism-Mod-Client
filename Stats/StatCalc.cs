@@ -12,6 +12,8 @@ namespace RealismMod
 {
     public static class StatCalc
     {
+        public const float convVRecoilConversion = -0.75f;
+
         public const float ErgoWeightMult = 13.55f;
         public const float ErgoTorqueMult = 0.82f;
         public const float PistolErgoWeightMult = 12.6f;
