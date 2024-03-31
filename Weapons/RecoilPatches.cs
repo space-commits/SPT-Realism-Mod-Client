@@ -518,7 +518,7 @@ namespace RealismMod
 
                 float stockedPistolFactor = WeaponStats.IsStockedPistol ? 0.75f : 1f;
 
-                __instance.RecoilStableShotIndex = 1; // try different value for pistols
+                __instance.RecoilStableShotIndex = WeaponStats.IsStocklessPistol ? 2 : 1; 
                 __instance.HandRotationRecoil.RecoilReturnTrajectoryOffset = template.RecoilReturnPathOffsetHandRotation * Plugin.AfterRecoilRandomness.Value;
                 __instance.HandRotationRecoil.StableAngleIncreaseStep = template.RecoilStableAngleIncreaseStep; 
                 __instance.HandRotationRecoil.AfterRecoilOffsetVerticalRange = template.PostRecoilVerticalRangeHandRotation * Plugin.AfterRecoilRandomness.Value;

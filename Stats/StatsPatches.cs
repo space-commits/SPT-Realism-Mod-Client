@@ -415,10 +415,8 @@ namespace RealismMod
             WeaponStats.IsStocklessPistol = !hasShoulderContact && __instance.WeapClass == "pistol" ? true : false;
             WeaponStats.IsStockedPistol = hasShoulderContact && __instance.WeapClass == "pistol" ? true : false;
 
-
             float totalLoudness = ((currentLoudness / 80) + 1f) * StatCalc.CaliberLoudnessFactor(caliber);
-            Logger.LogWarning("caliber " + caliber);
-            Logger.LogWarning("loudness " + totalLoudness);
+
             if (weapType == "bullpup")
             {
                 totalLoudness *= 1.15f;
@@ -451,7 +449,7 @@ namespace RealismMod
             WeaponStats.PureRecoilDelta = pureRecoilDelta;
             WeaponStats.ShotDispDelta = (baseShotDisp - currentShotDisp) / (baseShotDisp * -1f);
             WeaponStats.TotalCameraReturnSpeed = currentCamReturnSpeed;
-            WeaponStats.TotalModdedConv = currentConv;
+            WeaponStats.TotalModdedConv = currentConv * (!hasShoulderContact ? WeaponStats.FoldedConvergenceFactor : 1f);
             WeaponStats.ConvergenceDelta = currentConv / __instance.Template.RecoilReturnSpeedHandRotation;
         }
     }
