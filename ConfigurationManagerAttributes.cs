@@ -44,7 +44,7 @@ internal sealed class ConfigurationManagerAttributes
     public bool? Browsable;
 
     /// <summary>
-    /// Category the setting is under. Null to be directly under the plugin.
+    /// Category the setting is under. Null to be directly under the Plugin.
     /// </summary>
     public string Category;
 

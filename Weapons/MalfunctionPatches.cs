@@ -10,197 +10,142 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using MalfGlobals = BackendConfigSettingsClass.GClass1265;
-using OverheatGlobals = BackendConfigSettingsClass.GClass1266;
-using KnowMalfClass = EFT.InventoryLogic.Weapon.GClass2553;
-using MalfStateClass = GClass646<EFT.InventoryLogic.Weapon.EMalfunctionState>;
-using MalfStateStruct = GClass646<EFT.InventoryLogic.Weapon.EMalfunctionState>.GStruct42<float, EFT.InventoryLogic.Weapon.EMalfunctionState>;
+using MalfGlobals = BackendConfigSettingsClass.GClass1370;
+using OverheatGlobals = BackendConfigSettingsClass.GClass1371;
+using KnowMalfClass = EFT.InventoryLogic.Weapon.GClass2742;
+using DamageTypeClass = GClass2456;
+using Systems.Effects;
+
 namespace RealismMod
 {
-
-    public class GetMalfVariantsPatch : ModulePatch
+    public class GetMalfunctionStatePatch : ModulePatch
     {
+        private static FieldInfo playerField;
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player.FirearmController).GetMethod("GetSpecificMalfunctionVariants", BindingFlags.Instance | BindingFlags.Public);
+            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
+            return typeof(Player.FirearmController).GetMethod("GetMalfunctionState", BindingFlags.Instance | BindingFlags.Public);
         }
-        [PatchPrefix]
-        private static bool Prefix(Player.FirearmController __instance, List<MalfStateStruct> result, BulletClass ammo, Weapon.EMalfunctionSource malfunctionSource, float weaponDurability, bool hasAmmoInMag, bool isMagazineInserted, bool shouldCheckJam)
+
+        private static void ExplodeWeapon(Player.FirearmController fc, Player player) 
         {
-            result.Clear();
-            MalfGlobals malfunction = Singleton<BackendConfigSettingsClass>.Instance.Malfunction;
-            switch (malfunctionSource)
+            Singleton<Effects>.Instance.EmitGrenade("Grenade_new2", fc.CurrentFireport.Original.position, Vector3.up, 1f);
+            fc.Weapon.Repairable.Durability = 0f;
+            fc.Weapon.Repairable.MaxDurability = 0f;
+
+            if (player.ActiveHealthController != null)
             {
-                case Weapon.EMalfunctionSource.Durability:
-                    if (weaponDurability >= 80f && hasAmmoInMag && isMagazineInserted && __instance.Item.AllowFeed)
-                    {
-                        result.Add(new MalfStateStruct(malfunction.DurFeedWt, Weapon.EMalfunctionState.Feed));
-                        return false;
-                    }
-                    if (weaponDurability >= 50f && hasAmmoInMag && __instance.Item.AllowSlide)
-                    {
-                        result.Add(new MalfStateStruct(malfunction.DurSoftSlideWt, Weapon.EMalfunctionState.SoftSlide));
-                        return false;
-                    }
-                    if (weaponDurability < 50f && hasAmmoInMag && __instance.Item.AllowSlide)
-                    {
-                        float hardSlideWeight = Mathf.Lerp(malfunction.DurHardSlideMinWt, malfunction.DurHardSlideMaxWt, 1f - weaponDurability / 5f);
-                        result.Add(new MalfStateStruct(hardSlideWeight, Weapon.EMalfunctionState.HardSlide));
-                        return false;
-                    }
-                    if (shouldCheckJam && __instance.Item.AllowJam)
-                    {
-                        result.Add(new MalfStateStruct(malfunction.DurJamWt, Weapon.EMalfunctionState.Jam));
-                        return false;
-                    }
-                    if (__instance.Item.AllowMisfire)
-                    {
-                        result.Add(new MalfStateStruct(malfunction.DurMisfireWt, Weapon.EMalfunctionState.Misfire));
-                        return false;
-                    }
-                    break;
-                case Weapon.EMalfunctionSource.Ammo:
-                    if (__instance.Item.AllowMisfire)
-                    {
-                        float ammoWeight = malfunction.AmmoMisfireWt / (ammo.MalfMisfireChance + ammo.MalfFeedChance);
-                        result.Add(new MalfStateStruct(ammoWeight, Weapon.EMalfunctionState.Misfire));
-                        return false;
-                    }
-                    if (shouldCheckJam && __instance.Item.AllowJam)
-                    {
-                        result.Add(new MalfStateStruct(malfunction.AmmoJamWt, Weapon.EMalfunctionState.Jam));
-                        return false;
-                    }
-                    if (hasAmmoInMag && isMagazineInserted && __instance.Item.AllowFeed)
-                    {
-                        result.Add(new MalfStateStruct(malfunction.AmmoFeedWt, Weapon.EMalfunctionState.Feed));
-                        return false;
-                    }
-                    break;
-                case Weapon.EMalfunctionSource.Magazine:
-                    if (hasAmmoInMag && isMagazineInserted && __instance.Item.AllowFeed)
-                    {
-                        result.Add(new MalfStateStruct(1f, Weapon.EMalfunctionState.Feed));
-                        return false;
-                    }
-                    if (hasAmmoInMag && isMagazineInserted && __instance.Item.AllowJam)
-                    {
-                        result.Add(new MalfStateStruct(1f, Weapon.EMalfunctionState.Jam));
-                        return false;
-                    }
-                    break;
-                case Weapon.EMalfunctionSource.Ammo | Weapon.EMalfunctionSource.Magazine:
-                    break;
-                case Weapon.EMalfunctionSource.Overheat:
-                    if (hasAmmoInMag && __instance.Item.AllowSlide)
-                    {
-                        result.Add(new MalfStateStruct(malfunction.OverheatSoftSlideWt, Weapon.EMalfunctionState.SoftSlide));
-                    }
-                    if (weaponDurability <= 50f && hasAmmoInMag && __instance.Item.AllowSlide)
-                    {
-                        float heatMalfWeight = Mathf.Lerp(malfunction.OverheatHardSlideMinWt, malfunction.OverheatHardSlideMaxWt, 1f - weaponDurability / 5f);
-                        result.Add(new MalfStateStruct(heatMalfWeight, Weapon.EMalfunctionState.HardSlide));
-                        return false;
-                    }
-                    break;
-                default:
-                    return false;
+                InventoryControllerClass inventoryController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
+                if (player.IsYourPlayer) 
+                {
+                    Plugin.RealHealthController.AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 0f, 10f, 5f, 1f);
+                    Plugin.RealHealthController.AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 0f, 10f, 5f, 1f);
+                    Plugin.RealHealthController.AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 0f, 10f, 5f, 1f);
+                    Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.Head, null, null, null, null);
+                    Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.RightArm, null, null, null, null);
+                    NotificationManagerClass.DisplayWarningNotification("Catastrophic Failure. Wrong Ammo/Weapon Caliber Combination.", EFT.Communications.ENotificationDurationType.Long);
+                }
+                player.ActiveHealthController.ApplyDamage(EBodyPart.Head, UnityEngine.Random.Range(5, 20), DamageTypeClass.Existence);
+                player.ActiveHealthController.ApplyDamage(EBodyPart.RightArm, UnityEngine.Random.Range(20, 60), DamageTypeClass.Existence);
+
+                inventoryController.TryThrowItem(fc.Item, null);
             }
-            return false;
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(Player.FirearmController __instance, ref Weapon.EMalfunctionState __result, BulletClass ammoToFire)
+        {
+            Player player = (Player)playerField.GetValue(__instance);
+
+            if (__instance.Weapon.AmmoCaliber == "9x18PM" && ammoToFire.Template._id == "57371aab2459775a77142f22")
+            {
+                __instance.Weapon.Repairable.Durability = Mathf.Max(__instance.Weapon.Repairable.Durability - (__instance.Weapon.DurabilityBurnRatio * ammoToFire.DurabilityBurnModificator), 0f);
+                int rnd = UnityEngine.Random.Range(1, 10);
+                float dura = 2f - (__instance.Weapon.Repairable.Durability / __instance.Weapon.Repairable.MaxDurability);
+                if (__instance.Weapon.Repairable.Durability <= 75f && rnd <= 4 * dura)
+                {
+                    ExplodeWeapon(__instance, player);
+                    __result = Weapon.EMalfunctionState.HardSlide;
+                    return false;
+                }
+            }
+            if (__instance.Weapon.AmmoCaliber != ammoToFire.Caliber)
+            {
+                bool explosiveMismatch = (__instance.Weapon.AmmoCaliber == "366TKM" && ammoToFire.Caliber == "762x39") || (__instance.Weapon.AmmoCaliber == "556x45NATO" && ammoToFire.Caliber == "762x35") || (__instance.Weapon.AmmoCaliber == "762x51" && ammoToFire.Caliber == "68x51") || (__instance.Weapon.AmmoCaliber == "762x39" && ammoToFire.Caliber == "366TKM");
+                bool malfMismatch = (__instance.Weapon.AmmoCaliber == "762x35" && ammoToFire.Caliber == "556x45NATO") || (__instance.Weapon.AmmoCaliber == "68x51" && ammoToFire.Caliber == "762x51");
+
+                if (player.IsYourPlayer)
+                {
+                    if (__instance.Weapon.Repairable.MaxDurability <= 0f || malfMismatch)
+                    {
+                        __result = Weapon.EMalfunctionState.Misfire;
+                        return false;
+                    }
+
+                    if (explosiveMismatch)
+                    {
+                        ExplodeWeapon(__instance, player);
+                        __result = Weapon.EMalfunctionState.HardSlide;
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (explosiveMismatch)
+                    {
+                        ExplodeWeapon(__instance, player);
+                        __result = Weapon.EMalfunctionState.HardSlide;
+                        return false;
+                    }
+                    if (__instance.Weapon.Repairable.MaxDurability <= 0f || malfMismatch)
+                    {
+                        __result = Weapon.EMalfunctionState.Misfire;
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
     }
 
 
-/*    public class GetMalfunctionStatePatch : ModulePatch
-        {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player.FirearmController).GetMethod("GetMalfunctionState", BindingFlags.Instance | BindingFlags.Public);
-        }
-        [PatchPrefix]
-        private static bool Prefix(Player.FirearmController __instance, ref Weapon.EMalfunctionState __result, BulletClass ammoToFire, bool hasAmmoInMag, bool doesWeaponHaveBoltCatch, bool isMagazineInserted, float overheat, float fixSlideOverheat, out Weapon.EMalfunctionSource malfunctionSource)
-        {
-            malfunctionSource = Weapon.EMalfunctionSource.Durability;
-            if (!__instance.Item.AllowMalfunction)
-            {
-                __result = Weapon.EMalfunctionState.None;
-                return false;
-            }
-            if (__instance.Item.MalfState.SlideOnOverheatReached && overheat > fixSlideOverheat && __instance.Item.AllowSlide && hasAmmoInMag)
-            {
-                malfunctionSource = Weapon.EMalfunctionSource.Overheat;
-                __result = Weapon.EMalfunctionState.SoftSlide;
-                return false;
-            }
-            double durabilityMalfChance;
-            float magMalfChance;
-            float ammoMalfChance;
-            float overheatMalfChance;
-            float weaponDurability;
-            float totalMalfunctionChance = __instance.GetTotalMalfunctionChance(ammoToFire, overheat, out durabilityMalfChance, out magMalfChance, out ammoMalfChance, out overheatMalfChance, out weaponDurability);
-            float randomFloat = __instance.gclass2859_0.GetRandomFloat();
-
-            //instead of getting a total malf chance, roll chance to malf per malf type that's above 0
-            //if nothing gets rolled then return 0
-            //make sure each malf source has a unique malf type
-            
-
-            if (randomFloat > totalMalfunctionChance) // get rid of this
-            {
-                __result = Weapon.EMalfunctionState.None;
-                return false;
-            }
-            List<GClass757<Weapon.EMalfunctionSource>.GStruct43<float, Weapon.EMalfunctionSource>> list = __instance.list_0;// get rid of this
-            __instance.GetMalfunctionSources(list, durabilityMalfChance, magMalfChance, ammoMalfChance, overheatMalfChance, hasAmmoInMag, isMagazineInserted);// get rid of this
-            malfunctionSource = GClass757<Weapon.EMalfunctionSource>.GenerateDrop(list, randomFloat); // use my own logic to get this
-            bool shouldCheckJam = hasAmmoInMag || !doesWeaponHaveBoltCatch || !isMagazineInserted;
-            List<GClass757<Weapon.EMalfunctionState>.GStruct43<float, Weapon.EMalfunctionState>> list2 = __instance.list_1; // get rid of this
-            __instance.GetSpecificMalfunctionVariants(list2, ammoToFire, malfunctionSource, weaponDurability, hasAmmoInMag, isMagazineInserted, shouldCheckJam); // get rid of this
-            if (list2.Count == 0)
-            {
-                __result = Weapon.EMalfunctionState.None;
-                return false;
-            }
-            __result = GClass757<Weapon.EMalfunctionState>.GenerateDrop(list2); // use my own logic to get this
-            return false;
-
-            /////////////////////////////
-            malfunctionSource = Weapon.EMalfunctionSource.Durability;
-            switch (Plugin.test4.Value) 
-            {
-                case 1:
-                    __result = Weapon.EMalfunctionState.Misfire;
-                    return false;
-                case 2:
-                    __result = Weapon.EMalfunctionState.Jam; //failure to eject
-                    return false;
-                case 3:
-                    __result = Weapon.EMalfunctionState.HardSlide; //stuck slide
-                    return false;
-                case 4:
-                    __result = Weapon.EMalfunctionState.SoftSlide; //stuck slide but quicker
-                    return false;
-                case 5:
-                    __result = Weapon.EMalfunctionState.Feed; //double feed
-                    return false;
-                default:
-                    __result = Weapon.EMalfunctionState.None;
-                    return false;
-            }
-
-        }
-    }*/
-
-    public class GetTotalMalfunctionChancePatch : ModulePatch
+    public class GetDurabilityLossOnShotPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
+            return typeof(Weapon).GetMethod("GetDurabilityLossOnShot", BindingFlags.Instance | BindingFlags.Public);
+
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(Weapon __instance, ref float __result, float ammoBurnRatio, float overheatFactor, float skillWeaponTreatmentFactor, out float modsBurnRatio)
+        {
+            if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
+            {
+                modsBurnRatio = WeaponStats.TotalModDuraBurn;
+                __result = (float)__instance.Repairable.TemplateDurability / __instance.Template.OperatingResource * __instance.DurabilityBurnRatio * (modsBurnRatio * ammoBurnRatio) * overheatFactor * (1f - skillWeaponTreatmentFactor);
+                return false;
+            }
+            else
+            {
+                modsBurnRatio = 1f;
+                return true;
+            }
+        }
+    }
+
+    public class GetTotalMalfunctionChancePatch : ModulePatch
+    {
+        private static FieldInfo playerField;
+        protected override MethodBase GetTargetMethod()
+        {
+            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
             return typeof(Player.FirearmController).GetMethod("GetTotalMalfunctionChance", BindingFlags.Instance | BindingFlags.Public);
         }
         [PatchPrefix]
         private static bool Prefix(ref float __result, BulletClass ammoToFire, Player.FirearmController __instance, float overheat, out double durabilityMalfChance, out float magMalfChance, out float ammoMalfChance, out float overheatMalfChance, out float weaponDurability)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
 
             if (player.IsYourPlayer == true)
             {
@@ -210,31 +155,23 @@ namespace RealismMod
                 overheatMalfChance = 0f;
                 weaponDurability = 0f;
 
- 
                 if (!__instance.Item.AllowMalfunction)
                 {
                     __result = 0f;
                     return false;
                 }
 
-                /*                float ammoHotnessFactor = (1f - ((ammoToFire.ammoRec / 200f) + 1f)) + 1f;*/
-
-                float malfDelta = Mathf.Min(WeaponProperties.MalfChanceDelta * 3, 0.99f);
-                if (!WeaponProperties.CanCycleSubs && ammoToFire.ammoHear == 1)
+                if (__instance.Weapon.AmmoCaliber == "762x35" && ammoToFire.Caliber == "556x45NATO")
                 {
-
-                    if (ammoToFire.Caliber == "762x39")
-                    {
-                        __result = 0.2f * (1f - malfDelta);
-                    }
-                    else
-                    {
-                        __result = 0.35f * (1f - malfDelta);
-                    }
-
+                    __result = 10000f;
                     return false;
                 }
 
+                /*                float ammoHotnessFactor = (1f - ((ammoToFire.ammoRec / 200f) + 1f)) + 1f;*/
+
+                float malfDelta = Mathf.Min(WeaponStats.MalfChanceDelta * 3, 0.99f);
+                float subFactor = 1f;
+     
                 BackendConfigSettingsClass instance = Singleton<BackendConfigSettingsClass>.Instance;
                 MalfGlobals malfunctionGlobals = instance.Malfunction;
                 OverheatGlobals overheatGlobals = instance.Overheat;
@@ -243,15 +180,15 @@ namespace RealismMod
                 MagazineClass currentMagazine = __instance.Item.GetCurrentMagazine();
                 magMalfChance = ((currentMagazine == null) ? 0f : (currentMagazine.MalfunctionChance * magazineMalfChanceMult));
                 ammoMalfChance = ((ammoToFire != null) ? ((ammoToFire.MalfMisfireChance + ammoToFire.MalfFeedChance) * ammoMalfChanceMult) : 0f);
-                float weaponMalfChance = WeaponProperties.TotalMalfChance;
+                float weaponMalfChance = WeaponStats.TotalMalfChance;
                 float durability = __instance.Item.Repairable.Durability / (float)__instance.Item.Repairable.TemplateDurability * 100f;
                 weaponDurability = Mathf.Floor(durability);
-      
+
                 if (weaponDurability >= Plugin.DuraMalfThreshold.Value)
                 {
-                    magMalfChance *= 0.1f;
-                    weaponMalfChance *= 0.1f;
-                    ammoMalfChance *= 0.2f;
+                    magMalfChance *= 0.25f;
+                    weaponMalfChance *= 0.25f;
+                    ammoMalfChance *= 0.25f;
                 }
                 if (overheat >= overheatGlobals.OverheatProblemsStart)
                 {
@@ -271,9 +208,24 @@ namespace RealismMod
                 {
                     durabilityMalfChance *= 0.25f;
                 }
-                durabilityMalfChance *= (double)(float)__instance.Item.Buff.MalfunctionProtections;
-                durabilityMalfChance = (double)Mathf.Clamp01((float)durabilityMalfChance);
-                float totalMalfChance = Mathf.Clamp01((float)Math.Round(durabilityMalfChance + (double)((ammoMalfChance + magMalfChance + overheatMalfChance) / 1000f), 5));
+
+                if (!WeaponStats.CanCycleSubs && ammoToFire.ammoHear == 1)
+                {
+                    float suppFactor = __instance.IsSilenced || WeaponStats.HasBooster ? 0.25f : 1f;
+                    if (ammoToFire.Caliber == "762x39")
+                    {
+                        subFactor = 3000f * (1f - malfDelta) * suppFactor;
+                    }
+                    else
+                    {
+                        subFactor = 3500f * (1f - malfDelta) * suppFactor;
+                    }
+                }
+
+                durabilityMalfChance *= subFactor;
+                durabilityMalfChance *= __instance.Item.Buff.MalfunctionProtections;
+                durabilityMalfChance = Mathf.Clamp01((float)durabilityMalfChance);
+                float totalMalfChance = Mathf.Clamp01((float)Math.Round(durabilityMalfChance + ((ammoMalfChance + magMalfChance + overheatMalfChance) / 500f), 5));
 
                 __result = totalMalfChance;
                 return false;

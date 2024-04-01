@@ -1,11 +1,12 @@
 ﻿using EFT.InventoryLogic;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace RealismMod
 {
 
 
-    public static class DisplayWeaponProperties
+    public static class UIWeaponStats
     {
         public static float ErgoDelta = 0;
         public static int AutoFireRate = 0;
@@ -28,7 +29,7 @@ namespace RealismMod
     }
 
 
-    public static class WeaponProperties
+    public static class WeaponStats
     {
 
         public static string WeaponType(Weapon weapon)
@@ -98,7 +99,6 @@ namespace RealismMod
 
         }
 
-
         public static float MinChamberSpeed(Weapon weapon)
         {
             return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[12], out float result) ? result : 0.7f;
@@ -135,11 +135,27 @@ namespace RealismMod
 
         }
 
-        public static float CameraReturnSpeed(Weapon weapon)
+        public static float VisualRecoilMulti(Weapon weapon)
         {
             return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[18], out float result) ? result : 0.1f;
 
         }
+
+
+        public const float AdapterPistolGripBonusVRecoil = -1f;
+        public const float AdapterPistolGripBonusHRecoil = -2f;
+        public const float AdapterPistolGripBonusDispersion = -1f;
+        public const float AdapterPistolGripBonusChamber = 10f;
+        public const float AdapterPistolGripBonusErgo = 2f;
+        public const float PumpGripReloadBonus = 18f;
+        public const float FoldedErgoFactor = 0.85f;
+        public const float FoldedHRecoilFactor = 1.1f;
+        public const float FoldedVRecoilFactor = 1.6f;
+        public const float FoldedCOIFactor = 2.5f;
+        public const float FoldedCamRecoilFactor = 0.65f;
+        public const float FoldedDispersionFactor = 1.7f;
+        public const float FoldedRecoilAngleFactor = 1.15f;
+        public const float FoldedConvergenceFactor = 0.8f;
 
         public static float TotalWeaponWeight = 0f;
 
@@ -162,40 +178,15 @@ namespace RealismMod
         public static float MalfChanceDelta = 0;
 
         public static bool CanCycleSubs = false;
+        public static bool HasBooster = false;
 
         public static string _WeapClass = "";
 
+        public static bool IsStocklessPistol = false;
+        public static bool IsStockedPistol = false;
+        public static bool IsBullpup = false;
+
         public static bool ShouldGetSemiIncrease = false;
-
-        public static float AdapterPistolGripBonusVRecoil = -1;
-
-        public static float AdapterPistolGripBonusHRecoil = -2;
-
-        public static float AdapterPistolGripBonusDispersion = -1;
-
-        public static float AdapterPistolGripBonusChamber = 10;
-
-        public static float AdapterPistolGripBonusErgo = 2;
-
-        public static float PumpGripReloadBonus = 18f;
-
-        public static float FoldedErgoFactor = 1.0f;
-
-        public static float FoldedHRecoilFactor = 1.15f;
-
-        public static float FoldedVRecoilFactor = 1.5f;
-
-        public static float FoldedCOIFactor = 2f;
-
-        public static float FoldedCamRecoilFactor = 0.4f;
-
-        public static float FoldedDispersionFactor = 1.55f;
-
-        public static float FoldedRecoilAngleFactor = 1.15f;
-
-        public static float ErgoStatFactor = 7f;
-
-        public static float RecoilStatFactor = 3.5f;
 
         public static float ErgoDelta = 0f;
 
@@ -269,8 +260,6 @@ namespace RealismMod
 
         public static bool WeaponCanFSADS = false;
 
-        public static bool Folded = false;
-
         public static float SDReloadSpeedModifier = 1f;
 
         public static float SDFixSpeedModifier = 1f;
@@ -301,5 +290,14 @@ namespace RealismMod
         public static bool HasBayonet = false;
         public static float BaseMeleeDamage = 0f;
         public static float BaseMeleePen = 0f;
+
+        public static float CurrentVisualRecoilMulti = 1f;
+
+        public static Dictionary<string, Vector2> ZeroOffsetDict = new Dictionary<string, Vector2>();
+        public static Vector2 ZeroRecoilOffset = Vector2.zero;
+        public static float ScopeAccuracyFactor = 0f;
+        public static string ScopeID = "";
+        public static bool HasOptic;
+
     }
 }

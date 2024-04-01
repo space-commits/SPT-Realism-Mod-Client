@@ -11,18 +11,19 @@ using UnityEngine.UI;
 using EFT;
 using BepInEx.Logging;
 using System.IO;
+using Comfort.Common;
 
 namespace RealismMod
 {
     public class MountingUI : MonoBehaviour
     {
-        public static GameObject ActiveUIScreen;
-        private static GameObject mountingUIGameObject;
-        private static Image mountingUIImage;
-        private static RectTransform mountingUIRect;
-        private static Vector2 iconSize = new Vector2 (80, 80);
+        public GameObject ActiveUIScreen;
+        private GameObject mountingUIGameObject;
+        private Image mountingUIImage;
+        private RectTransform mountingUIRect;
+        private Vector2 iconSize = new Vector2(80, 80);
 
-        public static void DestroyGameObjects()
+        public void DestroyGameObject()
         {
             if (mountingUIGameObject != null)
             {
@@ -30,7 +31,7 @@ namespace RealismMod
             }
         }
 
-        public static void CreateGameObjects(UnityEngine.Transform parent)
+        public void CreateGameObject(UnityEngine.Transform parent)
         {
             mountingUIGameObject = new GameObject("MountingUI");
             mountingUIRect = mountingUIGameObject.AddComponent<RectTransform>();
@@ -47,11 +48,11 @@ namespace RealismMod
         {
             if (ActiveUIScreen != null && Plugin.EnableMountUI.Value)
             {
-                if (StanceController.IsBracingLeftSide)
+                if (StanceController.BracingDirection == EBracingDirection.Left)
                 {
                     mountingUIImage.sprite = Plugin.LoadedSprites["mountingleft.png"];
                 }
-                else if (StanceController.IsBracingRightSide)
+                else if (StanceController.BracingDirection == EBracingDirection.Right)
                 {
                     mountingUIImage.sprite = Plugin.LoadedSprites["mountingright.png"];
                 }
@@ -67,7 +68,7 @@ namespace RealismMod
                     mountingUIRect.sizeDelta = iconSize * scaleAmount;
 
                 }
-                else if (StanceController.IsBracing && !PlayerProperties.IsSprinting)
+                else if (StanceController.IsBracing && !PlayerState.IsSprinting)
                 {
                     mountingUIRect.sizeDelta = iconSize;
                     float alpha = Mathf.Lerp(0.2f, 1f, Mathf.PingPong(Time.time * 1f, 1f));
@@ -87,18 +88,23 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.UI.BattleUIScreen).GetMethod("Show", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(EFT.UI.BattleUIScreen).GetMethod("Show", new Type[] { typeof(GamePlayerOwner) });
         }
         [PatchPostfix]
         private static void PatchPostFix(EFT.UI.BattleUIScreen __instance)
         {
-            if (MountingUI.ActiveUIScreen == __instance.gameObject)
+            MountingUI mountingUI = Plugin.Hook.GetComponent<MountingUI>();
+
+            if (mountingUI != null) 
             {
-                return;
+                if (mountingUI.ActiveUIScreen == __instance.gameObject)
+                {
+                    return;
+                }
+                mountingUI.ActiveUIScreen = __instance.gameObject;
+                mountingUI.DestroyGameObject();
+                mountingUI.CreateGameObject(__instance.transform);
             }
-            MountingUI.ActiveUIScreen = __instance.gameObject;
-            MountingUI.DestroyGameObjects();
-            MountingUI.CreateGameObjects(__instance.transform);
         }
     }
 }

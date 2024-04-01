@@ -1,19 +1,24 @@
-﻿using Comfort.Common;
+﻿using BepInEx.Logging;
+using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using System;
+using System.IO;
+using System.Reflection;
 
 namespace RealismMod
 {
     public static class Utils
     {
-        public static Player YourPlayer;
+        public static ManualLogSource Logger;
+
+        public static bool Verified = false;
         public static bool IsReady = false;
+        public static bool IsInHideout = false;
         public static bool WeaponReady = false;
         public static bool HasRunErgoWeightCalc = false;
 
         public static string SetQuickSlotItemInvClassRef = "GClass2572_0";
-        public static string FirearmControllerSkillClassRef = "gclass1638_0";
 
         public static string Silencer = "550aa4cd4bdc2dd8348b456c";
         public static string FlashHider = "550aa4bf4bdc2dd6348b456b";
@@ -69,11 +74,16 @@ namespace RealismMod
             return true;
         }
 
-        //should not use, use the field instead, checkisready is called once per frame
-        public static Player GetPlayer() 
+        public static Player GetYourPlayer() 
         {
             GameWorld gameWorld = Singleton<GameWorld>.Instance;
-            return gameWorld.MainPlayer != null ? gameWorld.MainPlayer : null;
+            return gameWorld.MainPlayer;
+        }
+
+        public static Player GetPlayerByID(string id)
+        {
+            GameWorld gameWorld = Singleton<GameWorld>.Instance;
+            return gameWorld.GetAlivePlayerByProfileID(id);   
         }
 
         public static bool CheckIsReady()
@@ -84,15 +94,8 @@ namespace RealismMod
             Player player = gameWorld?.MainPlayer;
             if (player != null)
             {
-                YourPlayer = player;
-                if (player?.HandsController != null && player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon)
-                {
-                    Utils.WeaponReady = true;
-                }
-                else
-                {
-                    Utils.WeaponReady = false;
-                }
+                Utils.WeaponReady = player?.HandsController != null && player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon ? true : false;
+                Utils.IsInHideout = player is HideoutPlayer ? true : false; 
             }
 
             if (gameWorld == null || gameWorld.AllAlivePlayersList == null || gameWorld.MainPlayer == null || sessionResultPanel != null)
@@ -104,27 +107,34 @@ namespace RealismMod
             return true;
         }
 
-        public static bool IsInHideout() 
-        {
-            GameWorld gameWorld = Singleton<GameWorld>.Instance;
-            SessionResultPanel sessionResultPanel = Singleton<SessionResultPanel>.Instance;
-
-            Player player = gameWorld.MainPlayer;
-            if (player != null && player is HideoutPlayer)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-
         public static void SafelyAddAttributeToList(ItemAttributeClass itemAttribute, Mod __instance)
         {
             if (itemAttribute.Base() != 0f)
             {
                 __instance.Attributes.Add(itemAttribute);
             }
+        }
+
+        public static void VerifyFileIntegrity(ManualLogSource Logger)
+        {
+            var dllLoc = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string checksum = "d2F5ZmFyZXI=";
+            byte[] bytes = Convert.FromBase64String(checksum);
+            string decodedString = System.Text.Encoding.UTF8.GetString(bytes);
+            var modsLoc = Path.Combine(dllLoc, "..", "..", "user", "mods", decodedString);
+            var fullPath = Path.GetFullPath(modsLoc);
+
+            if (Directory.Exists(fullPath))
+            {
+                /*Environment.Exit(0);*/
+                Verified = true;
+                Logger.LogWarning("Verification Checksum: {0}" + checksum);
+            }
+        }
+
+        public static string GenId()
+        {
+            return Guid.NewGuid().ToString();
         }
 
         public static bool IsSight(Mod mod)

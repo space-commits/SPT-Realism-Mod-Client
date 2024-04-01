@@ -2,7 +2,7 @@
 
 namespace RealismMod
 {
-    public static class PlayerProperties
+    public static class PlayerState
     {
         public static float FixSkillMulti = 1f;
 
@@ -34,7 +34,7 @@ namespace RealismMod
 
         public static EnvironmentType EnviroType = EnvironmentType.Outdoor;
 
-        public static bool IsClearingMalf;
+        public static bool IsClearingMalf = false;
 
         public static bool IsAllowedAim = true;
 
@@ -67,10 +67,6 @@ namespace RealismMod
 
         public static float AimSkillADSBuff = 0f;
 
-        public static bool RightArmRuined = false;
-
-        public static bool LeftArmRuined = false;
-
         public static float HealthSprintSpeedFactor = 1f;
 
         public static float HealthSprintAccelFactor = 1f;
@@ -91,11 +87,18 @@ namespace RealismMod
 
         public static bool HasFullyResetSprintADSPenalties = false;
 
-        public static float TotalUnmodifiedWeight = 0f;
-        public static float TotalMousePenalty = 0f;
-        public static float TotalModifiedWeight = 0f;
-        public static float TotalModifiedWeightMinusWeapon = 0f;
+        public static float TotalModifiedWeight = 1f;
+        public static float TotalMousePenalty = 1f;
+        public static float TotalModifiedWeightMinusWeapon = 1f;
 
         public static bool IsMoving = false;
+
+        public static float DeviceBonus = 1f;
+        public static bool HasActiveDevice = false;
+        public static bool IRLaserActive = false;
+        public static bool IRLightActive = false;
+        public static bool LaserActive = false;
+        public static bool WhiteLightActive = false;
+
     }
 }

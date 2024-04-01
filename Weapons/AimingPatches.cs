@@ -1,5 +1,6 @@
 ﻿using Aki.Reflection.Patching;
 using BepInEx.Logging;
+using BSG.CameraEffects;
 using Comfort.Common;
 using EFT;
 using EFT.InputSystem;
@@ -11,50 +12,75 @@ using UnityEngine;
 
 namespace RealismMod
 {
-    public static class AimController 
+    public static class AimController
     {
         private static bool hasSetCanAds = false;
         private static bool hasSetActiveAimADS = false;
         private static bool wasToggled = false;
+        public static bool AimStateChanged = false;
+        public static bool HeadDeviceStateChanged = false;
 
-        public static void ADSCheck(Player player, EFT.Player.FirearmController fc, ManualLogSource logger)
+        public static void ADSCheck(Player player, EFT.Player.FirearmController fc)
         {
-            if (!player.IsAI && fc.Item != null)
+            if (player.IsYourPlayer && fc.Item != null)
             {
                 bool isAiming = (bool)AccessTools.Field(typeof(EFT.Player.FirearmController), "_isAiming").GetValue(fc);
-                FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
-                NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
-                ThermalVisionComponent thermComponent = player.ThermalVisionObserver.Component;
-                bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
-                bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
-                bool thermalIsOn = thermComponent != null && (thermComponent.Togglable == null || thermComponent.Togglable.On);
-                bool gearBlocksADS = Plugin.EnableFSPatch.Value && fsIsON && (!WeaponProperties.WeaponCanFSADS && (!GearProperties.AllowsADS(fsComponent.Item) || !PlayerProperties.GearAllowsADS));
-                bool visionDeviceBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && Plugin.HasOptic) || thermalIsOn);
-                if (Plugin.ModConfig.recoil_attachment_overhaul && (visionDeviceBlocksADS || gearBlocksADS))
+                if (AimStateChanged || HeadDeviceStateChanged) 
                 {
-                    if (!hasSetCanAds)
+                    FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
+                    NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
+                    ThermalVisionComponent thermComponent = player.ThermalVisionObserver.Component;
+                    bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
+                    bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
+                    bool thermalIsOn = thermComponent != null && (thermComponent.Togglable == null || thermComponent.Togglable.On);
+                    bool gearBlocksADS = Plugin.EnableFSPatch.Value && fsIsON && (!WeaponStats.WeaponCanFSADS && (!GearStats.AllowsADS(fsComponent.Item) || !PlayerState.GearAllowsADS));
+                    bool toobBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && WeaponStats.HasOptic) || thermalIsOn);
+
+                    fc.UpdateHipInaccuracy(); //update hipfire to take NVG toggle into account
+  
+                    if (Plugin.ServerConfig.recoil_attachment_overhaul && (toobBlocksADS || gearBlocksADS))
                     {
-                        if (isAiming)
+                        if (!hasSetCanAds)
                         {
-                            fc.ToggleAim();
+                            if (isAiming)
+                            {
+                                fc.ToggleAim();
+                            }
+                            PlayerState.IsAllowedADS = false;
+                            hasSetCanAds = true;
                         }
-                        PlayerProperties.IsAllowedADS = false;
-                        hasSetCanAds = true;
                     }
-                }
-                else
-                { 
-                    PlayerProperties.IsAllowedADS = true;
-                    hasSetCanAds = false;
+                    else
+                    {
+                        PlayerState.IsAllowedADS = true;
+                        hasSetCanAds = false;
+                    }
+                    //no idea wtf this is
+                    if (!wasToggled && (fsIsON || nvgIsOn))
+                    {
+                        wasToggled = true;
+                    }
+                    if (wasToggled && (!fsIsON && !nvgIsOn))
+                    {
+                        StanceController.WasActiveAim = false;
+                        if (Plugin.ToggleActiveAim.Value)
+                        {
+                            StanceController.StanceBlender.Target = 0f;
+                            StanceController.CurrentStance = EStance.None;
+                        }
+                        wasToggled = false;
+                    }
+
+                    AimStateChanged = false;
+                    HeadDeviceStateChanged = false;
                 }
 
-
-                if (StanceController.IsActiveAiming && !hasSetActiveAimADS)
+                if (StanceController.CurrentStance == EStance.ActiveAiming && !hasSetActiveAimADS)
                 {
                     player.MovementContext.SetAimingSlowdown(true, 0.33f);
                     hasSetActiveAimADS = true;
                 }
-                else if (!StanceController.IsActiveAiming && hasSetActiveAimADS)
+                else if (StanceController.CurrentStance != EStance.ActiveAiming && hasSetActiveAimADS)
                 {
                     player.MovementContext.SetAimingSlowdown(false, 0.33f);
                     if (isAiming)
@@ -65,50 +91,61 @@ namespace RealismMod
                     hasSetActiveAimADS = false;
                 }
 
-      
-                if (isAiming || StanceController.IsMeleeAttack)
+                if (isAiming && StanceController.CurrentStance == EStance.PatrolStance)
                 {
-                    StanceController.IsPatrolStance = false;
+                    StanceController.CurrentStance = EStance.None;
                 }
 
-                if (StanceController.IsMeleeAttack && isAiming)
+      /*          if (isAiming && StanceController.CurrentStance == EStance.Melee)
                 {
                     fc.ToggleAim();
-                }
-
-                if (!wasToggled && (fsIsON || nvgIsOn)) 
-                {
-                    wasToggled = true;
-                }
-                if (wasToggled && (!fsIsON && !nvgIsOn))
-                {
-                    StanceController.WasActiveAim = false;
-                    if (Plugin.ToggleActiveAim.Value)
-                    {
-                        StanceController.StanceBlender.Target = 0f;
-                        StanceController.IsActiveAiming = false;
-                    }
-                    wasToggled = false;
-                }
+                }*/
 
                 if (player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire)
                 {
-                    Plugin.IsAiming = isAiming;
+                    StanceController.IsAiming = isAiming;
                     StanceController.PistolIsColliding = false;
                 }
-                else if (fc.Item.WeapClass == "pistol")
+                else if (WeaponStats.IsStocklessPistol)
                 {
                     StanceController.PistolIsColliding = true;
                 }
-
             }
         }
     }
 
-    public class SetAimingSlowdownPatch : ModulePatch
+    //to prevent players toggling on device while drinking/eating to bypass restriction
+    //look for ecommand.togglegoggles
+    public class ToggleHeadDevicePatch : ModulePatch
     {
+        private static FieldInfo playerField;
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(MovementContext), "_player");
+            return typeof(Player).GetMethod("method_17", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(Player __instance)
+        {
+            if (__instance.IsYourPlayer)
+            {
+                Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
+                if (fc == null) return true;
+                bool isIdling = fc.FirearmsAnimator.IsIdling();
+                return isIdling;
+            }
+            return true;
+        }
+    }
+
+
+    public class SetAimingSlowdownPatch : ModulePatch
+    {
+        private static FieldInfo playerField;
+        protected override MethodBase GetTargetMethod()
+        {
+            playerField = AccessTools.Field(typeof(MovementContext), "_player");
             return typeof(MovementContext).GetMethod("SetAimingSlowdown", BindingFlags.Instance | BindingFlags.Public);
         }
 
@@ -116,15 +153,15 @@ namespace RealismMod
         private static bool Prefix(MovementContext __instance, bool isAiming)
         {
 
-            Player player = (Player)AccessTools.Field(typeof(MovementContext), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 if (isAiming)
                 {
                     //slow is hard set to 0.33 when called, 0.4-0.43 feels best.
-                    float baseSpeed = PlayerProperties.AimMoveSpeedBase * WeaponProperties.AimMoveSpeedWeapModifier * PlayerProperties.AimMoveSpeedInjuryMulti;
-                    float totalSpeed = StanceController.IsActiveAiming ? baseSpeed * 1.3f : baseSpeed;
-                    totalSpeed = WeaponProperties._WeapClass == "pistol" ? totalSpeed + 0.15f : totalSpeed;
+                    float baseSpeed = PlayerState.AimMoveSpeedBase * WeaponStats.AimMoveSpeedWeapModifier * PlayerState.AimMoveSpeedInjuryMulti;
+                    float totalSpeed = StanceController.CurrentStance == EStance.ActiveAiming ? baseSpeed * 1.45f : baseSpeed;
+                    totalSpeed = WeaponStats._WeapClass == "pistol" ? totalSpeed + 0.15f : totalSpeed;
                     __instance.AddStateSpeedLimit(Mathf.Clamp(totalSpeed, 0.3f, 0.9f), Player.ESpeedLimit.Aiming);
                     return false;
                 }
@@ -135,72 +172,35 @@ namespace RealismMod
         }
     }
 
-    public class ToggleHoldingBreathPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player).GetMethod("ToggleHoldingBreath", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(Player __instance)
-        {
-            if (__instance.IsYourPlayer == true)
-            {
-                if (!Plugin.EnableHoldBreath.Value)
-                {
-                    return false;
-                }
-                return true;
-            }
-            return true;
-        }
-    }
-
-    public class SetAimingPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(EFT.Player.FirearmController).GetMethod("set_IsAiming", BindingFlags.NonPublic | BindingFlags.Instance);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(EFT.Player.FirearmController __instance, bool value, ref bool ____isAiming)
-        {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
-            if (player.IsYourPlayer && __instance.Item.WeapClass == "pistol")
-            {
-                player.Physical.Aim((!____isAiming || !(player.MovementContext.StationaryWeapon == null)) ? 0f : __instance.ErgonomicWeight * 0.2f);
-            }
-        }
-    }
-
     public class ToggleAimPatch : ModulePatch
     {
+        private static FieldInfo playerField;
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player");
             return typeof(EFT.Player.FirearmController).GetMethod("ToggleAim", BindingFlags.Public | BindingFlags.Instance);
         }
 
         [PatchPrefix]
         private static bool Prefix(EFT.Player.FirearmController __instance)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
+            Player player = (Player)playerField.GetValue(__instance);
 
-            if (player.IsYourPlayer) 
+            if (player.IsYourPlayer)
             {
+                AimController.AimStateChanged = true;
                 bool gearFactorEnabled = Plugin.EnableFSPatch.Value || Plugin.EnableNVGPatch.Value;
 
                 StanceController.CanResetAimDrain = true;
 
-                if (PlayerProperties.SprintBlockADS && !PlayerProperties.TriedToADSFromSprint) 
+                if (PlayerState.SprintBlockADS && !PlayerState.TriedToADSFromSprint)
                 {
-                    PlayerProperties.TriedToADSFromSprint = true;
+                    PlayerState.TriedToADSFromSprint = true;
                     return false;
                 }
 
-                PlayerProperties.TriedToADSFromSprint = false;
-                return gearFactorEnabled ? PlayerProperties.IsAllowedADS : true;
+                PlayerState.TriedToADSFromSprint = false;
+                return gearFactorEnabled ? PlayerState.IsAllowedADS : true;
             }
             return true;
         }
