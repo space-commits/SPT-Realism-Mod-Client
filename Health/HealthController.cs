@@ -1419,8 +1419,6 @@ namespace RealismMod
                 float sprintFactor = PlayerState.IsSprinting ? 0.2f : 0f;
                 float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti;
 
-                Utils.Logger.LogWarning("playerWeightFactor " + playerWeightFactor);
-
                 ResourcePerTick = totalResourceRate;
             }
         }

@@ -100,7 +100,6 @@ namespace RealismMod
         {
             if (StanceController.IsIdle() && WeaponStats._WeapClass.ToLower() != "pistol")
             {
-                Logger.LogWarning(factor);
                 StanceController.CanResetDamping = false;
                 float rndX = UnityEngine.Random.Range(8f * 0.7f * factor, 8f * factor);
                 float rndY = UnityEngine.Random.Range(8f * 0.7f * factor, 8f * factor);
@@ -108,13 +107,11 @@ namespace RealismMod
 
                 if (pwa.IsAiming && !didAimWiggle)
                 {
-                    Logger.LogWarning("doing ADS wiggle");
                     StanceController.DoWiggleEffects(player, pwa, fc.Weapon, wiggleDir, wiggleFactor: factor, isADS: true);
                     didAimWiggle = true;
                 }
                 else if (!pwa.IsAiming && didAimWiggle)
                 {
-                    Logger.LogWarning("doing ADS UNwiggle");
                     didAimWiggle = false;
                 }
                 StanceController.DoDampingTimer = true;

@@ -23,6 +23,7 @@ using System.Collections.Generic;
 
 namespace RealismMod
 {
+
     public class CovertEquipmentVolumePatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -224,12 +225,11 @@ namespace RealismMod
             float mainT;
 
             GlobalEventHandlerClass.CreateEvent<CompressorTemplateClass>().Invoke(template);
-            Utils.Logger.LogWarning("SetCompressor");
-            DeafeningController.DryVolume = hasHeadset ? template.DryVolume : 0f;
+            DeafeningController.DryVolume = hasHeadset ? template.DryVolume * Plugin.DryVolumeMulti.Value : 0f;
             DeafeningController.CompressorVolume = hasHeadset ? template.CompressorVolume : -80f;
             DeafeningController.AmbientVolume = hasHeadset ? template.AmbientVolume : 0f;
             DeafeningController.AmbientOccluded = hasHeadset ? (template.AmbientVolume - 15f) : -5f;
-            DeafeningController.GunsVolume = hasHeadset ? template.DryVolume + Plugin.GunshotVolume.Value : Plugin.GunshotVolume.Value;
+            DeafeningController.GunsVolume = hasHeadset ? (template.DryVolume * Plugin.DryVolumeMulti.Value) + Plugin.GunshotVolume.Value : Plugin.GunshotVolume.Value;
             DeafeningController.CompressorLowpass = hasHeadset ? template.LowpassFreq : 2200;
             DeafeningController.CompressorDistortion = hasHeadset ? template.Distortion : 0.277f;
             DeafeningController.CompressorResonance = hasHeadset ? template.Resonance : 2.47f;
@@ -253,10 +253,11 @@ namespace RealismMod
             {
                 return false;
             }
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorAttack, template.CompressorAttack);
+
+            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorAttack, Plugin.HeadsetAttack.Value);
             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorGain, template.CompressorGain);
             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorRelease, template.CompressorRelease);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorThreshold, template.CompressorTreshold);
+            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorThreshold, template.CompressorTreshold + Plugin.HeadsetThreshold.Value);
             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorDistortion, template.Distortion);
             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorResonance, template.Resonance);
             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorCutoff, (float)template.CutoffFreq);

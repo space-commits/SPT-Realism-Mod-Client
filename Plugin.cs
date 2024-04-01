@@ -118,8 +118,12 @@ namespace RealismMod
         public static ConfigEntry<float> VigRate { get; set; }
         public static ConfigEntry<float> VigReset { get; set; }
         public static ConfigEntry<float> GainCutoff { get; set; }
+        public static ConfigEntry<float> DeafenResetDelay { get; set; }
         public static ConfigEntry<float> RealTimeGain { get; set; }
         public static ConfigEntry<float> HeadsetAmbientMulti { get; set; }
+        public static ConfigEntry<float> DryVolumeMulti { get; set; }
+        public static ConfigEntry<float> HeadsetThreshold { get; set; }
+        public static ConfigEntry<float> HeadsetAttack { get; set; }
         public static ConfigEntry<float> GunshotVolume { get; set; }
         public static ConfigEntry<float> PlayerMovementVolume { get; set; }
         public static ConfigEntry<float> NPCMovementVolume { get; set; }
@@ -618,7 +622,6 @@ namespace RealismMod
             //Deafen Effects
             if (ServerConfig.headset_changes)
             {
-                Logger.LogWarning("audio patches");
                 new PrismEffectsEnablePatch().Enable();
                 new PrismEffectsDisablePatch().Enable();
                 new UpdatePhonesPatch().Enable();
@@ -745,7 +748,7 @@ namespace RealismMod
                         RecoilController.ShotTimer = 0f;
                     }
 
-                    if (RecoilController.DeafenShotTimer >= 0.2f)
+                    if (RecoilController.DeafenShotTimer >= DeafenResetDelay.Value)
                     {
                         RecoilController.IsFiringDeafen = false;
                         RecoilController.DeafenShotTimer = 0f;
@@ -938,19 +941,24 @@ namespace RealismMod
             DuraMalfThreshold = Config.Bind<float>(waponSettings, "Malfunction Durability Threshold", 98f, new ConfigDescription("Malfunction Changes Must Be Enabled On The Server (Config App) And 'Enable Malfunctions Changes' Must Be True. Malfunction Chance Is Significantly Reduced Until This Durability Threshold Is Exceeded.", new AcceptableValueRange<float>(1f, 100f), new ConfigurationManagerAttributes { Order = 4, Browsable = ServerConfig.malf_changes }));
             IncreaseCOI = Config.Bind<bool>(waponSettings, "Enable Increased Inaccuracy", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Requires Restart. Increases The Innacuracy Of All Weapons So That MOA/Accuracy Is A More Important Stat.", null, new ConfigurationManagerAttributes { Order = 6, Browsable = ServerConfig.recoil_attachment_overhaul }));
 
+            DryVolumeMulti = Config.Bind<float>(deafSettings, "Headset Base Volume Reduction Multi", 1f, new ConfigDescription("Multi For How Much Headsets Reduce Audio Volume By, Not Including Gain", new AcceptableValueRange<float>(0.1f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
+            HeadsetThreshold = Config.Bind<float>(deafSettings, "Headset Cutoff Threshold Offset", -5f, new ConfigDescription("Threshold For How Loud Something Has To Be To Reduce Volume. Offset reduces or increases value. Lower Offset = More Sensitive. Offset Value of -5 Will Make It More Sensitive, A Value Of 5 Less.", new AcceptableValueRange<float>(-35f, -1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 90, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
+            HeadsetAttack = Config.Bind<float>(deafSettings, "Headset Attack", 1f, new ConfigDescription("How Quickly The Headset Will Start Reducing Volume. Lower = Faster.", new AcceptableValueRange<float>(1f, 100f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 80, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
+            HeadsetAmbientMulti = Config.Bind<float>(deafSettings, "Headset Ambient Multi", 0.25f, new ConfigDescription("Adjusts The Ambient Volume Reduction From Headsets. Headset Gain Also Affects Ambient Volume. Higher = Louder.", new AcceptableValueRange<float>(-10f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 70, Browsable = ServerConfig.headset_changes }));
             SharedMovementVolume = Config.Bind<float>(deafSettings, "Shared Movement Volume Multi", 1f, new ConfigDescription("Multiplier For Player + NPC Sprint Volume. Has To Be Shared Due To BSG Jank.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 60, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
             NPCMovementVolume = Config.Bind<float>(deafSettings, "NPC Movement Volume Multi", 1f, new ConfigDescription("Multiplier For NPC Movement Volume. Includes Walking And Equipment Rattle.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 50, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
             PlayerMovementVolume = Config.Bind<float>(deafSettings, "Player Movement Volume Multi", 1f, new ConfigDescription("Multiplier For Player Movment Volume.  Includes Walking And Equipment Rattle.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 40, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
             GunshotVolume = Config.Bind<float>(deafSettings, "Gunshot Volume", 0f, new ConfigDescription("Offset For Volume Of Gunshots When Not Using Headsets. Lower = Quieter. Use Gain Cutoff For Headsets", new AcceptableValueRange<float>(-50f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
-            HeadsetAmbientMulti = Config.Bind<float>(deafSettings, "Headset Ambient Multi", 0.25f, new ConfigDescription("Adjusts The Ambient Volume Reduction From Headsets. Headset Gain Also Affects Ambient Volume. Higher = Louder.", new AcceptableValueRange<float>(-10f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, Browsable = ServerConfig.headset_changes }));
             RealTimeGain = Config.Bind<float>(deafSettings, "Headset Gain", 14f, new ConfigDescription("WARNING: DO NOT SET THIS TOO HIGH, IT MAY DAMAGE YOUR HEARING! Most EFT Headsets Are Set To 13 By Default, Don't Make It Much Higher. Adjusts The Gain Of Equipped Headsets In Real Time, Acts Just Like The Volume Control On IRL Ear Defenders.", new AcceptableValueRange<float>(0f, 30f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, Browsable = ServerConfig.headset_changes }));
             GainCutoff = Config.Bind<float>(deafSettings, "Headset Gain Cutoff Multi", 1f, new ConfigDescription("How Much Headset Gain Is Reduced By While Firing. 0.75 = 25% Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, Browsable = ServerConfig.headset_changes }));
+            DeafenResetDelay = Config.Bind<float>(deafSettings, "Deafen Reset Delay", 0.5f, new ConfigDescription("How Long It Takes For Headset Gain To Be Restored Or Deafening Effects To Start Reseting", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, Browsable = ServerConfig.headset_changes }));
             DecGain = Config.Bind(deafSettings, "Reduce Gain Keybind", new KeyboardShortcut(KeyCode.KeypadMinus), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 9, Browsable = ServerConfig.headset_changes }));
             IncGain = Config.Bind(deafSettings, "Increase Gain Keybind", new KeyboardShortcut(KeyCode.KeypadPlus), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 8, Browsable = ServerConfig.headset_changes }));
             DeafRate = Config.Bind<float>(deafSettings, "Deafen Rate", 0.023f, new ConfigDescription("How Quickly Player Gets Deafened. Higher = Faster.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7, IsAdvanced = true, Browsable = ServerConfig.headset_changes }));
             DeafReset = Config.Bind<float>(deafSettings, "Deafen Reset Rate.", 0.042f, new ConfigDescription("How Quickly Player Regains Hearing. Higher = Faster.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true, Browsable = ServerConfig.headset_changes }));
             VigRate = Config.Bind<float>(deafSettings, "Tunnel Effect Rate", 0.02f, new ConfigDescription("How Quickly Player Gets Tunnel Vission. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true, Browsable = ServerConfig.headset_changes }));
             VigReset = Config.Bind<float>(deafSettings, "Tunnel Effect Reset Rate.", 0.035f, new ConfigDescription("How Quickly Player Recovers From Tunnel Vision. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true, Browsable = ServerConfig.headset_changes }));
+
 
             GlobalAimSpeedModifier = Config.Bind<float>(speed, "Aim Speed Multi.", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16, Browsable = ServerConfig.recoil_attachment_overhaul }));
             GlobalReloadSpeedMulti = Config.Bind<float>(speed, "Magazine Reload Speed Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15, Browsable = ServerConfig.recoil_attachment_overhaul }));

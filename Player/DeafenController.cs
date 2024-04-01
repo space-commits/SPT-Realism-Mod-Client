@@ -117,11 +117,6 @@ namespace RealismMod
                     Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", totalVolume + DeafeningController.AmbientOccluded);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", totalVolume + DeafeningController.AmbientVolume);
                 }
-                else
-                {
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value * Plugin.GainCutoff.Value);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol * (1f + (1f - Plugin.GainCutoff.Value)));
-                }
 
                 valuesAreReset = false;
             }
@@ -138,11 +133,18 @@ namespace RealismMod
                     Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", DeafeningController.AmbientVolume);
                 }
             }
-            else if(DeafeningController.HasHeadSet)
+
+            if (DeafeningController.HasHeadSet && (RecoilController.IsFiringDeafen || GrenadeVolume > 0f || BotVolume > 0f))
+            {
+                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value * Plugin.GainCutoff.Value);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol * (1f + (1f - Plugin.GainCutoff.Value)));
+            }
+            else if (DeafeningController.HasHeadSet)
             {
                 Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol);
             }
+
         }
 
         private static void ChangeDeafValues(float deafFactor, ref float vigValue, float vigIncRate, float vigLimit, ref float volValue, float volDecRate, float volLimit, float enviroMulti)
@@ -154,7 +156,6 @@ namespace RealismMod
 
         private static void ResetDeafValues(ref float vigValue, float vigResetRate, float vigLimit, ref float volValue, float volResetRate, float volLimit)
         {
-
             vigValue = Mathf.Clamp(vigValue - vigResetRate, 0.0f, vigLimit);
             volValue = Mathf.Clamp(volValue + volResetRate, volLimit, 0.0f);
         }

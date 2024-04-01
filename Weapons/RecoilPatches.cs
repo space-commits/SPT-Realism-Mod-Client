@@ -144,12 +144,6 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-
-                //move the actual value calc to player update so injuries etc. can be properly taken into account, where stance is taken into account.
-                //factor in weapon ergo, player weight, HP injury, energy + hydration, overdose, stance, factored recoil, laser vs. light and if it is currently visible (IR)
-                //if NVG + vis light, there should be a debuff. Lasers give a bigger boost than lights. Bonus shouldn't be massive.
-
-
                 if (__instance.AimingDevices.Length > 0 && __instance.AimingDevices.Any(x => x.Light.IsActive))
                 {
                     CheckDevice(__instance, tacticalModesField);
@@ -175,7 +169,6 @@ namespace RealismMod
                         PlayerState.WhiteLightActive ? 0.6f : 1f;
                     }
 
-                    Logger.LogWarning("PlayerState.DeviceBonus " + PlayerState.DeviceBonus);
                 }
                 else
                 {
@@ -292,7 +285,6 @@ namespace RealismMod
                 if (RecoilController.ShotCount > RecoilController.PrevShotCount)
                 {
                     float fpsFactor = 144f / (1f / Time.unscaledDeltaTime);
-                    Logger.LogWarning("fpsFactor " + fpsFactor);
 
                     float controlFactor = RecoilController.ShotCount <= 3f ? Plugin.PlayerControlMulti.Value * 3 : Plugin.PlayerControlMulti.Value;
                     RecoilController.PlayerControl += Mathf.Abs(deltaRotation.y) * controlFactor;
@@ -383,7 +375,6 @@ namespace RealismMod
 
                     if (targetRotation.y <= recordedRotation.y - Plugin.RecoilClimbLimit.Value)
                     {
-                        Logger.LogWarning("====HIT MAX====");
                         targetRotation.y = movementContext.Rotation.y;
                     }
 
@@ -646,7 +637,6 @@ namespace RealismMod
                 float horzFactor = PlayerState.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * shotFactor * Plugin.HorzMulti.Value;
                 RecoilController.FactoredTotalVRecoil = vertFactor * RecoilController.BaseTotalVRecoil;
                 RecoilController.FactoredTotalHRecoil = horzFactor * RecoilController.BaseTotalHRecoil;
-                Logger.LogWarning("horzFactor " + horzFactor);
 
                 horzFactor *= fovFactor * opticRecoilMulti; //I put it here after setting FactoredTotalHRecoil so that visual recoil isn't affected
                 rotationRecoilPower *= vertFactor;

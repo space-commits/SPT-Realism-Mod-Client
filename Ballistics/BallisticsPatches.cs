@@ -21,6 +21,8 @@ using EFT.Interactive;
 using Diz.Skinning;
 using EFT.Visual;
 using Diz.LanguageExtensions;
+using EFTSlot = GClass2767;
+using ArmorSlot = GClass2511;
 
 namespace RealismMod
 {
@@ -499,14 +501,16 @@ namespace RealismMod
                         float armorDamageActual = ammo.ArmorDamage * speedFactor;
                         float penPower = damageInfo.PenetrationPower;
 
+                        //need to redo this: for non-steel, higher pen should mean lower spall damage. I'm also sort of taking durability into account twice
+                        //ideally should use momentum instead too?
+
                         float duraPercent = armor.Repairable.Durability / armor.Repairable.TemplateDurability;
                         float armorFactor = armor.ArmorClass * 10f * duraPercent;
                         float penDuraFactoredClass = 10f + Mathf.Max(1f, armorFactor - (penPower / 1.8f));
                         float maxPotentialSpallDamage = KE / penDuraFactoredClass;
-     
-   
-                        float maxSpallingDamage = Mathf.Max(7f, maxPotentialSpallDamage - bluntDamage);
-                        float factoredSpallingDamage = maxSpallingDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction * (isMetalArmor ? (1f - duraPercent) + 1f : 1f);
+                            
+                        float factoredSpallingDamage = maxPotentialSpallDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction * (isMetalArmor ? (1f - duraPercent) + 1f : 1f);
+                        float maxSpallingDamage = Mathf.Clamp(factoredSpallingDamage - bluntDamage, 7f, ammoTemp.Damage * 0.5f);
                         float splitSpallingDmg = factoredSpallingDamage / bodyParts.Count;
 
                         if (Plugin.EnableBallisticsLogging.Value)
@@ -842,7 +846,7 @@ namespace RealismMod
             float startingDamage = damageInfo.Damage;
             float speedFactor = 1f;
             float armorDamageActual = 1f;
-            float KE = 1f;
+            float momentum = 1f;
 
             if (!damageType.IsWeaponInduced() && damageType != EDamageType.GrenadeFragment)
             {
@@ -879,112 +883,88 @@ namespace RealismMod
                     playArmorHitSound(__instance.Template.ArmorMaterial, damageInfo.HittedBallisticCollider.transform.position, isHead, UnityEngine.Random.Range(0, 2));
                 }
             }
-            BulletClass ammo = null;
+
+            //armor damage value has been replaced with velocity
+            //ammotemplate is used to get stats needed for calcs and get original armor damage value.
             AmmoTemplate ammoTemp = null;
-            if (damageType != EDamageType.Melee)
-            {
-                ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
-                ammo = new BulletClass(Utils.GenId(), ammoTemp);
-                bool canDoShotgunBonus = ammoTemp != null && !isHead && BallisticsController.BonusDamageCalibers.Contains(ammoTemp.Caliber);
-                bool isSlug = canDoShotgunBonus && ammoTemp.ProjectileCount <= 2;
-                bool isShot = canDoShotgunBonus && ammoTemp.ProjectileCount > 2;
-                speedFactor = ammo.GetBulletSpeed / damageInfo.ArmorDamage;
-                armorDamageActual = ammo.ArmorDamage * speedFactor;
-                armorDamageActual *= isShot ? 4f : isSlug ? 2f : 1f;
-                KE = (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f;
-            }
-            else
+            if (damageType == EDamageType.Melee)
             {
 
                 Weapon weap = damageInfo.Weapon as Weapon;
                 bool isBayonet = !damageInfo.Player.IsAI && WeaponStats.HasBayonet && weap.WeapClass != "Knife" ? true : false;
                 armorDamageActual = damageInfo.ArmorDamage;
                 float meleeDamage = isBayonet ? damageInfo.Damage : damageInfo.Damage * 2f;
-                KE = meleeDamage * 50f;
-            }
-
-
-            float bluntThrput = __instance.Template.BluntThroughput;
-            float softArmorPenReduction = 1f;
-            GClass2767 slot;
-            GClass2511 softArmorSlot;
-            if ((slot = (__instance.Item.CurrentAddress as GClass2767)) != null && (softArmorSlot = (slot.Slot as GClass2511)) != null && softArmorSlot.BluntDamageReduceFromSoftArmor)
-            {
-                bluntThrput *= 0.8f;
-                softArmorPenReduction = 0.8f;
-            }
-
-            float penPower = damageInfo.PenetrationPower;
-            float duraPercent = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability;
-            float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
-            float secondaryArmorResist = armorResist <= 50 ? armorResist : Mathf.Clamp(armorResist - 40f, 35f, 45f);
-            float armorDestructibility = Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
-            float armorFactor = armorResist * duraPercent * 1.65f;
-            float throughputDuraFactored = Mathf.Min(1f, bluntThrput * (1f + ((duraPercent - 1f) * -1f)));
-            float penDuraFactoredClass = Mathf.Max(1f, armorFactor - (penPower / 1.8f));
-            float penFactoredClass = Mathf.Max(1f, armorResist - (penPower / 1.8f));
-            float maxPotentialDuraDamage = KE / penDuraFactoredClass;
-            float maxPotentialBluntDamage = KE / penDuraFactoredClass; // KE / penFactoredClass changing it be factored by durability, might be better overall
-            float throughputFactoredDamage = Math.Min(damageInfo.Damage, maxPotentialDuraDamage * bluntThrput) * (armorDamageActual <= 2f ? 0.5f : 1f);
-            float armorStatReductionFactor = Mathf.Max((1 - (penDuraFactoredClass / 100f)), 0.1f);
-
-            if (damageInfo.DeflectedBy == __instance.Item.Id)
-            {
-                damageInfo.Damage *= 0.2f * armorStatReductionFactor;
-                armorDamageActual *= 0.2f * armorStatReductionFactor;
-                damageInfo.ArmorDamage *= 0.2f * armorStatReductionFactor;
-                damageInfo.PenetrationPower *= 0.2f * armorStatReductionFactor;
-            }
-
-            if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !isHead)
-            {
-                throughputFactoredDamage = Math.Min(damageInfo.Damage, maxPotentialBluntDamage * bluntThrput) * (armorDamageActual <= 2f ? 0.1f : 1f);
-            }
-            if ((__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel || __instance.Template.ArmorMaterial == EArmorMaterial.Titan) && isHead)
-            {
-                armorDestructibility = 0.1f;
-            }
-
-            float durabilityLoss = 1f;
-            if (damageType != EDamageType.Melee)
-            {
-                durabilityLoss = (maxPotentialBluntDamage / 24f) * Mathf.Clamp(ammo.BulletDiameterMilimeters / 7.62f, 1f, 2f) * armorDamageActual * armorDestructibility;
+                momentum = meleeDamage * 100f;
             }
             else
             {
-                durabilityLoss = (maxPotentialBluntDamage / 24f) * Mathf.Clamp(9f / 7.62f, 1f, 2f) * armorDamageActual * armorDestructibility;
+                ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
+                speedFactor = ammoTemp.InitialSpeed / damageInfo.ArmorDamage;
+                armorDamageActual = ammoTemp.ArmorDamage * speedFactor;
+                momentum = ammoTemp.BulletMassGram * damageInfo.ArmorDamage;
             }
+
+            if (damageInfo.DeflectedBy == __instance.Item.Id)
+            {
+                momentum *= 0.25f;
+                armorDamageActual *= 0.25f;
+                damageInfo.ArmorDamage *= 0.25f;
+                damageInfo.PenetrationPower *= 0.25f;
+            }
+
+            float bluntThrput = __instance.Template.BluntThroughput;
+            float softArmorStatReduction = 1f;
+            EFTSlot slot;
+            ArmorSlot softArmorSlot;
+            if ((slot = (__instance.Item.CurrentAddress as EFTSlot)) != null && (softArmorSlot = (slot.Slot as ArmorSlot)) != null && softArmorSlot.BluntDamageReduceFromSoftArmor)
+            {
+                bluntThrput *= 0.8f;
+                softArmorStatReduction = 0.8f;
+            }
+
+            float penPower = damageInfo.PenetrationPower;
+            float factoredPen = penPower / 1.8f;
+            float momentumFactor = Mathf.Log10(momentum) / 5;
+            float momentumDamageFactor = (Mathf.Exp(momentumFactor * 12)) / 100;
+            float duraPercent = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability;
+            float scaledArmorclass = __instance.ArmorClass * __instance.ArmorClass;
+            float armorDestructibility = Singleton<BackendConfigSettingsClass>.Instance.ArmorMaterials[__instance.Template.ArmorMaterial].Destructibility;
+            if ((__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel || __instance.Template.ArmorMaterial == EArmorMaterial.Titan) && isHead) 
+            {
+                armorDestructibility = 0.25f;
+            }
+            float factoredArmorClass = Mathf.Clamp(scaledArmorclass * Mathf.Pow(duraPercent, 2f), 10f, scaledArmorclass);
+            float armorFactorDura = Mathf.Clamp(1 - Mathf.InverseLerp(1f, 100f, factoredArmorClass), 0.1f, 1f);
+            float armorFactorDamage = Mathf.Clamp(1 - Mathf.InverseLerp(1f, 100f, factoredArmorClass - factoredPen), 0.1f, 1f);
+            float steelArmorFactorDamage = Mathf.Clamp(1 - Mathf.InverseLerp(1f, 100f, scaledArmorclass - factoredPen), 0.1f, 1f);
+
+            float totaldamage = 1f;
+            if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !isHead)
+            {
+                totaldamage = Mathf.Clamp(momentumDamageFactor * steelArmorFactorDamage * bluntThrput, 1, damageInfo.Damage);
+            }
+            else
+            {
+                totaldamage = Mathf.Clamp(momentumDamageFactor * armorFactorDamage * bluntThrput, 1, damageInfo.Damage);
+            }
+
+            float totalDuraLoss = momentumDamageFactor * armorDestructibility * armorDamageActual * armorFactorDura;
 
             if (damageType == EDamageType.Melee)
             {
-                if (damageInfo.PenetrationPower > armorFactor)
+                if (damageInfo.PenetrationPower > __instance.ArmorClass * 100f * duraPercent)
                 {
-                    if (Plugin.EnableBallisticsLogging.Value)
-                    {
-                        Logger.LogWarning("Melee Penetrated");
-                    }
-                    damageInfo.Damage *= armorStatReductionFactor;
-                    damageInfo.PenetrationPower *= armorStatReductionFactor;
+                    if (Plugin.EnableBallisticsLogging.Value) Logger.LogWarning("Melee Penetrated");
+                    damageInfo.Damage *= 0.75f;
+                    damageInfo.PenetrationPower *= 0.75f * softArmorStatReduction;
                 }
                 else
                 {
-                    if (Plugin.EnableBallisticsLogging.Value)
-                    {
-                        Logger.LogWarning("Melee Blocked");
-                    }
-                    if (!isHead)
-                    {
-                        damageInfo.Damage = throughputFactoredDamage + (damageInfo.Damage / 10f);
-                    }
-                    else
-                    {
-                        damageInfo.Damage = throughputFactoredDamage;
-                    }
-
-                    damageInfo.StaminaBurnRate = (throughputFactoredDamage / 100f) * 2f;
+                    if (Plugin.EnableBallisticsLogging.Value) Logger.LogWarning("Melee Blocked");
+                    if (!isHead) damageInfo.Damage = totaldamage + (damageInfo.Damage / 10f);
+                    else damageInfo.Damage = totaldamage;
                     damageInfo.HeavyBleedingDelta = 0f;
                     damageInfo.LightBleedingDelta = 0f;
-
                 }
             }
             else if (roundPenetrated)
@@ -993,14 +973,15 @@ namespace RealismMod
                 {
                     damageInfo.Damage = 0f;
                 }
-                durabilityLoss *= (1f - (penPower / 100f)); 
-                damageInfo.Damage *= armorStatReductionFactor;
-                damageInfo.PenetrationPower *= armorStatReductionFactor * softArmorPenReduction;
+                totalDuraLoss *= 0.25f;
+                float actualDurability = Mathf.Max(__instance.Repairable.Durability - totalDuraLoss, 1);
+                float armorFactor = 1f - ((__instance.ArmorClass / 200f) * (actualDurability / __instance.Repairable.TemplateDurability));
+                damageInfo.Damage *= Mathf.Clamp(armorFactor, 0.5f, 1f) * bluntThrput; //not sure what to do with this
+                damageInfo.PenetrationPower *= softArmorStatReduction;
             }
             else
             {
-                damageInfo.Damage = throughputFactoredDamage;
-                damageInfo.StaminaBurnRate = (throughputFactoredDamage / 100f) * 2f;
+                damageInfo.Damage = totaldamage;
             }
 
             if (!roundPenetrated)
@@ -1009,29 +990,29 @@ namespace RealismMod
                 damageInfo.LightBleedingDelta = 0f;
             }
 
-            durabilityLoss = Math.Max(durabilityLoss, 0.05f);
-            __instance.ApplyDurabilityDamage(durabilityLoss, armorComponents);
-            __result = durabilityLoss;
+            damageInfo.StaminaBurnRate = (totaldamage / 100f) * 2f;
+            totalDuraLoss = Math.Max(totalDuraLoss, 0.05f);
+            __instance.ApplyDurabilityDamage(totalDuraLoss, armorComponents);
+            __result = totalDuraLoss;
             damageInfo.Damage = Mathf.Min(damageInfo.Damage, startingDamage);
 
             if (Plugin.EnableBallisticsLogging.Value)
             {
                 Logger.LogWarning("===========ARMOR DAMAGE=============== ");
-                Logger.LogWarning("KE " + KE);
+                Logger.LogWarning("Momentum " + momentum);
+                Logger.LogWarning("Momentum Factor" + momentumDamageFactor);
                 Logger.LogWarning("Pen " + penPower);
                 Logger.LogWarning("Armor Damage " + armorDamageActual);
-                Logger.LogWarning("Class " + armorResist);
+                Logger.LogWarning("Class " + __instance.ArmorClass);
                 Logger.LogWarning("Throughput " + bluntThrput);
                 Logger.LogWarning("Material Descructibility " + armorDestructibility);
                 Logger.LogWarning("Dura percent " + duraPercent);
-                Logger.LogWarning("Durability Loss " + durabilityLoss);
-                Logger.LogWarning("Max potential blunt damage " + maxPotentialDuraDamage);
-                Logger.LogWarning("Max potential dura damage " + maxPotentialBluntDamage);
-                Logger.LogWarning("Throughput Facotred Damage " + throughputFactoredDamage);
+                Logger.LogWarning("armor Factor Damage = " + armorFactorDamage);
+                Logger.LogWarning("armor Factor Dura = " + armorFactorDura);
+                Logger.LogWarning("Durability Loss " + totalDuraLoss);
                 Logger.LogWarning("Damage " + damageInfo.Damage);
                 Logger.LogWarning("========================== ");
             }
-            ammo = null;
             ammoTemp = null;
             return false;
         }
