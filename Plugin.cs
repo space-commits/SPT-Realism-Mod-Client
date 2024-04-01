@@ -602,7 +602,7 @@ namespace RealismMod
             if (ServerConfig.realistic_ballistics)
             {
                 new CreateShotPatch().Enable();
-                new ApplyDamagePatch().Enable();
+                new ApplyArmorDamagePatch().Enable();
                 new DamageInfoPatch().Enable();
                 new ApplyDamageInfoPatch().Enable();
                 new SetPenetrationStatusPatch().Enable();
