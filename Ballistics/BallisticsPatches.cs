@@ -723,7 +723,7 @@ namespace RealismMod
         }
     }
 
-    public class ApplyDamagePatch : ModulePatch
+    public class ApplyArmorDamagePatch : ModulePatch
     {
         private static void playRicochetSound(Vector3 pos, int rndNum)
         {
@@ -889,9 +889,8 @@ namespace RealismMod
             AmmoTemplate ammoTemp = null;
             if (damageType == EDamageType.Melee)
             {
-
                 Weapon weap = damageInfo.Weapon as Weapon;
-                bool isBayonet = !damageInfo.Player.IsAI && WeaponStats.HasBayonet && weap.WeapClass != "Knife" ? true : false;
+                 bool isBayonet = !damageInfo.Player.IsAI && WeaponStats.HasBayonet && weap.WeapClass != "Knife" ? true : false;
                 armorDamageActual = damageInfo.ArmorDamage;
                 float meleeDamage = isBayonet ? damageInfo.Damage : damageInfo.Damage * 2f;
                 momentum = meleeDamage * 100f;
