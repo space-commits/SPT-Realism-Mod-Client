@@ -310,6 +310,8 @@ namespace RealismMod
         private static bool warnedUser = false;
         public static bool HasReloadedAudio = false;
 
+        public static float FPSFactor = 1f;
+
         private void getPaths()
         {
             var mod = RequestHandler.GetJson($"/RealismMod/GetInfo");
@@ -697,6 +699,9 @@ namespace RealismMod
 
         void Update()
         {
+            //games procedural animations are highly affected by FPS. I balanced everything at 144 FPS, so need to factor it.    
+            FPSFactor = 144f / (1f / Time.unscaledDeltaTime);
+
             if (!warnedUser && (int)Time.time % 5 == 0)
             {
                 warnedUser = true;

@@ -284,6 +284,7 @@ namespace RealismMod
         {
             if (!addedEffect) 
             {
+                Utils.Logger.LogWarning("haven't added effect yet, adding");
                 _Player.ActiveHealthController.AddEffect<ResourceRateChange>(BodyPart, 0f, null, 0f, 0f, null);
                 addedEffect = false;
             }

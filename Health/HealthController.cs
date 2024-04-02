@@ -1409,6 +1409,7 @@ namespace RealismMod
 
             if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach))
             {
+                Utils.Logger.LogWarning("adding effect");
                 ResourceRateEffect resEffect = new ResourceRateEffect(null, player, 0);
                 AddCustomEffect(resEffect, false);
             }
