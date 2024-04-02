@@ -26,7 +26,7 @@ namespace RealismMod
         Stim
     }
 
-    public interface IHealthEffect
+    public interface ICustomHealthEffect
     {
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; }
@@ -37,7 +37,7 @@ namespace RealismMod
         public EHealthEffectType EffectType { get; }
     }
 
-    public class TourniquetEffect : IHealthEffect
+    public class TourniquetEffect : ICustomHealthEffect
     {
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; }
@@ -87,7 +87,7 @@ namespace RealismMod
         }
     }
 
-    public class SurgeryEffect : IHealthEffect
+    public class SurgeryEffect : ICustomHealthEffect
     {
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }
@@ -153,7 +153,7 @@ namespace RealismMod
         }
     }
 
-    public class HealthDrainEffect : IHealthEffect
+    public class HealthDrainEffect : ICustomHealthEffect
     {
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }
@@ -196,7 +196,7 @@ namespace RealismMod
         }
     }
 
-    public class HealthRegenEffect : IHealthEffect
+    public class HealthRegenEffect : ICustomHealthEffect
     {
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }
@@ -260,7 +260,7 @@ namespace RealismMod
         }
     }
 
-    public class ResourceRateEffect : IHealthEffect
+    public class ResourceRateEffect : ICustomHealthEffect
     {
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }
@@ -286,12 +286,12 @@ namespace RealismMod
             {
                 Utils.Logger.LogWarning("haven't added effect yet, adding");
                 _Player.ActiveHealthController.AddEffect<ResourceRateChange>(BodyPart, 0f, null, 0f, 0f, null);
-                addedEffect = false;
+                addedEffect = true;
             }
         }
     }
 
-    public class PainKillerEffect : IHealthEffect
+    public class PainKillerEffect : ICustomHealthEffect
     {
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }
@@ -336,7 +336,7 @@ namespace RealismMod
         }
     }
 
-    public class StimShellEffect : IHealthEffect
+    public class StimShellEffect : ICustomHealthEffect
     {
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }

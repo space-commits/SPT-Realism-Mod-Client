@@ -186,7 +186,7 @@ namespace RealismMod
 
         public EBodyPart[] BodyParts = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm };
 
-        private List<IHealthEffect> activeHealthEffects = new List<IHealthEffect>();
+        private List<ICustomHealthEffect> activeHealthEffects = new List<ICustomHealthEffect>();
 
         private const float doubleClickTime = 0.2f;
         private float timeSinceLastClicked = 0f;
@@ -414,16 +414,16 @@ namespace RealismMod
             }
         }
 
-        public void AddCustomEffect(IHealthEffect newEffect, bool canStack)
+        public void AddCustomEffect(ICustomHealthEffect newEffect, bool canStack)
         {
             //need to decide if it's better to keep the old effect or to replace it with a new one.
             if (!canStack)
             {
-                foreach (IHealthEffect existingEff in activeHealthEffects)
+                foreach (ICustomHealthEffect existingEff in activeHealthEffects)
                 {
                     if (existingEff.GetType() == newEffect.GetType() && existingEff.BodyPart == newEffect.BodyPart)
                     {
-                        RemoveCustomEffectOfType(existingEff.GetType(), existingEff.BodyPart);
+                        RemoveCustomEffectOfType(newEffect.GetType(), newEffect.BodyPart);
                         break;
                     }
                 }
@@ -436,7 +436,7 @@ namespace RealismMod
         {
             for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
             {
-                IHealthEffect activeHealthEffect = activeHealthEffects[i];
+                ICustomHealthEffect activeHealthEffect = activeHealthEffects[i];
                 if (activeHealthEffect.GetType() == effect && activeHealthEffect.BodyPart == bodyPart)
                 {
                     activeHealthEffects.RemoveAt(i);
@@ -449,7 +449,7 @@ namespace RealismMod
             bool hasEffect = false;
             for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
             {
-                IHealthEffect activeHealthEffect = activeHealthEffects[i];
+                ICustomHealthEffect activeHealthEffect = activeHealthEffects[i];
                 if (activeHealthEffect.GetType() == effect && activeHealthEffect.BodyPart == bodyPart)
                 {
                     hasEffect = true;
@@ -727,7 +727,8 @@ namespace RealismMod
                     AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, painReliefInterval, 5f, PainTunnelStrength);
 
                     if (HasOverdosed)
-                    {
+                    { 
+                        Utils.Logger.LogWarning("adding contusion + termor");
                         AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 1f, painReliefInterval, 5f, 0.35f);
                         AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 1f, painReliefInterval, 5f, 1);
                     }
@@ -742,7 +743,7 @@ namespace RealismMod
         {
             for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
             {
-                IHealthEffect effect = activeHealthEffects[i];
+                ICustomHealthEffect effect = activeHealthEffects[i];
                 if (Plugin.EnableLogging.Value)
                 {
                     Utils.Logger.LogWarning("Type = " + effect.GetType().ToString());
