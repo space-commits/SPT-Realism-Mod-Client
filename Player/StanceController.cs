@@ -533,10 +533,10 @@ namespace RealismMod
                         CurrentStance == EStance.HighReady || 
                         (CurrentStance == EStance.LowReady && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed) ||
                         CurrentStance == EStance.PatrolStance;
-                   bool cancelStoredStance = 
+/*                   bool cancelStoredStance = 
                         StoredStance == EStance.HighReady || 
                         (StoredStance == EStance.LowReady && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed) ||
-                        StoredStance == EStance.PatrolStance;
+                        StoredStance == EStance.PatrolStance;*/
                     if (cancelCurrentStance) 
                     {
                         CurrentStance = EStance.None;
@@ -558,13 +558,12 @@ namespace RealismMod
                     }
                 }
 
-                if ((Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed) && !IsAiming && CurrentStance != EStance.ShortStock && CurrentStance != EStance.ActiveAiming && CurrentStance != EStance.HighReady)
+                if ((Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed) && !IsAiming && CurrentStance != EStance.ShortStock && CurrentStance != EStance.ActiveAiming && CurrentStance != EStance.HighReady && MeleeIsToggleable)
                 {
                     StanceBlender.Target = 1f;
                     CurrentStance = EStance.LowReady;
                     StoredStance = EStance.LowReady;
                     WasActiveAim = false;
-                    DidStanceWiggle = false;
                 }
             }
 

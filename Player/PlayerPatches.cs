@@ -288,6 +288,7 @@ namespace RealismMod
           
             if (isInjured)
             {
+                Logger.LogWarning("do sway injury");
                 float tremorSpeed = __instance.TremorOn ? deltaTime : (deltaTime / 2f);
                 tremorSpeed *= intensityHolder;
                 float tremorXRandom = __instance.TremorXRandom.GetValue(tremorSpeed);
@@ -295,6 +296,7 @@ namespace RealismMod
                 float tremorZRnadom = __instance.TremorZRandom.GetValue(tremorSpeed);
                 if ((__instance.Fracture || Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed) && !__instance.IsAiming)
                 {
+                    Logger.LogWarning("do sway tremor");
                     tremorXRandom += Mathf.Max(0f, randomY) * Mathf.Lerp(1f, 100f / __instance.EnergyFractureLimit, staminaLevel);
                 }
                 breathVector = new Vector3(tremorXRandom, tremorYRandom, tremorZRnadom) * __instance.Intensity;
