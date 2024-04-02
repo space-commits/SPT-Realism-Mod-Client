@@ -153,7 +153,7 @@ namespace RealismMod
             return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        [PatchPrefix]
+
         private static void Prefix(ref bool __result) //can use dynamic type for instance
         {
             Logger.LogWarning("stacking prefix ");
@@ -504,9 +504,6 @@ namespace RealismMod
                 int delay = (int)meds.HealthEffectsComponent.BuffSettings[0].Delay;
                 StimShellEffect stimEffect = new StimShellEffect(__instance, duration, delay, Plugin.RealHealthController.GetStimType(meds.Template._id));
                 Plugin.RealHealthController.AddCustomEffect(stimEffect, true);
-                Logger.LogWarning("//////////////////parent " + meds.Parent);
-                Logger.LogWarning("//////////////////temp parent " + meds.Template.Parent);
-
     
 /*                __instance.HealthController.ApplyItem(meds, EBodyPart.Head, null);
 */                return true;
