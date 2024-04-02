@@ -154,10 +154,17 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref bool __result) //can use dynamic type for instance
+        private static void Prefix(ref bool __result) //can use dynamic type for instance
         {
+            Logger.LogWarning("stacking prefix ");
             __result = false;
-            return false;
+        }
+
+        [PatchPostfix]
+        private static void PostFix(ref bool __result) //can use dynamic type for instance
+        {
+            Logger.LogWarning("stacking after result = " + __result);
+            __result = false;
         }
     }
 
@@ -283,6 +290,8 @@ namespace RealismMod
         {
             //I had to do this previously due to the type being protected, no longer is the case. Keeping for reference.
             /* BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);*/
+
+            Logger.LogWarning("body party state patch");
 
             HealthStateClass.BodyPartState bodyPartState = __instance.Dictionary_0[bodyPart];
             SkillManager skills = (SkillManager)AccessTools.Field(typeof(ActiveHealthController), "skillManager_0").GetValue(__instance);
