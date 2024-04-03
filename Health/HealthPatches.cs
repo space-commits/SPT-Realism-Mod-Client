@@ -30,6 +30,7 @@ using PhysicalClass = GClass681;
 using HealthStateClass = GClass2416<EFT.HealthSystem.ActiveHealthController.GClass2415>;
 using MedkitTemplate = IMedkitResource;
 using static EFT.HealthSystem.ActiveHealthController;
+using static GClass2417;
 
 namespace RealismMod
 {
@@ -143,6 +144,26 @@ namespace RealismMod
     }
 
 
+    public class StimStackPatch2 : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
+            Type genericType = typeof(Class1884<>); //declare generic type
+            Type constructedType = genericType.MakeGenericType(new Type[] { nestedType }); //construct type at runtime using nested type
+            return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(ref bool __result) //can use dynamic type for instance
+        {
+            Logger.LogWarning("stacking prefix 2");
+            __result = false;
+            return false;
+        }
+    }
+
+
     public class StimStackPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -153,20 +174,56 @@ namespace RealismMod
             return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }
 
-
-        private static void Prefix(ref bool __result) //can use dynamic type for instance
+        [PatchPrefix]
+        private static bool Prefix(ref bool __result) //can use dynamic type for instance
         {
             Logger.LogWarning("stacking prefix ");
             __result = false;
-        }
-
-        [PatchPostfix]
-        private static void PostFix(ref bool __result) //can use dynamic type for instance
-        {
-            Logger.LogWarning("stacking after result = " + __result);
-            __result = false;
+            return false;
         }
     }
+
+
+    public class AddEffectPatch : ModulePatch
+    {
+        static Type nestedType = null;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance);
+            var genericMethod = typeof(EFT.HealthSystem.ActiveHealthController).GetMethod("AddEffect");
+            var constructedMethod = genericMethod.MakeGenericMethod(new Type[] { nestedType }); // Specify the TEffect type
+            return constructedMethod;
+        }
+
+        [PatchPrefix]
+        private static void Prefix(EFT.HealthSystem.ActiveHealthController __instance) //can use dynamic type for instance
+        {
+            Logger.LogWarning("AddEffectPatch");
+
+        }
+    }
+
+    /*public class FindExistingEffectPatch : ModulePatch
+    {
+
+        protected override MethodBase GetTargetMethod()
+        {
+            Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
+            Type genericClassType = typeof(GClass2416<>); //declare generic type
+            Type constructedClassType = genericClassType.MakeGenericType(new Type[] { nestedType }); //construct type at runtime using nested type
+            var genericMethod = constructedClassType.GetMethod("FindExistingEffect");
+            var constructedMethod = genericMethod.MakeGenericMethod(new Type[] { nestedType }); // Specify the TEffect type
+            return constructedMethod;
+        }
+
+        [PatchPrefix]
+        private static void Prefix(ref IEffect __result) //can use dynamic type for instance
+        {
+            Logger.LogWarning("FindExistingEffect");
+            __result = null;
+        }
+    }*/
 
     public class BreathIsAudiblePatch : ModulePatch
     {
@@ -177,7 +234,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(PhysicalClass __instance,ref bool __result)
         {
-            __result = !__instance.HoldingBreath && ((__instance.StaminaParameters.StaminaExhaustionStartsBreathSound && __instance.Stamina.Exhausted) || __instance.Oxygen.Exhausted || Plugin.RealHealthController.HasOverdosed);
+            __result = !__instance.HoldingBreath && ((__instance.StaminaParameters.StaminaExhaustionStartsBreathSound && __instance.Stamina.Exhausted) || __instance.Oxygen.Exhausted || Plugin.RealHealthController.HasOverdosed || Plugin.RealHealthController.PainStrength > Plugin.RealHealthController.PainReliefStrength);
             return false;
         }
     }
@@ -499,6 +556,7 @@ namespace RealismMod
 
             if (meds.Template._parent == "5448f3a64bdc2d60728b456a") 
             {
+                Logger.LogWarning("is stim " + meds.Template.Name);
 
                 int duration = (int)meds.HealthEffectsComponent.BuffSettings[0].Duration * 2;
                 int delay = (int)meds.HealthEffectsComponent.BuffSettings[0].Delay;

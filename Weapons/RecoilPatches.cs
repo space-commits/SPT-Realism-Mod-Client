@@ -191,7 +191,7 @@ namespace RealismMod
         private static bool Prefix(NewRecoilShotEffect __instance, ref Vector3 __result)
         {
             Vector3 currentCameraRotation = __instance.CameraRotationRecoil.GetRecoil(false);
-            currentCameraRotation.y *= 0.5f;
+            currentCameraRotation.y *= 0.65f;
             __result = currentCameraRotation;
             return false;
 
@@ -509,9 +509,9 @@ namespace RealismMod
 
                 __instance.RecoilStableShotIndex = WeaponStats.IsStocklessPistol ? 2 : 1; 
                 __instance.HandRotationRecoil.RecoilReturnTrajectoryOffset = template.RecoilReturnPathOffsetHandRotation * Plugin.AfterRecoilRandomness.Value;
-                __instance.HandRotationRecoil.StableAngleIncreaseStep = template.RecoilStableAngleIncreaseStep; 
-                __instance.HandRotationRecoil.AfterRecoilOffsetVerticalRange = template.PostRecoilVerticalRangeHandRotation * Plugin.AfterRecoilRandomness.Value;
-                __instance.HandRotationRecoil.AfterRecoilOffsetHorizontalRange = template.PostRecoilHorizontalRangeHandRotation * Plugin.AfterRecoilRandomness.Value;
+                __instance.HandRotationRecoil.StableAngleIncreaseStep = template.RecoilStableAngleIncreaseStep;
+                __instance.HandRotationRecoil.AfterRecoilOffsetVerticalRange = Vector2.zero; // template.PostRecoilVerticalRangeHandRotation * Plugin.AfterRecoilRandomness.Value;
+                __instance.HandRotationRecoil.AfterRecoilOffsetHorizontalRange = Vector2.zero; // template.PostRecoilHorizontalRangeHandRotation * Plugin.AfterRecoilRandomness.Value;
 
                 __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = new Vector2(RecoilController.FactoredTotalDispersion * Plugin.RecoilRandomness.Value, 0f);
 
@@ -530,8 +530,8 @@ namespace RealismMod
                                 }
                 */
 
-                __instance.BasicRecoilRotationStrengthRange = new Vector2(0.97f, 1.03f); //should mess around with this, consider making it unique per weapon
-                __instance.BasicRecoilPositionStrengthRange = new Vector2(0.98f, 1.02f); //should mess around with this
+                __instance.BasicRecoilRotationStrengthRange = new Vector2(0.95f, 1.05f); //should mess around with this, consider making it unique per weapon
+                __instance.BasicRecoilPositionStrengthRange = new Vector2(0.95f, 1.05f); //should mess around with this
 
                 __instance.BasicPlayerRecoilRotationStrength = __instance.BasicRecoilRotationStrengthRange * ((template.RecoilForceUp * totalVRecoilDelta + AimingConfig.RecoilVertBonus) * __instance.IncomingRotationStrengthMultiplier);
                 __instance.BasicPlayerRecoilPositionStrength = __instance.BasicRecoilPositionStrengthRange * ((template.RecoilForceBack * totalHRecoilDelta + AimingConfig.RecoilBackBonus) * __instance.IncomingRotationStrengthMultiplier);

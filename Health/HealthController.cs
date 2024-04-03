@@ -12,6 +12,17 @@ using UnityEngine;
 using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2415;
 using ExistanceClass = GClass2456;
 
+using PainKillerInterface = GInterface260;
+using TremorInterface = GInterface263;
+using BrokenBoneInterface = GInterface245;
+using TunnelVisionInterface = GInterface265;
+using ContusionInterface = GInterface255;
+using HeavyBleedingInterface = GInterface243;
+using LightBleedingInterface = GInterface242;
+using DehydrationInterface = GInterface246;
+using ExhaustionInterface = GInterface247;
+using PainInterface = GInterface259;
+
 namespace RealismMod
 {
     public static class MedProperties
@@ -68,16 +79,16 @@ namespace RealismMod
 
         public static readonly Dictionary<string, Type> EffectTypes = new Dictionary<string, Type>
         {
-            { "PainKiller", typeof(GInterface258) },
-            { "Tremor", typeof(GInterface261) },
-            { "BrokenBone", typeof(GInterface243) },
-            { "TunnelVision", typeof(GInterface263) },
-            { "Contusion", typeof(GInterface253)  },
-            { "HeavyBleeding", typeof(GInterface241) },
-            { "LightBleeding", typeof(GInterface240) },
-            { "Dehydration", typeof(GInterface244) },
-            { "Exhaustion", typeof(GInterface245) },
-            { "Pain", typeof(GInterface257) }
+            { "PainKiller", typeof(PainKillerInterface) },
+            { "Tremor", typeof(TremorInterface) },
+            { "BrokenBone", typeof(BrokenBoneInterface) },
+            { "TunnelVision", typeof(TunnelVisionInterface) },
+            { "Contusion", typeof(ContusionInterface)  },
+            { "HeavyBleeding", typeof(HeavyBleedingInterface) },
+            { "LightBleeding", typeof(LightBleedingInterface) },
+            { "Dehydration", typeof(DehydrationInterface) },
+            { "Exhaustion", typeof(ExhaustionInterface) },
+            { "Pain", typeof(PainInterface) }
         };
     }
 
@@ -210,13 +221,15 @@ namespace RealismMod
         private const int painReliefInterval = 15;
         public const float PainThreshold = 30f;
         public const float PainReliefThreshold = 30f;
-        public const float PKOverdoseThreshold = 30f;
+        public const float PKOverdoseThreshold = 60f;
         private bool rightArmRuined = false;
         private bool leftArmRuined = false;
 
         private bool HasOverdosedStim = false;
 
         public float ResourcePerTick = 0;
+
+        private bool haveNotifiedPKOverdose = false;
 
         public bool ArmsAreIncapacitated 
         {
@@ -251,7 +264,7 @@ namespace RealismMod
 
                 if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
                 {
-                    AddStimDebuffs(Utils.GetYourPlayer(), Plugin.AddEffectType.Value);
+/*                    AddStimDebuffs(Utils.GetYourPlayer(), Plugin.AddEffectType.Value);*/ // use this to test stim debuffs
                     TestAddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, Utils.GetYourPlayer(), Plugin.AddEffectType.Value);
                     NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + Plugin.AddEffectType.Value + " To Part " + (EBodyPart)Plugin.AddEffectBodyPart.Value);
                 }
@@ -726,12 +739,18 @@ namespace RealismMod
                 {
                     AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, painReliefInterval, 5f, PainTunnelStrength);
 
-                    if (HasOverdosed)
-                    { 
-                        Utils.Logger.LogWarning("adding contusion + termor");
+                    if (PainReliefStrength > PKOverdoseThreshold)
+                    {
+                        if (!haveNotifiedPKOverdose) 
+                        {
+                            NotificationManagerClass.DisplayWarningNotification("Overdosed On PainKillers", EFT.Communications.ENotificationDurationType.Long);
+                            haveNotifiedPKOverdose = true;
+                        }
+
                         AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 1f, painReliefInterval, 5f, 0.35f);
                         AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 1f, painReliefInterval, 5f, 1);
                     }
+                    else haveNotifiedPKOverdose = false;
 
                     reliefWaitTime = 0f;
                 }
@@ -1332,12 +1351,12 @@ namespace RealismMod
 
                 if (currentHp <= 0f)
                 {
-                    PainStrength += 10f;
+                    PainStrength += 20f;
                 }
                 else if (percentHp <= 0.5f)
                 {
                     AddBaseEFTEffectIfNoneExisting(player, "Pain", part, 0f, 15f, 1f, 1f);
-                    PainStrength += 2f;
+                    PainStrength += 5f;
                 }
 
                 if (isLeg || isBody)
@@ -1375,11 +1394,12 @@ namespace RealismMod
             float totalHpPercent = totalCurrentHp / totalMaxHp;
             resourceRateInjuryMulti = Mathf.Clamp(1f - totalHpPercent, 0f, 1f);
 
-            if (totalHpPercent <= 0.5f)
+              //this is probably a bit too much, because if total HP is below 50% then you have multiple limbs adding pain already, and possibly fractures + blacked limbs
+       /*     if (totalHpPercent <= 0.5f)
             {
                 AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 15f, 1f, 1f);
                 PainStrength += 10f;
-            }
+            }*/
 
             float percentEnergyFactor = Mathf.Max(percentEnergy * 1.2f * (1f - painReliefFactor), 0.01f);
 
@@ -1397,20 +1417,21 @@ namespace RealismMod
             float percentHydroLimitRecoil = (1f + ((1f - percentHydro) / 20f)) * (1f - (painReliefFactor / 4));
             float percentHydroLimitErgo = (1f + ((1f - percentHydro) / 4f)) * (1f - (painReliefFactor / 4));
 
-            PlayerState.AimMoveSpeedInjuryMulti = Mathf.Max(aimMoveSpeedMulti * percentEnergyAimMove, 0.6f * percentHydroLowerLimit);
-            PlayerState.ADSInjuryMulti = Mathf.Max(adsInjuryMulti * percentEnergyADS, 0.35f * percentHydroLowerLimit);
-            PlayerState.StanceInjuryMulti = Mathf.Max(stanceInjuryMulti * percentEnergyStance, 0.45f * percentHydroLowerLimit);
-            PlayerState.ReloadInjuryMulti = Mathf.Max(reloadInjuryMulti * percentEnergyReload, 0.75f * percentHydroLowerLimit);
-            PlayerState.HealthSprintSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
-            PlayerState.HealthSprintAccelFactor = Mathf.Max(sprintAccelInjuryMulti * percentEnergySprint, 0.4f * percentHydroLowerLimit);
-            PlayerState.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk, 0.6f * percentHydroLowerLimit);
-            PlayerState.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen, 0.5f * percentHydroLowerLimit);
-            PlayerState.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)), 3.5f * percentHydroLimitErgo);
-            PlayerState.RecoilInjuryMulti = Mathf.Min(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)), 1.15f * percentHydroLimitRecoil);
+            float painKillerFactor = 1f - (PainReliefStrength / 100f);
+
+            PlayerState.AimMoveSpeedInjuryMulti = Mathf.Max(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor, 0.6f * percentHydroLowerLimit);
+            PlayerState.ADSInjuryMulti = Mathf.Max(adsInjuryMulti * percentEnergyADS * painKillerFactor, 0.35f * percentHydroLowerLimit);
+            PlayerState.StanceInjuryMulti = Mathf.Max(stanceInjuryMulti * percentEnergyStance * painKillerFactor, 0.6f * percentHydroLowerLimit);
+            PlayerState.ReloadInjuryMulti = Mathf.Max(reloadInjuryMulti * percentEnergyReload * painKillerFactor, 0.75f * percentHydroLowerLimit);
+            PlayerState.HealthSprintSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergySprint * painKillerFactor, 0.4f * percentHydroLowerLimit);
+            PlayerState.HealthSprintAccelFactor = Mathf.Max(sprintAccelInjuryMulti * percentEnergySprint * painKillerFactor, 0.4f * percentHydroLowerLimit);
+            PlayerState.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor, 0.6f * percentHydroLowerLimit);
+            PlayerState.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor, 0.5f * percentHydroLowerLimit);
+            PlayerState.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactor, 3.5f * percentHydroLimitErgo);
+            PlayerState.RecoilInjuryMulti = Mathf.Min(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactor, 1.15f * percentHydroLimitRecoil);
 
             if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach))
             {
-                Utils.Logger.LogWarning("adding effect");
                 ResourceRateEffect resEffect = new ResourceRateEffect(null, player, 0);
                 AddCustomEffect(resEffect, false);
             }
