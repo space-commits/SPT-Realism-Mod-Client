@@ -437,6 +437,7 @@ namespace RealismMod
                     float totalCheckChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerState.FixSkillMulti * PlayerState.ReloadInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.8f);
                     __instance.FirearmsAnimator.SetAnimationSpeed(totalCheckChamberSpeed);
 
+                    player.ExecuteSkill(new Action(() => player.Skills.WeaponFixAction.Complete(1f)));
 
                     if (Plugin.EnableLogging.Value == true)
                     {
@@ -562,6 +563,8 @@ namespace RealismMod
                     }
 
                     float totalRechamberSpeed = Mathf.Clamp(chamberSpeed * PlayerState.FixSkillMulti * PlayerState.ReloadInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.5f);
+
+                    player.ExecuteSkill(new Action(() => player.Skills.WeaponFixAction.Complete(1f)));
 
                     fc.FirearmsAnimator.SetAnimationSpeed(totalRechamberSpeed);
 

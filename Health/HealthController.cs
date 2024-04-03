@@ -52,9 +52,9 @@ namespace RealismMod
             return !Utils.IsNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[5], out int result) ? result : 1;
         }
 
-        public static int Unused1(Item med)
+        public static float HPRestoreAmount(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[6], out int result) ? result : 1;
+            return !Utils.IsNull(med.ConflictingItems, 7) && float.TryParse(med.ConflictingItems[6], out float result) ? result : 1;
         }
 
         public static int Unused2(Item med)
@@ -183,7 +183,12 @@ namespace RealismMod
             {"5ed51652f6c34d2cc26336a1", EStimType.Weight }
         };
 
-        public List<EStimType> activeStimOverdoses = new List<EStimType>();
+        public List<EBodyPart> PossibleBodyParts = new List<EBodyPart> 
+        {
+            EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm 
+        };
+
+        private List<EStimType> activeStimOverdoses = new List<EStimType>();
 
         public DamageTracker DmgTracker { get; }
 
@@ -1349,15 +1354,8 @@ namespace RealismMod
                 float percentHpRecoil = 1f - ((1f - percentHp) / (isLeftArm ? 10f : 20f));
 
 
-                if (currentHp <= 0f)
-                {
-                    PainStrength += 20f;
-                }
-                else if (percentHp <= 0.5f)
-                {
-                    AddBaseEFTEffectIfNoneExisting(player, "Pain", part, 0f, 15f, 1f, 1f);
-                    PainStrength += 5f;
-                }
+                if (currentHp <= 0f) PainStrength += 20f;
+                if (percentHp <= 0.5f) PainStrength += 5f;
 
                 if (isLeg || isBody)
                 {
@@ -1394,12 +1392,10 @@ namespace RealismMod
             float totalHpPercent = totalCurrentHp / totalMaxHp;
             resourceRateInjuryMulti = Mathf.Clamp(1f - totalHpPercent, 0f, 1f);
 
-              //this is probably a bit too much, because if total HP is below 50% then you have multiple limbs adding pain already, and possibly fractures + blacked limbs
-       /*     if (totalHpPercent <= 0.5f)
+            if (PainStrength > 10)
             {
                 AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 15f, 1f, 1f);
-                PainStrength += 10f;
-            }*/
+            }
 
             float percentEnergyFactor = Mathf.Max(percentEnergy * 1.2f * (1f - painReliefFactor), 0.01f);
 

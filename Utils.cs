@@ -18,8 +18,6 @@ namespace RealismMod
         public static bool WeaponReady = false;
         public static bool HasRunErgoWeightCalc = false;
 
-        public static string SetQuickSlotItemInvClassRef = "GClass2572_0";
-
         public static string Silencer = "550aa4cd4bdc2dd8348b456c";
         public static string FlashHider = "550aa4bf4bdc2dd6348b456b";
         public static string MuzzleCombo = "550aa4dd4bdc2dc9348b4569";
@@ -50,9 +48,9 @@ namespace RealismMod
             return difference < epsilon;
         }
 
-        public static bool IsNull(string[] confItemArray)
+        public static bool IsNull(string[] confItemArray, int expectedLength = 0)
         {
-            if (confItemArray != null && confItemArray.Length > 0)
+            if (confItemArray != null && confItemArray.Length > expectedLength)
             {
                 if (confItemArray[0] == "SPTRM")
                 {

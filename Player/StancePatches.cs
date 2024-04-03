@@ -239,6 +239,11 @@ namespace RealismMod
             return false;
         }
 
+        private static void MeleeSkillAction() 
+        {
+           
+        }
+
         private static void doMelee(Player.FirearmController fc, float ln, Player player)
         {
             if (!PlayerState.IsSprinting && StanceController.CurrentStance == EStance.Melee && StanceController.CanDoMeleeDetection && !StanceController.MeleeHitSomething)
@@ -274,7 +279,7 @@ namespace RealismMod
 
                     if (hitBalls as BodyPartCollider != null)
                     {
-                        player.Skills.FistfightAction.Complete(1f);
+                        player.ExecuteSkill(new Action(() => player.Skills.FistfightAction.Complete(1f)));
                     }
 
                     if (hitBalls.TypeOfMaterial == MaterialType.Glass || hitBalls.TypeOfMaterial == MaterialType.GlassShattered)

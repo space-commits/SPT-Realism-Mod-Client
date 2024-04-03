@@ -87,7 +87,7 @@ namespace RealismMod
         public static bool CanResetDamping = true;
 
         public static float HighReadyBlackedArmTime = 0.0f;
-        public static bool DoHighReadyInjuredAnim = false;
+        public static bool CanDoHighReadyInjuredAnim = false;
 
         public static bool HaveSetAiming = false;
         public static bool HaveSetActiveAim = false;
@@ -420,7 +420,7 @@ namespace RealismMod
                             DidStanceWiggle = false;
                             if (CurrentStance == EStance.HighReady && (Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed))
                             {
-                                DoHighReadyInjuredAnim = true;
+                                CanDoHighReadyInjuredAnim = true;
                             }
                         }
                     }
@@ -496,7 +496,7 @@ namespace RealismMod
 
                         if (CurrentStance == EStance.HighReady && (Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed))
                         {
-                            DoHighReadyInjuredAnim = true;
+                            CanDoHighReadyInjuredAnim = true;
                         }
                     }
 
@@ -531,7 +531,7 @@ namespace RealismMod
                 {
                     bool cancelCurrentStance = 
                         CurrentStance == EStance.HighReady || 
-                        (CurrentStance == EStance.LowReady && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed) ||
+                        CurrentStance == EStance.LowReady ||
                         CurrentStance == EStance.PatrolStance;
 /*                   bool cancelStoredStance = 
                         StoredStance == EStance.HighReady || 
@@ -542,23 +542,22 @@ namespace RealismMod
                         CurrentStance = EStance.None;
                         StoredStance = EStance.None;
                         StanceBlender.Target = 0f;
-                        DidStanceWiggle = false;
                     }
                 }
 
-                if (DoHighReadyInjuredAnim)
+                if (CanDoHighReadyInjuredAnim)
                 {
                     HighReadyBlackedArmTime += Time.deltaTime;
                     if (HighReadyBlackedArmTime >= 0.5f)
                     {
-                        DoHighReadyInjuredAnim = false;
+                        CanDoHighReadyInjuredAnim = false;
                         CurrentStance = EStance.LowReady;
                         StoredStance = EStance.LowReady;
                         HighReadyBlackedArmTime = 0f;
                     }
                 }
 
-                if ((Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed) && !IsAiming && CurrentStance != EStance.ShortStock && CurrentStance != EStance.ActiveAiming && CurrentStance != EStance.HighReady && MeleeIsToggleable)
+                if ((Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed) && !IsAiming && !IsFiringFromStance && CurrentStance != EStance.PatrolStance && CurrentStance != EStance.ShortStock && CurrentStance != EStance.ActiveAiming && CurrentStance != EStance.HighReady && MeleeIsToggleable)
                 {
                     StanceBlender.Target = 1f;
                     CurrentStance = EStance.LowReady;
@@ -907,6 +906,7 @@ namespace RealismMod
                 }
 
                 DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(10f, -10f, -50f) * movementFactor, true);
+                DidStanceWiggle = false;
                 stanceRotation = Quaternion.identity;
                 isResettingShortStock = false;
                 hasResetShortStock = true;
@@ -956,7 +956,7 @@ namespace RealismMod
                 float transitionPositionFactor = shortToHighMulti * lowToHighMulti * activeToHighMulti;
                 float transitionRotationFactor = shortToHighMulti * lowToHighMulti * activeToHighMulti * (transitionPositionFactor != 1f ? 0.9f : 1f);
 
-                if (DoHighReadyInjuredAnim)
+                if (CanDoHighReadyInjuredAnim)
                 {
                     if (StanceBlender.Value < 1f)
                     {
@@ -1009,9 +1009,7 @@ namespace RealismMod
 
                 DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(15, -10, -20) * movementFactor, true); //-10f, -10f, -50f
                 DidStanceWiggle = false;
-
                 stanceRotation = Quaternion.identity;
-
                 isResettingHighReady = false;
                 hasResetHighReady = true;
             }

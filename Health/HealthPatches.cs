@@ -85,6 +85,20 @@ namespace RealismMod
                 string hBleedType = MedProperties.HBleedHealType(item);
                 float hpPerTick = medType != "surg" ? -MedProperties.HpPerTick(item) : MedProperties.HpPerTick(item);
 
+                if (medType == "medkit") 
+                {
+                    float hp = MedProperties.HPRestoreAmount(item);
+                    List<ItemAttributeClass> hbAtt = item.Attributes;
+                    ItemAttributeClass hpAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.OutOfRaidHP);
+                    hpAttClass.Name = ENewItemAttributeId.OutOfRaidHP.GetName();
+                    hpAttClass.Base = () => hp;
+                    hpAttClass.StringValue = () => hp.ToString();
+                    hpAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    hpAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                    hpAttClass.LessIsGood = false;
+                    hbAtt.Add(hpAttClass);
+                }
+
                 if (hBleedType != "none")
                 {
                     List<ItemAttributeClass> hbAtt = item.Attributes;
@@ -157,14 +171,13 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref bool __result) //can use dynamic type for instance
         {
-            Logger.LogWarning("stacking prefix 2");
             __result = false;
             return false;
         }
     }
 
 
-    public class StimStackPatch : ModulePatch
+    public class StimStack1Patch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -175,55 +188,12 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref bool __result) //can use dynamic type for instance
+        private static bool Prefix(ref bool __result)
         {
-            Logger.LogWarning("stacking prefix ");
             __result = false;
             return false;
         }
     }
-
-
-    public class AddEffectPatch : ModulePatch
-    {
-        static Type nestedType = null;
-
-        protected override MethodBase GetTargetMethod()
-        {
-            nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance);
-            var genericMethod = typeof(EFT.HealthSystem.ActiveHealthController).GetMethod("AddEffect");
-            var constructedMethod = genericMethod.MakeGenericMethod(new Type[] { nestedType }); // Specify the TEffect type
-            return constructedMethod;
-        }
-
-        [PatchPrefix]
-        private static void Prefix(EFT.HealthSystem.ActiveHealthController __instance) //can use dynamic type for instance
-        {
-            Logger.LogWarning("AddEffectPatch");
-
-        }
-    }
-
-    /*public class FindExistingEffectPatch : ModulePatch
-    {
-
-        protected override MethodBase GetTargetMethod()
-        {
-            Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
-            Type genericClassType = typeof(GClass2416<>); //declare generic type
-            Type constructedClassType = genericClassType.MakeGenericType(new Type[] { nestedType }); //construct type at runtime using nested type
-            var genericMethod = constructedClassType.GetMethod("FindExistingEffect");
-            var constructedMethod = genericMethod.MakeGenericMethod(new Type[] { nestedType }); // Specify the TEffect type
-            return constructedMethod;
-        }
-
-        [PatchPrefix]
-        private static void Prefix(ref IEffect __result) //can use dynamic type for instance
-        {
-            Logger.LogWarning("FindExistingEffect");
-            __result = null;
-        }
-    }*/
 
     public class BreathIsAudiblePatch : ModulePatch
     {
@@ -239,7 +209,87 @@ namespace RealismMod
         }
     }
 
-    //in-raid healing
+    //out-of-raid
+    public class ApplyItemStashPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(HealthControllerClass).GetMethod("ApplyItem", BindingFlags.Instance | BindingFlags.Public);
+
+        }
+
+        private static void restoreHP(HealthControllerClass controller, EBodyPart initialTarget, float hpToRestore) 
+        {
+            if (initialTarget != EBodyPart.Common)
+            {
+                controller.ChangeHealth(initialTarget, hpToRestore, ExistanceClass.MedKitUse);
+                return;
+            }
+
+            foreach (EBodyPart bodyPart in Plugin.RealHealthController.PossibleBodyParts)
+            {
+                if (hpToRestore <= 0) break;
+                float hpMissing = controller.GetBodyPartHealth(bodyPart).Maximum - controller.GetBodyPartHealth(bodyPart).Current;
+                if (hpMissing <= 0) continue;
+                float hpToUse = Math.Min(hpMissing, hpToRestore);
+                controller.ChangeHealth(bodyPart, hpToUse, ExistanceClass.MedKitUse);
+                hpToRestore -= hpToUse;
+            }
+        }
+
+        [PatchPostfix]
+        private static void Postfix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
+        {
+            Logger.LogWarning("==apply==item==");
+            Logger.LogWarning("item " + item.LocalizedName());
+            Logger.LogWarning("bodyPart " + bodyPart);
+            Logger.LogWarning("amount " + amount);
+            FoodClass foodClass = item as FoodClass;
+            if (foodClass != null)
+            {
+                if (item.LocalizedName().ToLower().Contains("water")) 
+                {
+                    __instance.ChangeHydration(-100f);
+                    __instance.ChangeHydration(-100f);
+                }
+
+                foreach (var buff in foodClass.HealthEffectsComponent.BuffSettings) 
+                {
+                    if (buff.BuffType == EStimulatorBuffType.EnergyRate)
+                    {
+                        if (buff.Value > 0)
+                        {
+                            Logger.LogWarning("restoring energy " + buff.Value * buff.Duration);
+                            __instance.ChangeEnergy(buff.Value * buff.Duration);
+                        }
+                    }
+                    if (buff.BuffType == EStimulatorBuffType.HydrationRate)
+                    {
+                        if (buff.Value > 0)
+                        {
+                            Logger.LogWarning("restoring hydration " + buff.Value * buff.Duration);
+                            __instance.ChangeHydration(buff.Value * buff.Duration);
+                        }
+                    }
+                }
+                return;
+            }
+            MedsClass medsClass = item as MedsClass;
+            ValueStruct hp = __instance.GetBodyPartHealth(bodyPart);
+            if (medsClass != null && hp.Current < hp.Maximum)
+            {
+                string medType = MedProperties.MedType(medsClass);
+                //need to get surgery kit working later, doesnt want to remove hp resource.
+                if (medType == "medkit") // || medType == "surg"
+                {
+                    restoreHP(__instance, bodyPart, MedProperties.HPRestoreAmount(medsClass));
+                  /*  if (medType == "surg") medsClass.MedKitComponent.HpResource -= 1f;*/
+                }
+            }
+        }
+    }
+
+    //in-raid
     public class ApplyItemPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -295,8 +345,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(EFT.Player __instance, EBoundItem quickSlot)
         {
-            InventoryControllerClass inventoryCont = (InventoryControllerClass)AccessTools.Property(typeof(EFT.Player), Utils.SetQuickSlotItemInvClassRef).GetValue(__instance);
-            Item boundItem = inventoryCont.Inventory.FastAccess.GetBoundItem(quickSlot);
+            Item boundItem = __instance.GClass2761_0.Inventory.FastAccess.GetBoundItem(quickSlot);
             FoodClass food = boundItem as FoodClass;
             if (boundItem != null && (food = (boundItem as FoodClass)) != null)
             {
@@ -553,22 +602,20 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
         {
-
-            if (meds.Template._parent == "5448f3a64bdc2d60728b456a") 
-            {
-                Logger.LogWarning("is stim " + meds.Template.Name);
-
-                int duration = (int)meds.HealthEffectsComponent.BuffSettings[0].Duration * 2;
-                int delay = (int)meds.HealthEffectsComponent.BuffSettings[0].Delay;
-                StimShellEffect stimEffect = new StimShellEffect(__instance, duration, delay, Plugin.RealHealthController.GetStimType(meds.Template._id));
-                Plugin.RealHealthController.AddCustomEffect(stimEffect, true);
-    
-/*                __instance.HealthController.ApplyItem(meds, EBodyPart.Head, null);
-*/                return true;
-            }
-
             if (__instance.IsYourPlayer)
             {
+                if (meds.Template._parent == "5448f3a64bdc2d60728b456a")
+                {
+                    int duration = (int)meds.HealthEffectsComponent.BuffSettings[0].Duration * 2;
+                    int delay = (int)meds.HealthEffectsComponent.BuffSettings[0].Delay;
+                    StimShellEffect stimEffect = new StimShellEffect(__instance, duration, delay, Plugin.RealHealthController.GetStimType(meds.Template._id));
+                    Plugin.RealHealthController.AddCustomEffect(stimEffect, true);
+
+                    /*                __instance.HealthController.ApplyItem(meds, EBodyPart.Head, null);
+                    */
+                    return true;
+                }
+
                 string medType = MedProperties.MedType(meds);
 
                 if (MedProperties.CanBeUsedInRaid(meds) == false)
