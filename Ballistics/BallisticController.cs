@@ -31,7 +31,7 @@ namespace RealismMod
                 { 
                     case EBodyPartColliderType.RightCalf:
                     case EBodyPartColliderType.LeftCalf:
-                        di.Damage *= 0.5f;
+                        di.Damage *= 0.65f;
                         break;
                     case EBodyPartColliderType.RightThigh:
                     case EBodyPartColliderType.LeftThigh:
@@ -39,11 +39,11 @@ namespace RealismMod
                         break;
                     case EBodyPartColliderType.RightForearm:
                     case EBodyPartColliderType.LeftForearm:
-                        di.Damage *= 0.5f;
+                        di.Damage *= 0.6f;
                         break;
                     case EBodyPartColliderType.LeftUpperArm:
                     case EBodyPartColliderType.RightUpperArm:
-                        di.Damage *= 0.85f;
+                        di.Damage *= 0.9f;
                         break;
                     case EBodyPartColliderType.PelvisBack:
                     case EBodyPartColliderType.Pelvis:
@@ -59,7 +59,7 @@ namespace RealismMod
                         break;
                     case EBodyPartColliderType.LeftSideChestDown:
                     case EBodyPartColliderType.RightSideChestDown:
-                        di.Damage = 0.85f;
+                        di.Damage = 1f;
                         break;
                     case EBodyPartColliderType.LeftSideChestUp:
                     case EBodyPartColliderType.RightSideChestUp:
@@ -73,7 +73,10 @@ namespace RealismMod
                         di.Damage = 0.85f;
                         break;
                     case EBodyPartColliderType.ParietalHead:
-                        di.Damage = 0.95f;
+                        di.Damage = 0.9f;
+                        break;
+                    case EBodyPartColliderType.BackHead:
+                        di.Damage = 1.1f;
                         break;
                     default:
                         break; 

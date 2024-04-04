@@ -44,7 +44,7 @@ namespace RealismMod
 
         public static void DoVisualRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation, ManualLogSource logger)
         {
-            float cantedRecoilSpeed = Mathf.Min(BaseTotalConvergence, 16f);
+            float cantedRecoilSpeed = Mathf.Clamp(BaseTotalConvergence * 1.15f, 9f, 17f);
 
             if (RecoilController.IsFiringWiggle)
             {

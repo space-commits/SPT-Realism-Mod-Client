@@ -385,9 +385,9 @@ namespace RealismMod
         private static void playBodyHitSound(EBodyPart part, Vector3 pos, int rndNum)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 0.8f * Plugin.FleshHitSoundMulti.Value;
-            float volDist = 4f * Plugin.FleshHitSoundMulti.Value;
-            float distThreshold = 20f; //30f
+            float volClose = 0.4f * Plugin.FleshHitSoundMulti.Value;
+            float volDist = 2f * Plugin.FleshHitSoundMulti.Value;
+            float distThreshold = 30f;
 
             if (part == EBodyPart.Head)
             {
@@ -736,9 +736,9 @@ namespace RealismMod
         private static void playArmorHitSound(EArmorMaterial mat, Vector3 pos, bool isHelm, int rndNum)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 0.3f * Plugin.ArmorCloseHitSoundMulti.Value;
-            float volDist = 4f * Plugin.ArmorFarHitSoundMulti.Value;
-            float distThreshold = 20f;
+            float volClose = 0.15f * Plugin.ArmorCloseHitSoundMulti.Value;
+            float volDist = 2f * Plugin.ArmorFarHitSoundMulti.Value;
+            float distThreshold = 30f;
 
             if (mat == EArmorMaterial.Aramid)
             {
