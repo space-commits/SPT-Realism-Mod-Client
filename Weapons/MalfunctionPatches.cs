@@ -43,7 +43,6 @@ namespace RealismMod
                     Plugin.RealHealthController.AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 0f, 10f, 5f, 1f);
                     Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.Head, null, null, null, null);
                     Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.RightArm, null, null, null, null);
-                    NotificationManagerClass.DisplayWarningNotification("Catastrophic Failure. Wrong Ammo/Weapon Caliber Combination.", EFT.Communications.ENotificationDurationType.Long);
                 }
                 player.ActiveHealthController.ApplyDamage(EBodyPart.Head, UnityEngine.Random.Range(5, 20), DamageTypeClass.Existence);
                 player.ActiveHealthController.ApplyDamage(EBodyPart.RightArm, UnityEngine.Random.Range(20, 60), DamageTypeClass.Existence);
@@ -79,6 +78,7 @@ namespace RealismMod
                     if (__instance.Weapon.Repairable.MaxDurability <= 0f || malfMismatch)
                     {
                         __result = Weapon.EMalfunctionState.Misfire;
+                        NotificationManagerClass.DisplayWarningNotification("Possible Wrong Ammo/Weapon Caliber Combination.", EFT.Communications.ENotificationDurationType.Long);
                         return false;
                     }
 
@@ -86,6 +86,7 @@ namespace RealismMod
                     {
                         ExplodeWeapon(__instance, player);
                         __result = Weapon.EMalfunctionState.HardSlide;
+                        NotificationManagerClass.DisplayWarningNotification("Catastrophic Failure. Wrong Ammo/Weapon Caliber Combination.", EFT.Communications.ENotificationDurationType.Long);
                         return false;
                     }
                 }

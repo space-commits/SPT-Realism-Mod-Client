@@ -247,12 +247,6 @@ namespace RealismMod
             FoodClass foodClass = item as FoodClass;
             if (foodClass != null)
             {
-                if (item.LocalizedName().ToLower().Contains("water")) 
-                {
-                    __instance.ChangeHydration(-100f);
-                    __instance.ChangeHydration(-100f);
-                }
-
                 foreach (var buff in foodClass.HealthEffectsComponent.BuffSettings) 
                 {
                     if (buff.BuffType == EStimulatorBuffType.EnergyRate)

@@ -239,11 +239,6 @@ namespace RealismMod
             return false;
         }
 
-        private static void MeleeSkillAction() 
-        {
-           
-        }
-
         private static void doMelee(Player.FirearmController fc, float ln, Player player)
         {
             if (!PlayerState.IsSprinting && StanceController.CurrentStance == EStance.Melee && StanceController.CanDoMeleeDetection && !StanceController.MeleeHitSomething)
@@ -300,6 +295,7 @@ namespace RealismMod
                         Vector3 shotDirection = vector;
                         DamageInfo damageInfo = new DamageInfo
                         {
+                            SourceId = fc.Weapon.Id,
                             DamageType = EDamageType.Melee,
                             Damage = damage,
                             PenetrationPower = pen,

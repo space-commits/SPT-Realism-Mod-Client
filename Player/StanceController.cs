@@ -575,20 +575,12 @@ namespace RealismMod
                 stanceManipCancelTimer();
             }
 
-            if (DidWeaponSwap || WeaponStats.IsStocklessPistol)
+            if (DidWeaponSwap)
             {
-                if (DidWeaponSwap)
-                {
-                    CurrentStance = EStance.None;
-                    StoredStance = EStance.None;
-                    StanceTargetPosition = Vector3.zero;
-                    StanceBlender.Target = 0f;
-                }
-                else if (WeaponStats.IsStocklessPistol)
-                {
-                    CurrentStance = EStance.PistolCompressed;
-                    StoredStance = EStance.None;
-                }
+                CurrentStance = EStance.None;
+                StoredStance = EStance.None;
+                StanceTargetPosition = Vector3.zero;
+                StanceBlender.Target = 0f;
                 StanceIndex = 0;
                 WasActiveAim = false;
                 DidWeaponSwap = false;
