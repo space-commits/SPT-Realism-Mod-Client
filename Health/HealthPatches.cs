@@ -240,44 +240,48 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
         {
-            Logger.LogWarning("==apply==item==");
-            Logger.LogWarning("item " + item.LocalizedName());
-            Logger.LogWarning("bodyPart " + bodyPart);
-            Logger.LogWarning("amount " + amount);
-            FoodClass foodClass = item as FoodClass;
-            if (foodClass != null)
+            if (!GClass1849.InRaid) 
             {
-                foreach (var buff in foodClass.HealthEffectsComponent.BuffSettings) 
+                Logger.LogWarning("==apply==item==");
+                Logger.LogWarning("item " + item.LocalizedName());
+                Logger.LogWarning("bodyPart " + bodyPart);
+                Logger.LogWarning("amount " + amount);
+                FoodClass foodClass = item as FoodClass;
+                if (foodClass != null)
                 {
-                    if (buff.BuffType == EStimulatorBuffType.EnergyRate)
+                    foreach (var buff in foodClass.HealthEffectsComponent.BuffSettings)
                     {
-                        if (buff.Value > 0)
+                        if (buff.BuffType == EStimulatorBuffType.EnergyRate)
                         {
-                            Logger.LogWarning("restoring energy " + buff.Value * buff.Duration);
-                            __instance.ChangeEnergy(buff.Value * buff.Duration);
+                            if (buff.Value > 0)
+                            {
+                                Logger.LogWarning("restoring energy " + buff.Value * buff.Duration);
+                                __instance.ChangeEnergy(buff.Value * buff.Duration);
+                            }
+                        }
+                        if (buff.BuffType == EStimulatorBuffType.HydrationRate)
+                        {
+                            if (buff.Value > 0)
+                            {
+                                Logger.LogWarning("restoring hydration " + buff.Value * buff.Duration);
+                                __instance.ChangeHydration(buff.Value * buff.Duration);
+                            }
                         }
                     }
-                    if (buff.BuffType == EStimulatorBuffType.HydrationRate)
-                    {
-                        if (buff.Value > 0)
-                        {
-                            Logger.LogWarning("restoring hydration " + buff.Value * buff.Duration);
-                            __instance.ChangeHydration(buff.Value * buff.Duration);
-                        }
-                    }
+                    return;
                 }
-                return;
-            }
-            MedsClass medsClass = item as MedsClass;
-            ValueStruct hp = __instance.GetBodyPartHealth(bodyPart);
-            if (medsClass != null && hp.Current < hp.Maximum)
-            {
-                string medType = MedProperties.MedType(medsClass);
-                //need to get surgery kit working later, doesnt want to remove hp resource.
-                if (medType == "medkit") // || medType == "surg"
+                MedsClass medsClass = item as MedsClass;
+                if (medsClass != null)
                 {
-                    restoreHP(__instance, bodyPart, MedProperties.HPRestoreAmount(medsClass));
-                  /*  if (medType == "surg") medsClass.MedKitComponent.HpResource -= 1f;*/
+                    string medType = MedProperties.MedType(medsClass);
+                    //need to get surgery kit working later, doesnt want to remove hp resource.
+                    if (medType == "medkit") // || medType == "surg"
+                    {
+                        restoreHP(__instance, bodyPart, MedProperties.HPRestoreAmount(medsClass));
+           /*             medsClass.MedKitComponent.HpResource -= 1f;
+                        medsClass.MedKitComponent.Item.RaiseRefreshEvent(false, true);*/
+                        return;
+                    }   
                 }
             }
         }

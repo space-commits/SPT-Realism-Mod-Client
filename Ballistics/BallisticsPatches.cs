@@ -78,6 +78,7 @@ namespace RealismMod
           static void VisualizeSphereCollider(SphereCollider sphereCollider, string colliderName)
           {
               // Create a sphere primitive to represent the collider.
+              // Create a sphere primitive to represent the collider.
               GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 
               // Disable the sphere's collider component.
@@ -344,7 +345,7 @@ namespace RealismMod
 
             if (player.MovementContext.StationaryWeapon == null && !player.HandsController.IsPlacingBeacon() && !player.HandsController.IsInInteractionStrictCheck() && player.CurrentStateName != EPlayerState.BreachDoor && !player.IsSprintEnabled)
             {
-                int rndNumber = UnityEngine.Random.Range(0, 101);
+                int rndNumber = UnityEngine.Random.Range(1, 81);
                 float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
                 float hitArmArmorFactor = hitArmArmor ? 0.5f : 1f;
                 float hitLocationModifier = forearm ? 1.5f : 1f;
@@ -367,10 +368,11 @@ namespace RealismMod
 
         private static void TryDoKnockdown(Player player, float kineticEnergy, bool bonusChance, bool isPlayer)
         {
-            int rndNumber = UnityEngine.Random.Range(0, 101);
+            int rndNumber = UnityEngine.Random.Range(1, 51);
             float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
             float hitLocationModifier = bonusChance ? 2f : 1f;
             float totalChance = Mathf.Round(Plugin.FallBaseChance.Value * kineticEnergyFactor * hitLocationModifier);
+            Logger.LogWarning("totalChance " + totalChance);
 
             if (rndNumber <= totalChance)
             {
@@ -437,6 +439,10 @@ namespace RealismMod
 
             if (damageInfo.DamageType == EDamageType.Bullet || damageInfo.DamageType == EDamageType.Melee)
             {
+                BallisticCollider hittedBallisticCollider = damageInfo.HittedBallisticCollider;
+                BodyPartCollider bodyPartCollider = hittedBallisticCollider as BodyPartCollider;
+                EBodyPartColliderType partHit = bodyPartCollider.BodyPartColliderType;
+
                 bool hasArmArmor = false;
                 bool hasLegProtection = false;
                 int faceProtectionCount = 0;
@@ -466,7 +472,7 @@ namespace RealismMod
                     playBodyHitSound(bodyPartType, damageInfo.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
                 }
 
-                BallisticsController.ModifyDamageByHitZone(damageInfo.BodyPartColliderType, ref damageInfo);
+                BallisticsController.ModifyDamageByHitZone(partHit, ref damageInfo);
 
                 float KE = 1f;
                 BulletClass ammo = null;
@@ -573,10 +579,10 @@ namespace RealismMod
                 float toBeHP = hitPartHP - damageInfo.Damage;
                 bool canDoKnockdown = !__instance.IsInPronePose && ((!__instance.IsYourPlayer && Plugin.CanFellBot.Value) || (__instance.IsYourPlayer && Plugin.CanFellPlayer.Value));
                 bool canDoDisarm = ((!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value) || (__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value));
-                bool hitForearm = damageInfo.BodyPartColliderType == EBodyPartColliderType.LeftForearm || damageInfo.BodyPartColliderType == EBodyPartColliderType.RightForearm;
-                bool hitCalf = damageInfo.BodyPartColliderType == EBodyPartColliderType.LeftCalf || damageInfo.BodyPartColliderType == EBodyPartColliderType.RightCalf;
-                bool hitThigh= damageInfo.BodyPartColliderType == EBodyPartColliderType.LeftThigh || damageInfo.BodyPartColliderType == EBodyPartColliderType.RightThigh;
-
+                bool hitForearm = partHit == EBodyPartColliderType.LeftForearm || partHit == EBodyPartColliderType.RightForearm;
+                bool hitCalf = partHit == EBodyPartColliderType.LeftCalf || partHit == EBodyPartColliderType.RightCalf;
+                bool hitThigh= partHit == EBodyPartColliderType.LeftThigh || partHit == EBodyPartColliderType.RightThigh;
+           
                 if (hitForearm && toBeHP <= 0f && canDoDisarm)
                 {
                     TryDoDisarm(__instance, KE, hasArmArmor, hitForearm);
@@ -999,9 +1005,10 @@ namespace RealismMod
             {
                 Logger.LogWarning("===========ARMOR DAMAGE=============== ");
                 Logger.LogWarning("Momentum " + momentum);
-                Logger.LogWarning("Momentum Factor" + momentumDamageFactor);
+                Logger.LogWarning("Momentum Factor " + momentumDamageFactor);
                 Logger.LogWarning("Pen " + penPower);
                 Logger.LogWarning("Armor Damage " + armorDamageActual);
+                Logger.LogWarning("Speed Factor " + speedFactor);
                 Logger.LogWarning("Class " + __instance.ArmorClass);
                 Logger.LogWarning("Throughput " + bluntThrput);
                 Logger.LogWarning("Material Descructibility " + armorDestructibility);
@@ -1037,8 +1044,6 @@ namespace RealismMod
 
             float bcSpeedFactor = 1f - ((1f - speedFactor) * 0.25f);
             float bcFactored = Mathf.Max(ammo.BallisticCoeficient * bcSpeedFactor, 0.01f);
-
-            Logger.LogWarning("bcSpeedFactor " + bcSpeedFactor);
 
             __result = EftBulletClass.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
             return false;

@@ -14,7 +14,7 @@ namespace RealismMod
     {
         public const float convVRecoilConversion = -0.75f;
 
-        public const float ErgoWeightMult = 13.55f;
+        public const float ErgoWeightMult = 13.5f;
         public const float ErgoTorqueMult = 0.8f;
         public const float PistolErgoWeightMult = 12.6f;
         public const float PistolErgoTorqueMult = 1.0f;
