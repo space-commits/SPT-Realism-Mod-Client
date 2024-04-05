@@ -372,7 +372,6 @@ namespace RealismMod
             float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
             float hitLocationModifier = bonusChance ? 2f : 1f;
             float totalChance = Mathf.Round(Plugin.FallBaseChance.Value * kineticEnergyFactor * hitLocationModifier);
-            Logger.LogWarning("totalChance " + totalChance);
 
             if (rndNumber <= totalChance)
             {
@@ -475,7 +474,6 @@ namespace RealismMod
                 BallisticsController.ModifyDamageByHitZone(partHit, ref damageInfo);
 
                 float KE = 1f;
-                BulletClass ammo = null;
                 AmmoTemplate ammoTemp = null;
                 if (damageInfo.DamageType == EDamageType.Melee)
                 {
@@ -487,8 +485,7 @@ namespace RealismMod
                 else
                 {
                     ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
-                    ammo = new BulletClass(Utils.GenId(), ammoTemp);
-                    KE = (0.5f * ammo.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f;
+                    KE = (0.5f * ammoTemp.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f;
                 }
 
                 if (armor != null && damageInfo.DamageType != EDamageType.Melee)
@@ -498,13 +495,13 @@ namespace RealismMod
                         damageInfo.BleedBlock = false;
                         bool isMetalArmor = armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel || armor.Template.ArmorMaterial == EArmorMaterial.Titan ? true : false;
                         float bluntDamage = damageInfo.Damage;
-                        float speedFactor = damageInfo.ArmorDamage / ammo.GetBulletSpeed;
+                        float speedFactor = damageInfo.ArmorDamage / ammoTemp.InitialSpeed;
                         float fragChance = ammoTemp.FragmentationChance * speedFactor;
                         float lightBleedChance = damageInfo.LightBleedingDelta;
                         float heavyBleedChance = damageInfo.HeavyBleedingDelta;
-                        float ricochetChance = ammo.RicochetChance * speedFactor;
+                        float ricochetChance = ammoTemp.RicochetChance * speedFactor;
                         float spallReduction = GearStats.SpallReduction(armor.Item);
-                        float armorDamageActual = ammo.ArmorDamage * speedFactor;
+                        float armorDamageActual = ammoTemp.ArmorDamage * speedFactor;
                         float penPower = damageInfo.PenetrationPower;
 
                         //need to redo this: for non-steel, higher pen should mean lower spall damage. I'm also sort of taking durability into account twice
@@ -595,9 +592,7 @@ namespace RealismMod
                 if (canDoKnockdown && (doLegKnockdown || doHeadshotKnockdown))
                 {
                     TryDoKnockdown(__instance, KE, hasBonusChance, __instance.IsYourPlayer);
-                }
-
-                ammo = null;
+                }              
             }
         }
     }
@@ -904,8 +899,8 @@ namespace RealismMod
             else
             {
                 ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
-                speedFactor = ammoTemp.InitialSpeed / damageInfo.ArmorDamage;
-                armorDamageActual = ammoTemp.ArmorDamage * speedFactor;
+                speedFactor = damageInfo.ArmorDamage / ammoTemp.InitialSpeed;
+                armorDamageActual = ammoTemp.ArmorDamage; // * speedFactor don't think this is a good idea anymore, momentum being based on velocity is enough
                 momentum = ammoTemp.BulletMassGram * damageInfo.ArmorDamage;
             }
 
@@ -1044,6 +1039,13 @@ namespace RealismMod
 
             float bcSpeedFactor = 1f - ((1f - speedFactor) * 0.25f);
             float bcFactored = Mathf.Max(ammo.BallisticCoeficient * bcSpeedFactor, 0.01f);
+
+            if (Plugin.EnableBallisticsLogging.Value) 
+            {
+                Logger.LogWarning("speed factor " + speedFactor);
+                Logger.LogWarning("speed factored " + velocityFactored);
+                Logger.LogWarning("BC Factor " + bcSpeedFactor);
+            }
 
             __result = EftBulletClass.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
             return false;

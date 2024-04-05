@@ -551,7 +551,7 @@ namespace RealismMod
                         Plugin.RealHealthController.DmgTracker.TotalExhaustionDamage += damage;
                         return;
                     }
-                    if ((damageType == EDamageType.Fall && damage <= 12f))
+                    if ((damageType == EDamageType.Fall && damage <= 20f))
                     {
                         Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage, damageType);
                         return;
@@ -561,7 +561,7 @@ namespace RealismMod
                         Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
                         return;
                     }
-                    if (damageType == EDamageType.Blunt && damage <= 5f)
+                    if (damageType == EDamageType.Blunt && damage <= 7.5f)
                     {
                         Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
                         return;

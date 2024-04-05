@@ -1424,7 +1424,7 @@ namespace RealismMod
             PlayerState.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor, 0.6f * percentHydroLowerLimit);
             PlayerState.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor, 0.5f * percentHydroLowerLimit);
             PlayerState.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactor, 3.5f * percentHydroLimitErgo);
-            PlayerState.RecoilInjuryMulti = Mathf.Min(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactor, 1.15f * percentHydroLimitRecoil);
+            PlayerState.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactor, 1f, 1.15f * percentHydroLimitRecoil);
 
             if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach))
             {

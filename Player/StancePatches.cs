@@ -578,7 +578,6 @@ namespace RealismMod
             {
                 if (!StanceController.IsMounting)
                 {
-                    Logger.LogWarning("not mounting");
                     currentTilt = tilt;
                     currentPoseLevel = movementContext.PoseLevel;
                     wasProne = movementContext.IsInPronePose;
@@ -586,7 +585,6 @@ namespace RealismMod
 
                 if (currentTilt != tilt || currentPoseLevel != movementContext.PoseLevel || !movementContext.IsGrounded || wasProne != movementContext.IsInPronePose)
                 {
-                    Logger.LogWarning("cancelling mounting");
                     StanceController.IsMounting = false;
                 }
             }
