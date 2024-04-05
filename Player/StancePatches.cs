@@ -22,39 +22,6 @@ using ChartAndGraph;
 
 namespace RealismMod
 {
-    /*  public class LaserLateUpdatePatch : ModulePatch
-      {
-          protected override MethodBase GetTargetMethod()
-          {
-              return typeof(LaserBeam).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.Public);
-          }
-
-          [PatchPrefix]
-          private static bool Prefix(LaserBeam __instance)
-          {
-              if (Utils.IsReady)
-              {
-                  if ((StanceController.IsHighReady || StanceController.IsLowReady) && !Plugin.IsAiming)
-                  {
-                      Vector3 playerPos = Singleton<GameWorld>.Instance.AllAlivePlayersList[0].Transform.position;
-                      Vector3 lightPos = __instance.gameObject.transform.position;
-                      float distanceFromPlayer = Vector3.Distance(lightPos, playerPos);
-                      if (distanceFromPlayer <= 1.8f)
-                      {
-                          return false;
-                      }
-                      return true;
-                  }
-                  return true;
-              }
-              else
-              {
-                  return true;
-              }
-          }
-      }
-  */
-
     public class MuzzleSmokePatch : ModulePatch
     {
         private static Vector3 target = Vector3.zero;
@@ -611,6 +578,7 @@ namespace RealismMod
             {
                 if (!StanceController.IsMounting)
                 {
+                    Logger.LogWarning("not mounting");
                     currentTilt = tilt;
                     currentPoseLevel = movementContext.PoseLevel;
                     wasProne = movementContext.IsInPronePose;
@@ -618,6 +586,7 @@ namespace RealismMod
 
                 if (currentTilt != tilt || currentPoseLevel != movementContext.PoseLevel || !movementContext.IsGrounded || wasProne != movementContext.IsInPronePose)
                 {
+                    Logger.LogWarning("cancelling mounting");
                     StanceController.IsMounting = false;
                 }
             }

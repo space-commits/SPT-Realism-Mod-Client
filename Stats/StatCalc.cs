@@ -15,12 +15,12 @@ namespace RealismMod
         public const float convVRecoilConversion = -0.75f;
 
         public const float ErgoWeightMult = 13.55f;
-        public const float ErgoTorqueMult = 0.82f;
+        public const float ErgoTorqueMult = 0.8f;
         public const float PistolErgoWeightMult = 12.6f;
         public const float PistolErgoTorqueMult = 1.0f;
 
         public const float VRecoilWeightMult = 2f;
-        public const float VRecoilTorqueMult = 0.9f;
+        public const float VRecoilTorqueMult = 0.87f;
         public const float PistolVRecoilWeightMult = 1.5f;
         public const float PistolVRecoilTorqueMult = 1.5f;
 

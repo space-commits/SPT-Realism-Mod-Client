@@ -513,7 +513,7 @@ namespace RealismMod
                 __instance.HandRotationRecoil.AfterRecoilOffsetVerticalRange = Vector2.zero; // template.PostRecoilVerticalRangeHandRotation * Plugin.AfterRecoilRandomness.Value;
                 __instance.HandRotationRecoil.AfterRecoilOffsetHorizontalRange = Vector2.zero; // template.PostRecoilHorizontalRangeHandRotation * Plugin.AfterRecoilRandomness.Value;
 
-                __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = new Vector2(RecoilController.FactoredTotalDispersion * Plugin.RecoilRandomness.Value, 0f);
+                __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = new Vector2(RecoilController.FactoredTotalDispersion * Plugin.RecoilRandomness.Value, RecoilController.FactoredTotalDispersion * Plugin.RecoilRandomness.Value);
 
                 __instance.HandRotationRecoil.ReturnTrajectoryDumping = template.RecoilReturnPathDampingHandRotation ;
                 __instance.HandRotationRecoilEffect.Damping = template.RecoilDampingHandRotation * Plugin.RecoilDampingMulti.Value; 
@@ -644,7 +644,7 @@ namespace RealismMod
                 float dispFactor = incomingForce * PlayerState.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff * mountingDispModi * opticRecoilMulti * Plugin.DispMulti.Value;
                 RecoilController.FactoredTotalDispersion = RecoilController.BaseTotalDispersion * dispFactor;
 
-                __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = new Vector2(RecoilController.FactoredTotalDispersion * Plugin.RecoilRandomness.Value, 0f);
+                __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = new Vector2(RecoilController.FactoredTotalDispersion * Plugin.RecoilRandomness.Value, RecoilController.FactoredTotalDispersion * Plugin.RecoilRandomness.Value);
 
                 __instance.BasicPlayerRecoilDegreeRange = new Vector2(RecoilController.BaseTotalRecoilAngle, RecoilController.BaseTotalRecoilAngle);
                 __instance.BasicRecoilRadian = __instance.BasicPlayerRecoilDegreeRange * 0.017453292f;

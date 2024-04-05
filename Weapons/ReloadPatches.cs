@@ -250,8 +250,11 @@ namespace RealismMod
     public class ChamberCheckUIPatch : ModulePatch
     {
         private static FieldInfo ammoCountPanelField;
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             ammoCountPanelField = AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel");
             return typeof(Player.FirearmController).GetMethod("CheckChamber", BindingFlags.Instance | BindingFlags.Public);
         }
@@ -259,19 +262,23 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance)
         {
-            AmmoCountPanel panelUI = (AmmoCountPanel)ammoCountPanelField.GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
-            Slot slot = __instance.Weapon.Chambers.FirstOrDefault<Slot>();
-            BulletClass bulletClass = (slot == null) ? null : (slot.ContainedItem as BulletClass);
-            if (bulletClass != null)
+            Player player = (Player)playerField.GetValue(__instance);
+            if (player.IsYourPlayer) 
             {
-                string name = bulletClass.LocalizedName();
-                panelUI.Show("", name);
-            }
-            else 
-            {
-                if (__instance.Weapon.Chambers.Length == 1) 
+                AmmoCountPanel panelUI = (AmmoCountPanel)ammoCountPanelField.GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
+                Slot slot = __instance.Weapon.Chambers.FirstOrDefault<Slot>();
+                BulletClass bulletClass = (slot == null) ? null : (slot.ContainedItem as BulletClass);
+                if (bulletClass != null)
                 {
-                    panelUI.Show("Empty");
+                    string name = bulletClass.LocalizedName();
+                    panelUI.Show("", name);
+                }
+                else
+                {
+                    if (__instance.Weapon.Chambers.Length == 1)
+                    {
+                        panelUI.Show("Empty");
+                    }
                 }
             }
         }
@@ -333,28 +340,17 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(FirearmsAnimator).GetMethod("SetWeaponLevel", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(FirearmsAnimator).GetMethod("SetWeaponLevel");
         }
 
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance, float weaponLevel)
         {
-            Player player = Utils.GetYourPlayer();
-            if (player == null) return;
-            Player.FirearmController fc = player.HandsController as Player.FirearmController;
-            if (fc == null) return;
-            if (fc.FirearmsAnimator == __instance)
+            if (WeaponStats._WeapClass == "shotgun")
             {
-                if (WeaponStats._WeapClass == "shotgun")
-                {
-                    if (weaponLevel < 3)
-                    {
-                        weaponLevel += 1;
-                    }
-                    WeaponAnimationSpeedControllerClass.SetWeaponLevel(__instance.Animator, weaponLevel);
-                }
+                weaponLevel = Mathf.Clamp(weaponLevel + 1, 1, 3);
+                WeaponAnimationSpeedControllerClass.SetWeaponLevel(__instance.Animator, weaponLevel);
             }
- 
         }
     }
 

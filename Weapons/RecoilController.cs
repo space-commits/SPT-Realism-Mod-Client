@@ -44,7 +44,7 @@ namespace RealismMod
 
         public static void DoVisualRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation, ManualLogSource logger)
         {
-            float cantedRecoilSpeed = Mathf.Clamp(BaseTotalConvergence * 1.15f, 9f, 17f);
+            float cantedRecoilSpeed = Mathf.Clamp(BaseTotalConvergence * 1.15f, 10f, 16f);
 
             if (RecoilController.IsFiringWiggle)
             {
@@ -84,8 +84,8 @@ namespace RealismMod
             pwa.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.Damping = 0.62f; // 0.77
             pwa.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.ReturnSpeed = 0.14f; //0.15
 
-            newRecoil.HandRotationRecoil.NextStablePointDistanceRange.x = 0.1f; //1
-            newRecoil.HandRotationRecoil.NextStablePointDistanceRange.y = 6f; //4
+            newRecoil.HandRotationRecoil.NextStablePointDistanceRange.x = 1; //1  (defaults are 0.1, 6)
+            newRecoil.HandRotationRecoil.NextStablePointDistanceRange.y = 4; //4
 
             if (Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !WeaponStats.HasShoulderContact)))
             {

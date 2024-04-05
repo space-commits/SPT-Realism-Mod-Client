@@ -1034,7 +1034,11 @@ namespace RealismMod
             float damageFactored = ammo.Damage * speedFactor;
             float fragchanceFactored = Mathf.Max(ammo.FragmentationChance * speedFactor, 0);
             float penPowerFactored = EFT.Ballistics.BallisticsCalculator.GetAmmoPenetrationPower(ammo, randomNum, __instance.Randoms) * speedFactor;
-            float bcFactored = Mathf.Max(ammo.BallisticCoeficient * speedFactor, 0.01f);
+
+            float bcSpeedFactor = 1f - ((1f - speedFactor) * 0.25f);
+            float bcFactored = Mathf.Max(ammo.BallisticCoeficient * bcSpeedFactor, 0.01f);
+
+            Logger.LogWarning("bcSpeedFactor " + bcSpeedFactor);
 
             __result = EftBulletClass.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
             return false;
