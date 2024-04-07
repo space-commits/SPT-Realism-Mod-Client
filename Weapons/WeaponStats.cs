@@ -297,7 +297,7 @@ namespace RealismMod
         public static Vector2 ZeroRecoilOffset = Vector2.zero;
         public static float ScopeAccuracyFactor = 0f;
         public static string ScopeID = "";
-        public static bool HasOptic;
+        public static bool HasOptic = false;
 
     }
 }

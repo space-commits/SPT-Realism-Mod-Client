@@ -592,7 +592,8 @@ namespace RealismMod
                 if (canDoKnockdown && (doLegKnockdown || doHeadshotKnockdown))
                 {
                     TryDoKnockdown(__instance, KE, hasBonusChance, __instance.IsYourPlayer);
-                }              
+                }
+
             }
         }
     }
@@ -654,10 +655,25 @@ namespace RealismMod
                         }
 
                         float realResistance = GClass566.RealResistance(armorDuraPercent, (float)armorComponent.Repairable.TemplateDurability, armorComponent.ArmorClass, penetrationPower).RealResistance;
+                        
                         float factoredResistance = (realResistance >= penetrationPower + 15f) ? 0f : ((realResistance >= penetrationPower) ? (0.4f * (realResistance - penetrationPower - 15f) * (realResistance - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * realResistance - penetrationPower)));
+
+
                         if (shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f > factoredResistance)
                         {
+                            if (Plugin.EnableBallisticsLogging.Value == true)
+                            {
+                                Logger.LogWarning("============SHOT STATUS============== ");
+                                Logger.LogWarning("Blocked");
+                                Logger.LogWarning("========================== ");
+                            }
                             shot.BlockedBy = armorComponent.Item.Id;
+                        }
+                        else 
+                        {
+                            Logger.LogWarning("============SHOT STATUS============== ");
+                            Logger.LogWarning("Penetrated");
+                            Logger.LogWarning("========================== ");
                         }
                     }
                     __result = true;
@@ -840,6 +856,14 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ArmorComponent __instance, ref DamageInfo damageInfo, ref float __result, EBodyPartColliderType colliderType, EArmorPlateCollider armorPlateCollider, bool damageInfoIsLocal, List<ArmorComponent> armorComponents)
         {
+            if (Plugin.EnableBallisticsLogging.Value)
+            {
+                Logger.LogWarning("===========ARMOR DAMAGE BEFORE=============== ");
+                Logger.LogWarning("Pen " + damageInfo.PenetrationPower);
+                Logger.LogWarning("Damage " + damageInfo.Damage);
+                Logger.LogWarning("========================== ");
+            }
+
             EDamageType damageType = damageInfo.DamageType;
             bool isHead = __instance.Template.ArmorColliders.Any(x => BallisticsController.HeadCollidors.Contains(x));
             bool isSteelBodyArmor = __instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !isHead;
@@ -973,11 +997,11 @@ namespace RealismMod
                 {
                     damageInfo.Damage = 0f;
                 }
-                totalDuraLoss *= 0.25f;
                 float actualDurability = Mathf.Max(__instance.Repairable.Durability - totalDuraLoss, 1);
                 float armorFactor = 1f - ((__instance.ArmorClass / 200f) * (actualDurability / __instance.Repairable.TemplateDurability));
-                damageInfo.Damage *= Mathf.Clamp(armorFactor, 0.5f, 1f) * bluntThrput; //not sure what to do with this
-                damageInfo.PenetrationPower *= softArmorStatReduction;
+                float penReductionFactor = Mathf.Clamp(armorFactor, 0.9f, 1f) * softArmorStatReduction;
+                damageInfo.Damage *= penReductionFactor; //not sure what to do with this
+                damageInfo.PenetrationPower *= penReductionFactor;
             }
             else
             {
@@ -998,10 +1022,10 @@ namespace RealismMod
 
             if (Plugin.EnableBallisticsLogging.Value)
             {
-                Logger.LogWarning("===========ARMOR DAMAGE=============== ");
+                Logger.LogWarning("===========ARMOR DAMAGE AFTER=============== ");
                 Logger.LogWarning("Momentum " + momentum);
                 Logger.LogWarning("Momentum Factor " + momentumDamageFactor);
-                Logger.LogWarning("Pen " + penPower);
+                Logger.LogWarning("Pen " + damageInfo.PenetrationPower);
                 Logger.LogWarning("Armor Damage " + armorDamageActual);
                 Logger.LogWarning("Speed Factor " + speedFactor);
                 Logger.LogWarning("Class " + __instance.ArmorClass);

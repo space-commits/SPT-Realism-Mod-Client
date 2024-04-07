@@ -1300,7 +1300,7 @@ namespace RealismMod
             float sprintAccelInjuryMulti = 1f;
             float walkSpeedInjuryMulti = 1f;
             float stamRegenInjuryMulti = 1f;
-            float resourceRateInjuryMulti = 1f;
+            float resourceRateInjuryMulti = 0f;
 
             float drugFactor = HasOverdosedStim ? 100f + PainReliefStrength : PainReliefStrength;
             float painReliefFactor = Mathf.Min((drugFactor * 2.2f) / 100f, 0.99f);
@@ -1433,9 +1433,9 @@ namespace RealismMod
             }
             else 
             {
-                float playerWeightFactor = PlayerState.TotalModifiedWeight >= 10f ? PlayerState.TotalModifiedWeight / 400f : 0f;
-                float sprintMulti = PlayerState.IsSprinting ? 2f : 1f;
-                float sprintFactor = PlayerState.IsSprinting ? 0.2f : 0f;
+                float playerWeightFactor = PlayerState.TotalModifiedWeight >= 10f ? PlayerState.TotalModifiedWeight / 500f : 0f;
+                float sprintMulti = PlayerState.IsSprinting ? 1.5f : 1f;
+                float sprintFactor = PlayerState.IsSprinting ? 0.1f : 0f;
                 float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti;
 
                 ResourcePerTick = totalResourceRate;

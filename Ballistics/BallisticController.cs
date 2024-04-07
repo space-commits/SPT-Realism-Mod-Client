@@ -32,51 +32,77 @@ namespace RealismMod
                     case EBodyPartColliderType.RightCalf:
                     case EBodyPartColliderType.LeftCalf:
                         di.Damage *= 0.65f;
+                        di.HeavyBleedingDelta *= 0.8f;
+                        di.LightBleedingDelta *= 0.8f;
                         break;
                     case EBodyPartColliderType.RightThigh:
                     case EBodyPartColliderType.LeftThigh:
                         di.Damage *= 1.25f;
+                        di.HeavyBleedingDelta *= 1.25f;
+                        di.LightBleedingDelta *= 1.25f;
                         break;
                     case EBodyPartColliderType.RightForearm:
                     case EBodyPartColliderType.LeftForearm:
                         di.Damage *= 0.6f;
+                        di.HeavyBleedingDelta *= 0.6f;
+                        di.LightBleedingDelta *= 0.6f;
                         break;
                     case EBodyPartColliderType.LeftUpperArm:
                     case EBodyPartColliderType.RightUpperArm:
                         di.Damage *= 0.9f;
+                        di.HeavyBleedingDelta *= 1f;
+                        di.LightBleedingDelta *= 1f;
                         break;
                     case EBodyPartColliderType.PelvisBack:
                     case EBodyPartColliderType.Pelvis:
                         di.Damage *= 0.85f;
+                        di.HeavyBleedingDelta *= 0.85f;
+                        di.LightBleedingDelta *= 0.85f;
                         break;
                     case EBodyPartColliderType.RibcageUp:
                     case EBodyPartColliderType.SpineTop:
-                        di.Damage *= 1.15f;
+                        di.Damage *= 1f;
+                        di.HeavyBleedingDelta *= 1.15f;
+                        di.LightBleedingDelta *= 1.15f;
                         break;
                     case EBodyPartColliderType.RibcageLow:
                     case EBodyPartColliderType.SpineDown:
                         di.Damage *= 0.9f;
+                        di.HeavyBleedingDelta *= 0.95f;
+                        di.LightBleedingDelta *= 0.95f;
                         break;
                     case EBodyPartColliderType.LeftSideChestDown:
                     case EBodyPartColliderType.RightSideChestDown:
                         di.Damage *= 1f;
+                        di.HeavyBleedingDelta *= 0.9f;
+                        di.LightBleedingDelta *= 0.9f;
                         break;
                     case EBodyPartColliderType.LeftSideChestUp:
                     case EBodyPartColliderType.RightSideChestUp:
                         di.Damage *= 1f;
+                        di.HeavyBleedingDelta *= 1f;
+                        di.LightBleedingDelta *= 1f;
                         break;
                     case EBodyPartColliderType.NeckBack:
                     case EBodyPartColliderType.NeckFront:
                         di.Damage *= 0.9f;
+                        di.HeavyBleedingDelta *= 1.15f;
+                        di.LightBleedingDelta *= 1.15f;
                         break;
                     case EBodyPartColliderType.Jaw:
                         di.Damage *= 0.85f;
+                        di.HeavyBleedingDelta *= 0.95f;
+                        di.LightBleedingDelta *= 0.95f;
                         break;
                     case EBodyPartColliderType.ParietalHead:
                         di.Damage *= 0.9f;
+                        di.HeavyBleedingDelta *= 0.9f;
+                        di.LightBleedingDelta *= 0.9f;
                         break;
                     case EBodyPartColliderType.BackHead:
                         di.Damage *= 1.1f;
+                        di.HeavyBleedingDelta *= 1.15f;
+                        di.LightBleedingDelta *= 1.15f;
                         break;
                     default:
                         break; 

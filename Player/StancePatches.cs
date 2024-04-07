@@ -552,6 +552,35 @@ namespace RealismMod
         }
     }
 
+    public class ChangePosePatch : ModulePatch
+    {
+        private static FieldInfo movementContextField;
+        private static FieldInfo playerField;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            movementContextField = AccessTools.Field(typeof(MovementState), "MovementContext");
+            playerField = AccessTools.Field(typeof(MovementContext), "_player");
+            return typeof(MovementState).GetMethod("ChangePose", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+
+        [PatchPrefix]
+        private static void Prefix(MovementState __instance)
+        {
+            MovementContext movementContext = (MovementContext)movementContextField.GetValue(__instance);
+            Player player = (Player)playerField.GetValue(movementContext);
+
+            if (player.IsYourPlayer)
+            {
+
+                Logger.LogWarning("ChangePosePatch");
+                StanceController.IsMounting = false;
+            }
+        }
+    }
+
+
     public class SetTiltPatch : ModulePatch
     {
         private static FieldInfo movementContextField;
@@ -583,6 +612,10 @@ namespace RealismMod
                     wasProne = movementContext.IsInPronePose;
                 }
 
+                Logger.LogWarning("new tilt " + tilt);
+                Logger.LogWarning("current tilt " + currentTilt);
+                Logger.LogWarning("currentPoseLevel " + currentPoseLevel);
+                Logger.LogWarning("movementContext.PoseLevel  " + movementContext.PoseLevel);
                 if (currentTilt != tilt || currentPoseLevel != movementContext.PoseLevel || !movementContext.IsGrounded || wasProne != movementContext.IsInPronePose)
                 {
                     StanceController.IsMounting = false;

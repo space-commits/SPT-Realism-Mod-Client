@@ -597,8 +597,8 @@ namespace RealismMod
             {
                 //Conditional recoil modifiers 
                 float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
-                float playerWeightFactorBuff = 1f - (totalPlayerWeight / 400f);
-                float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 150f);
+                float playerWeightFactorBuff = 1f - (totalPlayerWeight / 650f);
+                float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 200f);
 
                 float activeAimingBonus = StanceController.CurrentStance == EStance.ActiveAiming ? 0.9f : 1f;
                 float aimCamRecoilBonus = StanceController.CurrentStance == EStance.ActiveAiming || !StanceController.IsAiming ? 0.8f : 1f;
@@ -610,7 +610,7 @@ namespace RealismMod
                 float baseRecoilAngle = RecoilController.BaseTotalRecoilAngle;
                 float mountingAngleModi = StanceController.IsMounting ? Mathf.Min(baseRecoilAngle + 15f, 90f) : StanceController.IsBracing ? Mathf.Min(baseRecoilAngle + 8f, 90f) : baseRecoilAngle;
                 
-                float opticRecoilMulti = allowedCalibers.Contains(firearmController.Weapon.AmmoCaliber) && StanceController.IsAiming && WeaponStats.HasOptic ? 0.95f : 1f;
+                float opticRecoilMulti = allowedCalibers.Contains(firearmController.Weapon.AmmoCaliber) && StanceController.IsAiming && WeaponStats.HasOptic && StanceController.IsAiming ? 0.95f : 1f;
                 float fovFactor = (Singleton<SharedGameSettingsClass>.Instance.Game.Settings.FieldOfView / 70f);
       /*          float opticLimit = StanceController.IsAiming && WeaponStats.HasOptic ? 15f * fovFactor : Plugin.HRecLimitMulti.Value * fovFactor;*/
 
