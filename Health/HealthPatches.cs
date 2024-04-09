@@ -157,7 +157,6 @@ namespace RealismMod
         }
     }
 
-
     public class StimStackPatch2 : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -177,7 +176,7 @@ namespace RealismMod
     }
 
 
-    public class StimStack1Patch : ModulePatch
+    public class StimStackPatch1 : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -240,12 +239,8 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
         {
-            if (!GClass1849.InRaid) 
+            if (Utils.IsReady)
             {
-                Logger.LogWarning("==apply==item==");
-                Logger.LogWarning("item " + item.LocalizedName());
-                Logger.LogWarning("bodyPart " + bodyPart);
-                Logger.LogWarning("amount " + amount);
                 FoodClass foodClass = item as FoodClass;
                 if (foodClass != null)
                 {
@@ -255,7 +250,6 @@ namespace RealismMod
                         {
                             if (buff.Value > 0)
                             {
-                                Logger.LogWarning("restoring energy " + buff.Value * buff.Duration);
                                 __instance.ChangeEnergy(buff.Value * buff.Duration);
                             }
                         }
@@ -263,7 +257,6 @@ namespace RealismMod
                         {
                             if (buff.Value > 0)
                             {
-                                Logger.LogWarning("restoring hydration " + buff.Value * buff.Duration);
                                 __instance.ChangeHydration(buff.Value * buff.Duration);
                             }
                         }
@@ -805,92 +798,117 @@ namespace RealismMod
         }
     }
 
-   /* //IT WILL AFFECT BOTS, UNUSED
-    public class EnergyRatePatch : ModulePatch
+    //patch itself works, so possible to patch methods of nested types
+/*    public class ExistenceEnergyDrainPatch : ModulePatch
     {
-
-        private static Type _targetType;
-        private static MethodInfo _targetMethod;
-
-        public EnergyRatePatch()
-        {
-            _targetType = AccessTools.TypeByName("Existence");
-            _targetMethod = AccessTools.Method(_targetType, "method_5");
-        }
-
         protected override MethodBase GetTargetMethod()
         {
-            return _targetMethod;
-        }
-
-        private static float GetDecayRate(Player player)
-        {
-            float energyDecayRate = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyLoopTime;
-            if (player.HealthController.IsBodyPartDestroyed(EBodyPart.Stomach))
-            {
-                energyDecayRate /= Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.DestroyedStomachEnergyTimeFactor;
-            }
-            return energyDecayRate;
+            Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Existence", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
+            return nestedType.GetMethod("method_5", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref float __result)
+        private static bool Prefix(ref float __result, dynamic __instance) //can use dynamic type for instance
         {
-            if (Utils.IsReady && !Utils.IsInHideout())
+
+            if (__instance.HealthController.Player.IsYourPlayer)
             {
-                Player player = Utils.GetPlayer();
-                float num = 1f - player.Skills.HealthHydration;
-                __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num * PlayerStats.HealthResourceRateFactor / GetDecayRate(player);
-                if (Plugin.EnableLogging.Value)
+                Player player = __instance.HealthController.Player;
+                float skillFactor = 1f - player.Skills.HealthEnergy;
+                float baseDrain = ActiveHealthController.GClass2415.GClass2424_0.Existence.EnergyDamage + Plugin.active
+                __result = *skillFactor / this.float_16;
+                return false;
+            }
+
+        }
+    }
+*/
+    /* //IT WILL AFFECT BOTS, UNUSED
+     public class EnergyRatePatch : ModulePatch
+     {
+
+         private static Type _targetType;
+         private static MethodInfo _targetMethod;
+
+         public EnergyRatePatch()
+         {
+             _targetType = AccessTools.TypeByName("Existence");
+             _targetMethod = AccessTools.Method(_targetType, "method_5");
+         }
+
+         protected override MethodBase GetTargetMethod()
+         {
+             return _targetMethod;
+         }
+
+         private static float GetDecayRate(Player player)
+         {
+             float energyDecayRate = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyLoopTime;
+             if (player.HealthController.IsBodyPartDestroyed(EBodyPart.Stomach))
+             {
+                 energyDecayRate /= Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.DestroyedStomachEnergyTimeFactor;
+             }
+             return energyDecayRate;
+         }
+
+         [PatchPrefix]
+         private static bool Prefix(ref float __result)
+         {
+             if (Utils.IsReady && !Utils.IsInHideout())
+             {
+                 Player player = Utils.GetPlayer();
+                 float num = 1f - player.Skills.HealthHydration;
+                 __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num * PlayerStats.HealthResourceRateFactor / GetDecayRate(player);
+                 if (Plugin.EnableLogging.Value)
+                 {
+                     Logger.LogWarning("modified energy decay = " + __result);
+                     Logger.LogWarning("original energy decay = " + Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num / GetDecayRate(player));
+                 }
+                 return false;
+             }
+             return true;
+
+         }
+     }*/
+
+    /*    //IT WILL AFFECT BOTS, UNUSED
+        public class HydoRatePatch : ModulePatch
+        {
+            private static Type _targetType;
+            private static MethodInfo _targetMethod;
+
+            public HydoRatePatch()
+            {
+                _targetType = AccessTools.TypeByName("Existence");
+                _targetMethod = AccessTools.Method(_targetType, "method_6");
+            }
+
+            protected override MethodBase GetTargetMethod()
+            {
+                return _targetMethod;
+            }
+
+            private static float GetDecayRate(Player player)
+            {
+                float energyDecayRate = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.HydrationLoopTime;
+                if (player.HealthController.IsBodyPartDestroyed(EBodyPart.Stomach))
                 {
-                    Logger.LogWarning("modified energy decay = " + __result);
-                    Logger.LogWarning("original energy decay = " + Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num / GetDecayRate(player));
+                    energyDecayRate /= Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.DestroyedStomachHydrationTimeFactor;
                 }
-                return false;
+                return energyDecayRate;
             }
-            return true;
 
-        }
-    }*/
-
-/*    //IT WILL AFFECT BOTS, UNUSED
-    public class HydoRatePatch : ModulePatch
-    {
-        private static Type _targetType;
-        private static MethodInfo _targetMethod;
-
-        public HydoRatePatch()
-        {
-            _targetType = AccessTools.TypeByName("Existence");
-            _targetMethod = AccessTools.Method(_targetType, "method_6");
-        }
-
-        protected override MethodBase GetTargetMethod()
-        {
-            return _targetMethod;
-        }
-
-        private static float GetDecayRate(Player player)
-        {
-            float energyDecayRate = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.HydrationLoopTime;
-            if (player.HealthController.IsBodyPartDestroyed(EBodyPart.Stomach))
+            [PatchPrefix]
+            private static bool Prefix(ref float __result)
             {
-                energyDecayRate /= Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.DestroyedStomachHydrationTimeFactor;
+                if (Utils.IsReady && !Utils.IsInHideout())
+                {
+                    Player player = Utils.GetPlayer();
+                    float num = 1f - player.Skills.HealthHydration;
+                    __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.HydrationDamage * num * PlayerStats.HealthResourceRateFactor / GetDecayRate(player);
+                    return false;
+                }
+                return true;
             }
-            return energyDecayRate;
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(ref float __result)
-        {
-            if (Utils.IsReady && !Utils.IsInHideout())
-            {
-                Player player = Utils.GetPlayer();
-                float num = 1f - player.Skills.HealthHydration;
-                __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.HydrationDamage * num * PlayerStats.HealthResourceRateFactor / GetDecayRate(player);
-                return false;
-            }
-            return true;
-        }
-    }*/
+        }*/
 }

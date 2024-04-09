@@ -149,6 +149,8 @@ namespace RealismMod
 
 
         //medical
+        public static ConfigEntry<float> EnergyRateMulti { get; set; }
+        public static ConfigEntry<float> HydrationRateMulti { get; set; }
         public static ConfigEntry<bool> GearBlocksHeal { get; set; }
         public static ConfigEntry<bool> GearBlocksEat { get; set; }
         public static ConfigEntry<bool> EnableAdrenaline { get; set; }
@@ -696,7 +698,7 @@ namespace RealismMod
                 new RestoreBodyPartPatch().Enable();
                 new FlyingBulletPatch().Enable();
                 new ToggleHeadDevicePatch().Enable();
-                new StimStack1Patch().Enable();
+                new StimStackPatch1().Enable();
                 new StimStackPatch2().Enable();
             }
         }
@@ -914,6 +916,8 @@ namespace RealismMod
             EnableMaterialSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Material Speed Modifier", ServerConfig.movement_changes, new ConfigDescription("Enables Movement Speed Being Affected By Ground Material (Concrete, Grass, Metal, Glass Etc.)", null, new ConfigurationManagerAttributes { Order = 20, Browsable = ServerConfig.movement_changes }));
             EnableSlopeSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Slope Speed Modifier", false, new ConfigDescription("Enables Slopes Slowing Down Movement. Can Cause Random Speed Slowdowns In Some Small Spots Due To BSG's Bad Map Geometry.", null, new ConfigurationManagerAttributes { Order = 10, Browsable = ServerConfig.movement_changes }));
 
+            HydrationRateMulti = Config.Bind<float>(healthSettings, "Hydration Drain Rate Multi", 0.8f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 110, Browsable = ServerConfig.med_changes }));
+            EnergyRateMulti = Config.Bind<float>(healthSettings, "Energy Drain Rate Multi", 0.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 100, Browsable = ServerConfig.med_changes }));
             EnableTrnqtEffect = Config.Bind<bool>(healthSettings, "Enable Tourniquet Effect", ServerConfig.med_changes, new ConfigDescription("Tourniquet Will Drain HP Of The Limb They Are Applied To.", null, new ConfigurationManagerAttributes { Order = 90, Browsable = ServerConfig.med_changes }));
             GearBlocksEat = Config.Bind<bool>(healthSettings, "Gear Blocks Consumption", ServerConfig.med_changes, new ConfigDescription("Gear Blocks Eating & Drinking. This Includes Some Masks & NVGs & Faceshields That Are Toggled On.", null, new ConfigurationManagerAttributes { Order = 80, Browsable = ServerConfig.med_changes }));
             GearBlocksHeal = Config.Bind<bool>(healthSettings, "Gear Blocks Healing", ServerConfig.med_changes, new ConfigDescription("Gear Blocks Use Of Meds If The Wound Is Covered By It.", null, new ConfigurationManagerAttributes { Order = 70, Browsable = ServerConfig.med_changes }));

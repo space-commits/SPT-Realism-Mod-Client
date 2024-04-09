@@ -20,6 +20,7 @@
     <Reference Include="Comfort" />
     <Reference Include="Assembly-CSharp" />
     <Reference Include="UnityEngine" />
+	<Reference Include="Microsoft.CSharp" />
     <Reference Include="UnityEngine.CoreModule" />
 	<Reference Include="UnityEngine.InputLegacyModule" />
 	<Reference Include="UnityEngine.JSONSerializeModule" />

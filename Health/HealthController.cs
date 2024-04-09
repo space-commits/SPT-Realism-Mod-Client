@@ -508,6 +508,7 @@ namespace RealismMod
             PainTunnelStrength = 0f;
             ReliefDuration = 0;
             HasOverdosedStim = false;
+            resetHealhPenalties();
         }
 
         public void ResetBleedDamageRecord(Player player)
@@ -831,7 +832,9 @@ namespace RealismMod
                 TickEffects();
                 effectsTime = 0f;
             }
-            
+
+            doResourceDrain(player.ActiveHealthController, Time.deltaTime);
+
             if (healthControllerTime >= 3f) 
             {
                 healthControllerTime = 0f;
@@ -1286,6 +1289,27 @@ namespace RealismMod
             }
         }
 
+        private void resetHealhPenalties() 
+        {
+            PlayerState.AimMoveSpeedInjuryMulti = 1;
+            PlayerState.ADSInjuryMulti = 1;
+            PlayerState.StanceInjuryMulti = 1;
+            PlayerState.ReloadInjuryMulti = 1;
+            PlayerState.HealthSprintSpeedFactor = 1;
+            PlayerState.HealthSprintAccelFactor = 1;
+            PlayerState.HealthWalkSpeedFactor = 1;
+            PlayerState.HealthStamRegenFactor =1;
+            PlayerState.ErgoDeltaInjuryMulti = 1;
+            PlayerState.RecoilInjuryMulti = 1;
+
+        }
+
+        private void doResourceDrain(ActiveHealthController hc, float dt)
+        {
+            hc.ChangeEnergy(-ResourcePerTick * dt * Plugin.EnergyRateMulti.Value);
+            hc.ChangeHydration(-ResourcePerTick * dt * Plugin.HydrationRateMulti.Value);
+        }
+
         public void PlayerInjuryStateCheck(Player player)
         {
             bool rightArmDamaged = player.MovementContext.PhysicalConditionIs(EPhysicalCondition.RightArmDamaged);
@@ -1307,7 +1331,6 @@ namespace RealismMod
             float resourceRateInjuryMulti = 0f;
 
             float drugFactor = HasOverdosedStim ? 100f + PainReliefStrength : PainReliefStrength;
-            float painReliefFactor = Mathf.Min((drugFactor * 2.2f) / 100f, 0.99f);
             float resourcePainReliefFactor = drugFactor / 100f;
 
             float currentEnergy = player.ActiveHealthController.Energy.Current;
@@ -1401,7 +1424,7 @@ namespace RealismMod
                 AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 15f, 1f, 1f);
             }
 
-            float percentEnergyFactor = Mathf.Max(percentEnergy * 1.2f * (1f - painReliefFactor), 0.01f);
+            float percentEnergyFactor = Mathf.Max(percentEnergy * 1.2f, 0.01f);
 
             float percentEnergySprint = 1f - ((1f - percentEnergyFactor) / 8f);
             float percentEnergyWalk = 1f - ((1f - percentEnergyFactor) / 12f);
@@ -1413,21 +1436,21 @@ namespace RealismMod
             float percentEnergyErgo = 1f - ((1f - percentEnergyFactor) / 2f);
             float percentEnergyStamRegen = 1f - ((1f - percentEnergyFactor) / 10f);
 
-            float percentHydroLowerLimit = (1f - ((1f - percentHydro) / 4f)) * (1f - (painReliefFactor / 4));
-            float percentHydroLimitRecoil = (1f + ((1f - percentHydro) / 20f)) * (1f - (painReliefFactor / 4));
-            float percentHydroLimitErgo = (1f + ((1f - percentHydro) / 4f)) * (1f - (painReliefFactor / 4));
+            float percentHydroLowerLimit = (1f - ((1f - percentHydro) / 4f));
+            float percentHydroLimitRecoil = (1f + ((1f - percentHydro) / 20f));
+            float percentHydroLimitErgo = (1f + ((1f - percentHydro) / 4f));
 
             float painKillerFactor = 1f - (PainReliefStrength / 100f);
 
             PlayerState.AimMoveSpeedInjuryMulti = Mathf.Max(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor, 0.6f * percentHydroLowerLimit);
             PlayerState.ADSInjuryMulti = Mathf.Max(adsInjuryMulti * percentEnergyADS * painKillerFactor, 0.35f * percentHydroLowerLimit);
-            PlayerState.StanceInjuryMulti = Mathf.Max(stanceInjuryMulti * percentEnergyStance * painKillerFactor, 0.6f * percentHydroLowerLimit);
+            PlayerState.StanceInjuryMulti = Mathf.Max(stanceInjuryMulti * percentEnergyStance * painKillerFactor, 0.65f * percentHydroLowerLimit);
             PlayerState.ReloadInjuryMulti = Mathf.Max(reloadInjuryMulti * percentEnergyReload * painKillerFactor, 0.75f * percentHydroLowerLimit);
             PlayerState.HealthSprintSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergySprint * painKillerFactor, 0.4f * percentHydroLowerLimit);
             PlayerState.HealthSprintAccelFactor = Mathf.Max(sprintAccelInjuryMulti * percentEnergySprint * painKillerFactor, 0.4f * percentHydroLowerLimit);
             PlayerState.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor, 0.6f * percentHydroLowerLimit);
             PlayerState.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor, 0.5f * percentHydroLowerLimit);
-            PlayerState.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactor, 3.5f * percentHydroLimitErgo);
+            PlayerState.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactor, 2f * percentHydroLimitErgo);
             PlayerState.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactor, 1f, 1.15f * percentHydroLimitRecoil);
 
             if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach))
@@ -1440,8 +1463,7 @@ namespace RealismMod
                 float playerWeightFactor = PlayerState.TotalModifiedWeight >= 10f ? PlayerState.TotalModifiedWeight / 500f : 0f;
                 float sprintMulti = PlayerState.IsSprinting ? 1.5f : 1f;
                 float sprintFactor = PlayerState.IsSprinting ? 0.1f : 0f;
-                float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti;
-
+                float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * (1f - player.Skills.HealthEnergy);
                 ResourcePerTick = totalResourceRate;
             }
         }

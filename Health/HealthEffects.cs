@@ -285,7 +285,6 @@ namespace RealismMod
         {
             if (!addedEffect) 
             {
-                Utils.Logger.LogWarning("haven't added effect yet, adding");
                 _Player.ActiveHealthController.AddEffect<ResourceRateChange>(BodyPart, 0f, null, 0f, 0f, null);
                 addedEffect = true;
             }
@@ -452,15 +451,13 @@ namespace RealismMod
         public override void RegularUpdate(float deltaTime)
         {
             this.time += deltaTime;
-            if (this.time < 3f)
+            if (this.time < 3f) 
             {
                 return;
             }
             this.time -= 3f;
             this.resourcePerTick = Plugin.RealHealthController.ResourcePerTick;
-            base.HealthController.ChangeEnergy(-this.resourcePerTick);
-            base.HealthController.ChangeHydration(-this.resourcePerTick);
-            this.SetHealthRatesPerSecond(0f, -this.resourcePerTick, -this.resourcePerTick, 0f);
+            this.SetHealthRatesPerSecond(0f, -this.resourcePerTick * Plugin.EnergyRateMulti.Value, -this.resourcePerTick * Plugin.HydrationRateMulti.Value, 0f);
         }
 
         private float resourcePerTick;
