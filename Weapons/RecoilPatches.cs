@@ -211,6 +211,7 @@ namespace RealismMod
         private static bool hasReset = false;
         private static float timer = 0.0f;
         private static float resetTime = 0.5f;
+        private static float deltaTime = 0f;
 
         private static Queue<float> distanceHistory = new Queue<float>();
         private static int historySize = 10;
@@ -271,7 +272,6 @@ namespace RealismMod
             if (player.IsYourPlayer && !ignoreClamp)
             {
                 /*deltaRotation = movementContext.ClampRotation(deltaRotation);*/
-                StanceController.MouseRotation = deltaRotation;
 
                 if (!StanceController.IsMounting)
                 {
@@ -281,6 +281,9 @@ namespace RealismMod
                 bool hybridBlocksReset = Plugin.EnableHybridRecoil.Value && !WeaponStats.HasShoulderContact && !Plugin.EnableHybridReset.Value;
                 bool canResetVert = Plugin.ResetVertical.Value && !hybridBlocksReset;
                 bool canResetHorz = Plugin.ResetHorizontal.Value && !hybridBlocksReset;
+
+                float fpsFactor = 144 / Plugin.FPSFactor;
+                fpsFactor = 1 + (fpsFactor - 1) * 0.25f;
 
                 if (RecoilController.ShotCount > RecoilController.PrevShotCount)
                 {
@@ -307,8 +310,8 @@ namespace RealismMod
                     float xRotation = 0f;
                     float yRotation = 0f;
 
-                    xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(dispersionSpeed, 1f)) + angle, 3);
-                    yRotation = (float)Math.Round(Mathf.Min(-RecoilController.FactoredTotalVRecoil * recoilClimbMulti * shotCountFactor, 0f), 3);
+                    xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(dispersionSpeed, 1f)) + angle, 3) * fpsFactor;
+                    yRotation = (float)Math.Round(Mathf.Min(-RecoilController.FactoredTotalVRecoil * recoilClimbMulti * shotCountFactor, 0f), 3) * fpsFactor;
 
                     targetRotation = movementContext.Rotation;
                     targetRotation.x += xRotation;
@@ -322,7 +325,7 @@ namespace RealismMod
                 else if ((canResetHorz || canResetVert) && !hasReset && !RecoilController.IsFiring)
                 {
                     bool isHybrid = Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !WeaponStats.HasShoulderContact));
-                    float resetSpeed = RecoilController.BaseTotalConvergence * WeaponStats.ConvergenceDelta * Plugin.ResetSpeed.Value;
+                    float resetSpeed = RecoilController.BaseTotalConvergence * WeaponStats.ConvergenceDelta * Plugin.ResetSpeed.Value * fpsFactor;
                     float resetSens = isHybrid ? (float)Math.Round(Plugin.ResetSensitivity.Value * 0.4f, 3) : Plugin.ResetSensitivity.Value;
 
                     bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Mathf.Clamp((float)Math.Round(resetSens / 2.5f, 3), 0f, 0.1f);
@@ -371,7 +374,7 @@ namespace RealismMod
                 if (RecoilController.IsFiring)
                 {
 
-                    if (targetRotation.y <= recordedRotation.y - Plugin.RecoilClimbLimit.Value)
+                    if (targetRotation.y <= recordedRotation.y - (Plugin.RecoilClimbLimit.Value * fpsFactor))
                     {
                         targetRotation.y = movementContext.Rotation.y;
                     }

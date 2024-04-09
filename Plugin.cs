@@ -703,10 +703,12 @@ namespace RealismMod
             }
         }
 
+        float deltaTime = 0f;
         void Update()
         {
             //games procedural animations are highly affected by FPS. I balanced everything at 144 FPS, so need to factor it.    
-            FPSFactor = 144f / (1f / Time.unscaledDeltaTime);
+            deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
+            FPSFactor = 1.0f / deltaTime;
 
             if (!warnedUser && (int)Time.time % 5 == 0)
             {
