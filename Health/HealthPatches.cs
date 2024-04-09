@@ -606,11 +606,10 @@ namespace RealismMod
                 {
                     int duration = (int)meds.HealthEffectsComponent.BuffSettings[0].Duration * 2;
                     int delay = (int)meds.HealthEffectsComponent.BuffSettings[0].Delay;
-                    StimShellEffect stimEffect = new StimShellEffect(__instance, duration, delay, Plugin.RealHealthController.GetStimType(meds.Template._id));
+                    EStimType stimType = Plugin.RealHealthController.GetStimType(meds.Template._id);
+                    StimShellEffect stimEffect = new StimShellEffect(__instance, duration, delay, stimType);
                     Plugin.RealHealthController.AddCustomEffect(stimEffect, true);
 
-                    /*                __instance.HealthController.ApplyItem(meds, EBodyPart.Head, null);
-                    */
                     return true;
                 }
 

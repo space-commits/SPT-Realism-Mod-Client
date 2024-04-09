@@ -10,7 +10,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2415;
-using ExistanceClass = GClass2456;
+using DamageTypeClass = GClass2456;
 
 using PainKillerInterface = GInterface260;
 using TremorInterface = GInterface263;
@@ -327,12 +327,12 @@ namespace RealismMod
         {
             if (effect == "removeHP")
             {
-                player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, -player.ActiveHealthController.GetBodyPartHealth((EBodyPart)partIndex).Maximum, ExistanceClass.Existence);
+                player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, -player.ActiveHealthController.GetBodyPartHealth((EBodyPart)partIndex).Maximum, DamageTypeClass.Existence);
                 return;
             }
             if (effect == "addHP")
             {
-                player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, player.ActiveHealthController.GetBodyPartHealth((EBodyPart)partIndex).Maximum, ExistanceClass.Existence);
+                player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, player.ActiveHealthController.GetBodyPartHealth((EBodyPart)partIndex).Maximum, DamageTypeClass.Existence);
                 return;
             }
             if (effect == "")
@@ -568,10 +568,14 @@ namespace RealismMod
         {
             MedsClass placeHolderItem = (MedsClass)Singleton<ItemFactory>.Instance.CreateItem(Utils.GenId(), debuffId, null);
             placeHolderItem.CurrentAddress = player.GClass2761_0.FindQuestGridToPickUp(placeHolderItem); //item needs an address to be valid, this is a hacky workaround
-            Utils.Logger.LogWarning("is null " + (placeHolderItem == null));
-            Utils.Logger.LogWarning("" + placeHolderItem.HealthEffectsComponent.StimulatorBuffs);
             player.ActiveHealthController.DoMedEffect(placeHolderItem, EBodyPart.Head, null);
-            Utils.Logger.LogWarning("added " + debuffId);
+
+            if (Plugin.EnableLogging.Value)
+            {
+                Utils.Logger.LogWarning("is null " + (placeHolderItem == null));
+                Utils.Logger.LogWarning("" + placeHolderItem.HealthEffectsComponent.StimulatorBuffs);
+                Utils.Logger.LogWarning("added " + debuffId);
+            }
         }
 
         private void EvaluateStimSingles(Player player, IEnumerable<IGrouping<EStimType, StimShellEffect>> stimGroups)

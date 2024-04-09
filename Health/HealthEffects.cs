@@ -11,6 +11,7 @@ using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2415;
 using ExistanceClass = GClass2456;
 using InterfaceOne = GInterface237;
 using InterfaceTwo = GInterface252;
+using EFT.InventoryLogic;
 
 namespace RealismMod
 {
@@ -345,6 +346,7 @@ namespace RealismMod
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
         public EStimType StimType { get; }
+        private bool hasRemovedTrnqt = false;
 
         public StimShellEffect(Player player, int? dur, int delay, EStimType stimType)
         {
@@ -361,6 +363,14 @@ namespace RealismMod
         {
             if (Delay <= 0)
             {
+
+                if (!hasRemovedTrnqt && (StimType == EStimType.Regenerative || StimType == EStimType.Clotting))
+                {
+                    Plugin.RealHealthController.RemoveEffectsOfType(EHealthEffectType.Tourniquet);
+                    NotificationManagerClass.DisplayMessageNotification("Removing Tourniquet Effects Due To Stim Type: " + StimType, EFT.Communications.ENotificationDurationType.Long);
+                    hasRemovedTrnqt = true;
+                }
+
                 Duration--;
                 if (Duration <= 0) Duration = 0;
             }

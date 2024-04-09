@@ -70,7 +70,7 @@ namespace RealismMod
             NewRecoilShotEffect newRecoil = pwa.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
             bool hasOptic = WeaponStats.HasOptic && StanceController.IsAiming;
             float stockedPistolFactor = WeaponStats.IsStockedPistol ? 0.75f : 1f;
-            float opticFactorRear = StanceController.IsAiming && hasOptic ? 0.8f : 1f;
+            float opticFactorRear = StanceController.IsAiming && hasOptic ? 0.9f : 1f;
             float opticFactorVert = StanceController.IsAiming && hasOptic ? 0.95f : 1f;
 
             newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = weapon.Template.RecoilCategoryMultiplierHandRotation * Plugin.RecoilIntensity.Value * stockedPistolFactor;
