@@ -1331,7 +1331,7 @@ namespace RealismMod
             float resourceRateInjuryMulti = 0f;
 
             float drugFactor = HasOverdosedStim ? 100f + PainReliefStrength : PainReliefStrength;
-            float resourcePainReliefFactor = drugFactor / 100f;
+            float resourcePainReliefFactor = drugFactor / 200f;
 
             float currentEnergy = player.ActiveHealthController.Energy.Current;
             float maxEnergy = player.ActiveHealthController.Energy.Maximum;
@@ -1381,7 +1381,7 @@ namespace RealismMod
                 float percentHpRecoil = 1f - ((1f - percentHp) / (isLeftArm ? 10f : 20f));
 
 
-                if (currentHp <= 0f) PainStrength += 20f;
+                if (currentHp <= 0f) PainStrength += 15f;
                 if (percentHp <= 0.5f) PainStrength += 5f;
 
                 if (isLeg || isBody)
@@ -1460,9 +1460,9 @@ namespace RealismMod
             }
             else 
             {
-                float playerWeightFactor = PlayerState.TotalModifiedWeight >= 10f ? PlayerState.TotalModifiedWeight / 500f : 0f;
+                float playerWeightFactor = PlayerState.TotalModifiedWeight >= 10f ? PlayerState.TotalModifiedWeight / 400f : 0f;
                 float sprintMulti = PlayerState.IsSprinting ? 1.5f : 1f;
-                float sprintFactor = PlayerState.IsSprinting ? 0.1f : 0f;
+                float sprintFactor = PlayerState.IsSprinting ? 0.125f : 0f;
                 float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * (1f - player.Skills.HealthEnergy);
                 ResourcePerTick = totalResourceRate;
             }

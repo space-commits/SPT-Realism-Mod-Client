@@ -140,9 +140,9 @@ namespace RealismMod
         private static int timer = 0;
         private static MaterialType[] allowedMats = { MaterialType.Helmet, MaterialType.BodyArmor, MaterialType.Body, MaterialType.Glass, MaterialType.GlassShattered, MaterialType.GlassVisor };
 
-        private static Vector3 startLeftDir = new Vector3(0.1f, 0f, 0f);
-        private static Vector3 startRightDir = new Vector3(-0.1f, 0f, 0f);
-        private static Vector3 startDownDir = new Vector3(0f, 0f, -0.12f);
+        private static Vector3 startLeftDir = new Vector3(0.12f, 0f, 0f);
+        private static Vector3 startRightDir = new Vector3(-0.12f, 0f, 0f);
+        private static Vector3 startDownDir = new Vector3(0f, 0f, -0.14f);
 
 
         private static Vector3 wiggleLeftDir = new Vector3(2.5f, 7.5f, -10f);
@@ -345,7 +345,7 @@ namespace RealismMod
                 if (StanceController.IsBracing) 
                 {
                     float mountOrientationBonus = StanceController.BracingDirection == EBracingDirection.Top ? 0.75f : 1f;
-                    float mountingRecoilLimit = WeaponStats.IsStocklessPistol ? 0.1f : 0.65f;
+                    float mountingRecoilLimit = WeaponStats.IsStocklessPistol ? 0.25f : 0.75f;
 
                     if (!StanceController.BlockBreathEffect) 
                     {
@@ -354,7 +354,7 @@ namespace RealismMod
                     }
 
                     StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 0.85f * mountOrientationBonus, 0.04f);
-                    StanceController.MountingRecoilBonus = Mathf.Clamp(mountingRecoilLimit * mountOrientationBonus, 0.1f, 1f);
+                    StanceController.MountingRecoilBonus = Mathf.Clamp(mountingRecoilLimit * mountOrientationBonus, 0.25f, 1f);
                 }
                 else
                 {
@@ -612,10 +612,6 @@ namespace RealismMod
                     wasProne = movementContext.IsInPronePose;
                 }
 
-                Logger.LogWarning("new tilt " + tilt);
-                Logger.LogWarning("current tilt " + currentTilt);
-                Logger.LogWarning("currentPoseLevel " + currentPoseLevel);
-                Logger.LogWarning("movementContext.PoseLevel  " + movementContext.PoseLevel);
                 if (currentTilt != tilt || currentPoseLevel != movementContext.PoseLevel || !movementContext.IsGrounded || wasProne != movementContext.IsInPronePose)
                 {
                     StanceController.IsMounting = false;
@@ -628,7 +624,7 @@ namespace RealismMod
     {
         private static FieldInfo aimSpeedField;
         private static FieldInfo blindFireStrength;
-        private static FieldInfo aimingQuatField;
+        private static FieldInfo scopeRotationField;
         private static FieldInfo weapRotationField;
         private static FieldInfo isAimingField;
         private static FieldInfo weaponPositionField;
@@ -681,7 +677,7 @@ namespace RealismMod
             aimSpeedField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed");
             blindFireStrength = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_blindfireStrength");
             weaponPositionField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryPosition");
-            aimingQuatField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_targetScopeRotation");
+            scopeRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_targetScopeRotation");
             weapRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryRotation");
             isAimingField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_isAiming");
             currentRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_cameraIdenity");
@@ -703,7 +699,7 @@ namespace RealismMod
             if (player != null)
             {
                 float pitch = (float)blindFireStrength.GetValue(__instance);
-                Quaternion aimingQuat = (Quaternion)aimingQuatField.GetValue(__instance);
+                Quaternion scopeRotation = (Quaternion)scopeRotationField.GetValue(__instance);
                 Vector3 weaponPosition = (Vector3)weaponPositionField.GetValue(__instance);
                 Quaternion weapRotation = (Quaternion)weapRotationField.GetValue(__instance);
 
@@ -737,7 +733,7 @@ namespace RealismMod
                     StanceController.DoMounting(player, __instance, firearmController, ref weaponPosition, ref mountWeapPosition, dt, __instance.HandsContainer.WeaponRoot.position);
                     weaponPositionField.SetValue(__instance, weaponPosition);
 
-                    currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? aimingQuat : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
+                    currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? scopeRotation : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
 
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponPosition, weapRotation * currentRotation);
 
@@ -888,7 +884,7 @@ namespace RealismMod
                         }
                     }
 
-                    currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && !isInStance ? aimingQuat : isInStance ? targetRotation : Quaternion.identity, isInStance ? stanceSpeed : 8f * dt);
+                    currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && !isInStance ? scopeRotation : isInStance ? targetRotation : Quaternion.identity, isInStance ? stanceSpeed : 8f * dt);
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponPosition, weapRotation * currentRotation);
                     currentRotationField.SetValue(__instance, currentRotation);
                 }
@@ -901,7 +897,7 @@ namespace RealismMod
         private static FieldInfo aimSpeedField;
         private static FieldInfo compensatoryField;
         private static FieldInfo displacementStrField;
-        private static FieldInfo aimingQuatField;
+        private static FieldInfo scopeRotationField;
         private static FieldInfo weapTempRotationField;
         private static FieldInfo weapTempPositionField;
         private static FieldInfo isAimingField;
@@ -936,7 +932,7 @@ namespace RealismMod
             aimSpeedField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed");
             compensatoryField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_compensatoryScale");
             displacementStrField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_displacementStr");
-            aimingQuatField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_targetScopeRotation");
+            scopeRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_targetScopeRotation");
             weapTempPositionField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryPosition");
             weapTempRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryRotation");
             isAimingField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_isAiming");
@@ -964,7 +960,7 @@ namespace RealismMod
                 float aimSpeed = (float)aimSpeedField.GetValue(__instance);
                 float compensatoryScale = (float)compensatoryField.GetValue(__instance);
                 float displacementStr = (float)displacementStrField.GetValue(__instance);
-                Quaternion aimingQuat = (Quaternion)aimingQuatField.GetValue(__instance);
+                Quaternion aimingQuat = (Quaternion)scopeRotationField.GetValue(__instance);
                 Vector3 weapTempPosition = (Vector3)weapTempPositionField.GetValue(__instance);
                 Quaternion weapTempRotation = (Quaternion)weapTempRotationField.GetValue(__instance);
                 bool isAiming = (bool)isAimingField.GetValue(__instance);

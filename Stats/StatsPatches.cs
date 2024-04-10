@@ -30,7 +30,8 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref int __result)
         {
-            if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
+            if (!Utils.IsReady) return true;
+            if (__instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
                 __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.SemiFireRate * currentAmmoTemplate.casingMass) : WeaponStats.SemiFireRate;
@@ -51,7 +52,8 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref int __result)
         {
-            if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
+            if (!Utils.IsReady) return true;
+            if (__instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
                 __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.AutoFireRate * currentAmmoTemplate.casingMass) : WeaponStats.AutoFireRate;
@@ -105,7 +107,8 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
+            if (!Utils.IsReady) return true;
+            if (__instance != null && __instance?.Owner != null && __instance?.Owner?.ID != null && __instance?.Owner?.ID == Singleton<GameWorld>.Instance?.MainPlayer?.ProfileId)
             {
                 if (PlayerState.IsInReloadOpertation)
                 {
@@ -139,7 +142,6 @@ namespace RealismMod
             float magWeight = 0;
             float currentTorque = 0;
             bool hasMag = magazine != null;
-
             if (hasMag == true)
             {
                 magWeight = magazine.GetSingleItemTotalWeight();
@@ -148,7 +150,6 @@ namespace RealismMod
                 magErgo = magazine.Ergonomics;
                 currentTorque = StatCalc.GetTorque(position, magWeightFactored, __instance.WeapClass);
             }
-
             float weapWeightLessMag = totalWeight - magWeight;
 
             float totalReloadSpeedMod = WeaponStats.SDReloadSpeedModifier;
@@ -170,7 +171,6 @@ namespace RealismMod
             float baseHRecoil = __instance.Template.RecoilForceBack;
             float hRecoilWeightFactor = StatCalc.WeightStatCalc(StatCalc.HRecoilWeightMult, magWeight) / 100;
             float currentHRecoil = WeaponStats.InitTotalHRecoil + (WeaponStats.InitTotalHRecoil * hRecoilWeightFactor);
-
             float dispersionWeightFactor = StatCalc.WeightStatCalc(StatCalc.DispersionWeightMult, magWeight) / 100;
             float currentDispersion = WeaponStats.InitDispersion + (WeaponStats.InitDispersion * dispersionWeightFactor);
 
@@ -198,7 +198,6 @@ namespace RealismMod
             float totalCOI = 0f;
             float totalCOIDelta = 0f;
 
-
             StatCalc.WeaponStatCalc(__instance, currentTorque, ref totalTorque, currentErgo, currentVRecoil, currentHRecoil, currentDispersion, currentCamRecoil, currentRecoilAngle, baseErgo, baseVRecoil, baseHRecoil, ref totalErgo, ref totalVRecoil, ref totalHRecoil, ref totalDispersion, ref totalCamRecoil, ref totalRecoilAngle, ref totalRecoilDamping, ref totalRecoilHandDamping, ref totalErgoDelta, ref totalVRecoilDelta, ref totalHRecoilDelta, ref recoilDamping, ref recoilHandDamping, WeaponStats.InitTotalCOI, WeaponStats.HasShoulderContact, ref totalCOI, ref totalCOIDelta, __instance.CenterOfImpactBase, currentPureErgo, ref totalPureErgoDelta, false);
 
             float ergonomicWeight = StatCalc.ErgoWeightCalc(totalWeight, totalPureErgoDelta, totalTorque, __instance.WeapClass);
@@ -217,7 +216,7 @@ namespace RealismMod
             float totalFixSpeed = 0;
 
             StatCalc.SpeedStatCalc(__instance, ergoFactor, ergoFactorLessMag, totalChamberSpeedMod, totalReloadSpeedMod, ref totalReloadSpeedLessMag, ref totalChamberSpeed, ref totalAimMoveSpeedFactor, ref totalFiringChamberSpeed, ref totalChamberCheckSpeed, ref totalFixSpeed);
-
+          
             WeaponStats.TotalFixSpeed = totalFixSpeed;
             WeaponStats.TotalChamberCheckSpeed = totalChamberCheckSpeed;
             WeaponStats.TotalReloadSpeedLessMag = totalReloadSpeedLessMag;
@@ -281,7 +280,7 @@ namespace RealismMod
             {
                 WeaponStats.ShouldGetSemiIncrease = true;
             }
-
+            Logger.LogWarning("b");
             float baseCOI = __instance.CenterOfImpactBase;
             float currentCOI = baseCOI;
 
@@ -411,7 +410,7 @@ namespace RealismMod
             {
                 WeaponStats.WeaponCanFSADS = !hasShoulderContact;
             }
-
+   
             WeaponStats.IsStocklessPistol = !hasShoulderContact && __instance.WeapClass == "pistol" ? true : false;
             WeaponStats.IsStockedPistol = hasShoulderContact && __instance.WeapClass == "pistol" ? true : false;
 
@@ -423,7 +422,7 @@ namespace RealismMod
                 WeaponStats.IsBullpup = true;
             }
             else WeaponStats.IsBullpup = false;
-
+  
             float pureRecoilDelta = ((baseVRecoil + baseHRecoil) - pureRecoil) / ((baseVRecoil + baseHRecoil) * -1f);
             WeaponStats.TotalModDuraBurn = modBurnRatio;
             WeaponStats.TotalMalfChance = currentMalfChance;
@@ -451,6 +450,7 @@ namespace RealismMod
             WeaponStats.TotalCameraReturnSpeed = currentCamReturnSpeed;
             WeaponStats.TotalModdedConv = currentConv * (!hasShoulderContact ? WeaponStats.FoldedConvergenceFactor : 1f);
             WeaponStats.ConvergenceDelta = currentConv / __instance.Template.RecoilReturnSpeedHandRotation;
+  
         }
     }
 
@@ -464,8 +464,8 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-
-            if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
+            if (!Utils.IsReady) return true;
+            if (__instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 __result = WeaponStats.COIDelta;
                 return false;
@@ -487,8 +487,8 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result, bool includeAmmo)
         {
-
-            if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
+            if (!Utils.IsReady) return true;
+            if (__instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 float currentSightFactor = 1f;
                 if (Utils.IsReady)
@@ -550,7 +550,8 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            if (__instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
+            if (!Utils.IsReady) return true;
+            if (__instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 float shotDispLessAmmo = __instance.ShotgunDispersionBase * (1f + WeaponStats.ShotDispDelta);
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;

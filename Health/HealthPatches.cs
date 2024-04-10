@@ -34,6 +34,33 @@ using static GClass2417;
 
 namespace RealismMod
 {
+
+    public class HealthEffectsConstructorPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(HealthEffectsComponent).GetConstructor(new Type[] { typeof(Item), typeof(IHealthEffect) });
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(HealthEffectsComponent __instance, Item item)
+        {
+            string medType = MedProperties.MedType(item);
+
+            if (item.Template._parent == "5448f3a64bdc2d60728b456a")
+            {
+                List<ItemAttributeClass> stimAtt = item.Attributes;
+                ItemAttributeClass stimAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.StimType);
+                stimAttClass.Name = ENewItemAttributeId.StimType.GetName();
+                stimAttClass.StringValue = () => Plugin.RealHealthController.GetStimType(item.TemplateId).ToString();
+                stimAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                stimAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                stimAttClass.LessIsGood = false;
+                stimAtt.Add(stimAttClass);
+            }
+        }
+    }
+
     public class MedkitConstructorPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -79,6 +106,19 @@ namespace RealismMod
         private static void PatchPostfix(MedKitComponent __instance, Item item)
         {
             string medType = MedProperties.MedType(item);
+
+            if (item.Template._parent == "5448f3a64bdc2d60728b456a") 
+            {
+                List<ItemAttributeClass> stimAtt = item.Attributes;
+                ItemAttributeClass stimAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.StimType);
+                stimAttClass.Name = ENewItemAttributeId.StimType.GetName();
+                stimAttClass.StringValue = () => Plugin.RealHealthController.GetStimType(item.TemplateId).ToString();
+                stimAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                stimAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                stimAttClass.LessIsGood = false;
+                stimAtt.Add(stimAttClass);
+                Logger.LogWarning("2324");
+            }
 
             if (medType == "trnqt" || medType == "medkit" || medType == "surg")
             {
@@ -239,8 +279,13 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
         {
-            if (Utils.IsReady)
+            if (!Utils.IsReady)
             {
+                if (Plugin.EnableLogging.Value) 
+                {
+                    Logger.LogWarning("applying " + item.LocalizedName());
+                }
+
                 FoodClass foodClass = item as FoodClass;
                 if (foodClass != null)
                 {

@@ -37,7 +37,7 @@ namespace RealismMod
                     bool toobBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && player.ProceduralWeaponAnimation.CurrentScope.IsOptic) || thermalIsOn);
 
                     fc.UpdateHipInaccuracy(); //update hipfire to take NVG toggle into account
-  
+
                     if (Plugin.ServerConfig.recoil_attachment_overhaul && (toobBlocksADS || gearBlocksADS))
                     {
                         if (!hasSetCanAds)
@@ -198,7 +198,6 @@ namespace RealismMod
                     PlayerState.TriedToADSFromSprint = true;
                     return false;
                 }
-
                 PlayerState.TriedToADSFromSprint = false;
                 return gearFactorEnabled ? PlayerState.IsAllowedADS : true;
             }

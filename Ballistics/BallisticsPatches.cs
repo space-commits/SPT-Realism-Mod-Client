@@ -490,7 +490,7 @@ namespace RealismMod
 
                 if (armor != null && damageInfo.DamageType != EDamageType.Melee)
                 {
-                    if (damageInfo.Blunt && GearStats.CanSpall(armor.Item) && (bodyPartType == EBodyPart.Chest || bodyPartType == EBodyPart.Stomach))
+                    if (__instance?.ActiveHealthController != null && damageInfo.Blunt && GearStats.CanSpall(armor.Item) && (bodyPartType == EBodyPart.Chest || bodyPartType == EBodyPart.Stomach))
                     {
                         damageInfo.BleedBlock = false;
                         bool isMetalArmor = armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel || armor.Template.ArmorMaterial == EArmorMaterial.Titan ? true : false;
@@ -513,7 +513,7 @@ namespace RealismMod
                         float maxPotentialSpallDamage = KE / penDuraFactoredClass;
                             
                         float factoredSpallingDamage = maxPotentialSpallDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction * (isMetalArmor ? (1f - duraPercent) + 1f : 1f);
-                        float maxSpallingDamage = Mathf.Clamp(factoredSpallingDamage - bluntDamage, 7f, ammoTemp.Damage * 0.5f);
+                        float maxSpallingDamage = Mathf.Clamp(factoredSpallingDamage - bluntDamage, 7f, 35f);
                         float splitSpallingDmg = factoredSpallingDamage / bodyParts.Count;
 
                         if (Plugin.EnableBallisticsLogging.Value)
@@ -572,8 +572,13 @@ namespace RealismMod
                     }
                 }
 
-                float hitPartHP = __instance.ActiveHealthController.GetBodyPartHealth(bodyPartType).Current;
-                float toBeHP = hitPartHP - damageInfo.Damage;
+                float toBeHP = 0;
+                if (__instance?.ActiveHealthController != null) 
+                {
+                    float hitPartHP = __instance.ActiveHealthController.GetBodyPartHealth(bodyPartType).Current;
+                    toBeHP = hitPartHP - damageInfo.Damage;
+                }
+
                 bool canDoKnockdown = !__instance.IsInPronePose && ((!__instance.IsYourPlayer && Plugin.CanFellBot.Value) || (__instance.IsYourPlayer && Plugin.CanFellPlayer.Value));
                 bool canDoDisarm = ((!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value) || (__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value));
                 bool hitForearm = partHit == EBodyPartColliderType.LeftForearm || partHit == EBodyPartColliderType.RightForearm;
@@ -651,7 +656,7 @@ namespace RealismMod
                         }
                         else if (armorComponent.Template.ArmorMaterial == EArmorMaterial.Titan)
                         {
-                            armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 1.5f);
+                            armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 2f);
                         }
 
                         float realResistance = GClass566.RealResistance(armorDuraPercent, (float)armorComponent.Repairable.TemplateDurability, armorComponent.ArmorClass, penetrationPower).RealResistance;

@@ -75,7 +75,8 @@ namespace RealismMod
             MeleeDamage,
             MeleePen,
             BallisticCoefficient,
-            OutOfRaidHP
+            OutOfRaidHP,
+            StimType
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -158,6 +159,8 @@ namespace RealismMod
                     return "MELEE PENETRATION";
                 case ENewItemAttributeId.OutOfRaidHP:
                     return "OUT-OF-RAID HP RESTORATION";
+                case ENewItemAttributeId.StimType:
+                    return "STIM TYPE";
                 default:
                     return id.ToString();
             }

@@ -44,13 +44,13 @@ namespace RealismMod
 
         public static void DoVisualRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation, ManualLogSource logger)
         {
-            float cantedRecoilSpeed = Mathf.Clamp(BaseTotalConvergence * 1.15f, 10f, 16f);
+            float cantedRecoilSpeed = Mathf.Clamp(BaseTotalConvergence * 1.05f, 9f, 16f);
 
             if (RecoilController.IsFiringWiggle)
             {
-                float cantedRecoilAmount = FactoredTotalHRecoil / 34f;
+                float cantedRecoilAmount = FactoredTotalHRecoil / 33.5f;
                 float totalCantedRecoil = Mathf.Lerp(-cantedRecoilAmount, cantedRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed * 1.05f, 1.0f));
-                float additionalRecoilAmount = FactoredTotalDispersion / 15f;
+                float additionalRecoilAmount = FactoredTotalDispersion / 16f;
                 float totalSideRecoil = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed, 1.0f)) * 0.05f;
                 float totalVertical = Mathf.Lerp(-additionalRecoilAmount, additionalRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed * 1.5f, 1.0f)) * 0.1f;
                 targetRecoil = new Vector3(totalVertical * 0.95f, totalCantedRecoil, totalSideRecoil * 0.89f) * Plugin.VisRecoilMulti.Value * WeaponStats.CurrentVisualRecoilMulti;
@@ -68,7 +68,7 @@ namespace RealismMod
         public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weapon)
         {
             NewRecoilShotEffect newRecoil = pwa.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
-            bool hasOptic = WeaponStats.HasOptic && StanceController.IsAiming;
+            bool hasOptic = WeaponStats.IsOptic && StanceController.IsAiming;
             float stockedPistolFactor = WeaponStats.IsStockedPistol ? 0.75f : 1f;
             float opticFactorRear = StanceController.IsAiming && hasOptic ? 0.9f : 1f;
             float opticFactorVert = StanceController.IsAiming && hasOptic ? 0.95f : 1f;
@@ -82,7 +82,7 @@ namespace RealismMod
             pwa.Shootingg.CurrentRecoilEffect.CameraRotationRecoilEffect.ReturnSpeed = Plugin.CamReturn.Value; 
             pwa.Shootingg.CurrentRecoilEffect.CameraRotationRecoilEffect.Intensity = 1; 
 
-            pwa.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.Damping = 0.62f; // 0.77
+            pwa.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.Damping = 0.68f; // 0.77
             pwa.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.ReturnSpeed = 0.14f; //0.15
 
             newRecoil.HandRotationRecoil.NextStablePointDistanceRange.x = 1; //1  (defaults are 0.1, 6)

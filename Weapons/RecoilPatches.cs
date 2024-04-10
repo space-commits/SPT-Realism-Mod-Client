@@ -191,7 +191,7 @@ namespace RealismMod
         private static bool Prefix(NewRecoilShotEffect __instance, ref Vector3 __result)
         {
             Vector3 currentCameraRotation = __instance.CameraRotationRecoil.GetRecoil(false);
-            currentCameraRotation.y *= 0.65f;
+            currentCameraRotation.y *= 0.75f;
             __result = currentCameraRotation;
             return false;
 
@@ -211,7 +211,6 @@ namespace RealismMod
         private static bool hasReset = false;
         private static float timer = 0.0f;
         private static float resetTime = 0.5f;
-        private static float deltaTime = 0f;
 
         private static Queue<float> distanceHistory = new Queue<float>();
         private static int historySize = 10;
@@ -282,8 +281,8 @@ namespace RealismMod
                 bool canResetVert = Plugin.ResetVertical.Value && !hybridBlocksReset;
                 bool canResetHorz = Plugin.ResetHorizontal.Value && !hybridBlocksReset;
 
-                float fpsFactor = 144 / Plugin.FPSFactor;
-                fpsFactor = 1 + (fpsFactor - 1) * 0.25f;
+                float fpsFactor = 144 / Plugin.FPS;
+                fpsFactor = 1 + (fpsFactor - 1) * 0.31f;
 
                 if (RecoilController.ShotCount > RecoilController.PrevShotCount)
                 {
@@ -326,7 +325,7 @@ namespace RealismMod
                 {
                     bool isHybrid = Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !WeaponStats.HasShoulderContact));
                     float resetSpeed = RecoilController.BaseTotalConvergence * WeaponStats.ConvergenceDelta * Plugin.ResetSpeed.Value * fpsFactor;
-                    float resetSens = isHybrid ? (float)Math.Round(Plugin.ResetSensitivity.Value * 0.4f, 3) : Plugin.ResetSensitivity.Value;
+                    float resetSens = isHybrid ? (float)Math.Round(Plugin.ResetSensitivity.Value * 0.4f, 3) : Plugin.ResetSensitivity.Value * fpsFactor;
 
                     bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Mathf.Clamp((float)Math.Round(resetSens / 2.5f, 3), 0f, 0.1f);
                     bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= resetSens;
@@ -613,7 +612,7 @@ namespace RealismMod
                 float baseRecoilAngle = RecoilController.BaseTotalRecoilAngle;
                 float mountingAngleModi = StanceController.IsMounting ? Mathf.Min(baseRecoilAngle + 15f, 90f) : StanceController.IsBracing ? Mathf.Min(baseRecoilAngle + 8f, 90f) : baseRecoilAngle;
                 
-                float opticRecoilMulti = allowedCalibers.Contains(firearmController.Weapon.AmmoCaliber) && StanceController.IsAiming && WeaponStats.HasOptic && StanceController.IsAiming ? 0.95f : 1f;
+                float opticRecoilMulti = allowedCalibers.Contains(firearmController.Weapon.AmmoCaliber) && StanceController.IsAiming && WeaponStats.IsOptic && StanceController.IsAiming ? 0.95f : 1f;
                 float fovFactor = (Singleton<SharedGameSettingsClass>.Instance.Game.Settings.FieldOfView / 70f);
       /*          float opticLimit = StanceController.IsAiming && WeaponStats.HasOptic ? 15f * fovFactor : Plugin.HRecLimitMulti.Value * fovFactor;*/
 
