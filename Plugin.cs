@@ -542,6 +542,15 @@ namespace RealismMod
             //recoil and attachments
             if (ServerConfig.recoil_attachment_overhaul) 
             {
+                //procedural animations
+                new UpdateWeaponVariablesPatch().Enable();
+                new SetAimingSlowdownPatch().Enable();
+                new PwaWeaponParamsPatch().Enable();
+                new UpdateSwayFactorsPatch().Enable();
+                new GetOverweightPatch().Enable();
+                new SetOverweightPatch().Enable();
+                new BreathProcessPatch().Enable();
+
                 //weapon and related
                 new COIDeltaPatch().Enable();
                 new TotalShotgunDispersionPatch().Enable();
@@ -551,13 +560,6 @@ namespace RealismMod
                 new ErgoDeltaPatch().Enable();
                 new ErgoWeightPatch().Enable();
                 new PlayerErgoPatch().Enable();
-                new UpdateWeaponVariablesPatch().Enable();
-                new SetAimingSlowdownPatch().Enable();
-                new PwaWeaponParamsPatch().Enable();
-                new UpdateSwayFactorsPatch().Enable();
-                new GetOverweightPatch().Enable();
-                new SetOverweightPatch().Enable();
-                new BreathProcessPatch().Enable();
                 new ToggleAimPatch().Enable();
                 new GetMalfunctionStatePatch().Enable();
                 if (EnableZeroShift.Value)

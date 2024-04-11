@@ -573,8 +573,6 @@ namespace RealismMod
 
             if (player.IsYourPlayer)
             {
-
-                Logger.LogWarning("ChangePosePatch");
                 StanceController.IsMounting = false;
             }
         }

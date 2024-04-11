@@ -89,6 +89,7 @@ namespace RealismMod
                 {
                     break;
                 }
+           
                 reloadMulti *= GearStats.ReloadSpeedMulti(armorComponent.Item);
                 ArmorTemplate armorTemplate = armorComponent.Template as ArmorTemplate;
 
@@ -169,7 +170,7 @@ namespace RealismMod
             }
 
             WeaponStats.NewMagReloadSpeed *= Plugin.GlobalReloadSpeedMulti.Value;
-            WeaponStats.CurrentMagReloadSpeed *= Plugin.GlobalReloadSpeedMulti.Value; ;
+            WeaponStats.CurrentMagReloadSpeed *= Plugin.GlobalReloadSpeedMulti.Value; 
         }
 
         public static float ErgoWeightCalc(float totalWeight, float ergoDelta, float totalTorque, string weapClass)

@@ -124,7 +124,7 @@ namespace RealismMod
                 case ENewItemAttributeId.BluntThroughput:
                     return "AVG. BLUNT DAMAGE REDUCTION";
                 case ENewItemAttributeId.ShotDispersion:
-                    return "SHOT SPREAD REDUCTION";
+                    return "BUCKSHOT SPREAD";
                 case ENewItemAttributeId.CanSpall:
                     return "CAN SPALL";
                 case ENewItemAttributeId.SpallReduction:

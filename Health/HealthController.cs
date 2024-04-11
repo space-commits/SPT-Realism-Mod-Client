@@ -1330,7 +1330,7 @@ namespace RealismMod
             float stamRegenInjuryMulti = 1f;
             float resourceRateInjuryMulti = 0f;
 
-            float drugFactor = HasOverdosedStim ? 100f + PainReliefStrength : PainReliefStrength;
+            float drugFactor = HasOverdosedStim ? 90f + PainReliefStrength : PainReliefStrength;
             float resourcePainReliefFactor = drugFactor / 200f;
 
             float currentEnergy = player.ActiveHealthController.Energy.Current;
@@ -1440,7 +1440,7 @@ namespace RealismMod
             float percentHydroLimitRecoil = (1f + ((1f - percentHydro) / 20f));
             float percentHydroLimitErgo = (1f + ((1f - percentHydro) / 4f));
 
-            float painKillerFactor = 1f - (PainReliefStrength / 100f);
+            float painKillerFactor = Mathf.Clamp(1f - (drugFactor / 300f), 0.5f, 1f);
 
             PlayerState.AimMoveSpeedInjuryMulti = Mathf.Max(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor, 0.6f * percentHydroLowerLimit);
             PlayerState.ADSInjuryMulti = Mathf.Max(adsInjuryMulti * percentEnergyADS * painKillerFactor, 0.35f * percentHydroLowerLimit);
@@ -1448,7 +1448,7 @@ namespace RealismMod
             PlayerState.ReloadInjuryMulti = Mathf.Max(reloadInjuryMulti * percentEnergyReload * painKillerFactor, 0.75f * percentHydroLowerLimit);
             PlayerState.HealthSprintSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergySprint * painKillerFactor, 0.4f * percentHydroLowerLimit);
             PlayerState.HealthSprintAccelFactor = Mathf.Max(sprintAccelInjuryMulti * percentEnergySprint * painKillerFactor, 0.4f * percentHydroLowerLimit);
-            PlayerState.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor, 0.6f * percentHydroLowerLimit);
+            PlayerState.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor, 0.7f * percentHydroLowerLimit);
             PlayerState.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor, 0.5f * percentHydroLowerLimit);
             PlayerState.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactor, 2f * percentHydroLimitErgo);
             PlayerState.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactor, 1f, 1.15f * percentHydroLimitRecoil);

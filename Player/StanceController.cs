@@ -128,6 +128,7 @@ namespace RealismMod
         public static bool DidWeaponSwap = false;
         public static bool IsBlindFiring = false;
         public static bool IsInThirdPerson = false;
+        public static bool IsInForcedLowReady = false;
 
         private static bool regenStam = false;
         private static bool drainStam = false;
@@ -490,7 +491,7 @@ namespace RealismMod
                     }
 
                     //low ready
-                    if (MeleeIsToggleable && Input.GetKeyDown(Plugin.LowReadyKeybind.Value.MainKey))
+                    if (MeleeIsToggleable && !IsInForcedLowReady && Input.GetKeyDown(Plugin.LowReadyKeybind.Value.MainKey))
                     {
                         StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
                         toggleStance(EStance.LowReady, false, true);
@@ -537,7 +538,7 @@ namespace RealismMod
                 if (CanDoHighReadyInjuredAnim)
                 {
                     HighReadyBlackedArmTime += Time.deltaTime;
-                    if (HighReadyBlackedArmTime >= 0.5f)
+                    if (HighReadyBlackedArmTime >= 0.35f)
                     {
                         CanDoHighReadyInjuredAnim = false;
                         CurrentStance = EStance.LowReady;
@@ -546,13 +547,15 @@ namespace RealismMod
                     }
                 }
 
-                if ((Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed) && !IsAiming && !IsFiringFromStance && CurrentStance != EStance.PatrolStance && CurrentStance != EStance.ShortStock && CurrentStance != EStance.ActiveAiming && CurrentStance != EStance.HighReady && MeleeIsToggleable)
+                if ((Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed) && !IsAiming && !IsFiringFromStance && CurrentStance != EStance.PistolCompressed && CurrentStance != EStance.PatrolStance && CurrentStance != EStance.ShortStock && CurrentStance != EStance.ActiveAiming && CurrentStance != EStance.HighReady && MeleeIsToggleable)
                 {
                     StanceBlender.Target = 1f;
                     CurrentStance = EStance.LowReady;
                     StoredStance = EStance.LowReady;
                     WasActiveAim = false;
+                    IsInForcedLowReady = true;
                 }
+                else IsInForcedLowReady = false;
             }
 
             HighReadyManipBuff = CurrentStance == EStance.HighReady ? 1.2f : 1f;
@@ -900,12 +903,12 @@ namespace RealismMod
                 {
                     if (StanceBlender.Value < 1f)
                     {
-                        rotationSpeed = 4f * stanceMulti * dt * Plugin.HighReadyRotationMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
+                        rotationSpeed = 3f * stanceMulti * dt * Plugin.HighReadyRotationMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
                         stanceRotation = lowReadyTargetQuaternion;
                     }
                     else 
                     {
-                        rotationSpeed = 4f * stanceMulti * dt * Plugin.HighReadyAdditionalRotationSpeedMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
+                        rotationSpeed = 3f * stanceMulti * dt * Plugin.HighReadyAdditionalRotationSpeedMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
                         stanceRotation = highReadyMiniTargetQuaternion;
                     }
                 }
