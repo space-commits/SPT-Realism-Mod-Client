@@ -280,7 +280,7 @@ namespace RealismMod
             {
                 WeaponStats.ShouldGetSemiIncrease = true;
             }
-            Logger.LogWarning("b");
+
             float baseCOI = __instance.CenterOfImpactBase;
             float currentCOI = baseCOI;
 

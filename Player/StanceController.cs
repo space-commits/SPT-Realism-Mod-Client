@@ -199,8 +199,9 @@ namespace RealismMod
 
         public static void SetStanceStamina(Player player)
         {
+            bool isUsingStationaryWeapon = player.MovementContext.CurrentState.Name == EPlayerState.Stationary;
             bool isInRegenableStance = CurrentStance == EStance.HighReady || CurrentStance == EStance.LowReady || CurrentStance == EStance.PatrolStance || CurrentStance == EStance.ShortStock || (IsIdle() && !Plugin.EnableIdleStamDrain.Value);
-            bool isInRegenableState = (!player.Physical.HoldingBreath && (IsMounting || IsBracing)) || player.IsInPronePose || CurrentStance == EStance.PistolCompressed || player.IsInventoryOpened;
+            bool isInRegenableState = (!player.Physical.HoldingBreath && (IsMounting || IsBracing)) || player.IsInPronePose || CurrentStance == EStance.PistolCompressed || player.IsInventoryOpened || isUsingStationaryWeapon;
             bool doRegen = ((isInRegenableStance && !IsAiming && !IsFiringFromStance) || isInRegenableState) && !PlayerState.IsSprinting;
             bool shouldDoIdleDrain = IsIdle() && Plugin.EnableIdleStamDrain.Value;
             bool shouldInterruptRegen = isInRegenableStance && (IsAiming || IsFiringFromStance);
@@ -355,7 +356,7 @@ namespace RealismMod
 
         public static void StanceState()
         {
-            if (Utils.WeaponReady)
+            if (Utils.WeaponReady && Utils.GetYourPlayer().MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 if (DoDampingTimer)
                 {
@@ -575,58 +576,6 @@ namespace RealismMod
             }
         }
 
-        /*        //doesn't work with multiple lights where one is off and the other is on
-                public static void ToggleDevice(Player.FirearmController fc, bool activating)
-                {
-                    foreach (Mod mod in fc.Item.Mods)
-                    {
-                        LightComponent light;
-                        if (mod.TryGetItemComponent<LightComponent>(out light))
-                        {
-                            if (!LightDictionary.ContainsKey(mod.Id))
-                            {
-                                LightDictionary.Add(mod.Id, light.IsActive);
-                            }
-
-                            bool isOn = light.IsActive;
-                            bool state = false;
-
-                            if (!activating && isOn)
-                            {
-                                state = false;
-                                LightDictionary[mod.Id] = true;
-                            }
-                            if (!activating && !isOn)
-                            {
-                                LightDictionary[mod.Id] = false;
-                                return;
-                            }
-                            if (activating && isOn)
-                            {
-                                return;
-                            }
-                            if (activating && !isOn && LightDictionary[mod.Id])
-                            {
-                                state = true;
-                            }
-                            else if (activating && !isOn)
-                            {
-                                return;
-                            }
-
-                            fc.SetLightsState(new LightStruct[]
-                            {
-                                new LightStruct
-                                {
-                                    Id = light.Item.Id,
-                                    IsActive = state,
-                                    LightMode = light.SelectedMode
-                                }
-                            }, false);
-                        }
-                    }
-                }
-        */
         public static void DoPistolStances(bool isThirdPerson, EFT.Animations.ProceduralWeaponAnimation pwa, ref Quaternion stanceRotation, float dt, ref bool hasResetPistolPos, Player player, ref float rotationSpeed, ref bool isResettingPistol, Player.FirearmController fc)
         {
             float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;

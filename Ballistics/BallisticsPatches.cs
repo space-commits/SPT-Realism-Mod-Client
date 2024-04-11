@@ -512,9 +512,9 @@ namespace RealismMod
                         float penDuraFactoredClass = 10f + Mathf.Max(1f, armorFactor - (penPower / 1.8f));
                         float maxPotentialSpallDamage = KE / penDuraFactoredClass;
                             
-                        float factoredSpallingDamage = maxPotentialSpallDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction * (isMetalArmor ? (1f - duraPercent) + 1f : 1f);
+                        float factoredSpallingDamage = maxPotentialSpallDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction * (isMetalArmor ? ( 1f - duraPercent) + 1f : 1f);
                         float maxSpallingDamage = Mathf.Clamp(factoredSpallingDamage - bluntDamage, 7f, 35f);
-                        float splitSpallingDmg = factoredSpallingDamage / bodyParts.Count;
+                        float splitSpallingDmg = maxSpallingDamage / bodyParts.Count;
 
                         if (Plugin.EnableBallisticsLogging.Value)
                         {
@@ -523,8 +523,8 @@ namespace RealismMod
                             Logger.LogWarning("Dura Percent " + duraPercent);
                             Logger.LogWarning("Armor factorPercent " + duraPercent);
                             Logger.LogWarning("Max Dura Factored Damage " + maxPotentialSpallDamage);
-                            Logger.LogWarning("Max Spalling Damage " + maxSpallingDamage);
                             Logger.LogWarning("Factored Spalling Damage " + factoredSpallingDamage);
+                            Logger.LogWarning("Max Spalling Damage " + maxSpallingDamage);
                             Logger.LogWarning("Split Spalling Dmg " + splitSpallingDmg);
                         }
 
@@ -970,11 +970,11 @@ namespace RealismMod
             float totaldamage = 1f;
             if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !isHead)
             {
-                totaldamage = Mathf.Clamp(momentumDamageFactor * steelArmorFactorDamage * bluntThrput, 1, damageInfo.Damage);
+                totaldamage = Mathf.Clamp(momentumDamageFactor * steelArmorFactorDamage * bluntThrput, 0.4f, damageInfo.Damage);
             }
             else
             {
-                totaldamage = Mathf.Clamp(momentumDamageFactor * armorFactorDamage * bluntThrput, 1, damageInfo.Damage);
+                totaldamage = Mathf.Clamp(momentumDamageFactor * armorFactorDamage * bluntThrput, 0.4f, damageInfo.Damage);
             }
 
             float totalDuraLoss = momentumDamageFactor * armorDestructibility * armorDamageActual * armorFactorDura;

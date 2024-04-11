@@ -696,7 +696,7 @@ namespace RealismMod
                 return;
             }
             Player player = (Player)playerField.GetValue(firearmController);
-            if (player != null)
+            if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 float pitch = (float)blindFireStrength.GetValue(__instance);
                 Quaternion scopeRotation = (Quaternion)scopeRotationField.GetValue(__instance);
@@ -951,7 +951,7 @@ namespace RealismMod
                 return;
             }
             Player player = (Player)playerField.GetValue(firearmController);
-            if (player != null && player.IsYourPlayer)
+            if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 FirearmController fc = player.HandsController as FirearmController;
 

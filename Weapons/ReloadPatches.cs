@@ -38,7 +38,8 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(FirearmController __instance)
         {
-            if (__instance.Weapon.HasChambers && __instance.Weapon.Chambers.Length == 1 && __instance.Weapon.ChamberAmmoCount == 0)
+            var player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(__instance);
+            if (player.IsYourPlayer && __instance.Weapon.HasChambers && __instance.Weapon.Chambers.Length == 1 && __instance.Weapon.ChamberAmmoCount == 0 && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 Plugin.BlockChambering = true;
             }
@@ -57,9 +58,9 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ChamberWeaponClass __instance, Action onWeaponAppear)
         {
-            var fc = (FirearmController)AccessTools.Field(typeof(ChamberWeaponClass), "firearmController_0").GetValue( __instance);
-            var player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(fc);
-            if (player.IsYourPlayer) 
+            FirearmController fc = (FirearmController)AccessTools.Field(typeof(ChamberWeaponClass), "firearmController_0").GetValue( __instance);
+            Player player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(fc);
+            if (player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary) 
             {
                 if (fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1) 
                 {
@@ -147,7 +148,7 @@ namespace RealismMod
             var fc = (FirearmController)AccessTools.Field(typeof(ReloadWeaponClass), "firearmController_0").GetValue(__instance);
             var player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(fc);
 
-            if (player.IsYourPlayer)
+            if (player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 Plugin.CanLoadChamber = true;
                 Plugin.BlockChambering = false;
@@ -166,7 +167,7 @@ namespace RealismMod
         private static bool Prefix(FirearmsAnimator __instance, int count)
         {
             Player player = Utils.GetYourPlayer();
-            if (player == null) return true;
+            if (player == null || player.MovementContext.CurrentState.Name != EPlayerState.Stationary) return true;
             FirearmController fc = player.HandsController as FirearmController;
             if (player.HandsAnimator == __instance as ObjectInHandsAnimator || fc == null)
             {
@@ -190,7 +191,7 @@ namespace RealismMod
         private static void Prefix(FirearmsAnimator __instance, ref bool compatible)
         {
             Player player = Utils.GetYourPlayer();
-            if (player == null) return;
+            if (player == null || player.MovementContext.CurrentState.Name != EPlayerState.Stationary) return;
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
             if (fc == null) return;
             if (fc.FirearmsAnimator == __instance)

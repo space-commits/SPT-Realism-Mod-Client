@@ -54,7 +54,7 @@ namespace RealismMod
         public const float HandDampingPistolMin = 0.2f;
         public const float HandDampingPistolMax = 0.9f;
 
-        public const float MagWeightMult = 16f;
+        public const float MagWeightMult = 16.5f;
 
         public static void CalcPlayerWeightStats(Player player)
         {

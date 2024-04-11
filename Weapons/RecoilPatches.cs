@@ -268,7 +268,7 @@ namespace RealismMod
             MovementContext movementContext = (MovementContext)movementContextField.GetValue(__instance);
             Player player = (Player)playerField.GetValue(movementContext);
 
-            if (player.IsYourPlayer && !ignoreClamp)
+            if (player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && !ignoreClamp)
             {
                 /*deltaRotation = movementContext.ClampRotation(deltaRotation);*/
 
@@ -460,7 +460,7 @@ namespace RealismMod
             FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
             Player player = (Player)playerField.GetValue(firearmController);
 
-            if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary) 
+            if (player != null && player.IsYourPlayer) 
             {
                 if (shotsGroupSettingsList != null)
                 {
@@ -499,7 +499,7 @@ namespace RealismMod
             //make sure the firearmcontroller is instatiated before using it to determine IsYourPlayer, make sure it's set correctly
             Player player = (Player)playerField.GetValue(firearmController);
 
-            if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
+            if (player != null && player.IsYourPlayer)
             {
 
                 //force stats to be calculated 
@@ -595,7 +595,7 @@ namespace RealismMod
             FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
             Player player = (Player)playerField.GetValue(firearmController);
 
-            if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
+            if (player != null && player.IsYourPlayer)
             {
                 //Conditional recoil modifiers 
                 float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
