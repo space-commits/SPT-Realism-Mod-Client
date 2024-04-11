@@ -8,6 +8,7 @@ using EFT;
 using EFT.InventoryLogic;
 using EFT.UI;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -304,9 +305,6 @@ namespace RealismMod
         public MountingUI MountingUIComponent;
         public static RealismHealthController RealHealthController;
 
-        private string ModPath;
-        private string ConfigFilePath;
-        private string ConfigJson;
         public static ConfigTemplate ServerConfig;
 
         private static bool warnedUser = false;
@@ -314,17 +312,40 @@ namespace RealismMod
 
         public static float FPS = 1f;
 
-        private void getPaths()
-        {
-            var mod = RequestHandler.GetJson($"/RealismMod/GetInfo");
-            ModPath = Json.Deserialize<string>(mod);
-            ConfigFilePath = Path.Combine(ModPath, @"config\config.json");
-        }
 
-        private void configCheck()
+        private void loadConfig()
         {
-            ConfigJson = File.ReadAllText(ConfigFilePath);
-            ServerConfig = JsonConvert.DeserializeObject<ConfigTemplate>(ConfigJson);
+            var settings = new JsonSerializerSettings
+            {
+                MissingMemberHandling = MissingMemberHandling.Ignore
+            };
+
+
+            try
+            {
+                //for some reason the server double serializes the data.
+                var jsonString = RequestHandler.GetJson("/RealismMod/GetInfo");
+                var str = JsonConvert.DeserializeObject<string>(jsonString);
+                ServerConfig = JsonConvert.DeserializeObject<ConfigTemplate>(str);
+          
+            }
+            catch (JsonReaderException ex)
+            {
+                Logger.LogError($"REALISM MOD JSON Parsing Error: {ex.Message}");
+            }
+            catch (JsonSerializationException ex)
+            {
+                Logger.LogError($"REALISM MOD JSON Deserialization Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"REALISM MOD Unexpected Error: {ex.Message}");
+            }
+
+            if (ServerConfig == null)
+            {
+                Logger.LogError("REALISM MOD ERROR: FAILED TO FETCH CONFIG DATA FROM SERVER");
+            }
         }
 
         private async void cacheIcons()
@@ -467,8 +488,7 @@ namespace RealismMod
         {
             try
             {
-                getPaths();
-                configCheck();
+                loadConfig();
                 loadSprites();
                 loadAudioClips();
                 cacheIcons();

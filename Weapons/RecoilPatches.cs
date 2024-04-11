@@ -741,7 +741,7 @@ namespace RealismMod
             FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
             Player player = (Player)playerField.GetValue(firearmController);
 
-            if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
+            if (player != null && player.IsYourPlayer)
             {
                 RecoilController.SetRecoilParams(__instance, firearmController.Weapon);
             }
