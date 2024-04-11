@@ -632,7 +632,7 @@ namespace RealismMod
                 new DamageInfoPatch().Enable();
                 new ApplyDamageInfoPatch().Enable();
                 new SetPenetrationStatusPatch().Enable();
-                new RealResistancePatch().Enable();
+                new AfterPenPlatePatch().Enable();
                 new IsShotDeflectedByHeavyArmorPatch().Enable();
                 new RigConstructorPatch().Enable();
                 new EquipmentPenaltyComponentPatch().Enable();

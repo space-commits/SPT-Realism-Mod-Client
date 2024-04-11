@@ -24,6 +24,16 @@ namespace RealismMod
         public static EBodyPartColliderType[] FaceSpallProtectionCollidors = { EBodyPartColliderType.NeckBack, EBodyPartColliderType.NeckFront, EBodyPartColliderType.Jaw, EBodyPartColliderType.Eyes, EBodyPartColliderType.HeadCommon };
         public static EBodyPartColliderType[] LegSpallProtectionCollidors = { EBodyPartColliderType.PelvisBack, EBodyPartColliderType.Pelvis};
 
+
+        public static void CalcAfterPenStats(float actualDurability, float armorClass, float templateDurability, ref float damage, ref float penetration, float factor = 1) 
+        {
+            float armorFactor = 1f - ((armorClass / 80f) * (actualDurability / templateDurability));
+            float damageReductionFactor = Mathf.Clamp(armorFactor, 0.85f, 1f);
+            float penReductionFactor = Mathf.Clamp(armorFactor, 0.85f, 1f) * factor;
+            damage *= damageReductionFactor;
+            penetration *= penReductionFactor;
+        }
+
         public static void ModifyDamageByHitZone(EBodyPartColliderType hitPart, ref DamageInfo di)
         {
             {

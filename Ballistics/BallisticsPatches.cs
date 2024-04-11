@@ -412,6 +412,14 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(Player __instance, ref DamageInfo damageInfo, EBodyPart bodyPartType)
         {
+            if (Plugin.EnableBallisticsLogging.Value)
+            {
+                Logger.LogWarning("==========Apply Damage Info=============== ");
+                Logger.LogWarning("Damage " + damageInfo.Damage);
+                Logger.LogWarning("Pen " + damageInfo.PenetrationPower);
+                Logger.LogWarning("========================= ");
+            }
+
             if (__instance.IsYourPlayer && Plugin.RealHealthController.HasOverdosed && damageInfo.Damage > 10f) 
             {
                 if (!__instance.IsInPronePose && Plugin.CanFellPlayer.Value)
@@ -603,89 +611,76 @@ namespace RealismMod
         }
     }
 
-    public class RealResistancePatch : ModulePatch
+    public class AfterPenPlatePatch : ModulePatch
     {
         private static FieldInfo armorCompsField;
 
         protected override MethodBase GetTargetMethod()
         {
             armorCompsField = AccessTools.Field(typeof(Player), "_preAllocatedArmorComponents");
-
-            return typeof(BodyPartCollider.ObserverBridge).GetMethod("SetShotStatus", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(EftBulletClass).GetMethod("smethod_2", BindingFlags.Static | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(BodyPartCollider.ObserverBridge __instance, bool __result, BodyPartCollider bodypart, EftBulletClass shot, Vector3 hitpoint, Vector3 shotNormal, Vector3 shotDirection)
+        private static bool Prefix(EftBulletClass __instance, BallisticCollider parentBallisticCollider, bool isForwardHit, EftBulletClass shot)
         {
 
-            Player player = Utils.GetPlayerByID(__instance.iPlayer.ProfileId);
+            if (!isForwardHit)
+            {
+                return false;
+            }
+            BodyPartCollider bodyPartCollider;
+            if ((bodyPartCollider = (parentBallisticCollider as BodyPartCollider)) == null)
+            {
+                return false;
+            }
+            if (bodyPartCollider.playerBridge == null)
+            {
+                return false;
+            }
+
+
+            Player player = Utils.GetPlayerByID(bodyPartCollider.playerBridge.iPlayer.ProfileId);
             List<ArmorComponent> armors = (List<ArmorComponent>)armorCompsField.GetValue(player);
             armors.Clear();
             player.Inventory.GetPutOnArmorsNonAlloc(armors);
-            ArmorPlateCollider armorPlateCollider = bodypart as ArmorPlateCollider;
+            ArmorPlateCollider armorPlateCollider = bodyPartCollider as ArmorPlateCollider;
             EArmorPlateCollider armorPlateCollider2 = (armorPlateCollider == null) ? ((EArmorPlateCollider)0) : armorPlateCollider.ArmorPlateColliderType;
+
             for (int i = 0; i < armors.Count; i++)
             {
                 ArmorComponent armorComponent = armors[i];
-                if (armorComponent.ShotMatches(bodypart.BodyPartColliderType, armorPlateCollider2))
+                if (armorComponent.ShotMatches(bodyPartCollider.BodyPartColliderType, armorPlateCollider2))
                 {
-                    bool isSteelBodyArmor = armorComponent.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !armorComponent.Template.ArmorColliders.Any(x => BallisticsController.HeadCollidors.Contains(x));
-
-                    if (armorComponent.Template.RicochetVals.x > 0f)
+                    if (Plugin.EnableBallisticsLogging.Value) 
                     {
-                        float shotAngle = Vector3.Angle(-shotDirection, shotNormal);
-                        if (shotAngle > armorComponent.Template.RicochetVals.z)
-                        {
-                            float t = Mathf.InverseLerp(90f, armorComponent.Template.RicochetVals.z, shotAngle);
-                            float factoredAngle = Mathf.Lerp(armorComponent.Template.RicochetVals.x, armorComponent.Template.RicochetVals.y, t);
-                            if (shot.Randoms.GetRandomFloat(shot.RandomSeed) < factoredAngle)
-                            {
-                                shot.DeflectedBy = armorComponent.Item.Id;
-                                __result = true;
-                            }
-                        }
+                        Logger.LogWarning("///AFTER PLATE PEN///");
+                        Logger.LogWarning("damage before = " + shot.Damage); 
+                        Logger.LogWarning("pen before = " + shot.PenetrationPower);
                     }
-                    if (string.IsNullOrEmpty(shot.BlockedBy) && (armorComponent.Repairable.Durability > 0f || isSteelBodyArmor))
+
+                    EFTSlot slot;
+                    ArmorSlot softArmorSlot;
+                    float softArmorReduction = 1f;
+                    if ((slot = (armorComponent.Item.CurrentAddress as EFTSlot)) != null && (softArmorSlot = (slot.Slot as ArmorSlot)) != null && softArmorSlot.BluntDamageReduceFromSoftArmor)
                     {
-                        float penetrationPower = shot.PenetrationPower;
-                        float armorDuraPercent = armorComponent.Repairable.Durability / (float)armorComponent.Repairable.TemplateDurability * 100f;
-
-                        if (armorComponent.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel)
-                        {
-                            armorDuraPercent = 100f;
-                        }
-                        else if (armorComponent.Template.ArmorMaterial == EArmorMaterial.Titan)
-                        {
-                            armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 2f);
-                        }
-
-                        float realResistance = GClass566.RealResistance(armorDuraPercent, (float)armorComponent.Repairable.TemplateDurability, armorComponent.ArmorClass, penetrationPower).RealResistance;
-                        
-                        float factoredResistance = (realResistance >= penetrationPower + 15f) ? 0f : ((realResistance >= penetrationPower) ? (0.4f * (realResistance - penetrationPower - 15f) * (realResistance - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * realResistance - penetrationPower)));
-
-
-                        if (shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f > factoredResistance)
-                        {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
-                            {
-                                Logger.LogWarning("============SHOT STATUS============== ");
-                                Logger.LogWarning("Blocked");
-                                Logger.LogWarning("========================== ");
-                            }
-                            shot.BlockedBy = armorComponent.Item.Id;
-                        }
-                        else 
-                        {
-                            Logger.LogWarning("============SHOT STATUS============== ");
-                            Logger.LogWarning("Penetrated");
-                            Logger.LogWarning("========================== ");
-                        }
+   
+                        softArmorReduction = 0.7f;
                     }
-                    __result = true;
-                    return false;
+                    BallisticsController.CalcAfterPenStats(armorComponent.Repairable.Durability, armorComponent.ArmorClass, armorComponent.Repairable.TemplateDurability, ref shot.Damage, ref shot.PenetrationPower, softArmorReduction);
+                
+                    if (Plugin.EnableBallisticsLogging.Value)
+                    {
+                        Logger.LogWarning("damage after = " + shot.Damage);
+                        Logger.LogWarning("pen after = " + shot.PenetrationPower);
+                        Logger.LogWarning("////");
+
+                    }
+
+                    break;
                 }
             }
-            __result = false;
+
             return false;
         }
     }
@@ -947,8 +942,8 @@ namespace RealismMod
             ArmorSlot softArmorSlot;
             if ((slot = (__instance.Item.CurrentAddress as EFTSlot)) != null && (softArmorSlot = (slot.Slot as ArmorSlot)) != null && softArmorSlot.BluntDamageReduceFromSoftArmor)
             {
-                bluntThrput *= 0.8f;
-                softArmorStatReduction = 0.8f;
+                bluntThrput *= 0.6f;
+                softArmorStatReduction = 0.7f;
             }
 
             float penPower = damageInfo.PenetrationPower;
@@ -1002,11 +997,9 @@ namespace RealismMod
                 {
                     damageInfo.Damage = 0f;
                 }
+
                 float actualDurability = Mathf.Max(__instance.Repairable.Durability - totalDuraLoss, 1);
-                float armorFactor = 1f - ((__instance.ArmorClass / 200f) * (actualDurability / __instance.Repairable.TemplateDurability));
-                float penReductionFactor = Mathf.Clamp(armorFactor, 0.9f, 1f) * softArmorStatReduction;
-                damageInfo.Damage *= penReductionFactor; //not sure what to do with this
-                damageInfo.PenetrationPower *= penReductionFactor;
+                BallisticsController.CalcAfterPenStats(actualDurability, __instance.ArmorClass, __instance.Repairable.TemplateDurability, ref damageInfo.Damage, ref damageInfo.PenetrationPower, softArmorStatReduction);
             }
             else
             {

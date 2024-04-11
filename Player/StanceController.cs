@@ -581,7 +581,7 @@ namespace RealismMod
             float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 100f);
             float ergoMulti = Mathf.Clamp(WeaponStats.ErgoStanceSpeed, 0.65f, 1.45f);
-            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.65f)), 0.5f, 1.45f);
+            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.55f)), 0.5f, 1.45f);
             float balanceFactor = 1f + (WeaponStats.Balance / 100f);
             balanceFactor = WeaponStats.Balance > 0f ? balanceFactor * -1f : balanceFactor;
             float resetErgoMulti = (1f - stanceMulti) + 1f;
@@ -690,7 +690,7 @@ namespace RealismMod
 
             float wiggleErgoMulti = Mathf.Clamp((WeaponStats.ErgoStanceSpeed * 0.5f), 0.1f, 1f);
             float stocklessModifier = WeaponStats.HasShoulderContact ? 1f : 0.5f;
-            WiggleReturnSpeed = (1f - (PlayerState.AimSkillADSBuff * 0.5f)) * wiggleErgoMulti * PlayerState.StanceInjuryMulti * stocklessModifier * playerWeightFactor * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.65f));
+            WiggleReturnSpeed = (1f - (PlayerState.AimSkillADSBuff * 0.5f)) * wiggleErgoMulti * PlayerState.StanceInjuryMulti * stocklessModifier * playerWeightFactor * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.55f));
 
             bool isColliding = !pwa.OverlappingAllowsBlindfire;
             float collisionRotationFactor = isColliding ? 2f : 1f;
