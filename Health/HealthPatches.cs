@@ -433,8 +433,6 @@ namespace RealismMod
             //I had to do this previously due to the type being protected, no longer is the case. Keeping for reference.
             /* BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);*/
 
-            Logger.LogWarning("body party state patch");
-
             HealthStateClass.BodyPartState bodyPartState = __instance.Dictionary_0[bodyPart];
             SkillManager skills = (SkillManager)AccessTools.Field(typeof(ActiveHealthController), "skillManager_0").GetValue(__instance);
             Action<EBodyPart, ValueStruct> bodyPartRestoredField = (Action<EBodyPart, ValueStruct>)AccessTools.Field(typeof(ActiveHealthController), "BodyPartRestoredEvent").GetValue(__instance);

@@ -24,56 +24,52 @@ namespace RealismMod
         {
             if (player.IsYourPlayer && fc.Item != null)
             {
-                bool isAiming = (bool)AccessTools.Field(typeof(EFT.Player.FirearmController), "_isAiming").GetValue(fc);
-                if (AimStateChanged || HeadDeviceStateChanged) 
+                FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
+                NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
+                ThermalVisionComponent thermComponent = player.ThermalVisionObserver.Component;
+                bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
+                bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
+                bool thermalIsOn = thermComponent != null && (thermComponent.Togglable == null || thermComponent.Togglable.On);
+                bool gearBlocksADS = Plugin.EnableFSPatch.Value && fsIsON && (!WeaponStats.WeaponCanFSADS && (!GearStats.AllowsADS(fsComponent.Item) || !PlayerState.GearAllowsADS));
+                bool toobBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && player.ProceduralWeaponAnimation.CurrentScope.IsOptic) || thermalIsOn);
+
+                fc.UpdateHipInaccuracy(); //update hipfire to take NVG toggle into account
+
+                if (Plugin.ServerConfig.recoil_attachment_overhaul && (toobBlocksADS || gearBlocksADS))
                 {
-                    FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
-                    NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
-                    ThermalVisionComponent thermComponent = player.ThermalVisionObserver.Component;
-                    bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
-                    bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
-                    bool thermalIsOn = thermComponent != null && (thermComponent.Togglable == null || thermComponent.Togglable.On);
-                    bool gearBlocksADS = Plugin.EnableFSPatch.Value && fsIsON && (!WeaponStats.WeaponCanFSADS && (!GearStats.AllowsADS(fsComponent.Item) || !PlayerState.GearAllowsADS));
-                    bool toobBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && player.ProceduralWeaponAnimation.CurrentScope.IsOptic) || thermalIsOn);
-
-                    fc.UpdateHipInaccuracy(); //update hipfire to take NVG toggle into account
-
-                    if (Plugin.ServerConfig.recoil_attachment_overhaul && (toobBlocksADS || gearBlocksADS))
+                    if (!hasSetCanAds)
                     {
-                        if (!hasSetCanAds)
+                        if (fc.IsAiming)
                         {
-                            if (isAiming)
-                            {
-                                fc.ToggleAim();
-                            }
-                            PlayerState.IsAllowedADS = false;
-                            hasSetCanAds = true;
+                            fc.ToggleAim();
                         }
+                        PlayerState.IsAllowedADS = false;
+                        hasSetCanAds = true;
                     }
-                    else
-                    {
-                        PlayerState.IsAllowedADS = true;
-                        hasSetCanAds = false;
-                    }
-                    //no idea wtf this is
-                    if (!wasToggled && (fsIsON || nvgIsOn))
-                    {
-                        wasToggled = true;
-                    }
-                    if (wasToggled && (!fsIsON && !nvgIsOn))
-                    {
-                        StanceController.WasActiveAim = false;
-                        if (Plugin.ToggleActiveAim.Value)
-                        {
-                            StanceController.StanceBlender.Target = 0f;
-                            StanceController.CurrentStance = EStance.None;
-                        }
-                        wasToggled = false;
-                    }
-
-                    AimStateChanged = false;
-                    HeadDeviceStateChanged = false;
                 }
+                else
+                {
+                    PlayerState.IsAllowedADS = true;
+                    hasSetCanAds = false;
+                }
+                //no idea wtf this is
+                if (!wasToggled && (fsIsON || nvgIsOn))
+                {
+                    wasToggled = true;
+                }
+                if (wasToggled && (!fsIsON && !nvgIsOn))
+                {
+                    StanceController.WasActiveAim = false;
+                    if (Plugin.ToggleActiveAim.Value)
+                    {
+                        StanceController.StanceBlender.Target = 0f;
+                        StanceController.CurrentStance = EStance.None;
+                    }
+                    wasToggled = false;
+                }
+
+                AimStateChanged = false;
+                HeadDeviceStateChanged = false;
 
                 if (StanceController.CurrentStance == EStance.ActiveAiming && !hasSetActiveAimADS)
                 {
@@ -83,7 +79,7 @@ namespace RealismMod
                 else if (StanceController.CurrentStance != EStance.ActiveAiming && hasSetActiveAimADS)
                 {
                     player.MovementContext.SetAimingSlowdown(false, 0.33f);
-                    if (isAiming)
+                    if (fc.IsAiming)
                     {
                         player.MovementContext.SetAimingSlowdown(true, 0.33f);
                     }
@@ -91,7 +87,7 @@ namespace RealismMod
                     hasSetActiveAimADS = false;
                 }
 
-                if (isAiming && StanceController.CurrentStance == EStance.PatrolStance)
+                if (fc.IsAiming && StanceController.CurrentStance == EStance.PatrolStance)
                 {
                     StanceController.CurrentStance = EStance.None;
                 }
@@ -103,7 +99,7 @@ namespace RealismMod
 
                 if (player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire)
                 {
-                    StanceController.IsAiming = isAiming;
+                    StanceController.IsAiming = fc.IsAiming;
                     StanceController.PistolIsColliding = false;
                 }
                 else if (WeaponStats.IsStocklessPistol)

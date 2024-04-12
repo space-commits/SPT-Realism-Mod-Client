@@ -622,7 +622,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(EftBulletClass __instance, BallisticCollider parentBallisticCollider, bool isForwardHit, EftBulletClass shot)
+        private static bool Prefix(BallisticCollider parentBallisticCollider, bool isForwardHit, EftBulletClass shot)
         {
 
             if (!isForwardHit)
@@ -639,14 +639,16 @@ namespace RealismMod
                 return false;
             }
 
-
             Player player = Utils.GetPlayerByID(bodyPartCollider.playerBridge.iPlayer.ProfileId);
+            if (player == null) return true;
+
             List<ArmorComponent> armors = (List<ArmorComponent>)armorCompsField.GetValue(player);
+
             armors.Clear();
             player.Inventory.GetPutOnArmorsNonAlloc(armors);
             ArmorPlateCollider armorPlateCollider = bodyPartCollider as ArmorPlateCollider;
             EArmorPlateCollider armorPlateCollider2 = (armorPlateCollider == null) ? ((EArmorPlateCollider)0) : armorPlateCollider.ArmorPlateColliderType;
-
+ 
             for (int i = 0; i < armors.Count; i++)
             {
                 ArmorComponent armorComponent = armors[i];

@@ -111,7 +111,7 @@ namespace RealismMod
             {
                 WeaponSkills weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
                 PlayerState.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
-                PlayerState.ReloadSkillMulti = Mathf.Max(1, ((weaponInfo.ReloadSpeed - 1f) * 0.5f) + 1f);
+                PlayerState.ReloadSkillMulti = weaponInfo.ReloadSpeed;
                 PlayerState.FixSkillMulti = weaponInfo.FixSpeed;
                 PlayerState.WeaponSkillErgo = weaponInfo.DeltaErgonomics;
                 PlayerState.AimSkillADSBuff = weaponInfo.AimSpeed;

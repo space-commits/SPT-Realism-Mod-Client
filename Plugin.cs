@@ -23,7 +23,7 @@ using BSG.CameraEffects;
 
 namespace RealismMod
 {
-    public class ConfigTemplate
+    public class RealismConfig
     {
         public bool recoil_attachment_overhaul { get; set; }
         public bool malf_changes { get; set; }
@@ -305,7 +305,7 @@ namespace RealismMod
         public MountingUI MountingUIComponent;
         public static RealismHealthController RealHealthController;
 
-        public static ConfigTemplate ServerConfig;
+        public static RealismConfig ServerConfig;
 
         private static bool warnedUser = false;
         public static bool HasReloadedAudio = false;
@@ -326,7 +326,7 @@ namespace RealismMod
                 //for some reason the server double serializes the data.
                 var jsonString = RequestHandler.GetJson("/RealismMod/GetInfo");
                 var str = JsonConvert.DeserializeObject<string>(jsonString);
-                ServerConfig = JsonConvert.DeserializeObject<ConfigTemplate>(str);
+                ServerConfig = JsonConvert.DeserializeObject<RealismConfig>(str);
           
             }
             catch (JsonReaderException ex)

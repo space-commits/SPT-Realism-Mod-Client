@@ -167,15 +167,15 @@ namespace RealismMod
             {"5c0e533786f7747fa23f4d47", EStimType.Clotting},
             {"5ed515f6915ec335206e4152", EStimType.Clotting},
             {"5ed515ece452db0eb56fc028", EStimType.Damage},
+            {"637b6179104668754b72f8f5", EStimType.Damage},
             {"5ed5160a87bb8443d10680b5", EStimType.Performance},
             {"5ed515c8d380ab312177c0fa", EStimType.Performance},
-            {"637b6251104668754b72f8f9", EStimType.Generic},
-            {"5c0e530286f7747fa1419862", EStimType.Regenerative},
-            {"637b6179104668754b72f8f5", EStimType.Damage},
-            {"5c0e534186f7747fa1419867", EStimType.Regenerative},
-            {"SJ0", EStimType.Regenerative},
             {"5c0e531286f7747fa54205c2", EStimType.Performance},
             {"5c0e531d86f7747fa23f4d42", EStimType.Performance},
+            {"5c0e530286f7747fa1419862", EStimType.Regenerative},
+            {"5c0e534186f7747fa1419867", EStimType.Regenerative},
+            {"SJ0", EStimType.Regenerative},
+            {"637b6251104668754b72f8f9", EStimType.Generic},
             {"637b612fb7afa97bfc3d7005", EStimType.Generic},
             {"5fca13ca637ee0341a484f46", EStimType.Generic},
             {"637b60c3b7afa97bfc3d7001", EStimType.Generic},
@@ -1048,7 +1048,7 @@ namespace RealismMod
             NotificationManagerClass.DisplayMessageNotification("Heavy Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
 
             float trnqtTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f - vitalitySkill), 2);
-            float maxHpToRestore = Mathf.Round(35f * (1f + vitalitySkill));
+            float maxHpToRestore = Mathf.Round(50f * (1f + vitalitySkill));
             float hpToRestore = Mathf.Min(DmgTracker.TotalHeavyBleedDamage, maxHpToRestore);
 
             if ((hBleedHealType == "combo" || hBleedHealType == "trnqt") && !isNotLimb)
@@ -1075,7 +1075,7 @@ namespace RealismMod
             NotificationManagerClass.DisplayMessageNotification("Light Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
 
             float trnqtTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f - vitalitySkill), 2);
-            float maxHpToRestore = Mathf.Round(35f * (1f + vitalitySkill));
+            float maxHpToRestore = Mathf.Round(50f * (1f + vitalitySkill));
             float hpToRestore = Mathf.Min(DmgTracker.TotalLightBleedDamage, maxHpToRestore);
 
             if (medType == "trnqt" && !isNotLimb)
@@ -1408,23 +1408,23 @@ namespace RealismMod
                     float armFractureFactor = isLeftArm && hasFracture ? 0.8f : isRightArm && hasFracture ? 0.9f : 1f;
 
                     aimMoveSpeedMulti *= percentHpAimMove * armFractureFactor;
-                    ergoDeltaInjuryMulti *= (1f + (1f - percentHp)) * armFractureFactor;
                     adsInjuryMulti *= percentHpADS * armFractureFactor;
                     stanceInjuryMulti *= percentHpStance * armFractureFactor;
                     reloadInjuryMulti *= percentHpReload * armFractureFactor;
+                    ergoDeltaInjuryMulti *= (1f + (1f - percentHp)) * armFractureFactor;
                     recoilInjuryMulti *= (1f + (1f - percentHpRecoil)) * armFractureFactor;
                 }
             }
 
             float totalHpPercent = totalCurrentHp / totalMaxHp;
-            resourceRateInjuryMulti = Mathf.Clamp(1f - totalHpPercent, 0f, 1f);
+            resourceRateInjuryMulti = Mathf.Clamp(1f - totalHpPercent, 0f, 1f) * 0.25f;
 
             if (PainStrength > 10)
             {
                 AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 15f, 1f, 1f);
             }
 
-            float percentEnergyFactor = Mathf.Max(percentEnergy * 1.2f, 0.01f);
+            float percentEnergyFactor = Mathf.Max(percentEnergy * 1.1f, 0.01f);
 
             float percentEnergySprint = 1f - ((1f - percentEnergyFactor) / 8f);
             float percentEnergyWalk = 1f - ((1f - percentEnergyFactor) / 12f);
@@ -1441,17 +1441,20 @@ namespace RealismMod
             float percentHydroLimitErgo = (1f + ((1f - percentHydro) / 4f));
 
             float painKillerFactor = Mathf.Clamp(1f - (drugFactor / 300f), 0.5f, 1f);
+            float painKillerFactorInverse = Mathf.Clamp(1f + (drugFactor / 600f), 1f, 1.15f);
+            float skillFactor = (1f - (player.Skills.HealthEnergy / 4));
+            float skillFactorInverse = (1f + (player.Skills.HealthEnergy / 4));
 
-            PlayerState.AimMoveSpeedInjuryMulti = Mathf.Max(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor, 0.6f * percentHydroLowerLimit);
-            PlayerState.ADSInjuryMulti = Mathf.Max(adsInjuryMulti * percentEnergyADS * painKillerFactor, 0.35f * percentHydroLowerLimit);
-            PlayerState.StanceInjuryMulti = Mathf.Max(stanceInjuryMulti * percentEnergyStance * painKillerFactor, 0.65f * percentHydroLowerLimit);
-            PlayerState.ReloadInjuryMulti = Mathf.Max(reloadInjuryMulti * percentEnergyReload * painKillerFactor, 0.75f * percentHydroLowerLimit);
-            PlayerState.HealthSprintSpeedFactor = Mathf.Max(sprintSpeedInjuryMulti * percentEnergySprint * painKillerFactor, 0.4f * percentHydroLowerLimit);
-            PlayerState.HealthSprintAccelFactor = Mathf.Max(sprintAccelInjuryMulti * percentEnergySprint * painKillerFactor, 0.4f * percentHydroLowerLimit);
-            PlayerState.HealthWalkSpeedFactor = Mathf.Max(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor, 0.7f * percentHydroLowerLimit);
-            PlayerState.HealthStamRegenFactor = Mathf.Max(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor, 0.5f * percentHydroLowerLimit);
-            PlayerState.ErgoDeltaInjuryMulti = Mathf.Min(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactor, 2f * percentHydroLimitErgo);
-            PlayerState.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactor, 1f, 1.15f * percentHydroLimitRecoil);
+            PlayerState.AimMoveSpeedInjuryMulti = Mathf.Clamp(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor * skillFactor, 0.6f * percentHydroLowerLimit, 1.1f);
+            PlayerState.ADSInjuryMulti = Mathf.Clamp(adsInjuryMulti * percentEnergyADS * painKillerFactor * skillFactor, 0.35f * percentHydroLowerLimit, 1.1f);
+            PlayerState.StanceInjuryMulti = Mathf.Clamp(stanceInjuryMulti * percentEnergyStance * painKillerFactor * skillFactor, 0.65f * percentHydroLowerLimit, 1.1f);
+            PlayerState.ReloadInjuryMulti = Mathf.Clamp(reloadInjuryMulti * percentEnergyReload * painKillerFactor * skillFactor, 0.75f * percentHydroLowerLimit, 1.1f);
+            PlayerState.HealthSprintSpeedFactor = Mathf.Clamp(sprintSpeedInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor, 0.4f * percentHydroLowerLimit, 1.1f);
+            PlayerState.HealthSprintAccelFactor = Mathf.Clamp(sprintAccelInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor, 0.4f * percentHydroLowerLimit, 1.1f);
+            PlayerState.HealthWalkSpeedFactor = Mathf.Clamp(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor * skillFactor, 0.7f * percentHydroLowerLimit, 1.1f);
+            PlayerState.HealthStamRegenFactor = Mathf.Clamp(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor * skillFactor, 0.5f * percentHydroLowerLimit, 1.1f);
+            PlayerState.ErgoDeltaInjuryMulti = Mathf.Clamp(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactorInverse * skillFactorInverse, 1f, 1.5f * percentHydroLimitErgo);
+            PlayerState.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactorInverse * skillFactorInverse, 1f, 1.15f * percentHydroLimitRecoil);
 
             if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach))
             {
