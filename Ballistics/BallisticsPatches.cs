@@ -593,7 +593,7 @@ namespace RealismMod
                 bool hitCalf = partHit == EBodyPartColliderType.LeftCalf || partHit == EBodyPartColliderType.RightCalf;
                 bool hitThigh= partHit == EBodyPartColliderType.LeftThigh || partHit == EBodyPartColliderType.RightThigh;
            
-                if (hitForearm && toBeHP <= 0f && canDoDisarm)
+                if (hitForearm && toBeHP <= 35f && canDoDisarm)
                 {
                     TryDoDisarm(__instance, KE, hasArmArmor, hitForearm);
                 }

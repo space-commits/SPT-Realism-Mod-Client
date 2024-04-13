@@ -219,12 +219,13 @@ namespace RealismMod
         private bool reset5 = false;
 
         public float PainStrength = 0f;
+        public float PainEffectThreshold = 10f;
         public float PainReliefStrength = 0f;
         public float PainTunnelStrength = 0f;
         public int ReliefDuration = 0;
 
         private const int painReliefInterval = 15;
-        public const float PainThreshold = 30f;
+        public const float PainArmThreshold = 30f;
         public const float PainReliefThreshold = 30f;
         public const float PKOverdoseThreshold = 60f;
         private bool rightArmRuined = false;
@@ -240,7 +241,7 @@ namespace RealismMod
         {
             get 
             {
-                return rightArmRuined || leftArmRuined || (PainStrength > PainThreshold && PainStrength > PainReliefStrength);
+                return rightArmRuined || leftArmRuined || (PainStrength > PainArmThreshold && PainStrength > PainReliefStrength);
             }
         }
 
@@ -1419,7 +1420,7 @@ namespace RealismMod
             float totalHpPercent = totalCurrentHp / totalMaxHp;
             resourceRateInjuryMulti = Mathf.Clamp(1f - totalHpPercent, 0f, 1f) * 0.25f;
 
-            if (PainStrength > 10)
+            if (PainStrength > PainEffectThreshold)
             {
                 AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 15f, 1f, 1f);
             }

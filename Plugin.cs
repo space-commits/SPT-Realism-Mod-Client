@@ -187,7 +187,6 @@ namespace RealismMod
         public static ConfigEntry<float> StanceTransitionSpeedMulti { get; set; }
         public static ConfigEntry<float> ThirdPersonPositionSpeed { get; set; }
         public static ConfigEntry<float> ThirdPersonRotationSpeed { get; set; }
-        public static ConfigEntry<float> ThirdPersonRotationMulti { get; set; }
         public static ConfigEntry<float> ActiveAimRotationX { get; set; }
         public static ConfigEntry<float> ActiveAimRotationY { get; set; }
         public static ConfigEntry<float> ActiveAimRotationZ { get; set; }
@@ -219,18 +218,36 @@ namespace RealismMod
         public static ConfigEntry<float> PistolPosResetSpeedMulti { get; set; }
         public static ConfigEntry<float> ShortStockSpeedMulti { get; set; }
         public static ConfigEntry<float> ShortStockResetSpeedMulti { get; set; }
+        public static ConfigEntry<float> ActiveThirdPersonPositionX { get; set; }
+        public static ConfigEntry<float> ActiveThirdPersonPositionY { get; set; }
+        public static ConfigEntry<float> ActiveThirdPersonPositionZ { get; set; }
+        public static ConfigEntry<float> ActiveThirdPersonRotationX { get; set; }
+        public static ConfigEntry<float> ActiveThirdPersonRotationY { get; set; }
+        public static ConfigEntry<float> ActiveThirdPersonRotationZ { get; set; }
         public static ConfigEntry<float> ActiveAimAdditionalRotationX { get; set; }
         public static ConfigEntry<float> ActiveAimAdditionalRotationY { get; set; }
         public static ConfigEntry<float> ActiveAimAdditionalRotationZ { get; set; }
         public static ConfigEntry<float> ActiveAimResetRotationX { get; set; }
         public static ConfigEntry<float> ActiveAimResetRotationY { get; set; }
         public static ConfigEntry<float> ActiveAimResetRotationZ { get; set; }
+        public static ConfigEntry<float> HighReadyThirdPersonPositionX { get; set; }
+        public static ConfigEntry<float> HighReadyThirdPersonPositionY { get; set; }
+        public static ConfigEntry<float> HighReadyThirdPersonPositionZ { get; set; }
+        public static ConfigEntry<float> HighReadyThirdPersonRotationX { get; set; }
+        public static ConfigEntry<float> HighReadyThirdPersonRotationY { get; set; }
+        public static ConfigEntry<float> HighReadyThirdPersonRotationZ { get; set; }
         public static ConfigEntry<float> HighReadyAdditionalRotationX { get; set; }
         public static ConfigEntry<float> HighReadyAdditionalRotationY { get; set; }
         public static ConfigEntry<float> HighReadyAdditionalRotationZ { get; set; }
         public static ConfigEntry<float> HighReadyResetRotationX { get; set; }
         public static ConfigEntry<float> HighReadyResetRotationY { get; set; }
         public static ConfigEntry<float> HighReadyResetRotationZ { get; set; }
+        public static ConfigEntry<float> LowReadyThirdPersonPositionX { get; set; }
+        public static ConfigEntry<float> LowReadyThirdPersonPositionY { get; set; }
+        public static ConfigEntry<float> LowReadyThirdPersonPositionZ { get; set; }
+        public static ConfigEntry<float> LowReadyThirdPersonRotationX { get; set; }
+        public static ConfigEntry<float> LowReadyThirdPersonRotationY { get; set; }
+        public static ConfigEntry<float> LowReadyThirdPersonRotationZ { get; set; }
         public static ConfigEntry<float> LowReadyAdditionalRotationX { get; set; }
         public static ConfigEntry<float> LowReadyAdditionalRotationY { get; set; }
         public static ConfigEntry<float> LowReadyAdditionalRotationZ { get; set; }
@@ -267,6 +284,12 @@ namespace RealismMod
         public static ConfigEntry<float> HighReadyRotationX { get; set; }
         public static ConfigEntry<float> HighReadyRotationY { get; set; }
         public static ConfigEntry<float> HighReadyRotationZ { get; set; }
+        public static ConfigEntry<float> ShortStockThirdPersonPositionX { get; set; }
+        public static ConfigEntry<float> ShortStockThirdPersonPositionY { get; set; }
+        public static ConfigEntry<float> ShortStockThirdPersonPositionZ { get; set; }
+        public static ConfigEntry<float> ShortStockThirdPersonRotationX { get; set; }
+        public static ConfigEntry<float> ShortStockThirdPersonRotationY { get; set; }
+        public static ConfigEntry<float> ShortStockThirdPersonRotationZ { get; set; }
         public static ConfigEntry<float> ShortStockOffsetX { get; set; }
         public static ConfigEntry<float> ShortStockOffsetY { get; set; }
         public static ConfigEntry<float> ShortStockOffsetZ { get; set; }
@@ -887,6 +910,7 @@ namespace RealismMod
             string lowReady = "14. Low Ready.";
             string pistol = "15. Pistol Position And Stance.";
             string shortStock = "16. Short-Stocking.";
+            string thirdPerson = "17. Third Person Animations.";
 
             test1 = Config.Bind<float>(testing, "test 1", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 600, IsAdvanced = true, Browsable = true }));
             test2 = Config.Bind<float>(testing, "test 2", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 500, IsAdvanced = true, Browsable = true }));
@@ -1034,15 +1058,43 @@ namespace RealismMod
             PatrolKeybind = Config.Bind(weapAimAndPos, "Patrol/Neutral Stance Keybind", new KeyboardShortcut(KeyCode.KeypadEnter), new ConfigDescription("Puts The Weapon In A Neutral Position, Improving Arm Stam Regen And Walk Speed. For Maximum Larping.", null, new ConfigurationManagerAttributes { Order = 155, Browsable = ServerConfig.enable_stances }));
             MeleeKeybind = Config.Bind(weapAimAndPos, "Melee Keybind", new KeyboardShortcut(KeyCode.Joystick1Button0), new ConfigDescription("Strike With Muzzle Or Bayonet Of Equipped Weapon.", null, new ConfigurationManagerAttributes { Order = 154, Browsable = ServerConfig.enable_stances }));
 
-            WeapOffsetX = Config.Bind<float>(weapAimAndPos, "Weapon Position X-Axis", 0.0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 152, Browsable = ServerConfig.enable_stances }));
-            WeapOffsetY = Config.Bind<float>(weapAimAndPos, "Weapon Position Y-Axis", 0.0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 151, Browsable = ServerConfig.enable_stances }));
-            WeapOffsetZ = Config.Bind<float>(weapAimAndPos, "Weapon Position Z-Axis", 0.0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 150, Browsable = ServerConfig.enable_stances }));
+            WeapOffsetX = Config.Bind<float>(weapAimAndPos, "Weapon Position X-Axis", -0.025f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 152, Browsable = ServerConfig.enable_stances }));
+            WeapOffsetY = Config.Bind<float>(weapAimAndPos, "Weapon Position Y-Axis", -0.015f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 151, Browsable = ServerConfig.enable_stances }));
+            WeapOffsetZ = Config.Bind<float>(weapAimAndPos, "Weapon Position Z-Axis", 0.015f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 150, Browsable = ServerConfig.enable_stances }));
 
             StanceRotationSpeedMulti = Config.Bind<float>(weapAimAndPos, "Stance Rotation Speed Multi", 1f, new ConfigDescription("Adjusts The Speed Of Stance Rotation Changes.", new AcceptableValueRange<float>(0.1f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 146, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             StanceTransitionSpeedMulti = Config.Bind<float>(weapAimAndPos, "Stance Transition Speed.", 15.0f, new ConfigDescription("Adjusts The Position Change Speed Between Stances", new AcceptableValueRange<float>(1f, 35f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            ThirdPersonRotationSpeed = Config.Bind<float>(weapAimAndPos, "Third Person Rotation Speed Multi", 1.5f, new ConfigDescription("Speed Of Stance Rotation Change In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 144, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            ThirdPersonPositionSpeed = Config.Bind<float>(weapAimAndPos, "Third Person Position Speed Multi", 1.0f, new ConfigDescription("Speed Of Stance Position Change In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 143, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            ThirdPersonRotationMulti = Config.Bind<float>(weapAimAndPos, "Third Person Rotation Multi", 2.0f, new ConfigDescription("Increases The Rotation Of High Ready And Low Ready Stances.", new AcceptableValueRange<float>(1f, 3f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 140, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+          
+            ThirdPersonRotationSpeed = Config.Bind<float>(thirdPerson, "Third Person Rotation Speed Multi", 1.5f, new ConfigDescription("Speed Of Stance Rotation Change In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1000, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            ThirdPersonPositionSpeed = Config.Bind<float>(thirdPerson, "Third Person Position Speed Multi", 1.0f, new ConfigDescription("Speed Of Stance Position Change In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1100, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+           
+            ShortStockThirdPersonPositionX = Config.Bind<float>(thirdPerson, "Short-Stock Third Person Position X-Axis", 0.03f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 200, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            ShortStockThirdPersonPositionY = Config.Bind<float>(thirdPerson, "Short-Stock Third Person Position Y-Axis", 0.065f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 190, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            ShortStockThirdPersonPositionZ = Config.Bind<float>(thirdPerson, "Short-Stock Third Person Position Z-Axis", -0.075f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 180, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            ShortStockThirdPersonRotationX = Config.Bind<float>(thirdPerson, "Short-Stock Third Person Rotation X-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 170, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            ShortStockThirdPersonRotationY = Config.Bind<float>(thirdPerson, "Short-Stock Third Person Rotation Y-Axis", -15f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 160, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            ShortStockThirdPersonRotationZ = Config.Bind<float>(thirdPerson, "Short-Stock Third Person Rotation Z-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 150, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+           
+            ActiveThirdPersonPositionX = Config.Bind<float>(thirdPerson, "Active Aim Third Person Position X-Axis", -0.02f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 140, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            ActiveThirdPersonPositionY = Config.Bind<float>(thirdPerson, "Active Aim Third Person Position Y-Axis", -0.02f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 130, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            ActiveThirdPersonPositionZ = Config.Bind<float>(thirdPerson, "Active Aim Third Person Position Z-Axis", 0.02f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 120, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            ActiveThirdPersonRotationX = Config.Bind<float>(thirdPerson, "Active Aim Third Person Rotation X-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 110, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            ActiveThirdPersonRotationY = Config.Bind<float>(thirdPerson, "Active Aim Third Person Rotation Y-Axis", -35f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            ActiveThirdPersonRotationZ = Config.Bind<float>(thirdPerson, "Active Aim Third Person Rotation Z-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 90, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+
+            HighReadyThirdPersonPositionX = Config.Bind<float>(thirdPerson, "High Ready Third Person Position X-Axis",  0.02f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 80, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonPositionY = Config.Bind<float>(thirdPerson, "High Ready Third Person Position Y-Axis", -0.01f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 70, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonPositionZ = Config.Bind<float>(thirdPerson, "High Ready Third Person Position Z-Axis",  -0.05f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 60, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonRotationX = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation X-Axis", -20f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 50, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonRotationY = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation Y-Axis", -15f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 40, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonRotationZ = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation Z-Axis", -5f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+
+            LowReadyThirdPersonPositionX = Config.Bind<float>(thirdPerson, "Low Ready Third Person Position X-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            LowReadyThirdPersonPositionY = Config.Bind<float>(thirdPerson, "Low Ready Third Person Position Y-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            LowReadyThirdPersonPositionZ = Config.Bind<float>(thirdPerson, "Low Ready Third Person Position Z-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 9, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            LowReadyThirdPersonRotationX = Config.Bind<float>(thirdPerson, "Low Ready Third Person Rotation X-Axis", 24f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 8, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            LowReadyThirdPersonRotationY = Config.Bind<float>(thirdPerson, "Low Ready Third Person Rotation Y-Axis", 10f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            LowReadyThirdPersonRotationZ = Config.Bind<float>(thirdPerson, "Low Ready Third Person Rotation Z-Axis", -1f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
             ActiveAimAdditionalRotationSpeedMulti = Config.Bind<float>(activeAim, "Active Aim Additonal Rotation Speed Multi.", 3.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             ActiveAimResetRotationSpeedMulti = Config.Bind<float>(activeAim, "Active Aim Reset Rotation Speed Multi.", 4.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
@@ -1117,8 +1169,8 @@ namespace RealismMod
             PistolPosResetSpeedMulti = Config.Bind<float>(pistol, "Pistol Position Reset Speed Multi", 14.0f, new ConfigDescription("", new AcceptableValueRange<float>(1.0f, 100.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
             PistolOffsetX = Config.Bind<float>(pistol, "Pistol Position X-Axis.", 0.015f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 25, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            PistolOffsetY = Config.Bind<float>(pistol, "Pistol Position Y-Axis.", 0.04f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 24, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            PistolOffsetZ = Config.Bind<float>(pistol, "Pistol Position Z-Axis.", -0.04f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 23, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolOffsetY = Config.Bind<float>(pistol, "Pistol Position Y-Axis.", 0f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 24, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolOffsetZ = Config.Bind<float>(pistol, "Pistol Position Z-Axis.", -0.055f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 23, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
             PistolRotationX = Config.Bind<float>(pistol, "Pistol Rotation X-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PistolRotationY = Config.Bind<float>(pistol, "Pistol Rotation Y-Axis", -15f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));

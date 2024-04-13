@@ -243,7 +243,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(PhysicalClass __instance,ref bool __result)
         {
-            __result = !__instance.HoldingBreath && ((__instance.StaminaParameters.StaminaExhaustionStartsBreathSound && __instance.Stamina.Exhausted) || __instance.Oxygen.Exhausted || Plugin.RealHealthController.HasOverdosed || Plugin.RealHealthController.PainStrength > Plugin.RealHealthController.PainReliefStrength);
+            __result = !__instance.HoldingBreath && ((__instance.StaminaParameters.StaminaExhaustionStartsBreathSound && __instance.Stamina.Exhausted) || __instance.Oxygen.Exhausted || Plugin.RealHealthController.HasOverdosed || (Plugin.RealHealthController.PainStrength > Plugin.RealHealthController.PainEffectThreshold && Plugin.RealHealthController.PainStrength > Plugin.RealHealthController.PainReliefStrength));
             return false;
         }
     }

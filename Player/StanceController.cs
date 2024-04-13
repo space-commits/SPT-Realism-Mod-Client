@@ -699,28 +699,31 @@ namespace RealismMod
             float collisionRotationFactor = isColliding ? 2f : 1f;
             float collisionPositionFactor = isColliding ? 2f : 1f;
 
-            float thirdPersonMulti = isThirdPerson ? Plugin.ThirdPersonRotationMulti.Value : 1f;
 
+            Vector3 activeTargetRoation = isThirdPerson ? new Vector3(Plugin.ActiveThirdPersonRotationX.Value, Plugin.ActiveThirdPersonRotationY.Value, Plugin.ActiveThirdPersonRotationZ.Value) : new Vector3(Plugin.ActiveAimRotationX.Value, Plugin.ActiveAimRotationY.Value, Plugin.ActiveAimRotationZ.Value);
             Quaternion activeAimMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.ActiveAimAdditionalRotationX.Value * resetErgoMulti, Plugin.ActiveAimAdditionalRotationY.Value * resetErgoMulti, Plugin.ActiveAimAdditionalRotationZ.Value * resetErgoMulti));
             Quaternion activeAimRevertQuaternion = IsAiming && WeaponStats.IsCantedSight ? Quaternion.identity : Quaternion.Euler(new Vector3(Plugin.ActiveAimResetRotationX.Value * resetErgoMulti, Plugin.ActiveAimResetRotationY.Value * resetErgoMulti, Plugin.ActiveAimResetRotationZ.Value * resetErgoMulti));
-            Vector3 activeAimTargetPosition = new Vector3(Plugin.ActiveAimOffsetX.Value, Plugin.ActiveAimOffsetY.Value, Plugin.ActiveAimOffsetZ.Value);
-            Vector3 activeAimTargetPosition2 = new Vector3(Plugin.ActiveAimOffsetX.Value, -0.03f, Plugin.ActiveAimOffsetZ.Value);
-            Quaternion activeAimTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.ActiveAimRotationX.Value, Plugin.ActiveAimRotationY.Value, Plugin.ActiveAimRotationZ.Value));
+            Vector3 activeAimTargetPosition = isThirdPerson ? new Vector3(Plugin.ActiveThirdPersonPositionX.Value, Plugin.ActiveThirdPersonPositionY.Value, Plugin.ActiveThirdPersonPositionZ.Value) : new Vector3(Plugin.ActiveAimOffsetX.Value, Plugin.ActiveAimOffsetY.Value, Plugin.ActiveAimOffsetZ.Value);
+            Vector3 activeAimTargetPosition2 = isThirdPerson ? new Vector3(Plugin.ActiveThirdPersonPositionX.Value, Plugin.ActiveThirdPersonPositionY.Value, Plugin.ActiveThirdPersonPositionZ.Value) : new Vector3(Plugin.ActiveAimOffsetX.Value, -0.03f, Plugin.ActiveAimOffsetZ.Value);
+            Quaternion activeAimTargetQuaternion = Quaternion.Euler(activeTargetRoation);
 
-            Quaternion lowReadyTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.LowReadyRotationX.Value * collisionRotationFactor * resetErgoMulti * thirdPersonMulti, Plugin.LowReadyRotationY.Value * thirdPersonMulti, Plugin.LowReadyRotationZ.Value * thirdPersonMulti));
+            Vector3 lowTargetRotation = isThirdPerson ? new Vector3(Plugin.LowReadyThirdPersonRotationX.Value * collisionRotationFactor, Plugin.LowReadyThirdPersonRotationY.Value, Plugin.LowReadyThirdPersonRotationZ.Value) : new Vector3(Plugin.LowReadyRotationX.Value * collisionRotationFactor * resetErgoMulti, Plugin.LowReadyRotationY.Value, Plugin.LowReadyRotationZ.Value);
+            Quaternion lowReadyTargetQuaternion = Quaternion.Euler(lowTargetRotation);
             Quaternion lowReadyMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.LowReadyAdditionalRotationX.Value * resetErgoMulti, Plugin.LowReadyAdditionalRotationY.Value * resetErgoMulti, Plugin.LowReadyAdditionalRotationZ.Value * resetErgoMulti));
             Quaternion lowReadyRevertQuaternion = Quaternion.Euler(Plugin.LowReadyResetRotationX.Value * resetErgoMulti, Plugin.LowReadyResetRotationY.Value * resetErgoMulti, Plugin.LowReadyResetRotationZ.Value * resetErgoMulti);
-            Vector3 lowReadyTargetPosition = new Vector3(Plugin.LowReadyOffsetX.Value, Plugin.LowReadyOffsetY.Value, Plugin.LowReadyOffsetZ.Value);
+            Vector3 lowReadyTargetPosition = isThirdPerson ? new Vector3(Plugin.LowReadyThirdPersonPositionX.Value, Plugin.LowReadyThirdPersonPositionY.Value, Plugin.LowReadyThirdPersonPositionZ.Value) : new Vector3(Plugin.LowReadyOffsetX.Value, Plugin.LowReadyOffsetY.Value, Plugin.LowReadyOffsetZ.Value);
 
-            Vector3 highReadyTargetPosition = new Vector3(Plugin.HighReadyOffsetX.Value, Plugin.HighReadyOffsetY.Value * (ModifyHighReady ? 0.25f : 1f), Plugin.HighReadyOffsetZ.Value);
-            Quaternion highReadyTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.HighReadyRotationX.Value * stanceMulti * collisionRotationFactor * thirdPersonMulti, Plugin.HighReadyRotationY.Value * stanceMulti * thirdPersonMulti * (ModifyHighReady ? -1f : 1f), Plugin.HighReadyRotationZ.Value * stanceMulti * thirdPersonMulti));
+            Vector3 highTargetRotation = isThirdPerson ? new Vector3(Plugin.HighReadyThirdPersonRotationX.Value * collisionRotationFactor, Plugin.HighReadyThirdPersonRotationY.Value, Plugin.HighReadyThirdPersonRotationZ.Value) : new Vector3(Plugin.HighReadyRotationX.Value * stanceMulti * collisionRotationFactor, Plugin.HighReadyRotationY.Value * stanceMulti * (ModifyHighReady ? -1f : 1f), Plugin.HighReadyRotationZ.Value * stanceMulti);
+            Vector3 highReadyTargetPosition = isThirdPerson ? new Vector3(Plugin.HighReadyThirdPersonPositionX.Value, Plugin.HighReadyThirdPersonPositionY.Value, Plugin.HighReadyThirdPersonPositionZ.Value) : new Vector3(Plugin.HighReadyOffsetX.Value, Plugin.HighReadyOffsetY.Value * (ModifyHighReady ? 0.25f : 1f), Plugin.HighReadyOffsetZ.Value);
+            Quaternion highReadyTargetQuaternion = Quaternion.Euler(highTargetRotation);
             Quaternion highReadyMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.HighReadyAdditionalRotationX.Value * resetErgoMulti, Plugin.HighReadyAdditionalRotationY.Value * resetErgoMulti, Plugin.HighReadyAdditionalRotationZ.Value * resetErgoMulti));
             Quaternion highReadyRevertQuaternion = Quaternion.Euler(Plugin.HighReadyResetRotationX.Value * resetErgoMulti, Plugin.HighReadyResetRotationY.Value * resetErgoMulti, Plugin.HighReadyResetRotationZ.Value * resetErgoMulti);
 
-            Quaternion shortStockTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.ShortStockRotationX.Value * stanceMulti, Plugin.ShortStockRotationY.Value * stanceMulti, Plugin.ShortStockRotationZ.Value * stanceMulti));
+            Vector3 shortTargetRotation = isThirdPerson ? new Vector3(Plugin.ShortStockThirdPersonRotationX.Value, Plugin.ShortStockThirdPersonRotationY.Value, Plugin.ShortStockThirdPersonRotationZ.Value) : new Vector3(Plugin.ShortStockRotationX.Value * stanceMulti, Plugin.ShortStockRotationY.Value * stanceMulti, Plugin.ShortStockRotationZ.Value * stanceMulti);
+            Quaternion shortStockTargetQuaternion = Quaternion.Euler(shortTargetRotation);
             Quaternion shortStockMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.ShortStockAdditionalRotationX.Value * resetErgoMulti, Plugin.ShortStockAdditionalRotationY.Value * resetErgoMulti, Plugin.ShortStockAdditionalRotationZ.Value * resetErgoMulti));
             Quaternion shortStockRevertQuaternion = Quaternion.Euler(Plugin.ShortStockResetRotationX.Value * resetErgoMulti, Plugin.ShortStockResetRotationY.Value * resetErgoMulti, Plugin.ShortStockResetRotationZ.Value * resetErgoMulti);
-            Vector3 shortStockTargetPosition = new Vector3(Plugin.ShortStockOffsetX.Value, Plugin.ShortStockOffsetY.Value, Plugin.ShortStockOffsetZ.Value);
+            Vector3 shortStockTargetPosition = isThirdPerson ? new Vector3(Plugin.ShortStockThirdPersonPositionX.Value, Plugin.ShortStockThirdPersonPositionY.Value, Plugin.ShortStockThirdPersonPositionZ.Value) : new Vector3(Plugin.ShortStockOffsetX.Value, Plugin.ShortStockOffsetY.Value, Plugin.ShortStockOffsetZ.Value);
 
             Quaternion meleeTargetQuaternion = Quaternion.Euler(new Vector3(2.5f * resetErgoMulti, -15f * resetErgoMulti, -1f));
             Quaternion meleeTargetQuaternion2 = Quaternion.Euler(new Vector3(-1.5f * resetErgoMulti, -7.5f * resetErgoMulti, -0.5f));
@@ -779,7 +782,7 @@ namespace RealismMod
                 hasResetShortStock = false;
                 hasResetMelee = true;
 
-                if (StanceTargetPosition != shortStockTargetPosition * thirdPersonMulti)
+                if (StanceTargetPosition != shortStockTargetPosition)
                 {
                     if (!hasResetActiveAim)
                     {
@@ -801,11 +804,11 @@ namespace RealismMod
                     hasResetLowReady = true;
                 }
 
-                if (StanceTargetPosition == shortStockTargetPosition * thirdPersonMulti && StanceBlender.Value >= 1f && !CanResetDamping)
+                if (StanceTargetPosition == shortStockTargetPosition && StanceBlender.Value >= 1f && !CanResetDamping)
                 {
                     DoDampingTimer = true;
                 }
-                else if (StanceTargetPosition != shortStockTargetPosition * thirdPersonMulti || StanceBlender.Value < 1)
+                else if (StanceTargetPosition != shortStockTargetPosition || StanceBlender.Value < 1)
                 {
                     CanResetDamping = false;
                 }
@@ -825,9 +828,9 @@ namespace RealismMod
                 }
 
                 StanceBlender.Speed = Plugin.ShortStockSpeedMulti.Value * stanceMulti * (isThirdPerson ? Plugin.ThirdPersonPositionSpeed.Value : 1f);
-                StanceTargetPosition = Vector3.Lerp(StanceTargetPosition, shortStockTargetPosition * thirdPersonMulti, Plugin.StanceTransitionSpeedMulti.Value * stanceMulti * transitionPositionFactor * dt);
+                StanceTargetPosition = Vector3.Lerp(StanceTargetPosition, shortStockTargetPosition, Plugin.StanceTransitionSpeedMulti.Value * stanceMulti * transitionPositionFactor * dt);
 
-                if ((StanceBlender.Value >= 1f || StanceTargetPosition == shortStockTargetPosition * thirdPersonMulti) && !DidStanceWiggle)
+                if ((StanceBlender.Value >= 1f || StanceTargetPosition == shortStockTargetPosition) && !DidStanceWiggle && !isThirdPerson)
                 {
                     DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(10f, -10f, 50f) * movementFactor, true);
                     DidStanceWiggle = true;
@@ -848,7 +851,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(10f, -10f, -50f) * movementFactor, true);
+                if (!isThirdPerson) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(10f, -10f, -50f) * movementFactor, true);
                 DidStanceWiggle = false;
                 stanceRotation = Quaternion.identity;
                 isResettingShortStock = false;
@@ -903,12 +906,12 @@ namespace RealismMod
                 {
                     if (StanceBlender.Value < 1f)
                     {
-                        rotationSpeed = 3f * stanceMulti * dt * Plugin.HighReadyRotationMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
+                        rotationSpeed = 3f * stanceMulti * dt * Plugin.HighReadyRotationMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value * 0.7f : 1f);
                         stanceRotation = lowReadyTargetQuaternion;
                     }
                     else 
                     {
-                        rotationSpeed = 3f * stanceMulti * dt * Plugin.HighReadyAdditionalRotationSpeedMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
+                        rotationSpeed = 3f * stanceMulti * dt * Plugin.HighReadyAdditionalRotationSpeedMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value * 0.2f : 1f);
                         stanceRotation = highReadyMiniTargetQuaternion;
                     }
                 }
@@ -916,12 +919,12 @@ namespace RealismMod
                 {
                     if (StanceBlender.Value < 1f)
                     {
-                        rotationSpeed = 4f * stanceMulti * dt * Plugin.HighReadyAdditionalRotationSpeedMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f) * transitionRotationFactor;
+                        rotationSpeed = 4f * stanceMulti * dt * Plugin.HighReadyAdditionalRotationSpeedMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value * 0.2f : 1f) * transitionRotationFactor;
                         stanceRotation = highReadyMiniTargetQuaternion;
                     }
                     else
                     {
-                        rotationSpeed = 4f * stanceMulti * dt * Plugin.HighReadyRotationMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value : 1f) * transitionRotationFactor;
+                        rotationSpeed = 4f * stanceMulti * dt * Plugin.HighReadyRotationMulti.Value * (isThirdPerson ? Plugin.ThirdPersonRotationSpeed.Value * 0.7f : 1f) * transitionRotationFactor;
                         stanceRotation = highReadyTargetQuaternion;
                     }
                 }
@@ -929,7 +932,7 @@ namespace RealismMod
                 StanceBlender.Speed = Plugin.HighReadySpeedMulti.Value * stanceMulti * (isThirdPerson ? Plugin.ThirdPersonPositionSpeed.Value : 1f);
                 StanceTargetPosition = Vector3.Lerp(StanceTargetPosition, highReadyTargetPosition, Plugin.StanceTransitionSpeedMulti.Value * stanceMulti * transitionPositionFactor * dt);
 
-                if ((StanceBlender.Value >= 1f || StanceTargetPosition == highReadyTargetPosition) && !DidStanceWiggle)
+                if ((StanceBlender.Value >= 1f || StanceTargetPosition == highReadyTargetPosition) && !DidStanceWiggle && !isThirdPerson)
                 {
                     DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(11f, 5.5f, 50f) * movementFactor, true);
                     DidStanceWiggle = true;
@@ -950,7 +953,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(15, -10, -20) * movementFactor, true); //-10f, -10f, -50f
+                if(!isThirdPerson) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(15, -10, -20) * movementFactor, true); //-10f, -10f, -50f
                 DidStanceWiggle = false;
                 stanceRotation = Quaternion.identity;
                 isResettingHighReady = false;
@@ -1015,7 +1018,7 @@ namespace RealismMod
                 StanceBlender.Speed = Plugin.LowReadySpeedMulti.Value * stanceMulti * (isThirdPerson ? Plugin.ThirdPersonPositionSpeed.Value * 0.8f : 1f);
                 StanceTargetPosition = Vector3.Lerp(StanceTargetPosition, lowReadyTargetPosition, Plugin.StanceTransitionSpeedMulti.Value * stanceMulti * transitionPositionFactor * dt);
 
-                if ((StanceBlender.Value >= 1f || StanceTargetPosition == lowReadyTargetPosition) && !DidStanceWiggle)
+                if ((StanceBlender.Value >= 1f || StanceTargetPosition == lowReadyTargetPosition) && !DidStanceWiggle && !isThirdPerson)
                 {
                     DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(7f, -7f, -50f) * movementFactor, true);
                     DidStanceWiggle = true;
@@ -1038,7 +1041,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(7f, 4f, 25f) * movementFactor, true);
+                if(isThirdPerson) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(7f, 4f, 25f) * movementFactor, true);
                 DidStanceWiggle = false;
                 stanceRotation = Quaternion.identity;
                 isResettingLowReady = false;
@@ -1067,7 +1070,7 @@ namespace RealismMod
                     }
                     if (!hasResetLowReady)
                     {
-                        lowToActive = 0.75f;
+                        lowToActive = 1f;
                     }
                 }
                 else
@@ -1104,7 +1107,7 @@ namespace RealismMod
 
                 StanceBlender.Speed = Plugin.ActiveAimSpeedMulti.Value * stanceMulti * beltfedFactor * (isThirdPerson ? Plugin.ThirdPersonPositionSpeed.Value : 1f);
 
-                if ((StanceBlender.Value >= 1f || StanceTargetPosition == activeAimTargetPosition) && !DidStanceWiggle)
+                if ((StanceBlender.Value >= 1f || StanceTargetPosition == activeAimTargetPosition) && !DidStanceWiggle && !isThirdPerson)
                 {
                     DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-20f, -15f, 0f), true);
                     DidStanceWiggle = true;
@@ -1127,7 +1130,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-10f, 5f, -25f) * movementFactor, true);
+                if(!isThirdPerson) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-10f, 5f, -25f) * movementFactor, true);
                 DidStanceWiggle = false;
 
                 stanceRotation = Quaternion.identity;
