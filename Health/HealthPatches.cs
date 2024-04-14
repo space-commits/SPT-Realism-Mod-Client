@@ -31,6 +31,7 @@ using HealthStateClass = GClass2416<EFT.HealthSystem.ActiveHealthController.GCla
 using MedkitTemplate = IMedkitResource;
 using static EFT.HealthSystem.ActiveHealthController;
 using static GClass2417;
+using Aki.Common.Http;
 
 namespace RealismMod
 {
@@ -281,45 +282,51 @@ namespace RealismMod
         {
             if (!Utils.IsReady)
             {
-                if (Plugin.EnableLogging.Value) 
+                if (Plugin.EnableLogging.Value)
                 {
                     Logger.LogWarning("applying " + item.LocalizedName());
                 }
 
-                FoodClass foodClass = item as FoodClass;
-                if (foodClass != null)
+                if (Plugin.ServerConfig.food_changes) 
                 {
-                    foreach (var buff in foodClass.HealthEffectsComponent.BuffSettings)
+                    FoodClass foodClass = item as FoodClass;
+                    if (foodClass != null)
                     {
-                        if (buff.BuffType == EStimulatorBuffType.EnergyRate)
+                        foreach (var buff in foodClass.HealthEffectsComponent.BuffSettings)
                         {
-                            if (buff.Value > 0)
+                            if (buff.BuffType == EStimulatorBuffType.EnergyRate)
                             {
-                                __instance.ChangeEnergy(buff.Value * buff.Duration);
+                                if (buff.Value > 0)
+                                {
+                                    __instance.ChangeEnergy(buff.Value * buff.Duration);
+                                }
+                            }
+                            if (buff.BuffType == EStimulatorBuffType.HydrationRate)
+                            {
+                                if (buff.Value > 0)
+                                {
+                                    __instance.ChangeHydration(buff.Value * buff.Duration);
+                                }
                             }
                         }
-                        if (buff.BuffType == EStimulatorBuffType.HydrationRate)
+                        return;
+                    }
+                }
+                if (Plugin.ServerConfig.med_changes)
+                {
+                    MedsClass medsClass = item as MedsClass;
+                    if (medsClass != null)
+                    {
+                        string medType = MedProperties.MedType(medsClass);
+                        //need to get surgery kit working later, doesnt want to remove hp resource.
+                        if (medType == "medkit") // || medType == "surg"
                         {
-                            if (buff.Value > 0)
-                            {
-                                __instance.ChangeHydration(buff.Value * buff.Duration);
-                            }
+                            restoreHP(__instance, bodyPart, MedProperties.HPRestoreAmount(medsClass));
+                            /*             medsClass.MedKitComponent.HpResource -= 1f;
+                                         medsClass.MedKitComponent.Item.RaiseRefreshEvent(false, true);*/
+                            return;
                         }
                     }
-                    return;
-                }
-                MedsClass medsClass = item as MedsClass;
-                if (medsClass != null)
-                {
-                    string medType = MedProperties.MedType(medsClass);
-                    //need to get surgery kit working later, doesnt want to remove hp resource.
-                    if (medType == "medkit") // || medType == "surg"
-                    {
-                        restoreHP(__instance, bodyPart, MedProperties.HPRestoreAmount(medsClass));
-           /*             medsClass.MedKitComponent.HpResource -= 1f;
-                        medsClass.MedKitComponent.Item.RaiseRefreshEvent(false, true);*/
-                        return;
-                    }   
                 }
             }
         }

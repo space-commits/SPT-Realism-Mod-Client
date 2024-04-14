@@ -35,6 +35,7 @@ namespace RealismMod
         public bool gear_weight { get; set; }
         public bool reload_changes { get; set; }
         public bool manual_chambering { get; set; }
+        public bool food_changes { get; set; }
     }
 
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.pluginVersion)]
@@ -734,7 +735,6 @@ namespace RealismMod
             if (ServerConfig.med_changes)
             {
                 new ApplyItemPatch().Enable();
-                new ApplyItemStashPatch().Enable();
                 new BreathIsAudiblePatch().Enable();
                 new ProceedPatch().Enable();
                 new RemoveEffectPatch().Enable();
@@ -745,9 +745,15 @@ namespace RealismMod
                 new RestoreBodyPartPatch().Enable();
                 new FlyingBulletPatch().Enable();
                 new ToggleHeadDevicePatch().Enable();
+            }
+            //needed for food and meds
+            if (ServerConfig.med_changes || ServerConfig.food_changes)
+            {
+                new ApplyItemStashPatch().Enable();
                 new StimStackPatch1().Enable();
                 new StimStackPatch2().Enable();
             }
+
         }
 
         float deltaTime = 0f;
