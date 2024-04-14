@@ -40,7 +40,6 @@ namespace RealismMod
         {
             if (__instance.Weapon.HasChambers && __instance.Weapon.Chambers.Length == 1 && __instance.Weapon.ChamberAmmoCount == 0 && !__instance.IsStationaryWeapon)
             {
-                Logger.LogWarning("CCCCCCCCCCCCCCCCCHOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMBER");
                 Plugin.BlockChambering = true;
             }
         }
