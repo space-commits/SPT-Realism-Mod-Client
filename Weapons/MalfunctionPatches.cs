@@ -35,76 +35,69 @@ namespace RealismMod
 
             if (player.ActiveHealthController != null)
             {
-                InventoryControllerClass inventoryController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
-                if (player.IsYourPlayer) 
+                if (player.IsYourPlayer)
                 {
                     Plugin.RealHealthController.AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 0f, 10f, 5f, 1f);
                     Plugin.RealHealthController.AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 0f, 10f, 5f, 1f);
                     Plugin.RealHealthController.AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 0f, 10f, 5f, 1f);
                     Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.Head, null, null, null, null);
                     Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.RightArm, null, null, null, null);
-                    NotificationManagerClass.DisplayWarningNotification("Catastrophic Failure. Wrong Ammo/Weapon Caliber Combination.", EFT.Communications.ENotificationDurationType.Long);
                 }
                 player.ActiveHealthController.ApplyDamage(EBodyPart.Head, UnityEngine.Random.Range(5, 20), DamageTypeClass.Existence);
                 player.ActiveHealthController.ApplyDamage(EBodyPart.RightArm, UnityEngine.Random.Range(20, 60), DamageTypeClass.Existence);
 
-                inventoryController.TryThrowItem(fc.Item, null);
+                InventoryControllerClass inventoryController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
+                if (fc.Item != null && inventoryController.CanThrow(fc.Item))
+                {
+                    inventoryController.TryThrowItem(fc.Item, null, false);
+                }
+
             }
         }
 
-        [PatchPrefix]
-        private static bool Prefix(Player.FirearmController __instance, ref Weapon.EMalfunctionState __result, BulletClass ammoToFire)
+        [PatchPostfix]
+        private static void Postfix(Player.FirearmController __instance, ref Weapon.EMalfunctionState __result, BulletClass ammoToFire)
         {
+         
             Player player = (Player)playerField.GetValue(__instance);
-
-            if (__instance.Weapon.AmmoCaliber == "9x18PM" && ammoToFire.Template._id == "57371aab2459775a77142f22")
+            if (__instance.Weapon.AmmoCaliber != ammoToFire.Caliber)
             {
                 __instance.Weapon.Repairable.Durability = Mathf.Max(__instance.Weapon.Repairable.Durability - (__instance.Weapon.DurabilityBurnRatio * ammoToFire.DurabilityBurnModificator), 0f);
                 int rnd = UnityEngine.Random.Range(1, 10);
                 float dura = 2f - (__instance.Weapon.Repairable.Durability / __instance.Weapon.Repairable.MaxDurability);
-                if (__instance.Weapon.Repairable.Durability <= 75f && rnd <= 4 * dura)
-                {
-                    ExplodeWeapon(__instance, player);
-                    __result = Weapon.EMalfunctionState.HardSlide;
-                    return false;
-                }
-            }
-            if (__instance.Weapon.AmmoCaliber != ammoToFire.Caliber)
-            {
-                bool explosiveMismatch = (__instance.Weapon.AmmoCaliber == "366TKM" && ammoToFire.Caliber == "762x39") || (__instance.Weapon.AmmoCaliber == "556x45NATO" && ammoToFire.Caliber == "762x35") || (__instance.Weapon.AmmoCaliber == "762x51" && ammoToFire.Caliber == "68x51") || (__instance.Weapon.AmmoCaliber == "762x39" && ammoToFire.Caliber == "366TKM");
-                bool malfMismatch = (__instance.Weapon.AmmoCaliber == "762x35" && ammoToFire.Caliber == "556x45NATO") || (__instance.Weapon.AmmoCaliber == "68x51" && ammoToFire.Caliber == "762x51");
+                bool do9x18Explodey = __instance.Weapon.Repairable.Durability <= 75f && rnd <= 4 * dura && __instance.Weapon.AmmoCaliber == "9x18PM" && ammoToFire.Template._id == "57371aab2459775a77142f22";
+                bool explosiveMismatch = do9x18Explodey || (__instance.Weapon.AmmoCaliber == "366TKM" && ammoToFire.Caliber == "762x39") || (__instance.Weapon.AmmoCaliber == "556x45NATO" && ammoToFire.Caliber == "762x35") || (__instance.Weapon.AmmoCaliber == "762x51" && ammoToFire.Caliber == "68x51");
+                bool malfMismatch = (__instance.Weapon.AmmoCaliber == "762x39" && ammoToFire.Caliber == "366TKM") || (__instance.Weapon.AmmoCaliber == "762x35" && ammoToFire.Caliber == "556x45NATO") || (__instance.Weapon.AmmoCaliber == "68x51" && ammoToFire.Caliber == "762x51");
 
                 if (player.IsYourPlayer)
                 {
                     if (__instance.Weapon.Repairable.MaxDurability <= 0f || malfMismatch)
                     {
+                        NotificationManagerClass.DisplayWarningNotification("Possible Wrong Ammo/Weapon Caliber Combination.", EFT.Communications.ENotificationDurationType.Long);
                         __result = Weapon.EMalfunctionState.Misfire;
-                        return false;
+                        return;
                     }
 
                     if (explosiveMismatch)
                     {
+                        NotificationManagerClass.DisplayWarningNotification("Catastrophic Failure. Wrong Ammo/Weapon Caliber Combination.", EFT.Communications.ENotificationDurationType.Long);
                         ExplodeWeapon(__instance, player);
-                        __result = Weapon.EMalfunctionState.HardSlide;
-                        return false;
                     }
                 }
                 else
                 {
-                    if (explosiveMismatch)
-                    {
-                        ExplodeWeapon(__instance, player);
-                        __result = Weapon.EMalfunctionState.HardSlide;
-                        return false;
-                    }
                     if (__instance.Weapon.Repairable.MaxDurability <= 0f || malfMismatch)
                     {
                         __result = Weapon.EMalfunctionState.Misfire;
-                        return false;
+                        return;
                     }
+                    if (explosiveMismatch)
+                    {
+                        ExplodeWeapon(__instance, player);
+                    }
+    
                 }
             }
-            return true;
         }
     }
 

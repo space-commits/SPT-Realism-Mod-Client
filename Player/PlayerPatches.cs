@@ -12,10 +12,8 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using WeaponSkills = EFT.SkillManager.GClass1771;
-using StaminaLevelClass = GClass753<float>;
 using WeightClass = GClass754<float>;
 using Comfort.Common;
-using ProcessorClass = GClass2213;
 using InputClass = Class1451;
 using static EFT.Player;
 using StatusStruct = GStruct414<GInterface324>;
@@ -62,13 +60,13 @@ namespace RealismMod
             {
                 Player player = Utils.GetYourPlayer();
                 FirearmController fc = player.HandsController as FirearmController;
-                if (!Plugin.CanLoadChamber && fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1 && fc.Weapon.ChamberAmmoCount == 0 && fc.Weapon.GetCurrentMagazine() != null && fc.Weapon.GetCurrentMagazine().Count > 0)
+                if (player.MovementContext.CurrentState.Name != EPlayerState.Stationary && !Plugin.CanLoadChamber && fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1 && fc.Weapon.ChamberAmmoCount == 0 && fc.Weapon.GetCurrentMagazine() != null && fc.Weapon.GetCurrentMagazine().Count > 0)
                 {
                     RechamberRound(fc, player);
                     return false;
                 }
             }
-            if (command == ECommand.ToggleGoggles)
+            if (command == ECommand.ToggleGoggles || command == ECommand.ChangeScope || command == ECommand.ChangeScopeMagnification)
             {
                 AimController.HeadDeviceStateChanged = true;
             }
@@ -79,7 +77,7 @@ namespace RealismMod
                 FirearmController fc = player.HandsController as FirearmController;
                 StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.75f, 0.75f, 1.25f));
             }
-            if (Plugin.BlockFiring.Value && command == ECommand.ToggleShooting && StanceController.CurrentStance != EStance.None && StanceController.CurrentStance != EStance.ActiveAiming && StanceController.CurrentStance != EStance.ShortStock && StanceController.CurrentStance != EStance.PistolCompressed)
+            if (Plugin.BlockFiring.Value && command == ECommand.ToggleShooting && !Plugin.RealHealthController.HasOverdosed && StanceController.CurrentStance != EStance.None && StanceController.CurrentStance != EStance.ActiveAiming && StanceController.CurrentStance != EStance.ShortStock && StanceController.CurrentStance != EStance.PistolCompressed)
             {
                 StanceController.CurrentStance = EStance.None;
                 StanceController.StoredStance = EStance.None;
@@ -113,7 +111,7 @@ namespace RealismMod
             {
                 WeaponSkills weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
                 PlayerState.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
-                PlayerState.ReloadSkillMulti = Mathf.Max(1, ((weaponInfo.ReloadSpeed - 1f) * 0.5f) + 1f);
+                PlayerState.ReloadSkillMulti = weaponInfo.ReloadSpeed;
                 PlayerState.FixSkillMulti = weaponInfo.FixSpeed;
                 PlayerState.WeaponSkillErgo = weaponInfo.DeltaErgonomics;
                 PlayerState.AimSkillADSBuff = weaponInfo.AimSpeed;
@@ -206,119 +204,6 @@ namespace RealismMod
                 StatCalc.CalcPlayerWeightStats(__instance);
                 StatCalc.SetGearParamaters(__instance);
             }
-        }
-    }
-
-    public class BreathProcessPatch : ModulePatch
-    {
-        private static FieldInfo breathIntensityField;
-        private static FieldInfo shakeIntensityField;
-        private static FieldInfo breathFrequencyField;
-        private static FieldInfo cameraSensetivityField;
-        private static FieldInfo baseHipRandomAmplitudesField; 
-        private static FieldInfo shotEffectorField;
-        private static FieldInfo handsRotationSpringField;
-        private static FieldInfo processorsField;
-        private static FieldInfo lackOfOxygenStrengthField;
-
-        protected override MethodBase GetTargetMethod()
-        {
-            breathIntensityField = AccessTools.Field(typeof(BreathEffector), "_breathIntensity");
-            shakeIntensityField = AccessTools.Field(typeof(BreathEffector), "_shakeIntensity");
-            breathFrequencyField = AccessTools.Field(typeof(BreathEffector), "_breathFrequency");
-            cameraSensetivityField = AccessTools.Field(typeof(BreathEffector), "_cameraSensetivity");
-            baseHipRandomAmplitudesField = AccessTools.Field(typeof(BreathEffector), "_baseHipRandomAmplitudes");
-            shotEffectorField = AccessTools.Field(typeof(BreathEffector), "_shotEffector");
-            handsRotationSpringField = AccessTools.Field(typeof(BreathEffector), "_handsRotationSpring");
-            lackOfOxygenStrengthField = AccessTools.Field(typeof(BreathEffector), "_lackOfOxygenStrength");
-            processorsField = AccessTools.Field(typeof(BreathEffector), "_processors");
-
-            return typeof(BreathEffector).GetMethod("Process", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static bool PatchPrefix(BreathEffector __instance, float deltaTime)
-        {
-           float breathFrequency = (float)AccessTools.Field(typeof(BreathEffector), "_breathFrequency").GetValue(__instance);
-           float cameraSensetivity = (float)AccessTools.Field(typeof(BreathEffector), "_cameraSensetivity").GetValue(__instance);
-           Vector2 baseHipRandomAmplitudes = (Vector2)AccessTools.Field(typeof(BreathEffector), "_baseHipRandomAmplitudes").GetValue(__instance);
-           ShotEffector  shotEffector = (ShotEffector)AccessTools.Field(typeof(BreathEffector), "_shotEffector").GetValue(__instance);
-           Spring handsRotationSpring = (Spring)AccessTools.Field(typeof(BreathEffector), "_handsRotationSpring").GetValue(__instance);
-           AnimationCurve lackOfOxygenStrength = (AnimationCurve)AccessTools.Field(typeof(BreathEffector), "_lackOfOxygenStrength").GetValue(__instance);
-           ProcessorClass[] processors = (ProcessorClass[])AccessTools.Field(typeof(BreathEffector), "_processors").GetValue(__instance);
-
-            float amplGain = Mathf.Sqrt(__instance.AmplitudeGain.Value);
-            __instance.HipXRandom.Amplitude = Mathf.Clamp(baseHipRandomAmplitudes.x + amplGain, 0f, 3f);
-            __instance.HipZRandom.Amplitude = Mathf.Clamp(baseHipRandomAmplitudes.y + amplGain, 0f, 3f);
-            __instance.HipXRandom.Hardness = (__instance.HipZRandom.Hardness = __instance.Hardness.Value);
-            shakeIntensityField.SetValue(__instance, 1f);
-            bool isInjured = __instance.TremorOn || __instance.Fracture || Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed;
-            float intensityHolder = 1f;
-
-            if (Time.time < __instance.StiffUntill)
-            {
-                float intensity = Mathf.Clamp(-__instance.StiffUntill + Time.time + 1f, isInjured ? 0.75f : 0.3f, 1f);
-                breathIntensityField.SetValue(__instance, intensity * __instance.Intensity);
-                shakeIntensityField.SetValue(__instance, intensity);
-                intensityHolder = intensity;
-            }
-            else
-            {
-                float holdBreathBonusSway = __instance.Physical.HoldingBreath ? 0.4f : 1f;
-                float holdBreathBonusUpDown = __instance.Physical.HoldingBreath ? 0.3f : 1f;
-                float t = lackOfOxygenStrength.Evaluate(__instance.OxygenLevel);
-                float b = __instance.IsAiming ? 0.75f : 1f;
-                breathIntensityField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, b, t), 1f, 1.5f) * __instance.Intensity * holdBreathBonusUpDown);
-                breathFrequencyField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, 1f, t), 1f, 2.5f) * deltaTime * holdBreathBonusSway);
-                shakeIntensityField.SetValue(__instance, holdBreathBonusSway);
-                cameraSensetivityField.SetValue(__instance, Mathf.Lerp(2f, 0f, t) * __instance.Intensity);
-                breathFrequency = (float)AccessTools.Field(typeof(BreathEffector), "_breathFrequency").GetValue(__instance);
-                cameraSensetivity = (float)AccessTools.Field(typeof(BreathEffector), "_cameraSensetivity").GetValue(__instance);
-            }
-
-            StaminaLevelClass staminaLevel = __instance.StaminaLevel;
-            __instance.YRandom.Amplitude = __instance.BreathParams.AmplitudeCurve.Evaluate(staminaLevel);
-            float stamFactor = __instance.BreathParams.Delay.Evaluate(staminaLevel);
-            __instance.XRandom.MinMaxDelay = (__instance.YRandom.MinMaxDelay = new Vector2(stamFactor / 2f, stamFactor));
-            __instance.YRandom.Hardness = __instance.BreathParams.Hardness.Evaluate(staminaLevel);
-            float randomY = __instance.YRandom.GetValue(deltaTime);
-            float randomX = __instance.XRandom.GetValue(deltaTime);
-            handsRotationSpring.AddAcceleration(new Vector3(Mathf.Max(0f, -randomY) * (1f - staminaLevel) * 2f, randomY, randomX) * ((float)shakeIntensityField.GetValue(__instance) * __instance.Intensity));
-            Vector3 breathVector = Vector3.zero;
-          
-            if (isInjured)
-            {
-                Logger.LogWarning("do sway injury");
-                float tremorSpeed = __instance.TremorOn ? deltaTime : (deltaTime / 2f);
-                tremorSpeed *= intensityHolder;
-                float tremorXRandom = __instance.TremorXRandom.GetValue(tremorSpeed);
-                float tremorYRandom = __instance.TremorYRandom.GetValue(tremorSpeed);
-                float tremorZRnadom = __instance.TremorZRandom.GetValue(tremorSpeed);
-                if ((__instance.Fracture || Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed) && !__instance.IsAiming)
-                {
-                    Logger.LogWarning("do sway tremor");
-                    tremorXRandom += Mathf.Max(0f, randomY) * Mathf.Lerp(1f, 100f / __instance.EnergyFractureLimit, staminaLevel);
-                }
-                breathVector = new Vector3(tremorXRandom, tremorYRandom, tremorZRnadom) * __instance.Intensity;
-            }
-            else if (!__instance.IsAiming && RecoilController.IsFiring)
-            {
-                breathVector = new Vector3(__instance.HipXRandom.GetValue(deltaTime), 0f, __instance.HipZRandom.GetValue(deltaTime)) * (__instance.Intensity * __instance.HipPenalty);
-            }
-
-            if (Vector3.SqrMagnitude(breathVector - shotEffector.CurrentRecoilEffect.HandRotationRecoilEffect.Offset) > 0.01f)
-            {
-                shotEffector.CurrentRecoilEffect.HandRotationRecoilEffect.Offset = Vector3.Lerp(shotEffector.CurrentRecoilEffect.HandRotationRecoilEffect.Offset, breathVector, 0.1f);
-            }
-            else
-            {
-                shotEffector.CurrentRecoilEffect.HandRotationRecoilEffect.Offset = breathVector;
-            }
-
-            float breathFactor = StanceController.BlockBreathEffect ? 0f : StanceController.MountingBreathReduction;
-            processors[0].ProcessRaw(breathFrequency, (float)breathIntensityField.GetValue(__instance) * breathFactor * 0.75f); 
-            processors[1].ProcessRaw(breathFrequency, (float)breathIntensityField.GetValue(__instance) * cameraSensetivity * breathFactor * 0.75f);
-            return false;
         }
     }
 
@@ -494,7 +379,7 @@ namespace RealismMod
                         newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = Mathf.Lerp(newRecoil.HandRotationRecoil.CategoryIntensityMultiplier, fc.Weapon.Template.RecoilCategoryMultiplierHandRotation * Plugin.RecoilIntensity.Value * stockedPistolFactor, 0.01f);
                         newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = Mathf.Lerp(newRecoil.HandRotationRecoil.ReturnTrajectoryDumping, fc.Weapon.Template.RecoilReturnPathDampingHandRotation * Plugin.HandsDampingMulti.Value, 0.01f);
                         player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping, fc.Weapon.Template.RecoilDampingHandRotation * Plugin.RecoilDampingMulti.Value, 0.01f);
-                        player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.45f, 0.01f);
+                        player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.41f, 0.01f);
                         player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, RecoilController.BaseTotalConvergence, 0.01f);
                     }
                     else

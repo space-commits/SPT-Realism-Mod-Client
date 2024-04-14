@@ -14,13 +14,13 @@ namespace RealismMod
     {
         public const float convVRecoilConversion = -0.75f;
 
-        public const float ErgoWeightMult = 13.55f;
-        public const float ErgoTorqueMult = 0.82f;
+        public const float ErgoWeightMult = 13.5f;
+        public const float ErgoTorqueMult = 0.8f;
         public const float PistolErgoWeightMult = 12.6f;
         public const float PistolErgoTorqueMult = 1.0f;
 
         public const float VRecoilWeightMult = 2f;
-        public const float VRecoilTorqueMult = 0.9f;
+        public const float VRecoilTorqueMult = 0.87f;
         public const float PistolVRecoilWeightMult = 1.5f;
         public const float PistolVRecoilTorqueMult = 1.5f;
 
@@ -54,7 +54,7 @@ namespace RealismMod
         public const float HandDampingPistolMin = 0.2f;
         public const float HandDampingPistolMax = 0.9f;
 
-        public const float MagWeightMult = 16f;
+        public const float MagWeightMult = 16.5f;
 
         public static void CalcPlayerWeightStats(Player player)
         {
@@ -89,6 +89,7 @@ namespace RealismMod
                 {
                     break;
                 }
+           
                 reloadMulti *= GearStats.ReloadSpeedMulti(armorComponent.Item);
                 ArmorTemplate armorTemplate = armorComponent.Template as ArmorTemplate;
 
@@ -126,7 +127,7 @@ namespace RealismMod
             {
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 StatCalc.MagReloadSpeedModifier(weapon, magazine, false, true);
-                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadInjuryMulti * PlayerState.ReloadSkillMulti * PlayerState.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.7f)), 0.45f, 1.3f));
+                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadInjuryMulti * PlayerState.ReloadSkillMulti * PlayerState.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.7f)), 0.5f, 1.35f));
             }
             else
             {
@@ -169,7 +170,7 @@ namespace RealismMod
             }
 
             WeaponStats.NewMagReloadSpeed *= Plugin.GlobalReloadSpeedMulti.Value;
-            WeaponStats.CurrentMagReloadSpeed *= Plugin.GlobalReloadSpeedMulti.Value; ;
+            WeaponStats.CurrentMagReloadSpeed *= Plugin.GlobalReloadSpeedMulti.Value; 
         }
 
         public static float ErgoWeightCalc(float totalWeight, float ergoDelta, float totalTorque, string weapClass)
@@ -206,14 +207,15 @@ namespace RealismMod
             float baseChamberCheckSpeed = WeaponStats.BaseChamberCheckSpeed(weap);
             float baseChamberSpeed = WeaponStats.BaseChamberSpeed(weap);
             float baseReloadSpeed = WeaponStats.BaseReloadSpeed(weap);
-            float recoilMulti = (1f + (-1f * WeaponStats.PureRecoilDelta));
-            float ergoWeightMulti = (1f - (ergoWeight / 100f));
+            float recoilMulti = 1f + (-1f * WeaponStats.PureRecoilDelta);
+            float ergoWeightMulti = 1f - (ergoWeight / 100f);
+            float ergoWeightLessMagMulti = 1f - (ergonomicWeightLessMag / 100f);
 
             totalFixSpeed = Mathf.Clamp(baseFixSpeed * ergoWeightMulti * chamberSpeedMod, WeaponStats.MinChamberSpeed(weap), WeaponStats.MaxChamberSpeed(weap));
             totalFiringChamberSpeed = Mathf.Clamp(baseChamberSpeed * ergoWeightMulti * chamberSpeedMod * recoilMulti, WeaponStats.MinChamberSpeed(weap), WeaponStats.MaxChamberSpeed(weap));
             totalChamberSpeed = Mathf.Clamp(baseChamberSpeed * ergoWeightMulti * chamberSpeedMod, WeaponStats.MinChamberSpeed(weap), WeaponStats.MaxChamberSpeed(weap));
             totalChamberCheckSpeed = Mathf.Clamp(baseChamberCheckSpeed * ergoWeightMulti * chamberSpeedMod, WeaponStats.MinChamberSpeed(weap), WeaponStats.MaxChamberSpeed(weap));
-            totalReloadSpeedLessMag = Mathf.Clamp(baseReloadSpeed * (1f - (ergonomicWeightLessMag / 100f)) * reloadSpeedMod, WeaponStats.MinReloadSpeed(weap), WeaponStats.MaxReloadSpeed(weap));
+            totalReloadSpeedLessMag = Mathf.Clamp(baseReloadSpeed * ergoWeightLessMagMulti * reloadSpeedMod, WeaponStats.MinReloadSpeed(weap), WeaponStats.MaxReloadSpeed(weap));
             totalAimMoveSpeedFactor = Mathf.Max(1f - (ergoWeight / 150f), 0.5f);
         }
 

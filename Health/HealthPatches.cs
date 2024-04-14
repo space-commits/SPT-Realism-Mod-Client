@@ -30,9 +30,38 @@ using PhysicalClass = GClass681;
 using HealthStateClass = GClass2416<EFT.HealthSystem.ActiveHealthController.GClass2415>;
 using MedkitTemplate = IMedkitResource;
 using static EFT.HealthSystem.ActiveHealthController;
+using static GClass2417;
+using Aki.Common.Http;
 
 namespace RealismMod
 {
+
+    public class HealthEffectsConstructorPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(HealthEffectsComponent).GetConstructor(new Type[] { typeof(Item), typeof(IHealthEffect) });
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(HealthEffectsComponent __instance, Item item)
+        {
+            string medType = MedProperties.MedType(item);
+
+            if (item.Template._parent == "5448f3a64bdc2d60728b456a")
+            {
+                List<ItemAttributeClass> stimAtt = item.Attributes;
+                ItemAttributeClass stimAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.StimType);
+                stimAttClass.Name = ENewItemAttributeId.StimType.GetName();
+                stimAttClass.StringValue = () => Plugin.RealHealthController.GetStimType(item.TemplateId).ToString();
+                stimAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                stimAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                stimAttClass.LessIsGood = false;
+                stimAtt.Add(stimAttClass);
+            }
+        }
+    }
+
     public class MedkitConstructorPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -79,10 +108,37 @@ namespace RealismMod
         {
             string medType = MedProperties.MedType(item);
 
+            if (item.Template._parent == "5448f3a64bdc2d60728b456a") 
+            {
+                List<ItemAttributeClass> stimAtt = item.Attributes;
+                ItemAttributeClass stimAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.StimType);
+                stimAttClass.Name = ENewItemAttributeId.StimType.GetName();
+                stimAttClass.StringValue = () => Plugin.RealHealthController.GetStimType(item.TemplateId).ToString();
+                stimAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                stimAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                stimAttClass.LessIsGood = false;
+                stimAtt.Add(stimAttClass);
+                Logger.LogWarning("2324");
+            }
+
             if (medType == "trnqt" || medType == "medkit" || medType == "surg")
             {
                 string hBleedType = MedProperties.HBleedHealType(item);
                 float hpPerTick = medType != "surg" ? -MedProperties.HpPerTick(item) : MedProperties.HpPerTick(item);
+
+                if (medType == "medkit") 
+                {
+                    float hp = MedProperties.HPRestoreAmount(item);
+                    List<ItemAttributeClass> hbAtt = item.Attributes;
+                    ItemAttributeClass hpAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.OutOfRaidHP);
+                    hpAttClass.Name = ENewItemAttributeId.OutOfRaidHP.GetName();
+                    hpAttClass.Base = () => hp;
+                    hpAttClass.StringValue = () => hp.ToString();
+                    hpAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    hpAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                    hpAttClass.LessIsGood = false;
+                    hbAtt.Add(hpAttClass);
+                }
 
                 if (hBleedType != "none")
                 {
@@ -142,8 +198,26 @@ namespace RealismMod
         }
     }
 
+    public class StimStackPatch2 : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
+            Type genericType = typeof(Class1884<>); //declare generic type
+            Type constructedType = genericType.MakeGenericType(new Type[] { nestedType }); //construct type at runtime using nested type
+            return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
+        }
 
-    public class StimStackPatch : ModulePatch
+        [PatchPrefix]
+        private static bool Prefix(ref bool __result) //can use dynamic type for instance
+        {
+            __result = false;
+            return false;
+        }
+    }
+
+
+    public class StimStackPatch1 : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -153,18 +227,11 @@ namespace RealismMod
             return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }
 
-
-        private static void Prefix(ref bool __result) //can use dynamic type for instance
+        [PatchPrefix]
+        private static bool Prefix(ref bool __result)
         {
-            Logger.LogWarning("stacking prefix ");
             __result = false;
-        }
-
-        [PatchPostfix]
-        private static void PostFix(ref bool __result) //can use dynamic type for instance
-        {
-            Logger.LogWarning("stacking after result = " + __result);
-            __result = false;
+            return false;
         }
     }
 
@@ -177,12 +244,95 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(PhysicalClass __instance,ref bool __result)
         {
-            __result = !__instance.HoldingBreath && ((__instance.StaminaParameters.StaminaExhaustionStartsBreathSound && __instance.Stamina.Exhausted) || __instance.Oxygen.Exhausted || Plugin.RealHealthController.HasOverdosed);
+            __result = !__instance.HoldingBreath && ((__instance.StaminaParameters.StaminaExhaustionStartsBreathSound && __instance.Stamina.Exhausted) || __instance.Oxygen.Exhausted || Plugin.RealHealthController.HasOverdosed || (Plugin.RealHealthController.PainStrength > Plugin.RealHealthController.PainEffectThreshold && Plugin.RealHealthController.PainStrength > Plugin.RealHealthController.PainReliefStrength));
             return false;
         }
     }
 
-    //in-raid healing
+    //out-of-raid
+    public class ApplyItemStashPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(HealthControllerClass).GetMethod("ApplyItem", BindingFlags.Instance | BindingFlags.Public);
+
+        }
+
+        private static void restoreHP(HealthControllerClass controller, EBodyPart initialTarget, float hpToRestore) 
+        {
+            if (initialTarget != EBodyPart.Common)
+            {
+                controller.ChangeHealth(initialTarget, hpToRestore, ExistanceClass.MedKitUse);
+                return;
+            }
+
+            foreach (EBodyPart bodyPart in Plugin.RealHealthController.PossibleBodyParts)
+            {
+                if (hpToRestore <= 0) break;
+                float hpMissing = controller.GetBodyPartHealth(bodyPart).Maximum - controller.GetBodyPartHealth(bodyPart).Current;
+                if (hpMissing <= 0) continue;
+                float hpToUse = Math.Min(hpMissing, hpToRestore);
+                controller.ChangeHealth(bodyPart, hpToUse, ExistanceClass.MedKitUse);
+                hpToRestore -= hpToUse;
+            }
+        }
+
+        [PatchPostfix]
+        private static void Postfix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
+        {
+            if (!Utils.IsReady)
+            {
+                if (Plugin.EnableLogging.Value)
+                {
+                    Logger.LogWarning("applying " + item.LocalizedName());
+                }
+
+                if (Plugin.ServerConfig.food_changes) 
+                {
+                    FoodClass foodClass = item as FoodClass;
+                    if (foodClass != null)
+                    {
+                        foreach (var buff in foodClass.HealthEffectsComponent.BuffSettings)
+                        {
+                            if (buff.BuffType == EStimulatorBuffType.EnergyRate)
+                            {
+                                if (buff.Value > 0)
+                                {
+                                    __instance.ChangeEnergy(buff.Value * buff.Duration);
+                                }
+                            }
+                            if (buff.BuffType == EStimulatorBuffType.HydrationRate)
+                            {
+                                if (buff.Value > 0)
+                                {
+                                    __instance.ChangeHydration(buff.Value * buff.Duration);
+                                }
+                            }
+                        }
+                        return;
+                    }
+                }
+                if (Plugin.ServerConfig.med_changes)
+                {
+                    MedsClass medsClass = item as MedsClass;
+                    if (medsClass != null)
+                    {
+                        string medType = MedProperties.MedType(medsClass);
+                        //need to get surgery kit working later, doesnt want to remove hp resource.
+                        if (medType == "medkit") // || medType == "surg"
+                        {
+                            restoreHP(__instance, bodyPart, MedProperties.HPRestoreAmount(medsClass));
+                            /*             medsClass.MedKitComponent.HpResource -= 1f;
+                                         medsClass.MedKitComponent.Item.RaiseRefreshEvent(false, true);*/
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //in-raid
     public class ApplyItemPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -238,8 +388,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(EFT.Player __instance, EBoundItem quickSlot)
         {
-            InventoryControllerClass inventoryCont = (InventoryControllerClass)AccessTools.Property(typeof(EFT.Player), Utils.SetQuickSlotItemInvClassRef).GetValue(__instance);
-            Item boundItem = inventoryCont.Inventory.FastAccess.GetBoundItem(quickSlot);
+            Item boundItem = __instance.GClass2761_0.Inventory.FastAccess.GetBoundItem(quickSlot);
             FoodClass food = boundItem as FoodClass;
             if (boundItem != null && (food = (boundItem as FoodClass)) != null)
             {
@@ -290,8 +439,6 @@ namespace RealismMod
         {
             //I had to do this previously due to the type being protected, no longer is the case. Keeping for reference.
             /* BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);*/
-
-            Logger.LogWarning("body party state patch");
 
             HealthStateClass.BodyPartState bodyPartState = __instance.Dictionary_0[bodyPart];
             SkillManager skills = (SkillManager)AccessTools.Field(typeof(ActiveHealthController), "skillManager_0").GetValue(__instance);
@@ -447,7 +594,7 @@ namespace RealismMod
                         Plugin.RealHealthController.DmgTracker.TotalExhaustionDamage += damage;
                         return;
                     }
-                    if ((damageType == EDamageType.Fall && damage <= 12f))
+                    if ((damageType == EDamageType.Fall && damage <= 20f))
                     {
                         Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage, damageType);
                         return;
@@ -457,7 +604,7 @@ namespace RealismMod
                         Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
                         return;
                     }
-                    if (damageType == EDamageType.Blunt && damage <= 5f)
+                    if (damageType == EDamageType.Blunt && damage <= 7.5f)
                     {
                         Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
                         return;
@@ -496,21 +643,19 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
         {
-
-            if (meds.Template._parent == "5448f3a64bdc2d60728b456a") 
-            {
-
-                int duration = (int)meds.HealthEffectsComponent.BuffSettings[0].Duration * 2;
-                int delay = (int)meds.HealthEffectsComponent.BuffSettings[0].Delay;
-                StimShellEffect stimEffect = new StimShellEffect(__instance, duration, delay, Plugin.RealHealthController.GetStimType(meds.Template._id));
-                Plugin.RealHealthController.AddCustomEffect(stimEffect, true);
-    
-/*                __instance.HealthController.ApplyItem(meds, EBodyPart.Head, null);
-*/                return true;
-            }
-
             if (__instance.IsYourPlayer)
             {
+                if (meds.Template._parent == "5448f3a64bdc2d60728b456a")
+                {
+                    int duration = (int)meds.HealthEffectsComponent.BuffSettings[0].Duration * 2;
+                    int delay = (int)meds.HealthEffectsComponent.BuffSettings[0].Delay;
+                    EStimType stimType = Plugin.RealHealthController.GetStimType(meds.Template._id);
+                    StimShellEffect stimEffect = new StimShellEffect(__instance, duration, delay, stimType);
+                    Plugin.RealHealthController.AddCustomEffect(stimEffect, true);
+
+                    return true;
+                }
+
                 string medType = MedProperties.MedType(meds);
 
                 if (MedProperties.CanBeUsedInRaid(meds) == false)
@@ -703,92 +848,117 @@ namespace RealismMod
         }
     }
 
-   /* //IT WILL AFFECT BOTS, UNUSED
-    public class EnergyRatePatch : ModulePatch
+    //patch itself works, so possible to patch methods of nested types
+/*    public class ExistenceEnergyDrainPatch : ModulePatch
     {
-
-        private static Type _targetType;
-        private static MethodInfo _targetMethod;
-
-        public EnergyRatePatch()
-        {
-            _targetType = AccessTools.TypeByName("Existence");
-            _targetMethod = AccessTools.Method(_targetType, "method_5");
-        }
-
         protected override MethodBase GetTargetMethod()
         {
-            return _targetMethod;
-        }
-
-        private static float GetDecayRate(Player player)
-        {
-            float energyDecayRate = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyLoopTime;
-            if (player.HealthController.IsBodyPartDestroyed(EBodyPart.Stomach))
-            {
-                energyDecayRate /= Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.DestroyedStomachEnergyTimeFactor;
-            }
-            return energyDecayRate;
+            Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Existence", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
+            return nestedType.GetMethod("method_5", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref float __result)
+        private static bool Prefix(ref float __result, dynamic __instance) //can use dynamic type for instance
         {
-            if (Utils.IsReady && !Utils.IsInHideout())
+
+            if (__instance.HealthController.Player.IsYourPlayer)
             {
-                Player player = Utils.GetPlayer();
-                float num = 1f - player.Skills.HealthHydration;
-                __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num * PlayerStats.HealthResourceRateFactor / GetDecayRate(player);
-                if (Plugin.EnableLogging.Value)
+                Player player = __instance.HealthController.Player;
+                float skillFactor = 1f - player.Skills.HealthEnergy;
+                float baseDrain = ActiveHealthController.GClass2415.GClass2424_0.Existence.EnergyDamage + Plugin.active
+                __result = *skillFactor / this.float_16;
+                return false;
+            }
+
+        }
+    }
+*/
+    /* //IT WILL AFFECT BOTS, UNUSED
+     public class EnergyRatePatch : ModulePatch
+     {
+
+         private static Type _targetType;
+         private static MethodInfo _targetMethod;
+
+         public EnergyRatePatch()
+         {
+             _targetType = AccessTools.TypeByName("Existence");
+             _targetMethod = AccessTools.Method(_targetType, "method_5");
+         }
+
+         protected override MethodBase GetTargetMethod()
+         {
+             return _targetMethod;
+         }
+
+         private static float GetDecayRate(Player player)
+         {
+             float energyDecayRate = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyLoopTime;
+             if (player.HealthController.IsBodyPartDestroyed(EBodyPart.Stomach))
+             {
+                 energyDecayRate /= Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.DestroyedStomachEnergyTimeFactor;
+             }
+             return energyDecayRate;
+         }
+
+         [PatchPrefix]
+         private static bool Prefix(ref float __result)
+         {
+             if (Utils.IsReady && !Utils.IsInHideout())
+             {
+                 Player player = Utils.GetPlayer();
+                 float num = 1f - player.Skills.HealthHydration;
+                 __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num * PlayerStats.HealthResourceRateFactor / GetDecayRate(player);
+                 if (Plugin.EnableLogging.Value)
+                 {
+                     Logger.LogWarning("modified energy decay = " + __result);
+                     Logger.LogWarning("original energy decay = " + Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num / GetDecayRate(player));
+                 }
+                 return false;
+             }
+             return true;
+
+         }
+     }*/
+
+    /*    //IT WILL AFFECT BOTS, UNUSED
+        public class HydoRatePatch : ModulePatch
+        {
+            private static Type _targetType;
+            private static MethodInfo _targetMethod;
+
+            public HydoRatePatch()
+            {
+                _targetType = AccessTools.TypeByName("Existence");
+                _targetMethod = AccessTools.Method(_targetType, "method_6");
+            }
+
+            protected override MethodBase GetTargetMethod()
+            {
+                return _targetMethod;
+            }
+
+            private static float GetDecayRate(Player player)
+            {
+                float energyDecayRate = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.HydrationLoopTime;
+                if (player.HealthController.IsBodyPartDestroyed(EBodyPart.Stomach))
                 {
-                    Logger.LogWarning("modified energy decay = " + __result);
-                    Logger.LogWarning("original energy decay = " + Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num / GetDecayRate(player));
+                    energyDecayRate /= Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.DestroyedStomachHydrationTimeFactor;
                 }
-                return false;
+                return energyDecayRate;
             }
-            return true;
 
-        }
-    }*/
-
-/*    //IT WILL AFFECT BOTS, UNUSED
-    public class HydoRatePatch : ModulePatch
-    {
-        private static Type _targetType;
-        private static MethodInfo _targetMethod;
-
-        public HydoRatePatch()
-        {
-            _targetType = AccessTools.TypeByName("Existence");
-            _targetMethod = AccessTools.Method(_targetType, "method_6");
-        }
-
-        protected override MethodBase GetTargetMethod()
-        {
-            return _targetMethod;
-        }
-
-        private static float GetDecayRate(Player player)
-        {
-            float energyDecayRate = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.HydrationLoopTime;
-            if (player.HealthController.IsBodyPartDestroyed(EBodyPart.Stomach))
+            [PatchPrefix]
+            private static bool Prefix(ref float __result)
             {
-                energyDecayRate /= Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.DestroyedStomachHydrationTimeFactor;
+                if (Utils.IsReady && !Utils.IsInHideout())
+                {
+                    Player player = Utils.GetPlayer();
+                    float num = 1f - player.Skills.HealthHydration;
+                    __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.HydrationDamage * num * PlayerStats.HealthResourceRateFactor / GetDecayRate(player);
+                    return false;
+                }
+                return true;
             }
-            return energyDecayRate;
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(ref float __result)
-        {
-            if (Utils.IsReady && !Utils.IsInHideout())
-            {
-                Player player = Utils.GetPlayer();
-                float num = 1f - player.Skills.HealthHydration;
-                __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.HydrationDamage * num * PlayerStats.HealthResourceRateFactor / GetDecayRate(player);
-                return false;
-            }
-            return true;
-        }
-    }*/
+        }*/
 }

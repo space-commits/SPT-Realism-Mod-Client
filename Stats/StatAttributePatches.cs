@@ -74,7 +74,9 @@ namespace RealismMod
             PainKillerStrength,
             MeleeDamage,
             MeleePen,
-            BallisticCoefficient
+            BallisticCoefficient,
+            OutOfRaidHP,
+            StimType
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -122,7 +124,7 @@ namespace RealismMod
                 case ENewItemAttributeId.BluntThroughput:
                     return "AVG. BLUNT DAMAGE REDUCTION";
                 case ENewItemAttributeId.ShotDispersion:
-                    return "SHOT SPREAD REDUCTION";
+                    return "BUCKSHOT SPREAD";
                 case ENewItemAttributeId.CanSpall:
                     return "CAN SPALL";
                 case ENewItemAttributeId.SpallReduction:
@@ -155,6 +157,10 @@ namespace RealismMod
                     return "MELEE DAMAGE";
                 case ENewItemAttributeId.MeleePen:
                     return "MELEE PENETRATION";
+                case ENewItemAttributeId.OutOfRaidHP:
+                    return "OUT-OF-RAID HP RESTORATION";
+                case ENewItemAttributeId.StimType:
+                    return "STIM TYPE";
                 default:
                     return id.ToString();
             }

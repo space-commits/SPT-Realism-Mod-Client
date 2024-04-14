@@ -11,6 +11,7 @@ using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2415;
 using ExistanceClass = GClass2456;
 using InterfaceOne = GInterface237;
 using InterfaceTwo = GInterface252;
+using EFT.InventoryLogic;
 
 namespace RealismMod
 {
@@ -284,7 +285,6 @@ namespace RealismMod
         {
             if (!addedEffect) 
             {
-                Utils.Logger.LogWarning("haven't added effect yet, adding");
                 _Player.ActiveHealthController.AddEffect<ResourceRateChange>(BodyPart, 0f, null, 0f, 0f, null);
                 addedEffect = true;
             }
@@ -345,6 +345,7 @@ namespace RealismMod
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
         public EStimType StimType { get; }
+        private bool hasRemovedTrnqt = false;
 
         public StimShellEffect(Player player, int? dur, int delay, EStimType stimType)
         {
@@ -361,6 +362,14 @@ namespace RealismMod
         {
             if (Delay <= 0)
             {
+
+                if (!hasRemovedTrnqt && (StimType == EStimType.Regenerative || StimType == EStimType.Clotting))
+                {
+                    Plugin.RealHealthController.RemoveEffectsOfType(EHealthEffectType.Tourniquet);
+                    NotificationManagerClass.DisplayMessageNotification("Removing Tourniquet Effects Due To Stim Type: " + StimType, EFT.Communications.ENotificationDurationType.Long);
+                    hasRemovedTrnqt = true;
+                }
+
                 Duration--;
                 if (Duration <= 0) Duration = 0;
             }
@@ -442,15 +451,13 @@ namespace RealismMod
         public override void RegularUpdate(float deltaTime)
         {
             this.time += deltaTime;
-            if (this.time < 3f)
+            if (this.time < 3f) 
             {
                 return;
             }
             this.time -= 3f;
             this.resourcePerTick = Plugin.RealHealthController.ResourcePerTick;
-            base.HealthController.ChangeEnergy(-this.resourcePerTick);
-            base.HealthController.ChangeHydration(-this.resourcePerTick);
-            this.SetHealthRatesPerSecond(0f, -this.resourcePerTick, -this.resourcePerTick, 0f);
+            this.SetHealthRatesPerSecond(0f, -this.resourcePerTick * Plugin.EnergyRateMulti.Value, -this.resourcePerTick * Plugin.HydrationRateMulti.Value, 0f);
         }
 
         private float resourcePerTick;

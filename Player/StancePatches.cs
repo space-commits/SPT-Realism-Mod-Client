@@ -22,39 +22,6 @@ using ChartAndGraph;
 
 namespace RealismMod
 {
-    /*  public class LaserLateUpdatePatch : ModulePatch
-      {
-          protected override MethodBase GetTargetMethod()
-          {
-              return typeof(LaserBeam).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.Public);
-          }
-
-          [PatchPrefix]
-          private static bool Prefix(LaserBeam __instance)
-          {
-              if (Utils.IsReady)
-              {
-                  if ((StanceController.IsHighReady || StanceController.IsLowReady) && !Plugin.IsAiming)
-                  {
-                      Vector3 playerPos = Singleton<GameWorld>.Instance.AllAlivePlayersList[0].Transform.position;
-                      Vector3 lightPos = __instance.gameObject.transform.position;
-                      float distanceFromPlayer = Vector3.Distance(lightPos, playerPos);
-                      if (distanceFromPlayer <= 1.8f)
-                      {
-                          return false;
-                      }
-                      return true;
-                  }
-                  return true;
-              }
-              else
-              {
-                  return true;
-              }
-          }
-      }
-  */
-
     public class MuzzleSmokePatch : ModulePatch
     {
         private static Vector3 target = Vector3.zero;
@@ -173,9 +140,9 @@ namespace RealismMod
         private static int timer = 0;
         private static MaterialType[] allowedMats = { MaterialType.Helmet, MaterialType.BodyArmor, MaterialType.Body, MaterialType.Glass, MaterialType.GlassShattered, MaterialType.GlassVisor };
 
-        private static Vector3 startLeftDir = new Vector3(0.1f, 0f, 0f);
-        private static Vector3 startRightDir = new Vector3(-0.1f, 0f, 0f);
-        private static Vector3 startDownDir = new Vector3(0f, 0f, -0.12f);
+        private static Vector3 startLeftDir = new Vector3(0.12f, 0f, 0f);
+        private static Vector3 startRightDir = new Vector3(-0.12f, 0f, 0f);
+        private static Vector3 startDownDir = new Vector3(0f, 0f, -0.14f);
 
 
         private static Vector3 wiggleLeftDir = new Vector3(2.5f, 7.5f, -10f);
@@ -274,7 +241,7 @@ namespace RealismMod
 
                     if (hitBalls as BodyPartCollider != null)
                     {
-                        player.Skills.FistfightAction.Complete(1f);
+                        player.ExecuteSkill(new Action(() => player.Skills.FistfightAction.Complete(1f)));
                     }
 
                     if (hitBalls.TypeOfMaterial == MaterialType.Glass || hitBalls.TypeOfMaterial == MaterialType.GlassShattered)
@@ -295,6 +262,7 @@ namespace RealismMod
                         Vector3 shotDirection = vector;
                         DamageInfo damageInfo = new DamageInfo
                         {
+                            SourceId = fc.Weapon.Id,
                             DamageType = EDamageType.Melee,
                             Damage = damage,
                             PenetrationPower = pen,
@@ -377,7 +345,7 @@ namespace RealismMod
                 if (StanceController.IsBracing) 
                 {
                     float mountOrientationBonus = StanceController.BracingDirection == EBracingDirection.Top ? 0.75f : 1f;
-                    float mountingRecoilLimit = WeaponStats.IsStocklessPistol ? 0.1f : 0.65f;
+                    float mountingRecoilLimit = WeaponStats.IsStocklessPistol ? 0.25f : 0.75f;
 
                     if (!StanceController.BlockBreathEffect) 
                     {
@@ -386,7 +354,7 @@ namespace RealismMod
                     }
 
                     StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, 0.85f * mountOrientationBonus, 0.04f);
-                    StanceController.MountingRecoilBonus = Mathf.Clamp(mountingRecoilLimit * mountOrientationBonus, 0.1f, 1f);
+                    StanceController.MountingRecoilBonus = Mathf.Clamp(mountingRecoilLimit * mountOrientationBonus, 0.25f, 1f);
                 }
                 else
                 {
@@ -584,6 +552,33 @@ namespace RealismMod
         }
     }
 
+    public class ChangePosePatch : ModulePatch
+    {
+        private static FieldInfo movementContextField;
+        private static FieldInfo playerField;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            movementContextField = AccessTools.Field(typeof(MovementState), "MovementContext");
+            playerField = AccessTools.Field(typeof(MovementContext), "_player");
+            return typeof(MovementState).GetMethod("ChangePose", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+
+        [PatchPrefix]
+        private static void Prefix(MovementState __instance)
+        {
+            MovementContext movementContext = (MovementContext)movementContextField.GetValue(__instance);
+            Player player = (Player)playerField.GetValue(movementContext);
+
+            if (player.IsYourPlayer)
+            {
+                StanceController.IsMounting = false;
+            }
+        }
+    }
+
+
     public class SetTiltPatch : ModulePatch
     {
         private static FieldInfo movementContextField;
@@ -627,7 +622,7 @@ namespace RealismMod
     {
         private static FieldInfo aimSpeedField;
         private static FieldInfo blindFireStrength;
-        private static FieldInfo aimingQuatField;
+        private static FieldInfo scopeRotationField;
         private static FieldInfo weapRotationField;
         private static FieldInfo isAimingField;
         private static FieldInfo weaponPositionField;
@@ -680,7 +675,7 @@ namespace RealismMod
             aimSpeedField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed");
             blindFireStrength = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_blindfireStrength");
             weaponPositionField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryPosition");
-            aimingQuatField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_targetScopeRotation");
+            scopeRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_targetScopeRotation");
             weapRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryRotation");
             isAimingField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_isAiming");
             currentRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_cameraIdenity");
@@ -699,10 +694,10 @@ namespace RealismMod
                 return;
             }
             Player player = (Player)playerField.GetValue(firearmController);
-            if (player != null)
+            if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 float pitch = (float)blindFireStrength.GetValue(__instance);
-                Quaternion aimingQuat = (Quaternion)aimingQuatField.GetValue(__instance);
+                Quaternion scopeRotation = (Quaternion)scopeRotationField.GetValue(__instance);
                 Vector3 weaponPosition = (Vector3)weaponPositionField.GetValue(__instance);
                 Quaternion weapRotation = (Quaternion)weapRotationField.GetValue(__instance);
 
@@ -736,7 +731,7 @@ namespace RealismMod
                     StanceController.DoMounting(player, __instance, firearmController, ref weaponPosition, ref mountWeapPosition, dt, __instance.HandsContainer.WeaponRoot.position);
                     weaponPositionField.SetValue(__instance, weaponPosition);
 
-                    currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? aimingQuat : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
+                    currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesReset ? scopeRotation : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
 
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponPosition, weapRotation * currentRotation);
 
@@ -813,9 +808,9 @@ namespace RealismMod
 
                     ////peaceful positon//// (player.AIData.BotOwner.Memory.IsPeace == true && !StanceController.botsToUseTacticalStances.Contains(player.AIData.BotOwner.Profile.Info.Settings.Role.ToString()) && !player.IsSprintEnabled && !__instance.IsAiming && !player.AIData.BotOwner.ShootData.Shooting && (Time.time - player.AIData.BotOwner.ShootData.LastTriggerPressd) > 20f)
 
-                    if (player.AIData.BotOwner.GetPlayer.MovementContext.BlindFire == 0)
+                    if (player.AIData.BotOwner.GetPlayer.MovementContext.BlindFire == 0 && player.MovementContext.StationaryWeapon == null)
                     {
-                        if (isPeace && !player.IsSprintEnabled && player.MovementContext.StationaryWeapon == null && !__instance.IsAiming && !firearmController.IsInReloadOperation() && !firearmController.IsInventoryOpen() && !firearmController.IsInInteractionStrictCheck() && !firearmController.IsInSpawnOperation() && !firearmController.IsHandsProcessing()) // && player.AIData.BotOwner.WeaponManager.IsWeaponReady &&  player.AIData.BotOwner.WeaponManager.InIdleState()
+                        if (isPeace && !player.IsSprintEnabled && !__instance.IsAiming && !firearmController.IsInReloadOperation() && !firearmController.IsInventoryOpen() && !firearmController.IsInInteractionStrictCheck() && !firearmController.IsInSpawnOperation() && !firearmController.IsHandsProcessing()) // && player.AIData.BotOwner.WeaponManager.IsWeaponReady &&  player.AIData.BotOwner.WeaponManager.InIdleState()
                         {
                             isInStance = true;
                             player.MovementContext.SetPatrol(true);
@@ -887,7 +882,7 @@ namespace RealismMod
                         }
                     }
 
-                    currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && !isInStance ? aimingQuat : isInStance ? targetRotation : Quaternion.identity, isInStance ? stanceSpeed : 8f * dt);
+                    currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && !isInStance ? scopeRotation : isInStance ? targetRotation : Quaternion.identity, isInStance ? stanceSpeed : 8f * dt);
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponPosition, weapRotation * currentRotation);
                     currentRotationField.SetValue(__instance, currentRotation);
                 }
@@ -900,7 +895,7 @@ namespace RealismMod
         private static FieldInfo aimSpeedField;
         private static FieldInfo compensatoryField;
         private static FieldInfo displacementStrField;
-        private static FieldInfo aimingQuatField;
+        private static FieldInfo scopeRotationField;
         private static FieldInfo weapTempRotationField;
         private static FieldInfo weapTempPositionField;
         private static FieldInfo isAimingField;
@@ -935,7 +930,7 @@ namespace RealismMod
             aimSpeedField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed");
             compensatoryField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_compensatoryScale");
             displacementStrField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_displacementStr");
-            aimingQuatField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_targetScopeRotation");
+            scopeRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_targetScopeRotation");
             weapTempPositionField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryPosition");
             weapTempRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryRotation");
             isAimingField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_isAiming");
@@ -954,7 +949,7 @@ namespace RealismMod
                 return;
             }
             Player player = (Player)playerField.GetValue(firearmController);
-            if (player != null && player.IsYourPlayer)
+            if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 FirearmController fc = player.HandsController as FirearmController;
 
@@ -963,7 +958,7 @@ namespace RealismMod
                 float aimSpeed = (float)aimSpeedField.GetValue(__instance);
                 float compensatoryScale = (float)compensatoryField.GetValue(__instance);
                 float displacementStr = (float)displacementStrField.GetValue(__instance);
-                Quaternion aimingQuat = (Quaternion)aimingQuatField.GetValue(__instance);
+                Quaternion aimingQuat = (Quaternion)scopeRotationField.GetValue(__instance);
                 Vector3 weapTempPosition = (Vector3)weapTempPositionField.GetValue(__instance);
                 Quaternion weapTempRotation = (Quaternion)weapTempRotationField.GetValue(__instance);
                 bool isAiming = (bool)isAimingField.GetValue(__instance);

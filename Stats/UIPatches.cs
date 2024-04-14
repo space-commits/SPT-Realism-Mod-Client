@@ -361,6 +361,10 @@ namespace RealismMod
         {
             return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod) == "762x39";
         }
+        private static bool IsMulti366(Mod mod)
+        {
+            return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod) == "366TKM";
+        }
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref string __result)
         {
@@ -384,6 +388,11 @@ namespace RealismMod
                 __result = "762x39";
                 return false;
             }
+            if (__instance.Mods.Any(IsMulti366))
+            {
+                __result = "366TKM";
+                return false;
+            }
             return true;
         }
     }
@@ -404,7 +413,7 @@ namespace RealismMod
             shotDispAtt.Name = ENewItemAttributeId.ShotDispersion.GetName();
             shotDispAtt.Base = () => shotDisp;
             shotDispAtt.StringValue = () => $"{shotDisp}%";
-            shotDispAtt.LessIsGood = false;
+            shotDispAtt.LessIsGood = true;
             shotDispAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
             shotDispAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
             Utils.SafelyAddAttributeToList(shotDispAtt, __instance);

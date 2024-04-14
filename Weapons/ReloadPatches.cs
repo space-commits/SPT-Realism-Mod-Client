@@ -38,7 +38,7 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(FirearmController __instance)
         {
-            if (__instance.Weapon.HasChambers && __instance.Weapon.Chambers.Length == 1 && __instance.Weapon.ChamberAmmoCount == 0)
+            if (__instance.Weapon.HasChambers && __instance.Weapon.Chambers.Length == 1 && __instance.Weapon.ChamberAmmoCount == 0 && !__instance.IsStationaryWeapon)
             {
                 Plugin.BlockChambering = true;
             }
@@ -59,7 +59,7 @@ namespace RealismMod
         {
             var fc = (FirearmController)AccessTools.Field(typeof(ChamberWeaponClass), "firearmController_0").GetValue( __instance);
             var player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(fc);
-            if (player.IsYourPlayer) 
+            if (player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary) 
             {
                 if (fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1) 
                 {
@@ -147,7 +147,7 @@ namespace RealismMod
             var fc = (FirearmController)AccessTools.Field(typeof(ReloadWeaponClass), "firearmController_0").GetValue(__instance);
             var player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(fc);
 
-            if (player.IsYourPlayer)
+            if (player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 Plugin.CanLoadChamber = true;
                 Plugin.BlockChambering = false;
@@ -166,7 +166,7 @@ namespace RealismMod
         private static bool Prefix(FirearmsAnimator __instance, int count)
         {
             Player player = Utils.GetYourPlayer();
-            if (player == null) return true;
+            if (player == null || player.MovementContext.CurrentState.Name == EPlayerState.Stationary) return true;
             FirearmController fc = player.HandsController as FirearmController;
             if (player.HandsAnimator == __instance as ObjectInHandsAnimator || fc == null)
             {
@@ -190,7 +190,7 @@ namespace RealismMod
         private static void Prefix(FirearmsAnimator __instance, ref bool compatible)
         {
             Player player = Utils.GetYourPlayer();
-            if (player == null) return;
+            if (player == null || player.MovementContext.CurrentState.Name == EPlayerState.Stationary) return;
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
             if (fc == null) return;
             if (fc.FirearmsAnimator == __instance)
@@ -229,7 +229,7 @@ namespace RealismMod
                     float highReadyBonus = fc.Item.WeapClass == "shotgun" && StanceController.CurrentStance == EStance.HighReady == true ? StanceController.HighReadyManipBuff : 1f;
                     float lowReadyBonus = fc.Item.WeapClass != "shotgun" && StanceController.CurrentStance == EStance.LowReady == true ? StanceController.LowReadyManipBuff : 1f;
 
-                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.4f);
+                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.45f);
                     player.HandsAnimator.SetAnimationSpeed(IntenralMagReloadSpeed);
 
                     if (Plugin.EnableLogging.Value == true)
@@ -250,8 +250,11 @@ namespace RealismMod
     public class ChamberCheckUIPatch : ModulePatch
     {
         private static FieldInfo ammoCountPanelField;
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
             ammoCountPanelField = AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel");
             return typeof(Player.FirearmController).GetMethod("CheckChamber", BindingFlags.Instance | BindingFlags.Public);
         }
@@ -259,19 +262,23 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance)
         {
-            AmmoCountPanel panelUI = (AmmoCountPanel)ammoCountPanelField.GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
-            Slot slot = __instance.Weapon.Chambers.FirstOrDefault<Slot>();
-            BulletClass bulletClass = (slot == null) ? null : (slot.ContainedItem as BulletClass);
-            if (bulletClass != null)
+            Player player = (Player)playerField.GetValue(__instance);
+            if (player.IsYourPlayer) 
             {
-                string name = bulletClass.LocalizedName();
-                panelUI.Show("", name);
-            }
-            else 
-            {
-                if (__instance.Weapon.Chambers.Length == 1) 
+                AmmoCountPanel panelUI = (AmmoCountPanel)ammoCountPanelField.GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
+                Slot slot = __instance.Weapon.Chambers.FirstOrDefault<Slot>();
+                BulletClass bulletClass = (slot == null) ? null : (slot.ContainedItem as BulletClass);
+                if (bulletClass != null)
                 {
-                    panelUI.Show("Empty");
+                    string name = bulletClass.LocalizedName();
+                    panelUI.Show("", name);
+                }
+                else
+                {
+                    if (__instance.Weapon.Chambers.Length == 1)
+                    {
+                        panelUI.Show("Empty");
+                    }
                 }
             }
         }
@@ -333,28 +340,17 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(FirearmsAnimator).GetMethod("SetWeaponLevel", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(FirearmsAnimator).GetMethod("SetWeaponLevel");
         }
 
         [PatchPostfix]
         private static void PatchPostfix(FirearmsAnimator __instance, float weaponLevel)
         {
-            Player player = Utils.GetYourPlayer();
-            if (player == null) return;
-            Player.FirearmController fc = player.HandsController as Player.FirearmController;
-            if (fc == null) return;
-            if (fc.FirearmsAnimator == __instance)
+            if (WeaponStats._WeapClass == "shotgun")
             {
-                if (WeaponStats._WeapClass == "shotgun")
-                {
-                    if (weaponLevel < 3)
-                    {
-                        weaponLevel += 1;
-                    }
-                    WeaponAnimationSpeedControllerClass.SetWeaponLevel(__instance.Animator, weaponLevel);
-                }
+                weaponLevel = Mathf.Clamp(weaponLevel + 1, 1, 3);
+                WeaponAnimationSpeedControllerClass.SetWeaponLevel(__instance.Animator, weaponLevel);
             }
- 
         }
     }
 
@@ -437,6 +433,7 @@ namespace RealismMod
                     float totalCheckChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerState.FixSkillMulti * PlayerState.ReloadInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.8f);
                     __instance.FirearmsAnimator.SetAnimationSpeed(totalCheckChamberSpeed);
 
+                    player.ExecuteSkill(new Action(() => player.Skills.WeaponFixAction.Complete(1f)));
 
                     if (Plugin.EnableLogging.Value == true)
                     {
@@ -449,7 +446,6 @@ namespace RealismMod
                 StanceController.CancelLowReady = true;
                 StanceController.CancelHighReady = true;
                 StanceController.CancelShortStock = true;
-                StanceController.CancelActiveAim = true;
             }
         }
     }
@@ -562,6 +558,8 @@ namespace RealismMod
                     }
 
                     float totalRechamberSpeed = Mathf.Clamp(chamberSpeed * PlayerState.FixSkillMulti * PlayerState.ReloadInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.5f);
+
+                    player.ExecuteSkill(new Action(() => player.Skills.WeaponFixAction.Complete(1f)));
 
                     fc.FirearmsAnimator.SetAnimationSpeed(totalRechamberSpeed);
 
@@ -773,7 +771,7 @@ namespace RealismMod
             {
                 FirearmsAnimator fa = (FirearmsAnimator)faField.GetValue(__instance);
 
-                float totalReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.3f);
+                float totalReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.35f);
                 fa.SetAnimationSpeed(totalReloadSpeed);
 
                 if (Plugin.EnableLogging.Value == true)
@@ -803,7 +801,7 @@ namespace RealismMod
             if (fc == null) return;
             if (fc.FirearmsAnimator == __instance)
             {
-                float totalReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.3f);
+                float totalReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.35f);
                 __instance.SetAnimationSpeed(totalReloadSpeed);
 
                 if (Plugin.EnableLogging.Value == true)
@@ -828,7 +826,7 @@ namespace RealismMod
         {
             if (PlayerState.IsMagReloading == true)
             {
-                float totalReloadSpeed = Mathf.Clamp(WeaponStats.NewMagReloadSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * PlayerState.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.3f);
+                float totalReloadSpeed = Mathf.Clamp(WeaponStats.NewMagReloadSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * PlayerState.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.35f);
                 __instance.SetAnimationSpeed(totalReloadSpeed);
 
                 if (Plugin.EnableLogging.Value == true)
