@@ -24,6 +24,95 @@ using ProcessorClass = GClass2213;
 
 namespace RealismMod
 {
+    public class CamRecoilPatch : ModulePatch
+    {
+        private static FieldInfo playerField;
+        private static FieldInfo fcField;
+        private static float camSpeed = 1f;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
+            fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
+            return typeof(ProceduralWeaponAnimation).GetMethod("method_19", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool PatchPrefix(ProceduralWeaponAnimation __instance, float deltaTime)
+        {
+            FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
+            if (firearmController == null) return false;
+            Player player = (Player)playerField.GetValue(firearmController);
+            if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
+            {
+                float _cameraRecoilLerpTempSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_cameraRecoilLerpTempSpeed").GetValue(__instance);
+                Quaternion _currentRecoilCameraRotate = (Quaternion)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_currentRecoilCameraRotate").GetValue(__instance);
+                Quaternion _previousCameraTargetRotation = (Quaternion)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_previousCameraTargetRotation").GetValue(__instance);
+
+                player.ProceduralWeaponAnimation.CameraToWeaponAngleSpeedRange.x = Plugin.test1.Value;
+                player.ProceduralWeaponAnimation.CameraToWeaponAngleSpeedRange.y = Plugin.test2.Value;
+
+                Vector3 _headRotationVec = (Vector3)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_headRotationVec").GetValue(__instance);
+                if (_headRotationVec != Vector3.zero)
+                {
+                    return false;
+                }
+                Vector3 current = Vector3.zero; //
+                bool autoFireOn;
+                if (((autoFireOn = (__instance.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect as NewRotationRecoilProcess).AutoFireOn) & __instance.IsAiming) && current != Vector3.zero)
+                {
+                    if (!__instance.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.StableOn)
+                    {
+                        Quaternion localRotation = __instance.HandsContainer.CameraTransform.localRotation;
+                        localRotation.y = 0f;
+                        Quaternion rhs = Quaternion.Euler(current);
+                        Quaternion quaternion = localRotation * rhs;
+                        camSpeed = Mathf.Clamp(camSpeed + __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y);
+                        Quaternion quaternion2 = Quaternion.Lerp(_currentRecoilCameraRotate, quaternion, camSpeed);
+                        __instance.HandsContainer.CameraTransform.localRotation = quaternion2;
+                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_previousCameraTargetRotation").SetValue(__instance, quaternion);
+                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_currentRecoilCameraRotate").SetValue(__instance, quaternion2);
+                        return false;
+                    }
+                    camSpeed = Mathf.Clamp(camSpeed + __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y);
+                    Quaternion quaternion3 = Quaternion.Lerp(_currentRecoilCameraRotate, _previousCameraTargetRotation, camSpeed);
+                    __instance.HandsContainer.CameraTransform.localRotation = quaternion3;
+                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_currentRecoilCameraRotate").SetValue(__instance, quaternion3);
+
+                    return false;
+                }
+                else
+                {
+                    if (!autoFireOn & __instance.IsAiming)
+                    {
+                        Quaternion localRotation2 = __instance.HandsContainer.CameraTransform.localRotation;
+                        localRotation2.y = 0f;
+                        Quaternion rhs2 = Quaternion.Euler(current);
+                        Quaternion quaternion4 = localRotation2 * rhs2;
+                        camSpeed = Mathf.Clamp(camSpeed - __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y);
+                        Quaternion quaternion5 = Quaternion.Lerp(_currentRecoilCameraRotate, quaternion4, camSpeed);
+                        __instance.HandsContainer.CameraTransform.localRotation = quaternion5;
+                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_previousCameraTargetRotation").SetValue(__instance, quaternion4);
+                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_currentRecoilCameraRotate").SetValue(__instance, quaternion5);
+                        return false;
+                    }
+                    if (!__instance.IsAiming)
+                    {
+                        Quaternion localRotation3 = __instance.HandsContainer.CameraTransform.localRotation;
+                        camSpeed = Mathf.Clamp(camSpeed - __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y);
+                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_cameraRecoilLerpTempSpeed").SetValue(__instance, camSpeed);
+                        Quaternion quaternion6 = Quaternion.Lerp(_currentRecoilCameraRotate, localRotation3, __instance.CameraToWeaponAngleSpeedRange.y);
+                        __instance.HandsContainer.CameraTransform.localRotation = quaternion6;
+                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_previousCameraTargetRotation").SetValue(__instance, localRotation3);
+                        AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_currentRecoilCameraRotate").SetValue(__instance, quaternion6);
+                    }
+                    return false;
+                }
+            }
+            return false;
+        }
+    }
+
     public class UpdateWeaponVariablesPatch : ModulePatch
     {
         private static FieldInfo playerField;

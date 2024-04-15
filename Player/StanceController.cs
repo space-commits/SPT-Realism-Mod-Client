@@ -1041,7 +1041,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                if(isThirdPerson) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(7f, 4f, 25f) * movementFactor, true);
+                if(!isThirdPerson) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(7f, 4f, 25f) * movementFactor, true);
                 DidStanceWiggle = false;
                 stanceRotation = Quaternion.identity;
                 isResettingLowReady = false;
