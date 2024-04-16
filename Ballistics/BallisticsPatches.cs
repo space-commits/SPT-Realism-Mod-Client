@@ -451,14 +451,15 @@ namespace RealismMod
                 EBodyPartColliderType partHit = EBodyPartColliderType.None;
                 if (damageInfo.BodyPartColliderType == EBodyPartColliderType.None)
                 {
-                    BallisticCollider hittedBallisticCollider = damageInfo.HittedBallisticCollider;
-                    BodyPartCollider bodyPartCollider = (BodyPartCollider)hittedBallisticCollider;
+                    BodyPartCollider bodyPartCollider = (BodyPartCollider)damageInfo.HittedBallisticCollider;
                     partHit = bodyPartCollider.BodyPartColliderType;
                 }
                 else 
                 {
                     partHit = damageInfo.BodyPartColliderType;
                 }
+
+                BallisticsController.ModifyDamageByHitZone(partHit, ref damageInfo);
 
                 bool hasArmArmor = false;
                 bool hasLegProtection = false;
@@ -487,7 +488,6 @@ namespace RealismMod
                 {
                     playBodyHitSound(bodyPartType, damageInfo.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
                 }
-                BallisticsController.ModifyDamageByHitZone(partHit, ref damageInfo);
 
                 float KE = 1f;
                 AmmoTemplate ammoTemp = null;
