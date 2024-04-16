@@ -285,7 +285,7 @@ namespace RealismMod
         {
             if (!addedEffect) 
             {
-                _Player.ActiveHealthController.AddEffect<ResourceRateChange>(BodyPart, 0f, null, 0f, 0f, null);
+                _Player.ActiveHealthController.AddEffect<ResourceRateDrain>(BodyPart, 0f, null, 0f, 0f, null);
                 addedEffect = true;
             }
         }
@@ -439,7 +439,7 @@ namespace RealismMod
 
     }
 
-    public class ResourceRateChange : EffectClass, IEffect, InterfaceOne, InterfaceTwo
+    public class ResourceRateDrain : EffectClass, IEffect, InterfaceOne, InterfaceTwo
     {
         public override void Started()
         {

@@ -655,7 +655,7 @@ namespace RealismMod
                 __instance.method_3(out finalRecoilRadian);
 
                 //Reset camera recoil values and modify by various factors
-                float camShotFactor = RecoilController.ShotCount > 1 ? Mathf.Min((RecoilController.ShotCount * 0.1f) + 1f, 1.4f) : 1f;
+                float camShotFactor = RecoilController.ShotCount > 1 ? Mathf.Min((RecoilController.ShotCount * 0.1f) + 1f, 1.55f) : 1f;
                 float totalCamRecoil = RecoilController.BaseTotalCamRecoil * incomingForce * PlayerState.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti * camShotFactor * Plugin.CamMulti.Value;
                 RecoilController.FactoredTotalCamRecoil = totalCamRecoil;
                 __instance.ShotRecoilProcessValues[3].IntensityMultiplicator = totalCamRecoil;

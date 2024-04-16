@@ -1457,18 +1457,22 @@ namespace RealismMod
             PlayerState.ErgoDeltaInjuryMulti = Mathf.Clamp(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactorInverse * skillFactorInverse, 1f, 1.5f * percentHydroLimitErgo);
             PlayerState.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactorInverse * skillFactorInverse, 1f, 1.15f * percentHydroLimitRecoil);
 
-            if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach))
+
+            if (Plugin.ResourceRateChanges.Value)
             {
-                ResourceRateEffect resEffect = new ResourceRateEffect(null, player, 0);
-                AddCustomEffect(resEffect, false);
-            }
-            else 
-            {
-                float playerWeightFactor = PlayerState.TotalModifiedWeight >= 10f ? PlayerState.TotalModifiedWeight / 400f : 0f;
-                float sprintMulti = PlayerState.IsSprinting ? 1.5f : 1f;
-                float sprintFactor = PlayerState.IsSprinting ? 0.125f : 0f;
-                float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * (1f - player.Skills.HealthEnergy);
-                ResourcePerTick = totalResourceRate;
+                if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach))
+                {
+                    ResourceRateEffect resEffect = new ResourceRateEffect(null, player, 0);
+                    AddCustomEffect(resEffect, false);
+                }
+                else
+                {
+                    float playerWeightFactor = PlayerState.TotalModifiedWeight >= 10f ? PlayerState.TotalModifiedWeight / 400f : 0f;
+                    float sprintMulti = PlayerState.IsSprinting ? 1.5f : 1f;
+                    float sprintFactor = PlayerState.IsSprinting ? 0.125f : 0f;
+                    float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * (1f - player.Skills.HealthEnergy);
+                    ResourcePerTick = totalResourceRate;
+                }
             }
         }
     }

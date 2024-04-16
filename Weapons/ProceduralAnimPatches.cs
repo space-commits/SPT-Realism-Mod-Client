@@ -24,6 +24,101 @@ using ProcessorClass = GClass2213;
 
 namespace RealismMod
 {
+    public class CamRecoilPatch : ModulePatch
+    {
+        private static FieldInfo cameraRecoilField;
+        private static FieldInfo cameraRecoilRotateField;
+        private static FieldInfo prevCameraTargetField;
+        private static FieldInfo headRotationField;
+        private static FieldInfo playerField;
+        private static FieldInfo fcField;
+        private static float camSpeed = 1f;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            cameraRecoilField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_cameraRecoilLerpTempSpeed");
+            cameraRecoilRotateField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_currentRecoilCameraRotate");
+            prevCameraTargetField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_previousCameraTargetRotation");
+            headRotationField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_headRotationVec");
+            playerField = AccessTools.Field(typeof(FirearmController), "_player");
+            fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
+            return typeof(ProceduralWeaponAnimation).GetMethod("method_19", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool PatchPrefix(ProceduralWeaponAnimation __instance, float deltaTime)
+        {
+            FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
+            if (firearmController == null) return false;
+            Player player = (Player)playerField.GetValue(firearmController);
+            if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
+            {
+                float _cameraRecoilLerpTempSpeed = (float)cameraRecoilField.GetValue(__instance);
+                Quaternion _currentRecoilCameraRotate = (Quaternion)cameraRecoilRotateField.GetValue(__instance);
+                Quaternion _previousCameraTargetRotation = (Quaternion)prevCameraTargetField.GetValue(__instance);
+
+                __instance.HandsContainer.CameraRotation.ReturnSpeed = 0.2f;
+                __instance.HandsContainer.CameraRotation.Damping = 0.55f;
+
+                Vector3 _headRotationVec = (Vector3)headRotationField.GetValue(__instance);
+                if (_headRotationVec != Vector3.zero)
+                {
+                    return false;
+                }
+   
+                bool autoFireOn;
+                if (((autoFireOn = (__instance.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect as NewRotationRecoilProcess).AutoFireOn) & __instance.IsAiming))
+                {
+                    if (!__instance.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.StableOn)
+                    {
+                        Quaternion localRotation = __instance.HandsContainer.CameraTransform.localRotation;
+                        localRotation.y = 0f;
+                        Quaternion quaternion = localRotation;
+                        camSpeed = Mathf.Clamp(camSpeed + __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y) * 2f;
+                        Quaternion quaternion2 = Quaternion.Lerp(_currentRecoilCameraRotate, quaternion, camSpeed);
+                        __instance.HandsContainer.CameraTransform.localRotation = quaternion2;
+                        prevCameraTargetField.SetValue(__instance, quaternion);
+                        cameraRecoilRotateField.SetValue(__instance, quaternion2);
+                        return false;
+                    }
+                    camSpeed = Mathf.Clamp(camSpeed + __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y) * 2f;
+                    Quaternion newCameraRotation = Quaternion.Lerp(_currentRecoilCameraRotate, _previousCameraTargetRotation, camSpeed);
+                    __instance.HandsContainer.CameraTransform.localRotation = newCameraRotation;
+                    cameraRecoilRotateField.SetValue(__instance, newCameraRotation);
+
+                    return false;
+                }
+                else
+                {
+                    if (!autoFireOn & __instance.IsAiming)
+                    {
+                        Quaternion cameraRotation = __instance.HandsContainer.CameraTransform.localRotation;
+                        cameraRotation.y = 0f;
+                        Quaternion cameraLocalRotaitonModified = cameraRotation;
+                        camSpeed = Mathf.Clamp(camSpeed - __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y);
+                        Quaternion newCameraRotaiton = Quaternion.Lerp(_currentRecoilCameraRotate, cameraLocalRotaitonModified, camSpeed * 2f);
+                        __instance.HandsContainer.CameraTransform.localRotation = newCameraRotaiton;
+                        prevCameraTargetField.SetValue(__instance, cameraLocalRotaitonModified);
+                        cameraRecoilRotateField.SetValue(__instance, newCameraRotaiton);
+                        return false;
+                    }
+                    if (!__instance.IsAiming)
+                    {
+                        Quaternion cameraRotation = __instance.HandsContainer.CameraTransform.localRotation;
+                        camSpeed = Mathf.Clamp(camSpeed - __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y) * 2f;
+                        cameraRecoilField.SetValue(__instance, camSpeed);
+                        Quaternion newCameraRotation = Quaternion.Lerp(_currentRecoilCameraRotate, cameraRotation, camSpeed);
+                        __instance.HandsContainer.CameraTransform.localRotation = newCameraRotation;
+                        prevCameraTargetField.SetValue(__instance, cameraRotation);
+                        cameraRecoilRotateField.SetValue(__instance, newCameraRotation);
+                    }
+                    return false;
+                }
+            }
+            return false;
+        }
+    }
+
     public class UpdateWeaponVariablesPatch : ModulePatch
     {
         private static FieldInfo playerField;

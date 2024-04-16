@@ -21,7 +21,7 @@ using ItemEventClass = GClass2767;
 using WeaponStateClass = GClass1668;
 using EFT.InputSystem;
 using EFT.Animations.NewRecoil;
-
+using EFT.UI;
 
 namespace RealismMod
 {

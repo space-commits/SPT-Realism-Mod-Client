@@ -23,6 +23,7 @@ using EFT.Visual;
 using Diz.LanguageExtensions;
 using EFTSlot = GClass2767;
 using ArmorSlot = GClass2511;
+using EFT.UI;
 
 namespace RealismMod
 {
@@ -444,11 +445,21 @@ namespace RealismMod
                 }
             }
 
+
             if (damageInfo.DamageType == EDamageType.Bullet || damageInfo.DamageType == EDamageType.Melee)
             {
-                BallisticCollider hittedBallisticCollider = damageInfo.HittedBallisticCollider;
-                BodyPartCollider bodyPartCollider = hittedBallisticCollider as BodyPartCollider;
-                EBodyPartColliderType partHit = bodyPartCollider.BodyPartColliderType;
+                EBodyPartColliderType partHit = EBodyPartColliderType.None;
+                if (damageInfo.BodyPartColliderType == EBodyPartColliderType.None)
+                {
+                    BodyPartCollider bodyPartCollider = (BodyPartCollider)damageInfo.HittedBallisticCollider;
+                    partHit = bodyPartCollider.BodyPartColliderType;
+                }
+                else 
+                {
+                    partHit = damageInfo.BodyPartColliderType;
+                }
+
+                BallisticsController.ModifyDamageByHitZone(partHit, ref damageInfo);
 
                 bool hasArmArmor = false;
                 bool hasLegProtection = false;
@@ -473,13 +484,10 @@ namespace RealismMod
                     faceProtectionCount += armorComponent.Template.ArmorColliders.Count(x => BallisticsController.FaceSpallProtectionCollidors.Contains(x));
                 }
                 preAllocatedArmorComponents.Clear();
-
-                if (!damageInfo.Blunt && Plugin.EnableHitSounds.Value && !__instance.IsYourPlayer)
+                if (!__instance.IsYourPlayer && damageInfo.HittedBallisticCollider != null && !damageInfo.Blunt && Plugin.EnableHitSounds.Value)
                 {
                     playBodyHitSound(bodyPartType, damageInfo.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
                 }
-
-                BallisticsController.ModifyDamageByHitZone(partHit, ref damageInfo);
 
                 float KE = 1f;
                 AmmoTemplate ammoTemp = null;
@@ -496,7 +504,7 @@ namespace RealismMod
                     KE = (0.5f * ammoTemp.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f;
                 }
 
-                if (armor != null && damageInfo.DamageType != EDamageType.Melee)
+                if (armor != null && ammoTemp != null && damageInfo.DamageType != EDamageType.Melee)
                 {
                     if (__instance?.ActiveHealthController != null && damageInfo.Blunt && GearStats.CanSpall(armor.Item) && (bodyPartType == EBodyPart.Chest || bodyPartType == EBodyPart.Stomach))
                     {
@@ -592,7 +600,7 @@ namespace RealismMod
                 bool hitForearm = partHit == EBodyPartColliderType.LeftForearm || partHit == EBodyPartColliderType.RightForearm;
                 bool hitCalf = partHit == EBodyPartColliderType.LeftCalf || partHit == EBodyPartColliderType.RightCalf;
                 bool hitThigh= partHit == EBodyPartColliderType.LeftThigh || partHit == EBodyPartColliderType.RightThigh;
-           
+
                 if (hitForearm && toBeHP <= 35f && canDoDisarm)
                 {
                     TryDoDisarm(__instance, KE, hasArmArmor, hitForearm);
@@ -899,7 +907,7 @@ namespace RealismMod
             }
 
             bool isPlayer = __instance.Item.Owner.ID.StartsWith("pmc") || __instance.Item.Owner.ID.StartsWith("scav");
-            if (!isPlayer && Plugin.EnableHitSounds.Value) 
+            if (!isPlayer && Plugin.EnableHitSounds.Value && damageInfo.HittedBallisticCollider != null) 
             {
                 if (damageInfo.DeflectedBy == __instance.Item.Id)
                 {
