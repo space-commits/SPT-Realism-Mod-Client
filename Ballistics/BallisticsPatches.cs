@@ -907,7 +907,7 @@ namespace RealismMod
             }
 
             bool isPlayer = __instance.Item.Owner.ID.StartsWith("pmc") || __instance.Item.Owner.ID.StartsWith("scav");
-            if (!isPlayer && Plugin.EnableHitSounds.Value) 
+            if (!isPlayer && Plugin.EnableHitSounds.Value && damageInfo.HittedBallisticCollider != null) 
             {
                 if (damageInfo.DeflectedBy == __instance.Item.Id)
                 {
