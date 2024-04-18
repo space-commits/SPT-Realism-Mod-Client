@@ -280,52 +280,50 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
         {
-            if (!Utils.IsReady)
-            {
-                if (Plugin.EnableLogging.Value)
-                {
-                    Logger.LogWarning("applying " + item.LocalizedName());
-                }
 
-                if (Plugin.ServerConfig.food_changes) 
+            if (Plugin.EnableLogging.Value)
+            {
+                Logger.LogWarning("applying " + item.LocalizedName());
+            }
+
+            if (Plugin.ServerConfig.food_changes)
+            {
+                FoodClass foodClass = item as FoodClass;
+                if (foodClass != null)
                 {
-                    FoodClass foodClass = item as FoodClass;
-                    if (foodClass != null)
+                    foreach (var buff in foodClass.HealthEffectsComponent.BuffSettings)
                     {
-                        foreach (var buff in foodClass.HealthEffectsComponent.BuffSettings)
+                        if (buff.BuffType == EStimulatorBuffType.EnergyRate)
                         {
-                            if (buff.BuffType == EStimulatorBuffType.EnergyRate)
+                            if (buff.Value > 0)
                             {
-                                if (buff.Value > 0)
-                                {
-                                    __instance.ChangeEnergy(buff.Value * buff.Duration);
-                                }
-                            }
-                            if (buff.BuffType == EStimulatorBuffType.HydrationRate)
-                            {
-                                if (buff.Value > 0)
-                                {
-                                    __instance.ChangeHydration(buff.Value * buff.Duration);
-                                }
+                                __instance.ChangeEnergy(buff.Value * buff.Duration);
                             }
                         }
-                        return;
+                        if (buff.BuffType == EStimulatorBuffType.HydrationRate)
+                        {
+                            if (buff.Value > 0)
+                            {
+                                __instance.ChangeHydration(buff.Value * buff.Duration);
+                            }
+                        }
                     }
+                    return;
                 }
-                if (Plugin.ServerConfig.med_changes)
+            }
+            if (Plugin.ServerConfig.med_changes)
+            {
+                MedsClass medsClass = item as MedsClass;
+                if (medsClass != null)
                 {
-                    MedsClass medsClass = item as MedsClass;
-                    if (medsClass != null)
+                    string medType = MedProperties.MedType(medsClass);
+                    //need to get surgery kit working later, doesnt want to remove hp resource.
+                    if (medType == "medkit") // || medType == "surg"
                     {
-                        string medType = MedProperties.MedType(medsClass);
-                        //need to get surgery kit working later, doesnt want to remove hp resource.
-                        if (medType == "medkit") // || medType == "surg"
-                        {
-                            restoreHP(__instance, bodyPart, MedProperties.HPRestoreAmount(medsClass));
-                            /*             medsClass.MedKitComponent.HpResource -= 1f;
-                                         medsClass.MedKitComponent.Item.RaiseRefreshEvent(false, true);*/
-                            return;
-                        }
+                        restoreHP(__instance, bodyPart, MedProperties.HPRestoreAmount(medsClass));
+                        /*             medsClass.MedKitComponent.HpResource -= 1f;
+                                     medsClass.MedKitComponent.Item.RaiseRefreshEvent(false, true);*/
+                        return;
                     }
                 }
             }
