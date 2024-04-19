@@ -329,8 +329,56 @@ namespace RealismMod
             float playerWeightFactor = 1f + (totalPlayerWeight / 100f);
             float healthFactor = PlayerState.RecoilInjuryMulti * (Plugin.RealHealthController.HasOverdosed ? 1.5f : 1f);
             float ergoFactor = 1f + (WeaponStats.ErgoFactor / 200f);
-           
+
             WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(baseValue * PlayerState.DeviceBonus * ergoFactor * healthFactor * convergenceFactor * dispersionFactor * recoilFactor * playerWeightFactor, 0.2f, 1f);
+        }
+
+        private static void getStaminaPerc(Player player)
+        {
+
+            float remainStamPercent = player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity;
+            PlayerState.RemainingArmStamPerc = 1f - ((1f - remainStamPercent) / 3f);
+            PlayerState.RemainingArmStamPercReload = 1f - ((1f - remainStamPercent) / 4f);
+        }
+
+        private static void setStancePWAValues(Player player, FirearmController fc)
+        {
+            if (StanceController.CanResetDamping)
+            {
+                float stockedPistolFactor = WeaponStats.IsStockedPistol ? 0.75f : 1f;
+                NewRecoilShotEffect newRecoil = player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
+                newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = Mathf.Lerp(newRecoil.HandRotationRecoil.CategoryIntensityMultiplier, fc.Weapon.Template.RecoilCategoryMultiplierHandRotation * Plugin.RecoilIntensity.Value * stockedPistolFactor, 0.01f);
+                newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = Mathf.Lerp(newRecoil.HandRotationRecoil.ReturnTrajectoryDumping, fc.Weapon.Template.RecoilReturnPathDampingHandRotation * Plugin.HandsDampingMulti.Value, 0.01f);
+                player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping, fc.Weapon.Template.RecoilDampingHandRotation * Plugin.RecoilDampingMulti.Value, 0.01f);
+                player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.41f, 0.01f);
+                player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, RecoilController.BaseTotalConvergence, 0.01f);
+            }
+            else
+            {
+                player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.75f;
+                NewRecoilShotEffect newRecoil = player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
+                newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = WeaponStats._WeapClass == "pistol" ? 0.4f : 0.3f;
+                newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = 0.8f;
+                player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = 0.8f;
+                player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = 10f * StanceController.WiggleReturnSpeed;
+            }
+
+            player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.Damping = 0.5f;
+            player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.ReturnSpeed = 0.08f;
+            player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0;
+            player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
+        }
+
+        private static void chamberTimer(FirearmController fc)
+        {
+            Plugin.chamberTimer += Time.deltaTime;
+            if (Plugin.chamberTimer >= 1f)
+            {
+                fc.FirearmsAnimator.Rechamber(false);
+                fc.SetAnimatorAndProceduralValues();
+                Plugin.startRechamberTimer = false;
+                Plugin.chamberTimer = 0f;
+            }
         }
 
         private static void PWAUpdate(Player player, Player.FirearmController fc) 
@@ -339,14 +387,7 @@ namespace RealismMod
             {
                 if (Plugin.startRechamberTimer)
                 {
-                    Plugin.chamberTimer += Time.deltaTime;
-                    if (Plugin.chamberTimer >= 1f)
-                    {
-                        fc.FirearmsAnimator.Rechamber(false);
-                        fc.SetAnimatorAndProceduralValues();
-                        Plugin.startRechamberTimer = false;
-                        Plugin.chamberTimer = 0f;
-                    }
+                    chamberTimer(fc);
                 }
 
                 if (RecoilController.IsFiring)
@@ -361,41 +402,16 @@ namespace RealismMod
                 ReloadController.ReloadStateCheck(player, fc, Logger);
                 AimController.ADSCheck(player, fc);
 
-                if (Plugin.EnableStanceStamChanges.Value)
+                if (Plugin.EnableStanceStamChanges.Value && Plugin.ServerConfig.enable_stances)
                 {
                     StanceController.SetStanceStamina(player);
                 }
 
-                float remainStamPercent = player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity;
-                PlayerState.RemainingArmStamPerc = 1f - ((1f - remainStamPercent) / 3f);
-                PlayerState.RemainingArmStamPercReload = 1f - ((1f - remainStamPercent) / 4f);
+                getStaminaPerc(player);
 
-                if (!RecoilController.IsFiringMovement)
+                if (!RecoilController.IsFiringMovement && Plugin.ServerConfig.enable_stances)
                 {
-                    if (StanceController.CanResetDamping)
-                    {
-                        float stockedPistolFactor = WeaponStats.IsStockedPistol ? 0.75f : 1f;
-                        NewRecoilShotEffect newRecoil = player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
-                        newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = Mathf.Lerp(newRecoil.HandRotationRecoil.CategoryIntensityMultiplier, fc.Weapon.Template.RecoilCategoryMultiplierHandRotation * Plugin.RecoilIntensity.Value * stockedPistolFactor, 0.01f);
-                        newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = Mathf.Lerp(newRecoil.HandRotationRecoil.ReturnTrajectoryDumping, fc.Weapon.Template.RecoilReturnPathDampingHandRotation * Plugin.HandsDampingMulti.Value, 0.01f);
-                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping, fc.Weapon.Template.RecoilDampingHandRotation * Plugin.RecoilDampingMulti.Value, 0.01f);
-                        player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.41f, 0.01f);
-                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, RecoilController.BaseTotalConvergence, 0.01f);
-                    }
-                    else
-                    {
-                        player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.75f;
-                        NewRecoilShotEffect newRecoil = player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
-                        newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = WeaponStats._WeapClass == "pistol" ? 0.4f : 0.3f;
-                        newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = 0.8f; 
-                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = 0.8f; 
-                        player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = 10f * StanceController.WiggleReturnSpeed;
-                    }
-
-                    player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.Damping = 0.5f;
-                    player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandPositionRecoilEffect.ReturnSpeed = 0.08f; 
-                    player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0;
-                    player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
+                    setStancePWAValues(player, fc);
                 }
                 player.MovementContext.SetPatrol(StanceController.CurrentStance == EStance.PatrolStance ? true : false);
             }

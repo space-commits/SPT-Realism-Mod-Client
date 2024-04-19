@@ -410,6 +410,36 @@ namespace RealismMod
             Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
         }
 
+        private static void disarmAndKnockdownCheck(Player player, DamageInfo damageInfo, EBodyPart bodyPartType, EBodyPartColliderType partHit, float KE, bool hasArmArmor) 
+        {
+            float totalHPPerc = (player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Common).Current - damageInfo.Damage ) / player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Common).Maximum;
+            float hitPartHP = player.ActiveHealthController.GetBodyPartHealth(bodyPartType).Current;
+            float toBeHP = hitPartHP - damageInfo.Damage;
+            bool canDoKnockdown = !player.IsInPronePose && ((!player.IsYourPlayer && Plugin.CanFellBot.Value) || (player.IsYourPlayer && Plugin.CanFellPlayer.Value));
+            bool canDoDisarm = ((!player.IsYourPlayer && Plugin.CanDisarmBot.Value) || (player.IsYourPlayer && Plugin.CanDisarmPlayer.Value));
+            bool hitForearm = partHit == EBodyPartColliderType.LeftForearm || partHit == EBodyPartColliderType.RightForearm;
+            bool hitCalf = partHit == EBodyPartColliderType.LeftCalf || partHit == EBodyPartColliderType.RightCalf;
+            bool hitThigh = partHit == EBodyPartColliderType.LeftThigh || partHit == EBodyPartColliderType.RightThigh;
+            bool isOverdosed = player.IsYourPlayer && Plugin.RealHealthController.HasOverdosed && damageInfo.Damage > 10f;
+            bool fell = damageInfo.DamageType == EDamageType.Fall && damageInfo.Damage >= 15f;
+            bool doShotLegKnockdown = (hitCalf || hitThigh) && toBeHP <= 25f;
+            bool doShotDisarm = hitForearm && toBeHP <= 25f;
+            bool doHeadshotKnockdown = bodyPartType == EBodyPart.Head && toBeHP > 0f && damageInfo.Damage >= 1;
+            bool hasBonusChance = hitCalf || bodyPartType == EBodyPart.Head;
+            float chanceModifier = fell ? 50000 : 1f;
+
+
+            if (canDoDisarm && (doShotDisarm || isOverdosed || fell))
+            {
+                TryDoDisarm(player, KE * chanceModifier, hasArmArmor, hitForearm);
+            }
+
+            if (canDoKnockdown && (doShotLegKnockdown || doHeadshotKnockdown || isOverdosed || fell))
+            {
+                TryDoKnockdown(player, KE * chanceModifier, hasBonusChance, player.IsYourPlayer);
+            }
+        }
+
         [PatchPrefix]
         private static void Prefix(Player __instance, ref DamageInfo damageInfo, EBodyPart bodyPartType)
         {
@@ -420,31 +450,6 @@ namespace RealismMod
                 Logger.LogWarning("Pen " + damageInfo.PenetrationPower);
                 Logger.LogWarning("========================= ");
             }
-
-            if (__instance.IsYourPlayer && Plugin.RealHealthController.HasOverdosed && damageInfo.Damage > 10f) 
-            {
-                if (!__instance.IsInPronePose && Plugin.CanFellPlayer.Value)
-                {
-                    __instance.ToggleProne();
-                }
-                if (Plugin.CanDisarmPlayer.Value)
-                {
-                    TryDoDisarm(__instance, damageInfo.Damage * 50f, false, false);
-                }
-            }
-
-            if (damageInfo.DamageType == EDamageType.Fall && damageInfo.Damage >= 15f)
-            {
-                if (!__instance.IsInPronePose) 
-                {
-                    __instance.ToggleProne();
-                }
-                if ((__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value) || (!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value))
-                {
-                    TryDoDisarm(__instance, damageInfo.Damage * 50f, false, false);
-                }
-            }
-
 
             if (damageInfo.DamageType == EDamageType.Bullet || damageInfo.DamageType == EDamageType.Melee)
             {
@@ -588,33 +593,10 @@ namespace RealismMod
                     }
                 }
 
-                float toBeHP = 0;
-                if (__instance?.ActiveHealthController != null) 
+                if (__instance?.ActiveHealthController != null)
                 {
-                    float hitPartHP = __instance.ActiveHealthController.GetBodyPartHealth(bodyPartType).Current;
-                    toBeHP = hitPartHP - damageInfo.Damage;
+                    disarmAndKnockdownCheck(__instance, damageInfo, bodyPartType, partHit, KE, hasArmArmor);
                 }
-
-                bool canDoKnockdown = !__instance.IsInPronePose && ((!__instance.IsYourPlayer && Plugin.CanFellBot.Value) || (__instance.IsYourPlayer && Plugin.CanFellPlayer.Value));
-                bool canDoDisarm = ((!__instance.IsYourPlayer && Plugin.CanDisarmBot.Value) || (__instance.IsYourPlayer && Plugin.CanDisarmPlayer.Value));
-                bool hitForearm = partHit == EBodyPartColliderType.LeftForearm || partHit == EBodyPartColliderType.RightForearm;
-                bool hitCalf = partHit == EBodyPartColliderType.LeftCalf || partHit == EBodyPartColliderType.RightCalf;
-                bool hitThigh= partHit == EBodyPartColliderType.LeftThigh || partHit == EBodyPartColliderType.RightThigh;
-
-                if (hitForearm && toBeHP <= 35f && canDoDisarm)
-                {
-                    TryDoDisarm(__instance, KE, hasArmArmor, hitForearm);
-                }
-
-                bool doLegKnockdown = (hitCalf || hitThigh) && toBeHP <= 0f;
-                bool doHeadshotKnockdown = bodyPartType == EBodyPart.Head && toBeHP > 0f && damageInfo.Damage >= 1;
-                bool hasBonusChance = hitCalf || bodyPartType == EBodyPart.Head;
-
-                if (canDoKnockdown && (doLegKnockdown || doHeadshotKnockdown))
-                {
-                    TryDoKnockdown(__instance, KE, hasBonusChance, __instance.IsYourPlayer);
-                }
-
             }
         }
     }

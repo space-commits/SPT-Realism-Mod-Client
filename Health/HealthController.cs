@@ -509,6 +509,8 @@ namespace RealismMod
             PainTunnelStrength = 0f;
             ReliefDuration = 0;
             HasOverdosedStim = false;
+            leftArmRuined = false;  
+            rightArmRuined = false;
             resetHealhPenalties();
         }
 
