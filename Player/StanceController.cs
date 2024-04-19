@@ -586,7 +586,7 @@ namespace RealismMod
             float ergoMulti = Mathf.Clamp(WeaponStats.ErgoStanceSpeed, 0.65f, 1.45f);
             float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.55f)), 0.5f, 1.45f);
             float balanceFactor = 1f + (WeaponStats.Balance / 100f);
-            balanceFactor = WeaponStats.Balance > 0f ? balanceFactor * -1f : balanceFactor;
+            balanceFactor = WeaponStats.Balance < 0f ? balanceFactor * -1f : balanceFactor;
             float resetErgoMulti = (1f - stanceMulti) + 1f;
 
             float wiggleErgoMulti = Mathf.Clamp((WeaponStats.ErgoStanceSpeed * 0.25f), 0.1f, 1f);
@@ -674,7 +674,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(10f, 1f, -30f) * movementFactor);
+                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(5f * balanceFactor, 2f * balanceFactor, -50f) * movementFactor); //new Vector3(10f, 1f, -30f)
 
                 isResettingPistol = false;
                 CurrentStance = EStance.None;
