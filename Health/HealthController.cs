@@ -218,6 +218,8 @@ namespace RealismMod
         private bool reset4 = false;
         private bool reset5 = false;
 
+        private float baseMaxHPRestore = 70f;
+
         public float PainStrength = 0f;
         public float PainEffectThreshold = 10f;
         public float PainReliefStrength = 0f;
@@ -1051,7 +1053,7 @@ namespace RealismMod
             NotificationManagerClass.DisplayMessageNotification("Heavy Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
 
             float trnqtTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f - vitalitySkill), 2);
-            float maxHpToRestore = Mathf.Round(50f * (1f + vitalitySkill));
+            float maxHpToRestore = Mathf.Round(baseMaxHPRestore * (1f + vitalitySkill));
             float hpToRestore = Mathf.Min(DmgTracker.TotalHeavyBleedDamage, maxHpToRestore);
 
             if ((hBleedHealType == "combo" || hBleedHealType == "trnqt") && !isNotLimb)
@@ -1078,7 +1080,7 @@ namespace RealismMod
             NotificationManagerClass.DisplayMessageNotification("Light Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
 
             float trnqtTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f - vitalitySkill), 2);
-            float maxHpToRestore = Mathf.Round(50f * (1f + vitalitySkill));
+            float maxHpToRestore = Mathf.Round(baseMaxHPRestore * (1f + vitalitySkill));
             float hpToRestore = Mathf.Min(DmgTracker.TotalLightBleedDamage, maxHpToRestore);
 
             if (medType == "trnqt" && !isNotLimb)
