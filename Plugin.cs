@@ -635,22 +635,25 @@ namespace RealismMod
                 new CanStartReloadPatch().Enable();
                 new ReloadMagPatch().Enable();
                 new QuickReloadMagPatch().Enable();
-                new ReloadWithAmmoPatch().Enable();
-                new ReloadBarrelsPatch().Enable();
-                new ReloadCylinderMagazinePatch().Enable();
-                new OnMagInsertedPatch().Enable();
                 new SetMagTypeCurrentPatch().Enable();
                 new SetMagTypeNewPatch().Enable();
                 new SetMagInWeaponPatch().Enable();
                 new SetMalfRepairSpeedPatch().Enable();
                 new BoltActionReloadPatch().Enable();
-                new SetSpeedParametersPatch().Enable();
-                new CheckAmmoPatch().Enable();
-                new CheckChamberPatch().Enable();
-                new RechamberPatch().Enable();
-                new SetAnimatorAndProceduralValuesPatch().Enable();
                 new SetWeaponLevelPatch().Enable();
             }
+
+
+            new ReloadWithAmmoPatch().Enable();
+            new ReloadBarrelsPatch().Enable();
+            new ReloadCylinderMagazinePatch().Enable();
+            new OnMagInsertedPatch().Enable();
+            new SetSpeedParametersPatch().Enable();
+            new CheckAmmoPatch().Enable();
+            new CheckChamberPatch().Enable();
+            new RechamberPatch().Enable();
+            new SetAnimatorAndProceduralValuesPatch().Enable();
+   
 
             //Ballistics
             if (ServerConfig.realistic_ballistics)

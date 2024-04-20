@@ -223,7 +223,6 @@ namespace RealismMod
 
                 if (PlayerState.IsAttemptingToReloadInternalMag && Plugin.ServerConfig.reload_changes)
                 {
-         
                     StanceController.CancelHighReady = fc.Item.WeapClass != "shotgun" ? true : false;
                     StanceController.CancelLowReady = fc.Item.WeapClass == "shotgun" || fc.Item.WeapClass == "pistol" ? true : false;
 
