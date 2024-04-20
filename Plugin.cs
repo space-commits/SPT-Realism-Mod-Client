@@ -41,7 +41,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.pluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string pluginVersion = "1.1.0";
+        private const string pluginVersion = "1.1.1";
 
         //movement
         public static ConfigEntry<bool> EnableMaterialSpeed { get; set; }
@@ -635,22 +635,25 @@ namespace RealismMod
                 new CanStartReloadPatch().Enable();
                 new ReloadMagPatch().Enable();
                 new QuickReloadMagPatch().Enable();
-                new ReloadWithAmmoPatch().Enable();
-                new ReloadBarrelsPatch().Enable();
-                new ReloadCylinderMagazinePatch().Enable();
-                new OnMagInsertedPatch().Enable();
                 new SetMagTypeCurrentPatch().Enable();
                 new SetMagTypeNewPatch().Enable();
                 new SetMagInWeaponPatch().Enable();
                 new SetMalfRepairSpeedPatch().Enable();
                 new BoltActionReloadPatch().Enable();
-                new SetSpeedParametersPatch().Enable();
-                new CheckAmmoPatch().Enable();
-                new CheckChamberPatch().Enable();
-                new RechamberPatch().Enable();
-                new SetAnimatorAndProceduralValuesPatch().Enable();
                 new SetWeaponLevelPatch().Enable();
             }
+
+
+            new ReloadWithAmmoPatch().Enable();
+            new ReloadBarrelsPatch().Enable();
+            new ReloadCylinderMagazinePatch().Enable();
+            new OnMagInsertedPatch().Enable();
+            new SetSpeedParametersPatch().Enable();
+            new CheckAmmoPatch().Enable();
+            new CheckChamberPatch().Enable();
+            new RechamberPatch().Enable();
+            new SetAnimatorAndProceduralValuesPatch().Enable();
+   
 
             //Ballistics
             if (ServerConfig.realistic_ballistics)

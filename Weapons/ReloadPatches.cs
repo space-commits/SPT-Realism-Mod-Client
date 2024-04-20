@@ -220,7 +220,7 @@ namespace RealismMod
                 StanceController.ModifyHighReady = true;
                 StanceController.CancelShortStock = true;
                 StanceController.CancelActiveAim = true;
-         
+
                 if (PlayerState.IsAttemptingToReloadInternalMag && Plugin.ServerConfig.reload_changes)
                 {
                     StanceController.CancelHighReady = fc.Item.WeapClass != "shotgun" ? true : false;
