@@ -540,7 +540,7 @@ namespace RealismMod
                 }
                 if (WeaponStats.WeaponType(weap) == "DI")
                 {
-                    modDuraBurn *= 1.17f;
+                    modDuraBurn *= 1.25f;
                 }
             }
 

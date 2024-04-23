@@ -41,7 +41,7 @@ namespace RealismMod
                 { 
                     case EBodyPartColliderType.RightCalf:
                     case EBodyPartColliderType.LeftCalf:
-                        di.Damage *= 0.6f * Plugin.GlobalDamageModifier.Value;
+                        di.Damage *= 0.55f * Plugin.GlobalDamageModifier.Value;
                         di.HeavyBleedingDelta *= 0.8f;
                         di.LightBleedingDelta *= 0.8f;
                         break;
@@ -53,15 +53,15 @@ namespace RealismMod
                         break;
                     case EBodyPartColliderType.RightForearm:
                     case EBodyPartColliderType.LeftForearm:
-                        di.Damage *= 0.6f * Plugin.GlobalDamageModifier.Value;
-                        di.HeavyBleedingDelta *= 0.6f;
-                        di.LightBleedingDelta *= 0.6f;
+                        di.Damage *= 0.55f * Plugin.GlobalDamageModifier.Value;
+                        di.HeavyBleedingDelta *= 0.55f;
+                        di.LightBleedingDelta *= 0.55f;
                         break;
                     case EBodyPartColliderType.LeftUpperArm:
                     case EBodyPartColliderType.RightUpperArm:
-                        di.Damage *= 0.9f * Plugin.GlobalDamageModifier.Value;
-                        di.HeavyBleedingDelta *= 1f;
-                        di.LightBleedingDelta *= 1f;
+                        di.Damage *= 0.85f * Plugin.GlobalDamageModifier.Value;
+                        di.HeavyBleedingDelta *= 0.9f;
+                        di.LightBleedingDelta *= 0.9f;
                         break;
                     case EBodyPartColliderType.PelvisBack:
                     case EBodyPartColliderType.Pelvis:

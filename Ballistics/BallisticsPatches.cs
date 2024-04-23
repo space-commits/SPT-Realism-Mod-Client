@@ -384,6 +384,35 @@ namespace RealismMod
             }
         }
 
+        private static void disarmAndKnockdownCheck(Player player, DamageInfo damageInfo, EBodyPart bodyPartType, EBodyPartColliderType partHit, float KE, bool hasArmArmor) 
+        {
+            float totalHPPerc = (player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Common).Current - damageInfo.Damage ) / player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Common).Maximum;
+            float hitPartHP = player.ActiveHealthController.GetBodyPartHealth(bodyPartType).Current;
+            float toBeHP = hitPartHP - damageInfo.Damage;
+            bool canDoKnockdown = !player.IsInPronePose && ((!player.IsYourPlayer && Plugin.CanFellBot.Value) || (player.IsYourPlayer && Plugin.CanFellPlayer.Value));
+            bool canDoDisarm = ((!player.IsYourPlayer && Plugin.CanDisarmBot.Value) || (player.IsYourPlayer && Plugin.CanDisarmPlayer.Value));
+            bool hitForearm = partHit == EBodyPartColliderType.LeftForearm || partHit == EBodyPartColliderType.RightForearm;
+            bool hitCalf = partHit == EBodyPartColliderType.LeftCalf || partHit == EBodyPartColliderType.RightCalf;
+            bool hitThigh = partHit == EBodyPartColliderType.LeftThigh || partHit == EBodyPartColliderType.RightThigh;
+            bool isOverdosed = player.IsYourPlayer && Plugin.RealHealthController.HasOverdosed && damageInfo.Damage > 10f;
+            bool fell = damageInfo.DamageType == EDamageType.Fall && damageInfo.Damage >= 15f;
+            bool doShotLegKnockdown = (hitCalf || hitThigh) && toBeHP <= 25f;
+            bool doShotDisarm = hitForearm && toBeHP <= 25f;
+            bool doHeadshotKnockdown = bodyPartType == EBodyPart.Head && toBeHP > 0f && toBeHP <= 12f && damageInfo.Damage >= 5;
+            bool hasBonusChance = hitCalf || bodyPartType == EBodyPart.Head;
+            float chanceModifier = fell ? 50000 : 1f;
+
+            if (canDoDisarm && (doShotDisarm || isOverdosed || fell))
+            {
+                TryDoDisarm(player, KE * chanceModifier, hasArmArmor, hitForearm);
+            }
+
+            if (canDoKnockdown && (doShotLegKnockdown || doHeadshotKnockdown || isOverdosed || fell))
+            {
+                TryDoKnockdown(player, KE * chanceModifier, hasBonusChance, player.IsYourPlayer);
+            }
+        }
+
         private static void playBodyHitSound(EBodyPart part, Vector3 pos, int rndNum)
         {
             float dist = CameraClass.Instance.Distance(pos);
@@ -410,35 +439,6 @@ namespace RealismMod
             Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
         }
 
-        private static void disarmAndKnockdownCheck(Player player, DamageInfo damageInfo, EBodyPart bodyPartType, EBodyPartColliderType partHit, float KE, bool hasArmArmor) 
-        {
-            float totalHPPerc = (player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Common).Current - damageInfo.Damage ) / player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Common).Maximum;
-            float hitPartHP = player.ActiveHealthController.GetBodyPartHealth(bodyPartType).Current;
-            float toBeHP = hitPartHP - damageInfo.Damage;
-            bool canDoKnockdown = !player.IsInPronePose && ((!player.IsYourPlayer && Plugin.CanFellBot.Value) || (player.IsYourPlayer && Plugin.CanFellPlayer.Value));
-            bool canDoDisarm = ((!player.IsYourPlayer && Plugin.CanDisarmBot.Value) || (player.IsYourPlayer && Plugin.CanDisarmPlayer.Value));
-            bool hitForearm = partHit == EBodyPartColliderType.LeftForearm || partHit == EBodyPartColliderType.RightForearm;
-            bool hitCalf = partHit == EBodyPartColliderType.LeftCalf || partHit == EBodyPartColliderType.RightCalf;
-            bool hitThigh = partHit == EBodyPartColliderType.LeftThigh || partHit == EBodyPartColliderType.RightThigh;
-            bool isOverdosed = player.IsYourPlayer && Plugin.RealHealthController.HasOverdosed && damageInfo.Damage > 10f;
-            bool fell = damageInfo.DamageType == EDamageType.Fall && damageInfo.Damage >= 15f;
-            bool doShotLegKnockdown = (hitCalf || hitThigh) && toBeHP <= 25f;
-            bool doShotDisarm = hitForearm && toBeHP <= 25f;
-            bool doHeadshotKnockdown = bodyPartType == EBodyPart.Head && toBeHP > 0f && damageInfo.Damage >= 1;
-            bool hasBonusChance = hitCalf || bodyPartType == EBodyPart.Head;
-            float chanceModifier = fell ? 50000 : 1f;
-
-
-            if (canDoDisarm && (doShotDisarm || isOverdosed || fell))
-            {
-                TryDoDisarm(player, KE * chanceModifier, hasArmArmor, hitForearm);
-            }
-
-            if (canDoKnockdown && (doShotLegKnockdown || doHeadshotKnockdown || isOverdosed || fell))
-            {
-                TryDoKnockdown(player, KE * chanceModifier, hasBonusChance, player.IsYourPlayer);
-            }
-        }
 
         [PatchPrefix]
         private static void Prefix(Player __instance, ref DamageInfo damageInfo, EBodyPart bodyPartType)
@@ -700,14 +700,16 @@ namespace RealismMod
             {
                 armorDuraPercent = 100f;
             }
-            else if (__instance.Template.ArmorMaterial == EArmorMaterial.Titan)
+            else if (__instance.Template.ArmorMaterial == EArmorMaterial.Titan || __instance.Template.ArmorMaterial == EArmorMaterial.Aluminium)
             {
                 armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 1.5f);
             }
 
             float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
             float realResistance = (121f - 5000f / (45f + armorDuraPercent * 2f)) * armorResist * 0.01f;
-            if (((realResistance >= penetrationPower + 15f) ? 0f : ((realResistance >= penetrationPower) ? (0.4f * (realResistance - penetrationPower - 15f) * (realResistance - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * realResistance - penetrationPower)))) - shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f < 0f)
+            bool didPenByChance = ((realResistance >= penetrationPower + 15f) ? 0f : ((realResistance >= penetrationPower) ? (0.4f * (realResistance - penetrationPower - 15f) * (realResistance - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * realResistance - penetrationPower)))) - shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f < 0f;
+            bool shouldBeBlocked = armorDuraPercent >= 90f && armorResist - shot.PenetrationPower >= 5;
+            if (!shouldBeBlocked && didPenByChance)
             {
                 shot.BlockedBy = __instance.Item.Id;
                 Debug.Log(">>> Shot blocked by armor piece");
@@ -715,6 +717,7 @@ namespace RealismMod
                 {
                     Logger.LogWarning("===========PEN STATUS=============== ");
                     Logger.LogWarning("Blocked");
+                    Logger.LogWarning("shouldBeBlocked " + shouldBeBlocked);
                     Logger.LogWarning("========================== ");
                 }
             }
@@ -724,10 +727,10 @@ namespace RealismMod
                 {
                     Logger.LogWarning("============PEN STATUS============== ");
                     Logger.LogWarning("Penetrated");
+                    Logger.LogWarning("shouldBeBlocked " + shouldBeBlocked);
                     Logger.LogWarning("========================== ");
                 }
             }
-
             return false;
         }
     }
@@ -888,7 +891,7 @@ namespace RealismMod
                 return true;
             }
 
-            bool isPlayer = __instance.Item.Owner.ID.StartsWith("pmc") || __instance.Item.Owner.ID.StartsWith("scav");
+            bool isPlayer = __instance.Item.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId;
             if (!isPlayer && Plugin.EnableHitSounds.Value && damageInfo.HittedBallisticCollider != null) 
             {
                 if (damageInfo.DeflectedBy == __instance.Item.Id)

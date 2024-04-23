@@ -542,14 +542,13 @@ namespace RealismMod
             if (ServerConfig.malf_changes)
             {
                 new GetTotalMalfunctionChancePatch().Enable();
-
+                new IsKnownMalfTypePatch().Enable();
                 if (ServerConfig.manual_chambering) 
                 {
                     new SetAmmoCompatiblePatch().Enable();
                     new StartReloadPatch().Enable();
                     new StartEquipWeapPatch().Enable();
                     new SetAmmoOnMagPatch().Enable();
-                    new IsKnownMalfTypePatch().Enable();
                     new PreChamberLoadPatch().Enable();
                 }
             }
@@ -718,7 +717,6 @@ namespace RealismMod
             //Stances
             if (ServerConfig.enable_stances) 
             {
-                new ApplyComplexRotationPatch().Enable();
                 new ApplySimpleRotationPatch().Enable();
                 new InitTransformsPatch().Enable();
                 new ZeroAdjustmentsPatch().Enable();
@@ -734,7 +732,9 @@ namespace RealismMod
                 new BattleUIScreenPatch().Enable();
                 new MuzzleSmokePatch().Enable();
                 new ChangePosePatch().Enable();
+                new MountingPatch().Enable();
             }
+            new ApplyComplexRotationPatch().Enable(); //also needed for visual recoil
 
             //Health
             if (ServerConfig.med_changes)
