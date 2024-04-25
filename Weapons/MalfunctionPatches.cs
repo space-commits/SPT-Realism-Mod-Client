@@ -71,7 +71,7 @@ namespace RealismMod
 
                 if (player.IsYourPlayer)
                 {
-                    if (__instance.Weapon.Repairable.MaxDurability <= 0f || malfMismatch)
+                    if (__instance.Weapon.Repairable.MaxDurability <= 0f || malfMismatch || (explosiveMismatch && !Plugin.ServerConfig.malf_changes))
                     {
                         NotificationManagerClass.DisplayWarningNotification("Possible Wrong Ammo/Weapon Caliber Combination.", EFT.Communications.ENotificationDurationType.Long);
                         __result = Weapon.EMalfunctionState.Misfire;
@@ -86,7 +86,7 @@ namespace RealismMod
                 }
                 else
                 {
-                    if (__instance.Weapon.Repairable.MaxDurability <= 0f || malfMismatch)
+                    if (__instance.Weapon.Repairable.MaxDurability <= 0f || malfMismatch || (explosiveMismatch && !Plugin.ServerConfig.malf_changes))
                     {
                         __result = Weapon.EMalfunctionState.Misfire;
                         return;

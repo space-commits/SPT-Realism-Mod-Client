@@ -1282,7 +1282,7 @@ namespace RealismMod
             Quaternion currentRotation = Quaternion.Euler(currentYawPitch.x, currentYawPitch.y, 0);
 
             lastMountYawPitch = currentYawPitch;
-            lastRotation = Quaternion.SlerpUnclamped(currentRotation, lastRotation, Plugin.test3.Value);
+            lastRotation = Quaternion.SlerpUnclamped(currentRotation, lastRotation, 0.115f);
 
             Vector3 delta = MakeQuaternionDelta(lastRotation, currentRotation).eulerAngles;
 
@@ -1295,14 +1295,14 @@ namespace RealismMod
 
         static void ApplyPivotPoint(ProceduralWeaponAnimation pwa)
         {
-            float aimMultiplier = 1f - ((1f - Plugin.test4.Value) * mountAimSmoothed);
+            float aimMultiplier = 1f - ((1f - 0.25f) * mountAimSmoothed);
 
             Transform weaponRootAnim = pwa.HandsContainer.WeaponRootAnim;
 
             if (weaponRootAnim == null) return;
 
             weaponRootAnim.LocalRotateAround(
-                Vector3.up * Plugin.test2.Value,
+                Vector3.up * -0.75f,
                 new Vector3(
                     cumulativeMountPitch * aimMultiplier,
                     0,
@@ -1312,7 +1312,7 @@ namespace RealismMod
 
             // Not doing this messes up pivot for all offsets after this
             weaponRootAnim.LocalRotateAround(
-                Vector3.up * -Plugin.test2.Value,
+                Vector3.up * 0.75f,
                 Vector3.zero
             );
         }

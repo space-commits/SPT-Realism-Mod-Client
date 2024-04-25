@@ -53,11 +53,11 @@ namespace RealismMod
             {
                 if (StanceController.IsMounting)
                 {
-                    mountClamp = Mathf.Lerp(mountClamp, 2.5f, Plugin.test1.Value);
+                    mountClamp = Mathf.Lerp(mountClamp, 2.5f, 0.1f);
                 }
                 else
                 {
-                    mountClamp = Mathf.Lerp(mountClamp, 0f, Plugin.test1.Value);
+                    mountClamp = Mathf.Lerp(mountClamp, 0f, 0.1f);
                 }
 
                 StanceController.MountingPivotUpdate(player, __instance, mountClamp, StanceController.GetDeltaTime());

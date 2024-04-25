@@ -709,7 +709,7 @@ namespace RealismMod
             float realResistance = (121f - 5000f / (45f + armorDuraPercent * 2f)) * armorResist * 0.01f;
             bool didPenByChance = ((realResistance >= penetrationPower + 15f) ? 0f : ((realResistance >= penetrationPower) ? (0.4f * (realResistance - penetrationPower - 15f) * (realResistance - penetrationPower - 15f)) : (100f + penetrationPower / (0.9f * realResistance - penetrationPower)))) - shot.Randoms.GetRandomFloat(shot.RandomSeed) * 100f < 0f;
             bool shouldBeBlocked = armorDuraPercent >= 90f && armorResist - shot.PenetrationPower >= 5;
-            if (!shouldBeBlocked && didPenByChance)
+            if (shouldBeBlocked || didPenByChance)
             {
                 shot.BlockedBy = __instance.Item.Id;
                 Debug.Log(">>> Shot blocked by armor piece");

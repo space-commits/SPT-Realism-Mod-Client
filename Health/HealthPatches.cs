@@ -280,7 +280,6 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
         {
-
             if (Plugin.EnableLogging.Value)
             {
                 Logger.LogWarning("applying " + item.LocalizedName());
@@ -341,11 +340,13 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(PlayerHealthController __instance, Item item, EBodyPart bodyPart, ref bool __result)
         {
-            MedsClass medsClass;
-            FoodClass foodClass;
-            bool canUse = true;
-            if (__instance.Player.IsYourPlayer && __instance.CanApplyItem(item, bodyPart))
+            if (__instance.Player.IsYourPlayer)
             {
+                if (!__instance.CanApplyItem(item, bodyPart)) return true;
+
+                MedsClass medsClass;
+                FoodClass foodClass;
+                bool canUse = true;
                 if (((medsClass = (item as MedsClass)) != null))
                 {
                     if (Plugin.EnableLogging.Value)
@@ -386,18 +387,21 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(EFT.Player __instance, EBoundItem quickSlot)
         {
-            Item boundItem = __instance.GClass2761_0.Inventory.FastAccess.GetBoundItem(quickSlot);
-            FoodClass food = boundItem as FoodClass;
-            if (boundItem != null && (food = (boundItem as FoodClass)) != null)
+            if (__instance.IsYourPlayer)
             {
-                bool canUse = true;
-                Plugin.RealHealthController.CanConsume(__instance, boundItem, ref canUse);
-                if (Plugin.EnableLogging.Value)
+                Item boundItem = __instance.GClass2761_0.Inventory.FastAccess.GetBoundItem(quickSlot);
+                FoodClass food = boundItem as FoodClass;
+                if (boundItem != null && (food = (boundItem as FoodClass)) != null)
                 {
-                    Logger.LogWarning("qucik slot, can use = " + canUse);
-                }
+                    bool canUse = true;
+                    Plugin.RealHealthController.CanConsume(__instance, boundItem, ref canUse);
+                    if (Plugin.EnableLogging.Value)
+                    {
+                        Logger.LogWarning("qucik slot, can use = " + canUse);
+                    }
 
-                return canUse;
+                    return canUse;
+                }
             }
             return true;
         }
@@ -435,32 +439,36 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ActiveHealthController __instance, EBodyPart bodyPart, float healthPenalty, ref bool __result)
         {
-            //I had to do this previously due to the type being protected, no longer is the case. Keeping for reference.
-            /* BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);*/
-
-            HealthStateClass.BodyPartState bodyPartState = __instance.Dictionary_0[bodyPart];
-            SkillManager skills = (SkillManager)AccessTools.Field(typeof(ActiveHealthController), "skillManager_0").GetValue(__instance);
-            Action<EBodyPart, ValueStruct> bodyPartRestoredField = (Action<EBodyPart, ValueStruct>)AccessTools.Field(typeof(ActiveHealthController), "BodyPartRestoredEvent").GetValue(__instance);
-
-            if (!bodyPartState.IsDestroyed)
+            if (__instance.Player.IsYourPlayer) 
             {
-                __result = false;
+                //I had to do this previously due to the type being protected, no longer is the case. Keeping for reference.
+                /* BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);*/
+
+                HealthStateClass.BodyPartState bodyPartState = __instance.Dictionary_0[bodyPart];
+                SkillManager skills = (SkillManager)AccessTools.Field(typeof(ActiveHealthController), "skillManager_0").GetValue(__instance);
+                Action<EBodyPart, ValueStruct> bodyPartRestoredField = (Action<EBodyPart, ValueStruct>)AccessTools.Field(typeof(ActiveHealthController), "BodyPartRestoredEvent").GetValue(__instance);
+
+                if (!bodyPartState.IsDestroyed)
+                {
+                    __result = false;
+                    return false;
+                }
+
+                HealthValue health = bodyPartState.Health;
+                bodyPartState.IsDestroyed = false;
+                healthPenalty += (1f - healthPenalty) * skills.SurgeryReducePenalty;
+                bodyPartState.Health = new HealthValue(1f, Mathf.Max(1f, Mathf.Ceil(bodyPartState.Health.Maximum * healthPenalty)), 0f);
+                __instance.method_40(bodyPart, EDamageType.Medicine);
+                __instance.method_32(bodyPart);
+                Action<EBodyPart, ValueStruct> bodyPartRestoredEvent = bodyPartRestoredField;
+                if (bodyPartRestoredEvent != null)
+                {
+                    bodyPartRestoredEvent(bodyPart, health.CurrentAndMaximum);
+                }
+                __result = true;
                 return false;
             }
-
-            HealthValue health = bodyPartState.Health;
-            bodyPartState.IsDestroyed = false;
-            healthPenalty += (1f - healthPenalty) * skills.SurgeryReducePenalty;
-            bodyPartState.Health = new HealthValue(1f, Mathf.Max(1f, Mathf.Ceil(bodyPartState.Health.Maximum * healthPenalty)), 0f);
-            __instance.method_40(bodyPart, EDamageType.Medicine);
-            __instance.method_32(bodyPart);
-            Action<EBodyPart, ValueStruct> bodyPartRestoredEvent = bodyPartRestoredField;
-            if (bodyPartRestoredEvent != null)
-            {
-                bodyPartRestoredEvent(bodyPart, health.CurrentAndMaximum);
-            }
-            __result = true;
-            return false;
+            return true;
         }
     }
 

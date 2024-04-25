@@ -228,7 +228,7 @@ namespace RealismMod
                 if (weapon != null) 
                 {
                     __instance.Overweight = 0;
-                    __instance.CrankRecoil = Plugin.EnableCrank.Value;
+                    __instance.CrankRecoil = !Plugin.EnableCrank.Value || (!WeaponStats.HasShoulderContact && WeaponStats._WeapClass != "pistol") ? false : true;
 
                     float updateErgoWeight = firearmController.ErgonomicWeight; //force ergo weight to update
 
@@ -256,8 +256,6 @@ namespace RealismMod
                     float newAimSpeed = Mathf.Max(totalSightedAimSpeed * PlayerState.ADSSprintMulti, 0.3f) * Plugin.GlobalAimSpeedModifier.Value;
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(__instance, newAimSpeed); //aimspeed
                     float aimingSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").GetValue(__instance); //aimspeed
-
-                    Logger.LogWarning("aim speed " + newAimSpeed);
 
                     float formfactor = WeaponStats.IsBullpup ? 0.75f : 1f;
                     float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f));
