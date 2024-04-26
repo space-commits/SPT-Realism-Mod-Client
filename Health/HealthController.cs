@@ -208,7 +208,7 @@ namespace RealismMod
         private float timeSinceLastClicked = 0f;
         private bool clickTriggered = false;
 
-        private float adrenalineCooldownTime = 60f * (1f - PlayerState.StressResistanceFactor);
+        private float adrenalineCooldownTime = 80f * (1f - PlayerState.StressResistanceFactor);
         public bool AdrenalineCooldownActive = false;
 
         //temporary solution
@@ -320,7 +320,7 @@ namespace RealismMod
             }
             if (AdrenalineCooldownActive && adrenalineCooldownTime <= 0.0f)
             {
-                adrenalineCooldownTime = 60f * (1f - PlayerState.StressResistanceFactor);
+                adrenalineCooldownTime = 80f * (1f - PlayerState.StressResistanceFactor);
                 AdrenalineCooldownActive = false;
             }
         }
@@ -1186,7 +1186,7 @@ namespace RealismMod
             bool mouthBlocked = MouthIsBlocked(head, face, equipment);
 
             bool hasHeadGear = head != null || ears != null || face != null;
-            bool hasBodyGear = vest != null || tacrig != null || bag != null;
+            bool hasBodyGear = vest != null || tacrig != null; // bag != null
 
             bool isHead = false;
             bool isBody = false;

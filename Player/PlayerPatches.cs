@@ -56,6 +56,10 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(InputClass __instance, ECommand command)
         {
+            if (command == ECommand.ToggleStepLeft || command == ECommand.ToggleStepRight || command == ECommand.ReturnFromRightStep || command == ECommand.ReturnFromLeftStep) 
+            {
+                StanceController.IsMounting = false;
+            }
             if (command == ECommand.ChamberUnload && Plugin.ServerConfig.manual_chambering)
             {
                 Player player = Utils.GetYourPlayer();
@@ -458,7 +462,7 @@ namespace RealismMod
                 PlayerState.IsSprinting = __instance.IsSprintEnabled;
                 PlayerState.EnviroType = __instance.Environment;
                 StanceController.IsInInventory = __instance.IsInventoryOpened;
-                PlayerState.IsMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
+                PlayerState.IsMoving = __instance.IsSprintEnabled || __instance.MovementContext.AbsoluteMovementDirection.x  > 0 || __instance.MovementContext.AbsoluteMovementDirection.y > 0;
 
                 if (Plugin.EnableSprintPenalty.Value && Plugin.ServerConfig.enable_stances)
                 {

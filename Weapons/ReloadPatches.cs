@@ -229,7 +229,7 @@ namespace RealismMod
                     float highReadyBonus = fc.Item.WeapClass == "shotgun" && StanceController.CurrentStance == EStance.HighReady == true ? StanceController.HighReadyManipBuff : 1f;
                     float lowReadyBonus = fc.Item.WeapClass != "shotgun" && StanceController.CurrentStance == EStance.LowReady == true ? StanceController.LowReadyManipBuff : 1f;
 
-                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.45f);
+                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.65f, 1.45f);
                     player.HandsAnimator.SetAnimationSpeed(IntenralMagReloadSpeed);
 
                     if (Plugin.EnableLogging.Value == true)
@@ -487,7 +487,7 @@ namespace RealismMod
                     chamberSpeed *= Plugin.GlobalBoltSpeedMulti.Value;
                     stanceModifier = StanceController.IsBracing ? 1.2f : StanceController.IsMounting ? 1.4f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.15f : 1f;
                 }
-                float totalChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * stanceModifier * ammoFactor * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.3f);
+                float totalChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * stanceModifier * ammoFactor * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.65f, 1.3f);
                 __instance.FirearmsAnimator.SetAnimationSpeed(totalChamberSpeed);
 
                 if (Plugin.EnableLogging.Value == true)
@@ -516,7 +516,7 @@ namespace RealismMod
             if (fc == null) return;
             if (fc.FirearmsAnimator == __instance)
             {
-                float totalFixSpeed = Mathf.Clamp(fix * WeaponStats.TotalFixSpeed * PlayerState.ReloadInjuryMulti * Plugin.GlobalFixSpeedMulti.Value * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.55f, 1.15f);
+                float totalFixSpeed = Mathf.Clamp(fix * WeaponStats.TotalFixSpeed * PlayerState.ReloadInjuryMulti * Plugin.GlobalFixSpeedMulti.Value * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.65f, 1.15f);
                 WeaponAnimationSpeedControllerClass.SetSpeedFix(__instance.Animator, totalFixSpeed);
                 __instance.SetAnimationSpeed(totalFixSpeed);         
                 if (Plugin.EnableLogging.Value == true)
@@ -557,7 +557,7 @@ namespace RealismMod
                         chamberSpeed *= Plugin.GlobalRechamberSpeedMulti.Value;
                     }
 
-                    float totalRechamberSpeed = Mathf.Clamp(chamberSpeed * PlayerState.FixSkillMulti * PlayerState.ReloadInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.5f);
+                    float totalRechamberSpeed = Mathf.Clamp(chamberSpeed * PlayerState.FixSkillMulti * PlayerState.ReloadInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.65f, 1.5f);
 
                     player.ExecuteSkill(new Action(() => player.Skills.WeaponFixAction.Complete(1f)));
 
@@ -771,7 +771,7 @@ namespace RealismMod
             {
                 FirearmsAnimator fa = (FirearmsAnimator)faField.GetValue(__instance);
 
-                float totalReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.35f);
+                float totalReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.65f, 1.35f);
                 fa.SetAnimationSpeed(totalReloadSpeed);
 
                 if (Plugin.EnableLogging.Value == true)
@@ -801,7 +801,7 @@ namespace RealismMod
             if (fc == null) return;
             if (fc.FirearmsAnimator == __instance)
             {
-                float totalReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.35f);
+                float totalReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.65f, 1.35f);
                 __instance.SetAnimationSpeed(totalReloadSpeed);
 
                 if (Plugin.EnableLogging.Value == true)
@@ -826,7 +826,7 @@ namespace RealismMod
         {
             if (PlayerState.IsMagReloading == true)
             {
-                float totalReloadSpeed = Mathf.Clamp(WeaponStats.NewMagReloadSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * PlayerState.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.5f, 1.35f);
+                float totalReloadSpeed = Mathf.Clamp(WeaponStats.NewMagReloadSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * PlayerState.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.7f)), 0.65f, 1.35f);
                 __instance.SetAnimationSpeed(totalReloadSpeed);
 
                 if (Plugin.EnableLogging.Value == true)

@@ -244,7 +244,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(PhysicalClass __instance,ref bool __result)
         {
-            __result = !__instance.HoldingBreath && ((__instance.StaminaParameters.StaminaExhaustionStartsBreathSound && __instance.Stamina.Exhausted) || __instance.Oxygen.Exhausted || Plugin.RealHealthController.HasOverdosed || (Plugin.RealHealthController.PainStrength > Plugin.RealHealthController.PainEffectThreshold && Plugin.RealHealthController.PainStrength > Plugin.RealHealthController.PainReliefStrength));
+            __result = !__instance.HoldingBreath && ((__instance.StaminaParameters.StaminaExhaustionStartsBreathSound && __instance.Stamina.Exhausted) || __instance.Oxygen.Exhausted || Plugin.RealHealthController.HasOverdosed);
             return false;
         }
     }
@@ -535,7 +535,7 @@ namespace RealismMod
             float stressResist = player.Skills.StressPain.Value;
             float painkillerDuration = (float)Math.Round(10f * (1f + stressResist), 2);
             float negativeEffectDuration = (float)Math.Round(15f * (1f - stressResist), 2);
-            float negativeEffectStrength = (float)Math.Round(0.9f * (1f - stressResist), 2);
+            float negativeEffectStrength = (float)Math.Round(0.75f * (1f - stressResist), 2);
             Plugin.RealHealthController.AddAdrenaline(player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
         }
     }
@@ -692,7 +692,7 @@ namespace RealismMod
 
                     bool mouthBlocked = Plugin.RealHealthController.MouthIsBlocked(head, face, equipment);
 
-                    bool hasBodyGear = vest != null || tacrig != null || bag != null;
+                    bool hasBodyGear = vest != null || tacrig != null; //|| bag != null
                     bool hasHeadGear = head != null || ears != null || face != null;
 
                     FaceShieldComponent fsComponent = __instance.FaceShieldObserver.Component;

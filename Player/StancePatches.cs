@@ -390,7 +390,7 @@ namespace RealismMod
                     float mountOrientationBonus = StanceController.BracingDirection == EBracingDirection.Top ? 0.75f : 1f;
                     float mountingRecoilLimit = WeaponStats.IsStocklessPistol ? 0.25f : 0.75f;
                     float recoilBonus = StanceController.IsMounting && __instance.Weapon.IsBeltMachineGun ? 0.6f : StanceController.IsMounting ? 0.8f : 0.95f;
-                    float swayBonus = StanceController.IsMounting ? 0.5f : 0.75f;
+                    float swayBonus = __instance.Weapon.IsBeltMachineGun && StanceController.IsMounting ? 0.35f : StanceController.IsMounting ? 0.5f : 0.75f;
 
                     StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, recoilBonus * mountOrientationBonus, 0.04f);
                     StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, swayBonus * mountOrientationBonus, 0.04f);
@@ -618,6 +618,7 @@ namespace RealismMod
     {
         private static FieldInfo movementContextField;
         private static FieldInfo playerField;
+        public static float tiltBeforeMount = 0f;
 
         protected override MethodBase GetTargetMethod()
         {
@@ -625,10 +626,6 @@ namespace RealismMod
             playerField = AccessTools.Field(typeof(MovementContext), "_player");
             return typeof(MovementState).GetMethod("SetTilt", BindingFlags.Instance | BindingFlags.Public);
         }
-
-        public static float currentTilt = 0f;
-        public static float currentPoseLevel = 0f;
-        public static bool wasProne = false;
 
         [PatchPrefix]
         private static void Prefix(MovementState __instance, float tilt)
@@ -640,14 +637,12 @@ namespace RealismMod
             {
                 if (!StanceController.IsMounting)
                 {
-                    currentTilt = tilt;
-                    currentPoseLevel = movementContext.PoseLevel;
-                    wasProne = movementContext.IsInPronePose;
+                    tiltBeforeMount = tilt;
                 }
-
-                if (currentTilt != tilt || currentPoseLevel != movementContext.PoseLevel || !movementContext.IsGrounded || wasProne != movementContext.IsInPronePose)
+                else if (Math.Abs(tiltBeforeMount - tilt) > 2.5f)
                 {
                     StanceController.IsMounting = false;
+                    tiltBeforeMount = 0f;
                 }
             }
         }
@@ -1002,6 +997,8 @@ namespace RealismMod
                 handsRotation += sway;
                 Vector3 rotationCenter = __instance._shouldMoveWeaponCloser ? __instance.HandsContainer.RotationCenterWoStock : __instance.HandsContainer.RotationCenter;
                 Vector3 weapRootPivot = __instance.HandsContainer.WeaponRootAnim.TransformPoint(rotationCenter);
+
+                StanceController.IsLeftShoulder = __instance.LeftStance;
 
                 bool allStancesAreReset = hasResetActiveAim && hasResetLowReady && hasResetHighReady && hasResetShortStock && hasResetPistolPos;
                 bool isInStance = 

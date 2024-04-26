@@ -294,7 +294,7 @@ namespace RealismMod
 
                     float shotCountFactor = (float)Math.Round(Mathf.Min(RecoilController.ShotCount * 0.4f, 1.2f), 2);
                     float baseAngle = RecoilController.BaseTotalRecoilAngle;
-                    float totalRecAngle = StanceController.IsMounting ? Mathf.Min(baseAngle + 15, 90f) : StanceController.IsBracing ? Mathf.Min(baseAngle + 8f, 90f) : baseAngle;
+                    float totalRecAngle = StanceController.IsMounting ? Mathf.Min(baseAngle + 10, 90f) : StanceController.IsBracing ? Mathf.Min(baseAngle + 5f, 90f) : baseAngle;
                     totalRecAngle = WeaponStats._WeapClass != "pistol" ? totalRecAngle : totalRecAngle - 5;
                     float hipfireModifier = !StanceController.IsAiming ? 1.1f : 1f;
                     float dispersionSpeedFactor = WeaponStats._WeapClass != "pistol" ? 1f + (-WeaponStats.TotalDispersionDelta) : 1f;
@@ -610,8 +610,7 @@ namespace RealismMod
 
                 float mountingDispModi = Mathf.Clamp(StanceController.BracingRecoilBonus, 0.85f, 1f);
                 float baseRecoilAngle = RecoilController.BaseTotalRecoilAngle;
-                float mountingAngleModi = StanceController.IsMounting ? Mathf.Min(baseRecoilAngle + 15f, 90f) : StanceController.IsBracing ? Mathf.Min(baseRecoilAngle + 8f, 90f) : baseRecoilAngle;
-                
+                    
                 float opticRecoilMulti = allowedCalibers.Contains(firearmController.Weapon.AmmoCaliber) && StanceController.IsAiming && WeaponStats.IsOptic && StanceController.IsAiming ? 0.95f : 1f;
                 float fovFactor = (Singleton<SharedGameSettingsClass>.Instance.Game.Settings.FieldOfView / 70f);
       /*          float opticLimit = StanceController.IsAiming && WeaponStats.HasOptic ? 15f * fovFactor : Plugin.HRecLimitMulti.Value * fovFactor;*/
@@ -658,9 +657,8 @@ namespace RealismMod
 
                 //Reset camera recoil values and modify by various factors
                 float camShotFactor = RecoilController.ShotCount > 1 ? Mathf.Min((RecoilController.ShotCount * 0.1f) + 1f, 1.55f) : 1f;
-                float totalCamRecoil = RecoilController.BaseTotalCamRecoil * incomingForce * PlayerState.RecoilInjuryMulti 
-                    * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti * camShotFactor 
-                    * StanceController.BracingRecoilBonus * Plugin.CamMulti.Value;
+                float totalCamRecoil = RecoilController.BaseTotalCamRecoil * incomingForce * PlayerState.RecoilInjuryMulti * shortStockingCamBonus 
+                    * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti * camShotFactor  * Plugin.CamMulti.Value;
                 RecoilController.FactoredTotalCamRecoil = totalCamRecoil;
                 __instance.ShotRecoilProcessValues[3].IntensityMultiplicator = totalCamRecoil;
                 __instance.ShotRecoilProcessValues[4].IntensityMultiplicator = -totalCamRecoil;

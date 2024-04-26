@@ -107,6 +107,7 @@ namespace RealismMod
         public static EStance CurrentStance = EStance.None;
         private static EStance lastRecordedStance = EStance.None;
         public static bool WasActiveAim = false;
+        public static bool IsLeftShoulder = false;
 
         public static bool IsInForcedLowReady = false;
         public static bool IsAiming = false;
@@ -142,6 +143,7 @@ namespace RealismMod
         public static float BracingRecoilBonus = 1f;
         public static float DismountTimer = 0.0f;
         public static bool CanDoDismountTimer = false;
+
  
 
         private static float getRestoreRate() 
@@ -203,8 +205,8 @@ namespace RealismMod
             bool isUsingStationaryWeapon = player.MovementContext.CurrentState.Name == EPlayerState.Stationary;
             bool isInRegenableStance = CurrentStance == EStance.HighReady || CurrentStance == EStance.LowReady || CurrentStance == EStance.PatrolStance || CurrentStance == EStance.ShortStock || (IsIdle() && !Plugin.EnableIdleStamDrain.Value);
             bool isInRegenableState = (!player.Physical.HoldingBreath && (IsMounting || IsBracing)) || player.IsInPronePose || CurrentStance == EStance.PistolCompressed || player.IsInventoryOpened || isUsingStationaryWeapon;
-            bool doRegen = ((isInRegenableStance && !IsAiming && !IsFiringFromStance) || isInRegenableState) && !PlayerState.IsSprinting;
-            bool shouldDoIdleDrain = IsIdle() && Plugin.EnableIdleStamDrain.Value;
+            bool doRegen = ((isInRegenableStance && !IsAiming && !IsFiringFromStance && !IsLeftShoulder) || isInRegenableState) && !PlayerState.IsSprinting;
+            bool shouldDoIdleDrain = (IsIdle() || IsLeftShoulder) && Plugin.EnableIdleStamDrain.Value;
             bool shouldInterruptRegen = isInRegenableStance && (IsAiming || IsFiringFromStance);
             bool doDrain = (shouldInterruptRegen || !isInRegenableStance || shouldDoIdleDrain) && !isInRegenableState && !PlayerState.IsSprinting;
             bool doNeutral = PlayerState.IsSprinting;
@@ -378,7 +380,7 @@ namespace RealismMod
                     DidStanceWiggle = false;
                 }
 
-                if (!PlayerState.IsSprinting && !IsInInventory && !WeaponStats.IsStocklessPistol)
+                if (!PlayerState.IsSprinting && !IsInInventory && !WeaponStats.IsStocklessPistol && !IsLeftShoulder)
                 {
                     //cycle stances
                     if (MeleeIsToggleable && Input.GetKeyUp(Plugin.CycleStancesKeybind.Value.MainKey))
