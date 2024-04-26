@@ -1382,7 +1382,7 @@ namespace RealismMod
                 float percentHpAimMove = 1f - ((1f - percentHp) / (isArm ? 20f : 14f));
                 float percentHpADS = 1f - ((1f - percentHp) / (isRightArm ? 1f : 2f));
                 float percentHpStance = 1f - ((1f - percentHp) / (isRightArm ? 1.5f : 3f));
-                float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 2f : 3.5f));
+                float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 2.75f : 4f));
                 float percentHpRecoil = 1f - ((1f - percentHp) / (isLeftArm ? 10f : 20f));
 
 
@@ -1422,7 +1422,7 @@ namespace RealismMod
             }
 
             float totalHpPercent = totalCurrentHp / totalMaxHp;
-            resourceRateInjuryMulti = Mathf.Clamp(1f - totalHpPercent, 0f, 1f) * 0.25f;
+            resourceRateInjuryMulti = Mathf.Clamp(1f - totalHpPercent, 0f, 1f) * 0.15f;
 
             if (PainStrength > PainEffectThreshold)
             {
@@ -1445,7 +1445,7 @@ namespace RealismMod
             float percentHydroLimitRecoil = (1f + ((1f - percentHydro) / 20f));
             float percentHydroLimitErgo = (1f + ((1f - percentHydro) / 4f));
 
-            float painKillerFactor = Mathf.Clamp(1f - (drugFactor / 300f), 0.5f, 1f);
+            float painKillerFactor = Mathf.Clamp(1f - (drugFactor / 400f), 0.5f, 1f);
             float painKillerFactorInverse = Mathf.Clamp(1f + (drugFactor / 600f), 1f, 1.15f);
             float skillFactor = (1f - (player.Skills.HealthEnergy / 4));
             float skillFactorInverse = (1f + (player.Skills.HealthEnergy / 4));
@@ -1471,9 +1471,9 @@ namespace RealismMod
                 }
                 else
                 {
-                    float playerWeightFactor = PlayerState.TotalModifiedWeight >= 10f ? PlayerState.TotalModifiedWeight / 400f : 0f;
-                    float sprintMulti = PlayerState.IsSprinting ? 1.5f : 1f;
-                    float sprintFactor = PlayerState.IsSprinting ? 0.125f : 0f;
+                    float playerWeightFactor = PlayerState.TotalModifiedWeight >= 10f ? PlayerState.TotalModifiedWeight / 500f : 0f;
+                    float sprintMulti = PlayerState.IsSprinting ? 1.45f : 1f;
+                    float sprintFactor = PlayerState.IsSprinting ? 0.1f : 0f;
                     float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * (1f - player.Skills.HealthEnergy);
                     ResourcePerTick = totalResourceRate;
                 }
