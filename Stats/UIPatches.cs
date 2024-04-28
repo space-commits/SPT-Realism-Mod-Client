@@ -18,8 +18,37 @@ using StatAttributeClass = GClass2752;
 using BarrelTemplateClass = GClass2579;
 using ArmorPlateUIClass = GClass2633;
 using FormatArmorClass = GClass2520;
+using Aki.Reflection.Utils;
+
 namespace RealismMod
 {
+ 
+    public class ArmorClassStringPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(ArmorComponent.Class1934).GetMethod("method_3", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        private static string GetItemClass(CompositeArmorComponent x)
+        {
+            return x.Item.ShortName.Localized(null) + ": " + GearStats.ArmorClass(x.Item);
+        }
+
+        [PatchPrefix]
+        private static bool PatchPrefix(ArmorComponent.Class1934 __instance, ref string __result)
+        {
+            CompositeArmorComponent[] array = __instance.item.GetItemComponentsInChildren<CompositeArmorComponent>(true).ToArray<CompositeArmorComponent>();
+
+            if (array.Length > 1)
+            {
+                __result = array.Select(new Func<CompositeArmorComponent, string>(GetItemClass)).CastToStringValue("\n", true);
+            }
+            __result = GearStats.ArmorClass(__instance.armorComponent_0.Item);
+            return false;
+        }
+    }
+
 
     public class ArmorLevelDisplayPatch : ModulePatch
     {

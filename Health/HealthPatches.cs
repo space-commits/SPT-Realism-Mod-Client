@@ -573,7 +573,7 @@ namespace RealismMod
                     float maxHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;
                     float remainingHp = currentHp / maxHp;
 
-                    if (remainingHp <= 0.5f && (damageType == EDamageType.Dehydration || damageType == EDamageType.Exhaustion))
+                    if (remainingHp <= 0.9f && (damageType == EDamageType.Dehydration || damageType == EDamageType.Exhaustion))
                     {
                         damage = 0;
                         return;
@@ -643,11 +643,13 @@ namespace RealismMod
 
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<GInterface130>), typeof(int), typeof(bool) }, null);
+            return typeof(EFT.Player).GetMethod("SetInHands", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(int), typeof(Callback<GInterface130>)}, null);
+/*
+            return typeof(EFT.Player).GetMethod("TryProceed", BindingFlags.Instance | BindingFlags.Public);*/
         }
 
         [PatchPrefix]
-        private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
+        private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart, int animationVariant, Callback<GInterface130> callback)
         {
             if (__instance.IsYourPlayer)
             {
@@ -671,7 +673,6 @@ namespace RealismMod
                 }
 
                 float medHPRes = meds.MedKitComponent.HpResource;
-
                 string hBleedHealType = MedProperties.HBleedHealType(meds);
 
                 bool canHealFract = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
@@ -681,7 +682,6 @@ namespace RealismMod
                 if (bodyPart == EBodyPart.Common)
                 {
                     EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
-
                     Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
                     Item ears = equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem;
                     Item glasses = equipment.GetSlot(EquipmentSlot.Eyewear).ContainedItem;
@@ -691,7 +691,6 @@ namespace RealismMod
                     Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
 
                     bool mouthBlocked = Plugin.RealHealthController.MouthIsBlocked(head, face, equipment);
-
                     bool hasBodyGear = vest != null || tacrig != null; //|| bag != null
                     bool hasHeadGear = head != null || ears != null || face != null;
 
@@ -708,7 +707,7 @@ namespace RealismMod
                     if (medType.Contains("pain"))
                     {
                         int duration = MedProperties.PainKillerDuration(meds);
-                        int delay = MedProperties.Delay(meds);
+                        int delay = (int)Mathf.Round(MedProperties.Delay(meds) * (1f - __instance.Skills.HealthEnergy.Value));
                         float tunnelVisionStr = MedProperties.TunnelVisionStrength(meds);
                         float painKillStr = MedProperties.Strength(meds);
 
@@ -849,7 +848,6 @@ namespace RealismMod
                     Plugin.RealHealthController.HandleHealthEffects(medType, meds, bodyPart, __instance, hBleedHealType, canHealHBleed, canHealLBleed, canHealFract);
                 }
             }
-
             return true;
         }
     }

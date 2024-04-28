@@ -416,8 +416,8 @@ namespace RealismMod
 
                     deltaRotation *= (fc.AimingSensitivity * 0.9f);
 
-                    float lowerClampXLimit = StanceController.BracingDirection == EBracingDirection.Top ? -17f : StanceController.BracingDirection == EBracingDirection.Right ? -4f : -15f;
-                    float upperClampXLimit = StanceController.BracingDirection == EBracingDirection.Top ? 17f : StanceController.BracingDirection == EBracingDirection.Right ? 15f : 1f;
+                    float lowerClampXLimit = StanceController.BracingDirection == EBracingDirection.Top ? -19f : StanceController.BracingDirection == EBracingDirection.Right ? -4f : -15f;
+                    float upperClampXLimit = StanceController.BracingDirection == EBracingDirection.Top ? 19f : StanceController.BracingDirection == EBracingDirection.Right ? 15f : 1f;
 
                     float lowerClampYLimit = StanceController.BracingDirection == EBracingDirection.Top ? -10f : -8f;
                     float upperClampYLimit = StanceController.BracingDirection == EBracingDirection.Top ? 10f : 15f;

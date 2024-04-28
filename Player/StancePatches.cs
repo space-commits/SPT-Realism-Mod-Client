@@ -152,7 +152,7 @@ namespace RealismMod
             if (player.IsYourPlayer)
             {
                 WeaponStats.BaseWeaponLength = length;
-                WeaponStats.NewWeaponLength = length >= 0.9f ? length * 1.15f : length;
+                WeaponStats.NewWeaponLength = length >= 0.9f ? length * 1.1f : length;
             }
         }
     }
@@ -467,7 +467,12 @@ namespace RealismMod
                     }
                     if (StanceController.StoredStance == EStance.ShortStock && StanceController.IsAiming)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.7f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.75f);
+                        return;
+                    }
+                    if (StanceController.IsAiming)
+                    {
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.85f);
                         return;
                     }
                 }
@@ -482,6 +487,11 @@ namespace RealismMod
     {
         private static FieldInfo playerField;
         private static FieldInfo fcField;
+
+     /*   private static Dictionary<string, Vector3> weaponOffsets = new Dictionary<string, Vector3>
+        {
+            { "", new Vector3(0, 0, 0)  }
+        };*/
 
         protected override MethodBase GetTargetMethod()
         {

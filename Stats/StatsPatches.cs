@@ -16,6 +16,7 @@ using System.Linq;
 using WeaponSkills = EFT.SkillManager.GClass1771;
 using EFT.Visual;
 using static EFT.SkillManager;
+using RealismMod.Weapons;
 
 namespace RealismMod
 {
@@ -226,7 +227,7 @@ namespace RealismMod
 
             if (hasMag == true)
             {
-                StatCalc.MagReloadSpeedModifier(__instance, (MagazineClass)magazine, false, false);
+                ReloadController.MagReloadSpeedModifier(__instance, (MagazineClass)magazine, false, false);
             }
 
             if (Plugin.EnableLogging.Value == true)
