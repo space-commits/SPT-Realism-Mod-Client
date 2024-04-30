@@ -91,10 +91,7 @@ namespace RealismMod
         public static bool CancelShortStock = false;
         public static bool CancelActiveAim = false;
         public static bool ShouldResetStances = false;
-        public static bool DoMeleeReset = false;
-
-        private static bool setRunAnim = false;
-        private static bool haveResetRunAnim = false;
+        private static bool doMeleeReset = false;
 
         public static bool HasResetActiveAim = true;
         public static bool HasResetLowReady = true;
@@ -141,10 +138,9 @@ namespace RealismMod
         public static bool IsMounting = false;
         public static float BracingSwayBonus = 1f;
         public static float BracingRecoilBonus = 1f;
-        public static float DismountTimer = 0.0f;
-        public static bool CanDoDismountTimer = false;
 
- 
+        private static float tacSprintTime = 0.0f;
+        private static bool canDoTacSprintTimer = false;
 
         private static float getRestoreRate() 
         {
@@ -329,7 +325,7 @@ namespace RealismMod
 
             if (MeleeTimer >= 0.25f)
             {
-                DoMeleeReset = false;
+                doMeleeReset = false;
                 MeleeIsToggleable = true;
                 MeleeTimer = 0f;
             }
@@ -366,7 +362,7 @@ namespace RealismMod
                     stanceDampingTimer();
                 }
 
-                if (DoMeleeReset)
+                if (doMeleeReset)
                 {
                     meleeCooldownTimer();
                 }
@@ -742,22 +738,20 @@ namespace RealismMod
                 pwa.HandsContainer.WeaponRoot.localPosition = WeaponOffsetPosition;
             }
 
-            if (Plugin.EnableTacSprint.Value && (CurrentStance == EStance.HighReady || StoredStance == EStance.HighReady) && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed && !fc.Weapon.IsBeltMachineGun)
+            if (Plugin.EnableTacSprint.Value && PlayerState.IsSprinting && CurrentStance != EStance.ActiveAiming && (CurrentStance == EStance.HighReady || StoredStance == EStance.HighReady) && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed && !fc.Weapon.IsBeltMachineGun && WeaponStats.TotalWeaponWeight <= 5.5f)
             {
                 player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
-                if (!setRunAnim)
-                {
-                    setRunAnim = true;
-                    haveResetRunAnim = false;
-                }
+                tacSprintTime = 0f;
+                canDoTacSprintTimer = true;
             }
-            else if (Plugin.EnableTacSprint.Value)
+            else if (Plugin.EnableTacSprint.Value && canDoTacSprintTimer)
             {
-                if (!haveResetRunAnim)
+                tacSprintTime += Time.deltaTime;
+                if (tacSprintTime >= 0.5f)
                 {
-                    player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, (float)fc.Item.CalculateCellSize().X);
-                    haveResetRunAnim = true;
-                    setRunAnim = false;
+                    player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, fc.Item.CalculateCellSize().X);
+                    tacSprintTime = 0f;
+                    canDoTacSprintTimer = false;
                 }
             }
 
@@ -1210,7 +1204,7 @@ namespace RealismMod
             }
             else if (StanceBlender.Value == 0f && !hasResetMelee)
             {
-                DoMeleeReset = true;
+                doMeleeReset = true;
                 if (!CanResetDamping)
                 {
                     DoDampingTimer = true;
