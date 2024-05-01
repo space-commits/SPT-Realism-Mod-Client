@@ -594,8 +594,8 @@ namespace RealismMod
             float movementFactor = PlayerState.IsMoving ? 1.3f : 1f;
 
             Quaternion pistolRevertQuaternion = Quaternion.Euler(Plugin.PistolResetRotationX.Value * balanceFactor, Plugin.PistolResetRotationY.Value, Plugin.PistolResetRotationZ.Value);
-            Vector3 pistolTargetPosition = new Vector3(Plugin.PistolOffsetX.Value, Plugin.PistolOffsetY.Value, Plugin.PistolOffsetZ.Value);
-            Vector3 pistolTargetRotation = new Vector3(Plugin.PistolRotationX.Value, Plugin.PistolRotationY.Value, Plugin.PistolRotationZ.Value);
+            Vector3 pistolTargetPosition = isThirdPerson ? new Vector3(Plugin.PistolThirdPersonPositionX.Value, Plugin.PistolThirdPersonPositionY.Value, Plugin.PistolThirdPersonPositionZ.Value) : new Vector3(Plugin.PistolOffsetX.Value, Plugin.PistolOffsetY.Value, Plugin.PistolOffsetZ.Value);
+            Vector3 pistolTargetRotation = isThirdPerson ? new Vector3(Plugin.PistolThirdPersonRotationX.Value, Plugin.PistolThirdPersonRotationY.Value, Plugin.PistolThirdPersonRotationZ.Value) : new Vector3(Plugin.PistolRotationX.Value, Plugin.PistolRotationY.Value, Plugin.PistolRotationZ.Value);
             Quaternion pistolTargetQuaternion = Quaternion.Euler(pistolTargetRotation);
             Quaternion pistolMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.PistolAdditionalRotationX.Value, Plugin.PistolAdditionalRotationY.Value, Plugin.PistolAdditionalRotationZ.Value));
 
