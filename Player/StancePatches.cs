@@ -844,9 +844,7 @@ namespace RealismMod
                     bool isInStance = false;
                     float stanceSpeed = 1f;
 
-                    ////peaceful positon//// (player.AIData.BotOwner.Memory.IsPeace == true && !StanceController.botsToUseTacticalStances.Contains(player.AIData.BotOwner.Profile.Info.Settings.Role.ToString()) && !player.IsSprintEnabled && !__instance.IsAiming && !player.AIData.BotOwner.ShootData.Shooting && (Time.time - player.AIData.BotOwner.ShootData.LastTriggerPressd) > 20f)
-
-                    if (player.AIData.BotOwner.GetPlayer.MovementContext.BlindFire == 0 && player.MovementContext.StationaryWeapon == null)
+                    if (player.MovementContext.BlindFire == 0 && player.MovementContext.StationaryWeapon == null)
                     {
                         if (isPeace && !player.IsSprintEnabled && !__instance.IsAiming && !firearmController.IsInReloadOperation() && !firearmController.IsInventoryOpen() && !firearmController.IsInInteractionStrictCheck() && !firearmController.IsInSpawnOperation() && !firearmController.IsHandsProcessing()) // && player.AIData.BotOwner.WeaponManager.IsWeaponReady &&  player.AIData.BotOwner.WeaponManager.InIdleState()
                         {
@@ -862,7 +860,7 @@ namespace RealismMod
                                 if (!isTacBot && !firearmController.IsInReloadOperation() && !player.IsSprintEnabled && !__instance.IsAiming && notShooting && (lastDistance >= 25f || lastDistance == 0f))    // (Time.time - player.AIData.BotOwner.Memory.LastEnemyTimeSeen) > 1f
                                 {
                                     isInStance = true;
-                                    stanceSpeed = 4f * dt * 3f;
+                                    stanceSpeed = 12f * dt;
                                     targetRotation = lowReadyTargetQuaternion;
                                     __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * lowReadyTargetPostion;
                                 }
@@ -872,7 +870,7 @@ namespace RealismMod
                                 {
                                     isInStance = true;
                                     player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2);
-                                    stanceSpeed = 4f * dt * 2.7f;
+                                    stanceSpeed = 10.8f * dt;
                                     targetRotation = highReadyTargetQuaternion;
                                     __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * highReadyTargetPostion;
                                 }
@@ -885,7 +883,7 @@ namespace RealismMod
                                 if (isTacBot && (((nvgIsOn || fsIsON) && !player.IsSprintEnabled && !firearmController.IsInReloadOperation() && lastDistance < 25f && lastDistance > 2f && lastDistance != 0f) || (__instance.IsAiming && (nvgIsOn && __instance.CurrentScope.IsOptic || fsIsON))))
                                 {
                                     isInStance = true;
-                                    stanceSpeed = 4f * dt * 1.5f;
+                                    stanceSpeed = 6f * dt;
                                     targetRotation = activeAimTargetQuaternion;
                                     __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * activeAimTargetPostion;
                                 }
@@ -894,7 +892,7 @@ namespace RealismMod
                                 if (isTacBot && !player.IsSprintEnabled && !firearmController.IsInReloadOperation() && lastDistance <= 2f && lastDistance != 0f)
                                 {
                                     isInStance = true;
-                                    stanceSpeed = 4f * dt * 3f;
+                                    stanceSpeed = 12f * dt;
                                     targetRotation = shortStockTargetQuaternion;
                                     __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * shortStockTargetPostion;
                                 }
@@ -904,7 +902,7 @@ namespace RealismMod
                                 if (!isTacBot && !player.IsSprintEnabled && !__instance.IsAiming && notShooting)
                                 {
                                     isInStance = true;
-                                    stanceSpeed = 4f * dt * 1.5f;
+                                    stanceSpeed = 6f * dt;
                                     targetRotation = normalPistolTargetQuaternion;
                                     __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * normalPistolTargetPosition;
                                 }
@@ -912,7 +910,7 @@ namespace RealismMod
                                 if (isTacBot && !player.IsSprintEnabled && !__instance.IsAiming && notShooting)
                                 {
                                     isInStance = true;
-                                    stanceSpeed = 4f * dt * 1.5f;
+                                    stanceSpeed = 6f * dt;
                                     targetRotation = tacPistolTargetQuaternion;
                                     __instance.HandsContainer.HandsPosition.Zero = __instance.PositionZeroSum + pitch * tacPistolTargetPosition;
                                 }
