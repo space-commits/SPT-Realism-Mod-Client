@@ -53,7 +53,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(EquipmentPenaltyComponent __instance, Item item, bool anyArmorPlateSlots)
         {
-            if (Plugin.ServerConfig.gear_weight)
+            if (Plugin.ServerConfig.gear_weight && anyArmorPlateSlots)
             {
                 float comfortModifier = GearStats.ComfortModifier(item);
                 if (comfortModifier > 0f && comfortModifier != 1f)

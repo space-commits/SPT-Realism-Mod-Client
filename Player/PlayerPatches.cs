@@ -22,6 +22,7 @@ using WeaponStateClass = GClass1668;
 using EFT.InputSystem;
 using EFT.Animations.NewRecoil;
 using EFT.UI;
+using RealismMod.Weapons;
 
 namespace RealismMod
 {
@@ -56,6 +57,10 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(InputClass __instance, ECommand command)
         {
+            if (command == ECommand.ToggleStepLeft || command == ECommand.ToggleStepRight || command == ECommand.ReturnFromRightStep || command == ECommand.ReturnFromLeftStep) 
+            {
+                StanceController.IsMounting = false;
+            }
             if (command == ECommand.ChamberUnload && Plugin.ServerConfig.manual_chambering)
             {
                 Player player = Utils.GetYourPlayer();
@@ -319,7 +324,7 @@ namespace RealismMod
             }
         }
 
-        private static void CalcBaseHipfireAccuracy(Player player)
+        private static void calcBaseHipfireAccuracy(Player player)
         {
             float baseValue = 0.4f;
             float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
@@ -390,6 +395,11 @@ namespace RealismMod
                     chamberTimer(fc);
                 }
 
+                if (Plugin.ServerConfig.enable_stances)
+                {
+                    StanceController.DoMounting(player, player.ProceduralWeaponAnimation, fc);
+                }
+
                 if (RecoilController.IsFiring)
                 {
                     RecoilController.SetRecoilParams(player.ProceduralWeaponAnimation, fc.Item);
@@ -419,8 +429,12 @@ namespace RealismMod
             {
                 StanceController.UnarmedStanceStamina(player);
             }
+            else 
+            {
+                StanceController.IsMounting = false;
+            }
 
-            CalcBaseHipfireAccuracy(player);
+            calcBaseHipfireAccuracy(player);
             float stanceHipFactor = StanceController.CurrentStance == EStance.ActiveAiming ? 0.7f : StanceController.CurrentStance == EStance.ShortStock ? 1.35f : 1.05f;
             player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.2f, 1.6f);
         }
@@ -449,12 +463,12 @@ namespace RealismMod
                 PlayerState.IsSprinting = __instance.IsSprintEnabled;
                 PlayerState.EnviroType = __instance.Environment;
                 StanceController.IsInInventory = __instance.IsInventoryOpened;
-                PlayerState.IsMoving = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D);
+                PlayerState.IsMoving = __instance.IsSprintEnabled || __instance.MovementContext.AbsoluteMovementDirection.x  > 0 || __instance.MovementContext.AbsoluteMovementDirection.y > 0;
 
                 if (Plugin.EnableSprintPenalty.Value && Plugin.ServerConfig.enable_stances)
                 {
                     DoSprintPenalty(__instance, fc, StanceController.BracingSwayBonus);
-                    if (PlayerState.HasFullyResetSprintADSPenalties) //!RecoilController.IsFiring && 
+                    if (PlayerState.HasFullyResetSprintADSPenalties)
                     {
                         __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerState.TotalBreathIntensity * StanceController.BracingSwayBonus;
                         __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerState.TotalHandsIntensity * StanceController.BracingSwayBonus;

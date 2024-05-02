@@ -144,9 +144,9 @@ namespace RealismMod
         public const float AdapterPistolGripBonusVRecoil = -1f;
         public const float AdapterPistolGripBonusHRecoil = -2f;
         public const float AdapterPistolGripBonusDispersion = -1f;
-        public const float AdapterPistolGripBonusChamber = 10f;
+        public const float AdapterPistolGripBonusChamber = 20f;
         public const float AdapterPistolGripBonusErgo = 2f;
-        public const float PumpGripReloadBonus = 18f;
+        public const float PumpGripReloadBonus = 20f;
         public const float FoldedErgoFactor = 0.85f;
         public const float FoldedHRecoilFactor = 1.1f;
         public const float FoldedVRecoilFactor = 1.6f;

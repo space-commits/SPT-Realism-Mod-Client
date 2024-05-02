@@ -41,7 +41,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.pluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string pluginVersion = "1.1.1";
+        private const string pluginVersion = "1.1.2";
 
         //movement
         public static ConfigEntry<bool> EnableMaterialSpeed { get; set; }
@@ -268,6 +268,12 @@ namespace RealismMod
         public static ConfigEntry<float> ShortStockResetRotationX { get; set; }
         public static ConfigEntry<float> ShortStockResetRotationY { get; set; }
         public static ConfigEntry<float> ShortStockResetRotationZ { get; set; }
+        public static ConfigEntry<float> PistolThirdPersonPositionX { get; set; }
+        public static ConfigEntry<float> PistolThirdPersonPositionY { get; set; }
+        public static ConfigEntry<float> PistolThirdPersonPositionZ { get; set; }
+        public static ConfigEntry<float> PistolThirdPersonRotationX { get; set; }
+        public static ConfigEntry<float> PistolThirdPersonRotationY { get; set; }
+        public static ConfigEntry<float> PistolThirdPersonRotationZ { get; set; }
         public static ConfigEntry<float> PistolOffsetX { get; set; }
         public static ConfigEntry<float> PistolOffsetY { get; set; }
         public static ConfigEntry<float> PistolOffsetZ { get; set; }
@@ -542,14 +548,13 @@ namespace RealismMod
             if (ServerConfig.malf_changes)
             {
                 new GetTotalMalfunctionChancePatch().Enable();
-
+                new IsKnownMalfTypePatch().Enable();
                 if (ServerConfig.manual_chambering) 
                 {
                     new SetAmmoCompatiblePatch().Enable();
                     new StartReloadPatch().Enable();
                     new StartEquipWeapPatch().Enable();
                     new SetAmmoOnMagPatch().Enable();
-                    new IsKnownMalfTypePatch().Enable();
                     new PreChamberLoadPatch().Enable();
                 }
             }
@@ -669,6 +674,7 @@ namespace RealismMod
                 new EquipmentPenaltyComponentPatch().Enable();
                 new ArmorLevelUIPatch().Enable();
                 new ArmorLevelDisplayPatch().Enable();
+                new ArmorClassStringPatch().Enable();
 
                 if (EnableRagdollFix.Value)
                 {
@@ -718,7 +724,6 @@ namespace RealismMod
             //Stances
             if (ServerConfig.enable_stances) 
             {
-                new ApplyComplexRotationPatch().Enable();
                 new ApplySimpleRotationPatch().Enable();
                 new InitTransformsPatch().Enable();
                 new ZeroAdjustmentsPatch().Enable();
@@ -734,7 +739,9 @@ namespace RealismMod
                 new BattleUIScreenPatch().Enable();
                 new MuzzleSmokePatch().Enable();
                 new ChangePosePatch().Enable();
+                new MountingPatch().Enable();
             }
+            new ApplyComplexRotationPatch().Enable(); //also needed for visual recoil
 
             //Health
             if (ServerConfig.med_changes)
@@ -916,12 +923,13 @@ namespace RealismMod
             string deafSettings = ".9. Deafening and Audio.";
             string speed = "10. Weapon Speed Modifiers.";
             string weapAimAndPos = "11. Weapon Stances And Position.";
-            string activeAim = "12. Active Aim.";
-            string highReady = "13. High Ready.";
-            string lowReady = "14. Low Ready.";
-            string pistol = "15. Pistol Position And Stance.";
-            string shortStock = "16. Short-Stocking.";
-            string thirdPerson = "17. Third Person Animations.";
+            string thirdPerson = "12. Third Person Animations.";
+            string activeAim = "13. Active Aim.";
+            string highReady = "14. High Ready.";
+            string lowReady = "15. Low Ready.";
+            string pistol = "16. Pistol Position And Stance.";
+            string shortStock = "17. Short-Stocking.";
+
 
             test1 = Config.Bind<float>(testing, "test 1", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 600, IsAdvanced = true, Browsable = true }));
             test2 = Config.Bind<float>(testing, "test 2", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 500, IsAdvanced = true, Browsable = true }));
@@ -978,11 +986,11 @@ namespace RealismMod
             EnableSlopeSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Slope Speed Modifier", false, new ConfigDescription("Enables Slopes Slowing Down Movement. Can Cause Random Speed Slowdowns In Some Small Spots Due To BSG's Bad Map Geometry.", null, new ConfigurationManagerAttributes { Order = 10, Browsable = ServerConfig.movement_changes }));
 
             ResourceRateChanges = Config.Bind<bool>(healthSettings, "Enable Hydration/Energy Loss Rate Changes", ServerConfig.med_changes, new ConfigDescription("Enables Changes To How Hydration And Energy Loss Rates Are Calculated. They Are Increased By Injuries, Drug Use, Sprinting And Weight.", null, new ConfigurationManagerAttributes { Order = 120, Browsable = ServerConfig.med_changes }));
-            HydrationRateMulti = Config.Bind<float>(healthSettings, "Hydration Drain Rate Multi", 0.8f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 110, Browsable = ServerConfig.med_changes }));
-            EnergyRateMulti = Config.Bind<float>(healthSettings, "Energy Drain Rate Multi", 0.5f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 100, Browsable = ServerConfig.med_changes }));
+            HydrationRateMulti = Config.Bind<float>(healthSettings, "Hydration Drain Rate Multi.", 0.55f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 110, Browsable = ServerConfig.med_changes }));
+            EnergyRateMulti = Config.Bind<float>(healthSettings, "Energy Drain Rate Multi.", 0.35f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 100, Browsable = ServerConfig.med_changes }));
             EnableTrnqtEffect = Config.Bind<bool>(healthSettings, "Enable Tourniquet Effect", ServerConfig.med_changes, new ConfigDescription("Tourniquet Will Drain HP Of The Limb They Are Applied To.", null, new ConfigurationManagerAttributes { Order = 90, Browsable = ServerConfig.med_changes }));
             GearBlocksEat = Config.Bind<bool>(healthSettings, "Gear Blocks Consumption", ServerConfig.med_changes, new ConfigDescription("Gear Blocks Eating & Drinking. This Includes Some Masks & NVGs & Faceshields That Are Toggled On.", null, new ConfigurationManagerAttributes { Order = 80, Browsable = ServerConfig.med_changes }));
-            GearBlocksHeal = Config.Bind<bool>(healthSettings, "Gear Blocks Healing", ServerConfig.med_changes, new ConfigDescription("Gear Blocks Use Of Meds If The Wound Is Covered By It.", null, new ConfigurationManagerAttributes { Order = 70, Browsable = ServerConfig.med_changes }));
+            GearBlocksHeal = Config.Bind<bool>(healthSettings, "Gear Blocks Healing", false, new ConfigDescription("Gear Blocks Use Of Meds If The Wound Is Covered By It.", null, new ConfigurationManagerAttributes { Order = 70, Browsable = ServerConfig.med_changes }));
             EnableAdrenaline = Config.Bind<bool>(healthSettings, "Adrenaline", ServerConfig.med_changes, new ConfigDescription("If The Player Is Shot or Shot At They Will Get A Painkiller Effect, As Well As Tunnel Vision and Tremors. The Duration And Strength Of These Effects Are Determined By The Stress Resistence Skill.", null, new ConfigurationManagerAttributes { Order = 55, Browsable = ServerConfig.med_changes }));
             DropGearKeybind = Config.Bind(healthSettings, "Remove Gear Keybind (Double Press)", new KeyboardShortcut(KeyCode.P), new ConfigDescription("Removes Any Gear That Is Blocking The Healing Of A Wound, It's A Double Press Like Bag Keybind Is.", null, new ConfigurationManagerAttributes { Order = 50, Browsable = ServerConfig.med_changes }));
 
@@ -991,7 +999,7 @@ namespace RealismMod
             EnableMouseSensPenalty = Config.Bind<bool>(miscSettings, "Enable Weight Mouse Sensitivity Penalty", ServerConfig.gear_weight, new ConfigDescription("Instead Of Using Gear Mouse Sens Penalty Stats, It Is Calculated Based On The Gear + Content's Weight As Modified By The Comfort Stat.", null, new ConfigurationManagerAttributes { Order = 20, Browsable = ServerConfig.gear_weight }));
             EnableZeroShift = Config.Bind<bool>(miscSettings, "Enable Zero Shift", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Sights Simulate Losing Zero While Firing. The Reticle Has A Chance To Move Off Target. The Chance Is Determined By The Scope And Its Mount's Accuracy Stat, And The Weapon's Recoil. High Quality Scopes And Mounts Won't Lose Zero. SCAR-H Has Worse Zero-Shift.", null, new ConfigurationManagerAttributes { Order = 30, Browsable = ServerConfig.recoil_attachment_overhaul }));
 
-            GlobalDamageModifier = Config.Bind<float>(ballSettings, "Global Damage Modifier", 0.95f, new ConfigDescription("Lower = Less Damage Received (Except Head) For Bots And Player.", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 110, Browsable = ServerConfig.realistic_ballistics }));
+            GlobalDamageModifier = Config.Bind<float>(ballSettings, "Global Damage Modifier", 1f, new ConfigDescription("Lower = Less Damage Received (Except Head) For Bots And Player.", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 110, Browsable = ServerConfig.realistic_ballistics }));
             EnableBodyHitZones = Config.Bind<bool>(ballSettings, "Enable Body Hit Zones", ServerConfig.realistic_ballistics, new ConfigDescription("Divides Body Into A, C and D Hit Zones Like On IPSC Targets. In Addtion, There Are Upper Arm, Forearm, Thigh, Calf, Neck, Spine And Heart Hit Zones. Each Zone Modifies Damage And Bleed Chance. ", null, new ConfigurationManagerAttributes { Order = 10, Browsable = ServerConfig.realistic_ballistics }));
             EnableHitSounds = Config.Bind<bool>(ballSettings, "Enable Hit Sounds", ServerConfig.realistic_ballistics, new ConfigDescription("Enables Additional Sounds To Be Played When Hitting The New Body Zones And Armor Hit Sounds By Material.", null, new ConfigurationManagerAttributes { Order = 50, Browsable = ServerConfig.realistic_ballistics }));
             FleshHitSoundMulti = Config.Bind<float>(ballSettings, "Flesh Hit Sound Multi", 1f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 60, Browsable = ServerConfig.realistic_ballistics }));
@@ -1080,7 +1088,14 @@ namespace RealismMod
           
             ThirdPersonRotationSpeed = Config.Bind<float>(thirdPerson, "Third Person Rotation Speed Multi", 1.5f, new ConfigDescription("Speed Of Stance Rotation Change In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1000, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             ThirdPersonPositionSpeed = Config.Bind<float>(thirdPerson, "Third Person Position Speed Multi", 1.0f, new ConfigDescription("Speed Of Stance Position Change In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1100, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-           
+
+            PistolThirdPersonPositionX = Config.Bind<float>(thirdPerson, "Pistol Third Person Position X-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 260, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolThirdPersonPositionY = Config.Bind<float>(thirdPerson, "Pistol Third Person Position Y-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 250, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolThirdPersonPositionZ = Config.Bind<float>(thirdPerson, "Pistol Third Person Position Z-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 240, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolThirdPersonRotationX = Config.Bind<float>(thirdPerson, "Pistol Third Person Rotation X-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 230, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolThirdPersonRotationY = Config.Bind<float>(thirdPerson, "Pistol Third Person Rotation Y-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 220, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolThirdPersonRotationZ = Config.Bind<float>(thirdPerson, "Pistol Third Person Rotation Z-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 210, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+
             ShortStockThirdPersonPositionX = Config.Bind<float>(thirdPerson, "Short-Stock Third Person Position X-Axis", 0.03f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 200, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             ShortStockThirdPersonPositionY = Config.Bind<float>(thirdPerson, "Short-Stock Third Person Position Y-Axis", 0.065f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 190, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             ShortStockThirdPersonPositionZ = Config.Bind<float>(thirdPerson, "Short-Stock Third Person Position Z-Axis", -0.075f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 180, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
@@ -1108,7 +1123,7 @@ namespace RealismMod
             LowReadyThirdPersonRotationX = Config.Bind<float>(thirdPerson, "Low Ready Third Person Rotation X-Axis", 24f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 8, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             LowReadyThirdPersonRotationY = Config.Bind<float>(thirdPerson, "Low Ready Third Person Rotation Y-Axis", 10f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             LowReadyThirdPersonRotationZ = Config.Bind<float>(thirdPerson, "Low Ready Third Person Rotation Z-Axis", -1f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-
+ 
             ActiveAimAdditionalRotationSpeedMulti = Config.Bind<float>(activeAim, "Active Aim Additonal Rotation Speed Multi.", 3.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             ActiveAimResetRotationSpeedMulti = Config.Bind<float>(activeAim, "Active Aim Reset Rotation Speed Multi.", 4.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             ActiveAimRotationMulti = Config.Bind<float>(activeAim, "Active Aim Rotation Speed Multi.", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.0f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 144, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
@@ -1131,7 +1146,7 @@ namespace RealismMod
             ActiveAimResetRotationY = Config.Bind<float>(activeAim, "Active Aiming Reset Rotation Y-Axis.", 25.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 101, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             ActiveAimResetRotationZ = Config.Bind<float>(activeAim, "Active Aiming Reset Rotation Z-Axis", -2f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
-            HighReadyAdditionalRotationSpeedMulti = Config.Bind<float>(highReady, "High Ready Additonal Rotation Speed Multi.", 2.5f, new ConfigDescription("How Fast The Weapon Rotates Going Out Of Stance.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 94, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyAdditionalRotationSpeedMulti = Config.Bind<float>(highReady, "High Ready Additonal Rotation Speed Multi.", 1.5f, new ConfigDescription("How Fast The Weapon Rotates Going Out Of Stance.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 94, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             HighReadyResetRotationMulti = Config.Bind<float>(highReady, "High Ready Reset Rotation Speed Multi.", 2f, new ConfigDescription("How Fast The Weapon Rotates Going Out Of Stance.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 93, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             HighReadyRotationMulti = Config.Bind<float>(highReady, "High Ready Rotation Speed Multi.", 3f, new ConfigDescription("How Fast The Weapon Rotates Going Into Stance.", new AcceptableValueRange<float>(0.0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 92, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             HighReadyResetSpeedMulti = Config.Bind<float>(highReady, "High Ready Reset Speed Multi", 13f, new ConfigDescription("How Fast The Weapon Moves Going Out Of Stance", new AcceptableValueRange<float>(1f, 100.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 91, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));

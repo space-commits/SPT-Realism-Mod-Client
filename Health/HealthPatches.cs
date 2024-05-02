@@ -244,7 +244,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(PhysicalClass __instance,ref bool __result)
         {
-            __result = !__instance.HoldingBreath && ((__instance.StaminaParameters.StaminaExhaustionStartsBreathSound && __instance.Stamina.Exhausted) || __instance.Oxygen.Exhausted || Plugin.RealHealthController.HasOverdosed || (Plugin.RealHealthController.PainStrength > Plugin.RealHealthController.PainEffectThreshold && Plugin.RealHealthController.PainStrength > Plugin.RealHealthController.PainReliefStrength));
+            __result = !__instance.HoldingBreath && ((__instance.StaminaParameters.StaminaExhaustionStartsBreathSound && __instance.Stamina.Exhausted) || __instance.Oxygen.Exhausted || Plugin.RealHealthController.HasOverdosed);
             return false;
         }
     }
@@ -280,7 +280,6 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
         {
-
             if (Plugin.EnableLogging.Value)
             {
                 Logger.LogWarning("applying " + item.LocalizedName());
@@ -341,11 +340,13 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(PlayerHealthController __instance, Item item, EBodyPart bodyPart, ref bool __result)
         {
-            MedsClass medsClass;
-            FoodClass foodClass;
-            bool canUse = true;
-            if (__instance.Player.IsYourPlayer && __instance.CanApplyItem(item, bodyPart))
+            if (__instance.Player.IsYourPlayer)
             {
+                if (!__instance.CanApplyItem(item, bodyPart)) return true;
+
+                MedsClass medsClass;
+                FoodClass foodClass;
+                bool canUse = true;
                 if (((medsClass = (item as MedsClass)) != null))
                 {
                     if (Plugin.EnableLogging.Value)
@@ -386,18 +387,21 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(EFT.Player __instance, EBoundItem quickSlot)
         {
-            Item boundItem = __instance.GClass2761_0.Inventory.FastAccess.GetBoundItem(quickSlot);
-            FoodClass food = boundItem as FoodClass;
-            if (boundItem != null && (food = (boundItem as FoodClass)) != null)
+            if (__instance.IsYourPlayer)
             {
-                bool canUse = true;
-                Plugin.RealHealthController.CanConsume(__instance, boundItem, ref canUse);
-                if (Plugin.EnableLogging.Value)
+                Item boundItem = __instance.GClass2761_0.Inventory.FastAccess.GetBoundItem(quickSlot);
+                FoodClass food = boundItem as FoodClass;
+                if (boundItem != null && (food = (boundItem as FoodClass)) != null)
                 {
-                    Logger.LogWarning("qucik slot, can use = " + canUse);
-                }
+                    bool canUse = true;
+                    Plugin.RealHealthController.CanConsume(__instance, boundItem, ref canUse);
+                    if (Plugin.EnableLogging.Value)
+                    {
+                        Logger.LogWarning("qucik slot, can use = " + canUse);
+                    }
 
-                return canUse;
+                    return canUse;
+                }
             }
             return true;
         }
@@ -435,32 +439,36 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ActiveHealthController __instance, EBodyPart bodyPart, float healthPenalty, ref bool __result)
         {
-            //I had to do this previously due to the type being protected, no longer is the case. Keeping for reference.
-            /* BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);*/
-
-            HealthStateClass.BodyPartState bodyPartState = __instance.Dictionary_0[bodyPart];
-            SkillManager skills = (SkillManager)AccessTools.Field(typeof(ActiveHealthController), "skillManager_0").GetValue(__instance);
-            Action<EBodyPart, ValueStruct> bodyPartRestoredField = (Action<EBodyPart, ValueStruct>)AccessTools.Field(typeof(ActiveHealthController), "BodyPartRestoredEvent").GetValue(__instance);
-
-            if (!bodyPartState.IsDestroyed)
+            if (__instance.Player.IsYourPlayer) 
             {
-                __result = false;
+                //I had to do this previously due to the type being protected, no longer is the case. Keeping for reference.
+                /* BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);*/
+
+                HealthStateClass.BodyPartState bodyPartState = __instance.Dictionary_0[bodyPart];
+                SkillManager skills = (SkillManager)AccessTools.Field(typeof(ActiveHealthController), "skillManager_0").GetValue(__instance);
+                Action<EBodyPart, ValueStruct> bodyPartRestoredField = (Action<EBodyPart, ValueStruct>)AccessTools.Field(typeof(ActiveHealthController), "BodyPartRestoredEvent").GetValue(__instance);
+
+                if (!bodyPartState.IsDestroyed)
+                {
+                    __result = false;
+                    return false;
+                }
+
+                HealthValue health = bodyPartState.Health;
+                bodyPartState.IsDestroyed = false;
+                healthPenalty += (1f - healthPenalty) * skills.SurgeryReducePenalty;
+                bodyPartState.Health = new HealthValue(1f, Mathf.Max(1f, Mathf.Ceil(bodyPartState.Health.Maximum * healthPenalty)), 0f);
+                __instance.method_40(bodyPart, EDamageType.Medicine);
+                __instance.method_32(bodyPart);
+                Action<EBodyPart, ValueStruct> bodyPartRestoredEvent = bodyPartRestoredField;
+                if (bodyPartRestoredEvent != null)
+                {
+                    bodyPartRestoredEvent(bodyPart, health.CurrentAndMaximum);
+                }
+                __result = true;
                 return false;
             }
-
-            HealthValue health = bodyPartState.Health;
-            bodyPartState.IsDestroyed = false;
-            healthPenalty += (1f - healthPenalty) * skills.SurgeryReducePenalty;
-            bodyPartState.Health = new HealthValue(1f, Mathf.Max(1f, Mathf.Ceil(bodyPartState.Health.Maximum * healthPenalty)), 0f);
-            __instance.method_40(bodyPart, EDamageType.Medicine);
-            __instance.method_32(bodyPart);
-            Action<EBodyPart, ValueStruct> bodyPartRestoredEvent = bodyPartRestoredField;
-            if (bodyPartRestoredEvent != null)
-            {
-                bodyPartRestoredEvent(bodyPart, health.CurrentAndMaximum);
-            }
-            __result = true;
-            return false;
+            return true;
         }
     }
 
@@ -527,7 +535,7 @@ namespace RealismMod
             float stressResist = player.Skills.StressPain.Value;
             float painkillerDuration = (float)Math.Round(10f * (1f + stressResist), 2);
             float negativeEffectDuration = (float)Math.Round(15f * (1f - stressResist), 2);
-            float negativeEffectStrength = (float)Math.Round(0.9f * (1f - stressResist), 2);
+            float negativeEffectStrength = (float)Math.Round(0.75f * (1f - stressResist), 2);
             Plugin.RealHealthController.AddAdrenaline(player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
         }
     }
@@ -565,7 +573,7 @@ namespace RealismMod
                     float maxHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;
                     float remainingHp = currentHp / maxHp;
 
-                    if (remainingHp <= 0.5f && (damageType == EDamageType.Dehydration || damageType == EDamageType.Exhaustion))
+                    if (remainingHp <= 0.9f && (damageType == EDamageType.Dehydration || damageType == EDamageType.Exhaustion))
                     {
                         damage = 0;
                         return;
@@ -635,11 +643,13 @@ namespace RealismMod
 
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<GInterface130>), typeof(int), typeof(bool) }, null);
+            return typeof(EFT.Player).GetMethod("SetInHands", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(int), typeof(Callback<GInterface130>)}, null);
+/*
+            return typeof(EFT.Player).GetMethod("TryProceed", BindingFlags.Instance | BindingFlags.Public);*/
         }
 
         [PatchPrefix]
-        private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
+        private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart, int animationVariant, Callback<GInterface130> callback)
         {
             if (__instance.IsYourPlayer)
             {
@@ -663,7 +673,6 @@ namespace RealismMod
                 }
 
                 float medHPRes = meds.MedKitComponent.HpResource;
-
                 string hBleedHealType = MedProperties.HBleedHealType(meds);
 
                 bool canHealFract = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
@@ -673,7 +682,6 @@ namespace RealismMod
                 if (bodyPart == EBodyPart.Common)
                 {
                     EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
-
                     Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
                     Item ears = equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem;
                     Item glasses = equipment.GetSlot(EquipmentSlot.Eyewear).ContainedItem;
@@ -683,8 +691,7 @@ namespace RealismMod
                     Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
 
                     bool mouthBlocked = Plugin.RealHealthController.MouthIsBlocked(head, face, equipment);
-
-                    bool hasBodyGear = vest != null || tacrig != null || bag != null;
+                    bool hasBodyGear = vest != null || tacrig != null; //|| bag != null
                     bool hasHeadGear = head != null || ears != null || face != null;
 
                     FaceShieldComponent fsComponent = __instance.FaceShieldObserver.Component;
@@ -700,7 +707,7 @@ namespace RealismMod
                     if (medType.Contains("pain"))
                     {
                         int duration = MedProperties.PainKillerDuration(meds);
-                        int delay = MedProperties.Delay(meds);
+                        int delay = (int)Mathf.Round(MedProperties.Delay(meds) * (1f - __instance.Skills.HealthEnergy.Value));
                         float tunnelVisionStr = MedProperties.TunnelVisionStrength(meds);
                         float painKillStr = MedProperties.Strength(meds);
 
@@ -841,7 +848,6 @@ namespace RealismMod
                     Plugin.RealHealthController.HandleHealthEffects(medType, meds, bodyPart, __instance, hBleedHealType, canHealHBleed, canHealLBleed, canHealFract);
                 }
             }
-
             return true;
         }
     }

@@ -117,62 +117,6 @@ namespace RealismMod
             }
         }
 
-        public static void SetMagReloadSpeeds(Player.FirearmController __instance, MagazineClass magazine, bool isQuickReload = false)
-        {
-            PlayerState.IsMagReloading = true;
-            StanceController.CancelLowReady = true;
-            Weapon weapon = __instance.Item;
-
-            if (PlayerState.NoCurrentMagazineReload)
-            {
-                Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
-                StatCalc.MagReloadSpeedModifier(weapon, magazine, false, true);
-                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadInjuryMulti * PlayerState.ReloadSkillMulti * PlayerState.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.7f)), 0.5f, 1.35f));
-            }
-            else
-            {
-                StatCalc.MagReloadSpeedModifier(weapon, magazine, true, false, isQuickReload);
-            }
-        }
-
-        public static void MagReloadSpeedModifier(Weapon weapon, MagazineClass magazine, bool isNewMag, bool reloadFromNoMag, bool isQuickReload = false)
-        {
-            float magWeight = weapon.IsBeltMachineGun ? magazine.GetSingleItemTotalWeight() * StatCalc.MagWeightMult * 0.5f : magazine.GetSingleItemTotalWeight() * StatCalc.MagWeightMult;
-            float magWeightFactor = (magWeight / -100f) + 1f;
-            float magSpeed = AttachmentProperties.ReloadSpeed(magazine);
-            float reloadSpeedModiLessMag = WeaponStats.TotalReloadSpeedLessMag;
-            float stockModifier = weapon.WeapClass != "pistol" && !WeaponStats.HasShoulderContact ? 0.8f : 1f;
-
-            float magSpeedMulti = (magSpeed / 100f) + 1f;
-            float totalReloadSpeed = magSpeedMulti * magWeightFactor * reloadSpeedModiLessMag * stockModifier;
-
-            if (reloadFromNoMag)
-            {
-                WeaponStats.NewMagReloadSpeed = totalReloadSpeed;
-                WeaponStats.CurrentMagReloadSpeed = totalReloadSpeed;
-            }
-            else
-            {
-                if (isNewMag)
-                {
-                    WeaponStats.NewMagReloadSpeed = totalReloadSpeed;
-                }
-                else
-                {
-                    WeaponStats.CurrentMagReloadSpeed = totalReloadSpeed;
-                }
-            }
-
-            if (isQuickReload)
-            {
-                WeaponStats.NewMagReloadSpeed *= Plugin.QuickReloadSpeedMulti.Value;
-                WeaponStats.CurrentMagReloadSpeed *= Plugin.QuickReloadSpeedMulti.Value;
-            }
-
-            WeaponStats.NewMagReloadSpeed *= Plugin.GlobalReloadSpeedMulti.Value;
-            WeaponStats.CurrentMagReloadSpeed *= Plugin.GlobalReloadSpeedMulti.Value; 
-        }
-
         public static float ErgoWeightCalc(float totalWeight, float ergoDelta, float totalTorque, string weapClass)
         {
             if (weapClass == "pistol")
@@ -540,7 +484,7 @@ namespace RealismMod
                 }
                 if (WeaponStats.WeaponType(weap) == "DI")
                 {
-                    modDuraBurn *= 1.17f;
+                    modDuraBurn *= 1.25f;
                 }
             }
 

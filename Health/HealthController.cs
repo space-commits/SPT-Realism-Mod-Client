@@ -22,6 +22,8 @@ using LightBleedingInterface = GInterface242;
 using DehydrationInterface = GInterface246;
 using ExhaustionInterface = GInterface247;
 using PainInterface = GInterface259;
+using static GClass2463;
+using Newtonsoft.Json.Linq;
 
 namespace RealismMod
 {
@@ -208,7 +210,7 @@ namespace RealismMod
         private float timeSinceLastClicked = 0f;
         private bool clickTriggered = false;
 
-        private float adrenalineCooldownTime = 60f * (1f - PlayerState.StressResistanceFactor);
+        private float adrenalineCooldownTime = 70f * (1f - PlayerState.StressResistanceFactor);
         public bool AdrenalineCooldownActive = false;
 
         //temporary solution
@@ -218,7 +220,7 @@ namespace RealismMod
         private bool reset4 = false;
         private bool reset5 = false;
 
-        private float baseMaxHPRestore = 70f;
+        private float baseMaxHPRestore = 86f;
 
         public float PainStrength = 0f;
         public float PainEffectThreshold = 10f;
@@ -238,6 +240,8 @@ namespace RealismMod
         public float ResourcePerTick = 0;
 
         private bool haveNotifiedPKOverdose = false;
+
+        private bool addedCustomEffectsToDict = false;
 
         public bool ArmsAreIncapacitated 
         {
@@ -263,6 +267,12 @@ namespace RealismMod
 
         public void ControllerUpdate()
         {
+            if (!addedCustomEffectsToDict) 
+            {
+                AddCustomEffectsToDict();
+                addedCustomEffectsToDict = true;
+            }
+
             if (!Utils.IsInHideout && Utils.IsReady)
             {
                 healthControllerTime += Time.deltaTime;
@@ -320,9 +330,43 @@ namespace RealismMod
             }
             if (AdrenalineCooldownActive && adrenalineCooldownTime <= 0.0f)
             {
-                adrenalineCooldownTime = 60f * (1f - PlayerState.StressResistanceFactor);
+                adrenalineCooldownTime = 70f * (1f - PlayerState.StressResistanceFactor);
                 AdrenalineCooldownActive = false;
             }
+        }
+
+
+        public void AddCustomEffectsToDict() 
+        {
+            Type type1 = typeof(GClass2463.GClass2464);
+            FieldInfo fieldInfo1 = type1.GetField("dictionary_1", BindingFlags.NonPublic | BindingFlags.Static);
+            var effectDict1 = (Dictionary<byte, string>)fieldInfo1.GetValue(null);
+
+            effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "ResourceRateDrain");
+            effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "HealthRegen");
+            effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "HealthDrain");
+
+            fieldInfo1.SetValue(null, effectDict1);
+
+            Type type0 = typeof(GClass2463.GClass2464);
+            FieldInfo fieldInfo0 = type0.GetField("dictionary_0", BindingFlags.NonPublic | BindingFlags.Static);
+            var effectDict0 = (Dictionary<string, byte>)fieldInfo0.GetValue(null);
+
+            effectDict0.Add("ResourceRateDrain", Convert.ToByte(effectDict0.Count + 1));
+            effectDict0.Add("HealthRegen", Convert.ToByte(effectDict0.Count + 1));
+            effectDict0.Add("HealthDrain", Convert.ToByte(effectDict0.Count + 1));
+
+            fieldInfo0.SetValue(null, effectDict0);
+
+            Type typeType = typeof(GClass2463.GClass2464);
+            FieldInfo typeFieldInfo = typeType.GetField("type_0", BindingFlags.NonPublic | BindingFlags.Static);
+            var typeArr = (Type[])typeFieldInfo.GetValue(null);
+
+            Type[] customTypes = new Type[] { typeof(ResourceRateDrain), typeof(HealthRegen), typeof(HealthDrain) };
+
+            customTypes.CopyTo(typeArr, 0);
+            typeFieldInfo.SetValue(null, customTypes);
+
         }
 
 
@@ -1186,7 +1230,7 @@ namespace RealismMod
             bool mouthBlocked = MouthIsBlocked(head, face, equipment);
 
             bool hasHeadGear = head != null || ears != null || face != null;
-            bool hasBodyGear = vest != null || tacrig != null || bag != null;
+            bool hasBodyGear = vest != null || tacrig != null; // bag != null
 
             bool isHead = false;
             bool isBody = false;
@@ -1361,7 +1405,7 @@ namespace RealismMod
 
                 if (hasFracture)
                 {
-                    PainStrength += 10f;
+                    PainStrength += 9f;
                 }
 
                 bool isLeftArm = part == EBodyPart.LeftArm;
@@ -1382,12 +1426,12 @@ namespace RealismMod
                 float percentHpAimMove = 1f - ((1f - percentHp) / (isArm ? 20f : 14f));
                 float percentHpADS = 1f - ((1f - percentHp) / (isRightArm ? 1f : 2f));
                 float percentHpStance = 1f - ((1f - percentHp) / (isRightArm ? 1.5f : 3f));
-                float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 2f : 3.5f));
+                float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 2.75f : 4f));
                 float percentHpRecoil = 1f - ((1f - percentHp) / (isLeftArm ? 10f : 20f));
 
 
-                if (currentHp <= 0f) PainStrength += 15f;
-                if (percentHp <= 0.5f) PainStrength += 5f;
+                if (currentHp <= 0f) PainStrength += 14f;
+                if (percentHp <= 0.5f) PainStrength += 4f;
 
                 if (isLeg || isBody)
                 {
@@ -1422,7 +1466,7 @@ namespace RealismMod
             }
 
             float totalHpPercent = totalCurrentHp / totalMaxHp;
-            resourceRateInjuryMulti = Mathf.Clamp(1f - totalHpPercent, 0f, 1f) * 0.25f;
+            resourceRateInjuryMulti = Mathf.Clamp(1f - totalHpPercent, 0f, 1f) * 0.15f;
 
             if (PainStrength > PainEffectThreshold)
             {
@@ -1445,10 +1489,12 @@ namespace RealismMod
             float percentHydroLimitRecoil = (1f + ((1f - percentHydro) / 20f));
             float percentHydroLimitErgo = (1f + ((1f - percentHydro) / 4f));
 
-            float painKillerFactor = Mathf.Clamp(1f - (drugFactor / 300f), 0.5f, 1f);
-            float painKillerFactorInverse = Mathf.Clamp(1f + (drugFactor / 600f), 1f, 1.15f);
-            float skillFactor = (1f - (player.Skills.HealthEnergy / 4));
-            float skillFactorInverse = (1f + (player.Skills.HealthEnergy / 4));
+            float painFactor = Mathf.Max(PainStrength - PainReliefStrength, 0f);
+            painFactor = HasOverdosedStim ? 90f + painFactor : painFactor;
+            float painKillerFactor = Mathf.Clamp(1f - (painFactor / 1000f), 0.85f, 1f);
+            float painKillerFactorInverse = Mathf.Clamp(1f + (painFactor / 1000f), 1f, 1.15f);
+            float skillFactor = (1f + (player.Skills.HealthEnergy.Value / 4));
+            float skillFactorInverse = (1f - (player.Skills.HealthEnergy.Value / 4));
 
             PlayerState.AimMoveSpeedInjuryMulti = Mathf.Clamp(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor * skillFactor, 0.6f * percentHydroLowerLimit, 1.1f);
             PlayerState.ADSInjuryMulti = Mathf.Clamp(adsInjuryMulti * percentEnergyADS * painKillerFactor * skillFactor, 0.35f * percentHydroLowerLimit, 1.1f);
@@ -1458,8 +1504,8 @@ namespace RealismMod
             PlayerState.HealthSprintAccelFactor = Mathf.Clamp(sprintAccelInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor, 0.4f * percentHydroLowerLimit, 1.1f);
             PlayerState.HealthWalkSpeedFactor = Mathf.Clamp(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor * skillFactor, 0.7f * percentHydroLowerLimit, 1.1f);
             PlayerState.HealthStamRegenFactor = Mathf.Clamp(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor * skillFactor, 0.5f * percentHydroLowerLimit, 1.1f);
-            PlayerState.ErgoDeltaInjuryMulti = Mathf.Clamp(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactorInverse * skillFactorInverse, 1f, 1.5f * percentHydroLimitErgo);
-            PlayerState.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactorInverse * skillFactorInverse, 1f, 1.15f * percentHydroLimitRecoil);
+            PlayerState.ErgoDeltaInjuryMulti = Mathf.Clamp(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactorInverse * skillFactorInverse, 1f, 1.3f * percentHydroLimitErgo);
+            PlayerState.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactorInverse * skillFactorInverse, 1f, 1.1f * percentHydroLimitRecoil);
 
 
             if (Plugin.ResourceRateChanges.Value)
@@ -1471,10 +1517,10 @@ namespace RealismMod
                 }
                 else
                 {
-                    float playerWeightFactor = PlayerState.TotalModifiedWeight >= 10f ? PlayerState.TotalModifiedWeight / 400f : 0f;
-                    float sprintMulti = PlayerState.IsSprinting ? 1.5f : 1f;
-                    float sprintFactor = PlayerState.IsSprinting ? 0.125f : 0f;
-                    float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * (1f - player.Skills.HealthEnergy);
+                    float playerWeightFactor = PlayerState.TotalModifiedWeight >= 10f ? PlayerState.TotalModifiedWeight / 500f : 0f;
+                    float sprintMulti = PlayerState.IsSprinting ? 1.45f : 1f;
+                    float sprintFactor = PlayerState.IsSprinting ? 0.1f : 0f;
+                    float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * (1f - player.Skills.HealthEnergy.Value);
                     ResourcePerTick = totalResourceRate;
                 }
             }
