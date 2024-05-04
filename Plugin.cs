@@ -354,11 +354,8 @@ namespace RealismMod
 
             try
             {
-                //for some reason the server double serializes the data.
                 var jsonString = RequestHandler.GetJson("/RealismMod/GetInfo");
-                var str = JsonConvert.DeserializeObject<string>(jsonString);
-                ServerConfig = JsonConvert.DeserializeObject<RealismConfig>(str);
-          
+                ServerConfig = JsonConvert.DeserializeObject<RealismConfig>(jsonString);
             }
             catch (JsonReaderException ex)
             {
