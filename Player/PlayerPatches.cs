@@ -343,7 +343,7 @@ namespace RealismMod
 
             float remainStamPercent = player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity;
             PlayerState.RemainingArmStamPerc = 1f - ((1f - remainStamPercent) / 3f);
-            PlayerState.RemainingArmStamPercReload = 1f - ((1f - remainStamPercent) / 4f);
+            PlayerState.RemainingArmStamPercReload = Mathf.Clamp(1f - ((1f - remainStamPercent) / 4f), 0.85f, 1f);
         }
 
         private static void setStancePWAValues(Player player, FirearmController fc)

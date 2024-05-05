@@ -353,7 +353,7 @@ namespace RealismMod
                     {
                         Logger.LogWarning("ApplyItem Med");
                     }
-
+                    Logger.LogWarning("ApplyItem Med");
                     Plugin.RealHealthController.CanUseMedItem(__instance.Player, bodyPart, item, ref canUse);
                 }
                 if ((foodClass = (item as FoodClass)) != null)
@@ -390,8 +390,8 @@ namespace RealismMod
             if (__instance.IsYourPlayer)
             {
                 Item boundItem = __instance.GClass2761_0.Inventory.FastAccess.GetBoundItem(quickSlot);
-                FoodClass food = boundItem as FoodClass;
-                if (boundItem != null && (food = (boundItem as FoodClass)) != null)
+                FoodClass foodItem = boundItem as FoodClass;
+                if (boundItem != null && foodItem != null)
                 {
                     bool canUse = true;
                     Plugin.RealHealthController.CanConsume(__instance, boundItem, ref canUse);
@@ -620,7 +620,7 @@ namespace RealismMod
                         Plugin.RealHealthController.DmgTracker.UpdateDamage(damageType, bodyPart, damage);
                         return;
                     }
-                    if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= 16f) || (damageType == EDamageType.Blunt && damage >= 10f))
+                    if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= 17f) || (damageType == EDamageType.Blunt && damage >= 10f))
                     {
                         Plugin.RealHealthController.RemoveEffectsOfType(EHealthEffectType.HealthRegen);
                     }
@@ -637,246 +637,73 @@ namespace RealismMod
         }
     }
 
-
-    public class ProceedPatch : ModulePatch
+    //Gear blocking won't work but it's better than nothing
+    public class SetMedsInHandsPatch : ModulePatch
     {
-
         protected override MethodBase GetTargetMethod()
         {
             return typeof(EFT.Player).GetMethod("SetInHands", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(int), typeof(Callback<GInterface130>)}, null);
-/*
-            return typeof(EFT.Player).GetMethod("TryProceed", BindingFlags.Instance | BindingFlags.Public);*/
         }
 
         [PatchPrefix]
-        private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart, int animationVariant, Callback<GInterface130> callback)
+        private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
         {
-            if (__instance.IsYourPlayer)
+            if (__instance.IsYourPlayer && Plugin.IsUsingFika)
             {
-                if (meds.Template._parent == "5448f3a64bdc2d60728b456a")
-                {
-                    int duration = (int)meds.HealthEffectsComponent.BuffSettings[0].Duration * 2;
-                    int delay = (int)meds.HealthEffectsComponent.BuffSettings[0].Delay;
-                    EStimType stimType = Plugin.RealHealthController.GetStimType(meds.Template._id);
-                    StimShellEffect stimEffect = new StimShellEffect(__instance, duration, delay, stimType);
-                    Plugin.RealHealthController.AddCustomEffect(stimEffect, true);
+                bool shouldAllowHeal = true;
+                Plugin.RealHealthController.CanUseMedItemCommon(meds, __instance, ref bodyPart, ref shouldAllowHeal);
+                return shouldAllowHeal;
+            }
+            return true;
+        }
+    }
 
-                    return true;
-                }
+    //Fika overrides Proceed methods
+    public class ProceedMedsPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<GInterface130>), typeof(int), typeof(bool) }, null);
+        }
 
-                string medType = MedProperties.MedType(meds);
-
-                if (MedProperties.CanBeUsedInRaid(meds) == false)
-                {
-                    NotificationManagerClass.DisplayWarningNotification("This Item Can Not Be Used In Raid", EFT.Communications.ENotificationDurationType.Long);
-                    return false;
-                }
-
-                float medHPRes = meds.MedKitComponent.HpResource;
-                string hBleedHealType = MedProperties.HBleedHealType(meds);
-
-                bool canHealFract = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
-                bool canHealLBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.LightBleeding);
-                bool canHealHBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
-
-                if (bodyPart == EBodyPart.Common)
-                {
-                    EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(__instance);
-                    Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
-                    Item ears = equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem;
-                    Item glasses = equipment.GetSlot(EquipmentSlot.Eyewear).ContainedItem;
-                    Item face = equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
-                    Item vest = equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem;
-                    Item tacrig = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
-                    Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
-
-                    bool mouthBlocked = Plugin.RealHealthController.MouthIsBlocked(head, face, equipment);
-                    bool hasBodyGear = vest != null || tacrig != null; //|| bag != null
-                    bool hasHeadGear = head != null || ears != null || face != null;
-
-                    FaceShieldComponent fsComponent = __instance.FaceShieldObserver.Component;
-                    NightVisionComponent nvgComponent = __instance.NightVisionObserver.Component;
-                    bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
-                    bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
-
-                    if (Plugin.GearBlocksHeal.Value && medType.Contains("pills") && (mouthBlocked || fsIsON || nvgIsOn))
-                    {
-                        NotificationManagerClass.DisplayWarningNotification("Can't Take Pills, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
-                        return false;
-                    }
-                    if (medType.Contains("pain"))
-                    {
-                        int duration = MedProperties.PainKillerDuration(meds);
-                        int delay = (int)Mathf.Round(MedProperties.Delay(meds) * (1f - __instance.Skills.HealthEnergy.Value));
-                        float tunnelVisionStr = MedProperties.TunnelVisionStrength(meds);
-                        float painKillStr = MedProperties.Strength(meds);
-
-                        PainKillerEffect painKillerEffect = new PainKillerEffect(duration, __instance, delay, tunnelVisionStr, painKillStr);
-                        Plugin.RealHealthController.AddCustomEffect(painKillerEffect, true);
-                        return true;
-                    }
-                    if (medType.Contains("pills") || medType.Contains("drug"))
-                    {
-                        return true;
-                    }
-
-                    Type heavyBleedType;
-                    Type lightBleedType;
-                    Type fractureType;
-                    MedProperties.EffectTypes.TryGetValue("HeavyBleeding", out heavyBleedType);
-                    MedProperties.EffectTypes.TryGetValue("LightBleeding", out lightBleedType);
-                    MedProperties.EffectTypes.TryGetValue("BrokenBone", out fractureType);
-
-                    foreach (EBodyPart part in Plugin.RealHealthController.BodyParts)
-                    {
-                        bool isHead = false;
-                        bool isBody = false;
-                        bool isNotLimb = false;
-
-                        Plugin.RealHealthController.GetBodyPartType(part, ref isNotLimb, ref isHead, ref isBody);
-
-                        bool hasHeavyBleed = false;
-                        bool hasLightBleed = false;
-                        bool hasFracture = false;
-
-                        IEnumerable<IEffect> effects = Plugin.RealHealthController.GetInjuriesOnBodyPart(__instance, part, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
-
-                        float currentHp = __instance.ActiveHealthController.GetBodyPartHealth(part).Current;
-                        float maxHp = __instance.ActiveHealthController.GetBodyPartHealth(part).Maximum;
-
-                        if (medType == "surg" && ((isBody && !hasBodyGear) || (isHead && !hasHeadGear) || !isNotLimb))
-                        {
-                            if (currentHp == 0)
-                            {
-                                bodyPart = part;
-                                break;
-                            }
-                            continue;
-                        }
-
-                        foreach (IEffect effect in effects)
-                        {
-                            if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
-                            {
-                                continue;
-                            }
-
-                            if (canHealHBleed && effect.Type == heavyBleedType)
-                            {
-                                if (!isNotLimb)
-                                {
-                                    bodyPart = part;
-                                    break;
-                                }
-                                if ((isBody || isHead) && hBleedHealType == "trnqt")
-                                {
-                                    NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Heavy Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
-
-                                    continue;
-                                }
-                                if ((isBody || isHead) && (hBleedHealType == "clot" || hBleedHealType == "combo" || hBleedHealType == "surg"))
-                                {
-                                    bodyPart = part;
-                                    break;
-                                }
-
-                                bodyPart = part;
-                                break;
-                            }
-                            if (canHealLBleed && effect.Type == lightBleedType)
-                            {
-                                if (!isNotLimb)
-                                {
-                                    bodyPart = part;
-                                    break;
-                                }
-                                if ((isBody || isHead) && hBleedHealType == "trnqt")
-                                {
-                                    NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Light Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
-
-                                    continue;
-                                }
-                                if ((isBody || isHead) && hasHeavyBleed)
-                                {
-                                    continue;
-                                }
-
-                                bodyPart = part;
-                                break;
-                            }
-                            if (canHealFract && effect.Type == fractureType)
-                            {
-                                if (!isNotLimb)
-                                {
-                                    bodyPart = part;
-                                    break;
-                                }
-                                if (isNotLimb)
-                                {
-                                    NotificationManagerClass.DisplayWarningNotification("Splints Can Only Fix Fractures On Limbs", EFT.Communications.ENotificationDurationType.Long);
-
-                                    continue;
-                                }
-
-                                bodyPart = part;
-                                break;
-                            }
-                        }
-
-                        if (bodyPart != EBodyPart.Common)
-                        {
-                            break;
-                        }
-                    }
-
-                    if (bodyPart == EBodyPart.Common)
-                    {
-                        if (medType == "vas")
-                        {
-                            return true;
-                        }
-
-                        NotificationManagerClass.DisplayWarningNotification("No Suitable Bodypart Was Found For Healing, Gear May Be Covering The Wound.", EFT.Communications.ENotificationDurationType.Long);
-
-                        return false;
-                    }
-                }
-
-                //determine if any effects should be applied based on what is being healed
-                if (bodyPart != EBodyPart.Common)
-                {
-                    Plugin.RealHealthController.HandleHealthEffects(medType, meds, bodyPart, __instance, hBleedHealType, canHealHBleed, canHealLBleed, canHealFract);
-                }
+        [PatchPrefix]
+        private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
+        {
+            if (__instance.IsYourPlayer && !Plugin.IsUsingFika)
+            {
+                bool shouldAllowHeal = true;
+                Plugin.RealHealthController.CanUseMedItemCommon(meds, __instance, ref bodyPart, ref shouldAllowHeal);
+                return shouldAllowHeal;
             }
             return true;
         }
     }
 
     //patch itself works, so possible to patch methods of nested types
-/*    public class ExistenceEnergyDrainPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
+    /*    public class ExistenceEnergyDrainPatch : ModulePatch
         {
-            Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Existence", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
-            return nestedType.GetMethod("method_5", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(ref float __result, dynamic __instance) //can use dynamic type for instance
-        {
-
-            if (__instance.HealthController.Player.IsYourPlayer)
+            protected override MethodBase GetTargetMethod()
             {
-                Player player = __instance.HealthController.Player;
-                float skillFactor = 1f - player.Skills.HealthEnergy;
-                float baseDrain = ActiveHealthController.GClass2415.GClass2424_0.Existence.EnergyDamage + Plugin.active
-                __result = *skillFactor / this.float_16;
-                return false;
+                Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Existence", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
+                return nestedType.GetMethod("method_5", BindingFlags.Instance | BindingFlags.Public);
             }
 
+            [PatchPrefix]
+            private static bool Prefix(ref float __result, dynamic __instance) //can use dynamic type for instance
+            {
+
+                if (__instance.HealthController.Player.IsYourPlayer)
+                {
+                    Player player = __instance.HealthController.Player;
+                    float skillFactor = 1f - player.Skills.HealthEnergy;
+                    float baseDrain = ActiveHealthController.GClass2415.GClass2424_0.Existence.EnergyDamage + Plugin.active
+                    __result = *skillFactor / this.float_16;
+                    return false;
+                }
+
+            }
         }
-    }
-*/
+    */
     /* //IT WILL AFFECT BOTS, UNUSED
      public class EnergyRatePatch : ModulePatch
      {

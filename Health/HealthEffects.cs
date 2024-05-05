@@ -24,7 +24,8 @@ namespace RealismMod
         Adrenaline,
         ResourceRate,
         PainKiller,
-        Stim
+        Stim,
+        FoodPoisoning
     }
 
     public interface ICustomHealthEffect

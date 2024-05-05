@@ -40,6 +40,12 @@ namespace RealismMod.Weapons
             float magSpeedMulti = (magSpeed / 100f) + 1f;
             float totalReloadSpeed = magSpeedMulti * magWeightFactor * reloadSpeedModiLessMag * stockModifier;
 
+            Utils.Logger.LogWarning("magWeightFactor " + magWeightFactor);
+            Utils.Logger.LogWarning("magSpeed " + magSpeed);
+            Utils.Logger.LogWarning("reloadSpeedModiLessMag " + reloadSpeedModiLessMag);
+            Utils.Logger.LogWarning("magSpeedMulti " + magSpeedMulti);
+            Utils.Logger.LogWarning("totalReloadSpeed " + totalReloadSpeed);
+
             if (reloadFromNoMag)
             {
                 WeaponStats.NewMagReloadSpeed = totalReloadSpeed;
@@ -90,7 +96,7 @@ namespace RealismMod.Weapons
                     float highReadyBonus = fc.Item.WeapClass == "shotgun" && StanceController.CurrentStance == EStance.HighReady == true ? StanceController.HighReadyManipBuff : 1f;
                     float lowReadyBonus = fc.Item.WeapClass != "shotgun" && StanceController.CurrentStance == EStance.LowReady == true ? StanceController.LowReadyManipBuff : 1f;
 
-                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * (Mathf.Max(PlayerState.RemainingArmStamPercReload, 0.8f)), 0.65f, 1.45f);
+                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * PlayerState.RemainingArmStamPercReload, 0.65f, 1.45f);
                     player.HandsAnimator.SetAnimationSpeed(IntenralMagReloadSpeed);
 
                     if (Plugin.EnableLogging.Value == true)

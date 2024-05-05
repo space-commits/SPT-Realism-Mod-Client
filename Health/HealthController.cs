@@ -1200,6 +1200,211 @@ namespace RealismMod
             }
         }
 
+        public void CanUseMedItemCommon(MedsClass meds, Player player, ref EBodyPart bodyPart, ref bool shouldAllowHeal) 
+        {
+            if (meds.Template._parent == "5448f3a64bdc2d60728b456a")
+            {
+                int duration = (int)meds.HealthEffectsComponent.BuffSettings[0].Duration * 2;
+                int delay = (int)meds.HealthEffectsComponent.BuffSettings[0].Delay;
+                EStimType stimType = Plugin.RealHealthController.GetStimType(meds.Template._id);
+                StimShellEffect stimEffect = new StimShellEffect(player, duration, delay, stimType);
+                Plugin.RealHealthController.AddCustomEffect(stimEffect, true);
+
+                shouldAllowHeal = true;
+                return;
+            }
+
+            string medType = MedProperties.MedType(meds);
+
+            if (MedProperties.CanBeUsedInRaid(meds) == false)
+            {
+                NotificationManagerClass.DisplayWarningNotification("This Item Can Not Be Used In Raid", EFT.Communications.ENotificationDurationType.Long);
+                shouldAllowHeal = false;
+                return;
+            }
+
+            float medHPRes = meds.MedKitComponent.HpResource;
+            string hBleedHealType = MedProperties.HBleedHealType(meds);
+
+            bool canHealFract = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
+            bool canHealLBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.LightBleeding);
+            bool canHealHBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
+
+            if (bodyPart == EBodyPart.Common)
+            {
+                EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(player);
+                Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
+                Item ears = equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem;
+                Item glasses = equipment.GetSlot(EquipmentSlot.Eyewear).ContainedItem;
+                Item face = equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
+                Item vest = equipment.GetSlot(EquipmentSlot.ArmorVest).ContainedItem;
+                Item tacrig = equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
+                Item bag = equipment.GetSlot(EquipmentSlot.Backpack).ContainedItem;
+
+                bool mouthBlocked = Plugin.RealHealthController.MouthIsBlocked(head, face, equipment);
+                bool hasBodyGear = vest != null || tacrig != null; //|| bag != null
+                bool hasHeadGear = head != null || ears != null || face != null;
+
+                FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
+                NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
+                bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
+                bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
+
+                if (Plugin.GearBlocksHeal.Value && medType.Contains("pills") && (mouthBlocked || fsIsON || nvgIsOn))
+                {
+                    NotificationManagerClass.DisplayWarningNotification("Can't Take Pills, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
+                    shouldAllowHeal = false;
+                    return;
+                }
+                if (medType.Contains("pain"))
+                {
+                    int duration = MedProperties.PainKillerDuration(meds);
+                    int delay = (int)Mathf.Round(MedProperties.Delay(meds) * (1f - player.Skills.HealthEnergy.Value));
+                    float tunnelVisionStr = MedProperties.TunnelVisionStrength(meds);
+                    float painKillStr = MedProperties.Strength(meds);
+
+                    PainKillerEffect painKillerEffect = new PainKillerEffect(duration, player, delay, tunnelVisionStr, painKillStr);
+                    Plugin.RealHealthController.AddCustomEffect(painKillerEffect, true);
+                    shouldAllowHeal = true;
+                    return;
+                }
+                if (medType.Contains("pills") || medType.Contains("drug"))
+                {
+                    shouldAllowHeal = true;
+                    return;
+                }
+
+                Type heavyBleedType;
+                Type lightBleedType;
+                Type fractureType;
+                MedProperties.EffectTypes.TryGetValue("HeavyBleeding", out heavyBleedType);
+                MedProperties.EffectTypes.TryGetValue("LightBleeding", out lightBleedType);
+                MedProperties.EffectTypes.TryGetValue("BrokenBone", out fractureType);
+
+                foreach (EBodyPart part in Plugin.RealHealthController.BodyParts)
+                {
+                    bool isHead = false;
+                    bool isBody = false;
+                    bool isNotLimb = false;
+
+                    Plugin.RealHealthController.GetBodyPartType(part, ref isNotLimb, ref isHead, ref isBody);
+
+                    bool hasHeavyBleed = false;
+                    bool hasLightBleed = false;
+                    bool hasFracture = false;
+
+                    IEnumerable<IEffect> effects = Plugin.RealHealthController.GetInjuriesOnBodyPart(player, part, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
+
+                    float currentHp = player.ActiveHealthController.GetBodyPartHealth(part).Current;
+                    float maxHp = player.ActiveHealthController.GetBodyPartHealth(part).Maximum;
+
+                    if (medType == "surg" && ((isBody && !hasBodyGear) || (isHead && !hasHeadGear) || !isNotLimb))
+                    {
+                        if (currentHp == 0)
+                        {
+                            bodyPart = part;
+                            break;
+                        }
+                        continue;
+                    }
+
+                    foreach (IEffect effect in effects)
+                    {
+                        if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
+                        {
+                            continue;
+                        }
+
+                        if (canHealHBleed && effect.Type == heavyBleedType)
+                        {
+                            if (!isNotLimb)
+                            {
+                                bodyPart = part;
+                                break;
+                            }
+                            if ((isBody || isHead) && hBleedHealType == "trnqt")
+                            {
+                                NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Heavy Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
+
+                                continue;
+                            }
+                            if ((isBody || isHead) && (hBleedHealType == "clot" || hBleedHealType == "combo" || hBleedHealType == "surg"))
+                            {
+                                bodyPart = part;
+                                break;
+                            }
+
+                            bodyPart = part;
+                            break;
+                        }
+                        if (canHealLBleed && effect.Type == lightBleedType)
+                        {
+                            if (!isNotLimb)
+                            {
+                                bodyPart = part;
+                                break;
+                            }
+                            if ((isBody || isHead) && hBleedHealType == "trnqt")
+                            {
+                                NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Light Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
+
+                                continue;
+                            }
+                            if ((isBody || isHead) && hasHeavyBleed)
+                            {
+                                continue;
+                            }
+
+                            bodyPart = part;
+                            break;
+                        }
+                        if (canHealFract && effect.Type == fractureType)
+                        {
+                            if (!isNotLimb)
+                            {
+                                bodyPart = part;
+                                break;
+                            }
+                            if (isNotLimb)
+                            {
+                                NotificationManagerClass.DisplayWarningNotification("Splints Can Only Fix Fractures On Limbs", EFT.Communications.ENotificationDurationType.Long);
+
+                                continue;
+                            }
+
+                            bodyPart = part;
+                            break;
+                        }
+                    }
+
+                    if (bodyPart != EBodyPart.Common)
+                    {
+                        break;
+                    }
+                }
+
+                if (bodyPart == EBodyPart.Common)
+                {
+                    if (medType == "vas")
+                    {
+                        shouldAllowHeal = true;
+                        return;
+                    }
+
+                    NotificationManagerClass.DisplayWarningNotification("No Suitable Bodypart Was Found For Healing, Gear May Be Covering The Wound.", EFT.Communications.ENotificationDurationType.Long);
+
+                    shouldAllowHeal = false;
+                    return;
+                }
+            }
+
+            //determine if any effects should be applied based on what is being healed
+            if (bodyPart != EBodyPart.Common)
+            {
+                Plugin.RealHealthController.HandleHealthEffects(medType, meds, bodyPart, player, hBleedHealType, canHealHBleed, canHealLBleed, canHealFract);
+            }
+        }
+
 
         public void CanUseMedItem(Player player, EBodyPart bodyPart, Item item, ref bool canUse)
         {
@@ -1216,7 +1421,6 @@ namespace RealismMod
             }
 
             MedsClass med = item as MedsClass;
-
             EquipmentClass equipment = player.Equipment;
 
             Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;

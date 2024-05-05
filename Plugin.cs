@@ -57,6 +57,7 @@ namespace RealismMod
         //recoil
         public static ConfigEntry<float> ResetTime { get; set; }
         public static ConfigEntry<float> SwayIntensity { get; set; }
+        public static ConfigEntry<float> ProceduralIntensity { get; set; }
         public static ConfigEntry<float> RecoilIntensity { get; set; }
         public static ConfigEntry<float> VertMulti { get; set; }
         public static ConfigEntry<float> HorzMulti { get; set; }
@@ -338,6 +339,7 @@ namespace RealismMod
 
         public static RealismConfig ServerConfig;
 
+        public static bool IsUsingFika = false;
         private static bool warnedUser = false;
         public static bool HasReloadedAudio = false;
 
@@ -748,7 +750,8 @@ namespace RealismMod
             {
                 new ApplyItemPatch().Enable();
                 new BreathIsAudiblePatch().Enable();
-                new ProceedPatch().Enable();
+                new SetMedsInHandsPatch().Enable();
+                new ProceedMedsPatch().Enable();
                 new RemoveEffectPatch().Enable();
                 new StamRegenRatePatch().Enable();
                 new MedkitConstructorPatch().Enable();
@@ -785,6 +788,10 @@ namespace RealismMod
                 if (Chainloader.PluginInfos.ContainsKey("com.IcyClawz.MunitionsExpert") && ServerConfig.recoil_attachment_overhaul)
                 {
                     NotificationManagerClass.DisplayWarningNotification("ERROR: MUNITIONS EXPERT DETECTED, IT IS NOT COMPATIBLE!", EFT.Communications.ENotificationDurationType.Long);
+                }
+                if (Chainloader.PluginInfos.ContainsKey("com.fika.core"))
+                {
+                    IsUsingFika = true;
                 }
             }
             if (warnedUser && (int)Time.time % 5 != 0)
@@ -947,7 +954,7 @@ namespace RealismMod
             EnableBallisticsLogging = Config.Bind<bool>(testing, "Enable Ballistics Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 2, IsAdvanced = true, Browsable = true }));
             EnableLogging = Config.Bind<bool>(testing, "Enable Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true, Browsable = true }));
 
-            RecoilIntensity = Config.Bind<float>(recoilSettings, "Recoil Intensity", 1.25f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil. Does Not Affect Recoil Climb Much, Mostly Spread And Visual.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 50, Browsable = ServerConfig.recoil_attachment_overhaul }));
+            RecoilIntensity = Config.Bind<float>(recoilSettings, "Recoil Intensity", 1.3f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil. Does Not Affect Recoil Climb Much, Mostly Spread And Visual.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 50, Browsable = ServerConfig.recoil_attachment_overhaul }));
             VertMulti = Config.Bind<float>(recoilSettings, "Vertical Recoil Multi.", 1.0f, new ConfigDescription("Up/Down. Will Also Increase Recoil Climb.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 40, Browsable = ServerConfig.recoil_attachment_overhaul }));
             HorzMulti = Config.Bind<float>(recoilSettings, "Horizontal Recoil Multi", 1.0f, new ConfigDescription("Forward/Back. Will Also Increase Weapon Shake While Firing.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 30, Browsable = ServerConfig.recoil_attachment_overhaul }));
             DispMulti = Config.Bind<float>(recoilSettings, "Dispersion Recoil Multi", 1.0f, new ConfigDescription("Spread. Will Also Increase S-Pattern Size.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 20, Browsable = ServerConfig.recoil_attachment_overhaul }));
@@ -1021,9 +1028,10 @@ namespace RealismMod
             ShowRecoilAngle = Config.Bind<bool>(statSettings, "Show Recoil Angle Stat", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use..", null, new ConfigurationManagerAttributes { Order = 2, Browsable = ServerConfig.recoil_attachment_overhaul }));
             ShowSemiROF = Config.Bind<bool>(statSettings, "Show Semi Auto ROF Stat", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 1, Browsable = ServerConfig.recoil_attachment_overhaul }));
 
-            SwayIntensity = Config.Bind<float>(waponSettings, "Sway Intensity.", 1f, new ConfigDescription("Changes The Intensity Of Aim Sway And Inertia.", new AcceptableValueRange<float>(0f, 3f), new ConfigurationManagerAttributes { Order = 1, Browsable = ServerConfig.recoil_attachment_overhaul }));
-            DuraMalfThreshold = Config.Bind<float>(waponSettings, "Malfunction Durability Threshold", 98f, new ConfigDescription("Malfunction Changes Must Be Enabled On The Server (Config App) And 'Enable Malfunctions Changes' Must Be True. Malfunction Chance Is Significantly Reduced Until This Durability Threshold Is Exceeded.", new AcceptableValueRange<float>(1f, 100f), new ConfigurationManagerAttributes { Order = 4, Browsable = ServerConfig.malf_changes }));
-            IncreaseCOI = Config.Bind<bool>(waponSettings, "Enable Increased Inaccuracy", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Requires Restart. Increases The Innacuracy Of All Weapons So That MOA/Accuracy Is A More Important Stat.", null, new ConfigurationManagerAttributes { Order = 6, Browsable = ServerConfig.recoil_attachment_overhaul }));
+            SwayIntensity = Config.Bind<float>(waponSettings, "Sway Intensity.", 1.1f, new ConfigDescription("Changes The Intensity Of Aim Sway.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 1, Browsable = ServerConfig.recoil_attachment_overhaul }));
+            ProceduralIntensity = Config.Bind<float>(waponSettings, "Procedural Intensity.", 1.05f, new ConfigDescription("Changes The Intensity Of Procedural Animations, Including Sway, Weapon Movement, And Weapon Inertia.", new AcceptableValueRange<float>(0f, 3f), new ConfigurationManagerAttributes { Order = 10, Browsable = ServerConfig.recoil_attachment_overhaul }));
+            DuraMalfThreshold = Config.Bind<float>(waponSettings, "Malfunction Durability Threshold", 98f, new ConfigDescription("Malfunction Changes Must Be Enabled On The Server (Config App) And 'Enable Malfunctions Changes' Must Be True. Malfunction Chance Is Significantly Reduced Until This Durability Threshold Is Exceeded.", new AcceptableValueRange<float>(1f, 100f), new ConfigurationManagerAttributes { Order = 40, Browsable = ServerConfig.malf_changes }));
+            IncreaseCOI = Config.Bind<bool>(waponSettings, "Enable Increased Inaccuracy", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Requires Restart. Increases The Innacuracy Of All Weapons So That MOA/Accuracy Is A More Important Stat.", null, new ConfigurationManagerAttributes { Order = 60, Browsable = ServerConfig.recoil_attachment_overhaul }));
 
             DryVolumeMulti = Config.Bind<float>(deafSettings, "Headset Base Volume Reduction Multi", 1f, new ConfigDescription("Multi For How Much Headsets Reduce Audio Volume By, Not Including Gain", new AcceptableValueRange<float>(0.1f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
             HeadsetThreshold = Config.Bind<float>(deafSettings, "Headset Cutoff Threshold Offset", -5f, new ConfigDescription("Threshold For How Loud Something Has To Be To Reduce Volume. Offset reduces or increases value. Lower Offset = More Sensitive. Offset Value of -5 Will Make It More Sensitive, A Value Of 5 Less.", new AcceptableValueRange<float>(-35f, -1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 90, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
@@ -1042,7 +1050,6 @@ namespace RealismMod
             DeafReset = Config.Bind<float>(deafSettings, "Deafen Reset Rate.", 0.065f, new ConfigDescription("How Quickly Player Regains Hearing. Higher = Faster.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true, Browsable = ServerConfig.headset_changes }));
             VigRate = Config.Bind<float>(deafSettings, "Tunnel Effect Rate", 0.02f, new ConfigDescription("How Quickly Player Gets Tunnel Vission. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true, Browsable = ServerConfig.headset_changes }));
             VigReset = Config.Bind<float>(deafSettings, "Tunnel Effect Reset Rate.", 0.035f, new ConfigDescription("How Quickly Player Recovers From Tunnel Vision. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true, Browsable = ServerConfig.headset_changes }));
-
 
             GlobalAimSpeedModifier = Config.Bind<float>(speed, "Aim Speed Multi.", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16, Browsable = ServerConfig.recoil_attachment_overhaul }));
             GlobalReloadSpeedMulti = Config.Bind<float>(speed, "Magazine Reload Speed Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15, Browsable = ServerConfig.recoil_attachment_overhaul }));
