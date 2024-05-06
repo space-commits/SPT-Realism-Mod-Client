@@ -423,7 +423,7 @@ namespace RealismMod
 
             if (weapType == "bullpup")
             {
-                totalLoudness *= 1.15f;
+                totalLoudness *= 1.18f;
                 WeaponStats.IsBullpup = true;
             }
             else WeaponStats.IsBullpup = false;
