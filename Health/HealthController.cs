@@ -1700,14 +1700,14 @@ namespace RealismMod
             float skillFactor = (1f + (player.Skills.HealthEnergy.Value / 4));
             float skillFactorInverse = (1f - (player.Skills.HealthEnergy.Value / 4));
 
-            PlayerState.AimMoveSpeedInjuryMulti = Mathf.Clamp(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor * skillFactor, 0.6f * percentHydroLowerLimit, 1.1f);
-            PlayerState.ADSInjuryMulti = Mathf.Clamp(adsInjuryMulti * percentEnergyADS * painKillerFactor * skillFactor, 0.35f * percentHydroLowerLimit, 1.1f);
-            PlayerState.StanceInjuryMulti = Mathf.Clamp(stanceInjuryMulti * percentEnergyStance * painKillerFactor * skillFactor, 0.65f * percentHydroLowerLimit, 1.1f);
-            PlayerState.ReloadInjuryMulti = Mathf.Clamp(reloadInjuryMulti * percentEnergyReload * painKillerFactor * skillFactor, 0.75f * percentHydroLowerLimit, 1.1f);
-            PlayerState.HealthSprintSpeedFactor = Mathf.Clamp(sprintSpeedInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor, 0.4f * percentHydroLowerLimit, 1.1f);
-            PlayerState.HealthSprintAccelFactor = Mathf.Clamp(sprintAccelInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor, 0.4f * percentHydroLowerLimit, 1.1f);
-            PlayerState.HealthWalkSpeedFactor = Mathf.Clamp(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor * skillFactor, 0.7f * percentHydroLowerLimit, 1.1f);
-            PlayerState.HealthStamRegenFactor = Mathf.Clamp(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor * skillFactor, 0.5f * percentHydroLowerLimit, 1.1f);
+            PlayerState.AimMoveSpeedInjuryMulti = Mathf.Clamp(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor * skillFactor, 0.6f * percentHydroLowerLimit, 1f);
+            PlayerState.ADSInjuryMulti = Mathf.Clamp(adsInjuryMulti * percentEnergyADS * painKillerFactor * skillFactor, 0.35f * percentHydroLowerLimit, 1f);
+            PlayerState.StanceInjuryMulti = Mathf.Clamp(stanceInjuryMulti * percentEnergyStance * painKillerFactor * skillFactor, 0.65f * percentHydroLowerLimit, 1f);
+            PlayerState.ReloadInjuryMulti = Mathf.Clamp(reloadInjuryMulti * percentEnergyReload * painKillerFactor * skillFactor, 0.75f * percentHydroLowerLimit, 1f);
+            PlayerState.HealthSprintSpeedFactor = Mathf.Clamp(sprintSpeedInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor, 0.4f * percentHydroLowerLimit, 1f);
+            PlayerState.HealthSprintAccelFactor = Mathf.Clamp(sprintAccelInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor, 0.4f * percentHydroLowerLimit, 1f);
+            PlayerState.HealthWalkSpeedFactor = Mathf.Clamp(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor * skillFactor, 0.7f * percentHydroLowerLimit, 1f);
+            PlayerState.HealthStamRegenFactor = Mathf.Clamp(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor * skillFactor, 0.5f * percentHydroLowerLimit, 1f);
             PlayerState.ErgoDeltaInjuryMulti = Mathf.Clamp(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactorInverse * skillFactorInverse, 1f, 1.3f * percentHydroLimitErgo);
             PlayerState.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactorInverse * skillFactorInverse, 1f, 1.1f * percentHydroLimitRecoil);
 
