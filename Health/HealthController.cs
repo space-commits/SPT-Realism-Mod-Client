@@ -1630,7 +1630,7 @@ namespace RealismMod
                 float percentHpAimMove = 1f - ((1f - percentHp) / (isArm ? 20f : 14f));
                 float percentHpADS = 1f - ((1f - percentHp) / (isRightArm ? 1f : 2f));
                 float percentHpStance = 1f - ((1f - percentHp) / (isRightArm ? 1.5f : 3f));
-                float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 2.75f : 4f));
+                float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 2f : isRightArm ? 3f : 4f));
                 float percentHpRecoil = 1f - ((1f - percentHp) / (isLeftArm ? 10f : 20f));
 
 
@@ -1658,7 +1658,7 @@ namespace RealismMod
                         rightArmRuined = isArmRuined;
                     }
 
-                    float armFractureFactor = isLeftArm && hasFracture ? 0.8f : isRightArm && hasFracture ? 0.9f : 1f;
+                    float armFractureFactor = isLeftArm && hasFracture ? 0.75f : isRightArm && hasFracture ? 0.85f : 1f;
 
                     aimMoveSpeedMulti *= percentHpAimMove * armFractureFactor;
                     adsInjuryMulti *= percentHpADS * armFractureFactor;

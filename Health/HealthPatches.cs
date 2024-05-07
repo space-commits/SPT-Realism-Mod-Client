@@ -589,7 +589,7 @@ namespace RealismMod
                     float maxHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;
                     float remainingHp = currentHp / maxHp;
 
-                    if (remainingHp <= 0.9f && (damageType == EDamageType.Dehydration || damageType == EDamageType.Exhaustion))
+                    if (remainingHp <= 0.85f && (damageType == EDamageType.Dehydration || damageType == EDamageType.Exhaustion))
                     {
                         damage = 0;
                         return;

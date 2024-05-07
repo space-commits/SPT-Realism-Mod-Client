@@ -11,9 +11,11 @@ using EFT.UI;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
 using static ObjectInHandsAnimator;
 using Random = System.Random;
 
@@ -194,7 +196,7 @@ namespace RealismMod
             {
                 baseDrainRate = 0.1f;
             }
-            float formfactor = WeaponStats.IsBullpup ? 0.4f : 1f;
+            float formfactor = WeaponStats.IsBullpup ? 0.25f : 1f;
             return WeaponStats.ErgoFactor * formfactor * baseDrainRate * ((1f - PlayerState.ADSInjuryMulti) + 1f);
         }
 
@@ -355,6 +357,53 @@ namespace RealismMod
             if (setPrevisousAsCurrent) StoredStance = CurrentStance;
         }
 
+        private static void toggleHighReady() 
+        {
+            StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
+            toggleStance(EStance.HighReady, false, true);
+            WasActiveAim = false;
+            DidStanceWiggle = false;
+
+            if (CurrentStance == EStance.HighReady && (Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed))
+            {
+                CanDoHighReadyInjuredAnim = true;
+            }
+        }
+
+        private static void toggleLowReady()
+        {
+            StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
+            toggleStance(EStance.LowReady, false, true);
+            WasActiveAim = false;
+            DidStanceWiggle = false;
+        }
+
+        private static void handleScrollInput(float scrollIncrement)
+        {
+            if (scrollIncrement == -1) 
+            {
+                if (CurrentStance == EStance.HighReady)
+                {
+                    toggleHighReady();
+                }
+                else if (CurrentStance != EStance.LowReady && HasResetHighReady)
+                {
+                    toggleLowReady();
+                }      
+            }
+            if (scrollIncrement == 1 && CurrentStance != EStance.HighReady)
+            {
+                if (CurrentStance == EStance.LowReady && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed)
+                {
+                    toggleLowReady();
+                }
+                else if (CurrentStance != EStance.HighReady && HasResetLowReady)
+                {
+                    toggleHighReady();
+                }
+            }
+        }
+
         public static void StanceState()
         {
             if (Utils.WeaponReady && Utils.GetYourPlayer().MovementContext.CurrentState.Name != EPlayerState.Stationary)
@@ -370,7 +419,7 @@ namespace RealismMod
                 }
 
                 //patrol
-                if (MeleeIsToggleable && Input.GetKeyDown(Plugin.PatrolKeybind.Value.MainKey))
+                if (MeleeIsToggleable && Input.GetKeyDown(Plugin.PatrolKeybind.Value.MainKey) && Plugin.PatrolKeybind.Value.Modifiers.All(Input.GetKey))
                 {
                     toggleStance(EStance.PatrolStance);
                     StoredStance = EStance.None;
@@ -418,7 +467,7 @@ namespace RealismMod
                     //active aim
                     if (!Plugin.ToggleActiveAim.Value)
                     {
-                        if (MeleeIsToggleable && Input.GetKey(Plugin.ActiveAimKeybind.Value.MainKey) || (Input.GetKey(KeyCode.Mouse1) && !PlayerState.IsAllowedADS))
+                        if ((MeleeIsToggleable && Input.GetKey(Plugin.ActiveAimKeybind.Value.MainKey) && Plugin.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKey(KeyCode.Mouse1) && !PlayerState.IsAllowedADS))
                         {
                             if (!HaveSetActiveAim)
                             {
@@ -441,7 +490,7 @@ namespace RealismMod
                     }
                     else
                     {
-                        if (MeleeIsToggleable && Input.GetKeyDown(Plugin.ActiveAimKeybind.Value.MainKey) || (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerState.IsAllowedADS))
+                        if ((MeleeIsToggleable && Input.GetKeyDown(Plugin.ActiveAimKeybind.Value.MainKey) && Plugin.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerState.IsAllowedADS))
                         {
                             StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
                             toggleStance(EStance.ActiveAiming);
@@ -454,9 +503,20 @@ namespace RealismMod
                         }
                     }
 
+                    if (MeleeIsToggleable && Plugin.UseMouseWheelStance.Value)
+                    {
+                        if (Input.GetKey(Plugin.StanceWheelComboKeyBind.Value.MainKey) || !Plugin.UseMouseWheelPlusKey.Value)
+                        {
+                            float scrollDelta = Input.mouseScrollDelta.y;
+                            if (scrollDelta != 0f)
+                            {
+                                handleScrollInput(scrollDelta);
+                            }
+                        }
+                    }
 
                     //Melee
-                    if (!IsAiming && MeleeIsToggleable && Input.GetKeyDown(Plugin.MeleeKeybind.Value.MainKey))
+                    if (!IsAiming && MeleeIsToggleable && Input.GetKeyDown(Plugin.MeleeKeybind.Value.MainKey) && Plugin.MeleeKeybind.Value.Modifiers.All(Input.GetKey))
                     {
                         CurrentStance = EStance.Melee;
                         StoredStance = EStance.None;
@@ -468,7 +528,7 @@ namespace RealismMod
                     }
 
                     //short-stock
-                    if (MeleeIsToggleable && Input.GetKeyDown(Plugin.ShortStockKeybind.Value.MainKey))
+                    if (MeleeIsToggleable && Input.GetKeyDown(Plugin.ShortStockKeybind.Value.MainKey) && Plugin.ShortStockKeybind.Value.Modifiers.All(Input.GetKey))
                     {
                         StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
                         toggleStance(EStance.ShortStock, false, true);
@@ -477,26 +537,15 @@ namespace RealismMod
                     }
 
                     //high ready
-                    if (MeleeIsToggleable && Input.GetKeyDown(Plugin.HighReadyKeybind.Value.MainKey))
+                    if (MeleeIsToggleable && Input.GetKeyDown(Plugin.HighReadyKeybind.Value.MainKey) && Plugin.HighReadyKeybind.Value.Modifiers.All(Input.GetKey))
                     {
-                        StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
-                        toggleStance(EStance.HighReady, false, true);
-                        WasActiveAim = false;
-                        DidStanceWiggle = false;
-
-                        if (CurrentStance == EStance.HighReady && (Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed))
-                        {
-                            CanDoHighReadyInjuredAnim = true;
-                        }
+                        toggleHighReady();
                     }
 
                     //low ready
-                    if (MeleeIsToggleable && !IsInForcedLowReady && Input.GetKeyDown(Plugin.LowReadyKeybind.Value.MainKey))
+                    if (MeleeIsToggleable && !IsInForcedLowReady && Input.GetKeyDown(Plugin.LowReadyKeybind.Value.MainKey) && Plugin.LowReadyKeybind.Value.Modifiers.All(Input.GetKey))
                     {
-                        StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
-                        toggleStance(EStance.LowReady, false, true);
-                        WasActiveAim = false;
-                        DidStanceWiggle = false;
+                        toggleLowReady();
                     }
 
                     //cancel if aiming
@@ -1078,7 +1127,7 @@ namespace RealismMod
                     }
                     if (!hasResetLowReady)
                     {
-                        lowToActive = 1f;
+                        lowToActive = 1.15f;
                     }
                 }
                 else
@@ -1097,8 +1146,8 @@ namespace RealismMod
                     CanResetDamping = false;
                 }
 
-                float transitionPositionFactor = shortToActive * highToActive * lowToActive;
-                float transitionRotationFactor = shortToActive * highToActive * lowToActive * (transitionPositionFactor != 1f ? 0.9f : 1f);
+                float transitionPositionFactor = shortToActive * highToActive; //* lowToActive
+                float transitionRotationFactor = shortToActive * highToActive * lowToActive; //(transitionPositionFactor != 1f ? 0.9f : 1f)
 
                 if (StanceBlender.Value < 1f)
                 {
