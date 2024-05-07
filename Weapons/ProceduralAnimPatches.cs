@@ -13,7 +13,6 @@ using EFT.CameraControl;
 using System.Collections;
 using EFT.Interactive;
 using EFT.Animations;
-using System.Linq;
 using static EFT.Player;
 using System.ComponentModel;
 using static EFT.ClientPlayer;
@@ -385,14 +384,14 @@ namespace RealismMod
                 float weapWeight = weapon.GetSingleItemTotalWeight();
                 float totalPlayerWeight = PlayerState.TotalModifiedWeight - weapWeight;
                 float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
-                bool noShoulderContact = !WeaponStats.HasShoulderContact && weapon.WeapClass != "pistol";
+                bool noShoulderContact = !WeaponStats.HasShoulderContact; //maybe don't include pistol
                 float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * formfactor;
                 float weightFactor = StatCalc.ProceduralIntensityFactorCalc(weapWeight, weapon.WeapClass == "pistol" ? 1f : 4f);
                 float displacementModifier = noShoulderContact ? Plugin.ProceduralIntensity.Value * 0.95f : Plugin.ProceduralIntensity.Value * 0.48f;//lower = less drag
                 float aimIntensity = noShoulderContact ? Plugin.ProceduralIntensity.Value * 0.86f : Plugin.ProceduralIntensity.Value * 0.51f;
 
                 float displacementStrength = Mathf.Clamp((ergoWeight * weightFactor * playerWeightFactor) / 25f, 0.8f, 3.5f); //inertia
-                float swayStrength = Mathf.Clamp((ergoWeight * weightFactor * playerWeightFactor) / 60f, 0.6f, 1.1f); //side to side
+                float swayStrength = Mathf.Clamp((ergoWeight * weightFactor * playerWeightFactor) / 65f, 0.6f, 1f); //side to side
 
                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_displacementStr").SetValue(__instance, displacementStrength * displacementModifier * playerWeightFactor);
                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_swayStrength").SetValue(__instance, swayStrength);

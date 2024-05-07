@@ -32,12 +32,16 @@ using MedkitTemplate = IMedkitResource;
 using static EFT.HealthSystem.ActiveHealthController;
 using static GClass2417;
 using Aki.Common.Http;
+using UnityStandardAssets.ImageEffects;
+using System.Xml;
 
 namespace RealismMod
 {
 
     public class HealthEffectsConstructorPatch : ModulePatch
     {
+        private static List<string> modifiedMeds = new List<string>();  
+
         protected override MethodBase GetTargetMethod()
         {
             return typeof(HealthEffectsComponent).GetConstructor(new Type[] { typeof(Item), typeof(IHealthEffect) });
@@ -46,8 +50,20 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(HealthEffectsComponent __instance, Item item)
         {
-            string medType = MedProperties.MedType(item);
+       
+            if (__instance.DamageEffects != null && __instance.DamageEffects.Count > 0 && !modifiedMeds.Contains(item.TemplateId)) 
+            {
+                foreach (KeyValuePair<EDamageEffectType, GClass1235> entry in __instance.DamageEffects)
+                {
+                    if (entry.Key == EDamageEffectType.HeavyBleeding || entry.Key == EDamageEffectType.LightBleeding || entry.Key == EDamageEffectType.Fracture) 
+                    {
+                        entry.Value.Cost += 1;
+                    }
+                }
+            }
+            modifiedMeds.Add(item.TemplateId);
 
+            string medType = MedProperties.MedType(item);
             if (item.Template._parent == "5448f3a64bdc2d60728b456a")
             {
                 List<ItemAttributeClass> stimAtt = item.Attributes;

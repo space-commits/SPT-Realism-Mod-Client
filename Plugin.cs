@@ -353,28 +353,14 @@ namespace RealismMod
                 MissingMemberHandling = MissingMemberHandling.Ignore
             };
 
-
             try
             {
                 var jsonString = RequestHandler.GetJson("/RealismMod/GetInfo");
                 ServerConfig = JsonConvert.DeserializeObject<RealismConfig>(jsonString);
             }
-            catch (JsonReaderException ex)
-            {
-                Logger.LogError($"REALISM MOD JSON Parsing Error: {ex.Message}");
-            }
-            catch (JsonSerializationException ex)
-            {
-                Logger.LogError($"REALISM MOD JSON Deserialization Error: {ex.Message}");
-            }
             catch (Exception ex)
             {
-                Logger.LogError($"REALISM MOD Unexpected Error: {ex.Message}");
-            }
-
-            if (ServerConfig == null)
-            {
-                Logger.LogError("REALISM MOD ERROR: FAILED TO FETCH CONFIG DATA FROM SERVER");
+                Logger.LogError($"REALISM MOD ERROR: FAILED TO FETCH CONFIG DATA FROM SERVER: {ex.Message}");
             }
         }
 
@@ -1114,12 +1100,12 @@ namespace RealismMod
             ActiveThirdPersonRotationY = Config.Bind<float>(thirdPerson, "Active Aim Third Person Rotation Y-Axis", -35f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             ActiveThirdPersonRotationZ = Config.Bind<float>(thirdPerson, "Active Aim Third Person Rotation Z-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 90, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
-            HighReadyThirdPersonPositionX = Config.Bind<float>(thirdPerson, "High Ready Third Person Position X-Axis",  0.02f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 80, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            HighReadyThirdPersonPositionY = Config.Bind<float>(thirdPerson, "High Ready Third Person Position Y-Axis", -0.01f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 70, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            HighReadyThirdPersonPositionZ = Config.Bind<float>(thirdPerson, "High Ready Third Person Position Z-Axis",  -0.05f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 60, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            HighReadyThirdPersonRotationX = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation X-Axis", -20f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 50, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            HighReadyThirdPersonRotationY = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation Y-Axis", -15f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 40, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            HighReadyThirdPersonRotationZ = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation Z-Axis", -5f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonPositionX = Config.Bind<float>(thirdPerson, "High Ready Third Person Position X-Axis",  0.005f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 80, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonPositionY = Config.Bind<float>(thirdPerson, "High Ready Third Person Position Y-Axis", 0.05f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 70, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonPositionZ = Config.Bind<float>(thirdPerson, "High Ready Third Person Position Z-Axis",  -0.045f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 60, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonRotationX = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation X-Axis", -8f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 50, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonRotationY = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation Y-Axis", -25f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 40, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonRotationZ = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation Z-Axis", -0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
             LowReadyThirdPersonPositionX = Config.Bind<float>(thirdPerson, "Low Ready Third Person Position X-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             LowReadyThirdPersonPositionY = Config.Bind<float>(thirdPerson, "Low Ready Third Person Position Y-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
