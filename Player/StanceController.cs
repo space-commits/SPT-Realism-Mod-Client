@@ -503,7 +503,7 @@ namespace RealismMod
                         }
                     }
 
-                    if (MeleeIsToggleable && Plugin.UseMouseWheelStance.Value)
+                    if (MeleeIsToggleable && Plugin.UseMouseWheelStance.Value && !IsAiming)
                     {
                         if (Input.GetKey(Plugin.StanceWheelComboKeyBind.Value.MainKey) || !Plugin.UseMouseWheelPlusKey.Value)
                         {

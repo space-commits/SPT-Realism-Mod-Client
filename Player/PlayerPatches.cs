@@ -79,7 +79,7 @@ namespace RealismMod
                 Player player = Utils.GetYourPlayer();
                 if (player.Physical.HoldingBreath) return true;
                 FirearmController fc = player.HandsController as FirearmController;
-                StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.75f, 0.75f, 1.25f));
+                StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.25f, 0.25f, 0.5f));
             }
             if (Plugin.BlockFiring.Value && command == ECommand.ToggleShooting && !Plugin.RealHealthController.HasOverdosed && StanceController.CurrentStance != EStance.None && StanceController.CurrentStance != EStance.ActiveAiming && StanceController.CurrentStance != EStance.ShortStock && StanceController.CurrentStance != EStance.PistolCompressed)
             {

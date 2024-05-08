@@ -27,6 +27,7 @@ using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2415;
 using ExistanceClass = GClass2456;
 using StamController = GClass682;
 using PhysicalClass = GClass681;
+using MedUseStringClass = GClass1235;
 using HealthStateClass = GClass2416<EFT.HealthSystem.ActiveHealthController.GClass2415>;
 using MedkitTemplate = IMedkitResource;
 using static EFT.HealthSystem.ActiveHealthController;
@@ -37,6 +38,74 @@ using System.Xml;
 
 namespace RealismMod
 {
+    public class HealCostDisplayShortPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(MedUseStringClass).GetMethod("GetStringValue", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(MedUseStringClass __instance, ref string __result)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            if (__instance.Delay > 1f)
+            {
+                stringBuilder.Append(string.Format("{0} {1}{2}", "Del.".Localized(null), __instance.Delay, "sec".Localized(null)));
+            }
+            if (__instance.Duration > 0f)
+            {
+                if (stringBuilder.Length > 0)
+                {
+                    stringBuilder.Append(" / ");
+                }
+                stringBuilder.Append(string.Format("{0} {1}{2}", "Dur.".Localized(null), __instance.Duration, "sec".Localized(null)));
+            }
+            if (__instance.Cost > 0)
+            {
+                if (stringBuilder.Length > 0)
+                {
+                    stringBuilder.Append(" / ");
+                }
+                stringBuilder.Append((__instance.Cost + 1) + " HP");
+            }
+            __result = stringBuilder.ToString();
+            return false;
+        }
+    }
+
+    public class HealCostDisplayFullPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(MedUseStringClass).GetMethod("GetFullStringValue", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(MedUseStringClass __instance, string displayName, ref string __result)
+        {
+            if (__instance.Delay.IsZero() && __instance.Duration.IsZero() && __instance.Cost == 0)
+            {
+                __result = string.Empty;
+            }
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.Append(displayName.Localized(null));
+            if (__instance.Delay > 1f)
+            {
+                stringBuilder.Append(string.Format("\n{0} {1}{2}", "Delay".Localized(null), __instance.Delay, "sec".Localized(null)));
+            }
+            if (__instance.Duration > 0f)
+            {
+                stringBuilder.Append(string.Format("\n{0} {1}{2}", "Duration".Localized(null), (__instance.Duration + 1), "sec".Localized(null)));
+            }
+            if (__instance.Cost > 0)
+            {
+                stringBuilder.Append("\n" + (__instance.Cost + 1) + " HP");
+            }
+            __result = stringBuilder.ToString();
+            return false;
+        }
+    }
 
     public class HealthEffectsConstructorPatch : ModulePatch
     {
@@ -50,19 +119,6 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(HealthEffectsComponent __instance, Item item)
         {
-       
-            if (__instance.DamageEffects != null && __instance.DamageEffects.Count > 0 && !modifiedMeds.Contains(item.TemplateId)) 
-            {
-                foreach (KeyValuePair<EDamageEffectType, GClass1235> entry in __instance.DamageEffects)
-                {
-                    if (entry.Key == EDamageEffectType.HeavyBleeding || entry.Key == EDamageEffectType.LightBleeding || entry.Key == EDamageEffectType.Fracture) 
-                    {
-                        entry.Value.Cost += 1;
-                    }
-                }
-            }
-            modifiedMeds.Add(item.TemplateId);
-
             string medType = MedProperties.MedType(item);
             if (item.Template._parent == "5448f3a64bdc2d60728b456a")
             {
@@ -232,7 +288,6 @@ namespace RealismMod
         }
     }
 
-
     public class StimStackPatch1 : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -369,7 +424,6 @@ namespace RealismMod
                     {
                         Logger.LogWarning("ApplyItem Med");
                     }
-                    Logger.LogWarning("ApplyItem Med");
                     Plugin.RealHealthController.CanUseMedItem(__instance.Player, bodyPart, item, ref canUse);
                 }
                 if ((foodClass = (item as FoodClass)) != null)

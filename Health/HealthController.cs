@@ -1482,6 +1482,18 @@ namespace RealismMod
 
             IEnumerable<IEffect> effects = GetInjuriesOnBodyPart(player, bodyPart, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
 
+            bool canHealLightBleed = med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.LightBleeding) && med.HealthEffectsComponent.DamageEffects[EDamageEffectType.LightBleeding].Cost + 1 <= med.MedKitComponent.HpResource && hasLightBleed;
+            bool canHealHeavyBleed = med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding) && med.HealthEffectsComponent.DamageEffects[EDamageEffectType.HeavyBleeding].Cost + 1 <= med.MedKitComponent.HpResource && hasHeavyBleed;
+            bool canHealFracture = med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && med.HealthEffectsComponent.DamageEffects[EDamageEffectType.Fracture].Cost + 1 <= med.MedKitComponent.HpResource && hasFracture;
+            bool partHasTreatableInjury = canHealLightBleed || canHealHeavyBleed || canHealFracture;
+
+
+            if (medType == "medkit" && !partHasTreatableInjury)
+            {
+                canUse = false;
+                return;
+            }
+
             if (isNotLimb && MedProperties.HBleedHealType(item) == "trnqt")
             {
                 NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Heavy Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
