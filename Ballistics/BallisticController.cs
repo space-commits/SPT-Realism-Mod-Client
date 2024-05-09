@@ -41,7 +41,7 @@ namespace RealismMod
                 { 
                     case EBodyPartColliderType.RightCalf:
                     case EBodyPartColliderType.LeftCalf:
-                        di.Damage *= 0.8f * Plugin.GlobalDamageModifier.Value;
+                        di.Damage *= 0.9f * Plugin.GlobalDamageModifier.Value;
                         di.HeavyBleedingDelta *= 0.8f;
                         di.LightBleedingDelta *= 0.8f;
                         break;

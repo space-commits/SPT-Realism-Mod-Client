@@ -163,7 +163,7 @@ namespace RealismMod
             totalAimMoveSpeedFactor = Mathf.Max(1f - (ergoWeight / 150f), 0.5f);
         }
 
-        public static void WeaponStatCalc(Weapon weap, float currentTorque, ref float totalTorque, float currentErgo, float currentVRecoil, float currentHRecoil, float currentDispersion, float currentCamRecoil, float currentRecoilAngle, float baseErgo, float baseVRecoil, float baseHRecoil, ref float totalErgo, ref float totalVRecoil, ref float totalHRecoil, ref float totalDispersion, ref float totalCamRecoil, ref float totalRecoilAngle, ref float totalRecoilDamping, ref float totalRecoilHandDamping, ref float totalErgoDelta, ref float totalVRecoilDelta, ref float totalHRecoilDelta, ref float recoilDamping, ref float recoilHandDamping, float currentCOI, bool hasShoulderContact, ref float totalCOI, ref float totalCOIDelta, float baseCOI, float totalPureErgo, ref float totalPureErgoDelta, bool isDisplayDelta)
+        public static void WeaponStatCalc(Weapon weap, float currentTorque, ref float totalTorque, float currentErgo, float currentVRecoil, float currentHRecoil, float currentDispersion, float currentCamRecoil, float currentRecoilAngle, float baseErgo, float baseVRecoil, float baseHRecoil, ref float totalErgo, ref float totalVRecoil, ref float totalHRecoil, ref float totalDispersion, ref float totalCamRecoil, ref float totalRecoilAngle, ref float totalRecoilDamping, ref float totalRecoilHandDamping, ref float totalErgoDelta, ref float totalVRecoilDelta, ref float totalHRecoilDelta, ref float recoilDamping, ref float recoilHandDamping, float currentCOI, bool hasShoulderContact, ref float totalCOI, ref float totalCOIDelta, float baseCOI, float totalPureErgo, ref float totalPureErgoDelta, ref float totalErgoLessMag, float currentErgoLessMag, bool isDisplayDelta)
         {
             float angleTorqueMulti;
 
@@ -227,6 +227,7 @@ namespace RealismMod
             float totalTorqueFactor = totalTorque / 100f;
             float totalTorqueFactorInverse = totalTorque / -100f;
 
+            totalErgoLessMag = currentErgoLessMag + (currentErgoLessMag * (ergoWeapBaseWeightFactor + (totalTorqueFactorErgo * ergoTorqueMult)));
             totalErgo = currentErgo + (currentErgo * (ergoWeapBaseWeightFactor + (totalTorqueFactorErgo * ergoTorqueMult)));
             totalVRecoil = currentVRecoil + (currentVRecoil * (vRecoilWeapBaseWeightFactor + (totalTorqueFactor * vRecoilTorqueMult)));
             totalHRecoil = currentHRecoil + (currentHRecoil * (hRecoilWeapBaseWeightFactor + (totalTorqueFactorInverse * hRecoilTorqueMult)));
@@ -240,6 +241,7 @@ namespace RealismMod
             {
                 totalPureErgo *= WeaponStats.FoldedErgoFactor;
                 totalErgo *= WeaponStats.FoldedErgoFactor;
+                totalErgoLessMag *= WeaponStats.FoldedErgoFactor;
                 totalVRecoil *= WeaponStats.FoldedVRecoilFactor;
                 totalHRecoil *= WeaponStats.FoldedHRecoilFactor;
                 totalCamRecoil *= WeaponStats.FoldedCamRecoilFactor;

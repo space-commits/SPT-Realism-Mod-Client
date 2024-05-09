@@ -13,7 +13,6 @@ using EFT.CameraControl;
 using System.Collections;
 using EFT.Interactive;
 using EFT.Animations;
-using System.Linq;
 using static EFT.Player;
 using System.ComponentModel;
 using static EFT.ClientPlayer;
@@ -150,7 +149,7 @@ namespace RealismMod
 
                 float ergoWeightFactor = weapon.GetSingleItemTotalWeight() * (1f - WeaponStats.PureErgoDelta) * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f));
 
-                float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo) * 1.25f;
+                float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo) * 1.15f;
                 float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (1f + WeaponStats.ModAimSpeedModifier), 0.55f, 1.4f);
                 valueBlender.Speed = __instance.SwayFalloff * aimSpeed * 4.35f;
 
@@ -283,8 +282,8 @@ namespace RealismMod
                     }
 
                     float beltFedFactor = weapon.IsBeltMachineGun ? 1.45f : 1f;
-                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * Plugin.SwayIntensity.Value * beltFedFactor;
-                    float totalInputIntensitry = handsIntensity * handsIntensity * Plugin.SwayIntensity.Value * beltFedFactor;
+                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * Plugin.ProceduralIntensity.Value * beltFedFactor;
+                    float totalInputIntensitry = handsIntensity * handsIntensity * Plugin.ProceduralIntensity.Value * beltFedFactor;
                     PlayerState.TotalBreathIntensity = totalBreathIntensity;
                     PlayerState.TotalHandsIntensity = totalInputIntensitry;
 
@@ -326,7 +325,10 @@ namespace RealismMod
                         Logger.LogWarning("ADSInjuryMulti = " + PlayerState.ADSInjuryMulti);
                         Logger.LogWarning("remaining stam percentage = " + PlayerState.RemainingArmStamPerc);
                         Logger.LogWarning("strength = " + PlayerState.StrengthSkillAimBuff);
+                        Logger.LogWarning("player weight = " + playerWeightADSFactor);
                         Logger.LogWarning("sightSpeedModi = " + sightSpeedModi);
+                        Logger.LogWarning("totalSightlessAimSpeed = " + totalSightlessAimSpeed);
+                        Logger.LogWarning("totalSightedAimSpeed = " + totalSightedAimSpeed);
                         Logger.LogWarning("newAimSpeed = " + newAimSpeed);
                         Logger.LogWarning("_aimingSpeed = " + aimingSpeed);
                         Logger.LogWarning("breathIntensity = " + breathIntensity);
@@ -382,14 +384,14 @@ namespace RealismMod
                 float weapWeight = weapon.GetSingleItemTotalWeight();
                 float totalPlayerWeight = PlayerState.TotalModifiedWeight - weapWeight;
                 float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
-                bool noShoulderContact = !WeaponStats.HasShoulderContact && weapon.WeapClass != "pistol";
+                bool noShoulderContact = !WeaponStats.HasShoulderContact; //maybe don't include pistol
                 float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * formfactor;
                 float weightFactor = StatCalc.ProceduralIntensityFactorCalc(weapWeight, weapon.WeapClass == "pistol" ? 1f : 4f);
-                float displacementModifier = noShoulderContact ? Plugin.SwayIntensity.Value * 0.95f : Plugin.SwayIntensity.Value * 0.48f;//lower = less drag
-                float aimIntensity = noShoulderContact ? Plugin.SwayIntensity.Value * 0.86f : Plugin.SwayIntensity.Value * 0.51f;
+                float displacementModifier = noShoulderContact ? Plugin.ProceduralIntensity.Value * 0.95f : Plugin.ProceduralIntensity.Value * 0.48f;//lower = less drag
+                float aimIntensity = noShoulderContact ? Plugin.ProceduralIntensity.Value * 0.86f : Plugin.ProceduralIntensity.Value * 0.51f;
 
-                float displacementStrength = Mathf.Clamp((ergoWeight * weightFactor * playerWeightFactor) / 50f, 0.8f, 3f); //inertia
-                float swayStrength = Mathf.Clamp((ergoWeight * weightFactor * playerWeightFactor) / 60f, 0.65f, 1.1f); //side to side
+                float displacementStrength = Mathf.Clamp((ergoWeight * weightFactor * playerWeightFactor) / 25f, 0.8f, 3.5f); //inertia
+                float swayStrength = Mathf.Clamp((ergoWeight * weightFactor * playerWeightFactor) / 65f, 0.6f, 1f); //side to side
 
                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_displacementStr").SetValue(__instance, displacementStrength * displacementModifier * playerWeightFactor);
                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_swayStrength").SetValue(__instance, swayStrength);
@@ -470,13 +472,14 @@ namespace RealismMod
             }
             else
             {
-                float holdBreathBonusSway = __instance.Physical.HoldingBreath ? 0.4f : 1f;
-                float holdBreathBonusUpDown = __instance.Physical.HoldingBreath ? 0.3f : 1f;
+                float holdBreathBonusSway = __instance.Physical.HoldingBreath ? 0.45f : 1f;
+                float holdBreathBonusUpDown = __instance.Physical.HoldingBreath ? 0.25f : 1f;
+                float swayFactor = WeaponStats.IsOptic ? Plugin.SwayIntensity.Value : Plugin.SwayIntensity.Value * 1.1f;
                 float t = lackOfOxygenStrength.Evaluate(__instance.OxygenLevel);
                 float b = __instance.IsAiming ? 0.75f : 1f;
                 breathIntensityField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, b, t), 1f, 1.5f) * __instance.Intensity * holdBreathBonusUpDown);
                 breathFrequencyField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, 1f, t), 1f, 2.5f) * deltaTime * holdBreathBonusSway);
-                shakeIntensityField.SetValue(__instance, holdBreathBonusSway);
+                shakeIntensityField.SetValue(__instance, holdBreathBonusSway * swayFactor);
                 cameraSensetivityField.SetValue(__instance, Mathf.Lerp(2f, 0f, t) * __instance.Intensity);
                 breathFrequency = (float)AccessTools.Field(typeof(BreathEffector), "_breathFrequency").GetValue(__instance);
                 cameraSensetivity = (float)AccessTools.Field(typeof(BreathEffector), "_cameraSensetivity").GetValue(__instance);

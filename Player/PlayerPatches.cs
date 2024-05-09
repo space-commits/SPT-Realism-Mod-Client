@@ -8,7 +8,6 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using WeaponSkills = EFT.SkillManager.GClass1771;
@@ -80,7 +79,7 @@ namespace RealismMod
                 Player player = Utils.GetYourPlayer();
                 if (player.Physical.HoldingBreath) return true;
                 FirearmController fc = player.HandsController as FirearmController;
-                StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.75f, 0.75f, 1.25f));
+                StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.25f, 0.25f, 0.5f));
             }
             if (Plugin.BlockFiring.Value && command == ECommand.ToggleShooting && !Plugin.RealHealthController.HasOverdosed && StanceController.CurrentStance != EStance.None && StanceController.CurrentStance != EStance.ActiveAiming && StanceController.CurrentStance != EStance.ShortStock && StanceController.CurrentStance != EStance.PistolCompressed)
             {
@@ -343,7 +342,7 @@ namespace RealismMod
 
             float remainStamPercent = player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity;
             PlayerState.RemainingArmStamPerc = 1f - ((1f - remainStamPercent) / 3f);
-            PlayerState.RemainingArmStamPercReload = 1f - ((1f - remainStamPercent) / 4f);
+            PlayerState.RemainingArmStamPercReload = Mathf.Clamp(1f - ((1f - remainStamPercent) / 4f), 0.85f, 1f);
         }
 
         private static void setStancePWAValues(Player player, FirearmController fc)

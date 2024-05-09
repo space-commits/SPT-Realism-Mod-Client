@@ -91,11 +91,11 @@ namespace RealismMod
             {
                 ValueHandler rotationFrameSpan = (ValueHandler)rotationFrameSpanField.GetValue(__instance);
 
-                bool canDoHighReadyBonus = StanceController.CurrentStance == EStance.HighReady && Plugin.EnableTacSprint.Value && !Plugin.RealHealthController.ArmsAreIncapacitated && Plugin.RealHealthController.HasOverdosed;
+                bool canDoHighReadyBonus = StanceController.IsDoingTacSprint && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed;
                 float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player, Logger) : 1f;
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float stanceSpeedBonus = canDoHighReadyBonus ? 1.15f : 1f;
-                float stanceAccelBonus = StanceController.CurrentStance == EStance.PatrolStance ? 1.5f : StanceController.CurrentStance == EStance.ShortStock ? 0.9f : StanceController.CurrentStance == EStance.LowReady ? 1.3f : canDoHighReadyBonus ? 1.3f : 1f;
+                float stanceAccelBonus = StanceController.CurrentStance == EStance.PatrolStance ? 1.5f : StanceController.CurrentStance == EStance.ShortStock ? 0.9f : StanceController.CurrentStance == EStance.LowReady ? 1.25f : canDoHighReadyBonus ? 1.35f : StanceController.CurrentStance == EStance.HighReady ? 1.28f : 1f;
 
                 if (surfaceMulti < 1.0f)
                 {

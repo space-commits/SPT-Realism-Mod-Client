@@ -9,7 +9,6 @@ using System.Text;
 using static EFT.Player;
 using UnityEngine;
 using Comfort.Common;
-using System.Linq;
 using EFT.Ballistics;
 using System.ComponentModel;
 using Random = System.Random;
@@ -18,6 +17,7 @@ using HackShotResult = GClass1676;
 using CollisionLayerClass = GClass2987;
 using EFT.Animations;
 using ChartAndGraph;
+using System.Linq;
 /*using LightStruct = GStruct155;*/
 
 namespace RealismMod
@@ -460,6 +460,11 @@ namespace RealismMod
                 }
                 else
                 {
+                    if (Plugin.IsUsingFika) //collisions acts funky with stances from another client's perspective
+                    {
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.7f);
+                        return;
+                    }
                     if (StanceController.CurrentStance == EStance.HighReady || StanceController.CurrentStance == EStance.LowReady || StanceController.CurrentStance == EStance.ShortStock)
                     {
                         weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.8f);
@@ -838,7 +843,7 @@ namespace RealismMod
                     Vector3 distanceVect = player.AIData.BotOwner.AimingData.RealTargetPoint - player.AIData.BotOwner.MyHead.position;
                     float realDistance = distanceVect.magnitude;
 
-                    bool isTacBot = StanceController.botsToUseTacticalStances.Contains(player.AIData.BotOwner.Profile.Info.Settings.Role.ToString());
+                    bool isTacBot = StanceController.botsToUseTacticalStances.IndexOf(player.AIData.BotOwner.Profile.Info.Settings.Role.ToString()) != -1;
                     bool isPeace = player.AIData.BotOwner.Memory.IsPeace;
                     bool notShooting = !player.AIData.BotOwner.ShootData.Shooting && Time.time - player.AIData.BotOwner.ShootData.LastTriggerPressd > 15f;
                     bool isInStance = false;

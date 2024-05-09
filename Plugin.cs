@@ -41,7 +41,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.pluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string pluginVersion = "1.1.2";
+        private const string pluginVersion = "1.2.0";
 
         //movement
         public static ConfigEntry<bool> EnableMaterialSpeed { get; set; }
@@ -57,6 +57,7 @@ namespace RealismMod
         //recoil
         public static ConfigEntry<float> ResetTime { get; set; }
         public static ConfigEntry<float> SwayIntensity { get; set; }
+        public static ConfigEntry<float> ProceduralIntensity { get; set; }
         public static ConfigEntry<float> RecoilIntensity { get; set; }
         public static ConfigEntry<float> VertMulti { get; set; }
         public static ConfigEntry<float> HorzMulti { get; set; }
@@ -170,6 +171,9 @@ namespace RealismMod
         public static ConfigEntry<KeyboardShortcut> MountKeybind { get; set; }
         public static ConfigEntry<KeyboardShortcut> PatrolKeybind { get; set; }
         public static ConfigEntry<KeyboardShortcut> MeleeKeybind { get; set; }
+        public static ConfigEntry<KeyboardShortcut> StanceWheelComboKeyBind { get; set; }
+        public static ConfigEntry<bool> UseMouseWheelStance { get; set; }
+        public static ConfigEntry<bool> UseMouseWheelPlusKey { get; set; }
         public static ConfigEntry<bool> EnableFSPatch { get; set; }
         public static ConfigEntry<bool> EnableNVGPatch { get; set; }
         public static ConfigEntry<bool> EnableMountUI { get; set; }
@@ -338,6 +342,7 @@ namespace RealismMod
 
         public static RealismConfig ServerConfig;
 
+        public static bool IsUsingFika = false;
         private static bool warnedUser = false;
         public static bool HasReloadedAudio = false;
 
@@ -351,31 +356,14 @@ namespace RealismMod
                 MissingMemberHandling = MissingMemberHandling.Ignore
             };
 
-
             try
             {
-                //for some reason the server double serializes the data.
                 var jsonString = RequestHandler.GetJson("/RealismMod/GetInfo");
-                var str = JsonConvert.DeserializeObject<string>(jsonString);
-                ServerConfig = JsonConvert.DeserializeObject<RealismConfig>(str);
-          
-            }
-            catch (JsonReaderException ex)
-            {
-                Logger.LogError($"REALISM MOD JSON Parsing Error: {ex.Message}");
-            }
-            catch (JsonSerializationException ex)
-            {
-                Logger.LogError($"REALISM MOD JSON Deserialization Error: {ex.Message}");
+                ServerConfig = JsonConvert.DeserializeObject<RealismConfig>(jsonString);
             }
             catch (Exception ex)
             {
-                Logger.LogError($"REALISM MOD Unexpected Error: {ex.Message}");
-            }
-
-            if (ServerConfig == null)
-            {
-                Logger.LogError("REALISM MOD ERROR: FAILED TO FETCH CONFIG DATA FROM SERVER");
+                Logger.LogError($"REALISM MOD ERROR: FAILED TO FETCH CONFIG DATA FROM SERVER: {ex.Message}");
             }
         }
 
@@ -748,7 +736,8 @@ namespace RealismMod
             {
                 new ApplyItemPatch().Enable();
                 new BreathIsAudiblePatch().Enable();
-                new ProceedPatch().Enable();
+                new SetMedsInHandsPatch().Enable();
+                new ProceedMedsPatch().Enable();
                 new RemoveEffectPatch().Enable();
                 new StamRegenRatePatch().Enable();
                 new MedkitConstructorPatch().Enable();
@@ -757,6 +746,8 @@ namespace RealismMod
                 new RestoreBodyPartPatch().Enable();
                 new FlyingBulletPatch().Enable();
                 new ToggleHeadDevicePatch().Enable();
+                new HealCostDisplayShortPatch().Enable();
+                new HealCostDisplayFullPatch().Enable();
             }
             //needed for food and meds
             if (ServerConfig.med_changes || ServerConfig.food_changes)
@@ -785,6 +776,10 @@ namespace RealismMod
                 if (Chainloader.PluginInfos.ContainsKey("com.IcyClawz.MunitionsExpert") && ServerConfig.recoil_attachment_overhaul)
                 {
                     NotificationManagerClass.DisplayWarningNotification("ERROR: MUNITIONS EXPERT DETECTED, IT IS NOT COMPATIBLE!", EFT.Communications.ENotificationDurationType.Long);
+                }
+                if (Chainloader.PluginInfos.ContainsKey("com.fika.core"))
+                {
+                    IsUsingFika = true;
                 }
             }
             if (warnedUser && (int)Time.time % 5 != 0)
@@ -923,13 +918,13 @@ namespace RealismMod
             string deafSettings = ".9. Deafening and Audio.";
             string speed = "10. Weapon Speed Modifiers.";
             string weapAimAndPos = "11. Weapon Stances And Position.";
-            string thirdPerson = "12. Third Person Animations.";
+            string stanceBinds = "12. Weapon Stances Keybinds.";
             string activeAim = "13. Active Aim.";
             string highReady = "14. High Ready.";
             string lowReady = "15. Low Ready.";
             string pistol = "16. Pistol Position And Stance.";
             string shortStock = "17. Short-Stocking.";
-
+            string thirdPerson = "18. Third Person Animations.";
 
             test1 = Config.Bind<float>(testing, "test 1", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 600, IsAdvanced = true, Browsable = true }));
             test2 = Config.Bind<float>(testing, "test 2", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 500, IsAdvanced = true, Browsable = true }));
@@ -943,11 +938,11 @@ namespace RealismMod
             test10 = Config.Bind<float>(testing, "test 10", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 20, IsAdvanced = true, Browsable = true }));
             AddEffectType = Config.Bind<string>(testing, "Effect Type", "", new ConfigDescription("HeavyBleeding, LightBleeding, Fracture.", null, new ConfigurationManagerAttributes { Order = 5, IsAdvanced = true, Browsable = true }));
             AddEffectBodyPart = Config.Bind<int>(testing, "Body Part Index", 1, new ConfigDescription("Head = 0, Chest = 1, Stomach = 2, Letft Arm, Right Arm, Left Leg, Right Leg, Common (whole body)", null, new ConfigurationManagerAttributes { Order = 4, IsAdvanced = true, Browsable = true }));
-            AddEffectKeybind = Config.Bind(testing, "Add Effect Keybind", new KeyboardShortcut(KeyCode.JoystickButton6), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 3, IsAdvanced = true, Browsable = true }));
+            AddEffectKeybind = Config.Bind(testing, "Add Effect Keybind", new KeyboardShortcut(KeyCode.None), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 3, IsAdvanced = true, Browsable = true }));
             EnableBallisticsLogging = Config.Bind<bool>(testing, "Enable Ballistics Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 2, IsAdvanced = true, Browsable = true }));
             EnableLogging = Config.Bind<bool>(testing, "Enable Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 1, IsAdvanced = true, Browsable = true }));
 
-            RecoilIntensity = Config.Bind<float>(recoilSettings, "Recoil Intensity", 1.25f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil. Does Not Affect Recoil Climb Much, Mostly Spread And Visual.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 50, Browsable = ServerConfig.recoil_attachment_overhaul }));
+            RecoilIntensity = Config.Bind<float>(recoilSettings, "Recoil Intensity", 1.3f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil. Does Not Affect Recoil Climb Much, Mostly Spread And Visual.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 50, Browsable = ServerConfig.recoil_attachment_overhaul }));
             VertMulti = Config.Bind<float>(recoilSettings, "Vertical Recoil Multi.", 1.0f, new ConfigDescription("Up/Down. Will Also Increase Recoil Climb.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 40, Browsable = ServerConfig.recoil_attachment_overhaul }));
             HorzMulti = Config.Bind<float>(recoilSettings, "Horizontal Recoil Multi", 1.0f, new ConfigDescription("Forward/Back. Will Also Increase Weapon Shake While Firing.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 30, Browsable = ServerConfig.recoil_attachment_overhaul }));
             DispMulti = Config.Bind<float>(recoilSettings, "Dispersion Recoil Multi", 1.0f, new ConfigDescription("Spread. Will Also Increase S-Pattern Size.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 20, Browsable = ServerConfig.recoil_attachment_overhaul }));
@@ -1021,9 +1016,10 @@ namespace RealismMod
             ShowRecoilAngle = Config.Bind<bool>(statSettings, "Show Recoil Angle Stat", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use..", null, new ConfigurationManagerAttributes { Order = 2, Browsable = ServerConfig.recoil_attachment_overhaul }));
             ShowSemiROF = Config.Bind<bool>(statSettings, "Show Semi Auto ROF Stat", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 1, Browsable = ServerConfig.recoil_attachment_overhaul }));
 
-            SwayIntensity = Config.Bind<float>(waponSettings, "Sway Intensity.", 1f, new ConfigDescription("Changes The Intensity Of Aim Sway And Inertia.", new AcceptableValueRange<float>(0f, 3f), new ConfigurationManagerAttributes { Order = 1, Browsable = ServerConfig.recoil_attachment_overhaul }));
-            DuraMalfThreshold = Config.Bind<float>(waponSettings, "Malfunction Durability Threshold", 98f, new ConfigDescription("Malfunction Changes Must Be Enabled On The Server (Config App) And 'Enable Malfunctions Changes' Must Be True. Malfunction Chance Is Significantly Reduced Until This Durability Threshold Is Exceeded.", new AcceptableValueRange<float>(1f, 100f), new ConfigurationManagerAttributes { Order = 4, Browsable = ServerConfig.malf_changes }));
-            IncreaseCOI = Config.Bind<bool>(waponSettings, "Enable Increased Inaccuracy", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Requires Restart. Increases The Innacuracy Of All Weapons So That MOA/Accuracy Is A More Important Stat.", null, new ConfigurationManagerAttributes { Order = 6, Browsable = ServerConfig.recoil_attachment_overhaul }));
+            SwayIntensity = Config.Bind<float>(waponSettings, "Sway Intensity.", 1.1f, new ConfigDescription("Changes The Intensity Of Aim Sway.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 1, Browsable = ServerConfig.recoil_attachment_overhaul }));
+            ProceduralIntensity = Config.Bind<float>(waponSettings, "Procedural Intensity.", 1.05f, new ConfigDescription("Changes The Intensity Of Procedural Animations, Including Sway, Weapon Movement, And Weapon Inertia.", new AcceptableValueRange<float>(0f, 3f), new ConfigurationManagerAttributes { Order = 10, Browsable = ServerConfig.recoil_attachment_overhaul }));
+            DuraMalfThreshold = Config.Bind<float>(waponSettings, "Malfunction Durability Threshold", 98f, new ConfigDescription("Malfunction Changes Must Be Enabled On The Server (Config App) And 'Enable Malfunctions Changes' Must Be True. Malfunction Chance Is Significantly Reduced Until This Durability Threshold Is Exceeded.", new AcceptableValueRange<float>(1f, 100f), new ConfigurationManagerAttributes { Order = 40, Browsable = ServerConfig.malf_changes }));
+            IncreaseCOI = Config.Bind<bool>(waponSettings, "Enable Increased Inaccuracy", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Requires Restart. Increases The Innacuracy Of All Weapons So That MOA/Accuracy Is A More Important Stat.", null, new ConfigurationManagerAttributes { Order = 60, Browsable = ServerConfig.recoil_attachment_overhaul }));
 
             DryVolumeMulti = Config.Bind<float>(deafSettings, "Headset Base Volume Reduction Multi", 1f, new ConfigDescription("Multi For How Much Headsets Reduce Audio Volume By, Not Including Gain", new AcceptableValueRange<float>(0.1f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
             HeadsetThreshold = Config.Bind<float>(deafSettings, "Headset Cutoff Threshold Offset", -5f, new ConfigDescription("Threshold For How Loud Something Has To Be To Reduce Volume. Offset reduces or increases value. Lower Offset = More Sensitive. Offset Value of -5 Will Make It More Sensitive, A Value Of 5 Less.", new AcceptableValueRange<float>(-35f, -1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 90, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
@@ -1043,11 +1039,10 @@ namespace RealismMod
             VigRate = Config.Bind<float>(deafSettings, "Tunnel Effect Rate", 0.02f, new ConfigDescription("How Quickly Player Gets Tunnel Vission. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true, Browsable = ServerConfig.headset_changes }));
             VigReset = Config.Bind<float>(deafSettings, "Tunnel Effect Reset Rate.", 0.035f, new ConfigDescription("How Quickly Player Recovers From Tunnel Vision. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true, Browsable = ServerConfig.headset_changes }));
 
-
             GlobalAimSpeedModifier = Config.Bind<float>(speed, "Aim Speed Multi.", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16, Browsable = ServerConfig.recoil_attachment_overhaul }));
             GlobalReloadSpeedMulti = Config.Bind<float>(speed, "Magazine Reload Speed Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15, Browsable = ServerConfig.recoil_attachment_overhaul }));
             GlobalFixSpeedMulti = Config.Bind<float>(speed, "Malfunction Fix Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14, Browsable = ServerConfig.recoil_attachment_overhaul }));
-            GlobalUBGLReloadMulti = Config.Bind<float>(speed, "UBGL Reload Speed Multi", 1.35f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13, IsAdvanced = true, Browsable = ServerConfig.recoil_attachment_overhaul }));
+            GlobalUBGLReloadMulti = Config.Bind<float>(speed, "UBGL Reload Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13, IsAdvanced = true, Browsable = ServerConfig.recoil_attachment_overhaul }));
             RechamberPistolSpeedMulti = Config.Bind<float>(speed, "Pistol Rechamber Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true, Browsable = ServerConfig.recoil_attachment_overhaul }));
             GlobalRechamberSpeedMulti = Config.Bind<float>(speed, "Rechamber Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, Browsable = ServerConfig.recoil_attachment_overhaul }));
             GlobalBoltSpeedMulti = Config.Bind<float>(speed, "Bolt Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, Browsable = true }));
@@ -1066,29 +1061,29 @@ namespace RealismMod
             EnableAltPistol = Config.Bind<bool>(weapAimAndPos, "Enable Alternative Pistol Position And ADS", ServerConfig.enable_stances, new ConfigDescription("Pistol Will Be Held Centered And In A Compressed Stance. ADS Will Be Animated.", null, new ConfigurationManagerAttributes { Order = 229, Browsable = ServerConfig.enable_stances }));
             EnableIdleStamDrain = Config.Bind<bool>(weapAimAndPos, "Enable Idle Arm Stamina Drain", ServerConfig.enable_stances, new ConfigDescription("Arm Stamina Will Drain When Not In A Stance (High And Low Ready, Short-Stocking).", null, new ConfigurationManagerAttributes { Order = 210, Browsable = ServerConfig.enable_stances }));
             EnableStanceStamChanges = Config.Bind<bool>(weapAimAndPos, "Enable Stance Stamina And Movement Effects", ServerConfig.enable_stances, new ConfigDescription("Enabled Stances And Mounting To Affect Stamina And Movement Speed. Stamina Drain May Not Work Correctly If Disabled. High + Low Ready, Short-Stocking And Pistol Idle Will Regenerate Stamina Faster And Optionally Idle With Rifles Drains Stamina. High Ready Has Faster Sprint Speed And Sprint Accel, Low Ready Has Faster Sprint Accel. Arm Stamina Won't Drain Regular Stamina If It Reaches 0.", null, new ConfigurationManagerAttributes { Order = 183, Browsable = ServerConfig.enable_stances }));
-            ToggleActiveAim = Config.Bind<bool>(weapAimAndPos, "Use Toggle For Active Aim", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 200, Browsable = ServerConfig.enable_stances }));
             ActiveAimReload = Config.Bind<bool>(weapAimAndPos, "Allow Reload From Active Aim", false, new ConfigDescription("Allows Reload From Magazine While In Active Aim With Speed Bonus.", null, new ConfigurationManagerAttributes { Order = 190, Browsable = ServerConfig.enable_stances }));
             EnableMountUI = Config.Bind<bool>(weapAimAndPos, "Enable Mounting UI", ServerConfig.enable_stances, new ConfigDescription("If Enabled, An Icon On Screen Will Indicate If Player Is Bracing, Mounting And What Side Of Cover They Are On.", null, new ConfigurationManagerAttributes { Order = 179, Browsable = ServerConfig.enable_stances }));
-
-            CycleStancesKeybind = Config.Bind(weapAimAndPos, "Cycle Stances Keybind", new KeyboardShortcut(KeyCode.J), new ConfigDescription("Cycles Between High, Low Ready and Short-Stocking. Double Click Returns To Idle.", null, new ConfigurationManagerAttributes { Order = 174, Browsable = ServerConfig.enable_stances }));
-            ActiveAimKeybind = Config.Bind(weapAimAndPos, "Active Aim Keybind", new KeyboardShortcut(KeyCode.LeftArrow), new ConfigDescription("Cants The Weapon Sideways, Improving Hipfire Accuracy.", null, new ConfigurationManagerAttributes { Order = 173, Browsable = ServerConfig.enable_stances }));
-            HighReadyKeybind = Config.Bind(weapAimAndPos, "High Ready Keybind", new KeyboardShortcut(KeyCode.UpArrow), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 172, Browsable = ServerConfig.enable_stances }));
-            LowReadyKeybind = Config.Bind(weapAimAndPos, "Low Ready Keybind", new KeyboardShortcut(KeyCode.DownArrow), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 171, Browsable = ServerConfig.enable_stances }));
-            ShortStockKeybind = Config.Bind(weapAimAndPos, "Short-Stock Keybind", new KeyboardShortcut(KeyCode.RightArrow), new ConfigDescription("Tucks The Weapon's Stock Under Player's Arm, Shortening The Overall Length Of The Wweapon To Prevent Muzzle Being Pushed Away From Target.", null, new ConfigurationManagerAttributes { Order = 170, Browsable = ServerConfig.enable_stances }));
-            MountKeybind = Config.Bind(weapAimAndPos, "Mounting Keybind", new KeyboardShortcut(KeyCode.KeypadMultiply), new ConfigDescription("Snaps To Cover To Improve Weapon Stability And Recoil, Toggle Only.", null, new ConfigurationManagerAttributes { Order = 160, Browsable = ServerConfig.enable_stances }));
-            PatrolKeybind = Config.Bind(weapAimAndPos, "Patrol/Neutral Stance Keybind", new KeyboardShortcut(KeyCode.KeypadEnter), new ConfigDescription("Puts The Weapon In A Neutral Position, Improving Arm Stam Regen And Walk Speed. For Maximum Larping.", null, new ConfigurationManagerAttributes { Order = 155, Browsable = ServerConfig.enable_stances }));
-            MeleeKeybind = Config.Bind(weapAimAndPos, "Melee Keybind", new KeyboardShortcut(KeyCode.Joystick1Button0), new ConfigDescription("Strike With Muzzle Or Bayonet Of Equipped Weapon.", null, new ConfigurationManagerAttributes { Order = 154, Browsable = ServerConfig.enable_stances }));
-
             WeapOffsetX = Config.Bind<float>(weapAimAndPos, "Weapon Position X-Axis", -0.025f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 152, Browsable = ServerConfig.enable_stances }));
             WeapOffsetY = Config.Bind<float>(weapAimAndPos, "Weapon Position Y-Axis", -0.015f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 151, Browsable = ServerConfig.enable_stances }));
             WeapOffsetZ = Config.Bind<float>(weapAimAndPos, "Weapon Position Z-Axis", 0.015f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 150, Browsable = ServerConfig.enable_stances }));
-
             StanceRotationSpeedMulti = Config.Bind<float>(weapAimAndPos, "Stance Rotation Speed Multi", 1f, new ConfigDescription("Adjusts The Speed Of Stance Rotation Changes.", new AcceptableValueRange<float>(0.1f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 146, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             StanceTransitionSpeedMulti = Config.Bind<float>(weapAimAndPos, "Stance Transition Speed.", 15.0f, new ConfigDescription("Adjusts The Position Change Speed Between Stances", new AcceptableValueRange<float>(1f, 35f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-          
+
+            CycleStancesKeybind = Config.Bind(stanceBinds, "Cycle Stances Keybind", new KeyboardShortcut(KeyCode.None), new ConfigDescription("Cycles Between High, Low Ready and Short-Stocking. Double Click Returns To Idle.", null, new ConfigurationManagerAttributes { Order = 80, Browsable = ServerConfig.enable_stances }));
+            ActiveAimKeybind = Config.Bind(stanceBinds, "Active Aim Keybind", new KeyboardShortcut(KeyCode.Mouse4), new ConfigDescription("Cants The Weapon Sideways, Improving Hipfire Accuracy.", null, new ConfigurationManagerAttributes { Order = 90, Browsable = ServerConfig.enable_stances }));
+            ToggleActiveAim = Config.Bind<bool>(stanceBinds, "Use Toggle For Active Aim", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 100, Browsable = ServerConfig.enable_stances }));
+            HighReadyKeybind = Config.Bind(stanceBinds, "High Ready Keybind", new KeyboardShortcut(KeyCode.Mouse3, new[] { KeyCode.LeftAlt }), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 110, Browsable = ServerConfig.enable_stances }));
+            LowReadyKeybind = Config.Bind(stanceBinds, "Low Ready Keybind", new KeyboardShortcut(KeyCode.Mouse3, new[] { KeyCode.LeftControl }), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 120, Browsable = ServerConfig.enable_stances }));
+            ShortStockKeybind = Config.Bind(stanceBinds, "Short-Stock Keybind", new KeyboardShortcut(KeyCode.J), new ConfigDescription("Tucks The Weapon's Stock Under Player's Arm, Shortening The Overall Length Of The Wweapon To Prevent Muzzle Being Pushed Away From Target.", null, new ConfigurationManagerAttributes { Order = 130, Browsable = ServerConfig.enable_stances }));
+            MountKeybind = Config.Bind(stanceBinds, "Mounting Keybind", new KeyboardShortcut(KeyCode.M), new ConfigDescription("Snaps To Cover To Improve Weapon Stability And Recoil, Toggle Only.", null, new ConfigurationManagerAttributes { Order = 140, Browsable = ServerConfig.enable_stances }));
+            PatrolKeybind = Config.Bind(stanceBinds, "Patrol/Neutral Stance Keybind", new KeyboardShortcut(KeyCode.K), new ConfigDescription("Puts The Weapon In A Neutral Position, Improving Arm Stam Regen And Walk Speed. For Maximum Larping.", null, new ConfigurationManagerAttributes { Order = 155, Browsable = ServerConfig.enable_stances }));
+            MeleeKeybind = Config.Bind(stanceBinds, "Melee Keybind", new KeyboardShortcut(KeyCode.None), new ConfigDescription("Strike With Muzzle Or Bayonet Of Equipped Weapon.", null, new ConfigurationManagerAttributes { Order = 150, Browsable = ServerConfig.enable_stances }));
+            UseMouseWheelStance = Config.Bind<bool>(stanceBinds, "Enable Mouse Wheel Stance Switching", ServerConfig.enable_stances, new ConfigDescription("Switches Between High And Low Ready Via Mouse Wheel.", null, new ConfigurationManagerAttributes { Order = 160, Browsable = ServerConfig.enable_stances }));
+            UseMouseWheelPlusKey = Config.Bind<bool>(stanceBinds, "Require Key + Mouse Wheel", ServerConfig.enable_stances, new ConfigDescription("Require Keybind + Mouse Wheel To Change Stance.", null, new ConfigurationManagerAttributes { Order = 170, Browsable = ServerConfig.enable_stances }));
+            StanceWheelComboKeyBind = Config.Bind(stanceBinds, "Keybind To Use With Mouse Wheel", new KeyboardShortcut(KeyCode.LeftControl), new ConfigDescription("Key Used In Combination With Mouse Wheel If Enabled ", null, new ConfigurationManagerAttributes { Order = 180, Browsable = ServerConfig.enable_stances }));
+
             ThirdPersonRotationSpeed = Config.Bind<float>(thirdPerson, "Third Person Rotation Speed Multi", 1.5f, new ConfigDescription("Speed Of Stance Rotation Change In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1000, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             ThirdPersonPositionSpeed = Config.Bind<float>(thirdPerson, "Third Person Position Speed Multi", 1.0f, new ConfigDescription("Speed Of Stance Position Change In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1100, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-
             PistolThirdPersonPositionX = Config.Bind<float>(thirdPerson, "Pistol Third Person Position X-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 260, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PistolThirdPersonPositionY = Config.Bind<float>(thirdPerson, "Pistol Third Person Position Y-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 250, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PistolThirdPersonPositionZ = Config.Bind<float>(thirdPerson, "Pistol Third Person Position Z-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 240, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
@@ -1110,12 +1105,12 @@ namespace RealismMod
             ActiveThirdPersonRotationY = Config.Bind<float>(thirdPerson, "Active Aim Third Person Rotation Y-Axis", -35f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 100, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             ActiveThirdPersonRotationZ = Config.Bind<float>(thirdPerson, "Active Aim Third Person Rotation Z-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 90, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
-            HighReadyThirdPersonPositionX = Config.Bind<float>(thirdPerson, "High Ready Third Person Position X-Axis",  0.02f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 80, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            HighReadyThirdPersonPositionY = Config.Bind<float>(thirdPerson, "High Ready Third Person Position Y-Axis", -0.01f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 70, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            HighReadyThirdPersonPositionZ = Config.Bind<float>(thirdPerson, "High Ready Third Person Position Z-Axis",  -0.05f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 60, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            HighReadyThirdPersonRotationX = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation X-Axis", -20f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 50, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            HighReadyThirdPersonRotationY = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation Y-Axis", -15f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 40, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            HighReadyThirdPersonRotationZ = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation Z-Axis", -5f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonPositionX = Config.Bind<float>(thirdPerson, "High Ready Third Person Position X-Axis",  0.005f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 80, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonPositionY = Config.Bind<float>(thirdPerson, "High Ready Third Person Position Y-Axis", 0.05f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 70, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonPositionZ = Config.Bind<float>(thirdPerson, "High Ready Third Person Position Z-Axis",  -0.045f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 60, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonRotationX = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation X-Axis", -8f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 50, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonRotationY = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation Y-Axis", -25f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 40, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyThirdPersonRotationZ = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation Z-Axis", -0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
             LowReadyThirdPersonPositionX = Config.Bind<float>(thirdPerson, "Low Ready Third Person Position X-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             LowReadyThirdPersonPositionY = Config.Bind<float>(thirdPerson, "Low Ready Third Person Position Y-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
@@ -1164,7 +1159,7 @@ namespace RealismMod
             HighReadyAdditionalRotationY = Config.Bind<float>(highReady, "High Ready Additiona Rotation Y-Axis", 0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 68, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             HighReadyAdditionalRotationZ = Config.Bind<float>(highReady, "High Ready Additional Rotation Z-Axis", -2.5f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 67, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
-            HighReadyResetRotationX = Config.Bind<float>(highReady, "High Ready Reset Rotation X-Axis", -1f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 66, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            HighReadyResetRotationX = Config.Bind<float>(highReady, "High Ready Reset Rotation X-Axis", 1f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 66, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             HighReadyResetRotationY = Config.Bind<float>(highReady, "High Ready Reset Rotation Y-Axis", -2f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 65, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             HighReadyResetRotationZ = Config.Bind<float>(highReady, "High Ready Reset Rotation Z-Axis", 0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 64, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
