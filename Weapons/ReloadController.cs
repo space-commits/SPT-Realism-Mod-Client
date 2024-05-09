@@ -40,12 +40,6 @@ namespace RealismMod.Weapons
             float magSpeedMulti = (magSpeed / 100f) + 1f;
             float totalReloadSpeed = magSpeedMulti * magWeightFactor * reloadSpeedModiLessMag * stockModifier;
 
-            Utils.Logger.LogWarning("magWeightFactor " + magWeightFactor);
-            Utils.Logger.LogWarning("magSpeed " + magSpeed);
-            Utils.Logger.LogWarning("reloadSpeedModiLessMag " + reloadSpeedModiLessMag);
-            Utils.Logger.LogWarning("magSpeedMulti " + magSpeedMulti);
-            Utils.Logger.LogWarning("totalReloadSpeed " + totalReloadSpeed);
-
             if (reloadFromNoMag)
             {
                 WeaponStats.NewMagReloadSpeed = totalReloadSpeed;
