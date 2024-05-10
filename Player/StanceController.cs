@@ -197,7 +197,7 @@ namespace RealismMod
                 baseDrainRate = 0.1f;
             }
             float formfactor = WeaponStats.IsBullpup ? 0.25f : 1f;
-            return WeaponStats.ErgoFactor * formfactor * baseDrainRate * ((1f - PlayerState.ADSInjuryMulti) + 1f);
+            return WeaponStats.ErgoFactor * formfactor * baseDrainRate * ((1f - PlayerState.ADSInjuryMulti) + 1f) * (1f - (PlayerState.StrengthSkillAimBuff));
         }
 
         public static void SetStanceStamina(Player player)
@@ -505,7 +505,7 @@ namespace RealismMod
 
                     if (MeleeIsToggleable && Plugin.UseMouseWheelStance.Value && !IsAiming)
                     {
-                        if (Input.GetKey(Plugin.StanceWheelComboKeyBind.Value.MainKey) || !Plugin.UseMouseWheelPlusKey.Value)
+                        if ((Input.GetKey(Plugin.StanceWheelComboKeyBind.Value.MainKey) && Plugin.UseMouseWheelPlusKey.Value) || (!Plugin.UseMouseWheelPlusKey.Value && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.LeftAlt)))
                         {
                             float scrollDelta = Input.mouseScrollDelta.y;
                             if (scrollDelta != 0f)

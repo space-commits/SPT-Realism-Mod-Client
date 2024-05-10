@@ -376,7 +376,7 @@ namespace RealismMod
         private static void chamberTimer(FirearmController fc)
         {
             Plugin.chamberTimer += Time.deltaTime;
-            if (Plugin.chamberTimer >= 1f)
+            if (Plugin.chamberTimer >= 0.5f)
             {
                 fc.FirearmsAnimator.Rechamber(false);
                 fc.SetAnimatorAndProceduralValues();
