@@ -505,7 +505,7 @@ namespace RealismMod
 
                     if (MeleeIsToggleable && Plugin.UseMouseWheelStance.Value && !IsAiming)
                     {
-                        if ((Input.GetKey(Plugin.StanceWheelComboKeyBind.Value.MainKey) && Plugin.UseMouseWheelPlusKey.Value) || (!Plugin.UseMouseWheelPlusKey.Value && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.LeftAlt)))
+                        if ((Input.GetKey(Plugin.StanceWheelComboKeyBind.Value.MainKey) && Plugin.UseMouseWheelPlusKey.Value) || (!Plugin.UseMouseWheelPlusKey.Value && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.LeftAlt) && !Input.GetKey(KeyCode.R)))
                         {
                             float scrollDelta = Input.mouseScrollDelta.y;
                             if (scrollDelta != 0f)

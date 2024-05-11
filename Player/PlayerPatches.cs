@@ -81,7 +81,7 @@ namespace RealismMod
                 FirearmController fc = player.HandsController as FirearmController;
                 StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.25f, 0.25f, 0.5f));
             }
-            if (Plugin.BlockFiring.Value && command == ECommand.ToggleShooting && !Plugin.RealHealthController.HasOverdosed && StanceController.CurrentStance != EStance.None && StanceController.CurrentStance != EStance.ActiveAiming && StanceController.CurrentStance != EStance.ShortStock && StanceController.CurrentStance != EStance.PistolCompressed)
+            if (Plugin.ServerConfig.enable_stances &&  Plugin.BlockFiring.Value && command == ECommand.ToggleShooting && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed && StanceController.CurrentStance != EStance.None && StanceController.CurrentStance != EStance.ActiveAiming && StanceController.CurrentStance != EStance.ShortStock && StanceController.CurrentStance != EStance.PistolCompressed)
             {
                 StanceController.CurrentStance = EStance.None;
                 StanceController.StoredStance = EStance.None;
@@ -464,7 +464,7 @@ namespace RealismMod
                 StanceController.IsInInventory = __instance.IsInventoryOpened;
                 PlayerState.IsMoving = __instance.IsSprintEnabled || __instance.MovementContext.AbsoluteMovementDirection.x  > 0 || __instance.MovementContext.AbsoluteMovementDirection.y > 0;
 
-                if (Plugin.EnableSprintPenalty.Value && Plugin.ServerConfig.enable_stances)
+                if (Plugin.EnableSprintPenalty.Value)
                 {
                     DoSprintPenalty(__instance, fc, StanceController.BracingSwayBonus);
                     if (PlayerState.HasFullyResetSprintADSPenalties)
@@ -477,7 +477,6 @@ namespace RealismMod
                 {
                     PWAUpdate(__instance, fc);
                 }
-
             }
         }
     }

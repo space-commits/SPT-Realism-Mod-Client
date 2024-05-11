@@ -35,67 +35,71 @@ namespace RealismMod
 
                 fc.UpdateHipInaccuracy(); //update hipfire to take NVG toggle into account
 
-                if (Plugin.ServerConfig.recoil_attachment_overhaul && (toobBlocksADS || gearBlocksADS))
+                if (Plugin.ServerConfig.enable_stances)
                 {
-                    if (!hasSetCanAds)
+                    if ((toobBlocksADS || gearBlocksADS))
                     {
-                        if (fc.IsAiming)
+                        if (!hasSetCanAds)
                         {
-                            fc.ToggleAim();
+                            if (fc.IsAiming)
+                            {
+                                fc.ToggleAim();
+                            }
+                            PlayerState.IsAllowedADS = false;
+                            hasSetCanAds = true;
                         }
-                        PlayerState.IsAllowedADS = false;
-                        hasSetCanAds = true;
                     }
-                }
-                else
-                {
-                    PlayerState.IsAllowedADS = true;
-                    hasSetCanAds = false;
-                }
-                //no idea wtf this is
-                if (!wasToggled && (fsIsON || nvgIsOn))
-                {
-                    wasToggled = true;
-                }
-                if (wasToggled && (!fsIsON && !nvgIsOn))
-                {
-                    StanceController.WasActiveAim = false;
-                    if (Plugin.ToggleActiveAim.Value)
+                    else
                     {
-                        StanceController.StanceBlender.Target = 0f;
-                        StanceController.CurrentStance = EStance.None;
+                        PlayerState.IsAllowedADS = true;
+                        hasSetCanAds = false;
                     }
-                    wasToggled = false;
-                }
+                    //no idea wtf this is
+                    if (!wasToggled && (fsIsON || nvgIsOn))
+                    {
+                        wasToggled = true;
+                    }
+                    if (wasToggled && (!fsIsON && !nvgIsOn))
+                    {
+                        StanceController.WasActiveAim = false;
+                        if (Plugin.ToggleActiveAim.Value)
+                        {
+                            StanceController.StanceBlender.Target = 0f;
+                            StanceController.CurrentStance = EStance.None;
+                        }
+                        wasToggled = false;
+                    }
 
-                AimStateChanged = false;
-                HeadDeviceStateChanged = false;
+                    AimStateChanged = false;
+                    HeadDeviceStateChanged = false;
 
-                if (StanceController.CurrentStance == EStance.ActiveAiming && !hasSetActiveAimADS)
-                {
-                    player.MovementContext.SetAimingSlowdown(true, 0.33f);
-                    hasSetActiveAimADS = true;
-                }
-                else if (StanceController.CurrentStance != EStance.ActiveAiming && hasSetActiveAimADS)
-                {
-                    player.MovementContext.SetAimingSlowdown(false, 0.33f);
-                    if (fc.IsAiming)
+                    if (StanceController.CurrentStance == EStance.ActiveAiming && !hasSetActiveAimADS)
                     {
                         player.MovementContext.SetAimingSlowdown(true, 0.33f);
+                        hasSetActiveAimADS = true;
+                    }
+                    else if (StanceController.CurrentStance != EStance.ActiveAiming && hasSetActiveAimADS)
+                    {
+                        player.MovementContext.SetAimingSlowdown(false, 0.33f);
+                        if (fc.IsAiming)
+                        {
+                            player.MovementContext.SetAimingSlowdown(true, 0.33f);
+                        }
+
+                        hasSetActiveAimADS = false;
                     }
 
-                    hasSetActiveAimADS = false;
-                }
+                    if (fc.IsAiming && StanceController.CurrentStance == EStance.PatrolStance)
+                    {
+                        StanceController.CurrentStance = EStance.None;
+                    }
 
-                if (fc.IsAiming && StanceController.CurrentStance == EStance.PatrolStance)
-                {
-                    StanceController.CurrentStance = EStance.None;
-                }
+                    /*          if (isAiming && StanceController.CurrentStance == EStance.Melee)
+                              {
+                                  fc.ToggleAim();
+                              }*/
 
-      /*          if (isAiming && StanceController.CurrentStance == EStance.Melee)
-                {
-                    fc.ToggleAim();
-                }*/
+                }
 
                 if (player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire)
                 {

@@ -298,7 +298,6 @@ namespace RealismMod
                         __instance.HandsContainer.HandsRotation.InputIntensity = PlayerState.SprintTotalHandsIntensity;
                     }
 
-
                     if (__instance.CurrentAimingMod != null)
                     {
                         string id = (__instance.CurrentAimingMod?.Item?.Id != null) ? __instance.CurrentAimingMod.Item.Id : "";

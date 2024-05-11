@@ -586,15 +586,9 @@ namespace RealismMod
         private static bool Prefix(Player.FirearmController __instance, ref float __result)
         {
             Player player = (Player)playerField.GetValue(__instance);
-            if (player.IsYourPlayer == true)
+            if (player.IsYourPlayer)
             {
-                __result = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - PlayerState.StrengthSkillAimBuff * 1.5f);
-
-                if (!Utils.HasRunErgoWeightCalc)
-                {
-                    __result = 0;
-                    return false;
-                }
+                __result = WeaponStats.ErgoFactor * (1f - PlayerState.StrengthSkillAimBuff * 1.5f);
 
                 if (Plugin.EnableLogging.Value == true)
                 {
@@ -603,13 +597,9 @@ namespace RealismMod
                     Logger.LogWarning("base ergo weight = " + WeaponStats.ErgoFactor);
                     Logger.LogWarning("ergoweight ergo weight = " + WeaponStats.ErgonomicWeight);
                 }
-
                 return false;
             }
-            else
-            {
-                return true;
-            }
+            return true;
         }
     }    
 }
