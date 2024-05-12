@@ -505,7 +505,7 @@ namespace RealismMod
 
                     if (MeleeIsToggleable && Plugin.UseMouseWheelStance.Value && !IsAiming)
                     {
-                        if ((Input.GetKey(Plugin.StanceWheelComboKeyBind.Value.MainKey) && Plugin.UseMouseWheelPlusKey.Value) || (!Plugin.UseMouseWheelPlusKey.Value && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.LeftAlt) && !Input.GetKey(KeyCode.R)))
+                        if ((Input.GetKey(Plugin.StanceWheelComboKeyBind.Value.MainKey) && Plugin.UseMouseWheelPlusKey.Value) || (!Plugin.UseMouseWheelPlusKey.Value && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.LeftAlt) && !Input.GetKey(KeyCode.R) && !Input.GetKey(KeyCode.C)))
                         {
                             float scrollDelta = Input.mouseScrollDelta.y;
                             if (scrollDelta != 0f)
@@ -637,15 +637,16 @@ namespace RealismMod
             float ergoMulti = Mathf.Clamp(WeaponStats.ErgoStanceSpeed, 0.65f, 1.45f);
             float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.55f)), 0.5f, 1.45f);
             float balanceFactor = 1f + (WeaponStats.Balance / 100f);
-            balanceFactor = WeaponStats.Balance < 0f ? balanceFactor * -1f : balanceFactor;
+            float rotationBalanceFactor = WeaponStats.Balance < -5f ? balanceFactor * -1f : WeaponStats.Balance > 5f ? balanceFactor: 1f;
+            float wiggleBalanceFactor = WeaponStats.Balance < -5f ? balanceFactor * -1f : WeaponStats.Balance > 5f ? balanceFactor : Mathf.Abs(balanceFactor) <= 4f ? 0.75f : Mathf.Abs(balanceFactor) <= 3f ? 0.5f : 0.25f;
             float resetErgoMulti = (1f - stanceMulti) + 1f;
 
             float wiggleErgoMulti = Mathf.Clamp((WeaponStats.ErgoStanceSpeed * 0.25f), 0.1f, 1f);
             WiggleReturnSpeed = (1f - (PlayerState.AimSkillADSBuff * 0.5f)) * wiggleErgoMulti * PlayerState.StanceInjuryMulti * playerWeightFactor * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.65f));
 
-            float movementFactor = PlayerState.IsMoving ? 1.3f : 1f;
+            float movementFactor = PlayerState.IsMoving ? 1.2f : 1f;
 
-            Quaternion pistolRevertQuaternion = Quaternion.Euler(Plugin.PistolResetRotationX.Value * balanceFactor, Plugin.PistolResetRotationY.Value, Plugin.PistolResetRotationZ.Value);
+            Quaternion pistolRevertQuaternion = Quaternion.Euler(Plugin.PistolResetRotationX.Value * -rotationBalanceFactor, Plugin.PistolResetRotationY.Value, Plugin.PistolResetRotationZ.Value);
             Vector3 pistolTargetPosition = useThirdPersonStance ? new Vector3(Plugin.PistolThirdPersonPositionX.Value, Plugin.PistolThirdPersonPositionY.Value, Plugin.PistolThirdPersonPositionZ.Value) : new Vector3(Plugin.PistolOffsetX.Value, Plugin.PistolOffsetY.Value, Plugin.PistolOffsetZ.Value);
             Vector3 pistolTargetRotation = useThirdPersonStance ? new Vector3(Plugin.PistolThirdPersonRotationX.Value, Plugin.PistolThirdPersonRotationY.Value, Plugin.PistolThirdPersonRotationZ.Value) : new Vector3(Plugin.PistolRotationX.Value, Plugin.PistolRotationY.Value, Plugin.PistolRotationZ.Value);
             Quaternion pistolTargetQuaternion = Quaternion.Euler(pistolTargetRotation);
@@ -663,7 +664,7 @@ namespace RealismMod
                 currentPistolXPos = Mathf.Lerp(currentPistolXPos, targetPosX, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * 0.5f);
                 pistolLocalPosition.x = currentPistolXPos;
                 pistolLocalPosition.y = pwa.HandsContainer.TrackingTransform.localPosition.y;
-                pistolLocalPosition.z = pwa.HandsContainer.TrackingTransform.localPosition.z;  
+                pistolLocalPosition.z = pwa.HandsContainer.TrackingTransform.localPosition.z;
                 pwa.HandsContainer.WeaponRoot.localPosition = pistolLocalPosition;
             }
 
@@ -725,7 +726,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(5f * balanceFactor, 2f * balanceFactor, -35f) * movementFactor); //new Vector3(10f, 1f, -30f)
+                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(40f * wiggleBalanceFactor, 4f * wiggleBalanceFactor, -35f) * movementFactor); //new Vector3(10f, 1f, -30f)
 
                 isResettingPistol = false;
                 CurrentStance = EStance.None;
@@ -782,7 +783,7 @@ namespace RealismMod
             Vector3 meleeTargetPosition = new Vector3(0f, 0.06f, 0f);
             Vector3 meleeTargetPosition2 = new Vector3(0f, -0.0275f, 0f);
 
-            float movementFactor = PlayerState.IsMoving ? 1.25f : 1f;
+            float movementFactor = PlayerState.IsMoving ? 1.2f : 1f;
             float beltfedFactor = fc.Item.IsBeltMachineGun ? 0.85f : 1f;
 
             //for setting baseline position
@@ -1010,7 +1011,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                if(!useThirdPersonStance) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(15, -10, -20) * movementFactor, true); //-10f, -10f, -50f
+                if(!useThirdPersonStance) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(15, -10f, -20) * movementFactor, true); //-10f, -10f, -50f
                 DidStanceWiggle = false;
                 stanceRotation = Quaternion.identity;
                 isResettingHighReady = false;
