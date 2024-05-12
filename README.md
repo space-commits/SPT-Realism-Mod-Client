@@ -2,7 +2,9 @@ See the mod page's Overview for explanations of all features, installation/confi
 
 https://hub.sp-tarkov.com/files/file/606-spt-realism-mod/
 
--------------Credits----------------- Everyone who helped find bugs and offered constructive feedback. See the hub mod page for full credits.
+-------------Credits----------------- 
+
+Everyone who helped find bugs and offered constructive feedback. See the hub mod page for full credits.
 
 Fau​pi​​ and CWX​ for code related to displaying custom icons, from Munitions Expert​.
 
