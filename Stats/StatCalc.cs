@@ -655,7 +655,7 @@ namespace RealismMod
                     return "neutral";
                 }
             }
-            else if (opType == "p90" || opType == "tubefed" || opType == "magForward")
+            else if (opType == "p90" || opType.Contains("tubefed") || opType == "magForward")
             {
                 if (Utils.IsStock(mod))
                 {

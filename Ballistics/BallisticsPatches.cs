@@ -24,6 +24,7 @@ using Diz.LanguageExtensions;
 using EFTSlot = GClass2767;
 using ArmorSlot = GClass2511;
 using EFT.UI;
+using EFT.UI.Ragfair;
 
 namespace RealismMod
 {
@@ -227,6 +228,31 @@ namespace RealismMod
                 }
             }
         }*/
+
+    public class IsPenetratedPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Ballistics.BallisticCollider).GetMethod("IsPenetrated", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(EFT.Ballistics.BallisticCollider __instance, EftBulletClass shot, ref  bool __result)
+        {
+            if (shot.HittedBallisticCollider as BodyPartCollider != null)
+            {
+                BodyPartCollider bodyPartCollider = (BodyPartCollider)shot.HittedBallisticCollider;
+                EBodyPartColliderType bodyPart = bodyPartCollider.BodyPartColliderType;
+                bool isArm = bodyPart.ToString().ToLower().Contains("arm");
+                if (isArm && shot.PenetrationPower > 10)
+                {
+                    __result = true;
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
 
     public class IsShotDeflectedByHeavyArmorPatch : ModulePatch
     {
