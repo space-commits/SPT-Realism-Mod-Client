@@ -144,6 +144,7 @@ namespace RealismMod
                 totalSpeed += bag.Template.SpeedPenaltyPercent;
             }
             totalErgo /= 100f;
+            totalSpeed /= 100f;
             PlayerState.GearErgoPenalty = 1f + totalErgo;
             PlayerState.GearSpeedPenalty = 1f + totalSpeed;
         }
