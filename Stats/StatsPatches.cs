@@ -588,7 +588,7 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
-                __result = WeaponStats.ErgoFactor * (1f - PlayerState.StrengthSkillAimBuff * 1.5f);
+                __result = WeaponStats.ErgoFactor * (1f - PlayerState.StrengthSkillAimBuff * 1.5f) * (1f + (1f - PlayerState.GearErgoPenalty));
 
                 if (Plugin.EnableLogging.Value == true)
                 {

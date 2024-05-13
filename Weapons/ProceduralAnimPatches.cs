@@ -122,6 +122,31 @@ namespace RealismMod
     {
         private static FieldInfo playerField;
         private static FieldInfo fcField;
+        private static List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(20);
+
+
+        private static void getGearPenalty(Player player) 
+        {
+            preAllocatedArmorComponents.Clear();
+            player.Inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
+            float totalErgo = 0f;
+            float totalSpeed = 0f;
+            for (int i = 0; i < preAllocatedArmorComponents.Count; i++)
+            {
+                ArmorComponent armorComponent = preAllocatedArmorComponents[i];
+                totalErgo += armorComponent.WeaponErgonomicPenalty;
+                totalSpeed += armorComponent.SpeedPenalty;
+            }
+            EquipmentPenaltyComponent bag = player.Inventory.GetPutOnBackpack();
+            if (bag != null)
+            {
+                totalErgo += bag.Template.WeaponErgonomicPenalty;
+                totalSpeed += bag.Template.SpeedPenaltyPercent;
+            }
+            totalErgo /= 100f;
+            PlayerState.GearErgoPenalty = 1f + totalErgo;
+            PlayerState.GearSpeedPenalty = 1f + totalSpeed;
+        }
 
         protected override MethodBase GetTargetMethod()
         {
@@ -133,7 +158,6 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
-
             FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
             if (firearmController == null)
             {
@@ -147,9 +171,11 @@ namespace RealismMod
                 WeaponSkillsClass skillsClass = (WeaponSkillsClass)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_buffInfo").GetValue(__instance);
                 Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayBlender").GetValue(__instance);
 
-                float ergoWeightFactor = weapon.GetSingleItemTotalWeight() * (1f - WeaponStats.PureErgoDelta) * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f));
+                getGearPenalty(player);
 
-                float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo) * 1.15f;
+                float ergoWeightFactor = weapon.GetSingleItemTotalWeight() * (1f - WeaponStats.PureErgoDelta) * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + (1f - PlayerState.GearErgoPenalty));
+
+                float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo * PlayerState.GearErgoPenalty) * 1.15f;
                 float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (1f + WeaponStats.ModAimSpeedModifier), 0.55f, 1.4f);
                 valueBlender.Speed = __instance.SwayFalloff * aimSpeed * 4.35f;
 
@@ -162,7 +188,7 @@ namespace RealismMod
                 WeaponStats.ErgoStanceSpeed = baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (weapon.WeapClass == "pistol" ? 1.5f : 1f);
 
                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(__instance, aimSpeed);
-                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_ergonomicWeight").SetValue(__instance, WeaponStats.ErgoFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)));
+                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_ergonomicWeight").SetValue(__instance, WeaponStats.ErgoFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + (1f - PlayerState.GearErgoPenalty)));
 
                 if (Plugin.EnableLogging.Value == true)
                 {
@@ -171,6 +197,8 @@ namespace RealismMod
                     Logger.LogWarning("aimSpeed = " + aimSpeed);
                     Logger.LogWarning("base aimSpeed = " + baseAimspeed);
                     Logger.LogWarning("total ergofactor = " + WeaponStats.ErgoFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)));
+                    Logger.LogWarning("gear ergo factor = " + PlayerState.GearErgoPenalty);
+
                 }
             }
         }
@@ -257,7 +285,7 @@ namespace RealismMod
                     float aimingSpeed = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").GetValue(__instance); //aimspeed
 
                     float formfactor = WeaponStats.IsBullpup ? 0.75f : 1f;
-                    float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f));
+                    float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f) * (1f + (1f - PlayerState.GearErgoPenalty)));
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_ergonomicWeight").SetValue(__instance, ergoWeight);
                     float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(weapon.GetSingleItemTotalWeight(), weapon.WeapClass == "pistol" ? 1f : 4f);
                     float playerWeightSwayFactor = 1f + (totalPlayerWeight / 200f);
@@ -385,7 +413,7 @@ namespace RealismMod
                 float totalPlayerWeight = PlayerState.TotalModifiedWeight - weapWeight;
                 float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
                 bool noShoulderContact = !WeaponStats.HasShoulderContact; //maybe don't include pistol
-                float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * formfactor;
+                float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * formfactor * (1f + (1f - PlayerState.GearErgoPenalty));
                 float weightFactor = StatCalc.ProceduralIntensityFactorCalc(weapWeight, weapon.WeapClass == "pistol" ? 1f : 2.5f);
                 float displacementModifier = noShoulderContact ? Plugin.ProceduralIntensity.Value * 0.95f : Plugin.ProceduralIntensity.Value * 0.48f;//lower = less drag
                 float aimIntensity = noShoulderContact ? Plugin.ProceduralIntensity.Value * 0.86f : Plugin.ProceduralIntensity.Value * 0.51f;

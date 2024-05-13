@@ -140,7 +140,7 @@ namespace RealismMod
         public static float ProceduralIntensityFactorCalc(float weapWeight, float idealWeapWeight)
         {
             //get percentage differenecne between weapon weight and a chosen minimum/threshold weight. Apply that % difference as a multiplier 
-            return ((weapWeight - idealWeapWeight) / idealWeapWeight) +1f; 
+            return ((weapWeight - idealWeapWeight) / idealWeapWeight) + 1f; 
         }
 
         public static void SpeedStatCalc(Weapon weap, float ergoWeight, float ergonomicWeightLessMag, float chamberSpeedMod, float reloadSpeedMod, ref float totalReloadSpeedLessMag, ref float totalChamberSpeed, ref float totalAimMoveSpeedFactor, ref float totalFiringChamberSpeed, ref float totalChamberCheckSpeed, ref float totalFixSpeed)

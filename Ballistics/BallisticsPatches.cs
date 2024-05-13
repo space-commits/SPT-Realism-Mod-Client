@@ -337,7 +337,6 @@ namespace RealismMod
         private static List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(20);
         private static List<EBodyPart> bodyParts = new List<EBodyPart> { EBodyPart.RightArm, EBodyPart.LeftArm, EBodyPart.LeftLeg, EBodyPart.RightLeg, EBodyPart.Head, EBodyPart.Common, EBodyPart.Common };
 
-
         protected override MethodBase GetTargetMethod()
         {
             inventoryControllerField = AccessTools.Field(typeof(Player), "_inventoryController");
