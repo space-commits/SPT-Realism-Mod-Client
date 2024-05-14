@@ -135,7 +135,7 @@ namespace RealismMod
                 totalSpeed += faceCover.Template.SpeedPenaltyPercent;
             }
 
-            if (PlayerState.NVGIsActive) 
+            if (PlayerState.NVGIsActive)
             {
                 totalErgo += -15f;
                 totalSpeed += -15f;
@@ -146,6 +146,11 @@ namespace RealismMod
             PlayerState.GearErgoPenalty = 1f + totalErgo;
             PlayerState.GearSpeedPenalty = 1f + totalSpeed;
             player.ProceduralWeaponAnimation.UpdateWeaponVariables();
+            if (Plugin.EnableLogging.Value) 
+            {
+                Utils.Logger.LogWarning("gear speed " + PlayerState.GearSpeedPenalty);
+                Utils.Logger.LogWarning("gear ergo " + PlayerState.GearErgoPenalty);
+            }
         }
 
         public static float GetRigReloadSpeed(Player player)
