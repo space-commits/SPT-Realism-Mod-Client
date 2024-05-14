@@ -105,5 +105,7 @@ namespace RealismMod
 
         public static bool FSIsActive = false;
         public static bool NVGIsActive = false;
+
+        public static bool IsInLastStand = false;
     }
 }

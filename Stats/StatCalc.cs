@@ -97,6 +97,13 @@ namespace RealismMod
 
         public static void GetGearPenalty(Player player)
         {
+            FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
+            NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
+            ThermalVisionComponent thermComponent = player.ThermalVisionObserver.Component;
+            bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
+            bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
+            bool thermalIsOn = thermComponent != null && (thermComponent.Togglable == null || thermComponent.Togglable.On);
+
             List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(20);
             player.Inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
             float totalErgo = 0f;
@@ -107,7 +114,7 @@ namespace RealismMod
                 if (armorComponent.Item.Template._parent == "5448e5284bdc2dcb718b4567" || armorComponent.Item.Template._parent == "5a341c4686f77469e155819e") continue;
                 if (player.FaceShieldObserver.Component != null && player.FaceShieldObserver.Component.Item.TemplateId == armorComponent.Item.TemplateId)
                 {
-                    if (!PlayerState.FSIsActive || !GearStats.BlocksMouth(armorComponent.Item)) continue;
+                    if (!fsIsON || !GearStats.BlocksMouth(armorComponent.Item)) continue;
                     totalErgo += armorComponent.WeaponErgonomicPenalty;
                     totalSpeed += armorComponent.SpeedPenalty + -15f;
                     continue;
@@ -135,9 +142,9 @@ namespace RealismMod
                 totalSpeed += faceCover.Template.SpeedPenaltyPercent;
             }
 
-            if (PlayerState.NVGIsActive)
+            if (nvgIsOn || thermalIsOn)
             {
-                totalErgo += -15f;
+                totalErgo += -30f;
                 totalSpeed += -15f;
             }
 

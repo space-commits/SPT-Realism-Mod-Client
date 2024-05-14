@@ -35,7 +35,7 @@ namespace RealismMod
                 bool toobBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && player.ProceduralWeaponAnimation.CurrentScope.IsOptic) || thermalIsOn);
 
                 PlayerState.FSIsActive = fsIsON;
-                PlayerState.NVGIsActive = nvgIsOn;
+                PlayerState.NVGIsActive = nvgIsOn || thermalIsOn;
 
                 if (HeadDeviceStateChanged) 
                 {
