@@ -29,7 +29,7 @@ using EFT.UI.Ragfair;
 namespace RealismMod
 {
 
-    public class SetSkinPatch : ModulePatch
+   /* public class SetSkinPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -191,14 +191,14 @@ namespace RealismMod
             {
                 VisualizeBoxCollider(shot.HitCollider as BoxCollider, __instance.HitCollider.name);
             }
-       /*     if (shot.HitCollider is CapsuleCollider)
+       *//*     if (shot.HitCollider is CapsuleCollider)
             {
                 VisualizeCapsuleCollider(shot.HitCollider as CapsuleCollider, __instance.HitCollider.name);
             }
             if (shot.HitCollider is SphereCollider)
             {
                 VisualizeSphereCollider(shot.HitCollider as SphereCollider, __instance.HitCollider.name);
-            }*/
+            }*//*
 
             Logger.LogWarning("========Damage Info PostFix==========");
             Logger.LogWarning("id " + shot.Ammo.Id);
@@ -208,7 +208,7 @@ namespace RealismMod
             Logger.LogWarning("ballistic collider = " + __instance.HittedBallisticCollider.name);
             Logger.LogWarning("=================");
         }
-    }
+    }*/
 
     public class IsPenetratedPatch : ModulePatch
     {
@@ -250,7 +250,7 @@ namespace RealismMod
         }
     }
 
-/*    public class DamageInfoPatch : ModulePatch
+    public class DamageInfoPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -310,7 +310,7 @@ namespace RealismMod
             __instance.BleedBlock = false;
             return false;
         }
-    }*/
+    }
 
     public class ApplyDamageInfoPatch : ModulePatch
     {
@@ -445,6 +445,36 @@ namespace RealismMod
             Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
         }
 
+        private static void modifyDamageByZone(ref DamageInfo damageInfo, EBodyPartColliderType partHit) 
+        {
+            EBodyHitZone hitZone = EBodyHitZone.Unknown;
+            if (!damageInfo.Blunt)
+            {
+                if (partHit == EBodyPartColliderType.RibcageUp || partHit == EBodyPartColliderType.RibcageLow || partHit == EBodyPartColliderType.SpineDown || partHit == EBodyPartColliderType.SpineTop)
+                {
+                    Collider col = damageInfo.HitCollider;
+                    Vector3 localPoint = col.transform.InverseTransformPoint(damageInfo.HitPoint);
+                    Vector3 hitNormal = damageInfo.HitNormal;
+                    EHitOrientation hitOrientation = HitZones.GetHitOrientation(hitNormal, col.transform, Logger);
+                    hitZone = HitZones.GetHitBodyZone(Logger, localPoint, hitOrientation, partHit);
+                    if (Plugin.EnableBallisticsLogging.Value)
+                    {
+                        Logger.LogWarning("=========Hitzone Damage Info==========");
+                        Logger.LogWarning("hit collider = " + partHit);
+                        Logger.LogWarning("hit orientation = " + hitOrientation);
+                        Logger.LogWarning("hit zone = " + hitZone);
+                        Logger.LogWarning("damage = " + damageInfo.Damage);
+                        Logger.LogWarning("x = " + localPoint.x);
+                        Logger.LogWarning("y = " + localPoint.y);
+                        Logger.LogWarning("z = " + localPoint.z);
+                        Logger.LogWarning("===================");
+                    }
+                }
+
+                BallisticsController.ModifyDamageByHitZone(partHit, hitZone, ref damageInfo);
+            }
+        }
+
 
         [PatchPrefix]
         private static void Prefix(Player __instance, ref DamageInfo damageInfo, EBodyPart bodyPartType)
@@ -470,32 +500,7 @@ namespace RealismMod
                     partHit = damageInfo.BodyPartColliderType;
                 }
 
-
-
-                Collider col = damageInfo.HitCollider;
-                Vector3 localPoint = col.transform.InverseTransformPoint(damageInfo.HitPoint);
-                Vector3 hitNormal = damageInfo.HitNormal;
-                EHitOrientation hitOrientation = EHitOrientation.UnknownOrientation;
-
-                if (!damageInfo.Blunt && (partHit == EBodyPartColliderType.RibcageUp || partHit == EBodyPartColliderType.RibcageLow || partHit == EBodyPartColliderType.SpineDown || partHit == EBodyPartColliderType.SpineTop))
-                {
-                    hitOrientation = HitBox.GetHitOrientation(hitNormal, col.transform, Logger);
-                    EBodyHitZone hitZone = HitBox.GetHitBodyZone(Logger, localPoint, hitOrientation, partHit);
-                    if (Plugin.EnableBallisticsLogging.Value)
-                    {
-                        Logger.LogWarning("=========Hitzone Damage Info==========");
-                        Logger.LogWarning("hit collider = " + partHit);
-                        Logger.LogWarning("hit orientation = " + hitOrientation);
-                        Logger.LogWarning("hit zone = " + hitZone);
-                        Logger.LogWarning("damage = " + damageInfo.Damage);
-                        Logger.LogWarning("x = " + localPoint.x);
-                        Logger.LogWarning("y = " + localPoint.y);
-                        Logger.LogWarning("z = " + localPoint.z);
-                        Logger.LogWarning("===================");
-                    }
-                }
-
-                BallisticsController.ModifyDamageByHitZone(partHit, ref damageInfo);
+                modifyDamageByZone(ref damageInfo, partHit);
 
                 bool hasArmArmor = false;
                 bool hasLegProtection = false;

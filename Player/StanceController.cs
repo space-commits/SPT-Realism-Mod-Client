@@ -730,7 +730,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(40f * wiggleBalanceFactor, 4f * wiggleBalanceFactor, -35f) * movementFactor); //new Vector3(10f, 1f, -30f)
+                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(20f * wiggleBalanceFactor, 4f * wiggleBalanceFactor, -35f) * movementFactor); //new Vector3(10f, 1f, -30f)
 
                 isResettingPistol = false;
                 CurrentStance = EStance.None;
@@ -1082,7 +1082,7 @@ namespace RealismMod
 
                 if ((StanceBlender.Value >= 1f || StanceTargetPosition == lowReadyTargetPosition) && !DidStanceWiggle && !useThirdPersonStance)
                 {
-                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(7f, -7f, -50f) * movementFactor, true);
+                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-10f, 10f, -5f) * movementFactor, true); 
                     DidStanceWiggle = true;
                 }
             }

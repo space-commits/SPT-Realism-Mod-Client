@@ -74,38 +74,83 @@ namespace RealismMod
             }
         }
 
-        public static void SetGearParamaters(Player player)
+
+        private static EquipmentPenaltyComponent GetRigGearPenalty(Player player)
         {
-            float reloadMulti = 1f;
-            bool allowADS = true;
+            Item containedItem = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
+            if (containedItem == null)
+            {
+                return null;
+            }
+            return containedItem.GetItemComponent<EquipmentPenaltyComponent>();
+        }
+
+        private static EquipmentPenaltyComponent GetFaceCoverGearPenalty(Player player)
+        {
+            Item containedItem = player.Inventory.Equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
+            if (containedItem == null)
+            {
+                return null;
+            }
+            return containedItem.GetItemComponent<EquipmentPenaltyComponent>();
+        }
+
+        public static void GetGearPenalty(Player player)
+        {
             List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(20);
             player.Inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
-
-            reloadMulti *= StatCalc.GetRigReloadSpeed(player);
-
-            foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
+            float totalErgo = 0f;
+            float totalSpeed = 0f;
+            for (int i = 0; i < preAllocatedArmorComponents.Count; i++)
             {
-                if (armorComponent.Item.Template._parent == "5448e5284bdc2dcb718b4567")
+                ArmorComponent armorComponent = preAllocatedArmorComponents[i];
+                if (armorComponent.Item.Template._parent == "5448e5284bdc2dcb718b4567" || armorComponent.Item.Template._parent == "5a341c4686f77469e155819e") continue;
+                if (player.FaceShieldObserver.Component != null && player.FaceShieldObserver.Component.Item.TemplateId == armorComponent.Item.TemplateId)
                 {
-                    break;
+                    if (!PlayerState.FSIsActive || !GearStats.BlocksMouth(armorComponent.Item)) continue;
+                    totalErgo += armorComponent.WeaponErgonomicPenalty;
+                    totalSpeed += armorComponent.SpeedPenalty + -15f;
+                    continue;
                 }
-           
-                reloadMulti *= GearStats.ReloadSpeedMulti(armorComponent.Item);
-                ArmorTemplate armorTemplate = armorComponent.Template as ArmorTemplate;
 
-                if (!GearStats.AllowsADS(armorComponent.Item) && !armorTemplate.HasHinge)
-                {
-                    allowADS = false;
-                }
+                totalErgo += armorComponent.WeaponErgonomicPenalty;
+                totalSpeed += armorComponent.SpeedPenalty;
+            }
+            EquipmentPenaltyComponent bag = player.Inventory.GetPutOnBackpack();
+            if (bag != null)
+            {
+                totalErgo += bag.Template.WeaponErgonomicPenalty;
+                totalSpeed += bag.Template.SpeedPenaltyPercent;
+            }
+            EquipmentPenaltyComponent rig = GetRigGearPenalty(player);
+            if (rig != null)
+            {
+                totalErgo += rig.Template.WeaponErgonomicPenalty;
+                totalSpeed += rig.Template.SpeedPenaltyPercent;
+            }
+            EquipmentPenaltyComponent faceCover = GetFaceCoverGearPenalty(player);
+            if (faceCover != null)
+            {
+                totalErgo += faceCover.Template.WeaponErgonomicPenalty;
+                totalSpeed += faceCover.Template.SpeedPenaltyPercent;
             }
 
-            PlayerState.GearReloadMulti = reloadMulti;
-            PlayerState.GearAllowsADS = allowADS;
+            if (PlayerState.NVGIsActive) 
+            {
+                totalErgo += -15f;
+                totalSpeed += -15f;
+            }
+
+            totalErgo /= 100f;
+            totalSpeed /= 100f;
+            PlayerState.GearErgoPenalty = 1f + totalErgo;
+            PlayerState.GearSpeedPenalty = 1f + totalSpeed;
+            player.ProceduralWeaponAnimation.UpdateWeaponVariables();
         }
 
         public static float GetRigReloadSpeed(Player player)
         {
-            LootItemClass tacVest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem as LootItemClass;
+            Item tacVest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
 
             if (tacVest != null)
             {
@@ -115,6 +160,50 @@ namespace RealismMod
             {
                 return 1;
             }
+        }
+
+        public static bool GetFacecoverADS(Player player)
+        {
+            Item faceCover = player.Equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
+
+            if (faceCover != null)
+            {
+                return GearStats.AllowsADS(faceCover);
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        public static void SetGearParamaters(Player player)
+        {
+            float reloadMulti = 1f;
+            bool allowADS = true;
+            List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(20);
+            player.Inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
+
+            reloadMulti *= GetRigReloadSpeed(player);
+            allowADS = GetFacecoverADS(player);
+
+            foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
+            {
+                if (armorComponent.Item.Template._parent == "5448e5284bdc2dcb718b4567" || armorComponent.Item.Template._parent == "5a341c4686f77469e155819e")
+                {
+                    break;
+                }
+           
+                reloadMulti *= GearStats.ReloadSpeedMulti(armorComponent.Item);
+                ArmorTemplate armorTemplate = armorComponent.Template as ArmorTemplate;
+
+                if (!GearStats.AllowsADS(armorComponent.Item))
+                {
+                    allowADS = false;
+                }
+            }
+
+            PlayerState.GearReloadMulti = reloadMulti;
+            PlayerState.GearAllowsADS = allowADS;
         }
 
         public static float ErgoWeightCalc(float totalWeight, float ergoDelta, float totalTorque, string weapClass)

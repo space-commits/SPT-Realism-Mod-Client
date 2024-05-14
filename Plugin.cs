@@ -655,7 +655,7 @@ namespace RealismMod
                 new CreateShotPatch().Enable();
                 new ApplyArmorDamagePatch().Enable();
                 new DamageInfoPatch().Enable();
-                new SetSkinPatch().Enable();
+/*                new SetSkinPatch().Enable();*/
                 new ApplyDamageInfoPatch().Enable();
                 new SetPenetrationStatusPatch().Enable();
                 new IsPenetratedPatch().Enable();   

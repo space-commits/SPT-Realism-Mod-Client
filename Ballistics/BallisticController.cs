@@ -52,6 +52,7 @@ namespace RealismMod
         public const float DZone = 0.7f;
     }
 
+
     public static class BallisticsController
     {
         public static EBodyPartColliderType[] HeadCollidors = { EBodyPartColliderType.Eyes, EBodyPartColliderType.Ears, EBodyPartColliderType.Jaw, EBodyPartColliderType.BackHead, EBodyPartColliderType.NeckFront, EBodyPartColliderType.NeckBack, EBodyPartColliderType.HeadCommon, EBodyPartColliderType.ParietalHead };
@@ -69,93 +70,123 @@ namespace RealismMod
             penetration *= penReductionFactor;
         }
 
-        public static void ModifyDamageByHitZone(EBodyPartColliderType hitPart, ref DamageInfo di)
+        public static void ModifyDamageByHitZone(EBodyPartColliderType hitPart, EBodyHitZone hitZone, ref DamageInfo di)
         {
+            switch (hitZone) 
             {
-                switch (hitPart) 
-                { 
-                    case EBodyPartColliderType.RightCalf:
-                    case EBodyPartColliderType.LeftCalf:
-                        di.Damage *= 0.8f * Plugin.GlobalDamageModifier.Value;
-                        di.HeavyBleedingDelta *= 0.75f;
-                        di.LightBleedingDelta *= 0.75f;
-                        break;
-                    case EBodyPartColliderType.RightThigh:
-                    case EBodyPartColliderType.LeftThigh:
-                        di.Damage *= 1f * Plugin.GlobalDamageModifier.Value;
-                        di.HeavyBleedingDelta *= 1.25f;
-                        di.LightBleedingDelta *= 1.25f;
-                        break;
-                    case EBodyPartColliderType.RightForearm:
-                    case EBodyPartColliderType.LeftForearm:
-                        di.Damage *= 0.75f * Plugin.GlobalDamageModifier.Value;
-                        di.HeavyBleedingDelta *= 0.55f;
-                        di.LightBleedingDelta *= 0.55f;
-                        break;
-                    case EBodyPartColliderType.LeftUpperArm:
-                    case EBodyPartColliderType.RightUpperArm:
-                        di.Damage *= 0.9f * Plugin.GlobalDamageModifier.Value;
-                        di.HeavyBleedingDelta *= 0.75f;
-                        di.LightBleedingDelta *= 0.75f;
-                        break;
-                    case EBodyPartColliderType.PelvisBack:
-                    case EBodyPartColliderType.Pelvis:
-                        di.Damage *= 0.9f * Plugin.GlobalDamageModifier.Value;
-                        di.HeavyBleedingDelta *= 0.85f;
-                        di.LightBleedingDelta *= 0.85f;
-                        break;
-                    case EBodyPartColliderType.RibcageUp:
-                    case EBodyPartColliderType.SpineTop:
-                        di.Damage *= 1.01f * Plugin.GlobalDamageModifier.Value;
-                        di.HeavyBleedingDelta *= 1.15f;
-                        di.LightBleedingDelta *= 1.15f;
-                        break;
-                    case EBodyPartColliderType.RibcageLow:
-                    case EBodyPartColliderType.SpineDown:
-                        di.Damage *= 0.9f * Plugin.GlobalDamageModifier.Value;
-                        di.HeavyBleedingDelta *= 0.95f;
-                        di.LightBleedingDelta *= 0.95f;
-                        break;
-                    case EBodyPartColliderType.LeftSideChestDown:
-                    case EBodyPartColliderType.RightSideChestDown:
-                        di.Damage *= 0.9f * Plugin.GlobalDamageModifier.Value;
-                        di.HeavyBleedingDelta *= 0.9f;
-                        di.LightBleedingDelta *= 0.9f;
-                        break;
-                    case EBodyPartColliderType.LeftSideChestUp:
-                    case EBodyPartColliderType.RightSideChestUp:
-                        di.Damage *= 1.05f * Plugin.GlobalDamageModifier.Value;
-                        di.HeavyBleedingDelta *= 1f;
-                        di.LightBleedingDelta *= 1f;
-                        break;
-                    case EBodyPartColliderType.NeckBack:
-                    case EBodyPartColliderType.NeckFront:
-                        di.Damage *= 0.85f;
-                        di.HeavyBleedingDelta *= 1.15f;
-                        di.LightBleedingDelta *= 1.15f;
-                        break;
-                    case EBodyPartColliderType.Jaw:
-                        di.Damage *= 0.85f;
-                        di.HeavyBleedingDelta *= 0.95f;
-                        di.LightBleedingDelta *= 0.95f;
-                        break;
-                    case EBodyPartColliderType.ParietalHead:
-                        di.Damage *= 0.85f;
-                        di.HeavyBleedingDelta *= 0.9f;
-                        di.LightBleedingDelta *= 0.9f;
-                        break;
-                    case EBodyPartColliderType.BackHead:
-                        di.Damage *= 1f;
-                        di.HeavyBleedingDelta *= 1.15f;
-                        di.LightBleedingDelta *= 1.15f;
-                        break;
-                    default:
-                        break; 
-                }
+                case EBodyHitZone.Unknown:
+                    break;
+                case EBodyHitZone.AZone:
+                    di.Damage *= 1.5f * Plugin.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 2f;
+                    di.LightBleedingDelta *= 2f;
+                    return;
+                case EBodyHitZone.CZone:
+                    di.Damage *= 1f * Plugin.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 1f;
+                    di.LightBleedingDelta *= 1f;
+                    return;
+                case EBodyHitZone.DZone:
+                    di.Damage *= 0.7f * Plugin.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 0.5f;
+                    di.LightBleedingDelta *= 0.8f;
+                    return;
+                case EBodyHitZone.Heart:
+                    di.Damage = 120f * Plugin.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 10f;
+                    di.LightBleedingDelta *= 10f;
+                    return;
+                case EBodyHitZone.Spine:
+                    di.Damage = di.Damage + 80f * Plugin.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 1.5f;
+                    di.LightBleedingDelta *= 1.5f;
+                    return;
+            }
+
+            switch (hitPart)
+            {
+                case EBodyPartColliderType.RightCalf:
+                case EBodyPartColliderType.LeftCalf:
+                    di.Damage *= 0.8f * Plugin.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 0.75f;
+                    di.LightBleedingDelta *= 0.75f;
+                    break;
+                case EBodyPartColliderType.RightThigh:
+                case EBodyPartColliderType.LeftThigh:
+                    di.Damage *= 1f * Plugin.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 1.3f;
+                    di.LightBleedingDelta *= 1.3f;
+                    break;
+                case EBodyPartColliderType.RightForearm:
+                case EBodyPartColliderType.LeftForearm:
+                    di.Damage *= 0.75f * Plugin.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 0.55f;
+                    di.LightBleedingDelta *= 0.55f;
+                    break;
+                case EBodyPartColliderType.LeftUpperArm:
+                case EBodyPartColliderType.RightUpperArm:
+                    di.Damage *= 0.9f * Plugin.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 0.75f;
+                    di.LightBleedingDelta *= 0.75f;
+                    break;
+                case EBodyPartColliderType.PelvisBack:
+                case EBodyPartColliderType.Pelvis:
+                    di.Damage *= 0.9f * Plugin.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 0.85f;
+                    di.LightBleedingDelta *= 0.85f;
+                    break;
+                case EBodyPartColliderType.RibcageUp:
+                case EBodyPartColliderType.SpineTop:
+                    di.Damage *= 1f * Plugin.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 1.15f;
+                    di.LightBleedingDelta *= 1.15f;
+                    break;
+                case EBodyPartColliderType.RibcageLow:
+                case EBodyPartColliderType.SpineDown:
+                    di.Damage *= 0.9f * Plugin.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 0.95f;
+                    di.LightBleedingDelta *= 0.95f;
+                    break;
+                case EBodyPartColliderType.LeftSideChestDown:
+                case EBodyPartColliderType.RightSideChestDown:
+                    di.Damage *= 0.9f * Plugin.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 0.9f;
+                    di.LightBleedingDelta *= 0.9f;
+                    break;
+                case EBodyPartColliderType.LeftSideChestUp:
+                case EBodyPartColliderType.RightSideChestUp:
+                    di.Damage *= 1.1f * Plugin.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 1.25f;
+                    di.LightBleedingDelta *= 1.25f;
+                    break;
+                case EBodyPartColliderType.NeckBack:
+                case EBodyPartColliderType.NeckFront:
+                    di.Damage *= 0.85f;
+                    di.HeavyBleedingDelta *= 1.15f;
+                    di.LightBleedingDelta *= 1.15f;
+                    break;
+                case EBodyPartColliderType.Jaw:
+                    di.Damage *= 0.85f;
+                    di.HeavyBleedingDelta *= 0.95f;
+                    di.LightBleedingDelta *= 0.95f;
+                    break;
+                case EBodyPartColliderType.ParietalHead:
+                    di.Damage *= 0.85f;
+                    di.HeavyBleedingDelta *= 0.9f;
+                    di.LightBleedingDelta *= 0.9f;
+                    break;
+                case EBodyPartColliderType.BackHead:
+                    di.Damage *= 1f;
+                    di.HeavyBleedingDelta *= 1.15f;
+                    di.LightBleedingDelta *= 1.15f;
+                    break;
+                default:
+                    break;
             }
         }
     }
-    public static class HitBox
+
+    public static class HitZones
     {
         public static EHitOrientation GetHitOrientation(Vector3 hitNormal, Transform colliderTransform, ManualLogSource logger)
         {

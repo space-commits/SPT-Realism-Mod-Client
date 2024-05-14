@@ -188,6 +188,7 @@ namespace RealismMod
             {
                 StatCalc.CalcPlayerWeightStats(__instance);
                 StatCalc.SetGearParamaters(__instance);
+                StatCalc.GetGearPenalty(__instance);
             }
         }
     }
@@ -207,6 +208,7 @@ namespace RealismMod
             {
                 StatCalc.CalcPlayerWeightStats(__instance);
                 StatCalc.SetGearParamaters(__instance);
+                StatCalc.GetGearPenalty(__instance);
             }
         }
     }

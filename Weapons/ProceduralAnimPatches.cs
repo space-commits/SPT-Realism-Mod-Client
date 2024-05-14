@@ -122,32 +122,6 @@ namespace RealismMod
     {
         private static FieldInfo playerField;
         private static FieldInfo fcField;
-        private static List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(20);
-
-
-        private static void getGearPenalty(Player player) 
-        {
-            preAllocatedArmorComponents.Clear();
-            player.Inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
-            float totalErgo = 0f;
-            float totalSpeed = 0f;
-            for (int i = 0; i < preAllocatedArmorComponents.Count; i++)
-            {
-                ArmorComponent armorComponent = preAllocatedArmorComponents[i];
-                totalErgo += armorComponent.WeaponErgonomicPenalty;
-                totalSpeed += armorComponent.SpeedPenalty;
-            }
-            EquipmentPenaltyComponent bag = player.Inventory.GetPutOnBackpack();
-            if (bag != null)
-            {
-                totalErgo += bag.Template.WeaponErgonomicPenalty;
-                totalSpeed += bag.Template.SpeedPenaltyPercent;
-            }
-            totalErgo /= 100f;
-            totalSpeed /= 100f;
-            PlayerState.GearErgoPenalty = 1f + totalErgo;
-            PlayerState.GearSpeedPenalty = 1f + totalSpeed;
-        }
 
         protected override MethodBase GetTargetMethod()
         {
@@ -171,8 +145,6 @@ namespace RealismMod
                 Weapon weapon = firearmController.Weapon;
                 WeaponSkillsClass skillsClass = (WeaponSkillsClass)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_buffInfo").GetValue(__instance);
                 Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayBlender").GetValue(__instance);
-
-                getGearPenalty(player);
 
                 float ergoWeightFactor = weapon.GetSingleItemTotalWeight() * (1f - WeaponStats.PureErgoDelta) * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + (1f - PlayerState.GearErgoPenalty));
 

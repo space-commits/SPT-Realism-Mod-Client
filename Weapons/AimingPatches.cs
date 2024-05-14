@@ -30,14 +30,24 @@ namespace RealismMod
                 bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
                 bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
                 bool thermalIsOn = thermComponent != null && (thermComponent.Togglable == null || thermComponent.Togglable.On);
-                bool gearBlocksADS = Plugin.EnableFSPatch.Value && fsIsON && (!WeaponStats.WeaponCanFSADS && (!GearStats.AllowsADS(fsComponent.Item) || !PlayerState.GearAllowsADS));
+                bool gearBlocksADS = !WeaponStats.WeaponCanFSADS && !PlayerState.GearAllowsADS;
+                bool fsBlocksADS = Plugin.EnableFSPatch.Value && ((fsIsON && gearBlocksADS) || (gearBlocksADS));
                 bool toobBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && player.ProceduralWeaponAnimation.CurrentScope.IsOptic) || thermalIsOn);
+
+                PlayerState.FSIsActive = fsIsON;
+                PlayerState.NVGIsActive = nvgIsOn;
+
+                if (HeadDeviceStateChanged) 
+                {
+                    StatCalc.GetGearPenalty(Utils.GetYourPlayer());
+                    HeadDeviceStateChanged = false;
+                }
 
                 fc.UpdateHipInaccuracy(); //update hipfire to take NVG toggle into account
 
                 if (Plugin.ServerConfig.enable_stances)
                 {
-                    if ((toobBlocksADS || gearBlocksADS))
+                    if ((toobBlocksADS || fsBlocksADS))
                     {
                         if (!hasSetCanAds)
                         {
@@ -71,7 +81,6 @@ namespace RealismMod
                     }
 
                     AimStateChanged = false;
-                    HeadDeviceStateChanged = false;
 
                     if (StanceController.CurrentStance == EStance.ActiveAiming && !hasSetActiveAimADS)
                     {
