@@ -41,7 +41,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.pluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string pluginVersion = "1.2.1";
+        private const string pluginVersion = "1.2.2";
 
         //movement
         public static ConfigEntry<bool> EnableMaterialSpeed { get; set; }
