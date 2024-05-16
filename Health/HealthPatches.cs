@@ -190,7 +190,6 @@ namespace RealismMod
                 stimAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
                 stimAttClass.LessIsGood = false;
                 stimAtt.Add(stimAttClass);
-                Logger.LogWarning("2324");
             }
 
             if (medType == "trnqt" || medType == "medkit" || medType == "surg")

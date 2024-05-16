@@ -286,6 +286,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, EftBulletClass shot)
         {
+
             __instance.DamageType = damageType;
             __instance.Damage = shot.Damage;
             __instance.PenetrationPower = shot.PenetrationPower;
@@ -299,6 +300,10 @@ namespace RealismMod
             __instance.FireIndex = shot.FireIndex;
             if (__instance.DamageType == EDamageType.Blunt || __instance.DamageType == EDamageType.Bullet)
             {
+                if (Plugin.EnableLogging.Value) 
+                {
+                    Logger.LogWarning("================shot velocity============== " + shot.VelocityMagnitude);
+                }
                 __instance.ArmorDamage = shot.VelocityMagnitude;
             }
             else
@@ -478,6 +483,7 @@ namespace RealismMod
             {
                 if (partHit == EBodyPartColliderType.RibcageUp || partHit == EBodyPartColliderType.RibcageLow || partHit == EBodyPartColliderType.SpineDown || partHit == EBodyPartColliderType.SpineTop)
                 {
+                    if (damageInfo.HitCollider == null) return;
                     Collider col = damageInfo.HitCollider;
                     Vector3 localPoint = col.transform.InverseTransformPoint(damageInfo.HitPoint);
                     Vector3 hitNormal = damageInfo.HitNormal;
@@ -515,17 +521,20 @@ namespace RealismMod
 
             if (damageInfo.DamageType == EDamageType.Bullet || damageInfo.DamageType == EDamageType.Melee)
             {
+
                 EBodyPartColliderType partHit = EBodyPartColliderType.None;
+                //for fika, value is populated, otherwise it's unused
                 if (damageInfo.BodyPartColliderType == EBodyPartColliderType.None)
                 {
                     BodyPartCollider bodyPartCollider = (BodyPartCollider)damageInfo.HittedBallisticCollider;
                     partHit = bodyPartCollider.BodyPartColliderType;
                 }
-                else 
+                else //for fika, value is populated, otherwise it's unused
                 {
                     partHit = damageInfo.BodyPartColliderType;
                 }
 
+                //if fika, based on collidor type, get refernce to player assetpoolobject, get collidors, get component
                 modifyDamageByZone(ref damageInfo, partHit);
 
                 bool hasArmArmor = false;
@@ -556,7 +565,7 @@ namespace RealismMod
                     playBodyHitSound(bodyPartType, damageInfo.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
                 }
 
-                float KE = 1f;
+                float KE = 1f;f
                 AmmoTemplate ammoTemp = null;
                 if (damageInfo.DamageType == EDamageType.Melee)
                 {
@@ -568,7 +577,15 @@ namespace RealismMod
                 else
                 {
                     ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
-                    KE = (0.5f * ammoTemp.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f;
+
+                    if (damageInfo.ArmorDamage <= 1)
+                    {
+                        KE = (0.5f * ammoTemp.BulletMassGram * ammoTemp.InitialSpeed * ammoTemp.InitialSpeed) / 1000f;
+                    }
+                    else
+                    {
+                        KE = (0.5f * ammoTemp.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f;
+                    }
                 }
 
                 if (armor != null && ammoTemp != null && damageInfo.DamageType != EDamageType.Melee)
@@ -980,9 +997,17 @@ namespace RealismMod
             else
             {
                 ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
-                speedFactor = damageInfo.ArmorDamage / ammoTemp.InitialSpeed;
-                armorDamageActual = ammoTemp.ArmorDamage; // * speedFactor don't think this is a good idea anymore, momentum being based on velocity is enough
-                momentum = ammoTemp.BulletMassGram * damageInfo.ArmorDamage;
+
+                armorDamageActual = ammoTemp.ArmorDamage; // * speedFactor don't think facotring by speedFacotr is a good idea anymore, momentum being based on velocity is enough
+                if (damageInfo.ArmorDamage <= 1)
+                {
+                    momentum = ammoTemp.BulletMassGram * ammoTemp.InitialSpeed;
+                }
+                else 
+                {
+                    speedFactor = damageInfo.ArmorDamage / ammoTemp.InitialSpeed;
+                    momentum = ammoTemp.BulletMassGram * damageInfo.ArmorDamage;
+                }
             }
 
             if (damageInfo.DeflectedBy == __instance.Item.Id)
