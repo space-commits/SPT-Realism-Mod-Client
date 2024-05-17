@@ -60,12 +60,23 @@ namespace RealismMod
         {
          
             Player player = (Player)playerField.GetValue(__instance);
-            if (__instance.Weapon.AmmoCaliber != ammoToFire.Caliber)
+
+            bool do9x18Explodey = false;
+            bool isPMMAmmo = ammoToFire.Template._id == "57371aab2459775a77142f22";
+            if (__instance.Weapon.AmmoCaliber == "9x18PM" && isPMMAmmo) 
             {
-                __instance.Weapon.Repairable.Durability = Mathf.Max(__instance.Weapon.Repairable.Durability - (__instance.Weapon.DurabilityBurnRatio * ammoToFire.DurabilityBurnModificator), 0f);
+                if (isPMMAmmo)
+                {
+                    __instance.Weapon.Repairable.Durability = Mathf.Max(__instance.Weapon.Repairable.Durability - (__instance.Weapon.DurabilityBurnRatio * ammoToFire.DurabilityBurnModificator), 0f);
+                }
                 int rnd = UnityEngine.Random.Range(1, 10);
                 float dura = 2f - (__instance.Weapon.Repairable.Durability / __instance.Weapon.Repairable.MaxDurability);
-                bool do9x18Explodey = __instance.Weapon.Repairable.Durability <= 75f && rnd <= 4 * dura && __instance.Weapon.AmmoCaliber == "9x18PM" && ammoToFire.Template._id == "57371aab2459775a77142f22";
+                do9x18Explodey = __instance.Weapon.Repairable.Durability <= 75f && rnd <= 4 * dura && isPMMAmmo;
+            }
+
+            if (__instance.Weapon.AmmoCaliber != ammoToFire.Caliber)
+            {
+             
                 bool explosiveMismatch = do9x18Explodey || (__instance.Weapon.AmmoCaliber == "366TKM" && ammoToFire.Caliber == "762x39") || (__instance.Weapon.AmmoCaliber == "556x45NATO" && ammoToFire.Caliber == "762x35") || (__instance.Weapon.AmmoCaliber == "762x51" && ammoToFire.Caliber == "68x51");
                 bool malfMismatch = (__instance.Weapon.AmmoCaliber == "762x39" && ammoToFire.Caliber == "366TKM") || (__instance.Weapon.AmmoCaliber == "762x35" && ammoToFire.Caliber == "556x45NATO") || (__instance.Weapon.AmmoCaliber == "68x51" && ammoToFire.Caliber == "762x51");
 

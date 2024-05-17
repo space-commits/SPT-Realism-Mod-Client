@@ -565,7 +565,7 @@ namespace RealismMod
                     playBodyHitSound(bodyPartType, damageInfo.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
                 }
 
-                float KE = 1f;f
+                float KE = 1f;
                 AmmoTemplate ammoTemp = null;
                 if (damageInfo.DamageType == EDamageType.Melee)
                 {

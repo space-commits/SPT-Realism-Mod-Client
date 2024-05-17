@@ -477,7 +477,7 @@ namespace RealismMod
                             modCamRecoil = 0;
                             modAutoROF = 0;
                             modSemiROF = 0;
-                            modDuraBurn = 0;
+                            modDuraBurn = 1;
                             modMalfChance = 0;
                             return;
                         }
@@ -485,7 +485,7 @@ namespace RealismMod
                         {
                             modAutoROF = 0;
                             modSemiROF = 0;
-                            modDuraBurn = 0;
+                            modDuraBurn = 1;
                             modMalfChance = 0;
                             return;
                         }
