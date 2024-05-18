@@ -1,10 +1,8 @@
 ﻿using Aki.Reflection.Patching;
 using Aki.Reflection.Utils;
-using AmplifyMotion;
 using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
-using EFT.Ballistics;
 using EFT.HealthSystem;
 using EFT.InventoryLogic;
 using EFT.UI.Health;
@@ -18,7 +16,6 @@ using System.Reflection.Emit;
 using System.Text;
 using Systems.Effects;
 using UnityEngine;
-using UnityEngine.Assertions;
 using static CW2.Animations.PhysicsSimulator.Val;
 using static EFT.Player;
 using static RealismMod.Attributes;
@@ -32,9 +29,6 @@ using HealthStateClass = GClass2416<EFT.HealthSystem.ActiveHealthController.GCla
 using MedkitTemplate = IMedkitResource;
 using static EFT.HealthSystem.ActiveHealthController;
 using static GClass2417;
-using Aki.Common.Http;
-using UnityStandardAssets.ImageEffects;
-using System.Xml;
 
 namespace RealismMod
 {
@@ -190,7 +184,6 @@ namespace RealismMod
                 stimAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
                 stimAttClass.LessIsGood = false;
                 stimAtt.Add(stimAttClass);
-                Logger.LogWarning("2324");
             }
 
             if (medType == "trnqt" || medType == "medkit" || medType == "surg")

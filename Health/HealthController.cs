@@ -739,7 +739,7 @@ namespace RealismMod
             var stimTypeGroups = stims.GroupBy(effect => effect.StimType);
             var duplicatesGrouping = stimTypeGroups.Where(group => group.Count() > 1);
 /*            var singlesGrouping = stimTypeGroups.Where(group => group.Count() <= 1);
-*/            int totalDuplicates = duplicatesGrouping.Sum(group => group.Count());
+*/          int totalDuplicates = duplicatesGrouping.Sum(group => group.Count());
             EvaluateStimDuplicates(player, duplicatesGrouping);
        /*     EvaluateStimSingles(player, singlesGrouping);*/
             if (totalDuplicates > 1)
@@ -1205,7 +1205,7 @@ namespace RealismMod
             if (meds.Template._parent == "5448f3a64bdc2d60728b456a")
             {
                 int duration = (int)meds.HealthEffectsComponent.BuffSettings[0].Duration * 2;
-                int delay = (int)meds.HealthEffectsComponent.BuffSettings[0].Delay;
+                int delay = Mathf.Max((int)meds.HealthEffectsComponent.BuffSettings[0].Delay, 5);
                 EStimType stimType = Plugin.RealHealthController.GetStimType(meds.Template._id);
                 StimShellEffect stimEffect = new StimShellEffect(player, duration, delay, stimType);
                 Plugin.RealHealthController.AddCustomEffect(stimEffect, true);

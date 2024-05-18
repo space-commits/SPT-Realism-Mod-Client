@@ -297,6 +297,5 @@ namespace RealismMod
         public static float ScopeAccuracyFactor = 0f;
         public static string ScopeID = "";
         public static bool IsOptic = false;
-        public static bool IsCantedSight = false;
     }
 }

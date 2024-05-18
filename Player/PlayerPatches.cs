@@ -64,7 +64,9 @@ namespace RealismMod
             {
                 Player player = Utils.GetYourPlayer();
                 FirearmController fc = player.HandsController as FirearmController;
-                if (player.MovementContext.CurrentState.Name != EPlayerState.Stationary && !Plugin.CanLoadChamber && fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1 && fc.Weapon.ChamberAmmoCount == 0 && fc.Weapon.GetCurrentMagazine() != null && fc.Weapon.GetCurrentMagazine().Count > 0)
+                if (player.MovementContext.CurrentState.Name != EPlayerState.Stationary 
+                    && !Plugin.CanLoadChamber && fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1 
+                    && fc.Weapon.ChamberAmmoCount == 0 && fc.Weapon.GetCurrentMagazine() != null && fc.Weapon.GetCurrentMagazine().Count > 0)
                 {
                     RechamberRound(fc, player);
                     return false;
@@ -81,7 +83,11 @@ namespace RealismMod
                 FirearmController fc = player.HandsController as FirearmController;
                 StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.25f, 0.25f, 0.5f));
             }
-            if (Plugin.ServerConfig.enable_stances &&  Plugin.BlockFiring.Value && command == ECommand.ToggleShooting && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed && StanceController.CurrentStance != EStance.None && StanceController.CurrentStance != EStance.ActiveAiming && StanceController.CurrentStance != EStance.ShortStock && StanceController.CurrentStance != EStance.PistolCompressed)
+            if (Plugin.ServerConfig.enable_stances && Plugin.BlockFiring.Value && command == ECommand.ToggleShooting 
+                && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed 
+                && StanceController.CurrentStance != EStance.None && StanceController.CurrentStance != EStance.ActiveAiming 
+                && StanceController.CurrentStance != EStance.ShortStock && StanceController.CurrentStance != EStance.PistolCompressed
+                && !StanceController.IsLeftShoulder)
             {
                 StanceController.CurrentStance = EStance.None;
                 StanceController.StoredStance = EStance.None;
@@ -188,6 +194,7 @@ namespace RealismMod
             {
                 StatCalc.CalcPlayerWeightStats(__instance);
                 StatCalc.SetGearParamaters(__instance);
+                StatCalc.GetGearPenalty(__instance);
             }
         }
     }
@@ -207,6 +214,7 @@ namespace RealismMod
             {
                 StatCalc.CalcPlayerWeightStats(__instance);
                 StatCalc.SetGearParamaters(__instance);
+                StatCalc.GetGearPenalty(__instance);
             }
         }
     }
@@ -332,7 +340,8 @@ namespace RealismMod
             float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 100f);
             float healthFactor = PlayerState.RecoilInjuryMulti * (Plugin.RealHealthController.HasOverdosed ? 1.5f : 1f);
-            float ergoFactor = 1f + (WeaponStats.ErgoFactor / 200f);
+            float ergoWeight = WeaponStats.ErgoFactor * (1f + (1f - PlayerState.GearErgoPenalty));
+            float ergoFactor = 1f + (ergoWeight / 200f);
 
             WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(baseValue * PlayerState.DeviceBonus * ergoFactor * healthFactor * convergenceFactor * dispersionFactor * recoilFactor * playerWeightFactor, 0.2f, 1f);
         }

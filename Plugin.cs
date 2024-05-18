@@ -41,7 +41,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.pluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string pluginVersion = "1.2.1";
+        private const string pluginVersion = "1.2.2";
 
         //movement
         public static ConfigEntry<bool> EnableMaterialSpeed { get; set; }
@@ -344,7 +344,7 @@ namespace RealismMod
         public static RealismConfig ServerConfig;
 
         public static bool IsUsingFika = false;
-        private static bool warnedUser = false;
+        private static bool detectedMods = false;
         public static bool HasReloadedAudio = false;
 
         public static float FPS = 1f;
@@ -601,7 +601,6 @@ namespace RealismMod
                 new COIDisplayDeltaPatch().Enable();
                 new COIDisplayStringValuePatch().Enable();
                 new FireRateDisplayStringValuePatch().Enable();
-                new GetCachedReadonlyQualitiesPatch().Enable();
                 new CenterOfImpactMOAPatch().Enable();
                 new ModErgoStatDisplayPatch().Enable();
                 new GetAttributeIconPatches().Enable();
@@ -637,7 +636,6 @@ namespace RealismMod
                 new SetWeaponLevelPatch().Enable();
             }
 
-
             new ReloadWithAmmoPatch().Enable();
             new ReloadBarrelsPatch().Enable();
             new ReloadCylinderMagazinePatch().Enable();
@@ -647,17 +645,16 @@ namespace RealismMod
             new CheckChamberPatch().Enable();
             new RechamberPatch().Enable();
             new SetAnimatorAndProceduralValuesPatch().Enable();
-   
 
             //Ballistics
             if (ServerConfig.realistic_ballistics)
             {
                 new CreateShotPatch().Enable();
                 new ApplyArmorDamagePatch().Enable();
-                new DamageInfoPatch().Enable();
+                /*                new SetSkinPatch().Enable();*/
                 new ApplyDamageInfoPatch().Enable();
                 new SetPenetrationStatusPatch().Enable();
-                new IsPenetratedPatch().Enable();   
+                new IsPenetratedPatch().Enable();
                 new AfterPenPlatePatch().Enable();
                 new IsShotDeflectedByHeavyArmorPatch().Enable();
                 new RigConstructorPatch().Enable();
@@ -665,11 +662,9 @@ namespace RealismMod
                 new ArmorLevelUIPatch().Enable();
                 new ArmorLevelDisplayPatch().Enable();
                 new ArmorClassStringPatch().Enable();
-
-                if (EnableRagdollFix.Value)
-                {
-                    new ApplyCorpseImpulsePatch().Enable();
-                }
+                new DamageInfoPatch().Enable();
+                if (EnableRagdollFix.Value) new ApplyCorpseImpulsePatch().Enable();
+                new GetCachedReadonlyQualitiesPatch().Enable();
             }
 
             //Deafen Effects
@@ -768,9 +763,9 @@ namespace RealismMod
             deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
             FPS = 1.0f / deltaTime;
 
-            if (!warnedUser && (int)Time.time % 5 == 0)
+            if (!detectedMods && (int)Time.time % 5 == 0)
             {
-                warnedUser = true;
+                detectedMods = true;
                 if (Chainloader.PluginInfos.ContainsKey("com.servph.realisticrecoil") && ServerConfig.recoil_attachment_overhaul)
                 {
                     NotificationManagerClass.DisplayWarningNotification("ERROR: COMBAT OVERHAUL DETECTED, IT IS NOT COMPATIBLE!", EFT.Communications.ENotificationDurationType.Long);
@@ -784,11 +779,7 @@ namespace RealismMod
                     IsUsingFika = true;
                 }
             }
-            if (warnedUser && (int)Time.time % 5 != 0)
-            {
-                warnedUser = false;
-            }
-
+ 
             Utils.CheckIsReady();
             if (Utils.IsReady)
             {
@@ -1042,7 +1033,7 @@ namespace RealismMod
             VigReset = Config.Bind<float>(deafSettings, "Tunnel Effect Reset Rate.", 0.035f, new ConfigDescription("How Quickly Player Recovers From Tunnel Vision. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true, Browsable = ServerConfig.headset_changes }));
 
             PistolGlobalAimSpeedModifier = Config.Bind<float>(speed, "Pistol Aim Speed Multi.", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 17, Browsable = ServerConfig.recoil_attachment_overhaul }));
-            GlobalAimSpeedModifier = Config.Bind<float>(speed, "Aim Speed Multi.", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16, Browsable = ServerConfig.recoil_attachment_overhaul }));
+            GlobalAimSpeedModifier = Config.Bind<float>(speed, "Aim Speed Multi.", 1.35f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16, Browsable = ServerConfig.recoil_attachment_overhaul }));
             GlobalReloadSpeedMulti = Config.Bind<float>(speed, "Magazine Reload Speed Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15, Browsable = ServerConfig.recoil_attachment_overhaul }));
             GlobalFixSpeedMulti = Config.Bind<float>(speed, "Malfunction Fix Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14, Browsable = ServerConfig.recoil_attachment_overhaul }));
             GlobalUBGLReloadMulti = Config.Bind<float>(speed, "UBGL Reload Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13, IsAdvanced = true, Browsable = ServerConfig.recoil_attachment_overhaul }));

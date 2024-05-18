@@ -590,6 +590,32 @@ namespace RealismMod
             return typeof(NewRecoilShotEffect).GetMethod("AddRecoilForce");
         }
 
+        private static float zeroShiftGunFactor(string weapType, string id) 
+        {
+            switch (weapType)
+            {
+                case "6165ac306ef05c2ce828ef74":
+                case "6183afd850224f204c1da514":
+                    return 1.5f;
+            }
+
+            switch (weapType) 
+            {
+                case "marksmanRifle":
+                case "machinegun":
+                case "grenadeLauncher":
+                case "sniperRifle":
+                    return 1.15f;
+                case "pistol":
+                case "smg":
+                    return 0.5f;
+                case "shotgun":
+                    return 1f;
+                default:
+                    return 1;
+            }
+        }
+
         [PatchPrefix]
         public static bool Prefix(NewRecoilShotEffect __instance, float incomingForce)
         {
@@ -686,16 +712,16 @@ namespace RealismMod
                 }
 
                 //Calculate offest for zero shift
-                if (WeaponStats.ScopeAccuracyFactor <= 1f)
+                if (WeaponStats.ScopeAccuracyFactor < 1f)
                 {
-                    float gunFactor = firearmController.Weapon.TemplateId == "6183afd850224f204c1da514" || firearmController.Weapon.TemplateId == "6165ac306ef05c2ce828ef74" ? 4f : 1f;
+                    float gunFactor = zeroShiftGunFactor(WeaponStats._WeapClass, firearmController.Weapon.TemplateId);
                     float shiftRecoilFactor = (RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil) * (1f + totalCamRecoil) * gunFactor;
-                    float scopeFactor = ((1f - WeaponStats.ScopeAccuracyFactor) + (shiftRecoilFactor * 0.002f));
+                    float scopeFactor = ((1f - WeaponStats.ScopeAccuracyFactor) + (shiftRecoilFactor * 0.1f));
 
                     int rnd = UnityEngine.Random.Range(1, 20);
-                    if (scopeFactor * 10f > rnd)
+                    if (scopeFactor > rnd)
                     {
-                        float offsetFactor = scopeFactor * 0.2f;
+                        float offsetFactor = scopeFactor * 0.015f;
                         float offsetX = Random.Range(-offsetFactor, offsetFactor);
                         float offsetY = Random.Range(-offsetFactor, offsetFactor);
                         WeaponStats.ZeroRecoilOffset = new Vector2(offsetX, offsetY);
