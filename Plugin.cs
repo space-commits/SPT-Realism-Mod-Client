@@ -601,7 +601,6 @@ namespace RealismMod
                 new COIDisplayDeltaPatch().Enable();
                 new COIDisplayStringValuePatch().Enable();
                 new FireRateDisplayStringValuePatch().Enable();
-                new GetCachedReadonlyQualitiesPatch().Enable();
                 new CenterOfImpactMOAPatch().Enable();
                 new ModErgoStatDisplayPatch().Enable();
                 new GetAttributeIconPatches().Enable();
@@ -665,6 +664,7 @@ namespace RealismMod
                 new ArmorClassStringPatch().Enable();
                 new DamageInfoPatch().Enable();
                 if (EnableRagdollFix.Value) new ApplyCorpseImpulsePatch().Enable();
+                new GetCachedReadonlyQualitiesPatch().Enable();
             }
 
             //Deafen Effects
