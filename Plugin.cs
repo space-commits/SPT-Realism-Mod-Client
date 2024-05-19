@@ -609,10 +609,8 @@ namespace RealismMod
                 new MagazineMalfChanceDisplayPatch().Enable();
                 new BarrelModClassPatch().Enable();
                 new AmmoCaliberPatch().Enable();
-                if (IncreaseCOI.Value == true)
-                {
-                    new GetTotalCenterOfImpactPatch().Enable();
-                }
+                new GetTotalCenterOfImpactPatch().Enable();
+
                 //Recoil Patches
                 new GetCameraRotationRecoilPatch().Enable();
                 new RecalcWeaponParametersPatch().Enable();

@@ -26,6 +26,7 @@ using ArmorSlot = GClass2511;
 using EFT.UI;
 using EFT.UI.Ragfair;
 using EFT.HealthSystem;
+using EFT.AssetsManager;
 
 namespace RealismMod
 {
@@ -476,33 +477,59 @@ namespace RealismMod
             Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
         }
 
-        private static void modifyDamageByZone(ref DamageInfo damageInfo, EBodyPartColliderType partHit) 
+        private static EBodyHitZone modifyDamageByHitZone(Player player, EBodyPartColliderType partHit, DamageInfo damageInfo)
         {
             EBodyHitZone hitZone = EBodyHitZone.Unknown;
-            if (!damageInfo.Blunt)
+            if (partHit == EBodyPartColliderType.RibcageUp || partHit == EBodyPartColliderType.RibcageLow || partHit == EBodyPartColliderType.SpineDown || partHit == EBodyPartColliderType.SpineTop)
             {
-                if (partHit == EBodyPartColliderType.RibcageUp || partHit == EBodyPartColliderType.RibcageLow || partHit == EBodyPartColliderType.SpineDown || partHit == EBodyPartColliderType.SpineTop)
+                Collider col = damageInfo.HitCollider;
+                if (damageInfo.HitCollider == null) //fika can't send objects as part of peckets, need to find matching collider by checking collider type
                 {
-                    if (damageInfo.HitCollider == null) return;
-                    Collider col = damageInfo.HitCollider;
-                    Vector3 localPoint = col.transform.InverseTransformPoint(damageInfo.HitPoint);
-                    Vector3 hitNormal = damageInfo.HitNormal;
-                    EHitOrientation hitOrientation = HitZones.GetHitOrientation(hitNormal, col.transform, Logger);
-                    hitZone = HitZones.GetHitBodyZone(Logger, localPoint, hitOrientation, partHit);
-                    if (Plugin.EnableBallisticsLogging.Value)
+                    List<Collider> collidors = player.GetComponent<PlayerPoolObject>().Colliders;
+                    if (collidors == null || collidors.Count > 0) return hitZone;
+                    int count = collidors.Count;
+                    for (int i = 0; i < count; i++)
                     {
-                        Logger.LogWarning("=========Hitzone Damage Info==========");
-                        Logger.LogWarning("hit collider = " + partHit);
-                        Logger.LogWarning("hit orientation = " + hitOrientation);
-                        Logger.LogWarning("hit zone = " + hitZone);
-                        Logger.LogWarning("damage = " + damageInfo.Damage);
-                        Logger.LogWarning("x = " + localPoint.x);
-                        Logger.LogWarning("y = " + localPoint.y);
-                        Logger.LogWarning("z = " + localPoint.z);
-                        Logger.LogWarning("===================");
+                        Collider collider = collidors[i];
+                        Logger.LogWarning(collider.name);
+                        BodyPartCollider bp = collider.GetComponent<BodyPartCollider>();
+
+                        if (bp != null && bp.BodyPartColliderType == partHit)
+                        {
+                            Logger.LogWarning(bp.BodyPartColliderType);
+                            col = collider;
+                            break;
+                        }
                     }
+                    if (col == null) return hitZone;
                 }
 
+                Vector3 localPoint = col.transform.InverseTransformPoint(damageInfo.HitPoint);
+                Vector3 hitNormal = damageInfo.HitNormal;
+                EHitOrientation hitOrientation = HitZones.GetHitOrientation(hitNormal, col.transform, Logger);
+                hitZone = HitZones.GetHitBodyZone(Logger, localPoint, hitOrientation, partHit);
+                if (Plugin.EnableBallisticsLogging.Value)
+                {
+                    Logger.LogWarning("=========Hitzone Damage Info==========");
+                    Logger.LogWarning("hit collider = " + partHit);
+                    Logger.LogWarning("hit orientation = " + hitOrientation);
+                    Logger.LogWarning("hit zone = " + hitZone);
+                    Logger.LogWarning("damage before = " + damageInfo.Damage);
+                    Logger.LogWarning("x = " + localPoint.x);
+                    Logger.LogWarning("y = " + localPoint.y);
+                    Logger.LogWarning("z = " + localPoint.z);
+                    Logger.LogWarning("===================");
+                }
+            }
+            return hitZone;
+        }
+
+        private static void modifyDamageByZone(Player player, ref DamageInfo damageInfo, EBodyPartColliderType partHit) 
+        {
+           
+            if (!damageInfo.Blunt)
+            {
+                EBodyHitZone hitZone = modifyDamageByHitZone(player, partHit, damageInfo);
                 BallisticsController.ModifyDamageByHitZone(partHit, hitZone, ref damageInfo);
             }
         }
@@ -511,14 +538,6 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(Player __instance, ref DamageInfo damageInfo, EBodyPart bodyPartType)
         {
-            if (Plugin.EnableBallisticsLogging.Value)
-            {
-                Logger.LogWarning("==========Apply Damage Info=============== ");
-                Logger.LogWarning("Damage " + damageInfo.Damage);
-                Logger.LogWarning("Pen " + damageInfo.PenetrationPower);
-                Logger.LogWarning("========================= ");
-            }
-
             if (damageInfo.DamageType == EDamageType.Bullet || damageInfo.DamageType == EDamageType.Melee)
             {
 
@@ -535,7 +554,7 @@ namespace RealismMod
                 }
 
                 //if fika, based on collidor type, get refernce to player assetpoolobject, get collidors, get component
-                modifyDamageByZone(ref damageInfo, partHit);
+                modifyDamageByZone(__instance, ref damageInfo, partHit);
 
                 bool hasArmArmor = false;
                 bool hasLegProtection = false;
@@ -608,12 +627,13 @@ namespace RealismMod
                         //ideally should use momentum instead too?
 
                         float duraPercent = armor.Repairable.Durability / armor.Repairable.TemplateDurability;
+                        float spallDuraFactor = Mathf.Min(armor.Repairable.TemplateDurability / Mathf.Max(armor.Repairable.Durability, 1), 2);
                         float armorFactor = armor.ArmorClass * 10f * duraPercent;
                         float penDuraFactoredClass = 10f + Mathf.Max(1f, armorFactor - (penPower / 1.8f));
                         float maxPotentialSpallDamage = KE / penDuraFactoredClass;
                             
                         float factoredSpallingDamage = maxPotentialSpallDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction * (isMetalArmor ? ( 1f - duraPercent) + 1f : 1f);
-                        float maxSpallingDamage = Mathf.Clamp(factoredSpallingDamage - bluntDamage, 7f, 35f);
+                        float maxSpallingDamage = Mathf.Clamp(factoredSpallingDamage - bluntDamage, 7f, 35f * spallDuraFactor);
                         float splitSpallingDmg = maxSpallingDamage / bodyParts.Count;
 
                         if (Plugin.EnableBallisticsLogging.Value)
@@ -661,9 +681,10 @@ namespace RealismMod
 
                             if (Plugin.EnableBallisticsLogging.Value)
                             {
+                                Logger.LogWarning("==== ");
                                 Logger.LogWarning("Part Hit " + part);
                                 Logger.LogWarning("Damage " + damage);
-                                Logger.LogWarning("========================== ");
+                                Logger.LogWarning("=== ");
                             }
                             damageInfo.HeavyBleedingDelta = heavyBleedChance * bleedFactor;
                             damageInfo.LightBleedingDelta = lightBleedChance * bleedFactor;
@@ -676,6 +697,15 @@ namespace RealismMod
                 {
                     disarmAndKnockdownCheck(__instance, damageInfo, bodyPartType, partHit, KE, hasArmArmor);
                 }
+
+                if (Plugin.EnableBallisticsLogging.Value)
+                {
+                    Logger.LogWarning("==========Apply Damage Info=============== ");
+                    Logger.LogWarning("Damage " + damageInfo.Damage);
+                    Logger.LogWarning("Pen " + damageInfo.PenetrationPower);
+                    Logger.LogWarning("========================= ");
+                }
+
             }
         }
     }
@@ -782,6 +812,10 @@ namespace RealismMod
             else if (__instance.Template.ArmorMaterial == EArmorMaterial.Titan || __instance.Template.ArmorMaterial == EArmorMaterial.Aluminium)
             {
                 armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 1.5f);
+            }
+            else 
+            {
+                armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 1.1f);
             }
 
             float armorResist = (float)Singleton<BackendConfigSettingsClass>.Instance.Armor.GetArmorClass(__instance.ArmorClass).Resistance;
@@ -959,7 +993,7 @@ namespace RealismMod
                 __instance.TryShatter(player, damageInfoIsLocal);
             }
 
-            if (__instance.Repairable.Durability <= 0f)
+            if (__instance.Repairable.Durability <= 0f && !isSteelBodyArmor)
             {
                 __result = 0f;
                 return false;
@@ -999,7 +1033,7 @@ namespace RealismMod
                 ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
 
                 armorDamageActual = ammoTemp.ArmorDamage; // * speedFactor don't think facotring by speedFacotr is a good idea anymore, momentum being based on velocity is enough
-                if (damageInfo.ArmorDamage <= 1)
+                if (damageInfo.ArmorDamage <= 1) //if damageinfo's armor damage is not equal to the velocity of the round, must be Fika
                 {
                     momentum = ammoTemp.BulletMassGram * ammoTemp.InitialSpeed;
                 }
@@ -1039,12 +1073,12 @@ namespace RealismMod
             {
                 armorDestructibility = 0.25f;
             }
-            float factoredArmorClass = Mathf.Clamp(scaledArmorclass * Mathf.Pow(duraPercent, 2f), 10f, scaledArmorclass);
+            float factoredArmorClass = Mathf.Clamp(scaledArmorclass * Mathf.Pow(duraPercent, 0.5f), 10f, scaledArmorclass);
             float armorFactorDura = Mathf.Clamp(1 - Mathf.InverseLerp(1f, 100f, factoredArmorClass), 0.1f, 1f);
             float armorFactorDamage = Mathf.Clamp(1 - Mathf.InverseLerp(1f, 100f, factoredArmorClass - factoredPen), 0.1f, 1f);
             float steelArmorFactorDamage = Mathf.Clamp(1 - Mathf.InverseLerp(1f, 100f, scaledArmorclass - factoredPen), 0.1f, 1f);
 
-            float totaldamage = 1f;
+            float totaldamage = 1f; float test = (float)Math.Pow(0.5, 1);
             if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !isHead)
             {
                 totaldamage = Mathf.Clamp(momentumDamageFactor * steelArmorFactorDamage * bluntThrput, 0.4f, damageInfo.Damage);

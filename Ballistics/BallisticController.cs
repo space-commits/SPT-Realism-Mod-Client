@@ -13,6 +13,7 @@ using EFT.Ballistics;
 using BepInEx.Logging;
 using System.IO;
 using System.Collections;
+using static RootMotion.FinalIK.IKSolver;
 
 
 namespace RealismMod
@@ -287,6 +288,11 @@ namespace RealismMod
                 /*float topNeckX = -0.25f;*/
                 float rearNeckZ = 0.05f;
                 float rearNeckX = -0.2f;
+
+                if (hitOrientation == EHitOrientation.BottomHit) 
+                {
+                    return EBodyHitZone.CZone;
+                }
 
                 if (hitOrientation != EHitOrientation.TopHit && hitOrientation != EHitOrientation.BottomHit)
                 {

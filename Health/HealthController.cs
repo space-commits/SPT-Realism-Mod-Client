@@ -793,6 +793,16 @@ namespace RealismMod
                 {
                     AddBaseEFTEffectIfNoneExisting(player, "PainKiller", EBodyPart.Head, 1f, ReliefDuration, 5f, 1f);
                 }
+                else if (PainStrength > PainReliefStrength)
+                {
+                    RemoveBaseEFTEffect(player, EBodyPart.Head, "PainKiller");
+
+                    if (PainStrength > PainEffectThreshold)
+                    {
+                        AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 15f, 1f, 1f);
+                    }
+                }
+
 
                 if (reliefWaitTime >= painReliefInterval)
                 {
@@ -1647,7 +1657,7 @@ namespace RealismMod
 
 
                 if (currentHp <= 0f) PainStrength += 14f;
-                if (percentHp <= 0.5f) PainStrength += 4f;
+                else if (percentHp <= 0.5f) PainStrength += 4f;
 
                 if (isLeg || isBody)
                 {
@@ -1683,12 +1693,6 @@ namespace RealismMod
 
             float totalHpPercent = totalCurrentHp / totalMaxHp;
             resourceRateInjuryMulti = Mathf.Clamp(1f - totalHpPercent, 0f, 1f) * 0.15f;
-
-            if (PainStrength > PainEffectThreshold)
-            {
-                AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 15f, 1f, 1f);
-            }
-
             float percentEnergyFactor = Mathf.Max(percentEnergy * 1.1f, 0.01f);
 
             float percentEnergySprint = 1f - ((1f - percentEnergyFactor) / 8f);

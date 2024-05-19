@@ -527,7 +527,7 @@ namespace RealismMod
                 WeaponStats.ScopeAccuracyFactor = currentSightFactor;
                 bool isBracingTop = StanceController.BracingDirection == EBracingDirection.Top;
                 float mountingFactor = StanceController.IsBracing && isBracingTop ? 1.05f : StanceController.IsBracing && !isBracingTop ? 1.025f : StanceController.IsMounting && isBracingTop ? 1.1f : StanceController.IsMounting && !isBracingTop ? 1.075f : 1f;
-                float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * currentSightFactor * mountingFactor;
+                float totalCoi = (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * currentSightFactor * mountingFactor * (Plugin.IncreaseCOI.Value ? 2f : 1f);
 
                 if (!includeAmmo)
                 {
