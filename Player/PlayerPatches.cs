@@ -125,7 +125,6 @@ namespace RealismMod
                 PlayerState.FixSkillMulti = weaponInfo.FixSpeed;
                 PlayerState.WeaponSkillErgo = weaponInfo.DeltaErgonomics;
                 PlayerState.AimSkillADSBuff = weaponInfo.AimSpeed;
-                PlayerState.StressResistanceFactor = player.Skills.StressPain.Value;
             }
         }
     }

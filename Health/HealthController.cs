@@ -227,11 +227,13 @@ namespace RealismMod
         public float PainReliefStrength = 0f;
         public float PainTunnelStrength = 0f;
         public int ReliefDuration = 0;
+        private bool hasPKStims = false;
 
         private const int painReliefInterval = 15;
         public const float PainArmThreshold = 30f;
         public const float PainReliefThreshold = 30f;
-        public const float PKOverdoseThreshold = 60f;
+        public const float BasePKOverdoseThreshold = 40f;
+
         private bool rightArmRuined = false;
         private bool leftArmRuined = false;
 
@@ -247,7 +249,7 @@ namespace RealismMod
         {
             get 
             {
-                return rightArmRuined || leftArmRuined || (PainStrength > PainArmThreshold && PainStrength > PainReliefStrength);
+                return (rightArmRuined || leftArmRuined || (PainStrength > PainArmThreshold && PainStrength > PainReliefStrength)) && !IsOnPKStims;
             }
         }
 
@@ -259,6 +261,21 @@ namespace RealismMod
             }
         }
 
+        public float PKOverdoseThreshold
+        {
+            get
+            {
+                return BasePKOverdoseThreshold * (1f + PlayerState.ImmuneSkillStrong);
+            }
+        }
+
+        public bool IsOnPKStims
+        {
+            get
+            {
+                return hasPKStims && !HasOverdosedStim;
+            }
+        }
 
         public RealismHealthController(DamageTracker dmgTracker) 
         {
@@ -630,18 +647,22 @@ namespace RealismMod
 
         private void EvaluateStimSingles(Player player, IEnumerable<IGrouping<EStimType, StimShellEffect>> stimGroups)
         {
+
+            hasPKStims = false;
             foreach (var group in stimGroups) 
             {
                 switch (group.Key)
                 {
                     case EStimType.Adrenal:
                         activeStimOverdoses.Remove(EStimType.Adrenal);
+                        hasPKStims = true;
                         break;
                     case EStimType.Regenerative:
                         activeStimOverdoses.Remove(EStimType.Regenerative);
                         break;
                     case EStimType.Damage:
                         activeStimOverdoses.Remove(EStimType.Damage);
+                        hasPKStims = true;
                         break;
                     case EStimType.Clotting:
                         activeStimOverdoses.Remove(EStimType.Clotting);
@@ -735,13 +756,13 @@ namespace RealismMod
 
         public void EvaluateActiveStims(Player player) 
         {
-            IEnumerable<StimShellEffect> stims = activeHealthEffects.OfType<StimShellEffect>();
-            var stimTypeGroups = stims.GroupBy(effect => effect.StimType);
+            IEnumerable<StimShellEffect> activeStims = activeHealthEffects.OfType<StimShellEffect>();
+            var stimTypeGroups = activeStims.GroupBy(effect => effect.StimType);
             var duplicatesGrouping = stimTypeGroups.Where(group => group.Count() > 1);
-/*            var singlesGrouping = stimTypeGroups.Where(group => group.Count() <= 1);
-*/          int totalDuplicates = duplicatesGrouping.Sum(group => group.Count());
+            var singlesGrouping = stimTypeGroups.Where(group => group.Count() <= 1);
+            int totalDuplicates = duplicatesGrouping.Sum(group => group.Count());
             EvaluateStimDuplicates(player, duplicatesGrouping);
-       /*     EvaluateStimSingles(player, singlesGrouping);*/
+            EvaluateStimSingles(player, singlesGrouping);
             if (totalDuplicates > 1)
             {
                 HasOverdosedStim = true;
@@ -784,25 +805,24 @@ namespace RealismMod
             }
         }
 
-        private void PainReliefCheck(Player player) 
+        private void PainReliefCheck(Player player)
         {
+            if (PainStrength >= PainEffectThreshold && !IsOnPKStims)
+            {
+                AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 15f, 1f, 1f);
+            }
+
             ReliefDuration = Math.Max(ReliefDuration - 1, 0);
             if (ReliefDuration > 0) 
             {
-                if (PainReliefStrength >= PainStrength)
+                if (PainReliefStrength >= PainStrength || IsOnPKStims)
                 {
                     AddBaseEFTEffectIfNoneExisting(player, "PainKiller", EBodyPart.Head, 1f, ReliefDuration, 5f, 1f);
                 }
                 else if (PainStrength > PainReliefStrength)
                 {
-                    RemoveBaseEFTEffect(player, EBodyPart.Head, "PainKiller");
-
-                    if (PainStrength > PainEffectThreshold)
-                    {
-                        AddBaseEFTEffectIfNoneExisting(player, "Pain", EBodyPart.Chest, 0f, 15f, 1f, 1f);
-                    }
+                    RemoveBaseEFTEffect(player, EBodyPart.Head, "PainKiller");                  
                 }
-
 
                 if (reliefWaitTime >= painReliefInterval)
                 {
@@ -859,6 +879,10 @@ namespace RealismMod
         public void ControllerTick()
         {
             Player player = Singleton<GameWorld>.Instance.MainPlayer;
+            PlayerState.ImmuneSkillWeak = player.Skills.ImmunityPainKiller.Value;
+            PlayerState.ImmuneSkillStrong = player.Skills.ImmunityMiscEffects.Value;
+            PlayerState.StressResistanceFactor = player.Skills.StressPain.Value;
+
             if (healthControllerTime >= 0.5f && !reset1)
             {
                 ResetBleedDamageRecord(player);
@@ -1268,9 +1292,9 @@ namespace RealismMod
                 }
                 if (medType.Contains("pain"))
                 {
-                    int duration = MedProperties.PainKillerDuration(meds);
+                    int duration = (int)(MedProperties.PainKillerDuration(meds) * (1f + PlayerState.ImmuneSkillWeak));
                     int delay = (int)Mathf.Round(MedProperties.Delay(meds) * (1f - player.Skills.HealthEnergy.Value));
-                    float tunnelVisionStr = MedProperties.TunnelVisionStrength(meds);
+                    float tunnelVisionStr = MedProperties.TunnelVisionStrength(meds) * (1f - PlayerState.ImmuneSkillWeak);
                     float painKillStr = MedProperties.Strength(meds);
 
                     PainKillerEffect painKillerEffect = new PainKillerEffect(duration, player, delay, tunnelVisionStr, painKillStr);
@@ -1631,7 +1655,7 @@ namespace RealismMod
 
                 if (hasFracture)
                 {
-                    PainStrength += 9f;
+                    PainStrength += 15f * PlayerState.StressResistanceFactor;
                 }
 
                 bool isLeftArm = part == EBodyPart.LeftArm;
@@ -1655,9 +1679,8 @@ namespace RealismMod
                 float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 2f : isRightArm ? 3f : 4f));
                 float percentHpRecoil = 1f - ((1f - percentHp) / (isLeftArm ? 10f : 20f));
 
-
-                if (currentHp <= 0f) PainStrength += 14f;
-                else if (percentHp <= 0.5f) PainStrength += 4f;
+                if (currentHp <= 0f) PainStrength += 20f * PlayerState.StressResistanceFactor;
+                else if (percentHp <= 0.5f) PainStrength += 5f * PlayerState.StressResistanceFactor;
 
                 if (isLeg || isBody)
                 {
@@ -1726,7 +1749,6 @@ namespace RealismMod
             PlayerState.HealthStamRegenFactor = Mathf.Clamp(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor * skillFactor, 0.5f * percentHydroLowerLimit, 1f);
             PlayerState.ErgoDeltaInjuryMulti = Mathf.Clamp(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactorInverse * skillFactorInverse, 1f, 1.3f * percentHydroLimitErgo);
             PlayerState.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactorInverse * skillFactorInverse, 1f, 1.12f * percentHydroLimitRecoil);
-
 
             if (Plugin.ResourceRateChanges.Value)
             {

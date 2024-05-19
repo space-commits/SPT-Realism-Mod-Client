@@ -162,8 +162,10 @@ namespace RealismMod
                     return "WEAK";
                 case <= 10:
                     return "MILD";
-                case >= 15:
+                case <= 15:
                     return "STRONG";
+                case > 15:
+                    return "VERY STRONG";
                 default:
                     return "NONE";
             }

@@ -16,6 +16,11 @@ namespace RealismMod
 
         public static float RecoilInjuryMulti = 1f;
 
+        public static float ImmuneSkillWeak = 0f;
+        public static float ImmuneSkillStrong = 0f;
+
+        public static float StressResistanceFactor = 0f;
+
         public static float AimMoveSpeedBase = 0.5f;
 
         public static float AimMoveSpeedInjuryMulti = 1f;
@@ -76,8 +81,6 @@ namespace RealismMod
         public static float HealthStamRegenFactor = 1f;
 
         public static float HealthResourceRateFactor = 0f;
-
-        public static float StressResistanceFactor = 0f;
 
         public static bool IsSprinting = false;
         public static bool WasSprinting = false;
