@@ -1,10 +1,7 @@
 ﻿using BepInEx.Logging;
-using EFT.InventoryLogic;
 using EFT;
+using EFT.InventoryLogic;
 using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
 namespace RealismMod.Weapons

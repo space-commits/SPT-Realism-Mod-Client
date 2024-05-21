@@ -15,7 +15,7 @@ namespace RealismMod
         public static bool Verified = false;
         public static bool IsReady = false;
         public static bool IsInHideout = false;
-        public static bool WeaponReady = false;
+        public static bool WeaponIsReady = false;
         public static bool HasRunErgoWeightCalc = false;
 
         public static string Silencer = "550aa4cd4bdc2dd8348b456c";
@@ -92,13 +92,20 @@ namespace RealismMod
             Player player = gameWorld?.MainPlayer;
             if (player != null)
             {
-                Utils.WeaponReady = player?.HandsController != null && player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon ? true : false;
-                Utils.IsInHideout = player is HideoutPlayer ? true : false; 
+                Utils.WeaponIsReady = player?.HandsController != null && player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon ? true : false;
+                Utils.IsInHideout = player is HideoutPlayer ? true : false;
+            }
+            else 
+            {
+                Utils.WeaponIsReady = false;
+                Utils.IsInHideout = false;
             }
 
             if (gameWorld == null || gameWorld.AllAlivePlayersList == null || gameWorld.MainPlayer == null || sessionResultPanel != null)
             {
                 Utils.IsReady = false;
+                Utils.WeaponIsReady = false;
+                Utils.IsInHideout = false;
                 return false;
             }
             Utils.IsReady = true;

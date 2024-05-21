@@ -1,12 +1,7 @@
 ﻿using Aki.Reflection.Patching;
-using BepInEx.Logging;
-using BSG.CameraEffects;
-using Comfort.Common;
 using EFT;
-using EFT.InputSystem;
 using EFT.InventoryLogic;
 using HarmonyLib;
-using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -19,6 +14,7 @@ namespace RealismMod
         private static bool wasToggled = false;
         public static bool AimStateChanged = false;
         public static bool HeadDeviceStateChanged = false;
+        public static float consoomTimer = 0f;
 
         public static void ADSCheck(Player player, EFT.Player.FirearmController fc)
         {
@@ -119,6 +115,16 @@ namespace RealismMod
                 {
                     StanceController.PistolIsColliding = true;
                 }
+
+                if (PlayerState.BlockFSWhileConsooming) 
+                {
+                    consoomTimer += Time.deltaTime;
+                    if (consoomTimer >= 1f)
+                    {
+                        PlayerState.BlockFSWhileConsooming = false;
+                        consoomTimer = 0f;
+                    }
+                }
             }
         }
     }
@@ -127,10 +133,8 @@ namespace RealismMod
     //look for ecommand.togglegoggles
     public class ToggleHeadDevicePatch : ModulePatch
     {
-        private static FieldInfo playerField;
         protected override MethodBase GetTargetMethod()
         {
-            playerField = AccessTools.Field(typeof(MovementContext), "_player");
             return typeof(Player).GetMethod("method_17", BindingFlags.Instance | BindingFlags.Public);
         }
 
@@ -140,9 +144,11 @@ namespace RealismMod
             if (__instance.IsYourPlayer)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
-                if (fc == null) return true;
-                bool isIdling = fc.FirearmsAnimator.IsIdling();
-                return isIdling;
+                if (fc != null)
+                {
+                    return fc.FirearmsAnimator.IsIdling() && !PlayerState.BlockFSWhileConsooming;
+                };
+                return !PlayerState.BlockFSWhileConsooming;
             }
             return true;
         }

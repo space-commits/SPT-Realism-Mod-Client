@@ -1,32 +1,19 @@
 ﻿using Aki.Reflection.Patching;
-using EFT.InventoryLogic;
+using Comfort.Common;
 using EFT;
+using EFT.AssetsManager;
+using EFT.Ballistics;
+using EFT.HealthSystem;
+using EFT.Interactive;
+using EFT.InventoryLogic;
+using HarmonyLib;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using Comfort.Common;
-using System.Linq;
-using HarmonyLib;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using EFT.Ballistics;
-using System.Drawing;
-using BepInEx.Logging;
-using UnityEngine.Rendering.PostProcessing;
-using EFT.Quests;
-using System.IO;
-using HarmonyLib.Tools;
-using System.Collections;
-using EFT.Interactive;
-using Diz.Skinning;
-using EFT.Visual;
-using Diz.LanguageExtensions;
-using EFTSlot = GClass2767;
 using ArmorSlot = GClass2511;
-using EFT.UI;
-using EFT.UI.Ragfair;
-using EFT.HealthSystem;
-using EFT.AssetsManager;
+using EFTSlot = GClass2767;
 
 namespace RealismMod
 {

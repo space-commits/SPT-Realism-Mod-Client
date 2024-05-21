@@ -1,18 +1,5 @@
-﻿using EFT;
-using System;
+﻿using Comfort.Common;
 using UnityEngine;
-using System.Linq;
-using Comfort.Common;
-using System.Reflection;
-using EFT.InventoryLogic;
-using System.Threading.Tasks;
-using Aki.Reflection.Patching;
-using static Val;
-using HarmonyLib;
-using Aki.Reflection.Utils;
-using UnityEngine.Rendering.PostProcessing;
-using static EFT.Interactive.BetterPropagationGroups;
-using BepInEx.Logging;
 
 namespace RealismMod
 {

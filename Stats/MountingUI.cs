@@ -1,17 +1,9 @@
 ﻿using Aki.Reflection.Patching;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-using UnityEngine;
-using EFT.InventoryLogic;
-using HarmonyLib;
-using System.Linq;
-using UnityEngine.UI;
 using EFT;
-using BepInEx.Logging;
-using System.IO;
-using Comfort.Common;
+using System;
+using System.Reflection;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace RealismMod
 {

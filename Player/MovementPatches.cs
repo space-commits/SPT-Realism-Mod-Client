@@ -1,20 +1,13 @@
 ﻿using Aki.Reflection.Patching;
 using Aki.Reflection.Utils;
-using BepInEx.Logging;
-using Comfort.Common;
 using EFT;
-using EFT.Ballistics;
-using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using static BaseBallistic;
-using static EFT.Player;
-using ValueHandler = GClass733;
 using SkillMovementStruct = EFT.SkillManager.GStruct228;
+using ValueHandler = GClass733;
 
 namespace RealismMod
 {
@@ -43,7 +36,7 @@ namespace RealismMod
 
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float firingMulti = MovementSpeedController.GetFiringMovementSpeedFactor(player, Logger);
-                float stanceFactor = StanceController.CurrentStance == EStance.PatrolStance ? 1.25f : StanceController.CurrentStance == EStance.HighReady || StanceController.CurrentStance == EStance.ShortStock ? 0.95f : 1f;
+                float stanceFactor = StanceController.CurrentStance == EStance.PatrolStance ? 1.25f : StanceController.CurrentStance == EStance.LowReady ? 1.025f : StanceController.CurrentStance == EStance.HighReady || StanceController.CurrentStance == EStance.ShortStock ? 0.95f : 1f;
                 __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * PlayerState.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti * stanceFactor);
                 return false;
             }

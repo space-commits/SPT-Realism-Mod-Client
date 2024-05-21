@@ -1,23 +1,11 @@
-﻿using Aki.Reflection.Patching;
-using BepInEx.Logging;
-using Comfort.Common;
-using CustomPlayerLoopSystem;
+﻿using Comfort.Common;
 using EFT;
 using EFT.Animations;
 using EFT.Animations.NewRecoil;
-using EFT.InputSystem;
 using EFT.InventoryLogic;
-using EFT.UI;
 using HarmonyLib;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using UnityEngine;
-using UnityEngine.UI;
-using static ObjectInHandsAnimator;
-using Random = System.Random;
 
 namespace RealismMod
 {
@@ -190,7 +178,7 @@ namespace RealismMod
             }
             else if (IsDoingTacSprint) 
             {
-                baseDrainRate = 0.1f;
+                baseDrainRate = 0.11f;
             }
             else if (CurrentStance == EStance.ActiveAiming && Plugin.EnableIdleStamDrain.Value)
             {
@@ -410,7 +398,7 @@ namespace RealismMod
 
         public static void StanceState()
         {
-            if (Utils.WeaponReady && Utils.GetYourPlayer().MovementContext.CurrentState.Name != EPlayerState.Stationary)
+            if (Utils.WeaponIsReady && Utils.GetYourPlayer().MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 if (DoDampingTimer)
                 {
@@ -620,7 +608,7 @@ namespace RealismMod
                 stanceManipCancelTimer();
             }
 
-            if (DidWeaponSwap)
+            if (DidWeaponSwap || (!Plugin.RememberStance.Value && !Utils.WeaponIsReady) || !Utils.IsReady)
             {
                 IsMounting = false;
                 CurrentStance = EStance.None;

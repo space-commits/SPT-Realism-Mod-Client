@@ -1,21 +1,18 @@
 ﻿using Aki.Reflection.Patching;
 using Comfort.Common;
 using EFT;
-using EFT.InventoryLogic;
-using HarmonyLib;
-using System.Reflection;
-using UnityEngine;
-using Random = UnityEngine.Random;
-using System;
-using static EFT.Player;
-using EFT.Interactive;
-using System.Linq;
-using EFT.Animations.Recoil;
 using EFT.Animations;
 using EFT.Animations.NewRecoil;
-using System.Collections.Generic;
-using System.IO;
+using EFT.InventoryLogic;
 using EFT.Visual;
+using HarmonyLib;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using UnityEngine;
+using static EFT.Player;
+using Random = UnityEngine.Random;
 
 namespace RealismMod
 {

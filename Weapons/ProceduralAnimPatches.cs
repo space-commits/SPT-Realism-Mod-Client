@@ -1,25 +1,15 @@
 ﻿using Aki.Reflection.Patching;
 using Comfort.Common;
-using EFT.InventoryLogic;
 using EFT;
-using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-using UnityEngine;
-using Diz.Skinning;
-using EFT.CameraControl;
-using System.Collections;
-using EFT.Interactive;
 using EFT.Animations;
+using EFT.InventoryLogic;
+using HarmonyLib;
+using System.Reflection;
+using UnityEngine;
 using static EFT.Player;
-using System.ComponentModel;
-using static EFT.ClientPlayer;
-using WeaponSkillsClass = EFT.SkillManager.GClass1771;
-using EFT.Animations.NewRecoil;
-using StaminaLevelClass = GClass753<float>;
 using ProcessorClass = GClass2213;
+using StaminaLevelClass = GClass753<float>;
+using WeaponSkillsClass = EFT.SkillManager.GClass1771;
 
 namespace RealismMod
 {
@@ -388,11 +378,11 @@ namespace RealismMod
                 float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
                 bool noShoulderContact = !WeaponStats.HasShoulderContact; //maybe don't include pistol
                 float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * formfactor * (1f + (1f - PlayerState.GearErgoPenalty));
-                float weightFactor = StatCalc.ProceduralIntensityFactorCalc(weapWeight, weapon.WeapClass == "pistol" ? 1f : 2f);
+                float weightFactor = StatCalc.ProceduralIntensityFactorCalc(weapWeight, weapon.WeapClass == "pistol" ? 1f : 3.5f);
                 float displacementModifier = noShoulderContact ? Plugin.ProceduralIntensity.Value * 0.95f : Plugin.ProceduralIntensity.Value * 0.48f;//lower = less drag
                 float aimIntensity = noShoulderContact ? Plugin.ProceduralIntensity.Value * 0.86f : Plugin.ProceduralIntensity.Value * 0.51f;
 
-                float displacementStrength = Mathf.Clamp((ergoWeight * weightFactor * playerWeightFactor) / 25f, 0.8f, weapon.WeapClass == "pistol" ? 2f : 3.5f); //inertia
+                float displacementStrength = Mathf.Clamp((ergoWeight * weightFactor * playerWeightFactor) / 30f, 0.8f, weapon.WeapClass == "pistol" ? 2f : 3.5f); //inertia
                 float swayStrength = Mathf.Clamp((ergoWeight * weightFactor * playerWeightFactor) / 65f, 0.6f, 1f); //side to side
 
                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_displacementStr").SetValue(__instance, displacementStrength * displacementModifier * playerWeightFactor);

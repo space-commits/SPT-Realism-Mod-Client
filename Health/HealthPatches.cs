@@ -1,34 +1,24 @@
 ﻿using Aki.Reflection.Patching;
-using Aki.Reflection.Utils;
-using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
 using EFT.HealthSystem;
 using EFT.InventoryLogic;
-using EFT.UI.Health;
 using HarmonyLib;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Text;
-using Systems.Effects;
 using UnityEngine;
-using static CW2.Animations.PhysicsSimulator.Val;
-using static EFT.Player;
+using static EFT.HealthSystem.ActiveHealthController;
 using static RealismMod.Attributes;
-using static Systems.Effects.Effects;
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2415;
 using ExistanceClass = GClass2456;
-using StamController = GClass682;
-using PhysicalClass = GClass681;
-using MedUseStringClass = GClass1235;
 using HealthStateClass = GClass2416<EFT.HealthSystem.ActiveHealthController.GClass2415>;
 using MedkitTemplate = IMedkitResource;
-using static EFT.HealthSystem.ActiveHealthController;
-using static GClass2417;
+using MedUseStringClass = GClass1235;
+using PhysicalClass = GClass681;
+using StamController = GClass682;
 
 namespace RealismMod
 {
@@ -462,7 +452,7 @@ namespace RealismMod
                     Plugin.RealHealthController.CanConsume(__instance, boundItem, ref canUse);
                     if (Plugin.EnableLogging.Value)
                     {
-                        Logger.LogWarning("qucik slot, can use = " + canUse);
+                        Logger.LogWarning("quick slot, can use = " + canUse);
                     }
 
                     return canUse;

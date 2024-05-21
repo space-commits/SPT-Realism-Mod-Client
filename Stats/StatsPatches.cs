@@ -2,21 +2,13 @@
 using Aki.Reflection.Patching;
 using Comfort.Common;
 using EFT;
-using EFT.Hideout;
-using EFT.Interactive;
 using EFT.InventoryLogic;
-using EFT.UI.DragAndDrop;
 using HarmonyLib;
-using System;
-using System.Reflection;
-using System.Collections.Generic;
-using UnityEngine;
-using static EFT.Player;
-using System.Linq;
-using WeaponSkills = EFT.SkillManager.GClass1771;
-using EFT.Visual;
-using static EFT.SkillManager;
 using RealismMod.Weapons;
+using System.Collections.Generic;
+using System.Reflection;
+using UnityEngine;
+using WeaponSkills = EFT.SkillManager.GClass1771;
 
 namespace RealismMod
 {
@@ -444,7 +436,7 @@ namespace RealismMod
             WeaponStats.InitRecoilAngle = currentRecoilAngle;
             WeaponStats.SDReloadSpeedModifier = currentReloadSpeedMod;
             WeaponStats.SDChamberSpeedModifier = currentChamberSpeedMod;
-            WeaponStats.SDFixSpeedModifier = currentFixSpeedMod;
+            WeaponStats.SDFixSpeedModifier = currentFixSpeedMod; //unused, replcaed by chamber speed
             WeaponStats.ModAimSpeedModifier = currentAimSpeedMod / 100f;
             WeaponStats.AutoFireRate = Mathf.Max(300, (int)currentAutoROF);
             WeaponStats.SemiFireRate = Mathf.Max(200, (int)currentSemiROF);

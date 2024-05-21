@@ -1,19 +1,5 @@
-﻿using Aki.Reflection.Patching;
-using EFT.InventoryLogic;
-using EFT;
-using System;
-using System.Reflection;
+﻿using BepInEx.Logging;
 using UnityEngine;
-using Comfort.Common;
-using System.Linq;
-using HarmonyLib;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using EFT.Ballistics;
-using BepInEx.Logging;
-using System.IO;
-using System.Collections;
-using static RootMotion.FinalIK.IKSolver;
 
 
 namespace RealismMod

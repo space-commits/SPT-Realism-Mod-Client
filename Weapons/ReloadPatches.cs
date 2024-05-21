@@ -1,31 +1,24 @@
 ﻿using Aki.Reflection.Patching;
-using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
-using EFT.Animations;
-using EFT.Interactive;
 using EFT.InventoryLogic;
 using EFT.UI;
 using HarmonyLib;
+using RealismMod.Weapons;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Xml.Linq;
 using UnityEngine;
-using static CW2.Animations.PhysicsSimulator.Val;
 using static EFT.Player;
-using MagReloadClass = EFT.Player.FirearmController.GClass1610;
-using RechamberClass = EFT.Player.FirearmController.GClass1622;
-using StatusStruct = GStruct414<GInterface324>;
-using ItemEventClass = GClass2767;
-using WeaponStateClass = GClass1668;
 using ChamberWeaponClass = EFT.Player.FirearmController.GClass1626;
+using ItemEventClass = GClass2767;
+using MagReloadClass = EFT.Player.FirearmController.GClass1610;
 using ReloadWeaponClass = EFT.Player.FirearmController.GClass1587;
+using StatusStruct = GStruct414<GInterface324>;
 using WeaponEventClass = EFT.Player.FirearmController.GClass1577;
 using WeaponEventHandlerClass = EFT.Player.FirearmController.GClass1576;
+using WeaponStateClass = GClass1668;
 using WeaponStatSubclass = EFT.Player.FirearmController.GClass1584;
-using RealismMod.Weapons;
 
 namespace RealismMod
 {

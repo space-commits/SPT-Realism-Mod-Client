@@ -1,8 +1,5 @@
-﻿using BepInEx.Logging;
-using EFT;
+﻿using EFT;
 using EFT.InventoryLogic;
-using HarmonyLib;
-using HarmonyLib.Tools;
 using System;
 using System.Collections.Generic;
 using UnityEngine;

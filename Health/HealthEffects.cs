@@ -1,17 +1,10 @@
 ﻿using EFT;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-using static Systems.Effects.Effects;
-using UnityEngine;
 using System.Linq;
-using BepInEx.Logging;
+using UnityEngine;
 using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2415;
 using ExistanceClass = GClass2456;
 using InterfaceOne = GInterface237;
 using InterfaceTwo = GInterface252;
-using EFT.InventoryLogic;
 
 namespace RealismMod
 {

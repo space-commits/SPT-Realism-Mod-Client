@@ -1,24 +1,14 @@
 ﻿using Aki.Reflection.Patching;
-using Aki.Reflection.Utils;
-using System;
-using System.Reflection;
-using System.Linq;
 using EFT.InventoryLogic;
-using System.Collections;
+using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using Comfort.Common;
+using System.Linq;
+using System.Reflection;
 using static RealismMod.Attributes;
-using UnityEngine;
-using UnityEngine.UI;
-using BPConstructor = GClass2684;
-using BPTemplate = GClass2587;
-using RigConstructor = GClass2685;
-using RigTemplate = GClass2588; 
 using HeadsetClass = GClass2639;
 using HeadsetTemplate = GClass2542;
-using ArmorCompTemplate = GInterface280;
-using HarmonyLib;
+using RigConstructor = GClass2685;
+using RigTemplate = GClass2588;
 
 
 namespace RealismMod

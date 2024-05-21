@@ -2,27 +2,20 @@
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using static RealismMod.Attributes;
 using UnityEngine;
 using UnityEngine.UI;
-using EFT;
-using BepInEx.Logging;
-using System.IO;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using StatAttributeClass = GClass2752;
-using BarrelTemplateClass = GClass2579;
+using static RealismMod.Attributes;
 using ArmorPlateUIClass = GClass2633;
+using BarrelTemplateClass = GClass2579;
 using FormatArmorClass = GClass2520;
-using Aki.Reflection.Utils;
+using StatAttributeClass = GClass2752;
 
 namespace RealismMod
 {
- 
+
     public class ArmorClassStringPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -392,7 +385,7 @@ namespace RealismMod
         }
         private static bool IsMulti366(Mod mod)
         {
-            return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod) == "366TKM";
+            return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod).Contains("366");
         }
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref string __result)

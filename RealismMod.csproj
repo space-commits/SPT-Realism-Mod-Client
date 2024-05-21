@@ -13,9 +13,6 @@
   <ItemGroup>
     <Reference Include="Aki.Reflection" />
 	<Reference Include="Aki.Common" />
-	<Reference Include="Assembly-CSharp-firstpass">
-	  <HintPath>libs\Assembly-CSharp-firstpass.dll</HintPath>
-	</Reference>
 	<Reference Include="ItemComponent.Types" />
     <Reference Include="Comfort" />
     <Reference Include="Assembly-CSharp" />

@@ -1,7 +1,7 @@
-﻿using System;
-using System.Reflection;
-using Aki.Reflection.Patching;
+﻿using Aki.Reflection.Patching;
 using EFT.UI;
+using System;
+using System.Reflection;
 using UnityEngine;
 
 

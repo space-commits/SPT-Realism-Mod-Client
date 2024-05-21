@@ -1,27 +1,20 @@
 ﻿using Aki.Reflection.Patching;
-using Aki.Reflection.Utils;
-using BepInEx.Logging;
 using EFT;
 using EFT.Animations;
+using EFT.Animations.NewRecoil;
+using EFT.InputSystem;
 using EFT.InventoryLogic;
 using HarmonyLib;
-using System;
+using RealismMod.Weapons;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 using UnityEngine;
-using WeaponSkills = EFT.SkillManager.GClass1771;
-using WeightClass = GClass754<float>;
-using Comfort.Common;
-using InputClass = Class1451;
 using static EFT.Player;
-using StatusStruct = GStruct414<GInterface324>;
+using InputClass = Class1451;
 using ItemEventClass = GClass2767;
+using StatusStruct = GStruct414<GInterface324>;
+using WeaponSkills = EFT.SkillManager.GClass1771;
 using WeaponStateClass = GClass1668;
-using EFT.InputSystem;
-using EFT.Animations.NewRecoil;
-using EFT.UI;
-using RealismMod.Weapons;
 
 namespace RealismMod
 {
@@ -56,9 +49,15 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(InputClass __instance, ECommand command)
         {
+            if (WeaponStats._WeapClass != "pistol" &&  command == ECommand.SelectFirstPrimaryWeapon || command == ECommand.SelectSecondPrimaryWeapon || command == ECommand.QuickSelectSecondaryWeapon || command == ECommand.SelectSecondaryWeapon) 
+            {
+                StanceController.DidWeaponSwap = true;
+                return true;
+            }
             if (command == ECommand.ToggleStepLeft || command == ECommand.ToggleStepRight || command == ECommand.ReturnFromRightStep || command == ECommand.ReturnFromLeftStep) 
             {
                 StanceController.IsMounting = false;
+                return true;
             }
             if (command == ECommand.ChamberUnload && Plugin.ServerConfig.manual_chambering)
             {
@@ -71,10 +70,12 @@ namespace RealismMod
                     RechamberRound(fc, player);
                     return false;
                 }
+                return true;
             }
             if (command == ECommand.ToggleGoggles || command == ECommand.ChangeScope || command == ECommand.ChangeScopeMagnification)
             {
                 AimController.HeadDeviceStateChanged = true;
+                return true;
             }
             if (command == ECommand.ToggleBreathing && Plugin.ServerConfig.recoil_attachment_overhaul && StanceController.IsAiming)
             {
@@ -82,6 +83,7 @@ namespace RealismMod
                 if (player.Physical.HoldingBreath) return true;
                 FirearmController fc = player.HandsController as FirearmController;
                 StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.25f, 0.25f, 0.5f));
+                return true;
             }
             if (Plugin.ServerConfig.enable_stances && Plugin.BlockFiring.Value && command == ECommand.ToggleShooting 
                 && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed 
@@ -350,7 +352,7 @@ namespace RealismMod
 
             float remainStamPercent = player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity;
             PlayerState.RemainingArmStamPerc = 1f - ((1f - remainStamPercent) / 3f);
-            PlayerState.RemainingArmStamPercReload = Mathf.Clamp(1f - ((1f - remainStamPercent) / 4f), 0.85f, 1f);
+            PlayerState.RemainingArmStamPercReload = Mathf.Clamp(1f - ((1f - remainStamPercent) / 4f), 0.85f, 1f); 
         }
 
         private static void setStancePWAValues(Player player, FirearmController fc)

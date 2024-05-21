@@ -1,5 +1,4 @@
-﻿using BepInEx.Logging;
-using Comfort.Common;
+﻿using Comfort.Common;
 using EFT;
 using EFT.HealthSystem;
 using EFT.InventoryLogic;
@@ -9,21 +8,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2415;
-using DamageTypeClass = GClass2456;
-
-using PainKillerInterface = GInterface260;
-using TremorInterface = GInterface263;
 using BrokenBoneInterface = GInterface245;
-using TunnelVisionInterface = GInterface265;
 using ContusionInterface = GInterface255;
+using DamageTypeClass = GClass2456;
+using DehydrationInterface = GInterface246;
+using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2415;
+using ExhaustionInterface = GInterface247;
 using HeavyBleedingInterface = GInterface243;
 using LightBleedingInterface = GInterface242;
-using DehydrationInterface = GInterface246;
-using ExhaustionInterface = GInterface247;
 using PainInterface = GInterface259;
-using static GClass2463;
-using Newtonsoft.Json.Linq;
+using PainKillerInterface = GInterface260;
+using TremorInterface = GInterface263;
+using TunnelVisionInterface = GInterface265;
 
 namespace RealismMod
 {
@@ -232,7 +228,7 @@ namespace RealismMod
         private const int painReliefInterval = 15;
         public const float PainArmThreshold = 30f;
         public const float PainReliefThreshold = 30f;
-        public const float BasePKOverdoseThreshold = 40f;
+        public const float BasePKOverdoseThreshold = 45f;
 
         private bool rightArmRuined = false;
         private bool leftArmRuined = false;
@@ -826,7 +822,7 @@ namespace RealismMod
 
                 if (reliefWaitTime >= painReliefInterval)
                 {
-                    AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, painReliefInterval, 5f, PainTunnelStrength);
+                    AddToExistingBaseEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, painReliefInterval, 5f, PainTunnelStrength);
 
                     if (PainReliefStrength > PKOverdoseThreshold)
                     {
@@ -835,9 +831,8 @@ namespace RealismMod
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On PainKillers", EFT.Communications.ENotificationDurationType.Long);
                             haveNotifiedPKOverdose = true;
                         }
-
-                        AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 1f, painReliefInterval, 5f, 0.35f);
-                        AddBasesEFTEffect(player, "Tremor", EBodyPart.Head, 1f, painReliefInterval, 5f, 1);
+                        AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, painReliefInterval, 5f, 0.35f);
+                        AddToExistingBaseEFTEffect(player, "Tremor", EBodyPart.Head, 1f, painReliefInterval, 5f, 1);
                     }
                     else haveNotifiedPKOverdose = false;
 
@@ -852,11 +847,11 @@ namespace RealismMod
             for (int i = activeHealthEffects.Count - 1; i >= 0; i--)
             {
                 ICustomHealthEffect effect = activeHealthEffects[i];
-                if (Plugin.EnableLogging.Value)
+          /*      if (Plugin.EnableLogging.Value)
                 {
                     Utils.Logger.LogWarning("Type = " + effect.GetType().ToString());
                     Utils.Logger.LogWarning("Delay = " + effect.Delay);
-                }
+                }*/
 
                 effect.Delay = Math.Max(effect.Delay - 1, 0);
 
@@ -1084,6 +1079,17 @@ namespace RealismMod
                 canUse = false;
                 return;
             }
+
+            CanConsumeAlcohol(player, item);
+            PlayerState.BlockFSWhileConsooming = true;
+        }
+
+        private void CanConsumeAlcohol(Player player, Item item) 
+        {
+            if (MedProperties.MedType(item) == "alcohol") 
+            {
+                AddPainkillerEffect(player, item);
+            }
         }
 
         public void DoPassiveRegen(float tickRate, EBodyPart bodyPart, Player player, int delay, float hpToRestore, EDamageType damageType)
@@ -1234,6 +1240,17 @@ namespace RealismMod
             }
         }
 
+        private void AddPainkillerEffect(Player player, Item item) 
+        {
+            int duration = (int)(MedProperties.PainKillerDuration(item) * (1f + PlayerState.ImmuneSkillWeak));
+            int delay = (int)Mathf.Round(MedProperties.Delay(item) * (1f - player.Skills.HealthEnergy.Value));
+            float tunnelVisionStr = MedProperties.TunnelVisionStrength(item) * (1f - PlayerState.ImmuneSkillWeak);
+            float painKillStr = MedProperties.Strength(item);
+
+            PainKillerEffect painKillerEffect = new PainKillerEffect(duration, player, delay, tunnelVisionStr, painKillStr);
+            Plugin.RealHealthController.AddCustomEffect(painKillerEffect, true);
+        }
+
         public void CanUseMedItemCommon(MedsClass meds, Player player, ref EBodyPart bodyPart, ref bool shouldAllowHeal) 
         {
             if (meds.Template._parent == "5448f3a64bdc2d60728b456a")
@@ -1292,13 +1309,7 @@ namespace RealismMod
                 }
                 if (medType.Contains("pain"))
                 {
-                    int duration = (int)(MedProperties.PainKillerDuration(meds) * (1f + PlayerState.ImmuneSkillWeak));
-                    int delay = (int)Mathf.Round(MedProperties.Delay(meds) * (1f - player.Skills.HealthEnergy.Value));
-                    float tunnelVisionStr = MedProperties.TunnelVisionStrength(meds) * (1f - PlayerState.ImmuneSkillWeak);
-                    float painKillStr = MedProperties.Strength(meds);
-
-                    PainKillerEffect painKillerEffect = new PainKillerEffect(duration, player, delay, tunnelVisionStr, painKillStr);
-                    Plugin.RealHealthController.AddCustomEffect(painKillerEffect, true);
+                    AddPainkillerEffect(player, meds);
                     shouldAllowHeal = true;
                     return;
                 }
@@ -1655,7 +1666,7 @@ namespace RealismMod
 
                 if (hasFracture)
                 {
-                    PainStrength += 15f * PlayerState.StressResistanceFactor;
+                    PainStrength += 15f * (1f - PlayerState.StressResistanceFactor);
                 }
 
                 bool isLeftArm = part == EBodyPart.LeftArm;
@@ -1679,8 +1690,8 @@ namespace RealismMod
                 float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 2f : isRightArm ? 3f : 4f));
                 float percentHpRecoil = 1f - ((1f - percentHp) / (isLeftArm ? 10f : 20f));
 
-                if (currentHp <= 0f) PainStrength += 20f * PlayerState.StressResistanceFactor;
-                else if (percentHp <= 0.5f) PainStrength += 5f * PlayerState.StressResistanceFactor;
+                if (currentHp <= 0f) PainStrength += 20f * (1f - PlayerState.StressResistanceFactor);
+                else if (percentHp <= 0.5f) PainStrength += 5f * (1f - PlayerState.StressResistanceFactor);
 
                 if (isLeg || isBody)
                 {

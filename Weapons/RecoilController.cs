@@ -1,13 +1,8 @@
 ﻿using BepInEx.Logging;
-using EFT;
 using EFT.Animations;
 using EFT.Animations.NewRecoil;
 using EFT.InventoryLogic;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-using static EFT.Player;
 
 namespace RealismMod
 {

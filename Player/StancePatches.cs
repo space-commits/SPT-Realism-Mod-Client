@@ -1,23 +1,18 @@
 ﻿using Aki.Reflection.Patching;
-using EFT.InventoryLogic;
+using Comfort.Common;
 using EFT;
+using EFT.Animations;
+using EFT.Ballistics;
+using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-using static EFT.Player;
-using UnityEngine;
-using Comfort.Common;
-using EFT.Ballistics;
-using System.ComponentModel;
-using Random = System.Random;
-using CastingClass = GClass649;
-using HackShotResult = GClass1676;
-using CollisionLayerClass = GClass2987;
-using EFT.Animations;
-using ChartAndGraph;
 using System.Linq;
+using System.Reflection;
+using UnityEngine;
+using static EFT.Player;
+using CastingClass = GClass649;
+using CollisionLayerClass = GClass2987;
+using HackShotResult = GClass1676;
 /*using LightStruct = GStruct155;*/
 
 namespace RealismMod

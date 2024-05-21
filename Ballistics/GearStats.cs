@@ -1,8 +1,4 @@
-﻿using BepInEx.Logging;
-using EFT.InventoryLogic;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using EFT.InventoryLogic;
 
 namespace RealismMod
 {
