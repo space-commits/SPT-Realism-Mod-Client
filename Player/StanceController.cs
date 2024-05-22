@@ -613,7 +613,6 @@ namespace RealismMod
                 IsMounting = false;
                 CurrentStance = EStance.None;
                 StoredStance = EStance.None;
-                StanceTargetPosition = Vector3.zero;
                 StanceBlender.Target = 0f;
                 StanceIndex = 0;
                 WasActiveAim = false;

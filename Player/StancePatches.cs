@@ -99,7 +99,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(SkillManager __instance, Item item)
         {
-            if (item?.Owner?.ID != null && item.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
+            if (item?.Owner?.ID != null && item.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId && StanceController.CurrentStance == EStance.PistolCompressed)
             {
                 StanceController.DidWeaponSwap = true;
             }

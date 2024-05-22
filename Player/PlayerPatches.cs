@@ -49,7 +49,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(InputClass __instance, ECommand command)
         {
-            if (WeaponStats._WeapClass != "pistol" &&  command == ECommand.SelectFirstPrimaryWeapon || command == ECommand.SelectSecondPrimaryWeapon || command == ECommand.QuickSelectSecondaryWeapon || command == ECommand.SelectSecondaryWeapon) 
+            if (StanceController.CurrentStance != EStance.PistolCompressed &&  (command == ECommand.SelectFirstPrimaryWeapon || command == ECommand.SelectSecondPrimaryWeapon || command == ECommand.QuickSelectSecondaryWeapon))
             {
                 StanceController.DidWeaponSwap = true;
                 return true;
