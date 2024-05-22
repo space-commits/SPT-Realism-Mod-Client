@@ -157,6 +157,7 @@ namespace RealismMod
         public const float FoldedConvergenceFactor = 0.8f;
 
         public static float TotalWeaponWeight = 0f;
+        public static float TotalWeaponLength = 0f;
 
         public static float TotalCameraReturnSpeed = 0.1f;
 
@@ -190,7 +191,7 @@ namespace RealismMod
         public static float ErgoDelta = 0f;
 
         public static int AutoFireRate = 0;
-
+        public static float FireRateDelta = 0;
         public static int SemiFireRate = 0;
 
         public static float Balance = 0f;

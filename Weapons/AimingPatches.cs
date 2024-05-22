@@ -167,7 +167,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(MovementContext __instance, bool isAiming)
         {
-
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {

@@ -784,7 +784,10 @@ namespace RealismMod
                 pwa.HandsContainer.WeaponRoot.localPosition = WeaponOffsetPosition;
             }
 
-            if (Plugin.EnableTacSprint.Value && PlayerState.IsSprinting && CurrentStance != EStance.ActiveAiming && (CurrentStance == EStance.HighReady || StoredStance == EStance.HighReady) && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed && !fc.Weapon.IsBeltMachineGun && WeaponStats.TotalWeaponWeight <= 5.5f)
+            if (Plugin.EnableTacSprint.Value && PlayerState.IsSprinting && CurrentStance != EStance.ActiveAiming 
+                && (CurrentStance == EStance.HighReady || StoredStance == EStance.HighReady) 
+                && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed 
+                && !fc.Weapon.IsBeltMachineGun && WeaponStats.TotalWeaponWeight <= 5.5f && WeaponStats.TotalWeaponLength <= 6f)
             {
                 IsDoingTacSprint = true;
                 player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
@@ -796,7 +799,7 @@ namespace RealismMod
                 tacSprintTime += Time.deltaTime;
                 if (tacSprintTime >= 0.5f)
                 {
-                    player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, fc.Item.CalculateCellSize().X);
+                    player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, WeaponStats.TotalWeaponLength);
                     tacSprintTime = 0f;
                     canDoTacSprintTimer = false;
                 }

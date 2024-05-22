@@ -1,9 +1,13 @@
 ﻿using EFT;
+using EFT.Animations;
 using EFT.InventoryLogic;
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using static EFT.Player;
 using ArmorTemplate = GClass2536; //to find again, search for HasHinge field
+using WeaponSkillsClass = EFT.SkillManager.GClass1771;
 
 namespace RealismMod
 {
@@ -149,7 +153,13 @@ namespace RealismMod
             totalSpeed /= 100f;
             PlayerState.GearErgoPenalty = 1f + totalErgo;
             PlayerState.GearSpeedPenalty = 1f + totalSpeed;
-            player.ProceduralWeaponAnimation.UpdateWeaponVariables();
+
+            Player.FirearmController fc = player.HandsController as Player.FirearmController;
+            if (fc != null) 
+            {
+                UpdateAimParameters(fc, player.ProceduralWeaponAnimation);
+            }
+
             if (Plugin.EnableLogging.Value) 
             {
                 Utils.Logger.LogWarning("gear speed " + PlayerState.GearSpeedPenalty);
@@ -213,6 +223,41 @@ namespace RealismMod
 
             PlayerState.GearReloadMulti = reloadMulti;
             PlayerState.GearAllowsADS = allowADS;
+        }
+
+        public static void UpdateAimParameters(FirearmController firearmController, ProceduralWeaponAnimation pwa) 
+        {
+            Weapon weapon = firearmController.Weapon;
+            WeaponSkillsClass skillsClass = (WeaponSkillsClass)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_buffInfo").GetValue(pwa);
+            Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayBlender").GetValue(pwa);
+
+            float headGearFactor = PlayerState.FSIsActive || PlayerState.NVGIsActive ? 1.35f : 1f;
+            float ergoWeightFactor = weapon.GetSingleItemTotalWeight() * (1f - WeaponStats.PureErgoDelta) * headGearFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + ((1f - PlayerState.GearErgoPenalty) * 1.5f));
+
+            float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo * PlayerState.GearErgoPenalty) * 1.15f;
+            float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (1f + WeaponStats.ModAimSpeedModifier), 0.5f, 1.45f);
+            valueBlender.Speed = pwa.SwayFalloff * aimSpeed * 4.35f;
+
+            AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayStrength").SetValue(pwa, Mathf.InverseLerp(1f, 18f, ergoWeightFactor));
+
+            pwa.UpdateSwayFactors();
+
+            aimSpeed = weapon.WeapClass == "pistol" ? aimSpeed * 1.35f : aimSpeed;
+            WeaponStats.SightlessAimSpeed = aimSpeed;
+            WeaponStats.ErgoStanceSpeed = baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (weapon.WeapClass == "pistol" ? 1.5f : 1f);
+
+            AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(pwa, aimSpeed);
+
+            if (Plugin.EnableLogging.Value == true)
+            {
+                Utils.Logger.LogWarning("========UpdateWeaponVariables=======");
+                Utils.Logger.LogWarning("total ergo = " + WeaponStats.TotalErgo);
+                Utils.Logger.LogWarning("aimSpeed = " + aimSpeed);
+                Utils.Logger.LogWarning("base aimSpeed = " + baseAimspeed);
+                Utils.Logger.LogWarning("total ergofactor = " + WeaponStats.ErgoFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)));
+                Utils.Logger.LogWarning("gear ergo factor = " + PlayerState.GearErgoPenalty);
+
+            }
         }
 
         public static float ErgoWeightCalc(float totalWeight, float ergoDelta, float totalTorque, string weapClass)

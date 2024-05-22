@@ -27,7 +27,9 @@ namespace RealismMod
             if (__instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
-                __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.SemiFireRate * currentAmmoTemplate.casingMass) : WeaponStats.SemiFireRate;
+                float duraFactor =__instance.Repairable.Durability / __instance.Repairable.TemplateDurability;
+                duraFactor = Mathf.Clamp(Mathf.Pow(duraFactor, 0.1f), 0.95f, 1f);
+                __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.SemiFireRate * currentAmmoTemplate.casingMass * duraFactor) : WeaponStats.SemiFireRate;
                 return false;
             }
             return true;
@@ -49,7 +51,9 @@ namespace RealismMod
             if (__instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
-                __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.AutoFireRate * currentAmmoTemplate.casingMass) : WeaponStats.AutoFireRate;
+                float duraFactor = __instance.Repairable.Durability / __instance.Repairable.TemplateDurability;
+                duraFactor = Mathf.Clamp(Mathf.Pow(duraFactor, 0.1f), 0.9f, 1f);
+                __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.AutoFireRate * currentAmmoTemplate.casingMass * duraFactor) : WeaponStats.AutoFireRate;
                 __result = Utils.Verified ? __result * 10 : __result;  
                 return false;
             }
@@ -438,8 +442,9 @@ namespace RealismMod
             WeaponStats.SDChamberSpeedModifier = currentChamberSpeedMod;
             WeaponStats.SDFixSpeedModifier = currentFixSpeedMod; //unused, replcaed by chamber speed
             WeaponStats.ModAimSpeedModifier = currentAimSpeedMod / 100f;
-            WeaponStats.AutoFireRate = Mathf.Max(300, (int)currentAutoROF);
-            WeaponStats.SemiFireRate = Mathf.Max(200, (int)currentSemiROF);
+            WeaponStats.AutoFireRate = Mathf.Max(400, (int)currentAutoROF);
+            WeaponStats.SemiFireRate = Mathf.Max(300, (int)currentSemiROF);
+            WeaponStats.FireRateDelta = (__instance.FireRate / WeaponStats.AutoFireRate) * (__instance.SingleFireRate / WeaponStats.SemiFireRate);
             WeaponStats.InitTotalCOI = currentCOI;
             WeaponStats.InitPureErgo = pureErgo;
             WeaponStats.PureRecoilDelta = pureRecoilDelta;

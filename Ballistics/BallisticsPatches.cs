@@ -1065,7 +1065,7 @@ namespace RealismMod
             float armorFactorDamage = Mathf.Clamp(1 - Mathf.InverseLerp(1f, 100f, factoredArmorClass - factoredPen), 0.1f, 1f);
             float steelArmorFactorDamage = Mathf.Clamp(1 - Mathf.InverseLerp(1f, 100f, scaledArmorclass - factoredPen), 0.1f, 1f);
 
-            float totaldamage = 1f; float test = (float)Math.Pow(0.5, 1);
+            float totaldamage = 1f; 
             if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !isHead)
             {
                 totaldamage = Mathf.Clamp(momentumDamageFactor * steelArmorFactorDamage * bluntThrput, 0.4f, damageInfo.Damage);

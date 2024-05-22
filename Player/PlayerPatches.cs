@@ -104,7 +104,6 @@ namespace RealismMod
         }
     }
 
-
     public class SyncWithCharacterSkillsPatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -220,7 +219,7 @@ namespace RealismMod
         }
     }
 
-    public class PlayerLateUpdatePatch : ModulePatch
+    public class PlayerUpdatePatch : ModulePatch
     {
         private static FieldInfo surfaceField;
 

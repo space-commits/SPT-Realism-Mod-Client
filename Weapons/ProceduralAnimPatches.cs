@@ -132,38 +132,7 @@ namespace RealismMod
 
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
-                Weapon weapon = firearmController.Weapon;
-                WeaponSkillsClass skillsClass = (WeaponSkillsClass)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_buffInfo").GetValue(__instance);
-                Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayBlender").GetValue(__instance);
-
-                float headGearFactor = PlayerState.FSIsActive || PlayerState.NVGIsActive ? 1.35f : 1f;
-                float ergoWeightFactor = weapon.GetSingleItemTotalWeight() * (1f - WeaponStats.PureErgoDelta) * headGearFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + ((1f - PlayerState.GearErgoPenalty) * 1.5f));
-
-                float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo * PlayerState.GearErgoPenalty) * 1.15f;
-                float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (1f + WeaponStats.ModAimSpeedModifier), 0.5f, 1.45f);
-                valueBlender.Speed = __instance.SwayFalloff * aimSpeed * 4.35f;
-
-                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayStrength").SetValue(__instance, Mathf.InverseLerp(1f, 18f, ergoWeightFactor));
-
-                __instance.UpdateSwayFactors();
-
-                aimSpeed = weapon.WeapClass == "pistol" ? aimSpeed * 1.35f : aimSpeed;
-                WeaponStats.SightlessAimSpeed = aimSpeed;
-                WeaponStats.ErgoStanceSpeed = baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (weapon.WeapClass == "pistol" ? 1.5f : 1f);
-
-                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(__instance, aimSpeed);
-                AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_ergonomicWeight").SetValue(__instance, WeaponStats.ErgoFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + (1f - PlayerState.GearErgoPenalty)));
-
-                if (Plugin.EnableLogging.Value == true)
-                {
-                    Logger.LogWarning("========UpdateWeaponVariables=======");
-                    Logger.LogWarning("total ergo = " + WeaponStats.TotalErgo);
-                    Logger.LogWarning("aimSpeed = " + aimSpeed);
-                    Logger.LogWarning("base aimSpeed = " + baseAimspeed);
-                    Logger.LogWarning("total ergofactor = " + WeaponStats.ErgoFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)));
-                    Logger.LogWarning("gear ergo factor = " + PlayerState.GearErgoPenalty);
-
-                }
+                StatCalc.UpdateAimParameters(firearmController, __instance);
             }
         }
     }
@@ -222,8 +191,6 @@ namespace RealismMod
                     __instance.Overweight = 0;
                     __instance.CrankRecoil = !Plugin.EnableCrank.Value || (!WeaponStats.HasShoulderContact && WeaponStats._WeapClass != "pistol") ? false : true;
 
-                    float updateErgoWeight = firearmController.ErgonomicWeight; //force ergo weight to update
-
                     float accuracy = weapon.GetTotalCenterOfImpact(false);
                     float3Field.SetValue(firearmController, accuracy); //update accuracy value
 
@@ -251,7 +218,6 @@ namespace RealismMod
 
                     float formfactor = WeaponStats.IsBullpup ? 0.75f : 1f;
                     float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + (1f - PlayerState.GearErgoPenalty));
-                    AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_ergonomicWeight").SetValue(__instance, ergoWeight);
                     float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(weapon.GetSingleItemTotalWeight(), weapon.WeapClass == "pistol" ? 1f : 4f);
                     float playerWeightSwayFactor = 1f + (totalPlayerWeight / 200f);
                     float totalErgoFactor = 1f + ((ergoWeight * ergoWeightFactor * playerWeightSwayFactor) / 100f);
