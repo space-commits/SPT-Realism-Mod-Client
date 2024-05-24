@@ -1333,8 +1333,12 @@ namespace RealismMod
                     bool isBody = false;
                     bool isNotLimb = false;
 
-                    bodyPart = Plugin.RealHealthController.BodyParts.Where(b =>
-                    player.ActiveHealthController.GetBodyPartHealth(b).Current / player.ActiveHealthController.GetBodyPartHealth(b).Maximum < 1).DefaultIfEmpty(EBodyPart.Common).Min();
+                    bodyPart = Plugin.RealHealthController.BodyParts
+                        .Where(b => player.ActiveHealthController.GetBodyPartHealth(b).Current / player.ActiveHealthController.GetBodyPartHealth(b).Maximum < 1)
+                        .OrderBy(b => player.ActiveHealthController.GetBodyPartHealth(b).Current / player.ActiveHealthController.GetBodyPartHealth(b).Maximum).FirstOrDefault();
+
+                    //IDE is a liar
+                    if(bodyPart == null) bodyPart = EBodyPart.Common;
 
                     if (bodyPart == EBodyPart.Common)
                     {
