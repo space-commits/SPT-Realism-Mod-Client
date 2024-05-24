@@ -12,29 +12,29 @@
 
   <ItemGroup>
     <Reference Include="Aki.Reflection" />
-	<Reference Include="Aki.Common" />
-	<Reference Include="Assembly-CSharp-firstpass">
-	  <HintPath>libs\Assembly-CSharp-firstpass.dll</HintPath>
-	</Reference>
-	<Reference Include="ItemComponent.Types" />
+    <Reference Include="Aki.Common" />
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>libs\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
+    <Reference Include="ItemComponent.Types" />
     <Reference Include="Comfort" />
     <Reference Include="Assembly-CSharp" />
     <Reference Include="UnityEngine" />
-	<Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="UnityEngine.CoreModule" />
-	<Reference Include="UnityEngine.InputLegacyModule" />
-	<Reference Include="UnityEngine.JSONSerializeModule" />
-	<Reference Include="UnityEngine.UnityWebRequestModule" />
+    <Reference Include="UnityEngine.InputLegacyModule" />
+    <Reference Include="UnityEngine.JSONSerializeModule" />
+    <Reference Include="UnityEngine.UnityWebRequestModule" />
     <Reference Include="UnityEngine.UnityWebRequestTextureModule" />
     <Reference Include="UnityEngine.UnityWebRequestWWWModule" />
-	<Reference Include="UnityEngine.UnityWebRequestAudioModule" />
-	<Reference Include="AnimationSystem.Types" />
-	<Reference Include="Newtonsoft.Json" />
-	<Reference Include="UnityEngine.AudioModule" />
+    <Reference Include="UnityEngine.UnityWebRequestAudioModule" />
+    <Reference Include="AnimationSystem.Types" />
+    <Reference Include="Newtonsoft.Json" />
+    <Reference Include="UnityEngine.AudioModule" />
     <Reference Include="Unity.Postprocessing.Runtime" />
-	<Reference Include="UnityEngine.PhysicsModule" />
-	<Reference Include="ItemTemplate.Types" />
-	<Reference Include="UnityEngine.UI" />
+    <Reference Include="UnityEngine.PhysicsModule" />
+    <Reference Include="ItemTemplate.Types" />
+    <Reference Include="UnityEngine.UI" />
     <Reference Include="Sirenix.Serialization" />
     <Reference Include="UnityEngine.TerrainPhysicsModule" />
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
