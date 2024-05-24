@@ -3,5 +3,6 @@
   <Reference>
     <Private>False</Private>
   </Reference>
+  <PackageReference ExcludeAssets="runtime"/>
 </ItemDefinitionGroup>
 </Project>
