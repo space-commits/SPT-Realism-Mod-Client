@@ -1251,6 +1251,7 @@ namespace RealismMod
             Plugin.RealHealthController.AddCustomEffect(painKillerEffect, true);
         }
 
+
         public void CanUseMedItemCommon(MedsClass meds, Player player, ref EBodyPart bodyPart, ref bool shouldAllowHeal) 
         {
             if (meds.Template._parent == "5448f3a64bdc2d60728b456a")
@@ -1326,105 +1327,124 @@ namespace RealismMod
                 MedProperties.EffectTypes.TryGetValue("LightBleeding", out lightBleedType);
                 MedProperties.EffectTypes.TryGetValue("BrokenBone", out fractureType);
 
-                foreach (EBodyPart part in Plugin.RealHealthController.BodyParts)
+                if (medType == "surg")
                 {
                     bool isHead = false;
                     bool isBody = false;
                     bool isNotLimb = false;
 
-                    Plugin.RealHealthController.GetBodyPartType(part, ref isNotLimb, ref isHead, ref isBody);
+                    bodyPart = Plugin.RealHealthController.BodyParts.Where(b =>
+                    player.ActiveHealthController.GetBodyPartHealth(b).Current / player.ActiveHealthController.GetBodyPartHealth(b).Maximum < 1).DefaultIfEmpty(EBodyPart.Common).Min();
 
-                    bool hasHeavyBleed = false;
-                    bool hasLightBleed = false;
-                    bool hasFracture = false;
-
-                    IEnumerable<IEffect> effects = Plugin.RealHealthController.GetInjuriesOnBodyPart(player, part, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
-
-                    float currentHp = player.ActiveHealthController.GetBodyPartHealth(part).Current;
-                    float maxHp = player.ActiveHealthController.GetBodyPartHealth(part).Maximum;
-
-                    if (medType == "surg" && ((isBody && !hasBodyGear) || (isHead && !hasHeadGear) || !isNotLimb))
+                    if (bodyPart == EBodyPart.Common)
                     {
-                        if (currentHp == 0)
-                        {
-                            bodyPart = part;
-                            break;
-                        }
-                        continue;
+                        NotificationManagerClass.DisplayWarningNotification("No Suitable Bodypart Was Found For Surgery Kit", EFT.Communications.ENotificationDurationType.Long);
+                        shouldAllowHeal = false;
+                        return;
                     }
 
-                    foreach (IEffect effect in effects)
+                    Plugin.RealHealthController.GetBodyPartType(bodyPart, ref isNotLimb, ref isHead, ref isBody);
+
+                    if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
                     {
-                        if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
-                        {
-                            continue;
-                        }
-
-                        if (canHealHBleed && effect.Type == heavyBleedType)
-                        {
-                            if (!isNotLimb)
-                            {
-                                bodyPart = part;
-                                break;
-                            }
-                            if ((isBody || isHead) && hBleedHealType == "trnqt")
-                            {
-                                NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Heavy Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
-
-                                continue;
-                            }
-                            if ((isBody || isHead) && (hBleedHealType == "clot" || hBleedHealType == "combo" || hBleedHealType == "surg"))
-                            {
-                                bodyPart = part;
-                                break;
-                            }
-
-                            bodyPart = part;
-                            break;
-                        }
-                        if (canHealLBleed && effect.Type == lightBleedType)
-                        {
-                            if (!isNotLimb)
-                            {
-                                bodyPart = part;
-                                break;
-                            }
-                            if ((isBody || isHead) && hBleedHealType == "trnqt")
-                            {
-                                NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Light Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
-
-                                continue;
-                            }
-                            if ((isBody || isHead) && hasHeavyBleed)
-                            {
-                                continue;
-                            }
-
-                            bodyPart = part;
-                            break;
-                        }
-                        if (canHealFract && effect.Type == fractureType)
-                        {
-                            if (!isNotLimb)
-                            {
-                                bodyPart = part;
-                                break;
-                            }
-                            if (isNotLimb)
-                            {
-                                NotificationManagerClass.DisplayWarningNotification("Splints Can Only Fix Fractures On Limbs", EFT.Communications.ENotificationDurationType.Long);
-
-                                continue;
-                            }
-
-                            bodyPart = part;
-                            break;
-                        }
+                        NotificationManagerClass.DisplayWarningNotification("Gear Is Blocking Wound", EFT.Communications.ENotificationDurationType.Long);
                     }
-
-                    if (bodyPart != EBodyPart.Common)
+                    Plugin.RealHealthController.HandleHealthEffects(medType, meds, bodyPart, player, hBleedHealType, canHealHBleed, canHealLBleed, canHealFract);
+                    return;
+                }
+                else 
+                {
+                    foreach (EBodyPart part in Plugin.RealHealthController.BodyParts)
                     {
-                        break;
+                        bool isHead = false;
+                        bool isBody = false;
+                        bool isNotLimb = false;
+
+                        Plugin.RealHealthController.GetBodyPartType(part, ref isNotLimb, ref isHead, ref isBody);
+
+                        bool hasHeavyBleed = false;
+                        bool hasLightBleed = false;
+                        bool hasFracture = false;
+
+                        IEnumerable<IEffect> effects = Plugin.RealHealthController.GetInjuriesOnBodyPart(player, part, ref hasHeavyBleed, ref hasLightBleed, ref hasFracture);
+
+                        float currentHp = player.ActiveHealthController.GetBodyPartHealth(part).Current;
+                        float maxHp = player.ActiveHealthController.GetBodyPartHealth(part).Maximum;
+
+
+                        foreach (IEffect effect in effects)
+                        {
+                            if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
+                            {
+                                continue;
+                            }
+
+                            if (canHealHBleed && effect.Type == heavyBleedType)
+                            {
+                                if (!isNotLimb)
+                                {
+                                    bodyPart = part;
+                                    break;
+                                }
+                                if ((isBody || isHead) && hBleedHealType == "trnqt")
+                                {
+                                    NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Heavy Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
+
+                                    continue;
+                                }
+                                if ((isBody || isHead) && (hBleedHealType == "clot" || hBleedHealType == "combo" || hBleedHealType == "surg"))
+                                {
+                                    bodyPart = part;
+                                    break;
+                                }
+
+                                bodyPart = part;
+                                break;
+                            }
+                            if (canHealLBleed && effect.Type == lightBleedType)
+                            {
+                                if (!isNotLimb)
+                                {
+                                    bodyPart = part;
+                                    break;
+                                }
+                                if ((isBody || isHead) && hBleedHealType == "trnqt")
+                                {
+                                    NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Light Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
+
+                                    continue;
+                                }
+                                if ((isBody || isHead) && hasHeavyBleed)
+                                {
+                                    continue;
+                                }
+
+                                bodyPart = part;
+                                break;
+                            }
+                            if (canHealFract && effect.Type == fractureType)
+                            {
+                                if (!isNotLimb)
+                                {
+                                    bodyPart = part;
+                                    break;
+                                }
+                                if (isNotLimb)
+                                {
+                                    NotificationManagerClass.DisplayWarningNotification("Splints Can Only Fix Fractures On Limbs", EFT.Communications.ENotificationDurationType.Long);
+
+                                    continue;
+                                }
+
+                                bodyPart = part;
+                                break;
+                            }
+                        }
+
+                        if (bodyPart != EBodyPart.Common)
+                        {
+                            break;
+                        }
                     }
                 }
 

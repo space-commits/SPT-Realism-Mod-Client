@@ -59,6 +59,7 @@ namespace RealismMod
 
             bool do9x18Explodey = false;
             bool isPMMAmmo = ammoToFire.Template._id == "57371aab2459775a77142f22";
+            float weaponDurability = __instance.Weapon.Repairable.MaxDurability;
             if (__instance.Weapon.AmmoCaliber == "9x18PM" && isPMMAmmo) 
             {
                 if (isPMMAmmo)
@@ -70,7 +71,7 @@ namespace RealismMod
                 do9x18Explodey = __instance.Weapon.Repairable.Durability <= 75f && rnd <= 4 * dura && isPMMAmmo;
             }
 
-            if (__instance.Weapon.AmmoCaliber != ammoToFire.Caliber)
+            if (__instance.Weapon.AmmoCaliber != ammoToFire.Caliber || __instance.Weapon.Repairable.MaxDurability <= 0)
             {
              
                 bool explosiveMismatch = do9x18Explodey || (__instance.Weapon.AmmoCaliber == "366TKM" && ammoToFire.Caliber == "762x39") || (__instance.Weapon.AmmoCaliber == "556x45NATO" && ammoToFire.Caliber == "762x35") || (__instance.Weapon.AmmoCaliber == "762x51" && ammoToFire.Caliber == "68x51");
@@ -78,9 +79,10 @@ namespace RealismMod
 
                 if (player.IsYourPlayer)
                 {
-                    if (__instance.Weapon.Repairable.MaxDurability <= 0f || malfMismatch || (explosiveMismatch && !Plugin.ServerConfig.malf_changes))
+                    if (weaponDurability <= 0f || malfMismatch || (explosiveMismatch && !Plugin.ServerConfig.malf_changes))
                     {
-                        NotificationManagerClass.DisplayWarningNotification("Possible Wrong Ammo/Weapon Caliber Combination.", EFT.Communications.ENotificationDurationType.Long);
+                        if (weaponDurability <= 0f) NotificationManagerClass.DisplayWarningNotification("Weapon Is Broken Beyond Repair.", EFT.Communications.ENotificationDurationType.Long);
+                        else NotificationManagerClass.DisplayWarningNotification("Possible Wrong Ammo/Weapon Caliber Combination.", EFT.Communications.ENotificationDurationType.Long);
                         __result = Weapon.EMalfunctionState.Misfire;
                         return;
                     }
