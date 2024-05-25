@@ -730,15 +730,7 @@ namespace RealismMod
                         Logger.LogWarning("pen before = " + shot.PenetrationPower);
                     }
 
-                    EFTSlot slot;
-                    ArmorSlot softArmorSlot;
-                    float softArmorReduction = 1f;
-                    if ((slot = (armorComponent.Item.CurrentAddress as EFTSlot)) != null && (softArmorSlot = (slot.Slot as ArmorSlot)) != null && softArmorSlot.BluntDamageReduceFromSoftArmor)
-                    {
-   
-                        softArmorReduction = 0.7f;
-                    }
-                    BallisticsController.CalcAfterPenStats(armorComponent.Repairable.Durability, armorComponent.ArmorClass, armorComponent.Repairable.TemplateDurability, ref shot.Damage, ref shot.PenetrationPower, softArmorReduction);
+                    BallisticsController.CalcAfterPenStats(armorComponent.Repairable.Durability, armorComponent.ArmorClass, armorComponent.Repairable.TemplateDurability, ref shot.Damage, ref shot.PenetrationPower);
                 
                     if (Plugin.EnableBallisticsLogging.Value)
                     {
@@ -1019,7 +1011,7 @@ namespace RealismMod
             }
 
             float bluntThrput = __instance.Template.BluntThroughput;
-            float softArmorStatReduction = 1f;
+            float softArmorStatReduction = 1f; // TODO: Check if worth keeping only for bayonet interactions
             EFTSlot slot;
             ArmorSlot softArmorSlot;
             if ((slot = (__instance.Item.CurrentAddress as EFTSlot)) != null && (softArmorSlot = (slot.Slot as ArmorSlot)) != null && softArmorSlot.BluntDamageReduceFromSoftArmor)
@@ -1081,7 +1073,7 @@ namespace RealismMod
                 }
 
                 float actualDurability = Mathf.Max(__instance.Repairable.Durability - totalDuraLoss, 1);
-                BallisticsController.CalcAfterPenStats(actualDurability, __instance.ArmorClass, __instance.Repairable.TemplateDurability, ref damageInfo.Damage, ref damageInfo.PenetrationPower, softArmorStatReduction);
+                BallisticsController.CalcAfterPenStats(actualDurability, __instance.ArmorClass, __instance.Repairable.TemplateDurability, ref damageInfo.Damage, ref damageInfo.PenetrationPower);
             }
             else
             {

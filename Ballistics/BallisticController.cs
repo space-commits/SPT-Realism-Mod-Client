@@ -61,13 +61,25 @@ namespace RealismMod
         public static EBodyPartColliderType[] LegSpallProtectionCollidors = { EBodyPartColliderType.PelvisBack, EBodyPartColliderType.Pelvis};
 
 
-        public static void CalcAfterPenStats(float actualDurability, float armorClass, float templateDurability, ref float damage, ref float penetration, float factor = 1) 
+        public static void CalcAfterPenStats(float actualDurability, float armorClass, float templateDurability, ref float damage, ref float penetration)
         {
-            float armorFactor = 1f - ((armorClass / 80f) * (actualDurability / templateDurability));
-            float damageReductionFactor = Mathf.Clamp(armorFactor, 0.85f, 1f);
-            float penReductionFactor = Mathf.Clamp(armorFactor, 0.85f, 1f) * factor;
-            damage *= damageReductionFactor;
-            penetration *= penReductionFactor;
+            /*
+            TODO: ADD PUBLIC SPREADSHEET FOR REFERENCE
+            Examples with default settings (70% reduction w/ 5 falloff scaling):
+                80 pen vs. LVL10 100%   => 70%
+                75 pen vs. LVL7 100%    => 52%
+                80 pen vs. LVL7 100%    => 39%
+                80 pen vs. LVL5 100%    => 14%
+            */
+            float maxReductionOnPen = 0.7f;  // TODO: EXPOSE AS CONFIG
+            float overpenFalloffScale = 5;  // TODO: EXPOSE AS CONFIG
+
+            float relativeOverpen = Mathf.Max(penetration / 10 - armorClass, 0f) / 8;
+            float overpenFactor = Mathf.Pow(relativeOverpen + 1, -overpenFalloffScale) * maxReductionOnPen;
+            float armorFactor = 1f - (overpenFactor * (actualDurability / templateDurability));
+
+            damage *= armorFactor;
+            penetration *= armorFactor;
         }
 
         public static void ModifyDamageByHitZone(EBodyPartColliderType hitPart, EBodyHitZone hitZone, ref DamageInfo di)
