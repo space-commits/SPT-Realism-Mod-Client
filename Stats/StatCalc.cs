@@ -167,10 +167,22 @@ namespace RealismMod
             }
         }
 
+        public static float GetBeltReloadSpeed(Player player)
+        {
+            Item tacVest = player.Equipment.GetSlot(EquipmentSlot.ArmBand).ContainedItem;
+            if (tacVest != null)
+            {
+                return GearStats.ReloadSpeedMulti(tacVest);
+            }
+            else
+            {
+                return 1;
+            }
+        }
+
         public static float GetRigReloadSpeed(Player player)
         {
             Item tacVest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
-
             if (tacVest != null)
             {
                 return GearStats.ReloadSpeedMulti(tacVest);
@@ -203,6 +215,7 @@ namespace RealismMod
             player.Inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
 
             reloadMulti *= GetRigReloadSpeed(player);
+            reloadMulti *= GetBeltReloadSpeed(player);
             allowADS = GetFacecoverADS(player);
 
             foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)

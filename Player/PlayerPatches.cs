@@ -123,6 +123,7 @@ namespace RealismMod
             if (player.IsYourPlayer)
             {
                 WeaponSkills weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
+                PlayerState.StrengthWeightBuff = player.Skills.StrengthBuffLiftWeightInc.Value;
                 PlayerState.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
                 PlayerState.ReloadSkillMulti = weaponInfo.ReloadSpeed;
                 PlayerState.FixSkillMulti = weaponInfo.FixSpeed;
@@ -151,7 +152,7 @@ namespace RealismMod
                 {
                     float itemTotalWeight = item.GetSingleItemTotalWeight();
                     trueWeight += itemTotalWeight;
-                    if (equipmentSlot == EquipmentSlot.Backpack || equipmentSlot == EquipmentSlot.TacticalVest || equipmentSlot == EquipmentSlot.ArmorVest || equipmentSlot == EquipmentSlot.Headwear)
+                    if (equipmentSlot == EquipmentSlot.Backpack || equipmentSlot == EquipmentSlot.TacticalVest || equipmentSlot == EquipmentSlot.ArmorVest || equipmentSlot == EquipmentSlot.Headwear || equipmentSlot == EquipmentSlot.ArmBand)
                     {
                         modifiedWeight += itemTotalWeight * GearStats.ComfortModifier(item);
                     }
