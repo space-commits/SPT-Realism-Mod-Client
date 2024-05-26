@@ -198,6 +198,39 @@ namespace RealismMod
         private bool doStimOverdoseTimer = false;
         private string overdoseEffectToAdd = "";
 
+        public bool HasAdrenalineEffect { get; set; } = false;
+
+        public float AdrenalineMovementBonus
+        {
+            get
+            {
+                return HasAdrenalineEffect ? 1.5f * (1f + PlayerState.StressResistanceFactor) : 1f;
+            }
+        }
+        public float AdrenalineReloadBonus
+        {
+            get
+            {
+                return HasAdrenalineEffect ? 1.05f * (1f + PlayerState.StressResistanceFactor) : 1f;
+            }
+        }
+
+        public float AdrenalineStanceBonus
+        {
+            get
+            {
+                return HasAdrenalineEffect ? 1.1f * (1f + PlayerState.StressResistanceFactor) : 1f;
+            }
+        }
+
+        public float AdrenalineADSBonus
+        {
+            get
+            {
+                return HasAdrenalineEffect ? 1.15f * (1f + PlayerState.StressResistanceFactor) : 1f;
+            }
+        }
+
         public EBodyPart[] BodyParts = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm };
 
         private List<ICustomHealthEffect> activeHealthEffects = new List<ICustomHealthEffect>();
@@ -424,7 +457,7 @@ namespace RealismMod
             }
         }
 
-        public void AddToExistingBaseEFTEffect(Player player, string targetEffect, EBodyPart bodyPart, float delayTime, float duration, float residueTime, float strength)
+        public void AddToExistingBaseEFTEffect(Player player, string targetEffect, EBodyPart bodyPart, float delayTime, float? duration, float residueTime, float strength)
         {
             if (!player.ActiveHealthController.BodyPartEffects.Effects[0].Any(v => v.Key == targetEffect))
             {
@@ -449,14 +482,13 @@ namespace RealismMod
             }
         }
 
-        public void AddAdrenaline(Player player, float painkillerDuration, float negativeEffectDuration, float negativeEffectStrength)
+        public void TryAddAdrenaline(Player player, float painkillerDuration, float negativeEffectDuration, float negativeEffectStrength)
         {
             if (Plugin.EnableAdrenaline.Value && !AdrenalineCooldownActive)
             {
                 AdrenalineCooldownActive = true;
-                AddToExistingBaseEFTEffect(player, "PainKiller", EBodyPart.Head, 0f, painkillerDuration, 3f, 1f);
-                AddToExistingBaseEFTEffect(player, "TunnelVision", EBodyPart.Head, 0f, negativeEffectDuration, 3f, negativeEffectStrength);
-                AddToExistingBaseEFTEffect(player, "Tremor", EBodyPart.Head, painkillerDuration, negativeEffectDuration, 3f, negativeEffectStrength);
+                AdrenalineEffect adrenalineEffect = new AdrenalineEffect(player, (int)painkillerDuration, 0, negativeEffectDuration, painkillerDuration, negativeEffectStrength, this);
+                Plugin.RealHealthController.AddCustomEffect(adrenalineEffect, true);
             }
         }
 
@@ -828,11 +860,11 @@ namespace RealismMod
                     {
                         if (!haveNotifiedPKOverdose) 
                         {
-                            NotificationManagerClass.DisplayWarningNotification("Overdosed On PainKillers", EFT.Communications.ENotificationDurationType.Long);
+                            NotificationManagerClass.DisplayWarningNotification("You Have Overdosed.", EFT.Communications.ENotificationDurationType.Long);
                             haveNotifiedPKOverdose = true;
                         }
                         AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, painReliefInterval, 5f, 0.35f);
-                        AddToExistingBaseEFTEffect(player, "Tremor", EBodyPart.Head, 1f, painReliefInterval, 5f, 1);
+                        AddToExistingBaseEFTEffect(player, "Tremor", EBodyPart.Head, 1f, painReliefInterval, 5f, 1f);
                     }
                     else haveNotifiedPKOverdose = false;
 
@@ -840,7 +872,6 @@ namespace RealismMod
                 }
             }
         }
-
 
         private void TickEffects() 
         {
@@ -1096,7 +1127,7 @@ namespace RealismMod
         {
             if (!HasCustomEffectOfType(typeof(TourniquetEffect), bodyPart))
             {
-                HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, bodyPart, player, delay, hpToRestore, damageType);
+                HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, bodyPart, player, delay, hpToRestore, damageType, this);
                 AddCustomEffect(regenEffect, false);
             }
         }
@@ -1109,7 +1140,7 @@ namespace RealismMod
             {
                 if (!HasCustomEffectOfType(typeof(TourniquetEffect), part))
                 {
-                    HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, part, player, delay, hpToRestore, damageType);
+                    HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, part, player, delay, hpToRestore, damageType, this);
                     AddCustomEffect(regenEffect, false);
                 }
             }
@@ -1124,7 +1155,7 @@ namespace RealismMod
             {
                 if (part != bodyPart && !HasCustomEffectOfType(typeof(TourniquetEffect), part))
                 {
-                    HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, part, player, delay, hpToRestore, damageType);
+                    HealthRegenEffect regenEffect = new HealthRegenEffect(tickRate, null, part, player, delay, hpToRestore, damageType, this);
                     AddCustomEffect(regenEffect, false);
                 }
             }
@@ -1142,7 +1173,7 @@ namespace RealismMod
 
             if ((hBleedHealType == "combo" || hBleedHealType == "trnqt") && !isNotLimb)
             {
-                TourniquetEffect trnqt = new TourniquetEffect(trnqtTickRate, null, bodyPart, player, delay);
+                TourniquetEffect trnqt = new TourniquetEffect(trnqtTickRate, null, bodyPart, player, delay, this);
                 AddCustomEffect(trnqt, false);
 
                 if (DmgTracker.TotalHeavyBleedDamage > 0f)
@@ -1169,7 +1200,7 @@ namespace RealismMod
 
             if (medType == "trnqt" && !isNotLimb)
             {
-                TourniquetEffect trnqt = new TourniquetEffect(trnqtTickRate, null, bodyPart, player, delay);
+                TourniquetEffect trnqt = new TourniquetEffect(trnqtTickRate, null, bodyPart, player, delay, this);
                 AddCustomEffect(trnqt, false);
 
                 if (DmgTracker.TotalLightBleedDamage > 0f)
@@ -1189,7 +1220,7 @@ namespace RealismMod
             int delay = (int)meds.HealthEffectsComponent.UseTime;
             float regenLimitFactor = 0.5f * (1f + surgerySkill);
             float surgTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f + surgerySkill), 2);
-            SurgeryEffect surg = new SurgeryEffect(surgTickRate, null, bodyPart, player, delay, regenLimitFactor);
+            SurgeryEffect surg = new SurgeryEffect(surgTickRate, null, bodyPart, player, delay, regenLimitFactor, this);
             AddCustomEffect(surg, false);
         }
 
@@ -1197,7 +1228,7 @@ namespace RealismMod
         {
             NotificationManagerClass.DisplayMessageNotification("Fracture On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
             int delay = (int)meds.HealthEffectsComponent.UseTime;
-            HealthRegenEffect regenEffect = new HealthRegenEffect(regenTickRate, null, bodyPart, player, delay, 12f, EDamageType.Impact);
+            HealthRegenEffect regenEffect = new HealthRegenEffect(regenTickRate, null, bodyPart, player, delay, 12f, EDamageType.Impact, this);
             AddCustomEffect(regenEffect, false);
         }
 
@@ -1247,7 +1278,7 @@ namespace RealismMod
             float tunnelVisionStr = MedProperties.TunnelVisionStrength(item) * (1f - PlayerState.ImmuneSkillWeak);
             float painKillStr = MedProperties.Strength(item);
 
-            PainKillerEffect painKillerEffect = new PainKillerEffect(duration, player, delay, tunnelVisionStr, painKillStr);
+            PainKillerEffect painKillerEffect = new PainKillerEffect(duration, player, delay, tunnelVisionStr, painKillStr, this);
             Plugin.RealHealthController.AddCustomEffect(painKillerEffect, true);
         }
 
@@ -1259,7 +1290,7 @@ namespace RealismMod
                 int duration = (int)meds.HealthEffectsComponent.BuffSettings[0].Duration * 2;
                 int delay = Mathf.Max((int)meds.HealthEffectsComponent.BuffSettings[0].Delay, 5);
                 EStimType stimType = Plugin.RealHealthController.GetStimType(meds.Template._id);
-                StimShellEffect stimEffect = new StimShellEffect(player, duration, delay, stimType);
+                StimShellEffect stimEffect = new StimShellEffect(player, duration, delay, stimType, this);
                 Plugin.RealHealthController.AddCustomEffect(stimEffect, true);
 
                 shouldAllowHeal = true;
@@ -1789,7 +1820,7 @@ namespace RealismMod
             {
                 if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach))
                 {
-                    ResourceRateEffect resEffect = new ResourceRateEffect(null, player, 0);
+                    ResourceRateEffect resEffect = new ResourceRateEffect(null, player, 0, this);
                     AddCustomEffect(resEffect, false);
                 }
                 else

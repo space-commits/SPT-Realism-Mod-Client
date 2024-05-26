@@ -9,8 +9,15 @@ namespace RealismMod.Weapons
     public static class ReloadController
     {
         public static float MinimumReloadSpeed = 0.7f;
-        public static float MaxReloadSpeed = 1.4f;
         public static float MaxInternalReloadSpeed = 1.5f;
+        public static float MaxReloadSpeed
+        {
+            get 
+            {
+                return PlayerState.IsQuickReloading ? 1.65f : 1.4f;
+            }
+
+        }  
 
         public static void SetMagReloadSpeeds(Player.FirearmController __instance, MagazineClass magazine, bool isQuickReload = false)
         {
@@ -22,7 +29,10 @@ namespace RealismMod.Weapons
             {
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 MagReloadSpeedModifier(weapon, magazine, false, true);
-                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadInjuryMulti * PlayerState.ReloadSkillMulti * PlayerState.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.8f)), 0.65f, 1.35f));
+                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(
+                    WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadInjuryMulti * PlayerState.ReloadSkillMulti * 
+                    PlayerState.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff *
+                    Plugin.RealHealthController.AdrenalineReloadBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.8f)), 0.65f, 1.35f));
             }
             else
             {

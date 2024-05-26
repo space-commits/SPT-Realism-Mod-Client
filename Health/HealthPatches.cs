@@ -588,10 +588,10 @@ namespace RealismMod
         {
             Player player = Utils.GetYourPlayer();
             float stressResist = player.Skills.StressPain.Value;
-            float painkillerDuration = (float)Math.Round(10f * (1f + stressResist), 2);
+            float painkillerDuration = (float)Math.Round(12f * (1f + stressResist), 2);
             float negativeEffectDuration = (float)Math.Round(15f * (1f - stressResist), 2);
             float negativeEffectStrength = (float)Math.Round(0.75f * (1f - stressResist), 2);
-            Plugin.RealHealthController.AddAdrenaline(player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
+            Plugin.RealHealthController.TryAddAdrenaline(player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
         }
     }
 
@@ -684,7 +684,7 @@ namespace RealismMod
                         float painkillerDuration = (float)Math.Round(20f * (1f + (stressResist / 2)), 2);
                         float negativeEffectDuration = (float)Math.Round(25f * (1f - (stressResist / 2)), 2);
                         float negativeEffectStrength = (float)Math.Round(0.95f * (1f - (stressResist / 2)), 2);
-                        Plugin.RealHealthController.AddAdrenaline(__instance.Player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
+                        Plugin.RealHealthController.TryAddAdrenaline(__instance.Player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
 
                     }
                 }

@@ -1,5 +1,6 @@
 ﻿using Aki.Reflection.Patching;
 using Aki.Reflection.Utils;
+using Comfort.Common;
 using EFT;
 using HarmonyLib;
 using System;
@@ -11,6 +12,7 @@ using ValueHandler = GClass733;
 
 namespace RealismMod
 {
+
     public class ClampSpeedPatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -22,7 +24,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(MovementContext __instance, float speed, ref float __result)
+        private static bool PatchPrefix(MovementContext __instance, float speed, ref float __result)
         {
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer)
@@ -31,17 +33,17 @@ namespace RealismMod
 
                 if (Utils.IsReady && Plugin.EnableSlopeSpeed.Value)
                 {
-                    slopeFactor = MovementSpeedController.GetSlope(player, Logger);
+                    slopeFactor = MovementSpeedController.GetSlope(player);
                 }
 
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
-                float firingMulti = MovementSpeedController.GetFiringMovementSpeedFactor(player, Logger);
-                float stanceFactor = StanceController.CurrentStance == EStance.PatrolStance ? 1.25f : StanceController.CurrentStance == EStance.LowReady ? 1.025f : StanceController.CurrentStance == EStance.HighReady || StanceController.CurrentStance == EStance.ShortStock ? 0.95f : 1f;
-                __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * PlayerState.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti * stanceFactor);
+                float firingMulti = MovementSpeedController.GetFiringMovementSpeedFactor(player);
+                float stanceFactor = StanceController.CurrentStance == EStance.PatrolStance ? 1.4f : StanceController.CurrentStance == EStance.LowReady ? 1.25f : StanceController.CurrentStance == EStance.HighReady || StanceController.CurrentStance == EStance.ShortStock ? 0.95f : 1f;
+                float totalModifier = PlayerState.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti * stanceFactor * Plugin.RealHealthController.AdrenalineMovementBonus;
+                __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * totalModifier);
                 return false;
             }
             return true;
-
         }
     }
 
@@ -85,7 +87,7 @@ namespace RealismMod
                 ValueHandler rotationFrameSpan = (ValueHandler)rotationFrameSpanField.GetValue(__instance);
 
                 bool canDoHighReadyBonus = StanceController.IsDoingTacSprint && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed;
-                float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player, Logger) : 1f;
+                float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float stanceSpeedBonus = canDoHighReadyBonus ? 1.15f : 1f;
                 float stanceAccelBonus = StanceController.CurrentStance == EStance.PatrolStance ? 1.45f : StanceController.CurrentStance == EStance.ShortStock ? 0.9f : StanceController.CurrentStance == EStance.LowReady ? 1.25f : canDoHighReadyBonus ? 1.37f : StanceController.CurrentStance == EStance.HighReady ? 1.2f : 1f;
@@ -99,8 +101,8 @@ namespace RealismMod
                     surfaceMulti = Mathf.Max(surfaceMulti * 0.85f, 0.2f);
                 }
 
-                float sprintAccel = player.Physical.SprintAcceleration * stanceAccelBonus * PlayerState.HealthSprintAccelFactor * surfaceMulti * slopeFactor * PlayerState.GearSpeedPenalty * deltaTime;
-                float speed = (player.Physical.SprintSpeed * __instance.SprintingSpeed + 1f) * __instance.StateSprintSpeedLimit * stanceSpeedBonus * PlayerState.HealthSprintSpeedFactor * surfaceMulti * slopeFactor * PlayerState.GearSpeedPenalty;
+                float sprintAccel = player.Physical.SprintAcceleration * stanceAccelBonus * PlayerState.HealthSprintAccelFactor * surfaceMulti * slopeFactor * PlayerState.GearSpeedPenalty * Plugin.RealHealthController.AdrenalineMovementBonus * deltaTime;
+                float speed = (player.Physical.SprintSpeed * __instance.SprintingSpeed + 1f) * __instance.StateSprintSpeedLimit * stanceSpeedBonus * PlayerState.HealthSprintSpeedFactor * surfaceMulti * slopeFactor * PlayerState.GearSpeedPenalty * Plugin.RealHealthController.AdrenalineMovementBonus;
                 float sprintInertia = Mathf.Max(EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(Mathf.Abs((float)rotationFrameSpan.Average)), EFTHardSettings.Instance.sprintSpeedInertiaCurve.Evaluate(2.1474836E+09f) * (2f - player.Physical.Inertia));
                 speed = Mathf.Clamp(speed * sprintInertia, 0.1f, speed);
                 __instance.SprintSpeed = Mathf.Clamp(__instance.SprintSpeed + sprintAccel * Mathf.Sign(speed - __instance.SprintSpeed), 0.01f, speed);

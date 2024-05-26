@@ -213,7 +213,7 @@ namespace RealismMod
                     sightSpeedModi = currentAimingMod != null && (currentAimingMod.TemplateId == "5c07dd120db834001c39092d" || currentAimingMod.TemplateId == "5c0a2cec0db834001b7ce47d") && __instance.CurrentScope.IsOptic ? 1f : sightSpeedModi;
                     float totalSightedAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)) * stanceMulti * stockMulti * playerWeightADSFactor, 0.4f, 1.5f);
                    
-                    float newAimSpeed = Mathf.Max(totalSightedAimSpeed * PlayerState.ADSSprintMulti, 0.3f) * (weapon.WeapClass == "pistol" ? Plugin.PistolGlobalAimSpeedModifier.Value : Plugin.GlobalAimSpeedModifier.Value);
+                    float newAimSpeed = Mathf.Max(totalSightedAimSpeed * PlayerState.ADSSprintMulti * Plugin.RealHealthController.AdrenalineADSBonus, 0.3f) * (weapon.WeapClass == "pistol" ? Plugin.PistolGlobalAimSpeedModifier.Value : Plugin.GlobalAimSpeedModifier.Value);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(__instance, newAimSpeed); //aimspeed
 
                     float formfactor = WeaponStats.IsBullpup ? 0.75f : 1f;

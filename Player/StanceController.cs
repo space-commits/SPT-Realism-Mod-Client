@@ -600,9 +600,9 @@ namespace RealismMod
                 else IsInForcedLowReady = false;
             }
 
-            HighReadyManipBuff = CurrentStance == EStance.HighReady ? 1.17f : 1f;
+            HighReadyManipBuff = CurrentStance == EStance.HighReady ? 1.2f : 1f;
             ActiveAimManipBuff = CurrentStance == EStance.ActiveAiming && Plugin.ActiveAimReload.Value ? 1.15f : 1f;
-            LowReadyManipBuff = CurrentStance == EStance.LowReady ? 1.17f : 1f;
+            LowReadyManipBuff = CurrentStance == EStance.LowReady ? 1.2f : 1f;
 
             if (ShouldResetStances)
             {
@@ -627,7 +627,7 @@ namespace RealismMod
             float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 100f);
             float ergoMulti = Mathf.Clamp(WeaponStats.ErgoStanceSpeed, 0.65f, 1.45f);
-            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.55f)), 0.5f, 1.45f);
+            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.55f)), 0.5f, 1.45f);
             float balanceFactor = 1f + (WeaponStats.Balance / 100f);
             float rotationBalanceFactor = WeaponStats.Balance < -5f ? balanceFactor * -1f : WeaponStats.Balance > 5f ? balanceFactor : 1f;
             float wiggleBalanceFactor = WeaponStats.Balance < -5f ? balanceFactor * -1f : WeaponStats.Balance > 5f ? balanceFactor : Mathf.Abs(balanceFactor) <= 4f ? 0.75f : Mathf.Abs(balanceFactor) <= 3f ? 0.5f : 0.25f;
@@ -733,7 +733,7 @@ namespace RealismMod
             float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 150f);
             float ergoMulti = Mathf.Clamp(WeaponStats.ErgoStanceSpeed * 1.15f, 0.55f, 1.2f);
-            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.65f)), 0.45f, 1.2f);
+            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.65f)), 0.45f, 1.2f);
             float resetErgoMulti = (1f - stanceMulti) + 1f;
 
             float wiggleErgoMulti = Mathf.Clamp((WeaponStats.ErgoStanceSpeed * 0.5f), 0.1f, 1f);

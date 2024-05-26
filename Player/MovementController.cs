@@ -14,8 +14,8 @@ namespace RealismMod
             {BaseBallistic.ESurfaceSound.MetalThin, 0.95f },
             {BaseBallistic.ESurfaceSound.GarbageMetal, 0.75f },
             {BaseBallistic.ESurfaceSound.Garbage, 0.75f },
-            {BaseBallistic.ESurfaceSound.Concrete, 1.05f },
-            {BaseBallistic.ESurfaceSound.Asphalt, 1.05f },
+            {BaseBallistic.ESurfaceSound.Concrete, 1f },
+            {BaseBallistic.ESurfaceSound.Asphalt, 1f },
             {BaseBallistic.ESurfaceSound.Gravel, 0.85f },
             {BaseBallistic.ESurfaceSound.Slate, 0.85f },
             {BaseBallistic.ESurfaceSound.Tile, 0.8f },
@@ -25,7 +25,7 @@ namespace RealismMod
             {BaseBallistic.ESurfaceSound.Wood, 0.95f},
             {BaseBallistic.ESurfaceSound.WoodThick, 0.95f },
             {BaseBallistic.ESurfaceSound.WoodThin, 0.95f },
-            {BaseBallistic.ESurfaceSound.Soil, 1.0f},
+            {BaseBallistic.ESurfaceSound.Soil, 0.95f},
             {BaseBallistic.ESurfaceSound.Grass, 0.95f },
             {BaseBallistic.ESurfaceSound.Swamp, 1.0f },
             {BaseBallistic.ESurfaceSound.Puddle, 0.8f }
@@ -47,7 +47,7 @@ namespace RealismMod
         private static float maxSlopeAngle = 1f;
         private static float maxSlowdownFactor = 0.1f;
 
-        public static float GetSlope(Player player, ManualLogSource logger)
+        public static float GetSlope(Player player)
         {
             Vector3 movementDirecion = player.MovementContext.MovementDirection.normalized;
             Vector3 position = player.Transform.position;
@@ -65,7 +65,7 @@ namespace RealismMod
             return slowdownFactor;
         }
 
-        public static float GetFiringMovementSpeedFactor(Player player, ManualLogSource logger)
+        public static float GetFiringMovementSpeedFactor(Player player)
         {
             if (!RecoilController.IsFiringMovement)
             {
