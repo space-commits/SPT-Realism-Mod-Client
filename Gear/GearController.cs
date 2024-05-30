@@ -1,13 +1,17 @@
 ﻿using EFT;
 using EFT.InventoryLogic;
 using System.Collections.Generic;
+using static ChartAndGraph.ChartItemEvents;
+using static GripPose;
+using UnityEngine.UI;
 using ArmorTemplate = GClass2536; //to find again, search for HasHinge field
 
 namespace RealismMod
 {
     public static class GearController
     {
-        public static bool HasGasMask { get; set; } 
+        public static bool HasGasMask { get; set; }
+        private static bool hadGasMask = true;
 
         private static void HandleGasMaskEffects(Player player, bool hasGasMask) 
         {
@@ -15,8 +19,10 @@ namespace RealismMod
             {
                 Utils.Logger.LogWarning("has gas mask");
                 HasGasMask = true;
+                hadGasMask = true;
                 player.SpeechSource.SetLowPassFilterParameters(1f, ESoundOcclusionType.Obstruction, 1600, 5000, true);
                 player.Muffled = true;
+
             }
             else
             {
@@ -25,9 +31,18 @@ namespace RealismMod
                 player.SpeechSource.ResetFilters();
             }
 
+            player.UpdateBreathStatus();
             player.UpdateOcclusion();
             player.SendVoiceMuffledState(player.Muffled);
-            player.UpdateBreathStatus();
+
+            if (!hasGasMask && hadGasMask && player.HealthStatus == ETagStatus.Dying) 
+            {
+                player.Say(EPhraseTrigger.OnBreath, true, 0f, (ETagStatus)0, 100, false);
+                hadGasMask = false;
+            }
+
+            //player.Say(EPhraseTrigger.OnBeingHurt, true, 0f, (ETagStatus)0, 100, false); this actually works for forcing voice change, and for resetting after taking it off
+
         }
 
 

@@ -29,9 +29,10 @@ namespace RealismMod
             Logger.LogWarning("tags " + tags);
 
             Player player = Utils.GetYourPlayer();
+            if (player == null) return true;
             PhraseSpeakerClass speaker = player.Speaker;
             if (speaker == null) return true;
-            if (speaker == __instance && GearController.HasGasMask && (trigger == EPhraseTrigger.OnBreath || tags == ETagStatus.Dying)) 
+            if (speaker == __instance && GearController.HasGasMask && (trigger == EPhraseTrigger.OnBreath || ((tags & ETagStatus.Dying) == ETagStatus.Dying))) 
             {
                 return false;
             }

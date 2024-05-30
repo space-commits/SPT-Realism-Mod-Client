@@ -69,7 +69,7 @@ namespace RealismMod
                 case EBodyHitZone.Unknown:
                     break;
                 case EBodyHitZone.AZone:
-                    di.Damage *= 1.55f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 1.6f * Plugin.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 2f;
                     di.LightBleedingDelta *= 2f;
                     return;
@@ -543,9 +543,9 @@ namespace RealismMod
 
             if (hitPart == EBodyPartColliderType.RibcageUp || hitPart == EBodyPartColliderType.RibcageLow || hitPart == EBodyPartColliderType.SpineDown || hitPart == EBodyPartColliderType.SpineTop)
             {
-                float spineZ = 0.01f;
-                float heartL = 0.03f;
-                float heartR = -0.015f;
+                float spineZ = 0.0125f;
+                float heartL = 0.0325f;
+                float heartR = -0.0175f;
                 float heartTop = hitOrientation == EHitOrientation.BackHit ? -0.0435f : -0.063f;
                 float heartBottom = hitOrientation == EHitOrientation.BackHit ? -0.028f : -0.05f;
 
