@@ -35,11 +35,11 @@ namespace RealismMod
                     slopeFactor = MovementSpeedController.GetSlope(player);
                 }
 
-                float weaponFactor = Mathf.Pow(1f - (WeaponStats.ErgoFactor / 100f) * (1f - PlayerState.StrengthWeightBuff), 0.2f);
-                float playerWeightFactor = Mathf.Pow(1f - (PlayerState.TotalModifiedWeightMinusWeapon / 100f) * (1f - PlayerState.StrengthWeightBuff), 0.5f); //doubling up because BSG's calcs are shit
+                float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - (WeaponStats.ErgoFactor / 100f) * (1f - PlayerState.StrengthWeightBuff), 0.15f);
+                float playerWeightFactor = Mathf.Pow(1f - (PlayerState.TotalModifiedWeightMinusWeapon / 100f) * (1f - PlayerState.StrengthWeightBuff), 0.4f); //doubling up because BSG's calcs are shit
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float firingMulti = MovementSpeedController.GetFiringMovementSpeedFactor(player);
-                float stanceFactor = StanceController.CurrentStance == EStance.PatrolStance ? 1.3f : StanceController.CurrentStance == EStance.LowReady ? 1.15f : StanceController.CurrentStance == EStance.HighReady ? 1.05f : StanceController.CurrentStance == EStance.ShortStock ? 0.95f : 1f;
+                float stanceFactor = StanceController.CurrentStance == EStance.PatrolStance ? 1.33f : StanceController.CurrentStance == EStance.LowReady ? 1.18f : StanceController.CurrentStance == EStance.HighReady ? 1.05f : StanceController.CurrentStance == EStance.ShortStock ? 0.95f : 1f;
                 float totalModifier = PlayerState.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti * stanceFactor * weaponFactor * playerWeightFactor * Plugin.RealHealthController.AdrenalineMovementBonus;
                 __result = Mathf.Clamp(speed, 0f, __instance.StateSpeedLimit * totalModifier);
                 return false;
@@ -88,7 +88,7 @@ namespace RealismMod
                 ValueHandler rotationFrameSpan = (ValueHandler)rotationFrameSpanField.GetValue(__instance);
 
                 bool canDoHighReadyBonus = StanceController.IsDoingTacSprint && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed;
-                float weaponFactor = Mathf.Pow(1f - (WeaponStats.ErgoFactor / 100f) * (1f - PlayerState.StrengthWeightBuff), 0.35f);
+                float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - (WeaponStats.ErgoFactor / 100f) * (1f - PlayerState.StrengthWeightBuff), 0.2f);
                 float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float stanceSpeedBonus = canDoHighReadyBonus ? 1.15f : 1f;

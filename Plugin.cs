@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 using static RealismMod.Attributes;
+using System.Reflection;
 
 namespace RealismMod
 {
@@ -123,6 +124,7 @@ namespace RealismMod
         public static ConfigEntry<float> PlayerMovementVolume { get; set; }
         public static ConfigEntry<float> NPCMovementVolume { get; set; }
         public static ConfigEntry<float> SharedMovementVolume { get; set; }
+        public static ConfigEntry<float> ADSVolume { get; set; }
         public static ConfigEntry<KeyboardShortcut> IncGain { get; set; }
         public static ConfigEntry<KeyboardShortcut> DecGain { get; set; }
 
@@ -326,8 +328,10 @@ namespace RealismMod
         public static ConfigEntry<String> AddEffectType { get; set; }
 
         public static Dictionary<Enum, Sprite> IconCache = new Dictionary<Enum, Sprite>();
-        public static Dictionary<string, AudioClip> LoadedAudioClips = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, AudioClip> HitAudioClips = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, AudioClip> GasMaskAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, Sprite> LoadedSprites = new Dictionary<string, Sprite>();
+        public static Dictionary<string, Texture> LoadedTextures = new Dictionary<string, Texture>();
 
         public static GameObject Hook;
         public MountingUI MountingUIComponent;
@@ -400,29 +404,44 @@ namespace RealismMod
             IconCache.Add(ENewItemAttributeId.OutOfRaidHP, Resources.Load<Sprite>("characteristics/icons/hpResource"));
             IconCache.Add(ENewItemAttributeId.StimType, Resources.Load<Sprite>("characteristics/icons/hpResource"));
 
-            Sprite balanceSprite = await requestSprite(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\icons\\balance.png");
-            Sprite recoilAngleSprite = await requestSprite(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\icons\\recoilAngle.png");
+            Sprite balanceSprite = await RequestResource<Sprite>(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\icons\\balance.png");
+            Sprite recoilAngleSprite = await RequestResource<Sprite>(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\icons\\recoilAngle.png");
 
             IconCache.Add(ENewItemAttributeId.Balance, balanceSprite);
             IconCache.Add(ENewItemAttributeId.RecoilAngle, recoilAngleSprite);
         }
 
-        private void loadSprites()
+        private void LoadTextures() 
+        {
+            string[] texFilesDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\masks\\", "*.png");
+
+            foreach (string fileDir in texFilesDir)
+            {
+                LoadTexture(fileDir);
+            }
+        }
+
+        private void LoadSprites()
         {
             string[] iconFilesDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\icons\\", "*.png");
 
             foreach (string fileDir in iconFilesDir)
             {
-                loadSprite(fileDir);
+                LoadSprite(fileDir);
             }
         }
 
-        private async void loadSprite(string path)
+        private async void LoadSprite(string path)
         {
-            LoadedSprites[Path.GetFileName(path)] = await requestSprite(path);
+            LoadedSprites[Path.GetFileName(path)] = await RequestResource<Sprite>(path);
         }
 
-        private async Task<Sprite> requestSprite(string path)
+        private async void LoadTexture(string path)
+        {
+            LoadedTextures[Path.GetFileName(path)] = await RequestResource<Texture>(path);
+        }
+
+        private async Task<T> RequestResource<T>(string path) where T : class
         {
             UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(path);
             UnityWebRequestAsyncOperation sendWeb = uwr.SendWebRequest();
@@ -432,36 +451,51 @@ namespace RealismMod
 
             if (uwr.isNetworkError || uwr.isHttpError)
             {
-                Logger.LogError("Realism Mod: Failed To Fetch Sprite");
+                Logger.LogError("Realism Mod: Failed To Fetch Resource");
                 return null;
             }
             else
             {
                 Texture2D texture = ((DownloadHandlerTexture)uwr.downloadHandler).texture;
-                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-                return sprite;
+
+                if (typeof(T) == typeof(Texture))
+                {
+                    return texture as T;
+                }
+                else if (typeof(T) == typeof(Sprite))
+                {
+                    Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                    return sprite as T;
+                }
+                else
+                {
+                    Logger.LogError("Realism Mod: Unsupported resource type requested");
+                    return null;
+                }
             }
         }
 
-        private void loadAudioClips()
+        private async void LoadAudioClips()
         {
-            string[] audioFilesDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\");
-            LoadedAudioClips.Clear();
+            string[] hitSoundsDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\hitsounds");
+            string[] gasMaskDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\gasmask");
 
-            foreach (string fileDir in audioFilesDir)
+            HitAudioClips.Clear();
+            GasMaskAudioClips.Clear();
+
+            foreach (string fileDir in hitSoundsDir)
             {
-                this.loadAudioClip(fileDir);
+                HitAudioClips[Path.GetFileName(fileDir)] = await RequestAudioClip(fileDir);
+            }
+            foreach (string fileDir in gasMaskDir)
+            {
+                GasMaskAudioClips[Path.GetFileName(fileDir)] = await RequestAudioClip(fileDir);
             }
 
             Plugin.HasReloadedAudio = true;
         }
 
-        private async void loadAudioClip(string path)
-        {
-            LoadedAudioClips[Path.GetFileName(path)] = await requestAudioClip(path);
-        }
-
-        private async Task<AudioClip> requestAudioClip(string path)
+        private async Task<AudioClip> RequestAudioClip(string path)
         {
             string extension = Path.GetExtension(path);
             AudioType audioType = AudioType.WAV;
@@ -501,8 +535,9 @@ namespace RealismMod
             try
             {
                 loadConfig();
-                loadSprites();
-                loadAudioClips();
+                LoadSprites();
+                LoadTextures();
+                LoadAudioClips();
                 cacheIcons();
                 Utils.VerifyFileIntegrity(Logger);    
             }
@@ -540,6 +575,8 @@ namespace RealismMod
                 }
             }
 
+ 
+
             //misc
             new ChamberCheckUIPatch().Enable();
 
@@ -549,6 +586,8 @@ namespace RealismMod
             new OnItemAddedOrRemovedPatch().Enable();
             new PlayerUpdatePatch().Enable();
             new PlayerInitPatch().Enable();
+            new FaceshieldMaskPatch().Enable();
+            new PlayPhrasePatch().Enable();
 
             //recoil and attachments
             if (ServerConfig.recoil_attachment_overhaul) 
@@ -564,7 +603,6 @@ namespace RealismMod
                 new CamRecoilPatch().Enable();
 
                 //weapon and related
-                new COIDeltaPatch().Enable();
                 new TotalShotgunDispersionPatch().Enable();
                 new GetDurabilityLossOnShotPatch().Enable();
                 new AutoFireRatePatch().Enable();
@@ -590,10 +628,9 @@ namespace RealismMod
                 new ModVRecoilStatDisplayPatchString().Enable();
                 new ErgoDisplayDeltaPatch().Enable();
                 new ErgoDisplayStringValuePatch().Enable();
-                new COIDisplayDeltaPatch().Enable();
-                new COIDisplayStringValuePatch().Enable();
+
                 new FireRateDisplayStringValuePatch().Enable();
-                new CenterOfImpactMOAPatch().Enable();
+ 
                 new ModErgoStatDisplayPatch().Enable();
                 new GetAttributeIconPatches().Enable();
                 new AmmoDuraBurnDisplayPatch().Enable();
@@ -601,6 +638,11 @@ namespace RealismMod
                 new MagazineMalfChanceDisplayPatch().Enable();
                 new BarrelModClassPatch().Enable();
                 new AmmoCaliberPatch().Enable();
+
+                new COIDeltaPatch().Enable();
+                new CenterOfImpactMOAPatch().Enable();
+                new COIDisplayDeltaPatch().Enable();
+                new COIDisplayStringValuePatch().Enable();
                 new GetTotalCenterOfImpactPatch().Enable();
 
                 //Recoil Patches
@@ -714,9 +756,17 @@ namespace RealismMod
             }
             new ApplyComplexRotationPatch().Enable(); //also needed for visual recoil
 
+
+            if (ServerConfig.enable_stances || ServerConfig.headset_changes) 
+            {
+                new ADSAudioPatch().Enable();
+            }
+
             //Health
             if (ServerConfig.med_changes)
             {
+                /*new HealthPanelPatch().Enable();
+*/
                 new SetQuickSlotPatch().Enable();   
                 new ApplyItemPatch().Enable();
                 new BreathIsAudiblePatch().Enable();
@@ -772,99 +822,20 @@ namespace RealismMod
             {
                 if (!Plugin.HasReloadedAudio)
                 {
-                    loadAudioClips();
+                    LoadAudioClips();
                     Plugin.HasReloadedAudio = true;
                 }
 
-                if (RecoilController.ShotCount > RecoilController.PrevShotCount)
-                {
-                    RecoilController.IsFiring = true;
-                    RecoilController.IsFiringDeafen = true;
-                    RecoilController.IsFiringWiggle = true;
-                    StanceController.IsFiringFromStance = true;
-                    RecoilController.IsFiringMovement = true;
-                    RecoilController.PrevShotCount = RecoilController.ShotCount;
-                }
-
-                if (RecoilController.ShotCount == RecoilController.PrevShotCount)
-                {
-                    RecoilController.DeafenShotTimer += Time.deltaTime;
-                    RecoilController.WiggleShotTimer += Time.deltaTime;
-                    RecoilController.ShotTimer += Time.deltaTime;
-                    RecoilController.MovementSpeedShotTimer += Time.deltaTime;
-
-                    if (RecoilController.ShotTimer >= ResetTime.Value)
-                    {
-                        RecoilController.IsFiring = false;
-                        RecoilController.ShotCount = 0;
-                        RecoilController.PrevShotCount = 0;
-                        RecoilController.ShotTimer = 0f;
-                    }
-
-                    if (RecoilController.DeafenShotTimer >= DeafenResetDelay.Value)
-                    {
-                        RecoilController.IsFiringDeafen = false;
-                        RecoilController.DeafenShotTimer = 0f;
-                    }
-
-                    if (RecoilController.WiggleShotTimer >= 0.12f)
-                    {
-                        RecoilController.IsFiringWiggle = false;
-                        RecoilController.WiggleShotTimer = 0f;
-                    }
-
-                    if (RecoilController.MovementSpeedShotTimer >= 0.5f)
-                    {
-                        RecoilController.IsFiringMovement = false;
-                        RecoilController.MovementSpeedShotTimer = 0f;
-                    }
-
-                    StanceController.StanceShotTimer();
-                }
+                RecoilController.RecoilUpdate();
+                AudioController.GasMaskBreathController();
 
                 if (ServerConfig.headset_changes)
                 {
-                    if (Input.GetKeyDown(Plugin.IncGain.Value.MainKey) && DeafeningController.HasHeadSet)
-                    {
-                        if (Plugin.RealTimeGain.Value < 30)
-                        {
-                            Plugin.RealTimeGain.Value += 1f;
-                            Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), Plugin.LoadedAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 1.0f, EOcclusionTest.None, null, false);
-                        }
-                    }
-                    if (Input.GetKeyDown(Plugin.DecGain.Value.MainKey) && DeafeningController.HasHeadSet)
-                    {
-
-                        if (Plugin.RealTimeGain.Value > 0)
-                        {
-                            Plugin.RealTimeGain.Value -= 1f;
-                            Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), Plugin.LoadedAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 1.0f, EOcclusionTest.None, null, false);
-                        }
-                    }
+                    AudioController.HeadsetVolumeAdjust();
 
                     if (DeafeningController.PrismEffects != null)
                     {
                         DeafeningController.DoDeafening();
-                    }
-
-                    if (DeafeningController.IsBotFiring)
-                    {
-                        DeafeningController.BotTimer += Time.deltaTime;
-                        if (DeafeningController.BotTimer >= 0.5f)
-                        {
-                            DeafeningController.IsBotFiring = false;
-                            DeafeningController.BotTimer = 0f;
-                        }
-                    }
-
-                    if (DeafeningController.GrenadeExploded)
-                    {
-                        DeafeningController.GrenadeTimer += Time.deltaTime;
-                        if (DeafeningController.GrenadeTimer >= 0.7f)
-                        {
-                            DeafeningController.GrenadeExploded = false;
-                            DeafeningController.GrenadeTimer = 0f;
-                        }
                     }
                 }
 
@@ -980,7 +951,7 @@ namespace RealismMod
             FleshHitSoundMulti = Config.Bind<float>(ballSettings, "Flesh Hit Sound Multi", 1f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 60, Browsable = ServerConfig.realistic_ballistics }));
             ArmorCloseHitSoundMulti = Config.Bind<float>(ballSettings, "Close Armor Hit Sound Multi", 1f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 70, Browsable = ServerConfig.realistic_ballistics }));
             ArmorFarHitSoundMulti = Config.Bind<float>(ballSettings, "Distant Armor Hit Sound Mutli", 1f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 80, Browsable = ServerConfig.realistic_ballistics }));
-            EnableRagdollFix = Config.Bind<bool>(ballSettings, "Enable Ragdoll Fix (Experimental)", ServerConfig.realistic_ballistics, new ConfigDescription("Requiures Restart. Enables Fix For Ragdolls Flying Into The Stratosphere.", null, new ConfigurationManagerAttributes { Order = 100, Browsable = ServerConfig.realistic_ballistics }));
+            EnableRagdollFix = Config.Bind<bool>(ballSettings, "Enable Ragdoll Fix (Experimental)", false, new ConfigDescription("Requiures Restart. Enables Fix For Ragdolls Flying Into The Stratosphere.", null, new ConfigurationManagerAttributes { Order = 100, Browsable = ServerConfig.realistic_ballistics }));
             RagdollForceModifier = Config.Bind<float>(ballSettings, "Ragdoll Force Modifier", 1f, new ConfigDescription("Requires Ragdoll Fix To Be Enabled.", new AcceptableValueRange<float>(0f, 10f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 110, Browsable = ServerConfig.realistic_ballistics }));
             CanDisarmBot = Config.Bind<bool>(ballSettings, "Can Disarm Bot.", false, new ConfigDescription("If Hit In The Arms, There Is A Chance That The Currently Equipped Weapon Will Be Dropped. Chance Is Modified By Bullet Kinetic Energy And Reduced If Hit Arm Armor, And Doubled If Forearm Is Hit. WARNING: Disarmed Bots Will Become Passive And Not Attack Player, So This Is Disabled By Default.", null, new ConfigurationManagerAttributes { Order = 120, Browsable = ServerConfig.realistic_ballistics }));
             CanDisarmPlayer = Config.Bind<bool>(ballSettings, "Can Disarm Player", ServerConfig.realistic_ballistics, new ConfigDescription("If Hit In The Arms, There Is A Chance That The Currently Equipped Weapon Will Be Dropped. Chance Is Modified By Bullet Kinetic Energy And Reduced If Hit Arm Armor, And Doubled If Forearm Is Hit.", null, new ConfigurationManagerAttributes { Order = 130, Browsable = ServerConfig.realistic_ballistics }));
@@ -1008,6 +979,7 @@ namespace RealismMod
             SharedMovementVolume = Config.Bind<float>(deafSettings, "Shared Movement Volume Multi", 1f, new ConfigDescription("Multiplier For Player + NPC Sprint Volume. Has To Be Shared Due To BSG Jank.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 60, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
             NPCMovementVolume = Config.Bind<float>(deafSettings, "NPC Movement Volume Multi", 1f, new ConfigDescription("Multiplier For NPC Movement Volume. Includes Walking And Equipment Rattle.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 50, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
             PlayerMovementVolume = Config.Bind<float>(deafSettings, "Player Movement Volume Multi", 1f, new ConfigDescription("Multiplier For Player Movment Volume.  Includes Walking And Equipment Rattle.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 40, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
+            ADSVolume = Config.Bind<float>(deafSettings, "ADS Volume Multi", 1f, new ConfigDescription("ADS Volume.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 35, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
             GunshotVolume = Config.Bind<float>(deafSettings, "Gunshot Volume", -5f, new ConfigDescription("Offset For Volume Of Gunshots When Not Using Headsets. Lower = Quieter. Use Gain Cutoff For Headsets", new AcceptableValueRange<float>(-50f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = false, Browsable = ServerConfig.headset_changes }));
             RealTimeGain = Config.Bind<float>(deafSettings, "Headset Gain", 9f, new ConfigDescription("WARNING: DO NOT SET THIS TOO HIGH, IT MAY DAMAGE YOUR HEARING! Most EFT Headsets Are Set To 13 By Default, Don't Make It Much Higher. Adjusts The Gain Of Equipped Headsets In Real Time, Acts Just Like The Volume Control On IRL Ear Defenders.", new AcceptableValueRange<float>(0f, 30f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, Browsable = ServerConfig.headset_changes }));
             GainCutoff = Config.Bind<float>(deafSettings, "Headset Gain Cutoff Multi", 0.75f, new ConfigDescription("How Much Headset Gain Is Reduced By While Firing. 0.75 = 25% Reduction.", new AcceptableValueRange<float>(0f, 1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, Browsable = ServerConfig.headset_changes }));
@@ -1066,11 +1038,12 @@ namespace RealismMod
 
             ThirdPersonRotationSpeed = Config.Bind<float>(thirdPerson, "Third Person Rotation Speed Multi", 1.5f, new ConfigDescription("Speed Of Stance Rotation Change In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1000, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             ThirdPersonPositionSpeed = Config.Bind<float>(thirdPerson, "Third Person Position Speed Multi", 1.0f, new ConfigDescription("Speed Of Stance Position Change In Third Person.", new AcceptableValueRange<float>(0.1f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1100, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            PistolThirdPersonPositionX = Config.Bind<float>(thirdPerson, "Pistol Third Person Position X-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 260, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            PistolThirdPersonPositionY = Config.Bind<float>(thirdPerson, "Pistol Third Person Position Y-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 250, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            PistolThirdPersonPositionZ = Config.Bind<float>(thirdPerson, "Pistol Third Person Position Z-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 240, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            
+            PistolThirdPersonPositionX = Config.Bind<float>(thirdPerson, "Pistol Third Person Position X-Axis", -0.03f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 260, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolThirdPersonPositionY = Config.Bind<float>(thirdPerson, "Pistol Third Person Position Y-Axis", 0.04f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 250, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolThirdPersonPositionZ = Config.Bind<float>(thirdPerson, "Pistol Third Person Position Z-Axis", -0.05f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 240, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PistolThirdPersonRotationX = Config.Bind<float>(thirdPerson, "Pistol Third Person Rotation X-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 230, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            PistolThirdPersonRotationY = Config.Bind<float>(thirdPerson, "Pistol Third Person Rotation Y-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 220, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolThirdPersonRotationY = Config.Bind<float>(thirdPerson, "Pistol Third Person Rotation Y-Axis", -15f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 220, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PistolThirdPersonRotationZ = Config.Bind<float>(thirdPerson, "Pistol Third Person Rotation Z-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 210, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
             ShortStockThirdPersonPositionX = Config.Bind<float>(thirdPerson, "Short-Stock Third Person Position X-Axis", 0.03f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 200, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));

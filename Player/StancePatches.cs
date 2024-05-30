@@ -6,7 +6,6 @@ using EFT.Ballistics;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -18,7 +17,6 @@ using HackShotResult = GClass1676;
 
 namespace RealismMod
 {
-
     public class MountingPatch : ModulePatch
     {
         private static FieldInfo playerField;

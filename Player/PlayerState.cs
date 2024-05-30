@@ -4,6 +4,8 @@ namespace RealismMod
 {
     public static class PlayerState
     {
+        public static bool IsScav = false;
+
         public static float FixSkillMulti = 1f;
 
         public static float ReloadSkillMulti = 1f;
@@ -67,6 +69,8 @@ namespace RealismMod
         public static float ADSSprintMulti = 1f;
 
         public static float WeaponSkillErgo = 0f;
+
+        public static float StaminaPerc = 1f;
 
         public static float RemainingArmStamPerc = 1f;
 

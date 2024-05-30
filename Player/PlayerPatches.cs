@@ -1,4 +1,5 @@
 ﻿using Aki.Reflection.Patching;
+using Comfort.Common;
 using EFT;
 using EFT.Animations;
 using EFT.Animations.NewRecoil;
@@ -6,9 +7,7 @@ using EFT.InputSystem;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using RealismMod.Weapons;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using static EFT.Player;
@@ -196,8 +195,9 @@ namespace RealismMod
             if (__instance.IsYourPlayer)
             {
                 StatCalc.CalcPlayerWeightStats(__instance);
-                StatCalc.SetGearParamaters(__instance);
-                StatCalc.GetGearPenalty(__instance);
+                GearController.SetGearParamaters(__instance);
+                GearController.GetGearPenalty(__instance);
+                PlayerState.IsScav = Singleton<GameWorld>.Instance.MainPlayer.Profile.Info.Side == EPlayerSide.Savage;
             }
         }
     }
@@ -216,8 +216,8 @@ namespace RealismMod
             if (__instance.IsYourPlayer)
             {
                 StatCalc.CalcPlayerWeightStats(__instance);
-                StatCalc.SetGearParamaters(__instance);
-                StatCalc.GetGearPenalty(__instance);
+                GearController.SetGearParamaters(__instance);
+                GearController.GetGearPenalty(__instance);
             }
         }
     }
@@ -232,7 +232,7 @@ namespace RealismMod
         private static bool didSprintPenalties = false;
         private static bool resetSwayAfterFiring = false;
 
-        private static void doSprintTimer(ProceduralWeaponAnimation pwa, Player.FirearmController fc, float mountingBonus)
+        private static void doSprintTimer(Player player, ProceduralWeaponAnimation pwa, Player.FirearmController fc, float mountingBonus)
         {
             sprintCooldownTimer += Time.deltaTime;
 
@@ -289,11 +289,13 @@ namespace RealismMod
             }
         }
 
+        //jump too
         private static void DoSprintPenalty(Player player, Player.FirearmController fc, float mountingBonus)
         {
-            if (player.IsSprintEnabled)
+            if (player.IsSprintEnabled || !player.MovementContext.IsGrounded)
             {
-                sprintTimer += Time.deltaTime;
+                float groundedFactor = !player.MovementContext.IsGrounded ? 10f : 1f;
+                sprintTimer += Time.deltaTime * groundedFactor;
                 if (sprintTimer >= 1f)
                 {
                     PlayerState.SprintBlockADS = true;
@@ -305,7 +307,7 @@ namespace RealismMod
             {
                 if (PlayerState.WasSprinting)
                 {
-                    doSprintTimer(player.ProceduralWeaponAnimation, fc, mountingBonus);
+                    doSprintTimer(player, player.ProceduralWeaponAnimation, fc, mountingBonus);
                 }
                 if (doSwayReset)
                 {
@@ -351,10 +353,11 @@ namespace RealismMod
 
         private static void getStaminaPerc(Player player)
         {
+            float remainArmStamPercent = Mathf.Min((player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity) * (1f + PlayerState.StrengthSkillAimBuff), 1f);
+            PlayerState.StaminaPerc = player.Physical.Stamina.Current / player.Physical.Stamina.TotalCapacity;
 
-            float remainStamPercent = player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity;
-            PlayerState.RemainingArmStamPerc = 1f - ((1f - remainStamPercent) / 3f);
-            PlayerState.RemainingArmStamPercReload = Mathf.Clamp(1f - ((1f - remainStamPercent) / 4f), 0.85f, 1f); 
+            PlayerState.RemainingArmStamPerc = 1f - ((1f - remainArmStamPercent) / 3f);
+            PlayerState.RemainingArmStamPercReload = Mathf.Clamp(1f - ((1f - remainArmStamPercent) / 4f), 0.85f, 1f); 
         }
 
         private static void setStancePWAValues(Player player, FirearmController fc)

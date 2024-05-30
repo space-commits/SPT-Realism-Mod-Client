@@ -37,6 +37,55 @@ namespace RealismMod
         public static float FactoredTotalDispersion;
         public static float FactoredTotalCamRecoil;
 
+        public static void RecoilUpdate() 
+        {
+            if (RecoilController.ShotCount > RecoilController.PrevShotCount)
+            {
+                RecoilController.IsFiring = true;
+                RecoilController.IsFiringDeafen = true;
+                RecoilController.IsFiringWiggle = true;
+                StanceController.IsFiringFromStance = true;
+                RecoilController.IsFiringMovement = true;
+                RecoilController.PrevShotCount = RecoilController.ShotCount;
+            }
+
+            if (RecoilController.ShotCount == RecoilController.PrevShotCount)
+            {
+                RecoilController.DeafenShotTimer += Time.deltaTime;
+                RecoilController.WiggleShotTimer += Time.deltaTime;
+                RecoilController.ShotTimer += Time.deltaTime;
+                RecoilController.MovementSpeedShotTimer += Time.deltaTime;
+
+                if (RecoilController.ShotTimer >= Plugin.ResetTime.Value)
+                {
+                    RecoilController.IsFiring = false;
+                    RecoilController.ShotCount = 0;
+                    RecoilController.PrevShotCount = 0;
+                    RecoilController.ShotTimer = 0f;
+                }
+
+                if (RecoilController.DeafenShotTimer >= Plugin.DeafenResetDelay.Value)
+                {
+                    RecoilController.IsFiringDeafen = false;
+                    RecoilController.DeafenShotTimer = 0f;
+                }
+
+                if (RecoilController.WiggleShotTimer >= 0.12f)
+                {
+                    RecoilController.IsFiringWiggle = false;
+                    RecoilController.WiggleShotTimer = 0f;
+                }
+
+                if (RecoilController.MovementSpeedShotTimer >= 0.5f)
+                {
+                    RecoilController.IsFiringMovement = false;
+                    RecoilController.MovementSpeedShotTimer = 0f;
+                }
+
+                StanceController.StanceShotTimer();
+            }
+        }
+
         public static void DoVisualRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation, ManualLogSource logger)
         {
             float cantedRecoilSpeed = Mathf.Clamp(BaseTotalConvergence * 1.05f, 9f, 16f);

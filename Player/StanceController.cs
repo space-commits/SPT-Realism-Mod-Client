@@ -337,7 +337,7 @@ namespace RealismMod
 
                 int rndNum = UnityEngine.Random.Range(1, 10);
                 string track = rndNum <= 5 ? "knife_1.wav" : "knife_2.wav";
-                Singleton<BetterAudio>.Instance.PlayAtPoint(player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim.position, Plugin.LoadedAudioClips[track], 2, BetterAudio.AudioSourceGroupType.Distant, 100, 2, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim.position, Plugin.HitAudioClips[track], 2, BetterAudio.AudioSourceGroupType.Distant, 100, 2, EOcclusionTest.Continuous);
             }
             player.Physical.ConsumeAsMelee(2f + (WeaponStats.ErgoFactor / 100f));
         }
@@ -600,9 +600,9 @@ namespace RealismMod
                 else IsInForcedLowReady = false;
             }
 
-            HighReadyManipBuff = CurrentStance == EStance.HighReady ? 1.2f : 1f;
+            HighReadyManipBuff = CurrentStance == EStance.HighReady ? 1.22f : 1f;
             ActiveAimManipBuff = CurrentStance == EStance.ActiveAiming && Plugin.ActiveAimReload.Value ? 1.15f : 1f;
-            LowReadyManipBuff = CurrentStance == EStance.LowReady ? 1.2f : 1f;
+            LowReadyManipBuff = CurrentStance == EStance.LowReady ? 1.22f : 1f;
 
             if (ShouldResetStances)
             {
@@ -639,8 +639,12 @@ namespace RealismMod
             float movementFactor = PlayerState.IsMoving ? 1.2f : 1f;
 
             Quaternion pistolRevertQuaternion = Quaternion.Euler(Plugin.PistolResetRotationX.Value * -rotationBalanceFactor, Plugin.PistolResetRotationY.Value, Plugin.PistolResetRotationZ.Value);
-            Vector3 pistolTargetPosition = useThirdPersonStance ? new Vector3(Plugin.PistolThirdPersonPositionX.Value, Plugin.PistolThirdPersonPositionY.Value, Plugin.PistolThirdPersonPositionZ.Value) : new Vector3(Plugin.PistolOffsetX.Value, Plugin.PistolOffsetY.Value, Plugin.PistolOffsetZ.Value);
-            Vector3 pistolTargetRotation = useThirdPersonStance ? new Vector3(Plugin.PistolThirdPersonRotationX.Value, Plugin.PistolThirdPersonRotationY.Value, Plugin.PistolThirdPersonRotationZ.Value) : new Vector3(Plugin.PistolRotationX.Value, Plugin.PistolRotationY.Value, Plugin.PistolRotationZ.Value);
+            Vector3 pistolPMCTargetPosition = useThirdPersonStance ? new Vector3(Plugin.PistolThirdPersonPositionX.Value, Plugin.PistolThirdPersonPositionY.Value, Plugin.PistolThirdPersonPositionZ.Value) : new Vector3(Plugin.PistolOffsetX.Value, Plugin.PistolOffsetY.Value, Plugin.PistolOffsetZ.Value);
+            Vector3 pistolScavTargetPosition = useThirdPersonStance ? new Vector3(-0.015f, 0.02f, -0.07f) : new Vector3(0.025f, 0f, -0.04f);
+            Vector3 pistolTargetPosition = PlayerState.IsScav ? pistolScavTargetPosition : pistolPMCTargetPosition;
+            Vector3 pistolPMCTargetRotation = useThirdPersonStance ? new Vector3(Plugin.PistolThirdPersonRotationX.Value, Plugin.PistolThirdPersonRotationY.Value, Plugin.PistolThirdPersonRotationZ.Value) : new Vector3(Plugin.PistolRotationX.Value, Plugin.PistolRotationY.Value, Plugin.PistolRotationZ.Value);
+            Vector3 pistolScavTargetRotation = useThirdPersonStance ? new Vector3(-2f, -5f, 0f) : new Vector3(1f, -8f, 0f);
+            Vector3 pistolTargetRotation = PlayerState.IsScav ? pistolScavTargetRotation : pistolPMCTargetRotation;    
             Quaternion pistolTargetQuaternion = Quaternion.Euler(pistolTargetRotation);
             Quaternion pistolMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.PistolAdditionalRotationX.Value, Plugin.PistolAdditionalRotationY.Value, Plugin.PistolAdditionalRotationZ.Value));
 
@@ -787,7 +791,8 @@ namespace RealismMod
             if (Plugin.EnableTacSprint.Value && PlayerState.IsSprinting && CurrentStance != EStance.ActiveAiming
                 && (CurrentStance == EStance.HighReady || StoredStance == EStance.HighReady)
                 && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed
-                && !fc.Weapon.IsBeltMachineGun && WeaponStats.TotalWeaponWeight <= 5.5f && WeaponStats.TotalWeaponLength <= 6f)
+                && !fc.Weapon.IsBeltMachineGun && WeaponStats.TotalWeaponWeight <= 5.5f && WeaponStats.TotalWeaponLength <= 6f
+                && !PlayerState.IsScav)
             {
                 IsDoingTacSprint = true;
                 player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
@@ -1276,7 +1281,7 @@ namespace RealismMod
         {
             if (playSound)
             {
-                AccessTools.Method(typeof(Player), "method_46").Invoke(player, new object[] { volume });
+                player.method_46(volume);
             }
 
             NewRecoilShotEffect newRecoil = pwa.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;

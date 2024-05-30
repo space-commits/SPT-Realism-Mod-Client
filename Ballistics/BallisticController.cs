@@ -1,11 +1,10 @@
-﻿using BepInEx.Logging;
+﻿using Comfort.Common;
+using EFT;
 using EFT.AssetsManager;
 using EFT.InventoryLogic;
-using EFT;
 using System.Collections.Generic;
-using UnityEngine;
-using Comfort.Common;
 using System.Linq;
+using UnityEngine;
 
 namespace RealismMod
 {
@@ -70,7 +69,7 @@ namespace RealismMod
                 case EBodyHitZone.Unknown:
                     break;
                 case EBodyHitZone.AZone:
-                    di.Damage *= 1.5f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 1.55f * Plugin.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 2f;
                     di.LightBleedingDelta *= 2f;
                     return;
@@ -80,7 +79,7 @@ namespace RealismMod
                     di.LightBleedingDelta *= 1f;
                     return;
                 case EBodyHitZone.DZone:
-                    di.Damage *= 0.7f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 0.8f * Plugin.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 0.5f;
                     di.LightBleedingDelta *= 0.8f;
                     return;
@@ -124,9 +123,9 @@ namespace RealismMod
                     break;
                 case EBodyPartColliderType.PelvisBack:
                 case EBodyPartColliderType.Pelvis:
-                    di.Damage *= 0.9f * Plugin.GlobalDamageModifier.Value;
-                    di.HeavyBleedingDelta *= 0.85f;
-                    di.LightBleedingDelta *= 0.85f;
+                    di.Damage *= 1.1f * Plugin.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 1.1f;
+                    di.LightBleedingDelta *= 1.1f;
                     break;
                 case EBodyPartColliderType.RibcageUp:
                 case EBodyPartColliderType.SpineTop:
@@ -148,7 +147,7 @@ namespace RealismMod
                     break;
                 case EBodyPartColliderType.LeftSideChestUp:
                 case EBodyPartColliderType.RightSideChestUp:
-                    di.Damage *= 1.1f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 1.2f * Plugin.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 1.25f;
                     di.LightBleedingDelta *= 1.25f;
                     break;
@@ -205,7 +204,7 @@ namespace RealismMod
 
             if (part == EBodyPart.Head)
             {
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, volClose * 0.6f, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips["headshot.wav"], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, volClose * 0.6f, EOcclusionTest.Regular);
                 return;
             }
 
@@ -219,7 +218,7 @@ namespace RealismMod
                 audioClip = rndNum == 0 ? "flesh_1.wav" : rndNum == 1 ? "flesh_2.wav" : "flesh_3.wav";
             }
 
-            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.LoadedAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+            Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
         }
 
         public static EBodyHitZone ModifyDamageByHitZone(Player player, EBodyPartColliderType partHit, DamageInfo damageInfo)

@@ -61,6 +61,26 @@ namespace RealismMod
             float totalVigLimit = Mathf.Min(0.3f * deafFactor * enviroMulti, 1.5f);
             float grenadeVigLimit = Mathf.Min(GrenadeVignetteDarknessLimit * deafFactor * enviroMulti, 1.5f);
 
+            if (IsBotFiring)
+            {
+                BotTimer += Time.deltaTime;
+                if (BotTimer >= 0.5f)
+                {
+                    IsBotFiring = false;
+                    BotTimer = 0f;
+                }
+            }
+
+            if (GrenadeExploded)
+            {
+                GrenadeTimer += Time.deltaTime;
+                if (GrenadeTimer >= 0.7f)
+                {
+                    GrenadeExploded = false;
+                    GrenadeTimer = 0f;
+                }
+            }
+
             if (RecoilController.IsFiringDeafen)
             {
                 ChangeDeafValues(deafFactor, ref VignetteDarkness, Plugin.VigRate.Value, totalVigLimit, ref Volume, Plugin.DeafRate.Value, VolumeLimit, enviroMulti);

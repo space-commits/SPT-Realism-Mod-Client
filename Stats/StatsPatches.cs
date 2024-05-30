@@ -124,6 +124,40 @@ namespace RealismMod
             }
         }
 
+        public static void CalcSightAccuracy() 
+        {
+            float currentSightFactor = 1f;
+            if (Utils.IsReady)
+            {
+                int iterations = 0;
+                Player player = Utils.GetYourPlayer();
+                Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
+
+                if (currentAimingMod != null)
+                {
+                    if (AttachmentProperties.ModType(currentAimingMod) == "sight")
+                    {
+                        currentSightFactor += currentAimingMod.Accuracy / 100f;
+                    }
+                    IEnumerable<Item> parents = currentAimingMod.GetAllParentItems();
+                    foreach (Item item in parents)
+                    {
+                        if (item is Mod && AttachmentProperties.ModType(item) == "mount")
+                        {
+                            Mod mod = item as Mod;
+                            currentSightFactor += (mod.Accuracy / 100f);
+                        }
+                        iterations++;
+                        if (iterations >= 5 || !(item is Mod))
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            WeaponStats.ScopeAccuracyFactor = currentSightFactor;
+        }
+
         public static float FinalStatCalc(Weapon __instance)
         {
             WeaponStats._WeapClass = __instance.WeapClass;
@@ -451,7 +485,9 @@ namespace RealismMod
             WeaponStats.ShotDispDelta = (baseShotDisp - currentShotDisp) / (baseShotDisp * -1f);
             WeaponStats.TotalCameraReturnSpeed = currentCamReturnSpeed;
             WeaponStats.TotalModdedConv = currentConv * (!hasShoulderContact ? WeaponStats.FoldedConvergenceFactor : 1f);
-            WeaponStats.ConvergenceDelta = currentConv / __instance.Template.RecoilReturnSpeedHandRotation;  
+            WeaponStats.ConvergenceDelta = currentConv / __instance.Template.RecoilReturnSpeedHandRotation;
+
+    
         }
     }
 
@@ -471,10 +507,7 @@ namespace RealismMod
                 __result = WeaponStats.COIDelta;
                 return false;
             }
-            else
-            {
-                return true;
-            }
+            else return true;
         }
     }
 
@@ -488,43 +521,15 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result, bool includeAmmo)
         {
-            if (!Utils.IsReady) return true;
+ 
             if (__instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
-                float currentSightFactor = 1f;
-                if (Utils.IsReady)
-                {
-                    int iterations = 0;
-                    Player player = Utils.GetYourPlayer();
-                    Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
 
-                    if (currentAimingMod != null)
-                    {
-                        if (AttachmentProperties.ModType(currentAimingMod) == "sight")
-                        {
-                            currentSightFactor += currentAimingMod.Accuracy / 100f;
-                        }
-                        IEnumerable<Item> parents = currentAimingMod.GetAllParentItems();
-                        foreach (Item item in parents)
-                        {
-                            if (item is Mod && AttachmentProperties.ModType(item) == "mount")
-                            {
-                                Mod mod = item as Mod;
-                                currentSightFactor += (mod.Accuracy / 100f);
-                            }
-                            iterations++;
-                            if (iterations >= 5 || !(item is Mod))
-                            {
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                WeaponStats.ScopeAccuracyFactor = currentSightFactor;
                 bool isBracingTop = StanceController.BracingDirection == EBracingDirection.Top;
-                float mountingFactor = StanceController.IsBracing && isBracingTop ? 1.05f : StanceController.IsBracing && !isBracingTop ? 1.025f : StanceController.IsMounting && isBracingTop ? 1.1f : StanceController.IsMounting && !isBracingTop ? 1.075f : 1f;
-                float totalCoi = (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * currentSightFactor * mountingFactor * (Plugin.IncreaseCOI.Value ? 2f : 1f);
+                float mountingFactor = StanceController.IsMounting && isBracingTop ? 0.8f : StanceController.IsMounting && !isBracingTop ? 0.9f : StanceController.IsBracing && isBracingTop ? 0.95f : StanceController.IsBracing && !isBracingTop ? 0.975f : 1f;
+                float stockFactor = !WeaponStats.HasShoulderContact ? 2f : 1f;
+                float baseCOI = __instance.CenterOfImpactBase * (1f - __instance.CenterOfImpactDelta);
+                float totalCoi = baseCOI * (1f + WeaponStats.ScopeAccuracyFactor) * mountingFactor * stockFactor * (Plugin.IncreaseCOI.Value ? 2f : 1f);
 
                 if (!includeAmmo)
                 {

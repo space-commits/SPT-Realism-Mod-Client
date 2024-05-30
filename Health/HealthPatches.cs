@@ -3,6 +3,7 @@ using Comfort.Common;
 using EFT;
 using EFT.HealthSystem;
 using EFT.InventoryLogic;
+using EFT.UI.Health;
 using HarmonyLib;
 using System;
 using System.Collections;
@@ -11,6 +12,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 using static EFT.HealthSystem.ActiveHealthController;
 using static RealismMod.Attributes;
 using ExistanceClass = GClass2456;
@@ -22,6 +25,48 @@ using StamController = GClass682;
 
 namespace RealismMod
 {
+    public class HealthPanelPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(HealthParametersPanel).GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void Postfix(HealthParametersPanel __instance)
+        {
+            HealthParameterPanel _radiation = (HealthParameterPanel)AccessTools.Field(typeof(HealthParametersPanel), "_radiation").GetValue(__instance);
+            GameObject panel = __instance.gameObject;
+            if (panel.transform.childCount > 0)
+            {
+                GameObject poisoning = panel.transform.Find("Poisoning")?.gameObject;
+                if (poisoning != null)
+                {
+                    GameObject buff = poisoning.transform.Find("Buff").gameObject;
+                    if (buff != null)
+                    {
+                        //can animate it by changing the font size with ping pong, and modulate the color
+                        CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
+                        buffUI.text = "69";
+                        buffUI.color = Color.red;
+                    }
+                }
+            }
+
+            if (_radiation != null)
+            {
+                _radiation.SetParameterValue(new ValueStruct
+                {
+                    Current = Plugin.test1.Value,
+                    Minimum = 0f,
+                    Maximum = 100f
+                }, Plugin.test2.Value, 0, true);
+
+            }
+
+        }
+    }
+
     public class HealCostDisplayShortPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

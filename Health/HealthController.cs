@@ -220,7 +220,7 @@ namespace RealismMod
         {
             get
             {
-                return HasAdrenalineEffect ? 1f + PlayerState.StressResistanceFactor : 1f;
+                return HasAdrenalineEffect ? 1f + Mathf.Pow(PlayerState.StressResistanceFactor, 1.25f) : 1f;
             }
         }
 
@@ -228,7 +228,7 @@ namespace RealismMod
         {
             get
             {
-                return HasAdrenalineEffect ? 1f + (PlayerState.StressResistanceFactor * 2f) : 1f;
+                return HasAdrenalineEffect ? 1f + (PlayerState.StressResistanceFactor * 1.5f) : 1f;
             }
         }
 
@@ -452,7 +452,7 @@ namespace RealismMod
 
         public void AddBaseEFTEffectIfNoneExisting(Player player, string effect, EBodyPart bodyPart, float delayTime, float duration, float residueTime, float strength)
         {
-            if (!player.ActiveHealthController.BodyPartEffects.Effects[0].Any(v => v.Key == effect))
+            if (!player.ActiveHealthController.BodyPartEffects.Effects[0].Any(e => e.Key == effect))
             {
                 AddBasesEFTEffect(player, effect, bodyPart, delayTime, duration, residueTime, strength);
             }
@@ -460,7 +460,7 @@ namespace RealismMod
 
         public void AddToExistingBaseEFTEffect(Player player, string targetEffect, EBodyPart bodyPart, float delayTime, float? duration, float residueTime, float strength)
         {
-            if (!player.ActiveHealthController.BodyPartEffects.Effects[0].Any(v => v.Key == targetEffect))
+            if (!player.ActiveHealthController.BodyPartEffects.Effects[0].Any(e => e.Key == targetEffect))
             {
                 AddBasesEFTEffect(player, targetEffect, bodyPart, delayTime, duration, residueTime, strength);
             }
@@ -495,11 +495,11 @@ namespace RealismMod
 
         public MethodInfo GetAddBaseEFTEffectMethodInfo()
         {
-            MethodInfo effectMethodInfo = typeof(EFT.HealthSystem.ActiveHealthController).GetMethods(BindingFlags.Public | BindingFlags.Instance).First(m =>
-            m.GetParameters().Length == 6
-            && m.GetParameters()[0].Name == "bodyPart"
-            && m.GetParameters()[5].Name == "initCallback"
-            && m.IsGenericMethod);
+            MethodInfo effectMethodInfo = typeof(EFT.HealthSystem.ActiveHealthController).GetMethods(BindingFlags.Public | BindingFlags.Instance).First(e =>
+            e.GetParameters().Length == 6
+            && e.GetParameters()[0].Name == "bodyPart"
+            && e.GetParameters()[5].Name == "initCallback"
+            && e.IsGenericMethod);
             return effectMethodInfo;
         }
 
@@ -583,13 +583,13 @@ namespace RealismMod
         public void RemoveRegenEffectsOfType(EDamageType damageType)
         {
             List<HealthRegenEffect> regenEffects = activeHealthEffects.OfType<HealthRegenEffect>().ToList();
-            regenEffects.RemoveAll(x => x.DamageType == damageType);
-            activeHealthEffects.RemoveAll(x => !regenEffects.Contains(x));
+            regenEffects.RemoveAll(r => r.DamageType == damageType);
+            activeHealthEffects.RemoveAll(a => !regenEffects.Contains(a));
         }
 
         public void RemoveEffectsOfType(EHealthEffectType effectType)
         {
-            activeHealthEffects.RemoveAll(x => x.EffectType == effectType);
+            activeHealthEffects.RemoveAll(a => a.EffectType == effectType);
         }
 
         public void ResetAllEffects()
@@ -620,11 +620,11 @@ namespace RealismMod
             {
                 IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(part);
 
-                if (heavyBleedType != null && effects.Any(e => e.Type == heavyBleedType))
+                if (heavyBleedType != null && effects.Any(h => h.Type == heavyBleedType))
                 {
                     hasHeavyBleed = true;
                 }
-                if (lightBleedType != null && effects.Any(e => e.Type == lightBleedType))
+                if (lightBleedType != null && effects.Any(l => l.Type == lightBleedType))
                 {
                     hasLightBleed = true;
                 }
@@ -936,6 +936,7 @@ namespace RealismMod
                 reset5 = true;
             }
 
+
             if (effectsTime >= 1f)
             {
                 PainReliefCheck(player);
@@ -943,7 +944,7 @@ namespace RealismMod
                 effectsTime = 0f;
             }
 
-            doResourceDrain(player.ActiveHealthController, Time.deltaTime);
+            DoResourceDrain(player.ActiveHealthController, Time.deltaTime);
 
             if (healthControllerTime >= 3f) 
             {
@@ -1369,8 +1370,10 @@ namespace RealismMod
                         .Where(b => player.ActiveHealthController.GetBodyPartHealth(b).Current / player.ActiveHealthController.GetBodyPartHealth(b).Maximum < 1)
                         .OrderBy(b => player.ActiveHealthController.GetBodyPartHealth(b).Current / player.ActiveHealthController.GetBodyPartHealth(b).Maximum).FirstOrDefault();
 
-                    //IDE is a liar
-                    if(bodyPart == null) bodyPart = EBodyPart.Common;
+                    //IDE is a liar, it can be null
+#pragma warning disable CS0472 
+                    if (bodyPart == null) bodyPart = EBodyPart.Common;
+#pragma warning restore CS0472 
 
                     if (bodyPart == EBodyPart.Common)
                     {
@@ -1670,7 +1673,7 @@ namespace RealismMod
 
         }
 
-        private void doResourceDrain(ActiveHealthController hc, float dt)
+        private void DoResourceDrain(ActiveHealthController hc, float dt)
         {
             hc.ChangeEnergy(-ResourcePerTick * dt * Plugin.EnergyRateMulti.Value);
             hc.ChangeHydration(-ResourcePerTick * dt * Plugin.HydrationRateMulti.Value);

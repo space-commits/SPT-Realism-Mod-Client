@@ -845,9 +845,9 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            float num = __instance.method_10((float)__instance.Repairable.TemplateDurability);
-            float num2 = (__instance.GetBarrelDeviation() - num) / (__instance.Single_0 - num);
-            __result = UIWeaponStats.COIDelta + num2;
+            float durability = __instance.method_10((float)__instance.Repairable.TemplateDurability);
+            float durabilityFactor = (__instance.GetBarrelDeviation() - durability) / (__instance.Single_0 - durability);
+            __result = (UIWeaponStats.COIDelta * Plugin.test2.Value) + durabilityFactor;
             return false;
         }
     }
@@ -868,13 +868,13 @@ namespace RealismMod
 
         private static float GetTotalCOI(Weapon __instance, bool includeAmmo)
         {
-            float num = __instance.CenterOfImpactBase * (1f + UIWeaponStats.COIDelta);
+            float totalCOI = __instance.CenterOfImpactBase * (1f + (-UIWeaponStats.COIDelta));
             if (!includeAmmo)
             {
-                return num;
+                return totalCOI;
             }
             AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
-            return num * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
+            return totalCOI * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
         }
     }
 
