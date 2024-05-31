@@ -33,8 +33,8 @@
 	<Reference Include="ItemTemplate.Types" />
 	<Reference Include="UnityEngine.UI" />
     <Reference Include="Sirenix.Serialization" />
-	<Reference Include="Unity.TextMeshPro"/>
-	<Reference Include="UnityEngine.ImageConversionModule"/>
+	<Reference Include="Unity.TextMeshPro" />
+	<Reference Include="UnityEngine.ImageConversionModule" />
     <Reference Include="UnityEngine.TerrainPhysicsModule" />
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />

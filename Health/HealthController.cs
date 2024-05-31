@@ -314,6 +314,7 @@ namespace RealismMod
 
         public void ControllerUpdate()
         {
+            //needed for Fika
             if (!addedCustomEffectsToDict) 
             {
                 AddCustomEffectsToDict();
@@ -382,28 +383,28 @@ namespace RealismMod
             }
         }
 
-
+        //To prevent null ref exceptions while using Fika, Realism's custom effects must be added to a dicitionary of existing EFT effects
         public void AddCustomEffectsToDict() 
         {
             Type type1 = typeof(GClass2463.GClass2464);
-            FieldInfo fieldInfo1 = type1.GetField("dictionary_1", BindingFlags.NonPublic | BindingFlags.Static);
-            var effectDict1 = (Dictionary<byte, string>)fieldInfo1.GetValue(null);
+            FieldInfo dictionaryField1 = type1.GetField("dictionary_1", BindingFlags.NonPublic | BindingFlags.Static);
+            var effectDict1 = (Dictionary<byte, string>)dictionaryField1.GetValue(null);
 
             effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "ResourceRateDrain");
             effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "HealthRegen");
             effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "HealthDrain");
 
-            fieldInfo1.SetValue(null, effectDict1);
+            dictionaryField1.SetValue(null, effectDict1);
 
             Type type0 = typeof(GClass2463.GClass2464);
-            FieldInfo fieldInfo0 = type0.GetField("dictionary_0", BindingFlags.NonPublic | BindingFlags.Static);
-            var effectDict0 = (Dictionary<string, byte>)fieldInfo0.GetValue(null);
+            FieldInfo dictionaryField0 = type0.GetField("dictionary_0", BindingFlags.NonPublic | BindingFlags.Static);
+            var effectDict0 = (Dictionary<string, byte>)dictionaryField0.GetValue(null);
 
             effectDict0.Add("ResourceRateDrain", Convert.ToByte(effectDict0.Count + 1));
             effectDict0.Add("HealthRegen", Convert.ToByte(effectDict0.Count + 1));
             effectDict0.Add("HealthDrain", Convert.ToByte(effectDict0.Count + 1));
 
-            fieldInfo0.SetValue(null, effectDict0);
+            dictionaryField0.SetValue(null, effectDict0);
 
             Type typeType = typeof(GClass2463.GClass2464);
             FieldInfo typeFieldInfo = typeType.GetField("type_0", BindingFlags.NonPublic | BindingFlags.Static);

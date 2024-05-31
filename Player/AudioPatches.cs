@@ -32,7 +32,7 @@ namespace RealismMod
             if (player == null) return true;
             PhraseSpeakerClass speaker = player.Speaker;
             if (speaker == null) return true;
-            if (speaker == __instance && GearController.HasGasMask && (trigger == EPhraseTrigger.OnBreath || ((tags & ETagStatus.Dying) == ETagStatus.Dying))) 
+            if (speaker == __instance && GearController.HasGasMask && (trigger == EPhraseTrigger.OnBreath || ((tags & ETagStatus.Dying) == ETagStatus.Dying)))
             {
                 return false;
             }

@@ -49,20 +49,35 @@ namespace RealismMod
             }
         }
 
-        private static float getBreathVolume() 
+        private static float GetBreathVolume() 
         {
             return _baseBreathVolume * (2f - PlayerState.StaminaPerc);
+        }
+
+        private static string GetAudioFromStamina()
+        {
+            switch (PlayerState.StaminaPerc)
+            {
+                case <= 0.35f:
+                    return "BadlyInjured";
+                case <= 0.7f:
+                    return "Injured";
+                default:
+                    return "Healthy";
+            }
+
         }
 
         public static void PlayGasMaskBreathing(bool breathOut, Player player)
         {
             int rndNumber = UnityEngine.Random.Range(1, 4);
-            ETagStatus injury = player.HealthStatus;
+            String breathClip = player.HealthStatus.ToString();
+            if (breathClip == "Healthy") breathClip = GetAudioFromStamina();
             string inOut = breathOut ? "out" : "in";
-            string clipName = inOut + "_" + injury + rndNumber + ".wav";
+            string clipName = inOut + "_" + breathClip + rndNumber + ".wav";
             AudioClip audioClip = Plugin.GasMaskAudioClips[clipName];
             CurrentBreathClipLength = audioClip.length;
-            float playBackVolume = getBreathVolume();
+            float playBackVolume = GetBreathVolume();
 
             Utils.Logger.LogWarning("clip " + clipName);
             Utils.Logger.LogWarning("playBackVolume " + playBackVolume);

@@ -88,7 +88,7 @@ namespace RealismMod
                 ValueHandler rotationFrameSpan = (ValueHandler)rotationFrameSpanField.GetValue(__instance);
 
                 bool canDoHighReadyBonus = StanceController.IsDoingTacSprint && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed;
-                float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - (WeaponStats.ErgoFactor / 100f) * (1f - PlayerState.StrengthWeightBuff), 0.2f);
+                float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - (WeaponStats.ErgoFactor / 100f) * (1f - PlayerState.StrengthWeightBuff), 0.15f);
                 float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float stanceSpeedBonus = canDoHighReadyBonus ? 1.15f : 1f;

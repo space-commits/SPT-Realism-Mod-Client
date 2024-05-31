@@ -22,7 +22,6 @@ namespace RealismMod
                 hadGasMask = true;
                 player.SpeechSource.SetLowPassFilterParameters(1f, ESoundOcclusionType.Obstruction, 1600, 5000, true);
                 player.Muffled = true;
-
             }
             else
             {

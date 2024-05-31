@@ -12,6 +12,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using static RealismMod.Attributes;
 using System.Reflection;
+using static RealismMod.GameWorldController;
 
 namespace RealismMod
 {
@@ -588,6 +589,7 @@ namespace RealismMod
             new PlayerInitPatch().Enable();
             new FaceshieldMaskPatch().Enable();
             new PlayPhrasePatch().Enable();
+            new OnGameStartPatch().Enable();
 
             //recoil and attachments
             if (ServerConfig.recoil_attachment_overhaul) 
@@ -820,6 +822,25 @@ namespace RealismMod
             Utils.CheckIsReady();
             if (Utils.IsReady)
             {
+                if (Input.GetKeyDown(KeyCode.U))
+                {
+                    GameObject gasZone = GameObject.Find("GasZone");
+
+                    if (gasZone != null)
+                    {
+                        gasZone.transform.position = new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value);
+                        gasZone.transform.rotation = Quaternion.Euler(new Vector3(Plugin.test4.Value, Plugin.test5.Value, Plugin.test6.Value));
+                        gasZone.GetComponent<BoxCollider>().size = new Vector3(Plugin.test7.Value, Plugin.test8.Value, Plugin.test9.Value);
+                  
+                        Logger.LogWarning("player pos " + Utils.GetYourPlayer().Transform.position);
+                        Logger.LogWarning("gasZone pos " + gasZone.transform.position);
+                        Logger.LogWarning("gasZone rot " + gasZone.transform.rotation);
+                        Logger.LogWarning("gasZone size " + gasZone.GetComponent<BoxCollider>().size);
+                    }
+     
+                }
+
+
                 if (!Plugin.HasReloadedAudio)
                 {
                     LoadAudioClips();

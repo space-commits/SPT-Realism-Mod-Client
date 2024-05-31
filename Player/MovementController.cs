@@ -12,8 +12,8 @@ namespace RealismMod
         {
             {BaseBallistic.ESurfaceSound.Metal, 0.95f },
             {BaseBallistic.ESurfaceSound.MetalThin, 0.95f },
-            {BaseBallistic.ESurfaceSound.GarbageMetal, 0.75f },
-            {BaseBallistic.ESurfaceSound.Garbage, 0.75f },
+            {BaseBallistic.ESurfaceSound.GarbageMetal, 0.8f },
+            {BaseBallistic.ESurfaceSound.Garbage, 0.8f },
             {BaseBallistic.ESurfaceSound.Concrete, 1f },
             {BaseBallistic.ESurfaceSound.Asphalt, 1f },
             {BaseBallistic.ESurfaceSound.Gravel, 0.85f },
