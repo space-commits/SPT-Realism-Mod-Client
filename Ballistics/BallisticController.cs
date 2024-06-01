@@ -64,18 +64,23 @@ namespace RealismMod
         public static void CalcAfterPenStats(float actualDurability, float armorClass, float templateDurability, ref float damage, ref float penetration)
         {
             /*
-            TODO: ADD PUBLIC SPREADSHEET FOR REFERENCE
+            SPREADSHEET REFERENCE: https://docs.google.com/spreadsheets/d/1dWDbSsyMoRGRf7d012f3TVzRVyNbT4mTWk-Mkam75vs/edit?usp=sharing
             Examples with default settings (70% reduction w/ 5 falloff scaling):
                 80 pen vs. LVL10 100%   => 70%
                 75 pen vs. LVL7 100%    => 52%
                 80 pen vs. LVL7 100%    => 39%
                 80 pen vs. LVL5 100%    => 14%
             */
-            float maxReductionOnPen = 0.7f;  // TODO: EXPOSE AS CONFIG
-            float overpenFalloffScale = 5;  // TODO: EXPOSE AS CONFIG
+
+            // TODO: Possibly expose these values to the user
+            float maxReductionOnPen = 0.7f;
+            float overpenFalloffScale = 5;
 
             float relativeOverpen = Mathf.Max(penetration / 10 - armorClass, 0f) / 8;
             float overpenFactor = Mathf.Pow(relativeOverpen + 1, -overpenFalloffScale) * maxReductionOnPen;
+
+            // TODO: Test/tweak durability scaling, default linear scaling was kept in place for now
+            //       This currently rewards the player for patching up their plates regularly
             float armorFactor = 1f - (overpenFactor * (actualDurability / templateDurability));
 
             damage *= armorFactor;
