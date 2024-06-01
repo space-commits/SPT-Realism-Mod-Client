@@ -18,7 +18,8 @@ namespace RealismMod
         ResourceRate,
         PainKiller,
         Stim,
-        FoodPoisoning
+        FoodPoisoning,
+        Toxicity
     }
 
     public interface ICustomHealthEffect
@@ -86,7 +87,68 @@ namespace RealismMod
 
                 if (currentPartHP > 25f && TimeExisted % 3 == 0) 
                 {
-                    _Player.ActiveHealthController.AddEffect<HealthRegen>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
+                    _Player.ActiveHealthController.AddEffect<HealthChange>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
+                }
+            }
+        }
+    }
+
+    public class ToxicityEffect : ICustomHealthEffect
+    {
+        public RealismHealthController RealHealthController { get; set; }
+        public EBodyPart BodyPart { get; set; }
+        public int? Duration { get; }
+        public int TimeExisted { get; set; }
+        public Player _Player { get; }
+        public int Delay { get; set; }
+        public EHealthEffectType EffectType { get; }
+
+        public ToxicityEffect(int? dur, Player player, int delay, RealismHealthController realHealthController)
+        {
+            TimeExisted = 0;
+            Duration = dur;
+            _Player = player;
+            Delay = delay;
+            EffectType = EHealthEffectType.Toxicity;
+            RealHealthController = realHealthController;
+        }
+
+        private float GetDrainRate() 
+        {
+            switch (RealHealthController.DmgeTracker.TotalToxicity)
+            {
+                case < 50f:
+                    return 0f;
+                case <= 60f:
+                    return -0.15f;
+                case <= 70f:
+                    return -0.25f;
+                case <= 80f:
+                    return -0.35f;
+                case <= 90f:
+                    return -0.45f;
+                case <= 200f:
+                    return -0.55f;
+                default: 
+                    return 0f;
+            }
+        }
+
+        public void Tick()
+        {
+            if (Delay <= 0)
+            {
+                TimeExisted++;
+                if (TimeExisted % 3 == 0)
+                {
+                    for(int i = 0; i < RealHealthController.BodyParts.Length; i++) 
+                    {
+                        EBodyPart bodyPart = RealHealthController.BodyParts[i];
+                        float baseDrainRate = GetDrainRate();
+                        baseDrainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
+                        _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 1f, baseDrainRate, null);
+                    }
+                   
                 }
             }
         }
@@ -146,7 +208,7 @@ namespace RealismMod
 
                 if (HpRegened < maxHpRegen && TimeExisted % 3 == 0)
                 {
-                    _Player.ActiveHealthController.AddEffect<HealthRegen>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
+                    _Player.ActiveHealthController.AddEffect<HealthChange>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
                     HpRegened += HpPerTick;
                 }
 
@@ -193,7 +255,7 @@ namespace RealismMod
             {
                 if (Delay <= 0 && TimeExisted % 3 == 0)
                 {
-                    _Player.ActiveHealthController.AddEffect<HealthDrain>( 0f, 3f, 1f, HpPerTick, null);
+                    _Player.ActiveHealthController.AddEffect<HealthDrain>(0f, 3f, 1f, HpPerTick, null);
                     HpDrained += HpPerTick;
                 }
             }
@@ -259,7 +321,7 @@ namespace RealismMod
             {
                 if (Delay <= 0 && TimeExisted % 3 == 0)
                 {
-                    _Player.ActiveHealthController.AddEffect<HealthRegen>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
+                    _Player.ActiveHealthController.AddEffect<HealthChange>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
                     HpRegened += HpPerTick;
                 }
             }
@@ -381,9 +443,9 @@ namespace RealismMod
                 if (!addedEffect)
                 {
                     _Player.ActiveHealthController.AddEffect<ResourceRateDrain>(BodyPart, 0f, null, 0f, 0f, null);
-                    RealHealthController.AddToExistingBaseEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 1f, 20f, 5f, 1f);
+                    RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 1f, 20f, 5f, 1f);
                     RealHealthController.AddToExistingBaseEFTEffect(_Player, "Contusion", EBodyPart.Head, 1f, 20f, 5f, 0.5f);
-                    RealHealthController.AddToExistingBaseEFTEffect(_Player, "Tremor", EBodyPart.Head, 1f, 20f, 5f, 1f);
+                    RealHealthController.AddBasesEFTEffect(_Player, "Tremor", EBodyPart.Head, 1f, 20f, 5f, 1f);
 
                     addedEffect = true;
                 }
@@ -426,9 +488,9 @@ namespace RealismMod
                 if (!addedAdrenalineEffect)
                 {
                     RealHealthController.HasAdrenalineEffect = true;
-                    RealHealthController.AddToExistingBaseEFTEffect(_Player, "PainKiller", EBodyPart.Head, 0f, PositiveEffectDuration, 3f, 1f);
-                    RealHealthController.AddToExistingBaseEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 0f, NegativeEffectDuration, 3f, EffectStrength);
-                    RealHealthController.AddToExistingBaseEFTEffect(_Player, "Tremor", EBodyPart.Head, PositiveEffectDuration, NegativeEffectDuration, 3f, EffectStrength);
+                    RealHealthController.AddBaseEFTEffectIfNoneExisting(_Player, "PainKiller", EBodyPart.Head, 0f, PositiveEffectDuration, 3f, 1f);
+                    RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 0f, NegativeEffectDuration, 3f, EffectStrength);
+                    RealHealthController.AddBasesEFTEffect(_Player, "Tremor", EBodyPart.Head, PositiveEffectDuration, NegativeEffectDuration, 3f, EffectStrength);
                     addedAdrenalineEffect = true;
                 }
 
@@ -519,7 +581,7 @@ namespace RealismMod
     }
 
 
-    public class HealthRegen : EffectClass, IEffect, InterfaceOne, InterfaceTwo
+    public class HealthChange : EffectClass, IEffect, InterfaceOne, InterfaceTwo
     {
         public override void Started()
         {

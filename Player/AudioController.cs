@@ -9,7 +9,7 @@ namespace RealismMod
 {
     public static class AudioController
     {
-        private const float _baseBreathVolume = 0.25f;
+        private const float _baseBreathVolume = 0.15f;
         private static float _currentBreathClipLength = 0f;
         private static float _breathTimer = 0f;
         private static float _breathCountdown = 2.5f;
@@ -39,6 +39,8 @@ namespace RealismMod
                     _breathedOut = !_breathedOut;
                 }
             }
+
+            DeviceController.DeviceAudioController();
         }
 
         private static float GetBreathVolume() 

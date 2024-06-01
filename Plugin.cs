@@ -484,11 +484,12 @@ namespace RealismMod
             string[] hitSoundsDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\hitsounds");
             string[] gasMaskDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\gasmask");
             string[] hazardDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones");
-            string[] devicedDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones");
-
+            string[] deviceDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\devices");
 
             HitAudioClips.Clear();
             GasMaskAudioClips.Clear();
+            HazardZoneClips.Clear();
+            DeviceAudioClips.Clear();
 
             foreach (string fileDir in hitSoundsDir)
             {
@@ -502,7 +503,7 @@ namespace RealismMod
             {
                 HazardZoneClips[Path.GetFileName(fileDir)] = await RequestAudioClip(fileDir);
             }
-            foreach (string fileDir in devicedDir)
+            foreach (string fileDir in deviceDir)
             {
                 DeviceAudioClips[Path.GetFileName(fileDir)] = await RequestAudioClip(fileDir);
             }

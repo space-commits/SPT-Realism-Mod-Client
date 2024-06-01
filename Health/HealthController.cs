@@ -141,7 +141,6 @@ namespace RealismMod
         private float _healthControllerTime = 0f;
         private float _effectsTime = 0f;
         private float _reliefWaitTime = 0f;
-        private float _gasEffectTime = 0f;
 
         private float _stimOverdoseWaitTime = 0f;
         private bool _doStimOverdoseTimer = false;
@@ -210,10 +209,13 @@ namespace RealismMod
         public int ReliefDuration = 0;
         private bool hasPKStims = false;
 
-        private const int painReliefInterval = 15;
+        private const float _painReliefInterval = 15f;
         public const float PainArmThreshold = 30f;
         public const float PainReliefThreshold = 30f;
         public const float BasePKOverdoseThreshold = 45f;
+
+        private const float _hazardInterval = 10f;
+        private float _hazardWaitTime = 0f;
 
         private bool rightArmRuined = false;
         private bool leftArmRuined = false;
@@ -277,6 +279,7 @@ namespace RealismMod
                 _healthControllerTime += Time.deltaTime;
                 _effectsTime += Time.deltaTime;
                 _reliefWaitTime += Time.deltaTime;
+                _hazardWaitTime += Time.deltaTime;
                 ControllerTick();
 
                 if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
@@ -342,7 +345,7 @@ namespace RealismMod
             var effectDict1 = (Dictionary<byte, string>)dictionaryField1.GetValue(null);
 
             effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "ResourceRateDrain");
-            effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "HealthRegen");
+            effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "HealthChange");
             effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "HealthDrain");
 
             dictionaryField1.SetValue(null, effectDict1);
@@ -352,7 +355,7 @@ namespace RealismMod
             var effectDict0 = (Dictionary<string, byte>)dictionaryField0.GetValue(null);
 
             effectDict0.Add("ResourceRateDrain", Convert.ToByte(effectDict0.Count + 1));
-            effectDict0.Add("HealthRegen", Convert.ToByte(effectDict0.Count + 1));
+            effectDict0.Add("HealthChange", Convert.ToByte(effectDict0.Count + 1));
             effectDict0.Add("HealthDrain", Convert.ToByte(effectDict0.Count + 1));
 
             dictionaryField0.SetValue(null, effectDict0);
@@ -361,7 +364,7 @@ namespace RealismMod
             FieldInfo typeFieldInfo = typeType.GetField("type_0", BindingFlags.NonPublic | BindingFlags.Static);
             var typeArr = (Type[])typeFieldInfo.GetValue(null);
 
-            Type[] customTypes = new Type[] { typeof(ResourceRateDrain), typeof(HealthRegen), typeof(HealthDrain) };
+            Type[] customTypes = new Type[] { typeof(ResourceRateDrain), typeof(HealthChange), typeof(HealthDrain) };
 
             customTypes.CopyTo(typeArr, 0);
             typeFieldInfo.SetValue(null, customTypes);
@@ -494,6 +497,21 @@ namespace RealismMod
 
             activeHealthEffects.Add(newEffect);
         }
+
+        public bool AddCustomEffectIfNoneExisting(ICustomHealthEffect newEffect)
+        {
+            foreach (ICustomHealthEffect existingEff in activeHealthEffects)
+            {
+                if (existingEff.GetType() == newEffect.GetType() && existingEff.BodyPart == newEffect.BodyPart)
+                {
+                    return false;
+                }
+            }
+
+            activeHealthEffects.Add(newEffect);
+            return true;    
+        }
+
 
         public void RemoveCustomEffectOfType(Type effect, EBodyPart bodyPart)
         {
@@ -805,9 +823,9 @@ namespace RealismMod
                     RemoveBaseEFTEffect(player, EBodyPart.Head, "PainKiller");                  
                 }
 
-                if (_reliefWaitTime >= painReliefInterval)
+                if (_reliefWaitTime >= _painReliefInterval)
                 {
-                    AddToExistingBaseEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, painReliefInterval, 5f, PainTunnelStrength);
+                    AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, _painReliefInterval, 5f, PainTunnelStrength);
 
                     if (PainReliefStrength > PKOverdoseThreshold)
                     {
@@ -816,8 +834,8 @@ namespace RealismMod
                             NotificationManagerClass.DisplayWarningNotification("You Have Overdosed.", EFT.Communications.ENotificationDurationType.Long);
                             haveNotifiedPKOverdose = true;
                         }
-                        AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, painReliefInterval, 5f, 0.35f);
-                        AddToExistingBaseEFTEffect(player, "Tremor", EBodyPart.Head, 1f, painReliefInterval, 5f, 1f);
+                        AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _painReliefInterval, 5f, 0.35f);
+                        AddToExistingBaseEFTEffect(player, "Tremor", EBodyPart.Head, 1f, _painReliefInterval, 5f, 1f);
                     }
                     else haveNotifiedPKOverdose = false;
 
@@ -885,13 +903,13 @@ namespace RealismMod
             if (_healthControllerTime >= 3f && !reset5)
             {
                 PlayerInjuryStateCheck(player);
-                GasZoneHealthEffectTick(player);
                 reset5 = true;
             }
 
 
             if (_effectsTime >= 1f)
             {
+                GasZoneHealthEffectTick(player);
                 PainReliefCheck(player);
                 TickEffects();
                 _effectsTime = 0f;
@@ -1762,18 +1780,20 @@ namespace RealismMod
             float skillFactor = (1f + (player.Skills.HealthEnergy.Value / 4));
             float skillFactorInverse = (1f - (player.Skills.HealthEnergy.Value / 4));
 
-            float toxicityFactor = DmgeTracker.TotalToxicity;
+            float toxicity = DmgeTracker.TotalToxicity / 200f; //factor by immunity skill
+            float toxicityFactor = 1f - toxicity;
+            float toxicityInverse = 1f + toxicity;
 
-            PlayerState.AimMoveSpeedInjuryMulti = Mathf.Clamp(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor * skillFactor, 0.6f * percentHydroLowerLimit, 1f);
-            PlayerState.ADSInjuryMulti = Mathf.Clamp(adsInjuryMulti * percentEnergyADS * painKillerFactor * skillFactor, 0.35f * percentHydroLowerLimit, 1f);
-            PlayerState.StanceInjuryMulti = Mathf.Clamp(stanceInjuryMulti * percentEnergyStance * painKillerFactor * skillFactor, 0.65f * percentHydroLowerLimit, 1f);
-            PlayerState.ReloadInjuryMulti = Mathf.Clamp(reloadInjuryMulti * percentEnergyReload * painKillerFactor * skillFactor, 0.75f * percentHydroLowerLimit, 1f);
-            PlayerState.HealthSprintSpeedFactor = Mathf.Clamp(sprintSpeedInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor, 0.4f * percentHydroLowerLimit, 1f);
-            PlayerState.HealthSprintAccelFactor = Mathf.Clamp(sprintAccelInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor, 0.4f * percentHydroLowerLimit, 1f);
-            PlayerState.HealthWalkSpeedFactor = Mathf.Clamp(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor * skillFactor, 0.7f * percentHydroLowerLimit, 1f);
-            PlayerState.HealthStamRegenFactor = Mathf.Clamp(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor * skillFactor, 0.5f * percentHydroLowerLimit, 1f);
-            PlayerState.ErgoDeltaInjuryMulti = Mathf.Clamp(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactorInverse * skillFactorInverse, 1f, 1.3f * percentHydroLimitErgo);
-            PlayerState.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactorInverse * skillFactorInverse, 1f, 1.12f * percentHydroLimitRecoil);
+            PlayerState.AimMoveSpeedInjuryMulti = Mathf.Clamp(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor * skillFactor * toxicityFactor, 0.6f * percentHydroLowerLimit, 1f);
+            PlayerState.ADSInjuryMulti = Mathf.Clamp(adsInjuryMulti * percentEnergyADS * painKillerFactor * skillFactor * toxicityFactor, 0.35f * percentHydroLowerLimit, 1f);
+            PlayerState.StanceInjuryMulti = Mathf.Clamp(stanceInjuryMulti * percentEnergyStance * painKillerFactor * skillFactor * toxicityFactor, 0.65f * percentHydroLowerLimit, 1f);
+            PlayerState.ReloadInjuryMulti = Mathf.Clamp(reloadInjuryMulti * percentEnergyReload * painKillerFactor * skillFactor * toxicityFactor, 0.75f * percentHydroLowerLimit, 1f);
+            PlayerState.HealthSprintSpeedFactor = Mathf.Clamp(sprintSpeedInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor * toxicityFactor, 0.4f * percentHydroLowerLimit, 1f);
+            PlayerState.HealthSprintAccelFactor = Mathf.Clamp(sprintAccelInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor * toxicityFactor, 0.4f * percentHydroLowerLimit, 1f);
+            PlayerState.HealthWalkSpeedFactor = Mathf.Clamp(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor * skillFactor * toxicityFactor, 0.7f * percentHydroLowerLimit, 1f);
+            PlayerState.HealthStamRegenFactor = Mathf.Clamp(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor * skillFactor * toxicityFactor, 0.5f * percentHydroLowerLimit, 1f);
+            PlayerState.ErgoDeltaInjuryMulti = Mathf.Clamp(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactorInverse * skillFactorInverse * toxicityInverse, 1f, 1.3f * percentHydroLimitErgo);
+            PlayerState.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactorInverse * skillFactorInverse * toxicityInverse, 1f, 1.12f * percentHydroLimitRecoil);
 
             if (Plugin.ResourceRateChanges.Value)
             {
@@ -1787,7 +1807,7 @@ namespace RealismMod
                     float playerWeightFactor = PlayerState.TotalModifiedWeight >= 10f ? PlayerState.TotalModifiedWeight / 500f : 0f;
                     float sprintMulti = PlayerState.IsSprinting ? 1.45f : 1f;
                     float sprintFactor = PlayerState.IsSprinting ? 0.1f : 0f;
-                    float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * (1f - player.Skills.HealthEnergy.Value);
+                    float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * (1f - player.Skills.HealthEnergy.Value) * toxicityInverse;
                     ResourcePerTick = totalResourceRate;
                 }
             }
@@ -1795,10 +1815,18 @@ namespace RealismMod
 
         private void ApplyToxicityEffects(Player player) 
         {
-            float effectStrength = DmgeTracker.TotalToxicity / 100f;
+            if (DmgeTracker.TotalToxicity >= 50f && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Common))
+            {
+                ToxicityEffect trnqt = new ToxicityEffect(null, player, 0, this);
+                AddCustomEffect(trnqt, false);
+            }
 
-            AddToExistingBaseEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, painReliefInterval, 5f, effectStrength);
-            AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, painReliefInterval, 5f, effectStrength * 0.5f);
+            float effectStrength = DmgeTracker.TotalToxicity / 100f;
+            Utils.Logger.LogWarning("effectStrength " + effectStrength);
+            Utils.Logger.LogWarning("PainTunnelStrength " + PainTunnelStrength);
+            AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, _hazardInterval, 5f, effectStrength);
+            if (DmgeTracker.TotalToxicity >= 50f) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, 0.35f);
+            _hazardWaitTime = 0f;
         }
 
         private int GetNextLowestToxicityLevel(int value)
@@ -1810,32 +1838,39 @@ namespace RealismMod
         {
             if (PlayerHazardBridge == null)
             {
-                PlayerHazardBridge = player.gameObject.AddComponent<PlayerHazardBridge>();
+                PlayerHazardBridge = player.gameObject.GetComponent<PlayerHazardBridge>();
             }
 
-            if (PlayerHazardBridge.IsInGasZone)
+            if (PlayerHazardBridge.IsInGasZone && GearController.CurrentMaskProtection < 1f)
             {
                 Utils.Logger.LogWarning("Increasing Toxicity");
-                float increase = PlayerHazardBridge.GasAmount * (1f - GearController.CurrentMaskProtection);
-                DmgeTracker.TotalToxicity += increase; //factor by immunity skill and whatever else;
+                float increase = PlayerHazardBridge.GasAmount * (1f - GearController.CurrentMaskProtection) * (1f - PlayerState.ImmuneSkillWeak);
+                DmgeTracker.TotalToxicity += increase;
                 DmgeTracker.ToxicityRate = increase;
             }
-            else if (DmgeTracker.TotalToxicity > 0f)
+            else if (DmgeTracker.TotalToxicity > 0f || GearController.CurrentMaskProtection >= 1f)
             {
                 Utils.Logger.LogWarning("Reducing Toxicity Passively");
-                float reduction = -1f; //factor by immunity skill and whatever else
-                DmgeTracker.TotalToxicity = Mathf.Clamp(DmgeTracker.TotalToxicity + reduction, GetNextLowestToxicityLevel((int)DmgeTracker.TotalToxicity), 100f);
-                DmgeTracker.ToxicityRate = reduction;
+                float reduction = -0.1f * (1f + PlayerState.ImmuneSkillStrong); 
+                float threshold = DmgeTracker.TotalToxicity < 50f ? 0f : GetNextLowestToxicityLevel((int)DmgeTracker.TotalToxicity);
+                DmgeTracker.TotalToxicity = Mathf.Clamp(DmgeTracker.TotalToxicity + reduction, threshold, 100f);
+                DmgeTracker.ToxicityRate = DmgeTracker.TotalToxicity == threshold ? 0f : reduction;
             }
             else 
             {
                 DmgeTracker.ToxicityRate = 0f;
             }
 
+            if (DmgeTracker.TotalToxicity <= 0f) 
+            {
+                RemoveCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Common);
+            }
+
+            Utils.Logger.LogWarning("Is In Gas Zone " + PlayerHazardBridge.IsInGasZone);
             Utils.Logger.LogWarning("Current Rate " + DmgeTracker.ToxicityRate);
             Utils.Logger.LogWarning("Current Toxicity " + DmgeTracker.TotalToxicity);
 
-            if (DmgeTracker.TotalToxicity >= 10f) ApplyToxicityEffects(player);
+            if (DmgeTracker.TotalToxicity >= 10f && _hazardWaitTime > _hazardInterval) ApplyToxicityEffects(player);
 
             //todo: if took AI-2 or antidote of somekind, reduce toxicity level
 

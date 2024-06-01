@@ -54,7 +54,7 @@ namespace RealismMod
             return containedItem.GetItemComponent<EquipmentPenaltyComponent>();
         }
 
-        private static EquipmentPenaltyComponent CheckFaceCoverGear(Player player, ref bool isGasMask, ref float gasProtection)
+        public static EquipmentPenaltyComponent CheckFaceCoverGear(Player player, ref bool isGasMask, ref float gasProtection)
         {
             Item containedItem = player.Inventory.Equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
             if (containedItem == null)

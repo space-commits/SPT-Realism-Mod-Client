@@ -191,15 +191,15 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player __instance)
         {
-
-            if (__instance.IsYourPlayer)
+           if (__instance.IsYourPlayer)
             {
                 StatCalc.CalcPlayerWeightStats(__instance);
                 GearController.SetGearParamaters(__instance);
                 GearController.GetGearPenalty(__instance);
                 PlayerState.IsScav = Singleton<GameWorld>.Instance.MainPlayer.Profile.Info.Side == EPlayerSide.Savage;
-                PlayerHazardBridge hazardZone = __instance.gameObject.AddComponent<PlayerHazardBridge>();
             }
+            PlayerHazardBridge hazardBridge = __instance.gameObject.AddComponent<PlayerHazardBridge>();
+            hazardBridge._Player = __instance;  
         }
     }
 

@@ -1,27 +1,51 @@
-﻿using EFT.Interactive;
-using EFT;
+﻿using EFT;
+using EFT.Interactive;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-using Comfort.Common;
-using static RootMotion.FinalIK.AimPoser;
+using ExistanceClass = GClass2456;
 
 namespace RealismMod
 {
     public class PlayerHazardBridge : MonoBehaviour
     {
+        public Player _Player { get; set; }
         public bool IsInGasZone { get; set; } = false;
         public float GasAmount { get; set; } = 0f;
+        private float _bridgeTimer = 0f;
+
+        void Update() 
+        {
+            _bridgeTimer = Time.deltaTime;
+            if (_bridgeTimer >= 5f) 
+            {
+                //temporary solution to dealing with bots
+                if (_Player != null && _Player.IsAI && IsInGasZone) 
+                {
+                    bool hasMask = false;
+                    float protectionLevel = 0f;
+                    GearController.CheckFaceCoverGear(_Player, ref hasMask, ref protectionLevel);
+                    if (protectionLevel < 1f) 
+                    {
+                        protectionLevel = 1f - protectionLevel;
+                        _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, GasAmount * protectionLevel, ExistanceClass.PoisonDamage);
+                        Utils.Logger.LogWarning("Gassing Bot: " + GasAmount * protectionLevel);
+                    }
+                }
+                _bridgeTimer = 0f;
+            }
+        }
     }
 
     public class GasZone : TriggerWithId
     {
+        public float GasStrengthModifier = 1f;
         private Dictionary<Player, PlayerHazardBridge> _containedPlayers = new Dictionary<Player, PlayerHazardBridge>();
         private BoxCollider _zoneCollider;
         private float _audioTimer = 0f;
         private float _audioClipLength= 0f;
         private float _tick = 0f;
+        private float _maxDistance = 0f;
 
         void Start()
         {
@@ -30,13 +54,15 @@ namespace RealismMod
             {
                 Utils.Logger.LogError("Realism Mod: No BoxCollider found in parent for GasZone");
             }
+            Vector3 boxSize = _zoneCollider.size;
+            _maxDistance = boxSize.magnitude / 2f;
         }
 
         public override void TriggerEnter(Player player)
         {
             if (player != null)
             {
-                Utils.Logger.LogWarning("enter " + player.Id);
+                Utils.Logger.LogWarning("enter " + player.ProfileId);
                 PlayerHazardBridge hazardBridge = player.GetComponent<PlayerHazardBridge>();
                 hazardBridge.IsInGasZone = true;
                 _containedPlayers.Add(player, hazardBridge);
@@ -47,7 +73,7 @@ namespace RealismMod
         {
             if (player != null)
             {
-                Utils.Logger.LogWarning("exit " + player.Id);
+                Utils.Logger.LogWarning("exit " + player.ProfileId);
                 PlayerHazardBridge hazardBridge = _containedPlayers[player];
                 hazardBridge.GasAmount = 0f;
                 hazardBridge.IsInGasZone = false;
@@ -57,7 +83,6 @@ namespace RealismMod
 
         void Update()
         {
-
             _tick += Time.deltaTime;
 
             if (_tick >= 0.25f) 
@@ -67,9 +92,11 @@ namespace RealismMod
                 {
                     Player player = p.Key;
                     PlayerHazardBridge hazardBridge = p.Value;
-                    float gasAmount = CalculateDepthInsideTrigger(player.Transform.position);
-                    hazardBridge.GasAmount = gasAmount <= 0f ? 0f : gasAmount; 
-                    Utils.Logger.LogWarning("current gas amount " + hazardBridge.GasAmount);
+                    float gasAmount = CalculateGasStrength(player.gameObject.transform.position);
+                    hazardBridge.GasAmount = gasAmount <= 0f ? 0f : gasAmount;
+                    Utils.Logger.LogWarning("Gas strength " + hazardBridge.GasAmount);
+  /*                  Utils.Logger.LogWarning("zone center " + _zoneCollider.bounds.center);
+                    Utils.Logger.LogWarning("player position " + player.gameObject.transform.position);*/
                 }
             }
 
@@ -84,26 +111,18 @@ namespace RealismMod
                       }*/
         }
 
-        float CalculateDepthInsideTrigger(Vector3 playerPosition)
+        float CalculateGasStrength(Vector3 playerPosition)
         {
-            // Convert the player's world position to the local position relative to the BoxCollider
-            Vector3 localPlayerPosition = transform.InverseTransformPoint(playerPosition);
+            float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
 
-            // Get the extents of the BoxCollider
-            Vector3 extents = _zoneCollider.size / 2;
+            // Invert the distance
+            float invertedDistance = _maxDistance - distance;
 
-            // Calculate the distances to each face of the BoxCollider
-            float distanceToFront = extents.z - localPlayerPosition.z;
-            float distanceToBack = extents.z + localPlayerPosition.z;
-            float distanceToLeft = extents.x - localPlayerPosition.x;
-            float distanceToRight = extents.x + localPlayerPosition.x;
-            float distanceToTop = extents.y - localPlayerPosition.y;
-            float distanceToBottom = extents.y + localPlayerPosition.y;
+            // Optionally, clamp the inverted distance to ensure it's within desired bounds
+            invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance);
 
-            // Determine the minimum distance to any boundary (this is the "depth" inside the trigger)
-            float depth = Mathf.Min(distanceToFront, distanceToBack, distanceToLeft, distanceToRight, distanceToTop, distanceToBottom);
 
-            return depth;
+            return invertedDistance / GasStrengthModifier;
         }
     }
 }

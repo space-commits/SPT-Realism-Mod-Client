@@ -27,6 +27,8 @@ namespace RealismMod
 {
     public class HealthPanelPatch : ModulePatch
     {
+        private static float _updateTime = 0f;
+
         protected override MethodBase GetTargetMethod()
         {
             return typeof(HealthParametersPanel).GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
@@ -38,13 +40,13 @@ namespace RealismMod
             {
                 case 0:
                     return Color.white;
-                case <= 0.25f:
+                case <= 25f:
                     return Color.yellow;
-                case <= 0.5f:
+                case <= 50f:
                     return new Color(1.0f, 0.647f, 0.0f);
-                case <= 0.75f:
+                case <= 75f:
                     return new Color(1.0f, 0.25f, 0.0f);
-                case <= 1f:
+                case <= 200f:
                     return Color.red;
                 default: 
                     return Color.white;    
@@ -59,67 +61,74 @@ namespace RealismMod
                     return Color.green;
                 case 0:
                     return new Color(0.4549f, 0.4824f, 0.4941f, 1f);
-                case <= 0.25f:
-                    return Color.yellow;
                 case <= 0.5f:
-                    return new Color(1.0f, 0.647f, 0.0f);
-                case <= 0.75f:
-                    return new Color(1.0f, 0.25f, 0.0f);
+                    return Color.yellow;
                 case <= 1f:
+                    return new Color(1.0f, 0.647f, 0.0f);
+                case <= 2.5f:
+                    return new Color(1.0f, 0.25f, 0.0f);
+                case <= 5f:
                     return Color.red;
                 default:
                     return Color.white;
             }
         }
 
+
         [PatchPostfix]
         private static void Postfix(HealthParametersPanel __instance)
         {
-            HealthParameterPanel _radiation = (HealthParameterPanel)AccessTools.Field(typeof(HealthParametersPanel), "_radiation").GetValue(__instance);
-            GameObject panel = __instance.gameObject;
-            if (panel.transform.childCount > 0)
+            _updateTime += Time.deltaTime;
+
+            if (_updateTime >= 1f) 
             {
-                GameObject poisoning = panel.transform.Find("Poisoning")?.gameObject;
-                if (poisoning != null)
+                _updateTime = 0f;
+                HealthParameterPanel _radiation = (HealthParameterPanel)AccessTools.Field(typeof(HealthParametersPanel), "_radiation").GetValue(__instance);
+                GameObject panel = __instance.gameObject;
+                if (panel.transform.childCount > 0)
                 {
-                    GameObject buff = poisoning.transform.Find("Buff")?.gameObject;
-                    GameObject current = poisoning.transform.Find("Current")?.gameObject;
-                    if (buff != null)
+                    GameObject poisoning = panel.transform.Find("Poisoning")?.gameObject;
+                    if (poisoning != null)
                     {
-                        float toxicityRate = Plugin.RealHealthController.DmgeTracker.ToxicityRate;
-                        //can animate it by changing the font size with ping pong, and modulate the color
-#pragma warning disable CS0618 
-                        CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
-#pragma warning restore CS0618 
-                        buffUI.text = toxicityRate.ToString("0.00");
-                        buffUI.color = GetCurrentColor(toxicityRate);
-                        buffUI.fontSize = Plugin.test1.Value;
-                    }
-                    if (current != null) 
-                    {
-                        Utils.Logger.LogWarning("found Current");
-                        float toxicityLevel = Plugin.RealHealthController.DmgeTracker.TotalToxicity;
-                        //can animate it by changing the font size with ping pong, and modulate the color
-#pragma warning disable CS0618 
-                        CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
-#pragma warning restore CS0618 
-                        buffUI.text = toxicityLevel.ToString();
-                        buffUI.color = GetCurrentColor(toxicityLevel);
-                        buffUI.fontSize = Plugin.test2.Value;
+                        GameObject buff = poisoning.transform.Find("Buff")?.gameObject;
+                        GameObject current = poisoning.transform.Find("Current")?.gameObject;
+                        if (buff != null)
+                        {
+                            float toxicityRate = Plugin.RealHealthController.DmgeTracker.ToxicityRate;
+                            //can animate it by changing the font size with ping pong, and modulate the color
+#pragma warning disable CS0618
+                            CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
+#pragma warning restore CS0618
+                            buffUI.text = (toxicityRate > 0f ? "+" : "") + toxicityRate.ToString("0.00");
+                            buffUI.color = GetRateColor(toxicityRate);
+                            buffUI.fontSize = 14f;
+                        }
+                        if (current != null)
+                        {
+                            float toxicityLevel = Mathf.Round(Plugin.RealHealthController.DmgeTracker.TotalToxicity);
+                            //can animate it by changing the font size with ping pong, and modulate the color
+#pragma warning disable CS0618
+                            CustomTextMeshProUGUI currentUI = current.GetComponent<CustomTextMeshProUGUI>();
+#pragma warning restore CS0618
+                            currentUI.text = toxicityLevel.ToString();
+                            currentUI.color = GetCurrentColor(toxicityLevel);
+                            currentUI.fontSize = 30f;
+                        }
                     }
                 }
+
+                /*           if (_radiation != null)
+                           {
+                               _radiation.SetParameterValue(new ValueStruct
+                               {
+                                   Current = Plugin.test1.Value,
+                                   Minimum = 0f,
+                                   Maximum = 100f
+                               }, Plugin.test2.Value, 0, true);
+
+                           }*/
             }
 
- /*           if (_radiation != null)
-            {
-                _radiation.SetParameterValue(new ValueStruct
-                {
-                    Current = Plugin.test1.Value,
-                    Minimum = 0f,
-                    Maximum = 100f
-                }, Plugin.test2.Value, 0, true);
-
-            }*/
 
         }
     }
