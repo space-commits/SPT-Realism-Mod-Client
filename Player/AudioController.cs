@@ -9,22 +9,14 @@ namespace RealismMod
 {
     public static class AudioController
     {
-
         private const float _baseBreathVolume = 0.25f;
-        public static float CurrentBreathClipLength {  get; private set; }
+        private static float _currentBreathClipLength = 0f;
         private static float _breathTimer = 0f;
         private static float _breathCountdown = 2.5f;
         private static bool _breathedOut = false;
 
         public static void GasMaskBreathController()
         {
-          
-/*            Utils.Logger.LogWarning("Busy " + player.Speaker.Busy);
-            Utils.Logger.LogWarning("QueuedEvent " + player.Speaker.QueuedEvent);
-            Utils.Logger.LogWarning("Speaking " + player.Speaker.Speaking);
-            if (player.Speaker.Clip != null) player.Speaker.Clip.ToString();*/
-    /*        Utils.Logger.LogWarning("TimeLeft " + player.Speaker.TimeLeft);*/
-
             _breathTimer += Time.deltaTime;
             if (GearController.HasGasMask && _breathCountdown > 0f)
             {
@@ -35,7 +27,7 @@ namespace RealismMod
                 _breathCountdown = 2.5f;
             }
 
-            if (_breathTimer > CurrentBreathClipLength && _breathCountdown <= 0f && GearController.HasGasMask) 
+            if (_breathTimer > _currentBreathClipLength && _breathCountdown <= 0f && GearController.HasGasMask) 
             {
                 Player player = Utils.GetYourPlayer();
                 bool isNotBusy = !player.Speaker.Busy || player.Speaker.Speaking == false;
@@ -76,12 +68,12 @@ namespace RealismMod
             string inOut = breathOut ? "out" : "in";
             string clipName = inOut + "_" + breathClip + rndNumber + ".wav";
             AudioClip audioClip = Plugin.GasMaskAudioClips[clipName];
-            CurrentBreathClipLength = audioClip.length;
+            _currentBreathClipLength = audioClip.length;
             float playBackVolume = GetBreathVolume();
 
-            Utils.Logger.LogWarning("clip " + clipName);
+/*            Utils.Logger.LogWarning("clip " + clipName);
             Utils.Logger.LogWarning("playBackVolume " + playBackVolume);
-
+*/
             player.SpeechSource.SetLowPassFilterParameters(1f, ESoundOcclusionType.Obstruction, 1600, 5000, true);
             Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), audioClip, 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, playBackVolume, EOcclusionTest.None, null, false);
         }

@@ -64,9 +64,9 @@ namespace RealismMod
             return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 12) && bool.TryParse(armorItem.ConflictingItems[12], out bool result) ? result : false;
         }
 
-        public static bool HasNeckArmor(Item armorItem)
+        public static float GasProtection(Item armorItem)
         {
-            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 13) && bool.TryParse(armorItem.ConflictingItems[13], out bool result) ? result : false;
+            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 13) && float.TryParse(armorItem.ConflictingItems[13], out float result) ? result : 0f;
         }
 
         public static float DbLevel(Item armorItem)

@@ -11,22 +11,24 @@ namespace RealismMod
     public static class GearController
     {
         public static bool HasGasMask { get; set; }
-        private static bool hadGasMask = true;
+        public static float CurrentMaskProtection { get; private set; } = 0f; 
+        private static bool _hadGasMask = true;
 
-        private static void HandleGasMaskEffects(Player player, bool hasGasMask) 
+        private static void HandleGasMaskEffects(Player player, bool hasGasMask, float gasProtection) 
         {
             if (hasGasMask)
             {
-                Utils.Logger.LogWarning("has gas mask");
                 HasGasMask = true;
-                hadGasMask = true;
+                CurrentMaskProtection = gasProtection;
+                _hadGasMask = true;
+/*                player.Say(EPhraseTrigger.OnBeingHurt, true, 0f, (ETagStatus)0, 100, false); //force to reset audio*/
                 player.SpeechSource.SetLowPassFilterParameters(1f, ESoundOcclusionType.Obstruction, 1600, 5000, true);
                 player.Muffled = true;
             }
             else
             {
-                Utils.Logger.LogWarning("does not have gas mask");
                 HasGasMask = false;
+                CurrentMaskProtection = 0f;
                 player.SpeechSource.ResetFilters();
             }
 
@@ -34,14 +36,11 @@ namespace RealismMod
             player.UpdateOcclusion();
             player.SendVoiceMuffledState(player.Muffled);
 
-            if (!hasGasMask && hadGasMask && player.HealthStatus == ETagStatus.Dying) 
+            if (!hasGasMask && _hadGasMask && player.HealthStatus == ETagStatus.Dying) 
             {
-                player.Say(EPhraseTrigger.OnBreath, true, 0f, (ETagStatus)0, 100, false);
-                hadGasMask = false;
+                player.Say(EPhraseTrigger.OnBreath, true, 0f, (ETagStatus)0, 100, false); //force to reset audio
+                _hadGasMask = false;
             }
-
-            //player.Say(EPhraseTrigger.OnBeingHurt, true, 0f, (ETagStatus)0, 100, false); this actually works for forcing voice change, and for resetting after taking it off
-
         }
 
 
@@ -55,7 +54,7 @@ namespace RealismMod
             return containedItem.GetItemComponent<EquipmentPenaltyComponent>();
         }
 
-        private static EquipmentPenaltyComponent CheckFaceCoverGearPenalty(Player player, ref bool isGasMask)
+        private static EquipmentPenaltyComponent CheckFaceCoverGear(Player player, ref bool isGasMask, ref float gasProtection)
         {
             Item containedItem = player.Inventory.Equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
             if (containedItem == null)
@@ -63,6 +62,8 @@ namespace RealismMod
                 return null;
             }
             isGasMask = GearStats.IsGasMask(containedItem);
+            gasProtection = GearStats.GasProtection(containedItem);
+
             return containedItem.GetItemComponent<EquipmentPenaltyComponent>();
         }
 
@@ -75,6 +76,7 @@ namespace RealismMod
             bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
             bool thermalIsOn = thermComponent != null && (thermComponent.Togglable == null || thermComponent.Togglable.On);
             bool hasGasMask = false;
+            float gasProtection = 0f;
 
             List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(20);
             player.Inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
@@ -107,7 +109,7 @@ namespace RealismMod
                 totalErgo += rig.Template.WeaponErgonomicPenalty;
                 totalSpeed += rig.Template.SpeedPenaltyPercent;
             }
-            EquipmentPenaltyComponent faceCover = CheckFaceCoverGearPenalty(player, ref hasGasMask);
+            EquipmentPenaltyComponent faceCover = CheckFaceCoverGear(player, ref hasGasMask, ref gasProtection);
             if (faceCover != null)
             {
                 totalErgo += faceCover.Template.WeaponErgonomicPenalty;
@@ -125,7 +127,7 @@ namespace RealismMod
             PlayerState.GearErgoPenalty = 1f + totalErgo;
             PlayerState.GearSpeedPenalty = 1f + totalSpeed;
 
-            HandleGasMaskEffects(player, hasGasMask);
+            HandleGasMaskEffects(player, hasGasMask, gasProtection);
 
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
             if (fc != null)

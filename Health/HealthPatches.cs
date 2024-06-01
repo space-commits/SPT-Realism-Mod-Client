@@ -32,6 +32,46 @@ namespace RealismMod
             return typeof(HealthParametersPanel).GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }
 
+        private static Color GetCurrentColor(float level) 
+        {
+            switch(level) 
+            {
+                case 0:
+                    return Color.white;
+                case <= 0.25f:
+                    return Color.yellow;
+                case <= 0.5f:
+                    return new Color(1.0f, 0.647f, 0.0f);
+                case <= 0.75f:
+                    return new Color(1.0f, 0.25f, 0.0f);
+                case <= 1f:
+                    return Color.red;
+                default: 
+                    return Color.white;    
+            }
+        }
+
+        private static Color GetRateColor(float level)
+        {
+            switch (level)
+            {
+                case < 0:
+                    return Color.green;
+                case 0:
+                    return new Color(0.4549f, 0.4824f, 0.4941f, 1f);
+                case <= 0.25f:
+                    return Color.yellow;
+                case <= 0.5f:
+                    return new Color(1.0f, 0.647f, 0.0f);
+                case <= 0.75f:
+                    return new Color(1.0f, 0.25f, 0.0f);
+                case <= 1f:
+                    return Color.red;
+                default:
+                    return Color.white;
+            }
+        }
+
         [PatchPostfix]
         private static void Postfix(HealthParametersPanel __instance)
         {
@@ -42,18 +82,35 @@ namespace RealismMod
                 GameObject poisoning = panel.transform.Find("Poisoning")?.gameObject;
                 if (poisoning != null)
                 {
-                    GameObject buff = poisoning.transform.Find("Buff").gameObject;
+                    GameObject buff = poisoning.transform.Find("Buff")?.gameObject;
+                    GameObject current = poisoning.transform.Find("Current")?.gameObject;
                     if (buff != null)
                     {
+                        float toxicityRate = Plugin.RealHealthController.DmgeTracker.ToxicityRate;
                         //can animate it by changing the font size with ping pong, and modulate the color
+#pragma warning disable CS0618 
                         CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
-                        buffUI.text = "69";
-                        buffUI.color = Color.red;
+#pragma warning restore CS0618 
+                        buffUI.text = toxicityRate.ToString("0.00");
+                        buffUI.color = GetCurrentColor(toxicityRate);
+                        buffUI.fontSize = Plugin.test1.Value;
+                    }
+                    if (current != null) 
+                    {
+                        Utils.Logger.LogWarning("found Current");
+                        float toxicityLevel = Plugin.RealHealthController.DmgeTracker.TotalToxicity;
+                        //can animate it by changing the font size with ping pong, and modulate the color
+#pragma warning disable CS0618 
+                        CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
+#pragma warning restore CS0618 
+                        buffUI.text = toxicityLevel.ToString();
+                        buffUI.color = GetCurrentColor(toxicityLevel);
+                        buffUI.fontSize = Plugin.test2.Value;
                     }
                 }
             }
 
-            if (_radiation != null)
+ /*           if (_radiation != null)
             {
                 _radiation.SetParameterValue(new ValueStruct
                 {
@@ -62,7 +119,7 @@ namespace RealismMod
                     Maximum = 100f
                 }, Plugin.test2.Value, 0, true);
 
-            }
+            }*/
 
         }
     }
@@ -692,12 +749,12 @@ namespace RealismMod
 
                     if (damageType == EDamageType.Dehydration)
                     {
-                        Plugin.RealHealthController.DmgTracker.TotalDehydrationDamage += damage;
+                        Plugin.RealHealthController.DmgeTracker.TotalDehydrationDamage += damage;
                         return;
                     }
                     if (damageType == EDamageType.Exhaustion)
                     {
-                        Plugin.RealHealthController.DmgTracker.TotalExhaustionDamage += damage;
+                        Plugin.RealHealthController.DmgeTracker.TotalExhaustionDamage += damage;
                         return;
                     }
                     if ((damageType == EDamageType.Fall && damage <= 20f))
@@ -717,7 +774,7 @@ namespace RealismMod
                     }
                     if (damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding)
                     {
-                        Plugin.RealHealthController.DmgTracker.UpdateDamage(damageType, bodyPart, damage);
+                        Plugin.RealHealthController.DmgeTracker.UpdateDamage(damageType, bodyPart, damage);
                         return;
                     }
                     if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= 17f) || (damageType == EDamageType.Blunt && damage >= 10f))

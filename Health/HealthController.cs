@@ -90,58 +90,6 @@ namespace RealismMod
         };
     }
 
-    public class DamageTracker
-    {
-        public Dictionary<EDamageType, Dictionary<EBodyPart, float>> DamageRecord = new Dictionary<EDamageType, Dictionary<EBodyPart, float>>();
-
-        public float TotalHeavyBleedDamage = 0f;
-        public float TotalLightBleedDamage = 0f;
-        public float TotalDehydrationDamage = 0f;
-        public float TotalExhaustionDamage = 0f;
-
-        //need to differentiate between head and body blunt damage
-        public void UpdateDamage(EDamageType damageType, EBodyPart bodyPart, float damage)
-        {
-            switch (damageType)
-            {
-                case EDamageType.HeavyBleeding:
-                    TotalHeavyBleedDamage += damage;
-                    return;
-                case EDamageType.LightBleeding:
-                    TotalLightBleedDamage += damage;
-                    return;
-            }
-
-            if (!DamageRecord.ContainsKey(damageType))
-            {
-                DamageRecord[damageType] = new Dictionary<EBodyPart, float>();
-            }
-
-            Dictionary<EBodyPart, float> innerDict = DamageRecord[damageType];
-            if (!innerDict.ContainsKey(bodyPart))
-            {
-                innerDict[bodyPart] = damage;
-            }
-            else
-            {
-                innerDict[bodyPart] += damage;
-            }
-        }
-
-        public void ResetTracker()
-        {
-            if (DamageRecord.Any()) 
-            {
-                DamageRecord.Clear();
-            }
- 
-            TotalHeavyBleedDamage = 0f;
-            TotalLightBleedDamage = 0f;
-            TotalDehydrationDamage = 0f;
-            TotalExhaustionDamage = 0f;
-        }
-    }
-
     public enum EStimType 
     {
         Regenerative,
@@ -188,15 +136,18 @@ namespace RealismMod
 
         private List<EStimType> activeStimOverdoses = new List<EStimType>();
 
-        public DamageTracker DmgTracker { get; }
+        public DamageTracker DmgeTracker { get; }
 
-        private float healthControllerTime = 0f;
-        private float effectsTime = 0f;
-        private float reliefWaitTime = 0f;
+        private float _healthControllerTime = 0f;
+        private float _effectsTime = 0f;
+        private float _reliefWaitTime = 0f;
+        private float _gasEffectTime = 0f;
 
-        private float stimOverdoseWaitTime = 0f;
-        private bool doStimOverdoseTimer = false;
-        private string overdoseEffectToAdd = "";
+        private float _stimOverdoseWaitTime = 0f;
+        private bool _doStimOverdoseTimer = false;
+        private string _overdoseEffectToAdd = "";
+
+        public PlayerHazardBridge PlayerHazardBridge { get;  private set; }
 
         public bool HasAdrenalineEffect { get; set; } = false;
 
@@ -309,7 +260,7 @@ namespace RealismMod
 
         public RealismHealthController(DamageTracker dmgTracker) 
         {
-            DmgTracker = dmgTracker;
+            DmgeTracker = dmgTracker;
         }
 
         public void ControllerUpdate()
@@ -323,9 +274,9 @@ namespace RealismMod
 
             if (!Utils.IsInHideout && Utils.IsReady)
             {
-                healthControllerTime += Time.deltaTime;
-                effectsTime += Time.deltaTime;
-                reliefWaitTime += Time.deltaTime;
+                _healthControllerTime += Time.deltaTime;
+                _effectsTime += Time.deltaTime;
+                _reliefWaitTime += Time.deltaTime;
                 ControllerTick();
 
                 if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
@@ -354,14 +305,14 @@ namespace RealismMod
                     clickTriggered = false;
                 }
 
-                if (doStimOverdoseTimer)
+                if (_doStimOverdoseTimer)
                 {
-                    stimOverdoseWaitTime += Time.deltaTime;
-                    if (stimOverdoseWaitTime >= 10f)
+                    _stimOverdoseWaitTime += Time.deltaTime;
+                    if (_stimOverdoseWaitTime >= 10f)
                     {
-                        AddStimDebuffs(Utils.GetYourPlayer(), overdoseEffectToAdd);
-                        doStimOverdoseTimer = false;
-                        stimOverdoseWaitTime = 0f;
+                        AddStimDebuffs(Utils.GetYourPlayer(), _overdoseEffectToAdd);
+                        _doStimOverdoseTimer = false;
+                        _stimOverdoseWaitTime = 0f;
                     }
                 }
             }
@@ -369,7 +320,7 @@ namespace RealismMod
             if (Utils.IsInHideout || !Utils.IsReady)
             {
                 ResetAllEffects();
-                DmgTracker.ResetTracker();
+                DmgeTracker.ResetTracker();
             }
  
             if (AdrenalineCooldownActive && adrenalineCooldownTime > 0.0f)
@@ -632,11 +583,11 @@ namespace RealismMod
             }
             if (!hasHeavyBleed)
             {
-                DmgTracker.TotalHeavyBleedDamage = 0f;
+                DmgeTracker.TotalHeavyBleedDamage = 0f;
             }
             if (!hasLightBleed)
             {
-                DmgTracker.TotalLightBleedDamage = 0f;
+                DmgeTracker.TotalLightBleedDamage = 0f;
             }
         }
 
@@ -721,8 +672,8 @@ namespace RealismMod
                         {
                         
                             activeStimOverdoses.Add(EStimType.Adrenal);
-                            doStimOverdoseTimer = true;
-                            overdoseEffectToAdd = "adrenal_debuff";
+                            _doStimOverdoseTimer = true;
+                            _overdoseEffectToAdd = "adrenal_debuff";
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Adrenal Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
@@ -730,8 +681,8 @@ namespace RealismMod
                         if (!activeStimOverdoses.Contains(EStimType.Regenerative)) 
                         {
                             activeStimOverdoses.Add(EStimType.Regenerative);
-                            doStimOverdoseTimer = true;
-                            overdoseEffectToAdd = "regen_debuff";
+                            _doStimOverdoseTimer = true;
+                            _overdoseEffectToAdd = "regen_debuff";
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Regenerative Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
@@ -739,8 +690,8 @@ namespace RealismMod
                         if (!activeStimOverdoses.Contains(EStimType.Damage))
                         {
                             activeStimOverdoses.Add(EStimType.Damage);
-                            doStimOverdoseTimer = true;
-                            overdoseEffectToAdd = "damage_debuff";
+                            _doStimOverdoseTimer = true;
+                            _overdoseEffectToAdd = "damage_debuff";
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Combat Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
@@ -757,8 +708,8 @@ namespace RealismMod
                         if (!activeStimOverdoses.Contains(EStimType.Weight))
                         {
                             activeStimOverdoses.Add(EStimType.Weight);
-                            doStimOverdoseTimer = true;
-                            overdoseEffectToAdd = "weight_debuff";
+                            _doStimOverdoseTimer = true;
+                            _overdoseEffectToAdd = "weight_debuff";
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Weight-Reducing Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
@@ -766,8 +717,8 @@ namespace RealismMod
                         if (!activeStimOverdoses.Contains(EStimType.Performance))
                         {
                             activeStimOverdoses.Add(EStimType.Performance);
-                            doStimOverdoseTimer = true;
-                            overdoseEffectToAdd = "performance_debuff";
+                            _doStimOverdoseTimer = true;
+                            _overdoseEffectToAdd = "performance_debuff";
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Performance-Enhancing Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
@@ -775,8 +726,8 @@ namespace RealismMod
                         if (!activeStimOverdoses.Contains(EStimType.Generic))
                         {
                             activeStimOverdoses.Add(EStimType.Generic);
-                            doStimOverdoseTimer = true;
-                            overdoseEffectToAdd = "generic_debuff";
+                            _doStimOverdoseTimer = true;
+                            _overdoseEffectToAdd = "generic_debuff";
                             NotificationManagerClass.DisplayWarningNotification("Overdosed On Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
@@ -818,20 +769,20 @@ namespace RealismMod
             {
                 RemoveRegenEffectsOfType(EDamageType.Dehydration);
             }
-            if (!isDehydrated && DmgTracker.TotalDehydrationDamage > 0f)
+            if (!isDehydrated && DmgeTracker.TotalDehydrationDamage > 0f)
             {
-                RestoreHPArossBody(player, DmgTracker.TotalDehydrationDamage, delay, EDamageType.Dehydration, tickRate);
-                DmgTracker.TotalDehydrationDamage = 0;
+                RestoreHPArossBody(player, DmgeTracker.TotalDehydrationDamage, delay, EDamageType.Dehydration, tickRate);
+                DmgeTracker.TotalDehydrationDamage = 0;
             }
 
             if (isExhausted)
             {
                 RemoveRegenEffectsOfType(EDamageType.Exhaustion);
             }
-            if (!isExhausted && DmgTracker.TotalExhaustionDamage > 0f)
+            if (!isExhausted && DmgeTracker.TotalExhaustionDamage > 0f)
             {
-                RestoreHPArossBody(player, DmgTracker.TotalExhaustionDamage, delay, EDamageType.Exhaustion, tickRate);
-                DmgTracker.TotalExhaustionDamage = 0;
+                RestoreHPArossBody(player, DmgeTracker.TotalExhaustionDamage, delay, EDamageType.Exhaustion, tickRate);
+                DmgeTracker.TotalExhaustionDamage = 0;
             }
         }
 
@@ -854,7 +805,7 @@ namespace RealismMod
                     RemoveBaseEFTEffect(player, EBodyPart.Head, "PainKiller");                  
                 }
 
-                if (reliefWaitTime >= painReliefInterval)
+                if (_reliefWaitTime >= painReliefInterval)
                 {
                     AddToExistingBaseEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, painReliefInterval, 5f, PainTunnelStrength);
 
@@ -870,7 +821,7 @@ namespace RealismMod
                     }
                     else haveNotifiedPKOverdose = false;
 
-                    reliefWaitTime = 0f;
+                    _reliefWaitTime = 0f;
                 }
             }
         }
@@ -911,45 +862,46 @@ namespace RealismMod
             PlayerState.ImmuneSkillStrong = player.Skills.ImmunityMiscEffects.Value;
             PlayerState.StressResistanceFactor = player.Skills.StressPain.Value;
 
-            if (healthControllerTime >= 0.5f && !reset1)
+            if (_healthControllerTime >= 0.5f && !reset1)
             {
                 ResetBleedDamageRecord(player);
                 reset1 = true;
             }
-            if (healthControllerTime >= 1f && !reset2)
+            if (_healthControllerTime >= 1f && !reset2)
             {
                 ResourceRegenCheck(player);
                 reset2 = true;
             }
-            if (healthControllerTime >= 2f && !reset3)
+            if (_healthControllerTime >= 2f && !reset3)
             {
                 DoubleBleedCheck(player);
                 reset3 = true;
             }
-            if (healthControllerTime >= 2.5f && !reset4)
+            if (_healthControllerTime >= 2.5f && !reset4)
             {
                 EvaluateActiveStims(player);
                 reset4 = true;
             }
-            if (healthControllerTime >= 3f && !reset5)
+            if (_healthControllerTime >= 3f && !reset5)
             {
                 PlayerInjuryStateCheck(player);
+                GasZoneHealthEffectTick(player);
                 reset5 = true;
             }
 
 
-            if (effectsTime >= 1f)
+            if (_effectsTime >= 1f)
             {
                 PainReliefCheck(player);
                 TickEffects();
-                effectsTime = 0f;
+                _effectsTime = 0f;
             }
 
             DoResourceDrain(player.ActiveHealthController, Time.deltaTime);
 
-            if (healthControllerTime >= 3f) 
+            if (_healthControllerTime >= 3f) 
             {
-                healthControllerTime = 0f;
+                _healthControllerTime = 0f;
                 reset1 = false;
                 reset2 = false;
                 reset3 = false;
@@ -1172,23 +1124,23 @@ namespace RealismMod
 
             float trnqtTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f - vitalitySkill), 2);
             float maxHpToRestore = Mathf.Round(baseMaxHPRestore * (1f + vitalitySkill));
-            float hpToRestore = Mathf.Min(DmgTracker.TotalHeavyBleedDamage, maxHpToRestore);
+            float hpToRestore = Mathf.Min(DmgeTracker.TotalHeavyBleedDamage, maxHpToRestore);
 
             if ((hBleedHealType == "combo" || hBleedHealType == "trnqt") && !isNotLimb)
             {
                 TourniquetEffect trnqt = new TourniquetEffect(trnqtTickRate, null, bodyPart, player, delay, this);
                 AddCustomEffect(trnqt, false);
 
-                if (DmgTracker.TotalHeavyBleedDamage > 0f)
+                if (DmgeTracker.TotalHeavyBleedDamage > 0f)
                 {
                     TrnqtRestoreHPArossBody(player, hpToRestore, delay, bodyPart, EDamageType.HeavyBleeding, vitalitySkill);
                 }
             }
-            else if (DmgTracker.TotalHeavyBleedDamage > 0f)
+            else if (DmgeTracker.TotalHeavyBleedDamage > 0f)
             {
                 RestoreHPArossBody(player, hpToRestore, delay, EDamageType.HeavyBleeding, regenTickRate);
             }
-            DmgTracker.TotalHeavyBleedDamage = Mathf.Max(DmgTracker.TotalHeavyBleedDamage - hpToRestore, 0f);
+            DmgeTracker.TotalHeavyBleedDamage = Mathf.Max(DmgeTracker.TotalHeavyBleedDamage - hpToRestore, 0f);
         }
 
         private void handleLightBleedHeal(string medType, MedsClass meds, EBodyPart bodyPart, Player player, bool isNotLimb, float vitalitySkill, float regenTickRate)
@@ -1199,23 +1151,23 @@ namespace RealismMod
 
             float trnqtTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f - vitalitySkill), 2);
             float maxHpToRestore = Mathf.Round(baseMaxHPRestore * (1f + vitalitySkill));
-            float hpToRestore = Mathf.Min(DmgTracker.TotalLightBleedDamage, maxHpToRestore);
+            float hpToRestore = Mathf.Min(DmgeTracker.TotalLightBleedDamage, maxHpToRestore);
 
             if (medType == "trnqt" && !isNotLimb)
             {
                 TourniquetEffect trnqt = new TourniquetEffect(trnqtTickRate, null, bodyPart, player, delay, this);
                 AddCustomEffect(trnqt, false);
 
-                if (DmgTracker.TotalLightBleedDamage > 0f)
+                if (DmgeTracker.TotalLightBleedDamage > 0f)
                 {
                     TrnqtRestoreHPArossBody(player, hpToRestore, delay, bodyPart, EDamageType.LightBleeding, vitalitySkill);
                 }
             }
-            else if (DmgTracker.TotalLightBleedDamage > 0f)
+            else if (DmgeTracker.TotalLightBleedDamage > 0f)
             {
                 RestoreHPArossBody(player, hpToRestore, delay, EDamageType.LightBleeding, regenTickRate);
             }
-            DmgTracker.TotalLightBleedDamage = Mathf.Max(DmgTracker.TotalLightBleedDamage - hpToRestore, 0f);
+            DmgeTracker.TotalLightBleedDamage = Mathf.Max(DmgeTracker.TotalLightBleedDamage - hpToRestore, 0f);
         }
 
         private void handleSurgery(string medType, MedsClass meds, EBodyPart bodyPart, Player player, float surgerySkill)
@@ -1810,6 +1762,8 @@ namespace RealismMod
             float skillFactor = (1f + (player.Skills.HealthEnergy.Value / 4));
             float skillFactorInverse = (1f - (player.Skills.HealthEnergy.Value / 4));
 
+            float toxicityFactor = DmgeTracker.TotalToxicity;
+
             PlayerState.AimMoveSpeedInjuryMulti = Mathf.Clamp(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor * skillFactor, 0.6f * percentHydroLowerLimit, 1f);
             PlayerState.ADSInjuryMulti = Mathf.Clamp(adsInjuryMulti * percentEnergyADS * painKillerFactor * skillFactor, 0.35f * percentHydroLowerLimit, 1f);
             PlayerState.StanceInjuryMulti = Mathf.Clamp(stanceInjuryMulti * percentEnergyStance * painKillerFactor * skillFactor, 0.65f * percentHydroLowerLimit, 1f);
@@ -1837,6 +1791,54 @@ namespace RealismMod
                     ResourcePerTick = totalResourceRate;
                 }
             }
+        }
+
+        private void ApplyToxicityEffects(Player player) 
+        {
+            float effectStrength = DmgeTracker.TotalToxicity / 100f;
+
+            AddToExistingBaseEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, painReliefInterval, 5f, effectStrength);
+            AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, painReliefInterval, 5f, effectStrength * 0.5f);
+        }
+
+        private int GetNextLowestToxicityLevel(int value)
+        {
+            return (value / 10) * 10;
+        }
+
+        private void GasZoneHealthEffectTick(Player player) 
+        {
+            if (PlayerHazardBridge == null)
+            {
+                PlayerHazardBridge = player.gameObject.AddComponent<PlayerHazardBridge>();
+            }
+
+            if (PlayerHazardBridge.IsInGasZone)
+            {
+                Utils.Logger.LogWarning("Increasing Toxicity");
+                float increase = PlayerHazardBridge.GasAmount * (1f - GearController.CurrentMaskProtection);
+                DmgeTracker.TotalToxicity += increase; //factor by immunity skill and whatever else;
+                DmgeTracker.ToxicityRate = increase;
+            }
+            else if (DmgeTracker.TotalToxicity > 0f)
+            {
+                Utils.Logger.LogWarning("Reducing Toxicity Passively");
+                float reduction = -1f; //factor by immunity skill and whatever else
+                DmgeTracker.TotalToxicity = Mathf.Clamp(DmgeTracker.TotalToxicity + reduction, GetNextLowestToxicityLevel((int)DmgeTracker.TotalToxicity), 100f);
+                DmgeTracker.ToxicityRate = reduction;
+            }
+            else 
+            {
+                DmgeTracker.ToxicityRate = 0f;
+            }
+
+            Utils.Logger.LogWarning("Current Rate " + DmgeTracker.ToxicityRate);
+            Utils.Logger.LogWarning("Current Toxicity " + DmgeTracker.TotalToxicity);
+
+            if (DmgeTracker.TotalToxicity >= 10f) ApplyToxicityEffects(player);
+
+            //todo: if took AI-2 or antidote of somekind, reduce toxicity level
+
         }
     }
 }

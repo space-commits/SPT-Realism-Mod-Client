@@ -71,6 +71,7 @@ namespace RealismMod
             HpPerTick,
             RemoveTrnqt,
             Comfort,
+            GasProtection,
             PainKillerStrength,
             MeleeDamage,
             MeleePen,
@@ -161,6 +162,8 @@ namespace RealismMod
                     return "OUT-OF-RAID HP RESTORATION";
                 case ENewItemAttributeId.StimType:
                     return "STIM TYPE";
+                case ENewItemAttributeId.GasProtection:
+                    return "FILTER EFFICIENCY";
                 default:
                     return id.ToString();
             }

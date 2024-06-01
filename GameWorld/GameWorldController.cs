@@ -14,31 +14,7 @@ using EFT.UI.Ragfair;
 
 namespace RealismMod
 {
-
-    public class GasZone: TriggerWithId
-    {
-      
-
-        public override void TriggerEnter(Player player)
-        {
-            if (player != null) 
-            {
-                Utils.Logger.LogWarning("enter " + player.name);
-            }
-
-        }
-
-        public override void TriggerExit(Player player)
-        {
-            if (player != null)
-            {
-                Utils.Logger.LogWarning("exit " + player.name);
-            }
-        }
-    }
-
-
-    public class GameWorldController
+    public static class GameWorldController
     {
 
         //position, rotation, size
@@ -65,7 +41,7 @@ namespace RealismMod
                 boxCollider.isTrigger = true;
                 boxCollider.size = size;
 
-                gasZone.transform.position = position;
+                gasZone.transform.position = position; 
           
                 EFT.Interactive.TriggerWithId trigger = gasZone.AddComponent<EFT.Interactive.TriggerWithId>();
                 trigger.SetId("gasZone1");
@@ -141,24 +117,36 @@ namespace RealismMod
             visualRepresentation.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.25f); 
             UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>());
         }
+    }
 
-        public class OnGameStartPatch : ModulePatch
+
+    public class OnGameStartPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
         {
-            protected override MethodBase GetTargetMethod()
-            {
-                return typeof(GameWorld).GetMethod("OnGameStarted", BindingFlags.Instance | BindingFlags.Public);
-            }
-
-            [PatchPostfix]
-            private static void PatchPostfix(GameWorld __instance)
-            {
-                Logger.LogWarning("GAME START ===================================");
-                CreateGasZones();
-
-                Logger.LogWarning("player " + Utils.GetYourPlayer().gameObject.layer);
-              
-            }
+            return typeof(GameWorld).GetMethod("OnGameStarted", BindingFlags.Instance | BindingFlags.Public);
         }
 
+        [PatchPostfix]
+        private static void PatchPostfix(GameWorld __instance)
+        {
+            Logger.LogWarning(" =================================== GAME START ===================================");
+            GameWorldController.CreateGasZones();
+        }
+    }
+
+    public class OnGameEndPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GameWorld).GetMethod("OnDestroy", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static void PatchPrefix(GameWorld __instance)
+        {
+            Logger.LogWarning(" =================================== GAME END ===================================");
+            Logger.LogWarning("player " + Utils.GetYourPlayer().ProfileId);
+        }
     }
 }

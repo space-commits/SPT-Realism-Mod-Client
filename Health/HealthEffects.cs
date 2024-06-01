@@ -245,11 +245,11 @@ namespace RealismMod
             {
                 if (DamageType == EDamageType.HeavyBleeding)
                 {
-                    RealHealthController.DmgTracker.TotalHeavyBleedDamage = Mathf.Max(RealHealthController.DmgTracker.TotalHeavyBleedDamage - HpRegenLimit, 0f);
+                    RealHealthController.DmgeTracker.TotalHeavyBleedDamage = Mathf.Max(RealHealthController.DmgeTracker.TotalHeavyBleedDamage - HpRegenLimit, 0f);
                 }
                 if (DamageType == EDamageType.LightBleeding)
                 {
-                    RealHealthController.DmgTracker.TotalLightBleedDamage = Mathf.Max(RealHealthController.DmgTracker.TotalLightBleedDamage - HpRegenLimit, 0f);
+                    RealHealthController.DmgeTracker.TotalLightBleedDamage = Mathf.Max(RealHealthController.DmgeTracker.TotalLightBleedDamage - HpRegenLimit, 0f);
 
                 }
                 deductedRecordedDamage = true;

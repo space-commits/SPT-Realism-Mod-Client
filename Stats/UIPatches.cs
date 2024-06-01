@@ -847,7 +847,7 @@ namespace RealismMod
         {
             float durability = __instance.method_10((float)__instance.Repairable.TemplateDurability);
             float durabilityFactor = (__instance.GetBarrelDeviation() - durability) / (__instance.Single_0 - durability);
-            __result = (UIWeaponStats.COIDelta * Plugin.test2.Value) + durabilityFactor;
+            __result = (UIWeaponStats.COIDelta * -1f) + durabilityFactor;
             return false;
         }
     }

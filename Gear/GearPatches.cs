@@ -91,6 +91,19 @@ namespace RealismMod
                 }
             }
 
+            float gasProtection = GearStats.GasProtection(item);
+            if (gasProtection > 0f) 
+            {
+                gasProtection = gasProtection * 100f;
+                List<ItemAttributeClass> gasAtt = item.Attributes;
+                ItemAttributeClass gasAttClass = new ItemAttributeClass(ENewItemAttributeId.GasProtection);
+                gasAttClass.Name = ENewItemAttributeId.GasProtection.GetName();
+                gasAttClass.Base = () => gasProtection;
+                gasAttClass.StringValue = () => gasProtection.ToString() + " %";
+                gasAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                gasAtt.Add(gasAttClass);
+            }
+
             ArmorComponent armorComp;
             if (anyArmorPlateSlots || item.TryGetItemComponent(out armorComp))
             {

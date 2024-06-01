@@ -198,6 +198,7 @@ namespace RealismMod
                 GearController.SetGearParamaters(__instance);
                 GearController.GetGearPenalty(__instance);
                 PlayerState.IsScav = Singleton<GameWorld>.Instance.MainPlayer.Profile.Info.Side == EPlayerSide.Savage;
+                PlayerHazardBridge hazardZone = __instance.gameObject.AddComponent<PlayerHazardBridge>();
             }
         }
     }
