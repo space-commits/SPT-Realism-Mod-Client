@@ -9,7 +9,7 @@ namespace RealismMod
 {
     public static class AudioController
     {
-        private const float _baseBreathVolume = 0.15f;
+        private const float _baseBreathVolume = 0.2f;
         private static float _currentBreathClipLength = 0f;
         private static float _breathTimer = 0f;
         private static float _breathCountdown = 2.5f;
@@ -52,9 +52,9 @@ namespace RealismMod
         {
             switch (PlayerState.StaminaPerc)
             {
-                case <= 0.35f:
+                case <= 0.45f:
                     return "BadlyInjured";
-                case <= 0.7f:
+                case <= 0.8f:
                     return "Injured";
                 default:
                     return "Healthy";

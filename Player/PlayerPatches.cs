@@ -139,44 +139,10 @@ namespace RealismMod
             return typeof(Inventory).GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static float getTotalWeight(Inventory invClass)
-        {
-            float modifiedWeight = 0f;
-            float trueWeight = 0f;
-            foreach (EquipmentSlot equipmentSlot in EquipmentClass.AllSlotNames)
-            {
-                Slot slot = invClass.Equipment.GetSlot(equipmentSlot);
-                IEnumerable<Item> items = slot.Items;
-                foreach (Item item in items)
-                {
-                    float itemTotalWeight = item.GetSingleItemTotalWeight();
-                    trueWeight += itemTotalWeight;
-                    if (equipmentSlot == EquipmentSlot.Backpack || equipmentSlot == EquipmentSlot.TacticalVest || equipmentSlot == EquipmentSlot.ArmorVest || equipmentSlot == EquipmentSlot.Headwear || equipmentSlot == EquipmentSlot.ArmBand)
-                    {
-                        modifiedWeight += itemTotalWeight * GearStats.ComfortModifier(item);
-                    }
-                    else
-                    {
-                        modifiedWeight += itemTotalWeight;
-                    }
-                }
-            }
-
-            if (Plugin.EnableLogging.Value)
-            {
-                Logger.LogWarning("==================");
-                Logger.LogWarning("Total Modified Weight " + modifiedWeight);
-                Logger.LogWarning("Total Unmodified Weight " + trueWeight);
-                Logger.LogWarning("==================");
-            }
-
-            return modifiedWeight;
-        }
-
         [PatchPrefix]
         private static bool PatchPrefix(Inventory __instance, ref float __result)
         {
-            __result = getTotalWeight(__instance);
+            __result = GearController.GetModifiedInventoryWeight(__instance);
             return false;
         }
     }
@@ -196,6 +162,7 @@ namespace RealismMod
                 StatCalc.CalcPlayerWeightStats(__instance);
                 GearController.SetGearParamaters(__instance);
                 GearController.GetGearPenalty(__instance);
+                GearController.CheckForDevices(__instance.Inventory);
                 PlayerState.IsScav = Singleton<GameWorld>.Instance.MainPlayer.Profile.Info.Side == EPlayerSide.Savage;
             }
             PlayerHazardBridge hazardBridge = __instance.gameObject.AddComponent<PlayerHazardBridge>();
@@ -219,6 +186,7 @@ namespace RealismMod
                 StatCalc.CalcPlayerWeightStats(__instance);
                 GearController.SetGearParamaters(__instance);
                 GearController.GetGearPenalty(__instance);
+                GearController.CheckForDevices(__instance.Inventory);
             }
         }
     }

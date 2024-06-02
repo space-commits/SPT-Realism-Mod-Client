@@ -16,16 +16,19 @@ namespace RealismMod
 
         public static void DeviceAudioController()
         {
-            _deviceTimer += Time.deltaTime;
-
-            if (_deviceTimer > _currentDeviceClipLength && _deviceTimer >= delay)
+            if (GearController.HasGasAnalyser) 
             {
-                Player player = Utils.GetYourPlayer();
-                PlayerHazardBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;
-                if (bridge != null && bridge.IsInGasZone)
+                _deviceTimer += Time.deltaTime;
+
+                if (_deviceTimer > _currentDeviceClipLength && _deviceTimer >= delay)
                 {
-                    PlayGasAnalyserClips(player, bridge);
-                    _deviceTimer = 0f;
+                    Player player = Utils.GetYourPlayer();
+                    PlayerHazardBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;
+                    if (bridge != null && bridge.IsInGasZone)
+                    {
+                        PlayGasAnalyserClips(player, bridge);
+                        _deviceTimer = 0f;
+                    }
                 }
             }
         }
@@ -36,19 +39,19 @@ namespace RealismMod
             {
                 case <= 0f:
                     return null;
-                case <= 0.025f:
+                case <= 0.1f:
                     return "gasBeep1.wav";
-                case <= 0.04f:
-                    return "gasBeep2.wav";
-                case <= 0.06f:
-                    return "gasBeep3.wav";
-                case <= 0.09f:
-                    return "gasBeep4.wav";
-                case <= 0.12f:
-                    return "gasBeep5.wav";
                 case <= 0.15f:
+                    return "gasBeep2.wav";
+                case <= 0.2f:
+                    return "gasBeep3.wav";
+                case <= 0.3f:
+                    return "gasBeep4.wav";
+                case <= 0.4f:
+                    return "gasBeep5.wav";
+                case <= 0.5f:
                     return "gasBeep6.wav";
-                case > 0.15f:
+                case > 0.5f:
                     return "gasBeep7.wav";
                 default: 
                     return null;

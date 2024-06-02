@@ -19,7 +19,7 @@ namespace RealismMod
 
         public static Dictionary<string, (float strength, Vector3 position, Vector3 rotation, Vector3 size)> GasZones = new Dictionary<string, (float strength, Vector3, Vector3, Vector3)>
         {
-            { "FactoryTent", (100f, new Vector3(-17.5f, 0.35f, -41.4f), new Vector3(0f, 0f, 0f), new Vector3(10f, 3f, 20f)) },
+            { "FactoryTent", (1f, new Vector3(-17.5f, 0.35f, -41.4f), new Vector3(0f, 0f, 0f), new Vector3(10f, 3f, 20f)) },
         };
 
 
@@ -49,12 +49,12 @@ namespace RealismMod
                 gasZone.layer = LayerMask.NameToLayer("Triggers");
                 gasZone.name = zoneName;
 
-                // Optional: Add a visual representation for debugging
+                // visual representation for debugging
                 GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 visualRepresentation.transform.parent = gasZone.transform;
                 visualRepresentation.transform.localScale = size;
                 visualRepresentation.transform.localPosition = boxCollider.center;
-                visualRepresentation.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.25f); // Set a transparent color
+                visualRepresentation.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.25f); 
                 UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
 
             }
@@ -74,6 +74,7 @@ namespace RealismMod
         {
             Logger.LogWarning(" =================================== GAME START ===================================");
             GameWorldController.CreateGasZones();
+            HazardTracker.ResetTracker();
         }
     }
 
@@ -88,6 +89,8 @@ namespace RealismMod
         private static void PatchPrefix(GameWorld __instance)
         {
             Logger.LogWarning(" =================================== GAME END ===================================");
+            HazardTracker.ResetTracker();
+            HazardTracker.SaveValues();
             Logger.LogWarning("player " + Utils.GetYourPlayer().ProfileId);
         }
     }

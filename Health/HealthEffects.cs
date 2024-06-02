@@ -19,7 +19,10 @@ namespace RealismMod
         PainKiller,
         Stim,
         FoodPoisoning,
-        Toxicity
+        Toxicity,
+        Detoxification,
+        Radiation,
+        RadiationTreatment
     }
 
     public interface ICustomHealthEffect
@@ -111,24 +114,25 @@ namespace RealismMod
             Delay = delay;
             EffectType = EHealthEffectType.Toxicity;
             RealHealthController = realHealthController;
+            BodyPart = EBodyPart.Chest;
         }
 
         private float GetDrainRate() 
         {
-            switch (RealHealthController.DmgeTracker.TotalToxicity)
+            switch (HazardTracker.TotalToxicity)
             {
                 case < 50f:
                     return 0f;
                 case <= 60f:
-                    return -0.15f;
+                    return -0.1f;
                 case <= 70f:
-                    return -0.25f;
+                    return -0.2f;
                 case <= 80f:
-                    return -0.35f;
+                    return -0.3f;
                 case <= 90f:
-                    return -0.45f;
+                    return -0.4f;
                 case <= 200f:
-                    return -0.55f;
+                    return -0.5f;
                 default: 
                     return 0f;
             }
@@ -501,6 +505,50 @@ namespace RealismMod
                     Duration = 0;
                 }
                    
+            }
+        }
+    }
+
+    public class DetoxificationEffect : ICustomHealthEffect
+    {
+        public RealismHealthController RealHealthController { get; set; }
+        public EBodyPart BodyPart { get; set; }
+        public int? Duration { get; set; }
+        public int TimeExisted { get; set; }
+        public Player _Player { get; }
+        public int Delay { get; set; }
+        public EHealthEffectType EffectType { get; }
+        private float _detoxRate = 0f;
+        private bool _addedRate = false;    
+
+        public DetoxificationEffect(Player player, int? dur, int delay, RealismHealthController realismHealthController, float rate)
+        {
+            TimeExisted = 0;
+            Duration = dur;
+            _Player = player;
+            Delay = delay;
+            RealHealthController = realismHealthController;
+            _detoxRate = rate;
+            EffectType = EHealthEffectType.Detoxification;
+            BodyPart = EBodyPart.Chest;
+        }
+
+        public void Tick()
+        {
+            if (Delay <= 0)
+            {
+                if (!_addedRate) 
+                {
+                    HazardTracker.ToxicityRateMeds += _detoxRate;
+                    _addedRate = true;
+                }
+         
+                Duration--;
+                if (Duration <= 0) 
+                {
+                    HazardTracker.ToxicityRateMeds -= _detoxRate;
+                    Duration = 0;
+                }
             }
         }
     }

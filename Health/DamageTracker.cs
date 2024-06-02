@@ -15,21 +15,6 @@ namespace RealismMod
         public float TotalLightBleedDamage = 0f;
         public float TotalDehydrationDamage = 0f;
         public float TotalExhaustionDamage = 0f;
-        public float ToxicityRate = 0f;
-
-        private float _totalToxicity;
-
-        public float TotalToxicity 
-        {
-            get 
-            {
-                return _totalToxicity;
-            }
-            set 
-            {
-                _totalToxicity = Mathf.Clamp(value, 0f, 100f); 
-            }
-        }
 
         //need to differentiate between head and body blunt damage
         public void UpdateDamage(EDamageType damageType, EBodyPart bodyPart, float damage)

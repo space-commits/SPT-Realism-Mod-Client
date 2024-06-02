@@ -138,14 +138,6 @@ namespace RealismMod
 
         public DamageTracker DmgeTracker { get; }
 
-        private float _healthControllerTime = 0f;
-        private float _effectsTime = 0f;
-        private float _reliefWaitTime = 0f;
-
-        private float _stimOverdoseWaitTime = 0f;
-        private bool _doStimOverdoseTimer = false;
-        private string _overdoseEffectToAdd = "";
-
         public PlayerHazardBridge PlayerHazardBridge { get;  private set; }
 
         public bool HasAdrenalineEffect { get; set; } = false;
@@ -186,6 +178,15 @@ namespace RealismMod
 
         private List<ICustomHealthEffect> activeHealthEffects = new List<ICustomHealthEffect>();
 
+
+        private float _healthControllerTime = 0f;
+        private float _effectsTime = 0f;
+        private float _reliefWaitTime = 0f;
+
+        private float _stimOverdoseWaitTime = 0f;
+        private bool _doStimOverdoseTimer = false;
+        private string _overdoseEffectToAdd = "";
+
         private const float doubleClickTime = 0.2f;
         private float timeSinceLastClicked = 0f;
         private bool clickTriggered = false;
@@ -214,6 +215,7 @@ namespace RealismMod
         public const float PainReliefThreshold = 30f;
         public const float BasePKOverdoseThreshold = 45f;
 
+        private const float _baseToxicityRecoveryRate = -0.05f;
         private const float _hazardInterval = 10f;
         private float _hazardWaitTime = 0f;
 
@@ -1084,11 +1086,12 @@ namespace RealismMod
                 return;
             }
 
-            CanConsumeAlcohol(player, item);
+            ConsumeAlcohol(player, item);
+            CheckIfReducesHazardInRaid(item, player, false);
             PlayerState.BlockFSWhileConsooming = true;
         }
 
-        private void CanConsumeAlcohol(Player player, Item item) 
+        private void ConsumeAlcohol(Player player, Item item) 
         {
             if (MedProperties.MedType(item) == "alcohol") 
             {
@@ -1255,14 +1258,75 @@ namespace RealismMod
             Plugin.RealHealthController.AddCustomEffect(painKillerEffect, true);
         }
 
+        public void CheckIfReducesHazardInStash(Item item, bool isMed)
+        {
+            GClass1235 details = null;
+            if (isMed && item as MedsClass != null)
+            {
+                MedsClass med = item as MedsClass;
+                details = med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? med.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
+            }
+            if (!isMed && item as FoodClass != null)
+            {
+                FoodClass food = item as FoodClass;
+                details = food.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? food.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
+            }
+
+            if (details != null)
+            {
+                float strength = details.FadeOut;
+                int duration = (int)details.Duration;
+                HazardTracker.TotalToxicity -= strength * duration;
+                HazardTracker.SaveValues();
+                Utils.Logger.LogWarning("Reduces Toxication In Stash");
+            }
+
+        }
+
+        public void CheckIfReducesHazardInRaid(Item item, Player player, bool isMed) 
+        {
+            Utils.Logger.LogWarning("===================================================TESTING");
+            GClass1235 details = null;
+            if (isMed && item as MedsClass != null)
+            {
+                MedsClass med = item as MedsClass;
+                details = med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? med.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
+                Utils.Logger.LogWarning("===================================================Is Med");
+            }
+            if (!isMed && item as FoodClass != null)
+            {
+                FoodClass food = item as FoodClass;
+                details = food.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? food.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
+                Utils.Logger.LogWarning("===================================================Is Food");
+            }
+
+            if (details != null)
+            {
+                float strength = -details.FadeOut;
+                int delay = (int)details.Delay;
+                int duration = (int)details.Duration;
+
+                DetoxificationEffect detox = new DetoxificationEffect(player, duration, delay, this, strength);
+                Plugin.RealHealthController.AddCustomEffect(detox, true);
+
+                Utils.Logger.LogWarning("===================================================Reduces Toxication");
+                Utils.Logger.LogWarning("===================================================strength " + strength);
+                Utils.Logger.LogWarning("===================================================delay " + delay);
+                Utils.Logger.LogWarning("===================================================duration " + duration);
+            }
+
+        }
 
         public void CanUseMedItemCommon(MedsClass meds, Player player, ref EBodyPart bodyPart, ref bool shouldAllowHeal) 
         {
+            CheckIfReducesHazardInRaid(meds, player, true); //the type of items that can reduce toxicity and radiation can't be blocked so should be fine
+
             if (meds.Template._parent == "5448f3a64bdc2d60728b456a")
             {
                 int duration = (int)meds.HealthEffectsComponent.BuffSettings[0].Duration * 2;
                 int delay = Mathf.Max((int)meds.HealthEffectsComponent.BuffSettings[0].Delay, 5);
                 EStimType stimType = Plugin.RealHealthController.GetStimType(meds.Template._id);
+
                 StimShellEffect stimEffect = new StimShellEffect(player, duration, delay, stimType, this);
                 Plugin.RealHealthController.AddCustomEffect(stimEffect, true);
 
@@ -1780,7 +1844,7 @@ namespace RealismMod
             float skillFactor = (1f + (player.Skills.HealthEnergy.Value / 4));
             float skillFactorInverse = (1f - (player.Skills.HealthEnergy.Value / 4));
 
-            float toxicity = DmgeTracker.TotalToxicity / 200f; //factor by immunity skill
+            float toxicity = HazardTracker.TotalToxicity / 200f; 
             float toxicityFactor = 1f - toxicity;
             float toxicityInverse = 1f + toxicity;
 
@@ -1797,7 +1861,7 @@ namespace RealismMod
 
             if (Plugin.ResourceRateChanges.Value)
             {
-                if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Stomach))
+                if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Chest))
                 {
                     ResourceRateEffect resEffect = new ResourceRateEffect(null, player, 0, this);
                     AddCustomEffect(resEffect, false);
@@ -1815,23 +1879,16 @@ namespace RealismMod
 
         private void ApplyToxicityEffects(Player player) 
         {
-            if (DmgeTracker.TotalToxicity >= 50f && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Common))
+            if (HazardTracker.TotalToxicity >= 50f && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Stomach))
             {
                 ToxicityEffect trnqt = new ToxicityEffect(null, player, 0, this);
                 AddCustomEffect(trnqt, false);
             }
 
-            float effectStrength = DmgeTracker.TotalToxicity / 100f;
-            Utils.Logger.LogWarning("effectStrength " + effectStrength);
-            Utils.Logger.LogWarning("PainTunnelStrength " + PainTunnelStrength);
+            float effectStrength = HazardTracker.TotalToxicity / 100f;
             AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, _hazardInterval, 5f, effectStrength);
-            if (DmgeTracker.TotalToxicity >= 50f) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, 0.35f);
+            if (HazardTracker.TotalToxicity >= 50f) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, 0.35f);
             _hazardWaitTime = 0f;
-        }
-
-        private int GetNextLowestToxicityLevel(int value)
-        {
-            return (value / 10) * 10;
         }
 
         private void GasZoneHealthEffectTick(Player player) 
@@ -1844,33 +1901,39 @@ namespace RealismMod
             if (PlayerHazardBridge.IsInGasZone && GearController.CurrentMaskProtection < 1f)
             {
                 Utils.Logger.LogWarning("Increasing Toxicity");
-                float increase = PlayerHazardBridge.GasAmount * (1f - GearController.CurrentMaskProtection) * (1f - PlayerState.ImmuneSkillWeak);
-                DmgeTracker.TotalToxicity += increase;
-                DmgeTracker.ToxicityRate = increase;
+                float increase = (PlayerHazardBridge.GasAmount + HazardTracker.ToxicityRateMeds) * (1f - GearController.CurrentMaskProtection) * (1f - PlayerState.ImmuneSkillWeak);
+                increase = Mathf.Max(increase, 0f);
+                HazardTracker.TotalToxicity += increase;
+                HazardTracker.TotalToxicityRate = increase;
             }
-            else if (DmgeTracker.TotalToxicity > 0f || GearController.CurrentMaskProtection >= 1f)
+            else if (HazardTracker.TotalToxicity > 0f || GearController.CurrentMaskProtection >= 1f)
             {
+         
+                float reduction = (_baseToxicityRecoveryRate + HazardTracker.ToxicityRateMeds) * (1f + PlayerState.ImmuneSkillStrong);
+                float threshold = HazardTracker.ToxicityRateMeds < 0f ? 0f : HazardTracker.GetNextLowestToxicityLevel((int)HazardTracker.TotalToxicity);
+                HazardTracker.TotalToxicity = Mathf.Clamp(HazardTracker.TotalToxicity + reduction, threshold, 100f);
+                HazardTracker.TotalToxicityRate = HazardTracker.TotalToxicity == threshold ? 0f : reduction;
+
                 Utils.Logger.LogWarning("Reducing Toxicity Passively");
-                float reduction = -0.1f * (1f + PlayerState.ImmuneSkillStrong); 
-                float threshold = DmgeTracker.TotalToxicity < 50f ? 0f : GetNextLowestToxicityLevel((int)DmgeTracker.TotalToxicity);
-                DmgeTracker.TotalToxicity = Mathf.Clamp(DmgeTracker.TotalToxicity + reduction, threshold, 100f);
-                DmgeTracker.ToxicityRate = DmgeTracker.TotalToxicity == threshold ? 0f : reduction;
+                Utils.Logger.LogWarning("reduction "  + reduction);
+                Utils.Logger.LogWarning("threshold " + threshold);
+                Utils.Logger.LogWarning("ToxicityRateZone " + HazardTracker.TotalToxicityRate);
             }
             else 
             {
-                DmgeTracker.ToxicityRate = 0f;
+                HazardTracker.TotalToxicityRate = 0f;
             }
 
-            if (DmgeTracker.TotalToxicity <= 0f) 
+            if (HazardTracker.TotalToxicity <= 0f) 
             {
-                RemoveCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Common);
+                RemoveCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest);
             }
 
             Utils.Logger.LogWarning("Is In Gas Zone " + PlayerHazardBridge.IsInGasZone);
-            Utils.Logger.LogWarning("Current Rate " + DmgeTracker.ToxicityRate);
-            Utils.Logger.LogWarning("Current Toxicity " + DmgeTracker.TotalToxicity);
+            Utils.Logger.LogWarning("Current Rate " + HazardTracker.TotalToxicityRate);
+            Utils.Logger.LogWarning("Current Toxicity " + HazardTracker.TotalToxicity);
 
-            if (DmgeTracker.TotalToxicity >= 10f && _hazardWaitTime > _hazardInterval) ApplyToxicityEffects(player);
+            if (HazardTracker.TotalToxicity >= 10f && _hazardWaitTime > _hazardInterval) ApplyToxicityEffects(player);
 
             //todo: if took AI-2 or antidote of somekind, reduce toxicity level
 

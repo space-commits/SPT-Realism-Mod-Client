@@ -10,7 +10,8 @@ namespace RealismMod
 {
     public static class GearController
     {
-        public static bool HasGasMask { get; set; }
+        public static bool HasGasMask { get; private set; } = false;
+        public static bool HasGasAnalyser { get; private set; } = false;
         public static float CurrentMaskProtection { get; private set; } = 0f; 
         private static bool _hadGasMask = true;
 
@@ -41,6 +42,55 @@ namespace RealismMod
                 player.Say(EPhraseTrigger.OnBreath, true, 0f, (ETagStatus)0, 100, false); //force to reset audio
                 _hadGasMask = false;
             }
+        }
+
+        public static void CheckForDevices(Inventory invClass) 
+        {
+            IEnumerable<Item> items = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.TacticalVest, EquipmentSlot.ArmBand});
+            bool hasGasAnalyser = false;
+            foreach (var item in items)
+            {
+                if (item.TemplateId == "590a3efd86f77437d351a25b")
+                {
+
+                    hasGasAnalyser = true;
+                }
+            }
+            HasGasAnalyser = hasGasAnalyser;
+        }
+
+        public static float GetModifiedInventoryWeight(Inventory invClass)
+        {
+            float modifiedWeight = 0f;
+            float trueWeight = 0f;
+            foreach (EquipmentSlot equipmentSlot in EquipmentClass.AllSlotNames)
+            {
+                Slot slot = invClass.Equipment.GetSlot(equipmentSlot);
+                IEnumerable<Item> items = slot.Items;
+                foreach (Item item in items)
+                {
+                    float itemTotalWeight = item.GetSingleItemTotalWeight();
+                    trueWeight += itemTotalWeight;
+                    if (equipmentSlot == EquipmentSlot.Backpack || equipmentSlot == EquipmentSlot.TacticalVest || equipmentSlot == EquipmentSlot.ArmorVest || equipmentSlot == EquipmentSlot.Headwear || equipmentSlot == EquipmentSlot.ArmBand)
+                    {
+                        modifiedWeight += itemTotalWeight * GearStats.ComfortModifier(item);
+                    }
+                    else
+                    {
+                        modifiedWeight += itemTotalWeight;
+                    }
+                }
+            }
+
+            if (Plugin.EnableLogging.Value)
+            {
+                Utils.Logger.LogWarning("==================");
+                Utils.Logger.LogWarning("Total Modified Weight " + modifiedWeight);
+                Utils.Logger.LogWarning("Total Unmodified Weight " + trueWeight);
+                Utils.Logger.LogWarning("==================");
+            }
+
+            return modifiedWeight;
         }
 
 

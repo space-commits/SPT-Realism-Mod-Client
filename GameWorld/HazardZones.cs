@@ -25,7 +25,7 @@ namespace RealismMod
                     bool hasMask = false;
                     float protectionLevel = 0f;
                     GearController.CheckFaceCoverGear(_Player, ref hasMask, ref protectionLevel);
-                    if (protectionLevel < 1f) 
+                    if (protectionLevel < 1f && GasAmount > 0.05f) 
                     {
                         protectionLevel = 1f - protectionLevel;
                         _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, GasAmount * protectionLevel, ExistanceClass.PoisonDamage);
@@ -42,8 +42,8 @@ namespace RealismMod
         public float GasStrengthModifier = 1f;
         private Dictionary<Player, PlayerHazardBridge> _containedPlayers = new Dictionary<Player, PlayerHazardBridge>();
         private BoxCollider _zoneCollider;
-        private float _audioTimer = 0f;
-        private float _audioClipLength= 0f;
+ /*       private float _audioTimer = 0f;
+        private float _audioClipLength= 0f;*/
         private float _tick = 0f;
         private float _maxDistance = 0f;
 
@@ -94,9 +94,7 @@ namespace RealismMod
                     PlayerHazardBridge hazardBridge = p.Value;
                     float gasAmount = CalculateGasStrength(player.gameObject.transform.position);
                     hazardBridge.GasAmount = gasAmount <= 0f ? 0f : gasAmount;
-                    Utils.Logger.LogWarning("Gas strength " + hazardBridge.GasAmount);
-  /*                  Utils.Logger.LogWarning("zone center " + _zoneCollider.bounds.center);
-                    Utils.Logger.LogWarning("player position " + player.gameObject.transform.position);*/
+      /*              Utils.Logger.LogWarning("Gas strength " + hazardBridge.GasAmount);*/
                 }
             }
 

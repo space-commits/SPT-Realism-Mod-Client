@@ -61,13 +61,13 @@ namespace RealismMod
                     return Color.green;
                 case 0:
                     return new Color(0.4549f, 0.4824f, 0.4941f, 1f);
-                case <= 0.5f:
+                case <= 0.1f:
                     return Color.yellow;
-                case <= 1f:
+                case <= 0.3f:
                     return new Color(1.0f, 0.647f, 0.0f);
-                case <= 2.5f:
+                case <= 0.5f:
                     return new Color(1.0f, 0.25f, 0.0f);
-                case <= 5f:
+                case > 0.5f:
                     return Color.red;
                 default:
                     return Color.white;
@@ -94,7 +94,7 @@ namespace RealismMod
                         GameObject current = poisoning.transform.Find("Current")?.gameObject;
                         if (buff != null)
                         {
-                            float toxicityRate = Plugin.RealHealthController.DmgeTracker.ToxicityRate;
+                            float toxicityRate = HazardTracker.TotalToxicityRate;
                             //can animate it by changing the font size with ping pong, and modulate the color
 #pragma warning disable CS0618
                             CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
@@ -105,7 +105,7 @@ namespace RealismMod
                         }
                         if (current != null)
                         {
-                            float toxicityLevel = Mathf.Round(Plugin.RealHealthController.DmgeTracker.TotalToxicity);
+                            float toxicityLevel = Mathf.Round(HazardTracker.TotalToxicity);
                             //can animate it by changing the font size with ping pong, and modulate the color
 #pragma warning disable CS0618
                             CustomTextMeshProUGUI currentUI = current.GetComponent<CustomTextMeshProUGUI>();
@@ -425,7 +425,7 @@ namespace RealismMod
 
         }
 
-        private static void restoreHP(HealthControllerClass controller, EBodyPart initialTarget, float hpToRestore) 
+        private static void RestoreHP(HealthControllerClass controller, EBodyPart initialTarget, float hpToRestore) 
         {
             if (initialTarget != EBodyPart.Common)
             {
@@ -474,6 +474,9 @@ namespace RealismMod
                             }
                         }
                     }
+
+                    Plugin.RealHealthController.CheckIfReducesHazardInStash(foodClass, false);
+
                     return;
                 }
             }
@@ -482,11 +485,13 @@ namespace RealismMod
                 MedsClass medsClass = item as MedsClass;
                 if (medsClass != null)
                 {
+                    Plugin.RealHealthController.CheckIfReducesHazardInStash(medsClass, false);
+
                     string medType = MedProperties.MedType(medsClass);
                     //need to get surgery kit working later, doesnt want to remove hp resource.
                     if (medType == "medkit") // || medType == "surg"
                     {
-                        restoreHP(__instance, bodyPart, MedProperties.HPRestoreAmount(medsClass));
+                        RestoreHP(__instance, bodyPart, MedProperties.HPRestoreAmount(medsClass));
                         /*             medsClass.MedKitComponent.HpResource -= 1f;
                                      medsClass.MedKitComponent.Item.RaiseRefreshEvent(false, true);*/
                         return;
