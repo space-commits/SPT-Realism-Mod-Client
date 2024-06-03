@@ -63,11 +63,11 @@ namespace RealismMod
                     return new Color(0.4549f, 0.4824f, 0.4941f, 1f);
                 case <= 0.1f:
                     return Color.yellow;
-                case <= 0.3f:
+                case <= 0.25f:
                     return new Color(1.0f, 0.647f, 0.0f);
-                case <= 0.5f:
+                case <= 0.4f:
                     return new Color(1.0f, 0.25f, 0.0f);
-                case > 0.5f:
+                case > 0.4f:
                     return Color.red;
                 default:
                     return Color.white;
@@ -475,7 +475,7 @@ namespace RealismMod
                         }
                     }
 
-                    Plugin.RealHealthController.CheckIfReducesHazardInStash(foodClass, false);
+                    Plugin.RealHealthController.CheckIfReducesHazardInStash(foodClass, false, __instance);
 
                     return;
                 }
@@ -485,8 +485,6 @@ namespace RealismMod
                 MedsClass medsClass = item as MedsClass;
                 if (medsClass != null)
                 {
-                    Plugin.RealHealthController.CheckIfReducesHazardInStash(medsClass, false);
-
                     string medType = MedProperties.MedType(medsClass);
                     //need to get surgery kit working later, doesnt want to remove hp resource.
                     if (medType == "medkit") // || medType == "surg"
@@ -496,6 +494,8 @@ namespace RealismMod
                                      medsClass.MedKitComponent.Item.RaiseRefreshEvent(false, true);*/
                         return;
                     }
+/*                    Plugin.RealHealthController.CheckIfReducesHazardInStash(medsClass, true, __instance); //can't get it to use resource without causing issues
+*/
                 }
             }
         }

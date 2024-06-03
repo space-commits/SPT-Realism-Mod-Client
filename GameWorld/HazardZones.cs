@@ -16,19 +16,21 @@ namespace RealismMod
 
         void Update() 
         {
-            _bridgeTimer = Time.deltaTime;
-            if (_bridgeTimer >= 5f) 
+            _bridgeTimer += Time.deltaTime;
+            if (_bridgeTimer >= 5f)
             {
+                Utils.Logger.LogWarning("tick for player " + _Player.IsAI);
                 //temporary solution to dealing with bots
-                if (_Player != null && _Player.IsAI && IsInGasZone) 
+                if (_Player != null && _Player.IsAI && IsInGasZone)
                 {
+                    Utils.Logger.LogWarning("Is AI ");
                     bool hasMask = false;
                     float protectionLevel = 0f;
                     GearController.CheckFaceCoverGear(_Player, ref hasMask, ref protectionLevel);
-                    if (protectionLevel < 1f && GasAmount > 0.05f) 
+                    if (protectionLevel < 0.9f && GasAmount > 0.05f) 
                     {
                         protectionLevel = 1f - protectionLevel;
-                        _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, GasAmount * protectionLevel, ExistanceClass.PoisonDamage);
+                        _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, GasAmount * protectionLevel * 5f, ExistanceClass.PoisonDamage);
                         Utils.Logger.LogWarning("Gassing Bot: " + GasAmount * protectionLevel);
                     }
                 }
@@ -63,7 +65,14 @@ namespace RealismMod
             if (player != null)
             {
                 Utils.Logger.LogWarning("enter " + player.ProfileId);
-                PlayerHazardBridge hazardBridge = player.GetComponent<PlayerHazardBridge>();
+                PlayerHazardBridge hazardBridge;
+                player.TryGetComponent<PlayerHazardBridge>(out hazardBridge);
+                if(hazardBridge == null)
+                {
+                    Utils.Logger.LogWarning("null ");
+                    hazardBridge = player.gameObject.AddComponent<PlayerHazardBridge>();
+                    hazardBridge._Player = player;
+                }
                 hazardBridge.IsInGasZone = true;
                 _containedPlayers.Add(player, hazardBridge);
             }
@@ -94,7 +103,7 @@ namespace RealismMod
                     PlayerHazardBridge hazardBridge = p.Value;
                     float gasAmount = CalculateGasStrength(player.gameObject.transform.position);
                     hazardBridge.GasAmount = gasAmount <= 0f ? 0f : gasAmount;
-      /*              Utils.Logger.LogWarning("Gas strength " + hazardBridge.GasAmount);*/
+         /*           Utils.Logger.LogWarning("Gas strength " + hazardBridge.GasAmount);*/
                 }
             }
 
@@ -112,15 +121,9 @@ namespace RealismMod
         float CalculateGasStrength(Vector3 playerPosition)
         {
             float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
-
-            // Invert the distance
-            float invertedDistance = _maxDistance - distance;
-
-            // Optionally, clamp the inverted distance to ensure it's within desired bounds
-            invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance);
-
-
-            return invertedDistance / GasStrengthModifier;
+            float invertedDistance = _maxDistance - distance;  // Invert the distance
+            invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance); //clamp the inverted distance
+            return invertedDistance / Plugin.test1.Value; //GasStrengthModifier
         }
     }
 }

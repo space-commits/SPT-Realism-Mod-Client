@@ -124,15 +124,17 @@ namespace RealismMod
                 case < 50f:
                     return 0f;
                 case <= 60f:
-                    return -0.1f;
+                    return -0.15f;
                 case <= 70f:
-                    return -0.2f;
+                    return -0.25f;
                 case <= 80f:
-                    return -0.3f;
-                case <= 90f:
                     return -0.4f;
-                case <= 200f:
-                    return -0.5f;
+                case <= 90f:
+                    return -0.6f;
+                case < 100f:
+                    return -0.8f;
+                case >= 100f:
+                    return -1f;
                 default: 
                     return 0f;
             }

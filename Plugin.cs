@@ -13,6 +13,7 @@ using UnityEngine.Networking;
 using static RealismMod.Attributes;
 using System.Reflection;
 using static RealismMod.GameWorldController;
+using EFT;
 
 namespace RealismMod
 {
@@ -29,6 +30,7 @@ namespace RealismMod
         public bool reload_changes { get; set; }
         public bool manual_chambering { get; set; }
         public bool food_changes { get; set; }
+        public string profile_id { get; set; }
     }
 
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.pluginVersion)]
@@ -348,8 +350,7 @@ namespace RealismMod
 
         public static float FPS = 1f;
 
-
-        private void loadConfig()
+        private void LoadConfig()
         {
             var settings = new JsonSerializerSettings
             {
@@ -367,7 +368,7 @@ namespace RealismMod
             }
         }
 
-        private async void cacheIcons()
+        private async void CacheIcons()
         {
             IconCache.Add(ENewItemAttributeId.ShotDispersion, Resources.Load<Sprite>("characteristics/icons/Velocity"));
             IconCache.Add(ENewItemAttributeId.BluntThroughput, Resources.Load<Sprite>("characteristics/icons/armorMaterial"));
@@ -546,16 +547,22 @@ namespace RealismMod
         public static bool CanLoadChamber = false;
         public static bool BlockChambering = false;
 
+        public static string CurrentProfileId = string.Empty;
+
         void Awake()
         {
+            Utils.Logger = Logger;
+
             try
             {
-                loadConfig();
+                LoadConfig();
                 LoadSprites();
                 LoadTextures();
                 LoadAudioClips();
-                cacheIcons();
-                Utils.VerifyFileIntegrity(Logger);    
+                CacheIcons();
+                HazardTracker.Filepath = AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\data\\hazard_tracker.json";
+                HazardTracker.GetHazardValues(ServerConfig.profile_id);
+                Utils.VerifyFileIntegrity(Logger); 
             }
             catch (Exception exception)
             {
@@ -572,7 +579,6 @@ namespace RealismMod
             DamageTracker dmgTracker = new DamageTracker();
             RealismHealthController healthController = new RealismHealthController(dmgTracker);
             RealHealthController = healthController;
-            Utils.Logger = Logger;
 
             initConfigs();
 
@@ -590,8 +596,6 @@ namespace RealismMod
                     new PreChamberLoadPatch().Enable();
                 }
             }
-
- 
 
             //misc
             new ChamberCheckUIPatch().Enable();
@@ -840,20 +844,7 @@ namespace RealismMod
             {
                 if (Input.GetKeyDown(KeyCode.U))
                 {
-                    GameObject gasZone = GameObject.Find("GasZone");
-
-                    if (gasZone != null)
-                    {
-                        gasZone.transform.position = new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value);
-                        gasZone.transform.rotation = Quaternion.Euler(new Vector3(Plugin.test4.Value, Plugin.test5.Value, Plugin.test6.Value));
-                        gasZone.GetComponent<BoxCollider>().size = new Vector3(Plugin.test7.Value, Plugin.test8.Value, Plugin.test9.Value);
-                  
-                        Logger.LogWarning("player pos " + Utils.GetYourPlayer().Transform.position);
-                        Logger.LogWarning("gasZone pos " + gasZone.transform.position);
-                        Logger.LogWarning("gasZone rot " + gasZone.transform.rotation);
-                        Logger.LogWarning("gasZone size " + gasZone.GetComponent<BoxCollider>().size);
-                    }
-     
+                    CreateDebugZone();     
                 }
 
 
@@ -969,8 +960,8 @@ namespace RealismMod
             EnableSlopeSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Slope Speed Modifier", false, new ConfigDescription("Enables Slopes Slowing Down Movement. Can Cause Random Speed Slowdowns In Some Small Spots Due To BSG's Bad Map Geometry.", null, new ConfigurationManagerAttributes { Order = 10, Browsable = ServerConfig.movement_changes }));
 
             ResourceRateChanges = Config.Bind<bool>(healthSettings, "Enable Hydration/Energy Loss Rate Changes", ServerConfig.med_changes, new ConfigDescription("Enables Changes To How Hydration And Energy Loss Rates Are Calculated. They Are Increased By Injuries, Drug Use, Sprinting And Weight.", null, new ConfigurationManagerAttributes { Order = 120, Browsable = ServerConfig.med_changes }));
-            HydrationRateMulti = Config.Bind<float>(healthSettings, "Hydration Drain Rate Multi.", 0.55f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 110, Browsable = ServerConfig.med_changes }));
-            EnergyRateMulti = Config.Bind<float>(healthSettings, "Energy Drain Rate Multi.", 0.35f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 100, Browsable = ServerConfig.med_changes }));
+            HydrationRateMulti = Config.Bind<float>(healthSettings, "Hydration Drain Rate Multi.", 0.6f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 110, Browsable = ServerConfig.med_changes }));
+            EnergyRateMulti = Config.Bind<float>(healthSettings, "Energy Drain Rate Multi.", 0.38f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 100, Browsable = ServerConfig.med_changes }));
             EnableTrnqtEffect = Config.Bind<bool>(healthSettings, "Enable Tourniquet Effect", ServerConfig.med_changes, new ConfigDescription("Tourniquet Will Drain HP Of The Limb They Are Applied To.", null, new ConfigurationManagerAttributes { Order = 90, Browsable = ServerConfig.med_changes }));
             GearBlocksEat = Config.Bind<bool>(healthSettings, "Gear Blocks Consumption", ServerConfig.med_changes, new ConfigDescription("Gear Blocks Eating & Drinking. This Includes Some Masks & NVGs & Faceshields That Are Toggled On.", null, new ConfigurationManagerAttributes { Order = 80, Browsable = ServerConfig.med_changes }));
             GearBlocksHeal = Config.Bind<bool>(healthSettings, "Gear Blocks Healing", false, new ConfigDescription("Gear Blocks Use Of Meds If The Wound Is Covered By It.", null, new ConfigurationManagerAttributes { Order = 70, Browsable = ServerConfig.med_changes }));

@@ -14,13 +14,19 @@ namespace RealismMod
         private static float _currentDeviceClipLength = 0f;
         private static float _deviceTimer = 0f;
 
+        private static float GetDelayTime() 
+        {
+            if (Plugin.RealHealthController.PlayerHazardBridge == null) return 4f;
+            return delay * (1f - Plugin.RealHealthController.PlayerHazardBridge.GasAmount);
+        }
+
         public static void DeviceAudioController()
         {
             if (GearController.HasGasAnalyser) 
             {
                 _deviceTimer += Time.deltaTime;
 
-                if (_deviceTimer > _currentDeviceClipLength && _deviceTimer >= delay)
+                if (_deviceTimer > _currentDeviceClipLength && _deviceTimer >= GetDelayTime())
                 {
                     Player player = Utils.GetYourPlayer();
                     PlayerHazardBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;

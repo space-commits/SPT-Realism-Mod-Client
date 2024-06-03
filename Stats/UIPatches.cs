@@ -1,4 +1,6 @@
 ﻿using Aki.Reflection.Patching;
+using Comfort.Common;
+using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
@@ -367,55 +369,32 @@ namespace RealismMod
             return typeof(Weapon).GetMethod("get_AmmoCaliber", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static bool IsMulti556(Mod mod) 
+        private static string[] _multiCals = new string[] { "556x45NATO", "762x35", "762x51", "762x39", "366TKM" };
+
+        private static string GetCaliber(IEnumerable<Mod> mods)
         {
-            return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod) == "556";  
+            int count = mods.Count();
+            foreach (var mod in mods)
+            {
+                string modType = AttachmentProperties.ModType(mod);
+                bool isBarrel = Utils.IsBarrel(mod);
+                if (isBarrel && _multiCals.Contains(modType))
+                {
+                    return modType;
+                }
+            }
+            return null;
         }
-        private static bool IsMulti308(Mod mod)
-        {
-            return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod) == "308";
-        }
-        private static bool IsMulti300(Mod mod)
-        {
-            return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod) == "300";
-        }
-        private static bool IsMulti762x39(Mod mod)
-        {
-            return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod) == "762x39";
-        }
-        private static bool IsMulti366(Mod mod)
-        {
-            return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod).Contains("366");
-        }
+
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref string __result)
         {
-            if (__instance.Mods.Any(IsMulti556)) 
-            {
-                __result = "556x45NATO";
-                return false;
-            }
-            if (__instance.Mods.Any(IsMulti300))
-            {
-                __result = "762x35";
-                return false;
-            }
-            if (__instance.Mods.Any(IsMulti308))
-            {
-                __result = "762x51";
-                return false;
-            }
-            if (__instance.Mods.Any(IsMulti762x39))
-            {
-                __result = "762x39";
-                return false;
-            }
-            if (__instance.Mods.Any(IsMulti366))
-            {
-                __result = "366TKM";
-                return false;
-            }
-            return true;
+
+            if (Utils.IsReady && __instance?.Owner?.ID != Singleton<GameWorld>.Instance?.MainPlayer?.ProfileId) return true;
+            string cal = GetCaliber(__instance.Mods);
+            if (cal == null) return true;
+            __result = cal;
+            return false;
         }
     }
 

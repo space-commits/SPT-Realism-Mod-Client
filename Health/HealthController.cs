@@ -1258,8 +1258,10 @@ namespace RealismMod
             Plugin.RealHealthController.AddCustomEffect(painKillerEffect, true);
         }
 
-        public void CheckIfReducesHazardInStash(Item item, bool isMed)
+        public void CheckIfReducesHazardInStash(Item item, bool isMed, HealthControllerClass hc)
         {
+            if (HazardTracker.TotalToxicity <= 0) return;
+
             GClass1235 details = null;
             if (isMed && item as MedsClass != null)
             {
@@ -1277,7 +1279,18 @@ namespace RealismMod
                 float strength = details.FadeOut;
                 int duration = (int)details.Duration;
                 HazardTracker.TotalToxicity -= strength * duration;
-                HazardTracker.SaveValues();
+                HazardTracker.UpdateHazardValues(Plugin.ServerConfig.profile_id);
+                HazardTracker.SaveHazardValues();
+            /*    if (isMed)
+                {
+                    var med = item as MedsClass;
+                    med.MedKitComponent.HpResource -= 1f;
+                    med.MedKitComponent.Item.RaiseRefreshEvent(false, true);
+                    IItemOwner owner = med.Parent.GetOwner();
+                    owner.RaiseEvent(new GEventArgs14(med, CommandStatus.Succeed, owner));
+                    GClass2422.RemoveItem(med);
+                    med = null;
+                }*/
                 Utils.Logger.LogWarning("Reduces Toxication In Stash");
             }
 
@@ -1886,13 +1899,15 @@ namespace RealismMod
             }
 
             float effectStrength = HazardTracker.TotalToxicity / 100f;
-            AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, _hazardInterval, 5f, effectStrength);
-            if (HazardTracker.TotalToxicity >= 50f) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, 0.35f);
+            AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, _hazardInterval, 5f, Mathf.Max(effectStrength * 2f, 1f));
+            if (HazardTracker.TotalToxicity >= 50f) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, effectStrength);
             _hazardWaitTime = 0f;
         }
 
         private void GasZoneHealthEffectTick(Player player) 
         {
+            if (!GameWorldController.GameStarted) return;
+
             if (PlayerHazardBridge == null)
             {
                 PlayerHazardBridge = player.gameObject.GetComponent<PlayerHazardBridge>();
@@ -1908,16 +1923,15 @@ namespace RealismMod
             }
             else if (HazardTracker.TotalToxicity > 0f || GearController.CurrentMaskProtection >= 1f)
             {
-         
                 float reduction = (_baseToxicityRecoveryRate + HazardTracker.ToxicityRateMeds) * (1f + PlayerState.ImmuneSkillStrong);
                 float threshold = HazardTracker.ToxicityRateMeds < 0f ? 0f : HazardTracker.GetNextLowestToxicityLevel((int)HazardTracker.TotalToxicity);
                 HazardTracker.TotalToxicity = Mathf.Clamp(HazardTracker.TotalToxicity + reduction, threshold, 100f);
                 HazardTracker.TotalToxicityRate = HazardTracker.TotalToxicity == threshold ? 0f : reduction;
 
-                Utils.Logger.LogWarning("Reducing Toxicity Passively");
+/*                Utils.Logger.LogWarning("Reducing Toxicity Passively");
                 Utils.Logger.LogWarning("reduction "  + reduction);
                 Utils.Logger.LogWarning("threshold " + threshold);
-                Utils.Logger.LogWarning("ToxicityRateZone " + HazardTracker.TotalToxicityRate);
+                Utils.Logger.LogWarning("ToxicityRateZone " + HazardTracker.TotalToxicityRate);*/
             }
             else 
             {
@@ -1929,9 +1943,9 @@ namespace RealismMod
                 RemoveCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest);
             }
 
-            Utils.Logger.LogWarning("Is In Gas Zone " + PlayerHazardBridge.IsInGasZone);
+       /*     Utils.Logger.LogWarning("Is In Gas Zone " + PlayerHazardBridge.IsInGasZone);
             Utils.Logger.LogWarning("Current Rate " + HazardTracker.TotalToxicityRate);
-            Utils.Logger.LogWarning("Current Toxicity " + HazardTracker.TotalToxicity);
+            Utils.Logger.LogWarning("Current Toxicity " + HazardTracker.TotalToxicity);*/
 
             if (HazardTracker.TotalToxicity >= 10f && _hazardWaitTime > _hazardInterval) ApplyToxicityEffects(player);
 

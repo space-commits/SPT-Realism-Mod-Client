@@ -5,6 +5,7 @@ using static ChartAndGraph.ChartItemEvents;
 using static GripPose;
 using UnityEngine.UI;
 using ArmorTemplate = GClass2536; //to find again, search for HasHinge field
+using System.Linq;
 
 namespace RealismMod
 {
@@ -44,19 +45,24 @@ namespace RealismMod
             }
         }
 
-        public static void CheckForDevices(Inventory invClass) 
+        private static void deviceCheckerHelper(IEnumerable<Item> items) 
         {
-            IEnumerable<Item> items = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.TacticalVest, EquipmentSlot.ArmBand});
-            bool hasGasAnalyser = false;
             foreach (var item in items)
             {
-                if (item.TemplateId == "590a3efd86f77437d351a25b")
+                if (item != null && item?.TemplateId != null && item.TemplateId == "590a3efd86f77437d351a25b")
                 {
-
-                    hasGasAnalyser = true;
+                    HasGasAnalyser = true;
                 }
             }
-            HasGasAnalyser = hasGasAnalyser;
+        }
+
+        public static void CheckForDevices(Inventory invClass) 
+        {
+            IEnumerable<Item> vestItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.TacticalVest}) ?? Enumerable.Empty<Item>();
+            IEnumerable<Item> armbandItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.ArmBand }) ?? Enumerable.Empty<Item>();
+            HasGasAnalyser = false;
+            deviceCheckerHelper(vestItems);
+            deviceCheckerHelper(armbandItems);
         }
 
         public static float GetModifiedInventoryWeight(Inventory invClass)

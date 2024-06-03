@@ -147,7 +147,7 @@ namespace RealismMod
         }
     }
 
-    public class PlayerInitPatch    : ModulePatch
+    public class PlayerInitPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -164,9 +164,9 @@ namespace RealismMod
                 GearController.GetGearPenalty(__instance);
                 GearController.CheckForDevices(__instance.Inventory);
                 PlayerState.IsScav = Singleton<GameWorld>.Instance.MainPlayer.Profile.Info.Side == EPlayerSide.Savage;
+                PlayerHazardBridge hazardBridge = __instance.gameObject.AddComponent<PlayerHazardBridge>();
+                hazardBridge._Player = __instance;
             }
-            PlayerHazardBridge hazardBridge = __instance.gameObject.AddComponent<PlayerHazardBridge>();
-            hazardBridge._Player = __instance;  
         }
     }
 
