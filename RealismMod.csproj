@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -9,6 +9,11 @@
     <LangVersion>latest</LangVersion>
     <BaseOutputPath></BaseOutputPath>
   </PropertyGroup>
+
+  <Target Name="Build Cleanup" AfterTargets="Build">
+    <Delete Files="$(OutDir)$(AssemblyName).pdb" />
+    <Delete Files="$(OutDir)$(AssemblyName).deps.json" />
+  </Target>
 
   <ItemGroup>
     <Reference Include="Aki.Reflection" />
