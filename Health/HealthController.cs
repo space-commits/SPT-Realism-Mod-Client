@@ -1285,32 +1285,28 @@ namespace RealismMod
                 HazardTracker.SaveHazardValues();
 
                 //doesn't work :(
-                if (isMed)
+         /*       if (isMed)
                 {
                     var med = item as MedsClass;
                     med.MedKitComponent.HpResource -= 1f;
                     med.MedKitComponent.Item.RaiseRefreshEvent(false, true);
-                    Utils.Logger.LogWarning("Reduced Toxication In Stash");
-                }
+                }*/
             }
 
         }
 
         public void CheckIfReducesHazardInRaid(Item item, Player player, bool isMed) 
         {
-            Utils.Logger.LogWarning("===================================================TESTING");
             GClass1235 details = null;
             if (isMed && item as MedsClass != null)
             {
                 MedsClass med = item as MedsClass;
                 details = med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? med.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
-                Utils.Logger.LogWarning("===================================================Is Med");
             }
             if (!isMed && item as FoodClass != null)
             {
                 FoodClass food = item as FoodClass;
                 details = food.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? food.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
-                Utils.Logger.LogWarning("===================================================Is Food");
             }
 
             if (details != null)
@@ -1321,11 +1317,6 @@ namespace RealismMod
 
                 DetoxificationEffect detox = new DetoxificationEffect(player, duration, delay, this, strength);
                 Plugin.RealHealthController.AddCustomEffect(detox, true);
-
-                Utils.Logger.LogWarning("===================================================Reduces Toxication");
-                Utils.Logger.LogWarning("===================================================strength " + strength);
-                Utils.Logger.LogWarning("===================================================delay " + delay);
-                Utils.Logger.LogWarning("===================================================duration " + duration);
             }
 
         }
@@ -1915,7 +1906,6 @@ namespace RealismMod
 
             if (PlayerHazardBridge.IsInGasZone && GearController.CurrentMaskProtection < 1f)
             {
-                Utils.Logger.LogWarning("Increasing Toxicity");
                 float increase = (PlayerHazardBridge.GasAmount + HazardTracker.ToxicityRateMeds) * (1f - GearController.CurrentMaskProtection) * (1f - PlayerState.ImmuneSkillWeak);
                 increase = Mathf.Max(increase, 0f);
                 HazardTracker.TotalToxicity += increase;

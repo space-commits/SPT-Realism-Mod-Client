@@ -66,7 +66,7 @@ namespace RealismMod
         public static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> LighthouseGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
             { "LighthouseTunnel", (0f, 150f, new Vector3(-67f, 6f, 330f), new Vector3(0f, 8f, 0f), new Vector3(25f, 8f, 30f)) },
-            { "LighthouseTrench", (0f, 150f, new Vector3(-98f, 1f, -584f), new Vector3(0f, 8f, 0f), new Vector3(80f, 3f, 6f)) }
+            { "LighthouseTrench", (0f, 150f, new Vector3(-98f, 1f, -584f), new Vector3(0f, 0f, 0f), new Vector3(80f, 3f, 6f)) }
         };
 
         public static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> WoodsGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
@@ -204,14 +204,9 @@ namespace RealismMod
 
         [PatchPostfix]
         private static void PatchPostfix(GameWorld __instance)
-        {
-            Logger.LogWarning(" =================================== GAME START ===================================");
-            Logger.LogWarning(" =================================== Location " + Singleton<GameWorld>.Instance.MainPlayer.Location);
-
-            Plugin.CurrentProfileId = Utils.GetYourPlayer().ProfileId;
-
-            /*WeatherController.Instance.WindController.CloudWindMultiplier = 1;*/
+        {            /*WeatherController.Instance.WindController.CloudWindMultiplier = 1;*/
             /*GameWorldController.CreateDebugZone();*/
+            Plugin.CurrentProfileId = Utils.GetYourPlayer().ProfileId;
             GameWorldController.CreateGasZones(Singleton<GameWorld>.Instance.MainPlayer.Location);
             HazardTracker.GetHazardValues(Plugin.CurrentProfileId);
             HazardTracker.ResetTracker();

@@ -72,7 +72,6 @@ namespace RealismMod
             {
                 record.RecordedTotalToxicity = TotalToxicity;
                 record.RecordedTotalRadiation = -1f;
-                Utils.Logger.LogWarning("updated record");
             }
         }
 
@@ -80,7 +79,6 @@ namespace RealismMod
         {
             string records = JsonConvert.SerializeObject(_hazardRecords, Formatting.Indented);
             File.WriteAllText(GetFilePath(), records);
-            Utils.Logger.LogWarning("saved record");
         }
 
         public static void GetHazardValues(string profileId)
@@ -88,24 +86,20 @@ namespace RealismMod
             string json = File.ReadAllText(GetFilePath());
             if (string.IsNullOrWhiteSpace(json) || json.Trim() == "{}")
             {
-                Utils.Logger.LogWarning("JSON content is empty or only contains '{}'");
+                Utils.Logger.LogWarning("Realism Mod: JSON File is empty");
             }
             else 
             {
-                Utils.Logger.LogWarning("Reading JSON");
-
                 _hazardRecords = JsonConvert.DeserializeObject<Dictionary<string, HazardRecord>>(json);
             }
 
             HazardRecord record = null;
             if (_hazardRecords.TryGetValue(profileId, out record))
             {
-                Utils.Logger.LogWarning("=================got record");
                 TotalToxicity = record.RecordedTotalToxicity;
             }
             else 
             {
-                Utils.Logger.LogWarning("==============================created record");
                 _hazardRecords.Add(profileId, new HazardRecord { RecordedTotalRadiation = 0, RecordedTotalToxicity = 0 });
                 TotalToxicity = 0f;
                 SaveHazardValues();

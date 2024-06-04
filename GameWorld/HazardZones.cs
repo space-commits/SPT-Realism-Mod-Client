@@ -61,12 +61,11 @@ namespace RealismMod
         {
             if (player != null)
             {
-                Utils.Logger.LogWarning("enter " + player.ProfileId);
+    /*            Utils.Logger.LogWarning("enter " + player.ProfileId);*/
                 PlayerHazardBridge hazardBridge;
                 player.TryGetComponent<PlayerHazardBridge>(out hazardBridge);
                 if(hazardBridge == null)
                 {
-                    Utils.Logger.LogWarning("null ");
                     hazardBridge = player.gameObject.AddComponent<PlayerHazardBridge>();
                     hazardBridge._Player = player;
                 }
@@ -79,7 +78,7 @@ namespace RealismMod
         {
             if (player != null)
             {
-                Utils.Logger.LogWarning("exit " + player.ProfileId);
+/*                Utils.Logger.LogWarning("exit " + player.ProfileId);*/
                 PlayerHazardBridge hazardBridge = _containedPlayers[player];
                 hazardBridge.GasAmount = 0f;
                 hazardBridge.IsInGasZone = false;
