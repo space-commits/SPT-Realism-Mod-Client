@@ -152,10 +152,15 @@ namespace RealismMod
                         EBodyPart bodyPart = RealHealthController.BodyParts[i];
                         float baseDrainRate = GetDrainRate();
                         baseDrainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
-                        _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 1f, baseDrainRate, null);
+                        _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 2f, baseDrainRate, null);
                     }
-                   
+            
                 }
+                if (TimeExisted % 6 == 0) 
+                {
+                    _Player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
+                }
+             
             }
         }
     }

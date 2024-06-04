@@ -19,11 +19,9 @@ namespace RealismMod
             _bridgeTimer += Time.deltaTime;
             if (_bridgeTimer >= 5f)
             {
-                Utils.Logger.LogWarning("tick for player " + _Player.IsAI);
                 //temporary solution to dealing with bots
                 if (_Player != null && _Player.IsAI && IsInGasZone)
                 {
-                    Utils.Logger.LogWarning("Is AI ");
                     bool hasMask = false;
                     float protectionLevel = 0f;
                     GearController.CheckFaceCoverGear(_Player, ref hasMask, ref protectionLevel);
@@ -31,7 +29,6 @@ namespace RealismMod
                     {
                         protectionLevel = 1f - protectionLevel;
                         _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, GasAmount * protectionLevel * 5f, ExistanceClass.PoisonDamage);
-                        Utils.Logger.LogWarning("Gassing Bot: " + GasAmount * protectionLevel);
                     }
                 }
                 _bridgeTimer = 0f;
@@ -123,7 +120,7 @@ namespace RealismMod
             float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
             float invertedDistance = _maxDistance - distance;  // Invert the distance
             invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance); //clamp the inverted distance
-            return invertedDistance / Plugin.test1.Value; //GasStrengthModifier
+            return invertedDistance / GasStrengthModifier;
         }
     }
 }

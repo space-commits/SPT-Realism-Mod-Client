@@ -18,13 +18,9 @@ namespace RealismMod
 
     public static class HazardTracker
     {
-
-        
         public static float TotalToxicityRate { get; set; } = 0f;
         private static float _totalToxicity = 0f;
         private static float _toxicityRateMeds = 0f;
-
-        public static string Filepath { get; set; }
         private static Dictionary<string, HazardRecord> _hazardRecords = new Dictionary<string, HazardRecord>();
 
         public static float ToxicityRateMeds
@@ -35,7 +31,7 @@ namespace RealismMod
             }
             set 
             {
-                _toxicityRateMeds =  Mathf.Clamp(value, -0.35f, 0f); 
+                _toxicityRateMeds =  Mathf.Clamp(value, -0.55f, 0f); 
             }
         }
 
@@ -50,6 +46,12 @@ namespace RealismMod
                 _totalToxicity = Mathf.Clamp(value, 0f, 100f);
             }
         }
+
+        private static string GetFilePath()
+        {
+            return AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\data\\hazard_tracker.json";
+        }
+
 
         public static int GetNextLowestToxicityLevel(int value)
         {
@@ -77,13 +79,13 @@ namespace RealismMod
         public static void SaveHazardValues()
         {
             string records = JsonConvert.SerializeObject(_hazardRecords, Formatting.Indented);
-            File.WriteAllText(Filepath, records);
+            File.WriteAllText(GetFilePath(), records);
             Utils.Logger.LogWarning("saved record");
         }
 
         public static void GetHazardValues(string profileId)
         {
-            string json = File.ReadAllText(Filepath);
+            string json = File.ReadAllText(GetFilePath());
             if (string.IsNullOrWhiteSpace(json) || json.Trim() == "{}")
             {
                 Utils.Logger.LogWarning("JSON content is empty or only contains '{}'");

@@ -11,6 +11,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using static RealismMod.Attributes;
+using static RootMotion.FinalIK.GenericPoser;
 using HeadsetClass = GClass2639;
 using HeadsetTemplate = GClass2542;
 using RigConstructor = GClass2685;
@@ -30,15 +31,16 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(PlayerCameraController __instance, FaceShieldComponent faceShield)
         {
-            if (faceShield != null && faceShield?.Item != null && GearStats.IsGasMask(faceShield.Item))
+            if (faceShield != null && faceShield?.Item != null)
             {
                 VisorEffect visor = (VisorEffect)AccessTools.Field(typeof(PlayerCameraController), "visorEffect_0").GetValue(__instance);
                 Material mat = visor.method_4();
 
-                Texture mask = Plugin.LoadedTextures["gp5.png"];
+                string maskToUse = GearStats.MaskToUse(faceShield.Item);
+                if (maskToUse == null || maskToUse == string.Empty || maskToUse == "") return;
+                Texture mask = Plugin.LoadedTextures[maskToUse + ".png"];
                 mat.SetTexture("_Mask", mask);
             }
-
         }
     }
 

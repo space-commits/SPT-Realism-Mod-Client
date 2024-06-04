@@ -25,9 +25,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(PhraseSpeakerClass __instance, EPhraseTrigger trigger, ETagStatus tags)
         {
-            Logger.LogWarning("trigger " + trigger);
-            Logger.LogWarning("tags " + tags);
-
             Player player = Utils.GetYourPlayer();
             if (player == null) return true;
             PhraseSpeakerClass speaker = player.Speaker;

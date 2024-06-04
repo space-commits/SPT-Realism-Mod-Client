@@ -61,7 +61,7 @@ namespace RealismMod
                     return Color.green;
                 case 0:
                     return new Color(0.4549f, 0.4824f, 0.4941f, 1f);
-                case <= 0.1f:
+                case <= 0.15f:
                     return Color.yellow;
                 case <= 0.25f:
                     return new Color(1.0f, 0.647f, 0.0f);

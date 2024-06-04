@@ -215,6 +215,8 @@ namespace RealismMod
         public const float PainReliefThreshold = 30f;
         public const float BasePKOverdoseThreshold = 45f;
 
+        public const float ToxicityThreshold = 50f;
+
         private const float _baseToxicityRecoveryRate = -0.05f;
         private const float _hazardInterval = 10f;
         private float _hazardWaitTime = 0f;
@@ -1279,19 +1281,17 @@ namespace RealismMod
                 float strength = details.FadeOut;
                 int duration = (int)details.Duration;
                 HazardTracker.TotalToxicity -= strength * duration;
-                HazardTracker.UpdateHazardValues(Plugin.ServerConfig.profile_id);
+                HazardTracker.UpdateHazardValues(Plugin.PMCProfileId);
                 HazardTracker.SaveHazardValues();
-            /*    if (isMed)
+
+                //doesn't work :(
+                if (isMed)
                 {
                     var med = item as MedsClass;
                     med.MedKitComponent.HpResource -= 1f;
                     med.MedKitComponent.Item.RaiseRefreshEvent(false, true);
-                    IItemOwner owner = med.Parent.GetOwner();
-                    owner.RaiseEvent(new GEventArgs14(med, CommandStatus.Succeed, owner));
-                    GClass2422.RemoveItem(med);
-                    med = null;
-                }*/
-                Utils.Logger.LogWarning("Reduces Toxication In Stash");
+                    Utils.Logger.LogWarning("Reduced Toxication In Stash");
+                }
             }
 
         }
@@ -1892,15 +1892,15 @@ namespace RealismMod
 
         private void ApplyToxicityEffects(Player player) 
         {
-            if (HazardTracker.TotalToxicity >= 50f && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Stomach))
+            if (HazardTracker.TotalToxicity >= ToxicityThreshold && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest))
             {
                 ToxicityEffect trnqt = new ToxicityEffect(null, player, 0, this);
                 AddCustomEffect(trnqt, false);
             }
 
             float effectStrength = HazardTracker.TotalToxicity / 100f;
-            AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, _hazardInterval, 5f, Mathf.Max(effectStrength * 2f, 1f));
-            if (HazardTracker.TotalToxicity >= 50f) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, effectStrength);
+            AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, _hazardInterval, 5f, Mathf.Min(effectStrength * 2f, 1f));
+            if (HazardTracker.TotalToxicity >= ToxicityThreshold) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, effectStrength * 0.7f);
             _hazardWaitTime = 0f;
         }
 
@@ -1938,19 +1938,16 @@ namespace RealismMod
                 HazardTracker.TotalToxicityRate = 0f;
             }
 
-            if (HazardTracker.TotalToxicity <= 0f) 
+            if (HazardTracker.TotalToxicity <= ToxicityThreshold) 
             {
                 RemoveCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest);
             }
 
-       /*     Utils.Logger.LogWarning("Is In Gas Zone " + PlayerHazardBridge.IsInGasZone);
+/*            Utils.Logger.LogWarning("Is In Gas Zone " + PlayerHazardBridge.IsInGasZone);
             Utils.Logger.LogWarning("Current Rate " + HazardTracker.TotalToxicityRate);
             Utils.Logger.LogWarning("Current Toxicity " + HazardTracker.TotalToxicity);*/
 
             if (HazardTracker.TotalToxicity >= 10f && _hazardWaitTime > _hazardInterval) ApplyToxicityEffects(player);
-
-            //todo: if took AI-2 or antidote of somekind, reduce toxicity level
-
         }
     }
 }

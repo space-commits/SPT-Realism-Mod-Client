@@ -48,34 +48,54 @@ namespace RealismMod
             return _baseBreathVolume * (2f - PlayerState.StaminaPerc);
         }
 
-        private static string GetAudioFromStamina()
+        private static string GetAudioFromOtherStates()
         {
-            switch (PlayerState.StaminaPerc)
+            if (HazardTracker.TotalToxicity >= 75f)
             {
-                case <= 0.45f:
-                    return "BadlyInjured";
-                case <= 0.8f:
-                    return "Injured";
-                default:
-                    return "Healthy";
+                return "Dying";
             }
+            if (HazardTracker.TotalToxicity >= 65f || PlayerState.StaminaPerc <= 0.45)
+            {
+                return "BadlyInjured";
+            }
+            if (HazardTracker.TotalToxicity >= 50f || PlayerState.StaminaPerc <= 0.8f)
+            {
+                return "Injured";
+            }
+            return "Healthy";
+        }
 
+        private static string ChooseAudioClip(string healthStatus, string desiredClip)
+        {
+            if (desiredClip == "Dying" || healthStatus == "Dying")
+            {
+                return "Dying";
+            }
+            if (desiredClip == "BadlyInjured" || healthStatus == "BadlyInjured")
+            {
+                return "BadlyInjured";
+            }
+            if (desiredClip == "Injured" || healthStatus == "Injured")
+            {
+                return "Injured";
+            }
+            return "Healthy";
         }
 
         public static void PlayGasMaskBreathing(bool breathOut, Player player)
         {
             int rndNumber = UnityEngine.Random.Range(1, 4);
-            String breathClip = player.HealthStatus.ToString();
-            if (breathClip == "Healthy") breathClip = GetAudioFromStamina();
+            string healthStatus = player.HealthStatus.ToString();
+            string desiredClip = GetAudioFromOtherStates();
+            string clipToUse = ChooseAudioClip(healthStatus, desiredClip);
             string inOut = breathOut ? "out" : "in";
-            string clipName = inOut + "_" + breathClip + rndNumber + ".wav";
+            string clipName = inOut + "_" + clipToUse + rndNumber + ".wav";
             AudioClip audioClip = Plugin.GasMaskAudioClips[clipName];
             _currentBreathClipLength = audioClip.length;
             float playBackVolume = GetBreathVolume();
 
-/*            Utils.Logger.LogWarning("clip " + clipName);
-            Utils.Logger.LogWarning("playBackVolume " + playBackVolume);
-*/
+            Utils.Logger.LogWarning("clip " + clipName);
+
             player.SpeechSource.SetLowPassFilterParameters(1f, ESoundOcclusionType.Obstruction, 1600, 5000, true);
             Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), audioClip, 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, playBackVolume, EOcclusionTest.None, null, false);
         }

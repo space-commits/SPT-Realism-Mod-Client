@@ -11,7 +11,7 @@ namespace RealismMod
 
         public static string ArmorClass(Item armorItem)
         {
-            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 2) ? armorItem.ConflictingItems[2] : "Unclassified";
+            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 2) && !string.IsNullOrEmpty(armorItem.ConflictingItems[2]) ? armorItem.ConflictingItems[2] : "Unclassified";
         }
 
         public static bool CanSpall(Item armorItem)
@@ -59,9 +59,9 @@ namespace RealismMod
             return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 11) && bool.TryParse(armorItem.ConflictingItems[11], out bool result) ? result : false;
         }
 
-        public static bool HasHitSecondaryArmor_DEPRICATED(Item armorItem)
+        public static string MaskToUse(Item armorItem)
         {
-            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 12) && bool.TryParse(armorItem.ConflictingItems[12], out bool result) ? result : false;
+            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 12) && !string.IsNullOrEmpty(armorItem.ConflictingItems[12]) ? armorItem.ConflictingItems[12] : string.Empty;
         }
 
         public static float GasProtection(Item armorItem)
