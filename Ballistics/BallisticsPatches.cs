@@ -574,11 +574,11 @@ namespace RealismMod
             float penetrationPower = shot.PenetrationPower;
             float armorDuraPercent = __instance.Repairable.Durability / (float)__instance.Repairable.TemplateDurability * 100f;
 
-            if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel)
+            if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && isSteelBodyArmor)
             {
                 armorDuraPercent = 100f;
             }
-            else if (__instance.Template.ArmorMaterial == EArmorMaterial.Titan || __instance.Template.ArmorMaterial == EArmorMaterial.Aluminium)
+            else if (__instance.Template.ArmorMaterial == EArmorMaterial.Titan || __instance.Template.ArmorMaterial == EArmorMaterial.Aluminium || (!isSteelBodyArmor && __instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel))
             {
                 armorDuraPercent = Mathf.Min(100f, armorDuraPercent * 1.5f);
             }
