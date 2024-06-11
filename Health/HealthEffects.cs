@@ -124,17 +124,17 @@ namespace RealismMod
                 case < 50f:
                     return 0f;
                 case <= 60f:
-                    return -0.15f;
+                    return -0.2f;
                 case <= 70f:
-                    return -0.25f;
+                    return -0.35f;
                 case <= 80f:
-                    return -0.4f;
+                    return -0.5f;
                 case <= 90f:
-                    return -0.6f;
+                    return -0.7f;
                 case < 100f:
-                    return -0.8f;
+                    return -0.9f;
                 case >= 100f:
-                    return -1f;
+                    return -1.1f;
                 default: 
                     return 0f;
             }
@@ -156,7 +156,7 @@ namespace RealismMod
                     }
             
                 }
-                if (TimeExisted % 6 == 0) 
+                if (TimeExisted % 5 == 0) 
                 {
                     _Player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
                 }

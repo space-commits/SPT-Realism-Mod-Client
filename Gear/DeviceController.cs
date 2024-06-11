@@ -9,7 +9,7 @@ namespace RealismMod
 {
     public static class DeviceController
     {
-        public static bool HasGasAnalyser { get; private set; } = false;
+        public static bool HasGasAnalyser { get; set; } = false;
         private const float Delay = 5f;
         private const float BaseDeviceVolume = 0.2f;
         private static float _currentDeviceClipLength = 0f;

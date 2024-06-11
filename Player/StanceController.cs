@@ -795,7 +795,7 @@ namespace RealismMod
                 && (CurrentStance == EStance.HighReady || StoredStance == EStance.HighReady)
                 && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed
                 && !fc.Weapon.IsBeltMachineGun && WeaponStats.TotalWeaponWeight <= 5.5f && WeaponStats.TotalWeaponLength <= 6f
-                && !PlayerState.IsScav && HazardTracker.TotalToxicity <= 50f)
+                && !PlayerState.IsScav && HazardTracker.TotalToxicity <= 50f && !Plugin.RealHealthController.IsPoisoned)
             {
                 IsDoingTacSprint = true;
                 player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);

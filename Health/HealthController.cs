@@ -20,6 +20,8 @@ using PainInterface = GInterface259;
 using PainKillerInterface = GInterface260;
 using TremorInterface = GInterface263;
 using TunnelVisionInterface = GInterface265;
+using ToxinInterface = GInterface249;
+using LethalToxinInterface = GInterface250;
 
 namespace RealismMod
 {
@@ -86,7 +88,8 @@ namespace RealismMod
             { "LightBleeding", typeof(LightBleedingInterface) },
             { "Dehydration", typeof(DehydrationInterface) },
             { "Exhaustion", typeof(ExhaustionInterface) },
-            { "Pain", typeof(PainInterface) }
+            { "LethalToxin", typeof(ToxinInterface) },
+            { "Intoxication", typeof(LethalToxinInterface) }
         };
     }
 
@@ -221,10 +224,10 @@ namespace RealismMod
         private const float _hazardInterval = 10f;
         private float _hazardWaitTime = 0f;
 
-        private bool rightArmRuined = false;
-        private bool leftArmRuined = false;
+        private bool _rightArmRuined = false;
+        private bool _leftArmRuined = false;
 
-        private bool HasOverdosedStim = false;
+        private bool _hasOverdosedStim = false;
 
         public float ResourcePerTick = 0;
 
@@ -232,11 +235,13 @@ namespace RealismMod
 
         private bool addedCustomEffectsToDict = false;
 
+        public bool IsPoisoned { get; set; } = false;   
+
         public bool ArmsAreIncapacitated 
         {
             get 
             {
-                return (rightArmRuined || leftArmRuined || (PainStrength > PainArmThreshold && PainStrength > PainReliefStrength)) && !IsOnPKStims;
+                return (_rightArmRuined || _leftArmRuined || (PainStrength > PainArmThreshold && PainStrength > PainReliefStrength)) && !IsOnPKStims;
             }
         }
 
@@ -244,7 +249,7 @@ namespace RealismMod
         {
             get
             {
-                return PainReliefStrength > PKOverdoseThreshold || HasOverdosedStim;
+                return PainReliefStrength > PKOverdoseThreshold || _hasOverdosedStim;
             }
         }
 
@@ -260,7 +265,7 @@ namespace RealismMod
         {
             get
             {
-                return hasPKStims && !HasOverdosedStim;
+                return hasPKStims && !_hasOverdosedStim;
             }
         }
 
@@ -574,9 +579,9 @@ namespace RealismMod
             PainReliefStrength = 0f;
             PainTunnelStrength = 0f;
             ReliefDuration = 0;
-            HasOverdosedStim = false;
-            leftArmRuined = false;  
-            rightArmRuined = false;
+            _hasOverdosedStim = false;
+            _leftArmRuined = false;  
+            _rightArmRuined = false;
             resetHealhPenalties();
         }
 
@@ -768,9 +773,9 @@ namespace RealismMod
             EvaluateStimSingles(player, singlesGrouping);
             if (totalDuplicates > 1)
             {
-                HasOverdosedStim = true;
+                _hasOverdosedStim = true;
             }
-            else HasOverdosedStim = false;
+            else _hasOverdosedStim = false;
         }
 
         public EStimType GetStimType(string id) 
@@ -1738,7 +1743,7 @@ namespace RealismMod
             float stamRegenInjuryMulti = 1f;
             float resourceRateInjuryMulti = 0f;
 
-            float drugFactor = HasOverdosedStim ? 90f + PainReliefStrength : PainReliefStrength;
+            float drugFactor = _hasOverdosedStim ? 90f + PainReliefStrength : PainReliefStrength;
             float resourcePainReliefFactor = drugFactor / 200f;
 
             float currentEnergy = player.ActiveHealthController.Energy.Current;
@@ -1748,6 +1753,8 @@ namespace RealismMod
             float currentHydro = player.ActiveHealthController.Hydration.Current;
             float maxHydro = player.ActiveHealthController.Hydration.Maximum;
             float percentHydro = currentHydro / maxHydro;
+
+            IsPoisoned = HasBaseEFTEffect(player, "LethalToxin");
 
             float totalMaxHp = 0f;
             float totalCurrentHp = 0f;
@@ -1805,11 +1812,11 @@ namespace RealismMod
                     bool isArmRuined = (currentHp <= 0f || hasFracture) && !HasBaseEFTEffect(player, "PainKiller");
                     if (isLeftArm)
                     {
-                        leftArmRuined = isArmRuined;
+                        _leftArmRuined = isArmRuined;
                     }
                     if (isRightArm)
                     {
-                        rightArmRuined = isArmRuined;
+                        _rightArmRuined = isArmRuined;
                     }
 
                     float armFractureFactor = isLeftArm && hasFracture ? 0.75f : isRightArm && hasFracture ? 0.85f : 1f;
@@ -1842,7 +1849,7 @@ namespace RealismMod
             float percentHydroLimitErgo = (1f + ((1f - percentHydro) / 4f));
 
             float painFactor = Mathf.Max(PainStrength - PainReliefStrength, 0f);
-            painFactor = HasOverdosedStim ? 90f + painFactor : painFactor;
+            painFactor = _hasOverdosedStim ? 90f + painFactor : painFactor;
             float painKillerFactor = Mathf.Clamp(1f - (painFactor / 1000f), 0.85f, 1f);
             float painKillerFactorInverse = Mathf.Clamp(1f + (painFactor / 1000f), 1f, 1.15f);
             float skillFactor = (1f + (player.Skills.HealthEnergy.Value / 4));
@@ -1852,16 +1859,19 @@ namespace RealismMod
             float toxicityFactor = 1f - toxicity;
             float toxicityInverse = 1f + toxicity;
 
-            PlayerState.AimMoveSpeedInjuryMulti = Mathf.Clamp(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor * skillFactor * toxicityFactor, 0.6f * percentHydroLowerLimit, 1f);
-            PlayerState.ADSInjuryMulti = Mathf.Clamp(adsInjuryMulti * percentEnergyADS * painKillerFactor * skillFactor * toxicityFactor, 0.35f * percentHydroLowerLimit, 1f);
-            PlayerState.StanceInjuryMulti = Mathf.Clamp(stanceInjuryMulti * percentEnergyStance * painKillerFactor * skillFactor * toxicityFactor, 0.65f * percentHydroLowerLimit, 1f);
-            PlayerState.ReloadInjuryMulti = Mathf.Clamp(reloadInjuryMulti * percentEnergyReload * painKillerFactor * skillFactor * toxicityFactor, 0.75f * percentHydroLowerLimit, 1f);
-            PlayerState.HealthSprintSpeedFactor = Mathf.Clamp(sprintSpeedInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor * toxicityFactor, 0.4f * percentHydroLowerLimit, 1f);
-            PlayerState.HealthSprintAccelFactor = Mathf.Clamp(sprintAccelInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor * toxicityFactor, 0.4f * percentHydroLowerLimit, 1f);
-            PlayerState.HealthWalkSpeedFactor = Mathf.Clamp(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor * skillFactor * toxicityFactor, 0.7f * percentHydroLowerLimit, 1f);
-            PlayerState.HealthStamRegenFactor = Mathf.Clamp(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor * skillFactor * toxicityFactor, 0.5f * percentHydroLowerLimit, 1f);
-            PlayerState.ErgoDeltaInjuryMulti = Mathf.Clamp(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactorInverse * skillFactorInverse * toxicityInverse, 1f, 1.3f * percentHydroLimitErgo);
-            PlayerState.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactorInverse * skillFactorInverse * toxicityInverse, 1f, 1.12f * percentHydroLimitRecoil);
+            float poisonBuffFactor = IsPoisoned ? 0.8f : 1f;
+            float poisonBuffFactorInverse = IsPoisoned ? 1.2f : 1f;
+
+            PlayerState.AimMoveSpeedInjuryMulti = Mathf.Clamp(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor * skillFactor * toxicityFactor * poisonBuffFactor, 0.6f * percentHydroLowerLimit, 1f);
+            PlayerState.ADSInjuryMulti = Mathf.Clamp(adsInjuryMulti * percentEnergyADS * painKillerFactor * skillFactor * toxicityFactor * poisonBuffFactor, 0.35f * percentHydroLowerLimit, 1f);
+            PlayerState.StanceInjuryMulti = Mathf.Clamp(stanceInjuryMulti * percentEnergyStance * painKillerFactor * skillFactor * toxicityFactor * poisonBuffFactor, 0.65f * percentHydroLowerLimit, 1f);
+            PlayerState.ReloadInjuryMulti = Mathf.Clamp(reloadInjuryMulti * percentEnergyReload * painKillerFactor * skillFactor * toxicityFactor * poisonBuffFactor, 0.75f * percentHydroLowerLimit, 1f);
+            PlayerState.HealthSprintSpeedFactor = Mathf.Clamp(sprintSpeedInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor * toxicityFactor * poisonBuffFactor, 0.4f * percentHydroLowerLimit, 1f);
+            PlayerState.HealthSprintAccelFactor = Mathf.Clamp(sprintAccelInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor * toxicityFactor * poisonBuffFactor, 0.4f * percentHydroLowerLimit, 1f);
+            PlayerState.HealthWalkSpeedFactor = Mathf.Clamp(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor * skillFactor * toxicityFactor * poisonBuffFactor, 0.7f * percentHydroLowerLimit, 1f);
+            PlayerState.HealthStamRegenFactor = Mathf.Clamp(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor * skillFactor * toxicityFactor * poisonBuffFactor, 0.5f * percentHydroLowerLimit, 1f);
+            PlayerState.ErgoDeltaInjuryMulti = Mathf.Clamp(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactorInverse * skillFactorInverse * toxicityInverse * poisonBuffFactorInverse, 1f, 1.3f * percentHydroLimitErgo);
+            PlayerState.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactorInverse * skillFactorInverse * toxicityInverse * poisonBuffFactorInverse, 1f, 1.12f * percentHydroLimitRecoil);
 
             if (Plugin.ResourceRateChanges.Value)
             {
@@ -1875,7 +1885,8 @@ namespace RealismMod
                     float playerWeightFactor = PlayerState.TotalModifiedWeight >= 10f ? PlayerState.TotalModifiedWeight / 500f : 0f;
                     float sprintMulti = PlayerState.IsSprinting ? 1.45f : 1f;
                     float sprintFactor = PlayerState.IsSprinting ? 0.1f : 0f;
-                    float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * (1f - player.Skills.HealthEnergy.Value) * toxicityInverse;
+                    float poisonSprintFactor = IsPoisoned ? 1.5f : 1f;
+                    float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * (1f - player.Skills.HealthEnergy.Value) * toxicityInverse * poisonSprintFactor;
                     ResourcePerTick = totalResourceRate;
                 }
             }

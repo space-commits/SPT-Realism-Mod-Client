@@ -50,7 +50,7 @@ namespace RealismMod
             {
                 if (item != null && item?.TemplateId != null && item.TemplateId == "590a3efd86f77437d351a25b")
                 {
-                    HasGasAnalyser = true;
+                    DeviceController.HasGasAnalyser = true;
                 }
             }
         }
@@ -59,7 +59,7 @@ namespace RealismMod
         {
             IEnumerable<Item> vestItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.TacticalVest}) ?? Enumerable.Empty<Item>();
             IEnumerable<Item> armbandItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.ArmBand }) ?? Enumerable.Empty<Item>();
-            HasGasAnalyser = false;
+            DeviceController.HasGasAnalyser = false;
             deviceCheckerHelper(vestItems);
             deviceCheckerHelper(armbandItems);
         }
