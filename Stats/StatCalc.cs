@@ -3,6 +3,7 @@ using EFT.Animations;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using static EFT.Player;
 using WeaponSkillsClass = EFT.SkillManager.GClass1771;
@@ -72,7 +73,37 @@ namespace RealismMod
                 }
             }
         }
-     
+
+        public static void CalcSightAccuracy(Mod currentAimingMod)
+        {
+            float currentSightFactor = 1f;
+            int iterations = 0;
+  
+            if (currentAimingMod != null)
+            {
+                if (AttachmentProperties.ModType(currentAimingMod) == "sight")
+                {
+                    currentSightFactor += currentAimingMod.Accuracy / 100f;
+                }
+                IEnumerable<Item> parents = currentAimingMod.GetAllParentItems();
+                foreach (Item item in parents)
+                {
+                    if (item is Mod && AttachmentProperties.ModType(item) == "mount")
+                    {
+                        Mod mod = item as Mod;
+                        currentSightFactor += (mod.Accuracy / 100f);
+                    }
+                    iterations++;
+                    if (iterations >= 5 || !(item is Mod))
+                    {
+                        break;
+                    }
+                }
+            }
+
+            WeaponStats.ScopeAccuracyFactor = currentSightFactor;
+        }
+
         public static void UpdateAimParameters(FirearmController firearmController, ProceduralWeaponAnimation pwa) 
         {
             Weapon weapon = firearmController.Weapon;

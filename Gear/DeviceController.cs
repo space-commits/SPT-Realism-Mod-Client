@@ -9,20 +9,21 @@ namespace RealismMod
 {
     public static class DeviceController
     {
-        private const float _baseDeviceVolume = 0.2f;
-        private const float delay = 5f;
+        public static bool HasGasAnalyser { get; private set; } = false;
+        private const float Delay = 5f;
+        private const float BaseDeviceVolume = 0.2f;
         private static float _currentDeviceClipLength = 0f;
         private static float _deviceTimer = 0f;
 
         private static float GetDelayTime() 
         {
             if (Plugin.RealHealthController.PlayerHazardBridge == null) return 4f;
-            return delay * (1f - Plugin.RealHealthController.PlayerHazardBridge.GasAmount);
+            return Delay * (1f - Plugin.RealHealthController.PlayerHazardBridge.GasAmount);
         }
 
         public static void DeviceAudioController()
         {
-            if (GearController.HasGasAnalyser) 
+            if (HasGasAnalyser) 
             {
                 _deviceTimer += Time.deltaTime;
 
@@ -66,12 +67,11 @@ namespace RealismMod
 
         public static void PlayGasAnalyserClips(Player player, PlayerHazardBridge bridge)
         {
-
             string clip = GetGasAnalsyerClip(bridge.GasAmount);
             if (clip == null) return;
             AudioClip audioClip = Plugin.DeviceAudioClips[clip];
             _currentDeviceClipLength = audioClip.length;
-            Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), audioClip, 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, _baseDeviceVolume, EOcclusionTest.None, null, false);
+            Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), audioClip, 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, BaseDeviceVolume, EOcclusionTest.None, null, false);
         }
     }
 }

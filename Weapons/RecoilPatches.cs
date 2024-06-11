@@ -587,13 +587,13 @@ namespace RealismMod
             return typeof(NewRecoilShotEffect).GetMethod("AddRecoilForce");
         }
 
-        private static float zeroShiftGunFactor(string weapType, string id) 
+        private static float ZeroShiftGunFactor(string weapType, string id) 
         {
-            switch (weapType)
+            switch (id)
             {
                 case "6165ac306ef05c2ce828ef74":
                 case "6183afd850224f204c1da514":
-                    return 1.5f;
+                    return 1.35f;
             }
 
             switch (weapType) 
@@ -604,6 +604,7 @@ namespace RealismMod
                 case "sniperRifle":
                     return 1.15f;
                 case "pistol":
+                    return 0.15f;
                 case "smg":
                     return 0.5f;
                 case "shotgun":
@@ -711,9 +712,9 @@ namespace RealismMod
                 //Calculate offest for zero shift
                 if (WeaponStats.ScopeAccuracyFactor < 1f)
                 {
-                    float gunFactor = zeroShiftGunFactor(WeaponStats._WeapClass, firearmController.Weapon.TemplateId);
+                    float gunFactor = ZeroShiftGunFactor(WeaponStats._WeapClass, firearmController.Weapon.TemplateId);
                     float shiftRecoilFactor = (RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil) * (1f + totalCamRecoil) * gunFactor;
-                    float scopeFactor = ((1f - WeaponStats.ScopeAccuracyFactor) + (shiftRecoilFactor * 0.1f));
+                    float scopeFactor = ((1f - WeaponStats.ScopeAccuracyFactor) * 10f) + (shiftRecoilFactor * 0.1f);
 
                     int rnd = UnityEngine.Random.Range(1, 20);
                     if (scopeFactor > rnd)

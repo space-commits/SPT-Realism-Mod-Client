@@ -145,7 +145,7 @@ namespace RealismMod
             if (Delay <= 0)
             {
                 TimeExisted++;
-                if (TimeExisted % 3 == 0)
+                if (TimeExisted % 3 == 0 && HazardTracker.TotalToxicity >= 55f)
                 {
                     for(int i = 0; i < RealHealthController.BodyParts.Length; i++) 
                     {

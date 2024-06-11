@@ -215,7 +215,7 @@ namespace RealismMod
         public const float PainReliefThreshold = 30f;
         public const float BasePKOverdoseThreshold = 45f;
 
-        public const float ToxicityThreshold = 50f;
+        public const float ToxicityThreshold = 40f;
 
         private const float _baseToxicityRecoveryRate = -0.05f;
         private const float _hazardInterval = 10f;
@@ -1917,11 +1917,6 @@ namespace RealismMod
                 float threshold = HazardTracker.ToxicityRateMeds < 0f ? 0f : HazardTracker.GetNextLowestToxicityLevel((int)HazardTracker.TotalToxicity);
                 HazardTracker.TotalToxicity = Mathf.Clamp(HazardTracker.TotalToxicity + reduction, threshold, 100f);
                 HazardTracker.TotalToxicityRate = HazardTracker.TotalToxicity == threshold ? 0f : reduction;
-
-/*                Utils.Logger.LogWarning("Reducing Toxicity Passively");
-                Utils.Logger.LogWarning("reduction "  + reduction);
-                Utils.Logger.LogWarning("threshold " + threshold);
-                Utils.Logger.LogWarning("ToxicityRateZone " + HazardTracker.TotalToxicityRate);*/
             }
             else 
             {
@@ -1932,10 +1927,6 @@ namespace RealismMod
             {
                 RemoveCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest);
             }
-
-/*            Utils.Logger.LogWarning("Is In Gas Zone " + PlayerHazardBridge.IsInGasZone);
-            Utils.Logger.LogWarning("Current Rate " + HazardTracker.TotalToxicityRate);
-            Utils.Logger.LogWarning("Current Toxicity " + HazardTracker.TotalToxicity);*/
 
             if (HazardTracker.TotalToxicity >= 10f && _hazardWaitTime > _hazardInterval) ApplyToxicityEffects(player);
         }

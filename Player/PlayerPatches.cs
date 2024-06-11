@@ -42,8 +42,8 @@ namespace RealismMod
             fc.FirearmsAnimator.SetAmmoOnMag(fc.Weapon.GetCurrentMagazineCount());
             weaponStateClass.SetRoundIntoWeapon(bullet, 0);
             fc.FirearmsAnimator.Rechamber(true);
-            Plugin.startRechamberTimer = true;
-            Plugin.chamberTimer = 0f;
+            Plugin.StartRechamberTimer = true;
+            Plugin.ChamberTimer = 0f;
         }
 
 
@@ -162,10 +162,14 @@ namespace RealismMod
                 StatCalc.CalcPlayerWeightStats(__instance);
                 GearController.SetGearParamaters(__instance);
                 GearController.GetGearPenalty(__instance);
-                GearController.CheckForDevices(__instance.Inventory);
-                PlayerState.IsScav = Singleton<GameWorld>.Instance.MainPlayer.Profile.Info.Side == EPlayerSide.Savage;
-                PlayerHazardBridge hazardBridge = __instance.gameObject.AddComponent<PlayerHazardBridge>();
-                hazardBridge._Player = __instance;
+
+                if (Plugin.ServerConfig.med_changes) //also add check for hazard zones being enabled 
+                {
+                    GearController.CheckForDevices(__instance.Inventory);
+                    PlayerState.IsScav = Singleton<GameWorld>.Instance.MainPlayer.Profile.Info.Side == EPlayerSide.Savage;
+                    PlayerHazardBridge hazardBridge = __instance.gameObject.AddComponent<PlayerHazardBridge>();
+                    hazardBridge._Player = __instance;
+                }
             }
         }
     }
@@ -261,10 +265,11 @@ namespace RealismMod
         //jump too
         private static void DoSprintPenalty(Player player, Player.FirearmController fc, float mountingBonus)
         {
-            if (player.IsSprintEnabled || !player.MovementContext.IsGrounded)
+            if (player.IsSprintEnabled || !player.MovementContext.IsGrounded || player.MovementContext.PlayerAnimatorIsJumpSetted())
             {
-                float groundedFactor = !player.MovementContext.IsGrounded ? 10f : 1f;
-                sprintTimer += Time.deltaTime * groundedFactor;
+                float fallFactor = !player.MovementContext.IsGrounded ? 2.5f : 1f;
+                float jumpFactor = player.MovementContext.PlayerAnimatorIsJumpSetted() ? 4f : 1f;
+                sprintTimer += Time.deltaTime * fallFactor * jumpFactor;
                 if (sprintTimer >= 1f)
                 {
                     PlayerState.SprintBlockADS = true;
@@ -359,13 +364,13 @@ namespace RealismMod
 
         private static void chamberTimer(FirearmController fc)
         {
-            Plugin.chamberTimer += Time.deltaTime;
-            if (Plugin.chamberTimer >= 0.5f)
+            Plugin.ChamberTimer += Time.deltaTime;
+            if (Plugin.ChamberTimer >= 0.5f)
             {
                 fc.FirearmsAnimator.Rechamber(false);
                 fc.SetAnimatorAndProceduralValues();
-                Plugin.startRechamberTimer = false;
-                Plugin.chamberTimer = 0f;
+                Plugin.StartRechamberTimer = false;
+                Plugin.ChamberTimer = 0f;
             }
         }
 
@@ -373,7 +378,7 @@ namespace RealismMod
         {
             if (fc != null)
             {
-                if (Plugin.startRechamberTimer)
+                if (Plugin.StartRechamberTimer)
                 {
                     chamberTimer(fc);
                 }

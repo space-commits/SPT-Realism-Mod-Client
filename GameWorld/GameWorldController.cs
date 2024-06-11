@@ -119,7 +119,7 @@ namespace RealismMod
             if (zones == null) return;
             foreach (var zone in zones)
             {
-                if (!Plugin.ZoneVisualDebug.Value && UnityEngine.Random.Range(1, 10) + zone.Value.spawnChance < 5f) continue;
+                if (!Plugin.ZoneDebug.Value && UnityEngine.Random.Range(1, 10) + zone.Value.spawnChance < 5f) continue;
 
                 float strengthModifier = UnityEngine.Random.Range(0.8f, 1.2f);
 
@@ -147,7 +147,7 @@ namespace RealismMod
                 boxCollider.size = size;
 
                 // visual representation for debugging
-                if (Plugin.ZoneVisualDebug.Value) 
+                if (Plugin.ZoneDebug.Value) 
                 {
                     GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     visualRepresentation.transform.parent = gasZone.transform;
@@ -204,14 +204,19 @@ namespace RealismMod
 
         [PatchPostfix]
         private static void PatchPostfix(GameWorld __instance)
-        {            /*WeatherController.Instance.WindController.CloudWindMultiplier = 1;*/
+        {   
+            /*WeatherController.Instance.WindController.CloudWindMultiplier = 1;*/
             /*GameWorldController.CreateDebugZone();*/
-            Plugin.CurrentProfileId = Utils.GetYourPlayer().ProfileId;
-            GameWorldController.CreateGasZones(Singleton<GameWorld>.Instance.MainPlayer.Location);
-            HazardTracker.GetHazardValues(Plugin.CurrentProfileId);
-            HazardTracker.ResetTracker();
-            GameWorldController.GameStarted = true;
 
+            Plugin.CurrentProfileId = Utils.GetYourPlayer().ProfileId;
+            if (Plugin.ServerConfig.med_changes) 
+            {
+                GameWorldController.CreateGasZones(Singleton<GameWorld>.Instance.MainPlayer.Location);
+                HazardTracker.GetHazardValues(Plugin.CurrentProfileId);
+                HazardTracker.ResetTracker();
+            }
+
+            GameWorldController.GameStarted = true;
         }
     }
 
@@ -225,10 +230,14 @@ namespace RealismMod
         [PatchPrefix]
         private static void PatchPrefix(GameWorld __instance)
         {
-            HazardTracker.ResetTracker();
-            HazardTracker.UpdateHazardValues(Plugin.CurrentProfileId);
-            HazardTracker.SaveHazardValues();
-            HazardTracker.GetHazardValues(Plugin.PMCProfileId); //update to use PMC id and not potentially scav id
+            if (Plugin.ServerConfig.med_changes) 
+            {
+                HazardTracker.ResetTracker();
+                HazardTracker.UpdateHazardValues(Plugin.CurrentProfileId);
+                HazardTracker.SaveHazardValues();
+                HazardTracker.GetHazardValues(Plugin.PMCProfileId); //update to use PMC id and not potentially scav id
+            }
+
             GameWorldController.GameStarted = false;
         }
     }

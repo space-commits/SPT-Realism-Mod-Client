@@ -196,6 +196,7 @@ namespace RealismMod
 
                     Mod currentAimingMod = (__instance.CurrentAimingMod != null) ? __instance.CurrentAimingMod.Item as Mod : null;
                     WeaponStats.IsOptic = __instance.CurrentScope.IsOptic;
+                    StatCalc.CalcSightAccuracy(currentAimingMod);
 
                     float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
                     float playerWeightADSFactor = 1f - (totalPlayerWeight / 200f);

@@ -124,40 +124,6 @@ namespace RealismMod
             }
         }
 
-        public static void CalcSightAccuracy() 
-        {
-            float currentSightFactor = 1f;
-            if (Utils.IsReady)
-            {
-                int iterations = 0;
-                Player player = Utils.GetYourPlayer();
-                Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
-
-                if (currentAimingMod != null)
-                {
-                    if (AttachmentProperties.ModType(currentAimingMod) == "sight")
-                    {
-                        currentSightFactor += currentAimingMod.Accuracy / 100f;
-                    }
-                    IEnumerable<Item> parents = currentAimingMod.GetAllParentItems();
-                    foreach (Item item in parents)
-                    {
-                        if (item is Mod && AttachmentProperties.ModType(item) == "mount")
-                        {
-                            Mod mod = item as Mod;
-                            currentSightFactor += (mod.Accuracy / 100f);
-                        }
-                        iterations++;
-                        if (iterations >= 5 || !(item is Mod))
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
-            WeaponStats.ScopeAccuracyFactor = currentSightFactor;
-        }
-
         public static float FinalStatCalc(Weapon __instance)
         {
             WeaponStats._WeapClass = __instance.WeapClass;

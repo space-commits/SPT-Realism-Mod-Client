@@ -589,7 +589,10 @@ namespace RealismMod
                     }
                 }
 
-                if ((Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed) && !IsAiming && !IsFiringFromStance && CurrentStance != EStance.PistolCompressed && CurrentStance != EStance.PatrolStance && CurrentStance != EStance.ShortStock && CurrentStance != EStance.ActiveAiming && CurrentStance != EStance.HighReady && MeleeIsToggleable)
+                if ((Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed || HazardTracker.TotalToxicity >= 60f) 
+                    && !IsAiming && !IsFiringFromStance && CurrentStance != EStance.PistolCompressed 
+                    && CurrentStance != EStance.PatrolStance && CurrentStance != EStance.ShortStock 
+                    && CurrentStance != EStance.ActiveAiming && MeleeIsToggleable)
                 {
                     StanceBlender.Target = 1f;
                     CurrentStance = EStance.LowReady;
@@ -792,7 +795,7 @@ namespace RealismMod
                 && (CurrentStance == EStance.HighReady || StoredStance == EStance.HighReady)
                 && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed
                 && !fc.Weapon.IsBeltMachineGun && WeaponStats.TotalWeaponWeight <= 5.5f && WeaponStats.TotalWeaponLength <= 6f
-                && !PlayerState.IsScav)
+                && !PlayerState.IsScav && HazardTracker.TotalToxicity <= 50f)
             {
                 IsDoingTacSprint = true;
                 player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);

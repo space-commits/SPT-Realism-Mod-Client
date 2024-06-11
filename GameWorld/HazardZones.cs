@@ -13,14 +13,15 @@ namespace RealismMod
         public bool IsInGasZone { get; set; } = false;
         public float GasAmount { get; set; } = 0f;
         private float _bridgeTimer = 0f;
+        private const float Interval = 6f;
 
         void Update() 
         {
             _bridgeTimer += Time.deltaTime;
-            if (_bridgeTimer >= 5f)
+            if (_bridgeTimer >= Interval)
             {
                 //temporary solution to dealing with bots
-                if (_Player != null && _Player.IsAI && IsInGasZone)
+                if (_Player != null && _Player?.ActiveHealthController != null && IsInGasZone && (_Player.IsAI || _Player?.AIData?.BotOwner != null))
                 {
                     bool hasMask = false;
                     float protectionLevel = 0f;
@@ -28,7 +29,8 @@ namespace RealismMod
                     if (protectionLevel < 0.9f && GasAmount > 0.05f) 
                     {
                         protectionLevel = 1f - protectionLevel;
-                        _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, GasAmount * protectionLevel * 5f, ExistanceClass.PoisonDamage);
+                        _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, GasAmount * protectionLevel * Interval, ExistanceClass.PoisonDamage);
+                        _Player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
                     }
                 }
                 _bridgeTimer = 0f;
@@ -119,7 +121,7 @@ namespace RealismMod
             float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
             float invertedDistance = _maxDistance - distance;  // Invert the distance
             invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance); //clamp the inverted distance
-            return invertedDistance / GasStrengthModifier;
+            return (invertedDistance / GasStrengthModifier) * (Plugin.ZoneDebug.Value ? Plugin.test10.Value : 1f);
         }
     }
 }

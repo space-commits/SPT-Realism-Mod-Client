@@ -312,7 +312,7 @@ namespace RealismMod
         public static ConfigEntry<float> ShortStockReadyRotationZ { get; set; }
 
         //dev config options
-        public static ConfigEntry<bool> ZoneVisualDebug { get; set; }
+        public static ConfigEntry<bool> ZoneDebug { get; set; }
         public static ConfigEntry<bool> EnableLogging { get; set; }
         public static ConfigEntry<bool> EnableBallisticsLogging { get; set; }
         public static ConfigEntry<float> test1 { get; set; }
@@ -344,9 +344,9 @@ namespace RealismMod
 
         public static RealismConfig ServerConfig;
 
-        public static bool IsUsingFika = false;
-        private static bool detectedMods = false;
         public static bool HasReloadedAudio = false;
+        public static bool IsUsingFika = false;
+        private bool _detectedMods = false;
 
         public static float FPS = 1f;
 
@@ -542,14 +542,14 @@ namespace RealismMod
                 return audioclip;
             }
         }
-        public static bool startRechamberTimer = false;
-        public static float chamberTimer = 0f;
+        public static bool StartRechamberTimer = false;
+        public static float ChamberTimer = 0f;
         public static bool CanLoadChamber = false;
         public static bool BlockChambering = false;
 
         public static string CurrentProfileId = string.Empty;
         public static string PMCProfileId = string.Empty;
-        private static bool _gotProfileId = false;
+        private bool _gotProfileId = false;
 
         void Awake()
         {
@@ -711,8 +711,6 @@ namespace RealismMod
                 new IsPenetratedPatch().Enable();
                 new AfterPenPlatePatch().Enable();
                 new IsShotDeflectedByHeavyArmorPatch().Enable();
-                new RigConstructorPatch().Enable();
-                new EquipmentPenaltyComponentPatch().Enable();
                 new ArmorLevelUIPatch().Enable();
                 new ArmorLevelDisplayPatch().Enable();
                 new ArmorClassStringPatch().Enable();
@@ -720,6 +718,9 @@ namespace RealismMod
                 if (EnableRagdollFix.Value) new ApplyCorpseImpulsePatch().Enable();
                 new GetCachedReadonlyQualitiesPatch().Enable();
             }
+            //stats used by multiple features
+            new RigConstructorPatch().Enable();
+            new EquipmentPenaltyComponentPatch().Enable();
 
             //Deafen Effects
             if (ServerConfig.headset_changes)
@@ -788,7 +789,6 @@ namespace RealismMod
             if (ServerConfig.med_changes)
             {
                 new HealthPanelPatch().Enable();
-
                 new SetQuickSlotPatch().Enable();   
                 new ApplyItemPatch().Enable();
                 new BreathIsAudiblePatch().Enable();
@@ -834,9 +834,9 @@ namespace RealismMod
                 catch { }
             }
 
-            if (!detectedMods && (int)Time.time % 5 == 0)
+            if (!_detectedMods && (int)Time.time % 5 == 0)
             {
-                detectedMods = true;
+                _detectedMods = true;
                 if (Chainloader.PluginInfos.ContainsKey("com.servph.realisticrecoil") && ServerConfig.recoil_attachment_overhaul)
                 {
                     NotificationManagerClass.DisplayWarningNotification("ERROR: COMBAT OVERHAUL DETECTED, IT IS NOT COMPATIBLE!", EFT.Communications.ENotificationDurationType.Long);
@@ -859,7 +859,6 @@ namespace RealismMod
                     CreateDebugZone();
                 }
 
-
                 if (!Plugin.HasReloadedAudio)
                 {
                     LoadAudioClips();
@@ -867,11 +866,10 @@ namespace RealismMod
                 }
 
                 RecoilController.RecoilUpdate();
-                AudioController.GasMaskBreathController();
 
                 if (ServerConfig.headset_changes)
                 {
-                    AudioController.HeadsetVolumeAdjust();
+                    AudioControllers.HeadsetVolumeAdjust();
 
                     if (DeafeningController.PrismEffects != null)
                     {
@@ -891,6 +889,7 @@ namespace RealismMod
             }
             if (ServerConfig.med_changes)
             {
+                AudioControllers.HazardZoneAudioController();
                 RealHealthController.ControllerUpdate();
             }
         }
@@ -931,7 +930,7 @@ namespace RealismMod
             AddEffectType = Config.Bind<string>(testing, "Effect Type", "", new ConfigDescription("HeavyBleeding, LightBleeding, Fracture, removeHP, addHP.", null, new ConfigurationManagerAttributes { Order = 60, IsAdvanced = true, Browsable = true }));
             AddEffectBodyPart = Config.Bind<int>(testing, "Body Part Index", 1, new ConfigDescription("Head = 0, Chest = 1, Stomach = 2, Letft Arm, Right Arm, Left Leg, Right Leg, Common (whole body)", null, new ConfigurationManagerAttributes { Order = 50, IsAdvanced = true, Browsable = true }));
             AddEffectKeybind = Config.Bind(testing, "Add Effect Keybind", new KeyboardShortcut(KeyCode.None), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 40, IsAdvanced = true, Browsable = true }));
-            ZoneVisualDebug = Config.Bind<bool>(testing, "Enable Zone Visual Debug", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 30, IsAdvanced = true, Browsable = true }));
+            ZoneDebug = Config.Bind<bool>(testing, "Enable Zone Debug", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 30, IsAdvanced = true, Browsable = true }));
             EnableBallisticsLogging = Config.Bind<bool>(testing, "Enable Ballistics Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 20, IsAdvanced = true, Browsable = true }));
             EnableLogging = Config.Bind<bool>(testing, "Enable Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true, Browsable = true }));
             

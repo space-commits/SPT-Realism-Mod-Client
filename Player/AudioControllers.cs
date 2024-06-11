@@ -7,7 +7,7 @@ using EFT;
 
 namespace RealismMod
 {
-    public static class AudioController
+    public static class AudioControllers
     {
         private const float _baseBreathVolume = 0.2f;
         private static float _currentBreathClipLength = 0f;
@@ -15,7 +15,7 @@ namespace RealismMod
         private static float _breathCountdown = 2.5f;
         private static bool _breathedOut = false;
 
-        public static void GasMaskBreathController()
+        public static void HazardZoneAudioController()
         {
             _breathTimer += Time.deltaTime;
             if (GearController.HasGasMask && _breathCountdown > 0f)
