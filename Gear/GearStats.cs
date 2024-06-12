@@ -54,9 +54,9 @@ namespace RealismMod
             return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 10) && bool.TryParse(armorItem.ConflictingItems[10], out bool result) ? result : false;
         }
 
-        public static bool HasStomachArmor(Item armorItem)
+        public static float RadProtection(Item armorItem)
         {
-            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 11) && bool.TryParse(armorItem.ConflictingItems[11], out bool result) ? result : false;
+            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 11) && float.TryParse(armorItem.ConflictingItems[11], out float result) ? result : 0f;
         }
 
         public static string MaskToUse(Item armorItem)

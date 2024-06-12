@@ -1,94 +1,136 @@
 ﻿using Aki.Reflection.Patching;
 using Comfort.Common;
 using EFT;
+using EFT.Interactive;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using static RootMotion.FinalIK.IKSolver;
 
 namespace RealismMod
 {
     public static class GameWorldController
     {
         public static bool GameStarted { get; set; } = false;
-       
-        public static void CreateGasZones(string map)
+
+        public static void CreateZones(string map)
         {
-            var zones = HazardZoneLocations.GetMapZones(map.ToLower());
-            if (zones == null) return;
-            foreach (var zone in zones)
+            var gasZones = HazardZoneLocations.GetGasZones(map.ToLower());
+            if (gasZones == null) return;
+            foreach (var zone in gasZones)
             {
-                if (!Plugin.ZoneDebug.Value && UnityEngine.Random.Range(1, 10) + zone.Value.spawnChance < 5f) continue;
+                CreateZone<GasZone>(zone);
+            }
 
-                float strengthModifier = UnityEngine.Random.Range(0.8f, 1.2f);
-
-                string zoneName = zone.Key;
-                Vector3 position = zone.Value.position;
-                Vector3 rotation = zone.Value.rotation;
-                Vector3 size = zone.Value.size;
-                Vector3 scale = zone.Value.size;
-
-                GameObject gasZone = new GameObject(zoneName);
-                GasZone gas = gasZone.AddComponent<GasZone>();
-                gas.GasStrengthModifier = zone.Value.strength * strengthModifier;
-
-                gasZone.transform.position = position;
-                gasZone.transform.rotation = Quaternion.Euler(rotation);
-
-                EFT.Interactive.TriggerWithId trigger = gasZone.AddComponent<EFT.Interactive.TriggerWithId>();
-                trigger.SetId(zoneName);
-
-                gasZone.layer = LayerMask.NameToLayer("Triggers");
-                gasZone.name = zoneName;
-
-                BoxCollider boxCollider = gasZone.AddComponent<BoxCollider>();
-                boxCollider.isTrigger = true;
-                boxCollider.size = size;
-
-                // visual representation for debugging
-                if (Plugin.ZoneDebug.Value) 
-                {
-                    GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    visualRepresentation.transform.parent = gasZone.transform;
-                    visualRepresentation.transform.localScale = size;
-                    visualRepresentation.transform.localPosition = boxCollider.center;
-                    visualRepresentation.transform.rotation = boxCollider.transform.rotation;
-                    visualRepresentation.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.25f);
-                    UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
-                }
+            var radZones = HazardZoneLocations.GetRadZones(map.ToLower());
+            if (radZones == null) return;
+            foreach (var zone in radZones)
+            {
+                CreateZone<RadiationZone>(zone);
             }
         }
 
-
-        public static void CreateDebugZone()
+        public static void CreateZone<T>(KeyValuePair<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> zone) where T : MonoBehaviour, IHazardZone
         {
-            UnityEngine.Object.Destroy(GameObject.Find("DebugZone"));
-            GameObject gasZone = new GameObject("DebugZone");
-            gasZone.transform.position = new Vector3(Plugin.test4.Value, Plugin.test5.Value, Plugin.test6.Value);
-            gasZone.transform.rotation = Quaternion.Euler(new Vector3(Plugin.test7.Value, Plugin.test8.Value, Plugin.test9.Value));
+            if (!Plugin.ZoneDebug.Value && UnityEngine.Random.Range(1, 10) + zone.Value.spawnChance < 5f) return;
 
-            EFT.Interactive.TriggerWithId trigger = gasZone.AddComponent<EFT.Interactive.TriggerWithId>();
-            trigger.SetId("DebugZone");
+            float strengthModifier = UnityEngine.Random.Range(0.65f, 1.2f);
 
-            gasZone.layer = LayerMask.NameToLayer("Triggers");
-            gasZone.name = "DebugZone";
+            string zoneName = zone.Key;
+            Vector3 position = zone.Value.position;
+            Vector3 rotation = zone.Value.rotation;
+            Vector3 size = zone.Value.size;
+            Vector3 scale = zone.Value.size;
 
-            BoxCollider boxCollider = gasZone.AddComponent<BoxCollider>();
+            GameObject hazardZone = new GameObject(zoneName);
+            T hazard = hazardZone.AddComponent<T>();
+            hazard.ZoneStrengthModifier = zone.Value.strength * strengthModifier;
+
+            hazardZone.transform.position = position;
+            hazardZone.transform.rotation = Quaternion.Euler(rotation);
+
+            EFT.Interactive.TriggerWithId trigger = hazardZone.AddComponent<EFT.Interactive.TriggerWithId>();
+            trigger.SetId(zoneName);
+
+            hazardZone.layer = LayerMask.NameToLayer("Triggers");
+            hazardZone.name = zoneName;
+
+            BoxCollider boxCollider = hazardZone.AddComponent<BoxCollider>();
             boxCollider.isTrigger = true;
-            boxCollider.size = new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value);
+            boxCollider.size = size;
 
             // visual representation for debugging
-            GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            visualRepresentation.name = "DebugZoneVisual";
-            visualRepresentation.transform.parent = gasZone.transform;
-            visualRepresentation.transform.localScale = boxCollider.size;
-            visualRepresentation.transform.localPosition = boxCollider.center;
-            visualRepresentation.transform.rotation = boxCollider.transform.rotation;
-            visualRepresentation.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.25f);
-            UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
+            if (Plugin.ZoneDebug.Value)
+            {
+                GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                visualRepresentation.name = zoneName + "Visual";
+                visualRepresentation.transform.parent = hazardZone.transform;
+                visualRepresentation.transform.localScale = size;
+                visualRepresentation.transform.localPosition = boxCollider.center;
+                visualRepresentation.transform.rotation = boxCollider.transform.rotation;
+                visualRepresentation.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.25f);
+                UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
+            }
+        }
 
-            Utils.Logger.LogWarning("player pos " + Utils.GetYourPlayer().Transform.position);
-            Utils.Logger.LogWarning("gasZone pos " + gasZone.transform.position);
-            Utils.Logger.LogWarning("gasZone rot " + gasZone.transform.rotation);
-            Utils.Logger.LogWarning("gasZone size " + gasZone.GetComponent<BoxCollider>().size);
+        public static void DebugZones()
+        {
+            string targetZone = Plugin.TargetZone.Value;
+            GameObject gasZone = GameObject.Find(targetZone);
+            if (gasZone == null)
+            {
+                gasZone = new GameObject(targetZone);
+                gasZone.transform.position = new Vector3(Plugin.test4.Value, Plugin.test5.Value, Plugin.test6.Value);
+                gasZone.transform.rotation = Quaternion.Euler(new Vector3(Plugin.test7.Value, Plugin.test8.Value, Plugin.test9.Value));
+
+                EFT.Interactive.TriggerWithId trigger = gasZone.AddComponent<EFT.Interactive.TriggerWithId>();
+                trigger.SetId(targetZone);
+
+                gasZone.layer = LayerMask.NameToLayer("Triggers");
+                gasZone.name = targetZone;
+
+                BoxCollider boxCollider = gasZone.AddComponent<BoxCollider>();
+                boxCollider.isTrigger = true;
+                boxCollider.size = new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value);
+
+                // visual representation for debugging
+                GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                visualRepresentation.name = targetZone + "Visual";
+                visualRepresentation.transform.parent = gasZone.transform;
+                visualRepresentation.transform.localScale = boxCollider.size;
+                visualRepresentation.transform.localPosition = boxCollider.center;
+                visualRepresentation.transform.rotation = boxCollider.transform.rotation;
+                visualRepresentation.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.25f);
+                UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
+
+                Utils.Logger.LogWarning("player pos " + Utils.GetYourPlayer().Transform.position);
+                Utils.Logger.LogWarning("gasZone pos " + gasZone.transform.position);
+                Utils.Logger.LogWarning("gasZone rot " + gasZone.transform.rotation);
+                Utils.Logger.LogWarning("gasZone size " + gasZone.GetComponent<BoxCollider>().size);
+            }
+            else
+            {
+                gasZone.transform.position = new Vector3(Plugin.test4.Value, Plugin.test5.Value, Plugin.test6.Value);
+                gasZone.transform.rotation = Quaternion.Euler(new Vector3(Plugin.test7.Value, Plugin.test8.Value, Plugin.test9.Value));
+                BoxCollider boxCollider = gasZone.GetComponent<BoxCollider>();
+                boxCollider.size = new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value);
+
+                GameObject visualRepresentation = GameObject.Find(targetZone + "Visual");
+                visualRepresentation.transform.parent = gasZone.transform;
+                visualRepresentation.transform.localScale = boxCollider.size;
+                visualRepresentation.transform.localPosition = boxCollider.center;
+                visualRepresentation.transform.rotation = boxCollider.transform.rotation;
+                Utils.Logger.LogWarning("player pos " + Utils.GetYourPlayer().Transform.position);
+                Utils.Logger.LogWarning("gasZone pos " + gasZone.transform.position);
+                Utils.Logger.LogWarning("gasZone rot " + gasZone.transform.rotation);
+                Utils.Logger.LogWarning("gasZone size " + gasZone.GetComponent<BoxCollider>().size);
+
+                /* UnityEngine.Object.Destroy(GameObject.Find("DebugZone"));
+     */
+
+
+
+            }
         }
     }
 
@@ -108,7 +150,7 @@ namespace RealismMod
             Plugin.CurrentProfileId = Utils.GetYourPlayer().ProfileId;
             if (Plugin.ServerConfig.med_changes) 
             {
-                GameWorldController.CreateGasZones(Singleton<GameWorld>.Instance.MainPlayer.Location);
+                GameWorldController.CreateZones(Singleton<GameWorld>.Instance.MainPlayer.Location);
                 HazardTracker.GetHazardValues(Plugin.CurrentProfileId);
                 HazardTracker.ResetTracker();
             }

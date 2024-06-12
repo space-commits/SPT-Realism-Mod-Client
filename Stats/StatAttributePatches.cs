@@ -72,6 +72,7 @@ namespace RealismMod
             RemoveTrnqt,
             Comfort,
             GasProtection,
+            RadProtection,
             PainKillerStrength,
             MeleeDamage,
             MeleePen,
@@ -163,7 +164,9 @@ namespace RealismMod
                 case ENewItemAttributeId.StimType:
                     return "STIM TYPE";
                 case ENewItemAttributeId.GasProtection:
-                    return "FILTER EFFICIENCY";
+                    return "GAS PROTECTION";
+                case ENewItemAttributeId.RadProtection:
+                    return "RADIATION PROTECTION";
                 default:
                     return id.ToString();
             }

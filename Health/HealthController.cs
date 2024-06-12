@@ -218,8 +218,7 @@ namespace RealismMod
         public const float PainReliefThreshold = 30f;
         public const float BasePKOverdoseThreshold = 45f;
 
-        public const float ToxicityThreshold = 40f;
-
+        private const float ToxicityThreshold = 40f;
         private const float _baseToxicityRecoveryRate = -0.05f;
         private const float _hazardInterval = 10f;
         private float _hazardWaitTime = 0f;
@@ -918,7 +917,7 @@ namespace RealismMod
 
             if (_effectsTime >= 1f)
             {
-                GasZoneHealthEffectTick(player);
+                HazardZoneHealthEffectTick(player);
                 PainReliefCheck(player);
                 TickEffects();
                 _effectsTime = 0f;
@@ -1906,7 +1905,7 @@ namespace RealismMod
             _hazardWaitTime = 0f;
         }
 
-        private void GasZoneHealthEffectTick(Player player) 
+        private void HazardZoneHealthEffectTick(Player player) 
         {
             if (!GameWorldController.GameStarted) return;
 
@@ -1915,26 +1914,62 @@ namespace RealismMod
                 PlayerHazardBridge = player.gameObject.GetComponent<PlayerHazardBridge>();
             }
 
-            if (PlayerHazardBridge.IsInGasZone && GearController.CurrentMaskProtection < 1f)
+            GasZoneTick(player);
+            RadiationZoneTick(player);
+
+        }
+
+        private void RadiationZoneTick(Player player) 
+        {
+            if (PlayerHazardBridge.IsInGasZone && GearController.CurrentGasProtection < 1f)
             {
-                float increase = (PlayerHazardBridge.GasAmount + HazardTracker.ToxicityRateMeds) * (1f - GearController.CurrentMaskProtection) * (1f - PlayerState.ImmuneSkillWeak);
+                float increase = (PlayerHazardBridge.RadAmount + HazardTracker.RadiationRateMeds) * (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak);
+                increase = Mathf.Max(increase, 0f);
+                HazardTracker.TotalRadiation += increase;
+                HazardTracker.TotalRadiationRate = increase;
+            }
+            else if (HazardTracker.TotalToxicity > 0f || GearController.CurrentGasProtection >= 1f)
+            {
+                float reduction = HazardTracker.RadiationRateMeds * (1f + PlayerState.ImmuneSkillStrong);
+                float threshold = HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
+                HazardTracker.TotalToxicity = Mathf.Clamp(HazardTracker.TotalRadiation + reduction, threshold, 100f);
+                HazardTracker.TotalRadiationRate = HazardTracker.TotalRadiation == threshold ? 0f : reduction;
+            }
+            else
+            {
+                HazardTracker.TotalRadiationRate = 0f;
+            }
+
+ /*           if (HazardTracker.TotalRadiation <= ToxicityThreshold)
+            {
+                RemoveCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest);
+            }*/
+
+/*            if (HazardTracker.TotalToxicity >= 10f && _hazardWaitTime > _hazardInterval) ApplyRadiationEffects(player);*/
+        }
+
+        private void GasZoneTick(Player player) 
+        {
+            if (PlayerHazardBridge.IsInGasZone && GearController.CurrentGasProtection < 1f)
+            {
+                float increase = (PlayerHazardBridge.GasAmount + HazardTracker.ToxicityRateMeds) * (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak);
                 increase = Mathf.Max(increase, 0f);
                 HazardTracker.TotalToxicity += increase;
                 HazardTracker.TotalToxicityRate = increase;
             }
-            else if (HazardTracker.TotalToxicity > 0f || GearController.CurrentMaskProtection >= 1f)
+            else if (HazardTracker.TotalToxicity > 0f || GearController.CurrentGasProtection >= 1f)
             {
                 float reduction = (_baseToxicityRecoveryRate + HazardTracker.ToxicityRateMeds) * (1f + PlayerState.ImmuneSkillStrong);
-                float threshold = HazardTracker.ToxicityRateMeds < 0f ? 0f : HazardTracker.GetNextLowestToxicityLevel((int)HazardTracker.TotalToxicity);
+                float threshold = HazardTracker.ToxicityRateMeds < 0f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalToxicity);
                 HazardTracker.TotalToxicity = Mathf.Clamp(HazardTracker.TotalToxicity + reduction, threshold, 100f);
                 HazardTracker.TotalToxicityRate = HazardTracker.TotalToxicity == threshold ? 0f : reduction;
             }
-            else 
+            else
             {
                 HazardTracker.TotalToxicityRate = 0f;
             }
 
-            if (HazardTracker.TotalToxicity <= ToxicityThreshold) 
+            if (HazardTracker.TotalToxicity <= ToxicityThreshold)
             {
                 RemoveCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest);
             }

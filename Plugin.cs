@@ -313,6 +313,7 @@ namespace RealismMod
 
         //dev config options
         public static ConfigEntry<bool> ZoneDebug { get; set; }
+        public static ConfigEntry<String> TargetZone { get; set; }
         public static ConfigEntry<bool> EnableLogging { get; set; }
         public static ConfigEntry<bool> EnableBallisticsLogging { get; set; }
         public static ConfigEntry<float> test1 { get; set; }
@@ -402,7 +403,8 @@ namespace RealismMod
             IconCache.Add(ENewItemAttributeId.HpPerTick, Resources.Load<Sprite>("characteristics/icons/hpResource"));
             IconCache.Add(ENewItemAttributeId.RemoveTrnqt, Resources.Load<Sprite>("characteristics/icons/hpResource"));
             IconCache.Add(ENewItemAttributeId.Comfort, Resources.Load<Sprite>("characteristics/icons/Weight"));
-            IconCache.Add(ENewItemAttributeId.GasProtection, Resources.Load<Sprite>("characteristics/icons/hpResource"));
+            IconCache.Add(ENewItemAttributeId.GasProtection, Resources.Load<Sprite>("characteristics/icons/icon_info_intoxication"));
+            IconCache.Add(ENewItemAttributeId.RadProtection, Resources.Load<Sprite>("characteristics/icons/icon_info_radiation"));
             IconCache.Add(ENewItemAttributeId.PainKillerStrength, Resources.Load<Sprite>("characteristics/icons/hpResource"));
             IconCache.Add(ENewItemAttributeId.MeleeDamage, Resources.Load<Sprite>("characteristics/icons/icon_info_bloodloss")); 
             IconCache.Add(ENewItemAttributeId.MeleePen, Resources.Load<Sprite>("characteristics/icons/icon_info_bulletspeed"));
@@ -854,9 +856,9 @@ namespace RealismMod
             Utils.CheckIsReady();
             if (Utils.IsReady)
             {
-                if (Input.GetKeyDown(Plugin.AddZone.Value.MainKey))
+                if (Plugin.ZoneDebug.Value && Input.GetKey(Plugin.AddZone.Value.MainKey))
                 {
-                    CreateDebugZone();
+                    DebugZones();
                 }
 
                 if (!Plugin.HasReloadedAudio)
@@ -927,6 +929,7 @@ namespace RealismMod
             test9 = Config.Bind<float>(testing, "test 9", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 90, IsAdvanced = true, Browsable = true }));
             test10 = Config.Bind<float>(testing, "test 10", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 80, IsAdvanced = true, Browsable = true }));
             AddZone = Config.Bind(testing, "Create Debug Zone", new KeyboardShortcut(KeyCode.None), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 70, IsAdvanced = true, Browsable = true }));
+            TargetZone = Config.Bind<string>(testing, "TargetZone", "", new ConfigDescription("DebugZone", null, new ConfigurationManagerAttributes { Order = 65, IsAdvanced = true, Browsable = true }));
             AddEffectType = Config.Bind<string>(testing, "Effect Type", "", new ConfigDescription("HeavyBleeding, LightBleeding, Fracture, removeHP, addHP.", null, new ConfigurationManagerAttributes { Order = 60, IsAdvanced = true, Browsable = true }));
             AddEffectBodyPart = Config.Bind<int>(testing, "Body Part Index", 1, new ConfigDescription("Head = 0, Chest = 1, Stomach = 2, Letft Arm, Right Arm, Left Leg, Right Leg, Common (whole body)", null, new ConfigurationManagerAttributes { Order = 50, IsAdvanced = true, Browsable = true }));
             AddEffectKeybind = Config.Bind(testing, "Add Effect Keybind", new KeyboardShortcut(KeyCode.None), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 40, IsAdvanced = true, Browsable = true }));

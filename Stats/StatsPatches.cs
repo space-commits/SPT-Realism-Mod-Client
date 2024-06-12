@@ -487,10 +487,9 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result, bool includeAmmo)
         {
- 
-            if (__instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
-            {
 
+            if (Utils.IsReady && __instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
+            {
                 bool isBracingTop = StanceController.BracingDirection == EBracingDirection.Top;
                 float mountingFactor = StanceController.IsMounting && isBracingTop ? 0.8f : StanceController.IsMounting && !isBracingTop ? 0.9f : StanceController.IsBracing && isBracingTop ? 0.95f : StanceController.IsBracing && !isBracingTop ? 0.975f : 1f;
                 float stockFactor = !WeaponStats.HasShoulderContact ? 2f : 1f;

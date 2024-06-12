@@ -34,7 +34,7 @@ namespace RealismMod
             return typeof(HealthParametersPanel).GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static Color GetCurrentColor(float level) 
+        private static Color GetCurrentGasColor(float level) 
         {
             switch(level) 
             {
@@ -53,7 +53,47 @@ namespace RealismMod
             }
         }
 
-        private static Color GetRateColor(float level)
+        private static Color GetCurrentRadColor(float level)
+        {
+            switch (level)
+            {
+                case 0:
+                    return Color.white;
+                case <= 25f:
+                    return Color.yellow;
+                case <= 50f:
+                    return new Color(1.0f, 0.647f, 0.0f);
+                case <= 75f:
+                    return new Color(1.0f, 0.25f, 0.0f);
+                case <= 200f:
+                    return Color.red;
+                default:
+                    return Color.white;
+            }
+        }
+
+        private static Color GetGasRateColor(float level)
+        {
+            switch (level)
+            {
+                case < 0:
+                    return Color.green;
+                case 0:
+                    return new Color(0.4549f, 0.4824f, 0.4941f, 1f);
+                case <= 0.15f:
+                    return Color.yellow;
+                case <= 0.25f:
+                    return new Color(1.0f, 0.647f, 0.0f);
+                case <= 0.4f:
+                    return new Color(1.0f, 0.25f, 0.0f);
+                case > 0.4f:
+                    return Color.red;
+                default:
+                    return Color.white;
+            }
+        }
+
+        private static Color GetRadRateColor(float level)
         {
             switch (level)
             {
@@ -100,7 +140,7 @@ namespace RealismMod
                             CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
 #pragma warning restore CS0618
                             buffUI.text = (toxicityRate > 0f ? "+" : "") + toxicityRate.ToString("0.00");
-                            buffUI.color = GetRateColor(toxicityRate);
+                            buffUI.color = GetGasRateColor(toxicityRate);
                             buffUI.fontSize = 14f;
                         }
                         if (current != null)
@@ -111,7 +151,39 @@ namespace RealismMod
                             CustomTextMeshProUGUI currentUI = current.GetComponent<CustomTextMeshProUGUI>();
 #pragma warning restore CS0618
                             currentUI.text = toxicityLevel.ToString();
-                            currentUI.color = GetCurrentColor(toxicityLevel);
+                            currentUI.color = GetCurrentGasColor(toxicityLevel);
+                            currentUI.fontSize = 30f;
+                        }
+                    }
+
+                    GameObject radiation = panel.transform.Find("Radiation")?.gameObject;
+                    if (radiation != null)
+                    {
+                        Logger.LogWarning("found rad");
+                        GameObject buff = radiation.transform.Find("Buff")?.gameObject;
+                        GameObject current = radiation.transform.Find("Current")?.gameObject;
+                        if (buff != null)
+                        {
+                            Logger.LogWarning("found buff");
+                            float radRate = HazardTracker.TotalRadiationRate;
+                            //can animate it by changing the font size with ping pong, and modulate the color
+#pragma warning disable CS0618
+                            CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
+#pragma warning restore CS0618
+                            buffUI.text = (radRate > 0f ? "+" : "") + radRate.ToString("0.00");
+                            buffUI.color = GetRadRateColor(radRate);
+                            buffUI.fontSize = 14f;
+                        }
+                        if (current != null)
+                        {
+                            Logger.LogWarning("found current");
+                            float radiationLevel = Mathf.Round(HazardTracker.TotalRadiation);
+                            //can animate it by changing the font size with ping pong, and modulate the color
+#pragma warning disable CS0618
+                            CustomTextMeshProUGUI currentUI = current.GetComponent<CustomTextMeshProUGUI>();
+#pragma warning restore CS0618
+                            currentUI.text = radiationLevel.ToString();
+                            currentUI.color = GetCurrentRadColor(radiationLevel);
                             currentUI.fontSize = 30f;
                         }
                     }

@@ -7,11 +7,26 @@ using ExistanceClass = GClass2456;
 
 namespace RealismMod
 {
+
+    public enum EZoneType 
+    {
+        Radiation,
+        Toxic
+    }
+
+    public interface IHazardZone
+    {
+        EZoneType ZoneType { get; } 
+        float ZoneStrengthModifier { get; set; }
+    }
+
     public class PlayerHazardBridge : MonoBehaviour
     {
         public Player _Player { get; set; }
         public bool IsInGasZone { get; set; } = false;
+        public bool IsInRadZone { get; set; } = false;
         public float GasAmount { get; set; } = 0f;
+        public float RadAmount { get; set; } = 0f;
         private float _bridgeTimer = 0f;
         private const float Interval = 6f;
 
@@ -21,15 +36,16 @@ namespace RealismMod
             if (_bridgeTimer >= Interval)
             {
                 //temporary solution to dealing with bots
-                if (_Player != null && _Player?.ActiveHealthController != null && IsInGasZone && (_Player.IsAI || _Player?.AIData?.BotOwner != null))
+                if (IsInGasZone && _Player != null && _Player?.ActiveHealthController != null && _Player?.AIData?.BotOwner != null && !_Player.AIData.BotOwner.IsDead)
                 {
                     bool hasMask = false;
-                    float protectionLevel = 0f;
-                    GearController.CheckFaceCoverGear(_Player, ref hasMask, ref protectionLevel);
-                    if (protectionLevel <= 0f && GasAmount > 0.05f) 
+                    float gasProtection = 0f;
+                    float radProtection = 0f;
+                    GearController.CheckFaceCoverGear(_Player, ref hasMask, ref gasProtection, ref radProtection);
+                    if (gasProtection <= 0f && GasAmount > 0.05f) 
                     {
-                        protectionLevel = 1f - protectionLevel;
-                        _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, GasAmount * protectionLevel * Interval, ExistanceClass.PoisonDamage);
+                        gasProtection = 1f - gasProtection;
+                        _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, GasAmount * gasProtection * Interval, ExistanceClass.PoisonDamage);
                         _Player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
                     }
                 }
@@ -38,15 +54,17 @@ namespace RealismMod
         }
     }
 
-    public class GasZone : TriggerWithId
+    public class GasZone : TriggerWithId, IHazardZone
     {
-        public float GasStrengthModifier = 1f;
+        public EZoneType ZoneType { get; } = EZoneType.Toxic;
+        public float ZoneStrengthModifier { get; set; } = 1f;
         private Dictionary<Player, PlayerHazardBridge> _containedPlayers = new Dictionary<Player, PlayerHazardBridge>();
         private BoxCollider _zoneCollider;
- /*       private float _audioTimer = 0f;
-        private float _audioClipLength= 0f;*/
         private float _tick = 0f;
         private float _maxDistance = 0f;
+
+        /* private float _audioTimer = 0f;
+       private float _audioClipLength= 0f;*/
 
         void Start()
         {
@@ -63,7 +81,6 @@ namespace RealismMod
         {
             if (player != null)
             {
-    /*            Utils.Logger.LogWarning("enter " + player.ProfileId);*/
                 PlayerHazardBridge hazardBridge;
                 player.TryGetComponent<PlayerHazardBridge>(out hazardBridge);
                 if(hazardBridge == null)
@@ -80,7 +97,6 @@ namespace RealismMod
         {
             if (player != null)
             {
-/*                Utils.Logger.LogWarning("exit " + player.ProfileId);*/
                 PlayerHazardBridge hazardBridge = _containedPlayers[player];
                 hazardBridge.GasAmount = 0f;
                 hazardBridge.IsInGasZone = false;
@@ -101,7 +117,6 @@ namespace RealismMod
                     PlayerHazardBridge hazardBridge = p.Value;
                     float gasAmount = CalculateGasStrength(player.gameObject.transform.position);
                     hazardBridge.GasAmount = gasAmount <= 0f ? 0f : gasAmount;
-         /*           Utils.Logger.LogWarning("Gas strength " + hazardBridge.GasAmount);*/
                 }
             }
 
@@ -119,9 +134,82 @@ namespace RealismMod
         float CalculateGasStrength(Vector3 playerPosition)
         {
             float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
-            float invertedDistance = _maxDistance - distance;  // Invert the distance
+            float invertedDistance = _maxDistance - distance;  // invert the distance
             invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance); //clamp the inverted distance
-            return (invertedDistance / GasStrengthModifier) * (Plugin.ZoneDebug.Value ? Plugin.test10.Value : 1f);
+            return (invertedDistance / ZoneStrengthModifier) * (Plugin.ZoneDebug.Value ? Plugin.test10.Value : 1f);
+        }
+    }
+
+    public class RadiationZone : TriggerWithId, IHazardZone
+    {
+        public EZoneType ZoneType { get; } = EZoneType.Radiation;
+        public float ZoneStrengthModifier { get; set; } = 1f;
+        private Dictionary<Player, PlayerHazardBridge> _containedPlayers = new Dictionary<Player, PlayerHazardBridge>();
+        private BoxCollider _zoneCollider;
+        private float _tick = 0f;
+        private float _maxDistance = 0f;
+
+        void Start()
+        {
+            _zoneCollider = GetComponentInParent<BoxCollider>();
+            if (_zoneCollider == null)
+            {
+                Utils.Logger.LogError("Realism Mod: No BoxCollider found in parent for RadiationZone");
+            }
+            Vector3 boxSize = _zoneCollider.size;
+            _maxDistance = boxSize.magnitude / 2f;
+        }
+
+        public override void TriggerEnter(Player player)
+        {
+            if (player != null)
+            {
+                PlayerHazardBridge hazardBridge;
+                player.TryGetComponent<PlayerHazardBridge>(out hazardBridge);
+                if (hazardBridge == null)
+                {
+                    hazardBridge = player.gameObject.AddComponent<PlayerHazardBridge>();
+                    hazardBridge._Player = player;
+                }
+                hazardBridge.IsInRadZone = true;
+                _containedPlayers.Add(player, hazardBridge);
+            }
+        }
+
+        public override void TriggerExit(Player player)
+        {
+            if (player != null)
+            {
+                PlayerHazardBridge hazardBridge = _containedPlayers[player];
+                hazardBridge.RadAmount = 0f;
+                hazardBridge.IsInRadZone = false;
+                _containedPlayers.Remove(player);
+            }
+        }
+
+        void Update()
+        {
+            _tick += Time.deltaTime;
+
+            if (_tick >= 0.25f)
+            {
+                _tick = 0f;
+                foreach (var p in _containedPlayers)
+                {
+                    Player player = p.Key;
+                    PlayerHazardBridge hazardBridge = p.Value;
+                    float radAmount = CalculateGasStrength(player.gameObject.transform.position);
+                    hazardBridge.RadAmount = radAmount <= 0f ? 0f : radAmount;
+                }
+            }
+        }
+
+        float CalculateGasStrength(Vector3 playerPosition)
+        {
+            float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
+            float invertedDistance = _maxDistance - distance;  // invert the distance
+            invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance); //clamp the inverted distance
+            return (invertedDistance / ZoneStrengthModifier) * (Plugin.ZoneDebug.Value ? Plugin.test10.Value : 1f);
         }
     }
 }

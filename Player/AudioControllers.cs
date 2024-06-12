@@ -40,7 +40,8 @@ namespace RealismMod
                 }
             }
 
-            DeviceController.DeviceAudioController();
+            DeviceController.GasAnalyserAudioController();
+            DeviceController.GeigerAudioController();
         }
 
         private static float GetBreathVolume() 

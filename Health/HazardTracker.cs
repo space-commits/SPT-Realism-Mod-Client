@@ -19,9 +19,24 @@ namespace RealismMod
     public static class HazardTracker
     {
         public static float TotalToxicityRate { get; set; } = 0f;
+        public static float TotalRadiationRate { get; set; } = 0f;
         private static float _totalToxicity = 0f;
+        private static float _totalRadiation = 0f;
         private static float _toxicityRateMeds = 0f;
+        private static float _radiationRateMeds = 0f;
         private static Dictionary<string, HazardRecord> _hazardRecords = new Dictionary<string, HazardRecord>();
+
+        public static float RadiationRateMeds
+        {
+            get
+            {
+                return _radiationRateMeds;
+            }
+            set
+            {
+                _radiationRateMeds = Mathf.Clamp(value, -0.55f, 0f);
+            }
+        }
 
         public static float ToxicityRateMeds
         {
@@ -47,22 +62,36 @@ namespace RealismMod
             }
         }
 
+        public static float TotalRadiation
+        {
+            get
+            {
+                return _totalRadiation;
+            }
+            set
+            {
+                _totalRadiation = Mathf.Clamp(value, 0f, 100f);
+            }
+        }
+
         private static string GetFilePath()
         {
             return AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\data\\hazard_tracker.json";
         }
 
 
-        public static int GetNextLowestToxicityLevel(int value)
+        public static int GetNextLowestHazardLevel(int value)
         {
             return (value / 10) * 10;
         }
 
         public static void ResetTracker() 
         {
-            _totalToxicity = GetNextLowestToxicityLevel((int)_totalToxicity);
+            _totalToxicity = GetNextLowestHazardLevel((int)_totalToxicity);
             ToxicityRateMeds = 0f;
+            RadiationRateMeds = 0f;
             TotalToxicityRate = 0f;
+            TotalRadiationRate = 0f;
         }
 
         public static void UpdateHazardValues(string profileId)
@@ -71,7 +100,7 @@ namespace RealismMod
             if (_hazardRecords.TryGetValue(profileId, out record))
             {
                 record.RecordedTotalToxicity = TotalToxicity;
-                record.RecordedTotalRadiation = -1f;
+                record.RecordedTotalRadiation = TotalRadiation;
             }
         }
 
@@ -97,11 +126,13 @@ namespace RealismMod
             if (_hazardRecords.TryGetValue(profileId, out record))
             {
                 TotalToxicity = record.RecordedTotalToxicity;
+                TotalRadiation = record.RecordedTotalRadiation;
             }
             else 
             {
                 _hazardRecords.Add(profileId, new HazardRecord { RecordedTotalRadiation = 0, RecordedTotalToxicity = 0 });
                 TotalToxicity = 0f;
+                TotalRadiation = 0f;
                 SaveHazardValues();
             }
         }
