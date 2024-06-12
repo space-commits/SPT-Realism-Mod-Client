@@ -50,7 +50,7 @@ namespace RealismMod
                     visualRepresentation.transform.parent = gasZone.transform;
                     visualRepresentation.transform.localScale = size;
                     visualRepresentation.transform.localPosition = boxCollider.center;
-                    visualRepresentation.transform.localRotation = boxCollider.transform.localRotation;
+                    visualRepresentation.transform.rotation = boxCollider.transform.rotation;
                     visualRepresentation.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.25f);
                     UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
                 }
@@ -81,7 +81,7 @@ namespace RealismMod
             visualRepresentation.transform.parent = gasZone.transform;
             visualRepresentation.transform.localScale = boxCollider.size;
             visualRepresentation.transform.localPosition = boxCollider.center;
-            visualRepresentation.transform.localRotation = boxCollider.transform.localRotation;
+            visualRepresentation.transform.rotation = boxCollider.transform.rotation;
             visualRepresentation.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.25f);
             UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
 

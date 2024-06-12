@@ -26,7 +26,7 @@ namespace RealismMod
                     bool hasMask = false;
                     float protectionLevel = 0f;
                     GearController.CheckFaceCoverGear(_Player, ref hasMask, ref protectionLevel);
-                    if (protectionLevel < 0.9f && GasAmount > 0.05f) 
+                    if (protectionLevel <= 0f && GasAmount > 0.05f) 
                     {
                         protectionLevel = 1f - protectionLevel;
                         _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, GasAmount * protectionLevel * Interval, ExistanceClass.PoisonDamage);
