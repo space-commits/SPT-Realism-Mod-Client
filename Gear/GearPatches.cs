@@ -119,20 +119,20 @@ namespace RealismMod
                 radAtt.Add(radAttClass);
             }
 
+            bool allowADS = GearStats.AllowsADS(item);
+            if (!allowADS)
+            {
+                List<ItemAttributeClass> canADSAtt = __instance.Item.Attributes;
+                ItemAttributeClass canADSAttAttClass = new ItemAttributeClass(ENewItemAttributeId.CantADS);
+                canADSAttAttClass.Name = ENewItemAttributeId.CantADS.GetName();
+                canADSAttAttClass.StringValue = () => "";
+                canADSAttAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                canADSAtt.Add(canADSAttAttClass);
+            }
+
             ArmorComponent armorComp;
             if (anyArmorPlateSlots || item.TryGetItemComponent(out armorComp))
             {
-                bool allowADS = GearStats.AllowsADS(item);
-                if (!allowADS)
-                {
-                    List<ItemAttributeClass> canADSAtt = __instance.Item.Attributes;
-                    ItemAttributeClass canADSAttAttClass = new ItemAttributeClass(ENewItemAttributeId.CantADS);
-                    canADSAttAttClass.Name = ENewItemAttributeId.CantADS.GetName();
-                    canADSAttAttClass.StringValue = () => "";
-                    canADSAttAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                    canADSAtt.Add(canADSAttAttClass);
-                }
-
                 List<ItemAttributeClass> bluntAtt = item.Attributes;
                 ItemAttributeClass bluntAttClass = new ItemAttributeClass(ENewItemAttributeId.BluntThroughput);
                 bluntAttClass.Name = ENewItemAttributeId.BluntThroughput.GetName();

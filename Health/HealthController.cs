@@ -219,6 +219,7 @@ namespace RealismMod
         public const float BasePKOverdoseThreshold = 45f;
 
         private const float ToxicityThreshold = 40f;
+        private const float RadiationThreshold = 60f;
         private const float _baseToxicityRecoveryRate = -0.05f;
         private const float _hazardInterval = 10f;
         private float _hazardWaitTime = 0f;
@@ -241,6 +242,14 @@ namespace RealismMod
             get 
             {
                 return (_rightArmRuined || _leftArmRuined || (PainStrength > PainArmThreshold && PainStrength > PainReliefStrength)) && !IsOnPKStims;
+            }
+        }
+
+        public bool HealthConditionPreventsTacSprint
+        {
+            get
+            {
+                return HazardTracker.TotalToxicity > ToxicityThreshold || HazardTracker.TotalRadiation > RadiationThreshold || ArmsAreIncapacitated || HasOverdosed || IsPoisoned;
             }
         }
 
@@ -1301,28 +1310,39 @@ namespace RealismMod
 
         public void CheckIfReducesHazardInRaid(Item item, Player player, bool isMed) 
         {
-            GClass1235 details = null;
+            GClass1235 detoxDetails = null;
+            GClass1235 deradDetails = null;
             if (isMed && item as MedsClass != null)
             {
                 MedsClass med = item as MedsClass;
-                details = med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? med.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
+                detoxDetails = med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? med.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
+                deradDetails = med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.RadExposure) ? med.HealthEffectsComponent.DamageEffects[EDamageEffectType.RadExposure] : null;
             }
             if (!isMed && item as FoodClass != null)
             {
                 FoodClass food = item as FoodClass;
-                details = food.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? food.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
+                detoxDetails = food.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? food.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
+                deradDetails = food.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.RadExposure) ? food.HealthEffectsComponent.DamageEffects[EDamageEffectType.RadExposure] : null;
             }
 
-            if (details != null)
+            if (detoxDetails != null)
             {
-                float strength = -details.FadeOut;
-                int delay = (int)details.Delay;
-                int duration = (int)details.Duration;
+                float strength = -detoxDetails.FadeOut;
+                int delay = (int)detoxDetails.Delay;
+                int duration = (int)detoxDetails.Duration;
 
                 DetoxificationEffect detox = new DetoxificationEffect(player, duration, delay, this, strength);
                 Plugin.RealHealthController.AddCustomEffect(detox, true);
             }
+            if (deradDetails != null)
+            {
+                float strength = -deradDetails.FadeOut;
+                int delay = (int)deradDetails.Delay;
+                int duration = (int)deradDetails.Duration;
 
+                RadationTreatmentEffect derad = new RadationTreatmentEffect(player, duration, delay, this, strength);
+                Plugin.RealHealthController.AddCustomEffect(derad, true);
+            }
         }
 
         public void CanUseMedItemCommon(MedsClass meds, Player player, ref EBodyPart bodyPart, ref bool shouldAllowHeal) 
@@ -1891,20 +1911,6 @@ namespace RealismMod
             }
         }
 
-        private void ApplyToxicityEffects(Player player) 
-        {
-            if (HazardTracker.TotalToxicity >= ToxicityThreshold && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest))
-            {
-                ToxicityEffect trnqt = new ToxicityEffect(null, player, 0, this);
-                AddCustomEffect(trnqt, false);
-            }
-
-            float effectStrength = HazardTracker.TotalToxicity / 100f;
-            AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, _hazardInterval, 5f, Mathf.Min(effectStrength * 2f, 1f));
-            if (HazardTracker.TotalToxicity >= ToxicityThreshold) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, effectStrength * 0.7f);
-            _hazardWaitTime = 0f;
-        }
-
         private void HazardZoneHealthEffectTick(Player player) 
         {
             if (!GameWorldController.GameStarted) return;
@@ -1916,23 +1922,23 @@ namespace RealismMod
 
             GasZoneTick(player);
             RadiationZoneTick(player);
-
+            HazardEffectsTick(player);
         }
 
         private void RadiationZoneTick(Player player) 
         {
-            if (PlayerHazardBridge.IsInGasZone && GearController.CurrentGasProtection < 1f)
+            if (PlayerHazardBridge.IsInRadZone && GearController.CurrentRadProtection < 1f)
             {
                 float increase = (PlayerHazardBridge.RadAmount + HazardTracker.RadiationRateMeds) * (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak);
                 increase = Mathf.Max(increase, 0f);
                 HazardTracker.TotalRadiation += increase;
                 HazardTracker.TotalRadiationRate = increase;
             }
-            else if (HazardTracker.TotalToxicity > 0f || GearController.CurrentGasProtection >= 1f)
+            else if (HazardTracker.TotalRadiation > 0f || GearController.CurrentRadProtection >= 1f)
             {
                 float reduction = HazardTracker.RadiationRateMeds * (1f + PlayerState.ImmuneSkillStrong);
-                float threshold = HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
-                HazardTracker.TotalToxicity = Mathf.Clamp(HazardTracker.TotalRadiation + reduction, threshold, 100f);
+                float threshold = HazardTracker.TotalRadiation <= 30f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
+                HazardTracker.TotalRadiation = Mathf.Clamp(HazardTracker.TotalRadiation + reduction, threshold, 100f);
                 HazardTracker.TotalRadiationRate = HazardTracker.TotalRadiation == threshold ? 0f : reduction;
             }
             else
@@ -1940,12 +1946,10 @@ namespace RealismMod
                 HazardTracker.TotalRadiationRate = 0f;
             }
 
- /*           if (HazardTracker.TotalRadiation <= ToxicityThreshold)
+            if (HazardTracker.TotalRadiation <= RadiationThreshold)
             {
-                RemoveCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest);
-            }*/
-
-/*            if (HazardTracker.TotalToxicity >= 10f && _hazardWaitTime > _hazardInterval) ApplyRadiationEffects(player);*/
+                RemoveCustomEffectOfType(typeof(RadiationEffect), EBodyPart.Chest);
+            }
         }
 
         private void GasZoneTick(Player player) 
@@ -1973,8 +1977,39 @@ namespace RealismMod
             {
                 RemoveCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest);
             }
+        }
 
-            if (HazardTracker.TotalToxicity >= 10f && _hazardWaitTime > _hazardInterval) ApplyToxicityEffects(player);
+        private void HazardEffectsTick(Player player) 
+        {
+            if (_hazardWaitTime > _hazardInterval) 
+            {
+                if (HazardTracker.TotalToxicity >= 10f)
+                {
+                    if (HazardTracker.TotalToxicity >= ToxicityThreshold && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest))
+                    {
+                        ToxicityEffect toxicity = new ToxicityEffect(null, player, 0, this);
+                        AddCustomEffect(toxicity, false);
+                    }
+
+                    float effectStrength = HazardTracker.TotalToxicity / 100f;
+                    AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, _hazardInterval, 5f, Mathf.Min(effectStrength * 2f, 1f));
+                    if (HazardTracker.TotalToxicity >= ToxicityThreshold) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, effectStrength * 0.7f);
+                }
+
+                if (HazardTracker.TotalRadiation >= 40f)
+                {
+                    if (HazardTracker.TotalRadiation >= RadiationThreshold && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest))
+                    {
+                        RadiationEffect radiation = new RadiationEffect(null, player, 0, this);
+                        AddCustomEffect(radiation, false);
+                    }
+
+                    float effectStrength = HazardTracker.TotalRadiation / 100f;
+                    AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, _hazardInterval, 5f, Mathf.Min(effectStrength, 1f));
+                }
+
+                _hazardWaitTime = 0f;
+            }
         }
     }
 }

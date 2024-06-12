@@ -66,9 +66,12 @@ namespace RealismMod
         {
             IEnumerable<Item> vestItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.TacticalVest}) ?? Enumerable.Empty<Item>();
             IEnumerable<Item> armbandItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.ArmBand }) ?? Enumerable.Empty<Item>();
+            IEnumerable<Item> pocketItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.Pockets }) ?? Enumerable.Empty<Item>();
             DeviceController.HasGasAnalyser = false;
+            DeviceController.HasGeiger = false;
             deviceCheckerHelper(vestItems);
             deviceCheckerHelper(armbandItems);
+            deviceCheckerHelper(pocketItems);
         }
 
         public static float GetModifiedInventoryWeight(Inventory invClass)
@@ -119,6 +122,7 @@ namespace RealismMod
         public static EquipmentPenaltyComponent CheckFaceCoverGear(Player player, ref bool isGasMask, ref float gasProtection, ref float radProtection)
         {
             Item containedItem = player.Inventory.Equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
+
             if (containedItem == null)
             {
                 return null;

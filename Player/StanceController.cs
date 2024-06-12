@@ -589,7 +589,7 @@ namespace RealismMod
                     }
                 }
 
-                if ((Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed || HazardTracker.TotalToxicity >= 60f) 
+                if ((Plugin.RealHealthController.HealthConditionPreventsTacSprint) 
                     && !IsAiming && !IsFiringFromStance && CurrentStance != EStance.PistolCompressed 
                     && CurrentStance != EStance.PatrolStance && CurrentStance != EStance.ShortStock 
                     && CurrentStance != EStance.ActiveAiming && MeleeIsToggleable)
@@ -793,9 +793,8 @@ namespace RealismMod
 
             if (Plugin.EnableTacSprint.Value && PlayerState.IsSprinting && CurrentStance != EStance.ActiveAiming
                 && (CurrentStance == EStance.HighReady || StoredStance == EStance.HighReady)
-                && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed
                 && !fc.Weapon.IsBeltMachineGun && WeaponStats.TotalWeaponWeight <= 5.5f && WeaponStats.TotalWeaponLength <= 6f
-                && !PlayerState.IsScav && HazardTracker.TotalToxicity <= 50f && !Plugin.RealHealthController.IsPoisoned)
+                && !PlayerState.IsScav && !Plugin.RealHealthController.HealthConditionPreventsTacSprint)
             {
                 IsDoingTacSprint = true;
                 player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
@@ -1115,6 +1114,8 @@ namespace RealismMod
                 float shortToActive = 1f;
                 float highToActive = 1f;
                 float lowToActive = 1f;
+                float highToActiveRotation = 1f;
+                float lowToActiveRotation = 1f;
                 isResettingActiveAim = false;
                 hasResetActiveAim = false;
                 hasResetMelee = true;
@@ -1128,10 +1129,12 @@ namespace RealismMod
                     if (!hasResetHighReady)
                     {
                         highToActive = 1f;
+                        highToActiveRotation = 1.2f;
                     }
                     if (!hasResetLowReady)
                     {
                         lowToActive = 1.15f;
+                        lowToActiveRotation = 1.35f;
                     }
                 }
                 else
@@ -1151,7 +1154,7 @@ namespace RealismMod
                 }
 
                 float transitionPositionFactor = shortToActive * highToActive; //* lowToActive
-                float transitionRotationFactor = shortToActive * highToActive * lowToActive; //(transitionPositionFactor != 1f ? 0.9f : 1f)
+                float transitionRotationFactor = shortToActive * highToActiveRotation * lowToActiveRotation; //(transitionPositionFactor != 1f ? 0.9f : 1f)
 
                 if (StanceBlender.Value < 1f)
                 {

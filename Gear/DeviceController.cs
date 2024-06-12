@@ -11,7 +11,8 @@ namespace RealismMod
     {
         public static bool HasGasAnalyser { get; set; } = false;
         public static bool HasGeiger { get; set; } = false;
-        private const float Delay = 5f;
+        private const float GasDelay = 5f;
+        private const float RadDelay = 1f;
         private const float BaseDeviceVolume = 0.2f;
 
         private static float _currentGasClipLength = 0f;
@@ -21,10 +22,17 @@ namespace RealismMod
         private static float _geigerDeviceTimer = 0f;
 
 
-        private static float GetDelayTime() 
+        private static float GetGasDelayTime() 
         {
             if (Plugin.RealHealthController.PlayerHazardBridge == null) return 4f;
-            return Delay * (1f - Plugin.RealHealthController.PlayerHazardBridge.GasAmount);
+            return GasDelay * (1f - Plugin.RealHealthController.PlayerHazardBridge.GasAmount);
+        }
+
+        private static float GeRadDelayTime()
+        {
+            if (Plugin.RealHealthController.PlayerHazardBridge == null) return 1f;
+            if (Plugin.RealHealthController.PlayerHazardBridge.RadAmount >= 0.15f) return 0f;
+            return RadDelay * (1f - Plugin.RealHealthController.PlayerHazardBridge.RadAmount);
         }
 
         public static void GasAnalyserAudioController()
@@ -33,7 +41,7 @@ namespace RealismMod
             {
                 _gasDeviceTimer += Time.deltaTime;
 
-                if (_gasDeviceTimer > _currentGasClipLength && _gasDeviceTimer >= GetDelayTime())
+                if (_gasDeviceTimer > _currentGasClipLength && _gasDeviceTimer >= GetGasDelayTime())
                 {
                     Player player = Utils.GetYourPlayer();
                     PlayerHazardBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;
@@ -52,7 +60,7 @@ namespace RealismMod
             {
                 _geigerDeviceTimer += Time.deltaTime;
 
-                if (_geigerDeviceTimer > _currentGeigerClipLength) // && _geigerDeviceTimer >= GetDelayTime()
+                if (_geigerDeviceTimer > _currentGeigerClipLength && _geigerDeviceTimer >= GeRadDelayTime())
                 {
                     Player player = Utils.GetYourPlayer();
                     PlayerHazardBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;
@@ -96,25 +104,25 @@ namespace RealismMod
             {
                 case <= 0f:
                     return null;
-                case <= 0.025f:
+                case <= 0.01f:
                     return "geiger1.wav";
-                case <= 0.05f:
+                case <= 0.025f:
                     return "geiger2.wav";
-                case <= 0.075f:
+                case <= 0.05f:
                     return "geiger3.wav";
-                case <= 0.12f:
+                case <= 0.075f:
                     return "geiger4.wav";
-                case <= 0.15f:
+                case <= 0.1f:
                     return "geiger5.wav";
-                case <= 0.2f:
+                case <= 0.15f:
                     return "geiger6.wav";
-                case <= 0.25f:
+                case <= 0.2f:
                     return "geiger7.wav";
-                case <= 0.35f:
+                case <= 0.25f:
                     return "geiger8.wav";
-                case <= 0.45f:
+                case <= 0.3f:
                     return "geiger9.wav";
-                case <= 0.5f:
+                case > 0.3f:
                     return "geiger10.wav";
                 default:
                     return null;

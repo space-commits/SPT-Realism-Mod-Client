@@ -46,7 +46,7 @@ namespace RealismMod
                     return new Color(1.0f, 0.647f, 0.0f);
                 case <= 75f:
                     return new Color(1.0f, 0.25f, 0.0f);
-                case <= 200f:
+                case > 75f:
                     return Color.red;
                 default: 
                     return Color.white;    
@@ -59,13 +59,13 @@ namespace RealismMod
             {
                 case 0:
                     return Color.white;
-                case <= 25f:
+                case <= 15f:
                     return Color.yellow;
-                case <= 50f:
+                case <= 25f:
                     return new Color(1.0f, 0.647f, 0.0f);
-                case <= 75f:
+                case <= 50f:
                     return new Color(1.0f, 0.25f, 0.0f);
-                case <= 200f:
+                case > 50f:
                     return Color.red;
                 default:
                     return Color.white;
@@ -101,13 +101,13 @@ namespace RealismMod
                     return Color.green;
                 case 0:
                     return new Color(0.4549f, 0.4824f, 0.4941f, 1f);
-                case <= 0.15f:
+                case <= 0.05f:
                     return Color.yellow;
-                case <= 0.25f:
+                case <= 0.15f:
                     return new Color(1.0f, 0.647f, 0.0f);
-                case <= 0.4f:
+                case <= 0.25f:
                     return new Color(1.0f, 0.25f, 0.0f);
-                case > 0.4f:
+                case > 0.25f:
                     return Color.red;
                 default:
                     return Color.white;
@@ -118,6 +118,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(HealthParametersPanel __instance)
         {
+#pragma warning disable CS0618
             _updateTime += Time.deltaTime;
 
             if (_updateTime >= 1f) 
@@ -135,10 +136,7 @@ namespace RealismMod
                         if (buff != null)
                         {
                             float toxicityRate = HazardTracker.TotalToxicityRate;
-                            //can animate it by changing the font size with ping pong, and modulate the color
-#pragma warning disable CS0618
-                            CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
-#pragma warning restore CS0618
+                            CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>(); //can animate it by changing the font size with ping pong, and modulate the color
                             buffUI.text = (toxicityRate > 0f ? "+" : "") + toxicityRate.ToString("0.00");
                             buffUI.color = GetGasRateColor(toxicityRate);
                             buffUI.fontSize = 14f;
@@ -146,10 +144,7 @@ namespace RealismMod
                         if (current != null)
                         {
                             float toxicityLevel = Mathf.Round(HazardTracker.TotalToxicity);
-                            //can animate it by changing the font size with ping pong, and modulate the color
-#pragma warning disable CS0618
                             CustomTextMeshProUGUI currentUI = current.GetComponent<CustomTextMeshProUGUI>();
-#pragma warning restore CS0618
                             currentUI.text = toxicityLevel.ToString();
                             currentUI.color = GetCurrentGasColor(toxicityLevel);
                             currentUI.fontSize = 30f;
@@ -159,46 +154,27 @@ namespace RealismMod
                     GameObject radiation = panel.transform.Find("Radiation")?.gameObject;
                     if (radiation != null)
                     {
-                        Logger.LogWarning("found rad");
                         GameObject buff = radiation.transform.Find("Buff")?.gameObject;
                         GameObject current = radiation.transform.Find("Current")?.gameObject;
                         if (buff != null)
                         {
-                            Logger.LogWarning("found buff");
                             float radRate = HazardTracker.TotalRadiationRate;
-                            //can animate it by changing the font size with ping pong, and modulate the color
-#pragma warning disable CS0618
                             CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
-#pragma warning restore CS0618
                             buffUI.text = (radRate > 0f ? "+" : "") + radRate.ToString("0.00");
                             buffUI.color = GetRadRateColor(radRate);
                             buffUI.fontSize = 14f;
                         }
                         if (current != null)
                         {
-                            Logger.LogWarning("found current");
                             float radiationLevel = Mathf.Round(HazardTracker.TotalRadiation);
-                            //can animate it by changing the font size with ping pong, and modulate the color
-#pragma warning disable CS0618
                             CustomTextMeshProUGUI currentUI = current.GetComponent<CustomTextMeshProUGUI>();
-#pragma warning restore CS0618
                             currentUI.text = radiationLevel.ToString();
                             currentUI.color = GetCurrentRadColor(radiationLevel);
                             currentUI.fontSize = 30f;
                         }
                     }
                 }
-
-                /*           if (_radiation != null)
-                           {
-                               _radiation.SetParameterValue(new ValueStruct
-                               {
-                                   Current = Plugin.test1.Value,
-                                   Minimum = 0f,
-                                   Maximum = 100f
-                               }, Plugin.test2.Value, 0, true);
-
-                           }*/
+#pragma warning restore CS0618
             }
 
 
