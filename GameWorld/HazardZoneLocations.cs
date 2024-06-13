@@ -19,8 +19,13 @@ namespace RealismMod
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> CustomsGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
             { "CustomsSwitchBasement", (0f, 60f, new Vector3(335f, -3.1f, -60.3f), new Vector3(0f, 0f, 0f), new Vector3(25f, 6.5f, 50f)) },
-            { "CustomsZB013", (0f, 20f, new Vector3(199f, -2.8f, -145f), new Vector3(0f, 0f, 0f), new Vector3(12f, 5f, 16f)) },
             { "CustomsWarehouse5", (0f, 80f, new Vector3(474.5f, 2.6f, -67f), new Vector3(0f, 9f, 0f), new Vector3(24f, 2.5f, 49f)) },
+            { "CustomsGasTrain1", (0f, 50f, new Vector3(460f, 2f, 185f), new Vector3(0f, 40f, 0f), new Vector3(10f, 10f, 45f)) },
+            { "CustomsGasTrain2", (0f, 25f, new Vector3(466f, 0f, 208f), new Vector3(0f, 10f, 0f), new Vector3(5f, 3f, 10f)) },
+            { "CustomsCrackDen", (0f, 50f, new Vector3(88f, 5f, -157f), new Vector3(0f, -12f, 0f), new Vector3(15f, 2f, 27f)) },
+            { "CustomsPumpWarehouse", (0f, 250f, new Vector3(557f, 1.5f, -120.5f), new Vector3(0f, 7f, 0f), new Vector3(40f, 15f, 23f)) },
+            { "CustomsPumpRoom", (0f, 150f, new Vector3(612f, 1.5f, -129.8f), new Vector3(0f, 6f, 0f), new Vector3(23.5f, 6.5f, 15f)) },
+            { "CustomsWarehouse5", (0f, 150f, new Vector3(391.5f, 1f, -97f), new Vector3(0f, 8.5f, 0f), new Vector3(53.5f, 6.5f, 29f)) },
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> GZGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
@@ -97,21 +102,31 @@ namespace RealismMod
             { "ReserveStorage", (0f, 500f, new Vector3(50f, -13.5f, -110f), new Vector3(0f, 0f, 0f), new Vector3(90f, 6f, 190f)) },
             { "ReserveShaft", (0f, 50f, new Vector3(-58.9f, -15.9f, 179.9f), new Vector3(0f, 0f, 0f), new Vector3(14f, 55f, 16f)) },
             { "ReserveD2Extract", (0f, 40f, new Vector3(-109f, -18.4f, 161f), new Vector3(0f, 0f, 0f), new Vector3(50f, 5f, 25f)) },
-            { "ReserveD2Rat", (0f, 50f, new Vector3(-67f, -18.6f, 141f), new Vector3(0f, 15f, 0f), new Vector3(45f, 4.5f, 15f)) },
-            { "ReserveD2Tank", (0f, 50f, new Vector3(-78.5f, -19.8f, 113f), new Vector3(0f, 15f, 0f), new Vector3(55f, 4.5f, 15f)) },
+            { "ReserveD2Rat", (0f, 50f, new Vector3(-63f, -18.6f, 139f), new Vector3(0f, 30f, 0f), new Vector3(40f, 15f, 14f)) },
+            { "ReserveD2Tank", (0f, 50f, new Vector3(-78.5f, -19.8f, 113f), new Vector3(0f, 30f, 0f), new Vector3(55f, 10f, 15f)) },
             { "ReserveBunker", (0f, 250f, new Vector3(-105.5f, -14.5f, 42.5f), new Vector3(0f, 9f, 0f), new Vector3(65f, 4.5f, 45f)) }
-        };
+        }; 
 
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> FactoryRadZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
-            { "FactoryTent", (0f, 25f, new Vector3(-17.5f, 0.35f, -41.4f), new Vector3(0f, 0f, 0f), new Vector3(6.5f, 4f, 38f)) },
-
+            { "FactoryGate0", (0f, 250f, new Vector3(-60f, 1f, 56.5f), new Vector3(0f, 0f, 0f), new Vector3(13f, 4f, 10f)) },
+            { "FactoryBarrels", (0f, 250f, new Vector3(56.5f, -1f, -28f), new Vector3(0f, 0f, 0f), new Vector3(8f, 8f, 4f)) },
+            { "FactoryBarrels", (0f, 250f, new Vector3(56.5f, -1f, -28f), new Vector3(0f, 0f, 0f), new Vector3(8f, 8f, 4f)) },
+            { "FactoryCellars", (0f, 250f, new Vector3(71f, -4f, -28.8f), new Vector3(0f, 0f, 0f), new Vector3(20f, 7f, 2.5f)) },
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> CustomsRadZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
-
+            { "CustomsRadTrain1", (0f, 250f, new Vector3(434f, 3.6f, 150f), new Vector3(0f, 40f, 0f), new Vector3(9f, 10f, 35f)) },
+            { "CustomsRadTrain2", (0f, 250f, new Vector3(465f, 3.6f, 200f), new Vector3(0f, 10f, 0f), new Vector3(15f, 5f, 10f)) },
+            { "CustomsRadTrain3", (0f, 250f, new Vector3(484f, 3.6f, 219f), new Vector3(0f, -33f, 0f), new Vector3(25f, 10f, 10f)) },
+            { "CustomsTrainExtract", (0f, 250f, new Vector3(479f, 1.4f, 229f), new Vector3(0f, 20f, 0f), new Vector3(25f, 10f, 8f)) },
+            { "CustomsBigRed", (0f, 500f, new Vector3(-213f, 1f, -122f), new Vector3(0f, 3f, 0f), new Vector3(24f, 5f, 59f)) },
+            { "CustomsGarrage", (0f, 250f, new Vector3(108f, 0f, -92f), new Vector3(0f, -12f, 0f), new Vector3(19f, 10f, 11.5f)) },
+            { "CustomsZB013", (0f, 250f, new Vector3(199f, -2.8f, -145f), new Vector3(0f, 0f, 0f), new Vector3(12f, 5f, 16f)) },
+            { "CustomsOldGasExit", (0f, 250f, new Vector3(311f, -2f, -180f), new Vector3(0f, -12f, 0f), new Vector3(10f, 5f, 15f)) },
+            { "CustomsZB", (0f, 250f, new Vector3(465f, -2f, -112f), new Vector3(0f, -0f, 0f), new Vector3(15f, 2f, 5f)) },
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> GZRadZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>

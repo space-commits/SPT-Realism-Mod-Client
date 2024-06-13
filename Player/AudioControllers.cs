@@ -51,15 +51,15 @@ namespace RealismMod
 
         private static string GetAudioFromOtherStates()
         {
-            if (HazardTracker.TotalToxicity >= 75f)
+            if (HazardTracker.TotalToxicity >= 75f || HazardTracker.TotalRadiationRate >= 85f)
             {
                 return "Dying";
             }
-            if (HazardTracker.TotalToxicity >= 65f || PlayerState.StaminaPerc <= 0.45)
+            if (HazardTracker.TotalToxicity >= 65f || PlayerState.StaminaPerc <= 0.45 || HazardTracker.TotalRadiationRate >= 70f)
             {
                 return "BadlyInjured";
             }
-            if (HazardTracker.TotalToxicity >= 50f || PlayerState.StaminaPerc <= 0.8f)
+            if (HazardTracker.TotalToxicity >= 50f || PlayerState.StaminaPerc <= 0.8f || HazardTracker.TotalRadiationRate >= 50f)
             {
                 return "Injured";
             }

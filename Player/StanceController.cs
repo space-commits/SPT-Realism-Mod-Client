@@ -335,7 +335,7 @@ namespace RealismMod
             if (WeaponStats.HasBayonet)
             {
 
-                int rndNum = UnityEngine.Random.Range(1, 10);
+                int rndNum = UnityEngine.Random.Range(1, 11);
                 string track = rndNum <= 5 ? "knife_1.wav" : "knife_2.wav";
                 Singleton<BetterAudio>.Instance.PlayAtPoint(player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim.position, Plugin.HitAudioClips[track], 2, BetterAudio.AudioSourceGroupType.Distant, 100, 2, EOcclusionTest.Continuous);
             }
@@ -589,7 +589,7 @@ namespace RealismMod
                     }
                 }
 
-                if ((Plugin.RealHealthController.HealthConditionPreventsTacSprint) 
+                if ((Plugin.RealHealthController.HealthConditionForcedLowReady) 
                     && !IsAiming && !IsFiringFromStance && CurrentStance != EStance.PistolCompressed 
                     && CurrentStance != EStance.PatrolStance && CurrentStance != EStance.ShortStock 
                     && CurrentStance != EStance.ActiveAiming && MeleeIsToggleable)
@@ -1133,7 +1133,7 @@ namespace RealismMod
                     }
                     if (!hasResetLowReady)
                     {
-                        lowToActive = 1.15f;
+                        lowToActive = 1f;
                         lowToActiveRotation = 1.35f;
                     }
                 }
@@ -1153,7 +1153,7 @@ namespace RealismMod
                     CanResetDamping = false;
                 }
 
-                float transitionPositionFactor = shortToActive * highToActive; //* lowToActive
+                float transitionPositionFactor = shortToActive * highToActive * lowToActive;
                 float transitionRotationFactor = shortToActive * highToActiveRotation * lowToActiveRotation; //(transitionPositionFactor != 1f ? 0.9f : 1f)
 
                 if (StanceBlender.Value < 1f)

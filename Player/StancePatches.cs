@@ -283,7 +283,7 @@ namespace RealismMod
 
                     if (hitBalls.TypeOfMaterial == MaterialType.Glass || hitBalls.TypeOfMaterial == MaterialType.GlassShattered)
                     {
-                        int rndNum = UnityEngine.Random.Range(1, 10);
+                        int rndNum = UnityEngine.Random.Range(1, 11);
                         if (rndNum > (4f + WeaponStats.BaseMeleeDamage))
                         {
                             shouldSkipHit = true;

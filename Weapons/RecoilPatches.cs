@@ -507,7 +507,7 @@ namespace RealismMod
 
                 float stockedPistolFactor = WeaponStats.IsStockedPistol ? 0.75f : 1f;
 
-                __instance.RecoilStableShotIndex = WeaponStats.IsStocklessPistol ? 2 : 1; 
+                __instance.RecoilStableShotIndex = WeaponStats.IsStocklessPistol ? 2 : (int)Plugin.test1.Value; 
                 __instance.HandRotationRecoil.RecoilReturnTrajectoryOffset = template.RecoilReturnPathOffsetHandRotation * Plugin.AfterRecoilRandomness.Value;
                 __instance.HandRotationRecoil.StableAngleIncreaseStep = template.RecoilStableAngleIncreaseStep;
                 __instance.HandRotationRecoil.AfterRecoilOffsetVerticalRange = Vector2.zero; // template.PostRecoilVerticalRangeHandRotation * Plugin.AfterRecoilRandomness.Value;
@@ -716,7 +716,7 @@ namespace RealismMod
                     float shiftRecoilFactor = (RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil) * (1f + totalCamRecoil) * gunFactor;
                     float scopeFactor = ((1f - WeaponStats.ScopeAccuracyFactor) * 10f) + (shiftRecoilFactor * 0.1f);
 
-                    int rnd = UnityEngine.Random.Range(1, 20);
+                    int rnd = UnityEngine.Random.Range(1, 21);
                     if (scopeFactor > rnd)
                     {
                         float offsetFactor = scopeFactor * 0.015f;

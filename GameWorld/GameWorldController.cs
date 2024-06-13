@@ -32,7 +32,7 @@ namespace RealismMod
 
         public static void CreateZone<T>(KeyValuePair<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> zone) where T : MonoBehaviour, IHazardZone
         {
-            if (!Plugin.ZoneDebug.Value && UnityEngine.Random.Range(1, 10) + zone.Value.spawnChance < 5f) return;
+            if (!Plugin.ZoneDebug.Value && UnityEngine.Random.Range(1, 11) + zone.Value.spawnChance < 5f) return;
 
             float strengthModifier = UnityEngine.Random.Range(0.65f, 1.2f);
 

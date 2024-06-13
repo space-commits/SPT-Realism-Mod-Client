@@ -37,7 +37,7 @@ namespace RealismMod
 
         public static void GasAnalyserAudioController()
         {
-            if (HasGasAnalyser) 
+            if (HasGasAnalyser && GameWorldController.GameStarted && Utils.IsReady) 
             {
                 _gasDeviceTimer += Time.deltaTime;
 
@@ -98,32 +98,32 @@ namespace RealismMod
             }
         }
 
-        public static string GetGeigerClip(float radLevel)
+        public static string[] GetGeigerClip(float radLevel)
         {
             switch (radLevel)
             {
                 case <= 0f:
                     return null;
                 case <= 0.01f:
-                    return "geiger1.wav";
+                    return new string[] { "geiger1.wav", "geiger1_1.wav" };
                 case <= 0.025f:
-                    return "geiger2.wav";
+                    return new string[] { "geiger2.wav", "geiger2_1.wav", "geiger1_1.wav", "geiger1.wav" };
                 case <= 0.05f:
-                    return "geiger3.wav";
+                    return new string[] { "geiger3.wav", "geiger3_1.wav", "geiger2.wav", "geiger2_1.wav" };
                 case <= 0.075f:
-                    return "geiger4.wav";
+                    return new string[] { "geiger4.wav", "geiger4_1.wav", "geiger3.wav", "geiger3_1.wav" };
                 case <= 0.1f:
-                    return "geiger5.wav";
+                    return new string[] { "geiger5.wav", "geiger5_1.wav", "geiger5_2.wav", "geiger4.wav", "geiger4_1.wav" };
                 case <= 0.15f:
-                    return "geiger6.wav";
+                    return new string[] { "geiger6.wav", "geiger6_1.wav", "geiger6_2.wav", "geiger5.wav", "geiger5_1.wav", "geiger5_2.wav" };
                 case <= 0.2f:
-                    return "geiger7.wav";
+                    return new string[] { "geiger7.wav" };
                 case <= 0.25f:
-                    return "geiger8.wav";
+                    return new string[] { "geiger8.wav", "geiger7.wav" };
                 case <= 0.3f:
-                    return "geiger9.wav";
+                    return new string[] { "geiger9.wav" };
                 case > 0.3f:
-                    return "geiger10.wav";
+                    return new string[] { "geiger10.wav", "geiger9.wav" };
                 default:
                     return null;
             }
@@ -140,8 +140,13 @@ namespace RealismMod
 
         public static void PlayGeigerClips(Player player, PlayerHazardBridge bridge)
         {
-            string clip = GetGeigerClip(bridge.RadAmount);
-            if (clip == null) return;
+            string[] clips = GetGeigerClip(bridge.RadAmount);
+            if (clips == null) return;
+            int rndNumber = UnityEngine.Random.Range(0, clips.Length);
+            Utils.Logger.LogWarning("rndNumber " + rndNumber);
+            Utils.Logger.LogWarning("clips.Length " + clips.Length);
+            Utils.Logger.LogWarning("clip " + clips[rndNumber]);
+            string clip = clips[rndNumber];
             AudioClip audioClip = Plugin.DeviceAudioClips[clip];
             _currentGeigerClipLength = audioClip.length;
             Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), audioClip, 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, BaseDeviceVolume, EOcclusionTest.None, null, false);

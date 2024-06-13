@@ -34,7 +34,7 @@ namespace RealismMod
             }
             set
             {
-                _radiationRateMeds = Mathf.Clamp(value, -0.55f, 0f);
+                _radiationRateMeds = Mathf.Clamp(value, -0.2f, 0f);
             }
         }
 
@@ -46,7 +46,7 @@ namespace RealismMod
             }
             set 
             {
-                _toxicityRateMeds =  Mathf.Clamp(value, -0.55f, 0f); 
+                _toxicityRateMeds =  Mathf.Clamp(value, -0.5f, 0f); 
             }
         }
 

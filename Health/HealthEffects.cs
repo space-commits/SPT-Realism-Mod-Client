@@ -541,16 +541,14 @@ namespace RealismMod
         {
             switch (HazardTracker.TotalToxicity)
             {
-                case < 70f:
+                case < 80f:
                     return 0f;
-                case <= 80f:
-                    return -0.1f;
                 case <= 90f:
                     return -0.15f;
                 case < 100f:
                     return -0.25f;
                 case >= 100f:
-                    return -0.35f;
+                    return -0.5f;
                 default:
                     return 0f;
             }
@@ -561,7 +559,7 @@ namespace RealismMod
             if (Delay <= 0)
             {
                 TimeExisted++;
-                if (TimeExisted % 3 == 0 && HazardTracker.TotalRadiation > 70f)
+                if (TimeExisted % 3 == 0 && HazardTracker.TotalRadiation > 80f)
                 {
                     for (int i = 0; i < RealHealthController.BodyParts.Length; i++)
                     {
@@ -572,7 +570,7 @@ namespace RealismMod
                     }
 
                 }
-                if (TimeExisted % 5 == 0 && HazardTracker.TotalRadiation > 60f)
+                if (TimeExisted % 5 == 0 && HazardTracker.TotalRadiation > 90f)
                 {
                     if (!Plugin.RealHealthController.HasBaseEFTEffect(_Player, "PainKiller"))
                     {
