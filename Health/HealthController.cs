@@ -1355,7 +1355,7 @@ namespace RealismMod
 
         public void CanUseMedItemCommon(MedsClass meds, Player player, ref EBodyPart bodyPart, ref bool shouldAllowHeal) 
         {
-            CheckIfReducesHazardInRaid(meds, player, true); //the type of items that can reduce toxicity and radiation can't be blocked so should be fine
+            CheckIfReducesHazardInRaid(meds, player, true); //the types of item that can reduce toxicity and radiation can't be blocked so should be fine
 
             if (meds.Template._parent == "5448f3a64bdc2d60728b456a")
             {

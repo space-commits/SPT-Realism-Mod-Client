@@ -31,7 +31,9 @@ namespace RealismMod
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> GZGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
-            { "GZUnderground", (-3f, 300f, new Vector3(80f, 15f, -20f), new Vector3(0f, 0f, 0f), new Vector3(50f, 3f, 110f)) },
+            { "GZUnderground1", (-3f, 300f, new Vector3(80f, 15f, -20f), new Vector3(0f, 0f, 0f), new Vector3(50f, 4f, 120f)) },
+            { "GZUnderground2", (-3f, 300f, new Vector3(82f, 15f, 132f), new Vector3(0f, 0f, 0f), new Vector3(45f, 4f, 95f)) },
+            { "GZTerragroupBuilding1", (0f, 350f, new Vector3(-45f, 25f, 19f), new Vector3(0f, 0f, 0f), new Vector3(45f, 7f, 100f)) }
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> ShorelineGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
@@ -137,7 +139,7 @@ namespace RealismMod
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> GZRadZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
-
+            { "GZTerragroupRubble", (0f, 350f, new Vector3(-58f, 25f, 22f), new Vector3(0f, 0f, 0f), new Vector3(-52f, 27.5f, 28f)) }
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> ShorelineRadZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
@@ -190,7 +192,9 @@ namespace RealismMod
             { "ReserveD2Extract", (0f, 150f, new Vector3(-109f, -18.4f, 161f), new Vector3(0f, 0f, 0f), new Vector3(50f, 5f, 25f)) },
             { "ReserveWater", (0f, 250f, new Vector3(-99f, -15f, 5.5f), new Vector3(0f, 15f, 0f), new Vector3(29.5f, 2f, 14.5f)) },
             { "ReserveHermetic", (0f, 100f, new Vector3(62f, -7f, -195f), new Vector3(0f, 15f, 0f), new Vector3(13f, 2f, 8f)) },
-            { "ReserveMarked1", (0f, 100f, new Vector3(191.5f, -7f, -226/3f), new Vector3(0f, 15f, 0f), new Vector3(4f, 3f, 4f)) },
+            { "ReserveMarkedTrain", (0f, 100f, new Vector3(191.5f, -7f, -226.3f), new Vector3(0f, 15f, 0f), new Vector3(4f, 3f, 4f)) }, 
+            { "ReserveMarkedBunker", (0f, 100f, new Vector3(-123f, -14f, 28.5f), new Vector3(0f, 15f, 0f), new Vector3(6f, 4f, 6f)) }, 
+            { "ReserveMarkedPawn", (0f, 100f, new Vector3(-154f, -9f, 74f), new Vector3(0f, 15f, 0f), new Vector3(7f, 4f, 7.5f)) }, //black pawn
         };
 
         public static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> GetGasZones(string map)
