@@ -384,7 +384,7 @@ namespace RealismMod
                     float mountOrientationBonus = StanceController.BracingDirection == EBracingDirection.Top ? 0.75f : 1f;
                     float mountingRecoilLimit = WeaponStats.IsStocklessPistol ? 0.25f : 0.75f;
                     float recoilBonus = StanceController.IsMounting && __instance.Weapon.IsBeltMachineGun ? 0.6f : StanceController.IsMounting ? 0.8f : 0.95f;
-                    float swayBonus = __instance.Weapon.IsBeltMachineGun && StanceController.IsMounting ? 0.35f : StanceController.IsMounting ? 0.5f : 0.75f;
+                    float swayBonus = StanceController.IsMounting ? 0.35f : 0.65f;
 
                     StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, recoilBonus * mountOrientationBonus, 0.04f);
                     StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, swayBonus * mountOrientationBonus, 0.04f);

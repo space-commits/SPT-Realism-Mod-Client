@@ -17,6 +17,8 @@ namespace RealismMod
 
         public static void HazardZoneAudioController()
         {
+            if (Utils.IsInHideout || !Utils.IsReady) return;
+
             _breathTimer += Time.deltaTime;
             if (GearController.HasGasMask && _breathCountdown > 0f)
             {

@@ -889,6 +889,7 @@ namespace RealismMod
             {
                 HasReloadedAudio = false;
             }
+
             if (ServerConfig.med_changes)
             {
                 AudioControllers.HazardZoneAudioController();

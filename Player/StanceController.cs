@@ -179,7 +179,7 @@ namespace RealismMod
             }
             else if (IsDoingTacSprint)
             {
-                baseDrainRate = 0.16f;
+                baseDrainRate = 0.25f;
             }
             else if (CurrentStance == EStance.ActiveAiming && Plugin.EnableIdleStamDrain.Value)
             {

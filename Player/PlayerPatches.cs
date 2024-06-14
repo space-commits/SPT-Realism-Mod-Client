@@ -199,19 +199,19 @@ namespace RealismMod
     {
         private static FieldInfo surfaceField;
 
-        private static float sprintCooldownTimer = 0f;
-        private static bool doSwayReset = false;
-        private static float sprintTimer = 0f;
-        private static bool didSprintPenalties = false;
-        private static bool resetSwayAfterFiring = false;
+        private static float _sprintCooldownTimer = 0f;
+        private static bool _doSwayReset = false;
+        private static float _sprintTimer = 0f;
+        private static bool _didSprintPenalties = false;
+        private static bool _resetSwayAfterFiring = false;
 
-        private static void doSprintTimer(Player player, ProceduralWeaponAnimation pwa, Player.FirearmController fc, float mountingBonus)
+        private static void DoSprintTimer(Player player, ProceduralWeaponAnimation pwa, Player.FirearmController fc, float mountingBonus)
         {
-            sprintCooldownTimer += Time.deltaTime;
+            _sprintCooldownTimer += Time.deltaTime;
 
-            if (!didSprintPenalties)
+            if (!_didSprintPenalties)
             {
-                float sprintDurationModi = 1f + (sprintTimer / 7f);
+                float sprintDurationModi = 1f + (_sprintTimer / 7f);
 
                 float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi, 3f);
                 float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi, 1.05f);
@@ -219,15 +219,15 @@ namespace RealismMod
                 pwa.HandsContainer.HandsRotation.InputIntensity = inputIntensitry * mountingBonus;
                 PlayerState.SprintTotalBreathIntensity = breathIntensity;
                 PlayerState.SprintTotalHandsIntensity = inputIntensitry;
-                PlayerState.SprintHipfirePenalty = Mathf.Min(1f + (sprintTimer / 100f), 1.25f);
-                PlayerState.ADSSprintMulti = Mathf.Max(1f - (sprintTimer / 12f), 0.3f);
+                PlayerState.SprintHipfirePenalty = Mathf.Min(1f + (_sprintTimer / 100f), 1.25f);
+                PlayerState.ADSSprintMulti = Mathf.Max(1f - (_sprintTimer / 12f), 0.3f);
 
 
-                didSprintPenalties = true;
-                doSwayReset = false;
+                _didSprintPenalties = true;
+                _doSwayReset = false;
             }
 
-            if (sprintCooldownTimer >= 0.35f)
+            if (_sprintCooldownTimer >= 0.35f)
             {
                 PlayerState.SprintBlockADS = false;
                 if (PlayerState.TriedToADSFromSprint)
@@ -235,12 +235,12 @@ namespace RealismMod
                     fc.ToggleAim();
                 }
             }
-            if (sprintCooldownTimer >= 4f)
+            if (_sprintCooldownTimer >= 4f)
             {
                 PlayerState.WasSprinting = false;
-                doSwayReset = true;
-                sprintCooldownTimer = 0f;
-                sprintTimer = 0f;
+                _doSwayReset = true;
+                _sprintCooldownTimer = 0f;
+                _sprintTimer = 0f;
             }
         }
 
@@ -258,7 +258,7 @@ namespace RealismMod
 
             if (Utils.AreFloatsEqual(1f, PlayerState.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerState.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerState.TotalHandsIntensity))
             {
-                doSwayReset = false;
+                _doSwayReset = false;
             }
         }
 
@@ -269,27 +269,27 @@ namespace RealismMod
             {
                 float fallFactor = !player.MovementContext.IsGrounded ? 2.5f : 1f;
                 float jumpFactor = player.MovementContext.PlayerAnimatorIsJumpSetted() ? 4f : 1f;
-                sprintTimer += Time.deltaTime * fallFactor * jumpFactor;
-                if (sprintTimer >= 1f)
+                _sprintTimer += Time.deltaTime * fallFactor * jumpFactor;
+                if (_sprintTimer >= 1f)
                 {
                     PlayerState.SprintBlockADS = true;
                     PlayerState.WasSprinting = true;
-                    didSprintPenalties = false;
+                    _didSprintPenalties = false;
                 }
             }
             else
             {
                 if (PlayerState.WasSprinting)
                 {
-                    doSprintTimer(player, player.ProceduralWeaponAnimation, fc, mountingBonus);
+                    DoSprintTimer(player, player.ProceduralWeaponAnimation, fc, mountingBonus);
                 }
-                if (doSwayReset)
+                if (_doSwayReset)
                 {
                     resetSwayParams(player.ProceduralWeaponAnimation, mountingBonus);
                 }
             }
 
-            if (!doSwayReset && !PlayerState.WasSprinting)
+            if (!_doSwayReset && !PlayerState.WasSprinting)
             {
                 PlayerState.HasFullyResetSprintADSPenalties = true;
             }
@@ -300,17 +300,17 @@ namespace RealismMod
 
             if (RecoilController.IsFiring)
             {
-                doSwayReset = false;
-                resetSwayAfterFiring = false;
+                _doSwayReset = false;
+                _resetSwayAfterFiring = false;
             }
-            else if (!resetSwayAfterFiring)
+            else if (!_resetSwayAfterFiring)
             {
-                resetSwayAfterFiring = true;
-                doSwayReset = true;
+                _resetSwayAfterFiring = true;
+                _doSwayReset = true;
             }
         }
 
-        private static void calcBaseHipfireAccuracy(Player player)
+        private static void CalcBaseHipfireAccuracy(Player player)
         {
             float baseValue = 0.4f;
             float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
@@ -325,7 +325,7 @@ namespace RealismMod
             WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(baseValue * PlayerState.DeviceBonus * ergoFactor * healthFactor * convergenceFactor * dispersionFactor * recoilFactor * playerWeightFactor, 0.2f, 1f);
         }
 
-        private static void getStaminaPerc(Player player)
+        private static void GetStaminaPerc(Player player)
         {
             float remainArmStamPercent = Mathf.Min((player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity) * (1f + PlayerState.StrengthSkillAimBuff), 1f);
             PlayerState.StaminaPerc = player.Physical.Stamina.Current / player.Physical.Stamina.TotalCapacity;
@@ -334,7 +334,7 @@ namespace RealismMod
             PlayerState.RemainingArmStamPercReload = Mathf.Clamp(1f - ((1f - remainArmStamPercent) / 4f), 0.85f, 1f); 
         }
 
-        private static void setStancePWAValues(Player player, FirearmController fc)
+        private static void SetStancePWAValues(Player player, FirearmController fc)
         {
             if (StanceController.CanResetDamping)
             {
@@ -362,7 +362,7 @@ namespace RealismMod
             player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
         }
 
-        private static void chamberTimer(FirearmController fc)
+        private static void ChamberTimer(FirearmController fc)
         {
             Plugin.ChamberTimer += Time.deltaTime;
             if (Plugin.ChamberTimer >= 0.5f)
@@ -380,7 +380,7 @@ namespace RealismMod
             {
                 if (Plugin.StartRechamberTimer)
                 {
-                    chamberTimer(fc);
+                    ChamberTimer(fc);
                 }
 
                 if (Plugin.ServerConfig.enable_stances)
@@ -405,11 +405,11 @@ namespace RealismMod
                     StanceController.SetStanceStamina(player);
                 }
 
-                getStaminaPerc(player);
+                GetStaminaPerc(player);
 
                 if (!RecoilController.IsFiringMovement && Plugin.ServerConfig.enable_stances)
                 {
-                    setStancePWAValues(player, fc);
+                    SetStancePWAValues(player, fc);
                 }
                 player.MovementContext.SetPatrol(StanceController.CurrentStance == EStance.PatrolStance ? true : false);
             }
@@ -422,7 +422,7 @@ namespace RealismMod
                 StanceController.IsMounting = false;
             }
 
-            calcBaseHipfireAccuracy(player);
+            CalcBaseHipfireAccuracy(player);
             float stanceHipFactor = StanceController.CurrentStance == EStance.ActiveAiming ? 0.7f : StanceController.CurrentStance == EStance.ShortStock ? 1.35f : 1.05f;
             player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.2f, 1.6f);
         }
@@ -456,12 +456,15 @@ namespace RealismMod
                 if (Plugin.EnableSprintPenalty.Value)
                 {
                     DoSprintPenalty(__instance, fc, StanceController.BracingSwayBonus);
-                    if (PlayerState.HasFullyResetSprintADSPenalties)
-                    {
-                        __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerState.TotalBreathIntensity * StanceController.BracingSwayBonus;
-                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerState.TotalHandsIntensity * StanceController.BracingSwayBonus;
-                    }
                 }
+                else PlayerState.HasFullyResetSprintADSPenalties = true;
+
+                if (PlayerState.HasFullyResetSprintADSPenalties)
+                {
+                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerState.TotalBreathIntensity * StanceController.BracingSwayBonus;
+                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerState.TotalHandsIntensity * StanceController.BracingSwayBonus;
+                }
+
                 if (Plugin.ServerConfig.recoil_attachment_overhaul)
                 {
                     PWAUpdate(__instance, fc);
