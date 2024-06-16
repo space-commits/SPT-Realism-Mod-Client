@@ -111,7 +111,9 @@ namespace RealismMod
             "5b4c81bd86f77418a75ae159",
             "5b4c81a086f77417d26be63f",
             "5b43237186f7742f3a4ab252",
-            "5a687e7886f7740c4a5133fb"
+            "5a687e7886f7740c4a5133fb",
+            "63927b29c115f907b14700b9",
+            ""
         });
 
         public Dictionary<string, EStimType> StimTypes = new Dictionary<string, EStimType>()
@@ -152,6 +154,7 @@ namespace RealismMod
         public bool HasAdrenalineEffect { get; set; } = false;
 
         public bool HasToxicItem { get; set; } = false;
+        public bool HasIrradiatedItem { get; set; } = false;
         public int ToxicItemCount { get; set; } = 0;
 
         public float AdrenalineMovementBonus
@@ -1891,11 +1894,11 @@ namespace RealismMod
             float skillFactor = (1f + (player.Skills.HealthEnergy.Value / 4));
             float skillFactorInverse = (1f - (player.Skills.HealthEnergy.Value / 4));
 
-            float toxicity = HazardTracker.TotalToxicity / 100f; 
+            float toxicity = (HazardTracker.TotalToxicity * (1f - PlayerState.ImmuneSkillWeak)) / 225f; 
             float toxicityFactor = 1f - toxicity;
             float toxicityInverse = 1f + toxicity;
 
-            float radiation = HazardTracker.TotalRadiation / 150f;
+            float radiation = (HazardTracker.TotalRadiation * (1f - PlayerState.ImmuneSkillWeak)) / 300f;
             float radiationFactor = 1f - radiation;
             float radiationInverse = 1f + radiation;
 
@@ -1925,11 +1928,15 @@ namespace RealismMod
                 }
                 else
                 {
-                    float playerWeightFactor = PlayerState.TotalModifiedWeight >= 10f ? PlayerState.TotalModifiedWeight / 500f : 0f;
+                    float weight = PlayerState.TotalModifiedWeight * (1f - player.Skills.EnduranceBuffJumpCostRed.Value);
+                    float weightInverse = PlayerState.TotalModifiedWeight * (1f + player.Skills.EnduranceBuffJumpCostRed.Value);
+                    float playerWeightFactor = weightInverse >= 10f ? weight / 500f : 0f;
                     float sprintMulti = PlayerState.IsSprinting ? 1.45f : 1f;
                     float sprintFactor = PlayerState.IsSprinting ? 0.1f : 0f;
-                    float poisonSprintFactor = IsPoisoned ? 1.5f : 1f;
-                    float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * (1f - player.Skills.HealthEnergy.Value) * toxicityInverse * radiationInverse * poisonSprintFactor;
+                    float poisonSprintFactor = IsPoisoned ? Mathf.Max(1.5f * (1f - PlayerState.ImmuneSkillWeak), 1.1f) : 1f;
+                    float toxicityResourceFactor = (HazardTracker.TotalToxicity * (1f - PlayerState.ImmuneSkillWeak)) / 150f;
+                    float radiationResourceFactor = (HazardTracker.TotalRadiation * (1f - PlayerState.ImmuneSkillWeak)) / 190f;
+                    float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * toxicityResourceFactor * radiationResourceFactor * poisonSprintFactor * (1f - player.Skills.HealthEnergy.Value);
                     ResourcePerTick = totalResourceRate;
                 }
             }
@@ -1951,9 +1958,9 @@ namespace RealismMod
 
         private void RadiationZoneTick(Player player) 
         {
-            if (PlayerHazardBridge.IsInRadZone && GearController.CurrentRadProtection < 1f)
+            if (PlayerHazardBridge.RadZoneCount > 0 && GearController.CurrentRadProtection < 1f)
             {
-                float increase = (PlayerHazardBridge.RadAmount + HazardTracker.RadiationRateMeds) * (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak);
+                float increase = (PlayerHazardBridge.TotalRadAmount + HazardTracker.RadiationRateMeds) * (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak);
                 increase = Mathf.Max(increase, 0f);
                 HazardTracker.TotalRadiation += increase;
                 HazardTracker.TotalRadiationRate = increase;
@@ -1970,7 +1977,7 @@ namespace RealismMod
                 HazardTracker.TotalRadiationRate = 0f;
             }
 
-            if (HazardTracker.TotalRadiation <= RadiationThreshold)
+            if (HazardTracker.TotalRadiation < RadiationThreshold)
             {
                 RemoveCustomEffectOfType(typeof(RadiationEffect), EBodyPart.Chest);
             }
@@ -1978,10 +1985,10 @@ namespace RealismMod
 
         private void GasZoneTick(Player player) 
         {
-            if ((PlayerHazardBridge.IsInGasZone || HasToxicItem) && GearController.CurrentGasProtection < 1f)
+            if ((PlayerHazardBridge.GasZoneCount > 0 || HasToxicItem) && GearController.CurrentGasProtection < 1f)
             {
                 float toxicItemFactor = ToxicItemCount * 0.1f; 
-                float increase = (PlayerHazardBridge.GasAmount + HazardTracker.ToxicityRateMeds + toxicItemFactor) * (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak);
+                float increase = (PlayerHazardBridge.TotalGasAmount + HazardTracker.ToxicityRateMeds + toxicItemFactor) * (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak);
                 increase = Mathf.Max(increase, 0f);
                 HazardTracker.TotalToxicity += increase;
                 HazardTracker.TotalToxicityRate = increase;
@@ -1998,7 +2005,7 @@ namespace RealismMod
                 HazardTracker.TotalToxicityRate = 0f;
             }
 
-            if (HazardTracker.TotalToxicity <= ToxicityThreshold)
+            if (HazardTracker.TotalToxicity < ToxicityThreshold)
             {
                 RemoveCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest);
             }
@@ -2048,7 +2055,6 @@ namespace RealismMod
                 {
                     if (ToxicItems.Contains(item.TemplateId)) 
                     {
-                        Utils.Logger.LogWarning("have item");
                         HasToxicItem = true;
                         ToxicItemCount++;
                     }

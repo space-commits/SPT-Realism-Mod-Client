@@ -33,6 +33,8 @@ namespace RealismMod
 
         public static float StrengthWeightBuff = 0f;
 
+        public static float EnduranceSkill = 0f;
+
         public static bool IsAllowedADS = true;
 
         public static bool GearAllowsADS = true;

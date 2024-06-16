@@ -34,8 +34,6 @@ namespace RealismMod
         {
             if (!Plugin.ZoneDebug.Value && UnityEngine.Random.Range(1, 11) + zone.Value.spawnChance < 5f) return;
 
-            float strengthModifier = UnityEngine.Random.Range(0.65f, 1.2f);
-
             string zoneName = zone.Key;
             Vector3 position = zone.Value.position;
             Vector3 rotation = zone.Value.rotation;
@@ -44,6 +42,12 @@ namespace RealismMod
 
             GameObject hazardZone = new GameObject(zoneName);
             T hazard = hazardZone.AddComponent<T>();
+
+            float strengthModifier = 1f;
+            if (hazard.ZoneType == EZoneType.Toxic)
+            { 
+               strengthModifier = Plugin.ZoneDebug.Value ? 1f : UnityEngine.Random.Range(0.65f, 1.2f); 
+            } 
             hazard.ZoneStrengthModifier = zone.Value.strength * strengthModifier;
 
             hazardZone.transform.position = position;
@@ -148,7 +152,7 @@ namespace RealismMod
             /*GameWorldController.CreateDebugZone();*/
 
             Plugin.CurrentProfileId = Utils.GetYourPlayer().ProfileId;
-            if (Plugin.ServerConfig.med_changes) 
+            if (Plugin.ServerConfig.enable_hazard_zones) 
             {
                 GameWorldController.CreateZones(Singleton<GameWorld>.Instance.MainPlayer.Location);
                 HazardTracker.GetHazardValues(Plugin.CurrentProfileId);
@@ -169,7 +173,7 @@ namespace RealismMod
         [PatchPrefix]
         private static void PatchPrefix(GameWorld __instance)
         {
-            if (Plugin.ServerConfig.med_changes) 
+            if (Plugin.ServerConfig.enable_hazard_zones) 
             {
                 HazardTracker.ResetTracker();
                 HazardTracker.UpdateHazardValues(Plugin.CurrentProfileId);

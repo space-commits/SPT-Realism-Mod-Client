@@ -13,6 +13,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using static RealismMod.Attributes;
 using static RealismMod.GameWorldController;
+using static UnityEngine.UI.Image;
 
 namespace RealismMod
 {
@@ -29,6 +30,7 @@ namespace RealismMod
         public bool reload_changes { get; set; }
         public bool manual_chambering { get; set; }
         public bool food_changes { get; set; }
+        public bool enable_hazard_zones { get; set; }   
     }
 
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.pluginVersion)]
@@ -145,6 +147,9 @@ namespace RealismMod
         public static ConfigEntry<bool> EnableAmmoStats { get; set; }
         public static ConfigEntry<float> RagdollForceModifier { get; set; }
         public static ConfigEntry<bool> EnableRagdollFix { get; set; }
+
+        //hazard zones
+        public static ConfigEntry<float> DeviceVolume { get; set; }
 
         //medical
         public static ConfigEntry<bool> ResourceRateChanges { get; set; }
@@ -445,10 +450,10 @@ namespace RealismMod
 
         private async void LoadTexture(string path)
         {
-            LoadedTextures[Path.GetFileName(path)] = await RequestResource<Texture>(path);
+            LoadedTextures[Path.GetFileName(path)] = await RequestResource<Texture>(path, true);
         }
 
-        private async Task<T> RequestResource<T>(string path) where T : class
+        private async Task<T> RequestResource<T>(string path, bool isMask = false) where T : class
         {
             UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(path);
             UnityWebRequestAsyncOperation sendWeb = uwr.SendWebRequest();
@@ -467,6 +472,19 @@ namespace RealismMod
 
                 if (typeof(T) == typeof(Texture))
                 {
+                    if (isMask) 
+                    {
+                        Texture2D flipped = new Texture2D(texture.width, texture.height);
+                        for (int y = 0; y < texture.height; y++)
+                        {
+                            for (int x = 0; x < texture.width; x++)
+                            {
+                                flipped.SetPixel(x, texture.height - y - 1, texture.GetPixel(x, y));
+                            }
+                        }
+                        flipped.Apply();
+                        texture = flipped;
+                    }
                     return texture as T;
                 }
                 else if (typeof(T) == typeof(Sprite))
@@ -907,6 +925,7 @@ namespace RealismMod
             string statSettings = ".5. Stat Display Settings.";
             string waponSettings = ".6. Weapon Settings.";
             string healthSettings = ".7. Health and Meds Settings.";
+            string zoneSettings = ".8. Hazard Zone Settings.";
             string moveSettings = ".8. Movement Settings.";
             string deafSettings = ".9. Deafening and Audio.";
             string speed = "10. Weapon Speed Modifiers.";
@@ -976,9 +995,11 @@ namespace RealismMod
             EnableMaterialSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Material Speed Modifier", ServerConfig.movement_changes, new ConfigDescription("Enables Movement Speed Being Affected By Ground Material (Concrete, Grass, Metal, Glass Etc.)", null, new ConfigurationManagerAttributes { Order = 20, Browsable = ServerConfig.movement_changes }));
             EnableSlopeSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Slope Speed Modifier", false, new ConfigDescription("Enables Slopes Slowing Down Movement. Can Cause Random Speed Slowdowns In Some Small Spots Due To BSG's Bad Map Geometry.", null, new ConfigurationManagerAttributes { Order = 10, Browsable = ServerConfig.movement_changes }));
 
+            DeviceVolume = Config.Bind<float>(zoneSettings, "Device Volume", 1f, new ConfigDescription("Volume Modifier For Geiger And Gas Analyser.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1, Browsable = ServerConfig.med_changes }));
+
             ResourceRateChanges = Config.Bind<bool>(healthSettings, "Enable Hydration/Energy Loss Rate Changes", ServerConfig.med_changes, new ConfigDescription("Enables Changes To How Hydration And Energy Loss Rates Are Calculated. They Are Increased By Injuries, Drug Use, Sprinting And Weight.", null, new ConfigurationManagerAttributes { Order = 120, Browsable = ServerConfig.med_changes }));
-            HydrationRateMulti = Config.Bind<float>(healthSettings, "Hydration Drain Rate Multi.", 0.6f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 110, Browsable = ServerConfig.med_changes }));
-            EnergyRateMulti = Config.Bind<float>(healthSettings, "Energy Drain Rate Multi.", 0.38f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 100, Browsable = ServerConfig.med_changes }));
+            HydrationRateMulti = Config.Bind<float>(healthSettings, "Hydration Drain Rate Multi.", 0.5f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 110, Browsable = ServerConfig.med_changes }));
+            EnergyRateMulti = Config.Bind<float>(healthSettings, "Energy Drain Rate Multi.", 0.3f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 100, Browsable = ServerConfig.med_changes }));
             EnableTrnqtEffect = Config.Bind<bool>(healthSettings, "Enable Tourniquet Effect", ServerConfig.med_changes, new ConfigDescription("Tourniquet Will Drain HP Of The Limb They Are Applied To.", null, new ConfigurationManagerAttributes { Order = 90, Browsable = ServerConfig.med_changes }));
             GearBlocksEat = Config.Bind<bool>(healthSettings, "Gear Blocks Consumption", ServerConfig.med_changes, new ConfigDescription("Gear Blocks Eating & Drinking. This Includes Some Masks & NVGs & Faceshields That Are Toggled On.", null, new ConfigurationManagerAttributes { Order = 80, Browsable = ServerConfig.med_changes }));
             GearBlocksHeal = Config.Bind<bool>(healthSettings, "Gear Blocks Healing", false, new ConfigDescription("Gear Blocks Use Of Meds If The Wound Is Covered By It.", null, new ConfigurationManagerAttributes { Order = 70, Browsable = ServerConfig.med_changes }));

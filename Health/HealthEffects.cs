@@ -293,7 +293,7 @@ namespace RealismMod
             _Player = player;
             Delay = delay;
             EffectType = EHealthEffectType.ResourceRate;
-            BodyPart = EBodyPart.Stomach;
+            BodyPart = EBodyPart.Chest;
             RealHealthController = realHealthController;
         }
 
@@ -544,11 +544,11 @@ namespace RealismMod
                 case < 80f:
                     return 0f;
                 case <= 90f:
-                    return -0.15f;
+                    return -0.05f;
                 case < 100f:
-                    return -0.25f;
+                    return -0.1f;
                 case >= 100f:
-                    return -0.5f;
+                    return -0.15f;
                 default:
                     return 0f;
             }
@@ -568,7 +568,6 @@ namespace RealismMod
                         baseDrainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
                         _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 2f, baseDrainRate, null);
                     }
-
                 }
                 if (TimeExisted % 5 == 0 && HazardTracker.TotalRadiation > 90f)
                 {

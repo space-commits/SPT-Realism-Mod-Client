@@ -23,10 +23,37 @@ namespace RealismMod
     public class PlayerHazardBridge : MonoBehaviour
     {
         public Player _Player { get; set; }
-        public bool IsInGasZone { get; set; } = false;
-        public bool IsInRadZone { get; set; } = false;
-        public float GasAmount { get; set; } = 0f;
-        public float RadAmount { get; set; } = 0f;
+        public int GasZoneCount { get; set; } = 0;
+        public int RadZoneCount { get; set; } = 0;
+        public Dictionary<string, float> GasAmounts = new Dictionary<string, float>();
+        public Dictionary<string, float> RadAmounts = new Dictionary<string, float>();
+
+        public float TotalGasAmount
+        {
+            get
+            {
+                float totalGas = 0f;
+                foreach (var gas in GasAmounts)
+                {
+                    totalGas += gas.Value;
+                }
+                return totalGas;
+            }
+        }
+
+        public float TotalRadAmount 
+        { 
+            get 
+            {
+                float totalRads = 0f;
+                foreach (var rad in RadAmounts) 
+                {
+                    totalRads += rad.Value;   
+                }
+                return totalRads;
+            }
+        }
+
         private float _bridgeTimer = 0f;
         private const float Interval = 6f;
 
@@ -36,16 +63,16 @@ namespace RealismMod
             if (_bridgeTimer >= Interval)
             {
                 //temporary solution to dealing with bots
-                if (IsInGasZone && _Player != null && _Player?.ActiveHealthController != null && _Player?.AIData?.BotOwner != null && !_Player.AIData.BotOwner.IsDead)
+                if (GasZoneCount > 0 && _Player != null && _Player?.ActiveHealthController != null && _Player?.AIData?.BotOwner != null && !_Player.AIData.BotOwner.IsDead)
                 {
                     bool hasMask = false;
                     float gasProtection = 0f;
                     float radProtection = 0f;
                     GearController.CheckFaceCoverGear(_Player, ref hasMask, ref gasProtection, ref radProtection);
-                    if (gasProtection <= 0f && GasAmount > 0.05f) 
+                    if (gasProtection <= 0f && TotalGasAmount > 0.05f) 
                     {
                         gasProtection = 1f - gasProtection;
-                        _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, GasAmount * gasProtection * Interval, ExistanceClass.PoisonDamage);
+                        _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, TotalGasAmount * gasProtection * Interval, ExistanceClass.PoisonDamage);
                         _Player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
                     }
                 }
@@ -88,7 +115,8 @@ namespace RealismMod
                     hazardBridge = player.gameObject.AddComponent<PlayerHazardBridge>();
                     hazardBridge._Player = player;
                 }
-                hazardBridge.IsInGasZone = true;
+                hazardBridge.GasZoneCount++;
+                hazardBridge.GasAmounts.Add(this.name, 0f);
                 _containedPlayers.Add(player, hazardBridge);
             }
         }
@@ -98,8 +126,8 @@ namespace RealismMod
             if (player != null)
             {
                 PlayerHazardBridge hazardBridge = _containedPlayers[player];
-                hazardBridge.GasAmount = 0f;
-                hazardBridge.IsInGasZone = false;
+                hazardBridge.GasZoneCount--;
+                hazardBridge.GasAmounts.Remove(this.name);
                 _containedPlayers.Remove(player);
             }
         }
@@ -116,7 +144,7 @@ namespace RealismMod
                     Player player = p.Key;
                     PlayerHazardBridge hazardBridge = p.Value;
                     float gasAmount = CalculateGasStrength(player.gameObject.transform.position);
-                    hazardBridge.GasAmount = gasAmount <= 0f ? 0f : gasAmount;
+                    hazardBridge.GasAmounts[this.name] = Mathf.Max(gasAmount, 0f);
                 }
             }
 
@@ -136,7 +164,7 @@ namespace RealismMod
             float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
             float invertedDistance = _maxDistance - distance;  // invert the distance
             invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance); //clamp the inverted distance
-            return (invertedDistance / ZoneStrengthModifier) * (Plugin.ZoneDebug.Value ? Plugin.test10.Value : 1f);
+            return invertedDistance / (ZoneStrengthModifier * (Plugin.ZoneDebug.Value ? Plugin.test10.Value : 1f));
         }
     }
 
@@ -171,7 +199,8 @@ namespace RealismMod
                     hazardBridge = player.gameObject.AddComponent<PlayerHazardBridge>();
                     hazardBridge._Player = player;
                 }
-                hazardBridge.IsInRadZone = true;
+                hazardBridge.RadZoneCount++;
+                hazardBridge.RadAmounts.Add(this.name, 0f);
                 _containedPlayers.Add(player, hazardBridge);
             }
         }
@@ -181,8 +210,8 @@ namespace RealismMod
             if (player != null)
             {
                 PlayerHazardBridge hazardBridge = _containedPlayers[player];
-                hazardBridge.RadAmount = 0f;
-                hazardBridge.IsInRadZone = false;
+                hazardBridge.RadZoneCount--;
+                hazardBridge.RadAmounts.Remove(this.name);
                 _containedPlayers.Remove(player);
             }
         }
@@ -198,18 +227,18 @@ namespace RealismMod
                 {
                     Player player = p.Key;
                     PlayerHazardBridge hazardBridge = p.Value;
-                    float radAmount = CalculateGasStrength(player.gameObject.transform.position);
-                    hazardBridge.RadAmount = radAmount <= 0f ? 0f : radAmount;
+                    float radAmount = CalculateRadStrength(player.gameObject.transform.position);
+                    hazardBridge.RadAmounts[this.name] = Mathf.Max(radAmount, 0f);
                 }
             }
         }
 
-        float CalculateGasStrength(Vector3 playerPosition)
+        float CalculateRadStrength(Vector3 playerPosition)
         {
             float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
             float invertedDistance = _maxDistance - distance;  // invert the distance
             invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance); //clamp the inverted distance
-            return (invertedDistance / ZoneStrengthModifier) * (Plugin.ZoneDebug.Value ? Plugin.test10.Value : 1f);
+            return invertedDistance / (ZoneStrengthModifier * (Plugin.ZoneDebug.Value ? Plugin.test10.Value : 1f));
         }
     }
 }
