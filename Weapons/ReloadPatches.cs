@@ -366,6 +366,7 @@ namespace RealismMod
         private static void PatchPostfix(EFT.Player.FirearmController __instance)
         {
             Player player = (Player)playerField.GetValue(__instance);
+            if (player == null) return;
             if (player.IsYourPlayer)
             {
                 if (Plugin.ServerConfig.reload_changes)
@@ -387,8 +388,8 @@ namespace RealismMod
                     float totalCheckChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerState.FixSkillMulti * PlayerState.ReloadInjuryMulti * 
                         PlayerState.RemainingArmStamPercReload * Plugin.RealHealthController.AdrenalineReloadBonus,
                         0.55f, 1.8f);
-                    __instance.FirearmsAnimator.SetAnimationSpeed(totalCheckChamberSpeed);
 
+                    __instance.FirearmsAnimator.SetAnimationSpeed(totalCheckChamberSpeed);
                     player.ExecuteSkill(new Action(() => player.Skills.WeaponFixAction.Complete(1f)));
 
                     if (Plugin.EnableLogging.Value == true)

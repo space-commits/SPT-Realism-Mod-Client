@@ -6,14 +6,34 @@ using static GripPose;
 using UnityEngine.UI;
 using ArmorTemplate = GClass2536; //to find again, search for HasHinge field
 using System.Linq;
+using UnityEngine;
 
 namespace RealismMod
 {
     public static class GearController
     {
         public static bool HasGasMask { get; private set; } = false;
-        public static float CurrentGasProtection { get; private set; } = 0f;
-        public static float CurrentRadProtection { get; private set; } = 0f;
+
+        private static float _currentGasProtection;
+        private static float _currentRadProtection;
+
+        public static float CurrentGasProtection
+        {
+            get
+            {
+                return _currentGasProtection * GasMaskDurabilityFactor;
+            }
+        }
+
+        public static float CurrentRadProtection 
+        {
+            get 
+            {
+                return _currentRadProtection * GasMaskDurabilityFactor;
+            }
+        } 
+
+        public static float GasMaskDurabilityFactor { get; set; } = 1f;
         private static bool _hadGasMask = true;
 
         private static void HandleGasMaskEffects(Player player, bool hasGasMask, float gasProtection, float radProtection) 
@@ -21,8 +41,8 @@ namespace RealismMod
             if (hasGasMask)
             {
                 HasGasMask = true;
-                CurrentGasProtection = gasProtection;
-                CurrentRadProtection = radProtection;
+                _currentGasProtection = gasProtection;
+                _currentRadProtection = radProtection;
                 _hadGasMask = true;
 /*                player.Say(EPhraseTrigger.OnBeingHurt, true, 0f, (ETagStatus)0, 100, false); //force to reset audio*/
                 player.SpeechSource.SetLowPassFilterParameters(1f, ESoundOcclusionType.Obstruction, 1600, 5000, true);
@@ -31,8 +51,8 @@ namespace RealismMod
             else
             {
                 HasGasMask = false;
-                CurrentGasProtection = 0f;
-                CurrentRadProtection = 0f;
+                _currentGasProtection = 0f;
+                _currentRadProtection = 0f;
                 player.SpeechSource.ResetFilters();
             }
 
@@ -47,7 +67,7 @@ namespace RealismMod
             }
         }
 
-        private static void deviceCheckerHelper(IEnumerable<Item> items) 
+        private static void DeviceCheckerHelper(IEnumerable<Item> items) 
         {
             foreach (var item in items)
             {
@@ -69,9 +89,9 @@ namespace RealismMod
             IEnumerable<Item> pocketItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.Pockets }) ?? Enumerable.Empty<Item>();
             DeviceController.HasGasAnalyser = false;
             DeviceController.HasGeiger = false;
-            deviceCheckerHelper(vestItems);
-            deviceCheckerHelper(armbandItems);
-            deviceCheckerHelper(pocketItems);
+            DeviceCheckerHelper(vestItems);
+            DeviceCheckerHelper(armbandItems);
+            DeviceCheckerHelper(pocketItems);
         }
 
         public static float GetModifiedInventoryWeight(Inventory invClass)
@@ -112,24 +132,33 @@ namespace RealismMod
         private static EquipmentPenaltyComponent GetRigGearPenalty(Player player)
         {
             Item containedItem = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
-            if (containedItem == null)
-            {
-                return null;
-            }
+            if (containedItem == null) return null;
             return containedItem.GetItemComponent<EquipmentPenaltyComponent>();
+        }
+
+        public static void SetGasMaskDurability(Player player)
+        {
+            ArmorComponent gasmask = player?.Inventory?.Equipment?.GetSlot(EquipmentSlot.FaceCover)?.ContainedItem?.GetItemComponent<ArmorComponent>();
+            if (gasmask == null)
+            {
+                GasMaskDurabilityFactor = 1;
+                return;
+            }
+            float perc = gasmask.Repairable.Durability / gasmask.Repairable.MaxDurability;
+            GasMaskDurabilityFactor = perc <= 0.5f ? 0 : perc;
         }
 
         public static EquipmentPenaltyComponent CheckFaceCoverGear(Player player, ref bool isGasMask, ref float gasProtection, ref float radProtection)
         {
             Item containedItem = player.Inventory.Equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
-
-            if (containedItem == null)
-            {
-                return null;
-            }
+            if (containedItem == null) return null;
             isGasMask = GearStats.IsGasMask(containedItem);
             gasProtection = GearStats.GasProtection(containedItem);
             radProtection = GearStats.RadProtection(containedItem);
+            if (isGasMask) 
+            {
+                SetGasMaskDurability(player);
+            }
 
             return containedItem.GetItemComponent<EquipmentPenaltyComponent>();
         }

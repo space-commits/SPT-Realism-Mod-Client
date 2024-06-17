@@ -57,11 +57,11 @@ namespace RealismMod
             {
                 return "Dying";
             }
-            if (HazardTracker.TotalToxicity >= 65f || PlayerState.StaminaPerc <= 0.45 || HazardTracker.TotalRadiationRate >= 70f)
+            if (HazardTracker.TotalToxicity >= 65f || PlayerState.StaminaPerc <= 0.55 || HazardTracker.TotalRadiationRate >= 70f)
             {
                 return "BadlyInjured";
             }
-            if (HazardTracker.TotalToxicity >= 50f || PlayerState.StaminaPerc <= 0.8f || HazardTracker.TotalRadiationRate >= 50f)
+            if (HazardTracker.TotalToxicity >= 50f || PlayerState.StaminaPerc <= 0.9f || HazardTracker.TotalRadiationRate >= 50f)
             {
                 return "Injured";
             }

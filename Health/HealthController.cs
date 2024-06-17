@@ -1728,7 +1728,6 @@ namespace RealismMod
                     Type effectType = effect.Type;
                     EBodyPart effectPart = effect.BodyPart;
 
-
                     IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(effectPart);
                     bool hasHeavyBleed = heavyBleedType != null && effects.Any(e => e.Type == heavyBleedType);
                     bool hasLightBleed = lightBleedType != null && effects.Any(e => e.Type == lightBleedType);
@@ -1949,6 +1948,11 @@ namespace RealismMod
             if (PlayerHazardBridge == null)
             {
                 PlayerHazardBridge = player.gameObject.GetComponent<PlayerHazardBridge>();
+            }
+
+            if ((PlayerHazardBridge.GasZoneCount > 0 || PlayerHazardBridge.RadZoneCount > 0) && GearController.HasGasMask) 
+            {
+                GearController.SetGasMaskDurability(player);
             }
 
             GasZoneTick(player);

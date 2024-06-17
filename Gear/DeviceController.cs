@@ -14,7 +14,7 @@ namespace RealismMod
         private const float GasDelay = 5f;
         private const float RadDelay = 4f;
         private const float GasDeviceVolume = 0.15f;
-        private const float GeigerDeviceVolume = 0.4f;
+        private const float GeigerDeviceVolume = 0.15f;
 
         private static float _currentGasClipLength = 0f;
         private static float _gasDeviceTimer = 0f;
@@ -80,19 +80,19 @@ namespace RealismMod
             {
                 case <= 0f:
                     return null;
-                case <= 0.1f:
+                case <= 0.05f:
                     return "gasBeep1.wav";
-                case <= 0.15f:
+                case <= 0.1f:
                     return "gasBeep2.wav";
-                case <= 0.2f:
+                case <= 0.15f:
                     return "gasBeep3.wav";
-                case <= 0.35f:
+                case <= 0.2f:
                     return "gasBeep4.wav";
-                case <= 0.4f:
+                case <= 0.25f:
                     return "gasBeep5.wav";
-                case <= 0.6f:
+                case <= 0.35f:
                     return "gasBeep6.wav";
-                case > 0.6f:
+                case > 0.35f:
                     return "gasBeep7.wav";
                 default: 
                     return null;
@@ -105,14 +105,20 @@ namespace RealismMod
             {
                 case <= 0f:
                     return null;
+                case <= 0.025f:
+                    return new string[] { "geiger1.wav", "geiger1_1.wav", "geiger1_2.wav", "geiger1_3.wav"};
                 case <= 0.05f:
-                    return new string[] { "geiger1.wav", "geiger1_1.wav", "geiger1_2.wav", "geiger1_3.wav", "geiger1_4.wav", "geiger1_5.wav", "geiger1_6.wav" };
+                    return new string[] { "geiger2.wav", "geiger2_1.wav", "geiger2_2.wav", "geiger2_3.wav"};
+                case <= 0.075f:
+                    return new string[] { "geiger3.wav", "geiger3_1.wav", "geiger3_2.wav", "geiger3_3.wav" };
                 case <= 0.1f:
-                    return new string[] { "geiger1.wav", "geiger1_1.wav", "geiger1_2.wav", "geiger1_3.wav", "geiger1_4.wav", "geiger1_5.wav", "geiger1_6.wav", "geiger2.wav", "geiger2_1.wav", "geiger2_2.wav", "geiger2_3.wav", "geiger2_4.wav", "geiger2_5.wav", "geiger2_6.wav", };
+                    return new string[] { "geiger4.wav", "geiger4_1.wav", "geiger4_2.wav", "geiger4_3.wav" };
                 case <= 0.15f:
-                    return new string[] { "geiger2.wav", "geiger2_1.wav", "geiger2_2.wav", "geiger2_3.wav", "geiger2_4.wav", "geiger2_5.wav", "geiger2_6.wav" };
-                case > 0.15f:
-                    return new string[] { "geiger3.wav", "geiger3_1.wav", "geiger3_2.wav", "geiger3_3.wav", "geiger3_4.wav", "geiger3_5.wav", "geiger3_6.wav"};
+                    return new string[] { "geiger5.wav", "geiger5_1.wav", "geiger5_2.wav", "geiger5_3.wav" };
+                case <= 0.2f:
+                    return new string[] { "geiger6.wav", "geiger6_1.wav", "geiger6_2.wav", "geiger6_3.wav" };
+                case > 0.2f:
+                    return new string[] { "geiger7.wav", "geiger7_1.wav", "geiger7_2.wav", "geiger7_3.wav" };
                 default:
                     return null;
             }
@@ -132,9 +138,6 @@ namespace RealismMod
             string[] clips = GetGeigerClip(bridge.TotalRadAmount);
             if (clips == null) return;
             int rndNumber = UnityEngine.Random.Range(0, clips.Length);
-            Utils.Logger.LogWarning("rndNumber " + rndNumber);
-            Utils.Logger.LogWarning("clips.Length " + clips.Length);
-            Utils.Logger.LogWarning("clip " + clips[rndNumber]);
             string clip = clips[rndNumber];
             AudioClip audioClip = Plugin.DeviceAudioClips[clip];
             _currentGeigerClipLength = audioClip.length;
