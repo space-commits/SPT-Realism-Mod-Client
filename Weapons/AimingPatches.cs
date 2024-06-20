@@ -29,8 +29,8 @@ namespace RealismMod
                 bool gearBlocksADS = !WeaponStats.WeaponCanFSADS && !PlayerState.GearAllowsADS;
                 bool fsBlocksADS = Plugin.EnableFSPatch.Value && ((fsIsON && gearBlocksADS) || (gearBlocksADS && (fsComponent == null || fsComponent?.Togglable == null)));
                 bool toobBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && player.ProceduralWeaponAnimation.CurrentScope.IsOptic) || thermalIsOn);
-                PlayerState.FSIsActive = fsIsON;
-                PlayerState.NVGIsActive = nvgIsOn || thermalIsOn;
+                GearController.FSIsActive = fsIsON;
+                GearController.NVGIsActive = nvgIsOn || thermalIsOn;
 
                 if (HeadDeviceStateChanged) 
                 {

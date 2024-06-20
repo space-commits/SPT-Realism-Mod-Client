@@ -149,7 +149,7 @@ namespace RealismMod
             if (StanceController.IsIdle() && WeaponStats._WeapClass.ToLower() != "pistol")
             {
                 StanceController.CanResetDamping = false;
-                float headGearFactor = PlayerState.FSIsActive || PlayerState.NVGIsActive ? 1.35f : 1f;
+                float headGearFactor = GearController.FSIsActive || GearController.NVGIsActive || GearController.HasGasMask ? 1.35f : 1f;
                 float baseLine = 6.5f * factor * headGearFactor;
                 float rndX = UnityEngine.Random.Range(baseLine * 0.9f, baseLine);
                 float rndY = UnityEngine.Random.Range(baseLine * 0.9f, baseLine);

@@ -73,14 +73,27 @@ namespace RealismMod
 
             if (_tick >= 0.25f) 
             {
-                _tick = 0f;
+                var playersToRemove = new List<Player>();
+
                 foreach (var p in _containedPlayers)
                 {
                     Player player = p.Key;
                     PlayerHazardBridge hazardBridge = p.Value;
+                    if (player == null || hazardBridge == null)
+                    {
+                        playersToRemove.Add(player);
+                        return;
+                    }
                     float gasAmount = CalculateGasStrength(player.gameObject.transform.position);
                     hazardBridge.GasAmounts[this.name] = Mathf.Max(gasAmount, 0f);
                 }
+
+                foreach (var p in playersToRemove)
+                {
+                    _containedPlayers.Remove(p);
+                }
+
+                _tick = 0f;
             }
         }
 
@@ -147,14 +160,26 @@ namespace RealismMod
 
             if (_tick >= 0.25f)
             {
+                var playersToRemove = new List<Player>();
+
                 foreach (var p in _containedPlayers)
                 {
                     Player player = p.Key;
                     PlayerHazardBridge hazardBridge = p.Value;
-                    if (player == null || hazardBridge == null) return; //to do: find way to remove null entries
+                    if (player == null || hazardBridge == null)
+                    {
+                        playersToRemove.Add(player);
+                        return; 
+                    }  
                     float radAmount = CalculateRadStrength(player.gameObject.transform.position);
                     hazardBridge.RadAmounts[this.name] = Mathf.Max(radAmount, 0f);
                 }
+
+                foreach (var p in playersToRemove) 
+                {
+                    _containedPlayers.Remove(p);
+                }
+
                 _tick = 0f;
             }
         }

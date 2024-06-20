@@ -135,7 +135,7 @@ namespace RealismMod
         private static float tacSprintTime = 0.0f;
         private static bool canDoTacSprintTimer = false;
 
-        private static float getRestoreRate()
+        private static float GetRestoreRate()
         {
             float baseRestoreRate = 0f;
             if (CurrentStance == EStance.PatrolStance || IsMounting)
@@ -166,7 +166,7 @@ namespace RealismMod
             return (1f - ((WeaponStats.ErgoFactor * formfactor) / 100f)) * baseRestoreRate * PlayerState.ADSInjuryMulti;
         }
 
-        private static float getDrainRate(Player player)
+        private static float GetDrainRate(Player player)
         {
             float baseDrainRate = 0f;
             if (player.Physical.HoldingBreath)
@@ -226,12 +226,12 @@ namespace RealismMod
             //drain
             if (doDrain)
             {
-                player.Physical.HandsStamina.Multiplier = getDrainRate(player);
+                player.Physical.HandsStamina.Multiplier = GetDrainRate(player);
             }
             //regen
             else if (doRegen)
             {
-                player.Physical.HandsStamina.Multiplier = getRestoreRate();
+                player.Physical.HandsStamina.Multiplier = GetRestoreRate();
             }
             //no drain or regen
             else if (doNeutral)

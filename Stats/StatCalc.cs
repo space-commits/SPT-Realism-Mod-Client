@@ -110,7 +110,7 @@ namespace RealismMod
             WeaponSkillsClass skillsClass = (WeaponSkillsClass)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_buffInfo").GetValue(pwa);
             Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayBlender").GetValue(pwa);
 
-            float headGearFactor = PlayerState.FSIsActive || PlayerState.NVGIsActive || GearController.HasGasMask ? 1.45f : 1f;
+            float headGearFactor = GearController.FSIsActive || GearController.NVGIsActive || GearController.HasGasMask ? 1.45f : 1f;
             float ergoWeightFactor = weapon.GetSingleItemTotalWeight() * (1f - WeaponStats.PureErgoDelta) * headGearFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + ((1f - PlayerState.GearErgoPenalty) * 1.5f));
 
             float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo * PlayerState.GearErgoPenalty) * 1.15f;

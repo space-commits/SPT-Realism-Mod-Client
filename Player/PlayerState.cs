@@ -114,9 +114,6 @@ namespace RealismMod
         public static float GearErgoPenalty = 1f;
         public static float GearSpeedPenalty = 1f;
 
-        public static bool FSIsActive = false;
-        public static bool NVGIsActive = false;
-
         public static bool BlockFSWhileConsooming = false;
 
         public static bool IsInLastStand = false;

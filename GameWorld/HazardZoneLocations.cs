@@ -16,6 +16,7 @@ namespace RealismMod
             { "FactoryVitamins", (1f, 10f, new Vector3(24.7f, 8.3f, 38.4f), new Vector3(0f, -2.5f, 0f), new Vector3(4.5f, 2f, 4f)) },
             { "FactoryPumpRoom", (1f, 10f, new Vector3(40f, 0.1f, -11.5f), new Vector3(0f, 0f, 0f), new Vector3(5.5f, 2f, 9.5f)) },
             { "FactoryCrashRoom", (0.05f, 5f, new Vector3(7f, -0.5f, -19f), new Vector3(0f, 0f, 0f), new Vector3(60f, 5.5f, 35.5f)) },
+            { "FactoryMechanicTunnel", (0.15f, 5f, new Vector3(-16.5f, -2.5f, 34f), new Vector3(0f, 0f, 0f), new Vector3(60f, 3f, 22f)) },
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> CustomsGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
@@ -117,9 +118,11 @@ namespace RealismMod
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> ReserveGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
             { "ReserveStorage", (0.15f, 500f, new Vector3(50f, -13.5f, -110f), new Vector3(0f, 0f, 0f), new Vector3(90f, 6f, 190f)) },
-            { "ReserveShaft", (0.75f, 50f, new Vector3(-58.9f, -15.9f, 179.9f), new Vector3(0f, 0f, 0f), new Vector3(14f, 55f, 16f)) },
-            { "ReserveD2Rat", (0.75f, 50f, new Vector3(-63f, -18.6f, 139f), new Vector3(0f, 30f, 0f), new Vector3(40f, 15f, 14f)) },
-            { "ReserveD2Tank", (0.75f, 50f, new Vector3(-78.5f, -19.8f, 113f), new Vector3(0f, 30f, 0f), new Vector3(55f, 10f, 15f)) },
+            { "ReserveShaft", (1f, 50f, new Vector3(-58.9f, -15.9f, 179.9f), new Vector3(0f, 0f, 0f), new Vector3(14f, 55f, 16f)) },
+            { "ReserveD2Rat", (1f, 40f, new Vector3(-63f, -18.6f, 139f), new Vector3(0f, 30f, 0f), new Vector3(45f, 15f, 14f)) },
+            { "ReserveD2Tank", (1f, 45f, new Vector3(-78.5f, -19.8f, 113f), new Vector3(0f, 30f, 0f), new Vector3(55f, 10f, 15f)) },
+            { "ReserveHallway1", (1f, 100f, new Vector3(-68.4f, -15f, 162f), new Vector3(0f, 30f, 0f), new Vector3(35f, 3f, 25f)) },
+            { "ReserveHallway2", (1f, 100f, new Vector3(-85.5f, -15f, 132f), new Vector3(0f, 30f, 0f), new Vector3(4f, 3f, 20f)) },
             { "ReserveBunker", (0.25f, 250f, new Vector3(-105f, -14.5f, 40f), new Vector3(0f, 15f, 0f), new Vector3(65f, 4.5f, 45f)) }
         }; 
 
@@ -197,7 +200,7 @@ namespace RealismMod
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> ReserveRadZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
-            { "ReserveD2Extract", (1f, 100f, new Vector3(-109f, -18.4f, 161f), new Vector3(0f, 0f, 0f), new Vector3(50f, 5f, 25f)) },
+            { "ReserveD2Extract", (1f, 100f, new Vector3(-109f, -18.4f, 161f), new Vector3(0f, 0f, 0f), new Vector3(53f, 5f, 27f)) },
             { "ReserveWater", (1f, 200f, new Vector3(-99f, -15f, 5.5f), new Vector3(0f, 15f, 0f), new Vector3(29.5f, 2f, 14.5f)) },
             { "ReserveHermetic", (1f, 100f, new Vector3(62f, -7f, -195f), new Vector3(0f, 15f, 0f), new Vector3(13f, 2f, 8f)) },
             { "ReserveMarkedTrain", (1f, 50f, new Vector3(191.5f, -7f, -226.3f), new Vector3(0f, 15f, 0f), new Vector3(4f, 3f, 4f)) }, 

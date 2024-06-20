@@ -815,7 +815,7 @@ namespace RealismMod
                 new SetMedsInHandsPatch().Enable();
                 new ProceedMedsPatch().Enable();
                 new RemoveEffectPatch().Enable();
-                new StamRegenRatePatch().Enable();
+                new StaminaRegenRatePatch().Enable();
                 new MedkitConstructorPatch().Enable();
                 new HealthEffectsConstructorPatch().Enable();
                 new HCApplyDamagePatch().Enable();

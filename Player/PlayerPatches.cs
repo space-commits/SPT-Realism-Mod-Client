@@ -246,7 +246,7 @@ namespace RealismMod
             }
         }
 
-        private static void resetSwayParams(ProceduralWeaponAnimation pwa, float mountingBonus)
+        private static void ResetSwayParams(ProceduralWeaponAnimation pwa, float mountingBonus)
         {
             float resetSwaySpeed = 0.035f;
             float resetSpeed = 0.4f;
@@ -287,7 +287,7 @@ namespace RealismMod
                 }
                 if (_doSwayReset)
                 {
-                    resetSwayParams(player.ProceduralWeaponAnimation, mountingBonus);
+                    ResetSwayParams(player.ProceduralWeaponAnimation, mountingBonus);
                 }
             }
 

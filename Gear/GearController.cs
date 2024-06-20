@@ -13,6 +13,9 @@ namespace RealismMod
     public static class GearController
     {
         public static bool HasGasMask { get; private set; } = false;
+        public static bool FSIsActive { get; set; } = false;
+        public static bool NVGIsActive { get; set; } = false;
+
 
         private static float _currentGasProtection;
         private static float _currentRadProtection;
