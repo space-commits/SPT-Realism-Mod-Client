@@ -946,6 +946,7 @@ namespace RealismMod
             int randomNum = UnityEngine.Random.Range(0, 512);
             float velocityFactored = ammo.InitialSpeed * speedFactor;
             float penChanceFactored = ammo.PenetrationChance * speedFactor;
+          /*  penChanceFactored = ammo.casingSounds.Contains("rifle") && ammo.PenetrationChance >= 52f ? Mathf.Max(penChanceFactored, 52f) : penChanceFactored; */ //some pistol ammo uses rifle case sounds....
             float damageFactored = ammo.Damage * speedFactor;
             float fragchanceFactored = Mathf.Max(ammo.FragmentationChance * speedFactor, 0);
             float penPowerFactored = EFT.Ballistics.BallisticsCalculator.GetAmmoPenetrationPower(ammo, randomNum, __instance.Randoms) * speedFactor;

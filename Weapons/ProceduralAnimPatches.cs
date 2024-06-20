@@ -191,12 +191,11 @@ namespace RealismMod
                     __instance.Overweight = 0;
                     __instance.CrankRecoil = !Plugin.EnableCrank.Value || (!WeaponStats.HasShoulderContact && WeaponStats._WeapClass != "pistol") ? false : true;
 
-                    float accuracy = weapon.GetTotalCenterOfImpact(false);
-                    float3Field.SetValue(firearmController, accuracy); //update accuracy value
-
                     Mod currentAimingMod = (__instance.CurrentAimingMod != null) ? __instance.CurrentAimingMod.Item as Mod : null;
                     WeaponStats.IsOptic = __instance.CurrentScope.IsOptic;
                     StatCalc.CalcSightAccuracy(currentAimingMod);
+                    float accuracy = weapon.GetTotalCenterOfImpact(false);
+                    float3Field.SetValue(firearmController, accuracy); //update accuracy value
 
                     float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
                     float playerWeightADSFactor = 1f - (totalPlayerWeight / 200f);

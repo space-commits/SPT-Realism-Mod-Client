@@ -216,7 +216,11 @@ namespace RealismMod
             float totalChamberCheckSpeed = 0;
             float totalFixSpeed = 0;
 
-            StatCalc.SpeedStatCalc(__instance, ergoFactor, ergoFactorLessMag, totalChamberSpeedMod, totalReloadSpeedMod, ref totalReloadSpeedLessMag, ref totalChamberSpeed, ref totalAimMoveSpeedFactor, ref totalFiringChamberSpeed, ref totalChamberCheckSpeed, ref totalFixSpeed);
+            StatCalc.SpeedStatCalc(
+                __instance, ergoFactor, ergoFactorLessMag, totalChamberSpeedMod, 
+                totalReloadSpeedMod, ref totalReloadSpeedLessMag, ref totalChamberSpeed, 
+                ref totalAimMoveSpeedFactor, ref totalFiringChamberSpeed, ref totalChamberCheckSpeed,
+                ref totalFixSpeed);
           
             WeaponStats.TotalFixSpeed = totalFixSpeed;
             WeaponStats.TotalChamberCheckSpeed = totalChamberCheckSpeed;
@@ -394,8 +398,25 @@ namespace RealismMod
                         WeaponStats.BaseMeleePen = AttachmentProperties.ModMeleePen(mod);
                     }
 
-                    StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, ref modMalfChance, ref modDuraBurn, ref modConv);
-                    StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeedMod, modReload, ref currentReloadSpeedMod, modFix, ref currentFixSpeedMod, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeedMod, modChamber, false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, __instance.IsBeltMachineGun);
+                    StatCalc.ModConditionalStatCalc(
+                        __instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, 
+                        ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, 
+                        ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, 
+                        ref modAccuracy, ref modType, ref position, ref modChamber, 
+                        ref modLoudness, ref modMalfChance, ref modDuraBurn, ref modConv);
+
+                    StatCalc.ModStatCalc(
+                        mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, 
+                        ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, 
+                        ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle,
+                        ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, 
+                        ref currentAimSpeedMod, modReload, ref currentReloadSpeedMod, modFix, 
+                        ref currentFixSpeedMod, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, 
+                        modHRecoil, ref currentHRecoil, ref currentChamberSpeedMod, modChamber, 
+                        false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, 
+                        modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, 
+                        ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, __instance.IsBeltMachineGun);
+
                     if (AttachmentProperties.CanCylceSubs(mod))
                     {
                         canCycleSubs = true;
@@ -417,7 +438,7 @@ namespace RealismMod
 
             float totalLoudness = ((currentLoudness / 80) + 1f) * StatCalc.CaliberLoudnessFactor(caliber);
 
-            if (weapType == "bullpup")
+            if (weapType == "bullpup" || weapOpType == "p90")
             {
                 totalLoudness *= 1.18f;
                 WeaponStats.IsBullpup = true;
@@ -493,17 +514,18 @@ namespace RealismMod
                 bool isBracingTop = StanceController.BracingDirection == EBracingDirection.Top;
                 float mountingFactor = StanceController.IsMounting && isBracingTop ? 0.8f : StanceController.IsMounting && !isBracingTop ? 0.9f : StanceController.IsBracing && isBracingTop ? 0.95f : StanceController.IsBracing && !isBracingTop ? 0.975f : 1f;
                 float stockFactor = !WeaponStats.HasShoulderContact ? 2f : 1f;
-                float baseCOI = __instance.CenterOfImpactBase * (1f - __instance.CenterOfImpactDelta);
-                float totalCoi = baseCOI * (1f + WeaponStats.ScopeAccuracyFactor) * mountingFactor * stockFactor * (Plugin.IncreaseCOI.Value ? 2f : 1f);
+                float baseCOI = __instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta);
+                float totalCOI = baseCOI * (1f - WeaponStats.ScopeAccuracyFactor) * mountingFactor * stockFactor * (Plugin.IncreaseCOI.Value ? 2f : 1f);
 
                 if (!includeAmmo)
                 {
-                    __result = totalCoi;
+                    __result = totalCOI;
                     return false;
                 }
 
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
-                __result = totalCoi * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
+                __result = totalCOI * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
+
                 return false;
             }
             return true;

@@ -47,7 +47,8 @@ namespace RealismMod
 
         private bool BotHasGasMask() 
         {
-            Item containedItem = _Player.Inventory.Equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
+            if (_Player?.Inventory == null || _Player?.Equipment == null) return true;
+            Item containedItem = _Player.Inventory?.Equipment?.GetSlot(EquipmentSlot.FaceCover)?.ContainedItem;
             if (containedItem == null) return false;
             return GearStats.IsGasMask(containedItem);
         }

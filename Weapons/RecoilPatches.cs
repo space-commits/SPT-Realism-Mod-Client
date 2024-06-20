@@ -710,11 +710,11 @@ namespace RealismMod
                 }
 
                 //Calculate offest for zero shift
-                if (WeaponStats.ScopeAccuracyFactor < 1f)
+                if (WeaponStats.ScopeAccuracyFactor < 0f)
                 {
                     float gunFactor = ZeroShiftGunFactor(WeaponStats._WeapClass, firearmController.Weapon.TemplateId);
                     float shiftRecoilFactor = (RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil) * (1f + totalCamRecoil) * gunFactor;
-                    float scopeFactor = ((1f - WeaponStats.ScopeAccuracyFactor) * 10f) + (shiftRecoilFactor * 0.1f);
+                    float scopeFactor = ((1f - WeaponStats.ScopeAccuracyFactor) * 2f) + (shiftRecoilFactor * 0.1f) * 0.15f;
 
                     int rnd = UnityEngine.Random.Range(1, 21);
                     if (scopeFactor > rnd)

@@ -1933,8 +1933,8 @@ namespace RealismMod
                     float sprintMulti = PlayerState.IsSprinting ? 1.45f : 1f;
                     float sprintFactor = PlayerState.IsSprinting ? 0.1f : 0f;
                     float poisonSprintFactor = IsPoisoned ? Mathf.Max(1.5f * (1f - PlayerState.ImmuneSkillWeak), 1.1f) : 1f;
-                    float toxicityResourceFactor = (HazardTracker.TotalToxicity * (1f - PlayerState.ImmuneSkillWeak)) / 150f;
-                    float radiationResourceFactor = (HazardTracker.TotalRadiation * (1f - PlayerState.ImmuneSkillWeak)) / 190f;
+                    float toxicityResourceFactor = 1f + (HazardTracker.TotalToxicity * (1f - PlayerState.ImmuneSkillWeak)) / 150f;
+                    float radiationResourceFactor = 1f + (HazardTracker.TotalRadiation * (1f - PlayerState.ImmuneSkillWeak)) / 190f;
                     float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * toxicityResourceFactor * radiationResourceFactor * poisonSprintFactor * (1f - player.Skills.HealthEnergy.Value);
                     ResourcePerTick = totalResourceRate;
                 }
@@ -1949,6 +1949,8 @@ namespace RealismMod
             {
                 PlayerHazardBridge = player.gameObject.GetComponent<PlayerHazardBridge>();
             }
+
+            if (!player.HealthController.IsAlive) return; 
 
             if ((PlayerHazardBridge.GasZoneCount > 0 || PlayerHazardBridge.RadZoneCount > 0) && GearController.HasGasMask) 
             {

@@ -10,11 +10,11 @@ namespace RealismMod
         //Gas
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> FactoryGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
-            { "FactoryTent", (0.6f, 11f, new Vector3(-17.5f, 0.35f, -41.4f), new Vector3(0f, 0f, 0f), new Vector3(6.5f, 4f, 38f)) },
-            { "FactoryBasement", (0.15f, 35f, new Vector3(-6f, -3.6f, -20.5f), new Vector3(0f, 0f, 0f), new Vector3(25f, 3f, 36f)) },
-            { "FactoryTanks", (0.15f, 30f, new Vector3(7f, -2.5f, 17f), new Vector3(0f, 0f, 0f), new Vector3(35f, 3f, 12f)) },
+            { "FactoryTent", (0.8f, 11f, new Vector3(-17.5f, 0.35f, -41.4f), new Vector3(0f, 0f, 0f), new Vector3(6.5f, 4f, 38f)) },
+            { "FactoryBasement", (0.25f, 35f, new Vector3(-6f, -3.6f, -20.5f), new Vector3(0f, 0f, 0f), new Vector3(25f, 3f, 36f)) },
+            { "FactoryTanks", (0.25f, 30f, new Vector3(7f, -2.5f, 17f), new Vector3(0f, 0f, 0f), new Vector3(35f, 3f, 12f)) },
             { "FactoryVitamins", (1f, 10f, new Vector3(24.7f, 8.3f, 38.4f), new Vector3(0f, -2.5f, 0f), new Vector3(4.5f, 2f, 4f)) },
-            { "FactoryPumpRoom", (1f, 5f, new Vector3(40f, 0.1f, -11.5f), new Vector3(0f, 0f, 0f), new Vector3(5.5f, 2f, 9.5f)) },
+            { "FactoryPumpRoom", (1f, 10f, new Vector3(40f, 0.1f, -11.5f), new Vector3(0f, 0f, 0f), new Vector3(5.5f, 2f, 9.5f)) },
             { "FactoryCrashRoom", (0.05f, 5f, new Vector3(7f, -0.5f, -19f), new Vector3(0f, 0f, 0f), new Vector3(60f, 5.5f, 35.5f)) },
         };
 
@@ -126,9 +126,9 @@ namespace RealismMod
         //Radiation
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> FactoryRadZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
-            { "FactoryGate0", (1f, 19f, new Vector3(-60f, 1f, 56.5f), new Vector3(0f, 0f, 0f), new Vector3(13f, 4f, 10f)) },
-            { "FactoryBarrels", (1f, 6f, new Vector3(56.5f, -1f, -28f), new Vector3(0f, 0f, 0f), new Vector3(8f, 8f, 4f)) },
-            { "FactoryCellars", (1f, 25f, new Vector3(71f, -4f, -28.8f), new Vector3(0f, 0f, 0f), new Vector3(20f, 7f, 2.5f)) },
+            { "FactoryGate0", (1f, 20f, new Vector3(-60f, 1f, 56.5f), new Vector3(0f, 0f, 0f), new Vector3(13f, 4f, 10f)) },
+            { "FactoryBarrels", (1f, 10f, new Vector3(56.5f, -1f, -28f), new Vector3(0f, 0f, 0f), new Vector3(9f, 9f, 5f)) },
+            { "FactoryCellars", (1f, 27f, new Vector3(71f, -4f, -28.8f), new Vector3(0f, 0f, 0f), new Vector3(20f, 7f, 2.5f)) },
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> CustomsRadZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>

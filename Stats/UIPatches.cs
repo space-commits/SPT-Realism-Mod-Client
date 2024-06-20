@@ -637,14 +637,8 @@ namespace RealismMod
         private static bool Prefix(BarrelModClass __instance, ref float __result)
         {
             BarrelComponent itemComponent = __instance.GetItemComponent<BarrelComponent>();
-            if (itemComponent == null)
-            {
-                __result = 0f;
-            }
-            else
-            {
-                __result = (float)Math.Round((double)(100f * itemComponent.Template.CenterOfImpact / 2.9089f) * 2, 2);
-            }
+            if (itemComponent == null) __result = 0f;
+            else __result = (float)Math.Round((double)(100f * itemComponent.Template.CenterOfImpact / 2.9089f) * 2, 2);
 
             return false;
         }
@@ -826,7 +820,7 @@ namespace RealismMod
         {
             float durability = __instance.method_10((float)__instance.Repairable.TemplateDurability);
             float durabilityFactor = (__instance.GetBarrelDeviation() - durability) / (__instance.Single_0 - durability);
-            __result = (UIWeaponStats.COIDelta * -1f) + durabilityFactor;
+            __result = UIWeaponStats.COIDelta + durabilityFactor;
             return false;
         }
     }
@@ -847,12 +841,13 @@ namespace RealismMod
 
         private static float GetTotalCOI(Weapon __instance, bool includeAmmo)
         {
-            float totalCOI = __instance.CenterOfImpactBase * (1f + (-UIWeaponStats.COIDelta));
+            float totalCOI = __instance.CenterOfImpactBase * (1f + (UIWeaponStats.COIDelta));
             if (!includeAmmo)
             {
                 return totalCOI;
             }
             AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
+
             return totalCOI * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
         }
     }

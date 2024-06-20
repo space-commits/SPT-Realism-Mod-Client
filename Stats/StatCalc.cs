@@ -76,7 +76,7 @@ namespace RealismMod
 
         public static void CalcSightAccuracy(Mod currentAimingMod)
         {
-            float currentSightFactor = 1f;
+            float currentSightFactor = 0f;
             int iterations = 0;
   
             if (currentAimingMod != null)
@@ -110,7 +110,7 @@ namespace RealismMod
             WeaponSkillsClass skillsClass = (WeaponSkillsClass)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_buffInfo").GetValue(pwa);
             Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayBlender").GetValue(pwa);
 
-            float headGearFactor = PlayerState.FSIsActive || PlayerState.NVGIsActive ? 1.35f : 1f;
+            float headGearFactor = PlayerState.FSIsActive || PlayerState.NVGIsActive || GearController.HasGasMask ? 1.45f : 1f;
             float ergoWeightFactor = weapon.GetSingleItemTotalWeight() * (1f - WeaponStats.PureErgoDelta) * headGearFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + ((1f - PlayerState.GearErgoPenalty) * 1.5f));
 
             float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo * PlayerState.GearErgoPenalty) * 1.15f;
@@ -257,7 +257,7 @@ namespace RealismMod
             totalDispersion = currentDispersion + (currentDispersion * (dispersionWeapBaseWeightFactor + (totalTorqueFactor * dispersionTorqueMult)));
 
             totalRecoilAngle = currentRecoilAngle + (currentRecoilAngle * (totalTorqueFactor * angleTorqueMulti));
-            totalCOI = currentCOI + (currentCOI * (WeaponStats.WeaponAccuracy(weap) / 100));
+            totalCOI = currentCOI + (currentCOI * (-WeaponStats.WeaponAccuracy(weap) / 100));
 
             if (!hasShoulderContact && weap.WeapClass != "pistol")
             {
@@ -310,7 +310,7 @@ namespace RealismMod
             currentCamRecoil = currentCamRecoil + (currentCamRecoil * ((modCamRecoil / 100f) + camRecoilWeightFactor));
             currentDispersion = currentDispersion + (currentDispersion * ((modDispersion / 100f) + dispersionWeightFactor));
             currentRecoilAngle = currentRecoilAngle + (currentRecoilAngle * (modAngle / 100f));
-            currentCOI = currentCOI + (currentCOI * (modAccuracy / 100f));
+            currentCOI = currentCOI + (currentCOI * (-modAccuracy / 100f));
             currentAutoROF = currentAutoROF + (currentAutoROF * (modAutoROF / 100f));
             currentSemiROF = currentSemiROF + (currentSemiROF * (modSemiROF / 100f));
             pureErgo = pureErgo + (pureErgo * (modErgo / 100f));

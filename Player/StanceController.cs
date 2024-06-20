@@ -181,9 +181,9 @@ namespace RealismMod
             {
                 baseDrainRate = 0.25f;
             }
-            else if (CurrentStance == EStance.ActiveAiming && Plugin.EnableIdleStamDrain.Value)
+            else if (CurrentStance == EStance.ActiveAiming)
             {
-                baseDrainRate = 0.05f;
+                baseDrainRate = 0.075f;
             }
             else
             {
@@ -201,8 +201,8 @@ namespace RealismMod
             bool doRegen = ((isInRegenableStance && !IsAiming && !IsFiringFromStance && !IsLeftShoulder) || isInRegenableState) && !PlayerState.IsSprinting;
             bool shouldDoIdleDrain = (IsIdle() || IsLeftShoulder) && Plugin.EnableIdleStamDrain.Value;
             bool shouldInterruptRegen = isInRegenableStance && (IsAiming || IsFiringFromStance);
-            bool doDrain = ((shouldInterruptRegen || !isInRegenableStance || shouldDoIdleDrain) && !isInRegenableState && !PlayerState.IsSprinting) || (IsDoingTacSprint && Plugin.EnableIdleStamDrain.Value);
-            bool doNeutral = PlayerState.IsSprinting || player.IsInventoryOpened;
+            bool doNeutral = PlayerState.IsSprinting || player.IsInventoryOpened || (CurrentStance == EStance.ActiveAiming && player.Pose == EPlayerPose.Duck);
+            bool doDrain = ((shouldInterruptRegen || !isInRegenableStance || shouldDoIdleDrain) && !isInRegenableState && !doNeutral) || (IsDoingTacSprint && Plugin.EnableIdleStamDrain.Value);
             EStance stance = CurrentStance;
 
             if (IsAiming != wasAiming || regenStam != doRegen || drainStam != doDrain || neutral != doNeutral || lastRecordedStance != CurrentStance || IsMounting != wasMounting || IsBracing != wasBracing)
@@ -793,7 +793,7 @@ namespace RealismMod
 
             if (Plugin.EnableTacSprint.Value && PlayerState.IsSprinting && CurrentStance != EStance.ActiveAiming
                 && (CurrentStance == EStance.HighReady || StoredStance == EStance.HighReady)
-                && !fc.Weapon.IsBeltMachineGun && WeaponStats.TotalWeaponWeight <= 5.5f && WeaponStats.TotalWeaponLength <= 6f
+                && !fc.Weapon.IsBeltMachineGun && WeaponStats.TotalWeaponWeight <= 5.1f && WeaponStats.TotalWeaponLength <= 6f
                 && !PlayerState.IsScav && !Plugin.RealHealthController.HealthConditionPreventsTacSprint)
             {
                 IsDoingTacSprint = true;

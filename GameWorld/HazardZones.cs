@@ -28,9 +28,6 @@ namespace RealismMod
         private float _tick = 0f;
         private float _maxDistance = 0f;
 
-        /* private float _audioTimer = 0f;
-       private float _audioClipLength= 0f;*/
-
         void Start()
         {
             _zoneCollider = GetComponentInParent<BoxCollider>();
@@ -85,16 +82,6 @@ namespace RealismMod
                     hazardBridge.GasAmounts[this.name] = Mathf.Max(gasAmount, 0f);
                 }
             }
-
-            /*        _audioTimer += Time.deltaTime;
-                       if (_audioTimer > _audioClipLength)
-                      {
-                          AudioClip audioClip = Plugin.HazardZoneClips["gasleak1.wav"];
-                          _audioClipLength = audioClip.length;
-                          _audioTimer = 0;
-                          //this playback does not update its position, it stays as loud as it was when it first started playing.
-                          Singleton<BetterAudio>.Instance.PlayAtPoint(this.transform.position, audioClip, CameraClass.Instance.Distance(this.transform.position), BetterAudio.AudioSourceGroupType.Nonspatial, 100, Plugin.test10.Value, EOcclusionTest.Regular);
-                      }*/
         }
 
         float CalculateGasStrength(Vector3 playerPosition)
@@ -160,14 +147,15 @@ namespace RealismMod
 
             if (_tick >= 0.25f)
             {
-                _tick = 0f;
                 foreach (var p in _containedPlayers)
                 {
                     Player player = p.Key;
                     PlayerHazardBridge hazardBridge = p.Value;
+                    if (player == null || hazardBridge == null) return; //to do: find way to remove null entries
                     float radAmount = CalculateRadStrength(player.gameObject.transform.position);
                     hazardBridge.RadAmounts[this.name] = Mathf.Max(radAmount, 0f);
                 }
+                _tick = 0f;
             }
         }
 
