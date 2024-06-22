@@ -390,7 +390,11 @@ namespace RealismMod
                         0.55f, 1.8f);
 
                     __instance.FirearmsAnimator.SetAnimationSpeed(totalCheckChamberSpeed);
-                    player.ExecuteSkill(new Action(() => player.Skills.WeaponFixAction.Complete(1f)));
+
+                    if (player?.Skills != null) 
+                    {
+                        player.ExecuteSkill(new Action(() => player.Skills.WeaponFixAction.Complete(1f)));
+                    }
 
                     if (Plugin.EnableLogging.Value == true)
                     {
