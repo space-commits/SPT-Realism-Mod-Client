@@ -1,20 +1,16 @@
 ﻿using Aki.Reflection.Patching;
-using Aki.Reflection.Utils;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
-using EFT.UI;
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
+using Systems.Effects;
 using UnityEngine;
+using DamageTypeClass = GClass2456;
+using KnowMalfClass = EFT.InventoryLogic.Weapon.GClass2742;
 using MalfGlobals = BackendConfigSettingsClass.GClass1370;
 using OverheatGlobals = BackendConfigSettingsClass.GClass1371;
-using KnowMalfClass = EFT.InventoryLogic.Weapon.GClass2742;
-using DamageTypeClass = GClass2456;
-using Systems.Effects;
 
 namespace RealismMod
 {
@@ -43,8 +39,8 @@ namespace RealismMod
                     Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.Head, null, null, null, null);
                     Plugin.RealHealthController.AddBasesEFTEffect(player, "LightBleeding", EBodyPart.RightArm, null, null, null, null);
                 }
-                player.ActiveHealthController.ApplyDamage(EBodyPart.Head, UnityEngine.Random.Range(5, 20), DamageTypeClass.Existence);
-                player.ActiveHealthController.ApplyDamage(EBodyPart.RightArm, UnityEngine.Random.Range(20, 60), DamageTypeClass.Existence);
+                player.ActiveHealthController.ApplyDamage(EBodyPart.Head, UnityEngine.Random.Range(5, 21), DamageTypeClass.Existence);
+                player.ActiveHealthController.ApplyDamage(EBodyPart.RightArm, UnityEngine.Random.Range(20, 61), DamageTypeClass.Existence);
 
                 InventoryControllerClass inventoryController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
                 if (fc.Item != null && inventoryController.CanThrow(fc.Item))
@@ -63,18 +59,19 @@ namespace RealismMod
 
             bool do9x18Explodey = false;
             bool isPMMAmmo = ammoToFire.Template._id == "57371aab2459775a77142f22";
+            float weaponDurability = __instance.Weapon.Repairable.MaxDurability;
             if (__instance.Weapon.AmmoCaliber == "9x18PM" && isPMMAmmo) 
             {
                 if (isPMMAmmo)
                 {
                     __instance.Weapon.Repairable.Durability = Mathf.Max(__instance.Weapon.Repairable.Durability - (__instance.Weapon.DurabilityBurnRatio * ammoToFire.DurabilityBurnModificator), 0f);
                 }
-                int rnd = UnityEngine.Random.Range(1, 10);
+                int rnd = UnityEngine.Random.Range(1, 11);
                 float dura = 2f - (__instance.Weapon.Repairable.Durability / __instance.Weapon.Repairable.MaxDurability);
                 do9x18Explodey = __instance.Weapon.Repairable.Durability <= 75f && rnd <= 4 * dura && isPMMAmmo;
             }
 
-            if (__instance.Weapon.AmmoCaliber != ammoToFire.Caliber)
+            if (__instance.Weapon.AmmoCaliber != ammoToFire.Caliber || __instance.Weapon.Repairable.MaxDurability <= 0)
             {
              
                 bool explosiveMismatch = do9x18Explodey || (__instance.Weapon.AmmoCaliber == "366TKM" && ammoToFire.Caliber == "762x39") || (__instance.Weapon.AmmoCaliber == "556x45NATO" && ammoToFire.Caliber == "762x35") || (__instance.Weapon.AmmoCaliber == "762x51" && ammoToFire.Caliber == "68x51");
@@ -82,9 +79,10 @@ namespace RealismMod
 
                 if (player.IsYourPlayer)
                 {
-                    if (__instance.Weapon.Repairable.MaxDurability <= 0f || malfMismatch || (explosiveMismatch && !Plugin.ServerConfig.malf_changes))
+                    if (weaponDurability <= 0f || malfMismatch || (explosiveMismatch && !Plugin.ServerConfig.malf_changes))
                     {
-                        NotificationManagerClass.DisplayWarningNotification("Possible Wrong Ammo/Weapon Caliber Combination.", EFT.Communications.ENotificationDurationType.Long);
+                        if (weaponDurability <= 0f) NotificationManagerClass.DisplayWarningNotification("Weapon Is Broken Beyond Repair.", EFT.Communications.ENotificationDurationType.Long);
+                        else NotificationManagerClass.DisplayWarningNotification("Possible Wrong Ammo/Weapon Caliber Combination.", EFT.Communications.ENotificationDurationType.Long);
                         __result = Weapon.EMalfunctionState.Misfire;
                         return;
                     }
@@ -202,11 +200,11 @@ namespace RealismMod
 
                 if (weaponDurability >= 50)
                 {
-                    durabilityMalfChance = ((Math.Pow((double)((weaponMalfChance + 1f)), 3.0 + (double)(100f - weaponDurability) / (20.0 - 10.0 / Math.Pow((double)__instance.Item.FireRate / 10.0, 0.322))) - 1.0) / 1000.0);
+                    durabilityMalfChance = ((Math.Pow((double)(weaponMalfChance + 1f), 3.0 + (double)(100f - weaponDurability) / (20.0 - 10.0 / Math.Pow((double)__instance.Item.FireRate / 10.0, 0.322))) - 1.0) / 1000.0);
                 }
                 else
                 {
-                    durabilityMalfChance = (Math.Pow((double)((weaponMalfChance + 1f)), Math.Log10(Math.Pow((double)(101f - weaponDurability), (50.0 - Math.Pow((double)weaponDurability, 1.286) / 4.8) / (Math.Pow((double)__instance.Item.FireRate, 0.17) / 2.9815 + 2.1)))) - 1.0) / 1000.0;
+                    durabilityMalfChance = (Math.Pow((double)(weaponMalfChance + 1f), Math.Log10(Math.Pow((double)(101f - weaponDurability), (50.0 - Math.Pow((double)weaponDurability, 1.286) / 4.8) / (Math.Pow((double)__instance.Item.FireRate, 0.17) / 2.9815 + 2.1)))) - 1.0) / 1000.0;
                 }
                 if (weaponDurability >= Plugin.DuraMalfThreshold.Value)
                 {
@@ -226,8 +224,7 @@ namespace RealismMod
                     }
                 }
 
-                durabilityMalfChance *= subFactor;
-                durabilityMalfChance *= __instance.Item.Buff.MalfunctionProtections;
+                durabilityMalfChance *= subFactor * __instance.Item.Buff.MalfunctionProtections * WeaponStats.FireRateDelta;
                 durabilityMalfChance = Mathf.Clamp01((float)durabilityMalfChance);
                 float totalMalfChance = Mathf.Clamp01((float)Math.Round(durabilityMalfChance + ((ammoMalfChance + magMalfChance + overheatMalfChance) / 500f), 5));
 

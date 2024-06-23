@@ -4,6 +4,8 @@ namespace RealismMod
 {
     public static class PlayerState
     {
+        public static bool IsScav = false;
+
         public static float FixSkillMulti = 1f;
 
         public static float ReloadSkillMulti = 1f;
@@ -16,6 +18,11 @@ namespace RealismMod
 
         public static float RecoilInjuryMulti = 1f;
 
+        public static float ImmuneSkillWeak = 0f;
+        public static float ImmuneSkillStrong = 0f;
+
+        public static float StressResistanceFactor = 0f;
+
         public static float AimMoveSpeedBase = 0.5f;
 
         public static float AimMoveSpeedInjuryMulti = 1f;
@@ -23,6 +30,10 @@ namespace RealismMod
         public static float ErgoDeltaInjuryMulti = 1f;
 
         public static float StrengthSkillAimBuff = 0f;
+
+        public static float StrengthWeightBuff = 0f;
+
+        public static float EnduranceSkill = 0f;
 
         public static bool IsAllowedADS = true;
 
@@ -61,6 +72,8 @@ namespace RealismMod
 
         public static float WeaponSkillErgo = 0f;
 
+        public static float StaminaPerc = 1f;
+
         public static float RemainingArmStamPerc = 1f;
 
         public static float RemainingArmStamPercReload = 1f;
@@ -76,8 +89,6 @@ namespace RealismMod
         public static float HealthStamRegenFactor = 1f;
 
         public static float HealthResourceRateFactor = 0f;
-
-        public static float StressResistanceFactor = 0f;
 
         public static bool IsSprinting = false;
         public static bool WasSprinting = false;
@@ -103,8 +114,7 @@ namespace RealismMod
         public static float GearErgoPenalty = 1f;
         public static float GearSpeedPenalty = 1f;
 
-        public static bool FSIsActive = false;
-        public static bool NVGIsActive = false;
+        public static bool BlockFSWhileConsooming = false;
 
         public static bool IsInLastStand = false;
     }

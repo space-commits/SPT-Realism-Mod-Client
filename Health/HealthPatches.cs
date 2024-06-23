@@ -1,6 +1,4 @@
 ﻿using Aki.Reflection.Patching;
-using Aki.Reflection.Utils;
-using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
 using EFT.HealthSystem;
@@ -12,26 +10,176 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Text;
-using Systems.Effects;
 using UnityEngine;
-using static CW2.Animations.PhysicsSimulator.Val;
-using static EFT.Player;
+using UnityEngine.UI;
+using TMPro;
+using static EFT.HealthSystem.ActiveHealthController;
 using static RealismMod.Attributes;
-using static Systems.Effects.Effects;
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2415;
 using ExistanceClass = GClass2456;
-using StamController = GClass682;
-using PhysicalClass = GClass681;
-using MedUseStringClass = GClass1235;
 using HealthStateClass = GClass2416<EFT.HealthSystem.ActiveHealthController.GClass2415>;
 using MedkitTemplate = IMedkitResource;
-using static EFT.HealthSystem.ActiveHealthController;
-using static GClass2417;
+using MedUseStringClass = GClass1235;
+using PhysicalClass = GClass681;
 
 namespace RealismMod
 {
+    public class HealthPanelPatch : ModulePatch
+    {
+        private static float _updateTime = 0f;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(HealthParametersPanel).GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        private static Color GetCurrentGasColor(float level) 
+        {
+            switch(level) 
+            {
+                case 0:
+                    return Color.white;
+                case <= 25f:
+                    return Color.yellow;
+                case <= 50f:
+                    return new Color(1.0f, 0.647f, 0.0f);
+                case <= 75f:
+                    return new Color(1.0f, 0.25f, 0.0f);
+                case > 75f:
+                    return Color.red;
+                default: 
+                    return Color.white;    
+            }
+        }
+
+        private static Color GetCurrentRadColor(float level)
+        {
+            switch (level)
+            {
+                case 0:
+                    return Color.white;
+                case <= 15f:
+                    return Color.yellow;
+                case <= 25f:
+                    return new Color(1.0f, 0.647f, 0.0f);
+                case <= 50f:
+                    return new Color(1.0f, 0.25f, 0.0f);
+                case > 50f:
+                    return Color.red;
+                default:
+                    return Color.white;
+            }
+        }
+
+        private static Color GetGasRateColor(float level)
+        {
+            switch (level)
+            {
+                case < 0:
+                    return Color.green;
+                case 0:
+                    return new Color(0.4549f, 0.4824f, 0.4941f, 1f);
+                case <= 0.15f:
+                    return Color.yellow;
+                case <= 0.25f:
+                    return new Color(1.0f, 0.647f, 0.0f);
+                case <= 0.4f:
+                    return new Color(1.0f, 0.25f, 0.0f);
+                case > 0.4f:
+                    return Color.red;
+                default:
+                    return Color.white;
+            }
+        }
+
+        private static Color GetRadRateColor(float level)
+        {
+            switch (level)
+            {
+                case < 0:
+                    return Color.green;
+                case 0:
+                    return new Color(0.4549f, 0.4824f, 0.4941f, 1f);
+                case <= 0.05f:
+                    return Color.yellow;
+                case <= 0.15f:
+                    return new Color(1.0f, 0.647f, 0.0f);
+                case <= 0.25f:
+                    return new Color(1.0f, 0.25f, 0.0f);
+                case > 0.25f:
+                    return Color.red;
+                default:
+                    return Color.white;
+            }
+        }
+
+
+        [PatchPostfix]
+        private static void Postfix(HealthParametersPanel __instance)
+        {
+#pragma warning disable CS0618
+            _updateTime += Time.deltaTime;
+
+            if (_updateTime >= 1f) 
+            {
+                _updateTime = 0f;
+                HealthParameterPanel _radiation = (HealthParameterPanel)AccessTools.Field(typeof(HealthParametersPanel), "_radiation").GetValue(__instance);
+                GameObject panel = __instance.gameObject;
+                if (panel.transform.childCount > 0)
+                {
+                    GameObject poisoning = panel.transform.Find("Poisoning")?.gameObject;
+                    if (poisoning != null)
+                    {
+                        GameObject buff = poisoning.transform.Find("Buff")?.gameObject;
+                        GameObject current = poisoning.transform.Find("Current")?.gameObject;
+                        if (buff != null)
+                        {
+                            float toxicityRate = HazardTracker.TotalToxicityRate;
+                            CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>(); //can animate it by changing the font size with ping pong, and modulate the color
+                            buffUI.text = (toxicityRate > 0f ? "+" : "") + toxicityRate.ToString("0.00");
+                            buffUI.color = GetGasRateColor(toxicityRate);
+                            buffUI.fontSize = 14f;
+                        }
+                        if (current != null)
+                        {
+                            float toxicityLevel = Mathf.Round(HazardTracker.TotalToxicity);
+                            CustomTextMeshProUGUI currentUI = current.GetComponent<CustomTextMeshProUGUI>();
+                            currentUI.text = toxicityLevel.ToString();
+                            currentUI.color = GetCurrentGasColor(toxicityLevel);
+                            currentUI.fontSize = 30f;
+                        }
+                    }
+
+                    GameObject radiation = panel.transform.Find("Radiation")?.gameObject;
+                    if (radiation != null)
+                    {
+                        GameObject buff = radiation.transform.Find("Buff")?.gameObject;
+                        GameObject current = radiation.transform.Find("Current")?.gameObject;
+                        if (buff != null)
+                        {
+                            float radRate = HazardTracker.TotalRadiationRate;
+                            CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
+                            buffUI.text = (radRate > 0f ? "+" : "") + radRate.ToString("0.00");
+                            buffUI.color = GetRadRateColor(radRate);
+                            buffUI.fontSize = 14f;
+                        }
+                        if (current != null)
+                        {
+                            float radiationLevel = Mathf.Round(HazardTracker.TotalRadiation);
+                            CustomTextMeshProUGUI currentUI = current.GetComponent<CustomTextMeshProUGUI>();
+                            currentUI.text = radiationLevel.ToString();
+                            currentUI.color = GetCurrentRadColor(radiationLevel);
+                            currentUI.fontSize = 30f;
+                        }
+                    }
+                }
+#pragma warning restore CS0618
+            }
+
+
+        }
+    }
+
     public class HealCostDisplayShortPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -162,8 +310,10 @@ namespace RealismMod
                     return "WEAK";
                 case <= 10:
                     return "MILD";
-                case >= 15:
+                case <= 15:
                     return "STRONG";
+                case > 15:
+                    return "VERY STRONG";
                 default:
                     return "NONE";
             }
@@ -322,7 +472,7 @@ namespace RealismMod
 
         }
 
-        private static void restoreHP(HealthControllerClass controller, EBodyPart initialTarget, float hpToRestore) 
+        private static void RestoreHP(HealthControllerClass controller, EBodyPart initialTarget, float hpToRestore) 
         {
             if (initialTarget != EBodyPart.Common)
             {
@@ -371,6 +521,9 @@ namespace RealismMod
                             }
                         }
                     }
+
+                    Plugin.RealHealthController.CheckIfReducesHazardInStash(foodClass, false, __instance);
+
                     return;
                 }
             }
@@ -383,11 +536,13 @@ namespace RealismMod
                     //need to get surgery kit working later, doesnt want to remove hp resource.
                     if (medType == "medkit") // || medType == "surg"
                     {
-                        restoreHP(__instance, bodyPart, MedProperties.HPRestoreAmount(medsClass));
+                        RestoreHP(__instance, bodyPart, MedProperties.HPRestoreAmount(medsClass));
                         /*             medsClass.MedKitComponent.HpResource -= 1f;
                                      medsClass.MedKitComponent.Item.RaiseRefreshEvent(false, true);*/
                         return;
                     }
+/*                    Plugin.RealHealthController.CheckIfReducesHazardInStash(medsClass, true, __instance); //can't get it to use resource without causing issues
+*/
                 }
             }
         }
@@ -460,7 +615,7 @@ namespace RealismMod
                     Plugin.RealHealthController.CanConsume(__instance, boundItem, ref canUse);
                     if (Plugin.EnableLogging.Value)
                     {
-                        Logger.LogWarning("qucik slot, can use = " + canUse);
+                        Logger.LogWarning("quick slot, can use = " + canUse);
                     }
 
                     return canUse;
@@ -535,26 +690,6 @@ namespace RealismMod
         }
     }
 
-    public class StamRegenRatePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(StamController).GetMethod("method_21", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-        [PatchPrefix]
-        private static bool Prefix(StamController __instance, float baseValue, ref float __result)
-        {
-            float[] float_7 = (float[])AccessTools.Field(typeof(StamController), "float_7").GetValue(__instance);
-            StamController.EPose epose_0 = (StamController.EPose)AccessTools.Field(typeof(StamController), "epose_0").GetValue(__instance);
-            Player player_0 = (Player)AccessTools.Field(typeof(StamController), "player_0").GetValue(__instance);
-            float Single_0 = (float)AccessTools.Property(typeof(StamController), "Single_0").GetValue(__instance);
-
-            __result = baseValue * float_7[(int)epose_0] * Singleton<BackendConfigSettingsClass>.Instance.StaminaRestoration.GetAt(player_0.HealthController.Energy.Normalized) * (player_0.Skills.EnduranceBuffRestoration + 1f) * PlayerState.HealthStamRegenFactor / Single_0;
-            return false;
-        }
-    }
-
     public class RemoveEffectPatch : ModulePatch
     {
         private static Type _targetType;
@@ -596,10 +731,10 @@ namespace RealismMod
         {
             Player player = Utils.GetYourPlayer();
             float stressResist = player.Skills.StressPain.Value;
-            float painkillerDuration = (float)Math.Round(10f * (1f + stressResist), 2);
+            float painkillerDuration = (float)Math.Round(12f * (1f + stressResist), 2);
             float negativeEffectDuration = (float)Math.Round(15f * (1f - stressResist), 2);
             float negativeEffectStrength = (float)Math.Round(0.75f * (1f - stressResist), 2);
-            Plugin.RealHealthController.AddAdrenaline(player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
+            Plugin.RealHealthController.TryAddAdrenaline(player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
         }
     }
 
@@ -612,7 +747,11 @@ namespace RealismMod
             return typeof(ActiveHealthController).GetMethod("ApplyDamage", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static EDamageType[] acceptedDamageTypes = { EDamageType.HeavyBleeding, EDamageType.LightBleeding, EDamageType.Fall, EDamageType.Barbed, EDamageType.Dehydration, EDamageType.Exhaustion };
+        private static EDamageType[] acceptedDamageTypes = { 
+            EDamageType.HeavyBleeding, EDamageType.LightBleeding, 
+            EDamageType.Fall, EDamageType.Barbed, EDamageType.Dehydration, 
+            EDamageType.Exhaustion, EDamageType.Poison,  EDamageType.Melee,
+            EDamageType.Explosion, EDamageType.Bullet, EDamageType.Blunt,};
 
         [PatchPrefix]
         private static void Prefix(ActiveHealthController __instance, EBodyPart bodyPart, ref float damage, DamageInfo damageInfo)
@@ -630,71 +769,68 @@ namespace RealismMod
 
                 EDamageType damageType = damageInfo.DamageType;
 
-                if (acceptedDamageTypes.Contains(damageType))
+                float currentHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Current;
+                float maxHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;
+                float remainingHp = currentHp / maxHp;
+
+                if (damageType == EDamageType.Dehydration || damageType == EDamageType.Exhaustion || damageType == EDamageType.Poison)
                 {
-                    float currentHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Current;
-                    float maxHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;
-                    float remainingHp = currentHp / maxHp;
+                    damage = 0;
+                    return;
+                }
 
-                    if (damageType == EDamageType.Dehydration || damageType == EDamageType.Exhaustion)
-                    {
-                        damage = 0;
-                        return;
-                    }
+                if (currentHp <= 10f && (bodyPart == EBodyPart.Head || bodyPart == EBodyPart.Chest) && (damageType == EDamageType.LightBleeding))
+                {
+                    damage = 0;
+                    return;
+                }
 
-                    if (currentHp <= 10f && (bodyPart == EBodyPart.Head || bodyPart == EBodyPart.Chest) && (damageType == EDamageType.LightBleeding))
-                    {
-                        damage = 0;
-                        return;
-                    }
+                float vitalitySkill = __instance.Player.Skills.VitalityBuffSurviobilityInc.Value;
+                float stressResist = __instance.Player.Skills.StressPain.Value;
+                int delay = (int)Math.Round(15f * (1f - vitalitySkill), 2);
+                float tickRate = (float)Math.Round(0.22f * (1f + vitalitySkill), 2);
 
-                    float vitalitySkill = __instance.Player.Skills.VitalityBuffSurviobilityInc.Value;
-                    float stressResist = __instance.Player.Skills.StressPain.Value;
-                    int delay = (int)Math.Round(15f * (1f - vitalitySkill), 2);
-                    float tickRate = (float)Math.Round(0.22f * (1f + vitalitySkill), 2);
+                if (damageType == EDamageType.Dehydration)
+                {
+                    Plugin.RealHealthController.DmgeTracker.TotalDehydrationDamage += damage;
+                    return;
+                }
+                if (damageType == EDamageType.Exhaustion)
+                {
+                    Plugin.RealHealthController.DmgeTracker.TotalExhaustionDamage += damage;
+                    return;
+                }
+                if ((damageType == EDamageType.Fall && damage <= 20f))
+                {
+                    Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage, damageType);
+                    return;
+                }
+                if (damageType == EDamageType.Barbed)
+                {
+                    Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
+                    return;
+                }
+                if (damageType == EDamageType.Blunt && damage <= 7.5f)
+                {
+                    Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
+                    return;
+                }
+                if (damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding)
+                {
+                    Plugin.RealHealthController.DmgeTracker.UpdateDamage(damageType, bodyPart, damage);
+                    return;
+                }
+                if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= 17f) || (damageType == EDamageType.Blunt && damage >= 10f))
+                {
+                    Plugin.RealHealthController.RemoveEffectsOfType(EHealthEffectType.HealthRegen);
+                }
+                if (damageType == EDamageType.Bullet || damageType == EDamageType.Blunt || damageType == EDamageType.Melee || damageType == EDamageType.Sniper)
+                {
+                    float painkillerDuration = (float)Math.Round(20f * (1f + (stressResist / 2)), 2);
+                    float negativeEffectDuration = (float)Math.Round(25f * (1f - (stressResist / 2)), 2);
+                    float negativeEffectStrength = (float)Math.Round(0.95f * (1f - (stressResist / 2)), 2);
+                    Plugin.RealHealthController.TryAddAdrenaline(__instance.Player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
 
-                    if (damageType == EDamageType.Dehydration)
-                    {
-                        Plugin.RealHealthController.DmgTracker.TotalDehydrationDamage += damage;
-                        return;
-                    }
-                    if (damageType == EDamageType.Exhaustion)
-                    {
-                        Plugin.RealHealthController.DmgTracker.TotalExhaustionDamage += damage;
-                        return;
-                    }
-                    if ((damageType == EDamageType.Fall && damage <= 20f))
-                    {
-                        Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage, damageType);
-                        return;
-                    }
-                    if (damageType == EDamageType.Barbed)
-                    {
-                        Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
-                        return;
-                    }
-                    if (damageType == EDamageType.Blunt && damage <= 7.5f)
-                    {
-                        Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
-                        return;
-                    }
-                    if (damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding)
-                    {
-                        Plugin.RealHealthController.DmgTracker.UpdateDamage(damageType, bodyPart, damage);
-                        return;
-                    }
-                    if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= 17f) || (damageType == EDamageType.Blunt && damage >= 10f))
-                    {
-                        Plugin.RealHealthController.RemoveEffectsOfType(EHealthEffectType.HealthRegen);
-                    }
-                    if (damageType == EDamageType.Bullet || damageType == EDamageType.Blunt || damageType == EDamageType.Melee || damageType == EDamageType.Sniper)
-                    {
-                        float painkillerDuration = (float)Math.Round(20f * (1f + (stressResist / 2)), 2);
-                        float negativeEffectDuration = (float)Math.Round(25f * (1f - (stressResist / 2)), 2);
-                        float negativeEffectStrength = (float)Math.Round(0.95f * (1f - (stressResist / 2)), 2);
-                        Plugin.RealHealthController.AddAdrenaline(__instance.Player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
-
-                    }
                 }
             }
         }

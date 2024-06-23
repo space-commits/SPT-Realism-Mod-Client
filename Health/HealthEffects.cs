@@ -1,17 +1,10 @@
 ﻿using EFT;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-using static Systems.Effects.Effects;
-using UnityEngine;
 using System.Linq;
-using BepInEx.Logging;
+using UnityEngine;
 using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2415;
 using ExistanceClass = GClass2456;
 using InterfaceOne = GInterface237;
 using InterfaceTwo = GInterface252;
-using EFT.InventoryLogic;
 
 namespace RealismMod
 {
@@ -25,7 +18,11 @@ namespace RealismMod
         ResourceRate,
         PainKiller,
         Stim,
-        FoodPoisoning
+        FoodPoisoning,
+        Toxicity,
+        Detoxification,
+        Radiation,
+        RadiationTreatment
     }
 
     public interface ICustomHealthEffect
@@ -37,10 +34,12 @@ namespace RealismMod
         public Player _Player { get; }
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
+        public RealismHealthController RealHealthController { get; set; }
     }
 
     public class TourniquetEffect : ICustomHealthEffect
     {
+        public RealismHealthController RealHealthController { get; set; }
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; }
         public int TimeExisted { get; set; }
@@ -51,7 +50,7 @@ namespace RealismMod
         private bool haveNotified = false;
         private bool haveRemovedSurgery = false;
 
-        public TourniquetEffect(float hpTick, int? dur, EBodyPart part, Player player, int delay)
+        public TourniquetEffect(float hpTick, int? dur, EBodyPart part, Player player, int delay, RealismHealthController realHealthController)
         {
             TimeExisted = 0;
             HpPerTick = -hpTick;
@@ -60,6 +59,7 @@ namespace RealismMod
             _Player = player;
             Delay = delay;
             EffectType = EHealthEffectType.Tourniquet;
+            RealHealthController = realHealthController;
         }
 
         public void Tick()
@@ -77,20 +77,20 @@ namespace RealismMod
                 if (!haveRemovedSurgery)
                 {
                     haveRemovedSurgery = true;
-                    Plugin.RealHealthController.RemoveCustomEffectOfType(typeof(SurgeryEffect), BodyPart);
+                    RealHealthController.RemoveCustomEffectOfType(typeof(SurgeryEffect), BodyPart);
                 }
 
                 float currentPartHP = _Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
 
                 if (TimeExisted > 10 && TimeExisted % 10 == 0)
                 {
-                    Plugin.RealHealthController.RemoveBaseEFTEffect(_Player, BodyPart, "HeavyBleeding");
-                    Plugin.RealHealthController.RemoveBaseEFTEffect(_Player, BodyPart, "LightBleeding");
+                    RealHealthController.RemoveBaseEFTEffect(_Player, BodyPart, "HeavyBleeding");
+                    RealHealthController.RemoveBaseEFTEffect(_Player, BodyPart, "LightBleeding");
                 }
 
                 if (currentPartHP > 25f && TimeExisted % 3 == 0) 
                 {
-                    _Player.ActiveHealthController.AddEffect<HealthRegen>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
+                    _Player.ActiveHealthController.AddEffect<HealthChange>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
                 }
             }
         }
@@ -98,6 +98,7 @@ namespace RealismMod
 
     public class SurgeryEffect : ICustomHealthEffect
     {
+        public RealismHealthController RealHealthController { get; set; }
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }
         public int TimeExisted { get; set; }
@@ -110,7 +111,7 @@ namespace RealismMod
         private bool hasRemovedTrnqt = false;
         private bool haveNotified = false;
 
-        public SurgeryEffect(float hpTick, int? dur, EBodyPart part, Player player, int delay, float limit)
+        public SurgeryEffect(float hpTick, int? dur, EBodyPart part, Player player, int delay, float limit, RealismHealthController realHealthController)
         {
             TimeExisted = 0;
             HpRegened = 0;
@@ -121,6 +122,7 @@ namespace RealismMod
             Delay = delay;
             HpRegenLimit = limit;
             EffectType = EHealthEffectType.Surgery;
+            RealHealthController = realHealthController;
         }
 
         public void Tick()
@@ -138,8 +140,8 @@ namespace RealismMod
                 if (!hasRemovedTrnqt)
                 {
                     hasRemovedTrnqt = true;
-                    Plugin.RealHealthController.RemoveCustomEffectOfType(typeof(TourniquetEffect), BodyPart);
-                    NotificationManagerClass.DisplayMessageNotification("Surgical Kit Used, Removing Tourniquet Effect Present On Limb: " + BodyPart, EFT.Communications.ENotificationDurationType.Long);
+                    RealHealthController.RemoveCustomEffectOfType(typeof(TourniquetEffect), BodyPart);
+                    NotificationManagerClass.DisplayMessageNotification("Surgical Kit Used, Removing Tourniquet Effect Present On Limb If Present: " + BodyPart, EFT.Communications.ENotificationDurationType.Long);
                 }
 
                 float currentHp = _Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
@@ -148,7 +150,7 @@ namespace RealismMod
 
                 if (HpRegened < maxHpRegen && TimeExisted % 3 == 0)
                 {
-                    _Player.ActiveHealthController.AddEffect<HealthRegen>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
+                    _Player.ActiveHealthController.AddEffect<HealthChange>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
                     HpRegened += HpPerTick;
                 }
 
@@ -164,6 +166,7 @@ namespace RealismMod
 
     public class HealthDrainEffect : ICustomHealthEffect
     {
+        public RealismHealthController RealHealthController { get; set; }
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }
         public int TimeExisted { get; set; }
@@ -174,7 +177,7 @@ namespace RealismMod
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
 
-        public HealthDrainEffect(float hpTick, Player player, int delay, float limit)
+        public HealthDrainEffect(float hpTick, Player player, int delay, float limit, RealismHealthController realHealthController)
         {
             TimeExisted = 0;
             HpDrained = 0;
@@ -184,6 +187,7 @@ namespace RealismMod
             Delay = delay;
             EffectType = EHealthEffectType.HealthDrain;
             BodyPart = EBodyPart.Common;
+            RealHealthController = realHealthController;
         }
 
         public void Tick()
@@ -193,7 +197,7 @@ namespace RealismMod
             {
                 if (Delay <= 0 && TimeExisted % 3 == 0)
                 {
-                    _Player.ActiveHealthController.AddEffect<HealthDrain>( 0f, 3f, 1f, HpPerTick, null);
+                    _Player.ActiveHealthController.AddEffect<HealthDrain>(0f, 3f, 1f, HpPerTick, null);
                     HpDrained += HpPerTick;
                 }
             }
@@ -207,6 +211,7 @@ namespace RealismMod
 
     public class HealthRegenEffect : ICustomHealthEffect
     {
+        public RealismHealthController RealHealthController { get; set; }
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }
         public int TimeExisted { get; set; }
@@ -219,7 +224,7 @@ namespace RealismMod
         public EHealthEffectType EffectType { get; }
         private bool deductedRecordedDamage = false;
 
-        public HealthRegenEffect(float hpTick, int? dur, EBodyPart part, Player player, int delay, float limit, EDamageType damageType)
+        public HealthRegenEffect(float hpTick, int? dur, EBodyPart part, Player player, int delay, float limit, EDamageType damageType, RealismHealthController realHealthController)
         {
             TimeExisted = 0;
             HpRegened = 0;
@@ -231,6 +236,7 @@ namespace RealismMod
             Delay = delay;
             DamageType = damageType;
             EffectType = EHealthEffectType.HealthRegen;
+            RealHealthController = realHealthController;
         }
 
         public void Tick()
@@ -243,11 +249,11 @@ namespace RealismMod
             {
                 if (DamageType == EDamageType.HeavyBleeding)
                 {
-                    Plugin.RealHealthController.DmgTracker.TotalHeavyBleedDamage = Mathf.Max(Plugin.RealHealthController.DmgTracker.TotalHeavyBleedDamage - HpRegenLimit, 0f);
+                    RealHealthController.DmgeTracker.TotalHeavyBleedDamage = Mathf.Max(RealHealthController.DmgeTracker.TotalHeavyBleedDamage - HpRegenLimit, 0f);
                 }
                 if (DamageType == EDamageType.LightBleeding)
                 {
-                    Plugin.RealHealthController.DmgTracker.TotalLightBleedDamage = Mathf.Max(Plugin.RealHealthController.DmgTracker.TotalLightBleedDamage - HpRegenLimit, 0f);
+                    RealHealthController.DmgeTracker.TotalLightBleedDamage = Mathf.Max(RealHealthController.DmgeTracker.TotalLightBleedDamage - HpRegenLimit, 0f);
 
                 }
                 deductedRecordedDamage = true;
@@ -257,7 +263,7 @@ namespace RealismMod
             {
                 if (Delay <= 0 && TimeExisted % 3 == 0)
                 {
-                    _Player.ActiveHealthController.AddEffect<HealthRegen>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
+                    _Player.ActiveHealthController.AddEffect<HealthChange>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
                     HpRegened += HpPerTick;
                 }
             }
@@ -271,6 +277,7 @@ namespace RealismMod
 
     public class ResourceRateEffect : ICustomHealthEffect
     {
+        public RealismHealthController RealHealthController { get; set; }
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }
         public int TimeExisted { get; set; }
@@ -279,14 +286,15 @@ namespace RealismMod
         public EHealthEffectType EffectType { get; }
         private bool addedEffect = false;
 
-        public ResourceRateEffect(int? dur, Player player, int delay)
+        public ResourceRateEffect(int? dur, Player player, int delay, RealismHealthController realHealthController)
         {
             TimeExisted = 0;
             Duration = dur;
             _Player = player;
             Delay = delay;
             EffectType = EHealthEffectType.ResourceRate;
-            BodyPart = EBodyPart.Stomach;
+            BodyPart = EBodyPart.Chest;
+            RealHealthController = realHealthController;
         }
 
         public void Tick()
@@ -301,6 +309,7 @@ namespace RealismMod
 
     public class PainKillerEffect : ICustomHealthEffect
     {
+        public RealismHealthController RealHealthController { get; set; }
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }
         public int TimeExisted { get; set; }
@@ -311,7 +320,7 @@ namespace RealismMod
         public float PainKillerStrength { get; set; }
         private bool addedEffect = false;
 
-        public PainKillerEffect(int? dur, Player player, int delay, float tunnelStrength, float painKillerStrength)
+        public PainKillerEffect(int? dur, Player player, int delay, float tunnelStrength, float painKillerStrength, RealismHealthController realHealthController)
         {
             TimeExisted = 0;
             Duration = dur;
@@ -321,6 +330,7 @@ namespace RealismMod
             EffectType = EHealthEffectType.PainKiller;
             TunnelVisionStrength = tunnelStrength;
             PainKillerStrength = painKillerStrength;
+            RealHealthController = realHealthController;
         }
 
         public void Tick()
@@ -344,8 +354,323 @@ namespace RealismMod
         }
     }
 
+    public class FoodPoisoningEffect : ICustomHealthEffect
+    {
+        public RealismHealthController RealHealthController { get; set; }
+        public EBodyPart BodyPart { get; set; }
+        public int? Duration { get; set; }
+        public int TimeExisted { get; set; }
+        public Player _Player { get; }
+        public int Delay { get; set; }
+        public EHealthEffectType EffectType { get; }
+        private bool addedEffect = false;
+        private float effectStrength = 1f;
+
+        public FoodPoisoningEffect(int? dur, Player player, int delay, float strength, RealismHealthController realHealthController)
+        {
+            TimeExisted = 0;
+            Duration = dur;
+            _Player = player;
+            Delay = delay;
+            EffectType = EHealthEffectType.FoodPoisoning;
+            BodyPart = EBodyPart.Stomach;
+            effectStrength = strength;
+            RealHealthController = realHealthController;
+        }
+
+        public void Tick()
+        {
+            if (Delay <= 0) 
+            {
+                if (!addedEffect)
+                {
+                    _Player.ActiveHealthController.AddEffect<ResourceRateDrain>(BodyPart, 0f, null, 0f, 0f, null);
+                    RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 1f, 20f, 5f, 1f);
+                    RealHealthController.AddToExistingBaseEFTEffect(_Player, "Contusion", EBodyPart.Head, 1f, 20f, 5f, 0.5f);
+                    RealHealthController.AddBasesEFTEffect(_Player, "Tremor", EBodyPart.Head, 1f, 20f, 5f, 1f);
+
+                    addedEffect = true;
+                }
+            }
+        }
+    }
+
+    public class AdrenalineEffect : ICustomHealthEffect
+    {
+        public RealismHealthController RealHealthController { get; set; }
+        public EBodyPart BodyPart { get; set; }
+        public int? Duration { get; set; }
+        public int TimeExisted { get; set; }
+        public Player _Player { get; }
+        public int Delay { get; set; }
+        public EHealthEffectType EffectType { get; }
+        public float PositiveEffectDuration { get; }
+        public float NegativeEffectDuration { get; }
+        public float EffectStrength { get; }
+        private bool addedAdrenalineEffect = false;
+
+        public AdrenalineEffect(Player player, int? dur, int delay, float negativeEffectDur, float posEffectDur, float strength, RealismHealthController realismHealthController)
+        {
+            TimeExisted = 0;
+            Duration = dur;
+            _Player = player;
+            Delay = delay;
+            EffectType = EHealthEffectType.Adrenaline;
+            BodyPart = EBodyPart.Chest;
+            PositiveEffectDuration = posEffectDur;
+            NegativeEffectDuration = negativeEffectDur;
+            EffectStrength = strength;
+            RealHealthController = realismHealthController; 
+        }
+
+        public void Tick()
+        {
+            if (Delay <= 0)
+            {
+                if (!addedAdrenalineEffect)
+                {
+                    RealHealthController.HasAdrenalineEffect = true;
+                    RealHealthController.AddBaseEFTEffectIfNoneExisting(_Player, "PainKiller", EBodyPart.Head, 0f, PositiveEffectDuration, 3f, 1f);
+                    RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 0f, NegativeEffectDuration, 3f, EffectStrength);
+                    RealHealthController.AddBasesEFTEffect(_Player, "Tremor", EBodyPart.Head, PositiveEffectDuration, NegativeEffectDuration, 3f, EffectStrength);
+                    addedAdrenalineEffect = true;
+                }
+
+                Duration--;
+                if (Duration <= 0) 
+                {
+                    RealHealthController.HasAdrenalineEffect = false;
+                    Duration = 0;
+                }
+                   
+            }
+        }
+    }
+
+    public class ToxicityEffect : ICustomHealthEffect
+    {
+        public RealismHealthController RealHealthController { get; set; }
+        public EBodyPart BodyPart { get; set; }
+        public int? Duration { get; }
+        public int TimeExisted { get; set; }
+        public Player _Player { get; }
+        public int Delay { get; set; }
+        public EHealthEffectType EffectType { get; }
+
+        public ToxicityEffect(int? dur, Player player, int delay, RealismHealthController realHealthController)
+        {
+            TimeExisted = 0;
+            Duration = dur;
+            _Player = player;
+            Delay = delay;
+            EffectType = EHealthEffectType.Toxicity;
+            RealHealthController = realHealthController;
+            BodyPart = EBodyPart.Chest;
+        }
+
+        private float GetDrainRate()
+        {
+            switch (HazardTracker.TotalToxicity)
+            {
+                case < 50f:
+                    return 0f;
+                case <= 60f:
+                    return -0.2f;
+                case <= 70f:
+                    return -0.35f;
+                case <= 80f:
+                    return -0.5f;
+                case <= 90f:
+                    return -0.7f;
+                case < 100f:
+                    return -0.9f;
+                case >= 100f:
+                    return -1.1f;
+                default:
+                    return 0f;
+            }
+        }
+
+        public void Tick()
+        {
+            if (Delay <= 0)
+            {
+                TimeExisted++;
+                if (TimeExisted % 3 == 0 && HazardTracker.TotalToxicity >= 55f)
+                {
+                    for (int i = 0; i < RealHealthController.BodyParts.Length; i++)
+                    {
+                        EBodyPart bodyPart = RealHealthController.BodyParts[i];
+                        float baseDrainRate = GetDrainRate();
+                        baseDrainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
+                        _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 2f, baseDrainRate, null);
+                    }
+
+                }
+                if (TimeExisted % 5 == 0)
+                {
+                    _Player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
+                }
+
+            }
+        }
+    }
+
+    public class RadiationEffect : ICustomHealthEffect
+    {
+        public RealismHealthController RealHealthController { get; set; }
+        public EBodyPart BodyPart { get; set; }
+        public int? Duration { get; }
+        public int TimeExisted { get; set; }
+        public Player _Player { get; }
+        public int Delay { get; set; }
+        public EHealthEffectType EffectType { get; }
+
+        public RadiationEffect(int? dur, Player player, int delay, RealismHealthController realHealthController)
+        {
+            TimeExisted = 0;
+            Duration = dur;
+            _Player = player;
+            Delay = delay;
+            EffectType = EHealthEffectType.Radiation;
+            RealHealthController = realHealthController;
+            BodyPart = EBodyPart.Chest;
+        }
+
+        private float GetDrainRate()
+        {
+            switch (HazardTracker.TotalToxicity)
+            {
+                case < 80f:
+                    return 0f;
+                case <= 90f:
+                    return -0.05f;
+                case < 100f:
+                    return -0.1f;
+                case >= 100f:
+                    return -0.15f;
+                default:
+                    return 0f;
+            }
+        }
+
+        public void Tick()
+        {
+            if (Delay <= 0)
+            {
+                TimeExisted++;
+                if (TimeExisted % 3 == 0 && HazardTracker.TotalRadiation > 80f)
+                {
+                    for (int i = 0; i < RealHealthController.BodyParts.Length; i++)
+                    {
+                        EBodyPart bodyPart = RealHealthController.BodyParts[i];
+                        float baseDrainRate = GetDrainRate();
+                        baseDrainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
+                        _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 2f, baseDrainRate, null);
+                    }
+                }
+                if (TimeExisted % 5 == 0 && HazardTracker.TotalRadiation > 90f)
+                {
+                    if (!Plugin.RealHealthController.HasBaseEFTEffect(_Player, "PainKiller"))
+                    {
+                        _Player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
+                    }
+                }
+            }
+        }
+    }
+
+    public class RadationTreatmentEffect : ICustomHealthEffect
+    {
+        public RealismHealthController RealHealthController { get; set; }
+        public EBodyPart BodyPart { get; set; }
+        public int? Duration { get; set; }
+        public int TimeExisted { get; set; }
+        public Player _Player { get; }
+        public int Delay { get; set; }
+        public EHealthEffectType EffectType { get; }
+        private float _deradRate = 0f;
+        private bool _addedRate = false;
+
+        public RadationTreatmentEffect(Player player, int? dur, int delay, RealismHealthController realismHealthController, float rate)
+        {
+            TimeExisted = 0;
+            Duration = dur;
+            _Player = player;
+            Delay = delay;
+            RealHealthController = realismHealthController;
+            _deradRate = rate;
+            EffectType = EHealthEffectType.RadiationTreatment;
+            BodyPart = EBodyPart.Chest;
+        }
+
+        public void Tick()
+        {
+            if (Delay <= 0)
+            {
+                if (!_addedRate)
+                {
+                    HazardTracker.RadiationRateMeds += _deradRate;
+                    _addedRate = true;
+                }
+
+                Duration--;
+                if (Duration <= 0)
+                {
+                    HazardTracker.RadiationRateMeds -= _deradRate;
+                    Duration = 0;
+                }
+            }
+        }
+    }
+
+    public class DetoxificationEffect : ICustomHealthEffect
+    {
+        public RealismHealthController RealHealthController { get; set; }
+        public EBodyPart BodyPart { get; set; }
+        public int? Duration { get; set; }
+        public int TimeExisted { get; set; }
+        public Player _Player { get; }
+        public int Delay { get; set; }
+        public EHealthEffectType EffectType { get; }
+        private float _detoxRate = 0f;
+        private bool _addedRate = false;    
+
+        public DetoxificationEffect(Player player, int? dur, int delay, RealismHealthController realismHealthController, float rate)
+        {
+            TimeExisted = 0;
+            Duration = dur;
+            _Player = player;
+            Delay = delay;
+            RealHealthController = realismHealthController;
+            _detoxRate = rate;
+            EffectType = EHealthEffectType.Detoxification;
+            BodyPart = EBodyPart.Chest;
+        }
+
+        public void Tick()
+        {
+            if (Delay <= 0)
+            {
+                if (!_addedRate) 
+                {
+                    HazardTracker.ToxicityRateMeds += _detoxRate;
+                    _addedRate = true;
+                }
+         
+                Duration--;
+                if (Duration <= 0) 
+                {
+                    HazardTracker.ToxicityRateMeds -= _detoxRate;
+                    Duration = 0;
+                }
+            }
+        }
+    }
+
     public class StimShellEffect : ICustomHealthEffect
     {
+        public RealismHealthController RealHealthController { get; set; }
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }
         public int TimeExisted { get; set; }
@@ -355,7 +680,7 @@ namespace RealismMod
         public EStimType StimType { get; }
         private bool hasRemovedTrnqt = false;
 
-        public StimShellEffect(Player player, int? dur, int delay, EStimType stimType)
+        public StimShellEffect(Player player, int? dur, int delay, EStimType stimType, RealismHealthController realismHealthController)
         {
             TimeExisted = 0;
             Duration = dur;
@@ -364,16 +689,16 @@ namespace RealismMod
             EffectType = EHealthEffectType.Stim;
             BodyPart = EBodyPart.Head;
             StimType = stimType;
+            RealHealthController = realismHealthController;
         }
 
         public void Tick()
         {
             if (Delay <= 0)
             {
-
                 if (!hasRemovedTrnqt && (StimType == EStimType.Regenerative || StimType == EStimType.Clotting))
                 {
-                    Plugin.RealHealthController.RemoveEffectsOfType(EHealthEffectType.Tourniquet);
+                    RealHealthController.RemoveEffectsOfType(EHealthEffectType.Tourniquet);
                     NotificationManagerClass.DisplayMessageNotification("Removing Tourniquet Effects Due To Stim Type: " + StimType, EFT.Communications.ENotificationDurationType.Long);
                     hasRemovedTrnqt = true;
                 }
@@ -419,7 +744,7 @@ namespace RealismMod
     }
 
 
-    public class HealthRegen : EffectClass, IEffect, InterfaceOne, InterfaceTwo
+    public class HealthChange : EffectClass, IEffect, InterfaceOne, InterfaceTwo
     {
         public override void Started()
         {

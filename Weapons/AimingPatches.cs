@@ -1,12 +1,7 @@
 ﻿using Aki.Reflection.Patching;
-using BepInEx.Logging;
-using BSG.CameraEffects;
-using Comfort.Common;
 using EFT;
-using EFT.InputSystem;
 using EFT.InventoryLogic;
 using HarmonyLib;
-using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -19,6 +14,7 @@ namespace RealismMod
         private static bool wasToggled = false;
         public static bool AimStateChanged = false;
         public static bool HeadDeviceStateChanged = false;
+        public static float consoomTimer = 0f;
 
         public static void ADSCheck(Player player, EFT.Player.FirearmController fc)
         {
@@ -27,19 +23,18 @@ namespace RealismMod
                 FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
                 NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
                 ThermalVisionComponent thermComponent = player.ThermalVisionObserver.Component;
-                bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
-                bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
-                bool thermalIsOn = thermComponent != null && (thermComponent.Togglable == null || thermComponent.Togglable.On);
+                bool fsIsON = fsComponent != null && (fsComponent?.Togglable == null || fsComponent.Togglable.On);
+                bool nvgIsOn = nvgComponent != null && (nvgComponent?.Togglable == null || nvgComponent.Togglable.On);
+                bool thermalIsOn = thermComponent != null && (thermComponent?.Togglable == null || thermComponent.Togglable.On);
                 bool gearBlocksADS = !WeaponStats.WeaponCanFSADS && !PlayerState.GearAllowsADS;
-                bool fsBlocksADS = Plugin.EnableFSPatch.Value && ((fsIsON && gearBlocksADS) || (gearBlocksADS && (fsComponent.Togglable == null || fsComponent == null)));
+                bool fsBlocksADS = Plugin.EnableFSPatch.Value && ((fsIsON && gearBlocksADS) || (gearBlocksADS && (fsComponent == null || fsComponent?.Togglable == null)));
                 bool toobBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && player.ProceduralWeaponAnimation.CurrentScope.IsOptic) || thermalIsOn);
-
-                PlayerState.FSIsActive = fsIsON;
-                PlayerState.NVGIsActive = nvgIsOn || thermalIsOn;
+                GearController.FSIsActive = fsIsON;
+                GearController.NVGIsActive = nvgIsOn || thermalIsOn;
 
                 if (HeadDeviceStateChanged) 
                 {
-                    StatCalc.GetGearPenalty(Utils.GetYourPlayer());
+                    GearController.GetGearPenalty(Utils.GetYourPlayer());
                     HeadDeviceStateChanged = false;
                 }
 
@@ -69,7 +64,7 @@ namespace RealismMod
                     {
                         wasToggled = true;
                     }
-                    if (wasToggled && (!fsIsON && !nvgIsOn))
+                    if (wasToggled && (!fsIsON && !nvgIsOn) && StanceController.CurrentStance == EStance.ActiveAiming)
                     {
                         StanceController.WasActiveAim = false;
                         if (Plugin.ToggleActiveAim.Value)
@@ -119,6 +114,16 @@ namespace RealismMod
                 {
                     StanceController.PistolIsColliding = true;
                 }
+
+                if (PlayerState.BlockFSWhileConsooming) 
+                {
+                    consoomTimer += Time.deltaTime;
+                    if (consoomTimer >= 1f)
+                    {
+                        PlayerState.BlockFSWhileConsooming = false;
+                        consoomTimer = 0f;
+                    }
+                }
             }
         }
     }
@@ -127,10 +132,8 @@ namespace RealismMod
     //look for ecommand.togglegoggles
     public class ToggleHeadDevicePatch : ModulePatch
     {
-        private static FieldInfo playerField;
         protected override MethodBase GetTargetMethod()
         {
-            playerField = AccessTools.Field(typeof(MovementContext), "_player");
             return typeof(Player).GetMethod("method_17", BindingFlags.Instance | BindingFlags.Public);
         }
 
@@ -140,9 +143,11 @@ namespace RealismMod
             if (__instance.IsYourPlayer)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
-                if (fc == null) return true;
-                bool isIdling = fc.FirearmsAnimator.IsIdling();
-                return isIdling;
+                if (fc != null)
+                {
+                    return fc.FirearmsAnimator.IsIdling() && !PlayerState.BlockFSWhileConsooming;
+                };
+                return !PlayerState.BlockFSWhileConsooming;
             }
             return true;
         }
@@ -161,7 +166,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(MovementContext __instance, bool isAiming)
         {
-
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {

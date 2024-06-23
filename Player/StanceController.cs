@@ -1,23 +1,12 @@
-﻿using Aki.Reflection.Patching;
-using BepInEx.Logging;
-using Comfort.Common;
-using CustomPlayerLoopSystem;
+﻿using Comfort.Common;
 using EFT;
 using EFT.Animations;
 using EFT.Animations.NewRecoil;
-using EFT.InputSystem;
 using EFT.InventoryLogic;
-using EFT.UI;
 using HarmonyLib;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using UnityEngine;
-using UnityEngine.UI;
-using static ObjectInHandsAnimator;
-using Random = System.Random;
 
 namespace RealismMod
 {
@@ -45,8 +34,8 @@ namespace RealismMod
     {
         //need to change to type WildSpawnType, and somehow get PMC type
         public static string[] botsToUseTacticalStances = { "bossKolontay", "sptBear", "sptUsec", "exUsec", "pmcBot", "bossKnight", "followerBigPipe", "followerBirdEye", "bossGluhar", "followerGluharAssault", "followerGluharScout", "followerGluharSecurity", "followerGluharSnipe" };
-/*        public static Dictionary<string, bool> LightDictionary = new Dictionary<string, bool>();*/
-      
+        /*        public static Dictionary<string, bool> LightDictionary = new Dictionary<string, bool>();*/
+
         public static Player.BetterValueBlender StanceBlender = new Player.BetterValueBlender
         {
             Speed = 5f,
@@ -146,7 +135,7 @@ namespace RealismMod
         private static float tacSprintTime = 0.0f;
         private static bool canDoTacSprintTimer = false;
 
-        private static float getRestoreRate() 
+        private static float GetRestoreRate()
         {
             float baseRestoreRate = 0f;
             if (CurrentStance == EStance.PatrolStance || IsMounting)
@@ -169,7 +158,7 @@ namespace RealismMod
             {
                 baseRestoreRate = 1f;
             }
-            else 
+            else
             {
                 baseRestoreRate = 4f;
             }
@@ -177,7 +166,7 @@ namespace RealismMod
             return (1f - ((WeaponStats.ErgoFactor * formfactor) / 100f)) * baseRestoreRate * PlayerState.ADSInjuryMulti;
         }
 
-        private static float getDrainRate(Player player)
+        private static float GetDrainRate(Player player)
         {
             float baseDrainRate = 0f;
             if (player.Physical.HoldingBreath)
@@ -188,13 +177,13 @@ namespace RealismMod
             {
                 baseDrainRate = 0.15f;
             }
-            else if (IsDoingTacSprint) 
+            else if (IsDoingTacSprint)
             {
-                baseDrainRate = 0.1f;
+                baseDrainRate = 0.25f;
             }
-            else if (CurrentStance == EStance.ActiveAiming && Plugin.EnableIdleStamDrain.Value)
+            else if (CurrentStance == EStance.ActiveAiming)
             {
-                baseDrainRate = 0.05f;
+                baseDrainRate = 0.075f;
             }
             else
             {
@@ -212,8 +201,8 @@ namespace RealismMod
             bool doRegen = ((isInRegenableStance && !IsAiming && !IsFiringFromStance && !IsLeftShoulder) || isInRegenableState) && !PlayerState.IsSprinting;
             bool shouldDoIdleDrain = (IsIdle() || IsLeftShoulder) && Plugin.EnableIdleStamDrain.Value;
             bool shouldInterruptRegen = isInRegenableStance && (IsAiming || IsFiringFromStance);
-            bool doDrain = ((shouldInterruptRegen || !isInRegenableStance || shouldDoIdleDrain) && !isInRegenableState && !PlayerState.IsSprinting) || (IsDoingTacSprint && Plugin.EnableIdleStamDrain.Value);
-            bool doNeutral = PlayerState.IsSprinting || player.IsInventoryOpened;
+            bool doNeutral = PlayerState.IsSprinting || player.IsInventoryOpened || (CurrentStance == EStance.ActiveAiming && player.Pose == EPlayerPose.Duck);
+            bool doDrain = ((shouldInterruptRegen || !isInRegenableStance || shouldDoIdleDrain) && !isInRegenableState && !doNeutral) || (IsDoingTacSprint && Plugin.EnableIdleStamDrain.Value);
             EStance stance = CurrentStance;
 
             if (IsAiming != wasAiming || regenStam != doRegen || drainStam != doDrain || neutral != doNeutral || lastRecordedStance != CurrentStance || IsMounting != wasMounting || IsBracing != wasBracing)
@@ -237,12 +226,12 @@ namespace RealismMod
             //drain
             if (doDrain)
             {
-                player.Physical.HandsStamina.Multiplier = getDrainRate(player);
+                player.Physical.HandsStamina.Multiplier = GetDrainRate(player);
             }
             //regen
             else if (doRegen)
             {
-                player.Physical.HandsStamina.Multiplier = getRestoreRate();
+                player.Physical.HandsStamina.Multiplier = GetRestoreRate();
             }
             //no drain or regen
             else if (doNeutral)
@@ -346,14 +335,14 @@ namespace RealismMod
             if (WeaponStats.HasBayonet)
             {
 
-                int rndNum = UnityEngine.Random.Range(1, 10);
+                int rndNum = UnityEngine.Random.Range(1, 11);
                 string track = rndNum <= 5 ? "knife_1.wav" : "knife_2.wav";
-                Singleton<BetterAudio>.Instance.PlayAtPoint(player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim.position, Plugin.LoadedAudioClips[track], 2, BetterAudio.AudioSourceGroupType.Distant, 100, 2, EOcclusionTest.Continuous);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim.position, Plugin.HitAudioClips[track], 2, BetterAudio.AudioSourceGroupType.Distant, 100, 2, EOcclusionTest.Continuous);
             }
             player.Physical.ConsumeAsMelee(2f + (WeaponStats.ErgoFactor / 100f));
         }
 
-        private static void toggleStance(EStance targetStance, bool setPrevious = false, bool setPrevisousAsCurrent = false) 
+        private static void toggleStance(EStance targetStance, bool setPrevious = false, bool setPrevisousAsCurrent = false)
         {
             if (setPrevious) StoredStance = CurrentStance;
             if (CurrentStance == targetStance) CurrentStance = EStance.None;
@@ -361,7 +350,7 @@ namespace RealismMod
             if (setPrevisousAsCurrent) StoredStance = CurrentStance;
         }
 
-        private static void toggleHighReady() 
+        private static void toggleHighReady()
         {
             StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
             toggleStance(EStance.HighReady, false, true);
@@ -384,7 +373,7 @@ namespace RealismMod
 
         private static void handleScrollInput(float scrollIncrement)
         {
-            if (scrollIncrement == -1) 
+            if (scrollIncrement == -1)
             {
                 if (CurrentStance == EStance.HighReady)
                 {
@@ -393,7 +382,7 @@ namespace RealismMod
                 else if (CurrentStance != EStance.LowReady && HasResetHighReady)
                 {
                     toggleLowReady();
-                }      
+                }
             }
             if (scrollIncrement == 1 && CurrentStance != EStance.HighReady)
             {
@@ -410,7 +399,7 @@ namespace RealismMod
 
         public static void StanceState()
         {
-            if (Utils.WeaponReady && Utils.GetYourPlayer().MovementContext.CurrentState.Name != EPlayerState.Stationary)
+            if (Utils.WeaponIsReady && Utils.GetYourPlayer().MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 if (DoDampingTimer)
                 {
@@ -471,7 +460,7 @@ namespace RealismMod
                     //active aim
                     if (!Plugin.ToggleActiveAim.Value)
                     {
-                        if ((MeleeIsToggleable && Input.GetKey(Plugin.ActiveAimKeybind.Value.MainKey) && Plugin.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKey(KeyCode.Mouse1) && !PlayerState.IsAllowedADS))
+                        if ((!IsAiming && MeleeIsToggleable && Input.GetKey(Plugin.ActiveAimKeybind.Value.MainKey) && Plugin.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKey(KeyCode.Mouse1) && !PlayerState.IsAllowedADS))
                         {
                             if (!HaveSetActiveAim)
                             {
@@ -494,7 +483,7 @@ namespace RealismMod
                     }
                     else
                     {
-                        if ((MeleeIsToggleable && Input.GetKeyDown(Plugin.ActiveAimKeybind.Value.MainKey) && Plugin.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerState.IsAllowedADS))
+                        if ((!IsAiming && MeleeIsToggleable && Input.GetKeyDown(Plugin.ActiveAimKeybind.Value.MainKey) && Plugin.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerState.IsAllowedADS))
                         {
                             StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
                             toggleStance(EStance.ActiveAiming);
@@ -562,7 +551,7 @@ namespace RealismMod
                         CurrentStance = EStance.None;
                         HaveSetAiming = true;
                     }
-                    else if (HaveSetAiming) 
+                    else if (HaveSetAiming)
                     {
                         CurrentStance = WasActiveAim ? EStance.ActiveAiming : StoredStance;
                         HaveSetAiming = false;
@@ -572,15 +561,15 @@ namespace RealismMod
 
                 if (IsFiringFromStance)
                 {
-                    bool cancelCurrentStance = 
-                        CurrentStance == EStance.HighReady || 
+                    bool cancelCurrentStance =
+                        CurrentStance == EStance.HighReady ||
                         CurrentStance == EStance.LowReady ||
                         CurrentStance == EStance.PatrolStance;
-/*                   bool cancelStoredStance = 
-                        StoredStance == EStance.HighReady || 
-                        (StoredStance == EStance.LowReady && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed) ||
-                        StoredStance == EStance.PatrolStance;*/
-                    if (cancelCurrentStance) 
+                    /*                   bool cancelStoredStance = 
+                                            StoredStance == EStance.HighReady || 
+                                            (StoredStance == EStance.LowReady && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed) ||
+                                            StoredStance == EStance.PatrolStance;*/
+                    if (cancelCurrentStance)
                     {
                         CurrentStance = EStance.None;
                         StoredStance = EStance.None;
@@ -600,7 +589,10 @@ namespace RealismMod
                     }
                 }
 
-                if ((Plugin.RealHealthController.ArmsAreIncapacitated || Plugin.RealHealthController.HasOverdosed) && !IsAiming && !IsFiringFromStance && CurrentStance != EStance.PistolCompressed && CurrentStance != EStance.PatrolStance && CurrentStance != EStance.ShortStock && CurrentStance != EStance.ActiveAiming && CurrentStance != EStance.HighReady && MeleeIsToggleable)
+                if ((Plugin.RealHealthController.HealthConditionForcedLowReady) 
+                    && !IsAiming && !IsFiringFromStance && CurrentStance != EStance.PistolCompressed 
+                    && CurrentStance != EStance.PatrolStance && CurrentStance != EStance.ShortStock 
+                    && CurrentStance != EStance.ActiveAiming && MeleeIsToggleable)
                 {
                     StanceBlender.Target = 1f;
                     CurrentStance = EStance.LowReady;
@@ -611,21 +603,20 @@ namespace RealismMod
                 else IsInForcedLowReady = false;
             }
 
-            HighReadyManipBuff = CurrentStance == EStance.HighReady ? 1.18f : 1f;
+            HighReadyManipBuff = CurrentStance == EStance.HighReady ? 1.22f : 1f;
             ActiveAimManipBuff = CurrentStance == EStance.ActiveAiming && Plugin.ActiveAimReload.Value ? 1.15f : 1f;
-            LowReadyManipBuff = CurrentStance == EStance.LowReady ? 1.18f : 1f;
+            LowReadyManipBuff = CurrentStance == EStance.LowReady ? 1.22f : 1f;
 
             if (ShouldResetStances)
             {
                 stanceManipCancelTimer();
             }
 
-            if (DidWeaponSwap)
+            if (DidWeaponSwap || (!Plugin.RememberStance.Value && !Utils.WeaponIsReady) || !Utils.IsReady)
             {
                 IsMounting = false;
                 CurrentStance = EStance.None;
                 StoredStance = EStance.None;
-                StanceTargetPosition = Vector3.zero;
                 StanceBlender.Target = 0f;
                 StanceIndex = 0;
                 WasActiveAim = false;
@@ -639,9 +630,9 @@ namespace RealismMod
             float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 100f);
             float ergoMulti = Mathf.Clamp(WeaponStats.ErgoStanceSpeed, 0.65f, 1.45f);
-            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.55f)), 0.5f, 1.45f);
+            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.55f)), 0.5f, 1.45f);
             float balanceFactor = 1f + (WeaponStats.Balance / 100f);
-            float rotationBalanceFactor = WeaponStats.Balance < -5f ? balanceFactor * -1f : WeaponStats.Balance > 5f ? balanceFactor: 1f;
+            float rotationBalanceFactor = WeaponStats.Balance < -5f ? balanceFactor * -1f : WeaponStats.Balance > 5f ? balanceFactor : 1f;
             float wiggleBalanceFactor = WeaponStats.Balance < -5f ? balanceFactor * -1f : WeaponStats.Balance > 5f ? balanceFactor : Mathf.Abs(balanceFactor) <= 4f ? 0.75f : Mathf.Abs(balanceFactor) <= 3f ? 0.5f : 0.25f;
             float resetErgoMulti = (1f - stanceMulti) + 1f;
 
@@ -651,8 +642,12 @@ namespace RealismMod
             float movementFactor = PlayerState.IsMoving ? 1.2f : 1f;
 
             Quaternion pistolRevertQuaternion = Quaternion.Euler(Plugin.PistolResetRotationX.Value * -rotationBalanceFactor, Plugin.PistolResetRotationY.Value, Plugin.PistolResetRotationZ.Value);
-            Vector3 pistolTargetPosition = useThirdPersonStance ? new Vector3(Plugin.PistolThirdPersonPositionX.Value, Plugin.PistolThirdPersonPositionY.Value, Plugin.PistolThirdPersonPositionZ.Value) : new Vector3(Plugin.PistolOffsetX.Value, Plugin.PistolOffsetY.Value, Plugin.PistolOffsetZ.Value);
-            Vector3 pistolTargetRotation = useThirdPersonStance ? new Vector3(Plugin.PistolThirdPersonRotationX.Value, Plugin.PistolThirdPersonRotationY.Value, Plugin.PistolThirdPersonRotationZ.Value) : new Vector3(Plugin.PistolRotationX.Value, Plugin.PistolRotationY.Value, Plugin.PistolRotationZ.Value);
+            Vector3 pistolPMCTargetPosition = useThirdPersonStance ? new Vector3(Plugin.PistolThirdPersonPositionX.Value, Plugin.PistolThirdPersonPositionY.Value, Plugin.PistolThirdPersonPositionZ.Value) : new Vector3(Plugin.PistolOffsetX.Value, Plugin.PistolOffsetY.Value, Plugin.PistolOffsetZ.Value);
+            Vector3 pistolScavTargetPosition = useThirdPersonStance ? new Vector3(-0.015f, 0.02f, -0.07f) : new Vector3(0.025f, 0f, -0.04f);
+            Vector3 pistolTargetPosition = PlayerState.IsScav ? pistolScavTargetPosition : pistolPMCTargetPosition;
+            Vector3 pistolPMCTargetRotation = useThirdPersonStance ? new Vector3(Plugin.PistolThirdPersonRotationX.Value, Plugin.PistolThirdPersonRotationY.Value, Plugin.PistolThirdPersonRotationZ.Value) : new Vector3(Plugin.PistolRotationX.Value, Plugin.PistolRotationY.Value, Plugin.PistolRotationZ.Value);
+            Vector3 pistolScavTargetRotation = useThirdPersonStance ? new Vector3(-2f, -5f, 0f) : new Vector3(1f, -8f, 0f);
+            Vector3 pistolTargetRotation = PlayerState.IsScav ? pistolScavTargetRotation : pistolPMCTargetRotation;    
             Quaternion pistolTargetQuaternion = Quaternion.Euler(pistolTargetRotation);
             Quaternion pistolMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.PistolAdditionalRotationX.Value, Plugin.PistolAdditionalRotationY.Value, Plugin.PistolAdditionalRotationZ.Value));
 
@@ -687,7 +682,7 @@ namespace RealismMod
                     rotationSpeed = 4f * stanceMulti * dt * Plugin.PistolAdditionalRotationSpeedMulti.Value * stanceMulti;
                     stanceRotation = pistolMiniTargetQuaternion;
                 }
-                else 
+                else
                 {
                     rotationSpeed = 4f * stanceMulti * dt * Plugin.PistolRotationSpeedMulti.Value * stanceMulti * (useThirdPersonStance ? Plugin.ThirdPersonRotationSpeed.Value : 1f);
                     stanceRotation = pistolTargetQuaternion;
@@ -745,7 +740,7 @@ namespace RealismMod
             float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 150f);
             float ergoMulti = Mathf.Clamp(WeaponStats.ErgoStanceSpeed * 1.15f, 0.55f, 1.2f);
-            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.65f)), 0.45f, 1.2f);
+            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.65f)), 0.45f, 1.2f);
             float resetErgoMulti = (1f - stanceMulti) + 1f;
 
             float wiggleErgoMulti = Mathf.Clamp((WeaponStats.ErgoStanceSpeed * 0.5f), 0.1f, 1f);
@@ -796,7 +791,10 @@ namespace RealismMod
                 pwa.HandsContainer.WeaponRoot.localPosition = WeaponOffsetPosition;
             }
 
-            if (Plugin.EnableTacSprint.Value && PlayerState.IsSprinting && CurrentStance != EStance.ActiveAiming && (CurrentStance == EStance.HighReady || StoredStance == EStance.HighReady) && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed && !fc.Weapon.IsBeltMachineGun && WeaponStats.TotalWeaponWeight <= 5.5f)
+            if (Plugin.EnableTacSprint.Value && PlayerState.IsSprinting && CurrentStance != EStance.ActiveAiming
+                && (CurrentStance == EStance.HighReady || StoredStance == EStance.HighReady)
+                && !fc.Weapon.IsBeltMachineGun && WeaponStats.TotalWeaponWeight <= 5.1f && WeaponStats.TotalWeaponLength <= 6f
+                && !PlayerState.IsScav && !Plugin.RealHealthController.HealthConditionPreventsTacSprint)
             {
                 IsDoingTacSprint = true;
                 player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
@@ -808,30 +806,30 @@ namespace RealismMod
                 tacSprintTime += Time.deltaTime;
                 if (tacSprintTime >= 0.5f)
                 {
-                    player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, fc.Item.CalculateCellSize().X);
+                    player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, WeaponStats.TotalWeaponLength);
                     tacSprintTime = 0f;
                     canDoTacSprintTimer = false;
                 }
                 IsDoingTacSprint = false;
             }
-            else 
+            else
             {
                 IsDoingTacSprint = false;
             }
 
-    /*        if (Plugin.StanceToggleDevice.Value)
-            {
-                if (!toggledLight && (IsHighReady || IsLowReady))
-                {
-                    ToggleDevice(fc, false);
-                    toggledLight = true;
-                }
-                if (toggledLight && !IsHighReady && !IsLowReady)
-                {
-                    ToggleDevice(fc, true);
-                    toggledLight = false;
-                }
-            }*/
+            /*        if (Plugin.StanceToggleDevice.Value)
+                    {
+                        if (!toggledLight && (IsHighReady || IsLowReady))
+                        {
+                            ToggleDevice(fc, false);
+                            toggledLight = true;
+                        }
+                        if (toggledLight && !IsHighReady && !IsLowReady)
+                        {
+                            ToggleDevice(fc, true);
+                            toggledLight = false;
+                        }
+                    }*/
 
             ////short-stock////
             if (CurrentStance == EStance.ShortStock && !pwa.IsAiming && !CancelShortStock && !IsBlindFiring && !pwa.LeftStance && !PlayerState.IsSprinting)
@@ -882,7 +880,7 @@ namespace RealismMod
                     rotationSpeed = 4f * stanceMulti * dt * Plugin.ShortStockAdditionalRotationSpeedMulti.Value * (useThirdPersonStance ? Plugin.ThirdPersonRotationSpeed.Value : 1f) * transitionRotationFactor;
                     stanceRotation = shortStockMiniTargetQuaternion;
                 }
-                else 
+                else
                 {
                     rotationSpeed = 4f * stanceMulti * dt * Plugin.ShortStockRotationMulti.Value * (useThirdPersonStance ? Plugin.ThirdPersonRotationSpeed.Value : 1f) * transitionRotationFactor;
                     stanceRotation = shortStockTargetQuaternion;
@@ -971,7 +969,7 @@ namespace RealismMod
                         rotationSpeed = 3f * highReadyStanceMulti * dt * Plugin.HighReadyRotationMulti.Value * (useThirdPersonStance ? Plugin.ThirdPersonRotationSpeed.Value * 0.7f : 1f);
                         stanceRotation = lowReadyTargetQuaternion;
                     }
-                    else 
+                    else
                     {
                         rotationSpeed = 3f * highReadyStanceMulti * dt * Plugin.HighReadyAdditionalRotationSpeedMulti.Value * (useThirdPersonStance ? Plugin.ThirdPersonRotationSpeed.Value * 0.2f : 1f);
                         stanceRotation = highReadyMiniTargetQuaternion;
@@ -1015,7 +1013,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                if(!useThirdPersonStance) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(15, -10f, -20) * movementFactor, true); //-10f, -10f, -50f
+                if (!useThirdPersonStance) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(15, -10f, -20) * movementFactor, true); //-10f, -10f, -50f
                 DidStanceWiggle = false;
                 stanceRotation = Quaternion.identity;
                 isResettingHighReady = false;
@@ -1071,7 +1069,7 @@ namespace RealismMod
                     rotationSpeed = 4f * stanceMulti * dt * Plugin.LowReadyAdditionalRotationSpeedMulti.Value * (useThirdPersonStance ? Plugin.ThirdPersonRotationSpeed.Value * 0.8f : 1f) * transitionRotationFactor;
                     stanceRotation = lowReadyMiniTargetQuaternion;
                 }
-                else 
+                else
                 {
                     rotationSpeed = 4f * stanceMulti * dt * Plugin.LowReadyRotationMulti.Value * (useThirdPersonStance ? Plugin.ThirdPersonRotationSpeed.Value * 0.8f : 1f) * transitionRotationFactor;
                     stanceRotation = lowReadyTargetQuaternion;
@@ -1082,7 +1080,7 @@ namespace RealismMod
 
                 if ((StanceBlender.Value >= 1f || StanceTargetPosition == lowReadyTargetPosition) && !DidStanceWiggle && !useThirdPersonStance)
                 {
-                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-10f, 10f, -5f) * movementFactor, true); 
+                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-10f, 10f, -5f) * movementFactor, true);
                     DidStanceWiggle = true;
                 }
             }
@@ -1103,7 +1101,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                if(!useThirdPersonStance) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(7f, 4f, 25f) * movementFactor, true);
+                if (!useThirdPersonStance) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(7f, 4f, 25f) * movementFactor, true);
                 DidStanceWiggle = false;
                 stanceRotation = Quaternion.identity;
                 isResettingLowReady = false;
@@ -1116,6 +1114,8 @@ namespace RealismMod
                 float shortToActive = 1f;
                 float highToActive = 1f;
                 float lowToActive = 1f;
+                float highToActiveRotation = 1f;
+                float lowToActiveRotation = 1f;
                 isResettingActiveAim = false;
                 hasResetActiveAim = false;
                 hasResetMelee = true;
@@ -1129,10 +1129,12 @@ namespace RealismMod
                     if (!hasResetHighReady)
                     {
                         highToActive = 1f;
+                        highToActiveRotation = 1.2f;
                     }
                     if (!hasResetLowReady)
                     {
-                        lowToActive = 1.15f;
+                        lowToActive = 1f;
+                        lowToActiveRotation = 1.35f;
                     }
                 }
                 else
@@ -1151,8 +1153,8 @@ namespace RealismMod
                     CanResetDamping = false;
                 }
 
-                float transitionPositionFactor = shortToActive * highToActive; //* lowToActive
-                float transitionRotationFactor = shortToActive * highToActive * lowToActive; //(transitionPositionFactor != 1f ? 0.9f : 1f)
+                float transitionPositionFactor = shortToActive * highToActive * lowToActive;
+                float transitionRotationFactor = shortToActive * highToActiveRotation * lowToActiveRotation; //(transitionPositionFactor != 1f ? 0.9f : 1f)
 
                 if (StanceBlender.Value < 1f)
                 {
@@ -1162,9 +1164,9 @@ namespace RealismMod
                 }
                 else
                 {
-                   StanceTargetPosition = Vector3.Lerp(StanceTargetPosition, activeAimTargetPosition, Plugin.StanceTransitionSpeedMulti.Value * stanceMulti * transitionPositionFactor * dt);
-                   rotationSpeed = 4f * stanceMulti * dt * Plugin.ActiveAimRotationMulti.Value * beltfedFactor * (useThirdPersonStance ? Plugin.ThirdPersonRotationSpeed.Value : 1f) * transitionRotationFactor;
-                   stanceRotation = activeAimTargetQuaternion;
+                    StanceTargetPosition = Vector3.Lerp(StanceTargetPosition, activeAimTargetPosition, Plugin.StanceTransitionSpeedMulti.Value * stanceMulti * transitionPositionFactor * dt);
+                    rotationSpeed = 4f * stanceMulti * dt * Plugin.ActiveAimRotationMulti.Value * beltfedFactor * (useThirdPersonStance ? Plugin.ThirdPersonRotationSpeed.Value : 1f) * transitionRotationFactor;
+                    stanceRotation = activeAimTargetQuaternion;
                 }
 
                 StanceBlender.Speed = Plugin.ActiveAimSpeedMulti.Value * stanceMulti * beltfedFactor * (useThirdPersonStance ? Plugin.ThirdPersonPositionSpeed.Value : 1f);
@@ -1192,7 +1194,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                if(!useThirdPersonStance) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-10f, 5f, -25f) * movementFactor, true);
+                if (!useThirdPersonStance) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-10f, 5f, -25f) * movementFactor, true);
                 DidStanceWiggle = false;
 
                 stanceRotation = Quaternion.identity;
@@ -1225,7 +1227,7 @@ namespace RealismMod
                 float initialPosDistance = Vector3.Distance(StanceTargetPosition, meleeTargetPosition);
                 float finalPosDistance = Vector3.Distance(StanceTargetPosition, meleeTargetPosition2);
 
-                if (initialPosDistance > 0.001f && !didHalfMeleeAnim) 
+                if (initialPosDistance > 0.001f && !didHalfMeleeAnim)
                 {
                     stanceRotation = meleeTargetQuaternion;
                     StanceTargetPosition = Vector3.Lerp(StanceTargetPosition, meleeTargetPosition, Plugin.StanceTransitionSpeedMulti.Value * Mathf.Clamp(stanceMulti, 0.75f, 1f) * dt * 1.5f * beltfedFactor);
@@ -1285,11 +1287,11 @@ namespace RealismMod
         {
             if (playSound)
             {
-                AccessTools.Method(typeof(Player), "method_46").Invoke(player, new object[] { volume });
+                player.method_46(volume);
             }
 
             NewRecoilShotEffect newRecoil = pwa.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
-            if (isADS) 
+            if (isADS)
             {
                 newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = 0.3f * wiggleFactor;
                 pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = 0.3f * wiggleFactor;
@@ -1417,5 +1419,25 @@ namespace RealismMod
                 IsMounting = false;
             }
         }
+
+        public static Dictionary<string, Vector3> GetWeaponOffsets()
+        {
+            return new Dictionary<string, Vector3>{
+            { "5b0bbe4e5acfc40dc528a72d", new Vector3(0f, 0f, -0.035f)}, //sa58
+            { "6183afd850224f204c1da514", new Vector3(0f, -0.012f, 0f)}, //mk17
+            { "6165ac306ef05c2ce828ef74", new Vector3(0f, -0.012f, 0f)}, //mk17 fde
+            { "6184055050224f204c1da540", new Vector3(0f, -0.012f, 0f)}, //mk16
+            { "618428466ef05c2ce828f218", new Vector3(0f, -0.012f, 0f)}, //mk16 fde
+            { "5ae08f0a5acfc408fb1398a1", new Vector3(0f, 0f, -0.005f)}, //mosin 
+            { "5bfd297f0db834001a669119", new Vector3(0f, 0f, -0.005f)}, //mosin s
+            { "54491c4f4bdc2db1078b4568", new Vector3(0f, 0f, -0.01f)}, //mp133
+            { "56dee2bdd2720bc8328b4567", new Vector3(0f, 0f, -0.01f)}, //mp153
+            { "606dae0ab0e443224b421bb7", new Vector3(0f, 0f, -0.01f)}, //mp155
+            { "6259b864ebedf17603599e88", new Vector3(0f, 0f, -0.02f)}, //M3
+            { "mechM3v1", new Vector3(0f, 0f, -0.02f)}, //M3 mechanic
+        /*    { "", new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value)}, //*/
+            };
+        }
     }
 }
+

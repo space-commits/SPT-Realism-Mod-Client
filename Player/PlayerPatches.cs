@@ -1,27 +1,21 @@
 ﻿using Aki.Reflection.Patching;
-using Aki.Reflection.Utils;
-using BepInEx.Logging;
+using Comfort.Common;
 using EFT;
 using EFT.Animations;
+using EFT.Animations.NewRecoil;
+using EFT.InputSystem;
 using EFT.InventoryLogic;
 using HarmonyLib;
-using System;
+using RealismMod.Weapons;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 using UnityEngine;
-using WeaponSkills = EFT.SkillManager.GClass1771;
-using WeightClass = GClass754<float>;
-using Comfort.Common;
-using InputClass = Class1451;
 using static EFT.Player;
-using StatusStruct = GStruct414<GInterface324>;
+using InputClass = Class1451;
 using ItemEventClass = GClass2767;
+using StatusStruct = GStruct414<GInterface324>;
+using WeaponSkills = EFT.SkillManager.GClass1771;
 using WeaponStateClass = GClass1668;
-using EFT.InputSystem;
-using EFT.Animations.NewRecoil;
-using EFT.UI;
-using RealismMod.Weapons;
 
 namespace RealismMod
 {
@@ -48,17 +42,23 @@ namespace RealismMod
             fc.FirearmsAnimator.SetAmmoOnMag(fc.Weapon.GetCurrentMagazineCount());
             weaponStateClass.SetRoundIntoWeapon(bullet, 0);
             fc.FirearmsAnimator.Rechamber(true);
-            Plugin.startRechamberTimer = true;
-            Plugin.chamberTimer = 0f;
+            Plugin.StartRechamberTimer = true;
+            Plugin.ChamberTimer = 0f;
         }
 
 
         [PatchPrefix]
         private static bool PatchPrefix(InputClass __instance, ECommand command)
         {
+            if (StanceController.CurrentStance != EStance.PistolCompressed &&  (command == ECommand.SelectFirstPrimaryWeapon || command == ECommand.SelectSecondPrimaryWeapon || command == ECommand.QuickSelectSecondaryWeapon))
+            {
+                StanceController.DidWeaponSwap = true;
+                return true;
+            }
             if (command == ECommand.ToggleStepLeft || command == ECommand.ToggleStepRight || command == ECommand.ReturnFromRightStep || command == ECommand.ReturnFromLeftStep) 
             {
                 StanceController.IsMounting = false;
+                return true;
             }
             if (command == ECommand.ChamberUnload && Plugin.ServerConfig.manual_chambering)
             {
@@ -71,10 +71,12 @@ namespace RealismMod
                     RechamberRound(fc, player);
                     return false;
                 }
+                return true;
             }
             if (command == ECommand.ToggleGoggles || command == ECommand.ChangeScope || command == ECommand.ChangeScopeMagnification)
             {
                 AimController.HeadDeviceStateChanged = true;
+                return true;
             }
             if (command == ECommand.ToggleBreathing && Plugin.ServerConfig.recoil_attachment_overhaul && StanceController.IsAiming)
             {
@@ -82,6 +84,7 @@ namespace RealismMod
                 if (player.Physical.HoldingBreath) return true;
                 FirearmController fc = player.HandsController as FirearmController;
                 StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.25f, 0.25f, 0.5f));
+                return true;
             }
             if (Plugin.ServerConfig.enable_stances && Plugin.BlockFiring.Value && command == ECommand.ToggleShooting 
                 && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed 
@@ -102,7 +105,6 @@ namespace RealismMod
         }
     }
 
-
     public class SyncWithCharacterSkillsPatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -120,12 +122,12 @@ namespace RealismMod
             if (player.IsYourPlayer)
             {
                 WeaponSkills weaponInfo = player.Skills.GetWeaponInfo(__instance.Item);
+                PlayerState.StrengthWeightBuff = player.Skills.StrengthBuffLiftWeightInc.Value;
                 PlayerState.StrengthSkillAimBuff = player.Skills.StrengthBuffAimFatigue.Value;
                 PlayerState.ReloadSkillMulti = weaponInfo.ReloadSpeed;
                 PlayerState.FixSkillMulti = weaponInfo.FixSpeed;
                 PlayerState.WeaponSkillErgo = weaponInfo.DeltaErgonomics;
                 PlayerState.AimSkillADSBuff = weaponInfo.AimSpeed;
-                PlayerState.StressResistanceFactor = player.Skills.StressPain.Value;
             }
         }
     }
@@ -137,49 +139,15 @@ namespace RealismMod
             return typeof(Inventory).GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static float getTotalWeight(Inventory invClass)
-        {
-            float modifiedWeight = 0f;
-            float trueWeight = 0f;
-            foreach (EquipmentSlot equipmentSlot in EquipmentClass.AllSlotNames)
-            {
-                Slot slot = invClass.Equipment.GetSlot(equipmentSlot);
-                IEnumerable<Item> items = slot.Items;
-                foreach (Item item in items)
-                {
-                    float itemTotalWeight = item.GetSingleItemTotalWeight();
-                    trueWeight += itemTotalWeight;
-                    if (equipmentSlot == EquipmentSlot.Backpack || equipmentSlot == EquipmentSlot.TacticalVest || equipmentSlot == EquipmentSlot.ArmorVest || equipmentSlot == EquipmentSlot.Headwear)
-                    {
-                        modifiedWeight += itemTotalWeight * GearStats.ComfortModifier(item);
-                    }
-                    else
-                    {
-                        modifiedWeight += itemTotalWeight;
-                    }
-                }
-            }
-
-            if (Plugin.EnableLogging.Value)
-            {
-                Logger.LogWarning("==================");
-                Logger.LogWarning("Total Modified Weight " + modifiedWeight);
-                Logger.LogWarning("Total Unmodified Weight " + trueWeight);
-                Logger.LogWarning("==================");
-            }
-
-            return modifiedWeight;
-        }
-
         [PatchPrefix]
         private static bool PatchPrefix(Inventory __instance, ref float __result)
         {
-            __result = getTotalWeight(__instance);
+            __result = GearController.GetModifiedInventoryWeight(__instance);
             return false;
         }
     }
 
-    public class PlayerInitPatch    : ModulePatch
+    public class PlayerInitPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -189,12 +157,20 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player __instance)
         {
-
-            if (__instance.IsYourPlayer)
+           if (__instance.IsYourPlayer)
             {
                 StatCalc.CalcPlayerWeightStats(__instance);
-                StatCalc.SetGearParamaters(__instance);
-                StatCalc.GetGearPenalty(__instance);
+                GearController.SetGearParamaters(__instance);
+                GearController.GetGearPenalty(__instance);
+                Plugin.RealHealthController.CheckInventoryForHazardousMaterials(__instance.Inventory);
+
+                if (Plugin.ServerConfig.med_changes) //also add check for hazard zones being enabled 
+                {
+                    GearController.CheckForDevices(__instance.Inventory);
+                    PlayerState.IsScav = Singleton<GameWorld>.Instance.MainPlayer.Profile.Info.Side == EPlayerSide.Savage;
+                    PlayerHazardBridge hazardBridge = __instance.gameObject.AddComponent<PlayerHazardBridge>();
+                    hazardBridge._Player = __instance;
+                }
             }
         }
     }
@@ -213,29 +189,31 @@ namespace RealismMod
             if (__instance.IsYourPlayer)
             {
                 StatCalc.CalcPlayerWeightStats(__instance);
-                StatCalc.SetGearParamaters(__instance);
-                StatCalc.GetGearPenalty(__instance);
+                GearController.SetGearParamaters(__instance);
+                GearController.GetGearPenalty(__instance);
+                GearController.CheckForDevices(__instance.Inventory);
+                Plugin.RealHealthController.CheckInventoryForHazardousMaterials(__instance.Inventory);
             }
         }
     }
 
-    public class PlayerLateUpdatePatch : ModulePatch
+    public class PlayerUpdatePatch : ModulePatch
     {
         private static FieldInfo surfaceField;
 
-        private static float sprintCooldownTimer = 0f;
-        private static bool doSwayReset = false;
-        private static float sprintTimer = 0f;
-        private static bool didSprintPenalties = false;
-        private static bool resetSwayAfterFiring = false;
+        private static float _sprintCooldownTimer = 0f;
+        private static bool _doSwayReset = false;
+        private static float _sprintTimer = 0f;
+        private static bool _didSprintPenalties = false;
+        private static bool _resetSwayAfterFiring = false;
 
-        private static void doSprintTimer(ProceduralWeaponAnimation pwa, Player.FirearmController fc, float mountingBonus)
+        private static void DoSprintTimer(Player player, ProceduralWeaponAnimation pwa, Player.FirearmController fc, float mountingBonus)
         {
-            sprintCooldownTimer += Time.deltaTime;
+            _sprintCooldownTimer += Time.deltaTime;
 
-            if (!didSprintPenalties)
+            if (!_didSprintPenalties)
             {
-                float sprintDurationModi = 1f + (sprintTimer / 7f);
+                float sprintDurationModi = 1f + (_sprintTimer / 7f);
 
                 float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi, 3f);
                 float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi, 1.05f);
@@ -243,15 +221,15 @@ namespace RealismMod
                 pwa.HandsContainer.HandsRotation.InputIntensity = inputIntensitry * mountingBonus;
                 PlayerState.SprintTotalBreathIntensity = breathIntensity;
                 PlayerState.SprintTotalHandsIntensity = inputIntensitry;
-                PlayerState.SprintHipfirePenalty = Mathf.Min(1f + (sprintTimer / 100f), 1.25f);
-                PlayerState.ADSSprintMulti = Mathf.Max(1f - (sprintTimer / 12f), 0.3f);
+                PlayerState.SprintHipfirePenalty = Mathf.Min(1f + (_sprintTimer / 100f), 1.25f);
+                PlayerState.ADSSprintMulti = Mathf.Max(1f - (_sprintTimer / 12f), 0.3f);
 
 
-                didSprintPenalties = true;
-                doSwayReset = false;
+                _didSprintPenalties = true;
+                _doSwayReset = false;
             }
 
-            if (sprintCooldownTimer >= 0.35f)
+            if (_sprintCooldownTimer >= 0.35f)
             {
                 PlayerState.SprintBlockADS = false;
                 if (PlayerState.TriedToADSFromSprint)
@@ -259,16 +237,16 @@ namespace RealismMod
                     fc.ToggleAim();
                 }
             }
-            if (sprintCooldownTimer >= 4f)
+            if (_sprintCooldownTimer >= 4f)
             {
                 PlayerState.WasSprinting = false;
-                doSwayReset = true;
-                sprintCooldownTimer = 0f;
-                sprintTimer = 0f;
+                _doSwayReset = true;
+                _sprintCooldownTimer = 0f;
+                _sprintTimer = 0f;
             }
         }
 
-        private static void resetSwayParams(ProceduralWeaponAnimation pwa, float mountingBonus)
+        private static void ResetSwayParams(ProceduralWeaponAnimation pwa, float mountingBonus)
         {
             float resetSwaySpeed = 0.035f;
             float resetSpeed = 0.4f;
@@ -282,35 +260,38 @@ namespace RealismMod
 
             if (Utils.AreFloatsEqual(1f, PlayerState.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerState.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerState.TotalHandsIntensity))
             {
-                doSwayReset = false;
+                _doSwayReset = false;
             }
         }
 
+        //jump too
         private static void DoSprintPenalty(Player player, Player.FirearmController fc, float mountingBonus)
         {
-            if (player.IsSprintEnabled)
+            if (player.IsSprintEnabled || !player.MovementContext.IsGrounded || player.MovementContext.PlayerAnimatorIsJumpSetted())
             {
-                sprintTimer += Time.deltaTime;
-                if (sprintTimer >= 1f)
+                float fallFactor = !player.MovementContext.IsGrounded ? 2.5f : 1f;
+                float jumpFactor = player.MovementContext.PlayerAnimatorIsJumpSetted() ? 4f : 1f;
+                _sprintTimer += Time.deltaTime * fallFactor * jumpFactor;
+                if (_sprintTimer >= 1f)
                 {
                     PlayerState.SprintBlockADS = true;
                     PlayerState.WasSprinting = true;
-                    didSprintPenalties = false;
+                    _didSprintPenalties = false;
                 }
             }
             else
             {
                 if (PlayerState.WasSprinting)
                 {
-                    doSprintTimer(player.ProceduralWeaponAnimation, fc, mountingBonus);
+                    DoSprintTimer(player, player.ProceduralWeaponAnimation, fc, mountingBonus);
                 }
-                if (doSwayReset)
+                if (_doSwayReset)
                 {
-                    resetSwayParams(player.ProceduralWeaponAnimation, mountingBonus);
+                    ResetSwayParams(player.ProceduralWeaponAnimation, mountingBonus);
                 }
             }
 
-            if (!doSwayReset && !PlayerState.WasSprinting)
+            if (!_doSwayReset && !PlayerState.WasSprinting)
             {
                 PlayerState.HasFullyResetSprintADSPenalties = true;
             }
@@ -321,17 +302,17 @@ namespace RealismMod
 
             if (RecoilController.IsFiring)
             {
-                doSwayReset = false;
-                resetSwayAfterFiring = false;
+                _doSwayReset = false;
+                _resetSwayAfterFiring = false;
             }
-            else if (!resetSwayAfterFiring)
+            else if (!_resetSwayAfterFiring)
             {
-                resetSwayAfterFiring = true;
-                doSwayReset = true;
+                _resetSwayAfterFiring = true;
+                _doSwayReset = true;
             }
         }
 
-        private static void calcBaseHipfireAccuracy(Player player)
+        private static void CalcBaseHipfireAccuracy(Player player)
         {
             float baseValue = 0.4f;
             float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
@@ -346,15 +327,16 @@ namespace RealismMod
             WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(baseValue * PlayerState.DeviceBonus * ergoFactor * healthFactor * convergenceFactor * dispersionFactor * recoilFactor * playerWeightFactor, 0.2f, 1f);
         }
 
-        private static void getStaminaPerc(Player player)
+        private static void GetStaminaPerc(Player player)
         {
+            float remainArmStamPercent = Mathf.Min((player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity) * (1f + PlayerState.StrengthSkillAimBuff), 1f);
+            PlayerState.StaminaPerc = player.Physical.Stamina.Current / player.Physical.Stamina.TotalCapacity;
 
-            float remainStamPercent = player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity;
-            PlayerState.RemainingArmStamPerc = 1f - ((1f - remainStamPercent) / 3f);
-            PlayerState.RemainingArmStamPercReload = Mathf.Clamp(1f - ((1f - remainStamPercent) / 4f), 0.85f, 1f);
+            PlayerState.RemainingArmStamPerc = 1f - ((1f - remainArmStamPercent) / 3f);
+            PlayerState.RemainingArmStamPercReload = Mathf.Clamp(1f - ((1f - remainArmStamPercent) / 4f), 0.85f, 1f); 
         }
 
-        private static void setStancePWAValues(Player player, FirearmController fc)
+        private static void SetStancePWAValues(Player player, FirearmController fc)
         {
             if (StanceController.CanResetDamping)
             {
@@ -382,15 +364,15 @@ namespace RealismMod
             player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
         }
 
-        private static void chamberTimer(FirearmController fc)
+        private static void ChamberTimer(FirearmController fc)
         {
-            Plugin.chamberTimer += Time.deltaTime;
-            if (Plugin.chamberTimer >= 0.5f)
+            Plugin.ChamberTimer += Time.deltaTime;
+            if (Plugin.ChamberTimer >= 0.5f)
             {
                 fc.FirearmsAnimator.Rechamber(false);
                 fc.SetAnimatorAndProceduralValues();
-                Plugin.startRechamberTimer = false;
-                Plugin.chamberTimer = 0f;
+                Plugin.StartRechamberTimer = false;
+                Plugin.ChamberTimer = 0f;
             }
         }
 
@@ -398,9 +380,9 @@ namespace RealismMod
         {
             if (fc != null)
             {
-                if (Plugin.startRechamberTimer)
+                if (Plugin.StartRechamberTimer)
                 {
-                    chamberTimer(fc);
+                    ChamberTimer(fc);
                 }
 
                 if (Plugin.ServerConfig.enable_stances)
@@ -425,11 +407,11 @@ namespace RealismMod
                     StanceController.SetStanceStamina(player);
                 }
 
-                getStaminaPerc(player);
+                GetStaminaPerc(player);
 
                 if (!RecoilController.IsFiringMovement && Plugin.ServerConfig.enable_stances)
                 {
-                    setStancePWAValues(player, fc);
+                    SetStancePWAValues(player, fc);
                 }
                 player.MovementContext.SetPatrol(StanceController.CurrentStance == EStance.PatrolStance ? true : false);
             }
@@ -442,7 +424,7 @@ namespace RealismMod
                 StanceController.IsMounting = false;
             }
 
-            calcBaseHipfireAccuracy(player);
+            CalcBaseHipfireAccuracy(player);
             float stanceHipFactor = StanceController.CurrentStance == EStance.ActiveAiming ? 0.7f : StanceController.CurrentStance == EStance.ShortStock ? 1.35f : 1.05f;
             player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.2f, 1.6f);
         }
@@ -476,12 +458,15 @@ namespace RealismMod
                 if (Plugin.EnableSprintPenalty.Value)
                 {
                     DoSprintPenalty(__instance, fc, StanceController.BracingSwayBonus);
-                    if (PlayerState.HasFullyResetSprintADSPenalties)
-                    {
-                        __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerState.TotalBreathIntensity * StanceController.BracingSwayBonus;
-                        __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerState.TotalHandsIntensity * StanceController.BracingSwayBonus;
-                    }
                 }
+                else PlayerState.HasFullyResetSprintADSPenalties = true;
+
+                if (PlayerState.HasFullyResetSprintADSPenalties)
+                {
+                    __instance.ProceduralWeaponAnimation.Breath.Intensity = PlayerState.TotalBreathIntensity * StanceController.BracingSwayBonus;
+                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = PlayerState.TotalHandsIntensity * StanceController.BracingSwayBonus;
+                }
+
                 if (Plugin.ServerConfig.recoil_attachment_overhaul)
                 {
                     PWAUpdate(__instance, fc);

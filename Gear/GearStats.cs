@@ -1,8 +1,4 @@
-﻿using BepInEx.Logging;
-using EFT.InventoryLogic;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using EFT.InventoryLogic;
 
 namespace RealismMod
 {
@@ -15,7 +11,7 @@ namespace RealismMod
 
         public static string ArmorClass(Item armorItem)
         {
-            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 2) ? armorItem.ConflictingItems[2] : "Unclassified";
+            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 2) && !string.IsNullOrEmpty(armorItem.ConflictingItems[2]) ? armorItem.ConflictingItems[2] : "Unclassified";
         }
 
         public static bool CanSpall(Item armorItem)
@@ -58,19 +54,19 @@ namespace RealismMod
             return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 10) && bool.TryParse(armorItem.ConflictingItems[10], out bool result) ? result : false;
         }
 
-        public static bool HasStomachArmor(Item armorItem)
+        public static float RadProtection(Item armorItem)
         {
-            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 11) && bool.TryParse(armorItem.ConflictingItems[11], out bool result) ? result : false;
+            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 11) && float.TryParse(armorItem.ConflictingItems[11], out float result) ? result : 0f;
         }
 
-        public static bool HasHitSecondaryArmor_DEPRICATED(Item armorItem)
+        public static string MaskToUse(Item armorItem)
         {
-            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 12) && bool.TryParse(armorItem.ConflictingItems[12], out bool result) ? result : false;
+            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 12) && !string.IsNullOrEmpty(armorItem.ConflictingItems[12]) ? armorItem.ConflictingItems[12] : string.Empty;
         }
 
-        public static bool HasNeckArmor(Item armorItem)
+        public static float GasProtection(Item armorItem)
         {
-            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 13) && bool.TryParse(armorItem.ConflictingItems[13], out bool result) ? result : false;
+            return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 13) && float.TryParse(armorItem.ConflictingItems[13], out float result) ? result : 0f;
         }
 
         public static float DbLevel(Item armorItem)
@@ -83,7 +79,7 @@ namespace RealismMod
             return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 15) && float.TryParse(armorItem.ConflictingItems[15], out float result) ? result : 1f;
         }
 
-        public static bool HasExtraArmor(Item armorItem)
+        public static bool IsGasMask(Item armorItem)
         {
             return !Utils.ConfItemsIsNullOrInvalid(armorItem.ConflictingItems, 16) && bool.TryParse(armorItem.ConflictingItems[16], out bool result) ? result : false;
         }

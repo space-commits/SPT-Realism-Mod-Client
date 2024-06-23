@@ -1,28 +1,22 @@
 ﻿using Aki.Reflection.Patching;
-using EFT.InventoryLogic;
+using Comfort.Common;
 using EFT;
+using EFT.Animations;
+using EFT.Ballistics;
+using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-using static EFT.Player;
-using UnityEngine;
-using Comfort.Common;
-using EFT.Ballistics;
-using System.ComponentModel;
-using Random = System.Random;
-using CastingClass = GClass649;
-using HackShotResult = GClass1676;
-using CollisionLayerClass = GClass2987;
-using EFT.Animations;
-using ChartAndGraph;
 using System.Linq;
+using System.Reflection;
+using UnityEngine;
+using static EFT.Player;
+using CastingClass = GClass649;
+using CollisionLayerClass = GClass2987;
+using HackShotResult = GClass1676;
 /*using LightStruct = GStruct155;*/
 
 namespace RealismMod
 {
-
     public class MountingPatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -104,7 +98,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(SkillManager __instance, Item item)
         {
-            if (item?.Owner?.ID != null && item.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
+            if (item?.Owner?.ID != null && item.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId && StanceController.CurrentStance == EStance.PistolCompressed)
             {
                 StanceController.DidWeaponSwap = true;
             }
@@ -289,7 +283,7 @@ namespace RealismMod
 
                     if (hitBalls.TypeOfMaterial == MaterialType.Glass || hitBalls.TypeOfMaterial == MaterialType.GlassShattered)
                     {
-                        int rndNum = UnityEngine.Random.Range(1, 10);
+                        int rndNum = UnityEngine.Random.Range(1, 11);
                         if (rndNum > (4f + WeaponStats.BaseMeleeDamage))
                         {
                             shouldSkipHit = true;
@@ -390,7 +384,7 @@ namespace RealismMod
                     float mountOrientationBonus = StanceController.BracingDirection == EBracingDirection.Top ? 0.75f : 1f;
                     float mountingRecoilLimit = WeaponStats.IsStocklessPistol ? 0.25f : 0.75f;
                     float recoilBonus = StanceController.IsMounting && __instance.Weapon.IsBeltMachineGun ? 0.6f : StanceController.IsMounting ? 0.8f : 0.95f;
-                    float swayBonus = __instance.Weapon.IsBeltMachineGun && StanceController.IsMounting ? 0.35f : StanceController.IsMounting ? 0.5f : 0.75f;
+                    float swayBonus = StanceController.IsMounting ? 0.35f : 0.65f;
 
                     StanceController.BracingRecoilBonus = Mathf.Lerp(StanceController.BracingRecoilBonus, recoilBonus * mountOrientationBonus, 0.04f);
                     StanceController.BracingSwayBonus = Mathf.Lerp(StanceController.BracingSwayBonus, swayBonus * mountOrientationBonus, 0.04f);
@@ -493,11 +487,6 @@ namespace RealismMod
         private static FieldInfo playerField;
         private static FieldInfo fcField;
 
-     /*   private static Dictionary<string, Vector3> weaponOffsets = new Dictionary<string, Vector3>
-        {
-            { "", new Vector3(0, 0, 0)  }
-        };*/
-
         protected override MethodBase GetTargetMethod()
         {
             playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
@@ -509,15 +498,13 @@ namespace RealismMod
         private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
             FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
-            if (firearmController == null)
-            {
-                return;
-            }
+            if (firearmController == null) return;
             Player player = (Player)playerField.GetValue(firearmController);
             if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
             {
-                StanceController.WeaponOffsetPosition = __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value);
-                __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value);
+                Vector3 baseOffset = StanceController.GetWeaponOffsets().TryGetValue(firearmController.Weapon.TemplateId, out Vector3 offset) ? offset : Vector3.zero;
+                __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value) + baseOffset;
+                StanceController.WeaponOffsetPosition = __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value) + baseOffset;
             }
         }
     }

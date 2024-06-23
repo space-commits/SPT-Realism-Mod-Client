@@ -1,28 +1,60 @@
-﻿using EFT;
-using System;
-using UnityEngine;
-using System.Linq;
+﻿using Aki.Reflection.Patching;
 using Comfort.Common;
-using System.Reflection;
+using EFT;
 using EFT.InventoryLogic;
-using System.Threading.Tasks;
-using Aki.Reflection.Patching;
-using static Val;
 using HarmonyLib;
-using Aki.Reflection.Utils;
-using UnityEngine.Rendering.PostProcessing;
-using static EFT.Interactive.BetterPropagationGroups;
-using BepInEx.Logging;
+using System;
+using System.Linq;
+using System.Reflection;
+using UnityEngine;
+using CompressorTemplateClass = GClass2901;
 using HeadsetClass = GClass2639;
 using HeadsetTemplate = GClass2542;
 using IWeapon = GInterface322;
-using CompressorTemplateClass = GClass2901;
-using System.Collections;
-using EFT.NextObservedPlayer;
-using System.Collections.Generic;
 
 namespace RealismMod
 {
+
+    public class PlayPhrasePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(PhraseSpeakerClass).GetMethod("Play", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool PatchPrefix(PhraseSpeakerClass __instance, EPhraseTrigger trigger, ETagStatus tags)
+        {
+            Player player = Utils.GetYourPlayer();
+            if (player == null) return true;
+            PhraseSpeakerClass speaker = player.Speaker;
+            if (speaker == null) return true;
+            if (speaker == __instance && GearController.HasGasMask && (trigger == EPhraseTrigger.OnBreath || ((tags & ETagStatus.Dying) == ETagStatus.Dying)))
+            {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    public class ADSAudioPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player).GetMethod("method_46", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool PatchPrefix(Player __instance, ref float volume)
+        {
+            if (!StanceController.IsIdle() && StanceController.IsAiming)
+            {
+                return false;
+            }
+            volume *= Plugin.ADSVolume.Value;
+            return true;
+        }
+    }
 
     public class CovertEquipmentVolumePatch : ModulePatch
     {

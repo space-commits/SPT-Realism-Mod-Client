@@ -1,18 +1,5 @@
-﻿using EFT;
-using System;
+﻿using Comfort.Common;
 using UnityEngine;
-using System.Linq;
-using Comfort.Common;
-using System.Reflection;
-using EFT.InventoryLogic;
-using System.Threading.Tasks;
-using Aki.Reflection.Patching;
-using static Val;
-using HarmonyLib;
-using Aki.Reflection.Utils;
-using UnityEngine.Rendering.PostProcessing;
-using static EFT.Interactive.BetterPropagationGroups;
-using BepInEx.Logging;
 
 namespace RealismMod
 {
@@ -73,6 +60,26 @@ namespace RealismMod
             float grenadeDeafFactor = GrenadeDeafFactor * EarProtectionFactor;
             float totalVigLimit = Mathf.Min(0.3f * deafFactor * enviroMulti, 1.5f);
             float grenadeVigLimit = Mathf.Min(GrenadeVignetteDarknessLimit * deafFactor * enviroMulti, 1.5f);
+
+            if (IsBotFiring)
+            {
+                BotTimer += Time.deltaTime;
+                if (BotTimer >= 0.5f)
+                {
+                    IsBotFiring = false;
+                    BotTimer = 0f;
+                }
+            }
+
+            if (GrenadeExploded)
+            {
+                GrenadeTimer += Time.deltaTime;
+                if (GrenadeTimer >= 0.7f)
+                {
+                    GrenadeExploded = false;
+                    GrenadeTimer = 0f;
+                }
+            }
 
             if (RecoilController.IsFiringDeafen)
             {

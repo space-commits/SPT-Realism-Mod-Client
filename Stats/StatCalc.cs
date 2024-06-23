@@ -1,12 +1,12 @@
-﻿using BepInEx.Logging;
-using EFT;
+﻿using EFT;
+using EFT.Animations;
 using EFT.InventoryLogic;
 using HarmonyLib;
-using HarmonyLib.Tools;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using ArmorTemplate = GClass2536; //to find again, search for HasHinge field
+using static EFT.Player;
+using WeaponSkillsClass = EFT.SkillManager.GClass1771;
 
 namespace RealismMod
 {
@@ -74,148 +74,69 @@ namespace RealismMod
             }
         }
 
-
-        private static EquipmentPenaltyComponent GetRigGearPenalty(Player player)
+        public static void CalcSightAccuracy(Mod currentAimingMod)
         {
-            Item containedItem = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
-            if (containedItem == null)
+            float currentSightFactor = 0f;
+            int iterations = 0;
+  
+            if (currentAimingMod != null)
             {
-                return null;
-            }
-            return containedItem.GetItemComponent<EquipmentPenaltyComponent>();
-        }
-
-        private static EquipmentPenaltyComponent GetFaceCoverGearPenalty(Player player)
-        {
-            Item containedItem = player.Inventory.Equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
-            if (containedItem == null)
-            {
-                return null;
-            }
-            return containedItem.GetItemComponent<EquipmentPenaltyComponent>();
-        }
-
-        public static void GetGearPenalty(Player player)
-        {
-            FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
-            NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
-            ThermalVisionComponent thermComponent = player.ThermalVisionObserver.Component;
-            bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
-            bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
-            bool thermalIsOn = thermComponent != null && (thermComponent.Togglable == null || thermComponent.Togglable.On);
-
-            List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(20);
-            player.Inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
-            float totalErgo = 0f;
-            float totalSpeed = 0f;
-            for (int i = 0; i < preAllocatedArmorComponents.Count; i++)
-            {
-                ArmorComponent armorComponent = preAllocatedArmorComponents[i];
-                if (armorComponent.Item.Template._parent == "5448e5284bdc2dcb718b4567" || armorComponent.Item.Template._parent == "5a341c4686f77469e155819e") continue;
-                if (player.FaceShieldObserver.Component != null && player.FaceShieldObserver.Component.Item.TemplateId == armorComponent.Item.TemplateId)
+                if (AttachmentProperties.ModType(currentAimingMod) == "sight")
                 {
-                    if (!fsIsON || !GearStats.BlocksMouth(armorComponent.Item)) continue;
-                    totalErgo += armorComponent.WeaponErgonomicPenalty;
-                    totalSpeed += armorComponent.SpeedPenalty + -15f;
-                    continue;
+                    currentSightFactor += currentAimingMod.Accuracy / 100f;
                 }
-
-                totalErgo += armorComponent.WeaponErgonomicPenalty;
-                totalSpeed += armorComponent.SpeedPenalty;
-            }
-            EquipmentPenaltyComponent bag = player.Inventory.GetPutOnBackpack();
-            if (bag != null)
-            {
-                totalErgo += bag.Template.WeaponErgonomicPenalty;
-                totalSpeed += bag.Template.SpeedPenaltyPercent;
-            }
-            EquipmentPenaltyComponent rig = GetRigGearPenalty(player);
-            if (rig != null)
-            {
-                totalErgo += rig.Template.WeaponErgonomicPenalty;
-                totalSpeed += rig.Template.SpeedPenaltyPercent;
-            }
-            EquipmentPenaltyComponent faceCover = GetFaceCoverGearPenalty(player);
-            if (faceCover != null)
-            {
-                totalErgo += faceCover.Template.WeaponErgonomicPenalty;
-                totalSpeed += faceCover.Template.SpeedPenaltyPercent;
-            }
-
-            if (nvgIsOn || thermalIsOn)
-            {
-                totalErgo += -30f;
-                totalSpeed += -15f;
-            }
-
-            totalErgo /= 100f;
-            totalSpeed /= 100f;
-            PlayerState.GearErgoPenalty = 1f + totalErgo;
-            PlayerState.GearSpeedPenalty = 1f + totalSpeed;
-            player.ProceduralWeaponAnimation.UpdateWeaponVariables();
-            if (Plugin.EnableLogging.Value) 
-            {
-                Utils.Logger.LogWarning("gear speed " + PlayerState.GearSpeedPenalty);
-                Utils.Logger.LogWarning("gear ergo " + PlayerState.GearErgoPenalty);
-            }
-        }
-
-        public static float GetRigReloadSpeed(Player player)
-        {
-            Item tacVest = player.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
-
-            if (tacVest != null)
-            {
-                return GearStats.ReloadSpeedMulti(tacVest);
-            }
-            else
-            {
-                return 1;
-            }
-        }
-
-        public static bool GetFacecoverADS(Player player)
-        {
-            Item faceCover = player.Equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
-
-            if (faceCover != null)
-            {
-                return GearStats.AllowsADS(faceCover);
-            }
-            else
-            {
-                return true;
-            }
-        }
-
-        public static void SetGearParamaters(Player player)
-        {
-            float reloadMulti = 1f;
-            bool allowADS = true;
-            List<ArmorComponent> preAllocatedArmorComponents = new List<ArmorComponent>(20);
-            player.Inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
-
-            reloadMulti *= GetRigReloadSpeed(player);
-            allowADS = GetFacecoverADS(player);
-
-            foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
-            {
-                if (armorComponent.Item.Template._parent == "5448e5284bdc2dcb718b4567" || armorComponent.Item.Template._parent == "5a341c4686f77469e155819e")
+                IEnumerable<Item> parents = currentAimingMod.GetAllParentItems();
+                foreach (Item item in parents)
                 {
-                    break;
-                }
-           
-                reloadMulti *= GearStats.ReloadSpeedMulti(armorComponent.Item);
-                ArmorTemplate armorTemplate = armorComponent.Template as ArmorTemplate;
-
-                if (!GearStats.AllowsADS(armorComponent.Item))
-                {
-                    allowADS = false;
+                    if (item is Mod && AttachmentProperties.ModType(item) == "mount")
+                    {
+                        Mod mod = item as Mod;
+                        currentSightFactor += (mod.Accuracy / 100f);
+                    }
+                    iterations++;
+                    if (iterations >= 5 || !(item is Mod))
+                    {
+                        break;
+                    }
                 }
             }
 
-            PlayerState.GearReloadMulti = reloadMulti;
-            PlayerState.GearAllowsADS = allowADS;
+            WeaponStats.ScopeAccuracyFactor = currentSightFactor;
+        }
+
+        public static void UpdateAimParameters(FirearmController firearmController, ProceduralWeaponAnimation pwa) 
+        {
+            Weapon weapon = firearmController.Weapon;
+            WeaponSkillsClass skillsClass = (WeaponSkillsClass)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_buffInfo").GetValue(pwa);
+            Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayBlender").GetValue(pwa);
+
+            float headGearFactor = GearController.FSIsActive || GearController.NVGIsActive || GearController.HasGasMask ? 1.45f : 1f;
+            float ergoWeightFactor = weapon.GetSingleItemTotalWeight() * (1f - WeaponStats.PureErgoDelta) * headGearFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + ((1f - PlayerState.GearErgoPenalty) * 1.5f));
+
+            float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo * PlayerState.GearErgoPenalty) * 1.15f;
+            float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (1f + WeaponStats.ModAimSpeedModifier), 0.5f, 1.45f);
+            valueBlender.Speed = pwa.SwayFalloff * aimSpeed * 4.35f;
+
+            AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayStrength").SetValue(pwa, Mathf.InverseLerp(1f, 18f, ergoWeightFactor));
+
+            pwa.UpdateSwayFactors();
+
+            aimSpeed = weapon.WeapClass == "pistol" ? aimSpeed * 1.35f : aimSpeed;
+            WeaponStats.SightlessAimSpeed = aimSpeed;
+            WeaponStats.ErgoStanceSpeed = baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (weapon.WeapClass == "pistol" ? 1.5f : 1f);
+
+            AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(pwa, aimSpeed);
+
+            if (Plugin.EnableLogging.Value == true)
+            {
+                Utils.Logger.LogWarning("========UpdateWeaponVariables=======");
+                Utils.Logger.LogWarning("total ergo = " + WeaponStats.TotalErgo);
+                Utils.Logger.LogWarning("aimSpeed = " + aimSpeed);
+                Utils.Logger.LogWarning("base aimSpeed = " + baseAimspeed);
+                Utils.Logger.LogWarning("total ergofactor = " + WeaponStats.ErgoFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)));
+                Utils.Logger.LogWarning("gear ergo factor = " + PlayerState.GearErgoPenalty);
+
+            }
         }
 
         public static float ErgoWeightCalc(float totalWeight, float ergoDelta, float totalTorque, string weapClass)
@@ -336,7 +257,7 @@ namespace RealismMod
             totalDispersion = currentDispersion + (currentDispersion * (dispersionWeapBaseWeightFactor + (totalTorqueFactor * dispersionTorqueMult)));
 
             totalRecoilAngle = currentRecoilAngle + (currentRecoilAngle * (totalTorqueFactor * angleTorqueMulti));
-            totalCOI = currentCOI + (currentCOI * ((-1f * WeaponStats.WeaponAccuracy(weap)) / 100));
+            totalCOI = currentCOI + (currentCOI * (-WeaponStats.WeaponAccuracy(weap) / 100));
 
             if (!hasShoulderContact && weap.WeapClass != "pistol")
             {
@@ -348,13 +269,6 @@ namespace RealismMod
                 totalCamRecoil *= WeaponStats.FoldedCamRecoilFactor;
                 totalDispersion *= WeaponStats.FoldedDispersionFactor;
                 totalRecoilAngle *= WeaponStats.FoldedRecoilAngleFactor;
-                totalCOI *= WeaponStats.FoldedCOIFactor;
-
-                //don't think his is neccessary anymore as shot dispersion no longer uses COI delta or COI.
-                if (weap.WeapClass != "shotgun")
-                {
-                    totalCOI *= WeaponStats.FoldedCOIFactor;
-                }
             }
 
             totalCOIDelta = (totalCOI - baseCOI) / baseCOI;
@@ -396,7 +310,7 @@ namespace RealismMod
             currentCamRecoil = currentCamRecoil + (currentCamRecoil * ((modCamRecoil / 100f) + camRecoilWeightFactor));
             currentDispersion = currentDispersion + (currentDispersion * ((modDispersion / 100f) + dispersionWeightFactor));
             currentRecoilAngle = currentRecoilAngle + (currentRecoilAngle * (modAngle / 100f));
-            currentCOI = currentCOI + (currentCOI * ((-1f * modAccuracy) / 100f));
+            currentCOI = currentCOI + (currentCOI * (-modAccuracy / 100f));
             currentAutoROF = currentAutoROF + (currentAutoROF * (modAutoROF / 100f));
             currentSemiROF = currentSemiROF + (currentSemiROF * (modSemiROF / 100f));
             pureErgo = pureErgo + (pureErgo * (modErgo / 100f));

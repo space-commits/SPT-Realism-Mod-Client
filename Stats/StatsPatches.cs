@@ -2,21 +2,13 @@
 using Aki.Reflection.Patching;
 using Comfort.Common;
 using EFT;
-using EFT.Hideout;
-using EFT.Interactive;
 using EFT.InventoryLogic;
-using EFT.UI.DragAndDrop;
 using HarmonyLib;
-using System;
-using System.Reflection;
-using System.Collections.Generic;
-using UnityEngine;
-using static EFT.Player;
-using System.Linq;
-using WeaponSkills = EFT.SkillManager.GClass1771;
-using EFT.Visual;
-using static EFT.SkillManager;
 using RealismMod.Weapons;
+using System.Collections.Generic;
+using System.Reflection;
+using UnityEngine;
+using WeaponSkills = EFT.SkillManager.GClass1771;
 
 namespace RealismMod
 {
@@ -35,7 +27,9 @@ namespace RealismMod
             if (__instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
-                __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.SemiFireRate * currentAmmoTemplate.casingMass) : WeaponStats.SemiFireRate;
+                float duraFactor =__instance.Repairable.Durability / __instance.Repairable.TemplateDurability;
+                duraFactor = Mathf.Clamp(Mathf.Pow(duraFactor, 0.1f), 0.95f, 1f);
+                __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.SemiFireRate * currentAmmoTemplate.casingMass * duraFactor) : WeaponStats.SemiFireRate;
                 return false;
             }
             return true;
@@ -57,7 +51,9 @@ namespace RealismMod
             if (__instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
-                __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.AutoFireRate * currentAmmoTemplate.casingMass) : WeaponStats.AutoFireRate;
+                float duraFactor = __instance.Repairable.Durability / __instance.Repairable.TemplateDurability;
+                duraFactor = Mathf.Clamp(Mathf.Pow(duraFactor, 0.1f), 0.9f, 1f);
+                __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.AutoFireRate * currentAmmoTemplate.casingMass * duraFactor) : WeaponStats.AutoFireRate;
                 __result = Utils.Verified ? __result * 10 : __result;  
                 return false;
             }
@@ -220,7 +216,11 @@ namespace RealismMod
             float totalChamberCheckSpeed = 0;
             float totalFixSpeed = 0;
 
-            StatCalc.SpeedStatCalc(__instance, ergoFactor, ergoFactorLessMag, totalChamberSpeedMod, totalReloadSpeedMod, ref totalReloadSpeedLessMag, ref totalChamberSpeed, ref totalAimMoveSpeedFactor, ref totalFiringChamberSpeed, ref totalChamberCheckSpeed, ref totalFixSpeed);
+            StatCalc.SpeedStatCalc(
+                __instance, ergoFactor, ergoFactorLessMag, totalChamberSpeedMod, 
+                totalReloadSpeedMod, ref totalReloadSpeedLessMag, ref totalChamberSpeed, 
+                ref totalAimMoveSpeedFactor, ref totalFiringChamberSpeed, ref totalChamberCheckSpeed,
+                ref totalFixSpeed);
           
             WeaponStats.TotalFixSpeed = totalFixSpeed;
             WeaponStats.TotalChamberCheckSpeed = totalChamberCheckSpeed;
@@ -398,8 +398,25 @@ namespace RealismMod
                         WeaponStats.BaseMeleePen = AttachmentProperties.ModMeleePen(mod);
                     }
 
-                    StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, ref modMalfChance, ref modDuraBurn, ref modConv);
-                    StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeedMod, modReload, ref currentReloadSpeedMod, modFix, ref currentFixSpeedMod, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, ref currentHRecoil, ref currentChamberSpeedMod, modChamber, false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, __instance.IsBeltMachineGun);
+                    StatCalc.ModConditionalStatCalc(
+                        __instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, 
+                        ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, 
+                        ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, 
+                        ref modAccuracy, ref modType, ref position, ref modChamber, 
+                        ref modLoudness, ref modMalfChance, ref modDuraBurn, ref modConv);
+
+                    StatCalc.ModStatCalc(
+                        mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, 
+                        ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, 
+                        ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle,
+                        ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, 
+                        ref currentAimSpeedMod, modReload, ref currentReloadSpeedMod, modFix, 
+                        ref currentFixSpeedMod, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, 
+                        modHRecoil, ref currentHRecoil, ref currentChamberSpeedMod, modChamber, 
+                        false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, 
+                        modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, 
+                        ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, __instance.IsBeltMachineGun);
+
                     if (AttachmentProperties.CanCylceSubs(mod))
                     {
                         canCycleSubs = true;
@@ -421,7 +438,7 @@ namespace RealismMod
 
             float totalLoudness = ((currentLoudness / 80) + 1f) * StatCalc.CaliberLoudnessFactor(caliber);
 
-            if (weapType == "bullpup")
+            if (weapType == "bullpup" || weapOpType == "p90")
             {
                 totalLoudness *= 1.18f;
                 WeaponStats.IsBullpup = true;
@@ -444,17 +461,20 @@ namespace RealismMod
             WeaponStats.InitRecoilAngle = currentRecoilAngle;
             WeaponStats.SDReloadSpeedModifier = currentReloadSpeedMod;
             WeaponStats.SDChamberSpeedModifier = currentChamberSpeedMod;
-            WeaponStats.SDFixSpeedModifier = currentFixSpeedMod;
+            WeaponStats.SDFixSpeedModifier = currentFixSpeedMod; //unused, replcaed by chamber speed
             WeaponStats.ModAimSpeedModifier = currentAimSpeedMod / 100f;
-            WeaponStats.AutoFireRate = Mathf.Max(300, (int)currentAutoROF);
-            WeaponStats.SemiFireRate = Mathf.Max(200, (int)currentSemiROF);
+            WeaponStats.AutoFireRate = Mathf.Max(400, (int)currentAutoROF);
+            WeaponStats.SemiFireRate = Mathf.Max(300, (int)currentSemiROF);
+            WeaponStats.FireRateDelta = (__instance.FireRate / WeaponStats.AutoFireRate) * (__instance.SingleFireRate / WeaponStats.SemiFireRate);
             WeaponStats.InitTotalCOI = currentCOI;
             WeaponStats.InitPureErgo = pureErgo;
             WeaponStats.PureRecoilDelta = pureRecoilDelta;
             WeaponStats.ShotDispDelta = (baseShotDisp - currentShotDisp) / (baseShotDisp * -1f);
             WeaponStats.TotalCameraReturnSpeed = currentCamReturnSpeed;
             WeaponStats.TotalModdedConv = currentConv * (!hasShoulderContact ? WeaponStats.FoldedConvergenceFactor : 1f);
-            WeaponStats.ConvergenceDelta = currentConv / __instance.Template.RecoilReturnSpeedHandRotation;  
+            WeaponStats.ConvergenceDelta = currentConv / __instance.Template.RecoilReturnSpeedHandRotation;
+
+    
         }
     }
 
@@ -474,10 +494,7 @@ namespace RealismMod
                 __result = WeaponStats.COIDelta;
                 return false;
             }
-            else
-            {
-                return true;
-            }
+            else return true;
         }
     }
 
@@ -491,52 +508,24 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result, bool includeAmmo)
         {
-            if (!Utils.IsReady) return true;
-            if (__instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
+
+            if (Utils.IsReady && __instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
-                float currentSightFactor = 1f;
-                if (Utils.IsReady)
-                {
-                    int iterations = 0;
-                    Player player = Utils.GetYourPlayer();
-                    Mod currentAimingMod = (player.ProceduralWeaponAnimation.CurrentAimingMod != null) ? player.ProceduralWeaponAnimation.CurrentAimingMod.Item as Mod : null;
-
-                    if (currentAimingMod != null)
-                    {
-                        if (AttachmentProperties.ModType(currentAimingMod) == "sight")
-                        {
-                            currentSightFactor += currentAimingMod.Accuracy / 100f;
-                        }
-                        IEnumerable<Item> parents = currentAimingMod.GetAllParentItems();
-                        foreach (Item item in parents)
-                        {
-                            if (item is Mod && AttachmentProperties.ModType(item) == "mount")
-                            {
-                                Mod mod = item as Mod;
-                                currentSightFactor += (mod.Accuracy / 100f);
-                            }
-                            iterations++;
-                            if (iterations >= 5 || !(item is Mod))
-                            {
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                WeaponStats.ScopeAccuracyFactor = currentSightFactor;
                 bool isBracingTop = StanceController.BracingDirection == EBracingDirection.Top;
-                float mountingFactor = StanceController.IsBracing && isBracingTop ? 1.05f : StanceController.IsBracing && !isBracingTop ? 1.025f : StanceController.IsMounting && isBracingTop ? 1.1f : StanceController.IsMounting && !isBracingTop ? 1.075f : 1f;
-                float totalCoi = 2 * (__instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta)) * currentSightFactor * mountingFactor;
+                float mountingFactor = StanceController.IsMounting && isBracingTop ? 0.8f : StanceController.IsMounting && !isBracingTop ? 0.9f : StanceController.IsBracing && isBracingTop ? 0.95f : StanceController.IsBracing && !isBracingTop ? 0.975f : 1f;
+                float stockFactor = !WeaponStats.HasShoulderContact ? 2f : 1f;
+                float baseCOI = __instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta);
+                float totalCOI = baseCOI * (1f - WeaponStats.ScopeAccuracyFactor) * mountingFactor * stockFactor * (Plugin.IncreaseCOI.Value ? 2f : 1f);
 
                 if (!includeAmmo)
                 {
-                    __result = totalCoi;
+                    __result = totalCOI;
                     return false;
                 }
 
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
-                __result = totalCoi * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
+                __result = totalCOI * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
+
                 return false;
             }
             return true;

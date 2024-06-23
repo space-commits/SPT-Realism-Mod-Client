@@ -1,16 +1,24 @@
 ﻿using BepInEx.Logging;
-using EFT.InventoryLogic;
 using EFT;
+using EFT.InventoryLogic;
 using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
 namespace RealismMod.Weapons
 {
     public static class ReloadController
     {
+        public static float MinimumReloadSpeed = 0.7f;
+        public static float MaxInternalReloadSpeed = 1.5f;
+        public static float MaxReloadSpeed
+        {
+            get 
+            {
+                return PlayerState.IsQuickReloading ? 1.65f : 1.4f;
+            }
+
+        }  
+
         public static void SetMagReloadSpeeds(Player.FirearmController __instance, MagazineClass magazine, bool isQuickReload = false)
         {
             PlayerState.IsMagReloading = true;
@@ -21,7 +29,10 @@ namespace RealismMod.Weapons
             {
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 MagReloadSpeedModifier(weapon, magazine, false, true);
-                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadInjuryMulti * PlayerState.ReloadSkillMulti * PlayerState.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.8f)), 0.65f, 1.35f));
+                player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(
+                    WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadInjuryMulti * PlayerState.ReloadSkillMulti * 
+                    PlayerState.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff *
+                    Plugin.RealHealthController.AdrenalineReloadBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.8f)), 0.65f, 1.35f));
             }
             else
             {
@@ -90,7 +101,7 @@ namespace RealismMod.Weapons
                     float highReadyBonus = fc.Item.WeapClass == "shotgun" && StanceController.CurrentStance == EStance.HighReady == true ? StanceController.HighReadyManipBuff : 1f;
                     float lowReadyBonus = fc.Item.WeapClass != "shotgun" && StanceController.CurrentStance == EStance.LowReady == true ? StanceController.LowReadyManipBuff : 1f;
 
-                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * PlayerState.RemainingArmStamPercReload, 0.65f, 1.5f);
+                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * PlayerState.RemainingArmStamPercReload, MinimumReloadSpeed, MaxInternalReloadSpeed);
                     player.HandsAnimator.SetAnimationSpeed(IntenralMagReloadSpeed);
 
                     if (Plugin.EnableLogging.Value == true)

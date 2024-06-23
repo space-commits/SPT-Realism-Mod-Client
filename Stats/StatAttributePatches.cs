@@ -1,7 +1,7 @@
-﻿using System;
-using System.Reflection;
-using Aki.Reflection.Patching;
+﻿using Aki.Reflection.Patching;
 using EFT.UI;
+using System;
+using System.Reflection;
 using UnityEngine;
 
 
@@ -71,6 +71,8 @@ namespace RealismMod
             HpPerTick,
             RemoveTrnqt,
             Comfort,
+            GasProtection,
+            RadProtection,
             PainKillerStrength,
             MeleeDamage,
             MeleePen,
@@ -161,6 +163,10 @@ namespace RealismMod
                     return "OUT-OF-RAID HP RESTORATION";
                 case ENewItemAttributeId.StimType:
                     return "STIM TYPE";
+                case ENewItemAttributeId.GasProtection:
+                    return "GAS PROTECTION";
+                case ENewItemAttributeId.RadProtection:
+                    return "RADIATION PROTECTION";
                 default:
                     return id.ToString();
             }

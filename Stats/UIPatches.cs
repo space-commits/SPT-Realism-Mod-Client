@@ -1,28 +1,23 @@
 ﻿using Aki.Reflection.Patching;
+using Comfort.Common;
+using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using static RealismMod.Attributes;
 using UnityEngine;
 using UnityEngine.UI;
-using EFT;
-using BepInEx.Logging;
-using System.IO;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using StatAttributeClass = GClass2752;
-using BarrelTemplateClass = GClass2579;
+using static RealismMod.Attributes;
 using ArmorPlateUIClass = GClass2633;
+using BarrelTemplateClass = GClass2579;
 using FormatArmorClass = GClass2520;
-using Aki.Reflection.Utils;
+using StatAttributeClass = GClass2752;
 
 namespace RealismMod
 {
- 
+
     public class ArmorClassStringPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -374,55 +369,32 @@ namespace RealismMod
             return typeof(Weapon).GetMethod("get_AmmoCaliber", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static bool IsMulti556(Mod mod) 
+        private static string[] _multiCals = new string[] { "556x45NATO", "762x35", "762x51", "762x39", "366TKM" };
+
+        private static string GetCaliber(IEnumerable<Mod> mods)
         {
-            return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod) == "556";  
+            int count = mods.Count();
+            foreach (var mod in mods)
+            {
+                string modType = AttachmentProperties.ModType(mod);
+                bool isBarrel = Utils.IsBarrel(mod);
+                if (isBarrel && _multiCals.Contains(modType))
+                {
+                    return modType;
+                }
+            }
+            return null;
         }
-        private static bool IsMulti308(Mod mod)
-        {
-            return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod) == "308";
-        }
-        private static bool IsMulti300(Mod mod)
-        {
-            return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod) == "300";
-        }
-        private static bool IsMulti762x39(Mod mod)
-        {
-            return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod) == "762x39";
-        }
-        private static bool IsMulti366(Mod mod)
-        {
-            return Utils.IsBarrel(mod) && AttachmentProperties.ModType(mod) == "366TKM";
-        }
+
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref string __result)
         {
-            if (__instance.Mods.Any(IsMulti556)) 
-            {
-                __result = "556x45NATO";
-                return false;
-            }
-            if (__instance.Mods.Any(IsMulti300))
-            {
-                __result = "762x35";
-                return false;
-            }
-            if (__instance.Mods.Any(IsMulti308))
-            {
-                __result = "762x51";
-                return false;
-            }
-            if (__instance.Mods.Any(IsMulti762x39))
-            {
-                __result = "762x39";
-                return false;
-            }
-            if (__instance.Mods.Any(IsMulti366))
-            {
-                __result = "366TKM";
-                return false;
-            }
-            return true;
+
+            if (Utils.IsReady && __instance?.Owner?.ID != Singleton<GameWorld>.Instance?.MainPlayer?.ProfileId) return true;
+            string cal = GetCaliber(__instance.Mods);
+            if (cal == null) return true;
+            __result = cal;
+            return false;
         }
     }
 
@@ -665,14 +637,8 @@ namespace RealismMod
         private static bool Prefix(BarrelModClass __instance, ref float __result)
         {
             BarrelComponent itemComponent = __instance.GetItemComponent<BarrelComponent>();
-            if (itemComponent == null)
-            {
-                __result = 0f;
-            }
-            else
-            {
-                __result = (float)Math.Round((double)(100f * itemComponent.Template.CenterOfImpact / 2.9089f) * 2, 2);
-            }
+            if (itemComponent == null) __result = 0f;
+            else __result = (float)Math.Round((double)(100f * itemComponent.Template.CenterOfImpact / 2.9089f) * 2, 2);
 
             return false;
         }
@@ -852,9 +818,9 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            float num = __instance.method_10((float)__instance.Repairable.TemplateDurability);
-            float num2 = (__instance.GetBarrelDeviation() - num) / (__instance.Single_0 - num);
-            __result = UIWeaponStats.COIDelta + num2;
+            float durability = __instance.method_10((float)__instance.Repairable.TemplateDurability);
+            float durabilityFactor = (__instance.GetBarrelDeviation() - durability) / (__instance.Single_0 - durability);
+            __result = UIWeaponStats.COIDelta + durabilityFactor;
             return false;
         }
     }
@@ -875,13 +841,14 @@ namespace RealismMod
 
         private static float GetTotalCOI(Weapon __instance, bool includeAmmo)
         {
-            float num = __instance.CenterOfImpactBase * (1f + UIWeaponStats.COIDelta);
+            float totalCOI = __instance.CenterOfImpactBase * (1f + (UIWeaponStats.COIDelta));
             if (!includeAmmo)
             {
-                return num;
+                return totalCOI;
             }
             AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
-            return num * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
+
+            return totalCOI * ((currentAmmoTemplate != null) ? currentAmmoTemplate.AmmoFactor : 1f);
         }
     }
 
