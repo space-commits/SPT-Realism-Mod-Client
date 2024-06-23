@@ -21,7 +21,6 @@ using HealthStateClass = GClass2416<EFT.HealthSystem.ActiveHealthController.GCla
 using MedkitTemplate = IMedkitResource;
 using MedUseStringClass = GClass1235;
 using PhysicalClass = GClass681;
-using StamController = GClass682;
 
 namespace RealismMod
 {
@@ -688,29 +687,6 @@ namespace RealismMod
                 return false;
             }
             return true;
-        }
-    }
-
-    public class StaminaRegenRatePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(StamController).GetMethod("method_21", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-        [PatchPrefix]
-        private static bool Prefix(StamController __instance, float baseValue, ref float __result)
-        {
-            float[] float_7 = (float[])AccessTools.Field(typeof(StamController), "float_7").GetValue(__instance);
-            StamController.EPose epose_0 = (StamController.EPose)AccessTools.Field(typeof(StamController), "epose_0").GetValue(__instance);
-            Player player_0 = (Player)AccessTools.Field(typeof(StamController), "player_0").GetValue(__instance);
-            float Single_0 = (float)AccessTools.Property(typeof(StamController), "Single_0").GetValue(__instance);
-
-            float gasMaskFactor = GearController.HasGasMask ? 0.5f : 1f;
-            float fsFactor = !GearController.HasGasMask && GearController.FSIsActive ? 0.75f : 1f;
-            float gearFactor = fsFactor * gasMaskFactor;
-            __result = baseValue * float_7[(int)epose_0] * Singleton<BackendConfigSettingsClass>.Instance.StaminaRestoration.GetAt(player_0.HealthController.Energy.Normalized) * (player_0.Skills.EnduranceBuffRestoration + 1f) * PlayerState.HealthStamRegenFactor * gearFactor / Single_0;
-            return false;
         }
     }
 

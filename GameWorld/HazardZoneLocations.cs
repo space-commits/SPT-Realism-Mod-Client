@@ -60,20 +60,21 @@ namespace RealismMod
             { "Shoreline108", (1f, 100f, new Vector3(-337f, -3f, -83f), new Vector3(0f, 0f, 0f), new Vector3(40f, 3f, 17.5f)) }, //cargo x
         };
 
-        private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> StreetsZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
+        private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> StreetsGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
             { "StreetsDrugs1", (1f, 17f, new Vector3(93f, 2.6f, 320f), new Vector3(0f, 0f, 0f), new Vector3(10.5f, 3f, 8f)) },
             { "StreetsPigs", (1f, 25f, new Vector3(137.6f, 3.8f, 314f), new Vector3(0f, 0f, 0f), new Vector3(3.5f, 2f, 5.5f)) },
             { "StreetsSewer", (1f, 100f, new Vector3(-262f, -2.7f, 211f), new Vector3(0f, 0f, 0f), new Vector3(20f, 2f, 40f)) },
-            { "StreetsFactoryCourtyard", (0.5f, 90f, new Vector3(-111f, 2.2f, 275f), new Vector3(0f, 0f, 0f), new Vector3(30f, 3f, 16f)) },
-            { "StreetsFactoryMain", (0.5f, 50f, new Vector3(-120f, 2.2f, 288.5f), new Vector3(0f, 0f, 0f), new Vector3(34f, 4.8f, 11f)) },
-            { "StreetsFactoryUpper", (0.5f, 60f, new Vector3(-120f, 10f, 288.5f), new Vector3(0f, 0f, 0f), new Vector3(34f, 4f, 11f)) },
-            { "StreetsFactoryBigRoom", (0.5f, 120f, new Vector3(-147f, 6f, 292), new Vector3(0f, 29f, 0f), new Vector3(20f, 7f, 12.5f)) },
-            { "StreetsFactoryBigRoomBack", (0.5f, 120f, new Vector3(-89.5f, 6f, 278f), new Vector3(0f, 0f, 0f), new Vector3(11f, 7f, 23f)) },
-            { "StreetsFactoryMarkedBuilding", (0.5f, 120f, new Vector3(-135f, 3f, 269f), new Vector3(0f, 0f, 0f), new Vector3(13f, 8f, 12.5f)) },
+            { "StreetsFactoryCourtyard", (0.75f, 90f, new Vector3(-111f, 2.2f, 275f), new Vector3(0f, 0f, 0f), new Vector3(30f, 3f, 16f)) },
+            { "StreetsFactoryMain", (0.75f, 50f, new Vector3(-120f, 2.2f, 288.5f), new Vector3(0f, 0f, 0f), new Vector3(34f, 4.8f, 11f)) },
+            { "StreetsFactoryUpper", (0.75f, 60f, new Vector3(-120f, 10f, 288.5f), new Vector3(0f, 0f, 0f), new Vector3(34f, 4f, 11f)) },
+            { "StreetsFactoryBigRoom", (0.75f, 120f, new Vector3(-147f, 6f, 292), new Vector3(0f, 29f, 0f), new Vector3(20f, 7f, 12.5f)) },
+            { "StreetsFactoryBigRoomBack", (0.75f, 120f, new Vector3(-89.5f, 6f, 278f), new Vector3(0f, 0f, 0f), new Vector3(11f, 7f, 23f)) },
+            { "StreetsFactoryMarkedBuilding", (0.75f, 120f, new Vector3(-135f, 3f, 269f), new Vector3(0f, 0f, 0f), new Vector3(13f, 8f, 12.5f)) },
             { "StreetsTerragroupOffice1", (1f, 100f, new Vector3(53f, 1f, -74f), new Vector3(0f, 0f, 0f), new Vector3(22f, 2f, 13f)) },
             { "StreetsTerragroupOffice2", (1f, 100f, new Vector3(60f, 1f, -62f), new Vector3(0f, 0f, 0f), new Vector3(15f, 2f, 9f)) },
             { "StreetsTerragroupOffice3", (1f, 100f, new Vector3(45.5f, 1f, -53.5f), new Vector3(0f, 0f, 0f), new Vector3(8.5f, 2f, 14f)) },
+            { "StreetsUndergroundCarpark", (0.35f, 350f, new Vector3(208f, 0f, 375f), new Vector3(0f, 0f, 0f), new Vector3(140f, 3f, 70f)) },
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> LabsGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
@@ -154,7 +155,7 @@ namespace RealismMod
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> GZRadZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
-            { "GZTerragroupRubble", (1f, 200f, new Vector3(-58f, 25f, 22f), new Vector3(0f, 0f, 0f), new Vector3(25f, 10f, 30f)) }
+            { "GZTerragroupRubble", (1f, 140f, new Vector3(-58f, 25f, 22f), new Vector3(0f, 0f, 0f), new Vector3(25f, 10f, 30f)) }
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> ShorelineRadZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
@@ -239,7 +240,7 @@ namespace RealismMod
                 case "lighthouse":
                     return LighthouseGasZones;
                 case "tarkovstreets":
-                    return StreetsZones;
+                    return StreetsGasZones;
                 default:
                     return null;
             }

@@ -614,6 +614,31 @@ namespace RealismMod
             }
         }
 
+
+        private static float PistolShotFactor(int shot)
+        {
+            switch (shot)
+            {
+                case 1:
+                case 2:
+                    return 0.05f;
+                case 3:
+                    return 0.1f;
+                case 4:
+                    return 0.15f;
+                case 5:
+                    return 0.2f;
+                case 6:
+                    return 0.25f;
+                case 7:
+                    return 0.35f;
+                case >= 8:
+                    return 0.5f;
+                default:
+                    return 1;
+            }
+        }
+
         [PatchPrefix]
         public static bool Prefix(NewRecoilShotEffect __instance, float incomingForce)
         {
@@ -640,7 +665,7 @@ namespace RealismMod
                 float fovFactor = (Singleton<SharedGameSettingsClass>.Instance.Game.Settings.FieldOfView / 70f);
       /*          float opticLimit = StanceController.IsAiming && WeaponStats.HasOptic ? 15f * fovFactor : Plugin.HRecLimitMulti.Value * fovFactor;*/
 
-                float shotFactor = firearmController.Weapon.WeapClass == "pistol" && RecoilController.ShotCount >= 1f && firearmController.Weapon.SelectedFireMode == Weapon.EFireMode.fullauto ? 0.5f : 1f;
+                float shotFactor = firearmController.Weapon.WeapClass == "pistol" && firearmController.Weapon.SelectedFireMode == Weapon.EFireMode.fullauto ? PistolShotFactor(RecoilController.ShotCount) : 1f;
 
                 //BSG stuff related to recoil modifier based on shot index/count. Unused by Realism mod.
                 int shotIndex = (int)shotIndexField.GetValue(__instance) + 1;
