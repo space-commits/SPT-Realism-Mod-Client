@@ -96,7 +96,7 @@ namespace RealismMod
             AudioClip audioClip = Plugin.GasMaskAudioClips[clipName];
             _currentBreathClipLength = audioClip.length;
             float playBackVolume = GetBreathVolume();
-            player.SpeechSource.SetLowPassFilterParameters(1f, ESoundOcclusionType.Obstruction, 1600, 5000, true);
+            player.SpeechSource.SetLowPassFilterParameters(0.99f, ESoundOcclusionType.Obstruction, 1600, 5000, true);
             Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), audioClip, 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, playBackVolume, EOcclusionTest.None, null, false);
         }
 

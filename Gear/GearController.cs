@@ -48,7 +48,7 @@ namespace RealismMod
                 _currentRadProtection = radProtection;
                 _hadGasMask = true;
 /*                player.Say(EPhraseTrigger.OnBeingHurt, true, 0f, (ETagStatus)0, 100, false); //force to reset audio*/
-                player.SpeechSource.SetLowPassFilterParameters(1f, ESoundOcclusionType.Obstruction, 1600, 5000, true);
+                player.SpeechSource.SetLowPassFilterParameters(0.99f, ESoundOcclusionType.Obstruction, 1600, 5000, true);
                 player.Muffled = true;
             }
             else
