@@ -36,6 +36,7 @@ namespace RealismMod
 
             if (!Plugin.IsUsingFika) 
             {
+                zoneProbability = Mathf.Max(zoneProbability, 0.1f);
                 zoneProbability = Mathf.Clamp01(zoneProbability);
                 float randomValue = UnityEngine.Random.value;
                 return randomValue <= zoneProbability;
