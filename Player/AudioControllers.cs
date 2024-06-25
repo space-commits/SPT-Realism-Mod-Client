@@ -13,6 +13,7 @@ namespace RealismMod
         private static float _currentBreathClipLength = 0f;
         private static float _breathTimer = 0f;
         private static float _breathCountdown = 2.5f;
+        private static float _coughTimer = 0f;
         private static bool _breathedOut = false;
 
         public static void HazardZoneAudioController()
@@ -20,6 +21,8 @@ namespace RealismMod
             if (Utils.IsInHideout || !Utils.IsReady) return;
 
             _breathTimer += Time.deltaTime;
+            _coughTimer += Time.deltaTime;  
+
             if (GearController.HasGasMask && _breathCountdown > 0f)
             {
                 _breathCountdown -= Time.deltaTime;
@@ -42,26 +45,42 @@ namespace RealismMod
                 }
             }
 
+            if (_coughTimer > 5f) 
+            {
+                CoughController(Utils.GetYourPlayer());
+                _coughTimer = 0f;
+            }
+
             DeviceController.GasAnalyserAudioController();
             DeviceController.GeigerAudioController();
         }
 
+        private static void CoughController(Player player) 
+        {
+            bool hasHazardification = HazardTracker.TotalToxicity >= 30f || (HazardTracker.TotalRadiation >= 80f && !Plugin.RealHealthController.HasBaseEFTEffect(player, "PainKiller"));
+            bool isGettingHazarded = HazardTracker.TotalToxicityRate >= 0.12f || HazardTracker.TotalToxicityRate >= 0.1f;
+            if (!GearController.HasGasMask || !GearController.HasGasFilter && (hasHazardification || isGettingHazarded)) 
+            {
+                player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
+            }
+        }
+
         private static float GetBreathVolume() 
         {
-            return _baseBreathVolume * (2f - PlayerState.StaminaPerc);
+            return _baseBreathVolume * (2f - PlayerState.StaminaPerc) * Plugin.GasMaskBreathVolume.Value;
         }
 
         private static string GetAudioFromOtherStates()
         {
-            if (HazardTracker.TotalToxicity >= 75f || HazardTracker.TotalRadiationRate >= 85f)
+            if (HazardTracker.TotalToxicity >= 70f || HazardTracker.TotalRadiation >= 85f)
             {
                 return "Dying";
             }
-            if (HazardTracker.TotalToxicity >= 65f || PlayerState.StaminaPerc <= 0.55 || HazardTracker.TotalRadiationRate >= 70f)
+            if (HazardTracker.TotalToxicity >= 50f || PlayerState.StaminaPerc <= 0.55 || HazardTracker.TotalRadiation >= 70f)
             {
                 return "BadlyInjured";
             }
-            if (HazardTracker.TotalToxicity >= 50f || PlayerState.StaminaPerc <= 0.9f || HazardTracker.TotalRadiationRate >= 50f)
+            if (HazardTracker.TotalToxicity >= 30f || PlayerState.StaminaPerc <= 0.9f || HazardTracker.TotalRadiation >= 50f)
             {
                 return "Injured";
             }

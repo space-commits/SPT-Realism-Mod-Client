@@ -17,7 +17,7 @@ namespace RealismMod
             { "FactoryPumpRoom", (1f, 10f, new Vector3(40f, 0.1f, -11.5f), new Vector3(0f, 0f, 0f), new Vector3(5.5f, 2f, 9.5f)) },
             { "FactoryCrashRoom", (0.05f, 150f, new Vector3(7f, -0.5f, -19f), new Vector3(0f, 0f, 0f), new Vector3(60f, 5.5f, 35.5f)) },
             { "FactoryMechanicTunnel", (0.2f, 100f, new Vector3(-16.5f, -2.5f, 34f), new Vector3(0f, 0f, 0f), new Vector3(60f, 3f, 22f)) },
-            { "FactoryExtractRoom", (0.05f, 200f, new Vector3(56f, 3f, -7f), new Vector3(0f, 0f, 0f), new Vector3(36f, 7f, 150f)) }, //main extract
+            { "FactoryExtractRoom", (0.05f, 200f, new Vector3(56f, 3f, -7f), new Vector3(0f, 0f, 0f), new Vector3(38f, 7f, 150f)) }, //main extract
             { "FactorySpawn", (0.05f, 200f, new Vector3(-22f, 2f, 49f), new Vector3(0f, 0f, 0f), new Vector3(65f, 9f, 30f)) },
         };
 
@@ -32,6 +32,7 @@ namespace RealismMod
             { "CustomsPumpRoom", (0.75f, 75f, new Vector3(612f, 1.5f, -129.8f), new Vector3(0f, 6f, 0f), new Vector3(23.5f, 6.5f, 15f)) },
             { "CustomsWarehouse3", (0.5f, 75f, new Vector3(391.5f, 1f, -97f), new Vector3(0f, 8.5f, 0f), new Vector3(53.5f, 6.5f, 29f)) },
             { "CustomsRiverContainer", (1f, 12.5f, new Vector3(-96f, -10f, -16.5f), new Vector3(0f, 25f, 0f), new Vector3(12f, 4f, 25f)) }, //quest location
+            { "CustomsAquarius", (1f, 500f, new Vector3(234f, 3.5f, 138f), new Vector3(0f, 9f, 0f), new Vector3(7.5f, 2f, 3.1f)) }, //she's a sneaky bitch
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> GZGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>

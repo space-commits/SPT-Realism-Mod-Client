@@ -507,11 +507,6 @@ namespace RealismMod
                     }
 
                 }
-                if (TimeExisted % 5 == 0)
-                {
-                    _Player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
-                }
-
             }
         }
     }
@@ -567,13 +562,6 @@ namespace RealismMod
                         float baseDrainRate = GetDrainRate();
                         baseDrainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
                         _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 2f, baseDrainRate, null);
-                    }
-                }
-                if (TimeExisted % 5 == 0 && HazardTracker.TotalRadiation > 90f)
-                {
-                    if (!Plugin.RealHealthController.HasBaseEFTEffect(_Player, "PainKiller"))
-                    {
-                        _Player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
                     }
                 }
             }

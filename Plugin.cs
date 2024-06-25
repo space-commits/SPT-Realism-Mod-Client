@@ -36,7 +36,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.pluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string pluginVersion = "1.3.0";
+        private const string pluginVersion = "1.3.1";
 
         //movement
         public static ConfigEntry<bool> EnableMaterialSpeed { get; set; }
@@ -150,6 +150,7 @@ namespace RealismMod
 
         //hazard zones
         public static ConfigEntry<float> DeviceVolume { get; set; }
+        public static ConfigEntry<float> GasMaskBreathVolume { get; set; }
 
         //medical
         public static ConfigEntry<bool> ResourceRateChanges { get; set; }
@@ -995,7 +996,8 @@ namespace RealismMod
             EnableMaterialSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Material Speed Modifier", ServerConfig.movement_changes, new ConfigDescription("Enables Movement Speed Being Affected By Ground Material (Concrete, Grass, Metal, Glass Etc.)", null, new ConfigurationManagerAttributes { Order = 20, Browsable = ServerConfig.movement_changes }));
             EnableSlopeSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Slope Speed Modifier", false, new ConfigDescription("Enables Slopes Slowing Down Movement. Can Cause Random Speed Slowdowns In Some Small Spots Due To BSG's Bad Map Geometry.", null, new ConfigurationManagerAttributes { Order = 10, Browsable = ServerConfig.movement_changes }));
 
-            DeviceVolume = Config.Bind<float>(zoneSettings, "Device Volume", 1f, new ConfigDescription("Volume Modifier For Geiger And Gas Analyser.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1, Browsable = ServerConfig.med_changes }));
+            DeviceVolume = Config.Bind<float>(zoneSettings, "Device Volume", 1f, new ConfigDescription("Volume Modifier For Geiger And Gas Analyser.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1, Browsable = ServerConfig.enable_hazard_zones }));
+            GasMaskBreathVolume = Config.Bind<float>(zoneSettings, "Gas Mask Breath Volume", 1f, new ConfigDescription("Volume Modifier For Gas Mask SFX.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 2, Browsable = ServerConfig.enable_hazard_zones }));
 
             ResourceRateChanges = Config.Bind<bool>(healthSettings, "Enable Hydration/Energy Loss Rate Changes", ServerConfig.med_changes, new ConfigDescription("Enables Changes To How Hydration And Energy Loss Rates Are Calculated. They Are Increased By Injuries, Drug Use, Sprinting And Weight.", null, new ConfigurationManagerAttributes { Order = 120, Browsable = ServerConfig.med_changes }));
             HydrationRateMulti = Config.Bind<float>(healthSettings, "Hydration Drain Rate Multi.", 0.5f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 110, Browsable = ServerConfig.med_changes }));

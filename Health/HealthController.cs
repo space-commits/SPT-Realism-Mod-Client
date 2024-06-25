@@ -230,7 +230,7 @@ namespace RealismMod
         public const float PainReliefThreshold = 30f;
         public const float BasePKOverdoseThreshold = 45f;
 
-        private const float ToxicityThreshold = 40f;
+        private const float ToxicityThreshold = 15f;
         private const float RadiationThreshold = 60f;
         private const float _baseToxicityRecoveryRate = -0.05f;
         private const float _hazardInterval = 10f;
@@ -2022,7 +2022,7 @@ namespace RealismMod
         {
             if (_hazardWaitTime > _hazardInterval) 
             {
-                if (HazardTracker.TotalToxicity >= 10f)
+                if (HazardTracker.TotalToxicity >= 50f)
                 {
                     if (HazardTracker.TotalToxicity >= ToxicityThreshold && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest))
                     {
