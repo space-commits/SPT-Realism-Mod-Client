@@ -946,7 +946,7 @@ namespace RealismMod
 
             if (_effectsTime >= 1f)
             {
-                HazardZoneHealthEffectTick(player);
+                if (Plugin.ServerConfig.enable_hazard_zones) HazardZoneHealthEffectTick(player);
                 PainReliefCheck(player);
                 TickEffects();
                 _effectsTime = 0f;
@@ -1954,7 +1954,8 @@ namespace RealismMod
 
             if ((PlayerHazardBridge.GasZoneCount > 0 || PlayerHazardBridge.RadZoneCount > 0) && GearController.HasGasMask) 
             {
-                GearController.SetGasMaskDurability(player);
+                GearController.UpdateFilterResource(player, PlayerHazardBridge);
+                GearController.CalcGasMaskDuraFactor(player);
             }
 
             GasZoneTick(player);
@@ -1966,7 +1967,7 @@ namespace RealismMod
         {
             if (PlayerHazardBridge.RadZoneCount > 0 && GearController.CurrentRadProtection < 1f)
             {
-                float increase = (PlayerHazardBridge.TotalRadAmount + HazardTracker.RadiationRateMeds) * (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak);
+                float increase = (PlayerHazardBridge.TotalRadRate + HazardTracker.RadiationRateMeds) * (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak);
                 increase = Mathf.Max(increase, 0f);
                 HazardTracker.TotalRadiation += increase;
                 HazardTracker.TotalRadiationRate = increase;
@@ -1994,7 +1995,7 @@ namespace RealismMod
             if ((PlayerHazardBridge.GasZoneCount > 0 || HasToxicItem) && GearController.CurrentGasProtection < 1f)
             {
                 float toxicItemFactor = ToxicItemCount * 0.1f; 
-                float increase = (PlayerHazardBridge.TotalGasAmount + HazardTracker.ToxicityRateMeds + toxicItemFactor) * (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak);
+                float increase = (PlayerHazardBridge.TotalGasRate + HazardTracker.ToxicityRateMeds + toxicItemFactor) * (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak);
                 increase = Mathf.Max(increase, 0f);
                 HazardTracker.TotalToxicity += increase;
                 HazardTracker.TotalToxicityRate = increase;

@@ -26,14 +26,14 @@ namespace RealismMod
         private static float GetGasDelayTime() 
         {
             if (Plugin.RealHealthController.PlayerHazardBridge == null) return 4f;
-            return GasDelay * (1f - Plugin.RealHealthController.PlayerHazardBridge.TotalGasAmount);
+            return GasDelay * (1f - Plugin.RealHealthController.PlayerHazardBridge.TotalGasRate);
         }
 
         private static float GeRadDelayTime()
         {
             if (Plugin.RealHealthController.PlayerHazardBridge == null) return 1f;
-            if (Plugin.RealHealthController.PlayerHazardBridge.TotalRadAmount >= 0.15f) return 0f;
-            return RadDelay * (1f - Mathf.Pow(Plugin.RealHealthController.PlayerHazardBridge.TotalRadAmount, 0.35f));
+            if (Plugin.RealHealthController.PlayerHazardBridge.TotalRadRate >= 0.15f) return 0f;
+            return RadDelay * (1f - Mathf.Pow(Plugin.RealHealthController.PlayerHazardBridge.TotalRadRate, 0.35f));
         }
 
         public static void GasAnalyserAudioController()
@@ -126,7 +126,7 @@ namespace RealismMod
 
         public static void PlayGasAnalyserClips(Player player, PlayerHazardBridge bridge)
         {
-            string clip = GetGasAnalsyerClip(bridge.TotalGasAmount);
+            string clip = GetGasAnalsyerClip(bridge.TotalGasRate);
             if (clip == null) return;
             AudioClip audioClip = Plugin.DeviceAudioClips[clip];
             _currentGasClipLength = audioClip.length;
@@ -135,7 +135,7 @@ namespace RealismMod
 
         public static void PlayGeigerClips(Player player, PlayerHazardBridge bridge)
         {
-            string[] clips = GetGeigerClip(bridge.TotalRadAmount);
+            string[] clips = GetGeigerClip(bridge.TotalRadRate);
             if (clips == null) return;
             int rndNumber = UnityEngine.Random.Range(0, clips.Length);
             string clip = clips[rndNumber];
