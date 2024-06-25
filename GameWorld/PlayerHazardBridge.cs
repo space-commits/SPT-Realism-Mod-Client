@@ -13,15 +13,15 @@ namespace RealismMod
         public Player _Player { get; set; }
         public int GasZoneCount { get; set; } = 0;
         public int RadZoneCount { get; set; } = 0;
-        public Dictionary<string, float> GasAmounts = new Dictionary<string, float>();
-        public Dictionary<string, float> RadAmounts = new Dictionary<string, float>();
+        public Dictionary<string, float> GasRates = new Dictionary<string, float>();
+        public Dictionary<string, float> RadRates = new Dictionary<string, float>();
 
-        public float TotalGasAmount
+        public float TotalGasRate
         {
             get
             {
                 float totalGas = 0f;
-                foreach (var gas in GasAmounts)
+                foreach (var gas in GasRates)
                 {
                     totalGas += gas.Value;
                 }
@@ -29,12 +29,12 @@ namespace RealismMod
             }
         }
 
-        public float TotalRadAmount
+        public float TotalRadRate
         {
             get
             {
                 float totalRads = 0f;
-                foreach (var rad in RadAmounts)
+                foreach (var rad in RadRates)
                 {
                     totalRads += rad.Value;
                 }
@@ -62,9 +62,9 @@ namespace RealismMod
                 //temporary solution to dealing with bots
                 if (GasZoneCount > 0 && _Player != null && _Player?.ActiveHealthController != null && _Player?.AIData?.BotOwner != null && !_Player.AIData.BotOwner.IsDead)
                 {
-                    if (!BotHasGasMask() && TotalGasAmount > 0.05f)
+                    if (!BotHasGasMask() && TotalGasRate > 0.05f)
                     {
-                        _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, TotalGasAmount * Interval, ExistanceClass.PoisonDamage);
+                        _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, TotalGasRate * Interval, ExistanceClass.PoisonDamage);
                         if (_Player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Chest).Current <= 60f) 
                         {
                             _Player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);

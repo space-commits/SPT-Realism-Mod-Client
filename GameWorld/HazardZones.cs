@@ -51,7 +51,7 @@ namespace RealismMod
                     hazardBridge._Player = player;
                 }
                 hazardBridge.GasZoneCount++;
-                hazardBridge.GasAmounts.Add(this.name, 0f);
+                hazardBridge.GasRates.Add(this.name, 0f);
                 _containedPlayers.Add(player, hazardBridge);
             }
         }
@@ -62,7 +62,7 @@ namespace RealismMod
             {
                 PlayerHazardBridge hazardBridge = _containedPlayers[player];
                 hazardBridge.GasZoneCount--;
-                hazardBridge.GasAmounts.Remove(this.name);
+                hazardBridge.GasRates.Remove(this.name);
                 _containedPlayers.Remove(player);
             }
         }
@@ -85,7 +85,7 @@ namespace RealismMod
                         return;
                     }
                     float gasAmount = CalculateGasStrength(player.gameObject.transform.position);
-                    hazardBridge.GasAmounts[this.name] = Mathf.Max(gasAmount, 0f);
+                    hazardBridge.GasRates[this.name] = Mathf.Max(gasAmount, 0f);
                 }
 
                 foreach (var p in playersToRemove)
@@ -138,7 +138,7 @@ namespace RealismMod
                     hazardBridge._Player = player;
                 }
                 hazardBridge.RadZoneCount++;
-                hazardBridge.RadAmounts.Add(this.name, 0f);
+                hazardBridge.RadRates.Add(this.name, 0f);
                 _containedPlayers.Add(player, hazardBridge);
             }
         }
@@ -149,7 +149,7 @@ namespace RealismMod
             {
                 PlayerHazardBridge hazardBridge = _containedPlayers[player];
                 hazardBridge.RadZoneCount--;
-                hazardBridge.RadAmounts.Remove(this.name);
+                hazardBridge.RadRates.Remove(this.name);
                 _containedPlayers.Remove(player);
             }
         }
@@ -172,7 +172,7 @@ namespace RealismMod
                         return; 
                     }  
                     float radAmount = CalculateRadStrength(player.gameObject.transform.position);
-                    hazardBridge.RadAmounts[this.name] = Mathf.Max(radAmount, 0f);
+                    hazardBridge.RadRates[this.name] = Mathf.Max(radAmount, 0f);
                 }
 
                 foreach (var p in playersToRemove) 

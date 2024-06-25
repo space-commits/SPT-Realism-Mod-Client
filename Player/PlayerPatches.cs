@@ -162,7 +162,7 @@ namespace RealismMod
                 StatCalc.CalcPlayerWeightStats(__instance);
                 GearController.SetGearParamaters(__instance);
                 GearController.GetGearPenalty(__instance);
-                Plugin.RealHealthController.CheckInventoryForHazardousMaterials(__instance.Inventory);
+                if(Plugin.ServerConfig.enable_hazard_zones) Plugin.RealHealthController.CheckInventoryForHazardousMaterials(__instance.Inventory);
 
                 if (Plugin.ServerConfig.med_changes) //also add check for hazard zones being enabled 
                 {
@@ -192,7 +192,7 @@ namespace RealismMod
                 GearController.SetGearParamaters(__instance);
                 GearController.GetGearPenalty(__instance);
                 GearController.CheckForDevices(__instance.Inventory);
-                Plugin.RealHealthController.CheckInventoryForHazardousMaterials(__instance.Inventory);
+                if (Plugin.ServerConfig.enable_hazard_zones) Plugin.RealHealthController.CheckInventoryForHazardousMaterials(__instance.Inventory);
             }
         }
     }

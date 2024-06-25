@@ -52,7 +52,7 @@ namespace RealismMod
             return typeof(EquipmentPenaltyComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface282), typeof(bool) });
         }
 
-        private static float getAverage(Func<CompositeArmorComponent, float> predicate, Item item)
+        private static float GetAverage(Func<CompositeArmorComponent, float> predicate, Item item)
         {
             List<CompositeArmorComponent> listofComps = item.GetItemComponentsInChildren<CompositeArmorComponent>(true).ToList();
             if (!listofComps.Any())
@@ -62,12 +62,12 @@ namespace RealismMod
             return (float)Math.Round(listofComps.Average(predicate), 2);
         }
 
-        private static float getAverageBlunt(Item item)
+        private static float GetAverageBlunt(Item item)
         {
-            return getAverage(new Func<CompositeArmorComponent, float>(getBluntThroughput), item);
+            return GetAverage(new Func<CompositeArmorComponent, float>(GetBluntThroughput), item);
         }
 
-        private static float getBluntThroughput(CompositeArmorComponent subArmor)
+        private static float GetBluntThroughput(CompositeArmorComponent subArmor)
         {
             return subArmor.BluntThroughput;
         }
@@ -136,8 +136,8 @@ namespace RealismMod
                 List<ItemAttributeClass> bluntAtt = item.Attributes;
                 ItemAttributeClass bluntAttClass = new ItemAttributeClass(ENewItemAttributeId.BluntThroughput);
                 bluntAttClass.Name = ENewItemAttributeId.BluntThroughput.GetName();
-                bluntAttClass.Base = () => 1f - getAverageBlunt(item) * 100f;
-                bluntAttClass.StringValue = () => ((1f - getAverageBlunt(item)) * 100f).ToString() + " %";
+                bluntAttClass.Base = () => 1f - GetAverageBlunt(item) * 100f;
+                bluntAttClass.StringValue = () => ((1f - GetAverageBlunt(item)) * 100f).ToString() + " %";
                 bluntAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                 bluntAtt.Add(bluntAttClass);
 

@@ -1,12 +1,10 @@
 ﻿using EFT;
 using EFT.InventoryLogic;
+using System;
 using System.Collections.Generic;
-using static ChartAndGraph.ChartItemEvents;
-using static GripPose;
-using UnityEngine.UI;
-using ArmorTemplate = GClass2536; //to find again, search for HasHinge field
 using System.Linq;
 using UnityEngine;
+using ArmorTemplate = GClass2536; //to find again, search for HasHinge field
 
 namespace RealismMod
 {
@@ -134,33 +132,61 @@ namespace RealismMod
 
         private static EquipmentPenaltyComponent GetRigGearPenalty(Player player)
         {
-            Item containedItem = player.Inventory.Equipment.GetSlot(EquipmentSlot.TacticalVest).ContainedItem;
+            Item containedItem = GetSlotItem(player, EquipmentSlot.TacticalVest);
             if (containedItem == null) return null;
             return containedItem.GetItemComponent<EquipmentPenaltyComponent>();
         }
 
-        public static void SetGasMaskDurability(Player player)
+        public static Item GetSlotItem(Player player, EquipmentSlot slot) 
         {
-            ArmorComponent gasmask = player?.Inventory?.Equipment?.GetSlot(EquipmentSlot.FaceCover)?.ContainedItem?.GetItemComponent<ArmorComponent>();
-            if (gasmask == null)
+           return player?.Inventory?.Equipment?.GetSlot(slot)?.ContainedItem;
+
+        }
+
+        public static void UpdateFilterResource(Player player, PlayerHazardBridge phb) 
+        {
+            Item gasmask = GetSlotItem(player, EquipmentSlot.FaceCover);
+            if (gasmask == null) return;
+            ResourceComponent filter = gasmask?.GetItemComponentsInChildren<ResourceComponent>(false).FirstOrDefault();
+            if (filter == null) return;
+
+            float reductionFactor = (phb.TotalGasRate + phb.TotalGasRate) / 7.5f;
+            filter.Value -= reductionFactor;
+        }
+
+        public static void CalcGasMaskDuraFactor(Player player)
+        {
+            Item gasmask = GetSlotItem(player, EquipmentSlot.FaceCover);
+            if (gasmask == null) return;
+            ResourceComponent filter = gasmask?.GetItemComponentsInChildren<ResourceComponent>(false).FirstOrDefault();
+            float filterFactor = 0f;
+           
+            if (filter != null) 
+            {
+                filterFactor = Mathf.Pow(filter.Value / filter.MaxResource, 0.6f);
+            }
+          
+            ArmorComponent armorComp = gasmask.GetItemComponent<ArmorComponent>();
+            if (armorComp == null)
             {
                 GasMaskDurabilityFactor = 1;
                 return;
             }
-            float perc = gasmask.Repairable.Durability / gasmask.Repairable.MaxDurability;
-            GasMaskDurabilityFactor = perc <= 0.5f ? 0 : perc;
+
+            float gasmaskDuraPerc = armorComp.Repairable.Durability / armorComp.Repairable.MaxDurability;
+            GasMaskDurabilityFactor = gasmaskDuraPerc <= 0.5f || filter == null ? 0 : gasmaskDuraPerc * filterFactor;
         }
 
         public static EquipmentPenaltyComponent CheckFaceCoverGear(Player player, ref bool isGasMask, ref float gasProtection, ref float radProtection)
         {
-            Item containedItem = player.Inventory.Equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
+            Item containedItem = GetSlotItem(player, EquipmentSlot.FaceCover);
             if (containedItem == null) return null;
             isGasMask = GearStats.IsGasMask(containedItem);
             gasProtection = GearStats.GasProtection(containedItem);
             radProtection = GearStats.RadProtection(containedItem);
             if (isGasMask) 
             {
-                SetGasMaskDurability(player);
+                CalcGasMaskDuraFactor(player);
             }
 
             return containedItem.GetItemComponent<EquipmentPenaltyComponent>();
