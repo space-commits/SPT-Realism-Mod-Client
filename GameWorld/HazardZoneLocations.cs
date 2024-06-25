@@ -84,12 +84,13 @@ namespace RealismMod
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> InterchangeGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
-            { "InterchangeSaferoom", (10f, 10f, new Vector3(-48.4f, 22f, 43.6f), new Vector3(0f, 0f, 0f), new Vector3(10f, 3f, 4.5f)) },
+            { "InterchangeSaferoom", (1f, 10f, new Vector3(-48.4f, 22f, 43.6f), new Vector3(0f, 0f, 0f), new Vector3(10f, 3f, 4.5f)) },
             { "InterchangeMantis", (0.75f, 50f, new Vector3(17.5f, 27.1f, -72.3f), new Vector3(0f, 0f, 0f), new Vector3(28f, 2f, 21f)) },
             { "InterchangeMed1", (1f, 10f, new Vector3(23f, 27.1f, -106.6f), new Vector3(0f, 0f, 0f), new Vector3(22f, 2f, 12f)) },
             { "InterchangeMed2", (1f, 10f, new Vector3(10.5f, 27.5f, -105.6f), new Vector3(0f, 45f, 0f), new Vector3(13f, 2f, 7f)) },
             { "InterchangeMed3", (1f, 10f, new Vector3(11.6f, 27.9f, -102.5f), new Vector3(0f, 0f, 0f), new Vector3(15.5f, 2f, 3.5f)) },
             { "InterchangeMedOpp", (0.5f, 50f, new Vector3(23f, 28.1f, -134.8f), new Vector3(0f, 0f, 0f), new Vector3(22f, 2f, 15f)) },
+            { "InterchangeBasementGoshan", (0.4f, 125f, new Vector3(-18f, 22f, -55f), new Vector3(0f, 0f, 0f), new Vector3(70f, 4f, 50f)) },
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> LighthouseGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
@@ -135,7 +136,7 @@ namespace RealismMod
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> FactoryRadZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
             { "FactoryGate0", (1f, 20f, new Vector3(-60f, 1f, 56.5f), new Vector3(0f, 0f, 0f), new Vector3(13f, 4f, 10f)) },
-            { "FactoryBarrels", (1f, 10f, new Vector3(56.5f, -1f, -28f), new Vector3(0f, 0f, 0f), new Vector3(9f, 9f, 5f)) },
+            { "FactoryBarrels", (1f, 10f, new Vector3(56.5f, -1f, -28f), new Vector3(0f, 0f, 0f), new Vector3(9f, 11f, 5f)) },
             { "FactoryCellars", (1f, 27f, new Vector3(71f, -4f, -28.8f), new Vector3(0f, 0f, 0f), new Vector3(20f, 7f, 2.5f)) },
         };
 
@@ -175,9 +176,9 @@ namespace RealismMod
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> LabsRadZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
-            { "LabsGreenGoo", (1f, 25f, new Vector3(-173f, 2f, -371), new Vector3(0f, 0f, 0f), new Vector3(12f, 5f, 14f)) },
-            { "LabsAreaAroundGoo", (1f, 190f, new Vector3(-174f, 2f, -367), new Vector3(0f, 0f, 0f), new Vector3(40f, 4f, 35f)) },
-            { "LabsGooBarrels", (1f, 25f, new Vector3(-174f, 2f, -355f), new Vector3(0f, 0f, 0f), new Vector3(5f, 5f, 5f)) },
+            { "LabsGreenGoo", (1f, 20f, new Vector3(-173f, 2f, -371), new Vector3(0f, 0f, 0f), new Vector3(12f, 5f, 14f)) },
+            { "LabsAreaAroundGoo", (1f, 150f, new Vector3(-174f, 2f, -367), new Vector3(0f, 0f, 0f), new Vector3(43f, 4f, 37f)) },
+            { "LabsGooBarrels", (1f, 20f, new Vector3(-174f, 2f, -355f), new Vector3(0f, 0f, 0f), new Vector3(5f, 5f, 5f)) },
             { "LabsGreen", (1f, 80f, new Vector3(-131f, 6f, -366f), new Vector3(0f, 0f, 0f), new Vector3(17.5f, 5f, 25f)) },
             { "LabsBlack", (1f, 50f, new Vector3(-131f, 1f, -357.5f), new Vector3(0f, 0f, 0f), new Vector3(19f, 4.5f, 12f)) },
             { "LabsBlue1", (1f, 38f, new Vector3(-133f, 1.5f, -400.5f), new Vector3(0f, 0f, 0f), new Vector3(14f, 3f, 11f)) },
@@ -186,7 +187,7 @@ namespace RealismMod
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> InterchangeRadZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
-
+             { "InterchangeWaterGoshan", (1f, 50f, new Vector3(-58f, 19.3f, -55f), new Vector3(0f, 0f, 0f), new Vector3(20f, 4f, 20f)) },
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> LighthouseRadZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>

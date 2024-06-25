@@ -214,9 +214,11 @@ namespace RealismMod
             if (!_didSprintPenalties)
             {
                 float sprintDurationModi = 1f + (_sprintTimer / 7f);
+                float ergoWeight = WeaponStats.ErgoFactor * (1f + (1f - PlayerState.GearErgoPenalty));
+                ergoWeight = 1f + (ergoWeight / 200f);
 
-                float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi, 3f);
-                float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi, 1.05f);
+                float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi * ergoWeight, 3f);
+                float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi * ergoWeight, 1.05f);
                 pwa.Breath.Intensity = breathIntensity * mountingBonus;
                 pwa.HandsContainer.HandsRotation.InputIntensity = inputIntensitry * mountingBonus;
                 PlayerState.SprintTotalBreathIntensity = breathIntensity;
