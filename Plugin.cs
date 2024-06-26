@@ -357,6 +357,17 @@ namespace RealismMod
 
         public static float FPS = 1f;
 
+        public static bool StartRechamberTimer = false;
+        public static float ChamberTimer = 0f;
+        public static bool CanLoadChamber = false;
+        public static bool BlockChambering = false;
+
+        public static string CurrentProfileId = string.Empty;
+        public static string PMCProfileId = string.Empty;
+        public static string ScavProfileId = string.Empty;
+        private bool _gotProfileId = false;
+
+
         private void LoadConfig()
         {
             var settings = new JsonSerializerSettings
@@ -563,14 +574,6 @@ namespace RealismMod
                 return audioclip;
             }
         }
-        public static bool StartRechamberTimer = false;
-        public static float ChamberTimer = 0f;
-        public static bool CanLoadChamber = false;
-        public static bool BlockChambering = false;
-
-        public static string CurrentProfileId = string.Empty;
-        public static string PMCProfileId = string.Empty;
-        private bool _gotProfileId = false;
 
         void Awake()
         {
@@ -601,22 +604,7 @@ namespace RealismMod
             RealismHealthController healthController = new RealismHealthController(dmgTracker);
             RealHealthController = healthController;
 
-            initConfigs();
-
-            //malfunctions
-            if (ServerConfig.malf_changes)
-            {
-                new GetTotalMalfunctionChancePatch().Enable();
-                new IsKnownMalfTypePatch().Enable();
-                if (ServerConfig.manual_chambering) 
-                {
-                    new SetAmmoCompatiblePatch().Enable();
-                    new StartReloadPatch().Enable();
-                    new StartEquipWeapPatch().Enable();
-                    new SetAmmoOnMagPatch().Enable();
-                    new PreChamberLoadPatch().Enable();
-                }
-            }
+            InitConfigBindings();
 
             //misc
             new ChamberCheckUIPatch().Enable();
@@ -631,6 +619,28 @@ namespace RealismMod
             new PlayPhrasePatch().Enable();
             new OnGameStartPatch().Enable();
             new OnGameEndPatch().Enable();
+            new QuestCompletePatch().Enable();
+
+            //hazards
+            if (ServerConfig.enable_hazard_zones) 
+            {
+                new HealthPanelPatch().Enable();
+            }
+
+            //malfunctions
+            if (ServerConfig.malf_changes)
+            {
+                new GetTotalMalfunctionChancePatch().Enable();
+                new IsKnownMalfTypePatch().Enable();
+                if (ServerConfig.manual_chambering)
+                {
+                    new SetAmmoCompatiblePatch().Enable();
+                    new StartReloadPatch().Enable();
+                    new StartEquipWeapPatch().Enable();
+                    new SetAmmoOnMagPatch().Enable();
+                    new PreChamberLoadPatch().Enable();
+                }
+            }
 
             //recoil and attachments
             if (ServerConfig.recoil_attachment_overhaul) 
@@ -794,7 +804,7 @@ namespace RealismMod
                 new OperateStationaryWeaponPatch().Enable();
                 new SetTiltPatch().Enable();
                 new BattleUIScreenPatch().Enable();
-                new MuzzleSmokePatch().Enable();
+                new MuzzleSmokePatch().Enable(); 
                 new ChangePosePatch().Enable();
                 new MountingPatch().Enable();
             }
@@ -809,7 +819,6 @@ namespace RealismMod
             //Health
             if (ServerConfig.med_changes)
             {
-                new HealthPanelPatch().Enable();
                 new SetQuickSlotPatch().Enable();   
                 new ApplyItemPatch().Enable();
                 new BreathIsAudiblePatch().Enable();
@@ -849,6 +858,7 @@ namespace RealismMod
                 try
                 {
                     PMCProfileId = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession().Profile.Id;
+                    ScavProfileId = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession().ProfileOfPet.Id;
                     HazardTracker.GetHazardValues(PMCProfileId);
                     _gotProfileId = true;
                 }
@@ -916,7 +926,7 @@ namespace RealismMod
             }
         }
 
-        private void initConfigs()
+        private void InitConfigBindings()
         {
             string testing = ".0. Testing";
             string miscSettings = ".1. Misc. Settings.";

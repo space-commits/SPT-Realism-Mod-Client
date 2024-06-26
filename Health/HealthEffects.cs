@@ -534,7 +534,7 @@ namespace RealismMod
 
         private float GetDrainRate()
         {
-            switch (HazardTracker.TotalToxicity)
+            switch (HazardTracker.TotalRadiation)
             {
                 case < 80f:
                     return 0f;

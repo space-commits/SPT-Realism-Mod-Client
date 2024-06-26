@@ -21,9 +21,32 @@ using HealthStateClass = GClass2416<EFT.HealthSystem.ActiveHealthController.GCla
 using MedkitTemplate = IMedkitResource;
 using MedUseStringClass = GClass1235;
 using PhysicalClass = GClass681;
+using EFT.UI;
 
 namespace RealismMod
 {
+
+    public class QuestCompletePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(QuestView).GetMethod("FinishQuest", BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(QuestView __instance)
+        {
+            if (__instance.QuestId == "667c643869df8111b81cb6dc") 
+            {
+                HazardTracker.TotalRadiation = 0;
+                HazardTracker.TotalToxicity = 0;
+                HazardTracker.UpdateHazardValues(Plugin.PMCProfileId);
+                HazardTracker.UpdateHazardValues(Plugin.ScavProfileId);
+                HazardTracker.SaveHazardValues();
+            }
+        }
+    }
+
     public class HealthPanelPatch : ModulePatch
     {
         private static float _updateTime = 0f;

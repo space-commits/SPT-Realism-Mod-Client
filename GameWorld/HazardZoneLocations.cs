@@ -65,7 +65,7 @@ namespace RealismMod
         {
             { "StreetsDrugs1", (1f, 17f, new Vector3(93f, 2.6f, 320f), new Vector3(0f, 0f, 0f), new Vector3(10.5f, 3f, 8f)) },
             { "StreetsPigs", (1f, 25f, new Vector3(137.6f, 3.8f, 314f), new Vector3(0f, 0f, 0f), new Vector3(3.5f, 2f, 5.5f)) },
-            { "StreetsSewer", (1f, 100f, new Vector3(-262f, -2.7f, 211f), new Vector3(0f, 0f, 0f), new Vector3(20f, 2f, 40f)) },
+            { "StreetsSewer", (1f, 70f, new Vector3(-262f, -2.7f, 211f), new Vector3(0f, 0f, 0f), new Vector3(20f, 2f, 40f)) },
             { "StreetsFactoryCourtyard", (0.75f, 90f, new Vector3(-111f, 2.2f, 275f), new Vector3(0f, 0f, 0f), new Vector3(30f, 3f, 16f)) },
             { "StreetsFactoryMain", (0.75f, 50f, new Vector3(-120f, 2.2f, 288.5f), new Vector3(0f, 0f, 0f), new Vector3(34f, 4.8f, 11f)) },
             { "StreetsFactoryUpper", (0.75f, 60f, new Vector3(-120f, 10f, 288.5f), new Vector3(0f, 0f, 0f), new Vector3(34f, 4f, 11f)) },
@@ -128,9 +128,9 @@ namespace RealismMod
             { "ReserveD2Tank", (1f, 45f, new Vector3(-78.5f, -19.8f, 113f), new Vector3(0f, 30f, 0f), new Vector3(55f, 10f, 15f)) },
             { "ReserveHallway1", (1f, 100f, new Vector3(-68.4f, -15f, 162f), new Vector3(0f, 30f, 0f), new Vector3(35f, 3f, 25f)) },
             { "ReserveHallway2", (1f, 100f, new Vector3(-85.5f, -15f, 132f), new Vector3(0f, 30f, 0f), new Vector3(4f, 3f, 20f)) },
-            { "ReserveBunker", (0.25f, 225f, new Vector3(-105f, -14.5f, 40f), new Vector3(0f, 15f, 0f), new Vector3(65f, 4.5f, 45f)) },
-            { "ReserveWhiteBishop", (0.25f, 200f, new Vector3(-66f, -9f, -32f), new Vector3(0f, 15f, 0f), new Vector3(35f, 3f, 20f)) }, //basement
-            { "ReserveBlackBishop", (0.25f, 210f, new Vector3(-138f, -9f, -9f), new Vector3(0f, 15f, 0f), new Vector3(69f, 3f, 23.5f)) }, //basement
+            { "ReserveBunker", (0.35f, 225f, new Vector3(-105f, -14.5f, 40f), new Vector3(0f, 15f, 0f), new Vector3(65f, 4.5f, 45f)) },
+            { "ReserveWhiteBishop", (0.5f, 200f, new Vector3(-66f, -9f, -32f), new Vector3(0f, 15f, 0f), new Vector3(35f, 3f, 20f)) }, //basement
+            { "ReserveBlackBishop", (0.5f, 210f, new Vector3(-138f, -9f, -9f), new Vector3(0f, 15f, 0f), new Vector3(69f, 3f, 23.5f)) }, //basement
         }; 
 
         //Radiation

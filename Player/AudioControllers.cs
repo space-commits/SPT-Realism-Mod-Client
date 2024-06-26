@@ -58,8 +58,8 @@ namespace RealismMod
         private static void CoughController(Player player) 
         {
             bool hasHazardification = HazardTracker.TotalToxicity >= 30f || (HazardTracker.TotalRadiation >= 80f && !Plugin.RealHealthController.HasBaseEFTEffect(player, "PainKiller"));
-            bool isGettingHazarded = HazardTracker.TotalToxicityRate >= 0.12f || HazardTracker.TotalToxicityRate >= 0.1f;
-            if (!GearController.HasGasMask || !GearController.HasGasFilter && (hasHazardification || isGettingHazarded)) 
+            bool isGettingHazarded = HazardTracker.TotalToxicityRate >= 0.15f || HazardTracker.TotalRadiationRate >= 0.1f;
+            if ((!GearController.HasGasMask || !GearController.HasGasFilter) && (hasHazardification || isGettingHazarded)) 
             {
                 player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
             }
