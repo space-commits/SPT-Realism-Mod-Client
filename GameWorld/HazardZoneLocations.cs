@@ -130,10 +130,13 @@ namespace RealismMod
             { "ReserveD2Tank", (1f, 45f, new Vector3(-78.5f, -19.8f, 113f), new Vector3(0f, 30f, 0f), new Vector3(55f, 10f, 15f)) },
             { "ReserveBunker", (0.35f, 225f, new Vector3(-105f, -14.5f, 40f), new Vector3(0f, 15f, 0f), new Vector3(65f, 4.5f, 45f)) },
             { "ReserveStorage", (0.15f, 500f, new Vector3(50f, -13.5f, -110f), new Vector3(0f, 0f, 0f), new Vector3(90f, 6f, 190f)) },
-            { "ReserveStorageSide1", (0.85f, 90f, new Vector3(76f, -12f, -136f), new Vector3(0f, 15f, 0f), new Vector3(16f, 3f, 29f)) },
-            { "ReserveStorageSide2", (0.85f, 90f, new Vector3(40f, -12f, -126f), new Vector3(0f, 15f, 0f), new Vector3(16f, 3f, 29f)) },
+            { "ReserveStorageSide1", (0.85f, 80f, new Vector3(76f, -12f, -136f), new Vector3(0f, 15f, 0f), new Vector3(16f, 3f, 29f)) },
+            { "ReserveStorageSide2", (0.85f, 80f, new Vector3(40f, -12f, -126f), new Vector3(0f, 15f, 0f), new Vector3(16f, 3f, 29f)) },
             { "ReserveWhiteBishop", (0.55f, 200f, new Vector3(-66f, -9f, -32f), new Vector3(0f, 15f, 0f), new Vector3(35f, 3f, 20f)) }, //basement
             { "ReserveBlackBishop", (0.55f, 210f, new Vector3(-138f, -9f, -9f), new Vector3(0f, 15f, 0f), new Vector3(69f, 3f, 23.5f)) }, //basement
+            { "ReserveBlackBishopHall", (0.4f, 220f, new Vector3(-134f, -12f, 14f), new Vector3(0f, 15f, 0f), new Vector3(50f, 4f, 23f)) }, //basemment
+            { "ReserveBlackPawnHall", (0.4f, 220f, new Vector3(-146f, -11f, 49f), new Vector3(0f, 15f, 0f), new Vector3(30f, 4f, 50f)) }, //basemment
+            { "ReserveWhitePawnHall", (0.4f, 220f, new Vector3(-103f, -10f, 72.5f), new Vector3(0f, 15f, 0f), new Vector3(70f, 4f, 25f)) }, //basemment
         }; 
 
         //Radiation

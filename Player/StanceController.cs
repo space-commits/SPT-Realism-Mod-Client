@@ -783,7 +783,7 @@ namespace RealismMod
             Vector3 meleeTargetPosition2 = new Vector3(0f, -0.0275f, 0f);
 
             float movementFactor = PlayerState.IsMoving ? 1.2f : 1f;
-            float beltfedFactor = fc.Item.IsBeltMachineGun ? 0.85f : 1f;
+            float beltfedFactor = fc.Item.IsBeltMachineGun || fc.Item.Weight >= 10f ? 0.85f : 1f;
 
             //for setting baseline position
             if (!IsBlindFiring && !pwa.LeftStance)

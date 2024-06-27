@@ -150,7 +150,7 @@ namespace RealismMod
             {
                 StanceController.CanResetDamping = false;
                 float headGearFactor = GearController.FSIsActive || GearController.NVGIsActive || GearController.HasGasMask ? 1.35f : 1f;
-                float baseLine = 6.5f * factor * headGearFactor;
+                float baseLine = Mathf.Clamp(6.5f * factor * headGearFactor, 1f, 17f);
                 float rndX = UnityEngine.Random.Range(baseLine * 0.9f, baseLine);
                 float rndY = UnityEngine.Random.Range(baseLine * 0.9f, baseLine);
                 Vector3 wiggleDir = new Vector3(-rndX, -rndY, 0f);
@@ -241,9 +241,9 @@ namespace RealismMod
                         handsIntensity = Mathf.Clamp(0.5f * totalErgoFactor * formfactor, 0.35f, 0.86f);
                     }
 
-                    float beltFedFactor = weapon.IsBeltMachineGun ? 1.45f : 1f;
-                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * Plugin.ProceduralIntensity.Value * beltFedFactor;
-                    float totalInputIntensitry = handsIntensity * handsIntensity * Plugin.ProceduralIntensity.Value * beltFedFactor;
+                    float chonkerFactor = weapon.IsBeltMachineGun || weapon.Weight >= 10f ? 1.45f : 1f;
+                    float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * Plugin.ProceduralIntensity.Value * chonkerFactor;
+                    float totalInputIntensitry = handsIntensity * handsIntensity * Plugin.ProceduralIntensity.Value * chonkerFactor;
                     PlayerState.TotalBreathIntensity = totalBreathIntensity;
                     PlayerState.TotalHandsIntensity = totalInputIntensitry;
 
@@ -338,7 +338,7 @@ namespace RealismMod
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 Weapon weapon = firearmController.Weapon;
-                float formfactor = WeaponStats.IsBullpup ? 0.75f : weapon.IsBeltMachineGun ? 1.4f : 1f;
+                float formfactor = WeaponStats.IsBullpup ? 0.75f : weapon.IsBeltMachineGun || weapon.Weight >= 10f ? 1.4f : 1f;
                 float weapWeight = weapon.GetSingleItemTotalWeight();
                 float totalPlayerWeight = PlayerState.TotalModifiedWeight - weapWeight;
                 float playerWeightFactor = 1f + (totalPlayerWeight / 200f);

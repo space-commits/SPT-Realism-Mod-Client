@@ -36,7 +36,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(QuestView __instance)
         {
-            if (__instance.QuestId == "667c643869df8111b81cb6dc") 
+            if (__instance.QuestId == "667c643869df8111b81cb6dc" || __instance.QuestId == "667dbbc9c62a7c2ee8fe25b2")
             {
                 HazardTracker.TotalRadiation = 0;
                 HazardTracker.TotalToxicity = 0;
