@@ -80,7 +80,7 @@ namespace RealismMod
             {
                 return "BadlyInjured";
             }
-            if (HazardTracker.TotalToxicity >= 30f || PlayerState.StaminaPerc <= 0.9f || HazardTracker.TotalRadiation >= 50f)
+            if (HazardTracker.TotalToxicity >= 30f || PlayerState.StaminaPerc <= 0.8f || HazardTracker.TotalRadiation >= 50f)
             {
                 return "Injured";
             }

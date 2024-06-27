@@ -122,15 +122,18 @@ namespace RealismMod
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> ReserveGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
-            { "ReserveStorage", (0.15f, 500f, new Vector3(50f, -13.5f, -110f), new Vector3(0f, 0f, 0f), new Vector3(90f, 6f, 190f)) },
-            { "ReserveShaft", (1f, 50f, new Vector3(-58.9f, -15.9f, 179.9f), new Vector3(0f, 0f, 0f), new Vector3(14f, 55f, 16f)) },
-            { "ReserveD2Rat", (1f, 40f, new Vector3(-63f, -18.6f, 139f), new Vector3(0f, 30f, 0f), new Vector3(45f, 15f, 14f)) },
-            { "ReserveD2Tank", (1f, 45f, new Vector3(-78.5f, -19.8f, 113f), new Vector3(0f, 30f, 0f), new Vector3(55f, 10f, 15f)) },
             { "ReserveHallway1", (1f, 100f, new Vector3(-68.4f, -15f, 162f), new Vector3(0f, 30f, 0f), new Vector3(35f, 3f, 25f)) },
             { "ReserveHallway2", (1f, 100f, new Vector3(-85.5f, -15f, 132f), new Vector3(0f, 30f, 0f), new Vector3(4f, 3f, 20f)) },
+            { "ReserveShaft", (1f, 50f, new Vector3(-58.9f, -15.9f, 179.9f), new Vector3(0f, 0f, 0f), new Vector3(14f, 55f, 16f)) },
+            { "ReserveStairsToD2", (1f, 60f, new Vector3(-70f, -16f, 78f), new Vector3(0f, 20f, 0f), new Vector3(11f, 8f, 38f)) },
+            { "ReserveD2Rat", (1f, 40f, new Vector3(-63f, -18.6f, 139f), new Vector3(0f, 30f, 0f), new Vector3(45f, 15f, 14f)) },
+            { "ReserveD2Tank", (1f, 45f, new Vector3(-78.5f, -19.8f, 113f), new Vector3(0f, 30f, 0f), new Vector3(55f, 10f, 15f)) },
             { "ReserveBunker", (0.35f, 225f, new Vector3(-105f, -14.5f, 40f), new Vector3(0f, 15f, 0f), new Vector3(65f, 4.5f, 45f)) },
-            { "ReserveWhiteBishop", (0.5f, 200f, new Vector3(-66f, -9f, -32f), new Vector3(0f, 15f, 0f), new Vector3(35f, 3f, 20f)) }, //basement
-            { "ReserveBlackBishop", (0.5f, 210f, new Vector3(-138f, -9f, -9f), new Vector3(0f, 15f, 0f), new Vector3(69f, 3f, 23.5f)) }, //basement
+            { "ReserveStorage", (0.15f, 500f, new Vector3(50f, -13.5f, -110f), new Vector3(0f, 0f, 0f), new Vector3(90f, 6f, 190f)) },
+            { "ReserveStorageSide1", (0.85f, 90f, new Vector3(76f, -12f, -136f), new Vector3(0f, 15f, 0f), new Vector3(16f, 3f, 29f)) },
+            { "ReserveStorageSide2", (0.85f, 90f, new Vector3(40f, -12f, -126f), new Vector3(0f, 15f, 0f), new Vector3(16f, 3f, 29f)) },
+            { "ReserveWhiteBishop", (0.55f, 200f, new Vector3(-66f, -9f, -32f), new Vector3(0f, 15f, 0f), new Vector3(35f, 3f, 20f)) }, //basement
+            { "ReserveBlackBishop", (0.55f, 210f, new Vector3(-138f, -9f, -9f), new Vector3(0f, 15f, 0f), new Vector3(69f, 3f, 23.5f)) }, //basement
         }; 
 
         //Radiation
@@ -212,7 +215,7 @@ namespace RealismMod
         {
             { "ReserveD2Extract", (1f, 100f, new Vector3(-109f, -18.4f, 161f), new Vector3(0f, 0f, 0f), new Vector3(53f, 5f, 27f)) },
             { "ReserveWater", (1f, 75f, new Vector3(-99f, -15f, 5.5f), new Vector3(0f, 15f, 0f), new Vector3(29.5f, 2f, 14.5f)) },
-            { "ReserveHermetic", (1f, 100f, new Vector3(62f, -7f, -195f), new Vector3(0f, 15f, 0f), new Vector3(20f, 2f, 8f)) },
+            { "ReserveHermetic", (1f, 100f, new Vector3(62f, -7f, -195f), new Vector3(0f, 15f, 0f), new Vector3(18f, 2f, 14f)) },
             { "ReserveMarkedTrain", (1f, 50f, new Vector3(191.5f, -7f, -226.3f), new Vector3(0f, 15f, 0f), new Vector3(4f, 3f, 4f)) }, 
             { "ReserveMarkedBunker", (1f, 50f, new Vector3(-123f, -14f, 28.5f), new Vector3(0f, 15f, 0f), new Vector3(6f, 4f, 6f)) }, 
             { "ReserveMarkedPawn", (1f, 50f, new Vector3(-154f, -9f, 74f), new Vector3(0f, 15f, 0f), new Vector3(7f, 4f, 7.5f)) }, //black pawn
