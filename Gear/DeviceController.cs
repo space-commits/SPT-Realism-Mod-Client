@@ -46,7 +46,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     PlayerHazardBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;
-                    if (player != null && bridge != null && (bridge.GasZoneCount > 0 || Plugin.RealHealthController.HasToxicItem))
+                    if (player != null && bridge != null && (bridge.GasZoneCount > 0 || Plugin.RealHealthController.ToxicItemCount > 0))
                     {
                         PlayGasAnalyserClips(player, bridge);
                         _gasDeviceTimer = 0f;
@@ -76,6 +76,8 @@ namespace RealismMod
 
         public static string GetGasAnalsyerClip(float gasLevel) 
         {
+            if (Plugin.RealHealthController.ToxicItemCount > 0 && gasLevel <= 0f) return "gasBeep1.wav";
+
             switch (gasLevel) 
             {
                 case <= 0f:
@@ -94,9 +96,9 @@ namespace RealismMod
                     return "gasBeep6.wav";
                 case > 0.35f:
                     return "gasBeep7.wav";
+                default: 
+                    return null;
             }
-            if (Plugin.RealHealthController.HasToxicItem) return "gasBeep3.wav";
-            return null;
         }
 
         public static string[] GetGeigerClip(float radLevel)

@@ -153,8 +153,6 @@ namespace RealismMod
 
         public bool HasAdrenalineEffect { get; set; } = false;
 
-        public bool HasToxicItem { get; set; } = false;
-        public bool HasIrradiatedItem { get; set; } = false;
         public int ToxicItemCount { get; set; } = 0;
 
         public float AdrenalineMovementBonus
@@ -1992,9 +1990,9 @@ namespace RealismMod
 
         private void GasZoneTick(Player player) 
         {
-            if ((PlayerHazardBridge.GasZoneCount > 0 || HasToxicItem) && GearController.CurrentGasProtection < 1f)
+            if ((PlayerHazardBridge.GasZoneCount > 0 || ToxicItemCount > 0) && GearController.CurrentGasProtection < 1f)
             {
-                float toxicItemFactor = ToxicItemCount * 0.1f; 
+                float toxicItemFactor = ToxicItemCount * 0.05f; 
                 float increase = (PlayerHazardBridge.TotalGasRate + HazardTracker.ToxicityRateMeds + toxicItemFactor) * (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak);
                 increase = Mathf.Max(increase, 0f);
                 HazardTracker.TotalToxicity += increase;
@@ -2053,16 +2051,13 @@ namespace RealismMod
 
         public void CheckInventoryForHazardousMaterials(Inventory inventory)
         {
-            HasToxicItem = false;
             ToxicItemCount = 0;
-    
             foreach (var grid in inventory.QuestRaidItems.Grids)
             {
                 foreach (var item in grid.Items)
                 {
                     if (ToxicItems.Contains(item.TemplateId)) 
                     {
-                        HasToxicItem = true;
                         ToxicItemCount++;
                     }
                 }
