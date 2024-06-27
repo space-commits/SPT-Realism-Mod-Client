@@ -24,7 +24,8 @@ namespace RealismMod
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> CustomsGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
             { "CustomsSwitchBasement", (0.5f, 60f, new Vector3(335f, -3.1f, -60.3f), new Vector3(0f, 0f, 0f), new Vector3(25f, 6.5f, 50f)) },
-            { "CustomsWarehouse5", (1f, 70f, new Vector3(474.5f, 2.6f, -67f), new Vector3(0f, 9f, 0f), new Vector3(24f, 2.5f, 49f)) }, //quest location
+            { "CustomsWarehouse5", (0.5f, 80f, new Vector3(474.5f, 2.6f, -67f), new Vector3(0f, 9f, 0f), new Vector3(24f, 2.5f, 49f)) }, //quest location
+            { "CustomsWarehouse5Van", (1f, 40f, new Vector3(480f, 3f, -76f), new Vector3(0f, 60f, 0f), new Vector3(11f, 4f, 6f)) }, //quest location
             { "CustomsGasTrain1", (1f, 50f, new Vector3(460f, 2f, 185f), new Vector3(0f, 40f, 0f), new Vector3(10f, 10f, 45f)) },
             { "CustomsGasTrain2", (1f, 25f, new Vector3(466f, 0f, 208f), new Vector3(0f, 10f, 0f), new Vector3(5f, 3f, 10f)) },
             { "CustomsCrackDen", (0.75f, 30f, new Vector3(88f, 5f, -157f), new Vector3(0f, -12f, 0f), new Vector3(15f, 2f, 27f)) },
@@ -159,6 +160,7 @@ namespace RealismMod
             { "CustomsOldGasExit", (1f, 50f, new Vector3(311f, -2f, -180f), new Vector3(0f, -12f, 0f), new Vector3(10f, 5f, 15f)) },
             { "CustomsZB", (1f, 50f, new Vector3(465f, -2f, -112f), new Vector3(0f, 0f, 0f), new Vector3(15f, 2f, 5f)) },
             { "CustomsMarkedRoom", (1f, 15f, new Vector3(183.5f, 7f, 182f), new Vector3(0f, 7f, 0f), new Vector3(6.5f, 3f, 6f)) },
+            { "CustomsBarrels1", (1f, 50f, new Vector3(427.5f, -1f, -85f), new Vector3(0f, 15f, 0f), new Vector3(5f, 2f, 4f)) },
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> GZRadZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
