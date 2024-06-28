@@ -70,7 +70,7 @@ namespace RealismMod
        
                 if (!haveNotified)
                 {
-                    NotificationManagerClass.DisplayWarningNotification("Tourniquet Applied On " + BodyPart + ", You Are Losing Health On This Limb. Use A Surgery Kit To Remove It.", EFT.Communications.ENotificationDurationType.Long);
+                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Tourniquet Applied On " + BodyPart + ", You Are Losing Health On This Limb. Use A Surgery Kit To Remove It.", EFT.Communications.ENotificationDurationType.Long);
                     haveNotified = true;
                 }
 
@@ -133,7 +133,7 @@ namespace RealismMod
 
                 if (!haveNotified)
                 {
-                    NotificationManagerClass.DisplayMessageNotification("Surgery Kit Applied On " + BodyPart + ", Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
+                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Surgery Kit Applied On " + BodyPart + ", Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
                     haveNotified = true;
                 }
 
@@ -141,7 +141,7 @@ namespace RealismMod
                 {
                     hasRemovedTrnqt = true;
                     RealHealthController.RemoveCustomEffectOfType(typeof(TourniquetEffect), BodyPart);
-                    NotificationManagerClass.DisplayMessageNotification("Surgical Kit Used, Removing Tourniquet Effect Present On Limb If Present: " + BodyPart, EFT.Communications.ENotificationDurationType.Long);
+                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Surgical Kit Used, Removing Tourniquet Effect Present On Limb If Present: " + BodyPart, EFT.Communications.ENotificationDurationType.Long);
                 }
 
                 float currentHp = _Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
@@ -156,7 +156,7 @@ namespace RealismMod
 
                 if (HpRegened >= maxHpRegen || currentHp == maxHp)
                 {
-                    NotificationManagerClass.DisplayMessageNotification("Surgical Kit Health Regeneration On " + BodyPart + " Has Expired", EFT.Communications.ENotificationDurationType.Long);
+                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Surgical Kit Health Regeneration On " + BodyPart + " Has Expired", EFT.Communications.ENotificationDurationType.Long);
                     Duration = 0;
                     return;
                 }
@@ -687,7 +687,7 @@ namespace RealismMod
                 if (!hasRemovedTrnqt && (StimType == EStimType.Regenerative || StimType == EStimType.Clotting))
                 {
                     RealHealthController.RemoveEffectsOfType(EHealthEffectType.Tourniquet);
-                    NotificationManagerClass.DisplayMessageNotification("Removing Tourniquet Effects Due To Stim Type: " + StimType, EFT.Communications.ENotificationDurationType.Long);
+                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Removing Tourniquet Effects Due To Stim Type: " + StimType, EFT.Communications.ENotificationDurationType.Long);
                     hasRemovedTrnqt = true;
                 }
 

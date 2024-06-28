@@ -22,6 +22,7 @@ using MedkitTemplate = IMedkitResource;
 using MedUseStringClass = GClass1235;
 using PhysicalClass = GClass681;
 using EFT.UI;
+using EFT.Communications;
 
 namespace RealismMod
 {
@@ -43,6 +44,7 @@ namespace RealismMod
                 HazardTracker.UpdateHazardValues(Plugin.PMCProfileId);
                 HazardTracker.UpdateHazardValues(Plugin.ScavProfileId);
                 HazardTracker.SaveHazardValues();
+                if(Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayNotification(new GClass2030("Blood Tests Came Back Clear, Your Radiation Poisoning Has Been Cured.".Localized(null), ENotificationDurationType.Long, ENotificationIconType.Quest, null));
             }
         }
     }

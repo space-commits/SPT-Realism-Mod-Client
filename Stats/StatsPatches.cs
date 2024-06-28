@@ -361,6 +361,7 @@ namespace RealismMod
             WeaponStats.BaseMeleePen = 0f;
             WeaponStats.HasBayonet = false;
             WeaponStats.HasBooster = false;
+            WeaponStats.HasBipod = false;
 
             foreach (Mod mod in __instance.Mods)
             {
@@ -398,6 +399,8 @@ namespace RealismMod
                         WeaponStats.BaseMeleeDamage = AttachmentProperties.ModMeleeDamage(mod);
                         WeaponStats.BaseMeleePen = AttachmentProperties.ModMeleePen(mod);
                     }
+
+                    if (Utils.IsBipod(mod)) WeaponStats.HasBipod = true;
 
                     StatCalc.ModConditionalStatCalc(
                         __instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, 

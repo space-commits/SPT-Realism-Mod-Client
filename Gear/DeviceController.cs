@@ -13,8 +13,8 @@ namespace RealismMod
         public static bool HasGeiger { get; set; } = false;
         private const float GasDelay = 5f;
         private const float RadDelay = 4f;
-        private const float GasDeviceVolume = 0.15f;
-        private const float GeigerDeviceVolume = 0.15f;
+        private const float GasDeviceVolume = 0.14f;
+        private const float GeigerDeviceVolume = 0.16f;
 
         private static float _currentGasClipLength = 0f;
         private static float _gasDeviceTimer = 0f;
