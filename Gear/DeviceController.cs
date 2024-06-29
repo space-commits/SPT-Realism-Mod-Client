@@ -13,8 +13,8 @@ namespace RealismMod
         public static bool HasGeiger { get; set; } = false;
         private const float GasDelay = 5f;
         private const float RadDelay = 4f;
-        private const float GasDeviceVolume = 0.15f;
-        private const float GeigerDeviceVolume = 0.15f;
+        private const float GasDeviceVolume = 0.14f;
+        private const float GeigerDeviceVolume = 0.16f;
 
         private static float _currentGasClipLength = 0f;
         private static float _gasDeviceTimer = 0f;
@@ -46,7 +46,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     PlayerHazardBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;
-                    if (player != null && bridge != null && bridge.GasZoneCount > 0)
+                    if (player != null && bridge != null && (bridge.GasZoneCount > 0 || Plugin.RealHealthController.ToxicItemCount > 0))
                     {
                         PlayGasAnalyserClips(player, bridge);
                         _gasDeviceTimer = 0f;
@@ -76,6 +76,8 @@ namespace RealismMod
 
         public static string GetGasAnalsyerClip(float gasLevel) 
         {
+            if (Plugin.RealHealthController.ToxicItemCount > 0 && gasLevel <= 0f) return "gasBeep1.wav";
+
             switch (gasLevel) 
             {
                 case <= 0f:

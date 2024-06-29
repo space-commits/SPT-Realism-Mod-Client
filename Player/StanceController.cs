@@ -111,21 +111,21 @@ namespace RealismMod
         public static float WiggleReturnSpeed = 1f;
 
         //arm stamina
-        private static bool regenStam = false;
-        private static bool drainStam = false;
-        private static bool neutral = false;
-        private static bool wasBracing = false;
-        private static bool wasMounting = false;
-        private static bool wasAiming = false;
+        private static bool _regenStam = false;
+        private static bool _drainStam = false;
+        private static bool _neutral = false;
+        private static bool _wasBracing = false;
+        private static bool _wasMounting = false;
+        private static bool _wasAiming = false;
         public static bool HaveResetStamDrain = false;
         public static bool CanResetAimDrain = false;
 
         //mounting
-        static Quaternion MakeQuaternionDelta(Quaternion from, Quaternion to) => to * Quaternion.Inverse(from);
-        static float mountAimSmoothed = 0f;
-        public static float cumulativeMountPitch = 0f;
-        public static float cumulativeMountYaw = 0f;
-        static Vector2 lastMountYawPitch;
+        private static Quaternion _makeQuaternionDelta(Quaternion from, Quaternion to) => to * Quaternion.Inverse(from); //yeah I don't know what this is either
+        private static float _mountAimSmoothed = 0f;
+        public static float _cumulativeMountPitch = 0f;
+        public static float _cumulativeMountYaw = 0f;
+        static Vector2 _lastMountYawPitch;
         public static EBracingDirection BracingDirection = EBracingDirection.None;
         public static bool IsBracing = false;
         public static bool IsMounting = false;
@@ -205,7 +205,7 @@ namespace RealismMod
             bool doDrain = ((shouldInterruptRegen || !isInRegenableStance || shouldDoIdleDrain) && !isInRegenableState && !doNeutral) || (IsDoingTacSprint && Plugin.EnableIdleStamDrain.Value);
             EStance stance = CurrentStance;
 
-            if (IsAiming != wasAiming || regenStam != doRegen || drainStam != doDrain || neutral != doNeutral || lastRecordedStance != CurrentStance || IsMounting != wasMounting || IsBracing != wasBracing)
+            if (IsAiming != _wasAiming || _regenStam != doRegen || _drainStam != doDrain || _neutral != doNeutral || lastRecordedStance != CurrentStance || IsMounting != _wasMounting || IsBracing != _wasBracing)
             {
                 if (doDrain)
                 {
@@ -239,12 +239,12 @@ namespace RealismMod
                 player.Physical.HandsStamina.Multiplier = 0f;
             }
 
-            regenStam = doRegen;
-            drainStam = doDrain;
-            neutral = doNeutral;
-            wasBracing = IsBracing;
-            wasMounting = IsMounting;
-            wasAiming = IsAiming;
+            _regenStam = doRegen;
+            _drainStam = doDrain;
+            _neutral = doNeutral;
+            _wasBracing = IsBracing;
+            _wasMounting = IsMounting;
+            _wasAiming = IsAiming;
             lastRecordedStance = CurrentStance;
         }
 
@@ -253,12 +253,12 @@ namespace RealismMod
             player.Physical.Aim(0f);
             player.Physical.HandsStamina.Multiplier = 1f;
             HaveResetStamDrain = true;
-            regenStam = false;
-            drainStam = false;
-            neutral = false;
-            wasBracing = false;
-            wasMounting = false;
-            wasAiming = false;
+            _regenStam = false;
+            _drainStam = false;
+            _neutral = false;
+            _wasBracing = false;
+            _wasMounting = false;
+            _wasAiming = false;
             lastRecordedStance = EStance.None;
         }
 
@@ -564,7 +564,8 @@ namespace RealismMod
                     bool cancelCurrentStance =
                         CurrentStance == EStance.HighReady ||
                         CurrentStance == EStance.LowReady ||
-                        CurrentStance == EStance.PatrolStance;
+                        CurrentStance == EStance.PatrolStance ||
+                        (IsAiming && CurrentStance != EStance.ActiveAiming);
                     /*                   bool cancelStoredStance = 
                                             StoredStance == EStance.HighReady || 
                                             (StoredStance == EStance.LowReady && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed) ||
@@ -783,7 +784,7 @@ namespace RealismMod
             Vector3 meleeTargetPosition2 = new Vector3(0f, -0.0275f, 0f);
 
             float movementFactor = PlayerState.IsMoving ? 1.2f : 1f;
-            float beltfedFactor = fc.Item.IsBeltMachineGun ? 0.85f : 1f;
+            float beltfedFactor = fc.Item.IsBeltMachineGun || fc.Item.Weight >= 10f ? 0.85f : 1f;
 
             //for setting baseline position
             if (!IsBlindFiring && !pwa.LeftStance)
@@ -1305,7 +1306,7 @@ namespace RealismMod
             player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[3].IntensityMultiplicator = 0;
             player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.RecoilProcessValues[4].IntensityMultiplicator = 0;
         }
-
+        
         //thanks and credit to lualeet's deadzone mod for this code, 0 jank compared to Realism's previous mounting system
         static void SetRotationWrapped(ref float yaw, ref float pitch)
         {
@@ -1336,29 +1337,29 @@ namespace RealismMod
 
         static void UpdateAimSmoothed(ProceduralWeaponAnimation pwa, float deltaTime)
         {
-            mountAimSmoothed = Mathf.Lerp(mountAimSmoothed, pwa.IsAiming ? 1f : 0f, deltaTime * 6f);
+            _mountAimSmoothed = Mathf.Lerp(_mountAimSmoothed, pwa.IsAiming ? 1f : 0f, deltaTime * 6f);
         }
 
         static void UpdateMountRotation(Vector2 currentYawPitch, float clamp)
         {
-            Quaternion lastRotation = Quaternion.Euler(lastMountYawPitch.x, lastMountYawPitch.y, 0);
+            Quaternion lastRotation = Quaternion.Euler(_lastMountYawPitch.x, _lastMountYawPitch.y, 0);
             Quaternion currentRotation = Quaternion.Euler(currentYawPitch.x, currentYawPitch.y, 0);
 
-            lastMountYawPitch = currentYawPitch;
+            _lastMountYawPitch = currentYawPitch;
             lastRotation = Quaternion.SlerpUnclamped(currentRotation, lastRotation, 0.115f);
 
-            Vector3 delta = MakeQuaternionDelta(lastRotation, currentRotation).eulerAngles;
+            Vector3 delta = _makeQuaternionDelta(lastRotation, currentRotation).eulerAngles;
 
-            cumulativeMountYaw += delta.x;
-            cumulativeMountPitch += delta.y;
+            _cumulativeMountYaw += delta.x;
+            _cumulativeMountPitch += delta.y;
 
-            SetRotationWrapped(ref cumulativeMountYaw, ref cumulativeMountPitch);
-            SetRotationClamped(ref cumulativeMountYaw, ref cumulativeMountPitch, clamp);
+            SetRotationWrapped(ref _cumulativeMountYaw, ref _cumulativeMountPitch);
+            SetRotationClamped(ref _cumulativeMountYaw, ref _cumulativeMountPitch, clamp);
         }
 
         static void ApplyPivotPoint(ProceduralWeaponAnimation pwa)
         {
-            float aimMultiplier = 1f - ((1f - 0.25f) * mountAimSmoothed);
+            float aimMultiplier = 1f - ((1f - 0.25f) * _mountAimSmoothed);
 
             Transform weaponRootAnim = pwa.HandsContainer.WeaponRootAnim;
 
@@ -1367,9 +1368,9 @@ namespace RealismMod
             weaponRootAnim.LocalRotateAround(
                 Vector3.up * -0.75f,
                 new Vector3(
-                    cumulativeMountPitch * aimMultiplier,
+                    _cumulativeMountPitch * aimMultiplier,
                     0,
-                    cumulativeMountYaw * aimMultiplier
+                    _cumulativeMountYaw * aimMultiplier
                 )
             );
 

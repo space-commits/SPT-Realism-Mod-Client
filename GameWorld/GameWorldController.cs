@@ -2,6 +2,7 @@
 using Comfort.Common;
 using EFT;
 using EFT.Interactive;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -32,9 +33,19 @@ namespace RealismMod
         private static bool ShouldSpawnZone(float zoneProbability) 
         {
             if(Plugin.ZoneDebug.Value) return true;
-            zoneProbability = Mathf.Clamp01(zoneProbability);
-            float randomValue = Random.value;
-            return randomValue <= zoneProbability;
+
+            if (!Plugin.IsUsingFika) 
+            {
+                zoneProbability = Mathf.Max(zoneProbability, 0.1f);
+                zoneProbability = Mathf.Clamp01(zoneProbability);
+                float randomValue = UnityEngine.Random.value;
+                return randomValue <= zoneProbability;
+            }
+
+            DateTime utcNow = DateTime.UtcNow;
+            int seed = utcNow.Year * 1000000 + utcNow.Month * 10000 + utcNow.Day * 100 + utcNow.Hour * 10;
+            int finalSeed = seed % 101;
+            return finalSeed <= zoneProbability * 100f;    
         }
 
         public static void CreateZone<T>(KeyValuePair<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> zone) where T : MonoBehaviour, IHazardZone
@@ -53,7 +64,7 @@ namespace RealismMod
             float strengthModifier = 1f;
             if (hazard.ZoneType == EZoneType.Toxic)
             { 
-               strengthModifier = Plugin.ZoneDebug.Value ? 1f : UnityEngine.Random.Range(0.9f, 1.25f); 
+               strengthModifier = Plugin.IsUsingFika || Plugin.ZoneDebug.Value ? 1f : UnityEngine.Random.Range(0.9f, 1.25f); 
             } 
             hazard.ZoneStrengthModifier = zone.Value.strength * strengthModifier;
 

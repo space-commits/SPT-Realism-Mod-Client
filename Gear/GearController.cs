@@ -11,6 +11,7 @@ namespace RealismMod
     public static class GearController
     {
         public static bool HasGasMask { get; private set; } = false;
+        public static bool HasGasFilter { get; private set; } = false;
         public static bool FSIsActive { get; set; } = false;
         public static bool NVGIsActive { get; set; } = false;
 
@@ -46,7 +47,7 @@ namespace RealismMod
                 _currentRadProtection = radProtection;
                 _hadGasMask = true;
 /*                player.Say(EPhraseTrigger.OnBeingHurt, true, 0f, (ETagStatus)0, 100, false); //force to reset audio*/
-                player.SpeechSource.SetLowPassFilterParameters(1f, ESoundOcclusionType.Obstruction, 1600, 5000, true);
+                player.SpeechSource.SetLowPassFilterParameters(0.99f, ESoundOcclusionType.Obstruction, 1600, 5000, true);
                 player.Muffled = true;
             }
             else
@@ -143,15 +144,16 @@ namespace RealismMod
 
         }
 
-        public static void UpdateFilterResource(Player player, PlayerHazardBridge phb) 
+        public static void UpdateFilterResource(Player player, PlayerHazardBridge phb)
         {
+            HasGasFilter = false;
             Item gasmask = GetSlotItem(player, EquipmentSlot.FaceCover);
             if (gasmask == null) return;
             ResourceComponent filter = gasmask?.GetItemComponentsInChildren<ResourceComponent>(false).FirstOrDefault();
             if (filter == null) return;
-
-            float reductionFactor = (phb.TotalGasRate + phb.TotalGasRate) / 7.5f;
+            float reductionFactor = (phb.TotalGasRate + phb.TotalGasRate) / 9f;
             filter.Value -= reductionFactor;
+            if (filter.Value > 0) HasGasFilter = true;
         }
 
         public static void CalcGasMaskDuraFactor(Player player)
@@ -163,7 +165,7 @@ namespace RealismMod
            
             if (filter != null) 
             {
-                filterFactor = Mathf.Pow(filter.Value / filter.MaxResource, 0.6f);
+                filterFactor = Mathf.Pow(filter.Value / filter.MaxResource, 0.45f);
             }
           
             ArmorComponent armorComp = gasmask.GetItemComponent<ArmorComponent>();
@@ -245,7 +247,7 @@ namespace RealismMod
             if (nvgIsOn || thermalIsOn)
             {
                 totalErgo += -30f;
-                totalSpeed += -15f;
+                totalSpeed += -12.5f;
             }
 
             totalErgo /= 100f;

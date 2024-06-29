@@ -657,7 +657,7 @@ namespace RealismMod
                 float shortStockingDebuff = StanceController.CurrentStance == EStance.ShortStock ? 1.15f : 1f;
                 float shortStockingCamBonus = StanceController.CurrentStance == EStance.ShortStock ? 0.6f : 1f;
 
-                float beltFedPenalty = firearmController.Weapon.IsBeltMachineGun && !StanceController.IsBracing && !StanceController.IsMounting ? 1.1f : 1f;
+                float beltFedFactor = firearmController.Weapon.IsBeltMachineGun && !StanceController.IsBracing && !StanceController.IsMounting ? 1.11f : 1f;
                 float mountingDispModi = Mathf.Clamp(StanceController.BracingRecoilBonus, 0.85f, 1f);
                 float baseRecoilAngle = RecoilController.BaseTotalRecoilAngle;
                     
@@ -684,8 +684,8 @@ namespace RealismMod
                 //Modify Vert and Horz recoil based on various factors
                 float vertFactor = PlayerState.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff 
                     * playerWeightFactorBuff * StanceController.BracingRecoilBonus * shotFactor * opticRecoilMulti
-                    * beltFedPenalty * Plugin.VertMulti.Value;
-                float horzFactor = PlayerState.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * shotFactor * beltFedPenalty * Plugin.HorzMulti.Value;
+                    * beltFedFactor * Plugin.VertMulti.Value;
+                float horzFactor = PlayerState.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * shotFactor * beltFedFactor * Plugin.HorzMulti.Value;
                 RecoilController.FactoredTotalVRecoil = vertFactor * RecoilController.BaseTotalVRecoil;
                 RecoilController.FactoredTotalHRecoil = horzFactor * RecoilController.BaseTotalHRecoil;
 
@@ -696,7 +696,7 @@ namespace RealismMod
                 //Recalculate and modify dispersion
                 float dispFactor = incomingForce * PlayerState.RecoilInjuryMulti * shortStockingDebuff 
                     * playerWeightFactorDebuff * mountingDispModi * opticRecoilMulti 
-                    * beltFedPenalty * Plugin.DispMulti.Value;
+                    * beltFedFactor * Plugin.DispMulti.Value;
                 RecoilController.FactoredTotalDispersion = RecoilController.BaseTotalDispersion * dispFactor;
 
                 __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = new Vector2(RecoilController.FactoredTotalDispersion * Plugin.RecoilRandomness.Value, RecoilController.FactoredTotalDispersion * Plugin.RecoilRandomness.Value);
@@ -710,7 +710,7 @@ namespace RealismMod
                 //Reset camera recoil values and modify by various factors
                 float camShotFactor = RecoilController.ShotCount > 1 ? Mathf.Min((RecoilController.ShotCount * 0.1f) + 1f, 1.55f) : 1f;
                 float totalCamRecoil = RecoilController.BaseTotalCamRecoil * incomingForce * PlayerState.RecoilInjuryMulti * shortStockingCamBonus 
-                    * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti * camShotFactor  * Plugin.CamMulti.Value;
+                    * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti * camShotFactor * Plugin.CamMulti.Value;
                 RecoilController.FactoredTotalCamRecoil = totalCamRecoil;
                 __instance.ShotRecoilProcessValues[3].IntensityMultiplicator = totalCamRecoil;
                 __instance.ShotRecoilProcessValues[4].IntensityMultiplicator = -totalCamRecoil;

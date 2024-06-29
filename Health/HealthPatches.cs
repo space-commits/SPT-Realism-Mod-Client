@@ -21,9 +21,34 @@ using HealthStateClass = GClass2416<EFT.HealthSystem.ActiveHealthController.GCla
 using MedkitTemplate = IMedkitResource;
 using MedUseStringClass = GClass1235;
 using PhysicalClass = GClass681;
+using EFT.UI;
+using EFT.Communications;
 
 namespace RealismMod
 {
+
+    public class QuestCompletePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(QuestView).GetMethod("FinishQuest", BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(QuestView __instance)
+        {
+            if (__instance.QuestId == "667c643869df8111b81cb6dc" || __instance.QuestId == "667dbbc9c62a7c2ee8fe25b2")
+            {
+                HazardTracker.TotalRadiation = 0;
+                HazardTracker.TotalToxicity = 0;
+                HazardTracker.UpdateHazardValues(Plugin.PMCProfileId);
+                HazardTracker.UpdateHazardValues(Plugin.ScavProfileId);
+                HazardTracker.SaveHazardValues();
+                if(Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayNotification(new GClass2030("Blood Tests Came Back Clear, Your Radiation Poisoning Has Been Cured.".Localized(null), ENotificationDurationType.Long, ENotificationIconType.Quest, null));
+            }
+        }
+    }
+
     public class HealthPanelPatch : ModulePatch
     {
         private static float _updateTime = 0f;

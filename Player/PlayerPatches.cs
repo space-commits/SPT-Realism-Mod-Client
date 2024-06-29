@@ -213,17 +213,19 @@ namespace RealismMod
 
             if (!_didSprintPenalties)
             {
+                bool skipPenalty = RecoilController.IsFiring && !StanceController.IsAiming;
                 float sprintDurationModi = 1f + (_sprintTimer / 7f);
+                float ergoWeight = WeaponStats.ErgoFactor * (1f + (1f - PlayerState.GearErgoPenalty));
+                ergoWeight = 1f + (ergoWeight / 200f);
 
-                float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi, 3f);
-                float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi, 1.05f);
+                float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi * ergoWeight, skipPenalty ? 1f : 3f);
+                float inputIntensitry = Mathf.Min(pwa.HandsContainer.HandsRotation.InputIntensity * sprintDurationModi * ergoWeight, skipPenalty ? 1f : 1.05f);
                 pwa.Breath.Intensity = breathIntensity * mountingBonus;
                 pwa.HandsContainer.HandsRotation.InputIntensity = inputIntensitry * mountingBonus;
                 PlayerState.SprintTotalBreathIntensity = breathIntensity;
                 PlayerState.SprintTotalHandsIntensity = inputIntensitry;
                 PlayerState.SprintHipfirePenalty = Mathf.Min(1f + (_sprintTimer / 100f), 1.25f);
                 PlayerState.ADSSprintMulti = Mathf.Max(1f - (_sprintTimer / 12f), 0.3f);
-
 
                 _didSprintPenalties = true;
                 _doSwayReset = false;
@@ -248,6 +250,7 @@ namespace RealismMod
 
         private static void ResetSwayParams(ProceduralWeaponAnimation pwa, float mountingBonus)
         {
+            bool skipPenalty = RecoilController.IsFiring && !StanceController.IsAiming;
             float resetSwaySpeed = 0.035f;
             float resetSpeed = 0.4f;
             PlayerState.SprintTotalBreathIntensity = Mathf.Lerp(PlayerState.SprintTotalBreathIntensity, PlayerState.TotalBreathIntensity, resetSwaySpeed);
@@ -255,8 +258,8 @@ namespace RealismMod
             PlayerState.ADSSprintMulti = Mathf.Lerp(PlayerState.ADSSprintMulti, 1f, resetSpeed);
             PlayerState.SprintHipfirePenalty = Mathf.Lerp(PlayerState.SprintHipfirePenalty, 1f, resetSpeed);
 
-            pwa.Breath.Intensity = PlayerState.SprintTotalBreathIntensity * mountingBonus;
-            pwa.HandsContainer.HandsRotation.InputIntensity = PlayerState.SprintTotalHandsIntensity * mountingBonus;
+            pwa.Breath.Intensity =  Mathf.Clamp(PlayerState.SprintTotalBreathIntensity * mountingBonus, 0.1f, skipPenalty ? 1f : 3f);
+            pwa.HandsContainer.HandsRotation.InputIntensity = Mathf.Clamp(PlayerState.SprintTotalHandsIntensity * mountingBonus, 0.1f, skipPenalty ? 1f : 1.05f);
 
             if (Utils.AreFloatsEqual(1f, PlayerState.ADSSprintMulti) && Utils.AreFloatsEqual(pwa.Breath.Intensity, PlayerState.TotalBreathIntensity) && Utils.AreFloatsEqual(pwa.HandsContainer.HandsRotation.InputIntensity, PlayerState.TotalHandsIntensity))
             {
@@ -426,7 +429,7 @@ namespace RealismMod
 
             CalcBaseHipfireAccuracy(player);
             float stanceHipFactor = StanceController.CurrentStance == EStance.ActiveAiming ? 0.7f : StanceController.CurrentStance == EStance.ShortStock ? 1.35f : 1.05f;
-            player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.2f, 1.6f);
+            player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.2f, Plugin.test3.Value);
         }
 
         protected override MethodBase GetTargetMethod()

@@ -287,6 +287,8 @@ namespace RealismMod
         public static float CurrentMagReloadSpeed = 1f;
         public static float NewMagReloadSpeed = 1f;
 
+        public static bool HasBipod = false;
+
         public static bool HasBayonet = false;
         public static float BaseMeleeDamage = 0f;
         public static float BaseMeleePen = 0f;

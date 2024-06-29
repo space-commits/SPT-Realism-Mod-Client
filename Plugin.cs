@@ -36,7 +36,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.pluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string pluginVersion = "1.3.0";
+        private const string pluginVersion = "1.3.1";
 
         //movement
         public static ConfigEntry<bool> EnableMaterialSpeed { get; set; }
@@ -150,8 +150,10 @@ namespace RealismMod
 
         //hazard zones
         public static ConfigEntry<float> DeviceVolume { get; set; }
+        public static ConfigEntry<float> GasMaskBreathVolume { get; set; }
 
-        //medical
+        //medical0
+        public static ConfigEntry<bool> EnableMedNotes { get; set; }
         public static ConfigEntry<bool> ResourceRateChanges { get; set; }
         public static ConfigEntry<float> EnergyRateMulti { get; set; }
         public static ConfigEntry<float> HydrationRateMulti { get; set; }
@@ -355,6 +357,17 @@ namespace RealismMod
         private bool _detectedMods = false;
 
         public static float FPS = 1f;
+
+        public static bool StartRechamberTimer = false;
+        public static float ChamberTimer = 0f;
+        public static bool CanLoadChamber = false;
+        public static bool BlockChambering = false;
+
+        public static string CurrentProfileId = string.Empty;
+        public static string PMCProfileId = string.Empty;
+        public static string ScavProfileId = string.Empty;
+        private bool _gotProfileId = false;
+
 
         private void LoadConfig()
         {
@@ -562,14 +575,6 @@ namespace RealismMod
                 return audioclip;
             }
         }
-        public static bool StartRechamberTimer = false;
-        public static float ChamberTimer = 0f;
-        public static bool CanLoadChamber = false;
-        public static bool BlockChambering = false;
-
-        public static string CurrentProfileId = string.Empty;
-        public static string PMCProfileId = string.Empty;
-        private bool _gotProfileId = false;
 
         void Awake()
         {
@@ -600,22 +605,7 @@ namespace RealismMod
             RealismHealthController healthController = new RealismHealthController(dmgTracker);
             RealHealthController = healthController;
 
-            initConfigs();
-
-            //malfunctions
-            if (ServerConfig.malf_changes)
-            {
-                new GetTotalMalfunctionChancePatch().Enable();
-                new IsKnownMalfTypePatch().Enable();
-                if (ServerConfig.manual_chambering) 
-                {
-                    new SetAmmoCompatiblePatch().Enable();
-                    new StartReloadPatch().Enable();
-                    new StartEquipWeapPatch().Enable();
-                    new SetAmmoOnMagPatch().Enable();
-                    new PreChamberLoadPatch().Enable();
-                }
-            }
+            InitConfigBindings();
 
             //misc
             new ChamberCheckUIPatch().Enable();
@@ -630,6 +620,28 @@ namespace RealismMod
             new PlayPhrasePatch().Enable();
             new OnGameStartPatch().Enable();
             new OnGameEndPatch().Enable();
+            new QuestCompletePatch().Enable();
+
+            //hazards
+            if (ServerConfig.enable_hazard_zones) 
+            {
+                new HealthPanelPatch().Enable();
+            }
+
+            //malfunctions
+            if (ServerConfig.malf_changes)
+            {
+                new GetTotalMalfunctionChancePatch().Enable();
+                new IsKnownMalfTypePatch().Enable();
+                if (ServerConfig.manual_chambering)
+                {
+                    new SetAmmoCompatiblePatch().Enable();
+                    new StartReloadPatch().Enable();
+                    new StartEquipWeapPatch().Enable();
+                    new SetAmmoOnMagPatch().Enable();
+                    new PreChamberLoadPatch().Enable();
+                }
+            }
 
             //recoil and attachments
             if (ServerConfig.recoil_attachment_overhaul) 
@@ -793,7 +805,7 @@ namespace RealismMod
                 new OperateStationaryWeaponPatch().Enable();
                 new SetTiltPatch().Enable();
                 new BattleUIScreenPatch().Enable();
-                new MuzzleSmokePatch().Enable();
+                new MuzzleSmokePatch().Enable(); 
                 new ChangePosePatch().Enable();
                 new MountingPatch().Enable();
             }
@@ -808,7 +820,6 @@ namespace RealismMod
             //Health
             if (ServerConfig.med_changes)
             {
-                new HealthPanelPatch().Enable();
                 new SetQuickSlotPatch().Enable();   
                 new ApplyItemPatch().Enable();
                 new BreathIsAudiblePatch().Enable();
@@ -848,6 +859,7 @@ namespace RealismMod
                 try
                 {
                     PMCProfileId = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession().Profile.Id;
+                    ScavProfileId = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession().ProfileOfPet.Id;
                     HazardTracker.GetHazardValues(PMCProfileId);
                     _gotProfileId = true;
                 }
@@ -915,7 +927,7 @@ namespace RealismMod
             }
         }
 
-        private void initConfigs()
+        private void InitConfigBindings()
         {
             string testing = ".0. Testing";
             string miscSettings = ".1. Misc. Settings.";
@@ -995,8 +1007,10 @@ namespace RealismMod
             EnableMaterialSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Material Speed Modifier", ServerConfig.movement_changes, new ConfigDescription("Enables Movement Speed Being Affected By Ground Material (Concrete, Grass, Metal, Glass Etc.)", null, new ConfigurationManagerAttributes { Order = 20, Browsable = ServerConfig.movement_changes }));
             EnableSlopeSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Slope Speed Modifier", false, new ConfigDescription("Enables Slopes Slowing Down Movement. Can Cause Random Speed Slowdowns In Some Small Spots Due To BSG's Bad Map Geometry.", null, new ConfigurationManagerAttributes { Order = 10, Browsable = ServerConfig.movement_changes }));
 
-            DeviceVolume = Config.Bind<float>(zoneSettings, "Device Volume", 1f, new ConfigDescription("Volume Modifier For Geiger And Gas Analyser.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1, Browsable = ServerConfig.med_changes }));
+            DeviceVolume = Config.Bind<float>(zoneSettings, "Device Volume", 0.9f, new ConfigDescription("Volume Modifier For Geiger And Gas Analyser.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1, Browsable = ServerConfig.enable_hazard_zones }));
+            GasMaskBreathVolume = Config.Bind<float>(zoneSettings, "Gas Mask Breath Volume", 0.8f, new ConfigDescription("Volume Modifier For Gas Mask SFX.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 2, Browsable = ServerConfig.enable_hazard_zones }));
 
+            EnableMedNotes = Config.Bind<bool>(healthSettings, "Medical Notifications", ServerConfig.med_changes, new ConfigDescription("Enables Notifications For Medical Status Effects, Healing Etc..", null, new ConfigurationManagerAttributes { Order = 130, Browsable = ServerConfig.med_changes }));
             ResourceRateChanges = Config.Bind<bool>(healthSettings, "Enable Hydration/Energy Loss Rate Changes", ServerConfig.med_changes, new ConfigDescription("Enables Changes To How Hydration And Energy Loss Rates Are Calculated. They Are Increased By Injuries, Drug Use, Sprinting And Weight.", null, new ConfigurationManagerAttributes { Order = 120, Browsable = ServerConfig.med_changes }));
             HydrationRateMulti = Config.Bind<float>(healthSettings, "Hydration Drain Rate Multi.", 0.5f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 110, Browsable = ServerConfig.med_changes }));
             EnergyRateMulti = Config.Bind<float>(healthSettings, "Energy Drain Rate Multi.", 0.3f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 100, Browsable = ServerConfig.med_changes }));

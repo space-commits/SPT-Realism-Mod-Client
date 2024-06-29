@@ -260,8 +260,8 @@ namespace RealismMod
             WeaponStats.TotalVRecoil = totalVRecoil;
             WeaponStats.TotalHRecoil = totalHRecoil;
             WeaponStats.Balance = totalTorque;
-            WeaponStats.TotalErgo = totalErgo;
-            WeaponStats.ErgoDelta = totalErgoDelta;
+            WeaponStats.TotalErgo = Mathf.Clamp(totalErgo, 1f, 80f);
+            WeaponStats.ErgoDelta = Mathf.Clamp(totalErgoDelta, -0.99f, 2);
             WeaponStats.VRecoilDelta = totalVRecoilDelta;
             WeaponStats.HRecoilDelta = totalHRecoilDelta;
             WeaponStats.ErgoFactor = Mathf.Clamp(80f - totalErgo, 1f, 80f);  //as an experiment, use total ergo as ergonomicWeight
@@ -279,6 +279,7 @@ namespace RealismMod
             WeaponStats._WeapClass = __instance.WeapClass;
             bool isManual = WeaponStats.IsManuallyOperated(__instance);
             WeaponStats._IsManuallyOperated = isManual;
+            bool isChonker = __instance.IsBeltMachineGun || __instance.Weight >= 10f;
 
             WeaponStats.ShouldGetSemiIncrease = false;
             if (__instance.WeapClass != "pistol" || __instance.WeapClass != "shotgun" || __instance.WeapClass != "sniperRifle" || __instance.WeapClass != "smg")
@@ -360,6 +361,7 @@ namespace RealismMod
             WeaponStats.BaseMeleePen = 0f;
             WeaponStats.HasBayonet = false;
             WeaponStats.HasBooster = false;
+            WeaponStats.HasBipod = false;
 
             foreach (Mod mod in __instance.Mods)
             {
@@ -398,6 +400,8 @@ namespace RealismMod
                         WeaponStats.BaseMeleePen = AttachmentProperties.ModMeleePen(mod);
                     }
 
+                    if (Utils.IsBipod(mod)) WeaponStats.HasBipod = true;
+
                     StatCalc.ModConditionalStatCalc(
                         __instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, 
                         ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, 
@@ -415,7 +419,7 @@ namespace RealismMod
                         modHRecoil, ref currentHRecoil, ref currentChamberSpeedMod, modChamber, 
                         false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, 
                         modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, 
-                        ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, __instance.IsBeltMachineGun);
+                        ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, isChonker);
 
                     if (AttachmentProperties.CanCylceSubs(mod))
                     {

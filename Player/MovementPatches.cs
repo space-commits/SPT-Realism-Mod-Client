@@ -122,7 +122,7 @@ namespace RealismMod
                 float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - (WeaponStats.ErgoFactor / 100f) * (1f - PlayerState.StrengthWeightBuff), 0.15f);
                 float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
-                float stanceSpeedBonus = canDoHighReadyBonus ? 1.15f : 1f;
+                float stanceSpeedBonus = canDoHighReadyBonus ? 1.25f : 1f;
                 float stanceAccelBonus = StanceController.CurrentStance == EStance.PatrolStance ? 1.45f : StanceController.CurrentStance == EStance.ShortStock ? 0.9f : StanceController.CurrentStance == EStance.LowReady ? 1.25f : canDoHighReadyBonus ? 1.37f : StanceController.CurrentStance == EStance.HighReady ? 1.2f : 1f;
 
                 if (surfaceMulti < 1.0f)
