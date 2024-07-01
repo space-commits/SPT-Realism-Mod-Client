@@ -1821,7 +1821,7 @@ namespace RealismMod
                 totalMaxHp += maxHp;
                 totalCurrentHp += currentHp;
 
-                float percentHp = (currentHp / maxHp);
+                float percentHp = currentHp / maxHp;
                 float percentHpStamRegen = 1f - ((1f - percentHp) / (isBody ? 10f : 5f));
                 float percentHpWalk = 1f - ((1f - percentHp) / (isBody ? 15f : 7.5f));
                 float percentHpSprint = 1f - ((1f - percentHp) / (isBody ? 8f : 4f));
@@ -2020,7 +2020,7 @@ namespace RealismMod
         {
             if (_hazardWaitTime > _hazardInterval) 
             {
-                if (HazardTracker.TotalToxicity >= 50f)
+                if (HazardTracker.TotalToxicity >= 10f)
                 {
                     if (HazardTracker.TotalToxicity >= ToxicityThreshold && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest))
                     {
@@ -2033,7 +2033,7 @@ namespace RealismMod
                     if (HazardTracker.TotalToxicity >= ToxicityThreshold) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, effectStrength * 0.7f);
                 }
 
-                if (HazardTracker.TotalRadiation >= 40f)
+                if (HazardTracker.TotalRadiation >= 10f)
                 {
                     if (HazardTracker.TotalRadiation >= RadiationThreshold && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest))
                     {

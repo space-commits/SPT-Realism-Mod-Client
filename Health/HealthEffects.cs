@@ -472,8 +472,10 @@ namespace RealismMod
         {
             switch (HazardTracker.TotalToxicity)
             {
-                case < 50f:
+                case < 40f:
                     return 0f;
+                case <= 50f:
+                    return -0.05f;
                 case <= 60f:
                     return -0.2f;
                 case <= 70f:
@@ -496,7 +498,7 @@ namespace RealismMod
             if (Delay <= 0)
             {
                 TimeExisted++;
-                if (TimeExisted % 3 == 0 && HazardTracker.TotalToxicity >= 55f)
+                if (TimeExisted % 3 == 0 && HazardTracker.TotalToxicity >= 50f)
                 {
                     for (int i = 0; i < RealHealthController.BodyParts.Length; i++)
                     {
@@ -543,7 +545,7 @@ namespace RealismMod
                 case < 100f:
                     return -0.1f;
                 case >= 100f:
-                    return -0.15f;
+                    return -0.25f;
                 default:
                     return 0f;
             }
@@ -554,7 +556,7 @@ namespace RealismMod
             if (Delay <= 0)
             {
                 TimeExisted++;
-                if (TimeExisted % 3 == 0 && HazardTracker.TotalRadiation > 80f)
+                if (TimeExisted % 3 == 0 && HazardTracker.TotalRadiation >= 80f)
                 {
                     for (int i = 0; i < RealHealthController.BodyParts.Length; i++)
                     {

@@ -65,8 +65,8 @@ namespace RealismMod
                     slopeFactor = MovementSpeedController.GetSlope(player);
                 }
 
-                float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - (WeaponStats.ErgoFactor / 100f) * (1f - PlayerState.StrengthWeightBuff), 0.15f);
-                float playerWeightFactor = Mathf.Pow(1f - (PlayerState.TotalModifiedWeightMinusWeapon / 100f) * (1f - PlayerState.StrengthWeightBuff), 0.4f); //doubling up because BSG's calcs are shit
+                float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - ((WeaponStats.ErgoFactor / 100f) * (1f - PlayerState.StrengthWeightBuff)), 0.15f);
+                float playerWeightFactor = Mathf.Pow(1f - ((PlayerState.TotalModifiedWeightMinusWeapon / 100f) * (1f - PlayerState.StrengthWeightBuff)), 0.3f); //doubling up because BSG's calcs are shit
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float firingMulti = MovementSpeedController.GetFiringMovementSpeedFactor(player);
                 float stanceFactor = StanceController.CurrentStance == EStance.PatrolStance ? 1.33f : StanceController.CurrentStance == EStance.LowReady ? 1.18f : StanceController.CurrentStance == EStance.HighReady ? 1.05f : StanceController.CurrentStance == EStance.ShortStock ? 0.95f : 1f;
@@ -116,10 +116,10 @@ namespace RealismMod
             if (player.IsYourPlayer)
             {
                 ValueHandler rotationFrameSpan = (ValueHandler)rotationFrameSpanField.GetValue(__instance);
-
                 bool canDoHighReadyBonus = StanceController.IsDoingTacSprint && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed;
                 float gearPenalty = GearController.HasGasMask ? 0.5f : GearController.FSIsActive || GearController.NVGIsActive ? 0.75f : 1;
-                float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - (WeaponStats.ErgoFactor / 100f) * (1f - PlayerState.StrengthWeightBuff), 0.15f);
+                gearPenalty = Mathf.Min(gearPenalty * (1f + PlayerState.StrengthWeightBuff), 1f);
+                float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - ((WeaponStats.ErgoFactor / 100f) * (1f - PlayerState.StrengthWeightBuff)), 0.15f);
                 float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float stanceSpeedBonus = canDoHighReadyBonus ? 1.25f : 1f;

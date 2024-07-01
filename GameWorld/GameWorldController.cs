@@ -74,6 +74,9 @@ namespace RealismMod
             EFT.Interactive.TriggerWithId trigger = hazardZone.AddComponent<EFT.Interactive.TriggerWithId>();
             trigger.SetId(zoneName);
 
+            EFT.Interactive.ExperienceTrigger questTrigger = hazardZone.AddComponent<EFT.Interactive.ExperienceTrigger>();
+            questTrigger.SetId(zoneName);
+
             hazardZone.layer = LayerMask.NameToLayer("Triggers");
             hazardZone.name = zoneName;
 

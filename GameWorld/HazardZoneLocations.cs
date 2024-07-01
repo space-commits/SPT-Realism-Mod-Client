@@ -25,15 +25,19 @@ namespace RealismMod
         {
             { "CustomsSwitchBasement", (0.5f, 60f, new Vector3(335f, -3.1f, -60.3f), new Vector3(0f, 0f, 0f), new Vector3(25f, 6.5f, 50f)) },
             { "CustomsWarehouse5", (0.5f, 80f, new Vector3(474.5f, 2.6f, -67f), new Vector3(0f, 9f, 0f), new Vector3(24f, 2.5f, 49f)) }, //quest location
-            { "CustomsWarehouse5Van", (1f, 40f, new Vector3(480f, 3f, -76f), new Vector3(0f, 60f, 0f), new Vector3(11f, 4f, 6f)) }, //quest location
+            { "CustomsWarehouse5Van", (1f, 40f, new Vector3(480f, 3f, -76f), new Vector3(0f, 60f, 0f), new Vector3(12f, 4f, 7f)) }, //quest location
             { "CustomsGasTrain1", (1f, 50f, new Vector3(460f, 2f, 185f), new Vector3(0f, 40f, 0f), new Vector3(10f, 10f, 45f)) },
             { "CustomsGasTrain2", (1f, 25f, new Vector3(466f, 0f, 208f), new Vector3(0f, 10f, 0f), new Vector3(5f, 3f, 10f)) },
             { "CustomsCrackDen", (0.75f, 30f, new Vector3(88f, 5f, -157f), new Vector3(0f, -12f, 0f), new Vector3(15f, 2f, 27f)) },
-            { "CustomsPumpWarehouse", (0.25f, 85f, new Vector3(557f, 1.5f, -120.5f), new Vector3(0f, 7f, 0f), new Vector3(40f, 15f, 23f)) },
-            { "CustomsPumpRoom", (0.75f, 75f, new Vector3(612f, 1.5f, -129.8f), new Vector3(0f, 6f, 0f), new Vector3(23.5f, 6.5f, 15f)) },
-            { "CustomsWarehouse3", (0.5f, 75f, new Vector3(391.5f, 1f, -97f), new Vector3(0f, 8.5f, 0f), new Vector3(53.5f, 6.5f, 29f)) },
+            { "CustomsPumpWarehouse", (0.4f, 85f, new Vector3(557f, 1.5f, -120.5f), new Vector3(0f, 7f, 0f), new Vector3(40f, 15f, 23f)) },
+            { "CustomsPumpRoom", (1f, 75f, new Vector3(612f, 1.5f, -129.8f), new Vector3(0f, 6f, 0f), new Vector3(23.5f, 6.5f, 15f)) },
+            { "CustomsWarehouse3", (0.7f, 75f, new Vector3(391.5f, 1f, -97f), new Vector3(0f, 8.5f, 0f), new Vector3(53.5f, 6.5f, 29f)) },
             { "CustomsRiverContainer", (1f, 12.5f, new Vector3(-96f, -10f, -16.5f), new Vector3(0f, 25f, 0f), new Vector3(12f, 4f, 25f)) }, //quest location
             { "CustomsAquarius", (1f, 500f, new Vector3(234f, 3.5f, 138f), new Vector3(0f, 9f, 0f), new Vector3(7.5f, 2f, 3.1f)) }, //she's a sneaky bitch
+            { "CustomsFortBarrels", (0.2f, 100f, new Vector3(206f, 2f, -111f), new Vector3(0f, -10f, 0f), new Vector3(12f, 1f, 32f)) },
+            { "CustomsChemTrain1", (1f, 100f, new Vector3(514.8f, 3f, -72.1f), new Vector3(0f, 10f, 0f), new Vector3(10f, 10f, 55f)) },
+            { "CustomsChemTrain2", (1f, 100f, new Vector3(506.4f, 3f, -60f), new Vector3(0f, 10f, 0f), new Vector3(10f, 10f, 20f)) },
+            { "CustomsChemTanks", (1f, 170f, new Vector3(530.4f, 1.2f, -65.6f), new Vector3(0f, 10f, 0f), new Vector3(15f, 10f, 40f)) },
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> GZGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
@@ -133,11 +137,11 @@ namespace RealismMod
             { "ReserveStorage", (0.15f, 500f, new Vector3(50f, -13.5f, -110f), new Vector3(0f, 0f, 0f), new Vector3(90f, 6f, 190f)) },
             { "ReserveStorageSide1", (0.85f, 80f, new Vector3(76f, -12f, -136f), new Vector3(0f, 15f, 0f), new Vector3(16f, 3f, 29f)) },
             { "ReserveStorageSide2", (0.85f, 80f, new Vector3(40f, -12f, -126f), new Vector3(0f, 15f, 0f), new Vector3(16f, 3f, 29f)) },
-            { "ReserveWhiteBishop", (0.55f, 190f, new Vector3(-66f, -9f, -32f), new Vector3(0f, 15f, 0f), new Vector3(35f, 3f, 20f)) }, //basement
-            { "ReserveBlackBishop", (0.55f, 200f, new Vector3(-138f, -9f, -9f), new Vector3(0f, 15f, 0f), new Vector3(69f, 3f, 23.5f)) }, //basement
-            { "ReserveBlackBishopHall", (0.4f, 220f, new Vector3(-134f, -12f, 14f), new Vector3(0f, 15f, 0f), new Vector3(50f, 4f, 23f)) }, //basemment
-            { "ReserveBlackPawnHall", (0.4f, 220f, new Vector3(-146f, -11f, 49f), new Vector3(0f, 15f, 0f), new Vector3(30f, 4f, 50f)) }, //basemment
-            { "ReserveWhitePawnHall", (0.4f, 220f, new Vector3(-103f, -10f, 72.5f), new Vector3(0f, 15f, 0f), new Vector3(70f, 4f, 25f)) }, //basemment
+            { "ReserveWhiteBishop", (0.6f, 190f, new Vector3(-66f, -9f, -32f), new Vector3(0f, 15f, 0f), new Vector3(35f, 3f, 20f)) }, //basement
+            { "ReserveBlackBishop", (0.6f, 200f, new Vector3(-138f, -9f, -9f), new Vector3(0f, 15f, 0f), new Vector3(69f, 3f, 23.5f)) }, //basement
+            { "ReserveBlackBishopHall", (0.5f, 220f, new Vector3(-134f, -12f, 14f), new Vector3(0f, 15f, 0f), new Vector3(50f, 4f, 23f)) }, //basemment
+            { "ReserveBlackPawnHall", (0.5f, 220f, new Vector3(-146f, -11f, 49f), new Vector3(0f, 15f, 0f), new Vector3(30f, 4f, 50f)) }, //basemment
+            { "ReserveWhitePawnHall", (0.5f, 220f, new Vector3(-103f, -10f, 72.5f), new Vector3(0f, 15f, 0f), new Vector3(70f, 4f, 25f)) }, //basemment
         }; 
 
         //Radiation
@@ -154,13 +158,15 @@ namespace RealismMod
             { "CustomsRadTrain2", (1f, 100f, new Vector3(465f, 3.6f, 200f), new Vector3(0f, 10f, 0f), new Vector3(15f, 5f, 10f)) },
             { "CustomsRadTrain3", (1f, 150f, new Vector3(484f, 3.6f, 219f), new Vector3(0f, -33f, 0f), new Vector3(25f, 10f, 10f)) },
             { "CustomsTrainExtract", (1f, 50f, new Vector3(479f, 1.4f, 229f), new Vector3(0f, 20f, 0f), new Vector3(25f, 10f, 8f)) },
-            { "CustomsBigRed", (1f, 300f, new Vector3(-213f, 1f, -122f), new Vector3(0f, 3f, 0f), new Vector3(24f, 5f, 59f)) },
-            { "CustomsGarrage", (1f, 90f, new Vector3(108f, 0f, -92f), new Vector3(0f, -12f, 0f), new Vector3(19f, 10f, 11.5f)) },
+            { "CustomsBigRed", (1f, 550f, new Vector3(-213f, 1f, -122f), new Vector3(0f, 3f, 0f), new Vector3(24f, 5f, 59f)) },
+            { "CustomsGarrage", (1f, 150f, new Vector3(108f, 0f, -92f), new Vector3(0f, -12f, 0f), new Vector3(19f, 10f, 11.5f)) },
             { "CustomsZB013", (1f, 80f, new Vector3(199f, -2.8f, -155f), new Vector3(0f, -10f, 0f), new Vector3(17.5f, 5f, 35f)) },
             { "CustomsOldGasExit", (1f, 50f, new Vector3(311f, -2f, -180f), new Vector3(0f, -12f, 0f), new Vector3(10f, 5f, 15f)) },
             { "CustomsZB", (1f, 50f, new Vector3(465f, -2f, -112f), new Vector3(0f, 0f, 0f), new Vector3(15f, 2f, 5f)) },
-            { "CustomsMarkedRoom", (1f, 15f, new Vector3(183.5f, 7f, 182f), new Vector3(0f, 7f, 0f), new Vector3(6.5f, 3f, 6f)) },
-            { "CustomsBarrels1", (1f, 50f, new Vector3(427.5f, -1f, -85f), new Vector3(0f, 15f, 0f), new Vector3(5f, 2f, 4f)) },
+            { "CustomsMarkedRoom", (1f, 15f, new Vector3(183.5f, 7f, 182f), new Vector3(0f, 7f, 0f), new Vector3(7f, 3f, 6.5f)) },
+            { "CustomsBarrels1", (1f, 45f, new Vector3(427.5f, -1f, -85f), new Vector3(0f, 15f, 0f), new Vector3(5f, 2f, 4f)) }, //mext to stash in ditch
+            { "CustomsCratesBigRed", (1f, 50f, new Vector3(-183f, 1f, -111f), new Vector3(0f, 0f, 0f), new Vector3(5.5f, 5f, 7f)) }, //outside big red
+            { "CustomsContainerBigRed", (1f, 50f, new Vector3(-193.5f, 1f, -125f), new Vector3(0f, 0f, 0f), new Vector3(6f, 5f, 10.5f)) }, //outside big red
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> GZRadZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>

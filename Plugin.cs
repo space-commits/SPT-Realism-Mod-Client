@@ -879,6 +879,7 @@ namespace RealismMod
                 }
                 if (Chainloader.PluginInfos.ContainsKey("com.fika.core"))
                 {
+                    Logger.LogWarning(" fika ");
                     IsUsingFika = true;
                 }
             }

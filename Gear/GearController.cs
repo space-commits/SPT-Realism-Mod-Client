@@ -18,6 +18,7 @@ namespace RealismMod
 
         private static float _currentGasProtection;
         private static float _currentRadProtection;
+        private static float _gasMaskDurabilityFactor;
 
         public static float CurrentGasProtection
         {
@@ -29,13 +30,20 @@ namespace RealismMod
 
         public static float CurrentRadProtection 
         {
-            get 
+            get
             {
                 return _currentRadProtection * GasMaskDurabilityFactor;
             }
         } 
 
-        public static float GasMaskDurabilityFactor { get; set; } = 1f;
+        public static float GasMaskDurabilityFactor 
+        {
+            get 
+            {
+                return _gasMaskDurabilityFactor >= 0.95f ? 1f : _gasMaskDurabilityFactor;
+            }
+        }
+
         private static bool _hadGasMask = true;
 
         private static void HandleGasMaskEffects(Player player, bool hasGasMask, float gasProtection, float radProtection) 
@@ -171,12 +179,12 @@ namespace RealismMod
             ArmorComponent armorComp = gasmask.GetItemComponent<ArmorComponent>();
             if (armorComp == null)
             {
-                GasMaskDurabilityFactor = 1;
+                _gasMaskDurabilityFactor = 1;
                 return;
             }
 
             float gasmaskDuraPerc = armorComp.Repairable.Durability / armorComp.Repairable.MaxDurability;
-            GasMaskDurabilityFactor = gasmaskDuraPerc <= 0.5f || filter == null ? 0 : gasmaskDuraPerc * filterFactor;
+            _gasMaskDurabilityFactor = gasmaskDuraPerc <= 0.5f || filter == null ? 0 : gasmaskDuraPerc * filterFactor;
         }
 
         public static EquipmentPenaltyComponent CheckFaceCoverGear(Player player, ref bool isGasMask, ref float gasProtection, ref float radProtection)
