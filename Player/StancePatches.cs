@@ -506,13 +506,18 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(firearmController);
             if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
             {
+         /*       __instance.HandsContainer.CameraOffset = new Vector3(0.04f, 0.04f, Plugin.test10.Value);
+                if (WeaponStats._WeapClass == "pistol") 
+                {
+                    return;
+                }*/
+  
                 Vector3 baseOffset = StanceController.GetWeaponOffsets().TryGetValue(firearmController.Weapon.TemplateId, out Vector3 offset) ? offset : Vector3.zero;
                 __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value) + baseOffset;
                 StanceController.WeaponOffsetPosition = __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value) + baseOffset;
             }
         }
     }
-
 
     public class ZeroAdjustmentsPatch : ModulePatch
     {

@@ -44,7 +44,7 @@ namespace RealismMod
         {
             { "GZUnderground1", (0.35f, 250f, new Vector3(80f, 15f, -20f), new Vector3(0f, 0f, 0f), new Vector3(50f, 4f, 120f)) },
             { "GZUnderground2", (0.35f, 250f, new Vector3(82f, 15f, 132f), new Vector3(0f, 0f, 0f), new Vector3(45f, 4f, 95f)) },
-            { "GZTerragroupBuilding1", (0.7f, 175f, new Vector3(-45f, 25f, 19f), new Vector3(0f, 0f, 0f), new Vector3(45f, 7f, 100f)) }
+            { "GZTerragroupBuilding1", (1f, 175f, new Vector3(-45f, 25f, 19f), new Vector3(0f, 0f, 0f), new Vector3(45f, 7f, 100f)) }
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> ShorelineGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
@@ -123,6 +123,7 @@ namespace RealismMod
             { "WoodsMedCampTent", (0.25f, 100f, new Vector3(-185, -1f, 218f), new Vector3(0f, 0f, 0f), new Vector3(10f, 2f, 25f)) },
             { "WoodsMedContainers", (0.25f, 100f, new Vector3(-205f, -1f, 215f), new Vector3(0f, 0f, 0f), new Vector3(12f, 2f, 27f)) },
             { "WoodsMedAmbulances", (0.25f, 100f, new Vector3(-185f, -1f, 244f), new Vector3(0f, 0f, 0f), new Vector3(20f, 2.5f, 20f)) },
+            { "WoodsZB14", (0.25f, 100f, new Vector3(446.5f, -13f, 60f), new Vector3(0f, 0f, 0f), new Vector3(25f, 3f, 27f)) }
         };
 
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> ReserveGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>

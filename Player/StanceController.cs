@@ -42,15 +42,16 @@ namespace RealismMod
             Target = 0f
         };
 
-        public static float currentPistolXPos = 0f;
+        private static float _currentPistolXPos = 0f;
+        private static float _currentPistolYPos = 0f;
         public static Vector3 CoverWiggleDirection = Vector3.zero;
         public static Vector3 WeaponOffsetPosition = Vector3.zero;
         public static Vector3 StanceTargetPosition = Vector3.zero;
-        private static Vector3 pistolLocalPosition = Vector3.zero;
+        private static Vector3 _pistolLocalPosition = Vector3.zero;
 
-        private const float clickDelay = 0.2f;
-        private static float doubleClickTime = 0f;
-        private static bool clickTriggered = true;
+        private const float _clickDelay = 0.2f;
+        private static float _doubleClickTime = 0f;
+        private static bool _clickTriggered = true;
         public static int StanceIndex = 0;
 
         public static bool MeleeIsToggleable = true;
@@ -425,9 +426,9 @@ namespace RealismMod
                     //cycle stances
                     if (MeleeIsToggleable && Input.GetKeyUp(Plugin.CycleStancesKeybind.Value.MainKey))
                     {
-                        if (Time.time <= doubleClickTime)
+                        if (Time.time <= _doubleClickTime)
                         {
-                            clickTriggered = true;
+                            _clickTriggered = true;
                             StanceBlender.Target = 0f;
                             StanceIndex = 0;
                             CancelAllStances();
@@ -435,16 +436,16 @@ namespace RealismMod
                         }
                         else
                         {
-                            clickTriggered = false;
-                            doubleClickTime = Time.time + clickDelay;
+                            _clickTriggered = false;
+                            _doubleClickTime = Time.time + _clickDelay;
                         }
                     }
-                    else if (!clickTriggered)
+                    else if (!_clickTriggered)
                     {
-                        if (Time.time > doubleClickTime)
+                        if (Time.time > _doubleClickTime)
                         {
                             StanceBlender.Target = 1f;
-                            clickTriggered = true;
+                            _clickTriggered = true;
                             StanceIndex++;
                             StanceIndex = StanceIndex > 3 ? 1 : StanceIndex;
                             CurrentStance = (EStance)StanceIndex;
@@ -632,17 +633,17 @@ namespace RealismMod
             float playerWeightFactor = 1f + (totalPlayerWeight / 100f);
             float ergoMulti = Mathf.Clamp(WeaponStats.ErgoStanceSpeed, 0.65f, 1.45f);
             float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.55f)), 0.5f, 1.45f);
-            float balanceFactor = 1f + (WeaponStats.Balance / 100f);
-            float rotationBalanceFactor = WeaponStats.Balance < -5f ? balanceFactor * -1f : WeaponStats.Balance > 5f ? balanceFactor : 1f;
-            float wiggleBalanceFactor = WeaponStats.Balance < -5f ? balanceFactor * -1f : WeaponStats.Balance > 5f ? balanceFactor : Mathf.Abs(balanceFactor) <= 4f ? 0.75f : Mathf.Abs(balanceFactor) <= 3f ? 0.5f : 0.25f;
+            float balanceFactor = 1f + ((WeaponStats.Balance * -1f) / 100f);
+            float rotationBalanceFactor = WeaponStats.Balance <= -9f ? balanceFactor * -1f : balanceFactor;
+            float wiggleBalanceFactor = Mathf.Abs(WeaponStats.Balance) > 4f ? balanceFactor : Mathf.Abs(WeaponStats.Balance) <= 4f ? 0.75f : Mathf.Abs(WeaponStats.Balance) <= 3f ? 0.5f : 0.25f;
             float resetErgoMulti = (1f - stanceMulti) + 1f;
 
             float wiggleErgoMulti = Mathf.Clamp((WeaponStats.ErgoStanceSpeed * 0.25f), 0.1f, 1f);
             WiggleReturnSpeed = (1f - (PlayerState.AimSkillADSBuff * 0.5f)) * wiggleErgoMulti * PlayerState.StanceInjuryMulti * playerWeightFactor * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.65f));
 
-            float movementFactor = PlayerState.IsMoving ? 1.2f : 1f;
+            float movementFactor = PlayerState.IsMoving ? 0.8f : 1f;
 
-            Quaternion pistolRevertQuaternion = Quaternion.Euler(Plugin.PistolResetRotationX.Value * -rotationBalanceFactor, Plugin.PistolResetRotationY.Value, Plugin.PistolResetRotationZ.Value);
+            Quaternion pistolRevertQuaternion = Quaternion.Euler(Plugin.PistolResetRotationX.Value * rotationBalanceFactor, Plugin.PistolResetRotationY.Value, Plugin.PistolResetRotationZ.Value);
             Vector3 pistolPMCTargetPosition = useThirdPersonStance ? new Vector3(Plugin.PistolThirdPersonPositionX.Value, Plugin.PistolThirdPersonPositionY.Value, Plugin.PistolThirdPersonPositionZ.Value) : new Vector3(Plugin.PistolOffsetX.Value, Plugin.PistolOffsetY.Value, Plugin.PistolOffsetZ.Value);
             Vector3 pistolScavTargetPosition = useThirdPersonStance ? new Vector3(-0.015f, 0.02f, -0.07f) : new Vector3(0.025f, 0f, -0.04f);
             Vector3 pistolTargetPosition = PlayerState.IsScav ? pistolScavTargetPosition : pistolPMCTargetPosition;
@@ -655,17 +656,38 @@ namespace RealismMod
             //I've no idea wtf is going on here but it sort of works
             if (!WeaponStats.HasShoulderContact && Plugin.EnableAltPistol.Value)
             {
+             /*   float targetPosX = Plugin.test5.Value;
+                if (!IsBlindFiring && !pwa.LeftStance) // !CancelPistolStance
+                {
+                    targetPosX = Plugin.test4.Value; // 0.04
+                }
+
+                float targetPosY = Plugin.test6.Value;
+                if (IsAiming)
+                {
+                    targetPosY = Plugin.test7.Value;
+                }
+
+                _currentPistolXPos = Mathf.Lerp(_currentPistolXPos, targetPosX, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * 0.5f);
+                _currentPistolYPos = Mathf.Lerp(_currentPistolYPos, targetPosY, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * Plugin.test8.Value); 
+
+                _pistolLocalPosition.x = _currentPistolXPos; // 0.04
+                _pistolLocalPosition.y = _currentPistolYPos; //-0.02
+                _pistolLocalPosition.z = 0f; // 0
+                pwa.HandsContainer.WeaponRoot.localPosition = _pistolLocalPosition;
+*/
+
                 float targetPosX = 0.09f;
                 if (!IsBlindFiring && !pwa.LeftStance) // !CancelPistolStance
                 {
                     targetPosX = Plugin.PistolOffsetX.Value;
                 }
 
-                currentPistolXPos = Mathf.Lerp(currentPistolXPos, targetPosX, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * 0.5f);
-                pistolLocalPosition.x = currentPistolXPos;
-                pistolLocalPosition.y = pwa.HandsContainer.TrackingTransform.localPosition.y;
-                pistolLocalPosition.z = pwa.HandsContainer.TrackingTransform.localPosition.z;
-                pwa.HandsContainer.WeaponRoot.localPosition = pistolLocalPosition;
+                _currentPistolXPos = Mathf.Lerp(_currentPistolXPos, targetPosX, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * 0.5f);
+                _pistolLocalPosition.x = _currentPistolXPos;
+                _pistolLocalPosition.y = pwa.HandsContainer.TrackingTransform.localPosition.y;
+                _pistolLocalPosition.z = pwa.HandsContainer.TrackingTransform.localPosition.z;
+                pwa.HandsContainer.WeaponRoot.localPosition = _pistolLocalPosition;
             }
 
             if (!pwa.IsAiming && !IsBlindFiring && !pwa.LeftStance && !PistolIsColliding && !WeaponStats.HasShoulderContact && Plugin.EnableAltPistol.Value) //!CancelPistolStance

@@ -13,67 +13,69 @@ using WeaponSkillsClass = EFT.SkillManager.GClass1771;
 
 namespace RealismMod
 {
+    //with BSG's recoil rework, player camera is much more closely attached to the weapon. This is a problem for the stances, making them behave strangely
+    //this patch attempts to rectify that
     public class CamRecoilPatch : ModulePatch
     {
-        private static FieldInfo cameraRecoilField;
-        private static FieldInfo cameraRecoilRotateField;
-        private static FieldInfo prevCameraTargetField;
-        private static FieldInfo headRotationField;
-        private static FieldInfo playerField;
-        private static FieldInfo fcField;
-        private static float camSpeed = 1f;
+        private static FieldInfo _cameraRecoilField;
+        private static FieldInfo _cameraRecoilRotateField;
+        private static FieldInfo _prevCameraTargetField;
+        private static FieldInfo _headRotationField;
+        private static FieldInfo _playerField;
+        private static FieldInfo _fcField;
+        private static float _camRecoilLerpTempSpeed = 1f;
 
         protected override MethodBase GetTargetMethod()
         {
-            cameraRecoilField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_cameraRecoilLerpTempSpeed");
-            cameraRecoilRotateField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_currentRecoilCameraRotate");
-            prevCameraTargetField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_previousCameraTargetRotation");
-            headRotationField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_headRotationVec");
-            playerField = AccessTools.Field(typeof(FirearmController), "_player");
-            fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
+            _cameraRecoilField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_cameraRecoilLerpTempSpeed");
+            _cameraRecoilRotateField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_currentRecoilCameraRotate");
+            _prevCameraTargetField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_previousCameraTargetRotation");
+            _headRotationField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_headRotationVec");
+            _playerField = AccessTools.Field(typeof(FirearmController), "_player");
+            _fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
             return typeof(ProceduralWeaponAnimation).GetMethod("method_19", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static bool PatchPrefix(ProceduralWeaponAnimation __instance, float deltaTime)
         {
-            FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
+            FirearmController firearmController = (FirearmController)_fcField.GetValue(__instance);
             if (firearmController == null) return false;
-            Player player = (Player)playerField.GetValue(firearmController);
+            Player player = (Player)_playerField.GetValue(firearmController);
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
-                float _cameraRecoilLerpTempSpeed = (float)cameraRecoilField.GetValue(__instance);
-                Quaternion _currentRecoilCameraRotate = (Quaternion)cameraRecoilRotateField.GetValue(__instance);
-                Quaternion _previousCameraTargetRotation = (Quaternion)prevCameraTargetField.GetValue(__instance);
+                float _cameraRecoilLerpTempSpeed = (float)_cameraRecoilField.GetValue(__instance);
+                Quaternion _currentRecoilCameraRotate = (Quaternion)_cameraRecoilRotateField.GetValue(__instance);
+                Quaternion _previousCameraTargetRotation = (Quaternion)_prevCameraTargetField.GetValue(__instance);
 
                 __instance.HandsContainer.CameraRotation.ReturnSpeed = 0.2f;
                 __instance.HandsContainer.CameraRotation.Damping = 0.55f;
 
-                Vector3 _headRotationVec = (Vector3)headRotationField.GetValue(__instance);
+                Vector3 _headRotationVec = (Vector3)_headRotationField.GetValue(__instance);
                 if (_headRotationVec != Vector3.zero)
                 {
                     return false;
                 }
-   
                 bool autoFireOn;
                 if (((autoFireOn = (__instance.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect as NewRotationRecoilProcess).AutoFireOn) & __instance.IsAiming))
                 {
                     if (!__instance.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.StableOn)
                     {
-                        Quaternion localRotation = __instance.HandsContainer.CameraTransform.localRotation;
-                        localRotation.y = 0f;
-                        Quaternion quaternion = localRotation;
-                        camSpeed = Mathf.Clamp(camSpeed + __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y) * 2f;
-                        Quaternion quaternion2 = Quaternion.Lerp(_currentRecoilCameraRotate, quaternion, camSpeed);
-                        __instance.HandsContainer.CameraTransform.localRotation = quaternion2;
-                        prevCameraTargetField.SetValue(__instance, quaternion);
-                        cameraRecoilRotateField.SetValue(__instance, quaternion2);
+                        Quaternion baseLocalRotation = __instance.HandsContainer.CameraTransform.localRotation;
+                        baseLocalRotation.y = 0f;
+         /*               Quaternion rhs = Quaternion.Euler(current);*/
+                        Quaternion newLocalRotation = baseLocalRotation; // * rhs //bsg uses this mmodifer
+                        _camRecoilLerpTempSpeed = Mathf.Clamp(_camRecoilLerpTempSpeed + __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y) * 2f;
+                        Quaternion newRecoilRotation = Quaternion.Lerp(_currentRecoilCameraRotate, newLocalRotation, _camRecoilLerpTempSpeed);
+                        __instance.HandsContainer.CameraTransform.localRotation = newRecoilRotation;
+                        _prevCameraTargetField.SetValue(__instance, newLocalRotation);
+                        _cameraRecoilRotateField.SetValue(__instance, newRecoilRotation);
                         return false;
                     }
-                    camSpeed = Mathf.Clamp(camSpeed + __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y) * 2f;
-                    Quaternion newCameraRotation = Quaternion.Lerp(_currentRecoilCameraRotate, _previousCameraTargetRotation, camSpeed);
+                    _camRecoilLerpTempSpeed = Mathf.Clamp(_camRecoilLerpTempSpeed + __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y) * 2f;
+                    Quaternion newCameraRotation = Quaternion.Lerp(_currentRecoilCameraRotate, _previousCameraTargetRotation, _camRecoilLerpTempSpeed);
                     __instance.HandsContainer.CameraTransform.localRotation = newCameraRotation;
-                    cameraRecoilRotateField.SetValue(__instance, newCameraRotation);
+                    _cameraRecoilRotateField.SetValue(__instance, newCameraRotation);
 
                     return false;
                 }
@@ -81,25 +83,26 @@ namespace RealismMod
                 {
                     if (!autoFireOn & __instance.IsAiming)
                     {
-                        Quaternion cameraRotation = __instance.HandsContainer.CameraTransform.localRotation;
-                        cameraRotation.y = 0f;
-                        Quaternion cameraLocalRotaitonModified = cameraRotation;
-                        camSpeed = Mathf.Clamp(camSpeed - __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y);
-                        Quaternion newCameraRotaiton = Quaternion.Lerp(_currentRecoilCameraRotate, cameraLocalRotaitonModified, camSpeed * 2f);
+                        Quaternion localCameraRotation = __instance.HandsContainer.CameraTransform.localRotation;
+                        localCameraRotation.y = 0f;
+          /*              Quaternion rhs = Quaternion.Euler(current);*/
+                        Quaternion cameraLocalRotaitonModified = localCameraRotation; // * rhs //bsg uses this mmodifer
+                        _camRecoilLerpTempSpeed = Mathf.Clamp(_camRecoilLerpTempSpeed - __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y);
+                        Quaternion newCameraRotaiton = Quaternion.Lerp(_currentRecoilCameraRotate, cameraLocalRotaitonModified, _camRecoilLerpTempSpeed * 2f); //bsg does not multi by 2, can't remember why I do this :')
                         __instance.HandsContainer.CameraTransform.localRotation = newCameraRotaiton;
-                        prevCameraTargetField.SetValue(__instance, cameraLocalRotaitonModified);
-                        cameraRecoilRotateField.SetValue(__instance, newCameraRotaiton);
+                        _prevCameraTargetField.SetValue(__instance, cameraLocalRotaitonModified);
+                        _cameraRecoilRotateField.SetValue(__instance, newCameraRotaiton);
                         return false;
                     }
                     if (!__instance.IsAiming)
                     {
                         Quaternion cameraRotation = __instance.HandsContainer.CameraTransform.localRotation;
-                        camSpeed = Mathf.Clamp(camSpeed - __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y) * 2f;
-                        cameraRecoilField.SetValue(__instance, camSpeed);
-                        Quaternion newCameraRotation = Quaternion.Lerp(_currentRecoilCameraRotate, cameraRotation, camSpeed);
+                        _camRecoilLerpTempSpeed = Mathf.Clamp(_camRecoilLerpTempSpeed - __instance.CameraToWeaponAngleStep * deltaTime, __instance.CameraToWeaponAngleSpeedRange.x, __instance.CameraToWeaponAngleSpeedRange.y) * 2f;  //bsg does not multi by 2, can't remember why I do this :')
+                        _cameraRecoilField.SetValue(__instance, _camRecoilLerpTempSpeed);
+                        Quaternion newCameraRotation = Quaternion.Lerp(_currentRecoilCameraRotate, cameraRotation, _camRecoilLerpTempSpeed); //__instance.CameraToWeaponAngleSpeedRange.y is what bsg uses
                         __instance.HandsContainer.CameraTransform.localRotation = newCameraRotation;
-                        prevCameraTargetField.SetValue(__instance, cameraRotation);
-                        cameraRecoilRotateField.SetValue(__instance, newCameraRotation);
+                        _prevCameraTargetField.SetValue(__instance, cameraRotation);
+                        _cameraRecoilRotateField.SetValue(__instance, newCameraRotation);
                     }
                     return false;
                 }
@@ -149,8 +152,9 @@ namespace RealismMod
             if (StanceController.IsIdle() && WeaponStats._WeapClass.ToLower() != "pistol")
             {
                 StanceController.CanResetDamping = false;
-                float headGearFactor = GearController.FSIsActive || GearController.NVGIsActive || GearController.HasGasMask ? 1.35f : 1f;
-                float baseLine = Mathf.Clamp(6.5f * factor * headGearFactor, 1f, 17f);
+                float mountingFactor = StanceController.IsMounting ? 0.1f : StanceController.IsBracing ? 0.25f : 1f;
+                float headGearFactor = GearController.FSIsActive || GearController.NVGIsActive || GearController.HasGasMask ? 1.5f : 1f;
+                float baseLine = Mathf.Clamp(6.5f * factor * headGearFactor * mountingFactor, 0.1f, 17f);
                 float rndX = UnityEngine.Random.Range(baseLine * 0.9f, baseLine);
                 float rndY = UnityEngine.Random.Range(baseLine * 0.9f, baseLine);
                 Vector3 wiggleDir = new Vector3(-rndX, -rndY, 0f);
@@ -380,7 +384,7 @@ namespace RealismMod
         private static FieldInfo breathIntensityField;
         private static FieldInfo shakeIntensityField;
         private static FieldInfo breathFrequencyField;
-        private static FieldInfo cameraSensetivityField;
+        private static FieldInfo cameraSensitivityField;
         private static FieldInfo baseHipRandomAmplitudesField;
         private static FieldInfo shotEffectorField;
         private static FieldInfo handsRotationSpringField;
@@ -392,7 +396,7 @@ namespace RealismMod
             breathIntensityField = AccessTools.Field(typeof(BreathEffector), "_breathIntensity");
             shakeIntensityField = AccessTools.Field(typeof(BreathEffector), "_shakeIntensity");
             breathFrequencyField = AccessTools.Field(typeof(BreathEffector), "_breathFrequency");
-            cameraSensetivityField = AccessTools.Field(typeof(BreathEffector), "_cameraSensetivity");
+            cameraSensitivityField = AccessTools.Field(typeof(BreathEffector), "_cameraSensetivity");
             baseHipRandomAmplitudesField = AccessTools.Field(typeof(BreathEffector), "_baseHipRandomAmplitudes");
             shotEffectorField = AccessTools.Field(typeof(BreathEffector), "_shotEffector");
             handsRotationSpringField = AccessTools.Field(typeof(BreathEffector), "_handsRotationSpring");
@@ -438,7 +442,7 @@ namespace RealismMod
                 breathIntensityField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, b, t), 1f, 1.5f) * __instance.Intensity * holdBreathBonusUpDown);
                 breathFrequencyField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, 1f, t), 1f, 2.5f) * deltaTime * holdBreathBonusSway);
                 shakeIntensityField.SetValue(__instance, holdBreathBonusSway * swayFactor);
-                cameraSensetivityField.SetValue(__instance, Mathf.Lerp(2f, 0f, t) * __instance.Intensity);
+                cameraSensitivityField.SetValue(__instance, Mathf.Lerp(2f, 0f, t) * __instance.Intensity);
                 breathFrequency = (float)AccessTools.Field(typeof(BreathEffector), "_breathFrequency").GetValue(__instance);
                 cameraSensetivity = (float)AccessTools.Field(typeof(BreathEffector), "_cameraSensetivity").GetValue(__instance);
             }
