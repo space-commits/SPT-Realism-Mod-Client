@@ -54,7 +54,6 @@ namespace RealismMod
                 float duraFactor = __instance.Repairable.Durability / __instance.Repairable.TemplateDurability;
                 duraFactor = Mathf.Clamp(Mathf.Pow(duraFactor, 0.1f), 0.9f, 1f);
                 __result = (currentAmmoTemplate != null) ? (int)(WeaponStats.AutoFireRate * currentAmmoTemplate.casingMass * duraFactor) : WeaponStats.AutoFireRate;
-                __result = Utils.Verified ? __result * 10 : __result;  
                 return false;
             }
             return true;

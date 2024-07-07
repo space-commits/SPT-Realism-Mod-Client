@@ -587,7 +587,6 @@ namespace RealismMod
                 LoadTextures();
                 LoadAudioClips();
                 CacheIcons();
-                Utils.VerifyFileIntegrity(Logger); 
             }
             catch (Exception exception)
             {

@@ -28,52 +28,52 @@ namespace RealismMod
     {
         public static string MedType(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) ? med.ConflictingItems[1] : "Unknown";
+            return !Utils.IsConfItemNull(med.ConflictingItems) ? med.ConflictingItems[1] : "Unknown";
         }
 
         public static string HBleedHealType(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) ? med.ConflictingItems[2] : "Unknown";
+            return !Utils.IsConfItemNull(med.ConflictingItems) ? med.ConflictingItems[2] : "Unknown";
         }
 
         public static float HpPerTick(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[3], out float result) ? result : 1f;
+            return !Utils.IsConfItemNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[3], out float result) ? result : 1f;
         }
 
         public static bool CanBeUsedInRaid(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) && bool.TryParse(med.ConflictingItems[4], out bool result) ? result : false;
+            return !Utils.IsConfItemNull(med.ConflictingItems) && bool.TryParse(med.ConflictingItems[4], out bool result) ? result : false;
         }
 
         public static int PainKillerDuration(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[5], out int result) ? result : 1;
+            return !Utils.IsConfItemNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[5], out int result) ? result : 1;
         }
 
         public static float HPRestoreAmount(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems, 7) && float.TryParse(med.ConflictingItems[6], out float result) ? result : 1;
+            return !Utils.IsConfItemNull(med.ConflictingItems, 7) && float.TryParse(med.ConflictingItems[6], out float result) ? result : 1;
         }
 
         public static int Unused2(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[7], out int result) ? result : 1;
+            return !Utils.IsConfItemNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[7], out int result) ? result : 1;
         }
 
         public static float TunnelVisionStrength(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[8], out float result) ? result : 1f;
+            return !Utils.IsConfItemNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[8], out float result) ? result : 1f;
         }
 
         public static int Delay(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[9], out int result) ? result : 1;
+            return !Utils.IsConfItemNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[9], out int result) ? result : 1;
         }
 
         public static float Strength(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[10], out float result) ? result : 0f;
+            return !Utils.IsConfItemNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[10], out float result) ? result : 0f;
         }
 
         public static readonly Dictionary<string, Type> EffectTypes = new Dictionary<string, Type>

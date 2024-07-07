@@ -97,7 +97,7 @@ namespace RealismMod
                 StanceController.StanceBlender.Target = 0f;
                 return false;
             }
-            if (Utils.Verified && (command == ECommand.EndSprinting || command == ECommand.EndShooting || command == ECommand.ToggleDuck || command == ECommand.Jump))
+            if (command == ECommand.EndSprinting || command == ECommand.EndShooting || command == ECommand.ToggleDuck || command == ECommand.Jump)
             {
                 return false;
             }

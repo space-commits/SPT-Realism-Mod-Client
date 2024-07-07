@@ -12,7 +12,6 @@ namespace RealismMod
     {
         public static ManualLogSource Logger;
 
-        public static bool Verified = false;
         public static bool IsReady = false;
         public static bool IsInHideout = false;
         public static bool WeaponIsReady = false;
@@ -48,7 +47,7 @@ namespace RealismMod
             return difference < epsilon;
         }
 
-        public static bool IsNull(string[] confItemArray, int expectedLength = 0)
+        public static bool IsConfItemNull(string[] confItemArray, int expectedLength = 0)
         {
             if (confItemArray != null && confItemArray.Length > expectedLength)
             {
@@ -117,23 +116,6 @@ namespace RealismMod
             if (itemAttribute.Base() != 0f)
             {
                 __instance.Attributes.Add(itemAttribute);
-            }
-        }
-
-        public static void VerifyFileIntegrity(ManualLogSource Logger)
-        {
-            var dllLoc = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string checksum = "d2F5ZmFyZXI=";
-            byte[] bytes = Convert.FromBase64String(checksum);
-            string decodedString = System.Text.Encoding.UTF8.GetString(bytes);
-            var modsLoc = Path.Combine(dllLoc, "..", "..", "user", "mods", decodedString);
-            var fullPath = Path.GetFullPath(modsLoc);
-
-            if (Directory.Exists(fullPath))
-            {
-                /*Environment.Exit(0);*/
-                Verified = true;
-                Logger.LogWarning("Verification Checksum: {0}" + checksum);
             }
         }
 
