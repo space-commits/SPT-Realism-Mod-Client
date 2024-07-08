@@ -8,7 +8,7 @@ using RealismMod.Weapons;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using WeaponSkills = EFT.SkillManager.GClass1771;
+using WeaponSkills = EFT.SkillManager.GClass1783;
 
 namespace RealismMod
 {

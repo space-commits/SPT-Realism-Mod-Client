@@ -1288,7 +1288,7 @@ namespace RealismMod
         {
             if (playSound)
             {
-                player.method_46(volume);
+                player.method_50(volume);
             }
 
             NewRecoilShotEffect newRecoil = pwa.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;

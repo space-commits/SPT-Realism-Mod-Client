@@ -10,9 +10,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using static EFT.Player;
-using CastingClass = GClass649;
-using CollisionLayerClass = GClass2987;
-using HackShotResult = GClass1676;
+using CollisionLayerClass = GClass3008;
 /*using LightStruct = GStruct155;*/
 
 namespace RealismMod
@@ -234,7 +232,7 @@ namespace RealismMod
 
         private static bool CheckForCoverCollision(EBracingDirection coverDir, Vector3 start, Vector3 direction, out RaycastHit raycastHit, RaycastHit[] raycastArr, Func<RaycastHit, bool> isHitIgnoreTest, string weapClass)
         {
-            if (CastingClass.Linecast(start, direction, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastArr, isHitIgnoreTest))
+            if (EFTPhysicsClass.Linecast(start, direction, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastArr, isHitIgnoreTest))
             {
                 SetMountingStatus(coverDir, weapClass);
                 StanceController.CoverWiggleDirection = GetWiggleDir(coverDir);
@@ -262,7 +260,7 @@ namespace RealismMod
 
                 BallisticCollider hitBalls = null;
                 RaycastHit raycastHit;
-                if (CastingClass.Linecast(meleeStart, meleeDir, out raycastHit, CollisionLayerClass.HitMask, false, raycastArr, isHitIgnoreTest))
+                if (EFTPhysicsClass.Linecast(meleeStart, meleeDir, out raycastHit, CollisionLayerClass.HitMask, false, raycastArr, isHitIgnoreTest))
                 {
                     Collider col = raycastHit.collider;
                     BaseBallistic baseballComp = col.GetComponent<BaseBallistic>();
@@ -314,7 +312,7 @@ namespace RealismMod
                             IsForwardHit = true,
                             StaminaBurnRate = 5f
                         };
-                        HackShotResult result = Singleton<GameWorld>.Instance.HackShot(damageInfo);
+                        ShotInfoClass result = Singleton<GameWorld>.Instance.HackShot(damageInfo);
                     }
                     float vol = WeaponStats.HasBayonet ? 10f : 12f;
                     Singleton<BetterAudio>.Instance.PlayDropItem(baseballComp.SurfaceSound, JsonType.EItemDropSoundType.Rifle, raycastHit.point, vol);

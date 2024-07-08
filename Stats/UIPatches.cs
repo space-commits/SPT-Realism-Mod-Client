@@ -10,10 +10,10 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using static RealismMod.Attributes;
-using ArmorPlateUIClass = GClass2633;
-using BarrelTemplateClass = GClass2579;
-using FormatArmorClass = GClass2520;
-using StatAttributeClass = GClass2752;
+using ArmorPlateUIClass = GClass2648;
+using BarrelTemplateClass = GClass2593;
+using FormatArmorClass = GClass2534;
+using StatAttributeClass = GClass2768;
 
 namespace RealismMod
 {
@@ -22,7 +22,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(ArmorComponent.Class1934).GetMethod("method_3", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(ArmorComponent.Class1963).GetMethod("method_3", BindingFlags.Instance | BindingFlags.Public);
         }
 
         private static string GetItemClass(CompositeArmorComponent x)
@@ -31,7 +31,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool PatchPrefix(ArmorComponent.Class1934 __instance, ref string __result)
+        private static bool PatchPrefix(ArmorComponent.Class1963 __instance, ref string __result)
         {
             CompositeArmorComponent[] array = __instance.item.GetItemComponentsInChildren<CompositeArmorComponent>(true).ToArray<CompositeArmorComponent>();
 
@@ -812,13 +812,13 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_18", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Weapon).GetMethod("method_17", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            float durability = __instance.method_10((float)__instance.Repairable.TemplateDurability);
+            float durability = __instance.method_9((float)__instance.Repairable.TemplateDurability);
             float durabilityFactor = (__instance.GetBarrelDeviation() - durability) / (__instance.Single_0 - durability);
             __result = UIWeaponStats.COIDelta + durabilityFactor;
             return false;
