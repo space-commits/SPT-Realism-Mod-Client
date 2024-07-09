@@ -1,4 +1,5 @@
-﻿using Aki.Reflection.Patching;
+﻿using SPT.Reflection.Patching;
+using SPT.Reflection.Utils;
 using Comfort.Common;
 using EFT;
 using EFT.HealthSystem;
@@ -21,6 +22,7 @@ using HealthStateClass = GClass2430<EFT.HealthSystem.ActiveHealthController.GCla
 using MedkitTemplate = IMedkitResource;
 using MedUseStringClass = GClass1244;
 using QuestUIClass = GClass2046;
+using SetInHandsMedsInterface = GInterface142;
 using EFT.UI;
 using EFT.Communications;
 
@@ -628,11 +630,11 @@ namespace RealismMod
             return typeof(EFT.Player).GetMethod("SetQuickSlotItem", BindingFlags.Instance | BindingFlags.Public);
         }
         [PatchPrefix]
-        private static bool Prefix(EFT.Player __instance, EBoundItem quickSlot, InventoryControllerClass ___inventoryControllerClass)
+        private static bool Prefix(EFT.Player __instance, EBoundItem quickSlot)
         {
             if (__instance.IsYourPlayer)
             {
-                Item boundItem = ___inventoryControllerClass.Inventory.FastAccess.GetBoundItem(quickSlot);
+                Item boundItem = __instance.InventoryControllerClass.Inventory.FastAccess.GetBoundItem(quickSlot);
                 FoodClass foodItem = boundItem as FoodClass;
                 if (boundItem != null && foodItem != null)
                 {
@@ -866,7 +868,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player).GetMethod("SetInHands", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(int), typeof(Callback<GInterface130>)}, null);
+            return typeof(EFT.Player).GetMethod("SetInHands", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(int), typeof(Callback<SetInHandsMedsInterface>)}, null);
         }
 
         [PatchPrefix]
@@ -887,7 +889,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<GInterface130>), typeof(int), typeof(bool) }, null);
+            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<SetInHandsMedsInterface>), typeof(int), typeof(bool) }, null);
         }
 
         [PatchPrefix]

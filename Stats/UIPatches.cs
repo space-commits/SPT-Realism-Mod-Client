@@ -1,4 +1,5 @@
-﻿using Aki.Reflection.Patching;
+﻿using SPT.Reflection.Patching;
+using SPT.Reflection.Utils;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
@@ -96,6 +97,60 @@ namespace RealismMod
             }
 
         }
+
+        //BSG got rid of malf chance, dura burn and heat....will need to add those back myself
+        private static string GetMalfChance(AmmoTemplate __instance)
+        {
+            float malfChance = __instance.MalfMisfireChance;
+            string text = "";
+/*            switch (malfChance)
+            {
+                case <= 0f:
+                    return "";
+                case <= 0.15f:
+                    return malfChancesKeys[1];
+                case <= 0.3f:
+                    return malfChancesKeys[2];
+                case <= 0.6f:
+                    return malfChancesKeys[3];
+                case <= 1.2f:
+                    return malfChancesKeys[4];
+                case > 1.2f:
+                    return malfChancesKeys[5];
+            }*/
+            return text.Localized(null);
+        }
+
+  /*      [PatchPrefix]
+        private static bool Prefix(AmmoTemplate __instance, ref string __result)
+        {
+            float duraBurn = __instance.DurabilityBurnModificator - 1f;
+
+            switch (duraBurn)
+            {
+                //560 = 5.6
+                case <= 2f:
+                    __result = duraBurn.ToString("P1");
+                    break;
+                case <= 4f:
+                    __result = "Significant Increase";
+                    break;
+                case <= 8f:
+                    __result = "Substantial Increase";
+                    break;
+                case <= 10f:
+                    __result = "Large Increase";
+                    break;
+                case <= 15f:
+                    __result = "Very Large Increase";
+                    break;
+                case <= 100f:
+                    __result = "Huge Increase";
+                    break;
+            }
+            return false;
+        }
+*/
         public static void AddCustomAttributes(AmmoTemplate ammoTemplate, ref List<ItemAttributeClass> ammoAttributes)
         {
             if (Plugin.EnableAmmoStats.Value == true)
@@ -180,60 +235,11 @@ namespace RealismMod
         }
     }
 
-    public class AmmoMalfChanceDisplayPatch : ModulePatch
-    {
-
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(AmmoTemplate).GetMethod("method_12", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        private static string[] malfChancesKeys = new string[]
-        {
-            "Malfunction/NoneChance",
-            "Malfunction/VeryLowChance",
-            "Malfunction/LowChance",
-            "Malfunction/MediumChance",
-            "Malfunction/HighChance",
-            "Malfunction/VeryHighChance"
-        };
-
-        [PatchPrefix]
-        private static bool Prefix(AmmoTemplate __instance, ref string __result)
-        {
-            float malfChance = __instance.MalfMisfireChance;
-            string text = "";
-            switch (malfChance)
-            {
-                case <= 0f:
-                    text = malfChancesKeys[0];
-                    break;
-                case <= 0.15f:
-                    text = malfChancesKeys[1];
-                    break;
-                case <= 0.3f:
-                    text = malfChancesKeys[2];
-                    break;
-                case <= 0.6f:
-                    text = malfChancesKeys[3];
-                    break;
-                case <= 1.2f:
-                    text = malfChancesKeys[4];
-                    break;
-                case > 1.2f:
-                    text = malfChancesKeys[5];
-                    break;
-            }
-            __result = text.Localized(null);
-            return false;
-        }
-    }
-
     public class MagazineMalfChanceDisplayPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(MagazineClass).GetMethod("method_39", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(MagazineClass).GetMethod("method_40", BindingFlags.Instance | BindingFlags.Public);
         }
 
         private static string[] malfChancesKeys = new string[]
@@ -277,50 +283,11 @@ namespace RealismMod
         }
     }
 
-    public class AmmoDuraBurnDisplayPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(AmmoTemplate).GetMethod("method_16", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-
-        [PatchPrefix]
-        private static bool Prefix(AmmoTemplate __instance, ref string __result)
-        {
-            float duraBurn = __instance.DurabilityBurnModificator - 1f;
-
-            switch (duraBurn)
-            {
-                //560 = 5.6
-                case <= 2f:
-                    __result = duraBurn.ToString("P1");
-                    break;
-                case <= 4f:
-                    __result = "Significant Increase";
-                    break;
-                case <= 8f:
-                    __result = "Substantial Increase";
-                    break;
-                case <= 10f:
-                    __result = "Large Increase";
-                    break;
-                case <= 15f:
-                    __result = "Very Large Increase";
-                    break;
-                case <= 100f:
-                    __result = "Huge Increase";
-                    break;
-            }
-            return false;
-        }
-    }
-
     public class ModVRecoilStatDisplayPatchFloat : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Mod).GetMethod("method_16", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Mod).GetMethod("method_15", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
@@ -336,7 +303,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Mod).GetMethod("method_17", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Mod).GetMethod("method_16", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -351,7 +318,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Mod).GetMethod("method_19", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Mod).GetMethod("method_18", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -746,7 +713,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_26", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Weapon).GetMethod("method_25", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
@@ -763,7 +730,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_27", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Weapon).GetMethod("method_26", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
@@ -779,7 +746,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_23", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Weapon).GetMethod("method_22", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
@@ -796,7 +763,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_24", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Weapon).GetMethod("method_23", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -829,7 +796,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_19", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Weapon).GetMethod("method_18", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -856,7 +823,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_36", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Weapon).GetMethod("method_35", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
@@ -872,7 +839,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_15", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Weapon).GetMethod("method_14", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
@@ -889,7 +856,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Weapon).GetMethod("method_16", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Weapon).GetMethod("method_15", BindingFlags.Instance | BindingFlags.Public);
         }
 
 

@@ -11,8 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Aki.Reflection" />
-	<Reference Include="Aki.Common" />
+    <Reference Include="spt-reflection" />
+	<Reference Include="spt-common" />
 	<Reference Include="ItemComponent.Types" />
     <Reference Include="Comfort" />
     <Reference Include="Assembly-CSharp" />

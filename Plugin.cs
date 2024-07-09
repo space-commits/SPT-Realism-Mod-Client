@@ -1,9 +1,10 @@
-﻿using Aki.Common.Http;
+﻿using SPT.Common.Http;
 using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using Comfort.Common;
 using EFT;
+using EFT.UI;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.pluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string pluginVersion = "1.3.1";
+        private const string pluginVersion = "1.4.0";
 
         //movement
         public static ConfigEntry<bool> EnableMaterialSpeed { get; set; }
@@ -346,9 +347,10 @@ namespace RealismMod
         public static Dictionary<string, Sprite> LoadedSprites = new Dictionary<string, Sprite>();
         public static Dictionary<string, Texture> LoadedTextures = new Dictionary<string, Texture>();
 
-        public static GameObject Hook;
+        public static GameObject MountingUIHookObj;
         public MountingUI MountingUIComponent;
         public static RealismHealthController RealHealthController;
+        public static EftBattleUIScreen BattleUIScreen;
 
         public static RealismConfig ServerConfig;
 
@@ -594,11 +596,11 @@ namespace RealismMod
                 Logger.LogError(exception);
             }
 
-            if (Hook == null)
+            if (MountingUIHookObj == null)
             {
-                Hook = new GameObject();
-                MountingUIComponent = Hook.AddComponent<MountingUI>();
-                DontDestroyOnLoad(Hook);
+                MountingUIHookObj = new GameObject();
+                MountingUIComponent = MountingUIHookObj.AddComponent<MountingUI>();
+                DontDestroyOnLoad(MountingUIHookObj);
             }
 
             DamageTracker dmgTracker = new DamageTracker();
@@ -687,8 +689,6 @@ namespace RealismMod
  
                 new ModErgoStatDisplayPatch().Enable();
                 new GetAttributeIconPatches().Enable();
-                new AmmoDuraBurnDisplayPatch().Enable();
-                new AmmoMalfChanceDisplayPatch().Enable();
                 new MagazineMalfChanceDisplayPatch().Enable();
                 new BarrelModClassPatch().Enable();
                 new AmmoCaliberPatch().Enable();

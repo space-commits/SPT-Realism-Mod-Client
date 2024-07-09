@@ -1,5 +1,5 @@
-
-using Aki.Reflection.Patching;
+using SPT.Reflection.Patching;
+using SPT.Reflection.Utils;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
@@ -82,7 +82,7 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                WeaponSkills skillsClass = (WeaponSkills)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1771_0").GetValue(__instance);
+                WeaponSkills skillsClass = (WeaponSkills)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1783_0").GetValue(__instance);
                 __result = Mathf.Max(0f, __instance.Item.ErgonomicsTotal * (1f + skillsClass.DeltaErgonomics + player.ErgonomicsPenalty));
                 return false;
             }

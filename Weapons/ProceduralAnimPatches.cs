@@ -1,4 +1,5 @@
-﻿using Aki.Reflection.Patching;
+﻿using SPT.Reflection.Patching;
+using SPT.Reflection.Utils;
 using Comfort.Common;
 using EFT;
 using EFT.Animations;
@@ -7,9 +8,9 @@ using HarmonyLib;
 using System.Reflection;
 using UnityEngine;
 using static EFT.Player;
-using ProcessorClass = GClass2213;
-using StaminaLevelClass = GClass753<float>;
-using WeaponSkillsClass = EFT.SkillManager.GClass1771;
+using ProcessorClass = GClass2227;
+using StaminaLevelClass = GClass754<float>;
+using WeaponSkillsClass = EFT.SkillManager.GClass1783;
 
 namespace RealismMod
 {

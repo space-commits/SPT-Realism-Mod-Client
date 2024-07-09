@@ -1,5 +1,5 @@
-﻿using Aki.Reflection.Patching;
-using Aki.Reflection.Utils;
+﻿using SPT.Reflection.Patching;
+using SPT.Reflection.Utils;
 using Comfort.Common;
 using EFT;
 using HarmonyLib;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using SkillMovementStruct = EFT.SkillManager.GStruct229;
-using ValueHandler = GClass3378;
+using ValueHandler = GClass734;
 
 namespace RealismMod
 {
@@ -81,7 +81,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player).GetMethod("method_53", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player).GetMethod("method_57", BindingFlags.Instance | BindingFlags.Public);
         }
 
 

@@ -1,4 +1,5 @@
-﻿using Aki.Reflection.Patching;
+﻿using SPT.Reflection.Patching;
+using SPT.Reflection.Utils;
 using EFT;
 using EFT.CameraControl;
 using EFT.InventoryLogic;
@@ -49,7 +50,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EquipmentPenaltyComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface282), typeof(bool) });
+            return typeof(EquipmentPenaltyComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface297), typeof(bool) });
         }
 
         private static float GetAverage(Func<CompositeArmorComponent, float> predicate, Item item)
