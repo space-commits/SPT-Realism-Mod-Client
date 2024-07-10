@@ -270,6 +270,7 @@ namespace RealismMod
                 Logger.LogWarning("DidArmorDamage " + damageInfo.DidArmorDamage);
                 Logger.LogWarning("DidBodyDamage " + damageInfo.DidBodyDamage);
                 Logger.LogWarning("bodyPartType " + bodyPartType);
+                Logger.LogWarning("bodyPartType " + bodyPartType);
                 Logger.LogWarning("BlockedBy " + damageInfo.BlockedBy);
                 Logger.LogWarning("SourceId " + damageInfo.SourceId);
 
@@ -293,7 +294,6 @@ namespace RealismMod
 
                 if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && __instance.IsAI && damageInfo.HittedBallisticCollider != null && !damageInfo.Blunt && Plugin.EnableHitSounds.Value)
                 {
-                    Logger.LogWarning("do bullet flesh hit sound " );
                     BallisticsController.PlayBodyHitSound(bodyPartType, damageInfo.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
                 }
 
@@ -305,8 +305,6 @@ namespace RealismMod
                 ArmorComponent armor = null;
                 if (doSpalling || (ammoTemp != null && ammoTemp.ProjectileCount <= 2))
                 {
-                    Logger.LogWarning("getting armor components");
-                    Logger.LogWarning("should do spalling " + doSpalling);
                     BallisticsController.GetArmorComponents(__instance, damageInfo, bodyPartType, ref armor, ref faceProtectionCount, ref doSpalling, ref hasArmArmor, ref hasLegProtection);
                 }
 
@@ -483,8 +481,8 @@ namespace RealismMod
         private static void playArmorHitSound(EArmorMaterial mat, Vector3 pos, bool isHelm, int rndNum)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 0.15f * Plugin.ArmorCloseHitSoundMulti.Value;
-            float volDist = 2f * Plugin.ArmorFarHitSoundMulti.Value;
+            float volClose = 0.5f * Plugin.ArmorCloseHitSoundMulti.Value;
+            float volDist = 3f * Plugin.ArmorFarHitSoundMulti.Value;
             float distThreshold = 30f;
 
             if (mat == EArmorMaterial.Aramid)
@@ -520,7 +518,7 @@ namespace RealismMod
                     audioClip = rndNum == 0 ? "ceramic_1.wav" : rndNum == 1 ? "ceramic_2.wav" : "ceramic_3.wav";
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist * 1.5f : volClose * 1.5f, EOcclusionTest.Regular);
             }
             else if (mat == EArmorMaterial.UHMWPE || mat == EArmorMaterial.Combined)
             {
@@ -548,7 +546,7 @@ namespace RealismMod
                     audioClip = rndNum == 0 ? "metal_1.wav" : rndNum == 1 ? "metal_2.wav" : "metal_3.wav";
                 }
 
-                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist * 0.35f : volClose * 0.5f, EOcclusionTest.Regular);
+                Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist * 0.75f : volClose * 0.75f, EOcclusionTest.Regular);
             }
             else if (mat == EArmorMaterial.Glass)
             {
@@ -659,7 +657,7 @@ namespace RealismMod
             if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && Plugin.EnableHitSounds.Value && damageInfo.HittedBallisticCollider != null)
             {
                 bool isPlayer = __instance.Item.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId;
-                if (isPlayer) 
+                if (!isPlayer) 
                 {
                     if (damageInfo.DeflectedBy == __instance.Item.Id)
                     {

@@ -270,27 +270,17 @@ namespace RealismMod
 
         public static void ModifyDamageByZone(Player player, ref DamageInfo damageInfo, EBodyPartColliderType partHit)
         {
-            Utils.Logger.LogWarning("modify damage by zone");
-            Utils.Logger.LogWarning("partHit " + partHit);
             if (!damageInfo.Blunt || string.IsNullOrEmpty(damageInfo.BlockedBy))
             {
-                Utils.Logger.LogWarning("not blunt");
                 EBodyHitZone hitZone = GetBodyHitZone(player, partHit, damageInfo);
                 BallisticsController.ModifyDamageByHitZone(partHit, hitZone, ref damageInfo);
             }
-            else Utils.Logger.LogWarning("blunt");
         }
 
 
         public static bool ShouldDoSpalling(AmmoTemplate ammoTemp, DamageInfo damageInfo, EBodyPart bodyPartType)
         {
-            Utils.Logger.LogWarning("ammoTemp null " + (ammoTemp == null));
-            Utils.Logger.LogWarning("damageInfo.DamageType " + damageInfo.DamageType);
-            Utils.Logger.LogWarning("damageInfo.Blunt " + damageInfo.Blunt);
-            Utils.Logger.LogWarning("bodyPartType " + bodyPartType);
-
-            if (ammoTemp == null || damageInfo.DamageType == EDamageType.Melee || !damageInfo.Blunt || bodyPartType != EBodyPart.Chest || bodyPartType != EBodyPart.Stomach) return false;
-            Utils.Logger.LogWarning("should do spalling");
+            if (ammoTemp == null || damageInfo.DamageType == EDamageType.Melee || !damageInfo.Blunt || (bodyPartType != EBodyPart.Chest && bodyPartType != EBodyPart.Stomach)) return false;
             if (ammoTemp.ProjectileCount > 2)
             {
                 int rndNum = UnityEngine.Random.Range(1, 10);
@@ -314,7 +304,6 @@ namespace RealismMod
             else
             {
                 ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
-                Utils.Logger.LogWarning("got ammo template");
                 if (damageInfo.ArmorDamage <= 1)
                 {
                     KE = (0.5f * ammoTemp.BulletMassGram * ammoTemp.InitialSpeed * ammoTemp.InitialSpeed) / 1000f;
@@ -382,10 +371,6 @@ namespace RealismMod
                     faceProtectionCount += ArmorColliderCount(armorComponent, FaceSpallProtectionCollidors);
                 }
             }
-
-            Utils.Logger.LogWarning("doSpalling " + doSpalling);
-            Utils.Logger.LogWarning("hasArmArmor " + hasArmArmor);
-
 
             preAllocatedArmorComponents.Clear();
         }

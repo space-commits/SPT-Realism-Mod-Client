@@ -228,6 +228,8 @@ namespace RealismMod
 
                     if (collider.name.ToLower().Contains("chesttop"))
                     {
+                        Utils.Logger.LogWarning("=armpit=");
+
                         float x = collider2.size.x * 1.3f; //height
                         float y = collider2.size.y * 1f; // depth 
                         float z = collider2.size.z * 1.15f; // width 
