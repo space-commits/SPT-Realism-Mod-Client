@@ -9,16 +9,17 @@ using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
-
 using System.Reflection;
 using UnityEngine;
 using EFTSlot = GClass2783;
 using ArmorSlot = GClass2525;
+using Diz.Skinning;
 
 namespace RealismMod
 {
 
-    /* public class SetSkinPatch : ModulePatch
+    //for making player meshes invisible
+    public class SetSkinPatch : ModulePatch
      {
          protected override MethodBase GetTargetMethod()
          {
@@ -33,175 +34,8 @@ namespace RealismMod
          }
      }
 
-     public class DamageInfoPatch : ModulePatch
-     {
-         protected override MethodBase GetTargetMethod()
-         {
-             return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(EftBulletClass) });
-         }
 
-         [PatchPrefix]
-         private static void Prefix()
-         {
-             Logger.LogWarning("========Damage Info Prefix==========");
-         }
-
-         static UnityEngine.Color getColor(string colliderName)
-         {
-             float opacity = Plugin.test2.Value;
-             if (colliderName.Contains("SpineTopChest")) return new UnityEngine.Color(1, 0, 0, opacity);
-             if (colliderName.Contains("SpineLowerChest")) return new UnityEngine.Color(0, 1, 0, opacity);
-             if (colliderName.Contains("PelvisBack")) return new UnityEngine.Color(0, 0, 1, opacity);
-             if (colliderName.Contains("SideChestDown")) return new UnityEngine.Color(0.5f, 1f, 0, opacity);
-             if (colliderName.Contains("SideChestUp")) return new UnityEngine.Color(0, 0.5f, 1f, opacity);
-             if (colliderName.Contains("HumanSpine2")) return new UnityEngine.Color(1f, 0f, 0.5f, opacity);
-             if (colliderName.Contains("HumanSpine3")) return new UnityEngine.Color(1f, 1f, 1f, opacity);
-             if (colliderName.Contains("HumanPelvis")) return new UnityEngine.Color(0.5f, 1f, 0.5f, opacity);
-             if (colliderName.ToLower().Contains("leg")) return new UnityEngine.Color(0f, 0f, 1f, opacity);
-             if (colliderName.ToLower().Contains("arm")) return new UnityEngine.Color(1f, 0f, 0f, opacity);
-             if (colliderName.ToLower().Contains("eye")) return new UnityEngine.Color(0f, 1f, 0f, opacity);
-             if (colliderName.ToLower().Contains("jaw")) return new UnityEngine.Color(0f, 1f, 0f, opacity);
-             if (colliderName.ToLower().Contains("ear")) return new UnityEngine.Color(1f, 1f, 1f, opacity);
-             if (colliderName.ToLower().Contains("head")) return new UnityEngine.Color(1f, 0f, 0f, opacity);
-             return new UnityEngine.Color(0, 0, 1, opacity);
-         }
-
-         static void VisualizeSphereCollider(SphereCollider sphereCollider, string colliderName)
-         {
-             // Create a sphere primitive to represent the collider.
-             // Create a sphere primitive to represent the collider.
-             GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-
-             // Disable the sphere's collider component.
-             UnityEngine.Object.Destroy(sphere.GetComponent<Collider>());
-
-             // Set the sphere's position to match the sphere collider.
-             Transform colliderTransform = sphereCollider.transform;
-             sphere.transform.position = colliderTransform.TransformPoint(sphereCollider.center);
-
-             // Calculate the correct scale for the sphere. Unity's default sphere has a radius of 0.5 units.
-             float actualScale = sphereCollider.radius / 0.5f;
-             Vector3 scale = new Vector3(actualScale, actualScale, actualScale);
-
-             // Apply global scale and additional scale factor if needed.
-             sphere.transform.localScale = Vector3.Scale(colliderTransform.localScale, scale) * Plugin.test1.Value;
-
-             // Set a transparent material to the sphere, so it doesn't obstruct the view.
-             Material transparentMaterial = new Material(Shader.Find("Standard"));
-             transparentMaterial.color = getColor(colliderName); // Set to desired semi-transparent color
-             sphere.GetComponent<Renderer>().material = transparentMaterial;
-
-             // Parent the sphere to the collider's GameObject to maintain relative positioning.
-             sphere.transform.SetParent(colliderTransform, true);
-         }
-
-         static void VisualizeBoxCollider(BoxCollider boxCollider, string colliderName)
-         {
-             // Create a cube primitive to represent the collider.
-             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-
-             // Disable the cube's collider component.
-             UnityEngine.Object.Destroy(cube.GetComponent<Collider>());
-
-             // Set the cube's position and scale to match the box collider.
-             Transform colliderTransform = boxCollider.transform;
-             cube.transform.position = colliderTransform.TransformPoint(boxCollider.center);
-             cube.transform.localScale = Vector3.Scale(colliderTransform.localScale, boxCollider.size) * Plugin.test1.Value;
-
-             // Optionally, set the cube's rotation to match the collider's GameObject.
-             cube.transform.rotation = colliderTransform.rotation;
-
-             // Set a transparent material to the cube, so it doesn't obstruct the view.
-             Material transparentMaterial = new Material(Shader.Find("Transparent/Diffuse"));
-             transparentMaterial.color = getColor(colliderName); // Red semi-transparent
-             cube.GetComponent<Renderer>().material = transparentMaterial;
-
-             // Parent the cube to the collider's GameObject to maintain relative positioning.
-             cube.transform.SetParent(colliderTransform, true);
-         }
-
-         static void VisualizeCapsuleCollider(CapsuleCollider capsuleCollider, string colliderName)
-         {
-             // Create a capsule primitive to represent the collider.
-             GameObject capsule = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-
-             // Disable the capsule's collider component.
-             UnityEngine.Object.Destroy(capsule.GetComponent<Collider>());
-
-             // Set the capsule's position to match the capsule collider.
-             Transform colliderTransform = capsuleCollider.transform;
-             capsule.transform.position = colliderTransform.TransformPoint(capsuleCollider.center);
-
-             // Calculate the correct scale for the capsule.
-             float capsuleDefaultHeight = 2.0f; // Default Unity capsule height
-             float capsuleDefaultRadius = 0.5f; // Default Unity capsule radius
-             float actualScaleHeight = (capsuleCollider.height - 2 * capsuleCollider.radius) / capsuleDefaultHeight;
-             float actualScaleRadius = capsuleCollider.radius / capsuleDefaultRadius;
-
-             // Adjust the scale and rotation based on the collider's direction.
-             Vector3 scale = Vector3.one;
-             Quaternion rotation = Quaternion.identity;
-             switch (capsuleCollider.direction)
-             {
-                 case 0: // x-axis
-                     scale = new Vector3(actualScaleHeight, actualScaleRadius, actualScaleRadius);
-                     rotation = Quaternion.Euler(0, 0, 90); // Rotate to align with x-axis
-                     break;
-                 case 1: // y-axis
-                     scale = new Vector3(actualScaleRadius, actualScaleHeight, actualScaleRadius);
-                     break;
-                 case 2: // z-axis
-                     scale = new Vector3(actualScaleRadius, actualScaleRadius, actualScaleHeight);
-                     rotation = Quaternion.Euler(90, 0, 0); // Rotate to align with z-axis
-                     break;
-             }
-
-             // Apply the rotation and scale.
-             capsule.transform.rotation = colliderTransform.rotation * rotation;
-             capsule.transform.localScale = Vector3.Scale(colliderTransform.localScale, scale) * Plugin.test1.Value;
-
-             // Set a transparent material to the capsule, so it doesn't obstruct the view.
-             Material transparentMaterial = new Material(Shader.Find("Transparent/Diffuse"));
-             transparentMaterial.color = getColor(colliderName); // Red semi-transparent
-             capsule.GetComponent<Renderer>().material = transparentMaterial;
-
-             // Parent the capsule to the collider's GameObject to maintain relative positioning.
-             capsule.transform.SetParent(colliderTransform, true);
-         }
-
-         [PatchPostfix]
-         private static void PostFix(ref DamageInfo __instance, EDamageType damageType, EftBulletClass shot)
-         {
-             Logger.LogWarning(" base " + shot.HitCollider.GetType().BaseType);
-             Logger.LogWarning(" type " + shot.HitCollider.GetType());
-             Logger.LogWarning(" name " + shot.HitCollider.GetType().Name);
-
-             if (shot.HitCollider is BoxCollider)
-             {
-                 VisualizeBoxCollider(shot.HitCollider as BoxCollider, __instance.HitCollider.name);
-             }
-        *//*     if (shot.HitCollider is CapsuleCollider)
-             {
-                 VisualizeCapsuleCollider(shot.HitCollider as CapsuleCollider, __instance.HitCollider.name);
-             }
-             if (shot.HitCollider is SphereCollider)
-             {
-                 VisualizeSphereCollider(shot.HitCollider as SphereCollider, __instance.HitCollider.name);
-             }*//*
-
-             Logger.LogWarning("========Damage Info PostFix==========");
-             Logger.LogWarning("id " + shot.Ammo.Id);
-             Logger.LogWarning("pen " + __instance.PenetrationPower);
-             Logger.LogWarning("damage " + __instance.Damage);
-             Logger.LogWarning("hit collider = " + __instance.HitCollider.name);
-             Logger.LogWarning("ballistic collider = " + __instance.HittedBallisticCollider.name);
-             Logger.LogWarning("=================");
-         }
-     }*/
-
-
-
-    //something something last stand mode
+    //something something last stand mode, draft/ unused
     public class KillPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -228,19 +62,22 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Ballistics.BallisticCollider).GetMethod("IsPenetrated", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(BodyPartCollider).GetMethod("IsPenetrated", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(EFT.Ballistics.BallisticCollider __instance, EftBulletClass shot, ref  bool __result)
+        private static bool Prefix(BodyPartCollider __instance, EftBulletClass shot, ref  bool __result)
         {
+            Logger.LogWarning("shot.HittedBallisticCollider " + shot.HittedBallisticCollider.name);
             if (shot.HittedBallisticCollider as BodyPartCollider != null)
             {
                 BodyPartCollider bodyPartCollider = (BodyPartCollider)shot.HittedBallisticCollider;
                 EBodyPartColliderType bodyPart = bodyPartCollider.BodyPartColliderType;
                 bool isArm = bodyPart.ToString().ToLower().Contains("arm");
+                Logger.LogWarning("IsPenetrated " + bodyPart);
                 if (isArm && shot.PenetrationPower > 10)
                 {
+                    Logger.LogWarning("Allowing Arm Penetration");
                     __result = true;
                     return false;
                 }
@@ -424,13 +261,25 @@ namespace RealismMod
         {
             if (damageInfo.DamageType == EDamageType.Bullet || damageInfo.DamageType == EDamageType.Melee)
             {
+
+                Logger.LogWarning("BodyPartColliderType " + damageInfo.BodyPartColliderType);
+                Logger.LogWarning("HittedBallisticCollider " + damageInfo.HittedBallisticCollider.name);
+                Logger.LogWarning("HitCollider " + damageInfo.HitCollider.name);
+                Logger.LogWarning("Blunt " + damageInfo.Blunt);
+                Logger.LogWarning("DamageType " + damageInfo.DamageType);
+                Logger.LogWarning("DidArmorDamage " + damageInfo.DidArmorDamage);
+                Logger.LogWarning("DidBodyDamage " + damageInfo.DidBodyDamage);
+                Logger.LogWarning("bodyPartType " + bodyPartType);
+                Logger.LogWarning("BlockedBy " + damageInfo.BlockedBy);
+                Logger.LogWarning("SourceId " + damageInfo.SourceId);
+
                 EBodyPartColliderType partHit = EBodyPartColliderType.None;
-                if (damageInfo.BodyPartColliderType == EBodyPartColliderType.None) //for fika, value is populated, otherwise it's unused
+                if (damageInfo.BodyPartColliderType == EBodyPartColliderType.None) //for fika value is populated, otherwise it's unused
                 {
                     BodyPartCollider bodyPartCollider = (BodyPartCollider)damageInfo.HittedBallisticCollider;
                     partHit = bodyPartCollider.BodyPartColliderType;
                 }
-                else //for fika, value is populated, otherwise it's unused
+                else
                 {
                     partHit = damageInfo.BodyPartColliderType;
                 }
@@ -444,6 +293,7 @@ namespace RealismMod
 
                 if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && __instance.IsAI && damageInfo.HittedBallisticCollider != null && !damageInfo.Blunt && Plugin.EnableHitSounds.Value)
                 {
+                    Logger.LogWarning("do bullet flesh hit sound " );
                     BallisticsController.PlayBodyHitSound(bodyPartType, damageInfo.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
                 }
 
@@ -453,8 +303,10 @@ namespace RealismMod
                 bool hasLegProtection = false;
                 int faceProtectionCount = 0;
                 ArmorComponent armor = null;
-                if (doSpalling || (ammoTemp != null && ammoTemp.ProjectileCount <= 2)) 
+                if (doSpalling || (ammoTemp != null && ammoTemp.ProjectileCount <= 2))
                 {
+                    Logger.LogWarning("getting armor components");
+                    Logger.LogWarning("should do spalling " + doSpalling);
                     BallisticsController.GetArmorComponents(__instance, damageInfo, bodyPartType, ref armor, ref faceProtectionCount, ref doSpalling, ref hasArmArmor, ref hasLegProtection);
                 }
 
@@ -920,6 +772,7 @@ namespace RealismMod
                 Logger.LogWarning("Speed Factor " + speedFactor);
                 Logger.LogWarning("Class " + __instance.ArmorClass);
                 Logger.LogWarning("Throughput " + bluntThrput);
+                Logger.LogWarning("Material " + __instance.Template.ArmorMaterial);
                 Logger.LogWarning("Material Descructibility " + armorDestructibility);
                 Logger.LogWarning("Dura percent " + duraPercent);
                 Logger.LogWarning("armor Factor Damage = " + armorFactorDamage);

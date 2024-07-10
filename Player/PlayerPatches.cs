@@ -17,6 +17,7 @@ using ItemEventClass = GClass2783;
 using StatusStruct = GStruct414<GInterface339>;
 using WeaponSkills = EFT.SkillManager.GClass1783;
 using WeaponStateClass = GClass1668;
+using EFT.AssetsManager;
 
 namespace RealismMod
 {
@@ -158,8 +159,9 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player __instance)
         {
-           if (__instance.IsYourPlayer)
-            {
+            Utils.Logger.LogWarning("==Player===");
+            if (__instance.IsYourPlayer)
+           {
                 StatCalc.CalcPlayerWeightStats(__instance);
                 GearController.SetGearParamaters(__instance);
                 GearController.GetGearPenalty(__instance);
@@ -172,6 +174,70 @@ namespace RealismMod
                     PlayerHazardBridge hazardBridge = __instance.gameObject.AddComponent<PlayerHazardBridge>();
                     hazardBridge._Player = __instance;
                 }
+            }
+            List<Collider> collidors = __instance.GetComponent<PlayerPoolObject>().Colliders;
+            if (collidors == null || collidors.Count <= 0) return;
+            int count = collidors.Count;
+            for (int i = 0; i < count; i++)
+            {
+                Utils.Logger.LogWarning("=====");
+
+                Collider collider = collidors[i];
+                Utils.Logger.LogWarning("player collidor " + collider.name);
+                ArmorPlateCollider armor = collider.GetComponent<ArmorPlateCollider>();
+                if (armor != null)
+                {
+                    Utils.Logger.LogWarning("armor collidor " + armor.name);
+                }
+
+                if (collider as BoxCollider != null) 
+                {
+                    BoxCollider collider2 = collider as BoxCollider;
+                    if (collider.name.ToLower() == "left" || collider.name.ToLower() == "right" || collider.name.ToLower() == "top") collider2.size *= Plugin.test3.Value;
+                    if (collider.name.ToLower().Contains("_chest"))
+                    {
+                        float x = collider2.size.x * 0.95f; //height
+                        float y = collider2.size.y * 0.95f; //depth 
+                        float z = collider2.size.z * 0.9f; //width 
+                        collider2.size = new Vector3(x, y, z);
+/*
+                        Utils.Logger.LogWarning("center before " + collider2.transform);
+
+                        float posX = Plugin.test4.Value; //
+                        float posY = Plugin.test5.Value; // 
+                        float posZ = Plugin.test6.Value; // 
+
+                        collider2.center = new Vector3(x, y, z);
+
+                        Utils.Logger.LogWarning("center after " + collider2.center);*/
+                    }
+                    if (collider.name.ToLower().Contains("_back"))
+                    {
+                        float x = collider2.size.x * 0.75f; 
+                        float y = collider2.size.y * 0.85f; 
+                        float z = collider2.size.z * 0.85f; 
+                        collider2.size = new Vector3(x, y, z);
+                    }
+                    if (collider.name.ToLower().Contains("_side_"))
+                    {
+                        float x = collider2.size.x * 0.8f; 
+                        float y = collider2.size.y * 0.95f; 
+                        float z = collider2.size.z * 1f; 
+                        collider2.size = new Vector3(x, y, z);
+                    }
+
+                    if (collider.name.ToLower().Contains("chesttop"))
+                    {
+                        float x = collider2.size.x * 1.3f; //height
+                        float y = collider2.size.y * 1f; // depth 
+                        float z = collider2.size.z * 1.15f; // width 
+                        collider2.size = new Vector3(x, y, z);
+                    }
+
+                    DebugGizmos.SingleObjects.VisualizeBoxCollider(collider as BoxCollider, collider.name);               
+                }
+
+                Utils.Logger.LogWarning("=====");
             }
         }
     }

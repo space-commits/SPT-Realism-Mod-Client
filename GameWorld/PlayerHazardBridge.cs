@@ -60,7 +60,7 @@ namespace RealismMod
             if (_bridgeTimer >= Interval)
             {
                 //temporary solution to dealing with bots
-                if (GasZoneCount > 0 && _Player != null && _Player?.ActiveHealthController != null && _Player?.AIData?.BotOwner != null && !_Player.AIData.BotOwner.IsDead)
+                if (GasZoneCount > 0 && _Player != null && _Player?.ActiveHealthController != null && _Player?.AIData?.BotOwner != null && !_Player.AIData.BotOwner.IsDead && _Player.HealthController.IsAlive)
                 {
                     if (!BotHasGasMask() && TotalGasRate > 0.05f)
                     {

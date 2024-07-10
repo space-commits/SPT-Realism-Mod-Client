@@ -221,7 +221,7 @@ namespace RealismMod
             Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
         }
 
-        public static EBodyHitZone ModifyDamageByHitZone(Player player, EBodyPartColliderType partHit, DamageInfo damageInfo)
+        public static EBodyHitZone GetBodyHitZone(Player player, EBodyPartColliderType partHit, DamageInfo damageInfo)
         {
             EBodyHitZone hitZone = EBodyHitZone.Unknown;
             if (partHit == EBodyPartColliderType.RibcageUp || partHit == EBodyPartColliderType.RibcageLow || partHit == EBodyPartColliderType.SpineDown || partHit == EBodyPartColliderType.SpineTop)
@@ -229,13 +229,13 @@ namespace RealismMod
                 Collider col = damageInfo.HitCollider;
                 if (damageInfo.HitCollider == null) //fika can't send objects as part of peckets, need to find matching collider by checking collider type
                 {
+                    Utils.Logger.LogWarning("hit collider is null, something is fucked up ");
                     List<Collider> collidors = player.GetComponent<PlayerPoolObject>().Colliders;
-                    if (collidors == null || collidors.Count > 0) return hitZone;
+                    if (collidors == null || collidors.Count <= 0) return hitZone;
                     int count = collidors.Count;
                     for (int i = 0; i < count; i++)
                     {
                         Collider collider = collidors[i];
-                        Utils.Logger.LogWarning(collider.name);
                         BodyPartCollider bp = collider.GetComponent<BodyPartCollider>();
 
                         if (bp != null && bp.BodyPartColliderType == partHit)
@@ -270,18 +270,27 @@ namespace RealismMod
 
         public static void ModifyDamageByZone(Player player, ref DamageInfo damageInfo, EBodyPartColliderType partHit)
         {
-
-            if (!damageInfo.Blunt)
+            Utils.Logger.LogWarning("modify damage by zone");
+            Utils.Logger.LogWarning("partHit " + partHit);
+            if (!damageInfo.Blunt || string.IsNullOrEmpty(damageInfo.BlockedBy))
             {
-                EBodyHitZone hitZone = ModifyDamageByHitZone(player, partHit, damageInfo);
+                Utils.Logger.LogWarning("not blunt");
+                EBodyHitZone hitZone = GetBodyHitZone(player, partHit, damageInfo);
                 BallisticsController.ModifyDamageByHitZone(partHit, hitZone, ref damageInfo);
             }
+            else Utils.Logger.LogWarning("blunt");
         }
 
 
         public static bool ShouldDoSpalling(AmmoTemplate ammoTemp, DamageInfo damageInfo, EBodyPart bodyPartType)
         {
+            Utils.Logger.LogWarning("ammoTemp null " + (ammoTemp == null));
+            Utils.Logger.LogWarning("damageInfo.DamageType " + damageInfo.DamageType);
+            Utils.Logger.LogWarning("damageInfo.Blunt " + damageInfo.Blunt);
+            Utils.Logger.LogWarning("bodyPartType " + bodyPartType);
+
             if (ammoTemp == null || damageInfo.DamageType == EDamageType.Melee || !damageInfo.Blunt || bodyPartType != EBodyPart.Chest || bodyPartType != EBodyPart.Stomach) return false;
+            Utils.Logger.LogWarning("should do spalling");
             if (ammoTemp.ProjectileCount > 2)
             {
                 int rndNum = UnityEngine.Random.Range(1, 10);
@@ -305,7 +314,7 @@ namespace RealismMod
             else
             {
                 ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
-
+                Utils.Logger.LogWarning("got ammo template");
                 if (damageInfo.ArmorDamage <= 1)
                 {
                     KE = (0.5f * ammoTemp.BulletMassGram * ammoTemp.InitialSpeed * ammoTemp.InitialSpeed) / 1000f;
@@ -373,6 +382,11 @@ namespace RealismMod
                     faceProtectionCount += ArmorColliderCount(armorComponent, FaceSpallProtectionCollidors);
                 }
             }
+
+            Utils.Logger.LogWarning("doSpalling " + doSpalling);
+            Utils.Logger.LogWarning("hasArmArmor " + hasArmArmor);
+
+
             preAllocatedArmorComponents.Clear();
         }
 

@@ -846,12 +846,12 @@ namespace RealismMod
 
         }
 
-        float deltaTime = 0f;
+        private float _deltaTime = 0f;
         void Update()
         {
             //games procedural animations are highly affected by FPS. I balanced everything at 144 FPS, so need to factor it.    
-            deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
-            FPS = 1.0f / deltaTime;
+            _deltaTime += (Time.unscaledDeltaTime - _deltaTime) * 0.1f;
+            FPS = 1.0f / _deltaTime;
 
             //keep trying to get player profile id
             if (!_gotProfileId)
