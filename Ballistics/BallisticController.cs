@@ -485,7 +485,7 @@ namespace RealismMod
                     ModifyPlateHelper(collider, boxCollider, "_chest", 0.95f, 0.95f, 0.9f);
                     ModifyPlateHelper(collider, boxCollider, "_back", 0.75f, 0.85f, 0.85f);
                     ModifyPlateHelper(collider, boxCollider, "_side_", 0.8f, 0.95f, 1f);
-                    ModifyPlateHelper(collider, boxCollider, "chesttop", 1.55f, 1f, 1.2f);
+                    ModifyPlateHelper(collider, boxCollider, "chesttop", 1.55f, 1f, 1.15f);
                 }
             }
         }
