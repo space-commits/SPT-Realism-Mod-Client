@@ -456,6 +456,39 @@ namespace RealismMod
                 player.ActiveHealthController.ApplyDamage(part, damage, damageInfo);
             }
         }
+
+        private static void ModifyPlateHelper(Collider collider, BoxCollider boxCollider, string target, float x, float y, float z) 
+        {
+            if (collider.name.ToLower().Contains(target))
+            {
+                float height = boxCollider.size.x * x;
+                float depth = boxCollider.size.y * y;
+                float width = boxCollider.size.z * z;
+                boxCollider.size = new Vector3(height, depth, width);
+
+                if (Plugin.EnableBallisticsLogging.Value) DebugGizmos.SingleObjects.VisualizeBoxCollider(collider as BoxCollider, collider.name);
+            }
+        }
+
+        public static void ModifyPlateColliders(Player player) 
+        {
+            List<Collider> collidors = player.GetComponent<PlayerPoolObject>().Colliders;
+            if (collidors == null || collidors.Count <= 0) return;
+            int count = collidors.Count;
+            for (int i = 0; i < count; i++)
+            {
+                Collider collider = collidors[i];
+                if (collider as BoxCollider != null)
+                {
+                    BoxCollider boxCollider = collider as BoxCollider;
+                    if (collider.name.ToLower() == "left" || collider.name.ToLower() == "right" || collider.name.ToLower() == "top") boxCollider.size *= Plugin.test3.Value;
+                    ModifyPlateHelper(collider, boxCollider, "_chest", 0.95f, 0.95f, 0.9f);
+                    ModifyPlateHelper(collider, boxCollider, "_back", 0.75f, 0.85f, 0.85f);
+                    ModifyPlateHelper(collider, boxCollider, "_side_", 0.8f, 0.95f, 1f);
+                    ModifyPlateHelper(collider, boxCollider, "chesttop", 1.55f, 1f, 1.2f);
+                }
+            }
+        }
     }
 
     public static class HitZones

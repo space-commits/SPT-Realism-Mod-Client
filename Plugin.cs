@@ -133,6 +133,7 @@ namespace RealismMod
         public static ConfigEntry<KeyboardShortcut> DecGain { get; set; }
 
         //ballistics
+        public static ConfigEntry<bool> EnablePlateChanges { get; set; }
         public static ConfigEntry<float> GlobalDamageModifier { get; set; }
         public static ConfigEntry<bool> EnableBodyHitZones { get; set; }
         public static ConfigEntry<bool> EnableHitSounds { get; set; }
@@ -735,9 +736,10 @@ namespace RealismMod
             //Ballistics
             if (ServerConfig.realistic_ballistics)
             {
+                /*new SetSkinPatch().Enable();*/
+                /*new CollidersPatch().Enable();*/
                 new CreateShotPatch().Enable();
                 new ApplyArmorDamagePatch().Enable();
-                /*                new SetSkinPatch().Enable();*/
                 new ApplyDamageInfoPatch().Enable();
                 new SetPenetrationStatusPatch().Enable();
                 new IsPenetratedPatch().Enable();
@@ -1025,7 +1027,8 @@ namespace RealismMod
             EnableMouseSensPenalty = Config.Bind<bool>(miscSettings, "Enable Weight Mouse Sensitivity Penalty", ServerConfig.gear_weight, new ConfigDescription("Instead Of Using Gear Mouse Sens Penalty Stats, It Is Calculated Based On The Gear + Content's Weight As Modified By The Comfort Stat.", null, new ConfigurationManagerAttributes { Order = 20, Browsable = ServerConfig.gear_weight }));
             EnableZeroShift = Config.Bind<bool>(miscSettings, "Enable Zero Shift", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Sights Simulate Losing Zero While Firing. The Reticle Has A Chance To Move Off Target. The Chance Is Determined By The Scope And Its Mount's Accuracy Stat, And The Weapon's Recoil. High Quality Scopes And Mounts Won't Lose Zero. SCAR-H Has Worse Zero-Shift.", null, new ConfigurationManagerAttributes { Order = 30, Browsable = ServerConfig.recoil_attachment_overhaul }));
 
-            GlobalDamageModifier = Config.Bind<float>(ballSettings, "Global Damage Modifier", 1f, new ConfigDescription("Lower = Less Damage Received (Except Head) For Bots And Player.", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 110, Browsable = ServerConfig.realistic_ballistics }));
+            GlobalDamageModifier = Config.Bind<float>(ballSettings, "Global Damage Modifier", 1f, new ConfigDescription("Lower = Less Damage Received (Except Head) For Bots And Player.", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 120, Browsable = ServerConfig.realistic_ballistics }));
+            EnablePlateChanges = Config.Bind<bool>(ballSettings, "Enable Armor Plate Hitbox Changes", ServerConfig.realistic_ballistics, new ConfigDescription("Reduces The Size Of Armor Plate Hitboxes To Be Closer To Real Life, And Closer To How They Were When First Implemented.", null, new ConfigurationManagerAttributes { Order = 110, Browsable = ServerConfig.realistic_ballistics }));
             EnableBodyHitZones = Config.Bind<bool>(ballSettings, "Enable Body Hit Zones", ServerConfig.realistic_ballistics, new ConfigDescription("Divides Body Into A, C and D Hit Zones Like On IPSC Targets. In Addtion, There Are Upper Arm, Forearm, Thigh, Calf, Neck, Spine And Heart Hit Zones. Each Zone Modifies Damage And Bleed Chance. ", null, new ConfigurationManagerAttributes { Order = 10, Browsable = ServerConfig.realistic_ballistics }));
             EnableHitSounds = Config.Bind<bool>(ballSettings, "Enable Hit Sounds", ServerConfig.realistic_ballistics, new ConfigDescription("Enables Additional Sounds To Be Played When Hitting The New Body Zones And Armor Hit Sounds By Material.", null, new ConfigurationManagerAttributes { Order = 50, Browsable = ServerConfig.realistic_ballistics }));
             FleshHitSoundMulti = Config.Bind<float>(ballSettings, "Flesh Hit Sound Multi", 1f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 60, Browsable = ServerConfig.realistic_ballistics }));
