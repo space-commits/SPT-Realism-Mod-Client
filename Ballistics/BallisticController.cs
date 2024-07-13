@@ -481,7 +481,7 @@ namespace RealismMod
                 if (collider as BoxCollider != null)
                 {
                     BoxCollider boxCollider = collider as BoxCollider;
-                    if (collider.name.ToLower() == "left" || collider.name.ToLower() == "right" || collider.name.ToLower() == "top") boxCollider.size *= Plugin.test3.Value;
+                    if (collider.name.ToLower() == "left" || collider.name.ToLower() == "right" || collider.name.ToLower() == "top") boxCollider.size *= 0f;
                     ModifyPlateHelper(collider, boxCollider, "_chest", 0.95f, 0.95f, 0.9f);
                     ModifyPlateHelper(collider, boxCollider, "_back", 0.75f, 0.85f, 0.85f);
                     ModifyPlateHelper(collider, boxCollider, "_side_", 0.8f, 0.95f, 1f);

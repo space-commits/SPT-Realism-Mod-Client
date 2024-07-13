@@ -159,7 +159,6 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player __instance)
         {
-            Utils.Logger.LogWarning("==Player===");
             if (__instance.IsYourPlayer)
             {
                 StatCalc.CalcPlayerWeightStats(__instance);
@@ -433,7 +432,7 @@ namespace RealismMod
 
             CalcBaseHipfireAccuracy(player);
             float stanceHipFactor = StanceController.CurrentStance == EStance.ActiveAiming ? 0.7f : StanceController.CurrentStance == EStance.ShortStock ? 1.35f : 1.05f;
-            player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.2f, Plugin.test3.Value);
+            player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.2f, 0.5f);
         }
 
         protected override MethodBase GetTargetMethod()

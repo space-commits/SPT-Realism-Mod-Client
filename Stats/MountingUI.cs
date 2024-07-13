@@ -97,8 +97,6 @@ namespace RealismMod
                 mountingUI.DestroyGameObject();
                 mountingUI.CreateGameObject(__instance.transform);
             }
-
-            Plugin.BattleUIScreen = __instance;
         }
     }
 }

@@ -14,101 +14,10 @@ using UnityEngine;
 using EFTSlot = GClass2783;
 using ArmorSlot = GClass2525;
 using Diz.Skinning;
+using EFT.UI;
 
 namespace RealismMod
 {
-
-    //attempting to change position of plates before they're fully instantiated, doesn't seem to make a difference
-    public class CollidersPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(Player).GetMethod("SetupHitColliders", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-
-        [PatchPrefix]
-        private static void Prefix(Player __instance)
-        {
-            Utils.Logger.LogWarning("SetupHitColliders");
-            ArmorPlateCollider[] plates = __instance.GetComponentsInChildren<ArmorPlateCollider>(true);
-            Utils.Logger.LogWarning("iterate");
-
-            if (plates == null) 
-            {
-                Utils.Logger.LogWarning("null plates");
-            }
-            foreach (var plate in plates)
-            {
-                Utils.Logger.LogWarning("===iterating==");
-
-                Collider collider = plate.Collider;
-                Utils.Logger.LogWarning("player collidor " + collider.name);
-                ArmorPlateCollider armor = collider.GetComponent<ArmorPlateCollider>();
-                if (armor != null)
-                {
-                    Utils.Logger.LogWarning("armor collidor " + armor.name);
-                }
-
-                if (collider as BoxCollider != null)
-                {
-                    BoxCollider collider2 = collider as BoxCollider;
-                    if (collider.name.ToLower() == "left" || collider.name.ToLower() == "right" || collider.name.ToLower() == "top") collider2.size *= Plugin.test3.Value;
-                    if (collider.name.ToLower().Contains("_chest"))
-                    {
-                        float x = collider2.size.x * 0.95f; //height
-                        float y = collider2.size.y * 0.95f; //depth 
-                        float z = collider2.size.z * 0.9f; //width 
-                        collider2.size = new Vector3(x, y, z);
-
-                        Utils.Logger.LogWarning("center before x" + collider2.center.x);
-                        Utils.Logger.LogWarning("center before y" + collider2.center.y);
-                        Utils.Logger.LogWarning("center before z" + collider2.center.z);
-
-                        float posX = Plugin.test4.Value; //
-                        float posY = Plugin.test5.Value; // 
-                        float posZ = Plugin.test6.Value; // 
-
-                        collider2.center = new Vector3(x, y, z);
-
-                        Utils.Logger.LogWarning("center after x" + collider2.center.x);
-                        Utils.Logger.LogWarning("center after y" + collider2.center.y);
-                        Utils.Logger.LogWarning("center after z" + collider2.center.z);
-                    }
-                    if (collider.name.ToLower().Contains("_back"))
-                    {
-                        float x = collider2.size.x * 0.75f;
-                        float y = collider2.size.y * 0.85f;
-                        float z = collider2.size.z * 0.85f;
-                        collider2.size = new Vector3(x, y, z);
-                    }
-                    if (collider.name.ToLower().Contains("_side_"))
-                    {
-                        float x = collider2.size.x * 0.8f;
-                        float y = collider2.size.y * 0.95f;
-                        float z = collider2.size.z * 1f;
-                        collider2.size = new Vector3(x, y, z);
-                    }
-
-                    if (collider.name.ToLower().Contains("chesttop"))
-                    {
-                        Utils.Logger.LogWarning("=armpit=");
-
-                        float x = collider2.size.x * 1.3f; //height
-                        float y = collider2.size.y * 1f; // depth 
-                        float z = collider2.size.z * 1.15f; // width 
-                        collider2.size = new Vector3(x, y, z);
-                    }
-
-                    DebugGizmos.SingleObjects.VisualizeBoxCollider(collider as BoxCollider, collider.name);
-                }
-
-                Utils.Logger.LogWarning("=====");
-            }
-
-        }
-    }
-
     //for making player meshes invisible
     public class SetSkinPatch : ModulePatch
      {
@@ -159,16 +68,13 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(BodyPartCollider __instance, EftBulletClass shot, ref  bool __result)
         {
-            Logger.LogWarning("shot.HittedBallisticCollider " + shot.HittedBallisticCollider.name);
             if (shot.HittedBallisticCollider as BodyPartCollider != null)
             {
                 BodyPartCollider bodyPartCollider = (BodyPartCollider)shot.HittedBallisticCollider;
                 EBodyPartColliderType bodyPart = bodyPartCollider.BodyPartColliderType;
                 bool isArm = bodyPart.ToString().ToLower().Contains("arm");
-                Logger.LogWarning("IsPenetrated " + bodyPart);
                 if (isArm && shot.PenetrationPower > 10)
                 {
-                    Logger.LogWarning("Allowing Arm Penetration");
                     __result = true;
                     return false;
                 }
@@ -352,19 +258,6 @@ namespace RealismMod
         {
             if (damageInfo.DamageType == EDamageType.Bullet || damageInfo.DamageType == EDamageType.Melee)
             {
-
-                Logger.LogWarning("BodyPartColliderType " + damageInfo.BodyPartColliderType);
-                Logger.LogWarning("HittedBallisticCollider " + damageInfo.HittedBallisticCollider.name);
-                Logger.LogWarning("HitCollider " + damageInfo.HitCollider.name);
-                Logger.LogWarning("Blunt " + damageInfo.Blunt);
-                Logger.LogWarning("DamageType " + damageInfo.DamageType);
-                Logger.LogWarning("DidArmorDamage " + damageInfo.DidArmorDamage);
-                Logger.LogWarning("DidBodyDamage " + damageInfo.DidBodyDamage);
-                Logger.LogWarning("bodyPartType " + bodyPartType);
-                Logger.LogWarning("bodyPartType " + bodyPartType);
-                Logger.LogWarning("BlockedBy " + damageInfo.BlockedBy);
-                Logger.LogWarning("SourceId " + damageInfo.SourceId);
-
                 EBodyPartColliderType partHit = EBodyPartColliderType.None;
                 if (damageInfo.BodyPartColliderType == EBodyPartColliderType.None) //for fika value is populated, otherwise it's unused
                 {
@@ -486,9 +379,7 @@ namespace RealismMod
                         Logger.LogWarning("damage after = " + shot.Damage);
                         Logger.LogWarning("pen after = " + shot.PenetrationPower);
                         Logger.LogWarning("////");
-
                     }
-
                     break;
                 }
             }
@@ -536,9 +427,9 @@ namespace RealismMod
             if (shouldBeBlocked || didPenByChance)
             {
                 shot.BlockedBy = __instance.Item.Id;
-                Debug.Log(">>> Shot blocked by armor piece");
                 if (Plugin.EnableBallisticsLogging.Value)
                 {
+                    Debug.Log(">>> Shot blocked by armor piece");
                     Logger.LogWarning("===========PEN STATUS=============== ");
                     Logger.LogWarning("Blocked");
                     Logger.LogWarning("shouldBeBlocked " + shouldBeBlocked);

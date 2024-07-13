@@ -223,13 +223,13 @@ namespace RealismMod
                 if (bulletClass != null)
                 {
                     string name = bulletClass.LocalizedName();
-                    Plugin.BattleUIScreen.ShowAmmoDetails(1, 10, 10, name, false);
+                    Singleton<CommonUI>.Instance.EftBattleUIScreen.ShowAmmoDetails(1, 10, 10, name, false);
                 }
                 else
                 {
                     if (__instance.Weapon.Chambers.Length == 1)
                     {
-                        Plugin.BattleUIScreen.ShowAmmoDetails(0, 10, 10, null, false);
+                        Singleton<CommonUI>.Instance.EftBattleUIScreen.ShowAmmoDetails(0, 10, 10, null, false);
                     }
                 }
             }
