@@ -636,7 +636,7 @@ namespace RealismMod
             float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.55f)), 0.5f, 1.45f);
 
             float balanceFactor = 1f + (WeaponStats.Balance / 100f);
-            float rotationBalanceFactor = WeaponStats.Balance <= -9f ? balanceFactor * -1f : balanceFactor;
+            float rotationBalanceFactor = WeaponStats.Balance <= -9f ? -balanceFactor : balanceFactor;
             float wiggleBalanceFactor = Mathf.Abs(WeaponStats.Balance) > 4f ? balanceFactor : Mathf.Abs(WeaponStats.Balance) <= 4f ? 0.75f : Mathf.Abs(WeaponStats.Balance) <= 3f ? 0.5f : 0.25f;
             float resetErgoMulti = (1f - stanceMulti) + 1f;
 
@@ -664,14 +664,20 @@ namespace RealismMod
                     targetPosX = 0.04f; // 0.04
                 }
 
+                float speedFactor = 1f;
                 float targetPosY = -0.04f; //-0.04
                 if (IsAiming)
                 {
+                    speedFactor = Plugin.PistolPosResetSpeedMulti.Value * stanceMulti;
                     targetPosY = 0.01f; //0.01
                 }
+                else 
+                {
+                    speedFactor = Plugin.PistolPosSpeedMulti.Value * stanceMulti;
+                }
 
-                _currentPistolXPos = Mathf.Lerp(_currentPistolXPos, targetPosX, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * 0.5f); //tweak speed
-                _currentPistolYPos = Mathf.Lerp(_currentPistolYPos, targetPosY, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * 1f); //tweak speed
+                _currentPistolXPos = Mathf.Lerp(_currentPistolXPos, targetPosX, dt * speedFactor * 0.5f); 
+                _currentPistolYPos = Mathf.Lerp(_currentPistolYPos, targetPosY, dt * speedFactor); 
 
                 _pistolLocalPosition.x = _currentPistolXPos; 
                 _pistolLocalPosition.y = _currentPistolYPos;
@@ -715,7 +721,7 @@ namespace RealismMod
                 }
                 if ((StanceBlender.Value >= 1f && StanceTargetPosition == pistolTargetPosition) && !DidStanceWiggle)
                 {
-                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-25f, 10f, 0f) * movementFactor);
+                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-12.5f, 5f, 0f) * movementFactor);
                     DidStanceWiggle = true;
                     CancelPistolStance = false;
                 }
@@ -737,7 +743,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(Plugin.test1.Value * wiggleBalanceFactor, Plugin.test2.Value * wiggleBalanceFactor, Plugin.test3.Value) * movementFactor); //new Vector3(10f, 1f, -30f)
+                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(10f * wiggleBalanceFactor, -5f * wiggleBalanceFactor, -40f) * movementFactor); //new Vector3(10f, 1f, -30f)
 
                 isResettingPistol = false;
                 CurrentStance = EStance.None;
