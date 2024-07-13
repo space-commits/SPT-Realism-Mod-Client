@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using ArmorTemplate = GClass2536; //to find again, search for HasHinge field
+using ArmorTemplate = GClass2550; //to find again, search for HasHinge field
 
 namespace RealismMod
 {

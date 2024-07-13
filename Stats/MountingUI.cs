@@ -1,6 +1,8 @@
-﻿using Aki.Reflection.Patching;
+﻿using SPT.Reflection.Patching;
+using SPT.Reflection.Utils;
 using EFT;
 using System;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
@@ -80,19 +82,17 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.UI.BattleUIScreen).GetMethod("Show", new Type[] { typeof(GamePlayerOwner) });
+            return typeof(EFT.UI.EftBattleUIScreen).GetMethods(BindingFlags.Instance | BindingFlags.Public).First(x => x.Name == "Show" && x.GetParameters()[0].Name == "owner");
         }
+
         [PatchPostfix]
-        private static void PatchPostFix(EFT.UI.BattleUIScreen __instance)
+        private static void PatchPostFix(EFT.UI.EftBattleUIScreen __instance)
         {
-            MountingUI mountingUI = Plugin.Hook.GetComponent<MountingUI>();
+            MountingUI mountingUI = Plugin.MountingUIHookObj.GetComponent<MountingUI>();
 
             if (mountingUI != null) 
             {
-                if (mountingUI.ActiveUIScreen == __instance.gameObject)
-                {
-                    return;
-                }
+                if (mountingUI.ActiveUIScreen == __instance.gameObject) return;
                 mountingUI.ActiveUIScreen = __instance.gameObject;
                 mountingUI.DestroyGameObject();
                 mountingUI.CreateGameObject(__instance.transform);

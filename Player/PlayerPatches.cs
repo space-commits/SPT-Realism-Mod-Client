@@ -1,4 +1,5 @@
-﻿using Aki.Reflection.Patching;
+﻿using SPT.Reflection.Patching;
+using SPT.Reflection.Utils;
 using Comfort.Common;
 using EFT;
 using EFT.Animations;
@@ -11,11 +12,12 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using static EFT.Player;
-using InputClass = Class1451;
-using ItemEventClass = GClass2767;
-using StatusStruct = GStruct414<GInterface324>;
-using WeaponSkills = EFT.SkillManager.GClass1771;
+using InputClass = Class1477;
+using ItemEventClass = GClass2783;
+using StatusStruct = GStruct414<GInterface339>;
+using WeaponSkills = EFT.SkillManager.GClass1783;
 using WeaponStateClass = GClass1668;
+using EFT.AssetsManager;
 
 namespace RealismMod
 {
@@ -34,8 +36,8 @@ namespace RealismMod
             fc.FirearmsAnimator.SetAmmoInChamber(0);
             fc.FirearmsAnimator.SetAmmoOnMag(currentMagazineCount);
             fc.FirearmsAnimator.SetAmmoCompatible(true);
-            StatusStruct gstruct = mag.Cartridges.PopTo(player.GClass2761_0, new ItemEventClass(fc.Item.Chambers[0]));
-            WeaponStateClass weaponStateClass = (WeaponStateClass)AccessTools.Field(typeof(FirearmController), "gclass1668_0").GetValue(fc);
+            StatusStruct gstruct = mag.Cartridges.PopTo(player.InventoryControllerClass, new ItemEventClass(fc.Item.Chambers[0]));
+            WeaponManagerClass weaponStateClass = (WeaponManagerClass)AccessTools.Field(typeof(FirearmController), "weaponManagerClass").GetValue(fc);
             weaponStateClass.RemoveAllShells();
             BulletClass bullet = (BulletClass)gstruct.Value.ResultItem;
             fc.FirearmsAnimator.SetAmmoInChamber(1);
@@ -157,7 +159,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player __instance)
         {
-           if (__instance.IsYourPlayer)
+            if (__instance.IsYourPlayer)
             {
                 StatCalc.CalcPlayerWeightStats(__instance);
                 GearController.SetGearParamaters(__instance);
@@ -172,6 +174,7 @@ namespace RealismMod
                     hazardBridge._Player = __instance;
                 }
             }
+            if(Plugin.EnablePlateChanges.Value) BallisticsController.ModifyPlateColliders(__instance);
         }
     }
 
@@ -429,7 +432,7 @@ namespace RealismMod
 
             CalcBaseHipfireAccuracy(player);
             float stanceHipFactor = StanceController.CurrentStance == EStance.ActiveAiming ? 0.7f : StanceController.CurrentStance == EStance.ShortStock ? 1.35f : 1.05f;
-            player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.2f, Plugin.test3.Value);
+            player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.2f, 0.5f);
         }
 
         protected override MethodBase GetTargetMethod()

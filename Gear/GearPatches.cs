@@ -1,4 +1,5 @@
-﻿using Aki.Reflection.Patching;
+﻿using SPT.Reflection.Patching;
+using SPT.Reflection.Utils;
 using EFT;
 using EFT.CameraControl;
 using EFT.InventoryLogic;
@@ -12,10 +13,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using static RealismMod.Attributes;
 using static RootMotion.FinalIK.GenericPoser;
-using HeadsetClass = GClass2639;
-using HeadsetTemplate = GClass2542;
-using RigConstructor = GClass2685;
-using RigTemplate = GClass2588;
+using HeadsetClass = GClass2654; //updatephonesreally()
+using HeadsetTemplate = GClass2556; //updatephonesreally()
+using RigConstructor = GClass2700;
+using RigTemplate = GClass2602; //the one without the blindness stat
 
 
 namespace RealismMod
@@ -49,7 +50,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EquipmentPenaltyComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface282), typeof(bool) });
+            return typeof(EquipmentPenaltyComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface297), typeof(bool) });
         }
 
         private static float GetAverage(Func<CompositeArmorComponent, float> predicate, Item item)

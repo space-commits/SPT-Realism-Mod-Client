@@ -1,4 +1,5 @@
-﻿using Aki.Reflection.Patching;
+﻿using SPT.Reflection.Patching;
+using SPT.Reflection.Utils;
 using Comfort.Common;
 using EFT;
 using EFT.HealthSystem;
@@ -16,11 +17,12 @@ using UnityEngine.UI;
 using TMPro;
 using static EFT.HealthSystem.ActiveHealthController;
 using static RealismMod.Attributes;
-using ExistanceClass = GClass2456;
-using HealthStateClass = GClass2416<EFT.HealthSystem.ActiveHealthController.GClass2415>;
+using ExistanceClass = GClass2470;
+using HealthStateClass = GClass2430<EFT.HealthSystem.ActiveHealthController.GClass2429>;
 using MedkitTemplate = IMedkitResource;
-using MedUseStringClass = GClass1235;
-using PhysicalClass = GClass681;
+using MedUseStringClass = GClass1244;
+using QuestUIClass = GClass2046;
+using SetInHandsMedsInterface = GInterface142;
 using EFT.UI;
 using EFT.Communications;
 
@@ -44,7 +46,7 @@ namespace RealismMod
                 HazardTracker.UpdateHazardValues(Plugin.PMCProfileId);
                 HazardTracker.UpdateHazardValues(Plugin.ScavProfileId);
                 HazardTracker.SaveHazardValues();
-                if(Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayNotification(new GClass2030("Blood Tests Came Back Clear, Your Radiation Poisoning Has Been Cured.".Localized(null), ENotificationDurationType.Long, ENotificationIconType.Quest, null));
+                if(Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayNotification(new QuestUIClass("Blood Tests Came Back Clear, Your Radiation Poisoning Has Been Cured.".Localized(null), ENotificationDurationType.Long, ENotificationIconType.Quest, null));
             }
         }
     }
@@ -443,7 +445,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
-            Type genericType = typeof(Class1884<>); //declare generic type
+            Type genericType = typeof(Class1913<>); //declare generic type
             Type constructedType = genericType.MakeGenericType(new Type[] { nestedType }); //construct type at runtime using nested type
             return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }
@@ -461,7 +463,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
-            Type genericType = typeof(Class1885<>); //declare generic type
+            Type genericType = typeof(Class1914<>); //declare generic type
             Type constructedType = genericType.MakeGenericType(new Type[] { nestedType }); //construct type at runtime using nested type
             return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }
@@ -478,10 +480,10 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(PhysicalClass).GetMethod("get_BreathIsAudible", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(BasePhysicalClass).GetMethod("get_BreathIsAudible", BindingFlags.Instance | BindingFlags.Public);
         }
         [PatchPrefix]
-        private static bool Prefix(PhysicalClass __instance,ref bool __result)
+        private static bool Prefix(BasePhysicalClass __instance,ref bool __result)
         {
             __result = !__instance.HoldingBreath && ((__instance.StaminaParameters.StaminaExhaustionStartsBreathSound && __instance.Stamina.Exhausted) || __instance.Oxygen.Exhausted || Plugin.RealHealthController.HasOverdosed);
             return false;
@@ -632,7 +634,7 @@ namespace RealismMod
         {
             if (__instance.IsYourPlayer)
             {
-                Item boundItem = __instance.GClass2761_0.Inventory.FastAccess.GetBoundItem(quickSlot);
+                Item boundItem = __instance.InventoryControllerClass.Inventory.FastAccess.GetBoundItem(quickSlot);
                 FoodClass foodItem = boundItem as FoodClass;
                 if (boundItem != null && foodItem != null)
                 {
@@ -866,7 +868,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player).GetMethod("SetInHands", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(int), typeof(Callback<GInterface130>)}, null);
+            return typeof(EFT.Player).GetMethod("SetInHands", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(int), typeof(Callback<SetInHandsMedsInterface>)}, null);
         }
 
         [PatchPrefix]
@@ -887,7 +889,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<GInterface130>), typeof(int), typeof(bool) }, null);
+            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<SetInHandsMedsInterface>), typeof(int), typeof(bool) }, null);
         }
 
         [PatchPrefix]
