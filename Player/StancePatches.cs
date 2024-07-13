@@ -457,7 +457,7 @@ namespace RealismMod
                 }
                 else
                 {
-                    if (Plugin.IsUsingFika) //collisions acts funky with stances from another client's perspective
+                    if (Plugin.FikaPresent) //collisions acts funky with stances from another client's perspective
                     {
                         weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.7f);
                         return;
@@ -484,6 +484,31 @@ namespace RealismMod
         }
     }
 
+    public class ShouldMoveWeapCloserPatch : ModulePatch
+    {
+        private static FieldInfo _playerField;
+        private static FieldInfo _fcField;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            _playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
+            _fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
+            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("CheckShouldMoveWeaponCloser", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance, bool ____shouldMoveWeaponCloser)
+        {
+            FirearmController firearmController = (FirearmController)_fcField.GetValue(__instance);
+            if (firearmController == null) return;
+            Player player = (Player)_playerField.GetValue(firearmController);
+            if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
+            {
+                ____shouldMoveWeaponCloser = false;
+            }
+        }
+    }
+
 
     public class InitTransformsPatch : ModulePatch
     {
@@ -505,15 +530,13 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(firearmController);
             if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
             {
-         /*       __instance.HandsContainer.CameraOffset = new Vector3(0.04f, 0.04f, Plugin.test10.Value);
-                if (WeaponStats._WeapClass == "pistol") 
-                {
-                    return;
-                }*/
-  
                 Vector3 baseOffset = StanceController.GetWeaponOffsets().TryGetValue(firearmController.Weapon.TemplateId, out Vector3 offset) ? offset : Vector3.zero;
-                __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value) + baseOffset;
-                StanceController.WeaponOffsetPosition = __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value) + baseOffset;
+                Vector3 newPos = Plugin.EnableAltRifle.Value ? new Vector3(0.08f, -0.075f, 0f) : new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value);
+                newPos += baseOffset;
+                if (!Plugin.EnableAltRifle.Value) newPos += __instance.HandsContainer.WeaponRoot.localPosition;
+                StanceController.WeaponOffsetPosition = newPos;
+                __instance.HandsContainer.WeaponRoot.localPosition = newPos;
+                if (!Plugin.FOVFixPresent) __instance.HandsContainer.CameraOffset = new Vector3(0.04f, 0.04f, 0.025f);
             }
         }
     }

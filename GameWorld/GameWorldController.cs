@@ -35,7 +35,7 @@ namespace RealismMod
         {
             if(Plugin.ZoneDebug.Value) return true;
 
-            if (!Plugin.IsUsingFika) 
+            if (!Plugin.FikaPresent) 
             {
                 zoneProbability = Mathf.Max(zoneProbability, 0.1f);
                 zoneProbability = Mathf.Clamp01(zoneProbability);
@@ -65,7 +65,7 @@ namespace RealismMod
             float strengthModifier = 1f;
             if (hazard.ZoneType == EZoneType.Toxic)
             { 
-               strengthModifier = Plugin.IsUsingFika || Plugin.ZoneDebug.Value ? 1f : UnityEngine.Random.Range(0.9f, 1.25f); 
+               strengthModifier = Plugin.FikaPresent || Plugin.ZoneDebug.Value ? 1f : UnityEngine.Random.Range(0.9f, 1.25f); 
             } 
             hazard.ZoneStrengthModifier = zone.Value.strength * strengthModifier;
 
@@ -151,11 +151,7 @@ namespace RealismMod
                 Utils.Logger.LogWarning("gasZone rot " + gasZone.transform.rotation);
                 Utils.Logger.LogWarning("gasZone size " + gasZone.GetComponent<BoxCollider>().size);
 
-                /* UnityEngine.Object.Destroy(GameObject.Find("DebugZone"));
-     */
-
-
-
+                /* UnityEngine.Object.Destroy(GameObject.Find("DebugZone"));*/
             }
         }
     }

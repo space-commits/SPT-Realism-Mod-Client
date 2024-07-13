@@ -184,6 +184,7 @@ namespace RealismMod
         public static ConfigEntry<bool> ToggleActiveAim { get; set; }
         public static ConfigEntry<bool> ActiveAimReload { get; set; }
         public static ConfigEntry<bool> EnableAltPistol { get; set; }
+        public static ConfigEntry<bool> EnableAltRifle { get; set; }
         public static ConfigEntry<bool> EnableIdleStamDrain { get; set; }
         public static ConfigEntry<bool> EnableStanceStamChanges { get; set; }
         public static ConfigEntry<bool> EnableTacSprint { get; set; }
@@ -355,7 +356,8 @@ namespace RealismMod
         public static RealismConfig ServerConfig;
 
         public static bool HasReloadedAudio = false;
-        public static bool IsUsingFika = false;
+        public static bool FikaPresent = false;
+        public static bool FOVFixPresent = false;
         private bool _detectedMods = false;
 
         public static float FPS = 1f;
@@ -846,26 +848,8 @@ namespace RealismMod
 
         }
 
-        private float _deltaTime = 0f;
-        void Update()
+        private void CheckForMods() 
         {
-            //games procedural animations are highly affected by FPS. I balanced everything at 144 FPS, so need to factor it.    
-            _deltaTime += (Time.unscaledDeltaTime - _deltaTime) * 0.1f;
-            FPS = 1.0f / _deltaTime;
-
-            //keep trying to get player profile id
-            if (!_gotProfileId)
-            {
-                try
-                {
-                    PMCProfileId = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession().Profile.Id;
-                    ScavProfileId = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession().ProfileOfPet.Id;
-                    HazardTracker.GetHazardValues(PMCProfileId);
-                    _gotProfileId = true;
-                }
-                catch { }
-            }
-
             if (!_detectedMods && (int)Time.time % 5 == 0)
             {
                 _detectedMods = true;
@@ -879,11 +863,47 @@ namespace RealismMod
                 }
                 if (Chainloader.PluginInfos.ContainsKey("com.fika.core"))
                 {
-                    Logger.LogWarning(" fika ");
-                    IsUsingFika = true;
+                    Logger.LogWarning("============================= Realism Mod: fika is loaded =============================== ");
+                    FikaPresent = true;
+                }
+                if (Chainloader.PluginInfos.ContainsKey("FOVFix"))
+                {
+                    Logger.LogWarning("============================= Realism Mod: FOV Fix is loaded =============================== ");
+                    FOVFixPresent = true;
                 }
             }
- 
+        }
+
+        private void CheckForProfileID() 
+        {
+            //keep trying to get player profile id
+            if (!_gotProfileId)
+            {
+                try
+                {
+                    PMCProfileId = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession().Profile.Id;
+                    ScavProfileId = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession().ProfileOfPet.Id;
+                    HazardTracker.GetHazardValues(PMCProfileId);
+                    _gotProfileId = true;
+                }
+                catch 
+                {
+                    if (EnableLogging.Value) Logger.LogWarning("Realism Mod: Error Getting Profile ID, Retrying");
+                }
+            }
+        }
+
+        private float _deltaTime = 0f;
+        void Update()
+        {
+            //games procedural animations are highly affected by FPS. I balanced everything at 144 FPS, so need to factor it.    
+            _deltaTime += (Time.unscaledDeltaTime - _deltaTime) * 0.1f;
+            FPS = 1.0f / _deltaTime;
+
+
+            CheckForProfileID();
+            CheckForMods();
+
             Utils.CheckIsReady();
             if (Utils.IsReady)
             {
@@ -1095,13 +1115,14 @@ namespace RealismMod
             EnableSprintPenalty = Config.Bind<bool>(weapAimAndPos, "Enable Sprint Aim Penalties", ServerConfig.movement_changes, new ConfigDescription("ADS Out Of Sprint Has A Short Delay, Reduced Aim Speed And Increased Sway. The Longer You Sprint The Bigger The Penalty.", null, new ConfigurationManagerAttributes { Order = 240, Browsable = ServerConfig.enable_stances }));
             EnableTacSprint = Config.Bind<bool>(weapAimAndPos, "Enable High Ready Sprint Animation", ServerConfig.enable_stances, new ConfigDescription("Enables Usage Of High Ready Sprint Animation When Sprinting From High Ready Position.", null, new ConfigurationManagerAttributes { Order = 230, Browsable = ServerConfig.enable_stances }));
             EnableAltPistol = Config.Bind<bool>(weapAimAndPos, "Enable Alternative Pistol Position And ADS", ServerConfig.enable_stances, new ConfigDescription("Pistol Will Be Held Centered And In A Compressed Stance. ADS Will Be Animated.", null, new ConfigurationManagerAttributes { Order = 229, Browsable = ServerConfig.enable_stances }));
+            EnableAltRifle = Config.Bind<bool>(weapAimAndPos, "Enable Alternative Rifle Position And ADS (WIP)", false, new ConfigDescription("Rfile Will Move Closer To Camera When Aiming, Leading To Smoother ADS From Stances. Also Standardizes All Rifle Positions. Ignores 'Rifle Position' Settings.", null, new ConfigurationManagerAttributes { Order = 220, Browsable = ServerConfig.enable_stances }));
             EnableIdleStamDrain = Config.Bind<bool>(weapAimAndPos, "Enable Idle Arm Stamina Drain", ServerConfig.enable_stances, new ConfigDescription("Arm Stamina Will Drain When Not In A Stance (High And Low Ready, Short-Stocking).", null, new ConfigurationManagerAttributes { Order = 210, Browsable = ServerConfig.enable_stances }));
             EnableStanceStamChanges = Config.Bind<bool>(weapAimAndPos, "Enable Stance Stamina And Movement Effects", ServerConfig.enable_stances, new ConfigDescription("Enabled Stances And Mounting To Affect Stamina And Movement Speed. Stamina Drain May Not Work Correctly If Disabled. High + Low Ready, Short-Stocking And Pistol Idle Will Regenerate Stamina Faster And Optionally Idle With Rifles Drains Stamina. High Ready Has Faster Sprint Speed And Sprint Accel, Low Ready Has Faster Sprint Accel. Arm Stamina Won't Drain Regular Stamina If It Reaches 0.", null, new ConfigurationManagerAttributes { Order = 183, Browsable = ServerConfig.enable_stances }));
             ActiveAimReload = Config.Bind<bool>(weapAimAndPos, "Allow Reload From Active Aim", false, new ConfigDescription("Allows Reload From Magazine While In Active Aim With Speed Bonus.", null, new ConfigurationManagerAttributes { Order = 190, Browsable = ServerConfig.enable_stances }));
             EnableMountUI = Config.Bind<bool>(weapAimAndPos, "Enable Mounting UI", ServerConfig.enable_stances, new ConfigDescription("If Enabled, An Icon On Screen Will Indicate If Player Is Bracing, Mounting And What Side Of Cover They Are On.", null, new ConfigurationManagerAttributes { Order = 179, Browsable = ServerConfig.enable_stances }));
-            WeapOffsetX = Config.Bind<float>(weapAimAndPos, "Weapon Position X-Axis", -0.025f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 152, Browsable = ServerConfig.enable_stances }));
-            WeapOffsetY = Config.Bind<float>(weapAimAndPos, "Weapon Position Y-Axis", -0.015f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 151, Browsable = ServerConfig.enable_stances }));
-            WeapOffsetZ = Config.Bind<float>(weapAimAndPos, "Weapon Position Z-Axis", 0f, new ConfigDescription("Adjusts The Starting Position Of Weapon On Screen, Except Pistols.", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 150, Browsable = ServerConfig.enable_stances }));
+            WeapOffsetX = Config.Bind<float>(weapAimAndPos, "Rifle Position X-Axis", -0.025f, new ConfigDescription("Adjusts The Starting Position Of Rifle On Screen If Alt Rifle Is Disabled", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 152, Browsable = ServerConfig.enable_stances }));
+            WeapOffsetY = Config.Bind<float>(weapAimAndPos, "Rifle Position Y-Axis", -0.015f, new ConfigDescription("Adjusts The Starting Position Of Rifle On Screen If Alt Rifle Is Disabled", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 151, Browsable = ServerConfig.enable_stances }));
+            WeapOffsetZ = Config.Bind<float>(weapAimAndPos, "Rifle Position Z-Axis", 0f, new ConfigDescription("Adjusts The Starting Position Of Rifle On Screen If Alt Rifle Is Disabled", new AcceptableValueRange<float>(-0.1f, 0.1f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 150, Browsable = ServerConfig.enable_stances }));
             StanceRotationSpeedMulti = Config.Bind<float>(weapAimAndPos, "Stance Rotation Speed Multi", 1f, new ConfigDescription("Adjusts The Speed Of Stance Rotation Changes.", new AcceptableValueRange<float>(0.1f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 146, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             StanceTransitionSpeedMulti = Config.Bind<float>(weapAimAndPos, "Stance Transition Speed.", 15.0f, new ConfigDescription("Adjusts The Position Change Speed Between Stances", new AcceptableValueRange<float>(1f, 35f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 145, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
@@ -1218,30 +1239,30 @@ namespace RealismMod
             LowReadyAdditionalRotationY = Config.Bind<float>(lowReady, "Low Ready Additional Rotation Y-Axis", -25.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 38, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             LowReadyAdditionalRotationZ = Config.Bind<float>(lowReady, "Low Ready Additional Rotation Z-Axis", 0.5f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 37, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
-            LowReadyResetRotationX = Config.Bind<float>(lowReady, "Low Ready Reset Rotation X-Axis", -2.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 36, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            LowReadyResetRotationX = Config.Bind<float>(lowReady, "Low Ready Reset Rotation X-Axis", -1.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 36, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             LowReadyResetRotationY = Config.Bind<float>(lowReady, "Low Ready Reset Rotation Y-Axis", 2.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 35, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            LowReadyResetRotationZ = Config.Bind<float>(lowReady, "Low Ready Reset Rotation Z-Axis", -1f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 34, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            LowReadyResetRotationZ = Config.Bind<float>(lowReady, "Low Ready Reset Rotation Z-Axis", -0.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 34, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
             PistolAdditionalRotationSpeedMulti = Config.Bind<float>(pistol, "Pistol Additional Rotation Speed Multi", 0.1f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 35, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            PistolResetRotationSpeedMulti = Config.Bind<float>(pistol, "Pistol Reset Rotation Speed Multi", 0.5f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 34, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            PistolRotationSpeedMulti = Config.Bind<float>(pistol, "Pistol Rotation Speed Multi", 1.8f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 33, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            PistolPosSpeedMulti = Config.Bind<float>(pistol, "Pistol Position Speed Multi", 8.0f, new ConfigDescription("", new AcceptableValueRange<float>(1.0f, 100.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 32, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            PistolPosResetSpeedMulti = Config.Bind<float>(pistol, "Pistol Position Reset Speed Multi", 14.0f, new ConfigDescription("", new AcceptableValueRange<float>(1.0f, 100.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolResetRotationSpeedMulti = Config.Bind<float>(pistol, "Pistol Reset Rotation Speed Multi", 2f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 34, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolRotationSpeedMulti = Config.Bind<float>(pistol, "Pistol Rotation Speed Multi", 1f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.0f, 20f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 33, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolPosSpeedMulti = Config.Bind<float>(pistol, "Pistol Position Speed Multi", 6.0f, new ConfigDescription("", new AcceptableValueRange<float>(1.0f, 100.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 32, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolPosResetSpeedMulti = Config.Bind<float>(pistol, "Pistol Position Reset Speed Multi", 16.0f, new ConfigDescription("", new AcceptableValueRange<float>(1.0f, 100.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
             PistolOffsetX = Config.Bind<float>(pistol, "Pistol Position X-Axis.", 0f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 25, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            PistolOffsetY = Config.Bind<float>(pistol, "Pistol Position Y-Axis.", 0.025f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 24, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolOffsetY = Config.Bind<float>(pistol, "Pistol Position Y-Axis.", 0.04f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 24, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PistolOffsetZ = Config.Bind<float>(pistol, "Pistol Position Z-Axis.", -0.015f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 23, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             
 			PistolRotationX = Config.Bind<float>(pistol, "Pistol Rotation X-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PistolRotationY = Config.Bind<float>(pistol, "Pistol Rotation Y-Axis", -5f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PistolRotationZ = Config.Bind<float>(pistol, "Pistol Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
-            PistolAdditionalRotationX = Config.Bind<float>(pistol, "Pistol Ready Additional Rotation X-Axis.", -10.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            PistolAdditionalRotationY = Config.Bind<float>(pistol, "Pistol Ready Additional Rotation Y-Axis.", -25.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolAdditionalRotationX = Config.Bind<float>(pistol, "Pistol Ready Additional Rotation X-Axis.", 0.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolAdditionalRotationY = Config.Bind<float>(pistol, "Pistol Ready Additional Rotation Y-Axis.", 0.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PistolAdditionalRotationZ = Config.Bind<float>(pistol, "Pistol Ready Additional Rotation Z-Axis.", 0.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
-            PistolResetRotationX = Config.Bind<float>(pistol, "Pistol Ready Reset Rotation X-Axis", -30.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            PistolResetRotationY = Config.Bind<float>(pistol, "Pistol Ready Reset Rotation Y-Axis", 15.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolResetRotationX = Config.Bind<float>(pistol, "Pistol Ready Reset Rotation X-Axis", 0.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolResetRotationY = Config.Bind<float>(pistol, "Pistol Ready Reset Rotation Y-Axis", 0.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PistolResetRotationZ = Config.Bind<float>(pistol, "Pistol Ready Reset Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
             ShortStockAdditionalRotationSpeedMulti = Config.Bind<float>(shortStock, "Short-Stock Additional Rotation Speed Multi", 2.0f, new ConfigDescription("How Fast The Weapon Rotates.", new AcceptableValueRange<float>(0.1f, 5f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 35, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));

@@ -99,10 +99,6 @@ namespace RealismMod
                 StanceController.StanceBlender.Target = 0f;
                 return false;
             }
-            if (command == ECommand.EndSprinting || command == ECommand.EndShooting || command == ECommand.ToggleDuck || command == ECommand.Jump)
-            {
-                return false;
-            }
             return true;
         }
     }

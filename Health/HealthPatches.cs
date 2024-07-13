@@ -874,7 +874,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
         {
-            if (__instance.IsYourPlayer && Plugin.IsUsingFika)
+            if (__instance.IsYourPlayer && Plugin.FikaPresent)
             {
                 bool shouldAllowHeal = true;
                 Plugin.RealHealthController.CanUseMedItemCommon(meds, __instance, ref bodyPart, ref shouldAllowHeal);
@@ -895,7 +895,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
         {
-            if (__instance.IsYourPlayer && !Plugin.IsUsingFika)
+            if (__instance.IsYourPlayer && !Plugin.FikaPresent)
             {
                 bool shouldAllowHeal = true;
                 Plugin.RealHealthController.CanUseMedItemCommon(meds, __instance, ref bodyPart, ref shouldAllowHeal);
