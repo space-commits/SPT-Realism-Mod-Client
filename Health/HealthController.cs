@@ -8,19 +8,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using BrokenBoneInterface = GInterface245;
-using ContusionInterface = GInterface255;
-using DamageTypeClass = GClass2456;
-using DehydrationInterface = GInterface246;
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2415;
-using ExhaustionInterface = GInterface247;
-using HeavyBleedingInterface = GInterface243;
-using LethalToxinInterface = GInterface250;
-using LightBleedingInterface = GInterface242;
-using PainKillerInterface = GInterface260;
-using ToxinInterface = GInterface249;
-using TremorInterface = GInterface263;
-using TunnelVisionInterface = GInterface265;
+using DamageTypeClass = GClass2470; //this.ApplyDamage(EBodyPart.LeftLeg
+using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2429; //ManualEffectUpdate
+using EffectsDictionary = GClass2477.GClass2478;
+using MedUiString = GClass1244;
+using HeavyBleedingInterface = GInterface258;
+using DehydrationInterface = GInterface261;
+using FractureInterface = GInterface260;
+using ContusionInterface = GInterface270;
+using ExhaustionInterface = GInterface262;
+using LethalToxinInterface = GInterface265;
+using LightBleedingInterface = GInterface257;
+using PainKillerInterface = GInterface275;
+using IntoxicationInterface = GInterface264;
+using TremorInterface = GInterface278;
+using TunnelVisionInterface = GInterface280;
 
 namespace RealismMod
 {
@@ -80,14 +82,14 @@ namespace RealismMod
         {
             { "PainKiller", typeof(PainKillerInterface) },
             { "Tremor", typeof(TremorInterface) },
-            { "BrokenBone", typeof(BrokenBoneInterface) },
+            { "BrokenBone", typeof(FractureInterface) },
             { "TunnelVision", typeof(TunnelVisionInterface) },
             { "Contusion", typeof(ContusionInterface)  },
             { "HeavyBleeding", typeof(HeavyBleedingInterface) },
             { "LightBleeding", typeof(LightBleedingInterface) },
             { "Dehydration", typeof(DehydrationInterface) },
             { "Exhaustion", typeof(ExhaustionInterface) },
-            { "LethalToxin", typeof(ToxinInterface) },
+            { "LethalToxin", typeof(IntoxicationInterface) },
             { "Intoxication", typeof(LethalToxinInterface) }
         };
     }
@@ -375,7 +377,7 @@ namespace RealismMod
         //To prevent null ref exceptions while using Fika, Realism's custom effects must be added to a dicitionary of existing EFT effects
         public void AddCustomEffectsToDict() 
         {
-            Type type1 = typeof(GClass2463.GClass2464);
+            Type type1 = typeof(EffectsDictionary);
             FieldInfo dictionaryField1 = type1.GetField("dictionary_1", BindingFlags.NonPublic | BindingFlags.Static);
             var effectDict1 = (Dictionary<byte, string>)dictionaryField1.GetValue(null);
 
@@ -385,7 +387,7 @@ namespace RealismMod
 
             dictionaryField1.SetValue(null, effectDict1);
 
-            Type type0 = typeof(GClass2463.GClass2464);
+            Type type0 = typeof(EffectsDictionary);
             FieldInfo dictionaryField0 = type0.GetField("dictionary_0", BindingFlags.NonPublic | BindingFlags.Static);
             var effectDict0 = (Dictionary<string, byte>)dictionaryField0.GetValue(null);
 
@@ -395,7 +397,7 @@ namespace RealismMod
 
             dictionaryField0.SetValue(null, effectDict0);
 
-            Type typeType = typeof(GClass2463.GClass2464);
+            Type typeType = typeof(EffectsDictionary);
             FieldInfo typeFieldInfo = typeType.GetField("type_0", BindingFlags.NonPublic | BindingFlags.Static);
             var typeArr = (Type[])typeFieldInfo.GetValue(null);
 
@@ -668,7 +670,7 @@ namespace RealismMod
         private void AddStimDebuffs(Player player, string debuffId)
         {
             MedsClass placeHolderItem = (MedsClass)Singleton<ItemFactory>.Instance.CreateItem(Utils.GenId(), debuffId, null);
-            placeHolderItem.CurrentAddress = player.GClass2761_0.FindQuestGridToPickUp(placeHolderItem); //item needs an address to be valid, this is a hacky workaround
+            placeHolderItem.CurrentAddress = player.InventoryControllerClass.FindQuestGridToPickUp(placeHolderItem); //item needs an address to be valid, this is a hacky workaround
             player.ActiveHealthController.DoMedEffect(placeHolderItem, EBodyPart.Head, null);
 
             if (Plugin.EnableLogging.Value)
@@ -1295,7 +1297,7 @@ namespace RealismMod
         {
             if (HazardTracker.TotalToxicity <= 0) return;
 
-            GClass1235 details = null;
+            MedUiString details = null;
             if (isMed && item as MedsClass != null)
             {
                 MedsClass med = item as MedsClass;
@@ -1328,8 +1330,8 @@ namespace RealismMod
 
         public void CheckIfReducesHazardInRaid(Item item, Player player, bool isMed) 
         {
-            GClass1235 detoxDetails = null;
-            GClass1235 deradDetails = null;
+            MedUiString detoxDetails = null;
+            MedUiString deradDetails = null;
             if (isMed && item as MedsClass != null)
             {
                 MedsClass med = item as MedsClass;

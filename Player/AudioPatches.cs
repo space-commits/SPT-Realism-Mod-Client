@@ -1,4 +1,5 @@
-﻿using Aki.Reflection.Patching;
+﻿using SPT.Reflection.Patching;
+using SPT.Reflection.Utils;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
@@ -7,10 +8,9 @@ using System;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using CompressorTemplateClass = GClass2901;
-using HeadsetClass = GClass2639;
-using HeadsetTemplate = GClass2542;
-using IWeapon = GInterface322;
+using CompressorTemplateClass = GClass2918; //SetCompressor
+using HeadsetClass = GClass2654; //Updatephonesreally()
+using HeadsetTemplate = GClass2556; //SetCompressor
 
 namespace RealismMod
 {
@@ -41,7 +41,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player).GetMethod("method_46", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player).GetMethod("method_50", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]

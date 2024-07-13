@@ -42,6 +42,7 @@ namespace RealismMod
             Target = 0f
         };
 
+
         private static float _currentPistolXPos = 0f;
         private static float _currentPistolYPos = 0f;
         public static Vector3 CoverWiggleDirection = Vector3.zero;
@@ -633,7 +634,8 @@ namespace RealismMod
             float playerWeightFactor = 1f + (totalPlayerWeight / 100f);
             float ergoMulti = Mathf.Clamp(WeaponStats.ErgoStanceSpeed, 0.65f, 1.45f);
             float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.55f)), 0.5f, 1.45f);
-            float balanceFactor = 1f + ((WeaponStats.Balance * -1f) / 100f);
+
+            float balanceFactor = 1f + (WeaponStats.Balance / 100f);
             float rotationBalanceFactor = WeaponStats.Balance <= -9f ? balanceFactor * -1f : balanceFactor;
             float wiggleBalanceFactor = Mathf.Abs(WeaponStats.Balance) > 4f ? balanceFactor : Mathf.Abs(WeaponStats.Balance) <= 4f ? 0.75f : Mathf.Abs(WeaponStats.Balance) <= 3f ? 0.5f : 0.25f;
             float resetErgoMulti = (1f - stanceMulti) + 1f;
@@ -656,37 +658,24 @@ namespace RealismMod
             //I've no idea wtf is going on here but it sort of works
             if (!WeaponStats.HasShoulderContact && Plugin.EnableAltPistol.Value)
             {
-             /*   float targetPosX = Plugin.test5.Value;
+                float targetPosX = 0f; // 0.0
                 if (!IsBlindFiring && !pwa.LeftStance) // !CancelPistolStance
                 {
-                    targetPosX = Plugin.test4.Value; // 0.04
+                    targetPosX = 0.04f; // 0.04
                 }
 
-                float targetPosY = Plugin.test6.Value;
+                float targetPosY = -0.04f; //-0.04
                 if (IsAiming)
                 {
-                    targetPosY = Plugin.test7.Value;
+                    targetPosY = 0.01f; //0.01
                 }
 
-                _currentPistolXPos = Mathf.Lerp(_currentPistolXPos, targetPosX, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * 0.5f);
-                _currentPistolYPos = Mathf.Lerp(_currentPistolYPos, targetPosY, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * Plugin.test8.Value); 
+                _currentPistolXPos = Mathf.Lerp(_currentPistolXPos, targetPosX, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * 0.5f); //tweak speed
+                _currentPistolYPos = Mathf.Lerp(_currentPistolYPos, targetPosY, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * 1f); //tweak speed
 
-                _pistolLocalPosition.x = _currentPistolXPos; // 0.04
-                _pistolLocalPosition.y = _currentPistolYPos; //-0.02
-                _pistolLocalPosition.z = 0f; // 0
-                pwa.HandsContainer.WeaponRoot.localPosition = _pistolLocalPosition;
-*/
-
-                float targetPosX = 0.09f;
-                if (!IsBlindFiring && !pwa.LeftStance) // !CancelPistolStance
-                {
-                    targetPosX = Plugin.PistolOffsetX.Value;
-                }
-
-                _currentPistolXPos = Mathf.Lerp(_currentPistolXPos, targetPosX, dt * Plugin.PistolPosSpeedMulti.Value * stanceMulti * 0.5f);
-                _pistolLocalPosition.x = _currentPistolXPos;
-                _pistolLocalPosition.y = pwa.HandsContainer.TrackingTransform.localPosition.y;
-                _pistolLocalPosition.z = pwa.HandsContainer.TrackingTransform.localPosition.z;
+                _pistolLocalPosition.x = _currentPistolXPos; 
+                _pistolLocalPosition.y = _currentPistolYPos;
+                _pistolLocalPosition.z = 0f;
                 pwa.HandsContainer.WeaponRoot.localPosition = _pistolLocalPosition;
             }
 
@@ -748,7 +737,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(20f * wiggleBalanceFactor, 4f * wiggleBalanceFactor, -35f) * movementFactor); //new Vector3(10f, 1f, -30f)
+                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(Plugin.test1.Value * wiggleBalanceFactor, Plugin.test2.Value * wiggleBalanceFactor, Plugin.test3.Value) * movementFactor); //new Vector3(10f, 1f, -30f)
 
                 isResettingPistol = false;
                 CurrentStance = EStance.None;
@@ -1306,11 +1295,11 @@ namespace RealismMod
 
         }
 
-        public static void DoWiggleEffects(Player player, ProceduralWeaponAnimation pwa, Weapon weapon, Vector3 wiggleDirection, bool playSound = false, float volume = 1f, float wiggleFactor = 1f, bool isADS = false)
+        public static void DoWiggleEffects(Player player, ProceduralWeaponAnimation pwa, Weapon weapon, Vector3 wiggleDirection, bool playSound = false, float volume = 0.5f, float wiggleFactor = 1f, bool isADS = false)
         {
             if (playSound)
             {
-                player.method_46(volume);
+                player.method_50(volume);
             }
 
             NewRecoilShotEffect newRecoil = pwa.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;

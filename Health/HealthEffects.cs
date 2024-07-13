@@ -1,10 +1,10 @@
 ﻿using EFT;
 using System.Linq;
 using UnityEngine;
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2415;
-using ExistanceClass = GClass2456;
-using InterfaceOne = GInterface237;
-using InterfaceTwo = GInterface252;
+using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2429;
+using ExistanceClass = GClass2470;
+using InterfaceOne = GInterface252;
+using InterfaceTwo = GInterface267;
 
 namespace RealismMod
 {

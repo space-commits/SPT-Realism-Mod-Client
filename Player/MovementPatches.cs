@@ -1,5 +1,5 @@
-﻿using Aki.Reflection.Patching;
-using Aki.Reflection.Utils;
+﻿using SPT.Reflection.Patching;
+using SPT.Reflection.Utils;
 using Comfort.Common;
 using EFT;
 using HarmonyLib;
@@ -7,9 +7,8 @@ using System;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using SkillMovementStruct = EFT.SkillManager.GStruct228;
-using StamController = GClass682;
-using ValueHandler = GClass733;
+using SkillMovementStruct = EFT.SkillManager.GStruct229;
+using ValueHandler = GClass734;
 
 namespace RealismMod
 {
@@ -18,16 +17,16 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(StamController).GetMethod("method_21", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(PlayerPhysicalClass).GetMethod("method_21", BindingFlags.Instance | BindingFlags.Public);
 
         }
         [PatchPrefix]
-        private static bool Prefix(StamController __instance, float baseValue, ref float __result)
+        private static bool Prefix(PlayerPhysicalClass __instance, float baseValue, ref float __result)
         {
-            float[] float_7 = (float[])AccessTools.Field(typeof(StamController), "float_7").GetValue(__instance);
-            StamController.EPose epose_0 = (StamController.EPose)AccessTools.Field(typeof(StamController), "epose_0").GetValue(__instance);
-            Player player_0 = (Player)AccessTools.Field(typeof(StamController), "player_0").GetValue(__instance);
-            float Single_0 = (float)AccessTools.Property(typeof(StamController), "Single_0").GetValue(__instance);
+            float[] float_7 = (float[])AccessTools.Field(typeof(PlayerPhysicalClass), "float_7").GetValue(__instance);
+            PlayerPhysicalClass.EPose epose_0 = (PlayerPhysicalClass.EPose)AccessTools.Field(typeof(PlayerPhysicalClass), "epose_0").GetValue(__instance);
+            Player player_0 = (Player)AccessTools.Field(typeof(PlayerPhysicalClass), "player_0").GetValue(__instance);
+            float Single_0 = (float)AccessTools.Property(typeof(PlayerPhysicalClass), "Single_0").GetValue(__instance);
 
             float gearFactor = GearController.HasGasMask ? 0.5f : GearController.FSIsActive ? 0.75f : 1f;
             float stanceFactor =
@@ -82,7 +81,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player).GetMethod("method_53", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player).GetMethod("method_57", BindingFlags.Instance | BindingFlags.Public);
         }
 
 

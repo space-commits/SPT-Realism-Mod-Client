@@ -1,9 +1,10 @@
-﻿using Aki.Common.Http;
+﻿using SPT.Common.Http;
 using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using Comfort.Common;
 using EFT;
+using EFT.UI;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.pluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string pluginVersion = "1.3.1";
+        private const string pluginVersion = "1.4.0";
 
         //movement
         public static ConfigEntry<bool> EnableMaterialSpeed { get; set; }
@@ -132,6 +133,7 @@ namespace RealismMod
         public static ConfigEntry<KeyboardShortcut> DecGain { get; set; }
 
         //ballistics
+        public static ConfigEntry<bool> EnablePlateChanges { get; set; }
         public static ConfigEntry<float> GlobalDamageModifier { get; set; }
         public static ConfigEntry<bool> EnableBodyHitZones { get; set; }
         public static ConfigEntry<bool> EnableHitSounds { get; set; }
@@ -346,7 +348,7 @@ namespace RealismMod
         public static Dictionary<string, Sprite> LoadedSprites = new Dictionary<string, Sprite>();
         public static Dictionary<string, Texture> LoadedTextures = new Dictionary<string, Texture>();
 
-        public static GameObject Hook;
+        public static GameObject MountingUIHookObj;
         public MountingUI MountingUIComponent;
         public static RealismHealthController RealHealthController;
 
@@ -367,7 +369,6 @@ namespace RealismMod
         public static string PMCProfileId = string.Empty;
         public static string ScavProfileId = string.Empty;
         private bool _gotProfileId = false;
-
 
         private void LoadConfig()
         {
@@ -593,11 +594,11 @@ namespace RealismMod
                 Logger.LogError(exception);
             }
 
-            if (Hook == null)
+            if (MountingUIHookObj == null)
             {
-                Hook = new GameObject();
-                MountingUIComponent = Hook.AddComponent<MountingUI>();
-                DontDestroyOnLoad(Hook);
+                MountingUIHookObj = new GameObject();
+                MountingUIComponent = MountingUIHookObj.AddComponent<MountingUI>();
+                DontDestroyOnLoad(MountingUIHookObj);
             }
 
             DamageTracker dmgTracker = new DamageTracker();
@@ -646,6 +647,7 @@ namespace RealismMod
             if (ServerConfig.recoil_attachment_overhaul) 
             {
                 //procedural animations
+                /*new CalculateCameraPatch().Enable();*/
                 new UpdateWeaponVariablesPatch().Enable();
                 new SetAimingSlowdownPatch().Enable();
                 new PwaWeaponParamsPatch().Enable();
@@ -686,8 +688,6 @@ namespace RealismMod
  
                 new ModErgoStatDisplayPatch().Enable();
                 new GetAttributeIconPatches().Enable();
-                new AmmoDuraBurnDisplayPatch().Enable();
-                new AmmoMalfChanceDisplayPatch().Enable();
                 new MagazineMalfChanceDisplayPatch().Enable();
                 new BarrelModClassPatch().Enable();
                 new AmmoCaliberPatch().Enable();
@@ -734,9 +734,10 @@ namespace RealismMod
             //Ballistics
             if (ServerConfig.realistic_ballistics)
             {
+                /*new SetSkinPatch().Enable();*/
+                /*new CollidersPatch().Enable();*/
                 new CreateShotPatch().Enable();
                 new ApplyArmorDamagePatch().Enable();
-                /*                new SetSkinPatch().Enable();*/
                 new ApplyDamageInfoPatch().Enable();
                 new SetPenetrationStatusPatch().Enable();
                 new IsPenetratedPatch().Enable();
@@ -845,12 +846,12 @@ namespace RealismMod
 
         }
 
-        float deltaTime = 0f;
+        private float _deltaTime = 0f;
         void Update()
         {
             //games procedural animations are highly affected by FPS. I balanced everything at 144 FPS, so need to factor it.    
-            deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
-            FPS = 1.0f / deltaTime;
+            _deltaTime += (Time.unscaledDeltaTime - _deltaTime) * 0.1f;
+            FPS = 1.0f / _deltaTime;
 
             //keep trying to get player profile id
             if (!_gotProfileId)
@@ -1025,7 +1026,8 @@ namespace RealismMod
             EnableMouseSensPenalty = Config.Bind<bool>(miscSettings, "Enable Weight Mouse Sensitivity Penalty", ServerConfig.gear_weight, new ConfigDescription("Instead Of Using Gear Mouse Sens Penalty Stats, It Is Calculated Based On The Gear + Content's Weight As Modified By The Comfort Stat.", null, new ConfigurationManagerAttributes { Order = 20, Browsable = ServerConfig.gear_weight }));
             EnableZeroShift = Config.Bind<bool>(miscSettings, "Enable Zero Shift", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Sights Simulate Losing Zero While Firing. The Reticle Has A Chance To Move Off Target. The Chance Is Determined By The Scope And Its Mount's Accuracy Stat, And The Weapon's Recoil. High Quality Scopes And Mounts Won't Lose Zero. SCAR-H Has Worse Zero-Shift.", null, new ConfigurationManagerAttributes { Order = 30, Browsable = ServerConfig.recoil_attachment_overhaul }));
 
-            GlobalDamageModifier = Config.Bind<float>(ballSettings, "Global Damage Modifier", 1f, new ConfigDescription("Lower = Less Damage Received (Except Head) For Bots And Player.", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 110, Browsable = ServerConfig.realistic_ballistics }));
+            GlobalDamageModifier = Config.Bind<float>(ballSettings, "Global Damage Modifier", 1f, new ConfigDescription("Lower = Less Damage Received (Except Head) For Bots And Player.", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 120, Browsable = ServerConfig.realistic_ballistics }));
+            EnablePlateChanges = Config.Bind<bool>(ballSettings, "Enable Armor Plate Hitbox Changes", ServerConfig.realistic_ballistics, new ConfigDescription("Reduces The Size Of Armor Plate Hitboxes To Be Closer To Real Life, And Closer To How They Were When First Implemented.", null, new ConfigurationManagerAttributes { Order = 110, Browsable = ServerConfig.realistic_ballistics }));
             EnableBodyHitZones = Config.Bind<bool>(ballSettings, "Enable Body Hit Zones", ServerConfig.realistic_ballistics, new ConfigDescription("Divides Body Into A, C and D Hit Zones Like On IPSC Targets. In Addtion, There Are Upper Arm, Forearm, Thigh, Calf, Neck, Spine And Heart Hit Zones. Each Zone Modifies Damage And Bleed Chance. ", null, new ConfigurationManagerAttributes { Order = 10, Browsable = ServerConfig.realistic_ballistics }));
             EnableHitSounds = Config.Bind<bool>(ballSettings, "Enable Hit Sounds", ServerConfig.realistic_ballistics, new ConfigDescription("Enables Additional Sounds To Be Played When Hitting The New Body Zones And Armor Hit Sounds By Material.", null, new ConfigurationManagerAttributes { Order = 50, Browsable = ServerConfig.realistic_ballistics }));
             FleshHitSoundMulti = Config.Bind<float>(ballSettings, "Flesh Hit Sound Multi", 1f, new ConfigDescription("Raises/Lowers New Hit Sounds Volume.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 60, Browsable = ServerConfig.realistic_ballistics }));
@@ -1227,10 +1229,10 @@ namespace RealismMod
             PistolPosResetSpeedMulti = Config.Bind<float>(pistol, "Pistol Position Reset Speed Multi", 14.0f, new ConfigDescription("", new AcceptableValueRange<float>(1.0f, 100.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
             PistolOffsetX = Config.Bind<float>(pistol, "Pistol Position X-Axis.", 0f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 25, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            PistolOffsetY = Config.Bind<float>(pistol, "Pistol Position Y-Axis.", 0.04f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 24, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            PistolOffsetZ = Config.Bind<float>(pistol, "Pistol Position Z-Axis.", -0.025f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 23, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-
-            PistolRotationX = Config.Bind<float>(pistol, "Pistol Rotation X-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolOffsetY = Config.Bind<float>(pistol, "Pistol Position Y-Axis.", 0.025f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 24, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolOffsetZ = Config.Bind<float>(pistol, "Pistol Position Z-Axis.", -0.015f, new ConfigDescription("Weapon Position When In Stance.", new AcceptableValueRange<float>(-10f, 10f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 23, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            
+			PistolRotationX = Config.Bind<float>(pistol, "Pistol Rotation X-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PistolRotationY = Config.Bind<float>(pistol, "Pistol Rotation Y-Axis", -5f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PistolRotationZ = Config.Bind<float>(pistol, "Pistol Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When In Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 

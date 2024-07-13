@@ -1,4 +1,5 @@
-﻿using Aki.Reflection.Patching;
+﻿using SPT.Reflection.Patching;
+using SPT.Reflection.Utils;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
@@ -8,17 +9,17 @@ using RealismMod.Weapons;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 using UnityEngine;
 using static EFT.Player;
-using ChamberWeaponClass = EFT.Player.FirearmController.GClass1626;
-using ItemEventClass = GClass2767;
-using MagReloadClass = EFT.Player.FirearmController.GClass1610;
-using ReloadWeaponClass = EFT.Player.FirearmController.GClass1587;
-using StatusStruct = GStruct414<GInterface324>;
-using WeaponEventClass = EFT.Player.FirearmController.GClass1577;
-using WeaponEventHandlerClass = EFT.Player.FirearmController.GClass1576;
-using WeaponStateClass = GClass1668;
-using WeaponStatSubclass = EFT.Player.FirearmController.GClass1584;
+using ChamberWeaponClass = EFT.Player.FirearmController.GClass1637;
+using ItemEventClass = GClass2783;
+using MagReloadClass = EFT.Player.FirearmController.GClass1621;
+using ReloadWeaponClass = EFT.Player.FirearmController.GClass1598;
+using StatusStruct = GStruct414<GInterface339>;
+using WeaponEventClass = EFT.Player.FirearmController.GClass1588;
+using WeaponEventHandlerClass = EFT.Player.FirearmController.GClass1587;
+using WeaponStatSubclass = EFT.Player.FirearmController.GClass1632;
 
 namespace RealismMod
 {
@@ -57,10 +58,10 @@ namespace RealismMod
             {
                 if (fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1) 
                 {
-                    var magazine = (MagazineClass)AccessTools.Field(typeof(ChamberWeaponClass), "gclass2669_0").GetValue(__instance);
+                    var magazine = (MagazineClass)AccessTools.Field(typeof(ChamberWeaponClass), "magazineClass").GetValue(__instance);
                     var ammoIsCompatible = (bool)AccessTools.Field(typeof(ChamberWeaponClass), "bool_1").GetValue(__instance);
-                    var bullet = (BulletClass)AccessTools.Field(typeof(ChamberWeaponClass), "gclass2736_0").GetValue(__instance);
-                    var chamberState = (WeaponStateClass)AccessTools.Field(typeof(ChamberWeaponClass), "gclass1668_0").GetValue(__instance);
+                    var bulletClass = (BulletClass)AccessTools.Field(typeof(ChamberWeaponClass), "bulletClass").GetValue(__instance);
+                    var weaponManagerClass = (WeaponManagerClass)AccessTools.Field(typeof(ChamberWeaponClass), "weaponManagerClass").GetValue(__instance);
 
                     AccessTools.Field(typeof(ChamberWeaponClass), "action_0").SetValue(__instance, onWeaponAppear);
                     __instance.Start();
@@ -72,7 +73,7 @@ namespace RealismMod
                     int currentMagazineCount = fc.Weapon.GetCurrentMagazineCount();
 
                     magazine = fc.Weapon.GetCurrentMagazine();
-                    AccessTools.Field(typeof(ChamberWeaponClass), "gclass2669_0").SetValue(__instance, magazine);
+                    AccessTools.Field(typeof(ChamberWeaponClass), "magazineClass").SetValue(__instance, magazine);
                    
                     fc.AmmoInChamberOnSpawn = chamberAmmoCount;
 
@@ -106,16 +107,16 @@ namespace RealismMod
                         {
                             fc.Weapon.MalfState.ChangeStateSilent(Weapon.EMalfunctionState.None);
                         }
-                        StatusStruct gstruct = magazine.Cartridges.PopTo(player.GClass2761_0, new ItemEventClass(fc.Item.Chambers[0]));
+                        StatusStruct gstruct = magazine.Cartridges.PopTo(player.InventoryControllerClass, new ItemEventClass(fc.Item.Chambers[0]));
                         fc.Item.MalfState.ChangeStateSilent(malfState);
                         if (gstruct.Value == null)
                         {
                             return false;
                         }
-                        chamberState.RemoveAllShells();
+                        weaponManagerClass.RemoveAllShells();
                         player.UpdatePhones();
-                        bullet = (BulletClass)gstruct.Value.ResultItem;
-                        AccessTools.Field(typeof(ChamberWeaponClass), "gclass2736_0").SetValue(__instance, bullet);
+                        bulletClass = (BulletClass)gstruct.Value.ResultItem;
+                        AccessTools.Field(typeof(ChamberWeaponClass), "bulletClass").SetValue(__instance, bulletClass);
                     }
                     return false;
                 }
@@ -206,7 +207,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             playerField = AccessTools.Field(typeof(FirearmController), "_player");
-            ammoCountPanelField = AccessTools.Field(typeof(BattleUIScreen), "_ammoCountPanel");
+            ammoCountPanelField = AccessTools.Field(typeof(EftBattleUIScreen), "_ammoCountPanel");
             return typeof(Player.FirearmController).GetMethod("CheckChamber", BindingFlags.Instance | BindingFlags.Public);
         }
 
@@ -216,19 +217,19 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer) 
             {
-                AmmoCountPanel panelUI = (AmmoCountPanel)ammoCountPanelField.GetValue(Singleton<GameUI>.Instance.BattleUiScreen);
                 Slot slot = __instance.Weapon.Chambers.FirstOrDefault<Slot>();
                 BulletClass bulletClass = (slot == null) ? null : (slot.ContainedItem as BulletClass);
+
                 if (bulletClass != null)
                 {
                     string name = bulletClass.LocalizedName();
-                    panelUI.Show("", name);
+                    Singleton<CommonUI>.Instance.EftBattleUIScreen.ShowAmmoDetails(1, 10, 10, name, false);
                 }
                 else
                 {
                     if (__instance.Weapon.Chambers.Length == 1)
                     {
-                        panelUI.Show("Empty");
+                        Singleton<CommonUI>.Instance.EftBattleUIScreen.ShowAmmoDetails(0, 10, 10, null, false);
                     }
                 }
             }

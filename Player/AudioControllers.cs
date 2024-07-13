@@ -59,7 +59,7 @@ namespace RealismMod
         {
             bool hasHazardification = HazardTracker.TotalToxicity >= 30f || (HazardTracker.TotalRadiation >= 20f && !Plugin.RealHealthController.HasBaseEFTEffect(player, "PainKiller"));
             bool isGettingHazarded = HazardTracker.TotalToxicityRate >= 0.15f;
-            if ((!GearController.HasGasMask || !GearController.HasGasFilter) && (hasHazardification || isGettingHazarded)) 
+            if (player.HealthController.IsAlive && (!GearController.HasGasMask || !GearController.HasGasFilter) && (hasHazardification || isGettingHazarded)) 
             {
                 player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
             }

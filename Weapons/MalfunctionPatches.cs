@@ -1,4 +1,5 @@
-﻿using Aki.Reflection.Patching;
+﻿using SPT.Reflection.Patching;
+using SPT.Reflection.Utils;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
@@ -7,10 +8,10 @@ using System;
 using System.Reflection;
 using Systems.Effects;
 using UnityEngine;
-using DamageTypeClass = GClass2456;
-using KnowMalfClass = EFT.InventoryLogic.Weapon.GClass2742;
-using MalfGlobals = BackendConfigSettingsClass.GClass1370;
-using OverheatGlobals = BackendConfigSettingsClass.GClass1371;
+using static EFT.InventoryLogic.Weapon;
+using DamageTypeClass = GClass2470;
+using MalfGlobals = BackendConfigSettingsClass.GClass1378;
+using OverheatGlobals = BackendConfigSettingsClass.GClass1379;
 
 namespace RealismMod
 {
@@ -247,7 +248,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(KnowMalfClass).GetMethod("IsKnownMalfType", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(WeaponMalfunctionStateClass).GetMethod("IsKnownMalfType", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]

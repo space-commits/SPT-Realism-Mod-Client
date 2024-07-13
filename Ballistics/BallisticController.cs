@@ -221,7 +221,7 @@ namespace RealismMod
             Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
         }
 
-        public static EBodyHitZone ModifyDamageByHitZone(Player player, EBodyPartColliderType partHit, DamageInfo damageInfo)
+        public static EBodyHitZone GetBodyHitZone(Player player, EBodyPartColliderType partHit, DamageInfo damageInfo)
         {
             EBodyHitZone hitZone = EBodyHitZone.Unknown;
             if (partHit == EBodyPartColliderType.RibcageUp || partHit == EBodyPartColliderType.RibcageLow || partHit == EBodyPartColliderType.SpineDown || partHit == EBodyPartColliderType.SpineTop)
@@ -229,13 +229,13 @@ namespace RealismMod
                 Collider col = damageInfo.HitCollider;
                 if (damageInfo.HitCollider == null) //fika can't send objects as part of peckets, need to find matching collider by checking collider type
                 {
+                    Utils.Logger.LogWarning("hit collider is null, something is fucked up ");
                     List<Collider> collidors = player.GetComponent<PlayerPoolObject>().Colliders;
-                    if (collidors == null || collidors.Count > 0) return hitZone;
+                    if (collidors == null || collidors.Count <= 0) return hitZone;
                     int count = collidors.Count;
                     for (int i = 0; i < count; i++)
                     {
                         Collider collider = collidors[i];
-                        Utils.Logger.LogWarning(collider.name);
                         BodyPartCollider bp = collider.GetComponent<BodyPartCollider>();
 
                         if (bp != null && bp.BodyPartColliderType == partHit)
@@ -270,10 +270,9 @@ namespace RealismMod
 
         public static void ModifyDamageByZone(Player player, ref DamageInfo damageInfo, EBodyPartColliderType partHit)
         {
-
-            if (!damageInfo.Blunt)
+            if (!damageInfo.Blunt || string.IsNullOrEmpty(damageInfo.BlockedBy))
             {
-                EBodyHitZone hitZone = ModifyDamageByHitZone(player, partHit, damageInfo);
+                EBodyHitZone hitZone = GetBodyHitZone(player, partHit, damageInfo);
                 BallisticsController.ModifyDamageByHitZone(partHit, hitZone, ref damageInfo);
             }
         }
@@ -281,7 +280,7 @@ namespace RealismMod
 
         public static bool ShouldDoSpalling(AmmoTemplate ammoTemp, DamageInfo damageInfo, EBodyPart bodyPartType)
         {
-            if (ammoTemp == null || damageInfo.DamageType == EDamageType.Melee || !damageInfo.Blunt || bodyPartType != EBodyPart.Chest || bodyPartType != EBodyPart.Stomach) return false;
+            if (ammoTemp == null || damageInfo.DamageType == EDamageType.Melee || !damageInfo.Blunt || (bodyPartType != EBodyPart.Chest && bodyPartType != EBodyPart.Stomach)) return false;
             if (ammoTemp.ProjectileCount > 2)
             {
                 int rndNum = UnityEngine.Random.Range(1, 10);
@@ -305,7 +304,6 @@ namespace RealismMod
             else
             {
                 ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
-
                 if (damageInfo.ArmorDamage <= 1)
                 {
                     KE = (0.5f * ammoTemp.BulletMassGram * ammoTemp.InitialSpeed * ammoTemp.InitialSpeed) / 1000f;
@@ -373,6 +371,7 @@ namespace RealismMod
                     faceProtectionCount += ArmorColliderCount(armorComponent, FaceSpallProtectionCollidors);
                 }
             }
+
             preAllocatedArmorComponents.Clear();
         }
 
@@ -455,6 +454,39 @@ namespace RealismMod
                 damageInfo.HeavyBleedingDelta = heavyBleedChance * bleedFactor;
                 damageInfo.LightBleedingDelta = lightBleedChance * bleedFactor;
                 player.ActiveHealthController.ApplyDamage(part, damage, damageInfo);
+            }
+        }
+
+        private static void ModifyPlateHelper(Collider collider, BoxCollider boxCollider, string target, float x, float y, float z) 
+        {
+            if (collider.name.ToLower().Contains(target))
+            {
+                float height = boxCollider.size.x * x;
+                float depth = boxCollider.size.y * y;
+                float width = boxCollider.size.z * z;
+                boxCollider.size = new Vector3(height, depth, width);
+
+                if (Plugin.EnableBallisticsLogging.Value) DebugGizmos.SingleObjects.VisualizeBoxCollider(collider as BoxCollider, collider.name);
+            }
+        }
+
+        public static void ModifyPlateColliders(Player player) 
+        {
+            List<Collider> collidors = player.GetComponent<PlayerPoolObject>().Colliders;
+            if (collidors == null || collidors.Count <= 0) return;
+            int count = collidors.Count;
+            for (int i = 0; i < count; i++)
+            {
+                Collider collider = collidors[i];
+                if (collider as BoxCollider != null)
+                {
+                    BoxCollider boxCollider = collider as BoxCollider;
+                    if (collider.name.ToLower() == "left" || collider.name.ToLower() == "right" || collider.name.ToLower() == "top") boxCollider.size *= 0f;
+                    ModifyPlateHelper(collider, boxCollider, "_chest", 0.95f, 0.95f, 0.9f);
+                    ModifyPlateHelper(collider, boxCollider, "_back", 0.75f, 0.85f, 0.85f);
+                    ModifyPlateHelper(collider, boxCollider, "_side_", 0.8f, 0.95f, 1f);
+                    ModifyPlateHelper(collider, boxCollider, "chesttop", 1.55f, 1f, 1.15f);
+                }
             }
         }
     }
