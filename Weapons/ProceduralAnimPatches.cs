@@ -288,7 +288,7 @@ namespace RealismMod
                 if (weapon != null) 
                 {
                     __instance.Overweight = 0;
-                    __instance.CrankRecoil = !Plugin.EnableCrank.Value || (!WeaponStats.HasShoulderContact && WeaponStats._WeapClass != "pistol") ? false : true;
+                    __instance.CrankRecoil = !Plugin.EnableCrank.Value ? false : true;  // || (!WeaponStats.HasShoulderContact && WeaponStats._WeapClass != "pistol")
 
                     Mod currentAimingMod = (__instance.CurrentAimingMod != null) ? __instance.CurrentAimingMod.Item as Mod : null;
                     WeaponStats.IsOptic = __instance.CurrentScope.IsOptic;

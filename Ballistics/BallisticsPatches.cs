@@ -777,12 +777,15 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, string player, Item weapon, ref EftBulletClass __result, float speedFactor, int fragmentIndex = 0)
         {
+            float speedFactorDamage = speedFactor > 1f ? Mathf.Pow(speedFactor, 4f) : speedFactor;
+            float speedFactorPenetration = speedFactor > 1f ? Mathf.Pow(speedFactor, 3f) : speedFactor < 1f ? Mathf.Pow(speedFactor, 0.45f) : speedFactor;
+
             int randomNum = UnityEngine.Random.Range(0, 512);
             float velocityFactored = ammo.InitialSpeed * speedFactor;
-            float penChanceFactored = ammo.PenetrationChanceObstacle * speedFactor;
-            float damageFactored = ammo.Damage * speedFactor;
-            float fragchanceFactored = Mathf.Max(ammo.FragmentationChance * speedFactor, 0);
-            float penPowerFactored = EFT.Ballistics.BallisticsCalculator.GetAmmoPenetrationPower(ammo, randomNum, __instance.Randoms) * speedFactor;
+            float penChanceFactored = ammo.PenetrationChanceObstacle * speedFactorPenetration;
+            float damageFactored = ammo.Damage * speedFactorDamage;
+            float fragchanceFactored = Mathf.Max(ammo.FragmentationChance * speedFactorDamage, 0);
+            float penPowerFactored = EFT.Ballistics.BallisticsCalculator.GetAmmoPenetrationPower(ammo, randomNum, __instance.Randoms) * speedFactorPenetration;
 
             float bcSpeedFactor = 1f - ((1f - speedFactor) * 0.25f);
             float bcFactored = Mathf.Max(ammo.BallisticCoeficient * bcSpeedFactor, 0.01f);
@@ -791,7 +794,6 @@ namespace RealismMod
             {
                 Logger.LogWarning("speed factor " + speedFactor);
                 Logger.LogWarning("speed factored " + velocityFactored);
-                Logger.LogWarning("BC Factor " + bcSpeedFactor);
             }
 
             __result = EftBulletClass.Create(ammo, fragmentIndex, randomNum, origin, direction, velocityFactored, velocityFactored, ammo.BulletMassGram, ammo.BulletDiameterMilimeters, (float)damageFactored, penPowerFactored, penChanceFactored, ammo.RicochetChance, fragchanceFactored, 1f, ammo.MinFragmentsCount, ammo.MaxFragmentsCount, EFT.Ballistics.BallisticsCalculator.DefaultHitBody, __instance.Randoms, bcFactored, player, weapon, fireIndex, null);
