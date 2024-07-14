@@ -31,12 +31,12 @@ namespace RealismMod
 
         [PatchPostfix]
         private static void PatchPostfix(
-            EFT.Animations.ProceduralWeaponAnimation __instance, Vector3 ____vCameraTarget, 
-            Player.ValueBlenderDelay ____tacticalReload, float ____aimLeftStanceAdditionalOffset, 
-            GInterface139 ____firearmAnimationData, float ____blindfireStrength, Quaternion ____rotation90deg,
-            bool ____crankRecoil, Vector3 ____localAimShift, float ____leftStanceCurrentCurveValue,
-            float ____compensatoryScale, Vector3 ____cameraByFOVOffset, float ____animatorPoseBlend,
-            Vector3 ___vector)
+            EFT.Animations.ProceduralWeaponAnimation __instance, ref Vector3 ____vCameraTarget,
+            ref Player.ValueBlenderDelay ____tacticalReload, ref float ____aimLeftStanceAdditionalOffset,
+            ref GInterface139 ____firearmAnimationData, ref float ____blindfireStrength, ref Quaternion ____rotation90deg,
+            ref bool ____crankRecoil, ref Vector3 ____localAimShift, ref float ____leftStanceCurrentCurveValue,
+            ref float ____compensatoryScale, ref Vector3 ____cameraByFOVOffset, ref float ____animatorPoseBlend,
+            ref Vector3 ___vector)
         {
             FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
             if (firearmController == null) return;

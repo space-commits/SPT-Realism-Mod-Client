@@ -42,6 +42,7 @@ namespace RealismMod
             Target = 0f
         };
 
+        private static float _currentRifleXPos = 0f;
         private static float _currentRifleYPos = 0f;
         private static float _currentPistolXPos = 0f;
         private static float _currentPistolYPos = 0f;
@@ -761,21 +762,23 @@ namespace RealismMod
         private static void DoAltRiflePos(ProceduralWeaponAnimation pwa, float stanceMulti, float dt) 
         {
             float speedFactor = 1f;
+            float targetPosX = WeaponOffsetPosition.x;
             float targetPosY = WeaponOffsetPosition.y;
             if (IsAiming)
             {
                 speedFactor = 10f * stanceMulti; //10
-                targetPosY = 0.01f;  //0.01 //0
-
+                targetPosX = 0.075f;  //0.01 
+                targetPosY = -0.05f;  //0.01 
             }
             else
             {
                 speedFactor = 8f * stanceMulti; //8
             }
 
+            _currentRifleXPos = Mathf.Lerp(_currentRifleXPos, targetPosX, dt * speedFactor);
             _currentRifleYPos = Mathf.Lerp(_currentRifleYPos, targetPosY, dt * speedFactor);
 
-            _rifleLocalPosition.x = WeaponOffsetPosition.x;
+            _rifleLocalPosition.x = _currentRifleXPos;
             _rifleLocalPosition.y = _currentRifleYPos;
             _rifleLocalPosition.z = WeaponOffsetPosition.z;
             pwa.HandsContainer.WeaponRoot.localPosition = _rifleLocalPosition;
@@ -818,8 +821,8 @@ namespace RealismMod
             float ergoMulti = Mathf.Clamp(WeaponStats.ErgoStanceSpeed * 1.15f, 0.55f, 1.2f);
             float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.65f)), 0.45f, 1.2f);
             float resetErgoMulti = (1f - stanceMulti) + 1f;
-            float highReadyStanceMulti = Mathf.Min(stanceMulti, 1f);
-            float lowReadyStanceMulti = Mathf.Min(stanceMulti, 1f);
+            float highReadyStanceMulti = Mathf.Min(stanceMulti, 0.8f);
+            float lowReadyStanceMulti = Mathf.Min(stanceMulti, 0.8f);
 
             float wiggleErgoMulti = Mathf.Clamp((WeaponStats.ErgoStanceSpeed * 0.5f), 0.1f, 1f);
             float stocklessModifier = WeaponStats.HasShoulderContact ? 1f : 0.5f;
@@ -950,7 +953,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                if (!useThirdPersonStance) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(10f, -10f, -50f) * movementFactor, true);
+                if (!useThirdPersonStance) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-5f, -5f , -55f) * movementFactor, true);
                 DidStanceWiggle = false;
                 stanceRotation = Quaternion.identity;
                 isResettingShortStock = false;
@@ -1052,7 +1055,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                if (!useThirdPersonStance) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(4f, -2.5f, -20) * movementFactor, true); //-10f, -10f, -50f
+                if (!useThirdPersonStance) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(4f, -2.5f, -30) * movementFactor, true); 
                 DidStanceWiggle = false;
                 stanceRotation = Quaternion.identity;
                 isResettingHighReady = false;
@@ -1233,7 +1236,7 @@ namespace RealismMod
                     DoDampingTimer = true;
                 }
 
-                if (!useThirdPersonStance) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-10f, 5f, -25f) * movementFactor, true);
+                if (!useThirdPersonStance) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(5f, 1.25f, 0f) * movementFactor, true);
                 DidStanceWiggle = false;
 
                 stanceRotation = Quaternion.identity;
@@ -1322,7 +1325,7 @@ namespace RealismMod
 
         }
 
-        public static void DoWiggleEffects(Player player, ProceduralWeaponAnimation pwa, Weapon weapon, Vector3 wiggleDirection, bool playSound = false, float volume = 0.5f, float wiggleFactor = 1f, bool isADS = false)
+        public static void DoWiggleEffects(Player player, ProceduralWeaponAnimation pwa, Weapon weapon, Vector3 wiggleDirection, bool playSound = false, float volume = 0.35f, float wiggleFactor = 1f, bool isADS = false)
         {
             if (playSound)
             {

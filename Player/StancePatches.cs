@@ -497,13 +497,13 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance, bool ____shouldMoveWeaponCloser)
+        private static void PatchPostfix(ProceduralWeaponAnimation __instance, ref bool ____shouldMoveWeaponCloser)
         {
             FirearmController firearmController = (FirearmController)_fcField.GetValue(__instance);
             if (firearmController == null) return;
             Player player = (Player)_playerField.GetValue(firearmController);
-            if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
-            {
+            if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer) 
+            { 
                 ____shouldMoveWeaponCloser = false;
             }
         }

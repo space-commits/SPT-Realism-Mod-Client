@@ -79,7 +79,10 @@ namespace RealismMod
             MeleePen,
             BallisticCoefficient,
             OutOfRaidHP,
-            StimType
+            StimType,
+            DurabilityBurn,
+            Heat,
+
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -168,6 +171,10 @@ namespace RealismMod
                     return "GAS PROTECTION";
                 case ENewItemAttributeId.RadProtection:
                     return "RADIATION PROTECTION";
+                case ENewItemAttributeId.Heat:
+                    return "HEAT";
+                case ENewItemAttributeId.DurabilityBurn:
+                    return "DURABILITY BURN";
                 default:
                     return id.ToString();
             }

@@ -80,8 +80,39 @@ namespace RealismMod
         }
     }
 
+    public class PenetrationUIPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GClass3115).GetConstructor(new Type[] { typeof(float) });
+        }
+
+        
+
+        private static string GetStringValues(int armorClass, float penetrationPower)
+        {
+            float penetrationChance = GClass566.RealResistance(100f, 100f, armorClass, penetrationPower).GetPenetrationChance(penetrationPower);
+            string armorClassString = armorClass >= 10 ? armorClass + "  " : armorClass >= 6 ? " " + armorClass + "  " : string.Format("<sprite name=\"armor_classes_{0}\"> ", armorClass);
+            return armorClassString + GClass3115.smethod_0(penetrationChance);
+        }
+
+
+        [PatchPostfix]
+        private static void PatchPrefix(GClass3115 __instance, float penetrationPower)
+        {
+            List<GClass3114> list = new List<GClass3114>();
+            for (int i = 1; i <= 10; i++)
+            {
+                list.Add(new GClass3114(GetStringValues(i, penetrationPower), null));
+            }
+            AccessTools.Field(typeof(GClass3115), "Lines").SetValue(__instance, list.ToArray());
+        }
+    }
+
+    //ammo stats
     public class GetCachedReadonlyQualitiesPatch : ModulePatch
     {
+
         protected override MethodBase GetTargetMethod()
         {
             return typeof(AmmoTemplate).GetMethod("GetCachedReadonlyQualities", BindingFlags.Instance | BindingFlags.Public);
@@ -91,66 +122,78 @@ namespace RealismMod
         private static void PatchPostFix(AmmoTemplate __instance, ref List<ItemAttributeClass> __result)
         {
 
-            if (!__result.Any((ItemAttributeClass i) => (ENewItemAttributeId)i.Id == ENewItemAttributeId.Damage) && !__result.Any((ItemAttributeClass i) => (ENewItemAttributeId)i.Id == ENewItemAttributeId.ProjectileCount))
+            if (!__result.Any((ItemAttributeClass i) => (ENewItemAttributeId)i.Id == ENewItemAttributeId.BallisticCoefficient) && !__result.Any((ItemAttributeClass i) => (ENewItemAttributeId)i.Id == ENewItemAttributeId.ProjectileCount))
             {
                 AddCustomAttributes(__instance, ref __result);
             }
 
         }
 
-        //BSG got rid of malf chance, dura burn and heat....will need to add those back myself
+        private static string GetHeat(AmmoTemplate __instance)
+        {
+            float heat = __instance.HeatFactor;
+            switch (heat)
+            {
+                case <= 1f:
+                    return "";
+                case <= 1.05f:
+                    return "Low";
+                case <= 1.1f:
+                    return "Significant";
+                case <= 1.15f:
+                    return "High";
+                case <= 1.2f:
+                    return "Very High";
+                case > 1.2f:
+                    return "Extreme";
+            }
+            return string.Empty;
+        }
+
+
         private static string GetMalfChance(AmmoTemplate __instance)
         {
             float malfChance = __instance.MalfMisfireChance;
-            string text = "";
-/*            switch (malfChance)
+            switch (malfChance)
             {
                 case <= 0f:
                     return "";
-                case <= 0.15f:
-                    return malfChancesKeys[1];
-                case <= 0.3f:
-                    return malfChancesKeys[2];
-                case <= 0.6f:
-                    return malfChancesKeys[3];
-                case <= 1.2f:
-                    return malfChancesKeys[4];
-                case > 1.2f:
-                    return malfChancesKeys[5];
-            }*/
-            return text.Localized(null);
+                case <= 0.5f:
+                    return "Low Chance";
+                case <= 1f:
+                    return "Significant Chance";
+                case <= 1.5f:
+                    return "High Chance";
+                case <= 2f:
+                    return  "Very High Chance";
+                case > 2f:
+                    return "Extremely High Chance";
+            }
+            return string.Empty;
         }
 
-  /*      [PatchPrefix]
-        private static bool Prefix(AmmoTemplate __instance, ref string __result)
+
+        private static string GetDuraBurnString(AmmoTemplate __instance)
         {
             float duraBurn = __instance.DurabilityBurnModificator - 1f;
-
             switch (duraBurn)
             {
-                //560 = 5.6
+                case <= 1.25f:
+                    return "Very Low";
+                case <= 1.5f:
+                    return  "Low";
                 case <= 2f:
-                    __result = duraBurn.ToString("P1");
-                    break;
+                    return "Significant";
                 case <= 4f:
-                    __result = "Significant Increase";
-                    break;
+                    return "High";
                 case <= 8f:
-                    __result = "Substantial Increase";
-                    break;
-                case <= 10f:
-                    __result = "Large Increase";
-                    break;
-                case <= 15f:
-                    __result = "Very Large Increase";
-                    break;
-                case <= 100f:
-                    __result = "Huge Increase";
-                    break;
+                    return "Very High";
+                case > 8f:
+                    return "Extreme";
             }
-            return false;
+            return string.Empty;
         }
-*/
+
         public static void AddCustomAttributes(AmmoTemplate ammoTemplate, ref List<ItemAttributeClass> ammoAttributes)
         {
             if (Plugin.EnableAmmoStats.Value == true)
@@ -191,27 +234,6 @@ namespace RealismMod
                     ammoAttributes.Add(fragAtt);
                 }
 
-                float totalDamage = ammoTemplate.Damage * ammoTemplate.ProjectileCount;
-                if (totalDamage > 0)
-                {
-                    ItemAttributeClass damageAtt = new ItemAttributeClass(ENewItemAttributeId.Damage);
-                    damageAtt.Name = ENewItemAttributeId.Damage.GetName();
-                    damageAtt.Base = () => totalDamage;
-                    damageAtt.StringValue = () => $"{totalDamage}";
-                    damageAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-                    ammoAttributes.Add(damageAtt);
-                }
-
-                if (ammoTemplate.PenetrationPower > 0f)
-                {
-                    ItemAttributeClass penAtt = new ItemAttributeClass(ENewItemAttributeId.Penetration);
-                    penAtt.Name = ENewItemAttributeId.Penetration.GetName();
-                    penAtt.Base = () => ammoTemplate.PenetrationPower;
-                    penAtt.StringValue = () => $"{ammoTemplate.PenetrationPower}";
-                    penAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-                    ammoAttributes.Add(penAtt);
-                }
-
                 if (ammoTemplate.BallisticCoeficient > 0f)
                 {
                     ItemAttributeClass bcAtt = new ItemAttributeClass(ENewItemAttributeId.BallisticCoefficient);
@@ -222,14 +244,34 @@ namespace RealismMod
                     ammoAttributes.Add(bcAtt);
                 }
 
-                if (ammoTemplate.ArmorDamage > 0f)
+                if (ammoTemplate.MalfFeedChance > 0f)
                 {
-                    ItemAttributeClass armorDamAtt = new ItemAttributeClass(ENewItemAttributeId.ArmorDamage);
-                    armorDamAtt.Name = ENewItemAttributeId.ArmorDamage.GetName();
-                    armorDamAtt.Base = () => ammoTemplate.ArmorDamage;
-                    armorDamAtt.StringValue = () => $"{ammoTemplate.ArmorDamage}";
-                    armorDamAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-                    ammoAttributes.Add(armorDamAtt);
+                    ItemAttributeClass malfAtt = new ItemAttributeClass(ENewItemAttributeId.MalfunctionChance);
+                    malfAtt.Name = ENewItemAttributeId.MalfunctionChance.GetName();
+                    malfAtt.Base = () => ammoTemplate.MalfMisfireChance;
+                    malfAtt.StringValue = () => GetMalfChance(ammoTemplate);
+                    malfAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    ammoAttributes.Add(malfAtt);
+                }
+
+                if (ammoTemplate.DurabilityBurnModificator > 1f)
+                {
+                    ItemAttributeClass duraBurnAtt = new ItemAttributeClass(ENewItemAttributeId.DurabilityBurn);
+                    duraBurnAtt.Name = ENewItemAttributeId.DurabilityBurn.GetName();
+                    duraBurnAtt.Base = () => ammoTemplate.DurabilityBurnModificator;
+                    duraBurnAtt.StringValue = () => GetDuraBurnString(ammoTemplate);
+                    duraBurnAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    ammoAttributes.Add(duraBurnAtt);
+                }
+
+                if (ammoTemplate.HeatFactor > 1f)
+                {
+                    ItemAttributeClass heatAtt = new ItemAttributeClass(ENewItemAttributeId.Heat);
+                    heatAtt.Name = ENewItemAttributeId.Heat.GetName();
+                    heatAtt.Base = () => ammoTemplate.HeatFactor;
+                    heatAtt.StringValue = () => GetHeat(ammoTemplate);
+                    heatAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                    ammoAttributes.Add(heatAtt);
                 }
             }
         }
