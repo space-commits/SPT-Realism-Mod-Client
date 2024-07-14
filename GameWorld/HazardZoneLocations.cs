@@ -11,12 +11,12 @@ namespace RealismMod
         private static Dictionary<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> FactoryGasZones = new Dictionary<string, (float spawnChance, float strength, Vector3, Vector3, Vector3)>
         {
             { "FactoryTent", (0.8f, 20f, new Vector3(-17.5f, 0.35f, -41.4f), new Vector3(0f, 0f, 0f), new Vector3(6.5f, 4f, 38f)) },
-            { "FactoryBasement", (0.25f, 100f, new Vector3(-6f, -3.6f, -20.5f), new Vector3(0f, 0f, 0f), new Vector3(25f, 3f, 36f)) },
-            { "FactoryTanks", (0.25f, 30f, new Vector3(7f, -2.5f, 17f), new Vector3(0f, 0f, 0f), new Vector3(35f, 3f, 12f)) },
+            { "FactoryBasement", (0.2f, 100f, new Vector3(-6f, -3.6f, -20.5f), new Vector3(0f, 0f, 0f), new Vector3(25f, 3f, 36f)) },
+            { "FactoryTanks", (0.2f, 30f, new Vector3(7f, -2.5f, 17f), new Vector3(0f, 0f, 0f), new Vector3(35f, 3f, 12f)) },
             { "FactoryVitamins", (1f, 10f, new Vector3(24.7f, 8.3f, 38.4f), new Vector3(0f, -2.5f, 0f), new Vector3(4.5f, 2f, 4f)) },
             { "FactoryPumpRoom", (1f, 10f, new Vector3(40f, 0.1f, -11.5f), new Vector3(0f, 0f, 0f), new Vector3(5.5f, 2f, 9.5f)) },
             { "FactoryCrashRoom", (0.05f, 150f, new Vector3(7f, -0.5f, -19f), new Vector3(0f, 0f, 0f), new Vector3(60f, 5.5f, 35.5f)) },
-            { "FactoryMechanicTunnel", (0.2f, 100f, new Vector3(-16.5f, -2.5f, 34f), new Vector3(0f, 0f, 0f), new Vector3(60f, 3f, 22f)) },
+            { "FactoryMechanicTunnel", (0.15f, 100f, new Vector3(-16.5f, -2.5f, 34f), new Vector3(0f, 0f, 0f), new Vector3(60f, 3f, 22f)) },
             { "FactoryExtractRoom", (0.05f, 200f, new Vector3(56f, 3f, -7f), new Vector3(0f, 0f, 0f), new Vector3(38f, 7f, 150f)) }, //main extract
             { "FactorySpawn", (0.05f, 200f, new Vector3(-22f, 2f, 49f), new Vector3(0f, 0f, 0f), new Vector3(65f, 9f, 30f)) },
         };

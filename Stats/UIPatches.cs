@@ -92,7 +92,7 @@ namespace RealismMod
         private static string GetStringValues(int armorClass, float penetrationPower)
         {
             float penetrationChance = GClass566.RealResistance(100f, 100f, armorClass, penetrationPower).GetPenetrationChance(penetrationPower);
-            string armorClassString = armorClass >= 10 ? armorClass + "  " : armorClass >= 6 ? " " + armorClass + "  " : string.Format("<sprite name=\"armor_classes_{0}\"> ", armorClass);
+            string armorClassString = armorClass >= 10 ? "Lvl " + armorClass + " " : "Lvl " + armorClass + " "; //string.Format("<sprite name=\"armor_classes_{0}\"> ", armorClass)
             return armorClassString + GClass3115.smethod_0(penetrationChance);
         }
 
@@ -244,7 +244,7 @@ namespace RealismMod
                     ammoAttributes.Add(bcAtt);
                 }
 
-                if (ammoTemplate.MalfFeedChance > 0f)
+                if (ammoTemplate.MalfMisfireChance > 0f)
                 {
                     ItemAttributeClass malfAtt = new ItemAttributeClass(ENewItemAttributeId.MalfunctionChance);
                     malfAtt.Name = ENewItemAttributeId.MalfunctionChance.GetName();
