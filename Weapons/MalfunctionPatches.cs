@@ -82,15 +82,15 @@ namespace RealismMod
                 {
                     if (weaponDurability <= 0f || malfMismatch || (explosiveMismatch && !Plugin.ServerConfig.malf_changes))
                     {
-                        if (weaponDurability <= 0f) NotificationManagerClass.DisplayWarningNotification("Weapon Is Broken Beyond Repair.", EFT.Communications.ENotificationDurationType.Long);
-                        else NotificationManagerClass.DisplayWarningNotification("Possible Wrong Ammo/Weapon Caliber Combination.", EFT.Communications.ENotificationDurationType.Long);
+                        if (weaponDurability <= 0f) NotificationManagerClass.DisplayWarningNotification("Weapon Is Broken Beyond Repair", EFT.Communications.ENotificationDurationType.Long);
+                        else NotificationManagerClass.DisplayWarningNotification("Wrong Ammo/Weapon Caliber Combination Or Weapon Is Broken", EFT.Communications.ENotificationDurationType.Long);
                         __result = Weapon.EMalfunctionState.Misfire;
                         return;
                     }
 
                     if (explosiveMismatch)
                     {
-                        NotificationManagerClass.DisplayWarningNotification("Catastrophic Failure. Wrong Ammo/Weapon Caliber Combination.", EFT.Communications.ENotificationDurationType.Long);
+                        NotificationManagerClass.DisplayWarningNotification("Catastrophic Failure. Wrong Ammo/Weapon Caliber Combination", EFT.Communications.ENotificationDurationType.Long);
                         ExplodeWeapon(__instance, player);
                     }
                 }

@@ -630,7 +630,7 @@ namespace RealismMod
             return typeof(EFT.Player).GetMethod("SetQuickSlotItem", BindingFlags.Instance | BindingFlags.Public);
         }
         [PatchPrefix]
-        private static bool Prefix(EFT.Player __instance, EBoundItem quickSlot)
+        private static bool Prefix(EFT.Player __instance, EBoundItem quickSlot, Callback<IHandsController> callback)
         {
             if (__instance.IsYourPlayer)
             {
@@ -644,8 +644,18 @@ namespace RealismMod
                     {
                         Logger.LogWarning("quick slot, can use = " + canUse);
                     }
-
+                    if (!canUse) callback(null);
                     return canUse;
+                }
+                if (Plugin.FikaPresent)
+                {
+                    MedsClass medItem = boundItem as MedsClass;
+                    if (boundItem != null && medItem != null)
+                    {
+                        __instance.SetInHands(medItem, EBodyPart.Common, 1, new Callback<GInterface142>(PlayerHealthController.Class1952.class1952_0.method_0));
+                        callback(null);
+                        return false;
+                    }
                 }
             }
             return true;
@@ -765,8 +775,6 @@ namespace RealismMod
         }
     }
 
-
-
     public class HCApplyDamagePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -884,7 +892,7 @@ namespace RealismMod
         }
     }
 
-    //Fika overrides Proceed methods
+
     public class ProceedMedsPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -895,7 +903,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
         {
-            if (__instance.IsYourPlayer && !Plugin.FikaPresent)
+            if (__instance.IsYourPlayer && !Plugin.FikaPresent)  //Fika overrides Proceed methods
             {
                 bool shouldAllowHeal = true;
                 Plugin.RealHealthController.CanUseMedItemCommon(meds, __instance, ref bodyPart, ref shouldAllowHeal);
