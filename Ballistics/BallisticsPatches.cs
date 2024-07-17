@@ -270,7 +270,7 @@ namespace RealismMod
                 }
  
                 //if fika, based on collidor type, get refernce to player assetpoolobject, get collidors, get component
-                BallisticsController.ModifyDamageByZone(__instance, ref damageInfo, partHit);
+                if (Plugin.EnableBodyHitZones.Value) BallisticsController.ModifyDamageByZone(__instance, ref damageInfo, partHit);
   
                 float KE = 1f;
                 AmmoTemplate ammoTemp = null;
