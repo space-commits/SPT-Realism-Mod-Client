@@ -178,8 +178,8 @@ namespace RealismMod
         private static int _timer = 0;
         private static MaterialType[] _allowedMats = { MaterialType.Helmet, MaterialType.BodyArmor, MaterialType.Body, MaterialType.Glass, MaterialType.GlassShattered, MaterialType.GlassVisor };
 
-        private static Vector3 _startLeftDir = new Vector3(0.12f, 0f, 0f);
-        private static Vector3 _startRightDir = new Vector3(-0.12f, 0f, 0f);
+        private static Vector3 _startLeftDir = new Vector3(0.137f, 0f, 0f);
+        private static Vector3 _startRightDir = new Vector3(-0.137f, 0f, 0f);
         private static Vector3 _startDownDir = new Vector3(0f, 0f, -0.19f);
 
         private static Vector3 _wiggleLeftDir = new Vector3(2.5f, 7.5f, -5) * 0.5f;

@@ -248,8 +248,8 @@ namespace RealismMod
             {
                 StanceController.CanResetDamping = false;
                 float mountingFactor = StanceController.IsMounting ? 0.1f : StanceController.IsBracing ? 0.25f : 1f;
-                float headGearFactor = GearController.FSIsActive || GearController.NVGIsActive || GearController.HasGasMask ? 1.5f : 1f;
-                float baseLine = Mathf.Clamp(6.5f * factor * headGearFactor * mountingFactor, 0.1f, 17f);
+                float headGearFactor = GearController.FSIsActive || GearController.NVGIsActive || GearController.HasGasMask ? 3f : 1f;
+                float baseLine = Mathf.Clamp(3.5f * factor * headGearFactor * mountingFactor, 0.1f, 17f);
                 float rndX = UnityEngine.Random.Range(baseLine * 0.9f, baseLine);
                 float rndY = UnityEngine.Random.Range(baseLine * 0.9f, baseLine);
                 Vector3 wiggleDir = new Vector3(-rndX, -rndY, 0f);
