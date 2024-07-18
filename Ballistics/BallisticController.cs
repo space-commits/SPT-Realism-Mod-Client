@@ -29,21 +29,6 @@ namespace RealismMod
         UnknownOrientation
     }
 
-    public static class HitZoneModifiers
-    {
-        public const float Neck = 100f;
-        public const float Spine = 80f;
-        public const float Heart = 120f;
-        public const float Calf = 0.9f;
-        public const float Forearm = 0.65f;
-        public const float Thigh = 1.3f;
-        public const float UpperArm = 1.35f;
-        public const float AZone = 2f;
-        public const float CZone = 1f;
-        public const float DZone = 0.7f;
-    }
-
-
     public static class BallisticsController
     {
         public static EBodyPartColliderType[] HeadCollidors = { EBodyPartColliderType.Eyes, EBodyPartColliderType.Ears, EBodyPartColliderType.Jaw, EBodyPartColliderType.BackHead, EBodyPartColliderType.NeckFront, EBodyPartColliderType.NeckBack, EBodyPartColliderType.HeadCommon, EBodyPartColliderType.ParietalHead };
@@ -69,7 +54,7 @@ namespace RealismMod
                 case EBodyHitZone.Unknown:
                     break;
                 case EBodyHitZone.AZone:
-                    di.Damage *= 1.6f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 1.7f * Plugin.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 2f;
                     di.LightBleedingDelta *= 2f;
                     return;
@@ -147,7 +132,7 @@ namespace RealismMod
                     break;
                 case EBodyPartColliderType.LeftSideChestUp:
                 case EBodyPartColliderType.RightSideChestUp:
-                    di.Damage *= 1.2f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 1.15f * Plugin.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 1.25f;
                     di.LightBleedingDelta *= 1.25f;
                     break;
@@ -163,12 +148,12 @@ namespace RealismMod
                     di.LightBleedingDelta *= 0.95f;
                     break;
                 case EBodyPartColliderType.ParietalHead:
-                    di.Damage *= 0.85f;
+                    di.Damage *= 0.9f;
                     di.HeavyBleedingDelta *= 0.9f;
                     di.LightBleedingDelta *= 0.9f;
                     break;
                 case EBodyPartColliderType.BackHead:
-                    di.Damage *= 1f;
+                    di.Damage *= 1.1f;
                     di.HeavyBleedingDelta *= 1.15f;
                     di.LightBleedingDelta *= 1.15f;
                     break;

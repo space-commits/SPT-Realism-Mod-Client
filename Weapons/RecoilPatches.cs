@@ -658,7 +658,6 @@ namespace RealismMod
                 float shortStockingDebuff = StanceController.CurrentStance == EStance.ShortStock ? 1.15f : 1f;
                 float shortStockingCamBonus = StanceController.CurrentStance == EStance.ShortStock ? 0.6f : 1f;
 
-                float beltFedFactor = firearmController.Weapon.IsBeltMachineGun && !StanceController.IsBracing && !StanceController.IsMounting ? 1.11f : 1f;
                 float mountingDispModi = Mathf.Clamp(StanceController.BracingRecoilBonus, 0.85f, 1f);
                 float baseRecoilAngle = RecoilController.BaseTotalRecoilAngle;
                     
@@ -683,10 +682,9 @@ namespace RealismMod
                 __instance.method_2(incomingForce, out rotationRecoilPower, out positionRecoilPower);
 
                 //Modify Vert and Horz recoil based on various factors
-                float vertFactor = PlayerState.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff 
-                    * playerWeightFactorBuff * StanceController.BracingRecoilBonus * shotFactor * opticRecoilMulti
-                    * beltFedFactor * Plugin.VertMulti.Value;
-                float horzFactor = PlayerState.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * shotFactor * beltFedFactor * Plugin.HorzMulti.Value;
+                float vertFactor = PlayerState.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff
+                    * playerWeightFactorBuff * StanceController.BracingRecoilBonus * shotFactor * opticRecoilMulti * Plugin.VertMulti.Value;
+                float horzFactor = PlayerState.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * shotFactor * Plugin.HorzMulti.Value;
                 RecoilController.FactoredTotalVRecoil = vertFactor * RecoilController.BaseTotalVRecoil;
                 RecoilController.FactoredTotalHRecoil = horzFactor * RecoilController.BaseTotalHRecoil;
 
@@ -696,8 +694,7 @@ namespace RealismMod
 
                 //Recalculate and modify dispersion
                 float dispFactor = incomingForce * PlayerState.RecoilInjuryMulti * shortStockingDebuff 
-                    * playerWeightFactorDebuff * mountingDispModi * opticRecoilMulti 
-                    * beltFedFactor * Plugin.DispMulti.Value;
+                    * playerWeightFactorDebuff * mountingDispModi * opticRecoilMulti * Plugin.DispMulti.Value;
                 RecoilController.FactoredTotalDispersion = RecoilController.BaseTotalDispersion * dispFactor;
 
                 __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = new Vector2(RecoilController.FactoredTotalDispersion * Plugin.RecoilRandomness.Value, RecoilController.FactoredTotalDispersion * Plugin.RecoilRandomness.Value);

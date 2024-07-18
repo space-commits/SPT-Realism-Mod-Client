@@ -34,110 +34,110 @@ namespace RealismMod
 
         public static string WeaponType(Weapon weapon)
         {
-            return !Utils.IsNull(weapon.ConflictingItems) ? weapon.ConflictingItems[1] : "Unknown";
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) ? weapon.ConflictingItems[1] : "Unknown";
 
         }
 
         public static float BaseTorqueDistance(Weapon weapon)
         {
-            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[2], out float result) ? result : 0f;
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[2], out float result) ? result : 0f;
 
         }
 
         public static bool WepHasShoulderContact(Weapon weapon)
         {
-            return !Utils.IsNull(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[3], out bool result) ? result : false;
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[3], out bool result) ? result : false;
 
         }
 
         public static float BaseReloadSpeed(Weapon weapon)
         {
-            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[4], out float result) ? result : 1f;
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[4], out float result) ? result : 1f;
 
         }
 
         public static string OperationType(Weapon weapon)
         {
-            return !Utils.IsNull(weapon.ConflictingItems) ? weapon.ConflictingItems[5] : "Unknown";
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) ? weapon.ConflictingItems[5] : "Unknown";
 
         }
 
         public static float WeaponAccuracy(Weapon weapon)
         {
  
-            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[6], out float result) ? result : 0f;
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[6], out float result) ? result : 0f;
 
         }
 
         public static float RecoilDamping(Weapon weapon)
         {;
-            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[7], out float result) ? result : 0f;
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[7], out float result) ? result : 0f;
 
         }
 
         public static float RecoilHandDamping(Weapon weapon)
         {
-            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[8], out float result) ? result : 0.65f;
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[8], out float result) ? result : 0.65f;
 
         }
 
         public static bool WeaponAllowsADS(Weapon weapon)
         {
-            return !Utils.IsNull(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[9], out bool result) ? result : false;
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[9], out bool result) ? result : false;
 
         }
 
         public static float BaseChamberSpeed(Weapon weapon)
         {
-            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[10], out float result) ? result : 1f;
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[10], out float result) ? result : 1f;
 
         }
 
         public static float MaxChamberSpeed(Weapon weapon)
         {
-            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[11], out float result) ? result : 1.2f;
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[11], out float result) ? result : 1.2f;
 
         }
 
         public static float MinChamberSpeed(Weapon weapon)
         {
-            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[12], out float result) ? result : 0.7f;
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[12], out float result) ? result : 0.7f;
 
         }
 
         public static bool IsManuallyOperated(Weapon weapon)
         {
-            return !Utils.IsNull(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[13], out bool result) ? result : false;
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) && bool.TryParse(weapon.ConflictingItems[13], out bool result) ? result : false;
 
         }
 
         public static float MaxReloadSpeed(Weapon weapon)
         {
-            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[14], out float result) ? result : 1.2f;
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[14], out float result) ? result : 1.2f;
 
         }
 
         public static float MinReloadSpeed(Weapon weapon)
         {
-            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[15], out float result) ? result : 0.7f;
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[15], out float result) ? result : 0.7f;
 
         }
 
         public static float BaseChamberCheckSpeed(Weapon weapon)
         {
-            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[16], out float result) ? result : 1f;
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[16], out float result) ? result : 1f;
 
         }
 
         public static float BaseFixSpeed(Weapon weapon)
         {
-            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[17], out float result) ? result : 1f;
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[17], out float result) ? result : 1f;
 
         }
 
         public static float VisualRecoilMulti(Weapon weapon)
         {
-            return !Utils.IsNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[18], out float result) ? result : 0.1f;
+            return !Utils.IsConfItemNull(weapon.ConflictingItems) && float.TryParse(weapon.ConflictingItems[18], out float result) ? result : 0.1f;
 
         }
 
@@ -148,13 +148,13 @@ namespace RealismMod
         public const float AdapterPistolGripBonusErgo = 2f;
         public const float PumpGripReloadBonus = 20f;
         public const float FoldedErgoFactor = 0.85f;
-        public const float FoldedHRecoilFactor = 1.1f;
-        public const float FoldedVRecoilFactor = 1.6f;
+        public const float FoldedHRecoilFactor = 1.15f;
+        public const float FoldedVRecoilFactor = 1.65f;
         public const float FoldedCOIFactor = 2.5f;
-        public const float FoldedCamRecoilFactor = 0.5f;
-        public const float FoldedDispersionFactor = 1.7f;
+        public const float FoldedCamRecoilFactor = 0.75f;
+        public const float FoldedDispersionFactor = 1.75f;
         public const float FoldedRecoilAngleFactor = 1.15f;
-        public const float FoldedConvergenceFactor = 0.8f;
+        public const float FoldedConvergenceFactor = 0.7f;
 
         public static float TotalWeaponWeight = 0f;
         public static float TotalWeaponLength = 0f;

@@ -52,7 +52,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(InputClass __instance, ECommand command)
         {
-            if (StanceController.CurrentStance != EStance.PistolCompressed &&  (command == ECommand.SelectFirstPrimaryWeapon || command == ECommand.SelectSecondPrimaryWeapon || command == ECommand.QuickSelectSecondaryWeapon))
+            if (StanceController.CurrentStance != EStance.PistolCompressed && (command == ECommand.SelectFirstPrimaryWeapon || command == ECommand.SelectSecondPrimaryWeapon || command == ECommand.QuickSelectSecondaryWeapon))
             {
                 StanceController.DidWeaponSwap = true;
                 return true;
@@ -97,10 +97,6 @@ namespace RealismMod
                 StanceController.CurrentStance = EStance.None;
                 StanceController.StoredStance = EStance.None;
                 StanceController.StanceBlender.Target = 0f;
-                return false;
-            }
-            if (Utils.Verified && (command == ECommand.EndSprinting || command == ECommand.EndShooting || command == ECommand.ToggleDuck || command == ECommand.Jump))
-            {
                 return false;
             }
             return true;
@@ -432,7 +428,7 @@ namespace RealismMod
 
             CalcBaseHipfireAccuracy(player);
             float stanceHipFactor = StanceController.CurrentStance == EStance.ActiveAiming ? 0.7f : StanceController.CurrentStance == EStance.ShortStock ? 1.35f : 1.05f;
-            player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.2f, 0.5f);
+            player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.1f, 0.5f);
         }
 
         protected override MethodBase GetTargetMethod()

@@ -23,6 +23,7 @@ using PainKillerInterface = GInterface275;
 using IntoxicationInterface = GInterface264;
 using TremorInterface = GInterface278;
 using TunnelVisionInterface = GInterface280;
+using static GClass2403;
 
 namespace RealismMod
 {
@@ -30,52 +31,52 @@ namespace RealismMod
     {
         public static string MedType(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) ? med.ConflictingItems[1] : "Unknown";
+            return !Utils.IsConfItemNull(med.ConflictingItems) ? med.ConflictingItems[1] : "Unknown";
         }
 
         public static string HBleedHealType(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) ? med.ConflictingItems[2] : "Unknown";
+            return !Utils.IsConfItemNull(med.ConflictingItems) ? med.ConflictingItems[2] : "Unknown";
         }
 
         public static float HpPerTick(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[3], out float result) ? result : 1f;
+            return !Utils.IsConfItemNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[3], out float result) ? result : 1f;
         }
 
         public static bool CanBeUsedInRaid(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) && bool.TryParse(med.ConflictingItems[4], out bool result) ? result : false;
+            return !Utils.IsConfItemNull(med.ConflictingItems) && bool.TryParse(med.ConflictingItems[4], out bool result) ? result : false;
         }
 
         public static int PainKillerDuration(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[5], out int result) ? result : 1;
+            return !Utils.IsConfItemNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[5], out int result) ? result : 1;
         }
 
         public static float HPRestoreAmount(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems, 7) && float.TryParse(med.ConflictingItems[6], out float result) ? result : 1;
+            return !Utils.IsConfItemNull(med.ConflictingItems, 7) && float.TryParse(med.ConflictingItems[6], out float result) ? result : 1;
         }
 
         public static int Unused2(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[7], out int result) ? result : 1;
+            return !Utils.IsConfItemNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[7], out int result) ? result : 1;
         }
 
         public static float TunnelVisionStrength(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[8], out float result) ? result : 1f;
+            return !Utils.IsConfItemNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[8], out float result) ? result : 1f;
         }
 
         public static int Delay(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[9], out int result) ? result : 1;
+            return !Utils.IsConfItemNull(med.ConflictingItems) && int.TryParse(med.ConflictingItems[9], out int result) ? result : 1;
         }
 
         public static float Strength(Item med)
         {
-            return !Utils.IsNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[10], out float result) ? result : 0f;
+            return !Utils.IsConfItemNull(med.ConflictingItems) && float.TryParse(med.ConflictingItems[10], out float result) ? result : 0f;
         }
 
         public static readonly Dictionary<string, Type> EffectTypes = new Dictionary<string, Type>
@@ -104,6 +105,18 @@ namespace RealismMod
         Performance,
         Generic,
         Weight
+    }
+
+    public enum EHealBlockType
+    {
+        Splint,
+        Trnqt,
+        Surgery,
+        GearCommon,
+        GearSpecific,
+        Unknown,
+        Pills,
+        Food
     }
 
     public class RealismHealthController
@@ -868,7 +881,7 @@ namespace RealismMod
                     {
                         if (!_haveNotifiedPKOverdose) 
                         {
-                            if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("You Have Overdosed.", EFT.Communications.ENotificationDurationType.Long);
+                            if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("You Have Overdosed", EFT.Communications.ENotificationDurationType.Long);
                             _haveNotifiedPKOverdose = true;
                         }
                         AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _painReliefInterval, 5f, 0.35f);
@@ -1116,7 +1129,7 @@ namespace RealismMod
             //will have to make mask exception for moustache, balaclava etc.
             if (fsIsON || nvgIsOn || mouthBlocked)
             {
-                if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Can't Eat/Drink, Mouth Is Blocked By Active Faceshield/NVGs Or Mask.", EFT.Communications.ENotificationDurationType.Long);
+                if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Food), EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
             }
@@ -1365,7 +1378,31 @@ namespace RealismMod
             }
         }
 
-        public void CanUseMedItemCommon(MedsClass meds, Player player, ref EBodyPart bodyPart, ref bool shouldAllowHeal) 
+        private string GetHealBlockMessage(EHealBlockType blockType) 
+        {
+            switch(blockType) 
+            {
+                case EHealBlockType.Trnqt:
+                    return "Tourniquets Can Only Stop Bleeds On Limbs";
+                case EHealBlockType.Splint:
+                    return "Splints Can Only Fix Fractures On Limbs";
+                case EHealBlockType.GearCommon:
+                    return "Gear Is Blocking Wound";
+                case EHealBlockType.GearSpecific:
+                    return " Has Gear On, Remove Gear First To Be Able To Heal";
+                case EHealBlockType.Surgery:
+                    return "No Suitable Bodypart Was Found For Surgery Kit";
+                case EHealBlockType.Pills:
+                    return "Can't Take Pills, Mouth Is Blocked By Active Faceshield/NVGs Or Mask";
+                case EHealBlockType.Food:
+                    return "Can't Eat/Drink, Mouth Is Blocked By Active Faceshield/NVGs Or Mask";
+                case EHealBlockType.Unknown:
+                default:
+                    return "No Suitable Bodypart Was Found For Healing";
+            }
+        }
+
+        public void CanUseMedItemCommon(MedsClass meds, Player player, ref EBodyPart bodyPart, ref bool shouldAllowHeal)
         {
             CheckIfReducesHazardInRaid(meds, player, true); //the types of item that can reduce toxicity and radiation can't be blocked so should be fine
 
@@ -1413,6 +1450,8 @@ namespace RealismMod
                 bool hasBodyGear = vest != null || tacrig != null; //|| bag != null
                 bool hasHeadGear = head != null || ears != null || face != null;
 
+                EHealBlockType blockType = EHealBlockType.Unknown;
+
                 FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
                 NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
                 bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
@@ -1420,7 +1459,7 @@ namespace RealismMod
 
                 if (Plugin.GearBlocksHeal.Value && medType.Contains("pills") && (mouthBlocked || fsIsON || nvgIsOn))
                 {
-                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Can't Take Pills, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
+                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Pills), EFT.Communications.ENotificationDurationType.Long);
                     shouldAllowHeal = false;
                     return;
                 }
@@ -1443,6 +1482,7 @@ namespace RealismMod
                 MedProperties.EffectTypes.TryGetValue("LightBleeding", out lightBleedType);
                 MedProperties.EffectTypes.TryGetValue("BrokenBone", out fractureType);
 
+
                 if (medType == "surg")
                 {
                     bool isHead = false;
@@ -1460,7 +1500,7 @@ namespace RealismMod
 
                     if (bodyPart == EBodyPart.Common)
                     {
-                        if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("No Suitable Bodypart Was Found For Surgery Kit", EFT.Communications.ENotificationDurationType.Long);
+                        if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Surgery), EFT.Communications.ENotificationDurationType.Long);
                         shouldAllowHeal = false;
                         return;
                     }
@@ -1469,7 +1509,7 @@ namespace RealismMod
 
                     if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
                     {
-                        if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Gear Is Blocking Wound", EFT.Communications.ENotificationDurationType.Long);
+                        if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.GearCommon), EFT.Communications.ENotificationDurationType.Long);
                     }
                     Plugin.RealHealthController.HandleHealthEffects(medType, meds, bodyPart, player, hBleedHealType, canHealHBleed, canHealLBleed, canHealFract);
                     return;
@@ -1510,8 +1550,7 @@ namespace RealismMod
                                 }
                                 if ((isBody || isHead) && hBleedHealType == "trnqt")
                                 {
-                                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Heavy Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
-
+                                    blockType = EHealBlockType.Trnqt;
                                     continue;
                                 }
                                 if ((isBody || isHead) && (hBleedHealType == "clot" || hBleedHealType == "combo" || hBleedHealType == "surg"))
@@ -1532,8 +1571,7 @@ namespace RealismMod
                                 }
                                 if ((isBody || isHead) && hBleedHealType == "trnqt")
                                 {
-                                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Light Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
-
+                                    blockType = EHealBlockType.Trnqt;
                                     continue;
                                 }
                                 if ((isBody || isHead) && hasHeavyBleed)
@@ -1553,8 +1591,7 @@ namespace RealismMod
                                 }
                                 if (isNotLimb)
                                 {
-                                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Splints Can Only Fix Fractures On Limbs", EFT.Communications.ENotificationDurationType.Long);
-
+                                    blockType = EHealBlockType.Splint;
                                     continue;
                                 }
 
@@ -1578,7 +1615,7 @@ namespace RealismMod
                         return;
                     }
 
-                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("No Suitable Bodypart Was Found For Healing, Gear May Be Covering The Wound.", EFT.Communications.ENotificationDurationType.Long);
+                    if (Plugin.EnableMedNotes.Value) GetHealBlockMessage(blockType);
 
                     shouldAllowHeal = false;
                     return;
@@ -1647,7 +1684,7 @@ namespace RealismMod
             {
                 if (Plugin.GearBlocksEat.Value && (mouthBlocked || fsIsON || nvgIsOn))
                 {
-                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Can't Take Pills, Mouth Is Blocked By Faceshield/NVGs/Mask. Toggle Off Faceshield/NVG Or Remove Mask/Headgear", EFT.Communications.ENotificationDurationType.Long);
+                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Pills), EFT.Communications.ENotificationDurationType.Long);
                     canUse = false;
                     return;
                 }
@@ -1657,7 +1694,7 @@ namespace RealismMod
 
             if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
             {
-                if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(bodyPart + " Has Gear On, Remove Gear First To Be Able To Heal", EFT.Communications.ENotificationDurationType.Long);
+                if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(bodyPart + GetHealBlockMessage(EHealBlockType.GearSpecific), EFT.Communications.ENotificationDurationType.Long);
 
                 canUse = false;
                 return;
@@ -1683,21 +1720,21 @@ namespace RealismMod
 
             if (isNotLimb && MedProperties.HBleedHealType(item) == "trnqt")
             {
-                if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Tourniquets Can Only Stop Heavy Bleeds On Limbs", EFT.Communications.ENotificationDurationType.Long);
+                if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Trnqt), EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
             }
 
             if (medType == "splint" && med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && isNotLimb)
             {
-                if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Splints Can Only Fix Fractures On Limbs", EFT.Communications.ENotificationDurationType.Long);
+                if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Splint), EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
             }
 
             if (medType == "medkit" && med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && hasFracture && isNotLimb && !hasHeavyBleed && !hasLightBleed)
             {
-                NotificationManagerClass.DisplayWarningNotification("Splints Can Only Fix Fractures On Limbs", EFT.Communications.ENotificationDurationType.Long);
+                NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Splint), EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
             }
@@ -1823,7 +1860,7 @@ namespace RealismMod
                 totalMaxHp += maxHp;
                 totalCurrentHp += currentHp;
 
-                float percentHp = (currentHp / maxHp);
+                float percentHp = currentHp / maxHp;
                 float percentHpStamRegen = 1f - ((1f - percentHp) / (isBody ? 10f : 5f));
                 float percentHpWalk = 1f - ((1f - percentHp) / (isBody ? 15f : 7.5f));
                 float percentHpSprint = 1f - ((1f - percentHp) / (isBody ? 8f : 4f));
@@ -1950,7 +1987,7 @@ namespace RealismMod
                 PlayerHazardBridge = player.gameObject.GetComponent<PlayerHazardBridge>();
             }
 
-            if (!player.HealthController.IsAlive) return; 
+            if (!player.HealthController.IsAlive || player.HealthController.DamageCoeff <= 0f) return; 
 
             if ((PlayerHazardBridge.GasZoneCount > 0 || PlayerHazardBridge.RadZoneCount > 0) && GearController.HasGasMask) 
             {
@@ -2022,7 +2059,7 @@ namespace RealismMod
         {
             if (_hazardWaitTime > _hazardInterval) 
             {
-                if (HazardTracker.TotalToxicity >= 50f)
+                if (HazardTracker.TotalToxicity >= 10f)
                 {
                     if (HazardTracker.TotalToxicity >= ToxicityThreshold && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest))
                     {
@@ -2035,7 +2072,7 @@ namespace RealismMod
                     if (HazardTracker.TotalToxicity >= ToxicityThreshold) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, effectStrength * 0.7f);
                 }
 
-                if (HazardTracker.TotalRadiation >= 40f)
+                if (HazardTracker.TotalRadiation >= 10f)
                 {
                     if (HazardTracker.TotalRadiation >= RadiationThreshold && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest))
                     {

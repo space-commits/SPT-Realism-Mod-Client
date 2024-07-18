@@ -110,14 +110,20 @@ namespace RealismMod
             WeaponSkillsClass skillsClass = (WeaponSkillsClass)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_buffInfo").GetValue(pwa);
             Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayBlender").GetValue(pwa);
 
-            float headGearFactor = GearController.FSIsActive || GearController.NVGIsActive || GearController.HasGasMask ? 1.45f : 1f;
-            float ergoWeightFactor = weapon.GetSingleItemTotalWeight() * (1f - WeaponStats.PureErgoDelta) * headGearFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + ((1f - PlayerState.GearErgoPenalty) * 1.5f));
+       
+            float swayStrength = 0f;
+            if (weapon.WeapClass != "pistol")
+            {
+                float headGearFactor = GearController.FSIsActive || GearController.NVGIsActive || GearController.HasGasMask ? 1.45f : 1f;
+                float gunWeightFactor = ProceduralIntensityFactorCalc(weapon.GetSingleItemTotalWeight(), 4f);
+                float ergoWeightFactor = WeaponStats.ErgoFactor * gunWeightFactor * (1f + (-WeaponStats.Balance / 100f)) * (1f - WeaponStats.PureErgoDelta) * headGearFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + ((1f - PlayerState.GearErgoPenalty) * 1.5f)); //
+                swayStrength = Mathf.InverseLerp(1f, 180f, ergoWeightFactor);
+            }
+            AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayStrength").SetValue(pwa, swayStrength);
 
             float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo * PlayerState.GearErgoPenalty) * 1.15f;
             float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (1f + WeaponStats.ModAimSpeedModifier), 0.5f, 1.45f);
             valueBlender.Speed = pwa.SwayFalloff * aimSpeed * 4.35f;
-
-            AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayStrength").SetValue(pwa, Mathf.InverseLerp(1f, 18f, ergoWeightFactor));
 
             pwa.UpdateSwayFactors();
 
@@ -647,7 +653,7 @@ namespace RealismMod
             {
                 return "frontFar";
             }
-            if (modType == "shotTube")
+            if (modType == "shotTube" || Utils.IsTacticalCombo(mod) || Utils.IsFlashlight(mod))
             {
                 return "frontHalf";
             }
@@ -661,7 +667,7 @@ namespace RealismMod
                 {
                     return "rear";
                 }
-                if (Utils.IsUBGL(mod) || Utils.IsHandguard(mod) || Utils.IsGasblock(mod) || Utils.IsFlashHider(mod) || Utils.IsForegrip(mod) || Utils.IsMuzzleCombo(mod) || Utils.IsSilencer(mod) || Utils.IsTacticalCombo(mod) || Utils.IsFlashlight(mod) || Utils.IsBipod(mod) || Utils.IsBarrel(mod))
+                if (Utils.IsUBGL(mod) || Utils.IsHandguard(mod) || Utils.IsGasblock(mod) || Utils.IsFlashHider(mod) || Utils.IsForegrip(mod) || Utils.IsMuzzleCombo(mod) || Utils.IsSilencer(mod) || Utils.IsBipod(mod) || Utils.IsBarrel(mod))
                 {
                     return "front";
                 }

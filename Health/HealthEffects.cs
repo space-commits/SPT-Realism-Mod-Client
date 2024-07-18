@@ -70,7 +70,7 @@ namespace RealismMod
        
                 if (!haveNotified)
                 {
-                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Tourniquet Applied On " + BodyPart + ", You Are Losing Health On This Limb. Use A Surgery Kit To Remove It.", EFT.Communications.ENotificationDurationType.Long);
+                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Tourniquet Applied On " + BodyPart + ", You Are Losing Health On This Limb. Use A Surgery Kit To Remove It", EFT.Communications.ENotificationDurationType.Long);
                     haveNotified = true;
                 }
 
@@ -472,8 +472,10 @@ namespace RealismMod
         {
             switch (HazardTracker.TotalToxicity)
             {
-                case < 50f:
+                case < 40f:
                     return 0f;
+                case <= 50f:
+                    return -0.05f;
                 case <= 60f:
                     return -0.2f;
                 case <= 70f:
@@ -496,7 +498,7 @@ namespace RealismMod
             if (Delay <= 0)
             {
                 TimeExisted++;
-                if (TimeExisted % 3 == 0 && HazardTracker.TotalToxicity >= 55f)
+                if (TimeExisted % 3 == 0 && HazardTracker.TotalToxicity >= 50f)
                 {
                     for (int i = 0; i < RealHealthController.BodyParts.Length; i++)
                     {
@@ -543,7 +545,7 @@ namespace RealismMod
                 case < 100f:
                     return -0.1f;
                 case >= 100f:
-                    return -0.15f;
+                    return -0.25f;
                 default:
                     return 0f;
             }
@@ -554,7 +556,7 @@ namespace RealismMod
             if (Delay <= 0)
             {
                 TimeExisted++;
-                if (TimeExisted % 3 == 0 && HazardTracker.TotalRadiation > 80f)
+                if (TimeExisted % 3 == 0 && HazardTracker.TotalRadiation >= 80f)
                 {
                     for (int i = 0; i < RealHealthController.BodyParts.Length; i++)
                     {
@@ -666,7 +668,7 @@ namespace RealismMod
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
         public EStimType StimType { get; }
-        private bool hasRemovedTrnqt = false;
+        private bool _hasRemovedTrnqt = false;
 
         public StimShellEffect(Player player, int? dur, int delay, EStimType stimType, RealismHealthController realismHealthController)
         {
@@ -684,11 +686,11 @@ namespace RealismMod
         {
             if (Delay <= 0)
             {
-                if (!hasRemovedTrnqt && (StimType == EStimType.Regenerative || StimType == EStimType.Clotting))
+                if (!_hasRemovedTrnqt && (StimType == EStimType.Regenerative || StimType == EStimType.Clotting))
                 {
                     RealHealthController.RemoveEffectsOfType(EHealthEffectType.Tourniquet);
                     if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Removing Tourniquet Effects Due To Stim Type: " + StimType, EFT.Communications.ENotificationDurationType.Long);
-                    hasRemovedTrnqt = true;
+                    _hasRemovedTrnqt = true;
                 }
 
                 Duration--;
@@ -699,93 +701,86 @@ namespace RealismMod
 
     public class HealthDrain : EffectClass, IEffect, InterfaceOne, InterfaceTwo
     {
+        private float _hpPerTick;
+        private float _time;
+        private EBodyPart _bodyPart;
+        private EBodyPart[] _bodyParts = { EBodyPart.Chest, EBodyPart.Stomach };
+
         public override void Started()
         {
-            this.hpPerTick = base.Strength;
-            this.SetHealthRatesPerSecond(this.hpPerTick / bodyParts.Count(), 0f, 0f, 0f);
-            this.bodyPart = base.BodyPart;
+            this._hpPerTick = base.Strength;
+            this.SetHealthRatesPerSecond(this._hpPerTick / _bodyParts.Count(), 0f, 0f, 0f);
+            this._bodyPart = base.BodyPart;
         }
 
         public override void RegularUpdate(float deltaTime)
         {
-            this.time += deltaTime;
-            if (this.time < 3f)
+            this._time += deltaTime;
+            if (this._time < 3f)
             {
                 return;
             }
-            this.time -= 3f;
-            foreach (EBodyPart part in bodyParts)
+            this._time -= 3f;
+            foreach (EBodyPart part in _bodyParts)
             {
                 if (this.HealthController.GetBodyPartHealth(part).Current > 0f) 
                 {
-                    this.HealthController.ApplyDamage(part, this.hpPerTick / bodyParts.Count(), ExistanceClass.PoisonDamage);
+                    this.HealthController.ApplyDamage(part, this._hpPerTick / _bodyParts.Count(), ExistanceClass.PoisonDamage);
                 }
             }
         }
-
-        private float hpPerTick;
-
-        private float time;
-
-        private EBodyPart bodyPart;
-        private EBodyPart[] bodyParts = { EBodyPart.Chest, EBodyPart.Stomach };
     }
 
 
     public class HealthChange : EffectClass, IEffect, InterfaceOne, InterfaceTwo
     {
+        private float _hpPerTick;
+        private float _time;
+        private EBodyPart _bodyPart;
+
         public override void Started()
         {
-            this.hpPerTick = base.Strength;
-            this.SetHealthRatesPerSecond(this.hpPerTick, 0f, 0f, 0f);
-            this.bodyPart = base.BodyPart;
+            this._hpPerTick = base.Strength;
+            this.SetHealthRatesPerSecond(this._hpPerTick, 0f, 0f, 0f);
+            this._bodyPart = base.BodyPart;
         }
 
         public override void RegularUpdate(float deltaTime)
         {
-            this.time += deltaTime;
-            if (this.time < 3f)
+            this._time += deltaTime;
+            if (this._time < 3f)
             {
                 return;
             }
-            this.time -= 3f;
-            base.HealthController.ChangeHealth(bodyPart, this.hpPerTick, ExistanceClass.Existence);
+            this._time -= 3f;
+            base.HealthController.ChangeHealth(_bodyPart, this._hpPerTick, ExistanceClass.Existence);
         }
-
-        private float hpPerTick;
-
-        private float time;
-
-        private EBodyPart bodyPart;
-
     }
 
     public class ResourceRateDrain : EffectClass, IEffect, InterfaceOne, InterfaceTwo
     {
+        private float _resourcePerTick;
+        private float _time;
+        private EBodyPart _bodyPart;
+
         public override void Started()
         {
-            this.resourcePerTick = Plugin.RealHealthController.ResourcePerTick;
-            this.bodyPart = base.BodyPart;
-            this.SetHealthRatesPerSecond(0f, -this.resourcePerTick, -this.resourcePerTick, 0f);
+            this._resourcePerTick = Plugin.RealHealthController.ResourcePerTick;
+            this._bodyPart = base.BodyPart;
+            this.SetHealthRatesPerSecond(0f, -this._resourcePerTick, -this._resourcePerTick, 0f);
         }
 
         public override void RegularUpdate(float deltaTime)
         {
-            this.time += deltaTime;
-            if (this.time < 3f) 
+            this._time += deltaTime;
+            if (this._time < 3f) 
             {
                 return;
             }
-            this.time -= 3f;
-            this.resourcePerTick = Plugin.RealHealthController.ResourcePerTick;
-            this.SetHealthRatesPerSecond(0f, -this.resourcePerTick * Plugin.EnergyRateMulti.Value, -this.resourcePerTick * Plugin.HydrationRateMulti.Value, 0f);
+            this._time -= 3f;
+            this._resourcePerTick = Plugin.RealHealthController.ResourcePerTick;
+            this.SetHealthRatesPerSecond(0f, -this._resourcePerTick * Plugin.EnergyRateMulti.Value, -this._resourcePerTick * Plugin.HydrationRateMulti.Value, 0f);
         }
-
-        private float resourcePerTick;
-
-        private float time;
-
-        private EBodyPart bodyPart;
     }
 
 }

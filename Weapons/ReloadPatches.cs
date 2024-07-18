@@ -528,7 +528,7 @@ namespace RealismMod
 
                     float totalRechamberSpeed = Mathf.Clamp(chamberSpeed * PlayerState.FixSkillMulti * PlayerState.ReloadInjuryMulti * 
                         PlayerState.RemainingArmStamPercReload * Plugin.RealHealthController.AdrenalineReloadBonus,
-                        0.7f, 1.5f);
+                        0.7f, 1.75f);
 
                     player.ExecuteSkill(new Action(() => player.Skills.WeaponFixAction.Complete(1f)));
 

@@ -178,8 +178,8 @@ namespace RealismMod
         private static int _timer = 0;
         private static MaterialType[] _allowedMats = { MaterialType.Helmet, MaterialType.BodyArmor, MaterialType.Body, MaterialType.Glass, MaterialType.GlassShattered, MaterialType.GlassVisor };
 
-        private static Vector3 _startLeftDir = new Vector3(0.12f, 0f, 0f);
-        private static Vector3 _startRightDir = new Vector3(-0.12f, 0f, 0f);
+        private static Vector3 _startLeftDir = new Vector3(0.137f, 0f, 0f);
+        private static Vector3 _startRightDir = new Vector3(-0.137f, 0f, 0f);
         private static Vector3 _startDownDir = new Vector3(0f, 0f, -0.19f);
 
         private static Vector3 _wiggleLeftDir = new Vector3(2.5f, 7.5f, -5) * 0.5f;
@@ -380,12 +380,16 @@ namespace RealismMod
                     StanceController.IsBracing = false;
                 }
 
-                if (StanceController.IsBracing) 
+                if (StanceController.IsBracing || StanceController.IsMounting) 
                 {
                     float mountOrientationBonus = StanceController.BracingDirection == EBracingDirection.Top ? 0.75f : 1f;
                     float mountingRecoilLimit = WeaponStats.IsStocklessPistol ? 0.25f : 0.75f;
-                    float recoilBonus = StanceController.IsMounting && __instance.Weapon.IsBeltMachineGun ? 0.6f : StanceController.IsMounting ? 0.8f : 0.95f;
-                    recoilBonus = StanceController.IsMounting && WeaponStats.HasBipod ? recoilBonus * 0.8f : recoilBonus;
+                    float recoilBonus = 
+                        StanceController.IsMounting && __instance.Weapon.IsBeltMachineGun && WeaponStats.HasBipod ? 0.5f :
+                        StanceController.IsMounting && __instance.Weapon.IsBeltMachineGun ? 0.65f :
+                        StanceController.IsMounting && WeaponStats.HasBipod ? 0.7f :
+                        StanceController.IsMounting ? 0.85f :
+                        0.95f;
                     float swayBonus = StanceController.IsMounting ? 0.35f : 0.65f;
                     swayBonus = StanceController.IsMounting && WeaponStats.HasBipod ? swayBonus * 0.8f : swayBonus;
 
@@ -457,29 +461,64 @@ namespace RealismMod
                 }
                 else
                 {
-                    if (Plugin.IsUsingFika) //collisions acts funky with stances from another client's perspective
+                    if (Plugin.FikaPresent) //collisions acts funky with stances from another client's perspective
                     {
                         weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.7f);
                         return;
                     }
-                    if (StanceController.CurrentStance == EStance.HighReady || StanceController.CurrentStance == EStance.LowReady || StanceController.CurrentStance == EStance.ShortStock)
+                    if (StanceController.CurrentStance == EStance.ShortStock)
+                    {
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.7f);
+                        return;
+                    }
+                    if (StanceController.CurrentStance == EStance.HighReady)
                     {
                         weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.8f);
                         return;
                     }
+                    if (StanceController.CurrentStance == EStance.LowReady)
+                    {
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.85f);
+                        return;
+                    }
                     if (StanceController.StoredStance == EStance.ShortStock && StanceController.IsAiming)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.75f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.8f);
                         return;
                     }
                     if (StanceController.IsAiming)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.85f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.9f);
                         return;
                     }
                 }
                 weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.95f);
                 return;
+            }
+        }
+    }
+
+    public class ShouldMoveWeapCloserPatch : ModulePatch
+    {
+        private static FieldInfo _playerField;
+        private static FieldInfo _fcField;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            _playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
+            _fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
+            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("CheckShouldMoveWeaponCloser", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(ProceduralWeaponAnimation __instance, ref bool ____shouldMoveWeaponCloser)
+        {
+            FirearmController firearmController = (FirearmController)_fcField.GetValue(__instance);
+            if (firearmController == null) return;
+            Player player = (Player)_playerField.GetValue(firearmController);
+            if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer) 
+            { 
+                ____shouldMoveWeaponCloser = false;
             }
         }
     }
@@ -506,12 +545,15 @@ namespace RealismMod
             if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
             {
                 Vector3 baseOffset = StanceController.GetWeaponOffsets().TryGetValue(firearmController.Weapon.TemplateId, out Vector3 offset) ? offset : Vector3.zero;
-                __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value) + baseOffset;
-                StanceController.WeaponOffsetPosition = __instance.HandsContainer.WeaponRoot.localPosition += new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value) + baseOffset;
+                Vector3 newPos = Plugin.EnableAltRifle.Value ? new Vector3(0.08f, -0.075f, 0f) : new Vector3(Plugin.WeapOffsetX.Value, Plugin.WeapOffsetY.Value, Plugin.WeapOffsetZ.Value);
+                newPos += baseOffset;
+                if (!Plugin.EnableAltRifle.Value) newPos += __instance.HandsContainer.WeaponRoot.localPosition;
+                StanceController.WeaponOffsetPosition = newPos;
+                __instance.HandsContainer.WeaponRoot.localPosition = newPos;
+                if (!Plugin.FOVFixPresent) __instance.HandsContainer.CameraOffset = new Vector3(0.04f, 0.04f, 0.025f);
             }
         }
     }
-
 
     public class ZeroAdjustmentsPatch : ModulePatch
     {
