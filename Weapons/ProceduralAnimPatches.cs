@@ -340,7 +340,7 @@ namespace RealismMod
                         handsIntensity = Mathf.Clamp(0.5f * totalErgoFactor * formfactor, 0.35f, 0.86f);
                     }
 
-                    float chonkerFactor = weapon.IsBeltMachineGun || weapon.Weight >= 10f ? 1.45f : 1f;
+                    float chonkerFactor = weapon.Weight >= 9f ? 1.45f : 1f;
                     float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * Plugin.ProceduralIntensity.Value * chonkerFactor;
                     float totalInputIntensitry = handsIntensity * handsIntensity * Plugin.ProceduralIntensity.Value * chonkerFactor;
                     PlayerState.TotalBreathIntensity = totalBreathIntensity;
@@ -437,7 +437,7 @@ namespace RealismMod
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 Weapon weapon = firearmController.Weapon;
-                float formfactor = WeaponStats.IsBullpup ? 0.75f : weapon.IsBeltMachineGun || weapon.Weight >= 10f ? 1.4f : 1f;
+                float formfactor = WeaponStats.IsBullpup ? 0.75f : weapon.Weight >= 9f ? 1.4f : 1f;
                 float weapWeight = weapon.GetSingleItemTotalWeight();
                 float totalPlayerWeight = PlayerState.TotalModifiedWeight - weapWeight;
                 float playerWeightFactor = 1f + (totalPlayerWeight / 200f);

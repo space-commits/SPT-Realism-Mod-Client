@@ -1987,7 +1987,7 @@ namespace RealismMod
                 PlayerHazardBridge = player.gameObject.GetComponent<PlayerHazardBridge>();
             }
 
-            if (!player.HealthController.IsAlive) return; 
+            if (!player.HealthController.IsAlive || player.HealthController.DamageCoeff <= 0f) return; 
 
             if ((PlayerHazardBridge.GasZoneCount > 0 || PlayerHazardBridge.RadZoneCount > 0) && GearController.HasGasMask) 
             {
