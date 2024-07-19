@@ -948,7 +948,6 @@ namespace RealismMod
 
             if (ServerConfig.med_changes)
             {
-                AudioControllers.HazardZoneAudioController();
                 RealHealthController.ControllerUpdate();
             }
         }

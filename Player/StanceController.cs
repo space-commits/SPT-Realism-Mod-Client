@@ -689,10 +689,10 @@ namespace RealismMod
 
             Quaternion pistolRevertQuaternion = Quaternion.Euler(Plugin.PistolResetRotationX.Value * rotationBalanceFactor, Plugin.PistolResetRotationY.Value, Plugin.PistolResetRotationZ.Value);
             Vector3 pistolPMCTargetPosition = useThirdPersonStance ? new Vector3(Plugin.PistolThirdPersonPositionX.Value, Plugin.PistolThirdPersonPositionY.Value, Plugin.PistolThirdPersonPositionZ.Value) : new Vector3(Plugin.PistolOffsetX.Value, Plugin.PistolOffsetY.Value, Plugin.PistolOffsetZ.Value);
-            Vector3 pistolScavTargetPosition = useThirdPersonStance ? new Vector3(-0.015f, 0.02f, -0.07f) : new Vector3(0.025f, 0f, -0.04f);
+            Vector3 pistolScavTargetPosition = useThirdPersonStance ? new Vector3(0.01f, 0.025f, -0.015f) : new Vector3(0.01f, 0.025f, -0.015f);
             Vector3 pistolTargetPosition = PlayerState.IsScav ? pistolScavTargetPosition : pistolPMCTargetPosition;
             Vector3 pistolPMCTargetRotation = useThirdPersonStance ? new Vector3(Plugin.PistolThirdPersonRotationX.Value, Plugin.PistolThirdPersonRotationY.Value, Plugin.PistolThirdPersonRotationZ.Value) : new Vector3(Plugin.PistolRotationX.Value, Plugin.PistolRotationY.Value, Plugin.PistolRotationZ.Value);
-            Vector3 pistolScavTargetRotation = useThirdPersonStance ? new Vector3(-2f, -5f, 0f) : new Vector3(1f, -8f, 0f);
+            Vector3 pistolScavTargetRotation = useThirdPersonStance ? new Vector3(2f, -10f, 0f) : new Vector3(2f, -10f, 0f);
             Vector3 pistolTargetRotation = PlayerState.IsScav ? pistolScavTargetRotation : pistolPMCTargetRotation;    
             Quaternion pistolTargetQuaternion = Quaternion.Euler(pistolTargetRotation);
             Quaternion pistolMiniTargetQuaternion = Quaternion.Euler(new Vector3(Plugin.PistolAdditionalRotationX.Value, Plugin.PistolAdditionalRotationY.Value, Plugin.PistolAdditionalRotationZ.Value));

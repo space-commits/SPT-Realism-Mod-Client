@@ -330,6 +330,7 @@ namespace RealismMod
                 _effectsTime += Time.deltaTime;
                 _reliefWaitTime += Time.deltaTime;
                 _hazardWaitTime += Time.deltaTime;
+
                 ControllerTick();
 
                 if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
@@ -956,7 +957,6 @@ namespace RealismMod
                 _reset5 = true;
             }
 
-
             if (_effectsTime >= 1f)
             {
                 if (Plugin.ServerConfig.enable_hazard_zones) HazardZoneHealthEffectTick(player);
@@ -965,8 +965,10 @@ namespace RealismMod
                 _effectsTime = 0f;
             }
 
+            if (player.HealthController.IsAlive && player.HealthController.DamageCoeff > 0f) AudioControllers.HazardZoneAudioController();
             DoResourceDrain(player.ActiveHealthController, Time.deltaTime);
 
+            //temporary timer solution :')
             if (_healthControllerTime >= 3f) 
             {
                 _healthControllerTime = 0f;
