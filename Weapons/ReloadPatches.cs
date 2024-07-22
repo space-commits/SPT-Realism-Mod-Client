@@ -344,6 +344,7 @@ namespace RealismMod
                     }
                 }
 
+                StanceController.CancelLeftShoulder = true;
                 StanceController.CancelLowReady = true;
                 StanceController.CancelShortStock = true;
                 StanceController.CancelActiveAim = true;
@@ -408,6 +409,7 @@ namespace RealismMod
                 StanceController.CancelLowReady = true;
                 StanceController.CancelHighReady = true;
                 StanceController.CancelShortStock = true;
+                StanceController.CancelLeftShoulder = true;
             }
         }
     }
@@ -543,6 +545,7 @@ namespace RealismMod
                 }
 
                 StanceController.CancelShortStock = true;
+                StanceController.CancelLeftShoulder = true;
             }
         }
     }

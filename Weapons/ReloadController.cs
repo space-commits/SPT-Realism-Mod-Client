@@ -23,6 +23,7 @@ namespace RealismMod.Weapons
         {
             PlayerState.IsMagReloading = true;
             StanceController.CancelLowReady = true;
+            StanceController.CancelLeftShoulder = true;
             Weapon weapon = __instance.Item;
 
             if (PlayerState.NoCurrentMagazineReload)
@@ -92,6 +93,7 @@ namespace RealismMod.Weapons
                 StanceController.ModifyHighReady = true;
                 StanceController.CancelShortStock = true;
                 StanceController.CancelActiveAim = true;
+                StanceController.CancelLeftShoulder = true;
 
                 if (PlayerState.IsAttemptingToReloadInternalMag && Plugin.ServerConfig.reload_changes)
                 {

@@ -46,6 +46,7 @@ namespace RealismMod
 
         private static float _currentRifleXPos = 0f;
         private static float _currentRifleYPos = 0f;
+        private static float _currentRifleZPos = 0f;
         private static float _currentPistolXPos = 0f;
         private static float _currentPistolYPos = 0f;
         public static Vector3 CoverWiggleDirection = Vector3.zero;
@@ -111,9 +112,11 @@ namespace RealismMod
 
         public static EStance StoredStance = EStance.None;
         public static EStance CurrentStance = EStance.None;
-        private static EStance lastRecordedStance = EStance.None;
+        private static EStance _lastRecordedStance = EStance.None;
         public static bool WasActiveAim = false;
         public static bool IsLeftShoulder = false;
+        public static bool CancelLeftShoulder = false;
+        public static bool DoLeftShoulderTransition = false;
         public static bool IsDoingTacSprint = false;
         private static float _tacSprintWeightLimit = 5.1f;
         private static int _tacSprintLengthLimit = 6;
@@ -218,14 +221,14 @@ namespace RealismMod
             bool isUsingStationaryWeapon = player.MovementContext.CurrentState.Name == EPlayerState.Stationary;
             bool isInRegenableStance = CurrentStance == EStance.HighReady || CurrentStance == EStance.LowReady || CurrentStance == EStance.PatrolStance || CurrentStance == EStance.ShortStock || (IsIdle() && !Plugin.EnableIdleStamDrain.Value);
             bool isInRegenableState = (!player.Physical.HoldingBreath && (IsMounting || IsBracing)) || player.IsInPronePose || CurrentStance == EStance.PistolCompressed || isUsingStationaryWeapon;
-            bool doRegen = ((isInRegenableStance && !IsAiming && !IsFiringFromStance && !IsLeftShoulder) || isInRegenableState) && !PlayerState.IsSprinting;
-            bool shouldDoIdleDrain = (IsIdle() || IsLeftShoulder) && Plugin.EnableIdleStamDrain.Value;
+            bool doRegen = ((isInRegenableStance && !IsAiming && !IsFiringFromStance) || isInRegenableState) && !PlayerState.IsSprinting;
+            bool shouldDoIdleDrain = IsIdle() && Plugin.EnableIdleStamDrain.Value;
             bool shouldInterruptRegen = isInRegenableStance && (IsAiming || IsFiringFromStance);
             bool doNeutral = PlayerState.IsSprinting || player.IsInventoryOpened || (CurrentStance == EStance.ActiveAiming && player.Pose == EPlayerPose.Duck);
             bool doDrain = ((shouldInterruptRegen || !isInRegenableStance || shouldDoIdleDrain) && !isInRegenableState && !doNeutral) || (IsDoingTacSprint && Plugin.EnableIdleStamDrain.Value);
             EStance stance = CurrentStance;
 
-            if (IsAiming != _wasAiming || _regenStam != doRegen || _drainStam != doDrain || _neutral != doNeutral || lastRecordedStance != CurrentStance || IsMounting != _wasMounting || IsBracing != _wasBracing)
+            if (IsAiming != _wasAiming || _regenStam != doRegen || _drainStam != doDrain || _neutral != doNeutral || _lastRecordedStance != CurrentStance || IsMounting != _wasMounting || IsBracing != _wasBracing)
             {
                 if (doDrain)
                 {
@@ -265,7 +268,7 @@ namespace RealismMod
             _wasBracing = IsBracing;
             _wasMounting = IsMounting;
             _wasAiming = IsAiming;
-            lastRecordedStance = CurrentStance;
+            _lastRecordedStance = CurrentStance;
         }
 
         public static void UnarmedStanceStamina(Player player)
@@ -279,7 +282,7 @@ namespace RealismMod
             _wasBracing = false;
             _wasMounting = false;
             _wasAiming = false;
-            lastRecordedStance = EStance.None;
+            _lastRecordedStance = EStance.None;
         }
 
         public static bool IsIdle()
@@ -308,6 +311,8 @@ namespace RealismMod
                 CancelPistolStance = false;
                 CancelActiveAim = false;
                 ShouldResetStances = false;
+                if (CancelLeftShoulder) IsLeftShoulder = true;
+                CancelLeftShoulder = false;
                 ManipTimer = 0.25f;
                 ManipTime = 0f;
             }
@@ -362,7 +367,7 @@ namespace RealismMod
             player.Physical.ConsumeAsMelee(2f + (WeaponStats.ErgoFactor / 100f));
         }
 
-        private static void toggleStance(EStance targetStance, bool setPrevious = false, bool setPrevisousAsCurrent = false)
+        private static void ToggleStance(EStance targetStance, bool setPrevious = false, bool setPrevisousAsCurrent = false)
         {
             if (setPrevious) StoredStance = CurrentStance;
             if (CurrentStance == targetStance) CurrentStance = EStance.None;
@@ -373,7 +378,7 @@ namespace RealismMod
         private static void ToggleHighReady()
         {
             StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
-            toggleStance(EStance.HighReady, false, true);
+            ToggleStance(EStance.HighReady, false, true);
             WasActiveAim = false;
             DidStanceWiggle = false;
 
@@ -386,7 +391,7 @@ namespace RealismMod
         private static void ToggleLowReady()
         {
             StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
-            toggleStance(EStance.LowReady, false, true);
+            ToggleStance(EStance.LowReady, false, true);
             WasActiveAim = false;
             DidStanceWiggle = false;
         }
@@ -434,16 +439,16 @@ namespace RealismMod
                 //patrol
                 if (MeleeIsToggleable && Input.GetKeyDown(Plugin.PatrolKeybind.Value.MainKey) && Plugin.PatrolKeybind.Value.Modifiers.All(Input.GetKey))
                 {
-                    toggleStance(EStance.PatrolStance);
+                    ToggleStance(EStance.PatrolStance);
                     StoredStance = EStance.None;
                     StanceBlender.Target = 0f;
                     DidStanceWiggle = false;
                 }
 
-                if (!PlayerState.IsSprinting && !IsInInventory && !WeaponStats.IsStocklessPistol && !IsLeftShoulder)
+                if (!PlayerState.IsSprinting && !IsInInventory && !WeaponStats.IsStocklessPistol)
                 {
                     //cycle stances
-                    if (MeleeIsToggleable && Input.GetKeyUp(Plugin.CycleStancesKeybind.Value.MainKey))
+                    if (MeleeIsToggleable && !IsLeftShoulder && Input.GetKeyUp(Plugin.CycleStancesKeybind.Value.MainKey))
                     {
                         if (Time.time <= _doubleClickTime)
                         {
@@ -480,7 +485,7 @@ namespace RealismMod
                     //active aim
                     if (!Plugin.ToggleActiveAim.Value)
                     {
-                        if ((!IsAiming && MeleeIsToggleable && Input.GetKey(Plugin.ActiveAimKeybind.Value.MainKey) && Plugin.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKey(KeyCode.Mouse1) && !PlayerState.IsAllowedADS))
+                        if ((!IsAiming && MeleeIsToggleable && !IsLeftShoulder && Input.GetKey(Plugin.ActiveAimKeybind.Value.MainKey) && Plugin.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKey(KeyCode.Mouse1) && !PlayerState.IsAllowedADS))
                         {
                             if (!HaveSetActiveAim)
                             {
@@ -503,10 +508,10 @@ namespace RealismMod
                     }
                     else
                     {
-                        if ((!IsAiming && MeleeIsToggleable && Input.GetKeyDown(Plugin.ActiveAimKeybind.Value.MainKey) && Plugin.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerState.IsAllowedADS))
+                        if ((!IsAiming && MeleeIsToggleable && !IsLeftShoulder && Input.GetKeyDown(Plugin.ActiveAimKeybind.Value.MainKey) && Plugin.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerState.IsAllowedADS))
                         {
                             StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
-                            toggleStance(EStance.ActiveAiming);
+                            ToggleStance(EStance.ActiveAiming);
                             WasActiveAim = CurrentStance == EStance.ActiveAiming ? true : false;
                             DidStanceWiggle = false;
                             if (CurrentStance != EStance.ActiveAiming)
@@ -516,7 +521,7 @@ namespace RealismMod
                         }
                     }
 
-                    if (MeleeIsToggleable && Plugin.UseMouseWheelStance.Value && !IsAiming)
+                    if (MeleeIsToggleable && !IsLeftShoulder && Plugin.UseMouseWheelStance.Value && !IsAiming)
                     {
                         if ((Input.GetKey(Plugin.StanceWheelComboKeyBind.Value.MainKey) && Plugin.UseMouseWheelPlusKey.Value) || (!Plugin.UseMouseWheelPlusKey.Value && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.LeftAlt) && !Input.GetKey(KeyCode.R) && !Input.GetKey(KeyCode.C)))
                         {
@@ -529,7 +534,7 @@ namespace RealismMod
                     }
 
                     //Melee
-                    if (!IsAiming && MeleeIsToggleable && Input.GetKeyDown(Plugin.MeleeKeybind.Value.MainKey) && Plugin.MeleeKeybind.Value.Modifiers.All(Input.GetKey))
+                    if (!IsAiming && MeleeIsToggleable && !IsLeftShoulder && Input.GetKeyDown(Plugin.MeleeKeybind.Value.MainKey) && Plugin.MeleeKeybind.Value.Modifiers.All(Input.GetKey))
                     {
                         CurrentStance = EStance.Melee;
                         StoredStance = EStance.None;
@@ -541,24 +546,33 @@ namespace RealismMod
                     }
 
                     //short-stock
-                    if (MeleeIsToggleable && Input.GetKeyDown(Plugin.ShortStockKeybind.Value.MainKey) && Plugin.ShortStockKeybind.Value.Modifiers.All(Input.GetKey))
+                    if (MeleeIsToggleable && !IsLeftShoulder && Input.GetKeyDown(Plugin.ShortStockKeybind.Value.MainKey) && Plugin.ShortStockKeybind.Value.Modifiers.All(Input.GetKey))
                     {
                         StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
-                        toggleStance(EStance.ShortStock, false, true);
+                        ToggleStance(EStance.ShortStock, false, true);
                         WasActiveAim = false;
                         DidStanceWiggle = false;
                     }
 
                     //high ready
-                    if (MeleeIsToggleable && Input.GetKeyDown(Plugin.HighReadyKeybind.Value.MainKey) && Plugin.HighReadyKeybind.Value.Modifiers.All(Input.GetKey))
+                    if (MeleeIsToggleable && !IsLeftShoulder && Input.GetKeyDown(Plugin.HighReadyKeybind.Value.MainKey) && Plugin.HighReadyKeybind.Value.Modifiers.All(Input.GetKey))
                     {
                         ToggleHighReady();
                     }
 
                     //low ready
-                    if (MeleeIsToggleable && !IsInForcedLowReady && Input.GetKeyDown(Plugin.LowReadyKeybind.Value.MainKey) && Plugin.LowReadyKeybind.Value.Modifiers.All(Input.GetKey))
+                    if (MeleeIsToggleable && !IsLeftShoulder && !IsInForcedLowReady && Input.GetKeyDown(Plugin.LowReadyKeybind.Value.MainKey) && Plugin.LowReadyKeybind.Value.Modifiers.All(Input.GetKey))
                     {
                         ToggleLowReady();
+                    }
+
+                    //left shoulder
+                    if (Input.GetKeyDown(KeyCode.V) && Plugin.MeleeKeybind.Value.Modifiers.All(Input.GetKey) || (IsLeftShoulder && CancelLeftShoulder))
+                    {
+                        IsLeftShoulder = !IsLeftShoulder;
+                        CurrentStance = EStance.None;
+                        StoredStance = EStance.None;
+                        StanceBlender.Target = 0f;
                     }
 
                     //cancel if aiming
@@ -645,7 +659,7 @@ namespace RealismMod
         private static void DoAltPistol(ProceduralWeaponAnimation pwa, float stanceMulti, float dt) 
         {
             float targetPosX = 0f; // 0.0
-            if (!IsBlindFiring && !pwa.LeftStance) // !CancelPistolStance
+            if (!IsBlindFiring) // !CancelPistolStance  && !pwa.LeftStance
             {
                 targetPosX = 0.04f; // 0.04
             }
@@ -705,7 +719,7 @@ namespace RealismMod
                 DoAltPistol(pwa, stanceMulti, dt);
             }
 
-            if (!pwa.IsAiming && !IsBlindFiring && !pwa.LeftStance && !PistolIsColliding && !WeaponStats.HasShoulderContact && Plugin.EnableAltPistol.Value) //!CancelPistolStance
+            if (!pwa.IsAiming && !IsBlindFiring && !PistolIsColliding && !WeaponStats.HasShoulderContact && Plugin.EnableAltPistol.Value) //!CancelPistolStance && !pwa.LeftStance
             {
                 CurrentStance = EStance.PistolCompressed;
                 StoredStance = EStance.None;
@@ -880,16 +894,53 @@ namespace RealismMod
             float chonkerFactor = WeaponStats.TotalWeaponWeight >= 9f ? 0.85f : 1f;
 
             //for setting baseline position
-            if (!IsBlindFiring && !pwa.LeftStance)
+            if (!IsBlindFiring) // && !pwa.LeftStance
             {
                 if (Plugin.EnableAltRifle.Value) DoAltRiflePos(pwa, stanceMulti, dt);
-                else pwa.HandsContainer.WeaponRoot.localPosition = WeaponOffsetPosition;
+                else
+                {
+                    float zTarget = WeaponOffsetPosition.z;
+                    float xTarget = IsLeftShoulder ? Plugin.test1.Value + WeaponOffsetPosition.x : WeaponOffsetPosition.x;
+                    float x = Mathf.Lerp(WeaponOffsetPosition.x, xTarget, Plugin.test2.Value * dt);
+
+                    _currentRifleXPos = Mathf.Lerp(_currentRifleXPos, xTarget, dt * Plugin.test2.Value);
+
+                    if (!Utils.AreFloatsEqual(_currentRifleXPos, xTarget, Plugin.test8.Value)) //IsLeftShoulder && 
+                    {
+                        zTarget = Plugin.test10.Value + WeaponOffsetPosition.z;
+                    }
+                    else
+                    {
+                        zTarget = WeaponOffsetPosition.z;
+                       
+                    }
+
+                    if (!Utils.AreFloatsEqual(_currentRifleXPos, xTarget, Plugin.test7.Value)) //IsLeftShoulder && 
+                    {
+                        rotationSpeed = 4f * stanceMulti * dt * Plugin.ShortStockRotationMulti.Value;
+                        stanceRotation = shortStockTargetQuaternion;
+                        DoLeftShoulderTransition = true;
+                    }
+                    else if (DoLeftShoulderTransition)
+                    {
+                        DoLeftShoulderTransition = false;
+                        DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(Plugin.test3.Value, Plugin.test4.Value, Plugin.test5.Value) * movementFactor, true);
+                    }
+
+                    _currentRifleZPos = Mathf.Lerp(_currentRifleZPos, zTarget, dt * Plugin.test9.Value);
+
+                    _rifleLocalPosition.x = _currentRifleXPos;
+                    _rifleLocalPosition.y = WeaponOffsetPosition.y;
+                    _rifleLocalPosition.z = _currentRifleZPos;
+
+                    pwa.HandsContainer.WeaponRoot.localPosition = _rifleLocalPosition;
+                }
             }
 
             DoTacSprint(fc, player);
 
             ////short-stock////
-            if (CurrentStance == EStance.ShortStock && !pwa.IsAiming && !CancelShortStock && !IsBlindFiring && !pwa.LeftStance && !PlayerState.IsSprinting)
+            if (CurrentStance == EStance.ShortStock && !pwa.IsAiming && !CancelShortStock && !IsBlindFiring && !pwa.LeftStance && !PlayerState.IsSprinting && !IsLeftShoulder)
             {
                 float activeToShort = 1f;
                 float highToShort = 1f;
@@ -975,7 +1026,7 @@ namespace RealismMod
             }
 
             ////high ready////
-            if (CurrentStance == EStance.HighReady && !pwa.IsAiming && !IsFiringFromStance && !CancelHighReady && !IsBlindFiring && !pwa.LeftStance)
+            if (CurrentStance == EStance.HighReady && !pwa.IsAiming && !IsFiringFromStance && !CancelHighReady && !IsBlindFiring && !IsLeftShoulder)
             {
                 float shortToHighMulti = 1.0f;
                 float lowToHighMulti = 1.0f;
@@ -1077,7 +1128,7 @@ namespace RealismMod
             }
 
             ////low ready////
-            if (CurrentStance == EStance.LowReady && !pwa.IsAiming && !IsFiringFromStance && !CancelLowReady && !IsBlindFiring && !pwa.LeftStance)
+            if (CurrentStance == EStance.LowReady && !pwa.IsAiming && !IsFiringFromStance && !CancelLowReady && !IsBlindFiring && !IsLeftShoulder)
             {
                 float highToLow = 1.0f;
                 float shortToLow = 1.0f;
@@ -1169,7 +1220,7 @@ namespace RealismMod
             }
 
             ////active aiming////
-            if (CurrentStance == EStance.ActiveAiming && !CancelActiveAim && !IsBlindFiring && !pwa.LeftStance)
+            if (CurrentStance == EStance.ActiveAiming && !CancelActiveAim && !IsBlindFiring && !IsLeftShoulder)
             {
                 float shortToActive = 1f;
                 float shortToActiveRotation = 1f;
@@ -1267,7 +1318,7 @@ namespace RealismMod
             }
 
             ////Melee////
-            if (CurrentStance == EStance.Melee && !pwa.IsAiming && !IsBlindFiring && !pwa.LeftStance && !PlayerState.IsSprinting)
+            if (CurrentStance == EStance.Melee && !pwa.IsAiming && !IsBlindFiring && !IsLeftShoulder && !PlayerState.IsSprinting)
             {
                 isResettingMelee = false;
                 hasResetMelee = false;
@@ -1307,7 +1358,7 @@ namespace RealismMod
                 if (StanceBlender.Value >= 1f && finalPosDistance <= 0.001f && !DidStanceWiggle)
                 {
                     DoMeleeEffect();
-                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-20f, -10f, -90f) * movementFactor, true, 3f);
+                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-20f, -10f, -90f) * movementFactor, true, 1.5f);
                     DidStanceWiggle = true;
                 }
 
