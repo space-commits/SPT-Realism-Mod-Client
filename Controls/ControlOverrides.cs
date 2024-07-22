@@ -74,6 +74,11 @@ namespace RealismMod.Controls
                 AimController.HeadDeviceStateChanged = true;
                 return true;
             }
+            if (command == ECommand.LeftStanceToggle)
+            {
+                StanceController.ToggleLeftShoulder();
+                return false;
+            }
             if (command == ECommand.ToggleBreathing && Plugin.ServerConfig.recoil_attachment_overhaul && StanceController.IsAiming)
             {
                 Player player = Utils.GetYourPlayer();

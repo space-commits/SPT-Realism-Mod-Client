@@ -311,7 +311,6 @@ namespace RealismMod
                 CancelPistolStance = false;
                 CancelActiveAim = false;
                 ShouldResetStances = false;
-                if (CancelLeftShoulder) IsLeftShoulder = true;
                 CancelLeftShoulder = false;
                 ManipTimer = 0.25f;
                 ManipTime = 0f;
@@ -419,6 +418,20 @@ namespace RealismMod
                 {
                     ToggleHighReady();
                 }
+            }
+        }
+
+        public static void ToggleLeftShoulder() 
+        {
+            IsLeftShoulder = !IsLeftShoulder;
+            if (!WeaponStats.IsStocklessPistol)
+            {
+                CurrentStance = EStance.None;
+                StoredStance = EStance.None;
+                WasActiveAim = false;
+                HaveSetActiveAim = false;
+                DidStanceWiggle = false;
+                StanceBlender.Target = 0f;
             }
         }
 
@@ -566,15 +579,6 @@ namespace RealismMod
                         ToggleLowReady();
                     }
 
-                    //left shoulder
-                    if (Input.GetKeyDown(KeyCode.V) && Plugin.MeleeKeybind.Value.Modifiers.All(Input.GetKey) || (IsLeftShoulder && CancelLeftShoulder))
-                    {
-                        IsLeftShoulder = !IsLeftShoulder;
-                        CurrentStance = EStance.None;
-                        StoredStance = EStance.None;
-                        StanceBlender.Target = 0f;
-                    }
-
                     //cancel if aiming
                     if (IsAiming)
                     {
@@ -656,28 +660,14 @@ namespace RealismMod
             }
         }
 
-        private static void DoAltPistol(ProceduralWeaponAnimation pwa, float stanceMulti, float dt) 
+        private static void DoAltPistolAndLeftShoulder(Player player, Player.FirearmController fc, ProceduralWeaponAnimation pwa, float stanceMulti, float dt) 
         {
-            float targetPosX = 0f; // 0.0
-            if (!IsBlindFiring) // !CancelPistolStance  && !pwa.LeftStance
-            {
-                targetPosX = 0.04f; // 0.04
-            }
+            float speedFactor = IsAiming ? Plugin.PistolPosResetSpeedMulti.Value * stanceMulti : Plugin.PistolPosSpeedMulti.Value * stanceMulti;
+            float xTarget = !IsBlindFiring && IsLeftShoulder && !CancelLeftShoulder ? 0.04f + Plugin.test4.Value : !IsBlindFiring ? 0.04f : 0f; // 0.0
+            float yTarget = IsAiming ? 0.01f : - 0.04f; //-0.04
 
-            float speedFactor = 1f;
-            float targetPosY = -0.04f; //-0.04
-            if (IsAiming)
-            {
-                speedFactor = Plugin.PistolPosResetSpeedMulti.Value * stanceMulti;
-                targetPosY = 0.01f; //0.01
-            }
-            else
-            {
-                speedFactor = Plugin.PistolPosSpeedMulti.Value * stanceMulti;
-            }
-
-            _currentPistolXPos = Mathf.Lerp(_currentPistolXPos, targetPosX, dt * speedFactor * 0.5f);
-            _currentPistolYPos = Mathf.Lerp(_currentPistolYPos, targetPosY, dt * speedFactor);
+            _currentPistolXPos = Mathf.Lerp(_currentPistolXPos, xTarget, dt * speedFactor * 0.5f);
+            _currentPistolYPos = Mathf.Lerp(_currentPistolYPos, yTarget, dt * speedFactor);
 
             _pistolLocalPosition.x = _currentPistolXPos;
             _pistolLocalPosition.y = _currentPistolYPos;
@@ -716,7 +706,7 @@ namespace RealismMod
             //I've no idea wtf is going on here but it sort of works
             if (!WeaponStats.HasShoulderContact && Plugin.EnableAltPistol.Value)
             {
-                DoAltPistol(pwa, stanceMulti, dt);
+                DoAltPistolAndLeftShoulder(player, fc, pwa, stanceMulti, dt);
             }
 
             if (!pwa.IsAiming && !IsBlindFiring && !PistolIsColliding && !WeaponStats.HasShoulderContact && Plugin.EnableAltPistol.Value) //!CancelPistolStance && !pwa.LeftStance
@@ -786,28 +776,48 @@ namespace RealismMod
             }
         }
 
-        private static void DoAltRiflePos(ProceduralWeaponAnimation pwa, float stanceMulti, float dt) 
+        private static void DoRiflePosAndLeftShoulder(Player player, Player.FirearmController fc, ProceduralWeaponAnimation pwa, float stanceMulti, float movementFactor, float dt, ref float rotationSpeed, ref Quaternion stanceRotation) 
         {
-            float speedFactor = 1f;
-            float targetPosX = WeaponOffsetPosition.x;
-            float targetPosY = WeaponOffsetPosition.y;
-            if (IsAiming)
+            bool doAltRifle = Plugin.EnableAltRifle.Value;
+
+            float speedFactor = doAltRifle && IsAiming ? 10f * stanceMulti : doAltRifle ? 8f * stanceMulti : 1f;
+            float xTarget = IsLeftShoulder && !CancelLeftShoulder ? -0.125f + WeaponOffsetPosition.x : doAltRifle && IsAiming ? 0.075f : WeaponOffsetPosition.x;
+            float yTarget = doAltRifle && IsAiming ? -0.05f : WeaponOffsetPosition.y;
+            float zTarget = WeaponOffsetPosition.z;
+
+            _currentRifleXPos = Mathf.Lerp(_currentRifleXPos, xTarget, dt * 3.5f);
+
+            if (!Utils.AreFloatsEqual(_currentRifleXPos, xTarget, 0.05f)) //IsLeftShoulder && 
             {
-                speedFactor = 10f * stanceMulti; //10
-                targetPosX = 0.075f;  //0.01 
-                targetPosY = -0.05f;  //0.01 
+                zTarget = 0.075f + WeaponOffsetPosition.z;
             }
             else
             {
-                speedFactor = 8f * stanceMulti; //8
+                zTarget = WeaponOffsetPosition.z;
+
             }
 
-            _currentRifleXPos = Mathf.Lerp(_currentRifleXPos, targetPosX, dt * speedFactor);
-            _currentRifleYPos = Mathf.Lerp(_currentRifleYPos, targetPosY, dt * speedFactor);
+            if (!Utils.AreFloatsEqual(_currentRifleXPos, xTarget, 0.045f)) //IsLeftShoulder && 
+            {
+                Utils.Logger.LogWarning("xTarget " + xTarget);
+                Utils.Logger.LogWarning("not equal");
+                rotationSpeed = 0.3f * stanceMulti * dt;
+                stanceRotation = Quaternion.Euler(new Vector3(-50f, -100f, 20f));
+                DoLeftShoulderTransition = true;
+            }
+            else if (DoLeftShoulderTransition)
+            {
+                Utils.Logger.LogWarning("end");
+                DoLeftShoulderTransition = false;
+                DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-2f, 2f, 15f) * movementFactor, true);
+            }
+
+            _currentRifleYPos = Mathf.Lerp(_currentRifleYPos, yTarget, dt * speedFactor);
+            _currentRifleZPos = Mathf.Lerp(_currentRifleZPos, zTarget, dt * speedFactor);
 
             _rifleLocalPosition.x = _currentRifleXPos;
             _rifleLocalPosition.y = _currentRifleYPos;
-            _rifleLocalPosition.z = WeaponOffsetPosition.z;
+            _rifleLocalPosition.z = _currentRifleZPos;
             pwa.HandsContainer.WeaponRoot.localPosition = _rifleLocalPosition;
         }
 
@@ -896,45 +906,7 @@ namespace RealismMod
             //for setting baseline position
             if (!IsBlindFiring) // && !pwa.LeftStance
             {
-                if (Plugin.EnableAltRifle.Value) DoAltRiflePos(pwa, stanceMulti, dt);
-                else
-                {
-                    float zTarget = WeaponOffsetPosition.z;
-                    float xTarget = IsLeftShoulder ? Plugin.test1.Value + WeaponOffsetPosition.x : WeaponOffsetPosition.x;
-                    float x = Mathf.Lerp(WeaponOffsetPosition.x, xTarget, Plugin.test2.Value * dt);
-
-                    _currentRifleXPos = Mathf.Lerp(_currentRifleXPos, xTarget, dt * Plugin.test2.Value);
-
-                    if (!Utils.AreFloatsEqual(_currentRifleXPos, xTarget, Plugin.test8.Value)) //IsLeftShoulder && 
-                    {
-                        zTarget = Plugin.test10.Value + WeaponOffsetPosition.z;
-                    }
-                    else
-                    {
-                        zTarget = WeaponOffsetPosition.z;
-                       
-                    }
-
-                    if (!Utils.AreFloatsEqual(_currentRifleXPos, xTarget, Plugin.test7.Value)) //IsLeftShoulder && 
-                    {
-                        rotationSpeed = 4f * stanceMulti * dt * Plugin.ShortStockRotationMulti.Value;
-                        stanceRotation = shortStockTargetQuaternion;
-                        DoLeftShoulderTransition = true;
-                    }
-                    else if (DoLeftShoulderTransition)
-                    {
-                        DoLeftShoulderTransition = false;
-                        DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(Plugin.test3.Value, Plugin.test4.Value, Plugin.test5.Value) * movementFactor, true);
-                    }
-
-                    _currentRifleZPos = Mathf.Lerp(_currentRifleZPos, zTarget, dt * Plugin.test9.Value);
-
-                    _rifleLocalPosition.x = _currentRifleXPos;
-                    _rifleLocalPosition.y = WeaponOffsetPosition.y;
-                    _rifleLocalPosition.z = _currentRifleZPos;
-
-                    pwa.HandsContainer.WeaponRoot.localPosition = _rifleLocalPosition;
-                }
+                DoRiflePosAndLeftShoulder(player, fc, pwa, stanceMulti, movementFactor, dt, ref rotationSpeed, ref stanceRotation, shortStockTargetQuaternion);
             }
 
             DoTacSprint(fc, player);
