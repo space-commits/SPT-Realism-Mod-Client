@@ -152,7 +152,8 @@ namespace RealismMod
             {"5fca13ca637ee0341a484f46", EStimType.Generic},
             {"637b60c3b7afa97bfc3d7001", EStimType.Generic},
             {"5ed5166ad380ab312177c100", EStimType.Generic},
-            {"5ed51652f6c34d2cc26336a1", EStimType.Weight }
+            {"5ed51652f6c34d2cc26336a1", EStimType.Weight },
+            {"66507eabf5ddb0818b085b68", EStimType.Weight }
         };
 
         public List<EBodyPart> PossibleBodyParts = new List<EBodyPart> 
@@ -167,6 +168,8 @@ namespace RealismMod
         public PlayerHazardBridge PlayerHazardBridge { get;  private set; }
 
         public bool HasAdrenalineEffect { get; set; } = false;
+
+        public bool IsCoughingInGas { get; set; } = false;
 
         public int ToxicItemCount { get; set; } = 0;
 
@@ -1788,7 +1791,7 @@ namespace RealismMod
             PlayerState.HealthSprintSpeedFactor = 1;
             PlayerState.HealthSprintAccelFactor = 1;
             PlayerState.HealthWalkSpeedFactor = 1;
-            PlayerState.HealthStamRegenFactor =1;
+            PlayerState.HealthStamRegenFactor = 1;
             PlayerState.ErgoDeltaInjuryMulti = 1;
             PlayerState.RecoilInjuryMulti = 1;
 
@@ -1932,7 +1935,9 @@ namespace RealismMod
             float skillFactor = (1f + (player.Skills.HealthEnergy.Value / 4));
             float skillFactorInverse = (1f - (player.Skills.HealthEnergy.Value / 4));
 
-            float toxicity = (HazardTracker.TotalToxicity * (1f - PlayerState.ImmuneSkillWeak)) / 225f; 
+            //gas
+            float coofFactor = IsCoughingInGas ? 0.65f : 1f;
+            float toxicity = (HazardTracker.TotalToxicity * coofFactor * (1f - PlayerState.ImmuneSkillWeak)) / 225f; 
             float toxicityFactor = 1f - toxicity;
             float toxicityInverse = 1f + toxicity;
 
@@ -1940,6 +1945,7 @@ namespace RealismMod
             float radiationFactor = 1f - radiation;
             float radiationInverse = 1f + radiation;
 
+            //cultist toxin, food poisoning
             float poisonDebuffFactor = IsPoisoned ? 0.8f : 1f;
             float poisonDebuffFactorInverse = IsPoisoned ? 1.2f : 1f;
 

@@ -15,6 +15,7 @@ using UnityEngine.Networking;
 using static RealismMod.Attributes;
 using static RealismMod.GameWorldController;
 using static UnityEngine.UI.Image;
+using RealismMod.Controls;
 
 namespace RealismMod
 {
@@ -615,7 +616,8 @@ namespace RealismMod
             new ChamberCheckUIPatch().Enable();
 
             //multiple
-            new KeyInputPatch().Enable();
+            new KeyInputPatch1().Enable();
+            new KeyInputPatch2().Enable();
             new SyncWithCharacterSkillsPatch().Enable();
             new OnItemAddedOrRemovedPatch().Enable();
             new PlayerUpdatePatch().Enable();

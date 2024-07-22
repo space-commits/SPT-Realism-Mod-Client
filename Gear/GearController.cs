@@ -159,7 +159,7 @@ namespace RealismMod
             if (gasmask == null) return;
             ResourceComponent filter = gasmask?.GetItemComponentsInChildren<ResourceComponent>(false).FirstOrDefault();
             if (filter == null) return;
-            float reductionFactor = (phb.TotalGasRate + phb.TotalGasRate) / 9f;
+            float reductionFactor = (phb.TotalGasRate + phb.TotalGasRate) / 10f;
             filter.Value -= reductionFactor;
             if (filter.Value > 0) HasGasFilter = true;
         }
@@ -173,7 +173,7 @@ namespace RealismMod
            
             if (filter != null) 
             {
-                filterFactor = Mathf.Pow(filter.Value / filter.MaxResource, 0.45f);
+                filterFactor = filter.Value > 90f ? 1f : Mathf.Pow(filter.Value / filter.MaxResource, 0.45f);
             }
           
             ArmorComponent armorComp = gasmask.GetItemComponent<ArmorComponent>();

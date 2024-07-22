@@ -2,11 +2,13 @@
 using EFT;
 using EFT.Animations;
 using EFT.Animations.NewRecoil;
+using EFT.Interactive;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static RootMotion.FinalIK.InteractionTrigger.Range;
 
 namespace RealismMod
 {
@@ -1134,7 +1136,7 @@ namespace RealismMod
 
                 if ((StanceBlender.Value >= 1f || StanceTargetPosition == lowReadyTargetPosition) && !DidStanceWiggle && !useThirdPersonStance)
                 {
-                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(10f, 10f, 0f) * movementFactor, true);
+                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(7f, 7f, 0f) * movementFactor, true);
                     DidStanceWiggle = true;
                 }
                 DidLowReadyResetStanceWiggle = false;
@@ -1151,7 +1153,7 @@ namespace RealismMod
 
                 if (!useThirdPersonStance && StanceBlender.Value <= 0.35f && !DidLowReadyResetStanceWiggle)
                 {
-                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-4f, 2.5f, 6f * Plugin.test4.Value) * movementFactor, true);
+                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-4f, 2.5f, 12f) * movementFactor, true);
                     DidLowReadyResetStanceWiggle = true;
                 }
             }
