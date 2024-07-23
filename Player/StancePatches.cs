@@ -125,31 +125,6 @@ namespace RealismMod
         }
     }
 
-    public class WeaponLengthPatch : ModulePatch
-    {
-        private static FieldInfo playerField;
-        private static FieldInfo weapLn;
-
-        protected override MethodBase GetTargetMethod()
-        {
-            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
-            weapLn = AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn");
-            return typeof(Player.FirearmController).GetMethod("method_7", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance)
-        {
-            Player player = (Player)playerField.GetValue(__instance);
-            float length = (float)weapLn.GetValue(__instance);
-            if (player.IsYourPlayer)
-            {
-                WeaponStats.BaseWeaponLength = length;
-                WeaponStats.NewWeaponLength = length >= 0.9f ? length * 1.15f : length;
-            }
-        }
-    }
-
     public class OperateStationaryWeaponPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -405,6 +380,31 @@ namespace RealismMod
         }
     }
 
+    public class WeaponLengthPatch : ModulePatch
+    {
+        private static FieldInfo playerField;
+        private static FieldInfo weapLn;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
+            weapLn = AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn");
+            return typeof(Player.FirearmController).GetMethod("method_7", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(Player.FirearmController __instance)
+        {
+            Player player = (Player)playerField.GetValue(__instance);
+            float length = (float)weapLn.GetValue(__instance);
+            if (player.IsYourPlayer)
+            {
+                WeaponStats.BaseWeaponLength = length;
+                WeaponStats.NewWeaponLength = length >= 0.9f ? length * 1.1f : length;
+            }
+        }
+    }
+
     public class WeaponOverlapViewPatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -463,32 +463,32 @@ namespace RealismMod
                 {
                     if (Plugin.FikaPresent) //collisions acts funky with stances from another client's perspective
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.7f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.6f);
                         return;
                     }
                     if (StanceController.CurrentStance == EStance.ShortStock)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.7f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.65f);
                         return;
                     }
                     if (StanceController.CurrentStance == EStance.HighReady)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.8f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.75f);
                         return;
                     }
                     if (StanceController.CurrentStance == EStance.LowReady)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.85f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.8f);
                         return;
                     }
                     if (StanceController.StoredStance == EStance.ShortStock && StanceController.IsAiming)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.8f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.75f);
                         return;
                     }
                     if (StanceController.IsAiming)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.9f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.85f);
                         return;
                     }
                 }

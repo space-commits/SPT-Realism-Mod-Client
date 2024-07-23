@@ -65,7 +65,7 @@ namespace RealismMod
                 else if (StanceController.IsBracing && !PlayerState.IsSprinting)
                 {
                     mountingUIRect.sizeDelta = iconSize;
-                    float alpha = Mathf.Lerp(0.2f, 1f, Mathf.PingPong(Time.time * 1f, 1f));
+                    float alpha = Mathf.Lerp(0.2f, 1f, Mathf.PingPong(Time.time, 1f));
                     Color lerpedColor = new Color(1f, 1f, 1f, alpha);
                     mountingUIImage.color = lerpedColor;
                 }
