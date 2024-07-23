@@ -453,6 +453,7 @@ namespace RealismMod
                 DidStanceWiggle = false;
                 StanceBlender.Target = 0f;
             }
+            Utils.GetYourPlayer().ProceduralWeaponAnimation.method_23();
         }
 
         public static void StanceState()
