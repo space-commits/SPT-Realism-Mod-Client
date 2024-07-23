@@ -70,7 +70,7 @@ namespace RealismMod
             player.UpdateOcclusion();
             player.SendVoiceMuffledState(player.Muffled);
 
-            if (!hasGasMask && _hadGasMask && player.HealthStatus == ETagStatus.Dying) 
+            if (!hasGasMask && _hadGasMask && player.HealthStatus == ETagStatus.Dying)
             {
                 player.Say(EPhraseTrigger.OnBreath, true, 0f, (ETagStatus)0, 100, false); //force to reset audio
                 _hadGasMask = false;

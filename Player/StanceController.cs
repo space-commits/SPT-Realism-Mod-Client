@@ -49,6 +49,8 @@ namespace RealismMod
         private static float _currentRifleZPos = 0f;
         private static float _currentPistolXPos = 0f;
         private static float _currentPistolYPos = 0f;
+        private static float _currentPistolXPosVelocity = 0f;
+
         public static Vector3 CoverWiggleDirection = Vector3.zero;
         public static Vector3 WeaponOffsetPosition = Vector3.zero;
         public static Vector3 StanceTargetPosition = Vector3.zero;
@@ -664,9 +666,10 @@ namespace RealismMod
         {
             float speedFactor = IsAiming ? Plugin.PistolPosResetSpeedMulti.Value * stanceMulti : Plugin.PistolPosSpeedMulti.Value * stanceMulti;
             float xTarget = !IsBlindFiring && IsLeftShoulder && !CancelLeftShoulder ? 0.04f + Plugin.test4.Value : !IsBlindFiring ? 0.04f : 0f; // 0.0
-            float yTarget = IsAiming ? 0.01f : - 0.04f; //-0.04
+            float yTarget = IsAiming ? 0.01f : -0.04f; 
 
-            _currentPistolXPos = Mathf.Lerp(_currentPistolXPos, xTarget, dt * speedFactor * 0.5f);
+            _currentPistolXPos = Mathf.SmoothDamp(_currentPistolXPos, xTarget, ref _currentPistolXPosVelocity, 0.25f, speedFactor, dt);
+            //_currentPistolYPos = Mathf.SmoothDamp(_currentPistolYPos, yTarget, ref _currentPistolYPosVelocity, 0.15f, 1f, dt);
             _currentPistolYPos = Mathf.Lerp(_currentPistolYPos, yTarget, dt * speedFactor);
 
             _pistolLocalPosition.x = _currentPistolXPos;
@@ -799,15 +802,12 @@ namespace RealismMod
 
             if (!Utils.AreFloatsEqual(_currentRifleXPos, xTarget, 0.045f)) //IsLeftShoulder && 
             {
-                Utils.Logger.LogWarning("xTarget " + xTarget);
-                Utils.Logger.LogWarning("not equal");
                 rotationSpeed = 0.3f * stanceMulti * dt;
                 stanceRotation = Quaternion.Euler(new Vector3(-50f, -100f, 20f));
                 DoLeftShoulderTransition = true;
             }
             else if (DoLeftShoulderTransition)
             {
-                Utils.Logger.LogWarning("end");
                 DoLeftShoulderTransition = false;
                 DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-2f, 2f, 15f) * movementFactor, true);
             }
@@ -906,7 +906,7 @@ namespace RealismMod
             //for setting baseline position
             if (!IsBlindFiring) // && !pwa.LeftStance
             {
-                DoRiflePosAndLeftShoulder(player, fc, pwa, stanceMulti, movementFactor, dt, ref rotationSpeed, ref stanceRotation, shortStockTargetQuaternion);
+                DoRiflePosAndLeftShoulder(player, fc, pwa, stanceMulti, movementFactor, dt, ref rotationSpeed, ref stanceRotation);
             }
 
             DoTacSprint(fc, player);
