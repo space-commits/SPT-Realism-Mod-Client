@@ -35,8 +35,7 @@ namespace RealismMod
             if (_breathTimer > _currentBreathClipLength && _breathCountdown <= 0f && GearController.HasGasMask) 
             {
                 Player player = Utils.GetYourPlayer();
-                bool isNotBusy = !player.Speaker.Busy || player.Speaker.Speaking == false;
-    
+                bool isNotBusy = !player.Speaker.Busy || !player.Speaker.Speaking;
                 if (isNotBusy) 
                 {
                     PlayGasMaskBreathing(_breathedOut, player);

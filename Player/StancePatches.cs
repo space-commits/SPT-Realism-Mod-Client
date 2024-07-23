@@ -125,31 +125,6 @@ namespace RealismMod
         }
     }
 
-    public class WeaponLengthPatch : ModulePatch
-    {
-        private static FieldInfo playerField;
-        private static FieldInfo weapLn;
-
-        protected override MethodBase GetTargetMethod()
-        {
-            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
-            weapLn = AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn");
-            return typeof(Player.FirearmController).GetMethod("method_7", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance)
-        {
-            Player player = (Player)playerField.GetValue(__instance);
-            float length = (float)weapLn.GetValue(__instance);
-            if (player.IsYourPlayer)
-            {
-                WeaponStats.BaseWeaponLength = length;
-                WeaponStats.NewWeaponLength = length >= 0.9f ? length * 1.1f : length;
-            }
-        }
-    }
-
     public class OperateStationaryWeaponPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -405,6 +380,31 @@ namespace RealismMod
         }
     }
 
+    public class WeaponLengthPatch : ModulePatch
+    {
+        private static FieldInfo playerField;
+        private static FieldInfo weapLn;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
+            weapLn = AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn");
+            return typeof(Player.FirearmController).GetMethod("method_7", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(Player.FirearmController __instance)
+        {
+            Player player = (Player)playerField.GetValue(__instance);
+            float length = (float)weapLn.GetValue(__instance);
+            if (player.IsYourPlayer)
+            {
+                WeaponStats.BaseWeaponLength = length;
+                WeaponStats.NewWeaponLength = length >= 0.9f ? length * 1.1f : length;
+            }
+        }
+    }
+
     public class WeaponOverlapViewPatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -463,36 +463,36 @@ namespace RealismMod
                 {
                     if (Plugin.FikaPresent) //collisions acts funky with stances from another client's perspective
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.7f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.6f);
                         return;
                     }
                     if (StanceController.CurrentStance == EStance.ShortStock)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.7f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.65f);
                         return;
                     }
                     if (StanceController.CurrentStance == EStance.HighReady)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.8f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.75f);
                         return;
                     }
                     if (StanceController.CurrentStance == EStance.LowReady)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.85f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.8f);
                         return;
                     }
                     if (StanceController.StoredStance == EStance.ShortStock && StanceController.IsAiming)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.8f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.75f);
                         return;
                     }
                     if (StanceController.IsAiming)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.9f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.85f);
                         return;
                     }
                 }
-                weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.95f);
+                weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength);
                 return;
             }
         }
@@ -965,50 +965,50 @@ namespace RealismMod
 
     public class ApplyComplexRotationPatch : ModulePatch
     {
-        private static FieldInfo aimSpeedField;
-        private static FieldInfo compensatoryField;
-        private static FieldInfo displacementStrField;
-        private static FieldInfo scopeRotationField;
-        private static FieldInfo weapTempRotationField;
-        private static FieldInfo weapTempPositionField;
-        private static FieldInfo isAimingField;
-        private static FieldInfo firearmControllerField;
-        private static FieldInfo playerField;
+        private static FieldInfo _aimSpeedField;
+        private static FieldInfo _compensatoryField;
+        private static FieldInfo _displacementStrField;
+        private static FieldInfo _scopeRotationField;
+        private static FieldInfo _weapTempRotationField;
+        private static FieldInfo _weapTempPositionField;
+        private static FieldInfo _isAimingField;
+        private static FieldInfo _firearmControllerField;
+        private static FieldInfo _playerField;
 
-        private static bool hasResetActiveAim = true;
-        private static bool hasResetLowReady = true;
-        private static bool hasResetHighReady = true;
-        private static bool hasResetShortStock = true;
-        private static bool hasResetPistolPos = true;
-        private static bool hasResetMelee = true;
+        private static bool _hasResetActiveAim = true;
+        private static bool _hasResetLowReady = true;
+        private static bool _hasResetHighReady = true;
+        private static bool _hasResetShortStock = true;
+        private static bool _hasResetPistolPos = true;
+        private static bool _hasResetMelee = true;
 
-        private static bool isResettingActiveAim = false;
-        private static bool isResettingLowReady = false;
-        private static bool isResettingHighReady = false;
-        private static bool isResettingShortStock = false;
-        private static bool isResettingPistol = false;
-        private static bool isResettingMelee = false;
-        private static bool didHalfMeleeAnim = false;
+        private static bool _isResettingActiveAim = false;
+        private static bool _isResettingLowReady = false;
+        private static bool _isResettingHighReady = false;
+        private static bool _isResettingShortStock = false;
+        private static bool _isResettingPistol = false;
+        private static bool _isResettingMelee = false;
+        private static bool _didHalfMeleeAnim = false;
 
-        private static Quaternion currentRotation = Quaternion.identity;
-        private static Quaternion stanceRotation = Quaternion.identity;
-        private static Vector3 mountWeapPosition = Vector3.zero;
-        private static Vector3 currentRecoil = Vector3.zero;
-        private static Vector3 targetRecoil = Vector3.zero;
+        private static Quaternion _currentRotation = Quaternion.identity;
+        private static Quaternion _stanceRotation = Quaternion.identity;
+        private static Vector3 _mountWeapPosition = Vector3.zero;
+        private static Vector3 _currentRecoil = Vector3.zero;
+        private static Vector3 _targetRecoil = Vector3.zero;
 
-        private static float stanceRotationSpeed = 1f;
+        private static float _stanceRotationSpeed = 1f;
 
         protected override MethodBase GetTargetMethod()
         {
-            aimSpeedField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed");
-            compensatoryField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_compensatoryScale");
-            displacementStrField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_displacementStr");
-            scopeRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_targetScopeRotation");
-            weapTempPositionField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryPosition");
-            weapTempRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryRotation");
-            isAimingField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_isAiming");
-            firearmControllerField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
-            playerField = AccessTools.Field(typeof(FirearmController), "_player");
+            _aimSpeedField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed");
+            _compensatoryField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_compensatoryScale");
+            _displacementStrField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_displacementStr");
+            _scopeRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_targetScopeRotation");
+            _weapTempPositionField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryPosition");
+            _weapTempRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryRotation");
+            _isAimingField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_isAiming");
+            _firearmControllerField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
+            _playerField = AccessTools.Field(typeof(FirearmController), "_player");
 
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("ApplyComplexRotation", BindingFlags.Instance | BindingFlags.Public);
         }
@@ -1016,25 +1016,25 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(EFT.Animations.ProceduralWeaponAnimation __instance, float dt)
         {
-            FirearmController firearmController = (FirearmController)firearmControllerField.GetValue(__instance);
+            FirearmController firearmController = (FirearmController)_firearmControllerField.GetValue(__instance);
             if (firearmController == null)
             {
                 return;
             }
-            Player player = (Player)playerField.GetValue(firearmController);
+            Player player = (Player)_playerField.GetValue(firearmController);
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 FirearmController fc = player.HandsController as FirearmController;
 
                 StanceController.IsInThirdPerson = false;
 
-                float aimSpeed = (float)aimSpeedField.GetValue(__instance);
-                float compensatoryScale = (float)compensatoryField.GetValue(__instance);
-                float displacementStr = (float)displacementStrField.GetValue(__instance);
-                Quaternion aimingQuat = (Quaternion)scopeRotationField.GetValue(__instance);
-                Vector3 weapTempPosition = (Vector3)weapTempPositionField.GetValue(__instance);
-                Quaternion weapTempRotation = (Quaternion)weapTempRotationField.GetValue(__instance);
-                bool isAiming = (bool)isAimingField.GetValue(__instance);
+                float aimSpeed = (float)_aimSpeedField.GetValue(__instance);
+                float compensatoryScale = (float)_compensatoryField.GetValue(__instance);
+                float displacementStr = (float)_displacementStrField.GetValue(__instance);
+                Quaternion aimingQuat = (Quaternion)_scopeRotationField.GetValue(__instance);
+                Vector3 weapTempPosition = (Vector3)_weapTempPositionField.GetValue(__instance);
+                Quaternion weapTempRotation = (Quaternion)_weapTempRotationField.GetValue(__instance);
+                bool isAiming = (bool)_isAimingField.GetValue(__instance);
 
                 Vector3 handsRotation = __instance.HandsContainer.HandsRotation.Get();
                 Vector3 sway = __instance.HandsContainer.SwaySpring.Value;
@@ -1043,15 +1043,14 @@ namespace RealismMod
                 Vector3 rotationCenter = __instance._shouldMoveWeaponCloser ? __instance.HandsContainer.RotationCenterWoStock : __instance.HandsContainer.RotationCenter;
                 Vector3 weapRootPivot = __instance.HandsContainer.WeaponRootAnim.TransformPoint(rotationCenter);
 
-                StanceController.IsLeftShoulder = __instance.LeftStance;
-
-                bool allStancesAreReset = hasResetActiveAim && hasResetLowReady && hasResetHighReady && hasResetShortStock && hasResetPistolPos;
+                bool allStancesAreReset = _hasResetActiveAim && _hasResetLowReady && _hasResetHighReady && _hasResetShortStock && _hasResetPistolPos && !StanceController.DoLeftShoulderTransition; 
                 bool isInStance = 
                     StanceController.CurrentStance == EStance.HighReady || 
                     StanceController.CurrentStance == EStance.LowReady || 
                     StanceController.CurrentStance == EStance.ShortStock ||
                     StanceController.CurrentStance == EStance.ActiveAiming || 
-                    StanceController.CurrentStance == EStance.Melee;
+                    StanceController.CurrentStance == EStance.Melee ||
+                    StanceController.DoLeftShoulderTransition;
                 bool isInShootableStance = 
                     StanceController.CurrentStance == EStance.ShortStock || 
                     StanceController.CurrentStance == EStance.ActiveAiming ||
@@ -1066,20 +1065,20 @@ namespace RealismMod
                     (StanceController.CancelLowReady && StanceController.CurrentStance == EStance.LowReady) || 
                     (StanceController.CancelShortStock && StanceController.CurrentStance == EStance.ShortStock); // || (StanceController.CancelPistolStance && StanceController.PistolIsCompressed)
 
-                currentRotation = Quaternion.Slerp(currentRotation, __instance.IsAiming && allStancesAreReset ? aimingQuat : doStanceRotation ? stanceRotation : Quaternion.identity, doStanceRotation ? stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
+                _currentRotation = Quaternion.Slerp(_currentRotation, __instance.IsAiming && allStancesAreReset ? aimingQuat : doStanceRotation ? _stanceRotation : Quaternion.identity, doStanceRotation ? _stanceRotationSpeed * Plugin.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
 
                 if (Plugin.EnableAdditionalRec.Value)
                 {
-                    RecoilController.DoVisualRecoil(ref targetRecoil, ref currentRecoil, ref weapTempRotation, Logger);
+                    RecoilController.DoVisualRecoil(ref _targetRecoil, ref _currentRecoil, ref weapTempRotation, Logger);
                 }
 
-                __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weapTempPosition, weapTempRotation * currentRotation);
+                __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weapTempPosition, weapTempRotation * _currentRotation);
 
                 if (!Plugin.ServerConfig.enable_stances) return;
 
                 if (WeaponStats.IsStocklessPistol && StanceController.CurrentStance != EStance.PatrolStance)
                 {
-                    if (StanceController.CurrentStance == EStance.PistolCompressed && !StanceController.IsAiming && !isResettingPistol && !StanceController.IsBlindFiring && !__instance.LeftStance)
+                    if (StanceController.CurrentStance == EStance.PistolCompressed && !StanceController.IsAiming && !_isResettingPistol && !StanceController.IsBlindFiring) //&& !__instance.LeftStance
                     {
                         StanceController.StanceBlender.Target = 1f;
                     }
@@ -1088,21 +1087,21 @@ namespace RealismMod
                         StanceController.StanceBlender.Target = 0f;
                     }
 
-                    if ((StanceController.CurrentStance != EStance.PistolCompressed && !StanceController.IsAiming && !isResettingPistol) || StanceController.IsBlindFiring || __instance.LeftStance)
+                    if ((StanceController.CurrentStance != EStance.PistolCompressed && !StanceController.IsAiming && !_isResettingPistol) || StanceController.IsBlindFiring) // || __instance.LeftStance
                     {
                         StanceController.StanceTargetPosition = Vector3.Lerp(StanceController.StanceTargetPosition, Vector3.zero, 5f * dt);
                     }
 
-                    hasResetActiveAim = true;
-                    hasResetHighReady = true;
-                    hasResetLowReady = true;
-                    hasResetShortStock = true;
-                    hasResetMelee = true;
-                    StanceController.DoPistolStances(false, __instance, ref stanceRotation, dt, ref hasResetPistolPos, player, ref stanceRotationSpeed, ref isResettingPistol, fc);
+                    _hasResetActiveAim = true;
+                    _hasResetHighReady = true;
+                    _hasResetLowReady = true;
+                    _hasResetShortStock = true;
+                    _hasResetMelee = true;
+                    StanceController.DoPistolStances(false, __instance, ref _stanceRotation, dt, ref _hasResetPistolPos, player, ref _stanceRotationSpeed, ref _isResettingPistol, fc);
                 }
                 else if (!WeaponStats.IsStocklessPistol || WeaponStats.HasShoulderContact)
                 {
-                    if ((!isInStance && allStancesAreReset) || (cancelBecauseShooting && !isInShootableStance) || StanceController.IsAiming || cancelStance || StanceController.IsBlindFiring || __instance.LeftStance)
+                    if ((!isInStance && allStancesAreReset) || (cancelBecauseShooting && !isInShootableStance) || StanceController.IsAiming || cancelStance || StanceController.IsBlindFiring || StanceController.IsLeftShoulder)
                     {
                         StanceController.StanceBlender.Target = 0f;
                     }
@@ -1111,21 +1110,21 @@ namespace RealismMod
                         StanceController.StanceBlender.Target = 1f;
                     }
 
-                    if (((!isInStance && allStancesAreReset) && !cancelBecauseShooting && !StanceController.IsAiming) || StanceController.IsBlindFiring || __instance.LeftStance)
+                    if (((!isInStance && allStancesAreReset) && !cancelBecauseShooting && !StanceController.IsAiming) || StanceController.IsBlindFiring || StanceController.IsLeftShoulder)
                     {
                         StanceController.StanceTargetPosition = Vector3.Lerp(StanceController.StanceTargetPosition, Vector3.zero, 5f * dt);
                     }
 
-                    hasResetPistolPos = true;
-                    StanceController.DoRifleStances(player, fc, false, __instance, ref stanceRotation, dt, ref isResettingShortStock, ref hasResetShortStock, ref hasResetLowReady, ref hasResetActiveAim, ref hasResetHighReady, ref isResettingHighReady, ref isResettingLowReady, ref isResettingActiveAim, ref stanceRotationSpeed, ref hasResetMelee, ref isResettingMelee, ref didHalfMeleeAnim);
+                    _hasResetPistolPos = true;
+                    StanceController.DoRifleStances(player, fc, false, __instance, ref _stanceRotation, dt, ref _isResettingShortStock, ref _hasResetShortStock, ref _hasResetLowReady, ref _hasResetActiveAim, ref _hasResetHighReady, ref _isResettingHighReady, ref _isResettingLowReady, ref _isResettingActiveAim, ref _stanceRotationSpeed, ref _hasResetMelee, ref _isResettingMelee, ref _didHalfMeleeAnim);
                 }
 
-                StanceController.HasResetActiveAim = hasResetActiveAim;
-                StanceController.HasResetHighReady = hasResetHighReady;
-                StanceController.HasResetLowReady = hasResetLowReady;
-                StanceController.HasResetShortStock = hasResetShortStock;
-                StanceController.HasResetPistolPos = hasResetPistolPos;
-                StanceController.HasResetMelee = hasResetMelee;
+                StanceController.HasResetActiveAim = _hasResetActiveAim;
+                StanceController.HasResetHighReady = _hasResetHighReady;
+                StanceController.HasResetLowReady = _hasResetLowReady;
+                StanceController.HasResetShortStock = _hasResetShortStock;
+                StanceController.HasResetPistolPos = _hasResetPistolPos;
+                StanceController.HasResetMelee = _hasResetMelee;
             }
         }
     }

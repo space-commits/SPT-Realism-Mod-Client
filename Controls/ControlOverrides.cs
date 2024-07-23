@@ -74,6 +74,11 @@ namespace RealismMod.Controls
                 AimController.HeadDeviceStateChanged = true;
                 return true;
             }
+            if (Plugin.ServerConfig.enable_stances && command == ECommand.LeftStanceToggle)
+            {
+                if (!StanceController.IsInForcedLowReady) StanceController.ToggleLeftShoulder();
+                return false;
+            }
             if (command == ECommand.ToggleBreathing && Plugin.ServerConfig.recoil_attachment_overhaul && StanceController.IsAiming)
             {
                 Player player = Utils.GetYourPlayer();
@@ -85,8 +90,7 @@ namespace RealismMod.Controls
             if (Plugin.ServerConfig.enable_stances && Plugin.BlockFiring.Value && command == ECommand.ToggleShooting
                 && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed
                 && StanceController.CurrentStance != EStance.None && StanceController.CurrentStance != EStance.ActiveAiming
-                && StanceController.CurrentStance != EStance.ShortStock && StanceController.CurrentStance != EStance.PistolCompressed
-                && !StanceController.IsLeftShoulder)
+                && StanceController.CurrentStance != EStance.ShortStock && StanceController.CurrentStance != EStance.PistolCompressed)
             {
                 StanceController.CurrentStance = EStance.None;
                 StanceController.StoredStance = EStance.None;
