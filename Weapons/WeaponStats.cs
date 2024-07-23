@@ -151,7 +151,7 @@ namespace RealismMod
         public const float FoldedHRecoilFactor = 1.15f;
         public const float FoldedVRecoilFactor = 1.65f;
         public const float FoldedCOIFactor = 2.5f;
-        public const float FoldedCamRecoilFactor = 0.75f;
+        public const float FoldedCamRecoilFactor = 0.6f;
         public const float FoldedDispersionFactor = 1.75f;
         public const float FoldedRecoilAngleFactor = 1.15f;
         public const float FoldedConvergenceFactor = 0.7f;

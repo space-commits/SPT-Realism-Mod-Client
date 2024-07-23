@@ -16,7 +16,7 @@ namespace RealismMod
             { "FactoryVitamins", (1f, 10f, new Vector3(24.7f, 8.3f, 38.4f), new Vector3(0f, -2.5f, 0f), new Vector3(4.5f, 2f, 4f)) },
             { "FactoryPumpRoom", (1f, 10f, new Vector3(40f, 0.1f, -11.5f), new Vector3(0f, 0f, 0f), new Vector3(5.5f, 2f, 9.5f)) },
             { "FactoryCrashRoom", (0.05f, 150f, new Vector3(7f, -0.5f, -19f), new Vector3(0f, 0f, 0f), new Vector3(60f, 5.5f, 35.5f)) },
-            { "FactoryMechanicTunnel", (0.15f, 100f, new Vector3(-16.5f, -2.5f, 34f), new Vector3(0f, 0f, 0f), new Vector3(60f, 3f, 22f)) },
+            { "FactoryMechanicTunnel", (0.1f, 100f, new Vector3(-16.5f, -2.5f, 34f), new Vector3(0f, 0f, 0f), new Vector3(60f, 3f, 22f)) },
             { "FactoryExtractRoom", (0.05f, 200f, new Vector3(56f, 3f, -7f), new Vector3(0f, 0f, 0f), new Vector3(38f, 7f, 150f)) }, //main extract
             { "FactorySpawn", (0.05f, 200f, new Vector3(-22f, 2f, 49f), new Vector3(0f, 0f, 0f), new Vector3(65f, 9f, 30f)) },
         };
@@ -31,7 +31,7 @@ namespace RealismMod
             { "CustomsCrackDen", (0.75f, 30f, new Vector3(88f, 5f, -157f), new Vector3(0f, -12f, 0f), new Vector3(15f, 2f, 27f)) },
             { "CustomsPumpWarehouse", (0.4f, 85f, new Vector3(557f, 1.5f, -120.5f), new Vector3(0f, 7f, 0f), new Vector3(40f, 15f, 23f)) },
             { "CustomsPumpRoom", (1f, 75f, new Vector3(612f, 1.5f, -129.8f), new Vector3(0f, 6f, 0f), new Vector3(23.5f, 6.5f, 15f)) },
-            { "CustomsWarehouse3", (0.7f, 75f, new Vector3(391.5f, 1f, -97f), new Vector3(0f, 8.5f, 0f), new Vector3(53.5f, 6.5f, 29f)) },
+            { "CustomsWarehouse3", (1f, 75f, new Vector3(391.5f, 1f, -97f), new Vector3(0f, 8.5f, 0f), new Vector3(53.5f, 6.5f, 29f)) },
             { "CustomsRiverContainer", (1f, 12.5f, new Vector3(-96f, -10f, -16.5f), new Vector3(0f, 25f, 0f), new Vector3(12f, 4f, 25f)) }, //quest location
             { "CustomsAquarius", (1f, 500f, new Vector3(234f, 3.5f, 138f), new Vector3(0f, 9f, 0f), new Vector3(7.5f, 2f, 3.1f)) }, //she's a sneaky bitch
             { "CustomsFortBarrels", (0.2f, 100f, new Vector3(206f, 2f, -111f), new Vector3(0f, -10f, 0f), new Vector3(12f, 1f, 32f)) },
@@ -251,6 +251,7 @@ namespace RealismMod
                 case "shoreline":
                     return ShorelineGasZones;
                 case "sandbox":
+                case "sandbox_high":
                     return GZGasZones;
                 case "woods":
                     return WoodsGasZones;
@@ -281,6 +282,7 @@ namespace RealismMod
                 case "shoreline":
                     return ShorelineRadZones;
                 case "sandbox":
+                case "sandbox_high":
                     return GZRadZones;
                 case "woods":
                     return WoodsRadZones;

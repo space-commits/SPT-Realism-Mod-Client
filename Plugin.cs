@@ -15,6 +15,7 @@ using UnityEngine.Networking;
 using static RealismMod.Attributes;
 using static RealismMod.GameWorldController;
 using static UnityEngine.UI.Image;
+using RealismMod.Controls;
 
 namespace RealismMod
 {
@@ -615,7 +616,8 @@ namespace RealismMod
             new ChamberCheckUIPatch().Enable();
 
             //multiple
-            new KeyInputPatch().Enable();
+            new KeyInputPatch1().Enable();
+            new KeyInputPatch2().Enable();
             new SyncWithCharacterSkillsPatch().Enable();
             new OnItemAddedOrRemovedPatch().Enable();
             new PlayerUpdatePatch().Enable();
@@ -948,7 +950,6 @@ namespace RealismMod
 
             if (ServerConfig.med_changes)
             {
-                AudioControllers.HazardZoneAudioController();
                 RealHealthController.ControllerUpdate();
             }
         }
@@ -1266,7 +1267,7 @@ namespace RealismMod
             PistolAdditionalRotationY = Config.Bind<float>(pistol, "Pistol Ready Additional Rotation Y-Axis.", 0.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PistolAdditionalRotationZ = Config.Bind<float>(pistol, "Pistol Ready Additional Rotation Z-Axis.", 0.0f, new ConfigDescription("Additional Seperate Weapon Rotation When Going Into Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
-            PistolResetRotationX = Config.Bind<float>(pistol, "Pistol Ready Reset Rotation X-Axis", -0.5f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PistolResetRotationX = Config.Bind<float>(pistol, "Pistol Ready Reset Rotation X-Axis", -1f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 3, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PistolResetRotationY = Config.Bind<float>(pistol, "Pistol Ready Reset Rotation Y-Axis", 0.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PistolResetRotationZ = Config.Bind<float>(pistol, "Pistol Ready Reset Rotation Z-Axis", 0.0f, new ConfigDescription("Weapon Rotation When Going Out Of Stance.", new AcceptableValueRange<float>(-1000f, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
