@@ -400,7 +400,7 @@ namespace RealismMod
             if (player.IsYourPlayer)
             {
                 WeaponStats.BaseWeaponLength = length;
-                WeaponStats.NewWeaponLength = length >= 0.9f ? length * 1.1f : length;
+                WeaponStats.NewWeaponLength = length >= 0.92f ? length * 1.12f : length;
             }
         }
     }

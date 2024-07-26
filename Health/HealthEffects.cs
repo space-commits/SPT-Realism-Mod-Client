@@ -500,9 +500,9 @@ namespace RealismMod
                 TimeExisted++;
                 if (TimeExisted % 3 == 0 && HazardTracker.TotalToxicity >= 50f)
                 {
-                    for (int i = 0; i < RealHealthController.BodyParts.Length; i++)
+                    for (int i = 0; i < RealHealthController.BodyPartsArr.Length; i++)
                     {
-                        EBodyPart bodyPart = RealHealthController.BodyParts[i];
+                        EBodyPart bodyPart = RealHealthController.BodyPartsArr[i];
                         float baseDrainRate = GetDrainRate();
                         baseDrainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
                         _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 2f, baseDrainRate, null);
@@ -558,9 +558,9 @@ namespace RealismMod
                 TimeExisted++;
                 if (TimeExisted % 3 == 0 && HazardTracker.TotalRadiation >= 80f)
                 {
-                    for (int i = 0; i < RealHealthController.BodyParts.Length; i++)
+                    for (int i = 0; i < RealHealthController.BodyPartsArr.Length; i++)
                     {
-                        EBodyPart bodyPart = RealHealthController.BodyParts[i];
+                        EBodyPart bodyPart = RealHealthController.BodyPartsArr[i];
                         float baseDrainRate = GetDrainRate();
                         baseDrainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
                         _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 2f, baseDrainRate, null);

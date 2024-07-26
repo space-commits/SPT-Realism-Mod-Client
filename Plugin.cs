@@ -38,7 +38,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.pluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string pluginVersion = "1.4.0";
+        private const string pluginVersion = "1.4.1";
 
         //movement
         public static ConfigEntry<bool> EnableMaterialSpeed { get; set; }
@@ -870,12 +870,10 @@ namespace RealismMod
                 }
                 if (Chainloader.PluginInfos.ContainsKey("com.fika.core"))
                 {
-                    Logger.LogWarning("============================= Realism Mod: fika is loaded =============================== ");
                     FikaPresent = true;
                 }
                 if (Chainloader.PluginInfos.ContainsKey("FOVFix"))
                 {
-                    Logger.LogWarning("============================= Realism Mod: FOV Fix is loaded =============================== ");
                     FOVFixPresent = true;
                 }
             }

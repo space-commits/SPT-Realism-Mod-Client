@@ -388,6 +388,7 @@ namespace RealismMod
 
         private static void ToggleStance(EStance targetStance, bool setPrevious = false, bool setPrevisousAsCurrent = false)
         {
+            if (IsLeftShoulder) IsLeftShoulder = false;
             if (setPrevious) StoredStance = CurrentStance;
             if (CurrentStance == targetStance) CurrentStance = EStance.None;
             else CurrentStance = targetStance;
@@ -482,7 +483,7 @@ namespace RealismMod
                 if (!PlayerState.IsSprinting && !IsInInventory && !WeaponStats.IsStocklessPistol)
                 {
                     //cycle stances
-                    if (MeleeIsToggleable && !IsLeftShoulder && Input.GetKeyUp(Plugin.CycleStancesKeybind.Value.MainKey))
+                    if (MeleeIsToggleable && Input.GetKeyUp(Plugin.CycleStancesKeybind.Value.MainKey))
                     {
                         if (Time.time <= _doubleClickTime)
                         {
@@ -502,6 +503,7 @@ namespace RealismMod
                     {
                         if (Time.time > _doubleClickTime)
                         {
+                            IsLeftShoulder = false;
                             StanceBlender.Target = 1f;
                             _clickTriggered = true;
                             StanceIndex++;
@@ -519,13 +521,13 @@ namespace RealismMod
                     //active aim
                     if (!Plugin.ToggleActiveAim.Value)
                     {
-                        if ((!IsAiming && MeleeIsToggleable && !IsLeftShoulder && Input.GetKey(Plugin.ActiveAimKeybind.Value.MainKey) && Plugin.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKey(KeyCode.Mouse1) && !PlayerState.IsAllowedADS))
+                        if ((!IsAiming && MeleeIsToggleable && Input.GetKey(Plugin.ActiveAimKeybind.Value.MainKey) && Plugin.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKey(KeyCode.Mouse1) && !PlayerState.IsAllowedADS))
                         {
                             if (!HaveSetActiveAim)
                             {
                                 DidStanceWiggle = false;
                             }
-
+                            IsLeftShoulder = false;
                             StanceBlender.Target = 1f;
                             CurrentStance = EStance.ActiveAiming;
                             WasActiveAim = true;
@@ -542,7 +544,7 @@ namespace RealismMod
                     }
                     else
                     {
-                        if ((!IsAiming && MeleeIsToggleable && !IsLeftShoulder && Input.GetKeyDown(Plugin.ActiveAimKeybind.Value.MainKey) && Plugin.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerState.IsAllowedADS))
+                        if ((!IsAiming && MeleeIsToggleable && Input.GetKeyDown(Plugin.ActiveAimKeybind.Value.MainKey) && Plugin.ActiveAimKeybind.Value.Modifiers.All(Input.GetKey)) || (Input.GetKeyDown(KeyCode.Mouse1) && !PlayerState.IsAllowedADS))
                         {
                             StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
                             ToggleStance(EStance.ActiveAiming);
@@ -555,7 +557,7 @@ namespace RealismMod
                         }
                     }
 
-                    if (MeleeIsToggleable && !IsLeftShoulder && Plugin.UseMouseWheelStance.Value && !IsAiming)
+                    if (MeleeIsToggleable && Plugin.UseMouseWheelStance.Value && !IsAiming)
                     {
                         if ((Input.GetKey(Plugin.StanceWheelComboKeyBind.Value.MainKey) && Plugin.UseMouseWheelPlusKey.Value) || (!Plugin.UseMouseWheelPlusKey.Value && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.LeftAlt) && !Input.GetKey(KeyCode.R) && !Input.GetKey(KeyCode.C)))
                         {
@@ -568,8 +570,9 @@ namespace RealismMod
                     }
 
                     //Melee
-                    if (!IsAiming && MeleeIsToggleable && !IsLeftShoulder && Input.GetKeyDown(Plugin.MeleeKeybind.Value.MainKey) && Plugin.MeleeKeybind.Value.Modifiers.All(Input.GetKey))
+                    if (!IsAiming && MeleeIsToggleable && Input.GetKeyDown(Plugin.MeleeKeybind.Value.MainKey) && Plugin.MeleeKeybind.Value.Modifiers.All(Input.GetKey))
                     {
+                        IsLeftShoulder = false;
                         CurrentStance = EStance.Melee;
                         StoredStance = EStance.None;
                         WasActiveAim = false;
@@ -580,7 +583,7 @@ namespace RealismMod
                     }
 
                     //short-stock
-                    if (MeleeIsToggleable && !IsLeftShoulder && Input.GetKeyDown(Plugin.ShortStockKeybind.Value.MainKey) && Plugin.ShortStockKeybind.Value.Modifiers.All(Input.GetKey))
+                    if (MeleeIsToggleable && Input.GetKeyDown(Plugin.ShortStockKeybind.Value.MainKey) && Plugin.ShortStockKeybind.Value.Modifiers.All(Input.GetKey))
                     {
                         StanceBlender.Target = StanceBlender.Target == 0f ? 1f : 0f;
                         ToggleStance(EStance.ShortStock, false, true);
@@ -589,13 +592,13 @@ namespace RealismMod
                     }
 
                     //high ready
-                    if (MeleeIsToggleable && !IsLeftShoulder && Input.GetKeyDown(Plugin.HighReadyKeybind.Value.MainKey) && Plugin.HighReadyKeybind.Value.Modifiers.All(Input.GetKey))
+                    if (MeleeIsToggleable && Input.GetKeyDown(Plugin.HighReadyKeybind.Value.MainKey) && Plugin.HighReadyKeybind.Value.Modifiers.All(Input.GetKey))
                     {
                         ToggleHighReady();
                     }
 
                     //low ready
-                    if (MeleeIsToggleable && !IsLeftShoulder && !IsInForcedLowReady && Input.GetKeyDown(Plugin.LowReadyKeybind.Value.MainKey) && Plugin.LowReadyKeybind.Value.Modifiers.All(Input.GetKey))
+                    if (MeleeIsToggleable && !IsInForcedLowReady && Input.GetKeyDown(Plugin.LowReadyKeybind.Value.MainKey) && Plugin.LowReadyKeybind.Value.Modifiers.All(Input.GetKey))
                     {
                         ToggleLowReady();
                     }

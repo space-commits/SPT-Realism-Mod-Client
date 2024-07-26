@@ -442,16 +442,16 @@ namespace RealismMod
             }
         }
 
-        private static void ModifyPlateHelper(Collider collider, BoxCollider boxCollider, string target, float x, float y, float z) 
+        private static void ModifyPlateHelper(Collider collider, BoxCollider boxCollider, string colliderName, string target, float x, float y, float z) 
         {
-            if (collider.name.ToLower().Contains(target))
+            if (colliderName.Contains(target))
             {
                 float height = boxCollider.size.x * x;
                 float depth = boxCollider.size.y * y;
                 float width = boxCollider.size.z * z;
                 boxCollider.size = new Vector3(height, depth, width);
 
-                if (Plugin.EnableBallisticsLogging.Value) DebugGizmos.SingleObjects.VisualizeBoxCollider(collider as BoxCollider, collider.name);
+                if (Plugin.EnableBallisticsLogging.Value) DebugGizmos.SingleObjects.VisualizeBoxCollider(boxCollider, collider.name);
             }
         }
 
@@ -463,14 +463,15 @@ namespace RealismMod
             for (int i = 0; i < count; i++)
             {
                 Collider collider = collidors[i];
-                if (collider as BoxCollider != null)
+                BoxCollider boxCollider = collider as BoxCollider;
+                if (boxCollider != null)
                 {
-                    BoxCollider boxCollider = collider as BoxCollider;
-                    if (collider.name.ToLower() == "left" || collider.name.ToLower() == "right" || collider.name.ToLower() == "top") boxCollider.size *= 0f;
-                    ModifyPlateHelper(collider, boxCollider, "_chest", 0.95f, 0.95f, 0.9f);
-                    ModifyPlateHelper(collider, boxCollider, "_back", 0.75f, 0.85f, 0.85f);
-                    ModifyPlateHelper(collider, boxCollider, "_side_", 0.8f, 0.95f, 1f);
-                    ModifyPlateHelper(collider, boxCollider, "chesttop", 1.55f, 1f, 1.15f);
+                    string colliderName = collider.name.ToLower();
+                    if (colliderName == "left" || colliderName == "right" || colliderName == "top") boxCollider.size *= 0f;
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "_chest", 0.975f, 0.475f, 0.87f); //height, depth, width
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "_back", 0.78f, 0.58f, 0.83f); //height, depth, width
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "_side_", 0.8f, 1f, 0.7f); //height, width, depth
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "chesttop", 1.55f, 0.9f, 1f);//height, width, depth
                 }
             }
         }
