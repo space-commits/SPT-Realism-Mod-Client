@@ -7,7 +7,7 @@
     <Version>0.14.8</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
-    <BaseOutputPath></BaseOutputPath>
+    <BaseOutputPath>F:\SP EFT\SPT-390\BepInEx\plugins</BaseOutputPath>
   </PropertyGroup>
 
   <ItemGroup>

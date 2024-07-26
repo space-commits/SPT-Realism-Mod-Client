@@ -370,7 +370,7 @@ namespace RealismMod
                 PlayerState.IsSprinting = __instance.IsSprintEnabled;
                 PlayerState.EnviroType = __instance.Environment;
                 StanceController.IsInInventory = __instance.IsInventoryOpened;
-                PlayerState.IsMoving = __instance.IsSprintEnabled || __instance.MovementContext.AbsoluteMovementDirection.x  > 0 || __instance.MovementContext.AbsoluteMovementDirection.y > 0;
+                PlayerState.IsMoving = __instance.IsSprintEnabled ||  !Utils.AreFloatsEqual(__instance.MovementContext.AbsoluteMovementDirection.x, 0f, 0.001f) || !Utils.AreFloatsEqual(__instance.MovementContext.AbsoluteMovementDirection.z, 0f, 0.001f);
 
                 if (Plugin.EnableSprintPenalty.Value)
                 {

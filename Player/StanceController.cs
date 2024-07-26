@@ -101,7 +101,7 @@ namespace RealismMod
                 return (Plugin.RealHealthController.HealthConditionForcedLowReady || (WeaponStats.TotalWeaponWeight >= 10f && !IsMounting))
                     && !IsAiming && !IsFiringFromStance && CurrentStance != EStance.PistolCompressed
                     && CurrentStance != EStance.PatrolStance && CurrentStance != EStance.ShortStock
-                    && CurrentStance != EStance.ActiveAiming && MeleeIsToggleable;
+                    && CurrentStance != EStance.ActiveAiming && MeleeIsToggleable && !IsBracing;
             }
         }
 
@@ -129,11 +129,41 @@ namespace RealismMod
         public static bool HasResetPistolPos = true;
         public static bool HasResetMelee = true;
 
-        public static EStance StoredStance = EStance.None;
-        public static EStance CurrentStance = EStance.None;
-        private static EStance _lastRecordedStance = EStance.None;
+
+
+        public static EStance StoredStance 
+        {
+            get { return _storedStance; }
+            set { _storedStance = value; }
+        }
+        public static EStance CurrentStance
+        {
+            get { return _currentStance; }
+            set 
+            {
+                if (value != _currentStance)
+                {
+                    _currentStance = value;
+                    if (!IsAiming) Utils.GetYourPlayer().ProceduralWeaponAnimation.method_23();
+                } 
+            }
+        }
+        private static EStance _lastRecordedStance = EStance.None; //used for stamina drate rate updates
+        private static EStance _currentStance = EStance.None;
+        private static EStance _storedStance = EStance.None;
         public static bool WasActiveAim = false;
-        public static bool IsLeftShoulder = false;
+        public static bool _isLeftShoulder = false;
+        public static bool IsLeftShoulder
+        {
+            get { return _isLeftShoulder; }
+            set 
+            {    if (value != _isLeftShoulder)
+                {
+                    _isLeftShoulder = value;
+                    Utils.GetYourPlayer().ProceduralWeaponAnimation.method_23();
+                } 
+            }
+        }
         public static bool CancelLeftShoulder = false;
         public static bool DoLeftShoulderTransition = false;
         public static bool IsDoingTacSprint = false;
@@ -170,7 +200,19 @@ namespace RealismMod
         static Vector2 _lastMountYawPitch;
         public static EBracingDirection BracingDirection = EBracingDirection.None;
         public static bool IsBracing = false;
-        public static bool IsMounting = false;
+        public static bool _isMounting = false;
+        public static bool IsMounting
+        {
+            get { return _isMounting; }
+            set
+            {
+                if (value != _isMounting)
+                {
+                    _isMounting = value;
+                    Utils.GetYourPlayer().ProceduralWeaponAnimation.method_23();
+                }
+            }
+        }
         public static float BracingSwayBonus = 1f;
         public static float BracingRecoilBonus = 1f;
 
@@ -454,7 +496,6 @@ namespace RealismMod
                 DidStanceWiggle = false;
                 StanceBlender.Target = 0f;
             }
-            Utils.GetYourPlayer().ProceduralWeaponAnimation.method_23();
         }
 
         public static void StanceState()

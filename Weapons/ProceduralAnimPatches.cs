@@ -299,10 +299,10 @@ namespace RealismMod
                     float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
                     float playerWeightADSFactor = 1f - (totalPlayerWeight / 200f);
                     float stanceMulti = 
-                        StanceController.IsIdle() && !StanceController.IsLeftShoulder ? 1.6f 
-                        : StanceController.WasActiveAim || StanceController.CurrentStance == EStance.ActiveAiming ? 1.6f 
+                        StanceController.IsIdle() && !StanceController.IsLeftShoulder ? 1.75f 
+                        : StanceController.WasActiveAim || StanceController.CurrentStance == EStance.ActiveAiming ? 1.65f 
                         : StanceController.CurrentStance == EStance.HighReady || StanceController.CurrentStance == EStance.HighReady ? 1.25f 
-                        : StanceController.StoredStance == EStance.LowReady || StanceController.CurrentStance == EStance.LowReady ? 1.3f 
+                        : StanceController.StoredStance == EStance.LowReady || StanceController.CurrentStance == EStance.LowReady ? 1.25f 
                         : StanceController.IsLeftShoulder ? 0.9f : 1f;
                     float stockMulti = weapon.WeapClass != "pistol" && !WeaponStats.HasShoulderContact ? 0.75f : 1f;
 
@@ -439,20 +439,38 @@ namespace RealismMod
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 Weapon weapon = firearmController.Weapon;
+                bool isPistol = weapon.WeapClass == "pistol";
 
-                float leftShoulderFactor = StanceController.IsLeftShoulder ? 2f : 1f;
+                float stanceFactor =
+                    StanceController.IsMounting ? 0.15f :
+                    StanceController.IsLeftShoulder ? 1.5f :
+                    WeaponStats.ErgoFactor <= 30f || __instance.IsAiming ? 1f :
+                    StanceController.CurrentStance == EStance.ShortStock ? 0.5f :
+                    StanceController.CurrentStance == EStance.LowReady ? 0.65f :
+                    StanceController.CurrentStance == EStance.HighReady ? 0.75f :
+                    StanceController.CurrentStance == EStance.ActiveAiming ? 0.85f : 1f;
                 float formfactor = WeaponStats.IsBullpup ? 0.75f : weapon.Weight >= 9f ? 1.4f : 1f;
                 float weapWeight = weapon.GetSingleItemTotalWeight();
                 float totalPlayerWeight = PlayerState.TotalModifiedWeight - weapWeight;
                 float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
                 bool noShoulderContact = !WeaponStats.HasShoulderContact; //maybe don't include pistol
-                float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * formfactor * leftShoulderFactor * (1f + (1f - PlayerState.GearErgoPenalty));
-                float weightFactor = StatCalc.ProceduralIntensityFactorCalc(weapWeight, weapon.WeapClass == "pistol" ? 1f : 1.5f);
+                float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * formfactor * (1f + (1f - PlayerState.GearErgoPenalty));
+                float weightFactor = StatCalc.ProceduralIntensityFactorCalc(weapWeight, isPistol ? 1f : 1.5f);
                 float displacementModifier = noShoulderContact ? Plugin.ProceduralIntensity.Value * 0.95f : Plugin.ProceduralIntensity.Value * 0.48f;//lower = less drag
                 float aimIntensity = noShoulderContact ? Plugin.ProceduralIntensity.Value * 0.86f : Plugin.ProceduralIntensity.Value * 0.51f;
+                float displacementFactor = isPistol ? 20f : 22.5f;
+                float displacementLowerLimit = isPistol ? 0.6f : 0.75f;
+                float displacementUpperLimit = isPistol ? 1.2f : 7f;
+                float swayStrengthFactor = isPistol ? 25f : 130f;
+                float swayStrengthLowerLimit = isPistol ? 0.5f : 0.6f;
+                float swayStrengthUpperLimit = isPistol ? 1.3f : 2f;
 
-                float displacementStrength = Mathf.Clamp((ergoWeight * weightFactor * playerWeightFactor) / 30f, 0.8f, weapon.WeapClass == "pistol" ? 2f : 3.65f); //inertia
-                float swayStrength = Mathf.Clamp((ergoWeight * weightFactor * playerWeightFactor) / 65f, 0.6f, 1.15f); //side to side
+                float combinedFactors = ergoWeight * weightFactor * playerWeightFactor;
+
+                float displacementStrength = Mathf.Clamp((combinedFactors) / displacementFactor, displacementLowerLimit, displacementUpperLimit); //inertia
+                displacementStrength *= stanceFactor * (__instance.IsAiming ? 1.1f : 1f); //be careful, also affects initial ADS displacement
+                float swayStrength = Mathf.Clamp((combinedFactors) / swayStrengthFactor, swayStrengthLowerLimit, swayStrengthUpperLimit); //side to side
+                swayStrength *= stanceFactor;
 
                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_displacementStr").SetValue(__instance, displacementStrength * displacementModifier * playerWeightFactor);
                 AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_swayStrength").SetValue(__instance, swayStrength);
@@ -471,6 +489,7 @@ namespace RealismMod
                     Logger.LogWarning("Sway Factors = " + __instance.MotionReact.SwayFactors);
                     Logger.LogWarning("ergoWeight = " + ergoWeight);
                     Logger.LogWarning("ergoWeightFactor = " + weightFactor);
+                    Logger.LogWarning("stanceFactor = " + stanceFactor);
                 }
                 return false;
             }
