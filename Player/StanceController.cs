@@ -867,7 +867,7 @@ namespace RealismMod
             float stanceFactor = Mathf.Min(stanceMulti, 0.6f);
             float ySpeedFactor = doAltRifle && IsAiming ? 5f : doAltRifle ? stanceFactor : 1f;
             float shoulderSpeed = 3f * stanceFactor;
-            float xTarget = IsLeftShoulder && !CancelLeftShoulder ? -0.125f + WeaponOffsetPosition.x : doAltRifle && IsAiming ? 0.075f : WeaponOffsetPosition.x;
+            float xTarget = IsLeftShoulder && !CancelLeftShoulder ? Plugin.LeftShoulderOffset.Value + WeaponOffsetPosition.x : doAltRifle && IsAiming ? 0.075f : WeaponOffsetPosition.x;
             float yTarget = doAltRifle && IsAiming ? -0.05f : WeaponOffsetPosition.y;
             float zTarget = WeaponOffsetPosition.z;
 

@@ -1913,7 +1913,7 @@ namespace RealismMod
             }
 
             float totalHpPercent = totalCurrentHp / totalMaxHp;
-            resourceRateInjuryMulti = Mathf.Clamp(1f - totalHpPercent, 0f, 1f) * 0.15f;
+            resourceRateInjuryMulti = Mathf.Clamp(1f - totalHpPercent, 0f, 1f) * 0.3f;
             float percentEnergyFactor = Mathf.Max(percentEnergy * 1.1f, 0.01f);
 
             float percentEnergySprint = 1f - ((1f - percentEnergyFactor) / 8f);
@@ -1977,8 +1977,8 @@ namespace RealismMod
                     float weight = PlayerState.TotalModifiedWeight * (1f - player.Skills.EnduranceBuffJumpCostRed.Value);
                     float weightInverse = PlayerState.TotalModifiedWeight * (1f + player.Skills.EnduranceBuffJumpCostRed.Value);
                     float playerWeightFactor = weightInverse >= 10f ? weight / 500f : 0f;
-                    float sprintMulti = PlayerState.IsSprinting ? 1.45f : 1f;
-                    float sprintFactor = PlayerState.IsSprinting ? 0.1f : 0f;
+                    float sprintMulti = PlayerState.IsSprinting ? 1.46f : 1f;
+                    float sprintFactor = PlayerState.IsSprinting ? 0.11f : 0f;
                     float poisonSprintFactor = IsPoisoned ? Mathf.Max(1.5f * (1f - PlayerState.ImmuneSkillWeak), 1.1f) : 1f;
                     float toxicityResourceFactor = 1f + (HazardTracker.TotalToxicity * (1f - PlayerState.ImmuneSkillWeak)) / 150f;
                     float radiationResourceFactor = 1f + (HazardTracker.TotalRadiation * (1f - PlayerState.ImmuneSkillWeak)) / 190f;
