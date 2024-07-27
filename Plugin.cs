@@ -881,14 +881,14 @@ namespace RealismMod
 
         private void CheckForProfileID() 
         {
-            //keep trying to get player profile id
+            //keep trying to get player profile id and update hazard values
             if (!_gotProfileId)
             {
                 try
                 {
                     PMCProfileId = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession().Profile.Id;
                     ScavProfileId = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession().ProfileOfPet.Id;
-                    HazardTracker.GetHazardValues(PMCProfileId);
+                    if(ServerConfig.enable_hazard_zones) HazardTracker.GetHazardValues(PMCProfileId);
                     _gotProfileId = true;
                 }
                 catch 
