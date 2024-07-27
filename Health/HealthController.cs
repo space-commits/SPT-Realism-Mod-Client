@@ -1913,7 +1913,7 @@ namespace RealismMod
             }
 
             float totalHpPercent = totalCurrentHp / totalMaxHp;
-            resourceRateInjuryMulti = Mathf.Clamp(1f - totalHpPercent, 0f, 1f) * 0.3f;
+            resourceRateInjuryMulti = Mathf.Clamp(1f - totalHpPercent, 0f, 1f) * 0.25f;
             float percentEnergyFactor = Mathf.Max(percentEnergy * 1.1f, 0.01f);
 
             float percentEnergySprint = 1f - ((1f - percentEnergyFactor) / 8f);
