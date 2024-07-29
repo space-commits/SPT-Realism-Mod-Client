@@ -810,7 +810,7 @@ namespace RealismMod
 
                     __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponPosition, weapRotation * currentRotation);
 
-                    if (WeaponStats.IsStocklessPistol && Plugin.EnableAltPistol.Value && StanceController.CurrentStance != EStance.PatrolStance)
+                    if (WeaponStats.IsStocklessPistol && Plugin.EnableAltPistol.Value) // && StanceController.CurrentStance != EStance.PatrolStance
                     {
                         if (StanceController.CurrentStance == EStance.PistolCompressed && !StanceController.IsAiming && !isResettingPistol && !StanceController.IsBlindFiring)
                         {
@@ -1076,7 +1076,7 @@ namespace RealismMod
 
                 if (!Plugin.ServerConfig.enable_stances) return;
 
-                if (WeaponStats.IsStocklessPistol && StanceController.CurrentStance != EStance.PatrolStance)
+                if (WeaponStats.IsStocklessPistol)//&& StanceController.CurrentStance != EStance.PatrolStance
                 {
                     if (StanceController.CurrentStance == EStance.PistolCompressed && !StanceController.IsAiming && !_isResettingPistol && !StanceController.IsBlindFiring) //&& !__instance.LeftStance
                     {

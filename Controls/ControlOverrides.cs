@@ -111,6 +111,11 @@ namespace RealismMod.Controls
         [PatchPrefix]
         private static bool PatchPrefix(InputClass2 __instance, ECommand command)
         {
+            if (command == ECommand.ToggleProne || command == ECommand.ToggleDuck)
+            {
+                StanceController.IsMounting = false;
+                return true;
+            }
             if ((command == ECommand.ScrollNext || command == ECommand.ScrollPrevious) && (Input.GetKey(Plugin.StanceWheelComboKeyBind.Value.MainKey) && Plugin.UseMouseWheelPlusKey.Value))
             {
                 return false;

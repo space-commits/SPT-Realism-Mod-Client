@@ -707,7 +707,7 @@ namespace RealismMod
 
             HighReadyManipBuff = CurrentStance == EStance.HighReady ? 1.22f : 1f;
             ActiveAimManipBuff = CurrentStance == EStance.ActiveAiming && Plugin.ActiveAimReload.Value ? 1.15f : 1f;
-            LowReadyManipBuff = CurrentStance == EStance.LowReady ? 1.22f : 1f;
+            LowReadyManipBuff = CurrentStance == EStance.LowReady ? 1.25f : 1f;
 
             if (ShouldResetStances)
             {

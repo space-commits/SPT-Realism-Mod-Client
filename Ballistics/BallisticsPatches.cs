@@ -18,14 +18,13 @@ using EFT.UI;
 
 namespace RealismMod
 {
-    //for making player meshes invisible
+    //for making player meshes invisible for testing
     public class SetSkinPatch : ModulePatch
      {
          protected override MethodBase GetTargetMethod()
          {
              return typeof(PlayerBody).GetMethod("SetSkin", BindingFlags.Instance | BindingFlags.Public);
          }
-
 
          [PatchPostfix]
          private static void Prefix(PlayerBody __instance, KeyValuePair<EBodyModelPart, ResourceKey> part, Skeleton skeleton)
@@ -34,29 +33,21 @@ namespace RealismMod
          }
      }
 
-
-    //something something last stand mode, draft/ unused
-    public class KillPatch : ModulePatch
+    public class VelocityPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(ActiveHealthController).GetMethod("Kill", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GClass3010).GetMethod("Initialize", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        [PatchPrefix]
-        private static bool Prefix(ActiveHealthController __instance)
+        [PatchPostfix]
+        private static void Prefix(GClass3010 __instance)
         {
-            Player player = __instance.Player;
-            if (player.IsYourPlayer) 
-            {
-                player.method_10();
-                player.ToggleProne();
-                PlayerState.IsInLastStand = true;   
-                return false;
-            }
-            return true;
+            float bcFactor = (float)AccessTools.Field(typeof(GClass3010), "float_3").GetValue(__instance);
+            AccessTools.Field(typeof(GClass3010), "float_3").SetValue(__instance, bcFactor *= Plugin.DragModifier.Value);
         }
     }
+
 
     public class IsPenetratedPatch : ModulePatch
     {
@@ -108,7 +99,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, EftBulletClass shot)
         {
-
             __instance.DamageType = damageType;
             __instance.Damage = shot.Damage;
             __instance.PenetrationPower = shot.PenetrationPower;
