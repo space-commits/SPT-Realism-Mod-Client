@@ -300,7 +300,7 @@ namespace RealismMod
         {
             if (WeaponStats._WeapClass == "shotgun")
             {
-                weaponLevel = Mathf.Clamp(weaponLevel + 2, 1, 3);
+                weaponLevel = Mathf.Clamp(weaponLevel + 1, 1, 3);
                 WeaponAnimationSpeedControllerClass.SetWeaponLevel(__instance.Animator, weaponLevel);
             }
         }
@@ -437,6 +437,7 @@ namespace RealismMod
                 ammoFactor = 2f - ammoFactor;
                 float stanceModifier = 1f;
                 float maxSpeed = 1.4f;
+                float shoulderFactor = StanceController.IsLeftShoulder ? 0.75f : 1f;
 
                 if (WeaponStats._WeapClass == "shotgun")
                 {
@@ -451,11 +452,11 @@ namespace RealismMod
                 if (WeaponStats._WeapClass == "sniperRifle")
                 {
                     chamberSpeed *= Plugin.GlobalBoltSpeedMulti.Value;
-                    stanceModifier = StanceController.IsBracing ? 1.2f : StanceController.IsMounting ? 1.4f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.15f : 1f;
+                    stanceModifier = StanceController.IsBracing ? 1.15f : StanceController.IsMounting ? 1.4f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.15f : 1f;
                 }
                
                 float totalChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * stanceModifier
-                    * ammoFactor * PlayerState.RemainingArmStamPercReload * Plugin.RealHealthController.AdrenalineReloadBonus,
+                    * ammoFactor * PlayerState.RemainingArmStamPercReload * Plugin.RealHealthController.AdrenalineReloadBonus * shoulderFactor,
                     0.75f, maxSpeed);
                 __instance.FirearmsAnimator.SetAnimationSpeed(totalChamberSpeed);
 

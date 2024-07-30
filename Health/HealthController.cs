@@ -177,7 +177,7 @@ namespace RealismMod
         {
             get
             {
-                return HasAdrenalineEffect ? 1f + Mathf.Pow(PlayerState.StressResistanceFactor, 1.5f) : 1f;
+                return HasAdrenalineEffect ? 0.9f + Mathf.Pow(PlayerState.StressResistanceFactor, 1.5f) : 1f;
             }
         }
 
@@ -185,7 +185,7 @@ namespace RealismMod
         {
             get
             {
-                return HasAdrenalineEffect ? 1f + Mathf.Pow(PlayerState.StressResistanceFactor, 1.25f) : 1f;
+                return HasAdrenalineEffect ? 0.9f + Mathf.Pow(PlayerState.StressResistanceFactor, 1.25f) : 1f;
             }
         }
 
@@ -193,7 +193,7 @@ namespace RealismMod
         {
             get
             {
-                return HasAdrenalineEffect ? 1f + Mathf.Pow(PlayerState.StressResistanceFactor, 1.25f) : 1f;
+                return HasAdrenalineEffect ? 0.9f + Mathf.Pow(PlayerState.StressResistanceFactor, 1.25f) : 1f;
             }
         }
 
@@ -201,7 +201,7 @@ namespace RealismMod
         {
             get
             {
-                return HasAdrenalineEffect ? 1f + (PlayerState.StressResistanceFactor * 1.5f) : 1f;
+                return HasAdrenalineEffect ? 0.9f + (PlayerState.StressResistanceFactor * 1.5f) : 1f;
             }
         }
 

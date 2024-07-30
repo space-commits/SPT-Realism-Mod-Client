@@ -121,7 +121,7 @@ namespace RealismMod
                 float playerWeightFactor = PlayerState.TotalModifiedWeightMinusWeapon >= 50f ? 1f - ((PlayerState.TotalModifiedWeightMinusWeapon / 100f) * (1f - PlayerState.StrengthWeightBuff)) : 1f; //doubling up because BSG's calcs are shit
                 float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;
                 float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
-                float stanceSpeedBonus = StanceController.IsDoingTacSprint ? 1.25f * (1f + player.Skills.EnduranceBuffBreathTimeInc.Value) : 1f;
+                float stanceSpeedBonus = StanceController.IsDoingTacSprint ? 1.15f * (1f + player.Skills.EnduranceBuffRestoration.Value) : 1f;
                 float stanceAccelBonus = StanceController.CurrentStance == EStance.PatrolStance ? 1.45f : StanceController.CurrentStance == EStance.ShortStock ? 0.9f : StanceController.CurrentStance == EStance.LowReady ? 1.25f : StanceController.IsDoingTacSprint ? 1.37f : StanceController.CurrentStance == EStance.HighReady ? 1.2f : 1f;
 
                 if (surfaceMulti < 1.0f)

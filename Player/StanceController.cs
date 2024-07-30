@@ -793,6 +793,8 @@ namespace RealismMod
                 DoAltPistolAndLeftShoulder(player, fc, pwa, stanceMulti, dt);
             }
 
+            if (CurrentStance == EStance.PatrolStance) return;
+
             if (!pwa.IsAiming && !IsBlindFiring && !PistolIsColliding && !WeaponStats.HasShoulderContact && Plugin.EnableAltPistol.Value) //!CancelPistolStance && !pwa.LeftStance
             {
                 CurrentStance = EStance.PistolCompressed;

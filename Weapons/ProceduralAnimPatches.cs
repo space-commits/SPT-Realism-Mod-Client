@@ -315,8 +315,8 @@ namespace RealismMod
                     float newAimSpeed = Mathf.Max(totalSightedAimSpeed * PlayerState.ADSSprintMulti * Plugin.RealHealthController.AdrenalineADSBonus, 0.3f) * (weapon.WeapClass == "pistol" ? Plugin.PistolGlobalAimSpeedModifier.Value : Plugin.GlobalAimSpeedModifier.Value);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(__instance, newAimSpeed); //aimspeed
 
-                    float leftShoulderFactor = StanceController.IsLeftShoulder ?1.4f : 1f;
-                    float formfactor = WeaponStats.IsBullpup ? 0.75f : 1f;
+                    float leftShoulderFactor = StanceController.IsLeftShoulder ? 1.4f : 1f;
+                    float formfactor = WeaponStats.IsBullpup ? 0.7f : 1f;
                     float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + (1f - PlayerState.GearErgoPenalty));
                     float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(weapon.GetSingleItemTotalWeight(), weapon.WeapClass == "pistol" ? 1f : 4f);
                     float playerWeightSwayFactor = 1f + (totalPlayerWeight / 200f);
@@ -337,8 +337,8 @@ namespace RealismMod
                     }
                     else
                     {
-                        breathIntensity = Mathf.Clamp(0.5f * totalErgoFactor * formfactor, 0.35f, 0.81f);
-                        handsIntensity = Mathf.Clamp(0.5f * totalErgoFactor * formfactor, 0.35f, 0.86f);
+                        breathIntensity = Mathf.Clamp(0.4f * totalErgoFactor * formfactor, 0.35f, 0.81f);
+                        handsIntensity = Mathf.Clamp(0.4f * totalErgoFactor * formfactor, 0.35f, 0.86f);
                     }
 
                     float chonkerFactor = weapon.Weight >= 9f ? 1.45f : 1f;
