@@ -436,6 +436,7 @@ namespace RealismMod
             IconCache.Add(ENewItemAttributeId.StimType, Resources.Load<Sprite>("characteristics/icons/hpResource"));
             IconCache.Add(ENewItemAttributeId.DurabilityBurn, Resources.Load<Sprite>("characteristics/icons/Velocity"));
             IconCache.Add(ENewItemAttributeId.Heat, Resources.Load<Sprite>("characteristics/icons/Velocity"));
+            IconCache.Add(ENewItemAttributeId.MuzzleFlash, Resources.Load<Sprite>("characteristics/icons/Velocity"));
 
             Sprite balanceSprite = await RequestResource<Sprite>(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\icons\\balance.png");
             Sprite recoilAngleSprite = await RequestResource<Sprite>(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\icons\\recoilAngle.png");
@@ -656,6 +657,7 @@ namespace RealismMod
             {
                 //procedural animations
                 /*new CalculateCameraPatch().Enable();*/
+                new MuzzleEffectsPatch().Enable();
                 new UpdateWeaponVariablesPatch().Enable();
                 new SetAimingSlowdownPatch().Enable();
                 new PwaWeaponParamsPatch().Enable();
@@ -744,8 +746,10 @@ namespace RealismMod
             //Ballistics
             if (ServerConfig.realistic_ballistics)
             {
+
                 /*new SetSkinPatch().Enable();*/
                 /*new CollidersPatch().Enable();*/
+                new InitiateShotPatch().Enable();
                 new VelocityPatch().Enable();
                 new CreateShotPatch().Enable();
                 new ApplyArmorDamagePatch().Enable();
@@ -1027,7 +1031,7 @@ namespace RealismMod
             RecoilDispersionFactor = Config.Bind<float>(advancedRecoilSettings, "S-Pattern Multi.", 0.06f, new ConfigDescription("Increases The Size The Classic S Pattern. Weapon's Dispersion Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 20, Browsable = ServerConfig.recoil_attachment_overhaul }));
             RecoilDispersionSpeed = Config.Bind<float>(advancedRecoilSettings, "S-Pattern Speed Multi", 2f, new ConfigDescription("Increases The Speed At Which Recoil Makes The Classic S Pattern.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 10, Browsable = ServerConfig.recoil_attachment_overhaul }));
             ResetTime = Config.Bind<float>(advancedRecoilSettings, "Reset Delay", 0.14f, new ConfigDescription("The Time In Seconds That Has To Be Elapsed Before Firing Is Considered Over, Recoil Will Not Reset Until It Is Over.", new AcceptableValueRange<float>(0.01f, 0.5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 4, Browsable = ServerConfig.recoil_attachment_overhaul }));
-            EnableCrank = Config.Bind<bool>(advancedRecoilSettings, "Rearward Recoil", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Makes Recoil Go Towards Player's Shoulder Instead Of Forward.", null, new ConfigurationManagerAttributes { IsAdvanced = true, Order = 3, Browsable = true }));
+            EnableCrank = Config.Bind<bool>(advancedRecoilSettings, "Rearward Recoil", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Makes Recoil Go Towards Player's Shoulder Instead Of Forward.", null, new ConfigurationManagerAttributes { IsAdvanced = true, Order = 3, Browsable = ServerConfig.recoil_attachment_overhaul }));
             HandsDampingMulti = Config.Bind<float>(advancedRecoilSettings, "Rearward Recoil Wiggle Multi", 1f, new ConfigDescription("The Amount Of Rearward Wiggle After Firing.", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 2, Browsable = ServerConfig.recoil_attachment_overhaul }));
             RecoilDampingMulti = Config.Bind<float>(advancedRecoilSettings, "Vertical Recoil Wiggle Multi", 1f, new ConfigDescription("The Amount Of Vertical Wiggle After Firing.", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 1, Browsable = ServerConfig.recoil_attachment_overhaul }));
 
@@ -1069,7 +1073,7 @@ namespace RealismMod
             CanDisarmBot = Config.Bind<bool>(ballSettings, "Can Disarm Bot.", false, new ConfigDescription("If Hit In The Arms, There Is A Chance That The Currently Equipped Weapon Will Be Dropped. Chance Is Modified By Bullet Kinetic Energy And Reduced If Hit Arm Armor, And Doubled If Forearm Is Hit. WARNING: Disarmed Bots Will Become Passive And Not Attack Player, So This Is Disabled By Default.", null, new ConfigurationManagerAttributes { Order = 10, Browsable = ServerConfig.realistic_ballistics }));
             CanDisarmPlayer = Config.Bind<bool>(ballSettings, "Can Disarm Player", ServerConfig.realistic_ballistics, new ConfigDescription("If Hit In The Arms, There Is A Chance That The Currently Equipped Weapon Will Be Dropped. Chance Is Modified By Bullet Kinetic Energy And Reduced If Hit Arm Armor, And Doubled If Forearm Is Hit.", null, new ConfigurationManagerAttributes { Order = 1, Browsable = ServerConfig.realistic_ballistics }));
            
-            EnableAmmoStats = Config.Bind<bool>(statSettings, "Display Ammo Stats", ServerConfig.realistic_ballistics, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 11, Browsable = true }));
+            EnableAmmoStats = Config.Bind<bool>(statSettings, "Display Ammo Stats", ServerConfig.realistic_ballistics, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 11, Browsable = ServerConfig.recoil_attachment_overhaul }));
             ShowBalance = Config.Bind<bool>(statSettings, "Show Balance Stat", ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 5, Browsable = ServerConfig.recoil_attachment_overhaul }));
             ShowCamRecoil = Config.Bind<bool>(statSettings, "Show Camera Recoil Stat", false, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 4, Browsable = ServerConfig.recoil_attachment_overhaul }));
             ShowDispersion = Config.Bind<bool>(statSettings, "Show Dispersion Stat", false, new ConfigDescription("Requiures Restart. Warning: Showing Too Many Stats On Weapons With Lots Of Slots Makes The Inspect Menu UI Difficult To Use.", null, new ConfigurationManagerAttributes { Order = 3, Browsable = ServerConfig.recoil_attachment_overhaul }));
@@ -1107,13 +1111,13 @@ namespace RealismMod
             GlobalUBGLReloadMulti = Config.Bind<float>(speed, "UBGL Reload Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13, IsAdvanced = true, Browsable = ServerConfig.recoil_attachment_overhaul }));
             RechamberPistolSpeedMulti = Config.Bind<float>(speed, "Pistol Rechamber Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 12, IsAdvanced = true, Browsable = ServerConfig.recoil_attachment_overhaul }));
             GlobalRechamberSpeedMulti = Config.Bind<float>(speed, "Rechamber Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 11, Browsable = ServerConfig.recoil_attachment_overhaul }));
-            GlobalBoltSpeedMulti = Config.Bind<float>(speed, "Bolt Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, Browsable = true }));
+            GlobalBoltSpeedMulti = Config.Bind<float>(speed, "Bolt Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, Browsable = ServerConfig.recoil_attachment_overhaul }));
             GlobalShotgunRackSpeedFactor = Config.Bind<float>(speed, "Shotgun Rack Speed Multi", 1.0f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 9, Browsable = ServerConfig.recoil_attachment_overhaul }));
             GlobalCheckChamberSpeedMulti = Config.Bind<float>(speed, "Chamber Check Speed Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 8, Browsable = ServerConfig.recoil_attachment_overhaul }));
             GlobalCheckChamberShotgunSpeedMulti = Config.Bind<float>(speed, "Shotgun Chamber Check Speed Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7, IsAdvanced = true, Browsable = ServerConfig.recoil_attachment_overhaul }));
             GlobalCheckChamberPistolSpeedMulti = Config.Bind<float>(speed, "Pistol Chamber Check Speed Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 6, IsAdvanced = true, Browsable = ServerConfig.recoil_attachment_overhaul }));
             GlobalCheckAmmoPistolSpeedMulti = Config.Bind<float>(speed, "Pistol Check Ammo Multi", 1.25f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 5, IsAdvanced = true, Browsable = ServerConfig.recoil_attachment_overhaul }));
-            GlobalCheckAmmoMulti = Config.Bind<float>(speed, "Check Ammo Multi.", 1.3f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, Browsable = true }));
+            GlobalCheckAmmoMulti = Config.Bind<float>(speed, "Check Ammo Multi.", 1.3f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, Browsable = ServerConfig.recoil_attachment_overhaul }));
             QuickReloadSpeedMulti = Config.Bind<float>(speed, "Quick Reload Multi", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, Browsable = ServerConfig.recoil_attachment_overhaul }));
             InternalMagReloadMulti = Config.Bind<float>(speed, "Internal Magazine Reload", 1.15f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, Browsable = ServerConfig.recoil_attachment_overhaul }));
 

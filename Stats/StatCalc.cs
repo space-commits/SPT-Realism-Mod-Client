@@ -12,7 +12,7 @@ namespace RealismMod
 {
     public static class StatCalc
     {
-        public const float convVRecoilConversion = -0.75f;
+        public const float convVRecoilConversion = -0.82f;
 
         public const float ErgoWeightMult = 13.5f;
         public const float ErgoTorqueMult = 0.8f;
@@ -301,7 +301,14 @@ namespace RealismMod
         }
 
 
-        public static void ModStatCalc(Mod mod, float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeedMod, float modReload, ref float currentReloadSpeedMod, float modFix, ref float currentFixSpeedMod, float modErgo, ref float currentErgo, float modVRecoil, ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeedMod, float modChamber, bool isDisplayDelta, string weapClass, ref float pureErgo, float modShotDisp, ref float currentShotDisp, float modloudness, ref float currentLoudness, ref float currentMalfChance, float modMalfChance, ref float pureRecoil, ref float currentConv, float modConv, ref float currentCamReturnSpeed, bool isChonker)
+        public static void ModStatCalc(Mod mod, float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, 
+            float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, 
+            ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeedMod, float modReload, 
+            ref float currentReloadSpeedMod, float modFix, ref float currentFixSpeedMod, float modErgo, ref float currentErgo, float modVRecoil,
+            ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeedMod, float modChamber, bool isDisplayDelta,
+            string weapClass, ref float pureErgo, float modShotDisp, ref float currentShotDisp, float modloudness, ref float currentLoudness, 
+            ref float currentMalfChance, float modMalfChance, ref float pureRecoil, ref float currentConv, float modConv, ref float currentCamReturnSpeed, bool isChonker,
+            ref float currentFlashSuppression, float modFlashSuppression)
         {
             float ergoWeightFactor = WeightStatCalc(StatCalc.ErgoWeightMult, isChonker ? modWeight * 0.5f : modWeight) / 100f;
             float vRecoilWeightFactor = WeightStatCalc(StatCalc.VRecoilWeightMult, modWeight) / 100f;
@@ -334,6 +341,7 @@ namespace RealismMod
             currentChamberSpeedMod = currentChamberSpeedMod + modChamber;
             currentFixSpeedMod = currentFixSpeedMod + modFix;
             currentLoudness = currentLoudness + modloudness;
+            currentFlashSuppression = currentFlashSuppression + modFlashSuppression;
 
             if (Utils.IsSilencer(mod))
             {
@@ -359,6 +367,8 @@ namespace RealismMod
             {
                 parent = mod.Parent.Container.ParentItem as Mod;
             }
+
+            WeaponStats.HasMuzzleDevice = Utils.IsMuzzleCombo(mod) || Utils.IsMuzzleDevice(mod) || Utils.IsSilencer(mod);
 
             if (Utils.IsStock(mod) == true)
             {
@@ -769,6 +779,143 @@ namespace RealismMod
                     modCamRecoil *= 1f;
                     modErgo *= 1f;
                     break;
+            }
+        }
+
+        public static int CaliberSparks(string caliber)
+        {
+            switch (caliber)
+            {
+                case "9x18PM":
+                    return 0;
+                case "57x28":
+                    return 1;
+                case "46x30":
+                    return 0;
+                case "9x21":
+                    return 2;
+                case "762x25TT":
+                    return 3;
+                case "1143x23ACP":
+                    return 1;
+                case "9x19PARA":
+                    return 2;
+                case "9x33R":
+                    return 10;
+
+                case "762x35":
+                    return 0;
+                case "9x39":
+                    return 0;
+
+                case "762x39":
+                    return 4;
+                case "545x39":
+                    return 3;
+                case "556x45NATO":
+                    return 3;
+                case "366TKM":
+                    return 2;
+
+                case "762x51":
+                    return 5;
+                case "762x54R":
+                    return 5;
+                case "68x51":
+                    return 4;
+
+
+                case "127x55":
+                    return 4;
+                case "86x70":
+                    return 6;
+                case "127x108":
+                    return 7;
+
+                case "23x75":
+                    return 3;
+                case "12g":
+                    return 2;
+                case "20g":
+                    return 1;
+
+                case "30x29":
+                    return 0;
+                case "40x46":
+                    return 0;
+                case "40x53":
+                    return 0;
+                default:
+                    return 0;
+            }
+        }
+
+
+        public static int CaliberMuzzleFlash(string caliber)
+        {
+            switch (caliber)
+            {
+                case "9x18PM":
+                    return 10;
+                case "57x28":
+                    return 12;
+                case "46x30":
+                    return 11;
+                case "9x21":
+                    return 13;
+                case "762x25TT":
+                    return 14;
+                case "1143x23ACP":
+                    return 12;
+                case "9x19PARA":
+                    return 13;
+                case "9x33R":
+                    return 30;
+
+                case "762x35":
+                    return 13;
+                case "9x39":
+                    return 12;
+
+                case "762x39":
+                    return 17;
+                case "545x39":
+                    return 16;
+                case "556x45NATO":
+                    return 16;
+                case "366TKM":
+                    return 15;
+
+                case "762x51":
+                    return 23;
+                case "762x54R":
+                    return 23;
+                case "68x51":
+                    return 22;
+
+
+                case "127x55":
+                    return 25;
+                case "86x70":
+                    return 30;
+                case "127x108":
+                    return 35;
+
+                case "23x75":
+                    return 19;
+                case "12g":
+                    return 14;
+                case "20g":
+                    return 12;
+
+                case "30x29":
+                    return 8;
+                case "40x46":
+                    return 8;
+                case "40x53":
+                    return 8;
+                default:
+                    return 12;
             }
         }
 

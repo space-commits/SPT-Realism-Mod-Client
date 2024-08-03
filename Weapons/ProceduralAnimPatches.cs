@@ -17,7 +17,7 @@ namespace RealismMod
 {
     //with BSG's recoil rework, player camera is much more closely attached to the weapon. This is a problem for the stances, making them behave strangely
     //this patch attempts to rectify that
-    public class CalculateCameraPatch : ModulePatch
+/*    public class CalculateCameraPatch : ModulePatch
     {
         private static FieldInfo playerField;
         private static FieldInfo fcField;
@@ -108,7 +108,7 @@ namespace RealismMod
                 ____vCameraTarget = ((____animatorPoseBlend > 0f) ? (____vCameraTarget + vector) : ____vCameraTarget);
             }
         }
-    }
+    }*/
 
     public class CamRecoilPatch : ModulePatch
     {
@@ -458,7 +458,7 @@ namespace RealismMod
                 float weightFactor = StatCalc.ProceduralIntensityFactorCalc(weapWeight, isPistol ? 1f : 1.5f);
                 float displacementModifier = noShoulderContact ? Plugin.ProceduralIntensity.Value * 0.95f : Plugin.ProceduralIntensity.Value * 0.48f;//lower = less drag
                 float aimIntensity = noShoulderContact ? Plugin.ProceduralIntensity.Value * 0.86f : Plugin.ProceduralIntensity.Value * 0.51f;
-                float displacementFactor = isPistol ? 20f : 22.5f;
+                float displacementFactor = isPistol ? 20f : 25.5f;
                 float displacementLowerLimit = isPistol ? 0.6f : 0.75f;
                 float displacementUpperLimit = isPistol ? 1.2f : 7f;
                 float swayStrengthFactor = isPistol ? 25f : 130f;

@@ -232,6 +232,16 @@ namespace RealismMod
         public static float TotalModdedConv = 0f;
         public static float ConvergenceDelta = 0f;
 
+        public static float VelocityDelta = 0f;
+
+        public static string Caliber = "";
+
+        public static float MuzzleLoudness = 0f;
+
+        public static float TotalMuzzleFlash = 0f;
+
+        public static bool HasMuzzleDevice = false;
+
         public static float InitDispersion = 0f;
 
         public static float InitRecoilAngle = 0f;

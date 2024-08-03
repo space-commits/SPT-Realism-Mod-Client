@@ -266,7 +266,7 @@ namespace RealismMod
             HandleGasMaskEffects(player, hasGasMask, gasProtection, radProtection);
 
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
-            if (fc != null)
+            if (fc != null && Plugin.ServerConfig.recoil_attachment_overhaul)
             {
                 StatCalc.UpdateAimParameters(fc, player.ProceduralWeaponAnimation);
             }

@@ -58,35 +58,6 @@ namespace RealismMod
         }
     }
 
-
-
-    public class MuzzleSmokePatch : ModulePatch
-    {
-        private static Vector3 target = Vector3.zero;
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(MuzzleSmoke).GetMethod("LateUpdateValues", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static void Prefix(MuzzleSmoke __instance)
-        {
-            if (WeaponStats._WeapClass == "pistol" && (!WeaponStats.HasShoulderContact || (Plugin.WeapOffsetX.Value != 0f && WeaponStats.HasShoulderContact)))
-            {
-                target = new Vector3(-0.2f, -0.2f, -0.2f);
-            }
-            else
-            {
-                target = new Vector3(0f, 0f, -0.2f);
-            }
-
-            Transform transform = (Transform)AccessTools.Field(typeof(MuzzleSmoke), "transform_0").GetValue(__instance);
-            Vector3 pos = (Vector3)AccessTools.Field(typeof(MuzzleSmoke), "vector3_0").GetValue(__instance);
-            pos = Vector3.Slerp(pos, transform.position + target, 0.125f); // left/right, up/down, in/out
-            AccessTools.Field(typeof(MuzzleSmoke), "vector3_0").SetValue(__instance, pos);
-        }
-    }
-
     public class OnWeaponDrawPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

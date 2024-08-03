@@ -970,7 +970,7 @@ namespace RealismMod
                 _effectsTime = 0f;
             }
 
-            if (player.HealthController.IsAlive && player.HealthController.DamageCoeff > 0f) AudioControllers.HazardZoneAudioController();
+            if (player.HealthController.IsAlive && player.HealthController.DamageCoeff > 0f && Plugin.ServerConfig.enable_hazard_zones) AudioControllers.HazardZoneAudioController();
             DoResourceDrain(player.ActiveHealthController, Time.deltaTime);
 
             //temporary timer solution :')

@@ -214,7 +214,6 @@ namespace RealismMod
                 Collider col = damageInfo.HitCollider;
                 if (damageInfo.HitCollider == null) //fika can't send objects as part of peckets, need to find matching collider by checking collider type
                 {
-                    Utils.Logger.LogWarning("hit collider is null, something is fucked up ");
                     List<Collider> collidors = player.GetComponent<PlayerPoolObject>().Colliders;
                     if (collidors == null || collidors.Count <= 0) return hitZone;
                     int count = collidors.Count;

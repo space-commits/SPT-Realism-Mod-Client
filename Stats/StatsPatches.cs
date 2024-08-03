@@ -350,6 +350,8 @@ namespace RealismMod
 
             float currentFixSpeedMod = 0f;
 
+            float currentFlashSuppression = 0f;
+
             bool folded = __instance.Folded;
             bool hasShoulderContact = false;
             if (WeaponStats.WepHasShoulderContact(__instance) && !folded)
@@ -388,6 +390,7 @@ namespace RealismMod
                     float modMalfChance = AttachmentProperties.ModMalfunctionChance(mod);
                     float modDuraBurn = mod.DurabilityBurnModificator;
                     float modFix = AttachmentProperties.FixSpeed(mod);
+                    float modFlashSuppression = AttachmentProperties.ModFlashSuppression(mod);
                     modVRecoil += modConv > 0f ? modConv * StatCalc.convVRecoilConversion : 0f;
 
                     if (Utils.IsMuzzleDevice(mod))
@@ -418,7 +421,8 @@ namespace RealismMod
                         modHRecoil, ref currentHRecoil, ref currentChamberSpeedMod, modChamber, 
                         false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, 
                         modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, 
-                        ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, isChonker);
+                        ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, isChonker,
+                        ref currentFlashSuppression, modFlashSuppression);
 
                     if (AttachmentProperties.CanCylceSubs(mod))
                     {
@@ -468,7 +472,7 @@ namespace RealismMod
             WeaponStats.ModAimSpeedModifier = currentAimSpeedMod / 100f;
             WeaponStats.AutoFireRate = Mathf.Max(400, (int)currentAutoROF);
             WeaponStats.SemiFireRate = Mathf.Max(300, (int)currentSemiROF);
-            WeaponStats.FireRateDelta = (__instance.FireRate / WeaponStats.AutoFireRate) * (__instance.SingleFireRate / WeaponStats.SemiFireRate);
+            WeaponStats.FireRateDelta = ((float)WeaponStats.AutoFireRate / (float)__instance.Template.bFirerate) * ((float)WeaponStats.SemiFireRate / (float)__instance.Template.SingleFireRate);
             WeaponStats.InitTotalCOI = currentCOI;
             WeaponStats.InitPureErgo = pureErgo;
             WeaponStats.PureRecoilDelta = pureRecoilDelta;
@@ -476,8 +480,10 @@ namespace RealismMod
             WeaponStats.TotalCameraReturnSpeed = currentCamReturnSpeed;
             WeaponStats.TotalModdedConv = currentConv * (!hasShoulderContact ? WeaponStats.FoldedConvergenceFactor : 1f);
             WeaponStats.ConvergenceDelta = currentConv / __instance.Template.RecoilReturnSpeedHandRotation;
-
-    
+            WeaponStats.VelocityDelta = __instance.VelocityDelta;
+            WeaponStats.MuzzleLoudness = currentLoudness;
+            WeaponStats.Caliber = caliber;
+            WeaponStats.TotalMuzzleFlash = currentFlashSuppression;
         }
     }
 

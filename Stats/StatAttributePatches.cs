@@ -82,6 +82,7 @@ namespace RealismMod
             StimType,
             DurabilityBurn,
             Heat,
+            MuzzleFlash
 
         }
 
@@ -175,6 +176,8 @@ namespace RealismMod
                     return "HEAT";
                 case ENewItemAttributeId.DurabilityBurn:
                     return "DURABILITY BURN";
+                case ENewItemAttributeId.MuzzleFlash:
+                    return "MUZZLE FLASH REDUCTION";
                 default:
                     return id.ToString();
             }

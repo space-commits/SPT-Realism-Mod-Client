@@ -225,7 +225,7 @@ namespace RealismMod
                     }
                 }
 
-                durabilityMalfChance *= subFactor * __instance.Item.Buff.MalfunctionProtections * WeaponStats.FireRateDelta;
+                durabilityMalfChance *= subFactor * __instance.Item.Buff.MalfunctionProtections; //* WeaponStats.FireRateDelta
                 durabilityMalfChance = Mathf.Clamp01((float)durabilityMalfChance);
                 float totalMalfChance = Mathf.Clamp01((float)Math.Round(durabilityMalfChance + ((ammoMalfChance + magMalfChance + overheatMalfChance) / 500f), 5));
 
