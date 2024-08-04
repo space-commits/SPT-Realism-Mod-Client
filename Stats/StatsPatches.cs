@@ -360,9 +360,13 @@ namespace RealismMod
             }
             WeaponStats.BaseMeleeDamage = 0f; //reset the melee dmg
             WeaponStats.BaseMeleePen = 0f;
+
             WeaponStats.HasBayonet = false;
             WeaponStats.HasBooster = false;
             WeaponStats.HasBipod = false;
+            WeaponStats.HasMuzzleDevice = false;
+            WeaponStats.HasSuppressor = false;
+            WeaponStats.HasGasBuster = false;
 
             foreach (Mod mod in __instance.Mods)
             {
@@ -397,19 +401,21 @@ namespace RealismMod
                     {
                         if (modType == "bayonet") WeaponStats.HasBayonet = true;
                         if (modType == "booster") WeaponStats.HasBooster = true;
-            
+                        if (Utils.IsSilencer(mod)) WeaponStats.HasSuppressor = true;
+
                         WeaponStats.BaseMeleeDamage = AttachmentProperties.ModMeleeDamage(mod);
                         WeaponStats.BaseMeleePen = AttachmentProperties.ModMeleePen(mod);
+                        WeaponStats.HasMuzzleDevice = true;
                     }
-
                     if (Utils.IsBipod(mod)) WeaponStats.HasBipod = true;
+                    if (Utils.IsCharge(mod) && modType == "gas") WeaponStats.HasGasBuster = true;
 
                     StatCalc.ModConditionalStatCalc(
                         __instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, 
                         ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, 
                         ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, 
                         ref modAccuracy, ref modType, ref position, ref modChamber, 
-                        ref modLoudness, ref modMalfChance, ref modDuraBurn, ref modConv);
+                        ref modLoudness, ref modMalfChance, ref modDuraBurn, ref modConv, ref modFlashSuppression);
 
                     StatCalc.ModStatCalc(
                         mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, 

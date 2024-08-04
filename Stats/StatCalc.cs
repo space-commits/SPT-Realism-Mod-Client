@@ -360,15 +360,13 @@ namespace RealismMod
         }
 
 
-        public static void ModConditionalStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, ref string position, ref float modChamber, ref float modLoudness, ref float modMalfChance, ref float modDuraBurn, ref float modConv)
+        public static void ModConditionalStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, ref string position, ref float modChamber, ref float modLoudness, ref float modMalfChance, ref float modDuraBurn, ref float modConv, ref float modFlash)
         {
             Mod parent = null;
             if (mod?.Parent?.Container?.ParentItem != null)
             {
                 parent = mod.Parent.Container.ParentItem as Mod;
             }
-
-            WeaponStats.HasMuzzleDevice = Utils.IsMuzzleCombo(mod) || Utils.IsMuzzleDevice(mod) || Utils.IsSilencer(mod);
 
             if (Utils.IsStock(mod) == true)
             {
@@ -533,6 +531,7 @@ namespace RealismMod
                     modDispersion *= 0.1f;
                     modAngle *= 0.1f;
                     modLoudness = 0f;
+                    modFlash = 0f;
                 }
                 return;
             }
@@ -581,6 +580,7 @@ namespace RealismMod
                         modDispersion *= 0.1f;
                         modAngle *= 0.1f;
                         modLoudness = 0f;
+                        modFlash = 0f;
                     }
                 }
                 return;
@@ -599,6 +599,7 @@ namespace RealismMod
                         modDispersion *= 0.1f;
                         modAngle *= 0.1f;
                         modLoudness = 0f;
+                        modFlash = 0f;
                     }
                 }
                 return;
@@ -732,7 +733,7 @@ namespace RealismMod
                     {
                         if (parentMod.Slots[i].ContainedItem != null)
                         {
-                            StatCalc.bufferSlotModifier(i, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
+                            StatCalc.BufferSlotModifier(i, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
                             return;
                         }
                     }
@@ -740,7 +741,53 @@ namespace RealismMod
             }
         }
 
-        private static void bufferSlotModifier(int position, ref float modVRecoil, ref float modHRecoil, ref float modDispersion, ref float modCamRecoil, ref float modErgo)
+        public static float WeightStatCalc(float statFactor, float itemWeight)
+        {
+            return itemWeight * -statFactor;
+        }
+
+        public static float FactoredWeight(float modWeight)
+        {
+            return Mathf.Clamp((float)Math.Pow(modWeight * 1.5f, 1.1f) / 1.1f, 0.001f, 5f);
+        }
+
+        private static float TorqueCalc(float distance, float weight, string weapClass)
+        {
+            if (weapClass == "pistol")
+            {
+                distance *= 2.5f;
+            }
+            return (distance - 0f) * weight;
+        }
+
+        public static float GetTorque(string position, float weight, string weapClass)
+        {
+            float torque = 0f;
+            switch (position)
+            {
+                case "front":
+                    torque = TorqueCalc(-10f, weight, weapClass);
+                    break;
+                case "rear":
+                    torque = TorqueCalc(10f, weight, weapClass);
+                    break;
+                case "rearHalf":
+                    torque = TorqueCalc(2.5f, weight, weapClass);
+                    break;
+                case "frontFar":
+                    torque = TorqueCalc(-15f, weight, weapClass);
+                    break;
+                case "frontHalf":
+                    torque = TorqueCalc(-5f, weight, weapClass);
+                    break;
+                default:
+                    torque = 0f;
+                    break;
+            }
+            return torque;
+        }
+
+        private static void BufferSlotModifier(int position, ref float modVRecoil, ref float modHRecoil, ref float modDispersion, ref float modCamRecoil, ref float modErgo)
         {
             switch (position)
             {
@@ -779,6 +826,141 @@ namespace RealismMod
                     modCamRecoil *= 1f;
                     modErgo *= 1f;
                     break;
+            }
+        }
+
+        public static float CaliberSmoke(string caliber)
+        {
+            switch (caliber)
+            {
+                case "9x18PM":
+                    return 0.2f;
+                case "57x28":
+                    return 0.3f;
+                case "46x30":
+                    return 0.25f;
+                case "9x21":
+                    return 0.35f;
+                case "762x25TT":
+                    return 0.4f;
+                case "1143x23ACP":
+                    return 0.35f;
+                case "9x19PARA":
+                    return 0.325f;
+                case "9x33R":
+                    return 1f;
+
+                case "762x35":
+                    return 0.4f;
+                case "9x39":
+                    return 0.35f;
+
+                case "762x39":
+                    return 0.65f;
+                case "545x39":
+                    return 0.5f;
+                case "556x45NATO":
+                    return 0.55f;
+                case "366TKM":
+                    return 0.7f;
+
+                case "762x51":
+                    return 0.8f;
+                case "762x54R":
+                    return 0.9f;
+                case "68x51":
+                    return 0.85f;
+
+                case "127x55":
+                    return 1.2f;
+                case "86x70":
+                    return 1.35f;
+                case "127x108":
+                    return 1.5f;
+
+                case "23x75":
+                    return 1.2f;
+                case "12g":
+                    return 1f;
+                case "20g":
+                    return 0.8f;
+
+                case "30x29":
+                    return 1f;
+                case "40x46":
+                    return 1f;
+                case "40x53":
+                    return 1f;
+                default:
+                    return 0.5f;
+            }
+        }
+
+        public static float CaliberFlame(string caliber)
+        {
+            switch (caliber)
+            {
+                case "9x18PM":
+                    return 0.05f;
+                case "57x28":
+                    return 0.065f;
+                case "46x30":
+                    return 0.055f;
+                case "9x21":
+                    return 0.055f;
+                case "762x25TT":
+                    return 0.065f;
+                case "1143x23ACP":
+                    return 0.05f;
+                case "9x19PARA":
+                    return 0.06f;
+                case "9x33R":
+                    return 0.2f;
+
+                case "762x35":
+                    return 0.07f;
+                case "9x39":
+                    return 0.065f;
+
+                case "762x39":
+                    return 0.1f;
+                case "545x39":
+                    return 0.09f;
+                case "556x45NATO":
+                    return 0.09f;
+                case "366TKM":
+                    return 0.08f;
+
+                case "762x51":
+                    return 0.15f;
+                case "762x54R":
+                    return 0.14f;
+                case "68x51":
+                    return 0.12f;
+
+
+                case "127x55":
+                    return 0.13f;
+                case "86x70":
+                    return 0.19f;
+                case "127x108":
+                    return 0.22f;
+
+                case "23x75":
+                    return 0.14f;
+                case "12g":
+                    return 0.12f;
+                case "20g":
+                    return 0.1f;
+
+                case "30x29":
+                    return 0.06f;
+                case "40x46":
+                    return 0.06f;
+                case "40x53":
+                    return 0.06f;
+                default:
+                    return 0.05f;
             }
         }
 
@@ -823,7 +1005,6 @@ namespace RealismMod
                     return 5;
                 case "68x51":
                     return 4;
-
 
                 case "127x55":
                     return 4;
@@ -961,7 +1142,6 @@ namespace RealismMod
                 case "68x51":
                     return 3f;
 
-
                 case "127x55":
                     return 3.8f;
                 case "86x70":
@@ -985,52 +1165,6 @@ namespace RealismMod
                 default:
                     return 1f;
             }
-        }
-
-        public static float WeightStatCalc(float statFactor, float itemWeight)
-        {
-            return itemWeight * -statFactor;
-        }
-
-        public static float FactoredWeight(float modWeight)
-        {
-            return Mathf.Clamp((float)Math.Pow(modWeight * 1.5f, 1.1f) / 1.1f, 0.001f, 5f);
-        }
-
-        private static float TorqueCalc(float distance, float weight, string weapClass)
-        {
-            if (weapClass == "pistol")
-            {
-                distance *= 2.5f;
-            }
-            return (distance - 0f) * weight;
-        }
-
-        public static float GetTorque(string position, float weight, string weapClass)
-        {
-            float torque = 0f;
-            switch (position)
-            {
-                case "front":
-                    torque = TorqueCalc(-10f, weight, weapClass);
-                    break;
-                case "rear":
-                    torque = TorqueCalc(10f, weight, weapClass);
-                    break;
-                case "rearHalf":
-                    torque = TorqueCalc(2.5f, weight, weapClass);
-                    break;
-                case "frontFar":
-                    torque = TorqueCalc(-15f, weight, weapClass);
-                    break;
-                case "frontHalf":
-                    torque = TorqueCalc(-5f, weight, weapClass);
-                    break;
-                default:
-                    torque = 0f;
-                    break;
-            }
-            return torque;
         }
     }
 }

@@ -486,7 +486,7 @@ namespace RealismMod
             {
                 float flashValue = muzzleFlash * -1f;
                 ItemAttributeClass flashAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.MuzzleFlash);
-                flashAtt.Name = ENewItemAttributeId.MuzzleFlash.GetName();
+                flashAtt.Name = Utils.IsSilencer(__instance) ? "Gas" : ENewItemAttributeId.MuzzleFlash.GetName();
                 flashAtt.Base = () => flashValue;
                 flashAtt.StringValue = () => $"{flashValue}%";
                 flashAtt.LessIsGood = false;
@@ -983,6 +983,7 @@ namespace RealismMod
 
             string weapOpType = WeaponStats.OperationType(__instance);
             string weapType = WeaponStats.WeaponType(__instance);
+            if (weapType == "DI") WeaponStats.IsDirectImpingement = true;
 
             float currentLoudness = 0;
             float currentFlashSuppression = 0;
@@ -1022,12 +1023,13 @@ namespace RealismMod
                 float modMalfChance = 0f;
                 float modDuraBurn = 0f;
                 float modFix = 0f;
+                float modFlashSuppression = 0f;
                 string modType = AttachmentProperties.ModType(mod);
                 string position = StatCalc.GetModPosition(mod, weapType, weapOpType, modType);
                 StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, 
                     ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, 
                     ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, 
-                    ref modMalfChance, ref modDuraBurn, ref modConv);
+                    ref modMalfChance, ref modDuraBurn, ref modConv, ref modFlashSuppression);
                 StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, 
                     modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, 
                     modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, 
