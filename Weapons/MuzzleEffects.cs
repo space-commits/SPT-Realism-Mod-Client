@@ -33,7 +33,7 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(WeaponManagerClass __instance)
         {
-            if (__instance.Player != null && !__instance.Player.IsYourPlayer) return;
+            if ((__instance.Player != null && !__instance.Player.IsYourPlayer) || !Plugin.EnableMuzzleEffects.Value) return;
             var muzzleManager = (MuzzleManager)_muzzleManagerField.GetValue(__instance.FirearmsEffects);
             if (muzzleManager == null) return;
             Player.FirearmController fc = __instance.Player.HandsController as Player.FirearmController;
@@ -67,13 +67,8 @@ namespace RealismMod
             float weaponSystemFactor = WeaponStats.IsDirectImpingement && WeaponStats.HasSuppressor ? 1.3f : 1f;
             float enviroFactorSmoke = PlayerState.EnviroType == EnvironmentType.Indoor ? 1.25f : 0.85f;
             float totalSmokeFactor = velocitySmokeFactor * muzzleSmokeSuppression * modSmokeSuppression * weaponSystemFactor * enviroFactorSmoke * duraFactor * heatFactor;
-
-            Logger.LogWarning("velocitySmokeFactor " + velocitySmokeFactor);
-            Logger.LogWarning("muzzleSmokeSuppression " + muzzleSmokeSuppression);
-            Logger.LogWarning("modSmokeSuppression " + modSmokeSuppression);
-            Logger.LogWarning("weaponSystemFactor " + weaponSystemFactor);
-            Logger.LogWarning("enviroFactorSmoke " + enviroFactorSmoke);
-            Logger.LogWarning("totalSmokeFactor " + totalSmokeFactor);
+            float smoketrailFactor = 1f + totalSmokeFactor;
+            float smoketrailFactorInverse =  Mathf.Max(1f - totalSmokeFactor, 0.1f);
 
             MuzzleSparks[] sparks = (MuzzleSparks[])_muzzleSparksField.GetValue(muzzleManager);
             if (sparks != null)
@@ -122,25 +117,16 @@ namespace RealismMod
                 }
             }
 
+/*            if (WeaponStats.IsPistol) return;*/
 
             //try to make it based on current heat of gun?
             MuzzleSmoke[] smoke = (MuzzleSmoke[])_muzzleSmokeField.GetValue(muzzleManager);
             if (smoke != null)
             {
-                for (int i = 0; i < smoke.Length; i++)
-                {
-                    Logger.LogWarning("SmokeLength " + smoke[i].SmokeLength);
-                    Logger.LogWarning("MuzzleSpeedMultiplier " + smoke[i].MuzzleSpeedMultiplier);
-                    Logger.LogWarning("SmokeVelocity " + smoke[i].SmokeVelocity);
-                    Logger.LogWarning("SmokeIncreasingByShot " + smoke[i].SmokeIncreasingByShot);
-                    Logger.LogWarning("SmokeEnd " + smoke[i].SmokeEnd);
-
-                    smoke[i].SmokeLength = Plugin.test1.Value; //how much smoke basically
-                    smoke[i].MuzzleSpeedMultiplier = Plugin.test2.Value; //sort of the same as below
-                    smoke[i].SmokeVelocity = Plugin.test3.Value; //how fast the smoke moves, lower to make it linger
-                    smoke[i].SmokeIncreasingByShot = Plugin.test4.Value; //how many shots/how quickly smoke effect starts happening and increasing in intensity
-                    smoke[i].SmokeEnd = Plugin.test5.Value; //not sure
-                }
+                smoke[0].SmokeLength = 20f * smoketrailFactor; //how long it is, 20
+                smoke[0].MuzzleSpeedMultiplier = 0.4f; //how much it twists and changes direction, lower = more straight, 1.2 
+                smoke[0].SmokeVelocity = 0.05f * smoketrailFactorInverse; //how fast the smoke moves, lower to make it linger, 0.4
+                smoke[0].SmokeIncreasingByShot = 0.25f * smoketrailFactor; //how many shots/how quickly smoke effect starts happening and increasing in intensity, 0.4
             }
 
         }
@@ -163,11 +149,11 @@ namespace RealismMod
         {
             if (WeaponStats._WeapClass == "pistol" && (!WeaponStats.HasShoulderContact || (Plugin.WeapOffsetX.Value != 0f && WeaponStats.HasShoulderContact)))
             {
-                _target = new Vector3(-0.2f, -0.2f, -0.2f);
+                _target = new Vector3(0f, 0f, -0.3f); 
             }
             else
             {
-                _target = new Vector3(0f, 0f, -0.2f);
+                _target = new Vector3(0f, 0f, -0.3f); 
             }
 
             Transform transform = (Transform)_transformField.GetValue(__instance);

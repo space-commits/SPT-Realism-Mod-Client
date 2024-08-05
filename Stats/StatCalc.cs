@@ -836,19 +836,19 @@ namespace RealismMod
             switch (caliber)
             {
                 case "9x18PM":
-                    return 0.2f;
-                case "57x28":
-                    return 0.3f;
-                case "46x30":
-                    return 0.25f;
-                case "9x21":
-                    return 0.35f;
-                case "762x25TT":
                     return 0.4f;
-                case "1143x23ACP":
+                case "57x28":
+                    return 0.4f;
+                case "46x30":
                     return 0.35f;
+                case "9x21":
+                    return 0.45f;
+                case "762x25TT":
+                    return 0.5f;
+                case "1143x23ACP":
+                    return 0.45f;
                 case "9x19PARA":
-                    return 0.325f;
+                    return 0.425f;
                 case "9x33R":
                     return 1f;
 

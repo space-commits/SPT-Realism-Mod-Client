@@ -353,6 +353,7 @@ namespace RealismMod
 
         public static void CancelAllStances()
         {
+            StanceBlender.Target = 0f;
             CurrentStance = EStance.None;
             StoredStance = EStance.None;
             DidStanceWiggle = false;

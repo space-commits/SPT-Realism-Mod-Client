@@ -136,7 +136,7 @@ namespace RealismMod
         private static Vector3 _offsetRightDir = new Vector3(-0.004f, 0, 0);
         private static Vector3 _offsetDownDir = new Vector3(0, -0.004f, 0);
 
-        private static void SetMountingStatus(EBracingDirection coverDir, string weapClass)
+        private static void SetMountingStatus(EBracingDirection coverDir)
         {
             if (!StanceController.IsMounting)
             {
@@ -177,11 +177,21 @@ namespace RealismMod
             }
         }
 
+        private static bool IsBracingProne(Player player) 
+        {
+            if (player.IsInPronePose) 
+            {
+                SetMountingStatus(EBracingDirection.Top);
+                return true;
+            }
+            return false;
+        }
+
         private static bool CheckForCoverCollision(EBracingDirection coverDir, Vector3 start, Vector3 direction, out RaycastHit raycastHit, RaycastHit[] raycastArr, Func<RaycastHit, bool> isHitIgnoreTest, string weapClass)
         {
             if (EFTPhysicsClass.Linecast(start, direction, out raycastHit, EFTHardSettings.Instance.WEAPON_OCCLUSION_LAYERS, false, raycastArr, isHitIgnoreTest))
             {
-                SetMountingStatus(coverDir, weapClass);
+                SetMountingStatus(coverDir);
                 StanceController.CoverWiggleDirection = GetWiggleDir(coverDir);
                 return true;
             }
@@ -316,7 +326,8 @@ namespace RealismMod
         
                     RaycastHit raycastHit;
 
-                    if (CheckForCoverCollision(EBracingDirection.Top, startDown, forwardDirection, out raycastHit, raycastArr, isHitIgnoreTest, weapClass) ||
+                    if (IsBracingProne(player) ||
+                        CheckForCoverCollision(EBracingDirection.Top, startDown, forwardDirection, out raycastHit, raycastArr, isHitIgnoreTest, weapClass) ||
                         CheckForCoverCollision(EBracingDirection.Left, startLeft, leftDirection, out raycastHit, raycastArr, isHitIgnoreTest, weapClass) ||
                         CheckForCoverCollision(EBracingDirection.Right, startRight, rightDirection, out raycastHit, raycastArr, isHitIgnoreTest, weapClass)) 
                     {
