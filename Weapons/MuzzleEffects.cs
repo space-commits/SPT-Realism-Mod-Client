@@ -50,18 +50,18 @@ namespace RealismMod
             int totalSparkFactor = (int)(velocitySparkFactor * muzzleSparkFactor * heatFactor * duraFactor);
 
             float flashCaliberFactor = StatCalc.CaliberMuzzleFlash(WeaponStats.Caliber) * 0.8f; //lazy
-            float velocityFlashFactor = WeaponStats.VelocityDelta < 0 ? Mathf.Pow(1f - WeaponStats.VelocityDelta, 3f) * flashCaliberFactor : (1f - WeaponStats.VelocityDelta) * flashCaliberFactor;
+            float velocityFlashFactor = WeaponStats.VelocityDelta < 0 ? Mathf.Pow(1f - WeaponStats.VelocityDelta, 2.5f) * flashCaliberFactor : (1f - WeaponStats.VelocityDelta) * flashCaliberFactor;
             float muzzleFlashSuppression = 1f + (WeaponStats.TotalMuzzleFlash / 100f);
             float enviroFactorFlash = PlayerState.EnviroType == EnvironmentType.Indoor ? 1.25f : 1f;
             float totalFlashFactor = velocityFlashFactor * muzzleFlashSuppression * enviroFactorFlash;
             Vector2 totalFlash = new Vector2(totalFlashFactor / 2f, totalFlashFactor);
 
-            float velocityFlameFactor = Mathf.Pow(1f - WeaponStats.VelocityDelta, 3.5f) * StatCalc.CaliberFlame(WeaponStats.Caliber);
+            float velocityFlameFactor = Mathf.Pow(1f - WeaponStats.VelocityDelta, 3f) * StatCalc.CaliberFlame(WeaponStats.Caliber);
             float muzzleFlameSuppression = Mathf.Clamp(1f + (WeaponStats.TotalMuzzleFlash / 50f), 0.1f, 3f);
             float enviroFactorFlame = PlayerState.EnviroType == EnvironmentType.Indoor ? 1.15f : 1f;
             float totalFlameFactor = velocityFlameFactor * muzzleFlameSuppression * heatFactor * duraFactor * enviroFactorFlame;
 
-            float velocitySmokeFactor = Mathf.Pow(1f - WeaponStats.VelocityDelta, 3.5f) * StatCalc.CaliberSmoke(WeaponStats.Caliber) * 0.65f;
+            float velocitySmokeFactor = Mathf.Pow(1f - WeaponStats.VelocityDelta, 3f) * StatCalc.CaliberSmoke(WeaponStats.Caliber) * 0.65f;
             float muzzleSmokeSuppression = WeaponStats.TotalMuzzleFlash > 0f ? 1f + WeaponStats.TotalMuzzleFlash / 75f : 1f + (WeaponStats.TotalMuzzleFlash / 200f);
             float modSmokeSuppression = 1f + (WeaponStats.TotalGas / 100f);
             float weaponSystemFactor = WeaponStats.IsDirectImpingement && WeaponStats.HasSuppressor ? 1.3f : 1f;
@@ -89,8 +89,8 @@ namespace RealismMod
                 for (int i = 0; i < jetsCount; i++)
                 {
                     MuzzleJet jet = jets[i];
-                    int particleCount = jet.Particles.Length;
                     jet.Chance = totalFlameFactor / jetsCount;
+                    int particleCount = jet.Particles.Length;
                     for (int j = 0; j < particleCount; j++)
                     {
                         jet.Particles[j].Size = totalFlameFactor;
@@ -106,61 +106,30 @@ namespace RealismMod
 
             __instance.FirearmsEffects.UpdateMuzzle();
 
-            MuzzleFume[] fume = (MuzzleFume[])_muzzleFumeField.GetValue(muzzleManager);
-            if (fume != null)
+            MuzzleFume[] fumes = (MuzzleFume[])_muzzleFumeField.GetValue(muzzleManager);
+            if (fumes != null)
             {
-                for (int i = 0; i < fume.Length; i++)
+                int fumeCount = fumes.Length;    
+                for (int i = 0; i < fumeCount; i++)
                 {
-                    fume[i].Size = totalSmokeFactor; //0.5 feels about right for standard AR-15 with flashider, 1 about right for brake
-                    fume[i].CountMin = 1; // set to 1, gently raise
-                    fume[i].CountRange = 2; // set to 2, gently raise
+                    MuzzleFume fume = fumes[i];
+                    fume.Size = Mathf.Max(totalSmokeFactor, 0.3f); //0.5 feels about right for standard AR-15 with flashider, 1 about right for brake
+                    fume.CountMin = 1; // set to 1, gently raise
+                    fume.CountRange = 2; // set to 2, gently raise
                 }
             }
 
-/*            if (WeaponStats.IsPistol) return;*/
-
             //try to make it based on current heat of gun?
-            MuzzleSmoke[] smoke = (MuzzleSmoke[])_muzzleSmokeField.GetValue(muzzleManager);
-            if (smoke != null)
+            MuzzleSmoke[] smokes = (MuzzleSmoke[])_muzzleSmokeField.GetValue(muzzleManager);
+            if (smokes != null)
             {
-                smoke[0].SmokeLength = 20f * smoketrailFactor; //how long it is, 20
-                smoke[0].MuzzleSpeedMultiplier = 0.4f; //how much it twists and changes direction, lower = more straight, 1.2 
-                smoke[0].SmokeVelocity = 0.05f * smoketrailFactorInverse; //how fast the smoke moves, lower to make it linger, 0.4
-                smoke[0].SmokeIncreasingByShot = 0.25f * smoketrailFactor; //how many shots/how quickly smoke effect starts happening and increasing in intensity, 0.4
+                MuzzleSmoke smoke = smokes[0];
+                smoke.SmokeLength = WeaponStats.IsPistol ? 0f : 20f * smoketrailFactor; //how long it is, 20
+                smoke.MuzzleSpeedMultiplier = 0.4f; //how much it twists and changes direction, lower = more straight, 1.2 
+                smoke.SmokeVelocity = WeaponStats.IsPistol ? 100f : 0.05f * smoketrailFactorInverse; //how fast the smoke moves, lower to make it linger, 0.4
+                smoke.SmokeIncreasingByShot = WeaponStats.IsPistol ? 0f : 0.25f * smoketrailFactor; //how many shots/how quickly smoke effect starts happening and increasing in intensity, 0.4
             }
 
         }
     }
-
-    public class MuzzleSmokePatch : ModulePatch
-    {
-        private static Vector3 _target = Vector3.zero;
-        private static FieldInfo _transformField;
-        private static FieldInfo _vector3Field;
-        protected override MethodBase GetTargetMethod()
-        {
-            _transformField = AccessTools.Field(typeof(MuzzleSmoke), "transform_0");
-            _vector3Field = AccessTools.Field(typeof(MuzzleSmoke), "vector3_0");
-            return typeof(MuzzleSmoke).GetMethod("LateUpdateValues", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static void Prefix(MuzzleSmoke __instance)
-        {
-            if (WeaponStats._WeapClass == "pistol" && (!WeaponStats.HasShoulderContact || (Plugin.WeapOffsetX.Value != 0f && WeaponStats.HasShoulderContact)))
-            {
-                _target = new Vector3(0f, 0f, -0.3f); 
-            }
-            else
-            {
-                _target = new Vector3(0f, 0f, -0.3f); 
-            }
-
-            Transform transform = (Transform)_transformField.GetValue(__instance);
-            Vector3 pos = (Vector3)_vector3Field.GetValue(__instance);
-            pos = Vector3.Slerp(pos, transform.position + _target, 0.125f); // left/right, up/down, in/out
-            _vector3Field.SetValue(__instance, pos);
-        }
-    }
-
 }

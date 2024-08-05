@@ -821,7 +821,6 @@ namespace RealismMod
                 new OperateStationaryWeaponPatch().Enable();
                 new SetTiltPatch().Enable();
                 new BattleUIScreenPatch().Enable();
-                new MuzzleSmokePatch().Enable(); 
                 new ChangePosePatch().Enable();
                 new MountingPatch().Enable();
                 new ShouldMoveWeapCloserPatch().Enable();    
