@@ -247,7 +247,7 @@ namespace RealismMod
                 baseRestoreRate = 4f;
             }
             float formfactor = WeaponStats.IsBullpup ? 1.05f : 1f;
-            return (1f - ((WeaponStats.ErgoFactor * formfactor) / 100f)) * baseRestoreRate * PlayerState.ADSInjuryMulti;
+            return (1f - ((WeaponStats.ErgoFactor * formfactor) / 100f)) * baseRestoreRate * PlayerState.HealthStamRegenFactor;
         }
 
         private static float GetDrainRate(Player player)
@@ -274,7 +274,7 @@ namespace RealismMod
                 baseDrainRate = 0.1f;
             }
             float formfactor = WeaponStats.IsBullpup ? 0.25f : 1f;
-            return WeaponStats.ErgoFactor * formfactor * baseDrainRate * ((1f - PlayerState.ADSInjuryMulti) + 1f) * (1f - (PlayerState.StrengthSkillAimBuff));
+            return WeaponStats.ErgoFactor * formfactor * baseDrainRate * ((1f - PlayerState.HealthStamRegenFactor) + 1f) * (1f - (PlayerState.StrengthSkillAimBuff));
         }
 
         public static void SetStanceStamina(Player player)

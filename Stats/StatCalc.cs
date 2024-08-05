@@ -853,9 +853,9 @@ namespace RealismMod
                     return 1f;
 
                 case "762x35":
-                    return 0.4f;
+                    return 0.5f;
                 case "9x39":
-                    return 0.35f;
+                    return 0.45f;
 
                 case "762x39":
                     return 0.65f;
@@ -864,7 +864,7 @@ namespace RealismMod
                 case "556x45NATO":
                     return 0.5f;
                 case "366TKM":
-                    return 0.7f;
+                    return 0.9f;
 
                 case "762x51":
                     return 0.8f;
@@ -931,7 +931,7 @@ namespace RealismMod
                 case "556x45NATO":
                     return 0.09f;
                 case "366TKM":
-                    return 0.08f;
+                    return 0.1f;
 
                 case "762x51":
                     return 0.15f;
@@ -1067,7 +1067,7 @@ namespace RealismMod
                 case "556x45NATO":
                     return 15;
                 case "366TKM":
-                    return 14;
+                    return 17;
 
                 case "762x51":
                     return 23;
