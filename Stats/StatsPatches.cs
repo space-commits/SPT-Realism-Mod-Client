@@ -351,6 +351,7 @@ namespace RealismMod
             float currentFixSpeedMod = 0f;
 
             float currentFlashSuppression = 0f;
+            float currentGas = 0f;
 
             bool folded = __instance.Folded;
             bool hasShoulderContact = false;
@@ -366,8 +367,7 @@ namespace RealismMod
             WeaponStats.HasBipod = false;
             WeaponStats.HasMuzzleDevice = false;
             WeaponStats.HasSuppressor = false;
-            WeaponStats.HasGasBuster = false;
-
+       
             foreach (Mod mod in __instance.Mods)
             {
                 if (!Utils.IsMagazine(mod))
@@ -408,7 +408,6 @@ namespace RealismMod
                         WeaponStats.HasMuzzleDevice = true;
                     }
                     if (Utils.IsBipod(mod)) WeaponStats.HasBipod = true;
-                    if (Utils.IsCharge(mod) && modType == "gas") WeaponStats.HasGasBuster = true;
 
                     StatCalc.ModConditionalStatCalc(
                         __instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, 
@@ -428,7 +427,7 @@ namespace RealismMod
                         false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, 
                         modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, 
                         ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, isChonker,
-                        ref currentFlashSuppression, modFlashSuppression);
+                        ref currentFlashSuppression, modFlashSuppression, ref currentGas);
 
                     if (AttachmentProperties.CanCylceSubs(mod))
                     {
@@ -490,6 +489,8 @@ namespace RealismMod
             WeaponStats.MuzzleLoudness = currentLoudness;
             WeaponStats.Caliber = caliber;
             WeaponStats.TotalMuzzleFlash = currentFlashSuppression;
+            WeaponStats.TotalGas = currentGas;
+            WeaponStats.IsDirectImpingement = weapType == "DI" ? true : false;
         }
     }
 

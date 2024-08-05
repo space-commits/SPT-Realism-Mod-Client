@@ -308,7 +308,7 @@ namespace RealismMod
             ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeedMod, float modChamber, bool isDisplayDelta,
             string weapClass, ref float pureErgo, float modShotDisp, ref float currentShotDisp, float modloudness, ref float currentLoudness, 
             ref float currentMalfChance, float modMalfChance, ref float pureRecoil, ref float currentConv, float modConv, ref float currentCamReturnSpeed, bool isChonker,
-            ref float currentFlashSuppression, float modFlashSuppression)
+            ref float currentFlashSuppression, float modFlashSuppression, ref float currentGas)
         {
             float ergoWeightFactor = WeightStatCalc(StatCalc.ErgoWeightMult, isChonker ? modWeight * 0.5f : modWeight) / 100f;
             float vRecoilWeightFactor = WeightStatCalc(StatCalc.VRecoilWeightMult, modWeight) / 100f;
@@ -341,7 +341,9 @@ namespace RealismMod
             currentChamberSpeedMod = currentChamberSpeedMod + modChamber;
             currentFixSpeedMod = currentFixSpeedMod + modFix;
             currentLoudness = currentLoudness + modloudness;
-            currentFlashSuppression = currentFlashSuppression + modFlashSuppression;
+            if (!Utils.IsMuzzleCombo(mod) && !Utils.IsFlashHider(mod) && !Utils.IsBarrel(mod)) currentGas = currentGas + modFlashSuppression;
+            else currentFlashSuppression = currentFlashSuppression + modFlashSuppression;
+
 
             if (Utils.IsSilencer(mod))
             {
@@ -860,7 +862,7 @@ namespace RealismMod
                 case "545x39":
                     return 0.5f;
                 case "556x45NATO":
-                    return 0.55f;
+                    return 0.5f;
                 case "366TKM":
                     return 0.7f;
 
@@ -1054,18 +1056,18 @@ namespace RealismMod
                     return 30;
 
                 case "762x35":
-                    return 13;
-                case "9x39":
                     return 12;
+                case "9x39":
+                    return 11;
 
                 case "762x39":
-                    return 17;
+                    return 16;
                 case "545x39":
-                    return 16;
-                case "556x45NATO":
-                    return 16;
-                case "366TKM":
                     return 15;
+                case "556x45NATO":
+                    return 15;
+                case "366TKM":
+                    return 14;
 
                 case "762x51":
                     return 23;

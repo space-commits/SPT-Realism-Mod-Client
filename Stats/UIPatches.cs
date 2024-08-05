@@ -482,14 +482,15 @@ namespace RealismMod
                 Utils.SafelyAddAttributeToList(canADSAttAttClass, __instance);
             }
 
-            if (muzzleFlash != 0f)
+            if (muzzleFlash != 0f && Plugin.EnableMuzzleEffects.Value)
             {
-                float flashValue = muzzleFlash * -1f;
+                bool isGasReduction = !Utils.IsMuzzleCombo(__instance) && !Utils.IsFlashHider(__instance) && !Utils.IsBarrel(__instance);
+                float flashValue = muzzleFlash * (isGasReduction ? 1f : -1f);
                 ItemAttributeClass flashAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.MuzzleFlash);
-                flashAtt.Name = Utils.IsSilencer(__instance) ? "Gas" : ENewItemAttributeId.MuzzleFlash.GetName();
+                flashAtt.Name = isGasReduction ? "Gas" : ENewItemAttributeId.MuzzleFlash.GetName();
                 flashAtt.Base = () => flashValue;
                 flashAtt.StringValue = () => $"{flashValue}%";
-                flashAtt.LessIsGood = false;
+                flashAtt.LessIsGood = isGasReduction ? true : false;
                 flashAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
                 flashAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
                 Utils.SafelyAddAttributeToList(flashAtt, __instance);
@@ -983,10 +984,9 @@ namespace RealismMod
 
             string weapOpType = WeaponStats.OperationType(__instance);
             string weapType = WeaponStats.WeaponType(__instance);
-            if (weapType == "DI") WeaponStats.IsDirectImpingement = true;
-
             float currentLoudness = 0;
             float currentFlashSuppression = 0;
+            float currentGas = 0;
 
             bool stockAllowsFSADS = false;
 
@@ -1037,7 +1037,7 @@ namespace RealismMod
                     modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, true, __instance.WeapClass, 
                     ref pureErgo, 0, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, 
                     modMalfChance, ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, isChonker,
-                    ref currentFlashSuppression, 0f);
+                    ref currentFlashSuppression, 0f, ref currentGas);
             }
 
 

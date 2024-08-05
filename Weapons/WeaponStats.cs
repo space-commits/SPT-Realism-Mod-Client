@@ -239,11 +239,11 @@ namespace RealismMod
         public static float MuzzleLoudness = 0f;
 
         public static float TotalMuzzleFlash = 0f;
+        public static float TotalGas = 0f;
 
         public static bool HasMuzzleDevice = false;
         public static bool HasSuppressor = false;
 
-        public static bool HasGasBuster = false;
         public static bool IsDirectImpingement = false;
 
         public static float InitDispersion = 0f;
