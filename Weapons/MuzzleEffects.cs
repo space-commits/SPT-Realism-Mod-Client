@@ -64,8 +64,8 @@ namespace RealismMod
             float velocitySmokeFactor = Mathf.Pow(1f - WeaponStats.VelocityDelta, 3f) * StatCalc.CaliberSmoke(WeaponStats.Caliber) * 0.65f;
             float muzzleSmokeSuppression = WeaponStats.TotalMuzzleFlash > 0f ? 1f + WeaponStats.TotalMuzzleFlash / 75f : 1f + (WeaponStats.TotalMuzzleFlash / 200f);
             float modSmokeSuppression = 1f + (WeaponStats.TotalGas / 100f);
-            float weaponSystemFactor = WeaponStats.IsDirectImpingement && WeaponStats.HasSuppressor ? 1.3f : 1f;
-            float enviroFactorSmoke = PlayerState.EnviroType == EnvironmentType.Indoor ? 1.25f : 0.85f;
+            float weaponSystemFactor = WeaponStats.IsDirectImpingement && WeaponStats.HasSuppressor ? 1.35f : 1f;
+            float enviroFactorSmoke = PlayerState.EnviroType == EnvironmentType.Indoor ? 1.3f : 0.85f;
             float totalSmokeFactor = velocitySmokeFactor * muzzleSmokeSuppression * modSmokeSuppression * weaponSystemFactor * enviroFactorSmoke * duraFactor * heatFactor;
             float smoketrailFactor = 1f + totalSmokeFactor;
             float smoketrailFactorInverse =  Mathf.Max(1f - totalSmokeFactor, 0.1f);
@@ -106,6 +106,8 @@ namespace RealismMod
 
             __instance.FirearmsEffects.UpdateMuzzle();
 
+            //can give each effect a known name so that I only modify them once, allowing to retain the original value, but then
+            //can't dynamically change the values based on weapon condition etc.
             MuzzleFume[] fumes = (MuzzleFume[])_muzzleFumeField.GetValue(muzzleManager);
             if (fumes != null)
             {

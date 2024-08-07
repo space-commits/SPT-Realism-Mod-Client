@@ -374,6 +374,10 @@ namespace RealismMod
             {
                 if (folded)
                 {
+                    modDuraBurn = 1;
+                    modMalfChance = 0;
+                    modAutoROF = 0;
+                    modSemiROF = 0;
                     modConv = 0;
                     modVRecoil = 0;
                     modHRecoil = 0;
@@ -413,6 +417,7 @@ namespace RealismMod
                         }
                         if (modType == "buffer_stock")
                         {
+                            modConv = 0;
                             modAutoROF = 0;
                             modSemiROF = 0;
                             modDuraBurn = 1;

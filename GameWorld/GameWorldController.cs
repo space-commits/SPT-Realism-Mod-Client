@@ -63,9 +63,9 @@ namespace RealismMod
             T hazard = hazardZone.AddComponent<T>();
 
             float strengthModifier = 1f;
-            if (hazard.ZoneType == EZoneType.Toxic)
+            if (hazard.ZoneType == EZoneType.Toxic && (!Plugin.FikaPresent && !Plugin.ZoneDebug.Value))
             { 
-               strengthModifier = Plugin.FikaPresent || Plugin.ZoneDebug.Value ? 1f : UnityEngine.Random.Range(0.9f, 1.25f); 
+               strengthModifier = UnityEngine.Random.Range(0.9f, 1.25f); 
             } 
             hazard.ZoneStrengthModifier = zone.Value.strength * strengthModifier;
 

@@ -1,11 +1,10 @@
-﻿using SPT.Common.Http;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using Comfort.Common;
 using EFT;
-using EFT.UI;
 using Newtonsoft.Json;
+using SPT.Common.Http;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,8 +13,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using static RealismMod.Attributes;
 using static RealismMod.GameWorldController;
-using static UnityEngine.UI.Image;
-using RealismMod.Controls;
+
 
 namespace RealismMod
 {
@@ -586,12 +584,23 @@ namespace RealismMod
             }
         }
 
+
+        public static UnityEngine.Object NukePrefab { get; private set; }
+
+        private void LoadNuke() 
+        {
+            String filename = Path.Combine(Environment.CurrentDirectory, "BepInEx/plugins/Realism/nuke/nuke.bundle");
+            var NukeBundle = AssetBundle.LoadFromFile(filename);
+            NukePrefab = NukeBundle.LoadAsset("Assets/nuclear/Prefab/NUCLEAR_EXPLOSION.prefab");
+        }
+
         void Awake()
         {
             Utils.Logger = Logger;
         
             try
             {
+                LoadNuke();
                 LoadConfig();
                 LoadSprites();
                 LoadTextures();
@@ -918,7 +927,14 @@ namespace RealismMod
             Utils.CheckIsReady();
             if (Utils.IsReady)
             {
-                if (Plugin.ZoneDebug.Value && Input.GetKey(Plugin.AddZone.Value.MainKey))
+                if (GameWorldController.GameStarted && Input.GetKeyDown(KeyCode.N))
+                {
+                    var player = Utils.GetYourPlayer().Transform;
+                    Instantiate(NukePrefab, new Vector3(833f, -1f, 317f), new Quaternion(0, 0, 0, 0));
+                }
+
+
+                if (Plugin.ZoneDebug.Value && Input.GetKeyDown(Plugin.AddZone.Value.MainKey))
                 {
                     DebugZones();
                 }

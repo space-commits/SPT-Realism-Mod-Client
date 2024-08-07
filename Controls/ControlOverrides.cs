@@ -13,7 +13,7 @@ using InputClass2 = Class1475;
 using StatusStruct = GStruct414<GInterface339>;
 using ItemEventClass = GClass2783;
 
-namespace RealismMod.Controls
+namespace RealismMod
 {
     public class KeyInputPatch1 : ModulePatch
     {
