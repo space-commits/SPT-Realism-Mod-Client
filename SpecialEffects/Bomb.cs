@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Nuclear_bomb : MonoBehaviour
+//Credit to AT for the assets and code
+public class Bomb : MonoBehaviour
 {
     [Range(1.0f, 2500.0f)]
     public float NukeDuration = 2500f;
@@ -13,7 +14,6 @@ public class Nuclear_bomb : MonoBehaviour
 
     [Range(1.0f, 1024.0f)]
     public float SizeCurve_multiply;
-
 
     public float LightRadius = 2048;
     public AnimationCurve LightRadius_curve;
@@ -35,7 +35,6 @@ public class Nuclear_bomb : MonoBehaviour
     public AnimationCurve Mat_SizeCurve;
     public float _mat_SizeCurve_multiply;
 
-    // Use this for initialization
     void Start()
     {
         finalShockWaveSize = new Vector3(0f, 0f, 0f);
@@ -43,7 +42,6 @@ public class Nuclear_bomb : MonoBehaviour
         finalShockSizeF = 0.0f;
     }
 
-    // Update is called once per frame
     void Update()
 
     {

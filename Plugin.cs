@@ -38,6 +38,8 @@ namespace RealismMod
     {
         private const string pluginVersion = "1.4.2";
 
+        public static UnityEngine.Object ExplosionPrefab { get; private set; }
+
         //movement
         public static ConfigEntry<bool> EnableMaterialSpeed { get; set; }
         public static ConfigEntry<bool> EnableSlopeSpeed { get; set; }
@@ -584,15 +586,12 @@ namespace RealismMod
             }
         }
 
-
-        public static UnityEngine.Object NukePrefab { get; private set; }
-
-        private void LoadNuke() 
+  /*      private void LoadExplosion()
         {
-            String filename = Path.Combine(Environment.CurrentDirectory, "BepInEx/plugins/Realism/nuke/nuke.bundle");
-            var NukeBundle = AssetBundle.LoadFromFile(filename);
-            NukePrefab = NukeBundle.LoadAsset("Assets/nuclear/Prefab/NUCLEAR_EXPLOSION.prefab");
-        }
+            String filename = Path.Combine(Environment.CurrentDirectory, "BepInEx/plugins/Realism/exp/expl.bundle");
+            var bundle = AssetBundle.LoadFromFile(filename);
+            ExplosionPrefab = bundle.LoadAsset("Assets/Explosion/Prefab/NUCLEAR_EXPLOSION.prefab");
+        }*/
 
         void Awake()
         {
@@ -600,7 +599,7 @@ namespace RealismMod
         
             try
             {
-                LoadNuke();
+       /*         LoadExplosion();*/
                 LoadConfig();
                 LoadSprites();
                 LoadTextures();
@@ -927,13 +926,13 @@ namespace RealismMod
             Utils.CheckIsReady();
             if (Utils.IsReady)
             {
-                if (GameWorldController.GameStarted && Input.GetKeyDown(KeyCode.N))
+
+             /*   if (GameWorldController.GameStarted && Input.GetKeyDown(KeyCode.N))
                 {
                     var player = Utils.GetYourPlayer().Transform;
-                    Instantiate(NukePrefab, new Vector3(833f, -1f, 317f), new Quaternion(0, 0, 0, 0));
+                    Instantiate(ExplosionPrefab, new Vector3(1800f, 0f, 317f), new Quaternion(0, 0, 0, 0));
                 }
-
-
+*/
                 if (Plugin.ZoneDebug.Value && Input.GetKeyDown(Plugin.AddZone.Value.MainKey))
                 {
                     DebugZones();

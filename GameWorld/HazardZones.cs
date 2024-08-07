@@ -193,8 +193,6 @@ namespace RealismMod
 
             if (_tick >= 0.25f)
             {
-                if (_isSphere) _maxDistance = (_zoneCollider as SphereCollider).radius * transform.localScale.magnitude;
-                
                 var playersToRemove = new List<Player>();
                 foreach (var p in _containedPlayers)
                 {
@@ -206,9 +204,6 @@ namespace RealismMod
                         return; 
                     }  
                     float radAmount = _isSphere ? CalculateRadStrengthSphere(player.gameObject.transform.position) : CalculateRadStrengthBox(player.gameObject.transform.position);
-                    Utils.Logger.LogError("transform.localScale.magnitude " + transform.localScale.magnitude);
-                    Utils.Logger.LogError("_maxDistance " + _maxDistance);
-                    Utils.Logger.LogError("radAmount " + radAmount);
                     hazardBridge.RadRates[this.name] = Mathf.Max(radAmount, 0f);
                 }
 
@@ -232,11 +227,10 @@ namespace RealismMod
         float CalculateRadStrengthSphere(Vector3 playerPosition)
         {
             float distanceToCenter = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
-            float radius = _zoneCollider.bounds.extents.magnitude;
-            float effectiveDistance = Mathf.Max(0, distanceToCenter - radius);
-            float invertedDistance = _maxDistance - effectiveDistance;
-            invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance);
-            return invertedDistance / (ZoneStrengthModifier * (Plugin.ZoneDebug.Value ? Plugin.test10.Value : 1f));
+            float radius = (_zoneCollider as SphereCollider).radius * transform.localScale.magnitude;
+            float distanceFromSurface = radius - distanceToCenter;
+            float clampedDistance = Mathf.Max(0f, distanceFromSurface);
+            return clampedDistance / (ZoneStrengthModifier * (Plugin.ZoneDebug.Value ? Plugin.test10.Value : 1f));
         }
     }
 }

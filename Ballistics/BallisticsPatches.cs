@@ -15,33 +15,49 @@ using EFTSlot = GClass2783;
 using ArmorSlot = GClass2525;
 using Diz.Skinning;
 using EFT.UI;
+using static EFT.Player;
 
 namespace RealismMod
 {
     public class InitiateShotPatch : ModulePatch
     {
+        private static FieldInfo _playerfield;
+        private static FieldInfo _accField;
+        private static FieldInfo _buckFeld;
+        private static FieldInfo _prefabField;
+        private static FieldInfo _skillField;
+        private static FieldInfo _soundField;
+        private static FieldInfo _recoilField;
+
         protected override MethodBase GetTargetMethod()
         {
+            _playerfield = AccessTools.Field(typeof(FirearmController), "_player");
+            _accField = AccessTools.Field(typeof(FirearmController), "float_3");
+            _buckFeld = AccessTools.Field(typeof(FirearmController), "float_4");
+            _prefabField = AccessTools.Field(typeof(FirearmController), "weaponPrefab_0");
+            _skillField = AccessTools.Field(typeof(FirearmController), "gclass1783_0");
+            _soundField = AccessTools.Field(typeof(FirearmController), "weaponSoundPlayer_0");
+            _recoilField = AccessTools.Field(typeof(FirearmController), "float_5");
             return typeof(Player.FirearmController).GetMethod("method_53", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(Player.FirearmController __instance,Weapon weapon, BulletClass ammo, int chamberIndex, bool multiShot = false)
+        private static bool Prefix(Player.FirearmController __instance, Weapon weapon, BulletClass ammo, int chamberIndex, bool multiShot = false)
         {
-            float accuracy = (float)AccessTools.Field(typeof(Player.FirearmController), "float_3").GetValue(__instance);
-            float accuracyBuck = (float)AccessTools.Field(typeof(Player.FirearmController), "float_4").GetValue(__instance);
-            WeaponPrefab weaponprefab = (WeaponPrefab)AccessTools.Field(typeof(Player.FirearmController), "weaponPrefab_0").GetValue(__instance);
-            SkillManager.GClass1783 noIdea = (SkillManager.GClass1783)AccessTools.Field(typeof(Player.FirearmController), "gclass1783_0").GetValue(__instance);
-            WeaponSoundPlayer WeaponSoundPlayer = (WeaponSoundPlayer)AccessTools.Field(typeof(Player.FirearmController), "weaponSoundPlayer_0").GetValue(__instance);
-            FieldInfo isAIField1 = typeof(Player.FirearmController).GetField("func_0", BindingFlags.NonPublic | BindingFlags.Instance);
-            Func<bool> isAIFunc1 = (Func<bool>)isAIField1.GetValue(__instance);
-            FieldInfo isAIField2 = typeof(Player.FirearmController).GetField("func_1", BindingFlags.NonPublic | BindingFlags.Instance);
-            Func<bool> isAIFunc2 = (Func<bool>)isAIField1.GetValue(__instance);
+
+            Player player = (Player)_playerfield.GetValue(__instance);
+            if (player == null || !player.IsYourPlayer) return true;
+
+            float accuracy = (float)_accField.GetValue(__instance);
+            float accuracyBuck = (float)_buckFeld.GetValue(__instance);
+            WeaponPrefab weaponprefab = (WeaponPrefab)_prefabField.GetValue(__instance);
+            SkillManager.GClass1783 skillFactor = (SkillManager.GClass1783)_skillField.GetValue(__instance);
+            WeaponSoundPlayer WeaponSoundPlayer = (WeaponSoundPlayer)_soundField.GetValue(__instance);
 
             Transform original = __instance.CurrentFireport.Original;
             Vector3 position = __instance.CurrentFireport.position;
-            Vector3 baseShotDirection = isAIFunc1() ? Utils.GetYourPlayer().LookDirection : __instance.WeaponDirection;
-            Vector3 shotPosition = isAIFunc1() ? Utils.GetYourPlayer().AIData.BotOwner.LookSensor.ShootStartPos : position;
+            Vector3 baseShotDirection = __instance.WeaponDirection;
+            Vector3 shotPosition = position;
             float ammoFactor = ammo.AmmoFactor;
             float heatFactor = 1f;
 
@@ -49,7 +65,7 @@ namespace RealismMod
             __instance.AdjustShotVectors(ref shotPosition, ref baseShotDirection);
             ammo.buckshotDispersion = accuracyBuck;
             __instance.CurrentChamberIndex = chamberIndex;
-            weapon.OnShot(ammo.DurabilityBurnModificator, ammo.HeatFactor, Utils.GetYourPlayer().Skills.WeaponDurabilityLosOnShotReduce.Value, instance.Overheat, GClass1485.PastTime);
+            weapon.OnShot(ammo.DurabilityBurnModificator, ammo.HeatFactor, player.Skills.WeaponDurabilityLosOnShotReduce.Value, instance.Overheat, GClass1485.PastTime);
 
             if (weapon.MalfState.LastShotOverheat >= 1f) //force overheat inaccuracy to start much earlier
             {
@@ -74,7 +90,7 @@ namespace RealismMod
             {
                 doubleShot = 0;
             }
-            float doubleActionFactor = weapon.CylinderHammerClosed ? (weapon.DoubleActionAccuracyPenalty * (1f - noIdea.DoubleActionRecoilReduce) * weapon.StockDoubleActionAccuracyPenaltyMult) : 0f;
+            float doubleActionFactor = weapon.CylinderHammerClosed ? (weapon.DoubleActionAccuracyPenalty * (1f - skillFactor.DoubleActionRecoilReduce) * weapon.StockDoubleActionAccuracyPenaltyMult) : 0f;
             float barrelDeviation = __instance.method_50(weapon);
             double accuracyBuff = weapon.GetItemComponent<BuffComponent>().WeaponSpread;
        
@@ -84,12 +100,12 @@ namespace RealismMod
             }
             float ramdomnessFactor = (accuracy + doubleActionFactor) * ammoFactor * heatFactor * barrelDeviation * (float)accuracyBuff * 0.012f;
             Vector3 randomSphere = UnityEngine.Random.insideUnitSphere * ramdomnessFactor;
-            Vector3 shotDirection = isAIFunc2() ? baseShotDirection : baseShotDirection + randomSphere;
+            Vector3 shotDirection = baseShotDirection + randomSphere;
   
             __instance.InitiateShot(weapon, ammo, shotPosition, shotDirection.normalized, position, chamberIndex, weapon.MalfState.LastShotOverheat);
             float recoilFactor = (doubleShot != 0) ? 1.5f : 1f;
-     
-            AccessTools.Field(typeof(Player.FirearmController), "float_5").SetValue(__instance, recoilFactor + (float)ammo.ammoRec / 100f);
+
+            _recoilField.SetValue(__instance, recoilFactor + (float)ammo.ammoRec / 100f);
             __instance.method_54(WeaponSoundPlayer, ammo, shotPosition, shotDirection, multiShot);
             if (ammo.AmmoTemplate.IsLightAndSoundShot)
             {
