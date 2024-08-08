@@ -33,7 +33,7 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(WeaponManagerClass __instance)
         {
-            if ((__instance.Player != null && !__instance.Player.IsYourPlayer) || !Plugin.EnableMuzzleEffects.Value) return;
+            if ((__instance.Player != null && !__instance.Player.IsYourPlayer) || !PluginConfig.EnableMuzzleEffects.Value) return;
             var muzzleManager = (MuzzleManager)_muzzleManagerField.GetValue(__instance.FirearmsEffects);
             if (muzzleManager == null) return;
             Player.FirearmController fc = __instance.Player.HandsController as Player.FirearmController;

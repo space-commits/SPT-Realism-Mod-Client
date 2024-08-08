@@ -127,7 +127,7 @@ namespace RealismMod
                 }
             }
 
-            if (Plugin.EnableLogging.Value)
+            if (PluginConfig.EnableLogging.Value)
             {
                 Utils.Logger.LogWarning("==================");
                 Utils.Logger.LogWarning("Total Modified Weight " + modifiedWeight);
@@ -271,7 +271,7 @@ namespace RealismMod
                 StatCalc.UpdateAimParameters(fc, player.ProceduralWeaponAnimation);
             }
 
-            if (Plugin.EnableLogging.Value)
+            if (PluginConfig.EnableLogging.Value)
             {
                 Utils.Logger.LogWarning("gear speed " + PlayerState.GearSpeedPenalty);
                 Utils.Logger.LogWarning("gear ergo " + PlayerState.GearErgoPenalty);

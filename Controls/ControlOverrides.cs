@@ -87,7 +87,7 @@ namespace RealismMod
                 StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.25f, 0.25f, 0.5f));
                 return true;
             }
-            if (Plugin.ServerConfig.enable_stances && Plugin.BlockFiring.Value && command == ECommand.ToggleShooting
+            if (Plugin.ServerConfig.enable_stances && PluginConfig.BlockFiring.Value && command == ECommand.ToggleShooting
                 && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed
                 && StanceController.CurrentStance != EStance.None && StanceController.CurrentStance != EStance.ActiveAiming
                 && StanceController.CurrentStance != EStance.ShortStock && StanceController.CurrentStance != EStance.PistolCompressed)
@@ -116,7 +116,7 @@ namespace RealismMod
                 StanceController.IsMounting = false;
                 return true;
             }
-            if ((command == ECommand.ScrollNext || command == ECommand.ScrollPrevious) && (Input.GetKey(Plugin.StanceWheelComboKeyBind.Value.MainKey) && Plugin.UseMouseWheelPlusKey.Value))
+            if ((command == ECommand.ScrollNext || command == ECommand.ScrollPrevious) && (Input.GetKey(PluginConfig.StanceWheelComboKeyBind.Value.MainKey) && PluginConfig.UseMouseWheelPlusKey.Value))
             {
                 return false;
             }

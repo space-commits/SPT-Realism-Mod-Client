@@ -337,14 +337,14 @@ namespace RealismMod
 
                 HealthEffecTick();
 
-                if (Input.GetKeyDown(Plugin.AddEffectKeybind.Value.MainKey))
+                if (Input.GetKeyDown(PluginConfig.AddEffectKeybind.Value.MainKey))
                 {
                     /*                    AddStimDebuffs(Utils.GetYourPlayer(), Plugin.AddEffectType.Value);*/ // use this to test stim debuffs
-                    TestAddBaseEFTEffect(Plugin.AddEffectBodyPart.Value, Utils.GetYourPlayer(), Plugin.AddEffectType.Value);
-                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + Plugin.AddEffectType.Value + " To Part " + (EBodyPart)Plugin.AddEffectBodyPart.Value);
+                    TestAddBaseEFTEffect(PluginConfig.AddEffectBodyPart.Value, Utils.GetYourPlayer(), PluginConfig.AddEffectType.Value);
+                    if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Adding Health Effect " + PluginConfig.AddEffectType.Value + " To Part " + (EBodyPart)PluginConfig.AddEffectBodyPart.Value);
                 }
 
-                if (Input.GetKeyDown(Plugin.DropGearKeybind.Value.MainKey))
+                if (Input.GetKeyDown(PluginConfig.DropGearKeybind.Value.MainKey))
                 {
                     if (_clickTriggered)
                     {
@@ -496,7 +496,7 @@ namespace RealismMod
 
         public void TryAddAdrenaline(Player player, float painkillerDuration, float negativeEffectDuration, float negativeEffectStrength)
         {
-            if (Plugin.EnableAdrenaline.Value && !AdrenalineCooldownActive)
+            if (PluginConfig.EnableAdrenaline.Value && !AdrenalineCooldownActive)
             {
                 AdrenalineCooldownActive = true;
                 AdrenalineEffect adrenalineEffect = new AdrenalineEffect(player, (int)painkillerDuration, 0, negativeEffectDuration, painkillerDuration, negativeEffectStrength, this);
@@ -692,7 +692,7 @@ namespace RealismMod
             placeHolderItem.CurrentAddress = player.InventoryControllerClass.FindQuestGridToPickUp(placeHolderItem); //item needs an address to be valid, this is a hacky workaround
             player.ActiveHealthController.DoMedEffect(placeHolderItem, EBodyPart.Head, null);
 
-            if (Plugin.EnableLogging.Value)
+            if (PluginConfig.EnableLogging.Value)
             {
                 Utils.Logger.LogWarning("is null " + (placeHolderItem == null));
                 Utils.Logger.LogWarning("" + placeHolderItem.HealthEffectsComponent.StimulatorBuffs);
@@ -748,7 +748,7 @@ namespace RealismMod
                             _activeStimOverdoses.Add(EStimType.Adrenal);
                             _doStimOverdoseTimer = true;
                             _overdoseEffectToAdd = "adrenal_debuff";
-                            if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Adrenal Stims", EFT.Communications.ENotificationDurationType.Long);
+                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Adrenal Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
                     case EStimType.Regenerative:
@@ -757,7 +757,7 @@ namespace RealismMod
                             _activeStimOverdoses.Add(EStimType.Regenerative);
                             _doStimOverdoseTimer = true;
                             _overdoseEffectToAdd = "regen_debuff";
-                            if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Regenerative Stims", EFT.Communications.ENotificationDurationType.Long);
+                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Regenerative Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
                     case EStimType.Damage:
@@ -766,7 +766,7 @@ namespace RealismMod
                             _activeStimOverdoses.Add(EStimType.Damage);
                             _doStimOverdoseTimer = true;
                             _overdoseEffectToAdd = "damage_debuff";
-                            if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Combat Stims", EFT.Communications.ENotificationDurationType.Long);
+                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Combat Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
                     case EStimType.Clotting:
@@ -774,7 +774,7 @@ namespace RealismMod
                         {
                             _activeStimOverdoses.Add(EStimType.Clotting);
                             AddStimDebuffs(player, "clotting_debuff");
-                            if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Coagulating Stims", EFT.Communications.ENotificationDurationType.Long);
+                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Coagulating Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
 
                         break;
@@ -784,7 +784,7 @@ namespace RealismMod
                             _activeStimOverdoses.Add(EStimType.Weight);
                             _doStimOverdoseTimer = true;
                             _overdoseEffectToAdd = "weight_debuff";
-                            if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Weight-Reducing Stims", EFT.Communications.ENotificationDurationType.Long);
+                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Weight-Reducing Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
                     case EStimType.Performance:
@@ -793,7 +793,7 @@ namespace RealismMod
                             _activeStimOverdoses.Add(EStimType.Performance);
                             _doStimOverdoseTimer = true;
                             _overdoseEffectToAdd = "performance_debuff";
-                            if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Performance-Enhancing Stims", EFT.Communications.ENotificationDurationType.Long);
+                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Performance-Enhancing Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
                     case EStimType.Generic:
@@ -802,7 +802,7 @@ namespace RealismMod
                             _activeStimOverdoses.Add(EStimType.Generic);
                             _doStimOverdoseTimer = true;
                             _overdoseEffectToAdd = "generic_debuff";
-                            if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Stims", EFT.Communications.ENotificationDurationType.Long);
+                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Overdosed On Stims", EFT.Communications.ENotificationDurationType.Long);
                         }
                         break;
                 }
@@ -887,7 +887,7 @@ namespace RealismMod
                     {
                         if (!_haveNotifiedPKOverdose) 
                         {
-                            if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("You Have Overdosed", EFT.Communications.ENotificationDurationType.Long);
+                            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("You Have Overdosed", EFT.Communications.ENotificationDurationType.Long);
                             _haveNotifiedPKOverdose = true;
                         }
                         AddBasesEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _painReliefInterval, 5f, 0.35f);
@@ -905,7 +905,7 @@ namespace RealismMod
             for (int i = _activeHealthEffects.Count - 1; i >= 0; i--)
             {
                 ICustomHealthEffect effect = _activeHealthEffects[i];
-          /*      if (Plugin.EnableLogging.Value)
+          /*      if (PluginConfig.EnableLogging.Value)
                 {
                     Utils.Logger.LogWarning("Type = " + effect.GetType().ToString());
                     Utils.Logger.LogWarning("Delay = " + effect.Delay);
@@ -919,7 +919,7 @@ namespace RealismMod
                 }
                 else
                 {
-                    if (Plugin.EnableLogging.Value)
+                    if (PluginConfig.EnableLogging.Value)
                     {
                         Utils.Logger.LogWarning("Removing Effect Due to Duration");
                     }
@@ -1136,7 +1136,7 @@ namespace RealismMod
             //will have to make mask exception for moustache, balaclava etc.
             if (fsIsON || nvgIsOn || mouthBlocked)
             {
-                if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Food), EFT.Communications.ENotificationDurationType.Long);
+                if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Food), EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
             }
@@ -1196,7 +1196,7 @@ namespace RealismMod
         {
             int delay = (int)meds.HealthEffectsComponent.UseTime;
 
-            if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Heavy Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
+            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Heavy Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
 
             float trnqtTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f - vitalitySkill), 2);
             float maxHpToRestore = Mathf.Round(_baseMaxHPRestore * (1f + vitalitySkill));
@@ -1223,7 +1223,7 @@ namespace RealismMod
         {
             int delay = (int)meds.HealthEffectsComponent.UseTime;
 
-            if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Light Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
+            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Light Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
 
             float trnqtTickRate = (float)Math.Round(MedProperties.HpPerTick(meds) * (1f - vitalitySkill), 2);
             float maxHpToRestore = Mathf.Round(_baseMaxHPRestore * (1f + vitalitySkill));
@@ -1258,7 +1258,7 @@ namespace RealismMod
         private void HandleSplint(MedsClass meds, float regenTickRate, EBodyPart bodyPart, Player player)
         {
             if (player.HealthController.GetBodyPartHealth(bodyPart).Current <= 0f) return;
-            if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Fracture On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
+            if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Fracture On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
             int delay = (int)meds.HealthEffectsComponent.UseTime;
             HealthRegenEffect regenEffect = new HealthRegenEffect(regenTickRate, null, bodyPart, player, delay, 12f, EDamageType.Impact, this);
             AddCustomEffect(regenEffect, false);
@@ -1282,7 +1282,7 @@ namespace RealismMod
 
             GetBodyPartType(bodyPart, ref isNotLimb, ref isHead, ref isBody);
 
-            if (Plugin.EnableTrnqtEffect.Value && hasHeavyBleed && canHealHBleed)
+            if (PluginConfig.EnableTrnqtEffect.Value && hasHeavyBleed && canHealHBleed)
             {
                 HandleHeavyBleedHeal(medType, meds, bodyPart, player, hBleedHealType, isNotLimb, vitalitySkill, regenTickRate);
             }
@@ -1431,7 +1431,7 @@ namespace RealismMod
 
             if (MedProperties.CanBeUsedInRaid(meds) == false)
             {
-                if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("This Item Can Not Be Used In Raid", EFT.Communications.ENotificationDurationType.Long);
+                if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("This Item Can Not Be Used In Raid", EFT.Communications.ENotificationDurationType.Long);
                 shouldAllowHeal = false;
                 return;
             }
@@ -1465,9 +1465,9 @@ namespace RealismMod
                 bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
                 bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
 
-                if (Plugin.GearBlocksHeal.Value && medType.Contains("pills") && (mouthBlocked || fsIsON || nvgIsOn))
+                if (PluginConfig.GearBlocksHeal.Value && medType.Contains("pills") && (mouthBlocked || fsIsON || nvgIsOn))
                 {
-                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Pills), EFT.Communications.ENotificationDurationType.Long);
+                    if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Pills), EFT.Communications.ENotificationDurationType.Long);
                     shouldAllowHeal = false;
                     return;
                 }
@@ -1508,16 +1508,16 @@ namespace RealismMod
 
                     if (bodyPart == EBodyPart.Common)
                     {
-                        if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Surgery), EFT.Communications.ENotificationDurationType.Long);
+                        if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Surgery), EFT.Communications.ENotificationDurationType.Long);
                         shouldAllowHeal = false;
                         return;
                     }
 
                     Plugin.RealHealthController.GetBodyPartType(bodyPart, ref isNotLimb, ref isHead, ref isBody);
 
-                    if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
+                    if (PluginConfig.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
                     {
-                        if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.GearCommon), EFT.Communications.ENotificationDurationType.Long);
+                        if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.GearCommon), EFT.Communications.ENotificationDurationType.Long);
                     }
                     Plugin.RealHealthController.HandleHealthEffects(medType, meds, bodyPart, player, hBleedHealType, canHealHBleed, canHealLBleed, canHealFract);
                     return;
@@ -1544,7 +1544,7 @@ namespace RealismMod
 
                         foreach (IEffect effect in effects)
                         {
-                            if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
+                            if (PluginConfig.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
                             {
                                 continue;
                             }
@@ -1623,7 +1623,7 @@ namespace RealismMod
                         return;
                     }
 
-                    if (Plugin.EnableMedNotes.Value) GetHealBlockMessage(blockType);
+                    if (PluginConfig.EnableMedNotes.Value) GetHealBlockMessage(blockType);
 
                     shouldAllowHeal = false;
                     return;
@@ -1647,7 +1647,7 @@ namespace RealismMod
 
             if (MedProperties.CanBeUsedInRaid(item) == false)
             {
-                if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("This Item Can Not Be Used In Raid", EFT.Communications.ENotificationDurationType.Long);
+                if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("This Item Can Not Be Used In Raid", EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
             }
@@ -1690,9 +1690,9 @@ namespace RealismMod
 
             if (medType.Contains("pills"))
             {
-                if (Plugin.GearBlocksEat.Value && (mouthBlocked || fsIsON || nvgIsOn))
+                if (PluginConfig.GearBlocksEat.Value && (mouthBlocked || fsIsON || nvgIsOn))
                 {
-                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Pills), EFT.Communications.ENotificationDurationType.Long);
+                    if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Pills), EFT.Communications.ENotificationDurationType.Long);
                     canUse = false;
                     return;
                 }
@@ -1700,9 +1700,9 @@ namespace RealismMod
             }
 
 
-            if (Plugin.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
+            if (PluginConfig.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
             {
-                if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(bodyPart + GetHealBlockMessage(EHealBlockType.GearSpecific), EFT.Communications.ENotificationDurationType.Long);
+                if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(bodyPart + GetHealBlockMessage(EHealBlockType.GearSpecific), EFT.Communications.ENotificationDurationType.Long);
 
                 canUse = false;
                 return;
@@ -1728,14 +1728,14 @@ namespace RealismMod
 
             if (isNotLimb && MedProperties.HBleedHealType(item) == "trnqt")
             {
-                if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Trnqt), EFT.Communications.ENotificationDurationType.Long);
+                if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Trnqt), EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
             }
 
             if (medType == "splint" && med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && isNotLimb)
             {
-                if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Splint), EFT.Communications.ENotificationDurationType.Long);
+                if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(EHealBlockType.Splint), EFT.Communications.ENotificationDurationType.Long);
                 canUse = false;
                 return;
             }
@@ -1801,8 +1801,8 @@ namespace RealismMod
 
         private void DoResourceDrain(ActiveHealthController hc, float dt)
         {
-            hc.ChangeEnergy(-ResourcePerTick * dt * Plugin.EnergyRateMulti.Value);
-            hc.ChangeHydration(-ResourcePerTick * dt * Plugin.HydrationRateMulti.Value);
+            hc.ChangeEnergy(-ResourcePerTick * dt * PluginConfig.EnergyRateMulti.Value);
+            hc.ChangeHydration(-ResourcePerTick * dt * PluginConfig.HydrationRateMulti.Value);
         }
 
         public void PlayerInjuryStateCheck(Player player)
@@ -1965,7 +1965,7 @@ namespace RealismMod
             PlayerState.ErgoDeltaInjuryMulti = Mathf.Clamp(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactorInverse * skillFactorInverse * hazardFactorInverse, 1f, 1.3f * percentHydroLimitErgo);
             PlayerState.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactorInverse * skillFactorInverse * hazardFactorInverse, 1f, 1.12f * percentHydroLimitRecoil);
 
-            if (Plugin.ResourceRateChanges.Value)
+            if (PluginConfig.ResourceRateChanges.Value)
             {
                 if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Chest))
                 {

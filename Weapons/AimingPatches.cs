@@ -28,8 +28,8 @@ namespace RealismMod
                 bool nvgIsOn = nvgComponent != null && (nvgComponent?.Togglable == null || nvgComponent.Togglable.On);
                 bool thermalIsOn = thermComponent != null && (thermComponent?.Togglable == null || thermComponent.Togglable.On);
                 bool gearBlocksADS = !WeaponStats.WeaponCanFSADS && !PlayerState.GearAllowsADS;
-                bool fsBlocksADS = Plugin.EnableFSPatch.Value && ((fsIsON && gearBlocksADS) || (gearBlocksADS && (fsComponent == null || fsComponent?.Togglable == null)));
-                bool toobBlocksADS = Plugin.EnableNVGPatch.Value && ((nvgIsOn && player.ProceduralWeaponAnimation.CurrentScope.IsOptic) || thermalIsOn);
+                bool fsBlocksADS = PluginConfig.EnableFSPatch.Value && ((fsIsON && gearBlocksADS) || (gearBlocksADS && (fsComponent == null || fsComponent?.Togglable == null)));
+                bool toobBlocksADS = PluginConfig.EnableNVGPatch.Value && ((nvgIsOn && player.ProceduralWeaponAnimation.CurrentScope.IsOptic) || thermalIsOn);
                 GearController.FSIsActive = fsIsON;
                 GearController.NVGIsActive = nvgIsOn || thermalIsOn;
 
@@ -68,7 +68,7 @@ namespace RealismMod
                     if (wasToggled && (!fsIsON && !nvgIsOn) && StanceController.CurrentStance == EStance.ActiveAiming)
                     {
                         StanceController.WasActiveAim = false;
-                        if (Plugin.ToggleActiveAim.Value)
+                        if (PluginConfig.ToggleActiveAim.Value)
                         {
                             StanceController.StanceBlender.Target = 0f;
                             StanceController.CurrentStance = EStance.None;
@@ -203,7 +203,7 @@ namespace RealismMod
             if (player.IsYourPlayer)
             {
                 AimController.AimStateChanged = true;
-                bool gearFactorEnabled = Plugin.EnableFSPatch.Value || Plugin.EnableNVGPatch.Value;
+                bool gearFactorEnabled = PluginConfig.EnableFSPatch.Value || PluginConfig.EnableNVGPatch.Value;
 
                 StanceController.CanResetAimDrain = true;
 

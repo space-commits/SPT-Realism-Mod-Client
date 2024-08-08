@@ -233,7 +233,7 @@ namespace RealismMod
                 ReloadController.MagReloadSpeedModifier(__instance, (MagazineClass)magazine, false, false);
             }
 
-            if (Plugin.EnableLogging.Value == true)
+            if (PluginConfig.EnableLogging.Value == true)
             {
                 Logger.LogWarning("Shoulder = " + WeaponStats.HasShoulderContact);
                 Logger.LogWarning("Total Ergo = " + totalErgo);
@@ -532,7 +532,7 @@ namespace RealismMod
                 float mountingFactor = StanceController.IsMounting && isBracingTop ? 0.8f : StanceController.IsMounting && !isBracingTop ? 0.9f : StanceController.IsBracing && isBracingTop ? 0.95f : StanceController.IsBracing && !isBracingTop ? 0.975f : 1f;
                 float stockFactor = !WeaponStats.HasShoulderContact ? 2f : 1f;
                 float baseCOI = __instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta);
-                float totalCOI = baseCOI * (1f - WeaponStats.ScopeAccuracyFactor) * mountingFactor * stockFactor * (Plugin.IncreaseCOI.Value ? 2f : 1f);
+                float totalCOI = baseCOI * (1f - WeaponStats.ScopeAccuracyFactor) * mountingFactor * stockFactor * (PluginConfig.IncreaseCOI.Value ? 2f : 1f);
 
                 if (!includeAmmo)
                 {
@@ -595,7 +595,7 @@ namespace RealismMod
             {
                 __result = WeaponStats.ErgoFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + (1f - PlayerState.GearErgoPenalty));
 
-                if (Plugin.EnableLogging.Value == true)
+                if (PluginConfig.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===ErgonomicWeight===");
                     Logger.LogWarning("total ergo weight = " + __result);

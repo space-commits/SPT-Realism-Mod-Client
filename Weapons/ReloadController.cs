@@ -71,12 +71,12 @@ namespace RealismMod.Weapons
 
             if (isQuickReload)
             {
-                WeaponStats.NewMagReloadSpeed *= Plugin.QuickReloadSpeedMulti.Value;
-                WeaponStats.CurrentMagReloadSpeed *= Plugin.QuickReloadSpeedMulti.Value;
+                WeaponStats.NewMagReloadSpeed *= PluginConfig.QuickReloadSpeedMulti.Value;
+                WeaponStats.CurrentMagReloadSpeed *= PluginConfig.QuickReloadSpeedMulti.Value;
             }
 
-            WeaponStats.NewMagReloadSpeed *= Plugin.GlobalReloadSpeedMulti.Value;
-            WeaponStats.CurrentMagReloadSpeed *= Plugin.GlobalReloadSpeedMulti.Value;
+            WeaponStats.NewMagReloadSpeed *= PluginConfig.GlobalReloadSpeedMulti.Value;
+            WeaponStats.CurrentMagReloadSpeed *= PluginConfig.GlobalReloadSpeedMulti.Value;
         }
 
         public static void ReloadStateCheck(Player player, EFT.Player.FirearmController fc, ManualLogSource logger)
@@ -103,10 +103,10 @@ namespace RealismMod.Weapons
                     float highReadyBonus = fc.Item.WeapClass == "shotgun" && StanceController.CurrentStance == EStance.HighReady == true ? StanceController.HighReadyManipBuff : 1f;
                     float lowReadyBonus = fc.Item.WeapClass != "shotgun" && StanceController.CurrentStance == EStance.LowReady == true ? StanceController.LowReadyManipBuff : 1f;
 
-                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * Plugin.InternalMagReloadMulti.Value * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * PlayerState.RemainingArmStamPercReload, MinimumReloadSpeed, MaxInternalReloadSpeed);
+                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PluginConfig.InternalMagReloadMulti.Value * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * PlayerState.RemainingArmStamPercReload, MinimumReloadSpeed, MaxInternalReloadSpeed);
                     player.HandsAnimator.SetAnimationSpeed(IntenralMagReloadSpeed);
 
-                    if (Plugin.EnableLogging.Value == true)
+                    if (PluginConfig.EnableLogging.Value == true)
                     {
                         logger.LogWarning("IsAttemptingToReloadInternalMag = " + IntenralMagReloadSpeed);
                     }

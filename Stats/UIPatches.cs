@@ -196,7 +196,7 @@ namespace RealismMod
 
         public static void AddCustomAttributes(AmmoTemplate ammoTemplate, ref List<ItemAttributeClass> ammoAttributes)
         {
-            if (Plugin.EnableAmmoStats.Value == true)
+            if (PluginConfig.EnableAmmoStats.Value == true)
             {
                 float fireRate = (float)Math.Round((ammoTemplate.casingMass - 1) * 100, 2);
                 if (fireRate != 0)
@@ -482,7 +482,7 @@ namespace RealismMod
                 Utils.SafelyAddAttributeToList(canADSAttAttClass, __instance);
             }
 
-            if (muzzleFlash != 0f && Plugin.EnableMuzzleEffects.Value)
+            if (muzzleFlash != 0f && PluginConfig.EnableMuzzleEffects.Value)
             {
                 bool isGasReduction = !Utils.IsMuzzleCombo(__instance) && !Utils.IsFlashHider(__instance) && !Utils.IsBarrel(__instance);
                 float flashValue = muzzleFlash * (isGasReduction ? 1f : -1f);
@@ -680,7 +680,7 @@ namespace RealismMod
         private static void PatchPostfix(Weapon __instance, string id, WeaponTemplate template)
         {
 
-            if (Plugin.ShowBalance.Value == true)
+            if (PluginConfig.ShowBalance.Value == true)
             {
                 List<ItemAttributeClass> balanceAttList = __instance.Attributes;
                 StatAttributeClass balanceAtt = new StatAttributeClass((EItemAttributeId)ENewItemAttributeId.Balance);
@@ -695,7 +695,7 @@ namespace RealismMod
 
             }
 
-            if (Plugin.ShowDispersion.Value == true)
+            if (PluginConfig.ShowDispersion.Value == true)
             {
                 List<ItemAttributeClass> dispersionAttList = __instance.Attributes;
                 StatAttributeClass dispersionAtt = new StatAttributeClass((EItemAttributeId)ENewItemAttributeId.Dispersion);
@@ -709,7 +709,7 @@ namespace RealismMod
                 dispersionAttList.Add(dispersionAtt);
             }
 
-            if (Plugin.ShowCamRecoil.Value == true)
+            if (PluginConfig.ShowCamRecoil.Value == true)
             {
                 List<ItemAttributeClass> camRecoilAttList = __instance.Attributes;
                 StatAttributeClass camRecoilAtt = new StatAttributeClass((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
@@ -723,7 +723,7 @@ namespace RealismMod
                 camRecoilAttList.Add(camRecoilAtt);
             }
 
-            if (Plugin.ShowRecoilAngle.Value == true)
+            if (PluginConfig.ShowRecoilAngle.Value == true)
             {
                 List<ItemAttributeClass> recoilAngleAttList = __instance.Attributes;
                 ItemAttributeClass recoilAngleAtt = new ItemAttributeClass(ENewItemAttributeId.RecoilAngle);
@@ -734,7 +734,7 @@ namespace RealismMod
                 recoilAngleAttList.Add(recoilAngleAtt);
             }
 
-            if (Plugin.ShowSemiROF.Value == true)
+            if (PluginConfig.ShowSemiROF.Value == true)
             {
                 List<ItemAttributeClass> semiROFAttList = __instance.Attributes;
                 ItemAttributeClass semiROFAtt = new ItemAttributeClass(ENewItemAttributeId.SemiROF);

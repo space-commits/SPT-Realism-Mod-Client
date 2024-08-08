@@ -60,14 +60,14 @@ namespace RealismMod
             {
                 float slopeFactor = 1f;
 
-                if (Utils.IsReady && Plugin.EnableSlopeSpeed.Value)
+                if (Utils.IsReady && PluginConfig.EnableSlopeSpeed.Value)
                 {
                     slopeFactor = MovementSpeedController.GetSlope(player);
                 }
 
                 float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - ((WeaponStats.ErgoFactor / 100f) * (1f - PlayerState.StrengthWeightBuff)), 0.15f);
                 float playerWeightFactor = Mathf.Pow(1f - ((PlayerState.TotalModifiedWeightMinusWeapon / 100f) * (1f - PlayerState.StrengthWeightBuff)), 0.3f); //doubling up because BSG's calcs are shit
-                float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
+                float surfaceMulti = PluginConfig.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float firingMulti = MovementSpeedController.GetFiringMovementSpeedFactor(player);
                 float stanceFactor = StanceController.CurrentStance == EStance.PatrolStance ? 1.33f : StanceController.CurrentStance == EStance.LowReady ? 1.15f : StanceController.CurrentStance == EStance.HighReady ? 1.05f : StanceController.CurrentStance == EStance.ShortStock ? 0.95f : 1f;
                 float totalModifier = PlayerState.HealthWalkSpeedFactor * surfaceMulti * slopeFactor * firingMulti * stanceFactor * weaponFactor * playerWeightFactor * Plugin.RealHealthController.AdrenalineMovementBonus;
@@ -119,8 +119,8 @@ namespace RealismMod
                 float gearPenalty = GearController.HasGasMask ? 0.3f * (1f + player.Skills.EnduranceBuffRestoration.Value) : GearController.FSIsActive ? 0.5f * (1f + player.Skills.HeavyVestMoveSpeedPenaltyReduction.Value) : GearController.NVGIsActive ? 0.6f : 1f;
                 float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - ((WeaponStats.ErgoFactor / 100f) * (1f - PlayerState.StrengthWeightBuff)), 0.15f);
                 float playerWeightFactor = PlayerState.TotalModifiedWeightMinusWeapon >= 50f ? 1f - ((PlayerState.TotalModifiedWeightMinusWeapon / 100f) * (1f - PlayerState.StrengthWeightBuff)) : 1f; //doubling up because BSG's calcs are shit
-                float slopeFactor = Plugin.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;
-                float surfaceMulti = Plugin.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
+                float slopeFactor = PluginConfig.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;
+                float surfaceMulti = PluginConfig.EnableMaterialSpeed.Value ? MovementSpeedController.GetSurfaceSpeed() : 1f;
                 float stanceSpeedBonus = StanceController.IsDoingTacSprint ? 1.15f * (1f + player.Skills.EnduranceBuffRestoration.Value) : 1f;
                 float stanceAccelBonus = StanceController.CurrentStance == EStance.PatrolStance ? 1.45f : StanceController.CurrentStance == EStance.ShortStock ? 0.9f : StanceController.CurrentStance == EStance.LowReady ? 1.25f : StanceController.IsDoingTacSprint ? 1.37f : StanceController.CurrentStance == EStance.HighReady ? 1.2f : 1f;
 

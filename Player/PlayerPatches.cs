@@ -85,7 +85,7 @@ namespace RealismMod
                     hazardBridge._Player = __instance;
                 }
             }
-            if(Plugin.EnablePlateChanges.Value) BallisticsController.ModifyPlateColliders(__instance);
+            if(PluginConfig.EnablePlateChanges.Value) BallisticsController.ModifyPlateColliders(__instance);
         }
     }
 
@@ -259,9 +259,9 @@ namespace RealismMod
             {
                 float stockedPistolFactor = WeaponStats.IsStockedPistol ? 0.75f : 1f;
                 NewRecoilShotEffect newRecoil = player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect as NewRecoilShotEffect;
-                newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = Mathf.Lerp(newRecoil.HandRotationRecoil.CategoryIntensityMultiplier, fc.Weapon.Template.RecoilCategoryMultiplierHandRotation * Plugin.RecoilIntensity.Value * stockedPistolFactor, 0.01f);
-                newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = Mathf.Lerp(newRecoil.HandRotationRecoil.ReturnTrajectoryDumping, fc.Weapon.Template.RecoilReturnPathDampingHandRotation * Plugin.HandsDampingMulti.Value, 0.01f);
-                player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping, fc.Weapon.Template.RecoilDampingHandRotation * Plugin.RecoilDampingMulti.Value, 0.01f);
+                newRecoil.HandRotationRecoil.CategoryIntensityMultiplier = Mathf.Lerp(newRecoil.HandRotationRecoil.CategoryIntensityMultiplier, fc.Weapon.Template.RecoilCategoryMultiplierHandRotation * PluginConfig.RecoilIntensity.Value * stockedPistolFactor, 0.01f);
+                newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = Mathf.Lerp(newRecoil.HandRotationRecoil.ReturnTrajectoryDumping, fc.Weapon.Template.RecoilReturnPathDampingHandRotation * PluginConfig.HandsDampingMulti.Value, 0.01f);
+                player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping, fc.Weapon.Template.RecoilDampingHandRotation * PluginConfig.RecoilDampingMulti.Value, 0.01f);
                 player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.41f, 0.01f);
                 player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, RecoilController.BaseTotalConvergence, 0.01f);
             }
@@ -309,7 +309,7 @@ namespace RealismMod
 
                 if (RecoilController.IsFiring)
                 {
-                    RecoilController.SetRecoilParams(player.ProceduralWeaponAnimation, fc.Item);
+                    RecoilController.SetRecoilParams(player.ProceduralWeaponAnimation, fc.Item, player);
                     if (StanceController.CurrentStance == EStance.PatrolStance)
                     {
                         StanceController.CurrentStance = EStance.None;
@@ -319,7 +319,7 @@ namespace RealismMod
                 ReloadController.ReloadStateCheck(player, fc, Logger);
                 AimController.ADSCheck(player, fc);
 
-                if (Plugin.EnableStanceStamChanges.Value && Plugin.ServerConfig.enable_stances)
+                if (PluginConfig.EnableStanceStamChanges.Value && Plugin.ServerConfig.enable_stances)
                 {
                     StanceController.SetStanceStamina(player);
                 }
@@ -332,7 +332,7 @@ namespace RealismMod
                 }
                 player.MovementContext.SetPatrol(StanceController.CurrentStance == EStance.PatrolStance ? true : false);
             }
-            else if (Plugin.ServerConfig.enable_stances && Plugin.EnableStanceStamChanges.Value && !StanceController.HaveResetStamDrain)
+            else if (Plugin.ServerConfig.enable_stances && PluginConfig.EnableStanceStamChanges.Value && !StanceController.HaveResetStamDrain)
             {
                 StanceController.UnarmedStanceStamina(player);
             }
@@ -358,10 +358,10 @@ namespace RealismMod
             if (Plugin.ServerConfig.headset_changes)
             {
                 SurfaceSet currentSet = (SurfaceSet)surfaceField.GetValue(__instance);
-                currentSet.SprintSoundBank.BaseVolume = Plugin.SharedMovementVolume.Value;
-                currentSet.StopSoundBank.BaseVolume = Plugin.SharedMovementVolume.Value;
-                currentSet.JumpSoundBank.BaseVolume = Plugin.SharedMovementVolume.Value;
-                currentSet.LandingSoundBank.BaseVolume = Plugin.SharedMovementVolume.Value;
+                currentSet.SprintSoundBank.BaseVolume = PluginConfig.SharedMovementVolume.Value;
+                currentSet.StopSoundBank.BaseVolume = PluginConfig.SharedMovementVolume.Value;
+                currentSet.JumpSoundBank.BaseVolume = PluginConfig.SharedMovementVolume.Value;
+                currentSet.LandingSoundBank.BaseVolume = PluginConfig.SharedMovementVolume.Value;
             }
 
             if (Utils.IsReady && __instance.IsYourPlayer)
@@ -372,7 +372,7 @@ namespace RealismMod
                 StanceController.IsInInventory = __instance.IsInventoryOpened;
                 PlayerState.IsMoving = __instance.IsSprintEnabled ||  !Utils.AreFloatsEqual(__instance.MovementContext.AbsoluteMovementDirection.x, 0f, 0.001f) || !Utils.AreFloatsEqual(__instance.MovementContext.AbsoluteMovementDirection.z, 0f, 0.001f);
 
-                if (Plugin.EnableSprintPenalty.Value)
+                if (PluginConfig.EnableSprintPenalty.Value)
                 {
                     DoSprintPenalty(__instance, fc, StanceController.BracingSwayBonus);
                 }

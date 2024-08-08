@@ -69,7 +69,7 @@ namespace RealismMod
 
         private static float GetBreathVolume() 
         {
-            return _baseBreathVolume * (2f - PlayerState.StaminaPerc) * Plugin.GasMaskBreathVolume.Value;
+            return _baseBreathVolume * (2f - PlayerState.StaminaPerc) * PluginConfig.GasMaskBreathVolume.Value;
         }
 
         private static string GetAudioFromOtherStates()
@@ -123,20 +123,20 @@ namespace RealismMod
 
         public static void HeadsetVolumeAdjust() 
         {
-            if (Input.GetKeyDown(Plugin.IncGain.Value.MainKey) && DeafeningController.HasHeadSet)
+            if (Input.GetKeyDown(PluginConfig.IncGain.Value.MainKey) && DeafeningController.HasHeadSet)
             {
-                if (Plugin.RealTimeGain.Value < 30)
+                if (PluginConfig.RealTimeGain.Value < 30)
                 {
-                    Plugin.RealTimeGain.Value += 1f;
+                    PluginConfig.RealTimeGain.Value += 1f;
                     Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), Plugin.HitAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 1.0f, EOcclusionTest.None, null, false);
                 }
             }
-            if (Input.GetKeyDown(Plugin.DecGain.Value.MainKey) && DeafeningController.HasHeadSet)
+            if (Input.GetKeyDown(PluginConfig.DecGain.Value.MainKey) && DeafeningController.HasHeadSet)
             {
 
-                if (Plugin.RealTimeGain.Value > 0)
+                if (PluginConfig.RealTimeGain.Value > 0)
                 {
-                    Plugin.RealTimeGain.Value -= 1f;
+                    PluginConfig.RealTimeGain.Value -= 1f;
                     Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), Plugin.HitAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 1.0f, EOcclusionTest.None, null, false);
                 }
             }

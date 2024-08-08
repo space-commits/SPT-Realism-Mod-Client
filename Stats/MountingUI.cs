@@ -12,68 +12,68 @@ namespace RealismMod
     public class MountingUI : MonoBehaviour
     {
         public GameObject ActiveUIScreen;
-        private GameObject mountingUIGameObject;
-        private Image mountingUIImage;
-        private RectTransform mountingUIRect;
-        private Vector2 iconSize = new Vector2(80, 80);
+        private GameObject _mountingUIGameObject;
+        private Image _mountingUIImage;
+        private RectTransform _mountingUIRect;
+        private Vector2 _iconSize = new Vector2(80, 80);
 
         public void DestroyGameObject()
         {
-            if (mountingUIGameObject != null)
+            if (_mountingUIGameObject != null)
             {
-                Destroy(mountingUIGameObject);
+                Destroy(_mountingUIGameObject);
             }
         }
 
         public void CreateGameObject(UnityEngine.Transform parent)
         {
-            mountingUIGameObject = new GameObject("MountingUI");
-            mountingUIRect = mountingUIGameObject.AddComponent<RectTransform>();
-            mountingUIRect.anchoredPosition = new Vector2(100, 100);
-            mountingUIImage = mountingUIGameObject.AddComponent<Image>();
-            mountingUIGameObject.transform.SetParent(parent);
-            mountingUIImage.sprite = Plugin.LoadedSprites["mounting.png"];
-            mountingUIImage.raycastTarget = false;
-            mountingUIImage.color = Color.clear;
-            mountingUIRect.sizeDelta = iconSize;
+            _mountingUIGameObject = new GameObject("MountingUI");
+            _mountingUIRect = _mountingUIGameObject.AddComponent<RectTransform>();
+            _mountingUIRect.anchoredPosition = new Vector2(100, 100);
+            _mountingUIImage = _mountingUIGameObject.AddComponent<Image>();
+            _mountingUIGameObject.transform.SetParent(parent);
+            _mountingUIImage.sprite = Plugin.LoadedSprites["mounting.png"];
+            _mountingUIImage.raycastTarget = false;
+            _mountingUIImage.color = Color.clear;
+            _mountingUIRect.sizeDelta = _iconSize;
         }
 
         public void Update()
         {
-            if (ActiveUIScreen != null && Plugin.EnableMountUI.Value)
+            if (ActiveUIScreen != null && PluginConfig.EnableMountUI.Value)
             {
                 if (StanceController.BracingDirection == EBracingDirection.Left)
                 {
-                    mountingUIImage.sprite = Plugin.LoadedSprites["mountingleft.png"];
+                    _mountingUIImage.sprite = Plugin.LoadedSprites["mountingleft.png"];
                 }
                 else if (StanceController.BracingDirection == EBracingDirection.Right)
                 {
-                    mountingUIImage.sprite = Plugin.LoadedSprites["mountingright.png"];
+                    _mountingUIImage.sprite = Plugin.LoadedSprites["mountingright.png"];
                 }
                 else
                 {
-                    mountingUIImage.sprite = Plugin.LoadedSprites["mounting.png"];
+                    _mountingUIImage.sprite = Plugin.LoadedSprites["mounting.png"];
                 }
 
                 if (StanceController.IsMounting)
                 {
-                    mountingUIImage.color = Color.white;
+                    _mountingUIImage.color = Color.white;
                     float scaleAmount = Mathf.Lerp(1f, 1.15f, Mathf.PingPong(Time.time * 0.9f, 1f));
-                    mountingUIRect.sizeDelta = iconSize * scaleAmount;
+                    _mountingUIRect.sizeDelta = _iconSize * scaleAmount;
 
                 }
                 else if (StanceController.IsBracing && !PlayerState.IsSprinting)
                 {
-                    mountingUIRect.sizeDelta = iconSize;
+                    _mountingUIRect.sizeDelta = _iconSize;
                     float alpha = Mathf.Lerp(0.2f, 1f, Mathf.PingPong(Time.time, 1f));
                     Color lerpedColor = new Color(1f, 1f, 1f, alpha);
-                    mountingUIImage.color = lerpedColor;
+                    _mountingUIImage.color = lerpedColor;
                 }
                 else
                 {
-                    mountingUIImage.color = Color.clear;
+                    _mountingUIImage.color = Color.clear;
                 }
-                mountingUIRect.localPosition = new Vector3(650f, -460f, 0f);
+                _mountingUIRect.localPosition = new Vector3(650f, -460f, 0f);
             }
         }
     }
@@ -88,7 +88,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostFix(EFT.UI.EftBattleUIScreen __instance)
         {
-            MountingUI mountingUI = Plugin.MountingUIHookObj.GetComponent<MountingUI>();
+            MountingUI mountingUI = Plugin.MountingUIGameObject.GetComponent<MountingUI>();
 
             if (mountingUI != null) 
             {

@@ -9,7 +9,7 @@ namespace RealismMod
 {
     public class DebugGizmos
     {
-        public static bool DrawGizmos = Plugin.EnableLogging.Value;
+        public static bool DrawGizmos = PluginConfig.EnableLogging.Value;
 
         public class SingleObjects
         {
@@ -90,7 +90,7 @@ namespace RealismMod
 
            private static UnityEngine.Color GetColor(string colliderName)
             {
-                float opacity = Plugin.test2.Value;
+                float opacity = PluginConfig.test2.Value;
                 if (colliderName.Contains("_chest") || colliderName.Contains("_back") || colliderName.Contains("_side") || colliderName.ToLower() == "left" || colliderName.ToLower() == "right" || colliderName.ToLower() == "top") return Color.magenta;
                 if (colliderName.Contains("SpineTopChest") || colliderName.Contains("SAPI_back")) return new UnityEngine.Color(1, 0, 0, opacity);
                 if (colliderName.Contains("SpineLowerChest")) return new UnityEngine.Color(0, 1, 0, opacity);
@@ -127,7 +127,7 @@ namespace RealismMod
                 Vector3 scale = new Vector3(actualScale, actualScale, actualScale);
 
                 // Apply global scale and additional scale factor if needed.
-                sphere.transform.localScale = Vector3.Scale(colliderTransform.localScale, scale) * Plugin.test1.Value;
+                sphere.transform.localScale = Vector3.Scale(colliderTransform.localScale, scale) * PluginConfig.test1.Value;
 
                 // Set a transparent material to the sphere, so it doesn't obstruct the view.
                 Material transparentMaterial = new Material(Shader.Find("Standard"));
@@ -149,7 +149,7 @@ namespace RealismMod
                 // Set the cube's position and scale to match the box collider.
                 Transform colliderTransform = boxCollider.transform;
                 cube.transform.position = colliderTransform.TransformPoint(boxCollider.center);
-                cube.transform.localScale = Vector3.Scale(colliderTransform.localScale, boxCollider.size) * Plugin.test1.Value;
+                cube.transform.localScale = Vector3.Scale(colliderTransform.localScale, boxCollider.size) * PluginConfig.test1.Value;
 
                 // Optionally, set the cube's rotation to match the collider's GameObject.
                 cube.transform.rotation = colliderTransform.rotation;
@@ -201,7 +201,7 @@ namespace RealismMod
 
                 // Apply the rotation and scale.
                 capsule.transform.rotation = colliderTransform.rotation * rotation;
-                capsule.transform.localScale = Vector3.Scale(colliderTransform.localScale, scale) * Plugin.test1.Value;
+                capsule.transform.localScale = Vector3.Scale(colliderTransform.localScale, scale) * PluginConfig.test2.Value;
 
                 // Set a transparent material to the capsule, so it doesn't obstruct the view.
                 Material transparentMaterial = new Material(Shader.Find("Transparent/Diffuse"));

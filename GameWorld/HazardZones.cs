@@ -114,7 +114,7 @@ namespace RealismMod
             float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
             float invertedDistance = _maxDistance - distance;  // invert the distance
             invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance); //clamp the inverted distance
-            return invertedDistance / (ZoneStrengthModifier * (Plugin.ZoneDebug.Value ? Plugin.test10.Value : 1f));
+            return invertedDistance / (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f));
         }
 
         float CalculateGasStrengthSphere(Vector3 playerPosition)
@@ -124,7 +124,7 @@ namespace RealismMod
             float effectiveDistance = Mathf.Max(0, distanceToCenter - radius); 
             float invertedDistance = _maxDistance - effectiveDistance; 
             invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance); 
-            return invertedDistance / (ZoneStrengthModifier * (Plugin.ZoneDebug.Value ? Plugin.test10.Value : 1f));
+            return invertedDistance / (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f));
         }
     }
 
@@ -221,7 +221,7 @@ namespace RealismMod
             float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
             float invertedDistance = _maxDistance - distance;  // invert the distance
             invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance); //clamp the inverted distance
-            return invertedDistance / (ZoneStrengthModifier * (Plugin.ZoneDebug.Value ? Plugin.test10.Value : 1f));
+            return invertedDistance / (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f));
         }
 
         float CalculateRadStrengthSphere(Vector3 playerPosition)
@@ -230,7 +230,7 @@ namespace RealismMod
             float radius = (_zoneCollider as SphereCollider).radius * transform.localScale.magnitude;
             float distanceFromSurface = radius - distanceToCenter;
             float clampedDistance = Mathf.Max(0f, distanceFromSurface);
-            return clampedDistance / (ZoneStrengthModifier * (Plugin.ZoneDebug.Value ? Plugin.test10.Value : 1f));
+            return clampedDistance / (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f));
         }
     }
 }

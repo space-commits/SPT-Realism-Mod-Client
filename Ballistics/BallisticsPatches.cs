@@ -144,7 +144,7 @@ namespace RealismMod
         private static void Prefix(GClass3010 __instance)
         {
             float bcFactor = (float)AccessTools.Field(typeof(GClass3010), "float_3").GetValue(__instance);
-            AccessTools.Field(typeof(GClass3010), "float_3").SetValue(__instance, bcFactor *= Plugin.DragModifier.Value);
+            AccessTools.Field(typeof(GClass3010), "float_3").SetValue(__instance, bcFactor *= PluginConfig.DragModifier.Value);
         }
     }
 
@@ -212,7 +212,7 @@ namespace RealismMod
             __instance.FireIndex = shot.FireIndex;
             if (__instance.DamageType == EDamageType.Blunt || __instance.DamageType == EDamageType.Bullet)
             {
-                if (Plugin.EnableLogging.Value) 
+                if (PluginConfig.EnableLogging.Value) 
                 {
                     Logger.LogWarning("================shot velocity============== " + shot.VelocityMagnitude);
                 }
@@ -274,7 +274,7 @@ namespace RealismMod
                 float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
                 float hitArmArmorFactor = hitArmArmor ? 0.5f : 1f;
                 float hitLocationModifier = forearm ? 1.5f : 1f;
-                float totalChance = Mathf.Round(Plugin.DisarmBaseChance.Value * kineticEnergyFactor * hitArmArmorFactor * hitLocationModifier);
+                float totalChance = Mathf.Round(PluginConfig.DisarmBaseChance.Value * kineticEnergyFactor * hitArmArmorFactor * hitLocationModifier);
 
                 if (rndNumber <= totalChance)
                 {
@@ -296,12 +296,12 @@ namespace RealismMod
             int rndNumber = UnityEngine.Random.Range(1, 51);
             float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
             float hitLocationModifier = bonusChance ? 2f : 1f;
-            float totalChance = Mathf.Round(Plugin.FallBaseChance.Value * kineticEnergyFactor * hitLocationModifier);
+            float totalChance = Mathf.Round(PluginConfig.FallBaseChance.Value * kineticEnergyFactor * hitLocationModifier);
 
             if (rndNumber <= totalChance)
             {
                 player.ToggleProne();
-                if ((isPlayer && Plugin.CanDisarmPlayer.Value) || (!isPlayer && Plugin.CanDisarmBot.Value))
+                if ((isPlayer && PluginConfig.CanDisarmPlayer.Value) || (!isPlayer && PluginConfig.CanDisarmBot.Value))
                 {
                     TryDoDisarm(player, kineticEnergy * 0.25f, false, false);
                 }
@@ -313,8 +313,8 @@ namespace RealismMod
             float totalHPPerc = (player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Common).Current - damageInfo.Damage) / player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Common).Maximum;
             float hitPartHP = player.ActiveHealthController.GetBodyPartHealth(bodyPartType).Current;
             float toBeHP = hitPartHP - damageInfo.Damage;
-            bool canDoKnockdown = !player.IsInPronePose && ((!player.IsYourPlayer && Plugin.CanFellBot.Value) || (player.IsYourPlayer && Plugin.CanFellPlayer.Value));
-            bool canDoDisarm = ((!player.IsYourPlayer && Plugin.CanDisarmBot.Value) || (player.IsYourPlayer && Plugin.CanDisarmPlayer.Value));
+            bool canDoKnockdown = !player.IsInPronePose && ((!player.IsYourPlayer && PluginConfig.CanFellBot.Value) || (player.IsYourPlayer && PluginConfig.CanFellPlayer.Value));
+            bool canDoDisarm = ((!player.IsYourPlayer && PluginConfig.CanDisarmBot.Value) || (player.IsYourPlayer && PluginConfig.CanDisarmPlayer.Value));
             bool hitForearm = partHit == EBodyPartColliderType.LeftForearm || partHit == EBodyPartColliderType.RightForearm;
             bool hitCalf = partHit == EBodyPartColliderType.LeftCalf || partHit == EBodyPartColliderType.RightCalf;
             bool hitThigh = partHit == EBodyPartColliderType.LeftThigh || partHit == EBodyPartColliderType.RightThigh;
@@ -360,13 +360,13 @@ namespace RealismMod
                 }
  
                 //if fika, based on collidor type, get refernce to player assetpoolobject, get collidors, get component
-                if (Plugin.EnableBodyHitZones.Value) BallisticsController.ModifyDamageByZone(__instance, ref damageInfo, partHit);
+                if (PluginConfig.EnableBodyHitZones.Value) BallisticsController.ModifyDamageByZone(__instance, ref damageInfo, partHit);
   
                 float KE = 1f;
                 AmmoTemplate ammoTemp = null;
                 BallisticsController.GetKineticEnergy(damageInfo, ref ammoTemp, ref KE);
 
-                if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && __instance.IsAI && damageInfo.HittedBallisticCollider != null && !damageInfo.Blunt && Plugin.EnableHitSounds.Value)
+                if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && __instance.IsAI && damageInfo.HittedBallisticCollider != null && !damageInfo.Blunt && PluginConfig.EnableHitSounds.Value)
                 {
                     BallisticsController.PlayBodyHitSound(bodyPartType, damageInfo.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
                 }
@@ -392,7 +392,7 @@ namespace RealismMod
                     DisarmAndKnockdownCheck(__instance, damageInfo, bodyPartType, partHit, KE, hasArmArmor);
                 }
 
-                if (Plugin.EnableBallisticsLogging.Value)
+                if (PluginConfig.EnableBallisticsLogging.Value)
                 {
                     Logger.LogWarning("==========Apply Damage Info=============== ");
                     Logger.LogWarning("Damage " + damageInfo.Damage);
@@ -447,7 +447,7 @@ namespace RealismMod
                 ArmorComponent armorComponent = armors[i];
                 if (armorComponent.ShotMatches(bodyPartCollider.BodyPartColliderType, armorPlateCollider2))
                 {
-                    if (Plugin.EnableBallisticsLogging.Value) 
+                    if (PluginConfig.EnableBallisticsLogging.Value) 
                     {
                         Logger.LogWarning("///AFTER PLATE PEN///");
                         Logger.LogWarning("damage before = " + shot.Damage); 
@@ -464,7 +464,7 @@ namespace RealismMod
                     }
                     BallisticsController.CalcAfterPenStats(armorComponent.Repairable.Durability, armorComponent.ArmorClass, armorComponent.Repairable.TemplateDurability, ref shot.Damage, ref shot.PenetrationPower, softArmorReduction);
                 
-                    if (Plugin.EnableBallisticsLogging.Value)
+                    if (PluginConfig.EnableBallisticsLogging.Value)
                     {
                         Logger.LogWarning("damage after = " + shot.Damage);
                         Logger.LogWarning("pen after = " + shot.PenetrationPower);
@@ -517,7 +517,7 @@ namespace RealismMod
             if (shouldBeBlocked || didPenByChance)
             {
                 shot.BlockedBy = __instance.Item.Id;
-                if (Plugin.EnableBallisticsLogging.Value)
+                if (PluginConfig.EnableBallisticsLogging.Value)
                 {
                     Debug.Log(">>> Shot blocked by armor piece");
                     Logger.LogWarning("===========PEN STATUS=============== ");
@@ -528,7 +528,7 @@ namespace RealismMod
             }
             else
             {
-                if (Plugin.EnableBallisticsLogging.Value == true)
+                if (PluginConfig.EnableBallisticsLogging.Value == true)
                 {
                     Logger.LogWarning("============PEN STATUS============== ");
                     Logger.LogWarning("Penetrated");
@@ -553,8 +553,8 @@ namespace RealismMod
         private static void playArmorHitSound(EArmorMaterial mat, Vector3 pos, bool isHelm, int rndNum)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 0.5f * Plugin.ArmorCloseHitSoundMulti.Value;
-            float volDist = 3f * Plugin.ArmorFarHitSoundMulti.Value;
+            float volClose = 0.5f * PluginConfig.ArmorCloseHitSoundMulti.Value;
+            float volDist = 3f * PluginConfig.ArmorFarHitSoundMulti.Value;
             float distThreshold = 30f;
 
             if (mat == EArmorMaterial.Aramid)
@@ -658,7 +658,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ArmorComponent __instance, ref DamageInfo damageInfo, ref float __result, EBodyPartColliderType colliderType, EArmorPlateCollider armorPlateCollider, bool damageInfoIsLocal, List<ArmorComponent> armorComponents)
         {
-            if (Plugin.EnableBallisticsLogging.Value)
+            if (PluginConfig.EnableBallisticsLogging.Value)
             {
                 Logger.LogWarning("===========ARMOR DAMAGE BEFORE=============== ");
                 Logger.LogWarning("Pen " + damageInfo.PenetrationPower);
@@ -726,7 +726,7 @@ namespace RealismMod
             }
 
           
-            if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && Plugin.EnableHitSounds.Value && damageInfo.HittedBallisticCollider != null)
+            if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && PluginConfig.EnableHitSounds.Value && damageInfo.HittedBallisticCollider != null)
             {
                 bool isPlayer = __instance.Item.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId;
                 if (!isPlayer) 
@@ -792,13 +792,13 @@ namespace RealismMod
             {
                 if (damageInfo.PenetrationPower > __instance.ArmorClass * 100f * duraPercent)
                 {
-                    if (Plugin.EnableBallisticsLogging.Value) Logger.LogWarning("Melee Penetrated");
+                    if (PluginConfig.EnableBallisticsLogging.Value) Logger.LogWarning("Melee Penetrated");
                     damageInfo.Damage *= 0.75f;
                     damageInfo.PenetrationPower *= 0.75f * softArmorStatReduction;
                 }
                 else
                 {
-                    if (Plugin.EnableBallisticsLogging.Value) Logger.LogWarning("Melee Blocked");
+                    if (PluginConfig.EnableBallisticsLogging.Value) Logger.LogWarning("Melee Blocked");
                     if (!isHead) damageInfo.Damage = totaldamage + (damageInfo.Damage / 10f);
                     else damageInfo.Damage = totaldamage;
                     damageInfo.HeavyBleedingDelta = 0f;
@@ -832,7 +832,7 @@ namespace RealismMod
             __result = totalDuraLoss;
             damageInfo.Damage = Mathf.Min(damageInfo.Damage, startingDamage);
 
-            if (Plugin.EnableBallisticsLogging.Value)
+            if (PluginConfig.EnableBallisticsLogging.Value)
             {
                 Logger.LogWarning("===========ARMOR DAMAGE AFTER=============== ");
                 Logger.LogWarning("Momentum " + momentum);
@@ -880,7 +880,7 @@ namespace RealismMod
             float bcSpeedFactor = 1f - ((1f - speedFactor) * 0.25f);
             float bcFactored = Mathf.Max(ammo.BallisticCoeficient * bcSpeedFactor, 0.01f);
 
-            if (Plugin.EnableBallisticsLogging.Value) 
+            if (PluginConfig.EnableBallisticsLogging.Value) 
             {
                 Logger.LogWarning("speed factor " + speedFactor);
                 Logger.LogWarning("speed factored " + velocityFactored);
@@ -919,7 +919,7 @@ namespace RealismMod
                 AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[lastDam.SourceId];
                 BulletClass ammo = new BulletClass(Utils.GenId(), ammoTemp);
                 float KE = ((0.5f * ammo.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
-                force = (-Mathf.Max(1f, KE / 1000f)) * Plugin.RagdollForceModifier.Value;
+                force = (-Mathf.Max(1f, KE / 1000f)) * PluginConfig.RagdollForceModifier.Value;
                 ammo = null;
                 ammoTemp = null;
             }

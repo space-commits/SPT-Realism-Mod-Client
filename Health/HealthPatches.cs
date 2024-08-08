@@ -46,7 +46,7 @@ namespace RealismMod
                 HazardTracker.UpdateHazardValues(Plugin.PMCProfileId);
                 HazardTracker.UpdateHazardValues(Plugin.ScavProfileId);
                 HazardTracker.SaveHazardValues();
-                if(Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayNotification(new QuestUIClass("Blood Tests Came Back Clear, Your Radiation Poisoning Has Been Cured.".Localized(null), ENotificationDurationType.Long, ENotificationIconType.Quest, null));
+                if(PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayNotification(new QuestUIClass("Blood Tests Came Back Clear, Your Radiation Poisoning Has Been Cured.".Localized(null), ENotificationDurationType.Long, ENotificationIconType.Quest, null));
             }
         }
     }
@@ -521,7 +521,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
         {
-            if (Plugin.EnableLogging.Value)
+            if (PluginConfig.EnableLogging.Value)
             {
                 Logger.LogWarning("applying " + item.LocalizedName());
             }
@@ -595,7 +595,7 @@ namespace RealismMod
                 bool canUse = true;
                 if (((medsClass = (item as MedsClass)) != null))
                 {
-                    if (Plugin.EnableLogging.Value)
+                    if (PluginConfig.EnableLogging.Value)
                     {
                         Logger.LogWarning("ApplyItem Med");
                     }
@@ -603,12 +603,12 @@ namespace RealismMod
                 }
                 if ((foodClass = (item as FoodClass)) != null)
                 {
-                    if (Plugin.EnableLogging.Value)
+                    if (PluginConfig.EnableLogging.Value)
                     {
                         Logger.LogWarning("ApplyItem Food");
                     }
 
-                    if (Plugin.GearBlocksEat.Value)
+                    if (PluginConfig.GearBlocksEat.Value)
                     {
                         Plugin.RealHealthController.CanConsume(__instance.Player, item, ref canUse);
                     }
@@ -640,7 +640,7 @@ namespace RealismMod
                 {
                     bool canUse = true;
                     Plugin.RealHealthController.CanConsume(__instance, boundItem, ref canUse);
-                    if (Plugin.EnableLogging.Value)
+                    if (PluginConfig.EnableLogging.Value)
                     {
                         Logger.LogWarning("quick slot, can use = " + canUse);
                     }
@@ -747,7 +747,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix()
         {
-            if (Plugin.EnableLogging.Value)
+            if (PluginConfig.EnableLogging.Value)
             {
                 Logger.LogWarning("Cancelling Meds");
             }
@@ -793,7 +793,7 @@ namespace RealismMod
         {
             if (__instance.Player.IsYourPlayer)
             {
-                if (Plugin.EnableLogging.Value)
+                if (PluginConfig.EnableLogging.Value)
                 {
                     Logger.LogWarning("=========");
                     Logger.LogWarning("part = " + bodyPart);
@@ -974,7 +974,7 @@ namespace RealismMod
                  Player player = Utils.GetPlayer();
                  float num = 1f - player.Skills.HealthHydration;
                  __result = Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num * PlayerStats.HealthResourceRateFactor / GetDecayRate(player);
-                 if (Plugin.EnableLogging.Value)
+                 if (PluginConfig.EnableLogging.Value)
                  {
                      Logger.LogWarning("modified energy decay = " + __result);
                      Logger.LogWarning("original energy decay = " + Singleton<BackendConfigSettingsClass>.Instance.Health.Effects.Existence.EnergyDamage * num / GetDecayRate(player));
