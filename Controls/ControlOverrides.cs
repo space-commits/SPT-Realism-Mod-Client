@@ -13,7 +13,7 @@ using InputClass2 = Class1475;
 using StatusStruct = GStruct414<GInterface339>;
 using ItemEventClass = GClass2783;
 
-namespace RealismMod.Controls
+namespace RealismMod
 {
     public class KeyInputPatch1 : ModulePatch
     {
@@ -87,7 +87,7 @@ namespace RealismMod.Controls
                 StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.25f, 0.25f, 0.5f));
                 return true;
             }
-            if (Plugin.ServerConfig.enable_stances && Plugin.BlockFiring.Value && command == ECommand.ToggleShooting
+            if (Plugin.ServerConfig.enable_stances && PluginConfig.BlockFiring.Value && command == ECommand.ToggleShooting
                 && !Plugin.RealHealthController.ArmsAreIncapacitated && !Plugin.RealHealthController.HasOverdosed
                 && StanceController.CurrentStance != EStance.None && StanceController.CurrentStance != EStance.ActiveAiming
                 && StanceController.CurrentStance != EStance.ShortStock && StanceController.CurrentStance != EStance.PistolCompressed)
@@ -111,7 +111,12 @@ namespace RealismMod.Controls
         [PatchPrefix]
         private static bool PatchPrefix(InputClass2 __instance, ECommand command)
         {
-            if ((command == ECommand.ScrollNext || command == ECommand.ScrollPrevious) && (Input.GetKey(Plugin.StanceWheelComboKeyBind.Value.MainKey) && Plugin.UseMouseWheelPlusKey.Value))
+            if (command == ECommand.ToggleProne || command == ECommand.ToggleDuck)
+            {
+                StanceController.IsMounting = false;
+                return true;
+            }
+            if ((command == ECommand.ScrollNext || command == ECommand.ScrollPrevious) && (Input.GetKey(PluginConfig.StanceWheelComboKeyBind.Value.MainKey) && PluginConfig.UseMouseWheelPlusKey.Value))
             {
                 return false;
             }

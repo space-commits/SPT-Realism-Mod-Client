@@ -233,7 +233,7 @@ namespace RealismMod
                 ReloadController.MagReloadSpeedModifier(__instance, (MagazineClass)magazine, false, false);
             }
 
-            if (Plugin.EnableLogging.Value == true)
+            if (PluginConfig.EnableLogging.Value == true)
             {
                 Logger.LogWarning("Shoulder = " + WeaponStats.HasShoulderContact);
                 Logger.LogWarning("Total Ergo = " + totalErgo);
@@ -350,6 +350,9 @@ namespace RealismMod
 
             float currentFixSpeedMod = 0f;
 
+            float currentFlashSuppression = 0f;
+            float currentGas = 0f;
+
             bool folded = __instance.Folded;
             bool hasShoulderContact = false;
             if (WeaponStats.WepHasShoulderContact(__instance) && !folded)
@@ -358,10 +361,13 @@ namespace RealismMod
             }
             WeaponStats.BaseMeleeDamage = 0f; //reset the melee dmg
             WeaponStats.BaseMeleePen = 0f;
+
             WeaponStats.HasBayonet = false;
             WeaponStats.HasBooster = false;
             WeaponStats.HasBipod = false;
-
+            WeaponStats.HasMuzzleDevice = false;
+            WeaponStats.HasSuppressor = false;
+       
             foreach (Mod mod in __instance.Mods)
             {
                 if (!Utils.IsMagazine(mod))
@@ -388,17 +394,19 @@ namespace RealismMod
                     float modMalfChance = AttachmentProperties.ModMalfunctionChance(mod);
                     float modDuraBurn = mod.DurabilityBurnModificator;
                     float modFix = AttachmentProperties.FixSpeed(mod);
+                    float modFlashSuppression = AttachmentProperties.ModFlashSuppression(mod);
                     modVRecoil += modConv > 0f ? modConv * StatCalc.convVRecoilConversion : 0f;
 
                     if (Utils.IsMuzzleDevice(mod))
                     {
                         if (modType == "bayonet") WeaponStats.HasBayonet = true;
                         if (modType == "booster") WeaponStats.HasBooster = true;
-            
+                        if (Utils.IsSilencer(mod)) WeaponStats.HasSuppressor = true;
+
                         WeaponStats.BaseMeleeDamage = AttachmentProperties.ModMeleeDamage(mod);
                         WeaponStats.BaseMeleePen = AttachmentProperties.ModMeleePen(mod);
+                        WeaponStats.HasMuzzleDevice = true;
                     }
-
                     if (Utils.IsBipod(mod)) WeaponStats.HasBipod = true;
 
                     StatCalc.ModConditionalStatCalc(
@@ -406,7 +414,7 @@ namespace RealismMod
                         ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, 
                         ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, 
                         ref modAccuracy, ref modType, ref position, ref modChamber, 
-                        ref modLoudness, ref modMalfChance, ref modDuraBurn, ref modConv);
+                        ref modLoudness, ref modMalfChance, ref modDuraBurn, ref modConv, ref modFlashSuppression);
 
                     StatCalc.ModStatCalc(
                         mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, 
@@ -418,7 +426,8 @@ namespace RealismMod
                         modHRecoil, ref currentHRecoil, ref currentChamberSpeedMod, modChamber, 
                         false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, 
                         modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, 
-                        ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, isChonker);
+                        ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, isChonker,
+                        ref currentFlashSuppression, modFlashSuppression, ref currentGas);
 
                     if (AttachmentProperties.CanCylceSubs(mod))
                     {
@@ -435,9 +444,10 @@ namespace RealismMod
             {
                 WeaponStats.WeaponCanFSADS = !hasShoulderContact;
             }
-   
-            WeaponStats.IsStocklessPistol = !hasShoulderContact && __instance.WeapClass == "pistol" ? true : false;
-            WeaponStats.IsStockedPistol = hasShoulderContact && __instance.WeapClass == "pistol" ? true : false;
+
+            WeaponStats.IsPistol = __instance.WeapClass == "pistol";
+            WeaponStats.IsStocklessPistol = !hasShoulderContact && WeaponStats.IsPistol ? true : false;
+            WeaponStats.IsStockedPistol = hasShoulderContact && WeaponStats.IsPistol ? true : false;
 
             float totalLoudness = ((currentLoudness / 80) + 1f) * StatCalc.CaliberLoudnessFactor(caliber);
 
@@ -468,7 +478,7 @@ namespace RealismMod
             WeaponStats.ModAimSpeedModifier = currentAimSpeedMod / 100f;
             WeaponStats.AutoFireRate = Mathf.Max(400, (int)currentAutoROF);
             WeaponStats.SemiFireRate = Mathf.Max(300, (int)currentSemiROF);
-            WeaponStats.FireRateDelta = (__instance.FireRate / WeaponStats.AutoFireRate) * (__instance.SingleFireRate / WeaponStats.SemiFireRate);
+            WeaponStats.FireRateDelta = ((float)WeaponStats.AutoFireRate / (float)__instance.Template.bFirerate) * ((float)WeaponStats.SemiFireRate / (float)__instance.Template.SingleFireRate);
             WeaponStats.InitTotalCOI = currentCOI;
             WeaponStats.InitPureErgo = pureErgo;
             WeaponStats.PureRecoilDelta = pureRecoilDelta;
@@ -476,8 +486,12 @@ namespace RealismMod
             WeaponStats.TotalCameraReturnSpeed = currentCamReturnSpeed;
             WeaponStats.TotalModdedConv = currentConv * (!hasShoulderContact ? WeaponStats.FoldedConvergenceFactor : 1f);
             WeaponStats.ConvergenceDelta = currentConv / __instance.Template.RecoilReturnSpeedHandRotation;
-
-    
+            WeaponStats.VelocityDelta = __instance.VelocityDelta;
+            WeaponStats.MuzzleLoudness = currentLoudness;
+            WeaponStats.Caliber = caliber;
+            WeaponStats.TotalMuzzleFlash = currentFlashSuppression;
+            WeaponStats.TotalGas = currentGas;
+            WeaponStats.IsDirectImpingement = weapType == "DI" ? true : false;
         }
     }
 
@@ -518,7 +532,7 @@ namespace RealismMod
                 float mountingFactor = StanceController.IsMounting && isBracingTop ? 0.8f : StanceController.IsMounting && !isBracingTop ? 0.9f : StanceController.IsBracing && isBracingTop ? 0.95f : StanceController.IsBracing && !isBracingTop ? 0.975f : 1f;
                 float stockFactor = !WeaponStats.HasShoulderContact ? 2f : 1f;
                 float baseCOI = __instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta);
-                float totalCOI = baseCOI * (1f - WeaponStats.ScopeAccuracyFactor) * mountingFactor * stockFactor * (Plugin.IncreaseCOI.Value ? 2f : 1f);
+                float totalCOI = baseCOI * (1f - WeaponStats.ScopeAccuracyFactor) * mountingFactor * stockFactor * (PluginConfig.IncreaseCOI.Value ? 2f : 1f);
 
                 if (!includeAmmo)
                 {
@@ -581,7 +595,7 @@ namespace RealismMod
             {
                 __result = WeaponStats.ErgoFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + (1f - PlayerState.GearErgoPenalty));
 
-                if (Plugin.EnableLogging.Value == true)
+                if (PluginConfig.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===ErgonomicWeight===");
                     Logger.LogWarning("total ergo weight = " + __result);

@@ -70,7 +70,7 @@ namespace RealismMod
        
                 if (!haveNotified)
                 {
-                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Tourniquet Applied On " + BodyPart + ", You Are Losing Health On This Limb. Use A Surgery Kit To Remove It", EFT.Communications.ENotificationDurationType.Long);
+                    if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("Tourniquet Applied On " + BodyPart + ", You Are Losing Health On This Limb. Use A Surgery Kit To Remove It", EFT.Communications.ENotificationDurationType.Long);
                     haveNotified = true;
                 }
 
@@ -133,7 +133,7 @@ namespace RealismMod
 
                 if (!haveNotified)
                 {
-                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Surgery Kit Applied On " + BodyPart + ", Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
+                    if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Surgery Kit Applied On " + BodyPart + ", Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
                     haveNotified = true;
                 }
 
@@ -141,7 +141,7 @@ namespace RealismMod
                 {
                     hasRemovedTrnqt = true;
                     RealHealthController.RemoveCustomEffectOfType(typeof(TourniquetEffect), BodyPart);
-                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Surgical Kit Used, Removing Tourniquet Effect Present On Limb If Present: " + BodyPart, EFT.Communications.ENotificationDurationType.Long);
+                    if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Surgical Kit Used, Removing Tourniquet Effect Present On Limb If Present: " + BodyPart, EFT.Communications.ENotificationDurationType.Long);
                 }
 
                 float currentHp = _Player.ActiveHealthController.GetBodyPartHealth(BodyPart).Current;
@@ -156,7 +156,7 @@ namespace RealismMod
 
                 if (HpRegened >= maxHpRegen || currentHp == maxHp)
                 {
-                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Surgical Kit Health Regeneration On " + BodyPart + " Has Expired", EFT.Communications.ENotificationDurationType.Long);
+                    if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Surgical Kit Health Regeneration On " + BodyPart + " Has Expired", EFT.Communications.ENotificationDurationType.Long);
                     Duration = 0;
                     return;
                 }
@@ -500,9 +500,9 @@ namespace RealismMod
                 TimeExisted++;
                 if (TimeExisted % 3 == 0 && HazardTracker.TotalToxicity >= 50f)
                 {
-                    for (int i = 0; i < RealHealthController.BodyParts.Length; i++)
+                    for (int i = 0; i < RealHealthController.BodyPartsArr.Length; i++)
                     {
-                        EBodyPart bodyPart = RealHealthController.BodyParts[i];
+                        EBodyPart bodyPart = RealHealthController.BodyPartsArr[i];
                         float baseDrainRate = GetDrainRate();
                         baseDrainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
                         _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 2f, baseDrainRate, null);
@@ -558,9 +558,9 @@ namespace RealismMod
                 TimeExisted++;
                 if (TimeExisted % 3 == 0 && HazardTracker.TotalRadiation >= 80f)
                 {
-                    for (int i = 0; i < RealHealthController.BodyParts.Length; i++)
+                    for (int i = 0; i < RealHealthController.BodyPartsArr.Length; i++)
                     {
-                        EBodyPart bodyPart = RealHealthController.BodyParts[i];
+                        EBodyPart bodyPart = RealHealthController.BodyPartsArr[i];
                         float baseDrainRate = GetDrainRate();
                         baseDrainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
                         _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 2f, baseDrainRate, null);
@@ -689,7 +689,7 @@ namespace RealismMod
                 if (!_hasRemovedTrnqt && (StimType == EStimType.Regenerative || StimType == EStimType.Clotting))
                 {
                     RealHealthController.RemoveEffectsOfType(EHealthEffectType.Tourniquet);
-                    if (Plugin.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Removing Tourniquet Effects Due To Stim Type: " + StimType, EFT.Communications.ENotificationDurationType.Long);
+                    if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Removing Tourniquet Effects Due To Stim Type: " + StimType, EFT.Communications.ENotificationDurationType.Long);
                     _hasRemovedTrnqt = true;
                 }
 
@@ -779,7 +779,7 @@ namespace RealismMod
             }
             this._time -= 3f;
             this._resourcePerTick = Plugin.RealHealthController.ResourcePerTick;
-            this.SetHealthRatesPerSecond(0f, -this._resourcePerTick * Plugin.EnergyRateMulti.Value, -this._resourcePerTick * Plugin.HydrationRateMulti.Value, 0f);
+            this.SetHealthRatesPerSecond(0f, -this._resourcePerTick * PluginConfig.EnergyRateMulti.Value, -this._resourcePerTick * PluginConfig.HydrationRateMulti.Value, 0f);
         }
     }
 

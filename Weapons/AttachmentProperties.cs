@@ -116,5 +116,10 @@ namespace RealismMod
         {
             return !Utils.IsConfItemNull(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[19], out float result) ? result : 0f;
         }
+
+        public static float ModFlashSuppression(Mod mod)
+        {
+            return !Utils.IsConfItemNull(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[20], out float result) ? result : 0f;
+        }
     }
 }

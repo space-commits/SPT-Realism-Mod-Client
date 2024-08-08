@@ -12,7 +12,7 @@ namespace RealismMod
 {
     public static class StatCalc
     {
-        public const float convVRecoilConversion = -0.75f;
+        public const float convVRecoilConversion = -0.82f;
 
         public const float ErgoWeightMult = 13.5f;
         public const float ErgoTorqueMult = 0.8f;
@@ -64,7 +64,7 @@ namespace RealismMod
             PlayerState.TotalModifiedWeightMinusWeapon = playerWeight - weaponWeight;
             PlayerState.TotalMousePenalty = (-playerWeight / 10f);
             PlayerState.TotalModifiedWeight = playerWeight;
-            if (Plugin.EnableMouseSensPenalty.Value)
+            if (PluginConfig.EnableMouseSensPenalty.Value)
             {
                 player.RemoveMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor);
                 if (PlayerState.TotalMousePenalty < 0f)
@@ -133,7 +133,7 @@ namespace RealismMod
 
             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(pwa, aimSpeed);
 
-            if (Plugin.EnableLogging.Value == true)
+            if (PluginConfig.EnableLogging.Value == true)
             {
                 Utils.Logger.LogWarning("========UpdateWeaponVariables=======");
                 Utils.Logger.LogWarning("total ergo = " + WeaponStats.TotalErgo);
@@ -301,7 +301,14 @@ namespace RealismMod
         }
 
 
-        public static void ModStatCalc(Mod mod, float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeedMod, float modReload, ref float currentReloadSpeedMod, float modFix, ref float currentFixSpeedMod, float modErgo, ref float currentErgo, float modVRecoil, ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeedMod, float modChamber, bool isDisplayDelta, string weapClass, ref float pureErgo, float modShotDisp, ref float currentShotDisp, float modloudness, ref float currentLoudness, ref float currentMalfChance, float modMalfChance, ref float pureRecoil, ref float currentConv, float modConv, ref float currentCamReturnSpeed, bool isChonker)
+        public static void ModStatCalc(Mod mod, float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, 
+            float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, 
+            ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeedMod, float modReload, 
+            ref float currentReloadSpeedMod, float modFix, ref float currentFixSpeedMod, float modErgo, ref float currentErgo, float modVRecoil,
+            ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeedMod, float modChamber, bool isDisplayDelta,
+            string weapClass, ref float pureErgo, float modShotDisp, ref float currentShotDisp, float modloudness, ref float currentLoudness, 
+            ref float currentMalfChance, float modMalfChance, ref float pureRecoil, ref float currentConv, float modConv, ref float currentCamReturnSpeed, bool isChonker,
+            ref float currentFlashSuppression, float modFlashSuppression, ref float currentGas)
         {
             float ergoWeightFactor = WeightStatCalc(StatCalc.ErgoWeightMult, isChonker ? modWeight * 0.5f : modWeight) / 100f;
             float vRecoilWeightFactor = WeightStatCalc(StatCalc.VRecoilWeightMult, modWeight) / 100f;
@@ -334,6 +341,9 @@ namespace RealismMod
             currentChamberSpeedMod = currentChamberSpeedMod + modChamber;
             currentFixSpeedMod = currentFixSpeedMod + modFix;
             currentLoudness = currentLoudness + modloudness;
+            if (!Utils.IsMuzzleCombo(mod) && !Utils.IsFlashHider(mod) && !Utils.IsBarrel(mod)) currentGas = currentGas + modFlashSuppression;
+            else currentFlashSuppression = currentFlashSuppression + modFlashSuppression;
+
 
             if (Utils.IsSilencer(mod))
             {
@@ -352,7 +362,7 @@ namespace RealismMod
         }
 
 
-        public static void ModConditionalStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, ref string position, ref float modChamber, ref float modLoudness, ref float modMalfChance, ref float modDuraBurn, ref float modConv)
+        public static void ModConditionalStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, ref string position, ref float modChamber, ref float modLoudness, ref float modMalfChance, ref float modDuraBurn, ref float modConv, ref float modFlash)
         {
             Mod parent = null;
             if (mod?.Parent?.Container?.ParentItem != null)
@@ -364,6 +374,10 @@ namespace RealismMod
             {
                 if (folded)
                 {
+                    modDuraBurn = 1;
+                    modMalfChance = 0;
+                    modAutoROF = 0;
+                    modSemiROF = 0;
                     modConv = 0;
                     modVRecoil = 0;
                     modHRecoil = 0;
@@ -403,6 +417,7 @@ namespace RealismMod
                         }
                         if (modType == "buffer_stock")
                         {
+                            modConv = 0;
                             modAutoROF = 0;
                             modSemiROF = 0;
                             modDuraBurn = 1;
@@ -523,6 +538,7 @@ namespace RealismMod
                     modDispersion *= 0.1f;
                     modAngle *= 0.1f;
                     modLoudness = 0f;
+                    modFlash = 0f;
                 }
                 return;
             }
@@ -571,6 +587,7 @@ namespace RealismMod
                         modDispersion *= 0.1f;
                         modAngle *= 0.1f;
                         modLoudness = 0f;
+                        modFlash = 0f;
                     }
                 }
                 return;
@@ -589,6 +606,7 @@ namespace RealismMod
                         modDispersion *= 0.1f;
                         modAngle *= 0.1f;
                         modLoudness = 0f;
+                        modFlash = 0f;
                     }
                 }
                 return;
@@ -722,121 +740,11 @@ namespace RealismMod
                     {
                         if (parentMod.Slots[i].ContainedItem != null)
                         {
-                            StatCalc.bufferSlotModifier(i, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
+                            StatCalc.BufferSlotModifier(i, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
                             return;
                         }
                     }
                 }
-            }
-        }
-
-        private static void bufferSlotModifier(int position, ref float modVRecoil, ref float modHRecoil, ref float modDispersion, ref float modCamRecoil, ref float modErgo)
-        {
-            switch (position)
-            {
-                case 0:
-                    modVRecoil *= 0.5f;
-                    modHRecoil *= 0.5f;
-                    modDispersion *= 0.5f;
-                    modCamRecoil *= 0.5f;
-                    modErgo *= 1.5f;
-                    break;
-                case 1:
-                    modVRecoil *= 0.75f;
-                    modHRecoil *= 0.75f;
-                    modDispersion *= 0.75f;
-                    modCamRecoil *= 0.75f;
-                    modErgo *= 1.25f;
-                    break;
-                case 2:
-                    modVRecoil *= 1f;
-                    modHRecoil *= 1f;
-                    modDispersion *= 1f;
-                    modCamRecoil *= 1f;
-                    modErgo *= 1f;
-                    break;
-                case 3:
-                    modVRecoil *= 1.25f;
-                    modHRecoil *= 1.25f;
-                    modDispersion *= 1.25f;
-                    modCamRecoil *= 1.25f;
-                    modErgo *= 0.75f;
-                    break;
-                default:
-                    modVRecoil *= 1f;
-                    modHRecoil *= 1f;
-                    modDispersion *= 1f;
-                    modCamRecoil *= 1f;
-                    modErgo *= 1f;
-                    break;
-            }
-        }
-
-        public static float CaliberLoudnessFactor(string caliber)
-        {
-            switch (caliber)
-            {
-                case "9x18PM":
-                    return 2.2f;
-                case "57x28":
-                    return 2.4f;
-                case "46x30":
-                    return 2.3f;
-                case "9x21":
-                    return 2.35f;
-                case "762x25TT":
-                    return 2.55f;
-                case "1143x23ACP":
-                    return 2.3f;
-                case "9x19PARA":
-                    return 2.4f;
-                case "9x33R":
-                    return 3.3f;
-
-                case "762x35":
-                    return 2f;
-                case "9x39":
-                    return 1.9f;
-
-                case "762x39":
-                    return 2.6f;
-                case "545x39":
-                    return 2.63f;
-                case "556x45NATO":
-                    return 2.65f;
-                case "366TKM":
-                    return 2.68f;
-
-                case "762x51":
-                    return 2.8f;
-                case "762x54R":
-                    return 2.82f;
-                case "68x51":
-                    return 3f;
-
-
-                case "127x55":
-                    return 3.8f;
-                case "86x70":
-                    return 4f;
-                case "127x108":
-                    return 4f;
-                    
-                case "23x75":
-                    return 3.35f;
-                case "12g":
-                    return 3f;
-                case "20g":
-                    return 2.9f;
-
-                case "30x29":
-                    return 2.4f;
-                case "40x46":
-                    return 2.5f;
-                case "40x53":
-                    return 2.5f;
-                default:
-                    return 1f;
             }
         }
 
@@ -884,6 +792,386 @@ namespace RealismMod
                     break;
             }
             return torque;
+        }
+
+        private static void BufferSlotModifier(int position, ref float modVRecoil, ref float modHRecoil, ref float modDispersion, ref float modCamRecoil, ref float modErgo)
+        {
+            switch (position)
+            {
+                case 0:
+                    modVRecoil *= 0.5f;
+                    modHRecoil *= 0.5f;
+                    modDispersion *= 0.5f;
+                    modCamRecoil *= 0.5f;
+                    modErgo *= 1.5f;
+                    break;
+                case 1:
+                    modVRecoil *= 0.75f;
+                    modHRecoil *= 0.75f;
+                    modDispersion *= 0.75f;
+                    modCamRecoil *= 0.75f;
+                    modErgo *= 1.25f;
+                    break;
+                case 2:
+                    modVRecoil *= 1f;
+                    modHRecoil *= 1f;
+                    modDispersion *= 1f;
+                    modCamRecoil *= 1f;
+                    modErgo *= 1f;
+                    break;
+                case 3:
+                    modVRecoil *= 1.25f;
+                    modHRecoil *= 1.25f;
+                    modDispersion *= 1.25f;
+                    modCamRecoil *= 1.25f;
+                    modErgo *= 0.75f;
+                    break;
+                default:
+                    modVRecoil *= 1f;
+                    modHRecoil *= 1f;
+                    modDispersion *= 1f;
+                    modCamRecoil *= 1f;
+                    modErgo *= 1f;
+                    break;
+            }
+        }
+
+        public static float CaliberSmoke(string caliber)
+        {
+            switch (caliber)
+            {
+                case "9x18PM":
+                    return 0.4f;
+                case "57x28":
+                    return 0.4f;
+                case "46x30":
+                    return 0.35f;
+                case "9x21":
+                    return 0.45f;
+                case "762x25TT":
+                    return 0.5f;
+                case "1143x23ACP":
+                    return 0.45f;
+                case "9x19PARA":
+                    return 0.425f;
+                case "9x33R":
+                    return 1f;
+
+                case "762x35":
+                    return 0.5f;
+                case "9x39":
+                    return 0.45f;
+
+                case "762x39":
+                    return 0.65f;
+                case "545x39":
+                    return 0.5f;
+                case "556x45NATO":
+                    return 0.5f;
+                case "366TKM":
+                    return 0.9f;
+
+                case "762x51":
+                    return 0.8f;
+                case "762x54R":
+                    return 0.9f;
+                case "68x51":
+                    return 0.85f;
+
+                case "127x55":
+                    return 1.2f;
+                case "86x70":
+                    return 1.35f;
+                case "127x108":
+                    return 1.5f;
+
+                case "23x75":
+                    return 1.2f;
+                case "12g":
+                    return 1f;
+                case "20g":
+                    return 0.8f;
+
+                case "30x29":
+                    return 1f;
+                case "40x46":
+                    return 1f;
+                case "40x53":
+                    return 1f;
+                default:
+                    return 0.5f;
+            }
+        }
+
+        public static float CaliberFlame(string caliber)
+        {
+            switch (caliber)
+            {
+                case "9x18PM":
+                    return 0.05f;
+                case "57x28":
+                    return 0.065f;
+                case "46x30":
+                    return 0.055f;
+                case "9x21":
+                    return 0.055f;
+                case "762x25TT":
+                    return 0.065f;
+                case "1143x23ACP":
+                    return 0.05f;
+                case "9x19PARA":
+                    return 0.06f;
+                case "9x33R":
+                    return 0.2f;
+
+                case "762x35":
+                    return 0.07f;
+                case "9x39":
+                    return 0.065f;
+
+                case "762x39":
+                    return 0.1f;
+                case "545x39":
+                    return 0.09f;
+                case "556x45NATO":
+                    return 0.09f;
+                case "366TKM":
+                    return 0.1f;
+
+                case "762x51":
+                    return 0.15f;
+                case "762x54R":
+                    return 0.14f;
+                case "68x51":
+                    return 0.12f;
+
+
+                case "127x55":
+                    return 0.13f;
+                case "86x70":
+                    return 0.19f;
+                case "127x108":
+                    return 0.22f;
+
+                case "23x75":
+                    return 0.14f;
+                case "12g":
+                    return 0.12f;
+                case "20g":
+                    return 0.1f;
+
+                case "30x29":
+                    return 0.06f;
+                case "40x46":
+                    return 0.06f;
+                case "40x53":
+                    return 0.06f;
+                default:
+                    return 0.05f;
+            }
+        }
+
+        public static int CaliberSparks(string caliber)
+        {
+            switch (caliber)
+            {
+                case "9x18PM":
+                    return 0;
+                case "57x28":
+                    return 1;
+                case "46x30":
+                    return 0;
+                case "9x21":
+                    return 2;
+                case "762x25TT":
+                    return 3;
+                case "1143x23ACP":
+                    return 1;
+                case "9x19PARA":
+                    return 2;
+                case "9x33R":
+                    return 10;
+
+                case "762x35":
+                    return 0;
+                case "9x39":
+                    return 0;
+
+                case "762x39":
+                    return 4;
+                case "545x39":
+                    return 3;
+                case "556x45NATO":
+                    return 3;
+                case "366TKM":
+                    return 2;
+
+                case "762x51":
+                    return 5;
+                case "762x54R":
+                    return 5;
+                case "68x51":
+                    return 4;
+
+                case "127x55":
+                    return 4;
+                case "86x70":
+                    return 6;
+                case "127x108":
+                    return 7;
+
+                case "23x75":
+                    return 3;
+                case "12g":
+                    return 2;
+                case "20g":
+                    return 1;
+
+                case "30x29":
+                    return 0;
+                case "40x46":
+                    return 0;
+                case "40x53":
+                    return 0;
+                default:
+                    return 0;
+            }
+        }
+
+
+        public static int CaliberMuzzleFlash(string caliber)
+        {
+            switch (caliber)
+            {
+                case "9x18PM":
+                    return 10;
+                case "57x28":
+                    return 12;
+                case "46x30":
+                    return 11;
+                case "9x21":
+                    return 13;
+                case "762x25TT":
+                    return 14;
+                case "1143x23ACP":
+                    return 12;
+                case "9x19PARA":
+                    return 13;
+                case "9x33R":
+                    return 30;
+
+                case "762x35":
+                    return 12;
+                case "9x39":
+                    return 11;
+
+                case "762x39":
+                    return 16;
+                case "545x39":
+                    return 15;
+                case "556x45NATO":
+                    return 15;
+                case "366TKM":
+                    return 17;
+
+                case "762x51":
+                    return 23;
+                case "762x54R":
+                    return 23;
+                case "68x51":
+                    return 22;
+
+
+                case "127x55":
+                    return 25;
+                case "86x70":
+                    return 30;
+                case "127x108":
+                    return 35;
+
+                case "23x75":
+                    return 19;
+                case "12g":
+                    return 14;
+                case "20g":
+                    return 12;
+
+                case "30x29":
+                    return 8;
+                case "40x46":
+                    return 8;
+                case "40x53":
+                    return 8;
+                default:
+                    return 12;
+            }
+        }
+
+        public static float CaliberLoudnessFactor(string caliber)
+        {
+            switch (caliber)
+            {
+                case "9x18PM":
+                    return 2.2f;
+                case "57x28":
+                    return 2.4f;
+                case "46x30":
+                    return 2.3f;
+                case "9x21":
+                    return 2.35f;
+                case "762x25TT":
+                    return 2.55f;
+                case "1143x23ACP":
+                    return 2.3f;
+                case "9x19PARA":
+                    return 2.4f;
+                case "9x33R":
+                    return 3.3f;
+
+                case "762x35":
+                    return 2f;
+                case "9x39":
+                    return 1.9f;
+
+                case "762x39":
+                    return 2.6f;
+                case "545x39":
+                    return 2.63f;
+                case "556x45NATO":
+                    return 2.65f;
+                case "366TKM":
+                    return 2.68f;
+
+                case "762x51":
+                    return 2.8f;
+                case "762x54R":
+                    return 2.82f;
+                case "68x51":
+                    return 3f;
+
+                case "127x55":
+                    return 3.8f;
+                case "86x70":
+                    return 4f;
+                case "127x108":
+                    return 4f;
+                    
+                case "23x75":
+                    return 3.35f;
+                case "12g":
+                    return 3f;
+                case "20g":
+                    return 2.9f;
+
+                case "30x29":
+                    return 2.4f;
+                case "40x46":
+                    return 2.5f;
+                case "40x53":
+                    return 2.5f;
+                default:
+                    return 1f;
+            }
         }
     }
 }

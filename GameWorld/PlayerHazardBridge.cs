@@ -45,12 +45,40 @@ namespace RealismMod
         private float _bridgeTimer = 0f;
         private const float Interval = 10f;
 
-        private bool BotHasGasMask() 
+        private bool BotHasGasmask() 
         {
             if (_Player?.Inventory == null || _Player?.Equipment == null) return true;
             Item containedItem = _Player.Inventory?.Equipment?.GetSlot(EquipmentSlot.FaceCover)?.ContainedItem;
             if (containedItem == null) return false;
             return GearStats.IsGasMask(containedItem);
+        }
+
+        private void HandleGas(bool hasGasmask) 
+        {
+            if (GasZoneCount > 0 && _Player != null && _Player?.ActiveHealthController != null && _Player?.AIData?.BotOwner != null && !_Player.AIData.BotOwner.IsDead && _Player.HealthController.IsAlive)
+            {
+                if (!hasGasmask && TotalGasRate > 0.05f)
+                {
+                    _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, TotalGasRate * Interval * 0.75f, ExistanceClass.PoisonDamage);
+
+                    if (_Player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Chest).Current <= 110f)
+                    {
+                        _Player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
+                    }
+                }
+            }
+        }
+
+        private void HandleRads(bool hasGasmask) 
+        {
+            if (RadZoneCount > 0 && _Player != null && _Player?.ActiveHealthController != null && _Player?.AIData?.BotOwner != null && !_Player.AIData.BotOwner.IsDead && _Player.HealthController.IsAlive)
+            {
+                float realRadRate = hasGasmask ? TotalRadRate * 0.5f : TotalRadRate;
+                if (realRadRate > 0.5f)
+                {
+                    _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, realRadRate * Interval, ExistanceClass.RadiationDamage);
+                }
+            }
         }
 
         //for bots
@@ -60,18 +88,9 @@ namespace RealismMod
             if (_bridgeTimer >= Interval)
             {
                 //temporary solution to dealing with bots
-                if (GasZoneCount > 0 && _Player != null && _Player?.ActiveHealthController != null && _Player?.AIData?.BotOwner != null && !_Player.AIData.BotOwner.IsDead && _Player.HealthController.IsAlive)
-                {
-                    if (!BotHasGasMask() && TotalGasRate > 0.05f)
-                    {
-                        _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, TotalGasRate * Interval * 0.75f, ExistanceClass.PoisonDamage);
-         
-                        if (_Player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Chest).Current <= 110f) 
-                        {
-                            _Player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
-                        }
-                    }
-                }
+                bool hasGasmask = BotHasGasmask();
+                HandleGas(hasGasmask);
+                HandleRads(hasGasmask);
                 _bridgeTimer = 0f;
             }
         }

@@ -33,7 +33,7 @@ namespace RealismMod
 
         private static bool ShouldSpawnZone(float zoneProbability) 
         {
-            if(Plugin.ZoneDebug.Value) return true;
+            if(PluginConfig.ZoneDebug.Value) return true;
 
             if (!Plugin.FikaPresent) 
             {
@@ -63,9 +63,9 @@ namespace RealismMod
             T hazard = hazardZone.AddComponent<T>();
 
             float strengthModifier = 1f;
-            if (hazard.ZoneType == EZoneType.Toxic)
+            if (hazard.ZoneType == EZoneType.Toxic && (!Plugin.FikaPresent && !PluginConfig.ZoneDebug.Value))
             { 
-               strengthModifier = Plugin.FikaPresent || Plugin.ZoneDebug.Value ? 1f : UnityEngine.Random.Range(0.9f, 1.25f); 
+               strengthModifier = UnityEngine.Random.Range(0.9f, 1.25f); 
             } 
             hazard.ZoneStrengthModifier = zone.Value.strength * strengthModifier;
 
@@ -86,7 +86,7 @@ namespace RealismMod
             boxCollider.size = size;
 
             // visual representation for debugging
-            if (Plugin.ZoneDebug.Value)
+            if (PluginConfig.ZoneDebug.Value)
             {
                 GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 visualRepresentation.name = zoneName + "Visual";
@@ -101,13 +101,13 @@ namespace RealismMod
 
         public static void DebugZones()
         {
-            string targetZone = Plugin.TargetZone.Value;
+            string targetZone = PluginConfig.TargetZone.Value;
             GameObject gasZone = GameObject.Find(targetZone);
             if (gasZone == null)
             {
                 gasZone = new GameObject(targetZone);
-                gasZone.transform.position = new Vector3(Plugin.test4.Value, Plugin.test5.Value, Plugin.test6.Value);
-                gasZone.transform.rotation = Quaternion.Euler(new Vector3(Plugin.test7.Value, Plugin.test8.Value, Plugin.test9.Value));
+                gasZone.transform.position = new Vector3(PluginConfig.test4.Value, PluginConfig.test5.Value, PluginConfig.test6.Value);
+                gasZone.transform.rotation = Quaternion.Euler(new Vector3(PluginConfig.test7.Value, PluginConfig.test8.Value, PluginConfig.test9.Value));
 
                 EFT.Interactive.TriggerWithId trigger = gasZone.AddComponent<EFT.Interactive.TriggerWithId>();
                 trigger.SetId(targetZone);
@@ -117,7 +117,7 @@ namespace RealismMod
 
                 BoxCollider boxCollider = gasZone.AddComponent<BoxCollider>();
                 boxCollider.isTrigger = true;
-                boxCollider.size = new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value);
+                boxCollider.size = new Vector3(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value);
 
                 // visual representation for debugging
                 GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -136,10 +136,10 @@ namespace RealismMod
             }
             else
             {
-                gasZone.transform.position = new Vector3(Plugin.test4.Value, Plugin.test5.Value, Plugin.test6.Value);
-                gasZone.transform.rotation = Quaternion.Euler(new Vector3(Plugin.test7.Value, Plugin.test8.Value, Plugin.test9.Value));
+                gasZone.transform.position = new Vector3(PluginConfig.test4.Value, PluginConfig.test5.Value, PluginConfig.test6.Value);
+                gasZone.transform.rotation = Quaternion.Euler(new Vector3(PluginConfig.test7.Value, PluginConfig.test8.Value, PluginConfig.test9.Value));
                 BoxCollider boxCollider = gasZone.GetComponent<BoxCollider>();
-                boxCollider.size = new Vector3(Plugin.test1.Value, Plugin.test2.Value, Plugin.test3.Value);
+                boxCollider.size = new Vector3(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value);
 
                 GameObject visualRepresentation = GameObject.Find(targetZone + "Visual");
                 visualRepresentation.transform.parent = gasZone.transform;

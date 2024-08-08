@@ -196,7 +196,7 @@ namespace RealismMod
 
         public static void AddCustomAttributes(AmmoTemplate ammoTemplate, ref List<ItemAttributeClass> ammoAttributes)
         {
-            if (Plugin.EnableAmmoStats.Value == true)
+            if (PluginConfig.EnableAmmoStats.Value == true)
             {
                 float fireRate = (float)Math.Round((ammoTemplate.casingMass - 1) * 100, 2);
                 if (fireRate != 0)
@@ -457,6 +457,7 @@ namespace RealismMod
             float conv = AttachmentProperties.ModConvergence(__instance);
             float meleeDmg = AttachmentProperties.ModMeleeDamage(__instance);
             float meleePen = AttachmentProperties.ModMeleePen(__instance);
+            float muzzleFlash = AttachmentProperties.ModFlashSuppression(__instance);
 
             if (Plugin.ServerConfig.malf_changes == true)
             {
@@ -479,6 +480,20 @@ namespace RealismMod
                 canADSAttAttClass.StringValue = () => "";
                 canADSAttAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                 Utils.SafelyAddAttributeToList(canADSAttAttClass, __instance);
+            }
+
+            if (muzzleFlash != 0f && PluginConfig.EnableMuzzleEffects.Value)
+            {
+                bool isGasReduction = !Utils.IsMuzzleCombo(__instance) && !Utils.IsFlashHider(__instance) && !Utils.IsBarrel(__instance);
+                float flashValue = muzzleFlash * (isGasReduction ? 1f : -1f);
+                ItemAttributeClass flashAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.MuzzleFlash);
+                flashAtt.Name = isGasReduction ? "Gas" : ENewItemAttributeId.MuzzleFlash.GetName();
+                flashAtt.Base = () => flashValue;
+                flashAtt.StringValue = () => $"{flashValue}%";
+                flashAtt.LessIsGood = isGasReduction ? true : false;
+                flashAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
+                flashAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
+                Utils.SafelyAddAttributeToList(flashAtt, __instance);
             }
 
             ItemAttributeClass hRecoilAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.HorizontalRecoil);
@@ -665,7 +680,7 @@ namespace RealismMod
         private static void PatchPostfix(Weapon __instance, string id, WeaponTemplate template)
         {
 
-            if (Plugin.ShowBalance.Value == true)
+            if (PluginConfig.ShowBalance.Value == true)
             {
                 List<ItemAttributeClass> balanceAttList = __instance.Attributes;
                 StatAttributeClass balanceAtt = new StatAttributeClass((EItemAttributeId)ENewItemAttributeId.Balance);
@@ -680,7 +695,7 @@ namespace RealismMod
 
             }
 
-            if (Plugin.ShowDispersion.Value == true)
+            if (PluginConfig.ShowDispersion.Value == true)
             {
                 List<ItemAttributeClass> dispersionAttList = __instance.Attributes;
                 StatAttributeClass dispersionAtt = new StatAttributeClass((EItemAttributeId)ENewItemAttributeId.Dispersion);
@@ -694,7 +709,7 @@ namespace RealismMod
                 dispersionAttList.Add(dispersionAtt);
             }
 
-            if (Plugin.ShowCamRecoil.Value == true)
+            if (PluginConfig.ShowCamRecoil.Value == true)
             {
                 List<ItemAttributeClass> camRecoilAttList = __instance.Attributes;
                 StatAttributeClass camRecoilAtt = new StatAttributeClass((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
@@ -708,7 +723,7 @@ namespace RealismMod
                 camRecoilAttList.Add(camRecoilAtt);
             }
 
-            if (Plugin.ShowRecoilAngle.Value == true)
+            if (PluginConfig.ShowRecoilAngle.Value == true)
             {
                 List<ItemAttributeClass> recoilAngleAttList = __instance.Attributes;
                 ItemAttributeClass recoilAngleAtt = new ItemAttributeClass(ENewItemAttributeId.RecoilAngle);
@@ -719,7 +734,7 @@ namespace RealismMod
                 recoilAngleAttList.Add(recoilAngleAtt);
             }
 
-            if (Plugin.ShowSemiROF.Value == true)
+            if (PluginConfig.ShowSemiROF.Value == true)
             {
                 List<ItemAttributeClass> semiROFAttList = __instance.Attributes;
                 ItemAttributeClass semiROFAtt = new ItemAttributeClass(ENewItemAttributeId.SemiROF);
@@ -969,8 +984,9 @@ namespace RealismMod
 
             string weapOpType = WeaponStats.OperationType(__instance);
             string weapType = WeaponStats.WeaponType(__instance);
-
             float currentLoudness = 0;
+            float currentFlashSuppression = 0;
+            float currentGas = 0;
 
             bool stockAllowsFSADS = false;
 
@@ -1007,19 +1023,21 @@ namespace RealismMod
                 float modMalfChance = 0f;
                 float modDuraBurn = 0f;
                 float modFix = 0f;
+                float modFlashSuppression = 0f;
                 string modType = AttachmentProperties.ModType(mod);
                 string position = StatCalc.GetModPosition(mod, weapType, weapOpType, modType);
                 StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, 
                     ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, 
                     ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, 
-                    ref modMalfChance, ref modDuraBurn, ref modConv);
+                    ref modMalfChance, ref modDuraBurn, ref modConv, ref modFlashSuppression);
                 StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, 
                     modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, 
                     modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, 
                     ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil,
                     modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, true, __instance.WeapClass, 
                     ref pureErgo, 0, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, 
-                    modMalfChance, ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, isChonker);
+                    modMalfChance, ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, isChonker,
+                    ref currentFlashSuppression, 0f, ref currentGas);
             }
 
 

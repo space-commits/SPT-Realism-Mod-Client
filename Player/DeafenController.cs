@@ -83,20 +83,20 @@ namespace RealismMod
 
             if (RecoilController.IsFiringDeafen)
             {
-                ChangeDeafValues(deafFactor, ref VignetteDarkness, Plugin.VigRate.Value, totalVigLimit, ref Volume, Plugin.DeafRate.Value, VolumeLimit, enviroMulti);
+                ChangeDeafValues(deafFactor, ref VignetteDarkness, PluginConfig.VigRate.Value, totalVigLimit, ref Volume, PluginConfig.DeafRate.Value, VolumeLimit, enviroMulti);
             }
             else if (!valuesAreReset)
             {
-                ResetDeafValues(ref VignetteDarkness, Plugin.VigReset.Value, totalVigLimit, ref Volume, Plugin.DeafReset.Value, VolumeLimit);
+                ResetDeafValues(ref VignetteDarkness, PluginConfig.VigReset.Value, totalVigLimit, ref Volume, PluginConfig.DeafReset.Value, VolumeLimit);
             }
 
             if (IsBotFiring)
             {
-                ChangeDeafValues(botDeafFactor, ref BotVignetteDarkness, Plugin.VigRate.Value, totalVigLimit, ref BotVolume, Plugin.DeafRate.Value, VolumeLimit, enviroMulti);
+                ChangeDeafValues(botDeafFactor, ref BotVignetteDarkness, PluginConfig.VigRate.Value, totalVigLimit, ref BotVolume, PluginConfig.DeafRate.Value, VolumeLimit, enviroMulti);
             }
             else if (!valuesAreReset)
             {
-                ResetDeafValues(ref BotVignetteDarkness, Plugin.VigReset.Value, totalVigLimit, ref BotVolume, Plugin.DeafReset.Value, VolumeLimit);
+                ResetDeafValues(ref BotVignetteDarkness, PluginConfig.VigReset.Value, totalVigLimit, ref BotVolume, PluginConfig.DeafReset.Value, VolumeLimit);
             }
 
             if (GrenadeExploded)
@@ -111,8 +111,8 @@ namespace RealismMod
             float totalVolume = Mathf.Clamp(Volume + BotVolume + GrenadeVolume, -40.0f, 0.0f);
             float totalVignette = Mathf.Clamp(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 0.0f, 65.0f);
 
-            float ambientGainMulti = 2f * (1f - Mathf.InverseLerp(0f, 30f, Plugin.RealTimeGain.Value));
-            float headsetAmbientVol = (DeafeningController.AmbientVolume * ambientGainMulti) + Plugin.HeadsetAmbientMulti.Value;
+            float ambientGainMulti = 2f * (1f - Mathf.InverseLerp(0f, 30f, PluginConfig.RealTimeGain.Value));
+            float headsetAmbientVol = (DeafeningController.AmbientVolume * ambientGainMulti) + PluginConfig.HeadsetAmbientMulti.Value;
 
             if (totalVolume != 0.0f || totalVignette != 0.0f)
             {
@@ -144,12 +144,12 @@ namespace RealismMod
 
             if (DeafeningController.HasHeadSet && (RecoilController.IsFiringDeafen || GrenadeVolume > 0f || BotVolume > 0f))
             {
-                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value * Plugin.GainCutoff.Value);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol * (1f + (1f - Plugin.GainCutoff.Value)));
+                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", PluginConfig.RealTimeGain.Value * PluginConfig.GainCutoff.Value);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol * (1f + (1f - PluginConfig.GainCutoff.Value)));
             }
             else if (DeafeningController.HasHeadSet)
             {
-                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", Plugin.RealTimeGain.Value);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", PluginConfig.RealTimeGain.Value);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol);
             }
 

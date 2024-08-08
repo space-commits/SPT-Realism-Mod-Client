@@ -127,7 +127,7 @@ namespace RealismMod
                 }
             }
 
-            if (Plugin.EnableLogging.Value)
+            if (PluginConfig.EnableLogging.Value)
             {
                 Utils.Logger.LogWarning("==================");
                 Utils.Logger.LogWarning("Total Modified Weight " + modifiedWeight);
@@ -266,12 +266,12 @@ namespace RealismMod
             HandleGasMaskEffects(player, hasGasMask, gasProtection, radProtection);
 
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
-            if (fc != null)
+            if (fc != null && Plugin.ServerConfig.recoil_attachment_overhaul)
             {
                 StatCalc.UpdateAimParameters(fc, player.ProceduralWeaponAnimation);
             }
 
-            if (Plugin.EnableLogging.Value)
+            if (PluginConfig.EnableLogging.Value)
             {
                 Utils.Logger.LogWarning("gear speed " + PlayerState.GearSpeedPenalty);
                 Utils.Logger.LogWarning("gear ergo " + PlayerState.GearErgoPenalty);

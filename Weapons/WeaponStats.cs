@@ -182,6 +182,7 @@ namespace RealismMod
 
         public static string _WeapClass = "";
 
+        public static bool IsPistol = false;
         public static bool IsStocklessPistol = false;
         public static bool IsStockedPistol = false;
         public static bool IsBullpup = false;
@@ -231,6 +232,20 @@ namespace RealismMod
 
         public static float TotalModdedConv = 0f;
         public static float ConvergenceDelta = 0f;
+
+        public static float VelocityDelta = 0f;
+
+        public static string Caliber = "";
+
+        public static float MuzzleLoudness = 0f;
+
+        public static float TotalMuzzleFlash = 0f;
+        public static float TotalGas = 0f;
+
+        public static bool HasMuzzleDevice = false;
+        public static bool HasSuppressor = false;
+
+        public static bool IsDirectImpingement = false;
 
         public static float InitDispersion = 0f;
 

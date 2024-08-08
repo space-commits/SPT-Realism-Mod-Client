@@ -187,7 +187,7 @@ namespace RealismMod
                 float durability = __instance.Item.Repairable.Durability / (float)__instance.Item.Repairable.TemplateDurability * 100f;
                 weaponDurability = Mathf.Floor(durability);
 
-                if (weaponDurability >= Plugin.DuraMalfThreshold.Value)
+                if (weaponDurability >= PluginConfig.DuraMalfThreshold.Value)
                 {
                     magMalfChance *= 0.25f;
                     weaponMalfChance *= 0.25f;
@@ -207,7 +207,7 @@ namespace RealismMod
                 {
                     durabilityMalfChance = (Math.Pow((double)(weaponMalfChance + 1f), Math.Log10(Math.Pow((double)(101f - weaponDurability), (50.0 - Math.Pow((double)weaponDurability, 1.286) / 4.8) / (Math.Pow((double)__instance.Item.FireRate, 0.17) / 2.9815 + 2.1)))) - 1.0) / 1000.0;
                 }
-                if (weaponDurability >= Plugin.DuraMalfThreshold.Value)
+                if (weaponDurability >= PluginConfig.DuraMalfThreshold.Value)
                 {
                     durabilityMalfChance *= 0.25f;
                 }
@@ -225,7 +225,7 @@ namespace RealismMod
                     }
                 }
 
-                durabilityMalfChance *= subFactor * __instance.Item.Buff.MalfunctionProtections * WeaponStats.FireRateDelta;
+                durabilityMalfChance *= subFactor * __instance.Item.Buff.MalfunctionProtections; //* WeaponStats.FireRateDelta
                 durabilityMalfChance = Mathf.Clamp01((float)durabilityMalfChance);
                 float totalMalfChance = Mathf.Clamp01((float)Math.Round(durabilityMalfChance + ((ammoMalfChance + magMalfChance + overheatMalfChance) / 500f), 5));
 

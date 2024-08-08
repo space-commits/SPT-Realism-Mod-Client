@@ -54,27 +54,27 @@ namespace RealismMod
                 case EBodyHitZone.Unknown:
                     break;
                 case EBodyHitZone.AZone:
-                    di.Damage *= 1.7f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 1.7f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 2f;
                     di.LightBleedingDelta *= 2f;
                     return;
                 case EBodyHitZone.CZone:
-                    di.Damage *= 1f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 1f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 1f;
                     di.LightBleedingDelta *= 1f;
                     return;
                 case EBodyHitZone.DZone:
-                    di.Damage *= 0.8f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 0.8f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 0.5f;
                     di.LightBleedingDelta *= 0.8f;
                     return;
                 case EBodyHitZone.Heart:
-                    di.Damage = 120f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage = 120f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 10f;
                     di.LightBleedingDelta *= 10f;
                     return;
                 case EBodyHitZone.Spine:
-                    di.Damage = di.Damage + 80f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage = di.Damage + 80f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 1.5f;
                     di.LightBleedingDelta *= 1.5f;
                     return;
@@ -84,55 +84,55 @@ namespace RealismMod
             {
                 case EBodyPartColliderType.RightCalf:
                 case EBodyPartColliderType.LeftCalf:
-                    di.Damage *= 0.8f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 0.8f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 0.75f;
                     di.LightBleedingDelta *= 0.75f;
                     break;
                 case EBodyPartColliderType.RightThigh:
                 case EBodyPartColliderType.LeftThigh:
-                    di.Damage *= 1f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 1f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 1.3f;
                     di.LightBleedingDelta *= 1.3f;
                     break;
                 case EBodyPartColliderType.RightForearm:
                 case EBodyPartColliderType.LeftForearm:
-                    di.Damage *= 0.75f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 0.75f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 0.55f;
                     di.LightBleedingDelta *= 0.55f;
                     break;
                 case EBodyPartColliderType.LeftUpperArm:
                 case EBodyPartColliderType.RightUpperArm:
-                    di.Damage *= 0.9f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 0.9f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 0.75f;
                     di.LightBleedingDelta *= 0.75f;
                     break;
                 case EBodyPartColliderType.PelvisBack:
                 case EBodyPartColliderType.Pelvis:
-                    di.Damage *= 1.1f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 1.1f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 1.1f;
                     di.LightBleedingDelta *= 1.1f;
                     break;
                 case EBodyPartColliderType.RibcageUp:
                 case EBodyPartColliderType.SpineTop:
-                    di.Damage *= 1f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 1f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 1.15f;
                     di.LightBleedingDelta *= 1.15f;
                     break;
                 case EBodyPartColliderType.RibcageLow:
                 case EBodyPartColliderType.SpineDown:
-                    di.Damage *= 0.9f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 0.9f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 0.95f;
                     di.LightBleedingDelta *= 0.95f;
                     break;
                 case EBodyPartColliderType.LeftSideChestDown:
                 case EBodyPartColliderType.RightSideChestDown:
-                    di.Damage *= 0.9f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 0.9f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 0.9f;
                     di.LightBleedingDelta *= 0.9f;
                     break;
                 case EBodyPartColliderType.LeftSideChestUp:
                 case EBodyPartColliderType.RightSideChestUp:
-                    di.Damage *= 1.15f * Plugin.GlobalDamageModifier.Value;
+                    di.Damage *= 1.15f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 1.25f;
                     di.LightBleedingDelta *= 1.25f;
                     break;
@@ -183,8 +183,8 @@ namespace RealismMod
         public static void PlayBodyHitSound(EBodyPart part, Vector3 pos, int rndNum)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 0.4f * Plugin.FleshHitSoundMulti.Value;
-            float volDist = 2f * Plugin.FleshHitSoundMulti.Value;
+            float volClose = 0.4f * PluginConfig.FleshHitSoundMulti.Value;
+            float volDist = 2f * PluginConfig.FleshHitSoundMulti.Value;
             float distThreshold = 30f;
 
             if (part == EBodyPart.Head)
@@ -214,7 +214,6 @@ namespace RealismMod
                 Collider col = damageInfo.HitCollider;
                 if (damageInfo.HitCollider == null) //fika can't send objects as part of peckets, need to find matching collider by checking collider type
                 {
-                    Utils.Logger.LogWarning("hit collider is null, something is fucked up ");
                     List<Collider> collidors = player.GetComponent<PlayerPoolObject>().Colliders;
                     if (collidors == null || collidors.Count <= 0) return hitZone;
                     int count = collidors.Count;
@@ -237,7 +236,7 @@ namespace RealismMod
                 Vector3 hitNormal = damageInfo.HitNormal;
                 EHitOrientation hitOrientation = HitZones.GetHitOrientation(hitNormal, col.transform);
                 hitZone = HitZones.GetHitBodyZone(localPoint, hitOrientation, partHit);
-                if (Plugin.EnableBallisticsLogging.Value)
+                if (PluginConfig.EnableBallisticsLogging.Value)
                 {
                     Utils.Logger.LogWarning("=========Hitzone Damage Info==========");
                     Utils.Logger.LogWarning("hit collider = " + partHit);
@@ -387,7 +386,7 @@ namespace RealismMod
             float maxSpallingDamage = Mathf.Clamp(factoredSpallingDamage - bluntDamage, 7f, 35f * spallDuraFactor);
             float splitSpallingDmg = maxSpallingDamage / spallingBodyParts.Count;
 
-            if (Plugin.EnableBallisticsLogging.Value)
+            if (PluginConfig.EnableBallisticsLogging.Value)
             {
                 Utils.Logger.LogWarning("===========SPALLING=============== ");
                 Utils.Logger.LogWarning("Spall Reduction " + spallReduction);
@@ -429,7 +428,7 @@ namespace RealismMod
                     bleedFactor *= 0.25f;
                 }
 
-                if (Plugin.EnableBallisticsLogging.Value)
+                if (PluginConfig.EnableBallisticsLogging.Value)
                 {
                     Utils.Logger.LogWarning("==== ");
                     Utils.Logger.LogWarning("Part Hit " + part);
@@ -442,16 +441,16 @@ namespace RealismMod
             }
         }
 
-        private static void ModifyPlateHelper(Collider collider, BoxCollider boxCollider, string target, float x, float y, float z) 
+        private static void ModifyPlateHelper(Collider collider, BoxCollider boxCollider, string colliderName, string target, float x, float y, float z) 
         {
-            if (collider.name.ToLower().Contains(target))
+            if (colliderName.Contains(target))
             {
                 float height = boxCollider.size.x * x;
                 float depth = boxCollider.size.y * y;
                 float width = boxCollider.size.z * z;
                 boxCollider.size = new Vector3(height, depth, width);
 
-                if (Plugin.EnableBallisticsLogging.Value) DebugGizmos.SingleObjects.VisualizeBoxCollider(collider as BoxCollider, collider.name);
+                if (PluginConfig.EnableBallisticsLogging.Value) DebugGizmos.SingleObjects.VisualizeBoxCollider(boxCollider, collider.name);
             }
         }
 
@@ -463,14 +462,15 @@ namespace RealismMod
             for (int i = 0; i < count; i++)
             {
                 Collider collider = collidors[i];
-                if (collider as BoxCollider != null)
+                BoxCollider boxCollider = collider as BoxCollider;
+                if (boxCollider != null)
                 {
-                    BoxCollider boxCollider = collider as BoxCollider;
-                    if (collider.name.ToLower() == "left" || collider.name.ToLower() == "right" || collider.name.ToLower() == "top") boxCollider.size *= 0f;
-                    ModifyPlateHelper(collider, boxCollider, "_chest", 0.95f, 0.95f, 0.9f);
-                    ModifyPlateHelper(collider, boxCollider, "_back", 0.75f, 0.85f, 0.85f);
-                    ModifyPlateHelper(collider, boxCollider, "_side_", 0.8f, 0.95f, 1f);
-                    ModifyPlateHelper(collider, boxCollider, "chesttop", 1.55f, 1f, 1.15f);
+                    string colliderName = collider.name.ToLower();
+                    if (colliderName == "left" || colliderName == "right" || colliderName == "top") boxCollider.size *= 0f;
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "_chest", 0.975f, 0.475f, 0.87f); //height, depth, width
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "_back", 0.78f, 0.58f, 0.83f); //height, depth, width
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "_side_", 0.8f, 1f, 0.7f); //height, width, depth
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "chesttop", 1.55f, 0.9f, 1f);//height, width, depth
                 }
             }
         }
@@ -486,7 +486,7 @@ namespace RealismMod
             {
                 if (localHitNormal.y > 0)
                 {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
+                    if (PluginConfig.EnableBallisticsLogging.Value == true)
                     {
                         Utils.Logger.LogWarning("hit front side of the box collider");
                     }
@@ -494,7 +494,7 @@ namespace RealismMod
                 }
                 else
                 {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
+                    if (PluginConfig.EnableBallisticsLogging.Value == true)
                     {
                         Utils.Logger.LogWarning("hit back side of the box collider");
                     }
@@ -505,7 +505,7 @@ namespace RealismMod
             {
                 if (localHitNormal.x > 0)
                 {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
+                    if (PluginConfig.EnableBallisticsLogging.Value == true)
                     {
                         Utils.Logger.LogWarning("hit bottom side of the box collider");
                     }
@@ -513,7 +513,7 @@ namespace RealismMod
                 }
                 else
                 {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
+                    if (PluginConfig.EnableBallisticsLogging.Value == true)
                     {
                         Utils.Logger.LogWarning("hit top side of the box collider");
                     }
@@ -524,7 +524,7 @@ namespace RealismMod
             {
                 if (localHitNormal.z > 0)
                 {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
+                    if (PluginConfig.EnableBallisticsLogging.Value == true)
                     {
                         Utils.Logger.LogWarning("hit left side of the box collider");
                     }
@@ -532,7 +532,7 @@ namespace RealismMod
                 }
                 else
                 {
-                    if (Plugin.EnableBallisticsLogging.Value == true)
+                    if (PluginConfig.EnableBallisticsLogging.Value == true)
                     {
                         Utils.Logger.LogWarning("hit right side of the box collider");
                     }
@@ -545,7 +545,7 @@ namespace RealismMod
         {
             if (localPoint.z >= -spineZ && localPoint.z <= spineZ && !isSideHit)
             {
-                if (Plugin.EnableBallisticsLogging.Value == true)
+                if (PluginConfig.EnableBallisticsLogging.Value == true)
                 {
                     Utils.Logger.LogWarning("SPINE HIT");
                 }
@@ -587,7 +587,7 @@ namespace RealismMod
                 {
                     if (isSideHit)
                     { 
-                        if (Plugin.EnableBallisticsLogging.Value == true)
+                        if (PluginConfig.EnableBallisticsLogging.Value == true)
                         {
                             Utils.Logger.LogWarning("SIDE HIT");
                         }
@@ -598,7 +598,7 @@ namespace RealismMod
                     {
                         if (hitOrientation == EHitOrientation.BackHit && localPoint.z > -rearNeckZ && localPoint.z < rearNeckZ && localPoint.x < rearNeckX)
                         {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
+                            if (PluginConfig.EnableBallisticsLogging.Value == true)
                             {
                                 Utils.Logger.LogWarning("NECK: BACK HIT (Counting As A-Zone)");
                             }
@@ -607,7 +607,7 @@ namespace RealismMod
 
                         if (localPoint.z <= heartL && localPoint.z >= heartR && localPoint.x >= heartTop && localPoint.x <= heartBottom && !isSideHit)
                         {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
+                            if (PluginConfig.EnableBallisticsLogging.Value == true)
                             {
                                 Utils.Logger.LogWarning("HEART HIT");
                             }
@@ -621,7 +621,7 @@ namespace RealismMod
 
                         if (localPoint.z < -dZoneZUpper || localPoint.z > dZoneZUpper)
                         {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
+                            if (PluginConfig.EnableBallisticsLogging.Value == true)
                             {
                                 Utils.Logger.LogWarning("D-ZONE HIT: UPPER TORSO");
                             }
@@ -630,7 +630,7 @@ namespace RealismMod
                         }
                         else if (localPoint.z > -aZoneZUpper && localPoint.z < aZoneZUpper)
                         {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
+                            if (PluginConfig.EnableBallisticsLogging.Value == true)
                             {
                                 Utils.Logger.LogWarning("A-ZONE HIT: UPPER TORSO");
                             }
@@ -638,7 +638,7 @@ namespace RealismMod
                         }
                         else
                         {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
+                            if (PluginConfig.EnableBallisticsLogging.Value == true)
                             {
                                 Utils.Logger.LogWarning("C-ZONE HIT: UPPER TORSO");
                             }
@@ -655,7 +655,7 @@ namespace RealismMod
                     {
                         if (localPoint.z < -dZoneZMid || localPoint.z > dZoneZMid)
                         {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
+                            if (PluginConfig.EnableBallisticsLogging.Value == true)
                             {
                                 Utils.Logger.LogWarning("D-ZONE HIT: MID TORSO");
                             }
@@ -663,7 +663,7 @@ namespace RealismMod
                         }
                         else if (localPoint.z > -aZoneZMid && localPoint.z < aZoneZMid && localPoint.x < aZoneXMid)
                         {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
+                            if (PluginConfig.EnableBallisticsLogging.Value == true)
                             {
                                 Utils.Logger.LogWarning("A-ZONE HIT: MID TORSO");
                             }
@@ -671,7 +671,7 @@ namespace RealismMod
                         }
                         else
                         {
-                            if (Plugin.EnableBallisticsLogging.Value == true)
+                            if (PluginConfig.EnableBallisticsLogging.Value == true)
                             {
                                 Utils.Logger.LogWarning("C-ZONE HIT: MID TORSO");
                             }
@@ -679,7 +679,7 @@ namespace RealismMod
                         }
                     }
 
-                    if (Plugin.EnableBallisticsLogging.Value == true)
+                    if (PluginConfig.EnableBallisticsLogging.Value == true)
                     {
                         Utils.Logger.LogWarning("COULDN'T FIND HIT ZONE");
                     }
@@ -690,7 +690,7 @@ namespace RealismMod
                 {
                     if (localPoint.z > -spineZ && localPoint.z < spineZ)
                     {
-                        if (Plugin.EnableBallisticsLogging.Value == true)
+                        if (PluginConfig.EnableBallisticsLogging.Value == true)
                         {
                             Utils.Logger.LogWarning("SPINE: TOP HIT");
                         }
@@ -698,20 +698,20 @@ namespace RealismMod
                     }
                     if (localPoint.z > -topNeckZ && localPoint.z < topNeckZ) // && localPoint.x < topNeckX
                     {
-                        if (Plugin.EnableBallisticsLogging.Value == true)
+                        if (PluginConfig.EnableBallisticsLogging.Value == true)
                         {
                             Utils.Logger.LogWarning("NECK: TOP HIT (Counting As A-Zone)");
                         }
                         return EBodyHitZone.AZone;
                     }
-                    if (Plugin.EnableBallisticsLogging.Value == true)
+                    if (PluginConfig.EnableBallisticsLogging.Value == true)
                     {
                         Utils.Logger.LogWarning("D-ZONE: TOP SHOULDERS HIT");
                     }
                     return EBodyHitZone.DZone;
                 }
             }
-            if (Plugin.EnableBallisticsLogging.Value == true)
+            if (PluginConfig.EnableBallisticsLogging.Value == true)
             {
                 Utils.Logger.LogWarning("COULDN'T FIND HIT ZONE");
             }

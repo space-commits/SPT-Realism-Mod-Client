@@ -254,7 +254,7 @@ namespace RealismMod
             if (fc.FirearmsAnimator == __instance)
             {
                 __instance.SetAnimationSpeed(1);
-                if (Plugin.EnableLogging.Value == true)
+                if (PluginConfig.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===SetSpeedParameters===");
                 }
@@ -280,7 +280,7 @@ namespace RealismMod
             {
                 StanceController.ShouldResetStances = true;
 
-                if (Plugin.EnableLogging.Value == true)
+                if (PluginConfig.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("SetAnimatorAndProceduralValues");
                 }
@@ -300,7 +300,7 @@ namespace RealismMod
         {
             if (WeaponStats._WeapClass == "shotgun")
             {
-                weaponLevel = Mathf.Clamp(weaponLevel + 2, 1, 3);
+                weaponLevel = Mathf.Clamp(weaponLevel + 1, 1, 3);
                 WeaponAnimationSpeedControllerClass.SetWeaponLevel(__instance.Animator, weaponLevel);
             }
         }
@@ -324,10 +324,10 @@ namespace RealismMod
             {
                 if (Plugin.ServerConfig.reload_changes)
                 {
-                    float bonus = Plugin.GlobalCheckAmmoMulti.Value;
+                    float bonus = PluginConfig.GlobalCheckAmmoMulti.Value;
                     if (WeaponStats._WeapClass == "pistol")
                     {
-                        bonus = Plugin.GlobalCheckAmmoPistolSpeedMulti.Value;
+                        bonus = PluginConfig.GlobalCheckAmmoPistolSpeedMulti.Value;
                     }
 
                     float totalCheckAmmoPatch = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadSkillMulti * 
@@ -336,7 +336,7 @@ namespace RealismMod
                         0.7f, 1.35f);
                     __instance.FirearmsAnimator.SetAnimationSpeed(totalCheckAmmoPatch);
 
-                    if (Plugin.EnableLogging.Value == true)
+                    if (PluginConfig.EnableLogging.Value == true)
                     {
                         Logger.LogWarning("===CheckAmmo===");
                         Logger.LogWarning("Check Ammo =" + totalCheckAmmoPatch);
@@ -376,15 +376,15 @@ namespace RealismMod
                     float chamberSpeed = WeaponStats.TotalChamberCheckSpeed;
                     if (WeaponStats._WeapClass == "pistol")
                     {
-                        chamberSpeed *= Plugin.GlobalCheckChamberPistolSpeedMulti.Value;
+                        chamberSpeed *= PluginConfig.GlobalCheckChamberPistolSpeedMulti.Value;
                     }
                     else if (WeaponStats._WeapClass == "shotgun")
                     {
-                        chamberSpeed *= Plugin.GlobalCheckChamberShotgunSpeedMulti.Value;
+                        chamberSpeed *= PluginConfig.GlobalCheckChamberShotgunSpeedMulti.Value;
                     }
                     else
                     {
-                        chamberSpeed *= Plugin.GlobalCheckChamberSpeedMulti.Value;
+                        chamberSpeed *= PluginConfig.GlobalCheckChamberSpeedMulti.Value;
                     }
 
                     float totalCheckChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerState.FixSkillMulti * PlayerState.ReloadInjuryMulti * 
@@ -398,7 +398,7 @@ namespace RealismMod
                         player.ExecuteSkill(new Action(() => player.Skills.WeaponFixAction.Complete(1f)));
                     }
 
-                    if (Plugin.EnableLogging.Value == true)
+                    if (PluginConfig.EnableLogging.Value == true)
                     {
                         Logger.LogWarning("===CheckChamber===");
                         Logger.LogWarning("Check Chamber = " + totalCheckChamberSpeed);
@@ -437,29 +437,30 @@ namespace RealismMod
                 ammoFactor = 2f - ammoFactor;
                 float stanceModifier = 1f;
                 float maxSpeed = 1.4f;
+                float shoulderFactor = StanceController.IsLeftShoulder ? 0.75f : 1f;
 
                 if (WeaponStats._WeapClass == "shotgun")
                 {
                     maxSpeed = 1.5f;
-                    chamberSpeed *= Plugin.GlobalShotgunRackSpeedFactor.Value;
+                    chamberSpeed *= PluginConfig.GlobalShotgunRackSpeedFactor.Value;
                     stanceModifier = StanceController.IsBracing ? 1.1f : StanceController.IsMounting ? 1.2f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.35f : 1f;
                 }
                 if (__instance.Item.IsGrenadeLauncher || __instance.Item.IsUnderBarrelDeviceActive)
                 {
-                    chamberSpeed *= Plugin.GlobalUBGLReloadMulti.Value;
+                    chamberSpeed *= PluginConfig.GlobalUBGLReloadMulti.Value;
                 }
                 if (WeaponStats._WeapClass == "sniperRifle")
                 {
-                    chamberSpeed *= Plugin.GlobalBoltSpeedMulti.Value;
-                    stanceModifier = StanceController.IsBracing ? 1.2f : StanceController.IsMounting ? 1.4f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.15f : 1f;
+                    chamberSpeed *= PluginConfig.GlobalBoltSpeedMulti.Value;
+                    stanceModifier = StanceController.IsBracing ? 1.15f : StanceController.IsMounting ? 1.4f : StanceController.CurrentStance == EStance.ActiveAiming ? 1.15f : 1f;
                 }
                
                 float totalChamberSpeed = Mathf.Clamp(chamberSpeed * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * stanceModifier
-                    * ammoFactor * PlayerState.RemainingArmStamPercReload * Plugin.RealHealthController.AdrenalineReloadBonus,
+                    * ammoFactor * PlayerState.RemainingArmStamPercReload * Plugin.RealHealthController.AdrenalineReloadBonus * shoulderFactor,
                     0.75f, maxSpeed);
                 __instance.FirearmsAnimator.SetAnimationSpeed(totalChamberSpeed);
 
-                if (Plugin.EnableLogging.Value == true)
+                if (PluginConfig.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===SetBoltActionReload===");
                     Logger.LogWarning("Set Bolt Action Reload = " + totalChamberSpeed);
@@ -486,11 +487,11 @@ namespace RealismMod
             if (fc.FirearmsAnimator == __instance)
             {
                 float totalFixSpeed = Mathf.Clamp(fix * WeaponStats.TotalFixSpeed * PlayerState.ReloadInjuryMulti * 
-                    Plugin.GlobalFixSpeedMulti.Value * PlayerState.RemainingArmStamPercReload * Plugin.RealHealthController.AdrenalineReloadBonus,
+                    PluginConfig.GlobalFixSpeedMulti.Value * PlayerState.RemainingArmStamPercReload * Plugin.RealHealthController.AdrenalineReloadBonus,
                     0.7f, 1.15f);
                 WeaponAnimationSpeedControllerClass.SetSpeedFix(__instance.Animator, totalFixSpeed);
                 __instance.SetAnimationSpeed(totalFixSpeed);         
-                if (Plugin.EnableLogging.Value == true)
+                if (PluginConfig.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===SetMalfRepairSpeed===");
                     Logger.LogWarning("SetMalfRepairSpeed = " + totalFixSpeed);
@@ -521,11 +522,11 @@ namespace RealismMod
                     float chamberSpeed = WeaponStats.TotalFixSpeed;
                     if (WeaponStats._WeapClass == "pistol")
                     {
-                        chamberSpeed *= Plugin.RechamberPistolSpeedMulti.Value;
+                        chamberSpeed *= PluginConfig.RechamberPistolSpeedMulti.Value;
                     }
                     else
                     {
-                        chamberSpeed *= Plugin.GlobalRechamberSpeedMulti.Value;
+                        chamberSpeed *= PluginConfig.GlobalRechamberSpeedMulti.Value;
                     }
 
                     float totalRechamberSpeed = Mathf.Clamp(chamberSpeed * PlayerState.FixSkillMulti * PlayerState.ReloadInjuryMulti * 
@@ -536,7 +537,7 @@ namespace RealismMod
 
                     fc.FirearmsAnimator.SetAnimationSpeed(totalRechamberSpeed);
 
-                    if (Plugin.EnableLogging.Value == true)
+                    if (PluginConfig.EnableLogging.Value == true)
                     {
                         Logger.LogWarning("===Rechamber===");
                         Logger.LogWarning("Rechamber = " + totalRechamberSpeed);
@@ -599,7 +600,7 @@ namespace RealismMod
             {
                 ReloadController.SetMagReloadSpeeds(__instance, magazine);
 
-                if (Plugin.EnableLogging.Value == true)
+                if (PluginConfig.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("ReloadMag Patch");
                     Logger.LogWarning("magazine = " + magazine.LocalizedName());
@@ -633,7 +634,7 @@ namespace RealismMod
 
                 PlayerState.IsQuickReloading = true;
 
-                if (Plugin.EnableLogging.Value == true)
+                if (PluginConfig.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===QuickReloadMag===");
                     Logger.LogWarning("=============");
@@ -661,7 +662,7 @@ namespace RealismMod
                 PlayerState.IsAttemptingToReloadInternalMag = true;
                 PlayerState.IsAttemptingRevolverReload = true;
 
-                if (Plugin.EnableLogging.Value == true)
+                if (PluginConfig.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===ReloadCylinderMagazine===");
                     Logger.LogWarning("=============");
@@ -688,7 +689,7 @@ namespace RealismMod
             {
                 PlayerState.IsAttemptingToReloadInternalMag = true;
 
-                if (Plugin.EnableLogging.Value == true)
+                if (PluginConfig.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===ReloadWithAmmo===");
                     Logger.LogWarning("=============");
@@ -715,7 +716,7 @@ namespace RealismMod
             {
                 PlayerState.IsAttemptingToReloadInternalMag = true;
 
-                if (Plugin.EnableLogging.Value == true)
+                if (PluginConfig.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===ReloadBarrels===");
                     Logger.LogWarning("=============");
@@ -751,7 +752,7 @@ namespace RealismMod
                     ReloadController.MinimumReloadSpeed, ReloadController.MaxReloadSpeed);
                 fa.SetAnimationSpeed(totalReloadSpeed);
 
-                if (Plugin.EnableLogging.Value == true)
+                if (PluginConfig.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===SetMagTypeNew===");
                     Logger.LogWarning("SetMagTypeNew = " + totalReloadSpeed);
@@ -784,7 +785,7 @@ namespace RealismMod
                     ReloadController.MinimumReloadSpeed, ReloadController.MaxReloadSpeed);
                 __instance.SetAnimationSpeed(totalReloadSpeed);
 
-                if (Plugin.EnableLogging.Value == true)
+                if (PluginConfig.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===SetMagTypeCurrent===");
                     Logger.LogWarning("SetMagTypeCurrent = " + totalReloadSpeed);
@@ -812,7 +813,7 @@ namespace RealismMod
                     ReloadController.MinimumReloadSpeed, ReloadController.MaxReloadSpeed);
                 __instance.SetAnimationSpeed(totalReloadSpeed);
 
-                if (Plugin.EnableLogging.Value == true)
+                if (PluginConfig.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===SetMagInWeapon===");
                     Logger.LogWarning("SetMagInWeapon = " + totalReloadSpeed);
@@ -851,7 +852,7 @@ namespace RealismMod
                 PlayerState.IsQuickReloading = false;
                 player.HandsAnimator.SetAnimationSpeed(1);
       
-                if (Plugin.EnableLogging.Value == true)
+                if (PluginConfig.EnableLogging.Value == true)
                 {
                     Logger.LogWarning("===OnMagInsertedPatch/method_47===");
                     Logger.LogWarning("=============");

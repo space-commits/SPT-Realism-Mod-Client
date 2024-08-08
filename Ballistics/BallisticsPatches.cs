@@ -15,17 +15,116 @@ using EFTSlot = GClass2783;
 using ArmorSlot = GClass2525;
 using Diz.Skinning;
 using EFT.UI;
+using static EFT.Player;
 
 namespace RealismMod
 {
-    //for making player meshes invisible
+    public class InitiateShotPatch : ModulePatch
+    {
+        private static FieldInfo _playerfield;
+        private static FieldInfo _accField;
+        private static FieldInfo _buckFeld;
+        private static FieldInfo _prefabField;
+        private static FieldInfo _skillField;
+        private static FieldInfo _soundField;
+        private static FieldInfo _recoilField;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            _playerfield = AccessTools.Field(typeof(FirearmController), "_player");
+            _accField = AccessTools.Field(typeof(FirearmController), "float_3");
+            _buckFeld = AccessTools.Field(typeof(FirearmController), "float_4");
+            _prefabField = AccessTools.Field(typeof(FirearmController), "weaponPrefab_0");
+            _skillField = AccessTools.Field(typeof(FirearmController), "gclass1783_0");
+            _soundField = AccessTools.Field(typeof(FirearmController), "weaponSoundPlayer_0");
+            _recoilField = AccessTools.Field(typeof(FirearmController), "float_5");
+            return typeof(Player.FirearmController).GetMethod("method_53", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(Player.FirearmController __instance, Weapon weapon, BulletClass ammo, int chamberIndex, bool multiShot = false)
+        {
+
+            Player player = (Player)_playerfield.GetValue(__instance);
+            if (player == null || !player.IsYourPlayer) return true;
+
+            float accuracy = (float)_accField.GetValue(__instance);
+            float accuracyBuck = (float)_buckFeld.GetValue(__instance);
+            WeaponPrefab weaponprefab = (WeaponPrefab)_prefabField.GetValue(__instance);
+            SkillManager.GClass1783 skillFactor = (SkillManager.GClass1783)_skillField.GetValue(__instance);
+            WeaponSoundPlayer WeaponSoundPlayer = (WeaponSoundPlayer)_soundField.GetValue(__instance);
+
+            Transform original = __instance.CurrentFireport.Original;
+            Vector3 position = __instance.CurrentFireport.position;
+            Vector3 baseShotDirection = __instance.WeaponDirection;
+            Vector3 shotPosition = position;
+            float ammoFactor = ammo.AmmoFactor;
+            float heatFactor = 1f;
+
+            BackendConfigSettingsClass instance = Singleton<BackendConfigSettingsClass>.Instance;
+            __instance.AdjustShotVectors(ref shotPosition, ref baseShotDirection);
+            ammo.buckshotDispersion = accuracyBuck;
+            __instance.CurrentChamberIndex = chamberIndex;
+            weapon.OnShot(ammo.DurabilityBurnModificator, ammo.HeatFactor, player.Skills.WeaponDurabilityLosOnShotReduce.Value, instance.Overheat, GClass1485.PastTime);
+
+            if (weapon.MalfState.LastShotOverheat >= 1f) //force overheat inaccuracy to start much earlier
+            {
+                heatFactor = Mathf.Lerp(1f, instance.Overheat.MaxCOIIncreaseMult, (weapon.MalfState.LastShotOverheat - 1f) / (instance.Overheat.MaxOverheat - 1f));
+                heatFactor = Mathf.Pow(heatFactor, 2f);
+            }
+            int doubleShot;
+      
+            if (multiShot)
+            {
+                if ((doubleShot = ((chamberIndex > 0) ? 1 : 0)) != 0)
+                {
+                    float x = UnityEngine.Random.Range(weaponprefab.DupletAccuracyPenaltyX.x, weaponprefab.DupletAccuracyPenaltyX.y);
+                    float y = UnityEngine.Random.Range(weaponprefab.DupletAccuracyPenaltyY.x, weaponprefab.DupletAccuracyPenaltyY.y);
+                    Vector3 vector2 = new Vector3(x, y);
+                    float angle = vector2.y * -1f;
+                    baseShotDirection = Quaternion.AngleAxis(vector2.x, original.forward) * baseShotDirection;
+                    baseShotDirection = Quaternion.AngleAxis(angle, original.right) * baseShotDirection;
+                }
+            }
+            else
+            {
+                doubleShot = 0;
+            }
+            float doubleActionFactor = weapon.CylinderHammerClosed ? (weapon.DoubleActionAccuracyPenalty * (1f - skillFactor.DoubleActionRecoilReduce) * weapon.StockDoubleActionAccuracyPenaltyMult) : 0f;
+            float barrelDeviation = __instance.method_50(weapon);
+            double accuracyBuff = weapon.GetItemComponent<BuffComponent>().WeaponSpread;
+       
+            if (accuracyBuff.ApproxEquals(0.0))
+            {
+                accuracyBuff = 1.0;
+            }
+            float ramdomnessFactor = (accuracy + doubleActionFactor) * ammoFactor * heatFactor * barrelDeviation * (float)accuracyBuff * 0.012f;
+            Vector3 randomSphere = UnityEngine.Random.insideUnitSphere * ramdomnessFactor;
+            Vector3 shotDirection = baseShotDirection + randomSphere;
+  
+            __instance.InitiateShot(weapon, ammo, shotPosition, shotDirection.normalized, position, chamberIndex, weapon.MalfState.LastShotOverheat);
+            float recoilFactor = (doubleShot != 0) ? 1.5f : 1f;
+
+            _recoilField.SetValue(__instance, recoilFactor + (float)ammo.ammoRec / 100f);
+            __instance.method_54(WeaponSoundPlayer, ammo, shotPosition, shotDirection, multiShot);
+            if (ammo.AmmoTemplate.IsLightAndSoundShot)
+            {
+                __instance.method_58(position, baseShotDirection);
+                __instance.LightAndSoundShot(position, baseShotDirection, ammo.AmmoTemplate);
+            }
+
+            return false;
+        }
+    }
+
+
+    //for making player meshes invisible for testing
     public class SetSkinPatch : ModulePatch
      {
          protected override MethodBase GetTargetMethod()
          {
              return typeof(PlayerBody).GetMethod("SetSkin", BindingFlags.Instance | BindingFlags.Public);
          }
-
 
          [PatchPostfix]
          private static void Prefix(PlayerBody __instance, KeyValuePair<EBodyModelPart, ResourceKey> part, Skeleton skeleton)
@@ -34,29 +133,21 @@ namespace RealismMod
          }
      }
 
-
-    //something something last stand mode, draft/ unused
-    public class KillPatch : ModulePatch
+    public class VelocityPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(ActiveHealthController).GetMethod("Kill", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GClass3010).GetMethod("Initialize", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        [PatchPrefix]
-        private static bool Prefix(ActiveHealthController __instance)
+        [PatchPostfix]
+        private static void Prefix(GClass3010 __instance)
         {
-            Player player = __instance.Player;
-            if (player.IsYourPlayer) 
-            {
-                player.method_10();
-                player.ToggleProne();
-                PlayerState.IsInLastStand = true;   
-                return false;
-            }
-            return true;
+            float bcFactor = (float)AccessTools.Field(typeof(GClass3010), "float_3").GetValue(__instance);
+            AccessTools.Field(typeof(GClass3010), "float_3").SetValue(__instance, bcFactor *= PluginConfig.DragModifier.Value);
         }
     }
+
 
     public class IsPenetratedPatch : ModulePatch
     {
@@ -108,7 +199,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, EftBulletClass shot)
         {
-
             __instance.DamageType = damageType;
             __instance.Damage = shot.Damage;
             __instance.PenetrationPower = shot.PenetrationPower;
@@ -122,7 +212,7 @@ namespace RealismMod
             __instance.FireIndex = shot.FireIndex;
             if (__instance.DamageType == EDamageType.Blunt || __instance.DamageType == EDamageType.Bullet)
             {
-                if (Plugin.EnableLogging.Value) 
+                if (PluginConfig.EnableLogging.Value) 
                 {
                     Logger.LogWarning("================shot velocity============== " + shot.VelocityMagnitude);
                 }
@@ -184,7 +274,7 @@ namespace RealismMod
                 float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
                 float hitArmArmorFactor = hitArmArmor ? 0.5f : 1f;
                 float hitLocationModifier = forearm ? 1.5f : 1f;
-                float totalChance = Mathf.Round(Plugin.DisarmBaseChance.Value * kineticEnergyFactor * hitArmArmorFactor * hitLocationModifier);
+                float totalChance = Mathf.Round(PluginConfig.DisarmBaseChance.Value * kineticEnergyFactor * hitArmArmorFactor * hitLocationModifier);
 
                 if (rndNumber <= totalChance)
                 {
@@ -206,12 +296,12 @@ namespace RealismMod
             int rndNumber = UnityEngine.Random.Range(1, 51);
             float kineticEnergyFactor = 1f + (kineticEnergy / 1000f);
             float hitLocationModifier = bonusChance ? 2f : 1f;
-            float totalChance = Mathf.Round(Plugin.FallBaseChance.Value * kineticEnergyFactor * hitLocationModifier);
+            float totalChance = Mathf.Round(PluginConfig.FallBaseChance.Value * kineticEnergyFactor * hitLocationModifier);
 
             if (rndNumber <= totalChance)
             {
                 player.ToggleProne();
-                if ((isPlayer && Plugin.CanDisarmPlayer.Value) || (!isPlayer && Plugin.CanDisarmBot.Value))
+                if ((isPlayer && PluginConfig.CanDisarmPlayer.Value) || (!isPlayer && PluginConfig.CanDisarmBot.Value))
                 {
                     TryDoDisarm(player, kineticEnergy * 0.25f, false, false);
                 }
@@ -223,8 +313,8 @@ namespace RealismMod
             float totalHPPerc = (player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Common).Current - damageInfo.Damage) / player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Common).Maximum;
             float hitPartHP = player.ActiveHealthController.GetBodyPartHealth(bodyPartType).Current;
             float toBeHP = hitPartHP - damageInfo.Damage;
-            bool canDoKnockdown = !player.IsInPronePose && ((!player.IsYourPlayer && Plugin.CanFellBot.Value) || (player.IsYourPlayer && Plugin.CanFellPlayer.Value));
-            bool canDoDisarm = ((!player.IsYourPlayer && Plugin.CanDisarmBot.Value) || (player.IsYourPlayer && Plugin.CanDisarmPlayer.Value));
+            bool canDoKnockdown = !player.IsInPronePose && ((!player.IsYourPlayer && PluginConfig.CanFellBot.Value) || (player.IsYourPlayer && PluginConfig.CanFellPlayer.Value));
+            bool canDoDisarm = ((!player.IsYourPlayer && PluginConfig.CanDisarmBot.Value) || (player.IsYourPlayer && PluginConfig.CanDisarmPlayer.Value));
             bool hitForearm = partHit == EBodyPartColliderType.LeftForearm || partHit == EBodyPartColliderType.RightForearm;
             bool hitCalf = partHit == EBodyPartColliderType.LeftCalf || partHit == EBodyPartColliderType.RightCalf;
             bool hitThigh = partHit == EBodyPartColliderType.LeftThigh || partHit == EBodyPartColliderType.RightThigh;
@@ -270,13 +360,13 @@ namespace RealismMod
                 }
  
                 //if fika, based on collidor type, get refernce to player assetpoolobject, get collidors, get component
-                if (Plugin.EnableBodyHitZones.Value) BallisticsController.ModifyDamageByZone(__instance, ref damageInfo, partHit);
+                if (PluginConfig.EnableBodyHitZones.Value) BallisticsController.ModifyDamageByZone(__instance, ref damageInfo, partHit);
   
                 float KE = 1f;
                 AmmoTemplate ammoTemp = null;
                 BallisticsController.GetKineticEnergy(damageInfo, ref ammoTemp, ref KE);
 
-                if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && __instance.IsAI && damageInfo.HittedBallisticCollider != null && !damageInfo.Blunt && Plugin.EnableHitSounds.Value)
+                if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && __instance.IsAI && damageInfo.HittedBallisticCollider != null && !damageInfo.Blunt && PluginConfig.EnableHitSounds.Value)
                 {
                     BallisticsController.PlayBodyHitSound(bodyPartType, damageInfo.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
                 }
@@ -302,7 +392,7 @@ namespace RealismMod
                     DisarmAndKnockdownCheck(__instance, damageInfo, bodyPartType, partHit, KE, hasArmArmor);
                 }
 
-                if (Plugin.EnableBallisticsLogging.Value)
+                if (PluginConfig.EnableBallisticsLogging.Value)
                 {
                     Logger.LogWarning("==========Apply Damage Info=============== ");
                     Logger.LogWarning("Damage " + damageInfo.Damage);
@@ -357,7 +447,7 @@ namespace RealismMod
                 ArmorComponent armorComponent = armors[i];
                 if (armorComponent.ShotMatches(bodyPartCollider.BodyPartColliderType, armorPlateCollider2))
                 {
-                    if (Plugin.EnableBallisticsLogging.Value) 
+                    if (PluginConfig.EnableBallisticsLogging.Value) 
                     {
                         Logger.LogWarning("///AFTER PLATE PEN///");
                         Logger.LogWarning("damage before = " + shot.Damage); 
@@ -374,7 +464,7 @@ namespace RealismMod
                     }
                     BallisticsController.CalcAfterPenStats(armorComponent.Repairable.Durability, armorComponent.ArmorClass, armorComponent.Repairable.TemplateDurability, ref shot.Damage, ref shot.PenetrationPower, softArmorReduction);
                 
-                    if (Plugin.EnableBallisticsLogging.Value)
+                    if (PluginConfig.EnableBallisticsLogging.Value)
                     {
                         Logger.LogWarning("damage after = " + shot.Damage);
                         Logger.LogWarning("pen after = " + shot.PenetrationPower);
@@ -427,7 +517,7 @@ namespace RealismMod
             if (shouldBeBlocked || didPenByChance)
             {
                 shot.BlockedBy = __instance.Item.Id;
-                if (Plugin.EnableBallisticsLogging.Value)
+                if (PluginConfig.EnableBallisticsLogging.Value)
                 {
                     Debug.Log(">>> Shot blocked by armor piece");
                     Logger.LogWarning("===========PEN STATUS=============== ");
@@ -438,7 +528,7 @@ namespace RealismMod
             }
             else
             {
-                if (Plugin.EnableBallisticsLogging.Value == true)
+                if (PluginConfig.EnableBallisticsLogging.Value == true)
                 {
                     Logger.LogWarning("============PEN STATUS============== ");
                     Logger.LogWarning("Penetrated");
@@ -463,8 +553,8 @@ namespace RealismMod
         private static void playArmorHitSound(EArmorMaterial mat, Vector3 pos, bool isHelm, int rndNum)
         {
             float dist = CameraClass.Instance.Distance(pos);
-            float volClose = 0.5f * Plugin.ArmorCloseHitSoundMulti.Value;
-            float volDist = 3f * Plugin.ArmorFarHitSoundMulti.Value;
+            float volClose = 0.5f * PluginConfig.ArmorCloseHitSoundMulti.Value;
+            float volDist = 3f * PluginConfig.ArmorFarHitSoundMulti.Value;
             float distThreshold = 30f;
 
             if (mat == EArmorMaterial.Aramid)
@@ -568,7 +658,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ArmorComponent __instance, ref DamageInfo damageInfo, ref float __result, EBodyPartColliderType colliderType, EArmorPlateCollider armorPlateCollider, bool damageInfoIsLocal, List<ArmorComponent> armorComponents)
         {
-            if (Plugin.EnableBallisticsLogging.Value)
+            if (PluginConfig.EnableBallisticsLogging.Value)
             {
                 Logger.LogWarning("===========ARMOR DAMAGE BEFORE=============== ");
                 Logger.LogWarning("Pen " + damageInfo.PenetrationPower);
@@ -636,7 +726,7 @@ namespace RealismMod
             }
 
           
-            if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && Plugin.EnableHitSounds.Value && damageInfo.HittedBallisticCollider != null)
+            if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && PluginConfig.EnableHitSounds.Value && damageInfo.HittedBallisticCollider != null)
             {
                 bool isPlayer = __instance.Item.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId;
                 if (!isPlayer) 
@@ -702,13 +792,13 @@ namespace RealismMod
             {
                 if (damageInfo.PenetrationPower > __instance.ArmorClass * 100f * duraPercent)
                 {
-                    if (Plugin.EnableBallisticsLogging.Value) Logger.LogWarning("Melee Penetrated");
+                    if (PluginConfig.EnableBallisticsLogging.Value) Logger.LogWarning("Melee Penetrated");
                     damageInfo.Damage *= 0.75f;
                     damageInfo.PenetrationPower *= 0.75f * softArmorStatReduction;
                 }
                 else
                 {
-                    if (Plugin.EnableBallisticsLogging.Value) Logger.LogWarning("Melee Blocked");
+                    if (PluginConfig.EnableBallisticsLogging.Value) Logger.LogWarning("Melee Blocked");
                     if (!isHead) damageInfo.Damage = totaldamage + (damageInfo.Damage / 10f);
                     else damageInfo.Damage = totaldamage;
                     damageInfo.HeavyBleedingDelta = 0f;
@@ -742,7 +832,7 @@ namespace RealismMod
             __result = totalDuraLoss;
             damageInfo.Damage = Mathf.Min(damageInfo.Damage, startingDamage);
 
-            if (Plugin.EnableBallisticsLogging.Value)
+            if (PluginConfig.EnableBallisticsLogging.Value)
             {
                 Logger.LogWarning("===========ARMOR DAMAGE AFTER=============== ");
                 Logger.LogWarning("Momentum " + momentum);
@@ -790,7 +880,7 @@ namespace RealismMod
             float bcSpeedFactor = 1f - ((1f - speedFactor) * 0.25f);
             float bcFactored = Mathf.Max(ammo.BallisticCoeficient * bcSpeedFactor, 0.01f);
 
-            if (Plugin.EnableBallisticsLogging.Value) 
+            if (PluginConfig.EnableBallisticsLogging.Value) 
             {
                 Logger.LogWarning("speed factor " + speedFactor);
                 Logger.LogWarning("speed factored " + velocityFactored);
@@ -829,7 +919,7 @@ namespace RealismMod
                 AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[lastDam.SourceId];
                 BulletClass ammo = new BulletClass(Utils.GenId(), ammoTemp);
                 float KE = ((0.5f * ammo.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
-                force = (-Mathf.Max(1f, KE / 1000f)) * Plugin.RagdollForceModifier.Value;
+                force = (-Mathf.Max(1f, KE / 1000f)) * PluginConfig.RagdollForceModifier.Value;
                 ammo = null;
                 ammoTemp = null;
             }
