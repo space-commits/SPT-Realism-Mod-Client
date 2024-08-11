@@ -34,10 +34,12 @@ namespace RealismMod
 
         void Update() 
         {
-            DoPreExplosionWeather();
-            if(wc == null) wc = WeatherController.Instance; //keep trying to get instance
+            if (wc == null) wc = WeatherController.Instance; //keep trying to get instance
             if (GameWorldController.GameStarted && wc != null)
             {
+                HazardTracker.IsPreExplosion = true;
+                if (HazardTracker.IsPreExplosion && !HazardTracker.HasExploded) DoPreExplosionWeather();
+                if (HazardTracker.HasExploded) DoExplosionWeather();
                 wc.WeatherDebug.Enabled = Enable;
                 if (Enable) 
                 {
@@ -52,38 +54,42 @@ namespace RealismMod
             }       
         }
 
-        private void DoExplosionWeather() 
+        //change all this to a lerp
+        private void DoExplosionWeather()
         {
+            float delay = 200f;
             _elapsedTime += Time.deltaTime;
             wc.WeatherDebug.Enabled = Enable;
 
-            WindDirection = WeatherDebug.Direction.SE;
-            TopWindDirection = Vector2.down;
+            WindDirection = WeatherDebug.Direction.South;
+            TopWindDirection = Vector2.up;
 
-            LighteningThunder = Mathf.Min(PluginConfig.test4.Value * Time.deltaTime, 100f);
-            WindMagnitude = Mathf.Min(PluginConfig.test5.Value * Time.deltaTime, 10f);
-
-            if (_elapsedTime >= PluginConfig.test1.Value)
+            if (_elapsedTime >= delay)
             {
-                Rain = Mathf.Min(PluginConfig.test2.Value * Time.deltaTime, 10f);
-                Fog = Mathf.Min(PluginConfig.test3.Value * Time.deltaTime, 1f);
-                CloudDensity = Mathf.Min(CloudDensity + (PluginConfig.test7.Value * Time.deltaTime), 1f);
+                Rain = Mathf.Lerp(Rain, 2f, 0.025f * Time.deltaTime);
+                Fog = Mathf.Lerp(Fog, 0.075f, 0.025f * Time.deltaTime);
+                CloudDensity = Mathf.Lerp(CloudDensity, 1f, 0.025f * Time.deltaTime);
+                LighteningThunder = Mathf.Lerp(LighteningThunder, 1f, 0.1f * Time.deltaTime);
+                WindMagnitude = Mathf.Lerp(WindMagnitude, 0.1f, 0.05f * Time.deltaTime);
             }
-            else 
+            else if (_elapsedTime >= 10f && _elapsedTime < delay)
             {
-                CloudDensity = Mathf.Max(CloudDensity - (PluginConfig.test6.Value * Time.deltaTime), -1f);
+                Fog = Mathf.Lerp(Fog, 0f, 0.05f * Time.deltaTime);
+                CloudDensity = Mathf.Lerp(CloudDensity, -0.75f, 0.25f * Time.deltaTime);
+                WindMagnitude = Mathf.Lerp(WindMagnitude, 1.2f, 0.25f * Time.deltaTime);
             }
+       
         }
 
         private void DoPreExplosionWeather()
         {
             Enable = true;
             CloudDensity = 1;
-            Fog = 0.15f;
+            Fog = 0.05f;
             Rain = 0.1f;
             WindMagnitude = 0;
             LighteningThunder = 0;
-            WindDirection = WeatherDebug.Direction.SE;
+            WindDirection = WeatherDebug.Direction.East;
             TopWindDirection = Vector2.down;
         }
     }

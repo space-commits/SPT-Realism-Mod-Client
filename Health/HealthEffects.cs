@@ -407,7 +407,7 @@ namespace RealismMod
         public float PositiveEffectDuration { get; }
         public float NegativeEffectDuration { get; }
         public float EffectStrength { get; }
-        private bool addedAdrenalineEffect = false;
+        private bool _addedAdrenalineEffect = false;
 
         public AdrenalineEffect(Player player, int? dur, int delay, float negativeEffectDur, float posEffectDur, float strength, RealismHealthController realismHealthController)
         {
@@ -427,13 +427,13 @@ namespace RealismMod
         {
             if (Delay <= 0)
             {
-                if (!addedAdrenalineEffect)
+                if (!_addedAdrenalineEffect)
                 {
                     RealHealthController.HasAdrenalineEffect = true;
                     RealHealthController.AddBaseEFTEffectIfNoneExisting(_Player, "PainKiller", EBodyPart.Head, 0f, PositiveEffectDuration, 3f, 1f);
                     RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 0f, NegativeEffectDuration, 3f, EffectStrength);
                     RealHealthController.AddBasesEFTEffect(_Player, "Tremor", EBodyPart.Head, PositiveEffectDuration, NegativeEffectDuration, 3f, EffectStrength);
-                    addedAdrenalineEffect = true;
+                    _addedAdrenalineEffect = true;
                 }
 
                 Duration--;

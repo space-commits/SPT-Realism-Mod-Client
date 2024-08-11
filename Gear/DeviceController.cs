@@ -36,7 +36,7 @@ namespace RealismMod
             return RadDelay * (1f - Mathf.Pow(Plugin.RealHealthController.PlayerHazardBridge.TotalRadRate, 0.35f));
         }
 
-        public static void GasAnalyserAudioController()
+        public static void DoGasAnalyserAudio()
         {
             if (HasGasAnalyser && GameWorldController.GameStarted && Utils.IsReady) 
             {
@@ -55,7 +55,7 @@ namespace RealismMod
             }
         }
 
-        public static void GeigerAudioController()
+        public static void DoGeigerAudio()
         {
             if (HasGeiger)
             {

@@ -90,6 +90,7 @@ namespace RealismMod
                 {
                     MuzzleJet jet = jets[i];
                     jet.Chance = totalFlameFactor / jetsCount;
+                    if (jet.Particles == null) continue;
                     int particleCount = jet.Particles.Length;
                     for (int j = 0; j < particleCount; j++)
                     {

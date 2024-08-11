@@ -17,7 +17,7 @@ public class ShockWave : TriggerWithId
     void Start()
     {
         RadiationZone gas = gameObject.AddComponent<RadiationZone>();
-        gas.ZoneStrengthModifier = 3000f;
+        gas.ZoneStrengthModifier = 4000f;
         EFT.Interactive.TriggerWithId trigger = gameObject.AddComponent<EFT.Interactive.TriggerWithId>();
         trigger.SetId("nuke");
         gameObject.layer = LayerMask.NameToLayer("Triggers");

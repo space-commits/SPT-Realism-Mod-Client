@@ -16,7 +16,7 @@ namespace RealismMod
         private static float _coughTimer = 0f;
         private static bool _breathedOut = false;
 
-        public static void HazardZoneAudioController()
+        public static void HazardZonesAudioController()
         {
             if (Utils.IsInHideout || !Utils.IsReady) return;
 
@@ -50,8 +50,8 @@ namespace RealismMod
                 _coughTimer = 0f;
             }
 
-            DeviceController.GasAnalyserAudioController();
-            DeviceController.GeigerAudioController();
+            DeviceController.DoGasAnalyserAudio();
+            DeviceController.DoGeigerAudio();
         }
 
         private static void CoughController(Player player) 
@@ -78,7 +78,7 @@ namespace RealismMod
             {
                 return "Dying";
             }
-            if (HazardTracker.TotalToxicity >= 50f || PlayerState.StaminaPerc <= 0.55 || HazardTracker.TotalRadiation >= 70f)
+            if (HazardTracker.TotalToxicity >= 50f || PlayerState.StaminaPerc <= 0.55 || HazardTracker.TotalRadiation >= 70f || Plugin.RealHealthController.HasAdrenalineEffect)
             {
                 return "BadlyInjured";
             }
