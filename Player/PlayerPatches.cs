@@ -370,7 +370,8 @@ namespace RealismMod
                 PlayerState.IsSprinting = __instance.IsSprintEnabled;
                 PlayerState.EnviroType = __instance.Environment;
                 StanceController.IsInInventory = __instance.IsInventoryOpened;
-                PlayerState.IsMoving = __instance.IsSprintEnabled ||  !Utils.AreFloatsEqual(__instance.MovementContext.AbsoluteMovementDirection.x, 0f, 0.001f) || !Utils.AreFloatsEqual(__instance.MovementContext.AbsoluteMovementDirection.z, 0f, 0.001f);
+                //bit wise operation, Mask property has serveral combined enum values
+                PlayerState.IsMoving = __instance.IsSprintEnabled || (__instance.ProceduralWeaponAnimation.Mask & EProceduralAnimationMask.Walking) != (EProceduralAnimationMask)0;//Plugin.FikaPresent ? false : __instance.IsSprintEnabled ||  !Utils.AreFloatsEqual(__instance.MovementContext.AbsoluteMovementDirection.x, 0f, 0.001f) || !Utils.AreFloatsEqual(__instance.MovementContext.AbsoluteMovementDirection.z, 0f, 0.001f);
 
                 if (PluginConfig.EnableSprintPenalty.Value)
                 {

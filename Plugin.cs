@@ -40,7 +40,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.pluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string pluginVersion = "1.4.2";
+        private const string pluginVersion = "1.4.3";
 
         public static Dictionary<Enum, Sprite> IconCache = new Dictionary<Enum, Sprite>();
         public static Dictionary<string, AudioClip> HitAudioClips = new Dictionary<string, AudioClip>();
@@ -328,7 +328,7 @@ namespace RealismMod
         
             try
             {
-                //LoadExplosion();
+                /*LoadExplosion();*/
                 LoadConfig();
                 LoadSprites();
                 LoadTextures();
@@ -341,7 +341,7 @@ namespace RealismMod
             }
 
             LoadMountingUI();
-           // LoadWeatherController();
+           /* LoadWeatherController();*/
             LoadHealthController();
             InitConfigBindings();
 
@@ -477,12 +477,16 @@ namespace RealismMod
             Utils.CheckIsReady();
             if (Utils.IsReady)
             {
-
-             /*   if (GameWorldController.GameStarted && Input.GetKeyDown(KeyCode.N))
+              /*  if (GameWorldController.GameStarted && Input.GetKeyDown(KeyCode.N))
                 {
                     var player = Utils.GetYourPlayer().Transform;
                     Instantiate(ExplosionPrefab, new Vector3(1000f, 0f, 317f), new Quaternion(0, 0, 0, 0));
                 }*/
+
+                if (PluginConfig.ZoneDebug.Value && Input.GetKeyDown(KeyCode.Keypad0))
+                {
+                    HazardTracker.WipeTracker();              
+                }
 
                 if (PluginConfig.ZoneDebug.Value && Input.GetKeyDown(PluginConfig.AddZone.Value.MainKey))
                 {

@@ -17,6 +17,8 @@ namespace RealismMod
 
     public static class HazardTracker
     {
+        public static bool IsPreExplosion { get; set; } = false;
+        public static bool HasExploded { get; set; } = false;
         public static float TotalToxicityRate { get; set; } = 0f;
         public static float TotalRadiationRate { get; set; } = 0f;
         private static float _totalToxicity = 0f;
@@ -91,6 +93,12 @@ namespace RealismMod
             RadiationRateMeds = 0f;
             TotalToxicityRate = 0f;
             TotalRadiationRate = 0f;
+        }
+
+        public static void WipeTracker() 
+        {
+            _totalToxicity = 0f;
+            _totalRadiation = 0f;
         }
 
         public static void UpdateHazardValues(string profileId)

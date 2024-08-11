@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using RealismMod;
 
 public class Bomb : MonoBehaviour
 {
@@ -35,11 +36,13 @@ public class Bomb : MonoBehaviour
     private float _xPos;
     private float _yPos;
     private float _zPos;
+
     void Start()
     {
         _currentShockwaveVector = new Vector3(0f, 0f, 0f);
         _elapsedTime = 0.0f;
         _currentShockwaveSize = 0.0f;
+        HazardTracker.HasExploded = true;
     }
 
     void Update()
@@ -51,21 +54,19 @@ public class Bomb : MonoBehaviour
         _elapsedTime += Time.deltaTime;
 
         BlastLight.intensity = LightPower_curve.Evaluate(_elapsedTime / NukeDuration);
-        BlastLight2.intensity = Light2Power_curve.Evaluate(_elapsedTime / NukeDuration);
+        //BlastLight2.intensity = Light2Power_curve.Evaluate(_elapsedTime / NukeDuration);
 
         /*     BlastLight.intensity = LightPower; //* LightPower_curve.Evaluate(FinalCurveVaue)*/
         BlastLight.range = LightRadius; // Mathf.Lerp(LightRadius, 0.0f, LightRadius_curve.Evaluate(FinalCurveVaue))
-        BlastLight2.range = LightRadius;
+        //BlastLight2.range = LightRadius;
 
         _xPos = LightXCurve.Evaluate(_elapsedTime / NukeDuration);
         _yPos = LightXCurve.Evaluate(_elapsedTime / NukeDuration);
         _zPos = LightXCurve.Evaluate(_elapsedTime / NukeDuration);
-        BlastLight2.transform.localPosition = new Vector3(-_xPos * 4f, _yPos * 0.25f, _zPos * 4f);
-        Debug.Log(BlastLight2.transform.localPosition);
+        //BlastLight2.transform.localPosition = new Vector3(-_xPos * 4f, _yPos * 0.25f, _zPos * 4f);
 
         if (_elapsedTime > NukeDuration)
         {
-            Debug.Log("Bepinex");
             Destroy(gameObject);
             return;
         }
