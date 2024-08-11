@@ -124,7 +124,7 @@ namespace RealismMod
 
             //try to make it based on current heat of gun?
             MuzzleSmoke[] smokes = (MuzzleSmoke[])_muzzleSmokeField.GetValue(muzzleManager);
-            if (smokes != null)
+            if (smokes != null && smokes.Length > 0)
             {
                 MuzzleSmoke smoke = smokes[0];
                 smoke.SmokeLength = WeaponStats.IsPistol ? 0f : 20f * smoketrailFactor; //how long it is, 20
