@@ -1405,6 +1405,7 @@ namespace RealismMod
                 case EHealBlockType.Food:
                     return "Can't Eat/Drink, Mouth Is Blocked By Active Faceshield/NVGs Or Mask";
                 case EHealBlockType.Unknown:
+                    return "No Suitable Bodypart Was Found For Healing";
                 default:
                     return "No Suitable Bodypart Was Found For Healing";
             }
@@ -1439,12 +1440,24 @@ namespace RealismMod
             float medHPRes = meds.MedKitComponent.HpResource;
             string hBleedHealType = MedProperties.HBleedHealType(meds);
 
-            bool canHealFract = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
-            bool canHealLBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.LightBleeding);
-            bool canHealHBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
+            bool canHealLBleed = 
+                meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.LightBleeding) && 
+                meds.HealthEffectsComponent.DamageEffects[EDamageEffectType.LightBleeding].Cost + 1 <= meds.MedKitComponent.HpResource;
+            bool canHealHBleed = 
+                meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding) && 
+                meds.HealthEffectsComponent.DamageEffects[EDamageEffectType.HeavyBleeding].Cost + 1 <= meds.MedKitComponent.HpResource;
+            bool canHealFract = 
+                meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) &&
+                meds.HealthEffectsComponent.DamageEffects[EDamageEffectType.Fracture].Cost + 1 <= meds.MedKitComponent.HpResource;
+
+            /*          bool canHealFract = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
+                      bool canHealLBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.LightBleeding);
+                      bool canHealHBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
+          */
 
             if (bodyPart == EBodyPart.Common)
             {
+                int gearBlockedHealCount = 0;
                 EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(player);
                 Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
                 Item ears = equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem;
@@ -1489,7 +1502,6 @@ namespace RealismMod
                 MedProperties.EffectTypes.TryGetValue("HeavyBleeding", out heavyBleedType);
                 MedProperties.EffectTypes.TryGetValue("LightBleeding", out lightBleedType);
                 MedProperties.EffectTypes.TryGetValue("BrokenBone", out fractureType);
-
 
                 if (medType == "surg")
                 {
@@ -1546,6 +1558,7 @@ namespace RealismMod
                         {
                             if (PluginConfig.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
                             {
+                                gearBlockedHealCount++;
                                 continue;
                             }
 
@@ -1623,7 +1636,8 @@ namespace RealismMod
                         return;
                     }
 
-                    if (PluginConfig.EnableMedNotes.Value) GetHealBlockMessage(blockType);
+                    if (blockType == EHealBlockType.Unknown && gearBlockedHealCount > 0) blockType = EHealBlockType.GearCommon;
+                    if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(blockType), EFT.Communications.ENotificationDurationType.Long);
 
                     shouldAllowHeal = false;
                     return;
@@ -1990,7 +2004,7 @@ namespace RealismMod
 
         private void HazardZoneHealthEffectTick(Player player) 
         {
-            if (!GameWorldController.GameStarted) return;
+            if (!HazardZoneSpawner.GameStarted) return;
 
             if (PlayerHazardBridge == null)
             {

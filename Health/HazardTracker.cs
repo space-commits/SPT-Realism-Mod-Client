@@ -1,10 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.Text;
-using UnityEngine;
-using Newtonsoft;
 using System.IO;
-using Newtonsoft.Json;
+using UnityEngine;
 
 namespace RealismMod
 {
@@ -13,6 +11,8 @@ namespace RealismMod
     {
         public float RecordedTotalToxicity { get; set; }
         public float RecordedTotalRadiation { get; set; }
+        public bool IsPreExplosion { get; set; }
+        public bool HasExploded { get; set; }
     }
 
     public static class HazardTracker

@@ -81,11 +81,13 @@ namespace RealismMod
         {
             foreach (var item in items)
             {
-                if (item != null && item?.TemplateId != null && item.TemplateId == "590a3efd86f77437d351a25b")
+                if (item == null || item?.TemplateId == null) continue;
+
+                if (item.TemplateId == "590a3efd86f77437d351a25b")
                 {
                     DeviceController.HasGasAnalyser = true;
                 }
-                if (item != null && item?.TemplateId != null && item.TemplateId == "5672cb724bdc2dc2088b456b")
+                if (item.TemplateId == "5672cb724bdc2dc2088b456b")
                 {
                     DeviceController.HasGeiger = true;
                 }
@@ -173,7 +175,7 @@ namespace RealismMod
            
             if (filter != null) 
             {
-                filterFactor = filter.Value > 90f ? 1f : Mathf.Pow(filter.Value / filter.MaxResource, 0.45f);
+                filterFactor = filter.Value > 90f ? 1f : Mathf.Pow(filter.Value / filter.MaxResource, 0.15f);
             }
           
             ArmorComponent armorComp = gasmask.GetItemComponent<ArmorComponent>();

@@ -3,20 +3,20 @@ using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using Comfort.Common;
 using EFT;
-using EFT.Weather;
-using HarmonyLib;
+using EFT.Ballistics;
+using EFT.InventoryLogic;
 using Newtonsoft.Json;
 using SPT.Common.Http;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.Rendering.PostProcessing;
 using static RealismMod.Attributes;
-using static RealismMod.GameWorldController;
+using static RealismMod.HazardZoneSpawner;
 
 
 namespace RealismMod
@@ -64,6 +64,9 @@ namespace RealismMod
 
         //explosion
         public static UnityEngine.Object ExplosionPrefab { get; private set; }
+
+        //hazard assets
+        public static UnityEngine.Object YellowBarrel { get; private set; }
 
         //weather controller
         public static GameObject RealismWeatherGameObject { get; private set; }
@@ -149,7 +152,6 @@ namespace RealismMod
 
             Sprite balanceSprite = await RequestResource<Sprite>(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\icons\\balance.png");
             Sprite recoilAngleSprite = await RequestResource<Sprite>(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\icons\\recoilAngle.png");
-
             IconCache.Add(ENewItemAttributeId.Balance, balanceSprite);
             IconCache.Add(ENewItemAttributeId.RecoilAngle, recoilAngleSprite);
         }
@@ -296,9 +298,16 @@ namespace RealismMod
 
         private void LoadExplosion()
         {
-            String filename = Path.Combine(Environment.CurrentDirectory, "BepInEx/plugins/Realism/exp/expl.bundle");
+            String filename = Path.Combine(Environment.CurrentDirectory, "BepInEx/plugins/Realism/bundles/exp/expl.bundle");
             var bundle = AssetBundle.LoadFromFile(filename);
             ExplosionPrefab = bundle.LoadAsset("Assets/Explosion/Prefab/NUCLEAR_EXPLOSION.prefab");
+        }
+
+        private void LoadHazardAssets()
+        {
+            String filename = Path.Combine(Environment.CurrentDirectory, "BepInEx/plugins/Realism/bundles/barrels/yellow_barrel.bundle");
+            var bundle = AssetBundle.LoadFromFile(filename);
+           YellowBarrel = bundle.LoadAsset("Assets/Labs/yellow_barrel.prefab");
         }
 
         private void LoadMountingUI()
@@ -328,7 +337,9 @@ namespace RealismMod
         
             try
             {
-                /*LoadExplosion();*/
+                //LoadExplosion();
+                HazardZoneLocations.InitZones();
+                LoadHazardAssets();
                 LoadConfig();
                 LoadSprites();
                 LoadTextures();
@@ -341,7 +352,7 @@ namespace RealismMod
             }
 
             LoadMountingUI();
-           /* LoadWeatherController();*/
+            //LoadWeatherController();
             LoadHealthController();
             InitConfigBindings();
 
@@ -427,14 +438,6 @@ namespace RealismMod
             if (!_detectedMods && (int)Time.time % 5 == 0)
             {
                 _detectedMods = true;
-                if (Chainloader.PluginInfos.ContainsKey("com.servph.realisticrecoil") && ServerConfig.recoil_attachment_overhaul)
-                {
-                    NotificationManagerClass.DisplayWarningNotification("ERROR: COMBAT OVERHAUL DETECTED, IT IS NOT COMPATIBLE!", EFT.Communications.ENotificationDurationType.Long);
-                }
-                if (Chainloader.PluginInfos.ContainsKey("com.IcyClawz.MunitionsExpert") && ServerConfig.recoil_attachment_overhaul)
-                {
-                    NotificationManagerClass.DisplayWarningNotification("ERROR: MUNITIONS EXPERT DETECTED, IT IS NOT COMPATIBLE!", EFT.Communications.ENotificationDurationType.Long);
-                }
                 if (Chainloader.PluginInfos.ContainsKey("com.fika.core"))
                 {
                     FikaPresent = true;
@@ -465,6 +468,19 @@ namespace RealismMod
             }
         }
 
+        void Test(DamageInfo di)
+        {
+            objects.Remove(di.HittedBallisticCollider.transform.root.gameObject);
+            Destroy(di.HittedBallisticCollider.transform.root.gameObject);
+            for (int i = 0; i < objects.Count; i++) 
+            {
+                Logger.LogWarning("num " + i + " " + objects[i].transform.position);
+            }
+        }
+
+        static List<GameObject> objects = new List<GameObject>();
+
+
         void Update()
         {
             //games procedural animations are highly affected by FPS. I balanced everything at 144 FPS, so need to factor it.    
@@ -477,11 +493,29 @@ namespace RealismMod
             Utils.CheckIsReady();
             if (Utils.IsReady)
             {
-              /*  if (GameWorldController.GameStarted && Input.GetKeyDown(KeyCode.N))
+                /*    if (GameWorldController.GameStarted && Input.GetKeyDown(KeyCode.N))
+                    {
+                        var player = Utils.GetYourPlayer().Transform;
+                        Instantiate(ExplosionPrefab, new Vector3(1000f, 0f, 317f), new Quaternion(0, 0, 0, 0));
+                    }*/
+
+                if (HazardZoneSpawner.GameStarted && PluginConfig.ZoneDebug.Value)
                 {
                     var player = Utils.GetYourPlayer().Transform;
-                    Instantiate(ExplosionPrefab, new Vector3(1000f, 0f, 317f), new Quaternion(0, 0, 0, 0));
-                }*/
+                    if (Input.GetKeyDown(KeyCode.Keypad0)) 
+                    {
+                        GameObject barrel = (GameObject)Instantiate(YellowBarrel, player.position, Quaternion.Euler(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value));
+                        BallisticCollider collider = barrel.GetComponentInChildren<BallisticCollider>();
+                        collider.OnHitAction += Test;
+                        objects.Add(barrel);
+                    }
+                    if (Input.GetKeyDown(KeyCode.Keypad1))
+                    {
+                        Utils.LoadLoot(player.position, player.rotation, PluginConfig.TargetZone.Value);
+                        Logger.LogWarning("player pos" + player.position);
+                        Logger.LogWarning("player rot" + player.rotation.eulerAngles);
+                    }
+                }
 
                 if (PluginConfig.ZoneDebug.Value && Input.GetKeyDown(KeyCode.Keypad0))
                 {
@@ -526,6 +560,8 @@ namespace RealismMod
 
         private void LoadGeneralPatches()
         {
+            new BirdPatch().Enable();
+
             //misc
             new ChamberCheckUIPatch().Enable();
 
@@ -974,8 +1010,8 @@ namespace RealismMod
             PluginConfig.HighReadyThirdPersonRotationY = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation Y-Axis", -25f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 40, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PluginConfig.HighReadyThirdPersonRotationZ = Config.Bind<float>(thirdPerson, "High Ready Third Person Rotation Z-Axis", -0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 30, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
 
-            PluginConfig.LowReadyThirdPersonPositionX = Config.Bind<float>(thirdPerson, "Low Ready Third Person Position X-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
-            PluginConfig.LowReadyThirdPersonPositionY = Config.Bind<float>(thirdPerson, "Low Ready Third Person Position Y-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PluginConfig.LowReadyThirdPersonPositionX = Config.Bind<float>(thirdPerson, "Low Ready Third Person Position X-Axis", 0.01f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 20, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
+            PluginConfig.LowReadyThirdPersonPositionY = Config.Bind<float>(thirdPerson, "Low Ready Third Person Position Y-Axis", -0.025f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 10, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PluginConfig.LowReadyThirdPersonPositionZ = Config.Bind<float>(thirdPerson, "Low Ready Third Person Position Z-Axis", 0f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 9, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PluginConfig.LowReadyThirdPersonRotationX = Config.Bind<float>(thirdPerson, "Low Ready Third Person Rotation X-Axis", 24f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 8, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));
             PluginConfig.LowReadyThirdPersonRotationY = Config.Bind<float>(thirdPerson, "Low Ready Third Person Rotation Y-Axis", 10f, new ConfigDescription("", new AcceptableValueRange<float>(-1000, 1000f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 7, IsAdvanced = true, Browsable = ServerConfig.enable_stances }));

@@ -6,11 +6,12 @@ using UnityEngine;
 
 namespace RealismMod
 {
-
     public enum EZoneType 
     {
         Radiation,
-        Toxic
+        Gas,
+        RadAssets,
+        GasAssets
     }
 
     public interface IHazardZone
@@ -21,7 +22,7 @@ namespace RealismMod
 
     public class GasZone : TriggerWithId, IHazardZone
     {
-        public EZoneType ZoneType { get; } = EZoneType.Toxic;
+        public EZoneType ZoneType { get; } = EZoneType.Gas;
         public float ZoneStrengthModifier { get; set; } = 1f;
         private Dictionary<Player, PlayerHazardBridge> _containedPlayers = new Dictionary<Player, PlayerHazardBridge>();
         private Collider _zoneCollider;

@@ -35,7 +35,7 @@ namespace RealismMod
     public static class StanceController
     {
         //need to change to type WildSpawnType, and somehow get PMC type
-        public static string[] botsToUseTacticalStances = { "bossKolontay", "sptBear", "sptUsec", "exUsec", "pmcBot", "bossKnight", "followerBigPipe", "followerBirdEye", "bossGluhar", "followerGluharAssault", "followerGluharScout", "followerGluharSecurity", "followerGluharSnipe" };
+        public static string[] botsToUseTacticalStances = { "bossKolontay", "pmcBEAR", "pmcUSEC", "exUsec", "pmcBot", "bossKnight", "followerBigPipe", "followerBirdEye", "bossGluhar", "followerGluharAssault", "followerGluharScout", "followerGluharSecurity", "followerGluharSnipe" };
         /*        public static Dictionary<string, bool> LightDictionary = new Dictionary<string, bool>();*/
 
         public static Player.BetterValueBlender StanceBlender = new Player.BetterValueBlender
@@ -943,16 +943,19 @@ namespace RealismMod
 
         public static void DoRifleStances(Player player, Player.FirearmController fc, bool isThirdPerson, EFT.Animations.ProceduralWeaponAnimation pwa, ref Quaternion stanceRotation, float dt, ref bool isResettingShortStock, ref bool hasResetShortStock, ref bool hasResetLowReady, ref bool hasResetActiveAim, ref bool hasResetHighReady, ref bool isResettingHighReady, ref bool isResettingLowReady, ref bool isResettingActiveAim, ref float rotationSpeed, ref bool hasResetMelee, ref bool isResettingMelee, ref bool didHalfMeleeAnim)
         {
+            float weightLimit = 8f;
+            float movementFactor = PlayerState.IsMoving ? 1.2f : 1f;
+            float chonkerFactor = WeaponStats.TotalWeaponWeight >= weightLimit ? 0.75f : 1f;
             bool useThirdPersonStance = isThirdPerson; // || Plugin.IsUsingFika
             float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 150f);
-            float lowerBaseLimit = WeaponStats.TotalWeaponWeight >= 9f ? 0.45f : 0.55f;
+            float lowerBaseLimit = WeaponStats.TotalWeaponWeight >= weightLimit ? 0.45f : 0.55f;
             float ergoMulti = Mathf.Clamp(WeaponStats.ErgoStanceSpeed * 1.15f, lowerBaseLimit, 1.2f);
-            float lowerSpeedLimit = WeaponStats.TotalWeaponWeight >= 9f ? 0.35f : 0.45f;
-            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.65f)), 0.45f, 1.2f); 
+            float lowerSpeedLimit = WeaponStats.TotalWeaponWeight >= weightLimit ? 0.35f : 0.45f;
+            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.65f)), lowerSpeedLimit, 1.2f); 
             float resetErgoMulti = (1f - stanceMulti) + 1f;
-            float highReadyStanceMulti = Mathf.Min(stanceMulti, 0.8f);
-            float lowReadyStanceMulti = Mathf.Min(stanceMulti, 0.8f);
+            float highReadyStanceMulti = Mathf.Min(stanceMulti, 0.7f);
+            float lowReadyStanceMulti = Mathf.Min(stanceMulti, 0.7f);
 
             float wiggleErgoMulti = Mathf.Clamp((WeaponStats.ErgoStanceSpeed * 0.5f), 0.1f, 1f);
             float stocklessModifier = WeaponStats.HasShoulderContact ? 1f : 0.5f;
@@ -1062,9 +1065,6 @@ namespace RealismMod
             Quaternion meleeTargetQuaternion2 = Quaternion.Euler(new Vector3(-1.5f * resetErgoMulti, -7.5f * resetErgoMulti, -0.5f));
             Vector3 meleeTargetPosition = new Vector3(0f, 0.06f, 0f);
             Vector3 meleeTargetPosition2 = new Vector3(0f, -0.0275f, 0f);
-
-            float movementFactor = PlayerState.IsMoving ? 1.2f : 1f;
-            float chonkerFactor = WeaponStats.TotalWeaponWeight >= 9f ? 0.85f : 1f;
 
             //for setting baseline position
             if (!IsBlindFiring) // && !pwa.LeftStance
@@ -1337,9 +1337,9 @@ namespace RealismMod
 
                 StanceBlender.Speed = PluginConfig.LowReadyResetSpeedMulti.Value * lowReadyStanceMulti * (useThirdPersonStance ? PluginConfig.ThirdPersonPositionSpeed.Value * 0.8f : 1f);
 
-                if (!useThirdPersonStance && StanceBlender.Value <= 0.35f && !DidLowReadyResetStanceWiggle)
+                if (!useThirdPersonStance && StanceBlender.Value <= 0.25f && !DidLowReadyResetStanceWiggle)
                 {
-                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-4f, 2.5f, 12f) * movementFactor, true);
+                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-4f, 2.5f, 10f) * movementFactor, true);
                     DidLowReadyResetStanceWiggle = true;
                 }
             }

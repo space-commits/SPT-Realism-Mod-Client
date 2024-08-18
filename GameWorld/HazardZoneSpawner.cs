@@ -1,33 +1,22 @@
-﻿using SPT.Reflection.Patching;
-using SPT.Reflection.Utils;
-using Comfort.Common;
-using EFT;
-using EFT.Interactive;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
+﻿using System;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace RealismMod
 {
-    public static class GameWorldController
+    public static class HazardZoneSpawner
     {
         public static bool GameStarted { get; set; } = false;
 
-        public static void CreateZones(string map)
+        public static void CreateZones(string map,ZoneCollection collection)
         {
-            var gasZones = HazardZoneLocations.GetGasZones(map.ToLower());
-            if (gasZones == null) return;
-            foreach (var zone in gasZones)
+            var zones = HazardZoneLocations.GetZones(collection.ZoneType, map.ToLower());
+            if (zones == null) return;
+            foreach (var zone in zones)
             {
-                CreateZone<GasZone>(zone);
-            }
-
-            var radZones = HazardZoneLocations.GetRadZones(map.ToLower());
-            if (radZones == null) return;
-            foreach (var zone in radZones)
-            {
-                CreateZone<RadiationZone>(zone);
+                if(collection.ZoneType == EZoneType.Gas || collection.ZoneType == EZoneType.GasAssets) CreateZone<GasZone>(zone);
+                else CreateZone<RadiationZone>(zone);
             }
         }
 
@@ -37,7 +26,7 @@ namespace RealismMod
 
             if (!Plugin.FikaPresent) 
             {
-                zoneProbability = Mathf.Max(zoneProbability, 0.1f);
+                zoneProbability = Mathf.Max(zoneProbability, 0.01f);
                 zoneProbability = Mathf.Clamp01(zoneProbability);
                 float randomValue = UnityEngine.Random.value;
                 return randomValue <= zoneProbability;
@@ -49,25 +38,27 @@ namespace RealismMod
             return finalSeed <= zoneProbability * 100f;    
         }
 
-        public static void CreateZone<T>(KeyValuePair<string, (float spawnChance, float strength, Vector3 position, Vector3 rotation, Vector3 size)> zone) where T : MonoBehaviour, IHazardZone
+        public static void CreateZone<T>(HazardLocation zone) where T : MonoBehaviour, IHazardZone
         {
-            if (!ShouldSpawnZone(zone.Value.spawnChance)) return;
+            if (!ShouldSpawnZone(zone.SpawnChance)) return;
 
-            string zoneName = zone.Key;
-            Vector3 position = zone.Value.position;
-            Vector3 rotation = zone.Value.rotation;
-            Vector3 size = zone.Value.size;
-            Vector3 scale = zone.Value.size;
+            HandleZoneAssets(zone);
+
+            string zoneName = zone.Name;
+            Vector3 position = new Vector3(zone.Position.X, zone.Position.Y, zone.Position.Z);
+            Vector3 rotation = new Vector3(zone.Rotation.X, zone.Rotation.Y, zone.Rotation.Z);
+            Vector3 size = new Vector3(zone.Size.X, zone.Size.Y, zone.Size.Z);
+            Vector3 scale = size;
 
             GameObject hazardZone = new GameObject(zoneName);
             T hazard = hazardZone.AddComponent<T>();
 
             float strengthModifier = 1f;
-            if (hazard.ZoneType == EZoneType.Toxic && (!Plugin.FikaPresent && !PluginConfig.ZoneDebug.Value))
+            if ((hazard.ZoneType == EZoneType.Gas || hazard.ZoneType == EZoneType.GasAssets) && (!Plugin.FikaPresent && !PluginConfig.ZoneDebug.Value))
             { 
                strengthModifier = UnityEngine.Random.Range(0.9f, 1.25f); 
             } 
-            hazard.ZoneStrengthModifier = zone.Value.strength * strengthModifier;
+            hazard.ZoneStrengthModifier = zone.Strength * strengthModifier;
 
             hazardZone.transform.position = position;
             hazardZone.transform.rotation = Quaternion.Euler(rotation);
@@ -85,6 +76,14 @@ namespace RealismMod
             boxCollider.isTrigger = true;
             boxCollider.size = size;
 
+            if (zone.BlockNav)
+            {
+                var navMeshObstacle = hazardZone.AddComponent<NavMeshObstacle>();
+                navMeshObstacle.carving = true;
+                navMeshObstacle.center = boxCollider.center;
+                navMeshObstacle.size = boxCollider.size;
+            }
+
             // visual representation for debugging
             if (PluginConfig.ZoneDebug.Value)
             {
@@ -94,9 +93,47 @@ namespace RealismMod
                 visualRepresentation.transform.localScale = size;
                 visualRepresentation.transform.localPosition = boxCollider.center;
                 visualRepresentation.transform.rotation = boxCollider.transform.rotation;
-                visualRepresentation.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.25f);
+                visualRepresentation.GetComponent<Renderer>().material.color = hazard.ZoneType == EZoneType.Radiation || hazard.ZoneType == EZoneType.RadAssets ?  new Color(0f, 1f, 0f, 0.15f) : new Color(1f, 0f, 0f, 0.15f);
                 UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
             }
+        }
+
+        public static void HandleZoneAssets(HazardLocation zone) 
+        {
+            if (zone.Assets == null || Plugin.FikaPresent) return;
+            System.Random rnd = new System.Random();
+            foreach (var asset in zone.Assets) 
+            {
+                if (rnd.Next(101) > asset.Odds) continue;
+
+                if (asset.RandomizeRotation) 
+                {
+                    asset.Rotation.Y = rnd.Range(0, 360);
+                }
+
+                Vector3 position = new Vector3(asset.Position.X, asset.Position.Y, asset.Position.Z);
+                Vector3 rotaiton = new Vector3(asset.Rotation.X, asset.Rotation.Y, asset.Rotation.Z);
+
+                if (asset.Type == "asset") UnityEngine.Object.Instantiate(GetAsset(asset.AssetName), position, Quaternion.Euler(rotaiton));
+                else if (asset.Type == "loot") LoadLooseLoot(position, rotaiton, asset.AssetName);
+            }
+        }
+
+        public static UnityEngine.Object GetAsset(string asset) 
+        {
+            switch (asset) 
+            {
+                case ("yellow_barrel"):
+                default:
+                    return Plugin.YellowBarrel;
+                    
+            }
+        }
+
+        private static void LoadLooseLoot(Vector3 postion, Vector3 rotation, string tempalteId)
+        {
+            Quaternion quat = Quaternion.Euler(rotation);
+            Utils.LoadLoot(postion, quat, tempalteId); //yes, I know this isn't running asnyc
         }
 
         public static void DebugZones()
@@ -134,7 +171,7 @@ namespace RealismMod
                 Utils.Logger.LogWarning("gasZone rot " + gasZone.transform.rotation);
                 Utils.Logger.LogWarning("gasZone size " + gasZone.GetComponent<BoxCollider>().size);
             }
-            else
+            else 
             {
                 gasZone.transform.position = new Vector3(PluginConfig.test4.Value, PluginConfig.test5.Value, PluginConfig.test6.Value);
                 gasZone.transform.rotation = Quaternion.Euler(new Vector3(PluginConfig.test7.Value, PluginConfig.test8.Value, PluginConfig.test9.Value));
@@ -153,53 +190,6 @@ namespace RealismMod
 
                 /* UnityEngine.Object.Destroy(GameObject.Find("DebugZone"));*/
             }
-        }
-    }
-
-    public class OnGameStartPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(GameWorld).GetMethod("OnGameStarted", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(GameWorld __instance)
-        {   
-            /*WeatherController.Instance.WindController.CloudWindMultiplier = 1;*/
-            /*GameWorldController.CreateDebugZone();*/
-
-            Plugin.CurrentProfileId = Utils.GetYourPlayer().ProfileId;
-            if (Plugin.ServerConfig.enable_hazard_zones) 
-            {
-                GameWorldController.CreateZones(Singleton<GameWorld>.Instance.MainPlayer.Location);
-                HazardTracker.GetHazardValues(Plugin.CurrentProfileId);
-                HazardTracker.ResetTracker();
-            }
-
-            GameWorldController.GameStarted = true;
-        }
-    }
-
-    public class OnGameEndPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(GameWorld).GetMethod("OnDestroy", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static void PatchPrefix(GameWorld __instance)
-        {
-            if (Plugin.ServerConfig.enable_hazard_zones) 
-            {
-                HazardTracker.ResetTracker();
-                HazardTracker.UpdateHazardValues(Plugin.CurrentProfileId);
-                HazardTracker.SaveHazardValues();
-                HazardTracker.GetHazardValues(Plugin.PMCProfileId); //update to use PMC id and not potentially scav id
-            }
-
-            GameWorldController.GameStarted = false;
         }
     }
 }

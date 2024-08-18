@@ -35,7 +35,7 @@ namespace RealismMod
         void Update() 
         {
             if (wc == null) wc = WeatherController.Instance; //keep trying to get instance
-            if (GameWorldController.GameStarted && wc != null)
+            if (HazardZoneSpawner.GameStarted && wc != null)
             {
                 HazardTracker.IsPreExplosion = true;
                 if (HazardTracker.IsPreExplosion && !HazardTracker.HasExploded) DoPreExplosionWeather();

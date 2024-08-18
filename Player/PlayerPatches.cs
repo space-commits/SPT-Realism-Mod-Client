@@ -84,6 +84,7 @@ namespace RealismMod
                     PlayerHazardBridge hazardBridge = __instance.gameObject.AddComponent<PlayerHazardBridge>();
                     hazardBridge._Player = __instance;
                 }
+
             }
             if(PluginConfig.EnablePlateChanges.Value) BallisticsController.ModifyPlateColliders(__instance);
         }
