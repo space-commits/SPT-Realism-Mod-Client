@@ -1871,7 +1871,7 @@ namespace RealismMod
                 }
 
                 bool isLeftArm = part == EBodyPart.LeftArm;
-                bool isRightArm = part == EBodyPart.LeftArm;
+                bool isRightArm = part == EBodyPart.RightArm;
                 bool isArm = isLeftArm || isRightArm;
                 bool isLeg = part == EBodyPart.LeftLeg || part == EBodyPart.RightLeg;
                 bool isBody = part == EBodyPart.Chest || part == EBodyPart.Stomach;
@@ -1906,14 +1906,8 @@ namespace RealismMod
                 if (isArm)
                 {
                     bool isArmRuined = (currentHp <= 0f || hasFracture) && !HasBaseEFTEffect(player, "PainKiller");
-                    if (isLeftArm)
-                    {
-                        _leftArmRuined = isArmRuined;
-                    }
-                    if (isRightArm)
-                    {
-                        _rightArmRuined = isArmRuined;
-                    }
+                    if (isLeftArm) _leftArmRuined = isArmRuined;
+                    if (isRightArm) _rightArmRuined = isArmRuined;
 
                     float armFractureFactor = isLeftArm && hasFracture ? 0.75f : isRightArm && hasFracture ? 0.85f : 1f;
 
@@ -2036,7 +2030,7 @@ namespace RealismMod
             else if (HazardTracker.TotalRadiation > 0f || GearController.CurrentRadProtection >= 1f)
             {
                 float reduction = HazardTracker.RadiationRateMeds * (1f + PlayerState.ImmuneSkillStrong);
-                float threshold = HazardTracker.TotalRadiation <= 20f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
+                float threshold = HazardTracker.TotalRadiation <= 15f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
                 HazardTracker.TotalRadiation = Mathf.Clamp(HazardTracker.TotalRadiation + reduction, threshold, 100f);
                 HazardTracker.TotalRadiationRate = HazardTracker.TotalRadiation == threshold ? 0f : reduction;
             }
@@ -2083,17 +2077,18 @@ namespace RealismMod
         {
             if (_hazardWaitTime > _hazardInterval) 
             {
-                if (HazardTracker.TotalToxicity >= 10f)
+                if (HazardTracker.TotalToxicity >= 10f || IsCoughingInGas)
                 {
-                    if (HazardTracker.TotalToxicity >= ToxicityThreshold && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest))
+                    if ((HazardTracker.TotalToxicity >= ToxicityThreshold || IsCoughingInGas) && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest))
                     {
                         ToxicityEffect toxicity = new ToxicityEffect(null, player, 0, this);
                         AddCustomEffect(toxicity, false);
                     }
 
                     float effectStrength = HazardTracker.TotalToxicity / 100f;
-                    AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, _hazardInterval, 5f, Mathf.Min(effectStrength * 2f, 1f));
-                    if (HazardTracker.TotalToxicity >= ToxicityThreshold) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, effectStrength * 0.7f);
+                    float coofFactor = IsCoughingInGas ? 0.5f : 1f;
+                    //AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, _hazardInterval, 5f, Mathf.Min(effectStrength * 2f, 1f)); maybe I'm relying too much on tunnel vision effect...
+                    if (HazardTracker.TotalToxicity >= ToxicityThreshold || IsCoughingInGas) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, (effectStrength * 0.7f) + coofFactor);
                 }
 
                 if (HazardTracker.TotalRadiation >= 10f)

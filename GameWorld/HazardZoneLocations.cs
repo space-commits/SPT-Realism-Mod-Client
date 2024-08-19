@@ -184,7 +184,7 @@ namespace RealismMod
             return JsonConvert.DeserializeObject<T>(jsonString);
         }
 
-        public static void InitZones()
+        public static void DeserializeZoneData()
         {
             GasZoneLocations = DeserializeHazardZones<GasZones>("gas_zones");
             RadZoneLocations = DeserializeHazardZones<RadZones>("rad_zones");

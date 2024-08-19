@@ -470,27 +470,42 @@ namespace RealismMod
 
         private float GetDrainRate()
         {
+            float rate = 0f;
+
+            if (Plugin.RealHealthController.IsCoughingInGas) rate += -0.1f;
+
             switch (HazardTracker.TotalToxicity)
             {
+                case < 30f:
+                    rate += 0f;
+                    break;
                 case < 40f:
-                    return 0f;
+                    rate += -0.025f;
+                    break;
                 case <= 50f:
-                    return -0.05f;
+                    rate += -0.05f;
+                    break;
                 case <= 60f:
-                    return -0.2f;
+                    rate += -0.2f;
+                    break;
                 case <= 70f:
-                    return -0.35f;
+                    rate += -0.35f;
+                    break;
                 case <= 80f:
-                    return -0.5f;
+                    rate += -0.5f;
+                    break;
                 case <= 90f:
-                    return -0.7f;
+                    rate += -0.7f;
+                    break;
                 case < 100f:
-                    return -0.9f;
+                    rate += -0.9f;
+                    break;
                 case >= 100f:
-                    return -1.1f;
-                default:
-                    return 0f;
+                    rate += -1.1f;
+                    break;
             }
+
+            return rate;
         }
 
         public void Tick()

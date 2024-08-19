@@ -56,7 +56,7 @@ namespace RealismMod
             float strengthModifier = 1f;
             if ((hazard.ZoneType == EZoneType.Gas || hazard.ZoneType == EZoneType.GasAssets) && (!Plugin.FikaPresent && !PluginConfig.ZoneDebug.Value))
             { 
-               strengthModifier = UnityEngine.Random.Range(0.9f, 1.25f); 
+               strengthModifier = UnityEngine.Random.Range(0.95f, 1.3f); 
             } 
             hazard.ZoneStrengthModifier = zone.Strength * strengthModifier;
 
@@ -121,11 +121,13 @@ namespace RealismMod
 
         public static UnityEngine.Object GetAsset(string asset) 
         {
-            switch (asset) 
+            switch (asset)
             {
+                case ("bluebox"):
+                    return Plugin.BlueBox;
                 case ("yellow_barrel"):
                 default:
-                    return Plugin.YellowBarrel;
+                    return Plugin.GooBarrel;
                     
             }
         }
@@ -133,7 +135,9 @@ namespace RealismMod
         private static void LoadLooseLoot(Vector3 postion, Vector3 rotation, string tempalteId)
         {
             Quaternion quat = Quaternion.Euler(rotation);
+#pragma warning disable CS4014 
             Utils.LoadLoot(postion, quat, tempalteId); //yes, I know this isn't running asnyc
+#pragma warning restore CS4014 
         }
 
         public static void DebugZones()

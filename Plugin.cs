@@ -52,6 +52,8 @@ namespace RealismMod
 
         public static RealismConfig ServerConfig;
 
+        private string _baseBundleFilepath;
+
         private float _realDeltaTime = 0f;
         public static float FPS = 1f;
 
@@ -66,7 +68,8 @@ namespace RealismMod
         public static UnityEngine.Object ExplosionPrefab { get; private set; }
 
         //hazard assets
-        public static UnityEngine.Object YellowBarrel { get; private set; }
+        public static UnityEngine.Object GooBarrel { get; private set; }
+        public static UnityEngine.Object BlueBox { get; private set; }
 
         //weather controller
         public static GameObject RealismWeatherGameObject { get; private set; }
@@ -296,18 +299,33 @@ namespace RealismMod
             }
         }
 
-        private void LoadExplosion()
+        private T LoadAndInitializePrefabs<T>(string bundlePath, string assetName) where T: UnityEngine.Object
         {
-            String filename = Path.Combine(Environment.CurrentDirectory, "BepInEx/plugins/Realism/bundles/exp/expl.bundle");
-            var bundle = AssetBundle.LoadFromFile(filename);
-            ExplosionPrefab = bundle.LoadAsset("Assets/Explosion/Prefab/NUCLEAR_EXPLOSION.prefab");
+            string fullPath = Path.Combine(_baseBundleFilepath, bundlePath);
+            AssetBundle bundle = AssetBundle.LoadFromFile(fullPath);
+
+            if (bundle == null)
+            {
+                Logger.LogError($"Failed to load AssetBundle from {fullPath}");
+                return null;
+            }
+
+            T asset = bundle.LoadAsset<T>(assetName);
+
+            if (asset == null)
+            {
+                Logger.LogError($"Failed to load asset {assetName} from bundle {fullPath}");
+            }
+
+            return asset;
         }
 
-        private void LoadHazardAssets()
+        private void LoadBundles() 
         {
-            String filename = Path.Combine(Environment.CurrentDirectory, "BepInEx/plugins/Realism/bundles/barrels/yellow_barrel.bundle");
-            var bundle = AssetBundle.LoadFromFile(filename);
-           YellowBarrel = bundle.LoadAsset("Assets/Labs/yellow_barrel.prefab");
+            _baseBundleFilepath = Path.Combine(Environment.CurrentDirectory, "BepInEx\\plugins\\Realism\\bundles\\");
+            GooBarrel = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\yellow_barrel.bundle", "Assets/Labs/yellow_barrel.prefab");
+            BlueBox = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\bluebox.bundle", "Assets/Prefabs/bluebox.prefab");
+            ExplosionPrefab = LoadAndInitializePrefabs<UnityEngine.Object>("exp\\expl.bundle", "Assets/Explosion/Prefab/NUCLEAR_EXPLOSION.prefab");
         }
 
         private void LoadMountingUI()
@@ -337,9 +355,8 @@ namespace RealismMod
         
             try
             {
-                //LoadExplosion();
-                HazardZoneLocations.InitZones();
-                LoadHazardAssets();
+                HazardZoneLocations.DeserializeZoneData();
+                LoadBundles();
                 LoadConfig();
                 LoadSprites();
                 LoadTextures();
@@ -470,10 +487,12 @@ namespace RealismMod
 
         void Test(DamageInfo di)
         {
+            Logger.LogWarning("==================");
             objects.Remove(di.HittedBallisticCollider.transform.root.gameObject);
             Destroy(di.HittedBallisticCollider.transform.root.gameObject);
-            for (int i = 0; i < objects.Count; i++) 
+            for (int i = 0; i < objects.Count; i++)
             {
+                Logger.LogWarning("name " + objects[i].name);
                 Logger.LogWarning("num " + i + " " + objects[i].transform.position);
             }
         }
@@ -504,7 +523,7 @@ namespace RealismMod
                     var player = Utils.GetYourPlayer().Transform;
                     if (Input.GetKeyDown(KeyCode.Keypad0)) 
                     {
-                        GameObject barrel = (GameObject)Instantiate(YellowBarrel, player.position, Quaternion.Euler(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value));
+                        GameObject barrel = (GameObject)Instantiate(GooBarrel, player.position, Quaternion.Euler(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value));
                         BallisticCollider collider = barrel.GetComponentInChildren<BallisticCollider>();
                         collider.OnHitAction += Test;
                         objects.Add(barrel);
