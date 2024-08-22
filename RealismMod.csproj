@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL"></Reference>
     <Reference Include="spt-reflection" />
 	<Reference Include="spt-common" />
 	<Reference Include="ItemComponent.Types" />

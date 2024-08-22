@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -119,17 +120,10 @@ namespace RealismMod
             }
         }
 
-        public static UnityEngine.Object GetAsset(string asset) 
+        public static UnityEngine.Object GetAsset(string asset)
         {
-            switch (asset)
-            {
-                case ("bluebox"):
-                    return Plugin.BlueBox;
-                case ("yellow_barrel"):
-                default:
-                    return Plugin.GooBarrel;
-                    
-            }
+            PropertyInfo fieldInfo = typeof(Assets).GetProperty(asset, BindingFlags.Public | BindingFlags.Static);
+            return (UnityEngine.Object)fieldInfo.GetValue(null);
         }
 
         private static void LoadLooseLoot(Vector3 postion, Vector3 rotation, string tempalteId)
