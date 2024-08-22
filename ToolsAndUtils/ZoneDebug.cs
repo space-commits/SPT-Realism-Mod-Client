@@ -1,39 +1,18 @@
 ﻿using BepInEx.Configuration;
-using BepInEx.Logging;
 using Comfort.Common;
-using EFT;
 using EFT.Ballistics;
 using EFT.Interactive;
-using EFT.InventoryLogic;
 using EFT.UI;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using UnityEngine;
+using static RootMotion.FinalIK.IKSolver;
 
 namespace RealismMod
 {
-    public static class Assets 
-    {
-        //hazard assets
-        public static UnityEngine.Object GooBarrel { get; set; }
-        public static UnityEngine.Object BlueBox { get; set; }
-        public static UnityEngine.Object RedForkLift { get; set; }
-        public static UnityEngine.Object ElectroForkLift { get; set; }
-        public static UnityEngine.Object BigForkLift { get; set; }
-        public static UnityEngine.Object LabsCrate { get; set; }
-        public static UnityEngine.Object Ural { get; set; }
-        public static UnityEngine.Object BluePallet { get; set; }
-        public static UnityEngine.Object BlueFuelPalletCloth { get; set; }
-        public static UnityEngine.Object BlueFuelPallet { get; set; }
-
-    }
-
     public static class MoveDaCube
     {
         public static ConfigEntry<float> ChangeSpeed;
@@ -48,7 +27,7 @@ namespace RealismMod
         public static ConfigEntry<KeyboardShortcut> RotateKey;
         public static ConfigEntry<bool> LockXAndZRotation;
         public static ConfigEntry<string> SelectedObjectName;
-        public static ConfigEntry<string> ClosestExfilName;
+        public static ConfigEntry<string> SelectedAssetName;
 
         private static void DrawerMatchPlayerYRotation(ConfigEntryBase entry)
         {
@@ -64,6 +43,7 @@ namespace RealismMod
                 callable();
             }
         }
+
         private static void DrawerUnselectObject(ConfigEntryBase entry)
         {
             if (Utils.GetYourPlayer() == null) return;
@@ -75,11 +55,14 @@ namespace RealismMod
             if (Utils.GetYourPlayer() == null) return;
             InitializeButton(InteractableComponent.SpawnCube, "Spawn Object");
         }
-
         private static void DrawerSpawnAsset(ConfigEntryBase entry)
         {
             if (Utils.GetYourPlayer() == null) return;
             InitializeButton(InteractableComponent.SpawnAsset, "Spawn Asset");
+        }
+        private static void DrawerLogObjects(ConfigEntryBase entry)
+        {
+            InitializeButton(() => { LogObjects(); }, "Log Object");
         }
 
         private static void DrawerResetTranslation(ConfigEntryBase entry)
@@ -96,6 +79,11 @@ namespace RealismMod
               "Selected Object Name",
               ""
           );
+            SelectedAssetName = config.Bind(
+            "41.0: Object Control",
+            "Selected Asset Name",
+            ""
+        );
             ChangeSpeed = config.Bind(
                 "41.0: Object Control",
                 "Change Speed",
@@ -111,16 +99,16 @@ namespace RealismMod
                     new ConfigurationManagerAttributes { CustomDrawer = DrawerSpawnObject }
                 )
             );
-             config.Bind(
-                "41.0: Object Control",
-                "Spawn Asset (name required)",
-                "",
-                new ConfigDescription(
-                    "Creates a new zone object",
-                    null,
-                    new ConfigurationManagerAttributes { CustomDrawer = DrawerSpawnAsset }
-                )
-            );
+            config.Bind(
+               "41.0: Object Control",
+               "Spawn Asset (name required)",
+               "",
+               new ConfigDescription(
+                   "Creates a new zone object",
+                   null,
+                   new ConfigurationManagerAttributes { CustomDrawer = DrawerSpawnAsset }
+               )
+           );
             config.Bind(
                 "41.1: Object Control",
                 "Move Object To Player Feet",
@@ -150,6 +138,16 @@ namespace RealismMod
                     null,
                     new ConfigurationManagerAttributes { CustomDrawer = DrawerUnselectObject }
                 )
+            );
+            config.Bind(
+               "41.1: Object Control",
+               "Log Objects",
+               "",
+               new ConfigDescription(
+                  "Logs Objects",
+                  null,
+                  new ConfigurationManagerAttributes { CustomDrawer = DrawerLogObjects }
+               )
             );
 
 
@@ -221,6 +219,33 @@ namespace RealismMod
             Rotate
         }
 
+        public static void AddComponentToExistingGO(GameObject box, string name)
+        {
+            GameObject parent = new GameObject();
+
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.transform.parent = parent.transform;
+
+            parent.name = name + "_parent";
+            parent.transform.position = box.transform.position;
+            parent.transform.rotation = box.transform.rotation;
+
+            cube.transform.rotation = box.transform.rotation;
+            cube.transform.localScale = box.transform.localScale;
+
+            cube.AddComponent<InteractableComponent>();
+            InteractableComponent interactableComponent = cube.GetComponent<InteractableComponent>();
+            interactableComponent.Init();
+            interactableComponent.SetName(name);
+
+            Renderer renderer = interactableComponent.GetComponent<Renderer>();
+            renderer.enabled = true;
+            renderer.material.color = Color.magenta;
+
+            MoveDaCube.AllInteractableComponents.Add(interactableComponent);
+            box.transform.localScale = new Vector3(0, 0, 0); //hide the hazsard zone I used to size this movemable cube
+        }
+
         public static void Update()
         {
             if (Utils.GetYourPlayer() == null) return;
@@ -229,20 +254,20 @@ namespace RealismMod
             if (TranslateKey.Value.IsDown())
             {
                 Mode = EInputMode.Translate;
-                TargetInteractableComponent.SetColor(Color.green);
+                TargetInteractableComponent.SetColor(new Color(0, 1, 0, 0.1f));
                 Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.MenuInstallModFunc);
             }
             if (ScaleKey.Value.IsDown())
             {
                 Mode = EInputMode.Scale;
-                TargetInteractableComponent.SetColor(Color.blue);
+                TargetInteractableComponent.SetColor(new Color(0, 0, 1, 0.1f));
                 Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.MenuInstallModGear);
 
             }
             if (RotateKey.Value.IsDown())
             {
                 Mode = EInputMode.Rotate;
-                TargetInteractableComponent.SetColor(Color.red);
+                TargetInteractableComponent.SetColor(new Color(1, 0, 0, 0.1f));
                 Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.MenuInstallModVital);
             }
 
@@ -269,16 +294,32 @@ namespace RealismMod
             }
         }
 
+        public static void LogObjects(bool mute = false)
+        {
+            Utils.Logger.LogWarning("=======================");
+            foreach (var zone in AllInteractableComponents)
+            {
+                Utils.Logger.LogWarning("==");
+                Utils.Logger.LogWarning("zone name " + zone.name);
+                if (zone.Asset != null) Utils.Logger.LogWarning("asset name " + zone.Asset.name);
+                Utils.Logger.LogWarning("\"position\": " + "\"x\":" + zone.transform.position.x + "," + "\"y\":" + zone.transform.position.y + "," + "\"z:\"" + zone.transform.position.z);
+                Utils.Logger.LogWarning("\"rotation\": " + "\"x\":" + zone.transform.rotation.eulerAngles.x + "," + "\"y\":" + zone.transform.eulerAngles.y + "," + "\"z:\"" + zone.transform.eulerAngles.z);
+                Utils.Logger.LogWarning("\"size\": " + "\"x\":" + zone.transform.localScale.x + "," + "\"y\":" + zone.transform.localScale.y + "," + "\"z:\"" + zone.transform.localScale.z);
+                Utils.Logger.LogWarning("==");
+            }
+        }
+
+
         public static void SelectObject(GameObject obj, bool mute = false)
         {
-            if (TargetInteractableComponent != null)
-            {
-                if (NameFieldEmpty() || NameTaken()) return;
-            }
-
+            /*   if (TargetInteractableComponent != null)
+               {
+                   if (NameFieldEmpty() || NameTaken()) return;
+               }
+   */
             TargetInteractableComponent = obj.GetComponent<InteractableComponent>();
             Mode = EInputMode.Translate;
-            TargetInteractableComponent.SetColor(Color.green);
+            TargetInteractableComponent.SetColor(new Color(0, 1, 0, 0.1f));
             SelectedObjectName.Value = TargetInteractableComponent.GetName();
 
             if (!mute)
@@ -290,13 +331,10 @@ namespace RealismMod
         public static void UnselectObject(bool mute = false)
         {
             if (TargetInteractableComponent == null) return;
-            if (NameFieldEmpty() || NameTaken()) return;
+            /*if (NameFieldEmpty() || NameTaken()) return;*/
 
             string oldName = TargetInteractableComponent.GetName();
-
-            TargetInteractableComponent.SetName(SelectedObjectName.Value);
-            TargetInteractableComponent.SetColor(Color.magenta);
-            TargetInteractableComponent.LogTransforms();
+            TargetInteractableComponent.SetColor(new Color(1, 1, 1, 0.1f));
 
             TargetInteractableComponent = null;
             SelectedObjectName.Value = "";
@@ -420,20 +458,13 @@ namespace RealismMod
     public class InteractableComponent : InteractableObject
     {
         public List<ActionsTypesClass> Actions = new List<ActionsTypesClass>();
-        public static GameObject ParentGameObject { get; private set; }
-        private static bool _IsAsset = false;
-
-        public void LogTransforms() 
-        {
-            Utils.Logger.LogWarning("======Object " + ParentGameObject.name + " ====== ");
-            Utils.Logger.LogWarning("pos " + ParentGameObject.transform.position);
-            Utils.Logger.LogWarning("rotation " + ParentGameObject.transform.rotation);
-        }
+        public GameObject ParentGameObject { get; private set; }
+        public GameObject Asset { get; private set; }
 
         public void Init()
         {
             this.gameObject.layer = LayerMask.NameToLayer("Interactive");
-            if (!_IsAsset) ParentGameObject = this.gameObject.transform.parent.gameObject;
+            ParentGameObject = this.gameObject.transform.parent.gameObject;
 
             Actions.AddRange(
                 new List<ActionsTypesClass>()
@@ -457,6 +488,11 @@ namespace RealismMod
                                 MoveDaCube.SelectObject(this.gameObject);
                             }
                         }
+                    },
+                    new ActionsTypesClass
+                    {
+                        Name =  this.transform.parent.name,
+                        Action = LogDetails
                     },
                     new ActionsTypesClass
                     {
@@ -508,6 +544,17 @@ namespace RealismMod
             Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.GeneratorTurnOff);
         }
 
+        public void LogDetails()
+        {
+            var zone = this.transform;
+            Utils.Logger.LogWarning("==== " + this.transform.parent.name);
+            Utils.Logger.LogWarning("name " + this.transform.parent.name);
+            Utils.Logger.LogWarning("\"position\": " + "\"x\":" + zone.transform.position.x + "," + "\"y\":" + zone.transform.position.y + "," + "\"z:\"" + zone.transform.position.z);
+            Utils.Logger.LogWarning("\"rotation\": " + "\"x\":" + zone.transform.rotation.eulerAngles.x + "," + "\"y\":" + zone.transform.eulerAngles.y + "," + "\"z:\"" + zone.transform.eulerAngles.z);
+            Utils.Logger.LogWarning("\"size\": " + "\"x\":" + zone.transform.localScale.x + "," + "\"y\":" + zone.transform.localScale.y + "," + "\"z:\"" + zone.transform.localScale.z);
+            Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.GeneratorTurnOff);
+        }
+
         public void ResetScale()
         {
             this.gameObject.transform.localScale = new Vector3(1, 1, 1);
@@ -523,6 +570,7 @@ namespace RealismMod
             this.gameObject.transform.position = new Vector3(0, 0, -9999);
             Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.MenuEscape);
             Destroy(this.gameObject, 3);
+            Destroy(Asset, 3);
         }
 
         public void TranslateMe(string axis, float amount)
@@ -564,20 +612,23 @@ namespace RealismMod
                 case "z": rotation = new Vector3(amount, 0, 0); break;
             }
 
-            if (axis == "x")
+            ParentGameObject.transform.localRotation = ParentGameObject.transform.localRotation * Quaternion.Euler(rotation);
+
+
+            /*if (axis == "x")
             {
                 ParentGameObject.transform.localRotation = ParentGameObject.transform.localRotation * Quaternion.Euler(rotation);
+
             }
             else if (!MoveDaCube.LockXAndZRotation.Value)
             {
                 this.gameObject.transform.localRotation = this.gameObject.transform.localRotation * Quaternion.Euler(rotation);
-            }
+            }*/
 
         }
 
         public void SetColor(Color color)
         {
-            if (_IsAsset) return;
             this.gameObject.GetComponent<Renderer>().material.color = color;
         }
 
@@ -638,28 +689,15 @@ namespace RealismMod
 
         public static object GetFieldValue(string fieldName)
         {
-           // Type type = obj.GetType();
+            // Type type = obj.GetType();
 
             PropertyInfo fieldInfo = typeof(Assets).GetProperty(fieldName, BindingFlags.Public | BindingFlags.Static);
             // return fieldInfo.GetValue(obj);
             return fieldInfo.GetValue(null);
         }
 
-        static List<GameObject> objects = new List<GameObject>();
-        static void Test(DamageInfo di)
+        public static void SpawnAsset()
         {
-            Utils.Logger.LogWarning("==================");
-            for (int i = 0; i < objects.Count; i++)
-            {
-                Utils.Logger.LogWarning("name " + objects[i].name);
-                Utils.Logger.LogWarning("num " + i + " " + objects[i].transform.position);
-                Utils.Logger.LogWarning("num " + i + " " + objects[i].transform.rotation.eulerAngles);
-            }
-        }
-
-        public static void SpawnAsset() 
-        {
-
             //settings are his plugin config settings
             if (MoveDaCube.SelectedObjectName.Value == "")
             {
@@ -677,7 +715,7 @@ namespace RealismMod
             interactableComponent.Init();
             interactableComponent.ResetTranslation();
             interactableComponent.MatchPlayerYRotation();
-            interactableComponent.SetName(Utils.GenId());
+            interactableComponent.SetName(MoveDaCube.SelectedObjectName.Value);
 
             MoveDaCube.UnselectObject();
             MoveDaCube.SelectObject(cube, mute: true);
@@ -686,13 +724,12 @@ namespace RealismMod
             MoveDaCube.AllInteractableComponents.Add(interactableComponent);
 
             var player = Utils.GetYourPlayer().Transform;
-            var fieldValue = (UnityEngine.Object)GetFieldValue(PluginConfig.TargetZone.Value);
+            var fieldValue = (UnityEngine.Object)GetFieldValue(MoveDaCube.SelectedAssetName.Value);
             GameObject asset = (GameObject)Instantiate(fieldValue, cube.transform.position, cube.transform.rotation);
+            asset.name = MoveDaCube.SelectedAssetName.Value + Utils.GenId();
             asset.transform.parent = parent.transform;
+            interactableComponent.Asset = asset;
             BallisticCollider collider = asset.GetComponentInChildren<BallisticCollider>();
-            collider.OnHitAction += Test;
-            objects.Add(asset);
-
         }
 
         public static Material GetTransparentMaterial(Color color, float transparency)
@@ -748,297 +785,4 @@ namespace RealismMod
         }
     }
 
-
-    //Task extention method: allows easier handling of async tasks in non-async methods, treating them as coroutines instead
-    public static class TaskExtensions
-    {
-        public static IEnumerator AsCoroutine(this Task task)
-        {
-            while (!task.IsCompleted)
-            {
-                yield return null;
-            }
-
-            if (task.IsFaulted)
-            {
-                throw task.Exception;
-            }
-        }
-    }
-
-    public static class Utils
-    {
-        public static ManualLogSource Logger;
-
-        public static bool IsReady = false;
-        public static bool IsInHideout = false;
-        public static bool WeaponIsReady = false;
-        public static bool HasRunErgoWeightCalc = false;
-
-        public static string Silencer = "550aa4cd4bdc2dd8348b456c";
-        public static string FlashHider = "550aa4bf4bdc2dd6348b456b";
-        public static string MuzzleCombo = "550aa4dd4bdc2dc9348b4569";
-        public static string Barrel = "555ef6e44bdc2de9068b457e";
-        public static string Mount = "55818b224bdc2dde698b456f";
-        public static string Receiver = "55818a304bdc2db5418b457d";
-        public static string Stock = "55818a594bdc2db9688b456a";
-        public static string Charge = "55818a6f4bdc2db9688b456b";
-        public static string CompactCollimator = "55818acf4bdc2dde698b456b";
-        public static string Collimator = "55818ad54bdc2ddc698b4569";
-        public static string AssaultScope = "55818add4bdc2d5b648b456f";
-        public static string Scope = "55818ae44bdc2dde698b456c";
-        public static string IronSight = "55818ac54bdc2d5b648b456e";
-        public static string SpecialScope = "55818aeb4bdc2ddc698b456a";
-        public static string AuxiliaryMod = "5a74651486f7744e73386dd1";
-        public static string Foregrip = "55818af64bdc2d5b648b4570";
-        public static string PistolGrip = "55818a684bdc2ddd698b456d";
-        public static string Gasblock = "56ea9461d2720b67698b456f";
-        public static string Handguard = "55818a104bdc2db9688b4569";
-        public static string Bipod = "55818afb4bdc2dde698b456d";
-        public static string Flashlight = "55818b084bdc2d5b648b4571";
-        public static string TacticalCombo = "55818b164bdc2ddc698b456c";
-        public static string UBGL = "55818b014bdc2ddc698b456b";
-
-        public static bool GetIPlayer(IPlayer x)
-        {
-            return x.ProfileId == Utils.GetYourPlayer().ProfileId;
-        }
-
-        public static async Task LoadLoot(Vector3 position, Quaternion rotation, string templateId)
-        {
-            Item item = Singleton<ItemFactory>.Instance.CreateItem(Utils.GenId(), templateId, null);
-            item.StackObjectsCount = 1;
-            item.SpawnedInSession = true;
-            ResourceKey[] resources = item.Template.AllResources.ToArray();
-            await LoadBundle(resources);
-            IPlayer player = Singleton<GameWorld>.Instance.RegisteredPlayers.FirstOrDefault(new Func<IPlayer, bool>(GetIPlayer));
-            Singleton<GameWorld>.Instance.ThrowItem(item, player, position, rotation, Vector3.zero, Vector3.zero);
-        }
-
-        public static async Task LoadBundle(ResourceKey[] resources)
-        {
-            await Singleton<PoolManager>.Instance.LoadBundlesAndCreatePools(PoolManager.PoolsCategory.Raid, PoolManager.AssemblyType.Local, resources, JobPriority.Immediate, null, PoolManager.DefaultCancellationToken);
-        }
-
-        public static bool AreFloatsEqual(float a, float b, float epsilon = 0.001f)
-        {
-            float difference = Math.Abs(a - b);
-            return difference < epsilon;
-        }
-
-        public static string GetRandomWeightedKey(Dictionary<string, int> items)
-        {
-            string result = "";
-            int totalWeight = 0;
-
-            foreach (var item in items) 
-            {
-                totalWeight += item.Value;
-            }
-
-            System.Random rnd = new System.Random();
-            int randNumber = rnd.Next(totalWeight);
-
-            foreach (var item in items)
-            {
-                int weight = item.Value;
-
-                if (randNumber >= weight)
-                {
-                    randNumber -= weight;
-                }
-                else
-                {
-                    result = item.Key;
-                    break;
-                }
-            }
-            return result;
-        }
-
-        public static bool IsConfItemNull(string[] confItemArray, int expectedLength = 0)
-        {
-            if (confItemArray != null && confItemArray.Length > expectedLength)
-            {
-                if (confItemArray[0] == "SPTRM")
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public static bool ConfItemsIsNullOrInvalid(string[] confItemArray, int length)
-        {
-            if (confItemArray != null && confItemArray.Length >= length)
-            {
-                if (confItemArray[0] == "SPTRM") 
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public static Player GetYourPlayer() 
-        {
-            GameWorld gameWorld = Singleton<GameWorld>.Instance;
-            if (gameWorld == null) return null;
-            return gameWorld.MainPlayer;
-        }
-
-        public static Player GetPlayerByID(string id)
-        {
-            GameWorld gameWorld = Singleton<GameWorld>.Instance;
-            return gameWorld.GetAlivePlayerByProfileID(id);   
-        }
-
-        public static bool CheckIsReady()
-        {
-            GameWorld gameWorld = Singleton<GameWorld>.Instance;
-            SessionResultPanel sessionResultPanel = Singleton<SessionResultPanel>.Instance;
-
-            Player player = gameWorld?.MainPlayer;
-            if (player != null)
-            {
-                Utils.WeaponIsReady = player?.HandsController != null && player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon ? true : false;
-                Utils.IsInHideout = player is HideoutPlayer ? true : false;
-            }
-            else 
-            {
-                Utils.WeaponIsReady = false;
-                Utils.IsInHideout = false;
-            }
-
-            if (gameWorld == null || gameWorld.AllAlivePlayersList == null || gameWorld.MainPlayer == null || sessionResultPanel != null)
-            {
-                Utils.IsReady = false;
-                Utils.WeaponIsReady = false;
-                Utils.IsInHideout = false;
-                return false;
-            }
-            Utils.IsReady = true;
-            return true;
-        }
-
-        public static void SafelyAddAttributeToList(ItemAttributeClass itemAttribute, Mod __instance)
-        {
-            if (itemAttribute.Base() != 0f)
-            {
-                __instance.Attributes.Add(itemAttribute);
-            }
-        }
-
-        public static string GenId()
-        {
-            return Guid.NewGuid().ToString();
-        }
-
-        public static bool IsSight(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Scope] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[AssaultScope] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[SpecialScope] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[CompactCollimator] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Collimator] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[IronSight];
-        }
-        public static bool IsMuzzleDevice(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[MuzzleCombo] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Silencer] || mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[FlashHider];
-        }
-        public static bool IsStock(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Stock];
-        }
-        public static bool IsSilencer(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Silencer];
-        }
-        public static bool IsMagazine(Mod mod)
-        {
-            return (mod is MagazineClass);
-        }
-        public static bool IsFlashHider(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[FlashHider];
-        }
-        public static bool IsMuzzleCombo(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[MuzzleCombo];
-        }
-        public static bool IsBarrel(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Barrel];
-        }
-        public static bool IsMount(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Mount];
-        }
-        public static bool IsReceiver(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Receiver];
-        }
-        public static bool IsCharge(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Charge];
-        }
-        public static bool IsCompactCollimator(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[CompactCollimator];
-        }
-        public static bool IsCollimator(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Collimator];
-        }
-        public static bool IsAssaultScope(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[AssaultScope];
-        }
-        public static bool IsScope(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Scope];
-        }
-        public static bool IsIronSight(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[IronSight];
-        }
-        public static bool IsSpecialScope(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[SpecialScope];
-        }
-        public static bool IsAuxiliaryMod(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[AuxiliaryMod];
-        }
-        public static bool IsForegrip(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Foregrip];
-        }
-        public static bool IsPistolGrip(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[PistolGrip];
-        }
-        public static bool IsGasblock(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Gasblock];
-        }
-        public static bool IsHandguard(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Handguard];
-        }
-        public static bool IsBipod(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Bipod];
-        }
-        public static bool IsFlashlight(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[Flashlight];
-        }
-        public static bool IsTacticalCombo(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[TacticalCombo];
-        }
-        public static bool IsUBGL(Mod mod)
-        {
-            return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[UBGL];
-        }
-    }
-
-  
 }

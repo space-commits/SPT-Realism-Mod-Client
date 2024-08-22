@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.AI;
+using static RootMotion.FinalIK.IKSolver;
 
 namespace RealismMod
 {
@@ -12,7 +14,7 @@ namespace RealismMod
 
         public static void CreateZones(string map,ZoneCollection collection)
         {
-            var zones = HazardZoneLocations.GetZones(collection.ZoneType, map.ToLower());
+            var zones = HazardZoneData.GetZones(collection.ZoneType, map.ToLower());
             if (zones == null) return;
             foreach (var zone in zones)
             {
@@ -44,68 +46,73 @@ namespace RealismMod
             if (!ShouldSpawnZone(zone.SpawnChance)) return;
 
             HandleZoneAssets(zone);
+            HandleZoneLoot(zone);
 
-            string zoneName = zone.Name;
-            Vector3 position = new Vector3(zone.Position.X, zone.Position.Y, zone.Position.Z);
-            Vector3 rotation = new Vector3(zone.Rotation.X, zone.Rotation.Y, zone.Rotation.Z);
-            Vector3 size = new Vector3(zone.Size.X, zone.Size.Y, zone.Size.Z);
-            Vector3 scale = size;
-
-            GameObject hazardZone = new GameObject(zoneName);
-            T hazard = hazardZone.AddComponent<T>();
-
-            float strengthModifier = 1f;
-            if ((hazard.ZoneType == EZoneType.Gas || hazard.ZoneType == EZoneType.GasAssets) && (!Plugin.FikaPresent && !PluginConfig.ZoneDebug.Value))
-            { 
-               strengthModifier = UnityEngine.Random.Range(0.95f, 1.3f); 
-            } 
-            hazard.ZoneStrengthModifier = zone.Strength * strengthModifier;
-
-            hazardZone.transform.position = position;
-            hazardZone.transform.rotation = Quaternion.Euler(rotation);
-
-            EFT.Interactive.TriggerWithId trigger = hazardZone.AddComponent<EFT.Interactive.TriggerWithId>();
-            trigger.SetId(zoneName);
-
-            EFT.Interactive.ExperienceTrigger questTrigger = hazardZone.AddComponent<EFT.Interactive.ExperienceTrigger>();
-            questTrigger.SetId(zoneName);
-
-            hazardZone.layer = LayerMask.NameToLayer("Triggers");
-            hazardZone.name = zoneName;
-
-            BoxCollider boxCollider = hazardZone.AddComponent<BoxCollider>();
-            boxCollider.isTrigger = true;
-            boxCollider.size = size;
-
-            if (zone.BlockNav)
+            foreach (var subZone in zone.Zones) 
             {
-                var navMeshObstacle = hazardZone.AddComponent<NavMeshObstacle>();
-                navMeshObstacle.carving = true;
-                navMeshObstacle.center = boxCollider.center;
-                navMeshObstacle.size = boxCollider.size;
-            }
+                string zoneName = subZone.Name;
+                Vector3 position = new Vector3(subZone.Position.X, subZone.Position.Y, subZone.Position.Z);
+                Vector3 rotation = new Vector3(subZone.Rotation.X, subZone.Rotation.Y, subZone.Rotation.Z);
+                Vector3 size = new Vector3(subZone.Size.X, subZone.Size.Y, subZone.Size.Z);
+                Vector3 scale = size;
 
-            // visual representation for debugging
-            if (PluginConfig.ZoneDebug.Value)
-            {
-                GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                visualRepresentation.name = zoneName + "Visual";
-                visualRepresentation.transform.parent = hazardZone.transform;
-                visualRepresentation.transform.localScale = size;
-                visualRepresentation.transform.localPosition = boxCollider.center;
-                visualRepresentation.transform.rotation = boxCollider.transform.rotation;
-                visualRepresentation.GetComponent<Renderer>().material.color = hazard.ZoneType == EZoneType.Radiation || hazard.ZoneType == EZoneType.RadAssets ?  new Color(0f, 1f, 0f, 0.15f) : new Color(1f, 0f, 0f, 0.15f);
-                UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
+                GameObject hazardZone = new GameObject(zoneName);
+                T hazard = hazardZone.AddComponent<T>();
+
+                float strengthModifier = 1f;
+                if ((hazard.ZoneType == EZoneType.Gas || hazard.ZoneType == EZoneType.GasAssets) && (!Plugin.FikaPresent && !PluginConfig.ZoneDebug.Value))
+                {
+                    strengthModifier = UnityEngine.Random.Range(0.95f, 1.3f);
+                }
+                hazard.ZoneStrengthModifier = subZone.Strength * strengthModifier;
+
+                hazardZone.transform.position = position;
+                hazardZone.transform.rotation = Quaternion.Euler(rotation);
+
+                EFT.Interactive.TriggerWithId trigger = hazardZone.AddComponent<EFT.Interactive.TriggerWithId>();
+                trigger.SetId(zoneName);
+
+                EFT.Interactive.ExperienceTrigger questTrigger = hazardZone.AddComponent<EFT.Interactive.ExperienceTrigger>();
+                questTrigger.SetId(zoneName);
+
+                hazardZone.layer = LayerMask.NameToLayer("Triggers");
+                hazardZone.name = zoneName;
+
+                BoxCollider boxCollider = hazardZone.AddComponent<BoxCollider>();
+                boxCollider.isTrigger = true;
+                boxCollider.size = size;
+
+                if (subZone.BlockNav)
+                {
+                    var navMeshObstacle = hazardZone.AddComponent<NavMeshObstacle>();
+                    navMeshObstacle.carving = true;
+                    navMeshObstacle.center = boxCollider.center;
+                    navMeshObstacle.size = boxCollider.size;
+                }
+
+                // visual representation for debugging
+                if (PluginConfig.ZoneDebug.Value)
+                {
+                    GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    visualRepresentation.name = zoneName + "Visual";
+                    visualRepresentation.transform.parent = hazardZone.transform;
+                    visualRepresentation.transform.localScale = size;
+                    visualRepresentation.transform.localPosition = boxCollider.center;
+                    visualRepresentation.transform.rotation = boxCollider.transform.rotation;
+                    visualRepresentation.GetComponent<Renderer>().material.color = hazard.ZoneType == EZoneType.Radiation || hazard.ZoneType == EZoneType.RadAssets ? new Color(0f, 1f, 0f, 0.15f) : new Color(1f, 0f, 0f, 0.15f);
+                    UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
+                    MoveDaCube.AddComponentToExistingGO(visualRepresentation, zoneName);
+                }
             }
         }
 
         public static void HandleZoneAssets(HazardLocation zone) 
         {
-            if (zone.Assets == null || Plugin.FikaPresent) return;
+            if (zone.Assets == null) return;
             System.Random rnd = new System.Random();
             foreach (var asset in zone.Assets) 
             {
-                if (rnd.Next(101) > asset.Odds) continue;
+                if (rnd.Next(101) > asset.Odds && !Plugin.FikaPresent) continue;
 
                 if (asset.RandomizeRotation) 
                 {
@@ -115,9 +122,49 @@ namespace RealismMod
                 Vector3 position = new Vector3(asset.Position.X, asset.Position.Y, asset.Position.Z);
                 Vector3 rotaiton = new Vector3(asset.Rotation.X, asset.Rotation.Y, asset.Rotation.Z);
 
-                if (asset.Type == "asset") UnityEngine.Object.Instantiate(GetAsset(asset.AssetName), position, Quaternion.Euler(rotaiton));
-                else if (asset.Type == "loot") LoadLooseLoot(position, rotaiton, asset.AssetName);
+                UnityEngine.Object.Instantiate(GetAsset(asset.AssetName), position, Quaternion.Euler(rotaiton));
             }
+        }
+
+        public static void HandleZoneLoot(HazardLocation zone)
+        {
+            if (zone.Loot == null || Plugin.FikaPresent) return;
+            System.Random rnd = new System.Random();
+            foreach (var loot in zone.Loot)
+            {
+                if (rnd.Next(101) > loot.Odds) continue;
+
+                if (loot.RandomizeRotation)
+                {
+                    loot.Rotation.Y = rnd.Range(0, 360);
+                }
+
+                Vector3 position = new Vector3(loot.Position.X, loot.Position.Y, loot.Position.Z);
+                Vector3 rotaiton = new Vector3(loot.Rotation.X, loot.Rotation.Y, loot.Rotation.Z);
+
+                LoadLooseLoot(position, rotaiton, GetLootTempalteId(loot.Type));
+            }
+        }
+
+        public static string GetLootTempalteId(string lootTier) 
+        {
+            Dictionary<string, int> lootDict;
+            switch (lootTier) 
+            {
+       
+                case "highTier":
+                    lootDict = ZoneLoot.HighTier;
+                    break;
+                case "midTier":
+                    lootDict = ZoneLoot.MidTier;
+                    break;
+                case "lowTier":
+                default:
+                    lootDict = ZoneLoot.LowTier;
+                    break;
+
+            }
+            return Utils.GetRandomWeightedKey(lootDict);
         }
 
         public static UnityEngine.Object GetAsset(string asset)

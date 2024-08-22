@@ -330,7 +330,8 @@ namespace RealismMod
             Assets.Ural = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\ural.bundle", "Assets/Prefabs/ural280_closed_update.prefab");
             Assets.BluePallet = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\bluepallet.bundle", "Assets/Prefabs/pallete_plastic_blue (10).prefab");
             Assets.BlueFuelPalletCloth = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\bluebarrelpalletcloth.bundle", "Assets/Prefabs/pallet_barrel_heap_update.prefab");
-        
+            Assets.BarrelPile = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\barrelpile.bundle", "Assets/Prefabs/barrel_pile (1).prefab");
+
             ExplosionPrefab = LoadAndInitializePrefabs<UnityEngine.Object>("exp\\expl.bundle", "Assets/Explosion/Prefab/NUCLEAR_EXPLOSION.prefab");
         }
 
@@ -361,7 +362,7 @@ namespace RealismMod
         
             try
             {
-                HazardZoneLocations.DeserializeZoneData();
+                HazardZoneData.DeserializeZoneData();
                 LoadBundles();
                 LoadConfig();
                 LoadSprites();

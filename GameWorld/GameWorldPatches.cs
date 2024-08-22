@@ -61,9 +61,9 @@ namespace RealismMod
             Plugin.CurrentProfileId = Utils.GetYourPlayer().ProfileId;
             if (Plugin.ServerConfig.enable_hazard_zones)
             {
-                HazardZoneSpawner.CreateZones(Singleton<GameWorld>.Instance.MainPlayer.Location, HazardZoneLocations.GasZoneLocations);
-                HazardZoneSpawner.CreateZones(Singleton<GameWorld>.Instance.MainPlayer.Location, HazardZoneLocations.RadZoneLocations);
-                HazardZoneSpawner.CreateZones(Singleton<GameWorld>.Instance.MainPlayer.Location, HazardZoneLocations.RadAssetZoneLocations);
+                HazardZoneSpawner.CreateZones(Singleton<GameWorld>.Instance.MainPlayer.Location, HazardZoneData.GasZoneLocations);
+                HazardZoneSpawner.CreateZones(Singleton<GameWorld>.Instance.MainPlayer.Location, HazardZoneData.RadZoneLocations);
+                HazardZoneSpawner.CreateZones(Singleton<GameWorld>.Instance.MainPlayer.Location, HazardZoneData.RadAssetZoneLocations);
                 HazardTracker.GetHazardValues(Plugin.CurrentProfileId);
                 HazardTracker.ResetTracker();
             }

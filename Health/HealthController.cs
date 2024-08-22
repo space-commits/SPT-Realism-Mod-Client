@@ -2022,7 +2022,8 @@ namespace RealismMod
         {
             if (PlayerHazardBridge.RadZoneCount > 0 && GearController.CurrentRadProtection < 1f)
             {
-                float increase = (PlayerHazardBridge.TotalRadRate + HazardTracker.RadiationRateMeds) * (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak);
+                float sprintFactor = PlayerState.IsSprinting ? 2f : 1f; 
+                float increase = (PlayerHazardBridge.TotalRadRate + HazardTracker.RadiationRateMeds) * (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak) * sprintFactor;
                 increase = Mathf.Max(increase, 0f);
                 HazardTracker.TotalRadiation += increase;
                 HazardTracker.TotalRadiationRate = increase;
@@ -2049,8 +2050,9 @@ namespace RealismMod
         {
             if ((PlayerHazardBridge.GasZoneCount > 0 || ToxicItemCount > 0) && GearController.CurrentGasProtection < 1f)
             {
+                float sprintFactor = PlayerState.IsSprinting ? 2f : 1f;
                 float toxicItemFactor = ToxicItemCount * 0.05f; 
-                float increase = (PlayerHazardBridge.TotalGasRate + HazardTracker.ToxicityRateMeds + toxicItemFactor) * (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak);
+                float increase = (PlayerHazardBridge.TotalGasRate + HazardTracker.ToxicityRateMeds + toxicItemFactor) * (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak) * sprintFactor;
                 increase = Mathf.Max(increase, 0f);
                 HazardTracker.TotalToxicity += increase;
                 HazardTracker.TotalToxicityRate = increase;

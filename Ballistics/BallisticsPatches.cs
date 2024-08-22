@@ -320,8 +320,8 @@ namespace RealismMod
             bool hitThigh = partHit == EBodyPartColliderType.LeftThigh || partHit == EBodyPartColliderType.RightThigh;
             bool isOverdosed = player.IsYourPlayer && Plugin.RealHealthController.HasOverdosed && damageInfo.Damage > 10f;
             bool fell = damageInfo.DamageType == EDamageType.Fall && damageInfo.Damage >= 15f;
-            bool doShotLegKnockdown = (hitCalf || hitThigh) && toBeHP <= 25f;
-            bool doShotDisarm = hitForearm && toBeHP <= 25f;
+            bool doShotLegKnockdown = (hitCalf || hitThigh) && toBeHP <= 5f;
+            bool doShotDisarm = hitForearm && toBeHP <= 5f;
             bool doHeadshotKnockdown = bodyPartType == EBodyPart.Head && toBeHP > 0f && toBeHP <= 12f && damageInfo.Damage >= 5;
             bool hasBonusChance = hitCalf || bodyPartType == EBodyPart.Head;
             float chanceModifier = fell ? 50000 : 1f;
