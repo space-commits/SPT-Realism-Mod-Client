@@ -33,7 +33,8 @@ namespace RealismMod
         {
             if (Plugin.RealHealthController.PlayerHazardBridge == null) return 1f;
             if (Plugin.RealHealthController.PlayerHazardBridge.TotalRadRate >= 0.15f) return 0f;
-            return RadDelay * (1f - Mathf.Pow(Plugin.RealHealthController.PlayerHazardBridge.TotalRadRate, 0.35f));
+            float radRate = Mathf.Max(Plugin.RealHealthController.PlayerHazardBridge.TotalRadRate, HazardTracker.TotalRadiationRate);
+            return RadDelay * (1f - Mathf.Pow(radRate, 0.35f));
         }
 
         public static void DoGasAnalyserAudio()
@@ -65,7 +66,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     PlayerHazardBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;
-                    if (player != null && bridge != null && bridge.RadZoneCount > 0)
+                    if (player != null && bridge != null && (bridge.RadZoneCount > 0 || HazardTracker.TotalRadiationRate > 0f))
                     {
                         PlayGeigerClips(player, bridge);
                         _geigerDeviceTimer = 0f;
@@ -103,7 +104,9 @@ namespace RealismMod
 
         public static string[] GetGeigerClip(float radLevel)
         {
-            switch (radLevel)
+            float radRate = Mathf.Max(Plugin.RealHealthController.PlayerHazardBridge.TotalRadRate, HazardTracker.TotalRadiationRate);
+
+            switch (radRate)
             {
                 case <= 0f:
                     return null;

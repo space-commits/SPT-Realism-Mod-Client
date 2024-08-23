@@ -25,6 +25,7 @@ using QuestUIClass = GClass2046;
 using SetInHandsMedsInterface = GInterface142;
 using EFT.UI;
 using EFT.Communications;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace RealismMod
 {
@@ -788,6 +789,28 @@ namespace RealismMod
             EDamageType.Exhaustion, EDamageType.Poison,  EDamageType.Melee,
             EDamageType.Explosion, EDamageType.Bullet, EDamageType.Blunt,};
 
+        private static void CancelRegen() 
+        {
+            Plugin.RealHealthController.CancelPassiveRegen = true;
+            Plugin.RealHealthController.CurrentPassiveRegenBlockDuration = Plugin.RealHealthController.BlockPassiveRegenBaseDuration;
+        }
+
+        private static void HandlePassiveRegenTimer(float damage, EDamageType damageType)
+        {
+            if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion ||
+                damageType == EDamageType.Sniper || damageType == EDamageType.Btr ||
+                damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding ||
+                damageType == EDamageType.Poison || damageType == EDamageType.Exhaustion ||
+                damageType == EDamageType.Dehydration || damageType == EDamageType.RadExposure ||
+                damageType == EDamageType.Impact || damageType == EDamageType.Melee ||
+                damageType == EDamageType.Flame || damageType == EDamageType.Medicine ||
+                damageType == EDamageType.LethalToxin || damageType == EDamageType.Stimulator ||
+                damage > 5f)
+            {
+                CancelRegen();
+            }
+        }
+
         [PatchPrefix]
         private static void Prefix(ActiveHealthController __instance, EBodyPart bodyPart, ref float damage, DamageInfo damageInfo)
         {
@@ -808,6 +831,8 @@ namespace RealismMod
                 float maxHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;
                 float remainingHp = currentHp / maxHp;
 
+    
+
                 if (damageType == EDamageType.Dehydration || damageType == EDamageType.Exhaustion || damageType == EDamageType.Poison)
                 {
                     damage = 0;
@@ -824,6 +849,8 @@ namespace RealismMod
                 float stressResist = __instance.Player.Skills.StressPain.Value;
                 int delay = (int)Math.Round(15f * (1f - vitalitySkill), 2);
                 float tickRate = (float)Math.Round(0.22f * (1f + vitalitySkill), 2);
+                float fallDamageLimit = 17 * vitalitySkill;
+                float bluntDamageLimit = 7.5f * vitalitySkill;
 
                 if (damageType == EDamageType.Dehydration)
                 {
@@ -835,7 +862,7 @@ namespace RealismMod
                     Plugin.RealHealthController.DmgeTracker.TotalExhaustionDamage += damage;
                     return;
                 }
-                if ((damageType == EDamageType.Fall && damage <= 20f))
+                if ((damageType == EDamageType.Fall && damage <= fallDamageLimit))
                 {
                     Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage, damageType);
                     return;
@@ -845,7 +872,7 @@ namespace RealismMod
                     Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
                     return;
                 }
-                if (damageType == EDamageType.Blunt && damage <= 7.5f)
+                if (damageType == EDamageType.Blunt && damage <= bluntDamageLimit)
                 {
                     Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
                     return;
@@ -855,7 +882,7 @@ namespace RealismMod
                     Plugin.RealHealthController.DmgeTracker.UpdateDamage(damageType, bodyPart, damage);
                     return;
                 }
-                if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= 17f) || (damageType == EDamageType.Blunt && damage >= 10f))
+                if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= fallDamageLimit + 2f) || (damageType == EDamageType.Blunt && damage >= bluntDamageLimit + 2f))
                 {
                     Plugin.RealHealthController.RemoveEffectsOfType(EHealthEffectType.HealthRegen);
                 }

@@ -124,9 +124,10 @@ namespace RealismMod
         public static ConfigEntry<float> DeviceVolume { get; set; }
         public static ConfigEntry<float> GasMaskBreathVolume { get; set; }
 
-        //medical0
+        //medical
         public static ConfigEntry<bool> EnableMedNotes { get; set; }
         public static ConfigEntry<bool> ResourceRateChanges { get; set; }
+        public static ConfigEntry<bool> PassiveRegen { get; set; }
         public static ConfigEntry<float> EnergyRateMulti { get; set; }
         public static ConfigEntry<float> HydrationRateMulti { get; set; }
         public static ConfigEntry<bool> GearBlocksHeal { get; set; }
@@ -392,11 +393,12 @@ namespace RealismMod
             EnableMaterialSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Material Speed Modifier", Plugin.ServerConfig.movement_changes, new ConfigDescription("Enables Movement Speed Being Affected By Ground Material (Concrete, Grass, Metal, Glass Etc.)", null, new ConfigurationManagerAttributes { Order = 20, Browsable = Plugin.ServerConfig.movement_changes }));
             EnableSlopeSpeed = Config.Bind<bool>(moveSettings, "Enable Ground Slope Speed Modifier", false, new ConfigDescription("Enables Slopes Slowing Down Movement. Can Cause Random Speed Slowdowns In Some Small Spots Due To BSG's Bad Map Geometry.", null, new ConfigurationManagerAttributes { Order = 10, Browsable = Plugin.ServerConfig.movement_changes }));
 
-            DeviceVolume = Config.Bind<float>(zoneSettings, "Device Volume", 0.9f, new ConfigDescription("Volume Modifier For Geiger And Gas Analyser.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1, Browsable = Plugin.ServerConfig.enable_hazard_zones }));
+            DeviceVolume = Config.Bind<float>(zoneSettings, "Device Volume", 1.2f, new ConfigDescription("Volume Modifier For Geiger And Gas Analyser.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1, Browsable = Plugin.ServerConfig.enable_hazard_zones }));
             GasMaskBreathVolume = Config.Bind<float>(zoneSettings, "Gas Mask Breath Volume", 0.8f, new ConfigDescription("Volume Modifier For Gas Mask SFX.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 2, Browsable = Plugin.ServerConfig.enable_hazard_zones }));
 
             EnableMedNotes = Config.Bind<bool>(healthSettings, "Medical Notifications", Plugin.ServerConfig.med_changes, new ConfigDescription("Enables Notifications For Medical Status Effects, Healing Etc..", null, new ConfigurationManagerAttributes { Order = 130, Browsable = Plugin.ServerConfig.med_changes }));
             ResourceRateChanges = Config.Bind<bool>(healthSettings, "Enable Hydration/Energy Loss Rate Changes", Plugin.ServerConfig.med_changes, new ConfigDescription("Enables Changes To How Hydration And Energy Loss Rates Are Calculated. They Are Increased By Injuries, Drug Use, Sprinting And Weight.", null, new ConfigurationManagerAttributes { Order = 120, Browsable = Plugin.ServerConfig.med_changes }));
+            PassiveRegen = Config.Bind<bool>(healthSettings, "Enable Passive Regen", Plugin.ServerConfig.med_changes, new ConfigDescription("Enables Regen Under Certain Conditions, And If THe Player Has Not Taken Damage For Some Time", null, new ConfigurationManagerAttributes { Order = 115, Browsable = Plugin.ServerConfig.med_changes }));
             HydrationRateMulti = Config.Bind<float>(healthSettings, "Hydration Drain Rate Multi.", 0.5f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 110, Browsable = Plugin.ServerConfig.med_changes }));
             EnergyRateMulti = Config.Bind<float>(healthSettings, "Energy Drain Rate Multi.", 0.3f, new ConfigDescription("Lower = Less Drain", new AcceptableValueRange<float>(0.1f, 1.5f), new ConfigurationManagerAttributes { Order = 100, Browsable = Plugin.ServerConfig.med_changes }));
             EnableTrnqtEffect = Config.Bind<bool>(healthSettings, "Enable Tourniquet Effect", Plugin.ServerConfig.med_changes, new ConfigDescription("Tourniquet Will Drain HP Of The Limb They Are Applied To.", null, new ConfigurationManagerAttributes { Order = 90, Browsable = Plugin.ServerConfig.med_changes }));

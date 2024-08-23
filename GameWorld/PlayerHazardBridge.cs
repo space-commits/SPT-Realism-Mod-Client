@@ -61,7 +61,7 @@ namespace RealismMod
                 {
                     _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, TotalGasRate * Interval * 0.75f, ExistanceClass.PoisonDamage);
 
-                    if (_Player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Chest).Current <= 110f)
+                    if (_Player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Chest).Current <= 115f)
                     {
                         _Player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
                     }
