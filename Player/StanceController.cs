@@ -1677,10 +1677,10 @@ namespace RealismMod
         {
             return new Dictionary<string, Vector3>{
             { "5b0bbe4e5acfc40dc528a72d", new Vector3(0f, 0f, -0.035f)}, //sa58
-            { "6183afd850224f204c1da514", new Vector3(0f, -0.013f, 0f)}, //mk17
-            { "6165ac306ef05c2ce828ef74", new Vector3(0f, -0.013f, 0f)}, //mk17 fde
-            { "6184055050224f204c1da540", new Vector3(0f, -0.013f, 0f)}, //mk16
-            { "618428466ef05c2ce828f218", new Vector3(0f, -0.013f, 0f)}, //mk16 fde
+            { "6183afd850224f204c1da514", new Vector3(0f, -0.0135f, 0.02f)}, //mk17
+            { "6165ac306ef05c2ce828ef74", new Vector3(0f, -0.0135f, 0.02f)}, //mk17 fde
+            { "6184055050224f204c1da540", new Vector3(0f, -0.0135f, 0.02f)}, //mk16
+            { "618428466ef05c2ce828f218", new Vector3(0f, -0.0135f, 0.02f)}, //mk16 fde
             { "5ae08f0a5acfc408fb1398a1", new Vector3(0f, 0f, -0.005f)}, //mosin 
             { "5bfd297f0db834001a669119", new Vector3(0f, 0f, -0.005f)}, //mosin s
             { "54491c4f4bdc2db1078b4568", new Vector3(0f, 0f, -0.01f)}, //mp133

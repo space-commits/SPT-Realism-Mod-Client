@@ -18,6 +18,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using static RealismMod.Attributes;
 using static RealismMod.HazardZoneSpawner;
+using static RootMotion.FinalIK.IKSolver;
 
 
 namespace RealismMod
@@ -331,6 +332,11 @@ namespace RealismMod
             Assets.BluePallet = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\bluepallet.bundle", "Assets/Prefabs/pallete_plastic_blue (10).prefab");
             Assets.BlueFuelPalletCloth = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\bluebarrelpalletcloth.bundle", "Assets/Prefabs/pallet_barrel_heap_update.prefab");
             Assets.BarrelPile = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\barrelpile.bundle", "Assets/Prefabs/barrel_pile (1).prefab");
+            Assets.LabsCrateSmall = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\labscratesmall.bundle", "Assets/Prefabs/woodBox_small (2).prefab");
+            Assets.YellowPlasticPallet = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\yellowbarrelpallet.bundle", "Assets/Prefabs/pallet_barrel_plastic_clear_P (4).prefab");
+            Assets.YellowPlasticBarrel = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\yellowbarrel.bundle", "Assets/Prefabs/barrel_plastic1_yellow_clear (6).prefab");
+            Assets.LabsSuit1 = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\labssuit1.bundle", "Assets/Prefabs/lab_ChemProtect_V2.prefab");
+            Assets.LabsSuit2 = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\labssuit2.bundle", "Assets/Prefabs/lab_ChemProtect_V3.prefab");
 
             ExplosionPrefab = LoadAndInitializePrefabs<UnityEngine.Object>("exp\\expl.bundle", "Assets/Explosion/Prefab/NUCLEAR_EXPLOSION.prefab");
         }
@@ -525,14 +531,13 @@ namespace RealismMod
                     {
                         var player = Utils.GetYourPlayer().Transform;
                         Utils.LoadLoot(player.position, player.rotation, PluginConfig.TargetZone.Value);
-                        Logger.LogWarning("player pos" + player.position);
-                        Logger.LogWarning("player rot" + player.rotation.eulerAngles);
+                        Utils.Logger.LogWarning("\"position\": " + "\"x\":" + player.position.x + "," + "\"y\":" + player.position.y + "," + "\"z:\"" + player.position.z);
+                        Utils.Logger.LogWarning("\"rotation\": " + "\"x\":" + player.rotation.eulerAngles.x + "," + "\"y\":" + player.eulerAngles.y + "," + "\"z:\"" + player.eulerAngles.z);
                     }
                 }
-
                 if (PluginConfig.ZoneDebug.Value && Input.GetKeyDown(KeyCode.Keypad0))
                 {
-                    HazardTracker.WipeTracker();              
+                    HazardTracker.WipeTracker();
                 }
 
                 if (PluginConfig.ZoneDebug.Value && Input.GetKeyDown(PluginConfig.AddZone.Value.MainKey))
@@ -673,7 +678,7 @@ namespace RealismMod
             new GetTotalCenterOfImpactPatch().Enable();
 
             //Recoil Patches
-            new GetCameraRotationRecoilPatch().Enable();
+            //new GetCameraRotationRecoilPatch().Enable(); makes recoil feel iffy, doesn't seem needed
             new RecalcWeaponParametersPatch().Enable();
             new AddRecoilForcePatch().Enable();
             new RecoilAnglesPatch().Enable();

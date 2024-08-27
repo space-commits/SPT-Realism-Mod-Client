@@ -17,10 +17,15 @@ namespace RealismMod
         public static UnityEngine.Object ElectroForkLift { get; set; }
         public static UnityEngine.Object BigForkLift { get; set; }
         public static UnityEngine.Object LabsCrate { get; set; }
+        public static UnityEngine.Object LabsCrateSmall { get; set; }
         public static UnityEngine.Object Ural { get; set; }
         public static UnityEngine.Object BluePallet { get; set; }
         public static UnityEngine.Object BlueFuelPalletCloth { get; set; }
         public static UnityEngine.Object BarrelPile { get; set; }
+        public static UnityEngine.Object YellowPlasticBarrel { get; set; }
+        public static UnityEngine.Object YellowPlasticPallet { get; set; }
+        public static UnityEngine.Object LabsSuit1 { get; set; }
+        public static UnityEngine.Object LabsSuit2 { get; set; }
     }
 
     public static class ZoneLoot 

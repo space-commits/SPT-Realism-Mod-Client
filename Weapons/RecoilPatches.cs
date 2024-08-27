@@ -189,7 +189,8 @@ namespace RealismMod
         private static bool Prefix(NewRecoilShotEffect __instance, ref Vector3 __result)
         {
             Vector3 currentCameraRotation = __instance.CameraRotationRecoil.GetRecoil(false);
-            currentCameraRotation.y *= 0.75f;
+            currentCameraRotation.x *= PluginConfig.test1.Value; //0.75
+            currentCameraRotation.y *= PluginConfig.test2.Value; //1
             __result = currentCameraRotation;
             return false;
 

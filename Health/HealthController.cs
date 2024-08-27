@@ -181,6 +181,10 @@ namespace RealismMod
 
         public bool CancelPassiveRegen { get; set; } = false;
 
+        public bool IsDehydrated { get; set; } = false;
+
+        public bool IsExhausted { get; set; } = false;
+
         public float CurrentPassiveRegenBlockDuration { get; set; } = 0f;
 
         public float BlockPassiveRegenBaseDuration 
@@ -245,7 +249,7 @@ namespace RealismMod
         {
             get
             {
-                return HazardTracker.TotalToxicity > 20f || HazardTracker.TotalRadiation > 40f || ArmsAreIncapacitated || HasOverdosed || IsPoisoned || IsCoughingInGas;
+                return HazardTracker.TotalToxicity > 20f || HazardTracker.TotalRadiation > 40f || ArmsAreIncapacitated || HasOverdosed || IsPoisoned || IsCoughingInGas || IsDehydrated || IsExhausted;
             }
         }
 
@@ -253,7 +257,7 @@ namespace RealismMod
         {
             get
             {
-                return HazardTracker.TotalToxicity > 40f || HazardTracker.TotalRadiation > 60f || ArmsAreIncapacitated || HasOverdosed || IsPoisoned || IsCoughingInGas;
+                return HazardTracker.TotalToxicity > 40f || HazardTracker.TotalRadiation > 60f || ArmsAreIncapacitated || HasOverdosed || IsPoisoned || IsCoughingInGas || IsDehydrated || IsExhausted;
             }
         }
 
@@ -322,7 +326,7 @@ namespace RealismMod
         public const float BasePKOverdoseThreshold = 45f;
 
         private const float ToxicityThreshold = 15f;
-        private const float RadiationThreshold = 40f;
+        public const float RadiationThreshold = 40f;
         private const float _baseToxicityRecoveryRate = -0.05f;
         private const float _hazardInterval = 10f;
         private float _hazardWaitTime = 0f;
@@ -423,7 +427,7 @@ namespace RealismMod
                 if (CurrentPassiveRegenBlockDuration <= 0.0f)
                 {
                     CancelPassiveRegen = false;
-                    CurrentPassiveRegenBlockDuration = 0f;
+                    CurrentPassiveRegenBlockDuration = BlockPassiveRegenBaseDuration;
                 }
             }
         }
@@ -436,7 +440,7 @@ namespace RealismMod
             var effectDict1 = (Dictionary<byte, string>)dictionaryField1.GetValue(null);
 
             effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "ResourceRateDrain");
-            effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "HealthRegen");
+            effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "HealthChange");
             effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "HealthDrain");
 
             dictionaryField1.SetValue(null, effectDict1);
@@ -446,7 +450,7 @@ namespace RealismMod
             var effectDict0 = (Dictionary<string, byte>)dictionaryField0.GetValue(null);
 
             effectDict0.Add("ResourceRateDrain", Convert.ToByte(effectDict0.Count + 1));
-            effectDict0.Add("HealthRegen", Convert.ToByte(effectDict0.Count + 1));
+            effectDict0.Add("HealthChange", Convert.ToByte(effectDict0.Count + 1));
             effectDict0.Add("HealthDrain", Convert.ToByte(effectDict0.Count + 1));
 
             dictionaryField0.SetValue(null, effectDict0);
@@ -455,7 +459,7 @@ namespace RealismMod
             FieldInfo typeFieldInfo = typeType.GetField("type_0", BindingFlags.NonPublic | BindingFlags.Static);
             var typeArr = (Type[])typeFieldInfo.GetValue(null);
 
-            Type[] customTypes = new Type[] { typeof(ResourceRateDrain), typeof(HealthRegen), typeof(HealthDrain) };
+            Type[] customTypes = new Type[] { typeof(ResourceRateDrain), typeof(HealthChange), typeof(HealthDrain) };
 
             customTypes.CopyTo(typeArr, 0);
             typeFieldInfo.SetValue(null, customTypes);
@@ -878,24 +882,24 @@ namespace RealismMod
             int delay = (int)Math.Round(15f * (1f - vitalitySkill), 2);
             float tickRate = (float)Math.Round(0.22f * (1f + vitalitySkill), 2);
 
-            bool isDehydrated = HasBaseEFTEffect(player, "Dehydration");
-            bool isExhausted = HasBaseEFTEffect(player, "Exhaustion");
+            IsDehydrated = HasBaseEFTEffect(player, "Dehydration");
+            IsExhausted = HasBaseEFTEffect(player, "Exhaustion");
 
-            if (isDehydrated)
+            if (IsDehydrated)
             {
                 RemoveRegenEffectsOfType(EDamageType.Dehydration);
             }
-            if (!isDehydrated && DmgeTracker.TotalDehydrationDamage > 0f)
+            if (!IsDehydrated && DmgeTracker.TotalDehydrationDamage > 0f)
             {
                 RestoreHPArossBody(player, DmgeTracker.TotalDehydrationDamage, delay, EDamageType.Dehydration, tickRate);
                 DmgeTracker.TotalDehydrationDamage = 0;
             }
 
-            if (isExhausted)
+            if (IsExhausted)
             {
                 RemoveRegenEffectsOfType(EDamageType.Exhaustion);
             }
-            if (!isExhausted && DmgeTracker.TotalExhaustionDamage > 0f)
+            if (!IsExhausted && DmgeTracker.TotalExhaustionDamage > 0f)
             {
                 RestoreHPArossBody(player, DmgeTracker.TotalExhaustionDamage, delay, EDamageType.Exhaustion, tickRate);
                 DmgeTracker.TotalExhaustionDamage = 0;
@@ -2083,18 +2087,13 @@ namespace RealismMod
             {
                 float reduction = HazardTracker.RadiationRateMeds * (1f + PlayerState.ImmuneSkillStrong);
                 float threshold = HazardTracker.TotalRadiation <= 15f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
-                HazardTracker.TotalRadiationRate = Mathf.Round(Mathf.Lerp(HazardTracker.TotalRadiationRate, HazardTracker.TotalRadiation == threshold ? 0f : reduction, 0.1f));
-                HazardTracker.TotalRadiationRate = (float)Math.Round(HazardTracker.TotalRadiationRate, 4);
+                HazardTracker.TotalRadiationRate = Mathf.Lerp(HazardTracker.TotalRadiationRate, HazardTracker.TotalRadiation == threshold ? 0f : reduction, 0.05f);
+                HazardTracker.TotalRadiationRate = (float)Math.Round(HazardTracker.TotalRadiationRate, 3);
                 HazardTracker.TotalRadiation = Mathf.Clamp(HazardTracker.TotalRadiation + HazardTracker.TotalRadiationRate, threshold, 100f);
             }
             else
             {
                 HazardTracker.TotalRadiationRate = 0f;
-            }
-
-            if (HazardTracker.TotalRadiation < RadiationThreshold)
-            {
-                RemoveCustomEffectOfType(typeof(RadiationEffect), EBodyPart.Chest);
             }
         }
 
@@ -2106,24 +2105,20 @@ namespace RealismMod
                 float toxicItemFactor = ToxicItemCount * 0.05f; 
                 float increase = (PlayerHazardBridge.TotalGasRate + HazardTracker.ToxicityRateMeds + toxicItemFactor) * (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak) * sprintFactor;
                 increase = Mathf.Max(increase, 0f);
-                HazardTracker.TotalToxicity += increase;
                 HazardTracker.TotalToxicityRate = increase;
+                HazardTracker.TotalToxicity += increase;
             }
             else if (HazardTracker.TotalToxicity > 0f || GearController.CurrentGasProtection >= 1f)
             {
                 float reduction = (_baseToxicityRecoveryRate + HazardTracker.ToxicityRateMeds) * (1f + PlayerState.ImmuneSkillStrong);
                 float threshold = HazardTracker.ToxicityRateMeds < 0f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalToxicity);
+                HazardTracker.TotalToxicityRate = Mathf.Lerp(HazardTracker.TotalToxicityRate, HazardTracker.TotalToxicity == threshold ? 0f : reduction, 0.1f);
+                HazardTracker.TotalToxicityRate = (float)Math.Round(HazardTracker.TotalToxicityRate, 3);
                 HazardTracker.TotalToxicity = Mathf.Clamp(HazardTracker.TotalToxicity + reduction, threshold, 100f);
-                HazardTracker.TotalToxicityRate = HazardTracker.TotalToxicity == threshold ? 0f : reduction;
             }
             else
             {
                 HazardTracker.TotalToxicityRate = 0f;
-            }
-
-            if (HazardTracker.TotalToxicity < ToxicityThreshold)
-            {
-                RemoveCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest);
             }
         }
 
@@ -2140,7 +2135,7 @@ namespace RealismMod
                     }
 
                     float effectStrength = HazardTracker.TotalToxicity / 100f;
-                    float coofFactor = IsCoughingInGas ? 0.5f : 1f;
+                    float coofFactor = IsCoughingInGas ? 0.5f : 0f;
                     //AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, _hazardInterval, 5f, Mathf.Min(effectStrength * 2f, 1f)); maybe I'm relying too much on tunnel vision effect...
                     if (HazardTracker.TotalToxicity >= ToxicityThreshold || IsCoughingInGas) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, (effectStrength * 0.7f) + coofFactor);
                 }

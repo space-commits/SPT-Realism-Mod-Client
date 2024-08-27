@@ -40,7 +40,7 @@ namespace RealismMod
         {
             get 
             {
-                return _gasMaskDurabilityFactor >= 0.95f ? 1f : _gasMaskDurabilityFactor;
+                return _gasMaskDurabilityFactor;
             }
         }
 
@@ -176,6 +176,7 @@ namespace RealismMod
             if (filter != null) 
             {
                 filterFactor = filter.Value > 90f ? 1f : Mathf.Pow(filter.Value / filter.MaxResource, 0.15f);
+                filterFactor = filterFactor > 0.85f ? 1f : filterFactor;
             }
           
             ArmorComponent armorComp = gasmask.GetItemComponent<ArmorComponent>();

@@ -829,7 +829,6 @@ namespace RealismMod
             __result = Math.Round(__instance.Template.RecoilForceUp + (__instance.Template.RecoilForceUp * (UIWeaponStats.VRecoilDelta)), 1).ToString();
             return false;
         }
-
     }
 
     public class COIDisplayDeltaPatch : ModulePatch
@@ -932,7 +931,7 @@ namespace RealismMod
 
         public static void DisplayDelta(Weapon __instance)
         {
-            bool isChonker = __instance.IsBeltMachineGun || __instance.Weight > 10f;
+            bool isChonker = __instance.IsBeltMachineGun || __instance.GetSingleItemTotalWeight() > 10f;
 
             float baseCOI = __instance.CenterOfImpactBase;
             float currentCOI = baseCOI;

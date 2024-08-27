@@ -122,13 +122,21 @@ namespace RealismMod
         private static bool _didSprintPenalties = false;
         private static bool _resetSwayAfterFiring = false;
 
+        private static bool SkipSprintPenalty
+        { 
+            get 
+            {
+                return RecoilController.IsFiring && !StanceController.IsAiming;
+            }  
+        }
+
         private static void DoSprintTimer(Player player, ProceduralWeaponAnimation pwa, Player.FirearmController fc, float mountingBonus)
         {
             _sprintCooldownTimer += Time.deltaTime;
 
             if (!_didSprintPenalties)
             {
-                bool skipPenalty = RecoilController.IsFiring && !StanceController.IsAiming;
+                bool skipPenalty = SkipSprintPenalty;
                 float sprintDurationModi = 1f + (_sprintTimer / 7f);
                 float ergoWeight = WeaponStats.ErgoFactor * (1f + (1f - PlayerState.GearErgoPenalty));
                 ergoWeight = 1f + (ergoWeight / 200f);
@@ -165,7 +173,7 @@ namespace RealismMod
 
         private static void ResetSwayParams(ProceduralWeaponAnimation pwa, float mountingBonus)
         {
-            bool skipPenalty = RecoilController.IsFiring && !StanceController.IsAiming;
+            bool skipPenalty = SkipSprintPenalty;
             float resetSwaySpeed = 0.035f;
             float resetSpeed = 0.4f;
             PlayerState.SprintTotalBreathIntensity = Mathf.Lerp(PlayerState.SprintTotalBreathIntensity, PlayerState.TotalBreathIntensity, resetSwaySpeed);

@@ -91,7 +91,7 @@ namespace RealismMod
 
                 if (currentPartHP > 25f && TimeExisted % 3 == 0) 
                 {
-                    _Player.ActiveHealthController.AddEffect<HealthRegen>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
+                    _Player.ActiveHealthController.AddEffect<HealthChange>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
                 }
             }
         }
@@ -151,7 +151,7 @@ namespace RealismMod
 
                 if (HpRegened < maxHpRegen && TimeExisted % 3 == 0)
                 {
-                    _Player.ActiveHealthController.AddEffect<HealthRegen>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
+                    _Player.ActiveHealthController.AddEffect<HealthChange>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
                     HpRegened += HpPerTick;
                 }
 
@@ -223,18 +223,11 @@ namespace RealismMod
 
                     bool hasBlockingEffect = RealHealthController.HasCustomEffectOfType(typeof(TourniquetEffect), bodyPart);
 
-                    Utils.Logger.LogWarning("hpPerc " + hpPerc);
-                    Utils.Logger.LogWarning("percentEnergy " + percentEnergy);
-                    Utils.Logger.LogWarning("percentHydro " + percentHydro);
-                    Utils.Logger.LogWarning("hasBlockingEffect " + hasBlockingEffect);
-                    Utils.Logger.LogWarning("GetHpThreshold " + GetHpThreshold());
-                    Utils.Logger.LogWarning("GetResourceThreshold " + GetResourceThreshold());
-
                     if (hasBlockingEffect || (currentHp >= maxHp) || hpPerc <= GetHpThreshold() || percentEnergy <= GetResourceThreshold() || percentHydro <= GetResourceThreshold()) continue;
 
                     float hpPerTick = GetRegenRate(percentHydro, percentEnergy);
                     hpPerTick *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
-                    _Player.ActiveHealthController.AddEffect<HealthRegen>(bodyPart, 0f, 3f, 1f, hpPerTick, null);
+                    _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 1f, hpPerTick, null);
                 }
             }
         }
@@ -299,7 +292,7 @@ namespace RealismMod
             {
                 if (Delay <= 0 && TimeExisted % 3 == 0)
                 {
-                    _Player.ActiveHealthController.AddEffect<HealthRegen>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
+                    _Player.ActiveHealthController.AddEffect<HealthChange>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
                     HpRegened += HpPerTick;
                 }
             }
@@ -503,33 +496,33 @@ namespace RealismMod
         {
             float rate = 0f;
 
-            if (Plugin.RealHealthController.IsCoughingInGas) rate += -2f;
+            if (Plugin.RealHealthController.IsCoughingInGas) rate += -7f + (-HazardTracker.TotalToxicityRate);
 
             switch (HazardTracker.TotalToxicity)
             {
-                case <= 40f:
-                    rate += -0.5f;
+                case < 40f:
+                    rate += 0f;
                     break;
                 case <= 50f:
-                    rate += -0.75f;
-                    break;
-                case <= 60f:
                     rate += -1f;
                     break;
-                case <= 70f:
-                    rate += -1.25f;
-                    break;
-                case <= 80f:
+                case <= 60f:
                     rate += -1.5f;
                     break;
-                case <= 90f:
-                    rate += -2f;
+                case <= 70f:
+                    rate += -2.5f;
                     break;
-                case < 100f:
+                case <= 80f:
                     rate += -3f;
                     break;
-                case >= 100f:
+                case <= 90f:
                     rate += -4f;
+                    break;
+                case < 100f:
+                    rate += -6f;
+                    break;
+                case >= 100f:
+                    rate += -8f;
                     break;
             }
 
@@ -549,7 +542,7 @@ namespace RealismMod
                     {
                         EBodyPart bodyPart = RealHealthController.BodyPartsArr[i];
                         drainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
-                        _Player.ActiveHealthController.AddEffect<HealthRegen>(bodyPart, 0f, 3f, 2f, drainRate, null);
+                        _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 2f, drainRate, null);
                     }
 
                 }
@@ -582,22 +575,22 @@ namespace RealismMod
         {
             switch (HazardTracker.TotalRadiation)
             {
-                case <= 40f:
-                    return -0.25f;
+                case < 40f:
+                    return 0f;
                 case <= 50f:
-                    return -0.35f;
+                    return -0.3f;
                 case <= 60f:
-                    return -0.5f;
+                    return -0.7f;
                 case < 70f:
-                    return -0.75f;
-                case <= 80f:
                     return -1f;
-                case <= 90f:
-                    return -1.25f;
-                case < 100f:
+                case <= 80f:
                     return -1.5f;
+                case <= 90f:
+                    return -2.5f;
+                case < 100f:
+                    return -3f;
                 case >= 100f:
-                    return -2f;
+                    return -4f;
                 default:
                     return 0f;
             }
@@ -611,12 +604,13 @@ namespace RealismMod
                 TimeExisted++;
                 if (TimeExisted % 3 == 0)
                 {
+                    float drainRate = GetDrainRate();
+                    if (drainRate >= 0) return;
                     for (int i = 0; i < RealHealthController.BodyPartsArr.Length; i++)
                     {
                         EBodyPart bodyPart = RealHealthController.BodyPartsArr[i];
-                        float baseDrainRate = GetDrainRate();
-                        baseDrainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
-                        _Player.ActiveHealthController.AddEffect<HealthRegen>(bodyPart, 0f, 3f, 2f, baseDrainRate, null);
+                        drainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
+                        _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 2f, drainRate, null);
                     }
                 }
             }
@@ -781,7 +775,7 @@ namespace RealismMod
     }
 
 
-    public class HealthRegen : EffectClass, IEffect, InterfaceOne, InterfaceTwo
+    public class HealthChange : EffectClass, IEffect, InterfaceOne, InterfaceTwo
     {
         private float _hpPerTick;
         private float _time;
@@ -802,7 +796,14 @@ namespace RealismMod
                 return;
             }
             this._time -= 3f;
-            base.HealthController.ChangeHealth(_bodyPart, this._hpPerTick, ExistanceClass.Existence);
+            if (this._hpPerTick < 0)
+            {
+                base.HealthController.ApplyDamage(_bodyPart, -this._hpPerTick, ExistanceClass.Existence);
+                Plugin.RealHealthController.CancelPassiveRegen = true;
+                Plugin.RealHealthController.CurrentPassiveRegenBlockDuration = Plugin.RealHealthController.BlockPassiveRegenBaseDuration;
+            }
+            else base.HealthController.ChangeHealth(_bodyPart, this._hpPerTick, ExistanceClass.Existence);
+
         }
     }
 

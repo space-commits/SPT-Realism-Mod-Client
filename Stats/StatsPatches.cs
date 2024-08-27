@@ -278,7 +278,7 @@ namespace RealismMod
             WeaponStats._WeapClass = __instance.WeapClass;
             bool isManual = WeaponStats.IsManuallyOperated(__instance);
             WeaponStats._IsManuallyOperated = isManual;
-            bool isChonker = __instance.IsBeltMachineGun || __instance.Weight >= 10f;
+            bool isChonker = __instance.IsBeltMachineGun || __instance.GetSingleItemTotalWeight() >= 10f;
 
             WeaponStats.ShouldGetSemiIncrease = false;
             if (__instance.WeapClass != "pistol" || __instance.WeapClass != "shotgun" || __instance.WeapClass != "sniperRifle" || __instance.WeapClass != "smg")

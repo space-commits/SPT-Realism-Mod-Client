@@ -1114,7 +1114,7 @@ namespace RealismMod
                 case "9x18PM":
                     return 2.2f;
                 case "57x28":
-                    return 2.4f;
+                    return 3f;
                 case "46x30":
                     return 2.3f;
                 case "9x21":
@@ -1126,7 +1126,7 @@ namespace RealismMod
                 case "9x19PARA":
                     return 2.4f;
                 case "9x33R":
-                    return 3.3f;
+                    return 4f;
 
                 case "762x35":
                     return 2f;
