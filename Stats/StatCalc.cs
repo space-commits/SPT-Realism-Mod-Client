@@ -856,6 +856,8 @@ namespace RealismMod
                     return 0.425f;
                 case "9x33R":
                     return 1f;
+                case "127x33":
+                    return 1.2f;
 
                 case "762x35":
                     return 0.5f;
@@ -923,6 +925,8 @@ namespace RealismMod
                     return 0.06f;
                 case "9x33R":
                     return 0.2f;
+                case "127x33":
+                    return 0.3f;
 
                 case "762x35":
                     return 0.07f;
@@ -991,6 +995,8 @@ namespace RealismMod
                     return 2;
                 case "9x33R":
                     return 10;
+                case "127x33":
+                    return 15;
 
                 case "762x35":
                     return 0;
@@ -1059,6 +1065,8 @@ namespace RealismMod
                     return 13;
                 case "9x33R":
                     return 30;
+                case "127x33":
+                    return 40;
 
                 case "762x35":
                     return 12;
@@ -1127,6 +1135,8 @@ namespace RealismMod
                     return 2.4f;
                 case "9x33R":
                     return 4f;
+                case "127x33":
+                    return 5;
 
                 case "762x35":
                     return 2f;
@@ -1152,9 +1162,9 @@ namespace RealismMod
                 case "127x55":
                     return 3.8f;
                 case "86x70":
-                    return 4f;
+                    return 5f;
                 case "127x108":
-                    return 4f;
+                    return 6f;
                     
                 case "23x75":
                     return 3.35f;

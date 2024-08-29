@@ -335,8 +335,7 @@ namespace RealismMod
             Assets.LabsCrateSmall = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\labscratesmall.bundle", "Assets/Prefabs/woodBox_small (2).prefab");
             Assets.YellowPlasticPallet = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\yellowbarrelpallet.bundle", "Assets/Prefabs/pallet_barrel_plastic_clear_P (4).prefab");
             Assets.YellowPlasticBarrel = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\yellowbarrel.bundle", "Assets/Prefabs/barrel_plastic1_yellow_clear (6).prefab");
-            Assets.LabsSuit1 = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\labssuit1.bundle", "Assets/Prefabs/lab_ChemProtect_V2.prefab");
-            Assets.LabsSuit2 = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\labssuit2.bundle", "Assets/Prefabs/lab_ChemProtect_V3.prefab");
+            Assets.MetalFence = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\metalfence.bundle", "Assets/Prefabs/fence_metall_part3_update.prefab");
 
             ExplosionPrefab = LoadAndInitializePrefabs<UnityEngine.Object>("exp\\expl.bundle", "Assets/Explosion/Prefab/NUCLEAR_EXPLOSION.prefab");
         }

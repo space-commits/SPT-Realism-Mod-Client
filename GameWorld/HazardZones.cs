@@ -18,12 +18,14 @@ namespace RealismMod
     {
         EZoneType ZoneType { get; } 
         float ZoneStrengthModifier { get; set; }
+        bool BlocksNav { get; set; }    
     }
 
     public class GasZone : TriggerWithId, IHazardZone
     {
         public EZoneType ZoneType { get; } = EZoneType.Gas;
         public float ZoneStrengthModifier { get; set; } = 1f;
+        public bool BlocksNav { get; set; }
         private Dictionary<Player, PlayerHazardBridge> _containedPlayers = new Dictionary<Player, PlayerHazardBridge>();
         private Collider _zoneCollider;
         private bool _isSphere = false;
@@ -133,6 +135,7 @@ namespace RealismMod
     {
         public EZoneType ZoneType { get; } = EZoneType.Radiation;
         public float ZoneStrengthModifier { get; set; } = 1f;
+        public bool BlocksNav { get; set; }
         private Dictionary<Player, PlayerHazardBridge> _containedPlayers = new Dictionary<Player, PlayerHazardBridge>();
         private Collider _zoneCollider;
         private bool _isSphere = false;
@@ -173,6 +176,7 @@ namespace RealismMod
                 }
                 hazardBridge.RadZoneCount++;
                 hazardBridge.RadRates.Add(this.name, 0f);
+                hazardBridge.ZoneBlocksNav = BlocksNav;
                 _containedPlayers.Add(player, hazardBridge);
             }
         }
@@ -184,6 +188,7 @@ namespace RealismMod
                 PlayerHazardBridge hazardBridge = _containedPlayers[player];
                 hazardBridge.RadZoneCount--;
                 hazardBridge.RadRates.Remove(this.name);
+                hazardBridge.ZoneBlocksNav = false;
                 _containedPlayers.Remove(player);
             }
         }

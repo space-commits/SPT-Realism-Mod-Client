@@ -650,7 +650,7 @@ namespace RealismMod
             if (player != null && player.IsYourPlayer)
             {
                 //Conditional recoil modifiers 
-                float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
+                float totalPlayerWeight = WeaponStats.IsStocklessPistol || (!WeaponStats.HasShoulderContact && !WeaponStats.IsPistol) ? 0f : PlayerState.TotalModifiedWeightMinusWeapon;
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 650f);
                 float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 200f);
                 float leftShoulderFactor = StanceController.IsLeftShoulder ? 1.2f : 1f;

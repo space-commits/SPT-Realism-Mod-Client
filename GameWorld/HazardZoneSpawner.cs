@@ -1,18 +1,42 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.AI;
-using static RootMotion.FinalIK.IKSolver;
+using EFT;
+using System.Linq;
 
 namespace RealismMod
 {
     public static class HazardZoneSpawner
     {
+        public const float MinBotSpawnDistanceFromPlayer = 150f;
         public static bool GameStarted { get; set; } = false;
 
-        public static void CreateZones(string map,ZoneCollection collection)
+        //for player, get cloesest spawn. For bot, sort by min distance, or furthest from player failing that.
+        public static Vector3 GetSafeSpawnPoint(Player entitiy, bool isBot, bool blocksNav)
+        {
+            IEnumerable<Vector3> spawns = HazardZoneData.GetSafeSpawn();
+            if (spawns == null || !blocksNav) return entitiy.Transform.position;
+            IEnumerable<Vector3> validSpawns = spawns;
+            Player player = Utils.GetYourPlayer();
+
+            if (isBot)
+            {
+                validSpawns = spawns.Where(s => Vector3.Distance(s, player.Transform.position) >= MinBotSpawnDistanceFromPlayer);
+            }
+
+            if (validSpawns.Any() || !isBot)
+            {
+                return validSpawns.OrderBy(s => Vector3.Distance(s, entitiy.Transform.position)).First();
+            }
+            else 
+            {
+                return spawns.OrderByDescending(s => Vector3.Distance(s, player.Transform.position)).First();
+            }
+        }
+
+        public static void CreateZones(string map, ZoneCollection collection)
         {
             var zones = HazardZoneData.GetZones(collection.ZoneType, map.ToLower());
             if (zones == null) return;
@@ -82,6 +106,7 @@ namespace RealismMod
                 boxCollider.isTrigger = true;
                 boxCollider.size = size;
 
+                hazard.BlocksNav = subZone.BlockNav;
                 if (subZone.BlockNav)
                 {
                     var navMeshObstacle = hazardZone.AddComponent<NavMeshObstacle>();

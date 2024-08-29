@@ -1,19 +1,24 @@
 ﻿using EFT;
 using EFT.InventoryLogic;
-using System;
+using Comfort.Common;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 using ExistanceClass = GClass2470;
+using System.Linq;
 
 namespace RealismMod
 {
     public class PlayerHazardBridge : MonoBehaviour
     {
+        private const float INTERVAL = 10f;
+        private const float STARTTIME = 30f;
         public Player _Player { get; set; }
+        public bool IsBot { get; private set; } = false;
+        public bool SpawnedInZone { get; private set; } = false;
+        public bool ZoneBlocksNav { get; set; } = false;
         public int GasZoneCount { get; set; } = 0;
         public int RadZoneCount { get; set; } = 0;
-        public Dictionary<string, float> GasRates = new Dictionary<string, float>();
+        public Dictionary<string, float> GasRates = new Dictionary<string, float>(); //to accomodate being in multiple zones
         public Dictionary<string, float> RadRates = new Dictionary<string, float>();
 
         public float TotalGasRate
@@ -43,7 +48,8 @@ namespace RealismMod
         }
 
         private float _bridgeTimer = 0f;
-        private const float Interval = 10f;
+        private float _timeActive = 0f;
+        private bool _checkedSpawn = false;
 
         private bool BotHasGasmask() 
         {
@@ -55,11 +61,11 @@ namespace RealismMod
 
         private void HandleGas(bool hasGasmask) 
         {
-            if (GasZoneCount > 0 && _Player != null && _Player?.ActiveHealthController != null && _Player?.AIData?.BotOwner != null && !_Player.AIData.BotOwner.IsDead && _Player.HealthController.IsAlive)
+            if (GasZoneCount > 0)
             {
                 if (!hasGasmask && TotalGasRate > 0.05f)
                 {
-                    _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, TotalGasRate * Interval * 0.75f, ExistanceClass.PoisonDamage);
+                    _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, TotalGasRate * INTERVAL * 0.75f, ExistanceClass.PoisonDamage);
 
                     if (_Player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Chest).Current <= 115f)
                     {
@@ -71,22 +77,53 @@ namespace RealismMod
 
         private void HandleRads(bool hasGasmask) 
         {
-            if (RadZoneCount > 0 && _Player != null && _Player?.ActiveHealthController != null && _Player?.AIData?.BotOwner != null && !_Player.AIData.BotOwner.IsDead && _Player.HealthController.IsAlive)
+            if (RadZoneCount > 0)
             {
                 float realRadRate = hasGasmask ? TotalRadRate * 0.5f : TotalRadRate;
                 if (realRadRate > 0.5f)
                 {
-                    _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, realRadRate * Interval, ExistanceClass.RadiationDamage);
+                    _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, realRadRate * INTERVAL, ExistanceClass.RadiationDamage);
                 }
             }
+        }
+
+        private void CheckSpawnPoint() 
+        {
+            if (!_checkedSpawn)
+            {
+                _timeActive += Time.deltaTime;
+                if (GasZoneCount > 0 || RadZoneCount > 0)
+                {
+                    SpawnedInZone = true;
+                    MoveEntityToSafeLocation();
+                }
+
+                if (_timeActive >= STARTTIME || SpawnedInZone) _checkedSpawn = true;
+            }
+        }
+
+        private void MoveEntityToSafeLocation() 
+        {
+            _Player.Transform.position = HazardZoneSpawner.GetSafeSpawnPoint(_Player, IsBot, ZoneBlocksNav);
+            Utils.Logger.LogWarning("Realism Mod: Spawned in Hazard, moved to " + _Player.Transform.position + ", Was Bot? " + IsBot);
+        }
+
+        void Awake() 
+        {
+            IsBot = _Player?.AIData?.BotOwner != null;
         }
 
         //for bots
         void Update()
         {
             _bridgeTimer += Time.deltaTime;
-            if (_bridgeTimer >= Interval)
+
+            CheckSpawnPoint();
+
+            if (_bridgeTimer >= INTERVAL)
             {
+                bool isAliveBot = IsBot && _Player != null && _Player?.ActiveHealthController != null && !_Player.AIData.BotOwner.IsDead && _Player.HealthController.IsAlive;
+                if (!isAliveBot) return;
                 //temporary solution to dealing with bots
                 bool hasGasmask = BotHasGasmask();
                 HandleGas(hasGasmask);

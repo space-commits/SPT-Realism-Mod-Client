@@ -5,6 +5,8 @@ using Newtonsoft.Json;
 using System;
 using EFT.Game.Spawning;
 using UnityEngine.Profiling;
+using EFT;
+using Comfort.Common;
 
 namespace RealismMod
 {
@@ -24,8 +26,56 @@ namespace RealismMod
         public static UnityEngine.Object BarrelPile { get; set; }
         public static UnityEngine.Object YellowPlasticBarrel { get; set; }
         public static UnityEngine.Object YellowPlasticPallet { get; set; }
-        public static UnityEngine.Object LabsSuit1 { get; set; }
-        public static UnityEngine.Object LabsSuit2 { get; set; }
+        public static UnityEngine.Object MetalFence { get; set; }
+    }
+
+    //alt spawn locations if playe/bot spawns in a hazard zone
+    public static class SafeSpawns
+    {
+        public static IEnumerable<Vector3> CustomsSpawns = new Vector3[]
+        {
+          new Vector3(436f, 2f, -63f),
+          new Vector3(558f, 2f, -99f),
+          new Vector3(336f, 1.6f, -17.3f),
+          new Vector3(347.4f, 1.6f, -178.6f),
+          new Vector3(199f, 1.6f, -203f),
+          new Vector3(536.1f, 0.8f, 11.3f),
+          new Vector3(372.6f, -0.4f, 46.1f),
+          new Vector3(158.1f, -1.1f, 193.9f),
+          new Vector3(61.1f, 1.6f, -173.8f),
+          new Vector3(-168.8f, 1.3f, -67f),
+          new Vector3(-228.8f, 1.7f, -220f)
+        };
+
+        public static IEnumerable<Vector3> GZSpawns = new Vector3[]
+        {
+          new Vector3(28.5f, 24.3f, -51.22f),
+          new Vector3(30.3f, 23.4f, 147.9f),
+          new Vector3(106.1f, 14.3f, 56.55f),
+          new Vector3(58.4f, 23.9f, 227.85f),
+        };
+
+        public static IEnumerable<Vector3> InterchangeSpawns = new Vector3[]
+        {
+          new Vector3(-45.7f, 27.5f, 12.1f),
+          new Vector3(0.33f, 27.5f, -199.1f),
+          new Vector3(-165.7f, 22.2f, -307.5f),
+          new Vector3(-161.6f, 21.7f, 199.9f),
+          new Vector3(34.6f, 27.5f, 112.7f),
+        };
+
+        public static IEnumerable<Vector3> ReserveSpawns = new Vector3[]
+        {
+          new Vector3(195.2f, -7.5f, -142.3f),
+          new Vector3(-61.8f, -7.5f, -42.6f),
+          new Vector3(-137.1f, -6.5f, -8.8f),
+          new Vector3(-172f, -6.7f, 40.5f),
+          new Vector3(-116.4f, -6.7f, 99.3f),
+          new Vector3(-72.5f, -11.3f, 29.8f),
+          new Vector3(56.4f, -7.12f, -5.1f),
+          new Vector3(-11f, 19.4f, 170f),
+          new Vector3(-144.3f, -9.9f, -23.8f),
+        };
     }
 
     public static class ZoneLoot 
@@ -143,7 +193,7 @@ namespace RealismMod
 
     public interface ZoneCollection 
     {
-       public EZoneType ZoneType { get; }
+        public EZoneType ZoneType { get; }
         public List<HazardLocation> Factory { get; set; }
         public List<HazardLocation> Customs { get; set; }
         public List<HazardLocation> GZ { get; set; }
@@ -213,7 +263,7 @@ namespace RealismMod
         [JsonProperty("LabsRadZones")]
         public List<HazardLocation> Labs { get; set; }
 
-        [JsonProperty("InterchangeRadZone")]
+        [JsonProperty("InterchangeRadZones")]
         public List<HazardLocation> Interchange { get; set; }
 
         [JsonProperty("LighthouseRadZones")]
@@ -248,7 +298,7 @@ namespace RealismMod
         [JsonProperty("LabsGasZones")]
         public List<HazardLocation> Labs { get; set; }
 
-        [JsonProperty("InterchangeGasZones")]
+        [JsonProperty("InterchangeGas")]
         public List<HazardLocation> Interchange { get; set; }
 
         [JsonProperty("LighthouseGasZones")]
@@ -312,6 +362,39 @@ namespace RealismMod
                     return zones.Lighthouse;
                 case "tarkovstreets":
                     return zones.Streets;
+                default:
+                    return null;
+            }
+        }
+
+        public static IEnumerable<Vector3> GetSafeSpawn()
+        {
+            string map = Singleton<GameWorld>.Instance.MainPlayer.Location;
+
+            switch (map)
+            {
+                case "rezervbase":
+                    return SafeSpawns.ReserveSpawns;
+                case "bigmap":
+                    return SafeSpawns.CustomsSpawns;
+                case "factory4_night":
+                case "factory4_day":
+                    return null;
+                case "interchange":
+                    return SafeSpawns.InterchangeSpawns;
+                case "laboratory":
+                    return null;
+                case "shoreline":
+                    return null;
+                case "sandbox":
+                case "sandbox_high":
+                    return SafeSpawns.GZSpawns;
+                case "woods":
+                    return null;
+                case "lighthouse":
+                    return null;
+                case "tarkovstreets":
+                    return null;
                 default:
                     return null;
             }
