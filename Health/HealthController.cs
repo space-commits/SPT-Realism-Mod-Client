@@ -1034,7 +1034,7 @@ namespace RealismMod
             if (player.HealthController.IsAlive && player.HealthController.DamageCoeff > 0f && Plugin.ServerConfig.enable_hazard_zones) AudioControllers.HazardZonesAudioController();
             DoResourceDrain(player.ActiveHealthController, Time.deltaTime);
 
-            if (!_addedPassiveRegenEffect)
+            if (!_addedPassiveRegenEffect && PluginConfig.PassiveRegen.Value)
             {
                 PassiveHealthRegenEffect resEffect = new PassiveHealthRegenEffect(player, this);
                 AddCustomEffect(resEffect, false);

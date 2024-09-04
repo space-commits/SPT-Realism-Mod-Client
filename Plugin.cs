@@ -43,7 +43,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.PLUGINVERSION)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string PLUGINVERSION = "1.4.4";
+        private const string PLUGINVERSION = "1.4.5";
 
         public static Dictionary<Enum, Sprite> IconCache = new Dictionary<Enum, Sprite>();
         public static Dictionary<string, AudioClip> HitAudioClips = new Dictionary<string, AudioClip>();
