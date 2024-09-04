@@ -2086,8 +2086,8 @@ namespace RealismMod
             else if (HazardTracker.TotalRadiation > 0f || GearController.CurrentRadProtection >= 1f)
             {
                 float reduction = HazardTracker.RadiationRateMeds * (1f + PlayerState.ImmuneSkillStrong);
-                float threshold = HazardTracker.TotalRadiation <= 15f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
-                HazardTracker.TotalRadiationRate = Mathf.Lerp(HazardTracker.TotalRadiationRate, HazardTracker.TotalRadiation == threshold ? 0f : reduction, 0.05f);
+                float threshold = HazardTracker.TotalRadiation <= 40f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
+                HazardTracker.TotalRadiationRate = Mathf.Lerp(HazardTracker.TotalRadiationRate, HazardTracker.TotalRadiation == threshold ? 0f : reduction, 0.08f);
                 HazardTracker.TotalRadiationRate = (float)Math.Round(HazardTracker.TotalRadiationRate, 3);
                 HazardTracker.TotalRadiation = Mathf.Clamp(HazardTracker.TotalRadiation + HazardTracker.TotalRadiationRate, threshold, 100f);
             }
@@ -2097,13 +2097,16 @@ namespace RealismMod
             }
         }
 
-        private void GasZoneTick(Player player) 
+        private void GasZoneTick(Player player)
         {
+            float sprintFactor = PlayerState.IsSprinting ? 2f : 1f;
+            float toxicItemFactor = ToxicItemCount * 0.05f;
+            float baseFactor = (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak);
+            float factors = baseFactor * sprintFactor;
+
             if ((PlayerHazardBridge.GasZoneCount > 0 || ToxicItemCount > 0) && GearController.CurrentGasProtection < 1f)
             {
-                float sprintFactor = PlayerState.IsSprinting ? 2f : 1f;
-                float toxicItemFactor = ToxicItemCount * 0.05f; 
-                float increase = (PlayerHazardBridge.TotalGasRate + HazardTracker.ToxicityRateMeds + toxicItemFactor) * (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak) * sprintFactor;
+                float increase = (PlayerHazardBridge.TotalGasRate + HazardTracker.ToxicityRateMeds + toxicItemFactor) * factors;
                 increase = Mathf.Max(increase, 0f);
                 HazardTracker.TotalToxicityRate = increase;
                 HazardTracker.TotalToxicity += increase;
@@ -2112,8 +2115,10 @@ namespace RealismMod
             {
                 float reduction = (_baseToxicityRecoveryRate + HazardTracker.ToxicityRateMeds) * (1f + PlayerState.ImmuneSkillStrong);
                 float threshold = HazardTracker.ToxicityRateMeds < 0f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalToxicity);
-                HazardTracker.TotalToxicityRate = Mathf.Lerp(HazardTracker.TotalToxicityRate, HazardTracker.TotalToxicity == threshold ? 0f : reduction, 0.1f);
-                HazardTracker.TotalToxicityRate = (float)Math.Round(HazardTracker.TotalToxicityRate, 3);
+                float totalRate = Mathf.Lerp(HazardTracker.TotalToxicityRate, HazardTracker.TotalToxicity == threshold ? 0f : reduction, 0.15f);
+                totalRate = (float)Math.Round(totalRate, 3);
+                if (totalRate < 0f) totalRate *= baseFactor;
+                HazardTracker.TotalToxicityRate = totalRate;    
                 HazardTracker.TotalToxicity = Mathf.Clamp(HazardTracker.TotalToxicity + reduction, threshold, 100f);
             }
             else
@@ -2135,7 +2140,7 @@ namespace RealismMod
                     }
 
                     float effectStrength = HazardTracker.TotalToxicity / 100f;
-                    float coofFactor = IsCoughingInGas ? 0.5f : 0f;
+                    float coofFactor = IsCoughingInGas ? 1f : 0f;
                     //AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, _hazardInterval, 5f, Mathf.Min(effectStrength * 2f, 1f)); maybe I'm relying too much on tunnel vision effect...
                     if (HazardTracker.TotalToxicity >= ToxicityThreshold || IsCoughingInGas) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, (effectStrength * 0.7f) + coofFactor);
                 }

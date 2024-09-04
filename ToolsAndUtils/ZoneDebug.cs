@@ -302,9 +302,9 @@ namespace RealismMod
                 Utils.Logger.LogWarning("==");
                 Utils.Logger.LogWarning("zone name " + zone.name);
                 if (zone.Asset != null) Utils.Logger.LogWarning("asset name " + zone.Asset.name);
-                Utils.Logger.LogWarning("\"position\": " + "\"x\":" + zone.transform.position.x + "," + "\"y\":" + zone.transform.position.y + "," + "\"z:\"" + zone.transform.position.z);
-                Utils.Logger.LogWarning("\"rotation\": " + "\"x\":" + zone.transform.rotation.eulerAngles.x + "," + "\"y\":" + zone.transform.eulerAngles.y + "," + "\"z:\"" + zone.transform.eulerAngles.z);
-                Utils.Logger.LogWarning("\"size\": " + "\"x\":" + zone.transform.localScale.x + "," + "\"y\":" + zone.transform.localScale.y + "," + "\"z:\"" + zone.transform.localScale.z);
+                Utils.Logger.LogWarning("\"position\": " + "\"x\":" + zone.transform.position.x + "," + "\"y\":" + zone.transform.position.y + "," + "\"z\":" + zone.transform.position.z);
+                Utils.Logger.LogWarning("\"rotation\": " + "\"x\":" + zone.transform.rotation.eulerAngles.x + "," + "\"y\":" + zone.transform.eulerAngles.y + "," + "\"z\":" + zone.transform.eulerAngles.z);
+                Utils.Logger.LogWarning("\"size\": " + "\"x\":" + zone.transform.localScale.x + "," + "\"y\":" + zone.transform.localScale.y + "," + "\"z\":" + zone.transform.localScale.z);
                 Utils.Logger.LogWarning("==");
             }
         }
@@ -724,12 +724,14 @@ namespace RealismMod
             MoveDaCube.AllInteractableComponents.Add(interactableComponent);
 
             var player = Utils.GetYourPlayer().Transform;
-            var fieldValue = (UnityEngine.Object)GetFieldValue(MoveDaCube.SelectedAssetName.Value);
-            GameObject asset = (GameObject)Instantiate(fieldValue, cube.transform.position, cube.transform.rotation);
+            var prefab = HazardZoneSpawner.GetAndLoadAsset(MoveDaCube.SelectedAssetName.Value);
+            GameObject asset = (GameObject)Instantiate(prefab, cube.transform.position, cube.transform.rotation);
             asset.name = MoveDaCube.SelectedAssetName.Value + Utils.GenId();
             asset.transform.parent = parent.transform;
             interactableComponent.Asset = asset;
             BallisticCollider collider = asset.GetComponentInChildren<BallisticCollider>();
+            MoveDaCube.LogObjects();
+
         }
 
         public static Material GetTransparentMaterial(Color color, float transparency)

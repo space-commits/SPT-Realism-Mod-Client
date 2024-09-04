@@ -66,6 +66,7 @@ namespace RealismMod
                 HazardZoneSpawner.CreateZones(Singleton<GameWorld>.Instance.MainPlayer.Location, HazardZoneData.RadAssetZoneLocations);
                 HazardTracker.GetHazardValues(Plugin.CurrentProfileId);
                 HazardTracker.ResetTracker();
+                //ShippingContainerSpawner.LoadAndSpawnShippingContainer();
             }
 
             HazardZoneSpawner.GameStarted = true;

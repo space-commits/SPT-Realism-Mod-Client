@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using EFT;
 using System.Linq;
+using UnityEngine.Assertions;
 
 namespace RealismMod
 {
@@ -17,7 +18,7 @@ namespace RealismMod
         public static Vector3 GetSafeSpawnPoint(Player entitiy, bool isBot, bool blocksNav)
         {
             IEnumerable<Vector3> spawns = HazardZoneData.GetSafeSpawn();
-            if (spawns == null || !blocksNav) return entitiy.Transform.position;
+            if (spawns == null || (isBot && !blocksNav)) return entitiy.Transform.position;
             IEnumerable<Vector3> validSpawns = spawns;
             Player player = Utils.GetYourPlayer();
 
@@ -147,7 +148,12 @@ namespace RealismMod
                 Vector3 position = new Vector3(asset.Position.X, asset.Position.Y, asset.Position.Z);
                 Vector3 rotaiton = new Vector3(asset.Rotation.X, asset.Rotation.Y, asset.Rotation.Z);
 
-                UnityEngine.Object.Instantiate(GetAsset(asset.AssetName), position, Quaternion.Euler(rotaiton));
+                GameObject containerPrefab = GetAndLoadAsset(asset.AssetName);
+                if (containerPrefab == null) 
+                {
+                    Utils.Logger.LogError("Realism Mod: Error Loading Asset From Bundle For Asset: " + asset.AssetName);
+                }
+                GameObject spawnedContainer = UnityEngine.Object.Instantiate(containerPrefab, position, Quaternion.Euler(rotaiton));
             }
         }
 
@@ -192,10 +198,27 @@ namespace RealismMod
             return Utils.GetRandomWeightedKey(lootDict);
         }
 
-        public static UnityEngine.Object GetAsset(string asset)
+        //previously I stored the loaded assets as static fields and used reflectio to dynamically load them, however this strangely caused issues with certain bundles,
+        //so instead I have to use this awful method to manually load in assets
+        public static GameObject GetAndLoadAsset(string assetName)
         {
-            PropertyInfo fieldInfo = typeof(Assets).GetProperty(asset, BindingFlags.Public | BindingFlags.Static);
-            return (UnityEngine.Object)fieldInfo.GetValue(null);
+            if (assetName == "GooBarrel") return Assets.GooBarrelBundle.LoadAsset<GameObject>("Assets/Labs/yellow_barrel.prefab");
+            if (assetName == "BlueBox") return Assets.BlueBoxBundle.LoadAsset<GameObject>("Assets/Prefabs/polytheneBox (6).prefab");
+            if (assetName == "RedForkLift") return Assets.RedForkLiftBundle.LoadAsset<GameObject>("Assets/Prefabs/autoloader.prefab");
+            if (assetName == "ElectroForkLift") return Assets.ElectroForkLiftBundle.LoadAsset<GameObject>("Assets/Prefabs/electroCar (2).prefab");
+            if (assetName == "LabsCrate") return Assets.LabsCrateBundle.LoadAsset<GameObject>("Assets/Prefabs/woodBox_medium.prefab");
+            if (assetName == "Ural") return Assets.UralBundle.LoadAsset<GameObject>("Assets/Prefabs/ural280_closed_update.prefab");
+            if (assetName == "Kamaz") return Assets.KamazBundle.LoadAsset<GameObject>("Assets/Prefabs/kamaz_4310_cargo_open.prefab");
+            if (assetName == "BluePallet") return Assets.BluePalletBundle.LoadAsset<GameObject>("Assets/Prefabs/pallete_plastic_blue (10).prefab");
+            if (assetName == "BlueFuelPalletCloth") return Assets.BlueFuelPalletClothBundle.LoadAsset<GameObject>("Assets/Prefabs/pallet_barrel_heap_update.prefab");
+            if (assetName == "BarrelPile") return Assets.BarrelPileBundle.LoadAsset<GameObject>("Assets/Prefabs/barrel_pile (1).prefab");
+            if (assetName == "LabsCrateSmall") return Assets.LabsCrateSmallBundle.LoadAsset<GameObject>("Assets/Prefabs/woodBox_small (2).prefab");
+            if (assetName == "YellowPlasticPallet") return Assets.YellowPlasticPalletBundle.LoadAsset<GameObject>("Assets/Prefabs/pallet_barrel_plastic_clear_P (4).prefab");
+            if (assetName == "WhitePlasticPallet") return Assets.WhitePlasticPalletBundle.LoadAsset<GameObject>("Assets/Prefabs/pallet_barrel_plastic_clear_P (5).prefab");
+            if (assetName == "MetalFence") return Assets.MetalFenceBundle.LoadAsset<GameObject>("Assets/Prefabs/fence_metall_part3_update.prefab");
+            if (assetName == "RedContainer") return Assets.RedContainerBundle.LoadAsset<GameObject>("Assets/Prefabs/container_6m_red_close.prefab"); if (assetName == "RedContainer") return Assets.RedContainerBundle.LoadAsset<GameObject>("Assets/Prefabs/container_6m_red_close.prefab");
+            if (assetName == "BlueContainer") return Assets.BlueContainerBundle.LoadAsset<GameObject>("container_6m_blue_close (1)");
+            return null;
         }
 
         private static void LoadLooseLoot(Vector3 postion, Vector3 rotation, string tempalteId)

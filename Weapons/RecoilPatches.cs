@@ -323,7 +323,8 @@ namespace RealismMod
                 else if ((canResetHorz || canResetVert) && !_hasReset && !RecoilController.IsFiring)
                 {
                     bool isHybrid = PluginConfig.EnableHybridRecoil.Value && (PluginConfig.HybridForAll.Value || (!PluginConfig.HybridForAll.Value && !WeaponStats.HasShoulderContact));
-                    float resetSpeed = RecoilController.BaseTotalConvergence * WeaponStats.ConvergenceDelta * PluginConfig.ResetSpeed.Value * fpsFactor;
+                    float resetSpeedFactor = WeaponStats.IsStocklessPistol || (WeaponStats.HasShoulderContact && !WeaponStats.IsPistol) ? 0.5f : 1f;
+                    float resetSpeed = RecoilController.BaseTotalConvergence * WeaponStats.ConvergenceDelta * PluginConfig.ResetSpeed.Value * resetSpeedFactor * fpsFactor;
                     float resetSens = isHybrid ? (float)Math.Round(PluginConfig.ResetSensitivity.Value * 0.4f, 3) : PluginConfig.ResetSensitivity.Value * fpsFactor;
 
                     bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Mathf.Clamp((float)Math.Round(resetSens / 2.5f, 3), 0f, 0.1f);
@@ -371,10 +372,10 @@ namespace RealismMod
 
                 if (RecoilController.IsFiring)
                 {
-
+                    //should be clamping instead of just setting it to not climb at all
                     if (_targetRotation.y <= _recordedRotation.y - (PluginConfig.RecoilClimbLimit.Value * fpsFactor))
                     {
-                        _targetRotation.y = movementContext.Rotation.y;
+                        _targetRotation.y = Mathf.Max(_targetRotation.y, _recordedRotation.y - (PluginConfig.RecoilClimbLimit.Value * fpsFactor));
                     }
 
                     float differenceX = Mathf.Abs(movementContext.Rotation.x - _targetRotation.x);

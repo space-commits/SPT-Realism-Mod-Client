@@ -5,6 +5,7 @@ using Comfort.Common;
 using EFT;
 using EFT.Ballistics;
 using EFT.InventoryLogic;
+using EFT.UI;
 using Newtonsoft.Json;
 using SPT.Common.Http;
 using System;
@@ -67,7 +68,7 @@ namespace RealismMod
         public static RealismHealthController RealHealthController;
 
         //explosion
-        public static UnityEngine.Object ExplosionPrefab { get; private set; }
+        public static AssetBundle ExplosionBundle { get; private set; }
 
         //weather controller
         public static GameObject RealismWeatherGameObject { get; private set; }
@@ -297,47 +298,35 @@ namespace RealismMod
             }
         }
 
-        private T LoadAndInitializePrefabs<T>(string bundlePath, string assetName) where T: UnityEngine.Object
+        private AssetBundle LoadAndInitializePrefabs(string bundlePath)
         {
             string fullPath = Path.Combine(_baseBundleFilepath, bundlePath);
             AssetBundle bundle = AssetBundle.LoadFromFile(fullPath);
-
-            if (bundle == null)
-            {
-                Logger.LogError($"Failed to load AssetBundle from {fullPath}");
-                return null;
-            }
-
-            T asset = bundle.LoadAsset<T>(assetName);
-
-            if (asset == null)
-            {
-                Logger.LogError($"Failed to load asset {assetName} from bundle {fullPath}");
-            }
-
-            return asset;
+            return bundle;
         }
 
         private void LoadBundles() 
         {
             _baseBundleFilepath = Path.Combine(Environment.CurrentDirectory, "BepInEx\\plugins\\Realism\\bundles\\");
 
-            Assets.GooBarrel = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\goo_barrel.bundle", "Assets/Labs/yellow_barrel.prefab");
-            Assets.BlueBox = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\bluebox.bundle", "Assets/Prefabs/bluebox.prefab");
-            Assets.RedForkLift = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\redforklift.bundle", "Assets/Prefabs/autoloader.prefab");
-            Assets.ElectroForkLift = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\electroforklift.bundle", "Assets/Prefabs/electroCar (2).prefab");
-            Assets.BigForkLift = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\bigforklift.bundle", "Assets/Prefabs/loader (3).prefab");
-            Assets.LabsCrate = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\labscrate.bundle", "Assets/Prefabs/woodBox_medium.prefab");
-            Assets.Ural = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\ural.bundle", "Assets/Prefabs/ural280_closed_update.prefab");
-            Assets.BluePallet = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\bluepallet.bundle", "Assets/Prefabs/pallete_plastic_blue (10).prefab");
-            Assets.BlueFuelPalletCloth = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\bluebarrelpalletcloth.bundle", "Assets/Prefabs/pallet_barrel_heap_update.prefab");
-            Assets.BarrelPile = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\barrelpile.bundle", "Assets/Prefabs/barrel_pile (1).prefab");
-            Assets.LabsCrateSmall = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\labscratesmall.bundle", "Assets/Prefabs/woodBox_small (2).prefab");
-            Assets.YellowPlasticPallet = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\yellowbarrelpallet.bundle", "Assets/Prefabs/pallet_barrel_plastic_clear_P (4).prefab");
-            Assets.YellowPlasticBarrel = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\yellowbarrel.bundle", "Assets/Prefabs/barrel_plastic1_yellow_clear (6).prefab");
-            Assets.MetalFence = LoadAndInitializePrefabs<UnityEngine.Object>("hazard_assets\\metalfence.bundle", "Assets/Prefabs/fence_metall_part3_update.prefab");
+            Assets.GooBarrelBundle = LoadAndInitializePrefabs("hazard_assets\\yellow_barrel.bundle");
+            Assets.BlueBoxBundle = LoadAndInitializePrefabs("hazard_assets\\bluebox.bundle");
+            Assets.RedForkLiftBundle = LoadAndInitializePrefabs("hazard_assets\\redforklift.bundle");
+            Assets.ElectroForkLiftBundle = LoadAndInitializePrefabs("hazard_assets\\electroforklift.bundle");
+            Assets.LabsCrateBundle = LoadAndInitializePrefabs("hazard_assets\\labscrate.bundle");
+            Assets.UralBundle = LoadAndInitializePrefabs("hazard_assets\\ural.bundle");
+            Assets.KamazBundle = LoadAndInitializePrefabs("hazard_assets\\kamaz.bundle");
+            Assets.BluePalletBundle = LoadAndInitializePrefabs("hazard_assets\\bluepallet.bundle");
+            Assets.BlueFuelPalletClothBundle = LoadAndInitializePrefabs("hazard_assets\\bluebarrelpalletcloth.bundle");
+            Assets.BarrelPileBundle = LoadAndInitializePrefabs("hazard_assets\\barrelpile.bundle");
+            Assets.LabsCrateSmallBundle = LoadAndInitializePrefabs("hazard_assets\\labscratesmall.bundle");
+            Assets.YellowPlasticPalletBundle = LoadAndInitializePrefabs("hazard_assets\\yellowbarrelpallet.bundle");
+            Assets.WhitePlasticPalletBundle = LoadAndInitializePrefabs("hazard_assets\\whitebarrelpallet.bundle");
+            Assets.MetalFenceBundle = LoadAndInitializePrefabs("hazard_assets\\metalfence.bundle");
+            Assets.RedContainerBundle = LoadAndInitializePrefabs("hazard_assets\\redcontainer.bundle");
+            Assets.BlueContainerBundle = LoadAndInitializePrefabs("hazard_assets\\bluecontainer.bundle");
+            ExplosionBundle = LoadAndInitializePrefabs("exp\\expl.bundle");
 
-            ExplosionPrefab = LoadAndInitializePrefabs<UnityEngine.Object>("exp\\expl.bundle", "Assets/Explosion/Prefab/NUCLEAR_EXPLOSION.prefab");
         }
 
         private void LoadMountingUI()
@@ -517,11 +506,12 @@ namespace RealismMod
             Utils.CheckIsReady();
             if (Utils.IsReady)
             {
-                /*    if (GameWorldController.GameStarted && Input.GetKeyDown(KeyCode.N))
-                    {
-                        var player = Utils.GetYourPlayer().Transform;
-                        Instantiate(ExplosionPrefab, new Vector3(1000f, 0f, 317f), new Quaternion(0, 0, 0, 0));
-                    }*/
+           /*     if (HazardZoneSpawner.GameStarted && Input.GetKeyDown(KeyCode.N))
+                {
+                    var player = Utils.GetYourPlayer().Transform;
+                    GameObject containerPrefab = ExplosionBundle.LoadAsset<GameObject>("Assets/Explosion/Prefab/NUCLEAR_EXPLOSION.prefab");
+                    Instantiate(containerPrefab, new Vector3(1000f, 0f, 317f), new Quaternion(0, 0, 0, 0));
+                }*/
 
                 if (HazardZoneSpawner.GameStarted && PluginConfig.ZoneDebug.Value)
                 {
@@ -530,8 +520,8 @@ namespace RealismMod
                     {
                         var player = Utils.GetYourPlayer().Transform;
                         Utils.LoadLoot(player.position, player.rotation, PluginConfig.TargetZone.Value);
-                        Utils.Logger.LogWarning("\"position\": " + "\"x\":" + player.position.x + "," + "\"y\":" + player.position.y + "," + "\"z:\"" + player.position.z);
-                        Utils.Logger.LogWarning("\"rotation\": " + "\"x\":" + player.rotation.eulerAngles.x + "," + "\"y\":" + player.eulerAngles.y + "," + "\"z:\"" + player.eulerAngles.z);
+                        Utils.Logger.LogWarning("\"position\": " + "\"x\":" + player.position.x + "," + "\"y\":" + player.position.y + "," + "\"z\":" + player.position.z);
+                        Utils.Logger.LogWarning("\"rotation\": " + "\"x\":" + player.rotation.eulerAngles.x + "," + "\"y\":" + player.eulerAngles.y + "," + "\"z\":" + player.eulerAngles.z);
                     }
                 }
                 if (PluginConfig.ZoneDebug.Value && Input.GetKeyDown(KeyCode.Keypad0))
