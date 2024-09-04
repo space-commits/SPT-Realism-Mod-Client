@@ -27,7 +27,7 @@ namespace RealismMod
         private static float _radiationRateMeds = 0f;
         private static Dictionary<string, HazardRecord> _hazardRecords = new Dictionary<string, HazardRecord>();
 
-        public static float RadiationRateMeds
+        public static float RadTreatmentRate
         {
             get
             {
@@ -35,11 +35,11 @@ namespace RealismMod
             }
             set
             {
-                _radiationRateMeds = Mathf.Clamp(value, -0.2f, 0f);
+                _radiationRateMeds = Mathf.Clamp(value, -0.3f, 0f);
             }
         }
 
-        public static float ToxicityRateMeds
+        public static float DetoxicationRate
         {
             get
             {
@@ -89,8 +89,8 @@ namespace RealismMod
         public static void ResetTracker() 
         {
             _totalToxicity = GetNextLowestHazardLevel((int)_totalToxicity);
-            ToxicityRateMeds = 0f;
-            RadiationRateMeds = 0f;
+            DetoxicationRate = 0f;
+            RadTreatmentRate = 0f;
             TotalToxicityRate = 0f;
             TotalRadiationRate = 0f;
         }

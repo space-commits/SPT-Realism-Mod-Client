@@ -20,7 +20,6 @@ namespace RealismMod
         public static AssetBundle LabsCrateBundle { get; set; }
         public static AssetBundle LabsCrateSmallBundle { get; set; }
         public static AssetBundle UralBundle { get; set; }
-        public static AssetBundle KamazBundle { get; set; }
         public static AssetBundle BluePalletBundle { get; set; }
         public static AssetBundle BlueFuelPalletClothBundle { get; set; }
         public static AssetBundle BarrelPileBundle { get; set; }

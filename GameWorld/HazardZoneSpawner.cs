@@ -208,7 +208,6 @@ namespace RealismMod
             if (assetName == "ElectroForkLift") return Assets.ElectroForkLiftBundle.LoadAsset<GameObject>("Assets/Prefabs/electroCar (2).prefab");
             if (assetName == "LabsCrate") return Assets.LabsCrateBundle.LoadAsset<GameObject>("Assets/Prefabs/woodBox_medium.prefab");
             if (assetName == "Ural") return Assets.UralBundle.LoadAsset<GameObject>("Assets/Prefabs/ural280_closed_update.prefab");
-            if (assetName == "Kamaz") return Assets.KamazBundle.LoadAsset<GameObject>("Assets/Prefabs/kamaz_4310_cargo_open.prefab");
             if (assetName == "BluePallet") return Assets.BluePalletBundle.LoadAsset<GameObject>("Assets/Prefabs/pallete_plastic_blue (10).prefab");
             if (assetName == "BlueFuelPalletCloth") return Assets.BlueFuelPalletClothBundle.LoadAsset<GameObject>("Assets/Prefabs/pallet_barrel_heap_update.prefab");
             if (assetName == "BarrelPile") return Assets.BarrelPileBundle.LoadAsset<GameObject>("Assets/Prefabs/barrel_pile (1).prefab");

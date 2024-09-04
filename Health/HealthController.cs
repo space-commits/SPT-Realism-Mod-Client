@@ -191,7 +191,7 @@ namespace RealismMod
         {
             get 
             {
-                return 600f * (1f - PlayerState.VitalityFactorStrong); // 900f
+                return 600f * (1f - PlayerState.VitalityFactorStrong);
             }
         }
 
@@ -507,7 +507,7 @@ namespace RealismMod
             effectMethod.MakeGenericMethod(typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType(effect, BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { bodyPart, delayTime, duration, residueTime, strength, null });
         }
 
-        public void AddBaseEFTEffectIfNoneExisting(Player player, string effect, EBodyPart bodyPart, float delayTime, float duration, float residueTime, float strength)
+        public void AddBaseEFTEffectIfNoneExisting(Player player, string effect, EBodyPart bodyPart, float? delayTime, float? duration, float? residueTime, float? strength)
         {
             if (!player.ActiveHealthController.BodyPartEffects.Effects[0].Any(e => e.Key == effect))
             {
@@ -639,6 +639,20 @@ namespace RealismMod
                 }
             }
             return hasEffect;
+        }
+
+        public ICustomHealthEffect GetCustomEffectOfType<T>(EBodyPart bodyPart) where T : ICustomHealthEffect
+        {
+            ICustomHealthEffect effect = null;
+            for (int i = _activeHealthEffects.Count - 1; i >= 0; i--)
+            {
+                ICustomHealthEffect activeHealthEffect = _activeHealthEffects[i];
+                if (activeHealthEffect.GetType() == typeof(T) && activeHealthEffect.BodyPart == bodyPart)
+                {
+                    effect = activeHealthEffect;
+                }
+            }
+            return effect;
         }
 
         public void CancelPendingEffects()
@@ -2078,15 +2092,15 @@ namespace RealismMod
 
             if (PlayerHazardBridge.RadZoneCount > 0 && GearController.CurrentRadProtection < 1f)
             {
-                float increase = (PlayerHazardBridge.TotalRadRate + HazardTracker.RadiationRateMeds) * factors;
+                float increase = (PlayerHazardBridge.TotalRadRate + HazardTracker.RadTreatmentRate) * factors;
                 increase = Mathf.Max(increase, 0f);
                 HazardTracker.TotalRadiationRate = increase;
                 HazardTracker.TotalRadiation += increase;
             }
             else if (HazardTracker.TotalRadiation > 0f || GearController.CurrentRadProtection >= 1f)
             {
-                float reduction = HazardTracker.RadiationRateMeds * (1f + PlayerState.ImmuneSkillStrong);
-                float threshold = HazardTracker.TotalRadiation <= 40f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
+                float reduction = HazardTracker.RadTreatmentRate * (1f + PlayerState.ImmuneSkillStrong);
+                float threshold = HazardTracker.TotalRadiation <= 30f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
                 HazardTracker.TotalRadiationRate = Mathf.Lerp(HazardTracker.TotalRadiationRate, HazardTracker.TotalRadiation == threshold ? 0f : reduction, 0.08f);
                 HazardTracker.TotalRadiationRate = (float)Math.Round(HazardTracker.TotalRadiationRate, 3);
                 HazardTracker.TotalRadiation = Mathf.Clamp(HazardTracker.TotalRadiation + HazardTracker.TotalRadiationRate, threshold, 100f);
@@ -2106,15 +2120,15 @@ namespace RealismMod
 
             if ((PlayerHazardBridge.GasZoneCount > 0 || ToxicItemCount > 0) && GearController.CurrentGasProtection < 1f)
             {
-                float increase = (PlayerHazardBridge.TotalGasRate + HazardTracker.ToxicityRateMeds + toxicItemFactor) * factors;
+                float increase = (PlayerHazardBridge.TotalGasRate + HazardTracker.DetoxicationRate + toxicItemFactor) * factors;
                 increase = Mathf.Max(increase, 0f);
                 HazardTracker.TotalToxicityRate = increase;
                 HazardTracker.TotalToxicity += increase;
             }
             else if (HazardTracker.TotalToxicity > 0f || GearController.CurrentGasProtection >= 1f)
             {
-                float reduction = (_baseToxicityRecoveryRate + HazardTracker.ToxicityRateMeds) * (1f + PlayerState.ImmuneSkillStrong);
-                float threshold = HazardTracker.ToxicityRateMeds < 0f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalToxicity);
+                float reduction = (_baseToxicityRecoveryRate + HazardTracker.DetoxicationRate) * (1f + PlayerState.ImmuneSkillStrong);
+                float threshold = HazardTracker.DetoxicationRate < 0f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalToxicity);
                 float totalRate = Mathf.Lerp(HazardTracker.TotalToxicityRate, HazardTracker.TotalToxicity == threshold ? 0f : reduction, 0.15f);
                 totalRate = (float)Math.Round(totalRate, 3);
                 if (totalRate < 0f) totalRate *= baseFactor;

@@ -783,7 +783,7 @@ namespace RealismMod
             return typeof(ActiveHealthController).GetMethod("ApplyDamage", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static EDamageType[] acceptedDamageTypes = { 
+        private static EDamageType[] _acceptedDamageTypes = { 
             EDamageType.HeavyBleeding, EDamageType.LightBleeding, 
             EDamageType.Fall, EDamageType.Barbed, EDamageType.Dehydration, 
             EDamageType.Exhaustion, EDamageType.Poison,  EDamageType.Melee,

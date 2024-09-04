@@ -315,7 +315,6 @@ namespace RealismMod
             Assets.ElectroForkLiftBundle = LoadAndInitializePrefabs("hazard_assets\\electroforklift.bundle");
             Assets.LabsCrateBundle = LoadAndInitializePrefabs("hazard_assets\\labscrate.bundle");
             Assets.UralBundle = LoadAndInitializePrefabs("hazard_assets\\ural.bundle");
-            Assets.KamazBundle = LoadAndInitializePrefabs("hazard_assets\\kamaz.bundle");
             Assets.BluePalletBundle = LoadAndInitializePrefabs("hazard_assets\\bluepallet.bundle");
             Assets.BlueFuelPalletClothBundle = LoadAndInitializePrefabs("hazard_assets\\bluebarrelpalletcloth.bundle");
             Assets.BarrelPileBundle = LoadAndInitializePrefabs("hazard_assets\\barrelpile.bundle");
@@ -520,8 +519,8 @@ namespace RealismMod
                     {
                         var player = Utils.GetYourPlayer().Transform;
                         Utils.LoadLoot(player.position, player.rotation, PluginConfig.TargetZone.Value);
-                        Utils.Logger.LogWarning("\"position\": " + "\"x\":" + player.position.x + "," + "\"y\":" + player.position.y + "," + "\"z\":" + player.position.z);
-                        Utils.Logger.LogWarning("\"rotation\": " + "\"x\":" + player.rotation.eulerAngles.x + "," + "\"y\":" + player.eulerAngles.y + "," + "\"z\":" + player.eulerAngles.z);
+                        Utils.Logger.LogWarning("\"position\": {" + "\"x\":" + player.position.x + "," + "\"y\":" + player.position.y + "," + "\"z\":" + player.position.z + "},");
+                        Utils.Logger.LogWarning("\"rotation\": {" + "\"x\":" + player.rotation.eulerAngles.x + "," + "\"y\":" + player.eulerAngles.y + "," + "\"z\":" + player.eulerAngles.z + "}");
                     }
                 }
                 if (PluginConfig.ZoneDebug.Value && Input.GetKeyDown(KeyCode.Keypad0))
