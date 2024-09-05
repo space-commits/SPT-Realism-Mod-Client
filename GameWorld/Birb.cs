@@ -41,10 +41,10 @@ namespace RealismMod
 
         private IEnumerator HandleHitAsync()
         {
-            System.Random rnd = new System.Random();  
-            yield return Utils.LoadLoot(this.transform.position, this.transform.rotation, Utils.GetRandomWeightedKey(_birbLoot)).AsCoroutine(); //make sure to wait for loot to drop before destroying birb
-            if (rnd.Next(10) <= 3) yield return Utils.LoadLoot(this.transform.position, this.transform.rotation, Utils.GetRandomWeightedKey(_birbLoot)).AsCoroutine();
-            if (rnd.Next(10) <= 3) yield return Utils.LoadLoot(this.transform.position, this.transform.rotation, Utils.GetRandomWeightedKey(_birbLoot)).AsCoroutine();
+
+            if (Utils.SystemRandom.Next(10) <= 5) yield return Utils.LoadLoot(this.transform.position, this.transform.rotation, Utils.GetRandomWeightedKey(_birbLoot)).AsCoroutine(); //make sure to wait for loot to drop before destroying birb
+            if (Utils.SystemRandom.Next(10) <= 3) yield return Utils.LoadLoot(this.transform.position, this.transform.rotation, Utils.GetRandomWeightedKey(_birbLoot)).AsCoroutine();
+            if (Utils.SystemRandom.Next(10) <= 2) yield return Utils.LoadLoot(this.transform.position, this.transform.rotation, Utils.GetRandomWeightedKey(_birbLoot)).AsCoroutine();
             Destroy(this.gameObject);
         }
 

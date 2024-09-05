@@ -135,14 +135,13 @@ namespace RealismMod
         public static void HandleZoneAssets(HazardLocation zone) 
         {
             if (zone.Assets == null) return;
-            System.Random rnd = new System.Random();
             foreach (var asset in zone.Assets) 
             {
-                if (rnd.Next(101) > asset.Odds && !Plugin.FikaPresent) continue;
+                if (Utils.SystemRandom.Next(101) > asset.Odds && !Plugin.FikaPresent) continue;
 
                 if (asset.RandomizeRotation) 
                 {
-                    asset.Rotation.Y = rnd.Range(0, 360);
+                    asset.Rotation.Y = Utils.SystemRandom.Range(0, 360);
                 }
 
                 Vector3 position = new Vector3(asset.Position.X, asset.Position.Y, asset.Position.Z);
@@ -160,14 +159,13 @@ namespace RealismMod
         public static void HandleZoneLoot(HazardLocation zone)
         {
             if (zone.Loot == null || Plugin.FikaPresent) return;
-            System.Random rnd = new System.Random();
             foreach (var loot in zone.Loot)
             {
-                if (rnd.Next(101) > loot.Odds) continue;
+                if (Utils.SystemRandom.Next(101) > loot.Odds) continue;
 
                 if (loot.RandomizeRotation)
                 {
-                    loot.Rotation.Y = rnd.Range(0, 360);
+                    loot.Rotation.Y = Utils.SystemRandom.Range(0, 360);
                 }
 
                 Vector3 position = new Vector3(loot.Position.X, loot.Position.Y, loot.Position.Z);

@@ -18,7 +18,6 @@ using StatAttributeClass = GClass2768;
 
 namespace RealismMod
 {
-
     public class ArmorClassStringPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

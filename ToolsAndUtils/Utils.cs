@@ -38,6 +38,7 @@ namespace RealismMod
     public static class Utils
     {
         public static ManualLogSource Logger;
+        public static System.Random SystemRandom = new System.Random();
 
         public static bool IsReady = false;
         public static bool IsInHideout = false;
@@ -105,8 +106,7 @@ namespace RealismMod
                 totalWeight += item.Value;
             }
 
-            System.Random rnd = new System.Random();
-            int randNumber = rnd.Next(totalWeight);
+            int randNumber = Utils.SystemRandom.Next(totalWeight);
 
             foreach (var item in items)
             {

@@ -503,8 +503,11 @@ namespace RealismMod
 
             switch (HazardTracker.TotalToxicity)
             {
-                case < 40f:
+                case < 30f:
                     drainRate += 0f;
+                    break;
+                case <= 40f:
+                    drainRate += -0.75f;
                     break;
                 case <= 50f:
                     drainRate += -1f;

@@ -264,7 +264,7 @@ namespace RealismMod
             }
             else if (IsDoingTacSprint)
             {
-                baseDrainRate = 0.2f; 
+                baseDrainRate = 0.15f; 
             }
             else if (CurrentStance == EStance.ActiveAiming)
             {
