@@ -237,7 +237,6 @@ namespace RealismMod
         }
     }
 
-
     public class SetCompressorPatch : ModulePatch
     {
         private static FieldInfo volumeField;

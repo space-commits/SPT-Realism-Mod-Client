@@ -173,7 +173,9 @@ namespace RealismMod
 
         public bool HasAdrenalineEffect { get; set; } = false;
 
-        public bool IsCoughingInGas { get; set; } = false;
+        public bool IsCoughingInGas { get; private set; } = false;
+
+        public bool DoCoughingAudio { get; private set; } = false;
 
         public int ToxicItemCount { get; set; } = 0;
 
@@ -327,7 +329,7 @@ namespace RealismMod
 
         private const float ToxicityThreshold = 15f;
         public const float RadiationThreshold = 30f;
-        public const float RadiationTreatmentThreshold = 20f;
+        public const float RadiationTreatmentThreshold = 40f;
         private const float _baseToxicityRecoveryRate = -0.05f;
         private const float _hazardInterval = 10f;
         private float _hazardWaitTime = 0f;
@@ -1021,7 +1023,7 @@ namespace RealismMod
 
             if (_effectsTime >= 1f)
             {
-                if (Plugin.ServerConfig.enable_hazard_zones) HazardZoneHealthEffectTick(player);
+                if (Plugin.ServerConfig.enable_hazard_zones) HazardZoneHealthTick(player);
                 PainReliefCheck(player);
                 TickEffects();
                 _effectsTime = 0f;
@@ -2059,7 +2061,7 @@ namespace RealismMod
             }
         }
 
-        private void HazardZoneHealthEffectTick(Player player) 
+        private void HazardZoneHealthTick(Player player) 
         {
             if (!GameWorldController.GameStarted) return;
 
@@ -2079,6 +2081,7 @@ namespace RealismMod
             GasZoneTick(player);
             RadiationZoneTick(player);
             HazardEffectsTick(player);
+            CoughController(player);
         }
 
         private void RadiationZoneTick(Player player)
@@ -2186,6 +2189,22 @@ namespace RealismMod
             }
         }
 
+        private void CoughController(Player player)
+        {
+            bool hasHazardification = HazardTracker.TotalToxicity >= 30f || (HazardTracker.TotalRadiation >= RadiationThreshold && !Plugin.RealHealthController.HasBaseEFTEffect(player, "PainKiller"));
+            bool isGettingHazarded = HazardTracker.TotalToxicityRate >= 0.05f;
+            if (player.HealthController.IsAlive && (!GearController.HasGasMask || !GearController.HasGasFilter) && (hasHazardification || isGettingHazarded))
+            {
+                DoCoughingAudio = true;
+                if (isGettingHazarded) IsCoughingInGas = true;
+                else IsCoughingInGas = false;
+            }
+            else 
+            {
+                IsCoughingInGas = false;
+                DoCoughingAudio = false;
+            } 
+        }
     }
 }
  
