@@ -1,26 +1,17 @@
 ﻿using BepInEx;
 using BepInEx.Bootstrap;
-using BepInEx.Configuration;
 using Comfort.Common;
 using EFT;
-using EFT.Ballistics;
-using EFT.InventoryLogic;
-using EFT.UI;
 using Newtonsoft.Json;
 using SPT.Common.Http;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 using static RealismMod.Attributes;
 using static RealismMod.HazardZoneSpawner;
-using static RootMotion.FinalIK.IKSolver;
-
 
 namespace RealismMod
 {
@@ -84,9 +75,6 @@ namespace RealismMod
         public static bool CanLoadChamber = false;
         public static bool BlockChambering = false;
 
-        public static string CurrentProfileId = string.Empty;
-        public static string PMCProfileId = string.Empty;
-        public static string ScavProfileId = string.Empty;
         private bool _gotProfileId = false;
 
         private void LoadConfig()
@@ -471,16 +459,18 @@ namespace RealismMod
             }
         }
 
-        private void CheckForProfileID() 
+        private void CheckForProfileData() 
         {
             //keep trying to get player profile id and update hazard values
             if (!_gotProfileId)
             {
                 try
                 {
-                    PMCProfileId = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession().Profile.Id;
-                    ScavProfileId = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession().ProfileOfPet.Id;
-                    if(ServerConfig.enable_hazard_zones) HazardTracker.GetHazardValues(PMCProfileId);
+                    var sessionData = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession();
+                    ProfileData.PMCProfileId = sessionData.Profile.Id;
+                    ProfileData.ScavProfileId = sessionData.ProfileOfPet.Id;
+                    ProfileData.PMCLevel = sessionData.Profile.Info.Level;
+                    if (ServerConfig.enable_hazard_zones) HazardTracker.GetHazardValues(ProfileData.PMCProfileId);
                     _gotProfileId = true;
                 }
                 catch 
@@ -499,7 +489,7 @@ namespace RealismMod
             _realDeltaTime += (Time.unscaledDeltaTime - _realDeltaTime) * 0.1f;
             FPS = 1.0f / _realDeltaTime;
 
-            CheckForProfileID();
+            CheckForProfileData();
             CheckForMods();
 
             Utils.CheckIsReady();
@@ -512,7 +502,7 @@ namespace RealismMod
                     Instantiate(containerPrefab, new Vector3(1000f, 0f, 317f), new Quaternion(0, 0, 0, 0));
                 }*/
 
-                if (HazardZoneSpawner.GameStarted && PluginConfig.ZoneDebug.Value)
+                if (GameWorldController.GameStarted && PluginConfig.ZoneDebug.Value)
                 {
 
                     if (Input.GetKeyDown(KeyCode.Keypad1))
@@ -520,6 +510,7 @@ namespace RealismMod
                         var player = Utils.GetYourPlayer().Transform;
                         Utils.LoadLoot(player.position, player.rotation, PluginConfig.TargetZone.Value);
                         Utils.Logger.LogWarning("\"position\": {" + "\"x\":" + player.position.x + "," + "\"y\":" + player.position.y + "," + "\"z\":" + player.position.z + "},");
+                        Utils.Logger.LogWarning("new Vector3(" + player.position.x + "f, " + player.position.y + "f, " + player.position.z + "f)");
                         Utils.Logger.LogWarning("\"rotation\": {" + "\"x\":" + player.rotation.eulerAngles.x + "," + "\"y\":" + player.eulerAngles.y + "," + "\"z\":" + player.eulerAngles.z + "}");
                     }
                 }

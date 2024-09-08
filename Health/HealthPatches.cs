@@ -32,6 +32,8 @@ namespace RealismMod
 
     public class QuestCompletePatch : ModulePatch
     {
+        private static string[] hazardHealQuests = { "667c643869df8111b81cb6dc", "667dbbc9c62a7c2ee8fe25b2" };
+
         protected override MethodBase GetTargetMethod()
         {
             return typeof(QuestView).GetMethod("FinishQuest", BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null);
@@ -40,12 +42,12 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(QuestView __instance)
         {
-            if (__instance.QuestId == "667c643869df8111b81cb6dc" || __instance.QuestId == "667dbbc9c62a7c2ee8fe25b2")
+            if (hazardHealQuests.Contains(__instance.QuestId))
             {
                 HazardTracker.TotalRadiation = 0;
                 HazardTracker.TotalToxicity = 0;
-                HazardTracker.UpdateHazardValues(Plugin.PMCProfileId);
-                HazardTracker.UpdateHazardValues(Plugin.ScavProfileId);
+                HazardTracker.UpdateHazardValues(ProfileData.PMCProfileId);
+                HazardTracker.UpdateHazardValues(ProfileData.ScavProfileId);
                 HazardTracker.SaveHazardValues();
                 if(PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayNotification(new QuestUIClass("Blood Tests Came Back Clear, Your Radiation Poisoning Has Been Cured.".Localized(null), ENotificationDurationType.Long, ENotificationIconType.Quest, null));
             }
@@ -827,8 +829,8 @@ namespace RealismMod
 
                 EDamageType damageType = damageInfo.DamageType;
 
-                float currentHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Current;
-                float maxHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;
+                float currentHp = __instance.GetBodyPartHealth(bodyPart).Current;
+                float maxHp = __instance.GetBodyPartHealth(bodyPart).Maximum;
                 float remainingHp = currentHp / maxHp;
 
                 HandlePassiveRegenTimer(damage, damageType);

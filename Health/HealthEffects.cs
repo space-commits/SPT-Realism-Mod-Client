@@ -548,7 +548,7 @@ namespace RealismMod
                     {
                         EBodyPart bodyPart = RealHealthController.BodyPartsArr[i];
                         drainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
-                        _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 2f, drainRate, null);
+                        _Player.ActiveHealthController.AddEffect<ToxicityDamage>(bodyPart, 0f, 3f, 2f, drainRate, null);
                     }
 
                 }
@@ -629,7 +629,6 @@ namespace RealismMod
             return drainRate * treatmentFactor;
         }
 
-        //add random % chance to bleed based on rad level
         public void Tick()
         {
             if (Delay <= 0)
@@ -644,7 +643,7 @@ namespace RealismMod
                     {
                         EBodyPart bodyPart = RealHealthController.BodyPartsArr[i];
                         drainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
-                        _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 2f, drainRate, null);
+                        _Player.ActiveHealthController.AddEffect<RadiationDamage>(bodyPart, 0f, 3f, 2f, drainRate, null);
                     }
                     float timeThreshold = Mathf.Max(600f * (1f - HazardTracker.TotalRadiation / 100f), 30f);
                     if (_bleedTimer > timeThreshold) 
@@ -843,6 +842,70 @@ namespace RealismMod
                 Plugin.RealHealthController.CurrentPassiveRegenBlockDuration = Plugin.RealHealthController.BlockPassiveRegenBaseDuration;
             }
             else base.HealthController.ChangeHealth(_bodyPart, this._hpPerTick, ExistanceClass.Existence);
+
+        }
+    }
+
+    public class RadiationDamage : EffectClass, IEffect, InterfaceOne, InterfaceTwo
+    {
+        private float _hpPerTick;
+        private float _time;
+        private EBodyPart _bodyPart;
+
+        public override void Started()
+        {
+            this._hpPerTick = base.Strength;
+            this.SetHealthRatesPerSecond(this._hpPerTick, 0f, 0f, 0f);
+            this._bodyPart = base.BodyPart;
+        }
+
+        public override void RegularUpdate(float deltaTime)
+        {
+            this._time += deltaTime;
+            if (this._time < 3f)
+            {
+                return;
+            }
+            this._time -= 3f;
+            if (this._hpPerTick < 0)
+            {
+                base.HealthController.ApplyDamage(_bodyPart, -this._hpPerTick, ExistanceClass.RadiationDamage);
+                Plugin.RealHealthController.CancelPassiveRegen = true;
+                Plugin.RealHealthController.CurrentPassiveRegenBlockDuration = Plugin.RealHealthController.BlockPassiveRegenBaseDuration;
+            }
+            else base.HealthController.ChangeHealth(_bodyPart, this._hpPerTick, ExistanceClass.RadiationDamage);
+
+        }
+    }
+
+    public class ToxicityDamage : EffectClass, IEffect, InterfaceOne, InterfaceTwo
+    {
+        private float _hpPerTick;
+        private float _time;
+        private EBodyPart _bodyPart;
+
+        public override void Started()
+        {
+            this._hpPerTick = base.Strength;
+            this.SetHealthRatesPerSecond(this._hpPerTick, 0f, 0f, 0f);
+            this._bodyPart = base.BodyPart;
+        }
+
+        public override void RegularUpdate(float deltaTime)
+        {
+            this._time += deltaTime;
+            if (this._time < 3f)
+            {
+                return;
+            }
+            this._time -= 3f;
+            if (this._hpPerTick < 0)
+            {
+                base.HealthController.ApplyDamage(_bodyPart, -this._hpPerTick, ExistanceClass.LethalPoisonDamage);
+                Plugin.RealHealthController.CancelPassiveRegen = true;
+                Plugin.RealHealthController.CurrentPassiveRegenBlockDuration = Plugin.RealHealthController.BlockPassiveRegenBaseDuration;
+            }
+            else base.HealthController.ChangeHealth(_bodyPart, this._hpPerTick, ExistanceClass.LethalPoisonDamage);
 
         }
     }

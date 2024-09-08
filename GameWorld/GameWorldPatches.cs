@@ -58,18 +58,18 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(GameWorld __instance)
         {
-            Plugin.CurrentProfileId = Utils.GetYourPlayer().ProfileId;
+            ProfileData.CurrentProfileId = Utils.GetYourPlayer().ProfileId;
             if (Plugin.ServerConfig.enable_hazard_zones)
             {
-                HazardZoneSpawner.CreateZones(Singleton<GameWorld>.Instance.MainPlayer.Location, HazardZoneData.GasZoneLocations);
-                HazardZoneSpawner.CreateZones(Singleton<GameWorld>.Instance.MainPlayer.Location, HazardZoneData.RadZoneLocations);
-                HazardZoneSpawner.CreateZones(Singleton<GameWorld>.Instance.MainPlayer.Location, HazardZoneData.RadAssetZoneLocations);
-                HazardTracker.GetHazardValues(Plugin.CurrentProfileId);
+                GameWorldController.CurrentMap = Singleton<GameWorld>.Instance.MainPlayer.Location.ToLower();
+                HazardZoneSpawner.CreateZones(HazardZoneData.GasZoneLocations);
+                HazardZoneSpawner.CreateZones(HazardZoneData.RadZoneLocations);
+                if (HazardTracker.CanSpawnDynamicZones()) HazardZoneSpawner.CreateZones(HazardZoneData.RadAssetZoneLocations);
+                HazardTracker.GetHazardValues(ProfileData.CurrentProfileId);
                 HazardTracker.ResetTracker();
-                //ShippingContainerSpawner.LoadAndSpawnShippingContainer();
             }
 
-            HazardZoneSpawner.GameStarted = true;
+            GameWorldController.GameStarted = true;
         }
     }
 
@@ -85,13 +85,15 @@ namespace RealismMod
         {
             if (Plugin.ServerConfig.enable_hazard_zones)
             {
+                var sessionData = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession();
+                ProfileData.PMCLevel = sessionData.Profile.Info.Level;
                 HazardTracker.ResetTracker();
-                HazardTracker.UpdateHazardValues(Plugin.CurrentProfileId);
+                HazardTracker.UpdateHazardValues(ProfileData.CurrentProfileId);
                 HazardTracker.SaveHazardValues();
-                HazardTracker.GetHazardValues(Plugin.PMCProfileId); //update to use PMC id and not potentially scav id
+                HazardTracker.GetHazardValues(ProfileData.PMCProfileId); //update to use PMC id and not potentially scav id
             }
 
-            HazardZoneSpawner.GameStarted = false;
+            GameWorldController.GameStarted = false;
         }
     }
 }

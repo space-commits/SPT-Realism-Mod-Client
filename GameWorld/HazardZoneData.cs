@@ -45,7 +45,16 @@ namespace RealismMod
           new Vector3(158.1f, 0f, 193.9f),
           new Vector3(61.1f, 1.6f, -173.8f),
           new Vector3(-168.8f, 1.3f, -67f),
-          new Vector3(-228.8f, 1.7f, -220f)
+          new Vector3(-228.8f, 1.7f, -220f),
+          new Vector3(587.7991f,1.5f,-131.4845f),
+          new Vector3(630.0674f,-0.1f,-88.28856f),
+          new Vector3(468.2215f,1.6f,-108.095f),
+          new Vector3(335.3215f,1.5f,-19.49973f),
+          new Vector3(243.4649f,1.5f,-49.10956f),
+          new Vector3(153.8941f,-1,165.7909f),
+          new Vector3(241.8438f,-0.2f,178.0606f),
+          new Vector3(76.565f,1.5f,-51.10367f),
+          new Vector3(-176.27f, 1.2f, -77.69751f)
         };
 
         public static IEnumerable<Vector3> GZSpawns = new Vector3[]
@@ -54,6 +63,14 @@ namespace RealismMod
           new Vector3(30.3f, 23.4f, 147.9f),
           new Vector3(106.1f, 14.3f, 56.55f),
           new Vector3(58.4f, 23.9f, 227.85f),
+          new Vector3(148.5946f, 23f, 224.3181f),
+          new Vector3(36.00006f, 23f, 322.1284f),
+          new Vector3(120.5057f, 25f, 141.3855f),
+          new Vector3(126.002f, 24.9f, 110.8803f),
+          new Vector3(175.0823f, 17.5f, 28.37658f),
+          new Vector3(104.1584f, 17.5f, 176.5322f),
+          new Vector3(49.54675f, 23.9f, 158.1759f),
+          new Vector3(98.86556f, 21.6f, -66.60643f)
         };
 
         public static IEnumerable<Vector3> InterchangeSpawns = new Vector3[]
@@ -63,6 +80,7 @@ namespace RealismMod
           new Vector3(-165.7f, 22.2f, -307.5f),
           new Vector3(-161.6f, 21.7f, 199.9f),
           new Vector3(34.6f, 27.5f, 112.7f),
+
         };
 
         public static IEnumerable<Vector3> ReserveSpawns = new Vector3[]
@@ -76,6 +94,7 @@ namespace RealismMod
           new Vector3(56.4f, -6.12f, -5.1f),
           new Vector3(-11f, 19.4f, 170f),
           new Vector3(-144.3f, -8.9f, -23.8f),
+
         };
 
         public static IEnumerable<Vector3> ShorelineSpawns = new Vector3[]
@@ -116,7 +135,7 @@ namespace RealismMod
           new Vector3(-149.7f, 5.1f, -743f),
           new Vector3(-185f, 5.1f, -621.4f),
           new Vector3(-68f, 19.7f, -125f),
-          new Vector3(-70f, 27.3f, 127.2f),
+          new Vector3(-70f, 27.3f, 127.2f)
         };
 
         public static IEnumerable<Vector3> SteetsSpawns = new Vector3[]
@@ -126,7 +145,8 @@ namespace RealismMod
           new Vector3(-158.7f, 2.6f, 281.4f),
           new Vector3(205.2f, 0.9f, 212.3f),
           new Vector3(249.6f, 3.8f, 347.16f),
-          new Vector3(42.4f, 0.75f, -64.36f)
+          new Vector3(42.4f, 0.75f, -64.36f),
+
         };
 
         public static IEnumerable<Vector3> FactorySpawns = new Vector3[]
@@ -134,13 +154,20 @@ namespace RealismMod
           new Vector3(29.8f, 0.7f, 8.3f),
           new Vector3(-21.1f, 0.6f, 23.5f),
           new Vector3(30.4f, 0.7f, 14.8f),
-          new Vector3(15.1f, 5f, 35.9f)
+          new Vector3(15.1f, 5f, 35.9f),
+
         };
 
         public static IEnumerable<Vector3> LabsSpawns = new Vector3[]
         {
           new Vector3(-179f, 0.5f, -322.6f),
-          new Vector3(-144f, 0.5f, -386.9f)
+          new Vector3(-144f, 0.5f, -386.9f),
+          new Vector3(-204.1818f, 0.5f, -391.2065f),
+          new Vector3(-153.6401f, 0.5f, -395.4791f),
+          new Vector3(-256.8109f, 0.5f, -308.5962f),
+          new Vector3(-242.5417f, 0.5f, -297.6328f),
+          new Vector3(-196.8698f, 0.5f, -323.7413f),
+          new Vector3(-126.1994f, 0.5f, -382.8971f)
         };
     }
 

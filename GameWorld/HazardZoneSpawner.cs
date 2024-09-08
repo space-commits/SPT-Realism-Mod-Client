@@ -6,19 +6,19 @@ using UnityEngine.AI;
 using EFT;
 using System.Linq;
 using UnityEngine.Assertions;
+using EFT.Quests;
 
 namespace RealismMod
 {
     public static class HazardZoneSpawner
     {
         public const float MinBotSpawnDistanceFromPlayer = 150f;
-        public static bool GameStarted { get; set; } = false;
 
-        //for player, get cloesest spawn. For bot, sort by min distance, or furthest from player failing that.
+        //for player, get closest spawn. For bot, sort by min distance, or furthest from player failing that.
         public static Vector3 GetSafeSpawnPoint(Player entitiy, bool isBot, bool blocksNav)
         {
             IEnumerable<Vector3> spawns = HazardZoneData.GetSafeSpawn();
-            if (spawns == null || (isBot && !blocksNav)) return entitiy.Transform.position;
+            if (spawns == null || (isBot && !blocksNav) || (!isBot && GameWorldController.CurrentMap == "laboratory")) return entitiy.Transform.position; //can't account for bot vs player, because of maps like Labs where player should spawn in gas
             IEnumerable<Vector3> validSpawns = spawns;
             Player player = Utils.GetYourPlayer();
 
@@ -37,24 +37,26 @@ namespace RealismMod
             }
         }
 
-        public static void CreateZones(string map, ZoneCollection collection)
+        public static void CreateZones(ZoneCollection collection)
         {
-            var zones = HazardZoneData.GetZones(collection.ZoneType, map.ToLower());
+            var zones = HazardZoneData.GetZones(collection.ZoneType, GameWorldController.CurrentMap);
             if (zones == null) return;
             foreach (var zone in zones)
             {
-                if(collection.ZoneType == EZoneType.Gas || collection.ZoneType == EZoneType.GasAssets) CreateZone<GasZone>(zone);
-                else CreateZone<RadiationZone>(zone);
+                if(collection.ZoneType == EZoneType.Gas || collection.ZoneType == EZoneType.GasAssets) CreateZone<GasZone>(zone, EZoneType.Gas);
+                else CreateZone<RadiationZone>(zone, EZoneType.Radiation);
             }
         }
 
-        private static bool ShouldSpawnZone(float zoneProbability) 
+        private static bool ShouldSpawnZone(float zoneProbability, EZoneType zoneType) 
         {
             if(PluginConfig.ZoneDebug.Value) return true;
 
             if (!Plugin.FikaPresent) 
             {
-                zoneProbability = Mathf.Max(zoneProbability, 0.01f);
+                bool doTimmyFactor = ProfileData.PMCLevel <= 10f && zoneType != EZoneType.Radiation;
+                float timmyFactor = doTimmyFactor && GameWorldController.CurrentMap == "sandbox" ? 0f : doTimmyFactor ? 0.25f : 1f;
+                zoneProbability = Mathf.Max(zoneProbability * timmyFactor, 0.01f);
                 zoneProbability = Mathf.Clamp01(zoneProbability);
                 float randomValue = UnityEngine.Random.value;
                 return randomValue <= zoneProbability;
@@ -66,9 +68,9 @@ namespace RealismMod
             return finalSeed <= zoneProbability * 100f;    
         }
 
-        public static void CreateZone<T>(HazardLocation zone) where T : MonoBehaviour, IHazardZone
+        public static void CreateZone<T>(HazardLocation zone, EZoneType zoneType) where T : MonoBehaviour, IHazardZone
         {
-            if (!ShouldSpawnZone(zone.SpawnChance)) return;
+            if (!ShouldSpawnZone(zone.SpawnChance, zoneType)) return;
 
             HandleZoneAssets(zone);
             HandleZoneLoot(zone);
@@ -97,8 +99,13 @@ namespace RealismMod
                 EFT.Interactive.TriggerWithId trigger = hazardZone.AddComponent<EFT.Interactive.TriggerWithId>();
                 trigger.SetId(zoneName);
 
+                string questZoneName = zone.Assets == null ? zoneName : "dynamic" + GameWorldController.CurrentMap;
+
                 EFT.Interactive.ExperienceTrigger questTrigger = hazardZone.AddComponent<EFT.Interactive.ExperienceTrigger>();
-                questTrigger.SetId(zoneName);
+                questTrigger.SetId(questZoneName);
+
+                EFT.Interactive.PlaceItemTrigger placeIemTrigger = hazardZone.AddComponent<EFT.Interactive.PlaceItemTrigger>();
+                placeIemTrigger.SetId(questZoneName);
 
                 hazardZone.layer = LayerMask.NameToLayer("Triggers");
                 hazardZone.name = zoneName;
@@ -196,8 +203,8 @@ namespace RealismMod
             return Utils.GetRandomWeightedKey(lootDict);
         }
 
-        //previously I stored the loaded assets as static fields and used reflectio to dynamically load them, however this strangely caused issues with certain bundles,
-        //so instead I have to use this awful method to manually load in assets
+        //previously I stored the loaded assets as static fields and used reflection to dynamically load them, however this strangely caused issues with certain bundles,
+        //so instead I have to use this method to manually load in assets
         public static GameObject GetAndLoadAsset(string assetName)
         {
             if (assetName == "GooBarrel") return Assets.GooBarrelBundle.LoadAsset<GameObject>("Assets/Labs/yellow_barrel.prefab");

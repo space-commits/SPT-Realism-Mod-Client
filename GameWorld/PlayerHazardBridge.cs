@@ -11,15 +11,16 @@ namespace RealismMod
     public class PlayerHazardBridge : MonoBehaviour
     {
         private const float INTERVAL = 10f;
-        private const float STARTTIME = 30f;
+        private const float SPAWNTIME = 30f;
         public Player _Player { get; set; }
         public bool IsBot { get; private set; } = false;
         public bool SpawnedInZone { get; private set; } = false;
         public bool ZoneBlocksNav { get; set; } = false;
         public int GasZoneCount { get; set; } = 0;
         public int RadZoneCount { get; set; } = 0;
+        public int SafeZoneCount { get; set; } = 0;
         public Dictionary<string, float> GasRates = new Dictionary<string, float>(); //to accomodate being in multiple zones
-        public Dictionary<string, float> RadRates = new Dictionary<string, float>();
+        public Dictionary<string, float> RadRates = new Dictionary<string, float>(); //to accomodate being in multiple zones
 
         public float TotalGasRate
         {
@@ -98,7 +99,7 @@ namespace RealismMod
                     MoveEntityToSafeLocation();
                 }
 
-                if (_timeActive >= STARTTIME || SpawnedInZone) _checkedSpawn = true;
+                if (_timeActive >= SPAWNTIME || SpawnedInZone || (!IsBot && PlayerState.IsMoving)) _checkedSpawn = true;
             }
         }
 
@@ -108,18 +109,13 @@ namespace RealismMod
             Utils.Logger.LogWarning("Realism Mod: Spawned in Hazard, moved to " + _Player.Transform.position + ", Was Bot? " + IsBot);
         }
 
-        void Awake() 
-        {
-            IsBot = _Player?.AIData?.BotOwner != null;
-        }
 
         //for bots
         void Update()
         {
             _bridgeTimer += Time.deltaTime;
-
+            IsBot = _Player?.AIData?.BotOwner != null || _Player.IsAI;
             CheckSpawnPoint();
-
             if (_bridgeTimer >= INTERVAL)
             {
                 bool isAliveBot = IsBot && _Player != null && _Player?.ActiveHealthController != null && !_Player.AIData.BotOwner.IsDead && _Player.HealthController.IsAlive;

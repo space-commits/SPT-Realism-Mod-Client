@@ -11,7 +11,8 @@ namespace RealismMod
         Radiation,
         Gas,
         RadAssets,
-        GasAssets
+        GasAssets,
+        SafeZone
     }
 
     public interface IHazardZone
@@ -237,6 +238,95 @@ namespace RealismMod
             float distanceFromSurface = radius - distanceToCenter;
             float clampedDistance = Mathf.Max(0f, distanceFromSurface);
             return clampedDistance / (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f));
+        }
+    }
+
+    public class SafeZone : TriggerWithId, IHazardZone
+    {
+        public EZoneType ZoneType { get; } = EZoneType.SafeZone;
+        public float ZoneStrengthModifier { get; set; } = 0f;
+        public bool BlocksNav { get; set; }
+        private Dictionary<Player, PlayerHazardBridge> _containedPlayers = new Dictionary<Player, PlayerHazardBridge>();
+        private Collider _zoneCollider;
+        private bool _isSphere = false;
+        private float _tick = 0f;
+        private float _maxDistance = 0f;
+
+        void Start()
+        {
+            _zoneCollider = GetComponentInParent<Collider>();
+            if (_zoneCollider == null)
+            {
+                Utils.Logger.LogError("Realism Mod: No BoxCollider found in parent for SafeZone");
+            }
+            SphereCollider sphereCollider = _zoneCollider as SphereCollider;
+            if (sphereCollider != null)
+            {
+                _isSphere = true;
+                _maxDistance = sphereCollider.radius;
+            }
+            else
+            {
+                BoxCollider box = _zoneCollider as BoxCollider;
+                Vector3 boxSize = box.size;
+                _maxDistance = boxSize.magnitude / 2f;
+            }
+        }
+
+        public override void TriggerEnter(Player player)
+        {
+            if (player != null)
+            {
+                PlayerHazardBridge hazardBridge;
+                player.TryGetComponent<PlayerHazardBridge>(out hazardBridge);
+                if (hazardBridge == null)
+                {
+                    hazardBridge = player.gameObject.AddComponent<PlayerHazardBridge>();
+                    hazardBridge._Player = player;
+                }
+                hazardBridge.SafeZoneCount++;
+                hazardBridge.ZoneBlocksNav = BlocksNav;
+                _containedPlayers.Add(player, hazardBridge);
+            }
+        }
+
+        public override void TriggerExit(Player player)
+        {
+            if (player != null)
+            {
+                PlayerHazardBridge hazardBridge = _containedPlayers[player];
+                hazardBridge.SafeZoneCount--;
+                hazardBridge.RadRates.Remove(this.name);
+                hazardBridge.ZoneBlocksNav = false;
+                _containedPlayers.Remove(player);
+            }
+        }
+
+        void Update()
+        {
+            _tick += Time.deltaTime;
+
+            if (_tick >= 0.25f)
+            {
+                var playersToRemove = new List<Player>();
+                foreach (var p in _containedPlayers)
+                {
+                    Player player = p.Key;
+                    PlayerHazardBridge hazardBridge = p.Value;
+                    if (player == null || hazardBridge == null)
+                    {
+                        playersToRemove.Add(player);
+                        return;
+                    }
+                }
+
+                foreach (var p in playersToRemove)
+                {
+                    _containedPlayers.Remove(p);
+                }
+
+                _tick = 0f;
+            }
         }
     }
 }

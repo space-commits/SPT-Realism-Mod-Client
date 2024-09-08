@@ -39,7 +39,7 @@ namespace RealismMod
 
         public static void DoGasAnalyserAudio()
         {
-            if (HasGasAnalyser && HazardZoneSpawner.GameStarted && Utils.IsReady) 
+            if (HasGasAnalyser && GameWorldController.GameStarted && Utils.IsReady) 
             {
                 _gasDeviceTimer += Time.deltaTime;
 

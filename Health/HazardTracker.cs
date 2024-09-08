@@ -1,7 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using Comfort.Common;
+using EFT;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 namespace RealismMod
@@ -106,8 +109,9 @@ namespace RealismMod
             HazardRecord record = null;
             if (_hazardRecords.TryGetValue(profileId, out record))
             {
-                record.RecordedTotalToxicity = TotalToxicity;
-                record.RecordedTotalRadiation = TotalRadiation;
+                bool isWipedProfle = IsWipedProfile();
+                record.RecordedTotalToxicity = isWipedProfle ? 0 : TotalToxicity;
+                record.RecordedTotalRadiation = isWipedProfle ? 0 : TotalRadiation;
             }
         }
 
@@ -117,12 +121,30 @@ namespace RealismMod
             File.WriteAllText(GetFilePath(), records);
         }
 
+        public static bool CanSpawnDynamicZones()
+        {
+            var sessionData = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession();
+            var dynamicZoneQuest = sessionData.Profile.QuestsData.First(q => q.Id == "66dad1a18cbba6e558486336");
+            bool didRequiredQuest = false;
+            if (dynamicZoneQuest != null) 
+            {
+                didRequiredQuest = dynamicZoneQuest.Status == EFT.Quests.EQuestStatus.Started || dynamicZoneQuest.Status == EFT.Quests.EQuestStatus.Success; 
+            }
+            return ProfileData.PMCLevel >= 20 || didRequiredQuest;
+        }
+
+        //for cases where player wiped profile
+        private static bool IsWipedProfile() 
+        {
+            return ProfileData.PMCLevel <= 1;
+        }
+
         public static void GetHazardValues(string profileId)
         {
             string json = File.ReadAllText(GetFilePath());
             if (string.IsNullOrWhiteSpace(json) || json.Trim() == "{}")
             {
-                Utils.Logger.LogWarning("Realism Mod: JSON File is empty");
+                Utils.Logger.LogWarning("Realism Mod: Hazard Data JSON File is empty");
             }
             else 
             {
@@ -132,8 +154,9 @@ namespace RealismMod
             HazardRecord record = null;
             if (_hazardRecords.TryGetValue(profileId, out record))
             {
-                TotalToxicity = record.RecordedTotalToxicity;
-                TotalRadiation = record.RecordedTotalRadiation;
+                bool isWipedProfle = IsWipedProfile();
+                TotalToxicity = isWipedProfle ? 0 : record.RecordedTotalToxicity;
+                TotalRadiation = isWipedProfle ? 0 : record.RecordedTotalRadiation;
             }
             else 
             {

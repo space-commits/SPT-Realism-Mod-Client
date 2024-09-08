@@ -434,39 +434,34 @@ namespace RealismMod
         }
 
         //To prevent null ref exceptions while using Fika, Realism's custom effects must be added to a dicitionary of existing EFT effects
-        public void AddCustomEffectsToDict() 
+        public void AddCustomEffectsToDict()
         {
-            Type type1 = typeof(EffectsDictionary);
-            FieldInfo dictionaryField1 = type1.GetField("dictionary_1", BindingFlags.NonPublic | BindingFlags.Static);
-            var effectDict1 = (Dictionary<byte, string>)dictionaryField1.GetValue(null);
-
-            effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "ResourceRateDrain");
-            effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "HealthChange");
-            effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "HealthDrain");
-
-            dictionaryField1.SetValue(null, effectDict1);
+            Type[] customTypes = new Type[] { typeof(ResourceRateDrain), typeof(HealthChange), typeof(HealthDrain), typeof(ToxicityDamage), typeof(RadiationDamage) };
 
             Type type0 = typeof(EffectsDictionary);
             FieldInfo dictionaryField0 = type0.GetField("dictionary_0", BindingFlags.NonPublic | BindingFlags.Static);
             var effectDict0 = (Dictionary<string, byte>)dictionaryField0.GetValue(null);
-
-            effectDict0.Add("ResourceRateDrain", Convert.ToByte(effectDict0.Count + 1));
-            effectDict0.Add("HealthChange", Convert.ToByte(effectDict0.Count + 1));
-            effectDict0.Add("HealthDrain", Convert.ToByte(effectDict0.Count + 1));
-
+            foreach (var customType in customTypes)
+            {
+                effectDict0.Add(customType.ToString(), Convert.ToByte(effectDict0.Count + 1));
+            }
             dictionaryField0.SetValue(null, effectDict0);
 
+            Type type1 = typeof(EffectsDictionary);
+            FieldInfo dictionaryField1 = type1.GetField("dictionary_1", BindingFlags.NonPublic | BindingFlags.Static);
+            var effectDict1 = (Dictionary<byte, string>)dictionaryField1.GetValue(null);
+            foreach (var customType in customTypes) 
+            {
+                effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), customType.ToString());
+            }
+            dictionaryField1.SetValue(null, effectDict1);
+
             Type typeType = typeof(EffectsDictionary);
-            FieldInfo typeFieldInfo = typeType.GetField("type_0", BindingFlags.NonPublic | BindingFlags.Static);
-            var typeArr = (Type[])typeFieldInfo.GetValue(null);
-
-            Type[] customTypes = new Type[] { typeof(ResourceRateDrain), typeof(HealthChange), typeof(HealthDrain) };
-
+            FieldInfo typeArrFieldInfo = typeType.GetField("type_0", BindingFlags.NonPublic | BindingFlags.Static);
+            var typeArr = (Type[])typeArrFieldInfo.GetValue(null);
             customTypes.CopyTo(typeArr, 0);
-            typeFieldInfo.SetValue(null, customTypes);
-
+            typeArrFieldInfo.SetValue(null, customTypes);
         }
-
 
         public void TestAddBaseEFTEffect(int partIndex, Player player, String effect)
         {
@@ -1404,7 +1399,7 @@ namespace RealismMod
                 float strength = details.FadeOut;
                 int duration = (int)details.Duration;
                 HazardTracker.TotalToxicity -= strength * duration;
-                HazardTracker.UpdateHazardValues(Plugin.PMCProfileId);
+                HazardTracker.UpdateHazardValues(ProfileData.PMCProfileId);
                 HazardTracker.SaveHazardValues();
 
                 //doesn't work :(
@@ -2066,7 +2061,7 @@ namespace RealismMod
 
         private void HazardZoneHealthEffectTick(Player player) 
         {
-            if (!HazardZoneSpawner.GameStarted) return;
+            if (!GameWorldController.GameStarted) return;
 
             if (PlayerHazardBridge == null)
             {
