@@ -185,6 +185,7 @@ namespace RealismMod
         public static bool IsPistol = false;
         public static bool IsStocklessPistol = false;
         public static bool IsStockedPistol = false;
+        public static bool IsMachinePistol = false;
         public static bool IsBullpup = false;
 
         public static bool ShouldGetSemiIncrease = false;

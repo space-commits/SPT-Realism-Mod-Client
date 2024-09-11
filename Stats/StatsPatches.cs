@@ -446,6 +446,7 @@ namespace RealismMod
             }
 
             WeaponStats.IsPistol = __instance.WeapClass == "pistol";
+            WeaponStats.IsMachinePistol = weapType == "smg_pistol" && !hasShoulderContact;
             WeaponStats.IsStocklessPistol = !hasShoulderContact && WeaponStats.IsPistol ? true : false;
             WeaponStats.IsStockedPistol = hasShoulderContact && WeaponStats.IsPistol ? true : false;
 

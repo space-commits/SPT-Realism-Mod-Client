@@ -15,10 +15,10 @@ namespace RealismMod
         public const float MinBotSpawnDistanceFromPlayer = 150f;
 
         //for player, get closest spawn. For bot, sort by min distance, or furthest from player failing that.
-        public static Vector3 GetSafeSpawnPoint(Player entitiy, bool isBot, bool blocksNav)
+        public static Vector3 GetSafeSpawnPoint(Player entitiy, bool isBot, bool blocksNav, bool isInRads)
         {
             IEnumerable<Vector3> spawns = HazardZoneData.GetSafeSpawn();
-            if (spawns == null || (isBot && !blocksNav) || (!isBot && GameWorldController.CurrentMap == "laboratory")) return entitiy.Transform.position; //can't account for bot vs player, because of maps like Labs where player should spawn in gas
+            if (spawns == null || (isBot && !blocksNav) || (!isBot && GameWorldController.CurrentMap == "laboratory" && !isInRads)) return entitiy.Transform.position; //can't account for bot vs player, because of maps like Labs where player should spawn in gas
             IEnumerable<Vector3> validSpawns = spawns;
             Player player = Utils.GetYourPlayer();
 
@@ -43,7 +43,7 @@ namespace RealismMod
             if (zones == null) return;
             foreach (var zone in zones)
             {
-                if(collection.ZoneType == EZoneType.Gas || collection.ZoneType == EZoneType.GasAssets) CreateZone<GasZone>(zone, EZoneType.Gas);
+                if (collection.ZoneType == EZoneType.Gas || collection.ZoneType == EZoneType.GasAssets) CreateZone<GasZone>(zone, EZoneType.Gas);
                 else CreateZone<RadiationZone>(zone, EZoneType.Radiation);
             }
         }

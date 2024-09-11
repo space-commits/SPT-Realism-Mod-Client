@@ -124,7 +124,7 @@ namespace RealismMod
         public static bool CanSpawnDynamicZones()
         {
             var sessionData = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession();
-            var dynamicZoneQuest = sessionData.Profile.QuestsData.First(q => q.Id == "66dad1a18cbba6e558486336");
+            var dynamicZoneQuest = sessionData.Profile.QuestsData.FirstOrDefault(q => q.Id == "66dad1a18cbba6e558486336");
             bool didRequiredQuest = false;
             if (dynamicZoneQuest != null) 
             {

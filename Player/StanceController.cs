@@ -58,6 +58,14 @@ namespace RealismMod
          new Keyframe(1, 1f)
         );
 
+        public static bool TreatWeaponAsPistolStance 
+        {
+            get 
+            {
+                return WeaponStats.IsMachinePistol || WeaponStats.IsStocklessPistol;
+            }
+        }
+
         private static float _animationTimer = 0f;
         private static float _animSpeed = 1f;
         private static float _pistolPosSpeed = 1f;
@@ -489,7 +497,7 @@ namespace RealismMod
         public static void ToggleLeftShoulder() 
         {
             IsLeftShoulder = !IsLeftShoulder;
-            if (!WeaponStats.IsStocklessPistol)
+            if (!TreatWeaponAsPistolStance)
             {
                 CurrentStance = EStance.None;
                 StoredStance = EStance.None;
@@ -523,7 +531,7 @@ namespace RealismMod
                     DidStanceWiggle = false;
                 }
 
-                if (!PlayerState.IsSprinting && !IsInInventory && !WeaponStats.IsStocklessPistol)
+                if (!PlayerState.IsSprinting && !IsInInventory && !TreatWeaponAsPistolStance)
                 {
                     //cycle stances
                     if (MeleeIsToggleable && Input.GetKeyUp(PluginConfig.CycleStancesKeybind.Value.MainKey))

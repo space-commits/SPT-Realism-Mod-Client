@@ -427,9 +427,9 @@ namespace RealismMod
         public static List<HazardLocation> GetZones(EZoneType zoneType, string map)
         {
             ZoneCollection zones =
-                zoneType == EZoneType.RadAssets ? zones = RadAssetZoneLocations :
-                zoneType == EZoneType.Radiation ? zones = RadZoneLocations :
-                zones = GasZoneLocations;
+                zoneType == EZoneType.RadAssets ? RadAssetZoneLocations :
+                zoneType == EZoneType.Radiation ? RadZoneLocations :
+                GasZoneLocations;
 
             switch (map)
             {

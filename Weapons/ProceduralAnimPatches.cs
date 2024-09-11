@@ -12,6 +12,8 @@ using ProcessorClass = GClass2227;
 using StaminaLevelClass = GClass754<float>;
 using WeaponSkillsClass = EFT.SkillManager.GClass1783;
 using System;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace RealismMod
 {
@@ -222,12 +224,8 @@ namespace RealismMod
         private static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
             FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
-            if (firearmController == null)
-            {
-                return;
-            }
+            if (firearmController == null) return;
             Player player = (Player)playerField.GetValue(firearmController);
-
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
                 StatCalc.UpdateAimParameters(firearmController, __instance);
