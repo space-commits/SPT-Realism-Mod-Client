@@ -28,6 +28,7 @@ namespace RealismMod
         public static AssetBundle MetalFenceBundle { get; set; }
         public static AssetBundle RedContainerBundle { get; set; }
         public static AssetBundle BlueContainerBundle { get; set; }
+        public static AssetBundle LabsBarrelPileBundle { get; set; }
     }
 
     //alt spawn locations if playe/bot spawns in a hazard zone
@@ -279,6 +280,8 @@ namespace RealismMod
     public class HazardLocation
     {
         public float SpawnChance { get; set; }
+        public string QuestToEnable { get; set; }
+        public string QuestToBlock { get; set; }
         public List<Zone> Zones { get; set; }
         public List<Asset> Assets { get; set; }
         public List<Loot> Loot { get; set; }
@@ -296,6 +299,41 @@ namespace RealismMod
         public List<HazardLocation> Interchange { get; set; }
         public List<HazardLocation> Lighthouse { get; set; }
         public List<HazardLocation> Woods { get; set; }
+        public List<HazardLocation> Reserve { get; set; }
+    }
+
+    public class SafeZones : ZoneCollection
+    {
+        public EZoneType ZoneType { get; } = EZoneType.SafeZone;
+
+        [JsonProperty("FactorySafeZones")]
+        public List<HazardLocation> Factory { get; set; }
+
+        [JsonProperty("CustomsSafeZones")]
+        public List<HazardLocation> Customs { get; set; }
+
+        [JsonProperty("GZSafeZones")]
+        public List<HazardLocation> GZ { get; set; }
+
+        [JsonProperty("ShorelineSafeZones")]
+        public List<HazardLocation> Shoreline { get; set; }
+
+        [JsonProperty("StreetsAssetZones")]
+        public List<HazardLocation> Streets { get; set; }
+
+        [JsonProperty("LabsSafeZones")]
+        public List<HazardLocation> Labs { get; set; }
+
+        [JsonProperty("InterchangeSafeZone")]
+        public List<HazardLocation> Interchange { get; set; }
+
+        [JsonProperty("LighthouseSafeZones")]
+        public List<HazardLocation> Lighthouse { get; set; }
+
+        [JsonProperty("WoodsSafeZones")]
+        public List<HazardLocation> Woods { get; set; }
+
+        [JsonProperty("ReserveAssetZones")]
         public List<HazardLocation> Reserve { get; set; }
     }
 
@@ -369,6 +407,41 @@ namespace RealismMod
         public List<HazardLocation> Reserve { get; set; }
     }
 
+    public class GasAssetZones : ZoneCollection
+    {
+        public EZoneType ZoneType { get; } = EZoneType.GasAssets;
+
+        [JsonProperty("FactoryGasAssetZones")]
+        public List<HazardLocation> Factory { get; set; }
+
+        [JsonProperty("CustomsGasAssetZones")]
+        public List<HazardLocation> Customs { get; set; }
+
+        [JsonProperty("GZGasAssetZones")]
+        public List<HazardLocation> GZ { get; set; }
+
+        [JsonProperty("ShorelineGasAssetZones")]
+        public List<HazardLocation> Shoreline { get; set; }
+
+        [JsonProperty("StreetsGasAssetZones")]
+        public List<HazardLocation> Streets { get; set; }
+
+        [JsonProperty("LabsGasAssetZones")]
+        public List<HazardLocation> Labs { get; set; }
+
+        [JsonProperty("InterchangeAssetGas")]
+        public List<HazardLocation> Interchange { get; set; }
+
+        [JsonProperty("LighthouseGasAssetZones")]
+        public List<HazardLocation> Lighthouse { get; set; }
+
+        [JsonProperty("WoodsGasAssetZones")]
+        public List<HazardLocation> Woods { get; set; }
+
+        [JsonProperty("ReserveGasAssetZones")]
+        public List<HazardLocation> Reserve { get; set; }
+    }
+
     public class GasZones: ZoneCollection
     {
         public EZoneType ZoneType { get; } = EZoneType.Gas;
@@ -406,7 +479,9 @@ namespace RealismMod
 
     public static class HazardZoneData
     {
+        public static SafeZones SafeZoneLocations;
         public static GasZones GasZoneLocations;
+        public static GasAssetZones GasAssetZoneLocations;
         public static RadZones RadZoneLocations;
         public static RadAssetZones RadAssetZoneLocations;
 
@@ -419,7 +494,9 @@ namespace RealismMod
 
         public static void DeserializeZoneData()
         {
+            SafeZoneLocations = DeserializeHazardZones<SafeZones>("safe_zones");
             GasZoneLocations = DeserializeHazardZones<GasZones>("gas_zones");
+            GasAssetZoneLocations = DeserializeHazardZones<GasAssetZones>("gas_asset_zones");
             RadZoneLocations = DeserializeHazardZones<RadZones>("rad_zones");
             RadAssetZoneLocations = DeserializeHazardZones<RadAssetZones>("rad_asset_zones");
         }
@@ -429,7 +506,9 @@ namespace RealismMod
             ZoneCollection zones =
                 zoneType == EZoneType.RadAssets ? RadAssetZoneLocations :
                 zoneType == EZoneType.Radiation ? RadZoneLocations :
-                GasZoneLocations;
+                zoneType == EZoneType.GasAssets ? GasAssetZoneLocations :
+                zoneType == EZoneType.Gas ? GasZoneLocations :
+                SafeZoneLocations;
 
             switch (map)
             {

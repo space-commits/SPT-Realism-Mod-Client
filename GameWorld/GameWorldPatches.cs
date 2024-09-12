@@ -2,9 +2,11 @@
 using EFT;
 using EFT.Animals;
 using EFT.Ballistics;
+using EFT.Interactive;
 using SPT.Reflection.Patching;
 using System.Reflection;
 using UnityEngine;
+
 
 namespace RealismMod
 {
@@ -54,7 +56,7 @@ namespace RealismMod
         {
             return typeof(GameWorld).GetMethod("OnGameStarted", BindingFlags.Instance | BindingFlags.Public);
         }
-
+ 
         [PatchPostfix]
         private static void PatchPostfix(GameWorld __instance)
         {
@@ -64,7 +66,8 @@ namespace RealismMod
                 GameWorldController.CurrentMap = Singleton<GameWorld>.Instance.MainPlayer.Location.ToLower();
                 HazardZoneSpawner.CreateZones(HazardZoneData.GasZoneLocations);
                 HazardZoneSpawner.CreateZones(HazardZoneData.RadZoneLocations);
-                if (HazardTracker.CanSpawnDynamicZones()) HazardZoneSpawner.CreateZones(HazardZoneData.RadAssetZoneLocations);
+                if (HazardZoneSpawner.ShouldSpawnDynamicZones()) HazardZoneSpawner.CreateZones(HazardZoneData.RadAssetZoneLocations);
+                HazardZoneSpawner.CreateZones(HazardZoneData.SafeZoneLocations);
                 HazardTracker.GetHazardValues(ProfileData.CurrentProfileId);
                 HazardTracker.ResetTracker();
             }

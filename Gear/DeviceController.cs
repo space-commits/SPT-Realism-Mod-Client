@@ -47,7 +47,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     PlayerHazardBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;
-                    if (player != null && bridge != null && (bridge.GasZoneCount > 0 || Plugin.RealHealthController.ToxicItemCount > 0))
+                    if (player != null && bridge != null && ((bridge.GasZoneCount > 0 && !bridge.IsProtectedFromSafeZone) || Plugin.RealHealthController.ToxicItemCount > 0))
                     {
                         PlayGasAnalyserClips(player, bridge);
                         _gasDeviceTimer = 0f;
@@ -66,7 +66,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     PlayerHazardBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;
-                    if (player != null && bridge != null && (bridge.RadZoneCount > 0 || HazardTracker.TotalRadiationRate > 0f))
+                    if (player != null && bridge != null && (bridge.RadZoneCount > 0 || HazardTracker.TotalRadiationRate > 0f) && !bridge.IsProtectedFromSafeZone)
                     {
                         PlayGeigerClips(player, bridge);
                         _geigerDeviceTimer = 0f;

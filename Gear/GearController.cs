@@ -24,7 +24,7 @@ namespace RealismMod
         {
             get
             {
-                return _currentGasProtection * GasMaskDurabilityFactor;
+                return _currentGasProtection * _gasMaskDurabilityFactor;
             }
         }
 
@@ -32,7 +32,7 @@ namespace RealismMod
         {
             get
             {
-                return _currentRadProtection * GasMaskDurabilityFactor;
+                return _currentRadProtection * _gasMaskDurabilityFactor;
             }
         } 
 
@@ -175,10 +175,13 @@ namespace RealismMod
            
             if (filter != null) 
             {
+                if (filter.Value > 0) HasGasFilter = true;
                 filterFactor = filter.Value > 90f ? 1f : Mathf.Pow(filter.Value / filter.MaxResource, 0.15f);
                 filterFactor = filterFactor > 0.85f ? 1f : filterFactor;
             }
           
+            //masks like the respirator are not given an armor rating, so we can safely assume this is a gas mask/respirator that does not take filters,
+            //therfore should not be subject to filter or durability factors
             ArmorComponent armorComp = gasmask.GetItemComponent<ArmorComponent>();
             if (armorComp == null)
             {

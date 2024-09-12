@@ -1,0 +1,78 @@
+{
+    "FactorySafeZones": [],
+    "CustomsSafeZones": [],
+    "GZSafeZones": [],
+    "ShorelineSafeZones": [],
+    "StreetsSafeZones": [],
+    "LabsSafeZones": [
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "LabsGreenSafeZone",
+                    "strength": 0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -130.2733,
+                        "y": 5.983998,
+                        "z": -349.8193
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 269.7681,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 5.680395,
+                        "y": 3.723195,
+                        "z": 18.1121
+                    }
+                },
+                {
+                    "name": "LabsBlackSafeZone",
+                    "strength": 0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -130.6313,
+                        "y": 0.6878951,
+                        "z": -349.3566
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 269.6727,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 4.063541,
+                        "y": 3.300328,
+                        "z": 17.84963
+                    }
+                },
+                {
+                    "name": "LabsBlackSafeZone",
+                    "strength": 0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -123.5548,
+                        "y": 1.359848,
+                        "z": -403.2564
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 179.7471,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 4.476452,
+                        "y": 3.930063,
+                        "z": 6.10278
+                    }
+                }
+            ]
+        }
+    ],
+    "InterchangeSafeZone": [],
+    "LighthouseSafeZones": [],
+    "WoodsSafeZones": [],
+    "ReserveSafeZones": []
+}

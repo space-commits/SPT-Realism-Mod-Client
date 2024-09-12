@@ -2072,7 +2072,7 @@ namespace RealismMod
 
             if (!player.HealthController.IsAlive || player.HealthController.DamageCoeff <= 0f) return; 
 
-            if ((PlayerHazardBridge.GasZoneCount > 0 || PlayerHazardBridge.RadZoneCount > 0) && GearController.HasGasMask) 
+            if ((PlayerHazardBridge.GasZoneCount > 0 || PlayerHazardBridge.RadZoneCount > 0) && GearController.HasGasMask && !PlayerHazardBridge.IsProtectedFromSafeZone) 
             {
                 GearController.UpdateFilterResource(player, PlayerHazardBridge);
                 GearController.CalcGasMaskDuraFactor(player);
@@ -2086,10 +2086,22 @@ namespace RealismMod
 
         private void RadiationZoneTick(Player player)
         {
+            bool isInRadZone = PlayerHazardBridge.RadZoneCount > 0 && !PlayerHazardBridge.IsProtectedFromSafeZone;
+            bool IsBeingHazarded = isInRadZone && GearController.CurrentRadProtection <= 0f; //CurrentRadProtection accounts for both respirators, and gas masks and whether they have filters or dura is too low
+
             float sprintFactor = PlayerState.IsSprinting ? 2f : 1f;
             float factors = (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak) * sprintFactor;
 
-            if (PlayerHazardBridge.RadZoneCount > 0 && GearController.CurrentRadProtection < 1f)
+            float lowerThreshold = !isInRadZone && HazardTracker.TotalRadiation <= RadiationTreatmentThreshold ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
+            float medicalRate = !IsBeingHazarded ? HazardTracker.RadTreatmentRate : 0f;
+            float radRate = PlayerHazardBridge.TotalRadRate * factors;
+            float totalRate = radRate + medicalRate;
+
+            float speed = totalRate > 0f ? 10f : 3f;
+            HazardTracker.TotalRadiationRate = Mathf.MoveTowards(HazardTracker.TotalRadiationRate, totalRate, speed * Time.deltaTime);
+            HazardTracker.TotalRadiation = Mathf.Clamp(HazardTracker.TotalRadiation + HazardTracker.TotalRadiationRate, lowerThreshold, 100f);
+
+         /*   if (PlayerHazardBridge.RadZoneCount > 0 && GearController.CurrentRadProtection < 1f && PlayerHazardBridge.SafeZoneCount <= 0)
             {
                 float increase = (PlayerHazardBridge.TotalRadRate + HazardTracker.RadTreatmentRate) * factors;
                 increase = Mathf.Max(increase, 0f);
@@ -2100,24 +2112,36 @@ namespace RealismMod
             {
                 float reduction = HazardTracker.RadTreatmentRate * (1f + PlayerState.ImmuneSkillStrong);
                 float threshold = HazardTracker.TotalRadiation <= RadiationTreatmentThreshold ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
-                HazardTracker.TotalRadiationRate = Mathf.Lerp(HazardTracker.TotalRadiationRate, HazardTracker.TotalRadiation == threshold ? 0f : reduction, 0.08f);
+                HazardTracker.TotalRadiationRate = Mathf.MoveTowards(HazardTracker.TotalRadiationRate, HazardTracker.TotalRadiation == threshold ? 0f : reduction, 3f * Time.deltaTime);
                 HazardTracker.TotalRadiationRate = (float)Math.Round(HazardTracker.TotalRadiationRate, 3);
                 HazardTracker.TotalRadiation = Mathf.Clamp(HazardTracker.TotalRadiation + HazardTracker.TotalRadiationRate, threshold, 100f);
             }
             else
             {
                 HazardTracker.TotalRadiationRate = 0f;
-            }
+            }*/
         }
 
         private void GasZoneTick(Player player)
         {
+            bool isInGasZone = PlayerHazardBridge.GasZoneCount > 0 && !PlayerHazardBridge.IsProtectedFromSafeZone;
+            bool zonePreventsHeal = isInGasZone && GearController.CurrentGasProtection <= 0f;
+            bool isBeingHazarded = !zonePreventsHeal || IsCoughingInGas;
             float sprintFactor = PlayerState.IsSprinting ? 2f : 1f;
             float toxicItemFactor = ToxicItemCount * 0.05f;
-            float baseFactor = (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak);
-            float factors = baseFactor * sprintFactor;
+            float factors = (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak) * sprintFactor;
 
-            if ((PlayerHazardBridge.GasZoneCount > 0 || ToxicItemCount > 0) && GearController.CurrentGasProtection < 1f)
+            float lowerThreshold = !isBeingHazarded && HazardTracker.DetoxicationRate < 0f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalToxicity);
+            float medicalRate = !isBeingHazarded ? HazardTracker.DetoxicationRate : 0f;
+            float gasRate = (PlayerHazardBridge.TotalGasRate + toxicItemFactor) * factors;
+            float totalRate = gasRate + medicalRate;
+
+            float speed = totalRate > 0f ? 10f : 3f;
+            HazardTracker.TotalToxicityRate = Mathf.MoveTowards(HazardTracker.TotalToxicityRate, totalRate, speed * Time.deltaTime);
+            HazardTracker.TotalToxicity = Mathf.Clamp(HazardTracker.TotalToxicity + HazardTracker.TotalToxicityRate, lowerThreshold, 100f);
+
+
+  /*          if (((PlayerHazardBridge.GasZoneCount > 0 && PlayerHazardBridge.SafeZoneCount <= 0) || ToxicItemCount > 0) && GearController.CurrentGasProtection < 1f)
             {
                 float increase = (PlayerHazardBridge.TotalGasRate + HazardTracker.DetoxicationRate + toxicItemFactor) * factors;
                 increase = Mathf.Max(increase, 0f);
@@ -2128,16 +2152,16 @@ namespace RealismMod
             {
                 float reduction = (_baseToxicityRecoveryRate + HazardTracker.DetoxicationRate) * (1f + PlayerState.ImmuneSkillStrong);
                 float threshold = HazardTracker.DetoxicationRate < 0f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalToxicity);
-                float totalRate = Mathf.Lerp(HazardTracker.TotalToxicityRate, HazardTracker.TotalToxicity == threshold ? 0f : reduction, 0.15f);
+                float totalRate = Mathf.MoveTowards(HazardTracker.TotalToxicityRate, HazardTracker.TotalToxicity == threshold ? 0f : reduction, 3f * Time.deltaTime);
                 totalRate = (float)Math.Round(totalRate, 3);
-                if (totalRate < 0f) totalRate *= baseFactor;
+                if (totalRate > 0f) totalRate *= baseFactor;
                 HazardTracker.TotalToxicityRate = totalRate;    
                 HazardTracker.TotalToxicity = Mathf.Clamp(HazardTracker.TotalToxicity + reduction, threshold, 100f);
             }
             else
             {
                 HazardTracker.TotalToxicityRate = 0f;
-            }
+            }*/
         }
 
         private void HazardEffectsTick(Player player) 

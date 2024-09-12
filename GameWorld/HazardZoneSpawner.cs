@@ -1,18 +1,49 @@
-﻿using System;
+﻿using Comfort.Common;
+using EFT;
+using System;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
-using EFT;
-using System.Linq;
-using UnityEngine.Assertions;
-using EFT.Quests;
 
 namespace RealismMod
 {
     public static class HazardZoneSpawner
     {
         public const float MinBotSpawnDistanceFromPlayer = 150f;
+
+        private static QuestDataClass GetQuest(string questId) 
+        {
+            var sessionData = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession();
+            return sessionData.Profile.QuestsData.FirstOrDefault(q => q.Id == questId);
+        }
+
+        public static bool QuestHasUnlockedZone(string questId)
+        {
+            bool didRequiredQuest = false;
+            var dynamicZoneQuest = GetQuest(questId);
+            if (dynamicZoneQuest != null)
+            {
+                didRequiredQuest = dynamicZoneQuest.Status == EFT.Quests.EQuestStatus.Started || dynamicZoneQuest.Status == EFT.Quests.EQuestStatus.Success;
+            }
+            return didRequiredQuest;
+        }
+
+        public static bool QuestHasBlocksZone(string questId)
+        {
+            bool didRequiredQuest = false;
+            var dynamicZoneQuest = GetQuest(questId);
+            if (dynamicZoneQuest != null)
+            {
+                didRequiredQuest = dynamicZoneQuest.Status == EFT.Quests.EQuestStatus.Success;
+            }
+            return didRequiredQuest;
+        }
+
+        public static bool ShouldSpawnDynamicZones()
+        {
+            return ProfileData.PMCLevel >= 20 || QuestHasUnlockedZone("66dad1a18cbba6e558486336");
+        }
 
         //for player, get closest spawn. For bot, sort by min distance, or furthest from player failing that.
         public static Vector3 GetSafeSpawnPoint(Player entitiy, bool isBot, bool blocksNav, bool isInRads)
@@ -44,19 +75,23 @@ namespace RealismMod
             foreach (var zone in zones)
             {
                 if (collection.ZoneType == EZoneType.Gas || collection.ZoneType == EZoneType.GasAssets) CreateZone<GasZone>(zone, EZoneType.Gas);
-                else CreateZone<RadiationZone>(zone, EZoneType.Radiation);
+                if (collection.ZoneType == EZoneType.Radiation || collection.ZoneType == EZoneType.RadAssets) CreateZone<RadiationZone>(zone, EZoneType.Radiation);
+                if (collection.ZoneType == EZoneType.SafeZone) CreateZone<SafeZone>(zone, EZoneType.SafeZone);
+
             }
         }
 
-        private static bool ShouldSpawnZone(float zoneProbability, EZoneType zoneType) 
+        private static bool ShouldSpawnZone(HazardLocation hazardLocation, EZoneType zoneType) 
         {
             if(PluginConfig.ZoneDebug.Value) return true;
 
             if (!Plugin.FikaPresent) 
             {
-                bool doTimmyFactor = ProfileData.PMCLevel <= 10f && zoneType != EZoneType.Radiation;
+                if (hazardLocation.QuestToBlock != null && !QuestHasUnlockedZone(hazardLocation.QuestToBlock)) return false;
+
+                bool doTimmyFactor = ProfileData.PMCLevel <= 10f && zoneType != EZoneType.Radiation && GameWorldController.CurrentMap != "laboratory";
                 float timmyFactor = doTimmyFactor && GameWorldController.CurrentMap == "sandbox" ? 0f : doTimmyFactor ? 0.25f : 1f;
-                zoneProbability = Mathf.Max(zoneProbability * timmyFactor, 0.01f);
+                float zoneProbability = Mathf.Max(hazardLocation.SpawnChance * timmyFactor, 0.01f);
                 zoneProbability = Mathf.Clamp01(zoneProbability);
                 float randomValue = UnityEngine.Random.value;
                 return randomValue <= zoneProbability;
@@ -65,17 +100,17 @@ namespace RealismMod
             DateTime utcNow = DateTime.UtcNow;
             int seed = utcNow.Year * 1000000 + utcNow.Month * 10000 + utcNow.Day * 100 + utcNow.Hour * 10;
             int finalSeed = seed % 101;
-            return finalSeed <= zoneProbability * 100f;    
+            return finalSeed <= hazardLocation.SpawnChance * 100f;    
         }
 
-        public static void CreateZone<T>(HazardLocation zone, EZoneType zoneType) where T : MonoBehaviour, IHazardZone
+        public static void CreateZone<T>(HazardLocation hazardLocation, EZoneType zoneType) where T : MonoBehaviour, IHazardZone
         {
-            if (!ShouldSpawnZone(zone.SpawnChance, zoneType)) return;
+            if (!ShouldSpawnZone(hazardLocation, zoneType)) return;
 
-            HandleZoneAssets(zone);
-            HandleZoneLoot(zone);
+            HandleZoneAssets(hazardLocation);
+            HandleZoneLoot(hazardLocation);
 
-            foreach (var subZone in zone.Zones) 
+            foreach (var subZone in hazardLocation.Zones) 
             {
                 string zoneName = subZone.Name;
                 Vector3 position = new Vector3(subZone.Position.X, subZone.Position.Y, subZone.Position.Z);
@@ -99,7 +134,7 @@ namespace RealismMod
                 EFT.Interactive.TriggerWithId trigger = hazardZone.AddComponent<EFT.Interactive.TriggerWithId>();
                 trigger.SetId(zoneName);
 
-                string questZoneName = zone.Assets == null ? zoneName : "dynamic" + GameWorldController.CurrentMap;
+                string questZoneName = hazardLocation.Assets == null ? zoneName : "dynamic" + GameWorldController.CurrentMap;
 
                 EFT.Interactive.ExperienceTrigger questTrigger = hazardZone.AddComponent<EFT.Interactive.ExperienceTrigger>();
                 questTrigger.SetId(questZoneName);
@@ -220,7 +255,8 @@ namespace RealismMod
             if (assetName == "YellowPlasticPallet") return Assets.YellowPlasticPalletBundle.LoadAsset<GameObject>("Assets/Prefabs/pallet_barrel_plastic_clear_P (4).prefab");
             if (assetName == "WhitePlasticPallet") return Assets.WhitePlasticPalletBundle.LoadAsset<GameObject>("Assets/Prefabs/pallet_barrel_plastic_clear_P (5).prefab");
             if (assetName == "MetalFence") return Assets.MetalFenceBundle.LoadAsset<GameObject>("Assets/Prefabs/fence_metall_part3_update.prefab");
-            if (assetName == "RedContainer") return Assets.RedContainerBundle.LoadAsset<GameObject>("Assets/Prefabs/container_6m_red_close.prefab"); if (assetName == "RedContainer") return Assets.RedContainerBundle.LoadAsset<GameObject>("Assets/Prefabs/container_6m_red_close.prefab");
+            if (assetName == "LabsBarrelPile") return Assets.LabsBarrelPileBundle.LoadAsset<GameObject>("Assets/Realism Hazard Prefabs/Prefab/Barrel_plastic_clear_set_01.prefab"); 
+            if (assetName == "RedContainer") return Assets.RedContainerBundle.LoadAsset<GameObject>("Assets/Prefabs/container_6m_red_close.prefab");
             if (assetName == "BlueContainer") return Assets.BlueContainerBundle.LoadAsset<GameObject>("container_6m_blue_close (1)");
             return null;
         }

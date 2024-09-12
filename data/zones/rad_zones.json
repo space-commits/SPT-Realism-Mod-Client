@@ -34,8 +34,8 @@
                     "blockNav": true,
                     "position": {
                         "x": 56.5,
-                        "y": -1.0,
-                        "z": -28.0
+                        "y": -1,
+                        "z": -27.39656
                     },
                     "rotation": {
                         "x": 0.0,
@@ -82,7 +82,7 @@
             "zones": [
                 {
                     "name": "CustomsRadTrain1",
-                    "strength": 150.0,
+                    "strength": 80.0,
                     "blockNav": true,
                     "position": {
                         "x": 434.0,
@@ -107,7 +107,7 @@
             "zones": [
                 {
                     "name": "CustomsRadTrain2",
-                    "strength": 100.0,
+                    "strength": 65.0,
                     "blockNav": true,
                     "position": {
                         "x": 465.0,
@@ -132,7 +132,7 @@
             "zones": [
                 {
                     "name": "CustomsRadTrain3",
-                    "strength": 150.0,
+                    "strength": 80.0,
                     "blockNav": true,
                     "position": {
                         "x": 484.0,
@@ -157,7 +157,7 @@
             "zones": [
                 {
                     "name": "CustomsTrainExtract",
-                    "strength": 50.0,
+                    "strength": 30.0,
                     "blockNav": true,
                     "position": {
                         "x": 479.0,
@@ -182,7 +182,7 @@
             "zones": [
                 {
                     "name": "CustomsBigRed",
-                    "strength": 550.0,
+                    "strength": 500.0,
                     "blockNav": false,
                     "position": {
                         "x": -213.0,
@@ -207,7 +207,7 @@
             "zones": [
                 {
                     "name": "CustomsGarrage",
-                    "strength": 150.0,
+                    "strength": 100.0,
                     "blockNav": false,
                     "position": {
                         "x": 108.0,
@@ -232,7 +232,7 @@
             "zones": [
                 {
                     "name": "CustomsZB013",
-                    "strength": 80.0,
+                    "strength": 60.0,
                     "blockNav": false,
                     "position": {
                         "x": 199.0,
@@ -257,7 +257,7 @@
             "zones": [
                 {
                     "name": "CustomsOldGasExit",
-                    "strength": 50.0,
+                    "strength": 40.0,
                     "blockNav": false,
                     "position": {
                         "x": 311.0,
@@ -282,7 +282,7 @@
             "zones": [
                 {
                     "name": "CustomsZB",
-                    "strength": 50.0,
+                    "strength": 40.0,
                     "blockNav": false,
                     "position": {
                         "x": 465.0,
@@ -307,7 +307,7 @@
             "zones": [
                 {
                     "name": "CustomsMarkedRoom",
-                    "strength": 15.0,
+                    "strength": 12.5,
                     "blockNav": false,
                     "position": {
                         "x": 183.5,
@@ -332,7 +332,7 @@
             "zones": [
                 {
                     "name": "CustomsBarrels1",
-                    "strength": 45.0,
+                    "strength": 40.0,
                     "blockNav": false,
                     "position": {
                         "x": 427.5,
@@ -357,7 +357,7 @@
             "zones": [
                 {
                     "name": "CustomsCratesBigRed",
-                    "strength": 50.0,
+                    "strength": 40.0,
                     "blockNav": false,
                     "position": {
                         "x": -183.0,
@@ -382,7 +382,7 @@
             "zones": [
                 {
                     "name": "CustomsContainerBigRed",
-                    "strength": 50.0,
+                    "strength": 40.0,
                     "blockNav": false,
                     "position": {
                         "x": -193.5,
@@ -615,7 +615,7 @@
             "zones": [
                 {
                     "name": "LabsGreenGoo",
-                    "strength": 8.0,
+                    "strength": 4.0,
                     "blockNav": true,
                     "position": {
                         "x": -173.0,
@@ -640,7 +640,7 @@
             "zones": [
                 {
                     "name": "LabsAreaAroundGoo",
-                    "strength": 80.0,
+                    "strength": 60.0,
                     "blockNav": false,
                     "position": {
                         "x": -174.0,
@@ -665,7 +665,7 @@
             "zones": [
                 {
                     "name": "LabsGooBarrels",
-                    "strength": 20.0,
+                    "strength": 10.0,
                     "blockNav": true,
                     "position": {
                         "x": -174.0,

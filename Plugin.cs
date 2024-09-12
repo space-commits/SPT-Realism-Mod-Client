@@ -312,6 +312,7 @@ namespace RealismMod
             Assets.MetalFenceBundle = LoadAndInitializePrefabs("hazard_assets\\metalfence.bundle");
             Assets.RedContainerBundle = LoadAndInitializePrefabs("hazard_assets\\redcontainer.bundle");
             Assets.BlueContainerBundle = LoadAndInitializePrefabs("hazard_assets\\bluecontainer.bundle");
+            Assets.LabsBarrelPileBundle = LoadAndInitializePrefabs("hazard_assets\\labsbarrelpile.bundle");
             ExplosionBundle = LoadAndInitializePrefabs("exp\\expl.bundle");
 
         }
@@ -642,8 +643,6 @@ namespace RealismMod
 
             new FireRateDisplayStringValuePatch().Enable();
 
-            new PenetrationUIPatch().Enable();
-
             new ModErgoStatDisplayPatch().Enable();
             new GetAttributeIconPatches().Enable();
             new MagazineMalfChanceDisplayPatch().Enable();
@@ -765,6 +764,7 @@ namespace RealismMod
         {
             /*new SetSkinPatch().Enable();*/
             /*new CollidersPatch().Enable();*/
+            new PenetrationUIPatch().Enable();
             new InitiateShotPatch().Enable();
             new VelocityPatch().Enable();
             new CreateShotPatch().Enable();

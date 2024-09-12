@@ -86,8 +86,6 @@ namespace RealismMod
             return typeof(GClass3115).GetConstructor(new Type[] { typeof(float) });
         }
 
-        
-
         private static string GetStringValues(int armorClass, float penetrationPower)
         {
             float penetrationChance = GClass566.RealResistance(100f, 100f, armorClass, penetrationPower).GetPenetrationChance(penetrationPower);

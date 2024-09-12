@@ -14,6 +14,7 @@ using WeaponSkillsClass = EFT.SkillManager.GClass1783;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using RootMotion.FinalIK;
 
 namespace RealismMod
 {
@@ -254,7 +255,7 @@ namespace RealismMod
 
                 if (pwa.IsAiming && !didAimWiggle)
                 {
-                    StanceController.DoWiggleEffects(player, pwa, fc.Weapon, wiggleDir, wiggleFactor: factor, isADS: true);
+                    if (!StanceController.IsFiringFromStance) StanceController.DoWiggleEffects(player, pwa, fc.Weapon, wiggleDir, wiggleFactor: factor, isADS: true);
                     didAimWiggle = true;
                 }
                 else if (!pwa.IsAiming && didAimWiggle)

@@ -121,18 +121,6 @@ namespace RealismMod
             File.WriteAllText(GetFilePath(), records);
         }
 
-        public static bool CanSpawnDynamicZones()
-        {
-            var sessionData = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession();
-            var dynamicZoneQuest = sessionData.Profile.QuestsData.FirstOrDefault(q => q.Id == "66dad1a18cbba6e558486336");
-            bool didRequiredQuest = false;
-            if (dynamicZoneQuest != null) 
-            {
-                didRequiredQuest = dynamicZoneQuest.Status == EFT.Quests.EQuestStatus.Started || dynamicZoneQuest.Status == EFT.Quests.EQuestStatus.Success; 
-            }
-            return ProfileData.PMCLevel >= 20 || didRequiredQuest;
-        }
-
         //for cases where player wiped profile
         private static bool IsWipedProfile() 
         {

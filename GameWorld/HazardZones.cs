@@ -1,8 +1,9 @@
-﻿using EFT;
+﻿using Comfort.Common;
+using EFT;
 using EFT.Interactive;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
+
 
 namespace RealismMod
 {
@@ -19,7 +20,7 @@ namespace RealismMod
     {
         EZoneType ZoneType { get; } 
         float ZoneStrengthModifier { get; set; }
-        bool BlocksNav { get; set; }    
+        bool BlocksNav { get; set; }
     }
 
     public class GasZone : TriggerWithId, IHazardZone
@@ -87,7 +88,7 @@ namespace RealismMod
         {
             _tick += Time.deltaTime;
 
-            if (_tick >= 0.25f)
+            if (_tick >= 0.001f)
             {
                 var playersToRemove = new List<Player>();
 
@@ -198,7 +199,7 @@ namespace RealismMod
         {
             _tick += Time.deltaTime;
 
-            if (_tick >= 0.25f)
+            if (_tick >= 0.001f)
             {
                 var playersToRemove = new List<Player>();
                 foreach (var p in _containedPlayers)
@@ -208,7 +209,7 @@ namespace RealismMod
                     if (player == null || hazardBridge == null)
                     {
                         playersToRemove.Add(player);
-                        return; 
+                        continue; 
                     }  
                     float radAmount = _isSphere ? CalculateRadStrengthSphere(player.gameObject.transform.position) : CalculateRadStrengthBox(player.gameObject.transform.position);
                     hazardBridge.RadRates[this.name] = Mathf.Max(radAmount, 0f);
@@ -246,14 +247,21 @@ namespace RealismMod
         public EZoneType ZoneType { get; } = EZoneType.SafeZone;
         public float ZoneStrengthModifier { get; set; } = 0f;
         public bool BlocksNav { get; set; }
+        public bool IsActive { get; set; } = true;
         private Dictionary<Player, PlayerHazardBridge> _containedPlayers = new Dictionary<Player, PlayerHazardBridge>();
         private Collider _zoneCollider;
+#pragma warning disable CS0414
         private bool _isSphere = false;
+#pragma warning disable CS0414
         private float _tick = 0f;
         private float _maxDistance = 0f;
+        private AudioSource _audioSource;
+        private List<Door> _doors = new List<Door>();
+        private List<Door> _keycardDoors = new List<Door>();
 
         void Start()
         {
+            SetUpAndPlayAudio();
             _zoneCollider = GetComponentInParent<Collider>();
             if (_zoneCollider == null)
             {
@@ -271,6 +279,80 @@ namespace RealismMod
                 Vector3 boxSize = box.size;
                 _maxDistance = boxSize.magnitude / 2f;
             }
+
+            CheckForDoors();
+        }
+
+        void CheckForDoors()
+        {
+            // Get the center and size of the box collider
+            BoxCollider box = (BoxCollider)_zoneCollider;
+            Vector3 boxCenter = box.transform.position + box.center;
+            Vector3 boxSize = box.size / 2; 
+
+            // Perform the OverlapBox check
+            Collider[] colliders = Physics.OverlapBox(boxCenter, boxSize, Quaternion.identity);
+
+            Utils.Logger.LogWarning($"======================={this.name}");
+
+            foreach (Collider col in colliders)
+            {
+                KeycardDoor keycardDoor = col.GetComponent<KeycardDoor>();
+                Door door = col.GetComponent<Door>();
+                if (keycardDoor != null)
+                {
+                    Utils.Logger.LogWarning($"Found Keycard door: {keycardDoor.name} is {keycardDoor.DoorState}");
+                    _keycardDoors.Add(keycardDoor);    
+ 
+                }
+                if (door != null)
+                {
+                    Utils.Logger.LogWarning($"Found door: {door.name} is {door.DoorState}");
+                    _doors.Add(door);
+                }
+            }
+        }
+
+        void CheckDoors()
+        {
+            foreach (var door in _doors) 
+            {
+                if (door.DoorState == EDoorState.Open) 
+                {
+                    Utils.Logger.LogWarning("==door open");
+                    IsActive = false;
+                    return;
+                }
+            }
+            foreach (var keycardDoors in _keycardDoors)
+            {
+                if (keycardDoors.DoorState == EDoorState.Open)
+                {
+                    Utils.Logger.LogWarning("==labs door open");
+                    IsActive = false;
+                    return;
+                }
+            }
+            IsActive = true;
+        }
+
+        void CheckDoorAudio() 
+        {
+            if (!IsActive) _audioSource.Stop();
+            if (!_audioSource.isPlaying && IsActive) _audioSource.Play();
+        }
+
+        private void SetUpAndPlayAudio() 
+        {
+            _audioSource = this.gameObject.AddComponent<AudioSource>();
+            _audioSource.clip = Plugin.HazardZoneClips["decontamination.wav"];
+            _audioSource.loop = true;
+            _audioSource.playOnAwake = false;
+            _audioSource.spatialBlend = 1.0f;
+            _audioSource.minDistance = 1f;
+            _audioSource.maxDistance = 100.0f;
+            _audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+            _audioSource.Play();
         }
 
         public override void TriggerEnter(Player player)
@@ -286,6 +368,7 @@ namespace RealismMod
                 }
                 hazardBridge.SafeZoneCount++;
                 hazardBridge.ZoneBlocksNav = BlocksNav;
+                hazardBridge.SafeZones.Add(this.name, IsActive);
                 _containedPlayers.Add(player, hazardBridge);
             }
         }
@@ -296,7 +379,7 @@ namespace RealismMod
             {
                 PlayerHazardBridge hazardBridge = _containedPlayers[player];
                 hazardBridge.SafeZoneCount--;
-                hazardBridge.RadRates.Remove(this.name);
+                hazardBridge.SafeZones.Remove(this.name);
                 hazardBridge.ZoneBlocksNav = false;
                 _containedPlayers.Remove(player);
             }
@@ -308,6 +391,9 @@ namespace RealismMod
 
             if (_tick >= 0.25f)
             {
+                CheckDoors();
+                CheckDoorAudio();
+
                 var playersToRemove = new List<Player>();
                 foreach (var p in _containedPlayers)
                 {
@@ -316,8 +402,10 @@ namespace RealismMod
                     if (player == null || hazardBridge == null)
                     {
                         playersToRemove.Add(player);
-                        return;
+                        continue;
                     }
+                    hazardBridge.SafeZones[this.name] = IsActive;
+                    Utils.Logger.LogWarning("is active " + IsActive);
                 }
 
                 foreach (var p in playersToRemove)

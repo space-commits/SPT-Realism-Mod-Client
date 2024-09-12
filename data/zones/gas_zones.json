@@ -31,7 +31,7 @@
                 {
                     "name": "FactoryBasement",
                     "strength": 100.0,
-                    "blockNav": false,
+                    "blockNav": true,
                     "position": {
                         "x": -6.0,
                         "y": -3.6,
@@ -156,7 +156,7 @@
                     "name": "FactoryMechanicTunnel",
                     "spawnChance": 0.05,
                     "strength": 100.0,
-                    "blockNav": false,
+                    "blockNav": true,
                     "position": {
                         "x": -16.5,
                         "y": -2.5,
@@ -360,9 +360,9 @@
                     "strength": 27.0,
                     "blockNav": true,
                     "position": {
-                        "x": 88.0,
-                        "y": 5.0,
-                        "z": -157.0
+                        "x": 84.401,
+                        "y": 5,
+                        "z": -157.23
                     },
                     "rotation": {
                         "x": 0.0,
@@ -680,12 +680,12 @@
             ]
         },
         {
-            "spawnChance": 1.0,
+            "spawnChance": 0.2,
             "zones": [
                 {
                     "name": "GZTerragroupBuilding1",
                     "strength": 175.0,
-                    "blockNav": false,
+                    "blockNav": true,
                     "position": {
                         "x": -45.0,
                         "y": 25.0,
