@@ -89,7 +89,7 @@ namespace RealismMod
             {
                 if (hazardLocation.QuestToBlock != null && !QuestHasUnlockedZone(hazardLocation.QuestToBlock)) return false;
 
-                bool doTimmyFactor = ProfileData.PMCLevel <= 10f && zoneType != EZoneType.Radiation && GameWorldController.CurrentMap != "laboratory";
+                bool doTimmyFactor = ProfileData.PMCLevel <= 10f && zoneType != EZoneType.Radiation && zoneType != EZoneType.RadAssets && GameWorldController.CurrentMap != "laboratory";
                 float timmyFactor = doTimmyFactor && GameWorldController.CurrentMap == "sandbox" ? 0f : doTimmyFactor ? 0.25f : 1f;
                 float zoneProbability = Mathf.Max(hazardLocation.SpawnChance * timmyFactor, 0.01f);
                 zoneProbability = Mathf.Clamp01(zoneProbability);
@@ -121,6 +121,8 @@ namespace RealismMod
                 GameObject hazardZone = new GameObject(zoneName);
                 T hazard = hazardZone.AddComponent<T>();
 
+                hazard.UsesDistanceFalloff = subZone.UsesDistanceFalloff;
+ 
                 float strengthModifier = 1f;
                 if ((hazard.ZoneType == EZoneType.Gas || hazard.ZoneType == EZoneType.GasAssets) && (!Plugin.FikaPresent && !PluginConfig.ZoneDebug.Value))
                 {

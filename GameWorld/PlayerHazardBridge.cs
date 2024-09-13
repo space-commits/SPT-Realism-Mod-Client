@@ -131,7 +131,6 @@ namespace RealismMod
                 foreach (var zone in SafeZones)
                 {
                     if (zone.Value == true) _isProtectedFromSafeZone = true;
-                    Utils.Logger.LogWarning("_isProtectedFromSafeZone " + _isProtectedFromSafeZone);
                 }
                 _safeZoneCheckTimer = 0f;
             }

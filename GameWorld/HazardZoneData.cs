@@ -262,6 +262,7 @@ namespace RealismMod
     {
         public string Name { get; set; }
         public float Strength { get; set; }
+        public bool UsesDistanceFalloff { get; set; }
         public bool BlockNav { get; set; }
         public Position Position { get; set; }
         public Rotation Rotation { get; set; }

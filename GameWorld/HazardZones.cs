@@ -1,8 +1,10 @@
 ﻿using Comfort.Common;
 using EFT;
 using EFT.Interactive;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Val;
 
 
 namespace RealismMod
@@ -21,6 +23,7 @@ namespace RealismMod
         EZoneType ZoneType { get; } 
         float ZoneStrengthModifier { get; set; }
         bool BlocksNav { get; set; }
+        bool UsesDistanceFalloff { get; set; }
     }
 
     public class GasZone : TriggerWithId, IHazardZone
@@ -28,6 +31,7 @@ namespace RealismMod
         public EZoneType ZoneType { get; } = EZoneType.Gas;
         public float ZoneStrengthModifier { get; set; } = 1f;
         public bool BlocksNav { get; set; }
+        public bool UsesDistanceFalloff { get; set; }
         private Dictionary<Player, PlayerHazardBridge> _containedPlayers = new Dictionary<Player, PlayerHazardBridge>();
         private Collider _zoneCollider;
         private bool _isSphere = false;
@@ -116,6 +120,7 @@ namespace RealismMod
 
         float CalculateGasStrengthBox(Vector3 playerPosition)
         {
+            if (!UsesDistanceFalloff) return (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f)) / 1000f;
             float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
             float invertedDistance = _maxDistance - distance;  // invert the distance
             invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance); //clamp the inverted distance
@@ -124,6 +129,7 @@ namespace RealismMod
 
         float CalculateGasStrengthSphere(Vector3 playerPosition)
         {
+            if (!UsesDistanceFalloff) return (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f)) / 1000f;
             float distanceToCenter = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
             float radius = _zoneCollider.bounds.extents.magnitude;
             float effectiveDistance = Mathf.Max(0, distanceToCenter - radius); 
@@ -138,6 +144,7 @@ namespace RealismMod
         public EZoneType ZoneType { get; } = EZoneType.Radiation;
         public float ZoneStrengthModifier { get; set; } = 1f;
         public bool BlocksNav { get; set; }
+        public bool UsesDistanceFalloff { get; set; }
         private Dictionary<Player, PlayerHazardBridge> _containedPlayers = new Dictionary<Player, PlayerHazardBridge>();
         private Collider _zoneCollider;
         private bool _isSphere = false;
@@ -226,6 +233,7 @@ namespace RealismMod
 
         float CalculateRadStrengthBox(Vector3 playerPosition)
         {
+            if (!UsesDistanceFalloff) return (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f)) / 1000f;
             float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
             float invertedDistance = _maxDistance - distance;  // invert the distance
             invertedDistance = Mathf.Clamp(invertedDistance, 0, _maxDistance); //clamp the inverted distance
@@ -234,6 +242,7 @@ namespace RealismMod
 
         float CalculateRadStrengthSphere(Vector3 playerPosition)
         {
+            if (!UsesDistanceFalloff) return (ZoneStrengthModifier * (PluginConfig.ZoneDebug.Value ? PluginConfig.test10.Value : 1f)) / 1000f;
             float distanceToCenter = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
             float radius = (_zoneCollider as SphereCollider).radius * transform.localScale.magnitude;
             float distanceFromSurface = radius - distanceToCenter;
@@ -244,115 +253,157 @@ namespace RealismMod
 
     public class SafeZone : TriggerWithId, IHazardZone
     {
+        const float MAIN_VOLUME = 0.5f;
         public EZoneType ZoneType { get; } = EZoneType.SafeZone;
         public float ZoneStrengthModifier { get; set; } = 0f;
         public bool BlocksNav { get; set; }
+        public bool UsesDistanceFalloff { get; set; }
         public bool IsActive { get; set; } = true;
         private Dictionary<Player, PlayerHazardBridge> _containedPlayers = new Dictionary<Player, PlayerHazardBridge>();
-        private Collider _zoneCollider;
-#pragma warning disable CS0414
-        private bool _isSphere = false;
-#pragma warning disable CS0414
+        private BoxCollider _zoneCollider;
         private float _tick = 0f;
-        private float _maxDistance = 0f;
-        private AudioSource _audioSource;
+        private float _distanceToCenter = 0f;
+        private AudioSource _mainAudioSource;
+        private AudioSource _doorShutAudioSource;
+        private AudioSource _doorOpenAudioSource;
         private List<Door> _doors = new List<Door>();
-        private List<Door> _keycardDoors = new List<Door>();
+        private List<KeycardDoor> _keycardDoors = new List<KeycardDoor>();
 
         void Start()
         {
-            SetUpAndPlayAudio();
-            _zoneCollider = GetComponentInParent<Collider>();
+            _zoneCollider = GetComponentInParent<BoxCollider>();
             if (_zoneCollider == null)
             {
                 Utils.Logger.LogError("Realism Mod: No BoxCollider found in parent for SafeZone");
+                return;
             }
-            SphereCollider sphereCollider = _zoneCollider as SphereCollider;
-            if (sphereCollider != null)
+            SetUpAndPlayMainAudio();
+            SetUpDoorShutAudio();
+            SetUpDoorOpenAudio();
+            CheckForDoors();
+        }
+
+
+        private void SetUpAndPlayMainAudio()
+        {
+            _mainAudioSource = this.gameObject.AddComponent<AudioSource>();
+            _mainAudioSource.clip = Plugin.HazardZoneClips["labs-hvac.wav"];
+            _mainAudioSource.volume = MAIN_VOLUME;
+            _mainAudioSource.loop = true;
+            _mainAudioSource.playOnAwake = false;
+            _mainAudioSource.spatialBlend = 1.0f;
+            _mainAudioSource.minDistance = 4f;
+            _mainAudioSource.maxDistance = 20f;
+            _mainAudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+            _mainAudioSource.Play();
+        }
+
+        private void SetUpDoorShutAudio()
+        {
+            _doorShutAudioSource = this.gameObject.AddComponent<AudioSource>();
+            _doorShutAudioSource.clip = Plugin.HazardZoneClips["door_shut.wav"];
+            _doorShutAudioSource.volume = 0.5f;
+            _doorShutAudioSource.loop = false;
+            _doorShutAudioSource.playOnAwake = false;
+            _doorShutAudioSource.spatialBlend = 1.0f;
+            _doorShutAudioSource.minDistance = 4f;
+            _doorShutAudioSource.maxDistance = 20f;
+            _doorShutAudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+        }
+
+        private void SetUpDoorOpenAudio()
+        {
+            _doorOpenAudioSource = this.gameObject.AddComponent<AudioSource>();
+            _doorOpenAudioSource.clip = Plugin.HazardZoneClips["door_open.wav"];
+            _doorOpenAudioSource.volume = 0.3f;
+            _doorOpenAudioSource.loop = false;
+            _doorOpenAudioSource.playOnAwake = false;
+            _doorOpenAudioSource.spatialBlend = 1.0f;
+            _doorOpenAudioSource.minDistance = 4f;
+            _doorOpenAudioSource.maxDistance = 20f;
+            _doorOpenAudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+        }
+
+        IEnumerator AdjustVolume(float targetVolume)
+        {
+            while (_mainAudioSource.volume != targetVolume)
             {
-                _isSphere = true;
-                _maxDistance = sphereCollider.radius;
+                _mainAudioSource.volume = Mathf.MoveTowards(_mainAudioSource.volume, targetVolume, 0.1f * Time.deltaTime);
+                yield return null;
             }
-            else
+            _mainAudioSource.volume = targetVolume;
+        }
+
+        bool AnyDoorsOpen(WorldInteractiveObject activeWorldObject)
+        {
+            foreach (var door in _doors) 
             {
-                BoxCollider box = _zoneCollider as BoxCollider;
-                Vector3 boxSize = box.size;
-                _maxDistance = boxSize.magnitude / 2f;
+                if (ReferenceEquals(door, activeWorldObject))
+                {
+                    continue;
+                }
+                if (door.DoorState == EDoorState.Open) return true;
+            }
+            foreach (var keyCardDoor in _keycardDoors)
+            {
+                if (ReferenceEquals(keyCardDoor, activeWorldObject))
+                {
+                    continue;
+                }
+                if (keyCardDoor.DoorState == EDoorState.Open) return true;
+            }
+            return false;    
+        }
+
+        void OnDoorStateChange(WorldInteractiveObject obj, EDoorState prevState, EDoorState nextState) 
+        {
+            bool otherDoorsCurrentlyOpen = AnyDoorsOpen(obj);
+
+            if (!otherDoorsCurrentlyOpen && ((prevState == EDoorState.Shut && nextState == EDoorState.Interacting) || (prevState == EDoorState.Locked && nextState == EDoorState.Interacting)))
+            {
+                _doorShutAudioSource.Stop();
+                _doorOpenAudioSource.Play();
+            } 
+            if (!otherDoorsCurrentlyOpen && prevState == EDoorState.Interacting && nextState == EDoorState.Shut)
+            {
+                _doorOpenAudioSource.Stop();
+                _doorShutAudioSource.Play(); 
             }
 
-            CheckForDoors();
+            if (!otherDoorsCurrentlyOpen && nextState == EDoorState.Shut) IsActive = true;
+            if (otherDoorsCurrentlyOpen || nextState == EDoorState.Open) IsActive = false;
+
+            if (!IsActive) StartCoroutine(AdjustVolume(0f));
+            if (IsActive) StartCoroutine(AdjustVolume(MAIN_VOLUME));
+
         }
 
         void CheckForDoors()
         {
-            // Get the center and size of the box collider
             BoxCollider box = (BoxCollider)_zoneCollider;
             Vector3 boxCenter = box.transform.position + box.center;
             Vector3 boxSize = box.size / 2; 
 
-            // Perform the OverlapBox check
             Collider[] colliders = Physics.OverlapBox(boxCenter, boxSize, Quaternion.identity);
-
-            Utils.Logger.LogWarning($"======================={this.name}");
 
             foreach (Collider col in colliders)
             {
                 KeycardDoor keycardDoor = col.GetComponent<KeycardDoor>();
                 Door door = col.GetComponent<Door>();
-                if (keycardDoor != null)
+
+                //need to check explicitly for type because KeyCardDoor inherits from Door, and Unity will treat them the same when getting component
+                if (keycardDoor != null && keycardDoor.Operatable && keycardDoor.GetType() == typeof(KeycardDoor))
                 {
-                    Utils.Logger.LogWarning($"Found Keycard door: {keycardDoor.name} is {keycardDoor.DoorState}");
-                    _keycardDoors.Add(keycardDoor);    
- 
+                    keycardDoor.OnDoorStateChanged += OnDoorStateChange;
+                    _keycardDoors.Add(keycardDoor);
+
                 }
-                if (door != null)
+                if (door != null && door.Operatable && door.GetType() == typeof(Door)) 
                 {
-                    Utils.Logger.LogWarning($"Found door: {door.name} is {door.DoorState}");
+                    door.OnDoorStateChanged += OnDoorStateChange;
                     _doors.Add(door);
                 }
             }
-        }
-
-        void CheckDoors()
-        {
-            foreach (var door in _doors) 
-            {
-                if (door.DoorState == EDoorState.Open) 
-                {
-                    Utils.Logger.LogWarning("==door open");
-                    IsActive = false;
-                    return;
-                }
-            }
-            foreach (var keycardDoors in _keycardDoors)
-            {
-                if (keycardDoors.DoorState == EDoorState.Open)
-                {
-                    Utils.Logger.LogWarning("==labs door open");
-                    IsActive = false;
-                    return;
-                }
-            }
-            IsActive = true;
-        }
-
-        void CheckDoorAudio() 
-        {
-            if (!IsActive) _audioSource.Stop();
-            if (!_audioSource.isPlaying && IsActive) _audioSource.Play();
-        }
-
-        private void SetUpAndPlayAudio() 
-        {
-            _audioSource = this.gameObject.AddComponent<AudioSource>();
-            _audioSource.clip = Plugin.HazardZoneClips["decontamination.wav"];
-            _audioSource.loop = true;
-            _audioSource.playOnAwake = false;
-            _audioSource.spatialBlend = 1.0f;
-            _audioSource.minDistance = 1f;
-            _audioSource.maxDistance = 100.0f;
-            _audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
-            _audioSource.Play();
         }
 
         public override void TriggerEnter(Player player)
@@ -388,12 +439,8 @@ namespace RealismMod
         void Update()
         {
             _tick += Time.deltaTime;
-
             if (_tick >= 0.25f)
             {
-                CheckDoors();
-                CheckDoorAudio();
-
                 var playersToRemove = new List<Player>();
                 foreach (var p in _containedPlayers)
                 {
@@ -404,8 +451,9 @@ namespace RealismMod
                         playersToRemove.Add(player);
                         continue;
                     }
-                    hazardBridge.SafeZones[this.name] = IsActive;
-                    Utils.Logger.LogWarning("is active " + IsActive);
+
+                    CalculateSafeZoneDepth(player.Position);
+                    hazardBridge.SafeZones[this.name] = IsActive && _distanceToCenter <= 0.69f;
                 }
 
                 foreach (var p in playersToRemove)
@@ -415,6 +463,15 @@ namespace RealismMod
 
                 _tick = 0f;
             }
+        }
+
+        void CalculateSafeZoneDepth(Vector3 playerPosition)
+        {
+            Vector3 extents = _zoneCollider.bounds.extents;
+            float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
+            float maxDistance = extents.magnitude;
+            float distancePercentage = distance / maxDistance;
+            _distanceToCenter = Mathf.Clamp01(distancePercentage);
         }
     }
 }
