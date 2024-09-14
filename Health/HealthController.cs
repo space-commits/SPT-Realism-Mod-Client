@@ -287,6 +287,8 @@ namespace RealismMod
             }
         }
 
+        private float _percentReources = 1f;
+
         private bool _addedResourceEffect = false;
         private bool _addedPassiveRegenEffect = false;
 
@@ -1916,6 +1918,8 @@ namespace RealismMod
             float maxHydro = player.ActiveHealthController.Hydration.Maximum;
             float percentHydro = currentHydro / maxHydro;
 
+            _percentReources = Mathf.Clamp01((percentEnergy + percentHydro) / 2f);
+
             IsPoisoned = HasBaseEFTEffect(player, "LethalToxin");
 
             float totalMaxHp = 0f;
@@ -2092,8 +2096,6 @@ namespace RealismMod
             float sprintFactor = PlayerState.IsSprinting ? 2f : 1f;
             float factors = (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak) * sprintFactor;
 
-            Utils.Logger.LogWarning($"gear protection {1f - GearController.CurrentRadProtection}");
-
             float lowerThreshold = !isInRadZone && HazardTracker.TotalRadiation <= RadiationTreatmentThreshold ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
             float medicalRate = !isInRadZone ? HazardTracker.RadTreatmentRate : 0f; //not sure if I should allow treatment while in radiation zone or not
             float radRate = PlayerHazardBridge.TotalRadRate * factors;
@@ -2114,7 +2116,7 @@ namespace RealismMod
             float factors = (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak) * sprintFactor;
 
             float lowerThreshold = !isBeingHazarded && HazardTracker.DetoxicationRate < 0f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalToxicity);
-            float passiveRegenRate = HazardTracker.TotalToxicity > 0f ? _baseToxicityRecoveryRate : 0f;
+            float passiveRegenRate = HazardTracker.TotalToxicity > 0f && !isInGasZone ? _baseToxicityRecoveryRate * (2f - _percentReources) : 0f;
             float reductionRate = !isBeingHazarded ? HazardTracker.DetoxicationRate + passiveRegenRate : 0f;
             float gasRate = (PlayerHazardBridge.TotalGasRate + toxicItemFactor) * factors;
             float totalRate = gasRate + reductionRate;

@@ -478,6 +478,41 @@ namespace RealismMod
         public List<HazardLocation> Reserve{ get; set; }
     }
 
+    public class QuestZones : ZoneCollection
+    {
+        public EZoneType ZoneType { get; } = EZoneType.Quest;
+
+        [JsonProperty("FactoryQuestZones")]
+        public List<HazardLocation> Factory { get; set; }
+
+        [JsonProperty("CustomsQuestZones")]
+        public List<HazardLocation> Customs { get; set; }
+
+        [JsonProperty("GZQuestZones")]
+        public List<HazardLocation> GZ { get; set; }
+
+        [JsonProperty("ShorelineQuestZones")]
+        public List<HazardLocation> Shoreline { get; set; }
+
+        [JsonProperty("StreetsQuestZones")]
+        public List<HazardLocation> Streets { get; set; }
+
+        [JsonProperty("LabsQuestZones")]
+        public List<HazardLocation> Labs { get; set; }
+
+        [JsonProperty("InterchangeQuestZones")]
+        public List<HazardLocation> Interchange { get; set; }
+
+        [JsonProperty("LighthouseQuestZones")]
+        public List<HazardLocation> Lighthouse { get; set; }
+
+        [JsonProperty("WoodsQuestZones")]
+        public List<HazardLocation> Woods { get; set; }
+
+        [JsonProperty("ReserveQuestZones")]
+        public List<HazardLocation> Reserve { get; set; }
+    }
+
     public static class HazardZoneData
     {
         public static SafeZones SafeZoneLocations;
@@ -485,6 +520,7 @@ namespace RealismMod
         public static GasAssetZones GasAssetZoneLocations;
         public static RadZones RadZoneLocations;
         public static RadAssetZones RadAssetZoneLocations;
+        public static QuestZones QuestZoneLocations;
 
         private static T DeserializeHazardZones<T>(string file) where T : class
         {
@@ -495,6 +531,7 @@ namespace RealismMod
 
         public static void DeserializeZoneData()
         {
+            QuestZoneLocations = DeserializeHazardZones<QuestZones>("quest_zones");
             SafeZoneLocations = DeserializeHazardZones<SafeZones>("safe_zones");
             GasZoneLocations = DeserializeHazardZones<GasZones>("gas_zones");
             GasAssetZoneLocations = DeserializeHazardZones<GasAssetZones>("gas_asset_zones");
@@ -509,6 +546,7 @@ namespace RealismMod
                 zoneType == EZoneType.Radiation ? RadZoneLocations :
                 zoneType == EZoneType.GasAssets ? GasAssetZoneLocations :
                 zoneType == EZoneType.Gas ? GasZoneLocations :
+                zoneType == EZoneType.Quest ? QuestZoneLocations :
                 SafeZoneLocations;
 
             switch (map)

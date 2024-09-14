@@ -15,7 +15,8 @@ namespace RealismMod
         Gas,
         RadAssets,
         GasAssets,
-        SafeZone
+        SafeZone,
+        Quest
     }
 
     public interface IHazardZone
@@ -24,6 +25,77 @@ namespace RealismMod
         float ZoneStrengthModifier { get; set; }
         bool BlocksNav { get; set; }
         bool UsesDistanceFalloff { get; set; }
+    }
+
+    public class QuestZone : TriggerWithId, IHazardZone
+    {
+        public EZoneType ZoneType { get; } = EZoneType.Quest;
+        public float ZoneStrengthModifier { get; set; } = 1f;
+        public bool BlocksNav { get; set; }
+        public bool UsesDistanceFalloff { get; set; }
+        private Dictionary<Player, PlayerHazardBridge> _containedPlayers = new Dictionary<Player, PlayerHazardBridge>();
+        private BoxCollider _zoneCollider;
+        private float _tick = 0f;
+
+        void Start()
+        {
+            _zoneCollider = GetComponentInParent<BoxCollider>();
+            if (_zoneCollider == null)
+            {
+                Utils.Logger.LogError("Realism Mod: No BoxCollider found in parent for RadiationZone");
+            }
+        }
+
+        public override void TriggerEnter(Player player)
+        {
+            if (player != null)
+            {
+                PlayerHazardBridge hazardBridge;
+                player.TryGetComponent<PlayerHazardBridge>(out hazardBridge);
+                if (hazardBridge == null)
+                {
+                    hazardBridge = player.gameObject.AddComponent<PlayerHazardBridge>();
+                    hazardBridge._Player = player;
+                }
+                _containedPlayers.Add(player, hazardBridge);
+            }
+        }
+
+        public override void TriggerExit(Player player)
+        {
+            if (player != null)
+            {
+                PlayerHazardBridge hazardBridge = _containedPlayers[player];
+                _containedPlayers.Remove(player);
+            }
+        }
+
+        void Update()
+        {
+            _tick += Time.deltaTime;
+
+            if (_tick >= 0.5f)
+            {
+                var playersToRemove = new List<Player>();
+                foreach (var p in _containedPlayers)
+                {
+                    Player player = p.Key;
+                    PlayerHazardBridge hazardBridge = p.Value;
+                    if (player == null || hazardBridge == null)
+                    {
+                        playersToRemove.Add(player);
+                        continue;
+                    }
+                }
+
+                foreach (var p in playersToRemove)
+                {
+                    _containedPlayers.Remove(p);
+                }
+
+                _tick = 0f;
+            }
+        }
     }
 
     public class GasZone : TriggerWithId, IHazardZone
@@ -253,7 +325,7 @@ namespace RealismMod
 
     public class SafeZone : TriggerWithId, IHazardZone
     {
-        const float MAIN_VOLUME = 0.5f;
+        const float MAIN_VOLUME = 0.6f;
         public EZoneType ZoneType { get; } = EZoneType.SafeZone;
         public float ZoneStrengthModifier { get; set; } = 0f;
         public bool BlocksNav { get; set; }
@@ -302,7 +374,7 @@ namespace RealismMod
         {
             _doorShutAudioSource = this.gameObject.AddComponent<AudioSource>();
             _doorShutAudioSource.clip = Plugin.HazardZoneClips["door_shut.wav"];
-            _doorShutAudioSource.volume = 0.5f;
+            _doorShutAudioSource.volume = 0.55f;
             _doorShutAudioSource.loop = false;
             _doorShutAudioSource.playOnAwake = false;
             _doorShutAudioSource.spatialBlend = 1.0f;
@@ -315,7 +387,7 @@ namespace RealismMod
         {
             _doorOpenAudioSource = this.gameObject.AddComponent<AudioSource>();
             _doorOpenAudioSource.clip = Plugin.HazardZoneClips["door_open.wav"];
-            _doorOpenAudioSource.volume = 0.3f;
+            _doorOpenAudioSource.volume = 0.35f;
             _doorOpenAudioSource.loop = false;
             _doorOpenAudioSource.playOnAwake = false;
             _doorOpenAudioSource.spatialBlend = 1.0f;

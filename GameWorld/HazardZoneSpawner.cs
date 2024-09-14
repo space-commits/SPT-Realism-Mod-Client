@@ -77,7 +77,7 @@ namespace RealismMod
                 if (collection.ZoneType == EZoneType.Gas || collection.ZoneType == EZoneType.GasAssets) CreateZone<GasZone>(zone, EZoneType.Gas);
                 if (collection.ZoneType == EZoneType.Radiation || collection.ZoneType == EZoneType.RadAssets) CreateZone<RadiationZone>(zone, EZoneType.Radiation);
                 if (collection.ZoneType == EZoneType.SafeZone) CreateZone<SafeZone>(zone, EZoneType.SafeZone);
-
+                if (collection.ZoneType == EZoneType.Quest) CreateZone<QuestZone>(zone, EZoneType.Quest);
             }
         }
 
@@ -136,7 +136,7 @@ namespace RealismMod
                 EFT.Interactive.TriggerWithId trigger = hazardZone.AddComponent<EFT.Interactive.TriggerWithId>();
                 trigger.SetId(zoneName);
 
-                string questZoneName = hazardLocation.Assets == null ? zoneName : "dynamic" + GameWorldController.CurrentMap;
+                string questZoneName = hazardLocation.Assets != null && zoneName.Contains("dynamicquest") ? "dynamic" + GameWorldController.CurrentMap : zoneName;
 
                 EFT.Interactive.ExperienceTrigger questTrigger = hazardZone.AddComponent<EFT.Interactive.ExperienceTrigger>();
                 questTrigger.SetId(questZoneName);

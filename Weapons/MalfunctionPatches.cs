@@ -60,7 +60,8 @@ namespace RealismMod
 
             bool do9x18Explodey = false;
             bool isPMMAmmo = ammoToFire.Template._id == "57371aab2459775a77142f22";
-            float weaponDurability = __instance.Weapon.Repairable.MaxDurability;
+            float weaponMaxDurability = __instance.Weapon.Repairable.MaxDurability;
+            float weaponCurrentDurability = __instance.Weapon.Repairable.Durability;
             if (__instance.Weapon.AmmoCaliber == "9x18PM" && isPMMAmmo) 
             {
                 if (isPMMAmmo)
@@ -80,9 +81,9 @@ namespace RealismMod
 
                 if (player.IsYourPlayer)
                 {
-                    if (weaponDurability <= 0f || malfMismatch || (explosiveMismatch && !Plugin.ServerConfig.malf_changes))
+                    if (weaponCurrentDurability <= 0f || malfMismatch || (explosiveMismatch && !Plugin.ServerConfig.malf_changes))
                     {
-                        if (weaponDurability <= 0f) NotificationManagerClass.DisplayWarningNotification("Weapon Is Broken Beyond Repair", EFT.Communications.ENotificationDurationType.Long);
+                        if (weaponCurrentDurability <= 0f) NotificationManagerClass.DisplayWarningNotification("Weapon Is Broken Beyond Repair", EFT.Communications.ENotificationDurationType.Long);
                         else NotificationManagerClass.DisplayWarningNotification("Wrong Ammo/Weapon Caliber Combination Or Weapon Is Broken", EFT.Communications.ENotificationDurationType.Long);
                         __result = Weapon.EMalfunctionState.Misfire;
                         return;
@@ -96,7 +97,7 @@ namespace RealismMod
                 }
                 else
                 {
-                    if (__instance.Weapon.Repairable.MaxDurability <= 0f || malfMismatch || (explosiveMismatch && !Plugin.ServerConfig.malf_changes))
+                    if (weaponCurrentDurability <= 0f || malfMismatch || (explosiveMismatch && !Plugin.ServerConfig.malf_changes))
                     {
                         __result = Weapon.EMalfunctionState.Misfire;
                         return;
@@ -117,7 +118,6 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             return typeof(Weapon).GetMethod("GetDurabilityLossOnShot", BindingFlags.Instance | BindingFlags.Public);
-
         }
 
         [PatchPrefix]
@@ -199,7 +199,7 @@ namespace RealismMod
                 }
                 overheatMalfChance *= (float)__instance.Item.Buff.MalfunctionProtections;
 
-                if (weaponDurability >= 50)
+                if (weaponDurability >= 60f)
                 {
                     durabilityMalfChance = ((Math.Pow((double)(weaponMalfChance + 1f), 3.0 + (double)(100f - weaponDurability) / (20.0 - 10.0 / Math.Pow((double)__instance.Item.FireRate / 10.0, 0.322))) - 1.0) / 1000.0);
                 }
@@ -227,9 +227,9 @@ namespace RealismMod
 
                 durabilityMalfChance *= subFactor * __instance.Item.Buff.MalfunctionProtections; //* WeaponStats.FireRateDelta
                 durabilityMalfChance = Mathf.Clamp01((float)durabilityMalfChance);
-                float totalMalfChance = Mathf.Clamp01((float)Math.Round(durabilityMalfChance + ((ammoMalfChance + magMalfChance + overheatMalfChance) / 500f), 5));
 
-                __result = totalMalfChance;
+                float totalMalfChance = Mathf.Clamp01((float)Math.Round(durabilityMalfChance + ((ammoMalfChance + magMalfChance + overheatMalfChance) / 1000f), 5));
+                __result = PluginConfig.test1.Value;
                 return false;
             }
             else
