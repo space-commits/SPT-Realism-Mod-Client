@@ -430,8 +430,7 @@ namespace RealismMod
         void OnDoorStateChange(WorldInteractiveObject obj, EDoorState prevState, EDoorState nextState) 
         {
             bool otherDoorsCurrentlyOpen = AnyDoorsOpen(obj);
-
-            if (!otherDoorsCurrentlyOpen && ((prevState == EDoorState.Shut && nextState == EDoorState.Interacting) || (prevState == EDoorState.Locked && nextState == EDoorState.Interacting)))
+            if (!otherDoorsCurrentlyOpen && ((prevState == EDoorState.Shut && nextState == EDoorState.Interacting) || (prevState == EDoorState.Locked && nextState == EDoorState.Interacting))) //prevState == EDoorState.Interacting && nextState == EDoorState.Open
             {
                 _doorShutAudioSource.Stop();
                 _doorOpenAudioSource.Play();

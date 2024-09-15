@@ -229,7 +229,7 @@ namespace RealismMod
                 durabilityMalfChance = Mathf.Clamp01((float)durabilityMalfChance);
 
                 float totalMalfChance = Mathf.Clamp01((float)Math.Round(durabilityMalfChance + ((ammoMalfChance + magMalfChance + overheatMalfChance) / 1000f), 5));
-                __result = PluginConfig.test1.Value;
+                __result = totalMalfChance;
                 return false;
             }
             else
