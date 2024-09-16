@@ -2123,7 +2123,7 @@ namespace RealismMod
             float gasRate = (PlayerHazardBridge.TotalGasRate + toxicItemFactor) * factors;
             float totalRate = gasRate + reductionRate;
 
-            float speed = totalRate > 0f ? 11f : 3f;
+            float speed = totalRate > 0f ? 11f : 1.5f;
             HazardTracker.TotalToxicityRate = Mathf.MoveTowards(HazardTracker.TotalToxicityRate, totalRate, speed * Time.deltaTime);
 
             float lowerThreshold = isInGasZone && GearController.CurrentGasProtection < 1f ? HazardTracker.TotalToxicity : !isBeingHazarded && HazardTracker.DetoxicationRate < 0f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalToxicity);

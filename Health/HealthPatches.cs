@@ -26,6 +26,9 @@ using SetInHandsMedsInterface = GInterface142;
 using EFT.UI;
 using EFT.Communications;
 using static System.Net.Mime.MediaTypeNames;
+using System.Drawing;
+using System.Security.Cryptography;
+using Color = UnityEngine.Color;
 
 namespace RealismMod
 {
@@ -239,7 +242,11 @@ namespace RealismMod
                 {
                     stringBuilder.Append(" / ");
                 }
-                stringBuilder.Append((__instance.Cost + 1) + " HP");
+                stringBuilder.Append((__instance.Cost + 1) + " HP"); //add 1 to the cost to ensure it accurately reflects how resource is deducted from medkits
+            }
+            if (__instance.HealthPenaltyMax == 69) //only way of verifying it's a rad or toxicity value
+            {
+                stringBuilder.Append($"(<color=#54C1FFFF>{-__instance.FadeOut}</color>)");
             }
             __result = stringBuilder.ToString();
             return false;
@@ -288,32 +295,7 @@ namespace RealismMod
             return typeof(HealthEffectsComponent).GetConstructor(new Type[] { typeof(Item), typeof(IHealthEffect) });
         }
 
-        [PatchPostfix]
-        private static void PatchPostfix(HealthEffectsComponent __instance, Item item)
-        {
-            string medType = MedProperties.MedType(item);
-            if (item.Template._parent == "5448f3a64bdc2d60728b456a")
-            {
-                List<ItemAttributeClass> stimAtt = item.Attributes;
-                ItemAttributeClass stimAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.StimType);
-                stimAttClass.Name = ENewItemAttributeId.StimType.GetName();
-                stimAttClass.StringValue = () => Plugin.RealHealthController.GetStimType(item.TemplateId).ToString();
-                stimAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                stimAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
-                stimAttClass.LessIsGood = false;
-                stimAtt.Add(stimAttClass);
-            }
-        }
-    }
-
-    public class MedkitConstructorPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(MedKitComponent).GetConstructor(new Type[] { typeof(Item), typeof(MedkitTemplate) });
-        }
-
-        private static string getHBTypeString(string type)
+        private static string GetHBTypeString(string type)
         {
             switch (type)
             {
@@ -330,7 +312,7 @@ namespace RealismMod
             }
         }
 
-        private static string getPKStrengthString(float str)
+        private static string GetPKStrengthString(float str)
         {
             switch (str)
             {
@@ -350,11 +332,10 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(MedKitComponent __instance, Item item)
+        private static void PatchPostfix(HealthEffectsComponent __instance, Item item)
         {
             string medType = MedProperties.MedType(item);
-
-            if (item.Template._parent == "5448f3a64bdc2d60728b456a") 
+            if (item.Template._parent == "5448f3a64bdc2d60728b456a")
             {
                 List<ItemAttributeClass> stimAtt = item.Attributes;
                 ItemAttributeClass stimAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.StimType);
@@ -366,12 +347,25 @@ namespace RealismMod
                 stimAtt.Add(stimAttClass);
             }
 
+            if (medType.Contains("pain") || medType.Contains("alcohol"))
+            {
+                float strength = MedProperties.Strength(item);
+                List<ItemAttributeClass> strengthAtt = item.Attributes;
+                ItemAttributeClass strengthAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.PainKillerStrength);
+                strengthAttClass.Name = ENewItemAttributeId.PainKillerStrength.GetName();
+                strengthAttClass.StringValue = () => GetPKStrengthString(strength);
+                strengthAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                strengthAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                strengthAttClass.LessIsGood = false;
+                strengthAtt.Add(strengthAttClass);
+            }
+
             if (medType == "trnqt" || medType == "medkit" || medType == "surg")
             {
                 string hBleedType = MedProperties.HBleedHealType(item);
                 float hpPerTick = medType != "surg" ? -MedProperties.HpPerTick(item) : MedProperties.HpPerTick(item);
 
-                if (medType == "medkit") 
+                if (medType == "medkit")
                 {
                     float hp = MedProperties.HPRestoreAmount(item);
                     List<ItemAttributeClass> hbAtt = item.Attributes;
@@ -390,7 +384,7 @@ namespace RealismMod
                     List<ItemAttributeClass> hbAtt = item.Attributes;
                     ItemAttributeClass hbAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.HBleedType);
                     hbAttClass.Name = ENewItemAttributeId.HBleedType.GetName();
-                    hbAttClass.StringValue = () => getHBTypeString(hBleedType);
+                    hbAttClass.StringValue = () => GetHBTypeString(hBleedType);
                     hbAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                     hbAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
                     hbAttClass.LessIsGood = false;
@@ -427,18 +421,6 @@ namespace RealismMod
                         hpTickAtt.Add(hpAttClass);
                     }
                 }
-            }
-            if (medType.Contains("pain"))
-            {
-                float strength = MedProperties.Strength(item);
-                List<ItemAttributeClass> strengthAtt = item.Attributes;
-                ItemAttributeClass strengthAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.PainKillerStrength);
-                strengthAttClass.Name = ENewItemAttributeId.PainKillerStrength.GetName();
-                strengthAttClass.StringValue = () => getPKStrengthString(strength);
-                strengthAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                strengthAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
-                strengthAttClass.LessIsGood = false;
-                strengthAtt.Add(strengthAttClass);
             }
         }
     }

@@ -172,64 +172,88 @@ namespace RealismMod
 
                 /*                float ammoHotnessFactor = (1f - ((ammoToFire.ammoRec / 200f) + 1f)) + 1f;*/
 
-                float malfDelta = Mathf.Min(WeaponStats.MalfChanceDelta * 3, 0.99f);
-                float subFactor = 1f;
-     
-                BackendConfigSettingsClass instance = Singleton<BackendConfigSettingsClass>.Instance;
-                MalfGlobals malfunctionGlobals = instance.Malfunction;
-                OverheatGlobals overheatGlobals = instance.Overheat;
-                float ammoMalfChanceMult = malfunctionGlobals.AmmoMalfChanceMult;
-                float magazineMalfChanceMult = malfunctionGlobals.MagazineMalfChanceMult;
+                //weapon durability --multi
+                //ammo malf chance -- multi
+                //mag malf chance -- multi
+                //heat -- multi of some sort
+                //total weapon malf chance -- base value
+                //weapon malf chance delta -- unsure if needed, think I used it to reduce subsonic malf chance
+                //subsonic ammo calcs based on caliber, facotring in use of suppressor and booster
+                //facotr by firerate delta too
+
+                BackendConfigSettingsClass globalSettings = Singleton<BackendConfigSettingsClass>.Instance;
+                MalfGlobals malfunctionSettings = globalSettings.Malfunction;
+                OverheatGlobals overheatSettings = globalSettings.Overheat;
+                float baseWeaponMalfChance = WeaponStats.TotalMalfChance;
+                float malfDelta = Mathf.Min(WeaponStats.MalfChanceDelta * 3, 0.99f); //for sub malf chance
+
+                //ammo malf chance
+                float globalAmmoMalfMulti = malfunctionSettings.AmmoMalfChanceMult;
+                ammoMalfChance = ammoToFire != null ? 1f + ((ammoToFire.MalfMisfireChance + ammoToFire.MalfFeedChance) * globalAmmoMalfMulti) : 0f;
+
+                //mag malf chance
                 MagazineClass currentMagazine = __instance.Item.GetCurrentMagazine();
-                magMalfChance = ((currentMagazine == null) ? 0f : (currentMagazine.MalfunctionChance * magazineMalfChanceMult));
-                ammoMalfChance = ((ammoToFire != null) ? ((ammoToFire.MalfMisfireChance + ammoToFire.MalfFeedChance) * ammoMalfChanceMult) : 0f);
-                float weaponMalfChance = WeaponStats.TotalMalfChance;
-                float durability = __instance.Item.Repairable.Durability / (float)__instance.Item.Repairable.TemplateDurability * 100f;
-                weaponDurability = Mathf.Floor(durability);
+                magMalfChance = currentMagazine == null ? 1f : 1f + (currentMagazine.MalfunctionChance * malfunctionSettings.MagazineMalfChanceMult);
 
-                if (weaponDurability >= PluginConfig.DuraMalfThreshold.Value)
-                {
-                    magMalfChance *= 0.25f;
-                    weaponMalfChance *= 0.25f;
-                    ammoMalfChance *= 0.25f;
-                }
-                if (overheat >= overheatGlobals.OverheatProblemsStart)
-                {
-                    overheatMalfChance = Mathf.Lerp(overheatGlobals.MinMalfChance, overheatGlobals.MaxMalfChance, (overheat - overheatGlobals.OverheatProblemsStart) / (overheatGlobals.MaxOverheat - overheatGlobals.OverheatProblemsStart));
-                }
-                overheatMalfChance *= (float)__instance.Item.Buff.MalfunctionProtections;
+                //durability factor
+                durabilityMalfChance = 2f - (__instance.Item.Repairable.Durability / (float)__instance.Item.Repairable.TemplateDurability);
+                weaponDurability = (__instance.Item.Repairable.Durability / (float)__instance.Item.Repairable.TemplateDurability) * 100f;
+         
+                //overheat
+                overheatMalfChance = 1f + Mathf.Clamp01(overheat / 100f);
+                overheatMalfChance = Mathf.Pow(overheatMalfChance, 2);
 
+                if (weaponDurability > PluginConfig.DuraMalfThreshold.Value)
+                {
+                    baseWeaponMalfChance *= 0.25f;
+                }
+
+                if (weaponDurability > PluginConfig.DuraMalfThreshold.Value)
+                {
+                    durabilityMalfChance = Math.Pow(durabilityMalfChance, 1.5);
+                }
                 if (weaponDurability >= 60f)
                 {
-                    durabilityMalfChance = ((Math.Pow((double)(weaponMalfChance + 1f), 3.0 + (double)(100f - weaponDurability) / (20.0 - 10.0 / Math.Pow((double)__instance.Item.FireRate / 10.0, 0.322))) - 1.0) / 1000.0);
+                    durabilityMalfChance = Math.Pow(durabilityMalfChance, 3);
                 }
                 else
                 {
-                    durabilityMalfChance = (Math.Pow((double)(weaponMalfChance + 1f), Math.Log10(Math.Pow((double)(101f - weaponDurability), (50.0 - Math.Pow((double)weaponDurability, 1.286) / 4.8) / (Math.Pow((double)__instance.Item.FireRate, 0.17) / 2.9815 + 2.1)))) - 1.0) / 1000.0;
-                }
-                if (weaponDurability >= PluginConfig.DuraMalfThreshold.Value)
-                {
-                    durabilityMalfChance *= 0.25f;
+                    durabilityMalfChance = Math.Pow(durabilityMalfChance, 5);
                 }
 
+                float subFactor = 0f;
                 if (!WeaponStats.CanCycleSubs && ammoToFire.ammoHear == 1)
                 {
-                    float suppFactor = __instance.IsSilenced || WeaponStats.HasBooster ? 0.25f : 1f;
+                    float suppFactor = __instance.IsSilenced || WeaponStats.HasBooster ? 0.15f : 1f;
                     if (ammoToFire.Caliber == "762x39")
                     {
-                        subFactor = 3000f * (1f - malfDelta) * suppFactor;
+                        subFactor = 0.04f * (1f - malfDelta) * suppFactor;
                     }
                     else
                     {
-                        subFactor = 3500f * (1f - malfDelta) * suppFactor;
+                        subFactor = 0.055f * (1f - malfDelta) * suppFactor;
                     }
                 }
 
-                durabilityMalfChance *= subFactor * __instance.Item.Buff.MalfunctionProtections; //* WeaponStats.FireRateDelta
-                durabilityMalfChance = Mathf.Clamp01((float)durabilityMalfChance);
+                float totalFactors = (float)durabilityMalfChance * overheatMalfChance * ammoMalfChance * magMalfChance * WeaponStats.FireRateDelta * (float)__instance.Item.Buff.MalfunctionProtections;
+                float totalMalfChance = (baseWeaponMalfChance + subFactor) * totalFactors;
+                __result = totalMalfChance * (PluginConfig.EnableBallisticsLogging.Value ? PluginConfig.MalfMulti.Value : 1f);
 
-                float totalMalfChance = Mathf.Clamp01((float)Math.Round(durabilityMalfChance + ((ammoMalfChance + magMalfChance + overheatMalfChance) / 1000f), 5));
-                __result = totalMalfChance;
+                if (PluginConfig.EnableBallisticsLogging.Value)
+                {
+                    Logger.LogWarning("=============");
+                    Logger.LogWarning("weapon base chance " + baseWeaponMalfChance);
+                    Logger.LogWarning("weapon malf delta " + WeaponStats.MalfChanceDelta);
+                    Logger.LogWarning("ammo malf chance " + ammoMalfChance);
+                    Logger.LogWarning("heat malf chance " + overheatMalfChance);
+                    Logger.LogWarning("durability " + weaponDurability);
+                    Logger.LogWarning("durability malf chance " + durabilityMalfChance);
+                    Logger.LogWarning("mag malf chance " + magMalfChance + " : " + currentMagazine.MalfunctionChance);
+                    Logger.LogWarning("WeaponStats.FireRateDelta " + WeaponStats.FireRateDelta);
+                    Logger.LogWarning("subFactor " + subFactor);
+                    Logger.LogWarning("total malf chance " + __result);
+                }
+
                 return false;
             }
             else

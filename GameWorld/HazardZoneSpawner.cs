@@ -126,7 +126,7 @@ namespace RealismMod
                 float strengthModifier = 1f;
                 if ((hazard.ZoneType == EZoneType.Gas || hazard.ZoneType == EZoneType.GasAssets) && (!Plugin.FikaPresent && !PluginConfig.ZoneDebug.Value) && GameWorldController.CurrentMap != "laboratory")
                 {
-                    strengthModifier = UnityEngine.Random.Range(0.95f, 1.3f);
+                    strengthModifier = UnityEngine.Random.Range(0.95f, 1.25f);
                 }
                 hazard.ZoneStrengthModifier = subZone.Strength * strengthModifier;
 

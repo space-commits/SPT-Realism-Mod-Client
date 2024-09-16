@@ -494,7 +494,7 @@ namespace RealismMod
                 {
                     modAutoROF *= 2.5f;
                     modSemiROF *= 2.5f;
-                    modMalfChance *= 3f;
+                    modMalfChance *= 4f;
                     modDuraBurn = ((modDuraBurn - 1f) * 1.15f) + 1f;
                 }
                 else
@@ -502,7 +502,7 @@ namespace RealismMod
                     modAutoROF *= 3f;
                     modSemiROF *= 3f;
                     modMalfChance *= 10f;
-                    modDuraBurn = ((modDuraBurn - 1f) * 3f) + 1f;
+                    modDuraBurn = ((modDuraBurn - 1f) * 2.8f) + 1f;
                 }
                 return;
             }

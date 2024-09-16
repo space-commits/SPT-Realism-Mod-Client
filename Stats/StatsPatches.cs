@@ -462,7 +462,7 @@ namespace RealismMod
             float pureRecoilDelta = ((baseVRecoil + baseHRecoil) - pureRecoil) / ((baseVRecoil + baseHRecoil) * -1f);
             WeaponStats.TotalModDuraBurn = modBurnRatio;
             WeaponStats.TotalMalfChance = currentMalfChance;
-            WeaponStats.MalfChanceDelta = (currentMalfChance - baseMalfChance) / baseMalfChance;
+            WeaponStats.MalfChanceDelta = (baseMalfChance - currentMalfChance) / baseMalfChance;
             DeafeningController.WeaponDeafFactor = totalLoudness;
             WeaponStats.CanCycleSubs = canCycleSubs;
             WeaponStats.HasShoulderContact = hasShoulderContact;
