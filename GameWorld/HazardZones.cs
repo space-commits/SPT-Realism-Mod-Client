@@ -328,6 +328,8 @@ namespace RealismMod
     public class SafeZone : TriggerWithId, IHazardZone
     {
         const float MAIN_VOLUME = 0.6f;
+        const float SHUT_VOLUME = 0.55f;
+        const float OPEN_VOLUME = 0.35f;
         public EZoneType ZoneType { get; } = EZoneType.SafeZone;
         public float ZoneStrengthModifier { get; set; } = 0f;
         public bool BlocksNav { get; set; }
@@ -367,8 +369,8 @@ namespace RealismMod
             _mainAudioSource.loop = true;
             _mainAudioSource.playOnAwake = false;
             _mainAudioSource.spatialBlend = 1.0f;
-            _mainAudioSource.minDistance = 4f;
-            _mainAudioSource.maxDistance = 20f;
+            _mainAudioSource.minDistance = 3.5f;
+            _mainAudioSource.maxDistance = 15f;
             _mainAudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
             _mainAudioSource.Play();
         }
@@ -377,12 +379,12 @@ namespace RealismMod
         {
             _doorShutAudioSource = this.gameObject.AddComponent<AudioSource>();
             _doorShutAudioSource.clip = Plugin.HazardZoneClips["door_shut.wav"];
-            _doorShutAudioSource.volume = 0.55f;
+            _doorShutAudioSource.volume = SHUT_VOLUME;
             _doorShutAudioSource.loop = false;
             _doorShutAudioSource.playOnAwake = false;
             _doorShutAudioSource.spatialBlend = 1.0f;
-            _doorShutAudioSource.minDistance = 4f;
-            _doorShutAudioSource.maxDistance = 20f;
+            _doorShutAudioSource.minDistance = 3.5f;
+            _doorShutAudioSource.maxDistance = 15f;
             _doorShutAudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
         }
 
@@ -390,23 +392,23 @@ namespace RealismMod
         {
             _doorOpenAudioSource = this.gameObject.AddComponent<AudioSource>();
             _doorOpenAudioSource.clip = Plugin.HazardZoneClips["door_open.wav"];
-            _doorOpenAudioSource.volume = 0.35f;
+            _doorOpenAudioSource.volume = OPEN_VOLUME;
             _doorOpenAudioSource.loop = false;
             _doorOpenAudioSource.playOnAwake = false;
             _doorOpenAudioSource.spatialBlend = 1.0f;
-            _doorOpenAudioSource.minDistance = 4f;
-            _doorOpenAudioSource.maxDistance = 20f;
+            _doorOpenAudioSource.minDistance = 3.5f;
+            _doorOpenAudioSource.maxDistance = 15f;
             _doorOpenAudioSource.rolloffMode = AudioRolloffMode.Logarithmic;
         }
 
-        IEnumerator AdjustVolume(float targetVolume)
+        IEnumerator AdjustVolume(float targetVolume, float speed, AudioSource audioSource)
         {
-            while (_mainAudioSource.volume != targetVolume)
+            while (audioSource.volume != targetVolume)
             {
-                _mainAudioSource.volume = Mathf.MoveTowards(_mainAudioSource.volume, targetVolume, 0.1f * Time.deltaTime);
+                audioSource.volume = Mathf.MoveTowards(audioSource.volume, targetVolume, speed * Time.deltaTime);
                 yield return null;
             }
-            _mainAudioSource.volume = targetVolume;
+            audioSource.volume = targetVolume;
         }
 
         void CheckForDoors()
@@ -419,22 +421,10 @@ namespace RealismMod
 
             foreach (Collider col in colliders)
             {
-                //KeycardDoor keycardDoor = col.GetComponent<KeycardDoor>();
-                //need to check explicitly for type because KeyCardDoor inherits from Door, and Unity will treat them the same when getting component
-                /*    if (keycardDoor != null && keycardDoor.Operatable && keycardDoor.GetType() == typeof(KeycardDoor))
-                    {
-
-                        _keycardDoors.Add(keycardDoor);
-                        _previousDoorStates.Add(keycardDoor, keycardDoor.DoorState);
-
-                }*/
-
                 Door door = col.GetComponent<Door>();
                 if (door != null && door.Operatable)
                 {
-                    Utils.Logger.LogWarning(door.KeyId);
                     if (door.KeyId == "5c1d0f4986f7744bb01837fa" || door.KeyId == "5c1d0c5f86f7744bb2683cf0") door.name = "automatic_door";
-
                     _doors.Add(door);
                     _previousDoorStates.Add(door, door.DoorState);
                 }
@@ -446,7 +436,6 @@ namespace RealismMod
             if (player.MovementContext.InteractionInfo.Result != null)
             {
                 KeyComponent key = ((KeyInteractionResultClass)player.MovementContext.InteractionInfo.Result).Key;
-                Utils.Logger.LogWarning("key " + key.Template.KeyId);
                 return doorKey == key.Template.KeyId;
             }
             return false;
@@ -465,79 +454,40 @@ namespace RealismMod
             return false;    
         }
 
-        void OnDoorStateChange(WorldInteractiveObject obj, EDoorState prevState, EDoorState nextState)
-        {
-            Utils.Logger.LogWarning("========");
-            Utils.Logger.LogWarning("obj name " + obj.name);
-            Utils.Logger.LogWarning("obj tag " + obj.tag);
-            Utils.Logger.LogWarning("key " + obj.KeyId);
-            Utils.Logger.LogWarning("prev " + prevState);
-            Utils.Logger.LogWarning("next " + nextState);
-            Utils.Logger.LogWarning("current angle " + obj.CurrentAngle);
-
-            bool otherDoorsCurrentlyOpen = AnyDoorsOpen(obj);
-            if (!otherDoorsCurrentlyOpen && ((prevState == EDoorState.Shut && nextState == EDoorState.Interacting) || (prevState == EDoorState.Locked && nextState == EDoorState.Interacting))) //prevState == EDoorState.Interacting && nextState == EDoorState.Open
-            {
-                _doorShutAudioSource.Stop();
-                _doorOpenAudioSource.Play();
-            } 
-            if (!otherDoorsCurrentlyOpen && prevState == EDoorState.Interacting && nextState == EDoorState.Shut)
-            {
-                _doorOpenAudioSource.Stop();
-                _doorShutAudioSource.Play(); 
-            }
-
-            if (!otherDoorsCurrentlyOpen && nextState == EDoorState.Shut) IsActive = true;
-            if (otherDoorsCurrentlyOpen || nextState == EDoorState.Open) IsActive = false;
-
-            if (!IsActive) StartCoroutine(AdjustVolume(0f));
-            if (IsActive) StartCoroutine(AdjustVolume(MAIN_VOLUME));
-
-        }
-
         IEnumerator PlayDoorInteractionSound(WorldInteractiveObject door, EDoorState prevState, EDoorState currentState)
         {
-            Utils.Logger.LogWarning("==================== ");
-            Utils.Logger.LogWarning("tag " + door.name);
+            bool isOpening = (prevState == EDoorState.Locked && currentState == EDoorState.Interacting) || (prevState == EDoorState.Shut && currentState == EDoorState.Interacting);
+            bool isClosing = prevState == EDoorState.Open && currentState == EDoorState.Interacting;
+
             float time = 0;
-            float timeLimit = prevState == EDoorState.Locked && door.name == "automatic_door" ? 4.5f : 1f;
+            float timeLimit = prevState == EDoorState.Locked && door.name == "automatic_door" ? 4f : isOpening ? 0.75f : 1f;
 
             while (time < timeLimit)
             {
-                Utils.Logger.LogWarning("CurrentAngle " + door.CurrentAngle);
                 time += Time.deltaTime; 
                 yield return null;
             }
 
-            Utils.Logger.LogWarning("Open Angle " + door.GetAngle(EDoorState.Open));
-            Utils.Logger.LogWarning("Closed Angle " + door.GetAngle(EDoorState.Shut));
-
             bool otherDoorsCurrentlyOpen = AnyDoorsOpen(door);
-
-            bool isOpening = (prevState == EDoorState.Locked && currentState == EDoorState.Interacting) || (prevState == EDoorState.Shut && currentState == EDoorState.Interacting);
-            bool isClosing = prevState == EDoorState.Open && currentState == EDoorState.Interacting;
-
             if (!otherDoorsCurrentlyOpen && isOpening && Mathf.Abs(door.CurrentAngle) > Mathf.Abs(door.GetAngle(EDoorState.Shut)))
             {
-                Utils.Logger.LogWarning("door Is Opening");
-                _doorShutAudioSource.Stop();
                 _doorOpenAudioSource.Play();
+                StartCoroutine(AdjustVolume(OPEN_VOLUME, 1f, _doorOpenAudioSource));
+                StartCoroutine(AdjustVolume(0f, 0.25f, _doorShutAudioSource));
                 IsActive = false;    
       
             }
             else if (!otherDoorsCurrentlyOpen && isClosing && Mathf.Abs(door.CurrentAngle) < Mathf.Abs(door.GetAngle(EDoorState.Open)))
             {
-                Utils.Logger.LogWarning("door is closing");
-                _doorOpenAudioSource.Stop();
                 _doorShutAudioSource.Play();
+                StartCoroutine(AdjustVolume(SHUT_VOLUME, 1f, _doorShutAudioSource));
+                StartCoroutine(AdjustVolume(0f, 0.25f, _doorOpenAudioSource));
                 IsActive = true;
             }
 
-            if (!IsActive) StartCoroutine(AdjustVolume(0f));
-            if (IsActive) StartCoroutine(AdjustVolume(MAIN_VOLUME));
-
+            if (!IsActive) StartCoroutine(AdjustVolume(0f, 0.1f, _mainAudioSource));
+            if (IsActive) StartCoroutine(AdjustVolume(MAIN_VOLUME, 0.1f, _mainAudioSource));
         }
-
 
         private void CheckDoorState(WorldInteractiveObject door)
         {
@@ -545,12 +495,6 @@ namespace RealismMod
             EDoorState currentState = door.DoorState;
             if (currentState != prevState) 
             {
-                if (door.InteractingPlayer != null) 
-                {
-                    Utils.Logger.LogWarning($"player " + door.InteractingPlayer.ProfileId);
-                }
-
-                Utils.Logger.LogWarning($"door state changed! prev: {prevState}, current: {currentState}");
                 StartCoroutine(PlayDoorInteractionSound(door, prevState, currentState));
             }
             _previousDoorStates[door] = door.DoorState;
