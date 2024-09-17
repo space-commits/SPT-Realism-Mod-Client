@@ -264,6 +264,7 @@ namespace RealismMod
         public float Strength { get; set; }
         public bool UsesDistanceFalloff { get; set; }
         public bool BlockNav { get; set; }
+        public string AudioFile { get; set; }
         public Position Position { get; set; }
         public Rotation Rotation { get; set; }
         public Size Size { get; set; }

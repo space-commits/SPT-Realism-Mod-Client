@@ -1,8 +1,10 @@
 ﻿using Comfort.Common;
 using EFT;
 using EFT.Interactive;
+using EFT.InventoryLogic;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 using UnityEngine;
 using static Val;
 
@@ -331,6 +333,7 @@ namespace RealismMod
         public bool BlocksNav { get; set; }
         public bool UsesDistanceFalloff { get; set; }
         public bool IsActive { get; set; } = true;
+        public bool? DoorType { get; set; }
         private Dictionary<Player, PlayerHazardBridge> _containedPlayers = new Dictionary<Player, PlayerHazardBridge>();
         private BoxCollider _zoneCollider;
         private float _tick = 0f;
@@ -339,7 +342,7 @@ namespace RealismMod
         private AudioSource _doorShutAudioSource;
         private AudioSource _doorOpenAudioSource;
         private List<Door> _doors = new List<Door>();
-        private List<KeycardDoor> _keycardDoors = new List<KeycardDoor>();
+        private Dictionary<WorldInteractiveObject, EDoorState> _previousDoorStates = new Dictionary<WorldInteractiveObject, EDoorState>();
 
         void Start()
         {
@@ -406,6 +409,49 @@ namespace RealismMod
             _mainAudioSource.volume = targetVolume;
         }
 
+        void CheckForDoors()
+        {
+            BoxCollider box = (BoxCollider)_zoneCollider;
+            Vector3 boxCenter = box.transform.position + box.center;
+            Vector3 boxSize = box.size / 2;
+
+            Collider[] colliders = Physics.OverlapBox(boxCenter, boxSize, Quaternion.identity);
+
+            foreach (Collider col in colliders)
+            {
+                //KeycardDoor keycardDoor = col.GetComponent<KeycardDoor>();
+                //need to check explicitly for type because KeyCardDoor inherits from Door, and Unity will treat them the same when getting component
+                /*    if (keycardDoor != null && keycardDoor.Operatable && keycardDoor.GetType() == typeof(KeycardDoor))
+                    {
+
+                        _keycardDoors.Add(keycardDoor);
+                        _previousDoorStates.Add(keycardDoor, keycardDoor.DoorState);
+
+                }*/
+
+                Door door = col.GetComponent<Door>();
+                if (door != null && door.Operatable)
+                {
+                    Utils.Logger.LogWarning(door.KeyId);
+                    if (door.KeyId == "5c1d0f4986f7744bb01837fa" || door.KeyId == "5c1d0c5f86f7744bb2683cf0") door.name = "automatic_door";
+
+                    _doors.Add(door);
+                    _previousDoorStates.Add(door, door.DoorState);
+                }
+            }
+        }
+
+        private bool KeysMatch(Player player, string doorKey)
+        {
+            if (player.MovementContext.InteractionInfo.Result != null)
+            {
+                KeyComponent key = ((KeyInteractionResultClass)player.MovementContext.InteractionInfo.Result).Key;
+                Utils.Logger.LogWarning("key " + key.Template.KeyId);
+                return doorKey == key.Template.KeyId;
+            }
+            return false;
+        }
+
         bool AnyDoorsOpen(WorldInteractiveObject activeWorldObject)
         {
             foreach (var door in _doors) 
@@ -416,19 +462,19 @@ namespace RealismMod
                 }
                 if (door.DoorState == EDoorState.Open) return true;
             }
-            foreach (var keyCardDoor in _keycardDoors)
-            {
-                if (ReferenceEquals(keyCardDoor, activeWorldObject))
-                {
-                    continue;
-                }
-                if (keyCardDoor.DoorState == EDoorState.Open) return true;
-            }
             return false;    
         }
 
-        void OnDoorStateChange(WorldInteractiveObject obj, EDoorState prevState, EDoorState nextState) 
+        void OnDoorStateChange(WorldInteractiveObject obj, EDoorState prevState, EDoorState nextState)
         {
+            Utils.Logger.LogWarning("========");
+            Utils.Logger.LogWarning("obj name " + obj.name);
+            Utils.Logger.LogWarning("obj tag " + obj.tag);
+            Utils.Logger.LogWarning("key " + obj.KeyId);
+            Utils.Logger.LogWarning("prev " + prevState);
+            Utils.Logger.LogWarning("next " + nextState);
+            Utils.Logger.LogWarning("current angle " + obj.CurrentAngle);
+
             bool otherDoorsCurrentlyOpen = AnyDoorsOpen(obj);
             if (!otherDoorsCurrentlyOpen && ((prevState == EDoorState.Shut && nextState == EDoorState.Interacting) || (prevState == EDoorState.Locked && nextState == EDoorState.Interacting))) //prevState == EDoorState.Interacting && nextState == EDoorState.Open
             {
@@ -449,32 +495,74 @@ namespace RealismMod
 
         }
 
-        void CheckForDoors()
+        IEnumerator PlayDoorInteractionSound(WorldInteractiveObject door, EDoorState prevState, EDoorState currentState)
         {
-            BoxCollider box = (BoxCollider)_zoneCollider;
-            Vector3 boxCenter = box.transform.position + box.center;
-            Vector3 boxSize = box.size / 2; 
+            Utils.Logger.LogWarning("==================== ");
+            Utils.Logger.LogWarning("tag " + door.name);
+            float time = 0;
+            float timeLimit = prevState == EDoorState.Locked && door.name == "automatic_door" ? 4.5f : 1f;
 
-            Collider[] colliders = Physics.OverlapBox(boxCenter, boxSize, Quaternion.identity);
-
-            foreach (Collider col in colliders)
+            while (time < timeLimit)
             {
-                KeycardDoor keycardDoor = col.GetComponent<KeycardDoor>();
-                Door door = col.GetComponent<Door>();
-
-                //need to check explicitly for type because KeyCardDoor inherits from Door, and Unity will treat them the same when getting component
-                if (keycardDoor != null && keycardDoor.Operatable && keycardDoor.GetType() == typeof(KeycardDoor))
-                {
-                    keycardDoor.OnDoorStateChanged += OnDoorStateChange;
-                    _keycardDoors.Add(keycardDoor);
-
-                }
-                if (door != null && door.Operatable && door.GetType() == typeof(Door)) 
-                {
-                    door.OnDoorStateChanged += OnDoorStateChange;
-                    _doors.Add(door);
-                }
+                Utils.Logger.LogWarning("CurrentAngle " + door.CurrentAngle);
+                time += Time.deltaTime; 
+                yield return null;
             }
+
+            Utils.Logger.LogWarning("Open Angle " + door.GetAngle(EDoorState.Open));
+            Utils.Logger.LogWarning("Closed Angle " + door.GetAngle(EDoorState.Shut));
+
+            bool otherDoorsCurrentlyOpen = AnyDoorsOpen(door);
+
+            bool isOpening = (prevState == EDoorState.Locked && currentState == EDoorState.Interacting) || (prevState == EDoorState.Shut && currentState == EDoorState.Interacting);
+            bool isClosing = prevState == EDoorState.Open && currentState == EDoorState.Interacting;
+
+            if (!otherDoorsCurrentlyOpen && isOpening && Mathf.Abs(door.CurrentAngle) > Mathf.Abs(door.GetAngle(EDoorState.Shut)))
+            {
+                Utils.Logger.LogWarning("door Is Opening");
+                _doorShutAudioSource.Stop();
+                _doorOpenAudioSource.Play();
+                IsActive = false;    
+      
+            }
+            else if (!otherDoorsCurrentlyOpen && isClosing && Mathf.Abs(door.CurrentAngle) < Mathf.Abs(door.GetAngle(EDoorState.Open)))
+            {
+                Utils.Logger.LogWarning("door is closing");
+                _doorOpenAudioSource.Stop();
+                _doorShutAudioSource.Play();
+                IsActive = true;
+            }
+
+            if (!IsActive) StartCoroutine(AdjustVolume(0f));
+            if (IsActive) StartCoroutine(AdjustVolume(MAIN_VOLUME));
+
+        }
+
+
+        private void CheckDoorState(WorldInteractiveObject door)
+        {
+            EDoorState prevState = _previousDoorStates[door];
+            EDoorState currentState = door.DoorState;
+            if (currentState != prevState) 
+            {
+                if (door.InteractingPlayer != null) 
+                {
+                    Utils.Logger.LogWarning($"player " + door.InteractingPlayer.ProfileId);
+                }
+
+                Utils.Logger.LogWarning($"door state changed! prev: {prevState}, current: {currentState}");
+                StartCoroutine(PlayDoorInteractionSound(door, prevState, currentState));
+            }
+            _previousDoorStates[door] = door.DoorState;
+        }
+
+        void CalculateSafeZoneDepth(Vector3 playerPosition)
+        {
+            Vector3 extents = _zoneCollider.bounds.extents;
+            float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
+            float maxDistance = extents.magnitude;
+            float distancePercentage = distance / maxDistance;
+            _distanceToCenter = Mathf.Clamp01(distancePercentage);
         }
 
         public override void TriggerEnter(Player player)
@@ -532,17 +620,13 @@ namespace RealismMod
                     _containedPlayers.Remove(p);
                 }
 
+                foreach (var door in _doors) 
+                {
+                    CheckDoorState(door);
+                }
+
                 _tick = 0f;
             }
-        }
-
-        void CalculateSafeZoneDepth(Vector3 playerPosition)
-        {
-            Vector3 extents = _zoneCollider.bounds.extents;
-            float distance = Vector3.Distance(playerPosition, _zoneCollider.bounds.center);
-            float maxDistance = extents.magnitude;
-            float distancePercentage = distance / maxDistance;
-            _distanceToCenter = Mathf.Clamp01(distancePercentage);
         }
     }
 }
