@@ -467,10 +467,10 @@ namespace RealismMod
                 {
                     string colliderName = collider.name.ToLower();
                     if (colliderName == "left" || colliderName == "right" || colliderName == "top") boxCollider.size *= 0f;
-                    ModifyPlateHelper(collider, boxCollider, colliderName, "_chest", 0.975f, 0.475f, 0.87f); //height, depth, width
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "_chest", 0.975f, 0.475f, 0.86f); //chest plate, height, depth, width
                     ModifyPlateHelper(collider, boxCollider, colliderName, "_back", 0.78f, 0.58f, 0.83f); //height, depth, width
                     ModifyPlateHelper(collider, boxCollider, colliderName, "_side_", 0.8f, 1f, 0.7f); //height, width, depth
-                    ModifyPlateHelper(collider, boxCollider, colliderName, "chesttop", 1.55f, 0.9f, 1f);//height, width, depth
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "chesttop", 1.55f, 0.9f, 1f);//armpits, height, width, depth
                 }
             }
         }

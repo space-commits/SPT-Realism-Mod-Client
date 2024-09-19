@@ -1,66 +1,33 @@
-﻿using SPT.Reflection.Patching;
-using SPT.Reflection.Utils;
-using Comfort.Common;
+﻿using Comfort.Common;
 using EFT;
 using EFT.HealthSystem;
 using EFT.InventoryLogic;
 using EFT.UI.Health;
 using HarmonyLib;
+using SPT.Reflection.Patching;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 using static EFT.HealthSystem.ActiveHealthController;
 using static RealismMod.Attributes;
+using Color = UnityEngine.Color;
 using ExistanceClass = GClass2470;
 using HealthStateClass = GClass2430<EFT.HealthSystem.ActiveHealthController.GClass2429>;
-using MedkitTemplate = IMedkitResource;
 using MedUseStringClass = GClass1244;
-using QuestUIClass = GClass2046;
 using SetInHandsMedsInterface = GInterface142;
-using EFT.UI;
-using EFT.Communications;
-using static System.Net.Mime.MediaTypeNames;
-using System.Drawing;
-using System.Security.Cryptography;
-using Color = UnityEngine.Color;
 
 namespace RealismMod
 {
-
-    public class QuestCompletePatch : ModulePatch
-    {
-        private static string[] hazardHealQuests = { "667c643869df8111b81cb6dc", "667dbbc9c62a7c2ee8fe25b2" };
-
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(QuestView).GetMethod("FinishQuest", BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(QuestView __instance)
-        {
-            if (hazardHealQuests.Contains(__instance.QuestId))
-            {
-                HazardTracker.TotalRadiation = 0;
-                HazardTracker.TotalToxicity = 0;
-                HazardTracker.UpdateHazardValues(ProfileData.PMCProfileId);
-                HazardTracker.UpdateHazardValues(ProfileData.ScavProfileId);
-                HazardTracker.SaveHazardValues();
-                if(PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayNotification(new QuestUIClass("Blood Tests Came Back Clear, Your Radiation Poisoning Has Been Cured.".Localized(null), ENotificationDurationType.Long, ENotificationIconType.Quest, null));
-            }
-        }
-    }
-
     public class HealthPanelPatch : ModulePatch
     {
-        private static float _updateTime = 0f;
+        public const float MAIN_FONT_SIZE = 14f;
+        public const float SECONDARY_FONT_SIZE = 30f;
+        public const float FONT_CHANGE_SPEED = 1f;
 
+        private static float _updateTime = 0f;
         protected override MethodBase GetTargetMethod()
         {
             return typeof(HealthParametersPanel).GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
@@ -171,7 +138,7 @@ namespace RealismMod
                             CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>(); //can animate it by changing the font size with ping pong, and modulate the color
                             buffUI.text = (toxicityRate > 0f ? "+" : "") + toxicityRate.ToString("0.00");
                             buffUI.color = GetGasRateColor(toxicityRate);
-                            buffUI.fontSize = 14f;
+                            buffUI.fontSize = MAIN_FONT_SIZE;
                         }
                         if (current != null)
                         {
@@ -179,7 +146,7 @@ namespace RealismMod
                             CustomTextMeshProUGUI currentUI = current.GetComponent<CustomTextMeshProUGUI>();
                             currentUI.text = toxicityLevel.ToString();
                             currentUI.color = GetCurrentGasColor(toxicityLevel);
-                            currentUI.fontSize = 30f;
+                            currentUI.fontSize = SECONDARY_FONT_SIZE;
                         }
                     }
 
@@ -194,7 +161,7 @@ namespace RealismMod
                             CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
                             buffUI.text = (radRate > 0f ? "+" : "") + radRate.ToString("0.00");
                             buffUI.color = GetRadRateColor(radRate);
-                            buffUI.fontSize = 14f;
+                            buffUI.fontSize = MAIN_FONT_SIZE;
                         }
                         if (current != null)
                         {
@@ -202,7 +169,7 @@ namespace RealismMod
                             CustomTextMeshProUGUI currentUI = current.GetComponent<CustomTextMeshProUGUI>();
                             currentUI.text = radiationLevel.ToString();
                             currentUI.color = GetCurrentRadColor(radiationLevel);
-                            currentUI.fontSize = 30f;
+                            currentUI.fontSize = SECONDARY_FONT_SIZE;
                         }
                     }
                 }

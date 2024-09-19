@@ -40,7 +40,7 @@ namespace RealismMod
         public static ManualLogSource Logger;
         public static System.Random SystemRandom = new System.Random();
 
-        public static bool IsReady = false;
+        public static bool PlayerIsReady = false;
         public static bool IsInHideout = false;
         public static bool WeaponIsReady = false;
         public static bool HasRunErgoWeightCalc = false;
@@ -181,12 +181,12 @@ namespace RealismMod
 
             if (gameWorld == null || gameWorld.AllAlivePlayersList == null || gameWorld.MainPlayer == null || sessionResultPanel != null)
             {
-                Utils.IsReady = false;
+                Utils.PlayerIsReady = false;
                 Utils.WeaponIsReady = false;
                 Utils.IsInHideout = false;
                 return false;
             }
-            Utils.IsReady = true;
+            Utils.PlayerIsReady = true;
             return true;
         }
 

@@ -224,7 +224,7 @@ namespace RealismMod
                 float subFactor = 0f;
                 if (!WeaponStats.CanCycleSubs && ammoToFire.ammoHear == 1)
                 {
-                    float suppFactor = __instance.IsSilenced || WeaponStats.HasBooster ? 0.15f : 1f;
+                    float suppFactor = __instance.IsSilenced || WeaponStats.HasBooster ? 0.2f : 1f;
                     if (ammoToFire.Caliber == "762x39")
                     {
                         subFactor = 0.04f * (1f - malfDelta) * suppFactor;

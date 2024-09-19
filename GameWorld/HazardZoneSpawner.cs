@@ -29,7 +29,7 @@ namespace RealismMod
             return didRequiredQuest;
         }
 
-        public static bool QuestHasBlocksZone(string questId)
+        public static bool QuestBlocksZone(string questId)
         {
             bool didRequiredQuest = false;
             var dynamicZoneQuest = GetQuest(questId);

@@ -724,7 +724,7 @@ namespace RealismMod
                 StanceManipCancelTimer();
             }
 
-            if (DidWeaponSwap || (!PluginConfig.RememberStance.Value && !Utils.WeaponIsReady) || !Utils.IsReady)
+            if (DidWeaponSwap || (!PluginConfig.RememberStance.Value && !Utils.WeaponIsReady) || !Utils.PlayerIsReady)
             {
                 IsLeftShoulder = false;
                 IsMounting = false;

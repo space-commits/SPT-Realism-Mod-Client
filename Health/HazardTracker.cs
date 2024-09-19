@@ -1,11 +1,15 @@
 ﻿using Comfort.Common;
 using EFT;
+using EFT.Hideout;
+using EFT.InventoryLogic;
+using EFT.UI;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using static RootMotion.FinalIK.IKSolver;
 
 namespace RealismMod
 {
@@ -24,10 +28,6 @@ namespace RealismMod
         public static bool HasExploded { get; set; } = false;
         public static float TotalToxicityRate { get; set; } = 0f;
         public static float TotalRadiationRate { get; set; } = 0f;
-        private static float _totalToxicity = 0f;
-        private static float _totalRadiation = 0f;
-        private static float _toxicityRateMeds = 0f;
-        private static float _radiationRateMeds = 0f;
         private static Dictionary<string, HazardRecord> _hazardRecords = new Dictionary<string, HazardRecord>();
 
         public static float RadTreatmentRate
@@ -78,6 +78,48 @@ namespace RealismMod
             }
         }
 
+        private static float _totalToxicity = 0f;
+        private static float _totalRadiation = 0f;
+        private static float _toxicityRateMeds = 0f;
+        private static float _radiationRateMeds = 0f;
+        private static float _upateTimer = 0f;
+        private static float _hideoutRegenTick = 0f;
+        public static bool _loadedData = false;
+
+        public static void OutOfRaidUpdate() 
+        {
+            if (GClass1864.InRaid) return;
+            _upateTimer += Time.deltaTime;
+            _hideoutRegenTick += Time.deltaTime;
+
+            if (_hideoutRegenTick > 1f)
+            {
+                var profileData = Singleton<ClientApplication<ISession>>.Instance.GetClientBackEndSession()?.Profile;
+                var genController = Singleton<HideoutClass>.Instance?.EnergyController;
+                if (profileData != null && _loadedData && genController != null && genController.IsEnergyGenerationOn)
+                {
+                    float ventsFactor = -(profileData.Hideout.Areas[0].level * 0.01f);
+                    float medFactor = -(profileData.Hideout.Areas[7].level * 0.025f);
+
+                    float totalFactor = ventsFactor + medFactor;
+                    TotalToxicityRate = totalFactor;
+                    TotalToxicity += TotalToxicityRate;
+                }
+                else 
+                {
+                    TotalToxicityRate = 0f;
+                }
+               
+                _hideoutRegenTick = 0f;
+            }
+            if (_upateTimer > 10f && _loadedData)
+            {
+                HazardTracker.UpdateHazardValues(ProfileData.PMCProfileId);
+                HazardTracker.SaveHazardValues();
+                _upateTimer = 0f;
+            }
+        }
+
         private static string GetFilePath()
         {
             return AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\data\\hazard_tracker.json";
@@ -110,8 +152,8 @@ namespace RealismMod
             if (_hazardRecords.TryGetValue(profileId, out record))
             {
                 bool isWipedProfle = IsWipedProfile();
-                record.RecordedTotalToxicity = isWipedProfle ? 0 : TotalToxicity;
-                record.RecordedTotalRadiation = isWipedProfle ? 0 : TotalRadiation;
+                record.RecordedTotalToxicity = isWipedProfle ? 0f : TotalToxicity;
+                record.RecordedTotalRadiation = isWipedProfle ? 0f : TotalRadiation;
             }
         }
 
@@ -143,8 +185,8 @@ namespace RealismMod
             if (_hazardRecords.TryGetValue(profileId, out record))
             {
                 bool isWipedProfle = IsWipedProfile();
-                TotalToxicity = isWipedProfle ? 0 : record.RecordedTotalToxicity;
-                TotalRadiation = isWipedProfle ? 0 : record.RecordedTotalRadiation;
+                TotalToxicity = isWipedProfle ? 0f : record.RecordedTotalToxicity;
+                TotalRadiation = isWipedProfle ? 0f : record.RecordedTotalRadiation;
             }
             else 
             {
@@ -153,6 +195,7 @@ namespace RealismMod
                 TotalRadiation = 0f;
                 SaveHazardValues();
             }
+            _loadedData = true;
         }
 
     }

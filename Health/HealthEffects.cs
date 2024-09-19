@@ -499,8 +499,8 @@ namespace RealismMod
             float treatmentFactor = 1f - (Mathf.Pow(Mathf.Abs(HazardTracker.DetoxicationRate), 0.3f));
             float drainRate = 0f;
 
-            if (Plugin.RealHealthController.IsCoughingInGas) drainRate += -8f + (-HazardTracker.TotalToxicityRate);
-
+            float coughingThreshold = 0.12f * (1f + PlayerState.ImmuneSkillStrong);
+            if (Plugin.RealHealthController.IsCoughingInGas && HazardTracker.TotalToxicityRate > coughingThreshold) drainRate += -8f + (-HazardTracker.TotalToxicityRate);
             switch (HazardTracker.TotalToxicity)
             {
                 case < 30f:

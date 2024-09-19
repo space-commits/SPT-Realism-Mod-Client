@@ -2,15 +2,42 @@
 using EFT;
 using EFT.Animals;
 using EFT.Ballistics;
-using EFT.Interactive;
+using EFT.Communications;
+using EFT.UI;
 using SPT.Reflection.Patching;
+using System;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using QuestUIClass = GClass2046;
 
 
 namespace RealismMod
 {
 
+    public class QuestCompletePatch : ModulePatch
+    {
+        private static string[] _hazardHealQuests = { "667c643869df8111b81cb6dc", "667dbbc9c62a7c2ee8fe25b2" };
+
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(QuestView).GetMethod("FinishQuest", BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(QuestView __instance)
+        {
+            if (_hazardHealQuests.Contains(__instance.QuestId))
+            {
+                HazardTracker.TotalRadiation = 0;
+                HazardTracker.TotalToxicity = 0;
+                HazardTracker.UpdateHazardValues(ProfileData.PMCProfileId);
+                HazardTracker.UpdateHazardValues(ProfileData.ScavProfileId);
+                HazardTracker.SaveHazardValues();
+                if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayNotification(new QuestUIClass("Blood Tests Came Back Clear, Your Radiation Poisoning Has Been Cured.".Localized(null), ENotificationDurationType.Long, ENotificationIconType.Quest, null));
+            }
+        }
+    }
 
     public class BirdPatch : ModulePatch
     {

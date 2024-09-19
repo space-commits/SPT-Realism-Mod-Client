@@ -396,7 +396,7 @@ namespace RealismMod
         private static bool Prefix(Weapon __instance, ref string __result)
         {
 
-            if (Utils.IsReady && __instance?.Owner?.ID != Singleton<GameWorld>.Instance?.MainPlayer?.ProfileId) return true;
+            if (Utils.PlayerIsReady && __instance?.Owner?.ID != Singleton<GameWorld>.Instance?.MainPlayer?.ProfileId) return true;
             string cal = GetCaliber(__instance.Mods);
             if (cal == null) return true;
             __result = cal;

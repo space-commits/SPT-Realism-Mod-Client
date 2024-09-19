@@ -373,7 +373,7 @@ namespace RealismMod
                 currentSet.LandingSoundBank.BaseVolume = PluginConfig.SharedMovementVolume.Value;
             }
 
-            if (Utils.IsReady && __instance.IsYourPlayer)
+            if (Utils.PlayerIsReady && __instance.IsYourPlayer)
             {
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
                 PlayerState.IsSprinting = __instance.IsSprintEnabled;

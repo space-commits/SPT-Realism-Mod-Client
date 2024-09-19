@@ -471,7 +471,10 @@ namespace RealismMod
                     ProfileData.PMCProfileId = sessionData.Profile.Id;
                     ProfileData.ScavProfileId = sessionData.ProfileOfPet.Id;
                     ProfileData.PMCLevel = sessionData.Profile.Info.Level;
-                    if (ServerConfig.enable_hazard_zones) HazardTracker.GetHazardValues(ProfileData.PMCProfileId);
+                    if (ServerConfig.enable_hazard_zones)
+                    {
+                        HazardTracker.GetHazardValues(ProfileData.PMCProfileId);
+                    }
                     _gotProfileId = true;
                 }
                 catch 
@@ -493,8 +496,10 @@ namespace RealismMod
             CheckForProfileData();
             CheckForMods();
 
+            if (ServerConfig.enable_hazard_zones) HazardTracker.OutOfRaidUpdate();
+
             Utils.CheckIsReady();
-            if (Utils.IsReady)
+            if (Utils.PlayerIsReady)
             {
            /*     if (HazardZoneSpawner.GameStarted && Input.GetKeyDown(KeyCode.N))
                 {
@@ -519,11 +524,12 @@ namespace RealismMod
                 {
                     HazardTracker.WipeTracker();
                 }
-
                 if (PluginConfig.ZoneDebug.Value && Input.GetKeyDown(PluginConfig.AddZone.Value.MainKey))
                 {
                     DebugZones();
                 }
+
+                if (ServerConfig.med_changes) RealHealthController.ControllerUpdate();
 
                 if (!Plugin.HasReloadedAudio)
                 {
@@ -549,10 +555,6 @@ namespace RealismMod
             else
             {
                 HasReloadedAudio = false;
-            }
-            if (ServerConfig.med_changes)
-            {
-                RealHealthController.ControllerUpdate();
             }
         }
 

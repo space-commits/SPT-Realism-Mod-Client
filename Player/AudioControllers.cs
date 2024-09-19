@@ -18,7 +18,7 @@ namespace RealismMod
 
         public static void HazardZonesAudioController()
         {
-            if (Utils.IsInHideout || !Utils.IsReady) return;
+            if (Utils.IsInHideout || !Utils.PlayerIsReady) return;
 
             _breathTimer += Time.deltaTime;
             _coughTimer += Time.deltaTime;  
