@@ -201,7 +201,10 @@ namespace RealismMod
          
                 //overheat
                 overheatMalfChance = 1f + Mathf.Clamp01(overheat / 100f);
-                overheatMalfChance = Mathf.Pow(overheatMalfChance, 2);
+                overheatMalfChance = Mathf.Pow(overheatMalfChance, 3f);
+
+                float shotFactor = 1f + (RecoilController.ShotCount / 200f);
+                float fireRateFactor = RecoilController.ShotCount > 2 ? Mathf.Max(WeaponStats.FireRateDelta, 1f) : 1f;
 
                 if (weaponDurability > PluginConfig.DuraMalfThreshold.Value)
                 {
@@ -235,7 +238,7 @@ namespace RealismMod
                     }
                 }
 
-                float totalFactors = (float)durabilityMalfChance * overheatMalfChance * ammoMalfChance * magMalfChance * WeaponStats.FireRateDelta * (float)__instance.Item.Buff.MalfunctionProtections;
+                float totalFactors = (float)durabilityMalfChance * overheatMalfChance * ammoMalfChance * magMalfChance * shotFactor * fireRateFactor * (float)__instance.Item.Buff.MalfunctionProtections;
                 float totalMalfChance = (baseWeaponMalfChance + subFactor) * totalFactors;
                 __result = totalMalfChance * (PluginConfig.EnableBallisticsLogging.Value ? PluginConfig.MalfMulti.Value : 1f);
 

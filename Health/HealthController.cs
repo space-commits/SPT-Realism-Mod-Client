@@ -2101,7 +2101,7 @@ namespace RealismMod
             float radRate = PlayerHazardBridge.TotalRadRate * factors;
             float totalRate = radRate + reductionRate;
 
-            float speed = totalRate > 0f ? 12f : 2f;
+            float speed = totalRate > 0f ? 10f : 2f;
             HazardTracker.TotalRadiationRate = Mathf.MoveTowards(HazardTracker.TotalRadiationRate, totalRate, speed * Time.deltaTime);
 
             float lowerThreshold = isInRadZone && GearController.CurrentGasProtection < 1f ? HazardTracker.TotalRadiation : !isInRadZone && HazardTracker.TotalRadiation <= RadiationTreatmentThreshold ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
