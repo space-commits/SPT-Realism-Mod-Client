@@ -19,14 +19,14 @@ namespace RealismMod
 {
     public class UpdateHipInaccuracyPatch : ModulePatch
     {
-        private static FieldInfo playerField;
-        private static FieldInfo tacticalModesField;
+        private static FieldInfo _playerField;
+        private static FieldInfo _tacticalModesField;
 
 
         protected override MethodBase GetTargetMethod()
         {
-            playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
-            tacticalModesField = AccessTools.Field(typeof(TacticalComboVisualController), "list_0");
+            _playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
+            _tacticalModesField = AccessTools.Field(typeof(TacticalComboVisualController), "list_0");
             return typeof(EFT.Player.FirearmController).GetMethod("UpdateHipInaccuracy", BindingFlags.Instance | BindingFlags.Public);
         }
 
@@ -139,12 +139,12 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Player.FirearmController __instance)
         {
-            Player player = (Player)playerField.GetValue(__instance);
+            Player player = (Player)_playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
                 if (__instance.AimingDevices.Length > 0 && __instance.AimingDevices.Any(x => x.Light.IsActive))
                 {
-                    CheckDevice(__instance, tacticalModesField);
+                    CheckDevice(__instance, _tacticalModesField);
                     PlayerState.HasActiveDevice = true;
 
                     NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
@@ -675,7 +675,8 @@ namespace RealismMod
                 float shortStockingDebuff = StanceController.CurrentStance == EStance.ShortStock ? 1.15f : 1f;
                 float shortStockingCamBonus = StanceController.CurrentStance == EStance.ShortStock ? 0.6f : 1f;
 
-                float mountingDispModi = Mathf.Clamp(StanceController.BracingRecoilBonus, 0.85f, 1f);
+                float mountingDispMulti = Mathf.Clamp(Mathf.Pow(StanceController.BracingRecoilBonus, 0.75f), 0.8f, 1f);
+
                 float baseRecoilAngle = RecoilController.BaseTotalRecoilAngle;
                     
                 float opticRecoilMulti = allowedCalibers.Contains(firearmController.Weapon.AmmoCaliber) && StanceController.IsAiming && WeaponStats.IsOptic && StanceController.IsAiming ? 0.95f : 1f;
@@ -714,7 +715,7 @@ namespace RealismMod
 
                 //Recalculate and modify dispersion
                 float dispFactor = incomingForce * PlayerState.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff * 
-                    mountingDispModi * opticRecoilMulti * leftShoulderFactor * rifleShotFactor * PluginConfig.DispMulti.Value;
+                    mountingDispMulti * opticRecoilMulti * leftShoulderFactor * rifleShotFactor * PluginConfig.DispMulti.Value;
                 RecoilController.FactoredTotalDispersion = RecoilController.BaseTotalDispersion * dispFactor;
 
                 __instance.HandRotationRecoil.ProgressRecoilAngleOnStable = new Vector2(RecoilController.FactoredTotalDispersion * PluginConfig.RecoilRandomness.Value, RecoilController.FactoredTotalDispersion * PluginConfig.RecoilRandomness.Value);

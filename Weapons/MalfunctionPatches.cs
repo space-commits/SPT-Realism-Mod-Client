@@ -204,7 +204,7 @@ namespace RealismMod
                 overheatMalfChance = Mathf.Pow(overheatMalfChance, 3f);
 
                 float shotFactor = 1f + (RecoilController.ShotCount / 200f);
-                float fireRateFactor = RecoilController.ShotCount > 2 ? Mathf.Max(WeaponStats.FireRateDelta, 1f) : 1f;
+                float fireRateFactor = RecoilController.ShotCount > 2 ? Mathf.Max(WeaponStats.AutoFireRateDelta, 1f) : 1f;
 
                 if (weaponDurability > PluginConfig.DuraMalfThreshold.Value)
                 {
@@ -252,7 +252,7 @@ namespace RealismMod
                     Logger.LogWarning("durability " + weaponDurability);
                     Logger.LogWarning("durability malf chance " + durabilityMalfChance);
                     Logger.LogWarning("mag malf chance " + magMalfChance + " : " + currentMagazine.MalfunctionChance);
-                    Logger.LogWarning("WeaponStats.FireRateDelta " + WeaponStats.FireRateDelta);
+                    Logger.LogWarning("WeaponStats.FireRateDelta " + WeaponStats.AutoFireRateDelta);
                     Logger.LogWarning("subFactor " + subFactor);
                     Logger.LogWarning("total malf chance " + __result);
                 }

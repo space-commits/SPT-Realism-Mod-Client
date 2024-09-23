@@ -619,6 +619,7 @@ namespace RealismMod
             //weapon and related
             new TotalShotgunDispersionPatch().Enable();
             new GetDurabilityLossOnShotPatch().Enable();
+            new FireratePitchPatch().Enable();
             new AutoFireRatePatch().Enable();
             new SingleFireRatePatch().Enable();
             new ErgoDeltaPatch().Enable();

@@ -457,12 +457,12 @@ namespace RealismMod
                 float weightFactor = StatCalc.ProceduralIntensityFactorCalc(weapWeight, isPistol ? 1f : 2.5f);
                 float displacementModifier = noShoulderContact ? PluginConfig.ProceduralIntensity.Value * 0.95f : PluginConfig.ProceduralIntensity.Value * 0.48f; // lower = less drag
                 float aimIntensity = noShoulderContact ? PluginConfig.ProceduralIntensity.Value * 0.86f : PluginConfig.ProceduralIntensity.Value * 0.51f;
-                float displacementFactor = isPistol ? 22f : 26f;
+                float displacementFactor = isPistol ? 22f : 24.7f;
                 float displacementLowerLimit = isPistol ? 0.6f : 0.75f;
-                float displacementUpperLimit = isPistol ? 1.2f : 7f;
-                float swayStrengthFactor = isPistol ? 25f : 130f;
+                float displacementUpperLimit = isPistol ? 1.2f : 7.2f;
+                float swayStrengthFactor = isPistol ? 25f : 123.5f;
                 float swayStrengthLowerLimit = isPistol ? 0.5f : 0.6f;
-                float swayStrengthUpperLimit = isPistol ? 1.3f : 2f;
+                float swayStrengthUpperLimit = isPistol ? 1.3f : 2.1f;
 
                 float combinedFactors = ergoWeight * weightFactor * playerWeightFactor;
 

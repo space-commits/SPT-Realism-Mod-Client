@@ -194,6 +194,8 @@ namespace RealismMod
 
         public static int AutoFireRate = 0;
         public static float FireRateDelta = 0;
+        public static float AutoFireRateDelta = 0;
+        public static float SemiFireRateDelta = 0;
         public static int SemiFireRate = 0;
 
         public static float Balance = 0f;

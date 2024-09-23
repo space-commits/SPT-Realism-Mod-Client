@@ -480,6 +480,9 @@ namespace RealismMod
             WeaponStats.AutoFireRate = Mathf.Max(400, (int)currentAutoROF);
             WeaponStats.SemiFireRate = Mathf.Max(300, (int)currentSemiROF);
             WeaponStats.FireRateDelta = ((float)WeaponStats.AutoFireRate / (float)__instance.Template.bFirerate) * ((float)WeaponStats.SemiFireRate / (float)__instance.Template.SingleFireRate);
+            WeaponStats.AutoFireRateDelta = (float)WeaponStats.AutoFireRate / (float)__instance.Template.bFirerate;
+            WeaponStats.SemiFireRateDelta = (float)WeaponStats.SemiFireRate / (float)__instance.Template.SingleFireRate;
+
             WeaponStats.InitTotalCOI = currentCOI;
             WeaponStats.InitPureErgo = pureErgo;
             WeaponStats.PureRecoilDelta = pureRecoilDelta;

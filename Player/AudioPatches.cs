@@ -14,6 +14,43 @@ using HeadsetTemplate = GClass2556; //SetCompressor
 
 namespace RealismMod
 {
+    public class FireratePitchPatch : ModulePatch
+    {
+        private static FieldInfo _playerField;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            _playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
+            return typeof(Player.FirearmController).GetMethod("method_57", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool PatchPrefix(Player.FirearmController __instance, ref float __result)
+        {
+            Player player = (Player)_playerField.GetValue(__instance);
+            if (player.IsYourPlayer) return true;
+            if (__instance.Weapon == null)
+            {
+                __result = 1f;
+            }
+
+            float result;
+            if (__instance.Weapon.FireMode.FireMode == Weapon.EFireMode.fullauto || __instance.Weapon.FireMode.FireMode == Weapon.EFireMode.burst)
+            {
+                float firerateMulti = Mathf.Pow(WeaponStats.AutoFireRateDelta, 3f);
+                float overHeatMulti = 1f + Mathf.Pow(__instance.Weapon.MalfState.LastShotOverheat / 100f, 2f);
+                result = (firerateMulti * overHeatMulti) + UnityEngine.Random.Range(-0.015f, 0.015f);
+                result = Mathf.Clamp(result, 0.75f, 1.25f);
+            }
+            else
+            {
+                result = 1f + UnityEngine.Random.Range(-0.03f, 0.03f);
+            }
+            __result = result;
+
+            return false;
+        }
+    }
 
     public class PlayPhrasePatch : ModulePatch
     {
