@@ -70,7 +70,7 @@ namespace RealismMod
                 }
                 int rnd = UnityEngine.Random.Range(1, 11);
                 float dura = 2f - (__instance.Weapon.Repairable.Durability / __instance.Weapon.Repairable.MaxDurability);
-                do9x18Explodey = __instance.Weapon.Repairable.Durability <= 75f && rnd <= 4 * dura && isPMMAmmo;
+                do9x18Explodey = __instance.Weapon.Repairable.Durability <= 80f && rnd <= 4 * dura && isPMMAmmo;
             }
 
             if (__instance.Weapon.AmmoCaliber != ammoToFire.Caliber || __instance.Weapon.Repairable.MaxDurability <= 0)

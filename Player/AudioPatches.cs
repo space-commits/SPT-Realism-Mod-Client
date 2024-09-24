@@ -28,7 +28,7 @@ namespace RealismMod
         private static bool PatchPrefix(Player.FirearmController __instance, ref float __result)
         {
             Player player = (Player)_playerField.GetValue(__instance);
-            if (player.IsYourPlayer) return true;
+            if (!player.IsYourPlayer) return true;
             if (__instance.Weapon == null)
             {
                 __result = 1f;
