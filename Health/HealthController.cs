@@ -121,7 +121,7 @@ namespace RealismMod
 
     public class RealismHealthController
     {
-        HashSet<string> ToxicItems = new HashSet<string> (new string[] {
+        HashSet<string> ToxicItems = new HashSet<string>(new string[] {
             "593a87af86f774122f54a951",
             "5b4c81bd86f77418a75ae159",
             "5b4c81a086f77417d26be63f",
@@ -156,22 +156,56 @@ namespace RealismMod
             {"66507eabf5ddb0818b085b68", EStimType.Weight }
         };
 
-        public List<EBodyPart> PossibleBodyParts = new List<EBodyPart> 
+        public List<EBodyPart> PossibleBodyParts = new List<EBodyPart>
         {
-            EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm 
+            EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm
         };
+
+        public EBodyPart[] BodyPartsArr = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm };
+
+        private List<ICustomHealthEffect> _activeHealthEffects = new List<ICustomHealthEffect>();
 
         private List<EStimType> _activeStimOverdoses = new List<EStimType>();
 
         public DamageTracker DmgeTracker { get; }
 
-        public PlayerHazardBridge PlayerHazardBridge { get;  private set; }
+        public PlayerHazardBridge PlayerHazardBridge { get; private set; }
 
         public bool HasAdrenalineEffect { get; set; } = false;
 
-        public bool IsCoughingInGas { get; set; } = false;
+        public bool IsCoughingInGas { get; private set; } = false;
+
+        public bool DoCoughingAudio { get; private set; } = false;
 
         public int ToxicItemCount { get; set; } = 0;
+
+        public bool IsPoisoned { get; set; } = false;
+
+        public bool CancelPassiveRegen { get; set; } = false;
+
+        public bool IsDehydrated { get; set; } = false;
+
+        public bool IsExhausted { get; set; } = false;
+
+        public float CurrentPassiveRegenBlockDuration { get; set; } = 0f;
+
+        public float BlockPassiveRegenBaseDuration
+        {
+            get
+            {
+                return 600f * (1f - PlayerState.VitalityFactorStrong);
+            }
+        }
+
+        public bool BlockPassiveRegen
+        {
+            get
+            {
+                return PlayerState.IsSprinting || HasOverdosed || IsPoisoned ||
+                    HazardTracker.TotalToxicity > 10f || HazardTracker.TotalRadiation > 10f ||
+                    IsCoughingInGas || HazardTracker.TotalToxicityRate > 0.01f || HazardTracker.TotalRadiationRate > 0.01f;
+            }
+        }
 
         public float AdrenalineMovementBonus
         {
@@ -205,10 +239,58 @@ namespace RealismMod
             }
         }
 
-        public EBodyPart[] BodyPartsArr = { EBodyPart.Head, EBodyPart.Chest, EBodyPart.Stomach, EBodyPart.RightLeg, EBodyPart.LeftLeg, EBodyPart.RightArm, EBodyPart.LeftArm };
+        public bool ArmsAreIncapacitated
+        {
+            get
+            {
+                return (_rightArmRuined || _leftArmRuined || (PainStrength > PainArmThreshold && PainStrength > PainReliefStrength)) && !IsOnPKStims;
+            }
+        }
 
-        private List<ICustomHealthEffect> _activeHealthEffects = new List<ICustomHealthEffect>();
+        public bool HealthConditionPreventsTacSprint
+        {
+            get
+            {
+                return HazardTracker.TotalToxicity > 20f || HazardTracker.TotalRadiation > 40f || ArmsAreIncapacitated || HasOverdosed || IsPoisoned || IsCoughingInGas || IsDehydrated || IsExhausted;
+            }
+        }
 
+        public bool HealthConditionForcedLowReady
+        {
+            get
+            {
+                return HazardTracker.TotalToxicity > 40f || HazardTracker.TotalRadiation > 60f || ArmsAreIncapacitated || HasOverdosed || IsPoisoned || IsCoughingInGas || IsDehydrated || IsExhausted;
+            }
+        }
+
+        public bool HasOverdosed
+        {
+            get
+            {
+                return PainReliefStrength > PKOverdoseThreshold || _hasOverdosedStim;
+            }
+        }
+
+        public float PKOverdoseThreshold
+        {
+            get
+            {
+                return BasePKOverdoseThreshold * (1f + PlayerState.ImmuneSkillStrong);
+            }
+        }
+
+        public bool IsOnPKStims
+        {
+            get
+            {
+                return _hasPKStims && !_hasOverdosedStim;
+            }
+        }
+
+        private float _percentReources = 1f;
+
+        private bool _addedResourceEffect = false;
+        private bool _addedPassiveRegenEffect = false;
 
         private float _healthControllerTime = 0f;
         private float _effectsTime = 0f;
@@ -248,7 +330,8 @@ namespace RealismMod
         public const float BasePKOverdoseThreshold = 45f;
 
         private const float ToxicityThreshold = 15f;
-        private const float RadiationThreshold = 60f;
+        public const float RadiationThreshold = 30f;
+        public const float RadiationTreatmentThreshold = 40f;
         private const float _baseToxicityRecoveryRate = -0.05f;
         private const float _hazardInterval = 10f;
         private float _hazardWaitTime = 0f;
@@ -264,57 +347,7 @@ namespace RealismMod
 
         private bool _addedCustomEffectsToDict = false;
 
-        public bool IsPoisoned { get; set; } = false;   
-
-        public bool ArmsAreIncapacitated 
-        {
-            get 
-            {
-                return (_rightArmRuined || _leftArmRuined || (PainStrength > PainArmThreshold && PainStrength > PainReliefStrength)) && !IsOnPKStims;
-            }
-        }
-
-        public bool HealthConditionPreventsTacSprint
-        {
-            get
-            {
-                return HazardTracker.TotalToxicity > ToxicityThreshold || HazardTracker.TotalRadiation > RadiationThreshold || ArmsAreIncapacitated || HasOverdosed || IsPoisoned;
-            }
-        }
-
-        public bool HealthConditionForcedLowReady
-        {
-            get
-            {
-                return HazardTracker.TotalToxicity > 60f || HazardTracker.TotalRadiation > 80f || ArmsAreIncapacitated || HasOverdosed || IsPoisoned;
-            }
-        }
-
-        public bool HasOverdosed
-        {
-            get
-            {
-                return PainReliefStrength > PKOverdoseThreshold || _hasOverdosedStim;
-            }
-        }
-
-        public float PKOverdoseThreshold
-        {
-            get
-            {
-                return BasePKOverdoseThreshold * (1f + PlayerState.ImmuneSkillStrong);
-            }
-        }
-
-        public bool IsOnPKStims
-        {
-            get
-            {
-                return _hasPKStims && !_hasOverdosedStim;
-            }
-        }
-
-        public RealismHealthController(DamageTracker dmgTracker) 
+        public RealismHealthController(DamageTracker dmgTracker)
         {
             DmgeTracker = dmgTracker;
         }
@@ -328,7 +361,7 @@ namespace RealismMod
                 _addedCustomEffectsToDict = true;
             }
 
-            if (!Utils.IsInHideout && Utils.IsReady)
+            if (!Utils.IsInHideout && Utils.PlayerIsReady)
             {
                 _healthControllerTime += Time.deltaTime;
                 _effectsTime += Time.deltaTime;
@@ -375,7 +408,7 @@ namespace RealismMod
                 }
             }
 
-            if (Utils.IsInHideout || !Utils.IsReady)
+            if (Utils.IsInHideout || !Utils.PlayerIsReady)
             {
                 ResetAllEffects();
                 DmgeTracker.ResetTracker();
@@ -391,45 +424,56 @@ namespace RealismMod
                     AdrenalineCooldownActive = false;
                 }
             }
+
+            if (CancelPassiveRegen)
+            {
+                CurrentPassiveRegenBlockDuration -= Time.deltaTime;
+
+                if (CurrentPassiveRegenBlockDuration <= 0.0f)
+                {
+                    CancelPassiveRegen = false;
+                    CurrentPassiveRegenBlockDuration = BlockPassiveRegenBaseDuration;
+                }
+            }
         }
 
         //To prevent null ref exceptions while using Fika, Realism's custom effects must be added to a dicitionary of existing EFT effects
-        public void AddCustomEffectsToDict() 
+        public void AddCustomEffectsToDict()
         {
-            Type type1 = typeof(EffectsDictionary);
-            FieldInfo dictionaryField1 = type1.GetField("dictionary_1", BindingFlags.NonPublic | BindingFlags.Static);
-            var effectDict1 = (Dictionary<byte, string>)dictionaryField1.GetValue(null);
-
-            effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "ResourceRateDrain");
-            effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "HealthChange");
-            effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), "HealthDrain");
-
-            dictionaryField1.SetValue(null, effectDict1);
+            Type[] customTypes = new Type[] { typeof(ResourceRateDrain), typeof(HealthChange), typeof(HealthDrain), typeof(ToxicityDamage), typeof(RadiationDamage) };
 
             Type type0 = typeof(EffectsDictionary);
             FieldInfo dictionaryField0 = type0.GetField("dictionary_0", BindingFlags.NonPublic | BindingFlags.Static);
             var effectDict0 = (Dictionary<string, byte>)dictionaryField0.GetValue(null);
-
-            effectDict0.Add("ResourceRateDrain", Convert.ToByte(effectDict0.Count + 1));
-            effectDict0.Add("HealthChange", Convert.ToByte(effectDict0.Count + 1));
-            effectDict0.Add("HealthDrain", Convert.ToByte(effectDict0.Count + 1));
-
+            foreach (var customType in customTypes)
+            {
+                effectDict0.Add(customType.ToString(), Convert.ToByte(effectDict0.Count + 1));
+            }
             dictionaryField0.SetValue(null, effectDict0);
 
+            Type type1 = typeof(EffectsDictionary);
+            FieldInfo dictionaryField1 = type1.GetField("dictionary_1", BindingFlags.NonPublic | BindingFlags.Static);
+            var effectDict1 = (Dictionary<byte, string>)dictionaryField1.GetValue(null);
+            foreach (var customType in customTypes)
+            {
+                effectDict1.Add(Convert.ToByte(effectDict1.Count + 1), customType.ToString());
+            }
+            dictionaryField1.SetValue(null, effectDict1);
+
             Type typeType = typeof(EffectsDictionary);
-            FieldInfo typeFieldInfo = typeType.GetField("type_0", BindingFlags.NonPublic | BindingFlags.Static);
-            var typeArr = (Type[])typeFieldInfo.GetValue(null);
-
-            Type[] customTypes = new Type[] { typeof(ResourceRateDrain), typeof(HealthChange), typeof(HealthDrain) };
-
+            FieldInfo typeArrFieldInfo = typeType.GetField("type_0", BindingFlags.NonPublic | BindingFlags.Static);
+            var typeArr = (Type[])typeArrFieldInfo.GetValue(null);
             customTypes.CopyTo(typeArr, 0);
-            typeFieldInfo.SetValue(null, customTypes);
-
+            typeArrFieldInfo.SetValue(null, customTypes);
         }
-
 
         public void TestAddBaseEFTEffect(int partIndex, Player player, String effect)
         {
+            if (effect == "")
+            {
+                return;
+            }
+
             if (effect == "removeHP")
             {
                 player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, -player.ActiveHealthController.GetBodyPartHealth((EBodyPart)partIndex).Maximum, DamageTypeClass.Existence);
@@ -440,8 +484,10 @@ namespace RealismMod
                 player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, player.ActiveHealthController.GetBodyPartHealth((EBodyPart)partIndex).Maximum, DamageTypeClass.Existence);
                 return;
             }
-            if (effect == "")
+            int healAmount = 0;
+            if (int.TryParse(effect, out healAmount))
             {
+                player.ActiveHealthController.ChangeHealth((EBodyPart)partIndex, healAmount, DamageTypeClass.Existence);
                 return;
             }
 
@@ -461,7 +507,7 @@ namespace RealismMod
             effectMethod.MakeGenericMethod(typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType(effect, BindingFlags.NonPublic | BindingFlags.Instance)).Invoke(player.ActiveHealthController, new object[] { bodyPart, delayTime, duration, residueTime, strength, null });
         }
 
-        public void AddBaseEFTEffectIfNoneExisting(Player player, string effect, EBodyPart bodyPart, float delayTime, float duration, float residueTime, float strength)
+        public void AddBaseEFTEffectIfNoneExisting(Player player, string effect, EBodyPart bodyPart, float? delayTime, float? duration, float? residueTime, float? strength)
         {
             if (!player.ActiveHealthController.BodyPartEffects.Effects[0].Any(e => e.Key == effect))
             {
@@ -565,7 +611,7 @@ namespace RealismMod
             }
 
             _activeHealthEffects.Add(newEffect);
-            return true;    
+            return true;
         }
 
 
@@ -593,6 +639,20 @@ namespace RealismMod
                 }
             }
             return hasEffect;
+        }
+
+        public ICustomHealthEffect GetCustomEffectOfType<T>(EBodyPart bodyPart) where T : ICustomHealthEffect
+        {
+            ICustomHealthEffect effect = null;
+            for (int i = _activeHealthEffects.Count - 1; i >= 0; i--)
+            {
+                ICustomHealthEffect activeHealthEffect = _activeHealthEffects[i];
+                if (activeHealthEffect.GetType() == typeof(T) && activeHealthEffect.BodyPart == bodyPart)
+                {
+                    effect = activeHealthEffect;
+                }
+            }
+            return effect;
         }
 
         public void CancelPendingEffects()
@@ -627,7 +687,7 @@ namespace RealismMod
             PainTunnelStrength = 0f;
             ReliefDuration = 0;
             _hasOverdosedStim = false;
-            _leftArmRuined = false;  
+            _leftArmRuined = false;
             _rightArmRuined = false;
             ResetHealhPenalties();
         }
@@ -704,7 +764,7 @@ namespace RealismMod
         {
 
             _hasPKStims = false;
-            foreach (var group in stimGroups) 
+            foreach (var group in stimGroups)
             {
                 switch (group.Key)
                 {
@@ -735,7 +795,7 @@ namespace RealismMod
             }
         }
 
-        private void EvaluateStimDuplicates(Player player, IEnumerable<IGrouping<EStimType, StimShellEffect>> stimGroups) 
+        private void EvaluateStimDuplicates(Player player, IEnumerable<IGrouping<EStimType, StimShellEffect>> stimGroups)
         {
             foreach (var group in stimGroups) // use this to count duplicates per category
             {
@@ -744,7 +804,7 @@ namespace RealismMod
                     case EStimType.Adrenal:
                         if (!_activeStimOverdoses.Contains(EStimType.Adrenal)) //if no active adrenal overdose
                         {
-                        
+
                             _activeStimOverdoses.Add(EStimType.Adrenal);
                             _doStimOverdoseTimer = true;
                             _overdoseEffectToAdd = "adrenal_debuff";
@@ -752,7 +812,7 @@ namespace RealismMod
                         }
                         break;
                     case EStimType.Regenerative:
-                        if (!_activeStimOverdoses.Contains(EStimType.Regenerative)) 
+                        if (!_activeStimOverdoses.Contains(EStimType.Regenerative))
                         {
                             _activeStimOverdoses.Add(EStimType.Regenerative);
                             _doStimOverdoseTimer = true;
@@ -809,7 +869,7 @@ namespace RealismMod
             }
         }
 
-        public void EvaluateActiveStims(Player player) 
+        public void EvaluateActiveStims(Player player)
         {
             IEnumerable<StimShellEffect> activeStims = _activeHealthEffects.OfType<StimShellEffect>();
             var stimTypeGroups = activeStims.GroupBy(effect => effect.StimType);
@@ -825,7 +885,7 @@ namespace RealismMod
             else _hasOverdosedStim = false;
         }
 
-        public EStimType GetStimType(string id) 
+        public EStimType GetStimType(string id)
         {
             return StimTypes.TryGetValue(id, out EStimType type) ? type : EStimType.Generic;
         }
@@ -836,24 +896,24 @@ namespace RealismMod
             int delay = (int)Math.Round(15f * (1f - vitalitySkill), 2);
             float tickRate = (float)Math.Round(0.22f * (1f + vitalitySkill), 2);
 
-            bool isDehydrated = HasBaseEFTEffect(player, "Dehydration");
-            bool isExhausted = HasBaseEFTEffect(player, "Exhaustion");
+            IsDehydrated = HasBaseEFTEffect(player, "Dehydration");
+            IsExhausted = HasBaseEFTEffect(player, "Exhaustion");
 
-            if (isDehydrated)
+            if (IsDehydrated)
             {
                 RemoveRegenEffectsOfType(EDamageType.Dehydration);
             }
-            if (!isDehydrated && DmgeTracker.TotalDehydrationDamage > 0f)
+            if (!IsDehydrated && DmgeTracker.TotalDehydrationDamage > 0f)
             {
                 RestoreHPArossBody(player, DmgeTracker.TotalDehydrationDamage, delay, EDamageType.Dehydration, tickRate);
                 DmgeTracker.TotalDehydrationDamage = 0;
             }
 
-            if (isExhausted)
+            if (IsExhausted)
             {
                 RemoveRegenEffectsOfType(EDamageType.Exhaustion);
             }
-            if (!isExhausted && DmgeTracker.TotalExhaustionDamage > 0f)
+            if (!IsExhausted && DmgeTracker.TotalExhaustionDamage > 0f)
             {
                 RestoreHPArossBody(player, DmgeTracker.TotalExhaustionDamage, delay, EDamageType.Exhaustion, tickRate);
                 DmgeTracker.TotalExhaustionDamage = 0;
@@ -868,7 +928,7 @@ namespace RealismMod
             }
 
             ReliefDuration = Math.Max(ReliefDuration - 1, 0);
-            if (ReliefDuration > 0) 
+            if (ReliefDuration > 0)
             {
                 if (PainReliefStrength >= PainStrength || IsOnPKStims)
                 {
@@ -876,7 +936,7 @@ namespace RealismMod
                 }
                 else if (PainStrength > PainReliefStrength)
                 {
-                    RemoveBaseEFTEffect(player, EBodyPart.Head, "PainKiller");                  
+                    RemoveBaseEFTEffect(player, EBodyPart.Head, "PainKiller");
                 }
 
                 if (_reliefWaitTime >= _painReliefInterval)
@@ -885,7 +945,7 @@ namespace RealismMod
 
                     if (PainReliefStrength > PKOverdoseThreshold)
                     {
-                        if (!_haveNotifiedPKOverdose) 
+                        if (!_haveNotifiedPKOverdose)
                         {
                             if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification("You Have Overdosed", EFT.Communications.ENotificationDurationType.Long);
                             _haveNotifiedPKOverdose = true;
@@ -900,16 +960,16 @@ namespace RealismMod
             }
         }
 
-        private void TickEffects() 
+        private void TickEffects()
         {
             for (int i = _activeHealthEffects.Count - 1; i >= 0; i--)
             {
                 ICustomHealthEffect effect = _activeHealthEffects[i];
-          /*      if (PluginConfig.EnableLogging.Value)
-                {
-                    Utils.Logger.LogWarning("Type = " + effect.GetType().ToString());
-                    Utils.Logger.LogWarning("Delay = " + effect.Delay);
-                }*/
+                /*      if (PluginConfig.EnableLogging.Value)
+                      {
+                          Utils.Logger.LogWarning("Type = " + effect.GetType().ToString());
+                          Utils.Logger.LogWarning("Delay = " + effect.Delay);
+                      }*/
 
                 effect.Delay = Math.Max(effect.Delay - 1, 0);
 
@@ -935,6 +995,7 @@ namespace RealismMod
             PlayerState.ImmuneSkillWeak = player.Skills.ImmunityPainKiller.Value;
             PlayerState.ImmuneSkillStrong = player.Skills.ImmunityMiscEffects.Value;
             PlayerState.StressResistanceFactor = player.Skills.StressPain.Value;
+            PlayerState.VitalityFactorStrong = player.Skills.VitalityBuffBleedChanceRed.Value;
 
             if (_healthControllerTime >= 0.5f && !_reset1)
             {
@@ -964,7 +1025,7 @@ namespace RealismMod
 
             if (_effectsTime >= 1f)
             {
-                if (Plugin.ServerConfig.enable_hazard_zones) HazardZoneHealthEffectTick(player);
+                if (Plugin.ServerConfig.enable_hazard_zones) HazardZoneHealthTick(player);
                 PainReliefCheck(player);
                 TickEffects();
                 _effectsTime = 0f;
@@ -973,8 +1034,15 @@ namespace RealismMod
             if (player.HealthController.IsAlive && player.HealthController.DamageCoeff > 0f && Plugin.ServerConfig.enable_hazard_zones) AudioControllers.HazardZonesAudioController();
             DoResourceDrain(player.ActiveHealthController, Time.deltaTime);
 
+            if (!_addedPassiveRegenEffect && PluginConfig.PassiveRegen.Value)
+            {
+                PassiveHealthRegenEffect resEffect = new PassiveHealthRegenEffect(player, this);
+                AddCustomEffect(resEffect, false);
+                _addedPassiveRegenEffect = true;
+            }
+
             //temporary timer solution :')
-            if (_healthControllerTime >= 3f) 
+            if (_healthControllerTime >= 3f)
             {
                 _healthControllerTime = 0f;
                 _reset1 = false;
@@ -1146,9 +1214,9 @@ namespace RealismMod
             PlayerState.BlockFSWhileConsooming = true;
         }
 
-        private void ConsumeAlcohol(Player player, Item item) 
+        private void ConsumeAlcohol(Player player, Item item)
         {
-            if (MedProperties.MedType(item) == "alcohol") 
+            if (MedProperties.MedType(item) == "alcohol")
             {
                 AddPainkillerEffect(player, item);
             }
@@ -1303,7 +1371,7 @@ namespace RealismMod
             }
         }
 
-        private void AddPainkillerEffect(Player player, Item item) 
+        private void AddPainkillerEffect(Player player, Item item)
         {
             int duration = (int)(MedProperties.PainKillerDuration(item) * (1f + PlayerState.ImmuneSkillWeak));
             int delay = (int)Mathf.Round(MedProperties.Delay(item) * (1f - player.Skills.HealthEnergy.Value));
@@ -1335,21 +1403,21 @@ namespace RealismMod
                 float strength = details.FadeOut;
                 int duration = (int)details.Duration;
                 HazardTracker.TotalToxicity -= strength * duration;
-                HazardTracker.UpdateHazardValues(Plugin.PMCProfileId);
+                HazardTracker.UpdateHazardValues(ProfileData.PMCProfileId);
                 HazardTracker.SaveHazardValues();
 
                 //doesn't work :(
-         /*       if (isMed)
-                {
-                    var med = item as MedsClass;
-                    med.MedKitComponent.HpResource -= 1f;
-                    med.MedKitComponent.Item.RaiseRefreshEvent(false, true);
-                }*/
+                /*       if (isMed)
+                       {
+                           var med = item as MedsClass;
+                           med.MedKitComponent.HpResource -= 1f;
+                           med.MedKitComponent.Item.RaiseRefreshEvent(false, true);
+                       }*/
             }
 
         }
 
-        public void CheckIfReducesHazardInRaid(Item item, Player player, bool isMed) 
+        public void CheckIfReducesHazardInRaid(Item item, Player player, bool isMed)
         {
             MedUiString detoxDetails = null;
             MedUiString deradDetails = null;
@@ -1386,9 +1454,9 @@ namespace RealismMod
             }
         }
 
-        private string GetHealBlockMessage(EHealBlockType blockType) 
+        private string GetHealBlockMessage(EHealBlockType blockType)
         {
-            switch(blockType) 
+            switch (blockType)
             {
                 case EHealBlockType.Trnqt:
                     return "Tourniquets Can Only Stop Bleeds On Limbs";
@@ -1405,6 +1473,7 @@ namespace RealismMod
                 case EHealBlockType.Food:
                     return "Can't Eat/Drink, Mouth Is Blocked By Active Faceshield/NVGs Or Mask";
                 case EHealBlockType.Unknown:
+                    return "No Suitable Bodypart Was Found For Healing";
                 default:
                     return "No Suitable Bodypart Was Found For Healing";
             }
@@ -1439,12 +1508,24 @@ namespace RealismMod
             float medHPRes = meds.MedKitComponent.HpResource;
             string hBleedHealType = MedProperties.HBleedHealType(meds);
 
-            bool canHealFract = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
-            bool canHealLBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.LightBleeding);
-            bool canHealHBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
+            bool canHealLBleed =
+                meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.LightBleeding) &&
+                meds.HealthEffectsComponent.DamageEffects[EDamageEffectType.LightBleeding].Cost + 1 <= meds.MedKitComponent.HpResource;
+            bool canHealHBleed =
+                meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding) &&
+                meds.HealthEffectsComponent.DamageEffects[EDamageEffectType.HeavyBleeding].Cost + 1 <= meds.MedKitComponent.HpResource;
+            bool canHealFract =
+                meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) &&
+                meds.HealthEffectsComponent.DamageEffects[EDamageEffectType.Fracture].Cost + 1 <= meds.MedKitComponent.HpResource;
+
+            /*          bool canHealFract = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Fracture) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
+                      bool canHealLBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.LightBleeding);
+                      bool canHealHBleed = meds.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.HeavyBleeding) && ((medType == "medkit" && medHPRes >= 3) || medType != "medkit");
+          */
 
             if (bodyPart == EBodyPart.Common)
             {
+                int gearBlockedHealCount = 0;
                 EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(player);
                 Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
                 Item ears = equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem;
@@ -1490,7 +1571,6 @@ namespace RealismMod
                 MedProperties.EffectTypes.TryGetValue("LightBleeding", out lightBleedType);
                 MedProperties.EffectTypes.TryGetValue("BrokenBone", out fractureType);
 
-
                 if (medType == "surg")
                 {
                     bool isHead = false;
@@ -1522,7 +1602,7 @@ namespace RealismMod
                     Plugin.RealHealthController.HandleHealthEffects(medType, meds, bodyPart, player, hBleedHealType, canHealHBleed, canHealLBleed, canHealFract);
                     return;
                 }
-                else 
+                else
                 {
                     foreach (EBodyPart part in Plugin.RealHealthController.BodyPartsArr)
                     {
@@ -1546,6 +1626,7 @@ namespace RealismMod
                         {
                             if (PluginConfig.GearBlocksHeal.Value && ((isBody && hasBodyGear) || (isHead && hasHeadGear)))
                             {
+                                gearBlockedHealCount++;
                                 continue;
                             }
 
@@ -1623,7 +1704,8 @@ namespace RealismMod
                         return;
                     }
 
-                    if (PluginConfig.EnableMedNotes.Value) GetHealBlockMessage(blockType);
+                    if (blockType == EHealBlockType.Unknown && gearBlockedHealCount > 0) blockType = EHealBlockType.GearCommon;
+                    if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayWarningNotification(GetHealBlockMessage(blockType), EFT.Communications.ENotificationDurationType.Long);
 
                     shouldAllowHeal = false;
                     return;
@@ -1785,7 +1867,7 @@ namespace RealismMod
             }
         }
 
-        private void ResetHealhPenalties() 
+        private void ResetHealhPenalties()
         {
             PlayerState.AimMoveSpeedInjuryMulti = 1;
             PlayerState.ADSInjuryMulti = 1;
@@ -1836,6 +1918,8 @@ namespace RealismMod
             float maxHydro = player.ActiveHealthController.Hydration.Maximum;
             float percentHydro = currentHydro / maxHydro;
 
+            _percentReources = Mathf.Clamp01((percentEnergy + percentHydro) / 2f);
+
             IsPoisoned = HasBaseEFTEffect(player, "LethalToxin");
 
             float totalMaxHp = 0f;
@@ -1857,7 +1941,7 @@ namespace RealismMod
                 }
 
                 bool isLeftArm = part == EBodyPart.LeftArm;
-                bool isRightArm = part == EBodyPart.LeftArm;
+                bool isRightArm = part == EBodyPart.RightArm;
                 bool isArm = isLeftArm || isRightArm;
                 bool isLeg = part == EBodyPart.LeftLeg || part == EBodyPart.RightLeg;
                 bool isBody = part == EBodyPart.Chest || part == EBodyPart.Stomach;
@@ -1892,14 +1976,8 @@ namespace RealismMod
                 if (isArm)
                 {
                     bool isArmRuined = (currentHp <= 0f || hasFracture) && !HasBaseEFTEffect(player, "PainKiller");
-                    if (isLeftArm)
-                    {
-                        _leftArmRuined = isArmRuined;
-                    }
-                    if (isRightArm)
-                    {
-                        _rightArmRuined = isArmRuined;
-                    }
+                    if (isLeftArm) _leftArmRuined = isArmRuined;
+                    if (isRightArm) _rightArmRuined = isArmRuined;
 
                     float armFractureFactor = isLeftArm && hasFracture ? 0.75f : isRightArm && hasFracture ? 0.85f : 1f;
 
@@ -1939,7 +2017,7 @@ namespace RealismMod
 
             //gas
             float coofFactor = IsCoughingInGas ? 0.65f : 1f;
-            float toxicity = (HazardTracker.TotalToxicity * coofFactor * (1f - PlayerState.ImmuneSkillWeak)) / 225f; 
+            float toxicity = (HazardTracker.TotalToxicity * coofFactor * (1f - PlayerState.ImmuneSkillWeak)) / 225f;
             float toxicityFactor = 1f - toxicity;
             float toxicityInverse = 1f + toxicity;
 
@@ -1967,28 +2045,27 @@ namespace RealismMod
 
             if (PluginConfig.ResourceRateChanges.Value)
             {
-                if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Chest))
+                if (!_addedResourceEffect)
                 {
                     ResourceRateEffect resEffect = new ResourceRateEffect(null, player, 0, this);
                     AddCustomEffect(resEffect, false);
+                    _addedResourceEffect = true;
                 }
-                else
-                {
-                    float weight = PlayerState.TotalModifiedWeight * (1f - player.Skills.EnduranceBuffJumpCostRed.Value);
-                    float weightInverse = PlayerState.TotalModifiedWeight * (1f + player.Skills.EnduranceBuffJumpCostRed.Value);
-                    float playerWeightFactor = weightInverse >= 10f ? weight / 500f : 0f;
-                    float sprintMulti = PlayerState.IsSprinting ? 1.46f : 1f;
-                    float sprintFactor = PlayerState.IsSprinting ? 0.11f : 0f;
-                    float poisonSprintFactor = IsPoisoned ? Mathf.Max(1.5f * (1f - PlayerState.ImmuneSkillWeak), 1.1f) : 1f;
-                    float toxicityResourceFactor = 1f + (HazardTracker.TotalToxicity * (1f - PlayerState.ImmuneSkillWeak)) / 150f;
-                    float radiationResourceFactor = 1f + (HazardTracker.TotalRadiation * (1f - PlayerState.ImmuneSkillWeak)) / 190f;
-                    float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * toxicityResourceFactor * radiationResourceFactor * poisonSprintFactor * (1f - player.Skills.HealthEnergy.Value);
-                    ResourcePerTick = totalResourceRate;
-                }
+
+                float weight = PlayerState.TotalModifiedWeight * (1f - player.Skills.EnduranceBuffJumpCostRed.Value);
+                float weightInverse = PlayerState.TotalModifiedWeight * (1f + player.Skills.EnduranceBuffJumpCostRed.Value);
+                float playerWeightFactor = weightInverse >= 10f ? weight / 500f : 0f;
+                float sprintMulti = PlayerState.IsSprinting ? 1.46f : 1f;
+                float sprintFactor = PlayerState.IsSprinting ? 0.11f : 0f;
+                float poisonSprintFactor = IsPoisoned ? Mathf.Max(1.5f * (1f - PlayerState.ImmuneSkillWeak), 1.1f) : 1f;
+                float toxicityResourceFactor = 1f + (HazardTracker.TotalToxicity * (1f - PlayerState.ImmuneSkillWeak)) / 150f;
+                float radiationResourceFactor = 1f + (HazardTracker.TotalRadiation * (1f - PlayerState.ImmuneSkillWeak)) / 190f;
+                float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * toxicityResourceFactor * radiationResourceFactor * poisonSprintFactor * (1f - player.Skills.HealthEnergy.Value);
+                ResourcePerTick = totalResourceRate;
             }
         }
 
-        private void HazardZoneHealthEffectTick(Player player) 
+        private void HazardZoneHealthTick(Player player)
         {
             if (!GameWorldController.GameStarted) return;
 
@@ -1997,9 +2074,9 @@ namespace RealismMod
                 PlayerHazardBridge = player.gameObject.GetComponent<PlayerHazardBridge>();
             }
 
-            if (!player.HealthController.IsAlive || player.HealthController.DamageCoeff <= 0f) return; 
+            if (!player.HealthController.IsAlive || player.HealthController.DamageCoeff <= 0f) return;
 
-            if ((PlayerHazardBridge.GasZoneCount > 0 || PlayerHazardBridge.RadZoneCount > 0) && GearController.HasGasMask) 
+            if ((PlayerHazardBridge.GasZoneCount > 0 || PlayerHazardBridge.RadZoneCount > 0) && GearController.HasGasMask && !PlayerHazardBridge.IsProtectedFromSafeZone)
             {
                 GearController.UpdateFilterResource(player, PlayerHazardBridge);
                 GearController.CalcGasMaskDuraFactor(player);
@@ -2008,78 +2085,67 @@ namespace RealismMod
             GasZoneTick(player);
             RadiationZoneTick(player);
             HazardEffectsTick(player);
+            CoughController(player);
         }
 
-        private void RadiationZoneTick(Player player) 
+        private void RadiationZoneTick(Player player)
         {
-            if (PlayerHazardBridge.RadZoneCount > 0 && GearController.CurrentRadProtection < 1f)
-            {
-                float increase = (PlayerHazardBridge.TotalRadRate + HazardTracker.RadiationRateMeds) * (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak);
-                increase = Mathf.Max(increase, 0f);
-                HazardTracker.TotalRadiation += increase;
-                HazardTracker.TotalRadiationRate = increase;
-            }
-            else if (HazardTracker.TotalRadiation > 0f || GearController.CurrentRadProtection >= 1f)
-            {
-                float reduction = HazardTracker.RadiationRateMeds * (1f + PlayerState.ImmuneSkillStrong);
-                float threshold = HazardTracker.TotalRadiation <= 20f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
-                HazardTracker.TotalRadiation = Mathf.Clamp(HazardTracker.TotalRadiation + reduction, threshold, 100f);
-                HazardTracker.TotalRadiationRate = HazardTracker.TotalRadiation == threshold ? 0f : reduction;
-            }
-            else
-            {
-                HazardTracker.TotalRadiationRate = 0f;
-            }
+            bool isInRadZone = PlayerHazardBridge.RadZoneCount > 0 && !PlayerHazardBridge.IsProtectedFromSafeZone;
+            bool IsBeingHazarded = isInRadZone && GearController.CurrentRadProtection <= 0f; //CurrentRadProtection accounts for both respirators, and gas masks and whether they have filters or dura is too low
 
-            if (HazardTracker.TotalRadiation < RadiationThreshold)
-            {
-                RemoveCustomEffectOfType(typeof(RadiationEffect), EBodyPart.Chest);
-            }
+            float sprintFactor = PlayerState.IsSprinting ? 2f : 1f;
+            float factors = (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak) * sprintFactor;
+
+            float reductionRate = !IsBeingHazarded ? HazardTracker.RadTreatmentRate : 0f; //not sure if I should allow treatment while in radiation zone or not
+            reductionRate = isInRadZone ? reductionRate * 0.5f : reductionRate;
+            float radRate = PlayerHazardBridge.TotalRadRate * factors;
+            float totalRate = radRate + reductionRate;
+
+            float speed = totalRate > 0f ? 10f : 2f;
+            HazardTracker.TotalRadiationRate = Mathf.MoveTowards(HazardTracker.TotalRadiationRate, totalRate, speed * Time.deltaTime);
+
+            float lowerThreshold = isInRadZone && GearController.CurrentGasProtection < 1f ? HazardTracker.TotalRadiation : !isInRadZone && HazardTracker.TotalRadiation <= RadiationTreatmentThreshold ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
+            HazardTracker.TotalRadiation = Mathf.Clamp(HazardTracker.TotalRadiation + HazardTracker.TotalRadiationRate, lowerThreshold, 100f);
         }
 
-        private void GasZoneTick(Player player) 
+        private void GasZoneTick(Player player)
         {
-            if ((PlayerHazardBridge.GasZoneCount > 0 || ToxicItemCount > 0) && GearController.CurrentGasProtection < 1f)
-            {
-                float toxicItemFactor = ToxicItemCount * 0.05f; 
-                float increase = (PlayerHazardBridge.TotalGasRate + HazardTracker.ToxicityRateMeds + toxicItemFactor) * (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak);
-                increase = Mathf.Max(increase, 0f);
-                HazardTracker.TotalToxicity += increase;
-                HazardTracker.TotalToxicityRate = increase;
-            }
-            else if (HazardTracker.TotalToxicity > 0f || GearController.CurrentGasProtection >= 1f)
-            {
-                float reduction = (_baseToxicityRecoveryRate + HazardTracker.ToxicityRateMeds) * (1f + PlayerState.ImmuneSkillStrong);
-                float threshold = HazardTracker.ToxicityRateMeds < 0f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalToxicity);
-                HazardTracker.TotalToxicity = Mathf.Clamp(HazardTracker.TotalToxicity + reduction, threshold, 100f);
-                HazardTracker.TotalToxicityRate = HazardTracker.TotalToxicity == threshold ? 0f : reduction;
-            }
-            else
-            {
-                HazardTracker.TotalToxicityRate = 0f;
-            }
+            bool isInGasZone = PlayerHazardBridge.GasZoneCount > 0 && !PlayerHazardBridge.IsProtectedFromSafeZone;
+            bool zonePreventsHeal = isInGasZone && GearController.CurrentGasProtection <= 0f;
+            bool isBeingHazarded = zonePreventsHeal || IsCoughingInGas;
+            float sprintFactor = PlayerState.IsSprinting ? 2f : 1f;
+            float toxicItemFactor = ToxicItemCount * 0.05f;
+            float factors = (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak) * sprintFactor;
 
-            if (HazardTracker.TotalToxicity < ToxicityThreshold)
-            {
-                RemoveCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest);
-            }
+            float passiveRegenRate = ToxicItemCount <= 0 && !isInGasZone && HazardTracker.TotalToxicity > 0f ? _baseToxicityRecoveryRate * (2f - _percentReources) : 0f;
+            float reductionRate = !isBeingHazarded ? HazardTracker.DetoxicationRate + passiveRegenRate : 0f;
+            reductionRate = isInGasZone ? reductionRate * 0.5f : reductionRate;
+            float gasRate = (PlayerHazardBridge.TotalGasRate + toxicItemFactor) * factors;
+            float totalRate = gasRate + reductionRate;
+
+            float speed = totalRate > 0f ? 11f : 1.5f;
+            HazardTracker.TotalToxicityRate = Mathf.MoveTowards(HazardTracker.TotalToxicityRate, totalRate, speed * Time.deltaTime);
+
+            float lowerThreshold = isInGasZone && GearController.CurrentGasProtection < 1f ? HazardTracker.TotalToxicity : !isBeingHazarded && HazardTracker.DetoxicationRate < 0f ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalToxicity);
+            HazardTracker.TotalToxicity = Mathf.Clamp(HazardTracker.TotalToxicity + HazardTracker.TotalToxicityRate, lowerThreshold, 100f);
         }
 
-        private void HazardEffectsTick(Player player) 
+        private void HazardEffectsTick(Player player)
         {
-            if (_hazardWaitTime > _hazardInterval) 
+            if (_hazardWaitTime > _hazardInterval)
             {
-                if (HazardTracker.TotalToxicity >= 10f)
+                if (HazardTracker.TotalToxicity >= 10f || IsCoughingInGas)
                 {
-                    if (HazardTracker.TotalToxicity >= ToxicityThreshold && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest))
+                    if ((HazardTracker.TotalToxicity >= ToxicityThreshold || IsCoughingInGas) && !HasCustomEffectOfType(typeof(ToxicityEffect), EBodyPart.Chest))
                     {
                         ToxicityEffect toxicity = new ToxicityEffect(null, player, 0, this);
                         AddCustomEffect(toxicity, false);
                     }
 
                     float effectStrength = HazardTracker.TotalToxicity / 100f;
-                    AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, _hazardInterval, 5f, Mathf.Min(effectStrength * 2f, 1f));
-                    if (HazardTracker.TotalToxicity >= ToxicityThreshold) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, effectStrength * 0.7f);
+                    float coofFactor = IsCoughingInGas ? 1f : 0f;
+                    //AddBasesEFTEffect(player, "TunnelVision", EBodyPart.Head, 1f, _hazardInterval, 5f, Mathf.Min(effectStrength * 2f, 1f)); maybe I'm relying too much on tunnel vision effect...
+                    if (HazardTracker.TotalToxicity >= ToxicityThreshold || IsCoughingInGas) AddToExistingBaseEFTEffect(player, "Contusion", EBodyPart.Head, 1f, _hazardInterval, 5f, (effectStrength * 0.7f) + coofFactor);
                 }
 
                 if (HazardTracker.TotalRadiation >= 10f)
@@ -2105,7 +2171,7 @@ namespace RealismMod
             {
                 foreach (var item in grid.Items)
                 {
-                    if (ToxicItems.Contains(item.TemplateId)) 
+                    if (ToxicItems.Contains(item.TemplateId))
                     {
                         ToxicItemCount++;
                     }
@@ -2113,6 +2179,38 @@ namespace RealismMod
             }
         }
 
+        private bool RollRadsCoughChance() 
+        {
+            int rnd = UnityEngine.Random.Range(0, 10);
+            return rnd < HazardTracker.TotalRadiation / 10;
+        }
+        
+        private void CoughController(Player player)
+        {
+            bool isBeingIrradiated = (HazardTracker.TotalRadiation >= RadiationThreshold && !Plugin.RealHealthController.HasBaseEFTEffect(player, "PainKiller"));
+            bool isBeingGassed = HazardTracker.TotalToxicity >= 30f;
+            bool hasHazardification = isBeingGassed || isBeingIrradiated;
+            bool isGettingHazarded = HazardTracker.TotalToxicityRate >= 0.067f * (1f + PlayerState.ImmuneSkillStrong);
+            if (player.HealthController.IsAlive && (!GearController.HasGasMask || !GearController.HasGasFilter) && (hasHazardification || isGettingHazarded))
+            {
+                if (isBeingIrradiated && !isBeingGassed) 
+                {
+                    float timerFactor = (1f + PlayerState.ImmuneSkillStrong) * (1f - (HazardTracker.TotalRadiation / 200f));
+                    int timer =  Mathf.RoundToInt(300f * timerFactor);
+                    if (Time.time % timer < 1f) DoCoughingAudio = true;
+               
+                }
+                else DoCoughingAudio = true;
+
+                if (isGettingHazarded) IsCoughingInGas = true;
+                else IsCoughingInGas = false;
+            }
+            else 
+            {
+                IsCoughingInGas = false;
+                DoCoughingAudio = false;
+            } 
+        }
     }
 }
  

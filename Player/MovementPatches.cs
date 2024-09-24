@@ -60,7 +60,7 @@ namespace RealismMod
             {
                 float slopeFactor = 1f;
 
-                if (Utils.IsReady && PluginConfig.EnableSlopeSpeed.Value)
+                if (Utils.PlayerIsReady && PluginConfig.EnableSlopeSpeed.Value)
                 {
                     slopeFactor = MovementSpeedController.GetSlope(player);
                 }

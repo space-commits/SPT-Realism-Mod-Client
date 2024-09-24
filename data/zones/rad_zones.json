@@ -1,0 +1,1197 @@
+{
+    "FactoryRadZones": [
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "FactoryGate0",
+                    "strength": 20.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -60.0,
+                        "y": 1.0,
+                        "z": 56.5
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 13.0,
+                        "y": 4.0,
+                        "z": 10.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "FactoryBarrels",
+                    "strength": 10.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 56.5,
+                        "y": -1,
+                        "z": -27.39656
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 9.0,
+                        "y": 11.0,
+                        "z": 5.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "FactoryCellars",
+                    "strength": 27.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 71.0,
+                        "y": -4.0,
+                        "z": -28.8
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 20.0,
+                        "y": 7.0,
+                        "z": 2.5
+                    }
+                }
+            ]
+        }
+    ],
+    "CustomsRadZones": [
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "CustomsRadTrain1",
+                    "strength": 80.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 434.0,
+                        "y": 3.6,
+                        "z": 150.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 40.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 9.0,
+                        "y": 10.0,
+                        "z": 35.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "CustomsRadTrain2",
+                    "strength": 65.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 465.0,
+                        "y": 3.6,
+                        "z": 200.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 10.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 15.0,
+                        "y": 5.0,
+                        "z": 10.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "CustomsRadTrain3",
+                    "strength": 80.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 484.0,
+                        "y": 3.6,
+                        "z": 219.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": -33.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 25.0,
+                        "y": 10.0,
+                        "z": 10.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "CustomsTrainExtract",
+                    "strength": 30.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 479.0,
+                        "y": 1.4,
+                        "z": 229.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 20.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 25.0,
+                        "y": 10.0,
+                        "z": 8.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "CustomsBigRed",
+                    "strength": 500.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -213.0,
+                        "y": 1.0,
+                        "z": -122.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 3.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 24.0,
+                        "y": 5.0,
+                        "z": 59.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "CustomsGarrage",
+                    "strength": 100.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": 108.0,
+                        "y": 0.0,
+                        "z": -92.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": -12.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 19.0,
+                        "y": 10.0,
+                        "z": 11.5
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "CustomsZB013",
+                    "strength": 60.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": 199.0,
+                        "y": -2.8,
+                        "z": -155.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": -10.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 17.5,
+                        "y": 5.0,
+                        "z": 35.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "CustomsOldGasExit",
+                    "strength": 40.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": 311.0,
+                        "y": -2.0,
+                        "z": -180.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": -12.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 10.0,
+                        "y": 5.0,
+                        "z": 15.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "CustomsZB",
+                    "strength": 40.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": 465.0,
+                        "y": -2.0,
+                        "z": -112.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 15.0,
+                        "y": 2.0,
+                        "z": 5.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "CustomsMarkedRoom",
+                    "strength": 12.5,
+                    "blockNav": false,
+                    "position": {
+                        "x": 183.5,
+                        "y": 7.0,
+                        "z": 182.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 7.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 7.0,
+                        "y": 3.0,
+                        "z": 6.5
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "CustomsBarrels1",
+                    "strength": 40.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": 427.5,
+                        "y": -1.0,
+                        "z": -85.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 15.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 5.0,
+                        "y": 2.0,
+                        "z": 4.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "CustomsCratesBigRed",
+                    "strength": 40.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -183.0,
+                        "y": 1.0,
+                        "z": -111.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 5.5,
+                        "y": 5.0,
+                        "z": 7.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "CustomsContainerBigRed",
+                    "strength": 40.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -193.5,
+                        "y": 1.0,
+                        "z": -125.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 6.0,
+                        "y": 5.0,
+                        "z": 10.5
+                    }
+                }
+            ]
+        }
+    ],
+    "GZRadZones": [
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "GZTerragroupRubble",
+                    "strength": 140.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -58.0,
+                        "y": 25.0,
+                        "z": 22.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 25.0,
+                        "y": 10.0,
+                        "z": 30.0
+                    }
+                }
+            ]
+        }
+    ],
+    "ShorelineRadZones": [
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "ShorelineTruck1",
+                    "strength": 50.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -770.0,
+                        "y": -59.3,
+                        "z": 461.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 15.0,
+                        "y": 1.5,
+                        "z": 7.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "ShorelineChurch",
+                    "strength": 70.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -256.0,
+                        "y": -54.0,
+                        "z": -105.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 17.0,
+                        "y": 4.0,
+                        "z": 12.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "ShorelineMarked",
+                    "strength": 40.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -337.5,
+                        "y": 3.0,
+                        "z": -88.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 6.4,
+                        "y": 2.0,
+                        "z": 8.0
+                    }
+                }
+            ]
+        }
+    ],
+    "StreetsRadZones": [
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "StreetsMarkedFactory",
+                    "strength": 35.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -131.0,
+                        "y": 8.8,
+                        "z": 269.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 6.0,
+                        "y": 3.0,
+                        "z": 13.5
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "StreetsMarked1",
+                    "strength": 75.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": 182.0,
+                        "y": 0.0,
+                        "z": 226.5
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 18.0,
+                        "y": 3.0,
+                        "z": 10.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "StreetsMarked2",
+                    "strength": 50.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": 203.0,
+                        "y": 0.0,
+                        "z": 228.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 15.0,
+                        "y": 2.0,
+                        "z": 8.5
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "StreetsXray",
+                    "strength": 75.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": 185.5,
+                        "y": 2.0,
+                        "z": 102.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 8.0,
+                        "y": 2.5,
+                        "z": 5.5
+                    }
+                }
+            ]
+        }
+    ],
+    "LabsRadZones": [
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "LabsGreenGoo",
+                    "strength": 4.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -173.0,
+                        "y": 2.0,
+                        "z": -371.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 12.0,
+                        "y": 5.0,
+                        "z": 14.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "LabsAreaAroundGoo",
+                    "strength": 60.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -174.0,
+                        "y": 2.0,
+                        "z": -367.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 43.0,
+                        "y": 4.0,
+                        "z": 37.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "LabsGooBarrels",
+                    "strength": 10.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -174.0,
+                        "y": 2.0,
+                        "z": -355.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 5.0,
+                        "y": 5.0,
+                        "z": 5.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "LabsGreen",
+                    "strength": 80.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -131.0,
+                        "y": 6.0,
+                        "z": -366.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 17.5,
+                        "y": 5.0,
+                        "z": 25.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "LabsBlack",
+                    "strength": 50.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -131.0,
+                        "y": 1.0,
+                        "z": -357.5
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 19.0,
+                        "y": 4.5,
+                        "z": 12.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "LabsBlue1",
+                    "strength": 38.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -133.0,
+                        "y": 1.5,
+                        "z": -400.5
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 14.0,
+                        "y": 3.0,
+                        "z": 11.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "LabsBlue2",
+                    "strength": 28.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -124.5,
+                        "y": 1.5,
+                        "z": -397.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 6.5,
+                        "y": 3.0,
+                        "z": 7.0
+                    }
+                }
+            ]
+        }
+    ],
+    "InterchangeRadZones": [
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "InterchangeWaterGoshan",
+                    "strength": 50.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -58.0,
+                        "y": 19.3,
+                        "z": -55.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 20.0,
+                        "y": 4.0,
+                        "z": 20.0
+                    }
+                }
+            ]
+        }
+    ],
+    "LighthouseRadZones": [
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "LighthouseLighthouseBasement",
+                    "strength": 25.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": 440.0,
+                        "y": 20.5,
+                        "z": 460.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 15.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 13.0,
+                        "y": 6.0,
+                        "z": 10.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "LighthouseLighthouse1",
+                    "strength": 150.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": 440.0,
+                        "y": 24.0,
+                        "z": 460.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 15.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 8.0,
+                        "y": 2.0,
+                        "z": 8.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "LighthouseCultRoom1",
+                    "strength": 50.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": 444.0,
+                        "y": 29.0,
+                        "z": 463.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 15.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 6.0,
+                        "y": 2.0,
+                        "z": 7.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "LighthouseBeachCargo",
+                    "strength": 25.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 136.9,
+                        "y": 1.0,
+                        "z": 47.8
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 7.0,
+                        "y": 3.0,
+                        "z": 7.0
+                    }
+                }
+            ]
+        }
+    ],
+    "WoodsRadZones": [
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "WooodsMarked1",
+                    "strength": 50.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -89.0,
+                        "y": 12.0,
+                        "z": -717.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 5.0,
+                        "y": 3.0,
+                        "z": 5.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "WooodsMarkedShed",
+                    "strength": 50.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -80.0,
+                        "y": 12.0,
+                        "z": -726.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 25.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 5.0,
+                        "y": 5.0,
+                        "z": 5.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "WooodsMarked2",
+                    "strength": 50.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": 195.6,
+                        "y": 0.2,
+                        "z": -7.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 25.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 7.0,
+                        "y": 3.0,
+                        "z": 7.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "WoodsMountainBunker1",
+                    "strength": 40.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -164.1,
+                        "y": 46.0,
+                        "z": -235.5
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": -20.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 15.0,
+                        "y": 2.5,
+                        "z": 5.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "WoodsMountainBunkerDoor",
+                    "strength": 50.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -156.0,
+                        "y": 51.0,
+                        "z": -273.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": -20.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 10.0,
+                        "y": 2.5,
+                        "z": 5.0
+                    }
+                }
+            ]
+        }
+    ],
+    "ReserveRadZones": [
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "ReserveD2Extract",
+                    "strength": 100.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -109.0,
+                        "y": -18.4,
+                        "z": 161.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 53.0,
+                        "y": 5.0,
+                        "z": 27.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "ReserveWater",
+                    "strength": 75.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -99.0,
+                        "y": -15.0,
+                        "z": 5.5
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 15.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 29.5,
+                        "y": 2.0,
+                        "z": 14.5
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "ReserveHermetic",
+                    "strength": 100.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": 62.0,
+                        "y": -7.0,
+                        "z": -195.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 15.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 18.0,
+                        "y": 2.0,
+                        "z": 16.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "ReserveMarkedTrain",
+                    "strength": 50.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": 191.5,
+                        "y": -7.0,
+                        "z": -226.3
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 15.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 4.0,
+                        "y": 3.0,
+                        "z": 4.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "ReserveMarkedBunker",
+                    "strength": 50.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -123.0,
+                        "y": -14.0,
+                        "z": 28.5
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 15.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 6.0,
+                        "y": 4.0,
+                        "z": 6.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "ReserveMarkedPawn",
+                    "strength": 50.0,
+                    "blockNav": false,
+                    "position": {
+                        "x": -154.0,
+                        "y": -9.0,
+                        "z": 74.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 15.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 7.0,
+                        "y": 4.0,
+                        "z": 7.5
+                    }
+                }
+            ]
+        }
+    ]
+}

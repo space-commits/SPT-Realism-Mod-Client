@@ -1,5 +1,7 @@
 ﻿using EFT;
+using System;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2429;
 using ExistanceClass = GClass2470;
@@ -13,6 +15,7 @@ namespace RealismMod
         Surgery,
         Tourniquet,
         HealthRegen,
+        PassiveHealthRegen,
         HealthDrain,
         Adrenaline,
         ResourceRate,
@@ -164,47 +167,70 @@ namespace RealismMod
         }
     }
 
-    public class HealthDrainEffect : ICustomHealthEffect
+    public class PassiveHealthRegenEffect : ICustomHealthEffect
     {
         public RealismHealthController RealHealthController { get; set; }
         public EBodyPart BodyPart { get; set; }
         public int? Duration { get; set; }
         public int TimeExisted { get; set; }
-        public float HpPerTick { get; }
         public Player _Player { get; }
-        public float HpDrained { get; set; }
-        public float HpDrainLimit { get; }
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
 
-        public HealthDrainEffect(float hpTick, Player player, int delay, float limit, RealismHealthController realHealthController)
+        public PassiveHealthRegenEffect(Player player, RealismHealthController realHealthController)
         {
             TimeExisted = 0;
-            HpDrained = 0;
-            HpDrainLimit = limit;
-            HpPerTick = hpTick;
-            _Player = player;
-            Delay = delay;
-            EffectType = EHealthEffectType.HealthDrain;
+            Duration = null;
             BodyPart = EBodyPart.Common;
+            _Player = player;
+            EffectType = EHealthEffectType.PassiveHealthRegen;
             RealHealthController = realHealthController;
+        }
+
+        public float GetRegenRate(float hydroPerc, float energyPerc) 
+        {
+            return 0.3f * hydroPerc * energyPerc * (1f  + _Player.Skills.VitalityBuffBleedChanceRed.Value);
+        }
+
+        //not sure if it should be on a per limb basis, or if total % hp should determine if regen is allowed, or both
+        public float GetHpThreshold() 
+        {
+           return 0.85f * (1f - _Player.Skills.VitalityBuffBleedChanceRed.Value); 
+        }
+
+        public float GetResourceThreshold()
+        {
+            return 0.9f * (1f - _Player.Skills.HealthBreakChanceRed.Value);
         }
 
         public void Tick()
         {
             TimeExisted++;
-            if (HpDrained < HpDrainLimit)
-            {
-                if (Delay <= 0 && TimeExisted % 3 == 0)
-                {
-                    _Player.ActiveHealthController.AddEffect<HealthDrain>(0f, 3f, 1f, HpPerTick, null);
-                    HpDrained += HpPerTick;
-                }
-            }
 
-            if (HpDrained >= HpDrainLimit)
+            if (TimeExisted % 3 == 0 && !RealHealthController.CancelPassiveRegen && !RealHealthController.BlockPassiveRegen) 
             {
-                Duration = 0;
+                foreach (var bodyPart in RealHealthController.BodyPartsArr)
+                {
+                    float currentHp = _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Current;
+                    float maxHp = _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;
+                    float hpPerc = currentHp / maxHp;
+
+                    float currentEnergy = _Player.ActiveHealthController.Energy.Current;
+                    float maxEnergy = _Player.ActiveHealthController.Energy.Maximum;
+                    float percentEnergy = currentEnergy / maxEnergy;
+
+                    float currentHydro = _Player.ActiveHealthController.Hydration.Current;
+                    float maxHydro = _Player.ActiveHealthController.Hydration.Maximum;
+                    float percentHydro = currentHydro / maxHydro;
+
+                    bool hasBlockingEffect = RealHealthController.HasCustomEffectOfType(typeof(TourniquetEffect), bodyPart);
+
+                    if (hasBlockingEffect || (currentHp >= maxHp) || hpPerc <= GetHpThreshold() || percentEnergy <= GetResourceThreshold() || percentHydro <= GetResourceThreshold()) continue;
+
+                    float hpPerTick = GetRegenRate(percentHydro, percentEnergy);
+                    hpPerTick *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
+                    _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 1f, hpPerTick, null);
+                }
             }
         }
     }
@@ -259,6 +285,11 @@ namespace RealismMod
                 deductedRecordedDamage = true;
             }
 
+            if (HpRegened >= HpRegenLimit || (currentHp >= maxHp) || currentHp <= 0f)
+            {
+                Duration = 0;
+            }
+
             if (HpRegened < HpRegenLimit)
             {
                 if (Delay <= 0 && TimeExisted % 3 == 0)
@@ -266,11 +297,6 @@ namespace RealismMod
                     _Player.ActiveHealthController.AddEffect<HealthChange>(BodyPart, 0f, 3f, 1f, HpPerTick, null);
                     HpRegened += HpPerTick;
                 }
-            }
-
-            if (HpRegened >= HpRegenLimit || (currentHp >= maxHp) || currentHp <= 0f)
-            {
-                Duration = 0;
             }
         }
     }
@@ -470,27 +496,43 @@ namespace RealismMod
 
         private float GetDrainRate()
         {
+            float treatmentFactor = 1f - (Mathf.Pow(Mathf.Abs(HazardTracker.DetoxicationRate), 0.3f));
+            float drainRate = 0f;
+
+            float coughingThreshold = 0.12f * (1f + PlayerState.ImmuneSkillStrong);
+            if (Plugin.RealHealthController.IsCoughingInGas && HazardTracker.TotalToxicityRate > coughingThreshold) drainRate += -8f + (-HazardTracker.TotalToxicityRate);
             switch (HazardTracker.TotalToxicity)
             {
-                case < 40f:
-                    return 0f;
+                case < 30f:
+                    drainRate += 0f;
+                    break;
+                case <= 40f:
+                    drainRate += -0.75f;
+                    break;
                 case <= 50f:
-                    return -0.05f;
+                    drainRate += -1f;
+                    break;
                 case <= 60f:
-                    return -0.2f;
+                    drainRate += -1.5f;
+                    break;
                 case <= 70f:
-                    return -0.35f;
+                    drainRate += -2.5f;
+                    break;
                 case <= 80f:
-                    return -0.5f;
+                    drainRate += -3f;
+                    break;
                 case <= 90f:
-                    return -0.7f;
+                    drainRate += -4f;
+                    break;
                 case < 100f:
-                    return -0.9f;
+                    drainRate += -6f;
+                    break;
                 case >= 100f:
-                    return -1.1f;
-                default:
-                    return 0f;
+                    drainRate += -8f;
+                    break;
             }
+
+            return drainRate * treatmentFactor;
         }
 
         public void Tick()
@@ -498,14 +540,15 @@ namespace RealismMod
             if (Delay <= 0)
             {
                 TimeExisted++;
-                if (TimeExisted % 3 == 0 && HazardTracker.TotalToxicity >= 50f)
+                if (TimeExisted % 3 == 0)
                 {
+                    float drainRate = GetDrainRate();
+                    if (drainRate >= 0) return;
                     for (int i = 0; i < RealHealthController.BodyPartsArr.Length; i++)
                     {
                         EBodyPart bodyPart = RealHealthController.BodyPartsArr[i];
-                        float baseDrainRate = GetDrainRate();
-                        baseDrainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
-                        _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 2f, baseDrainRate, null);
+                        drainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
+                        _Player.ActiveHealthController.AddEffect<ToxicityDamage>(bodyPart, 0f, 3f, 2f, drainRate, null);
                     }
 
                 }
@@ -522,6 +565,7 @@ namespace RealismMod
         public Player _Player { get; }
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
+        private int _bleedTimer = 0;
 
         public RadiationEffect(int? dur, Player player, int delay, RealismHealthController realHealthController)
         {
@@ -534,21 +578,55 @@ namespace RealismMod
             BodyPart = EBodyPart.Chest;
         }
 
+        private void DoBleed() 
+        {
+            float rnd = UnityEngine.Random.Range(1, 101);
+            if (HazardTracker.TotalRadiation < 30f || rnd > HazardTracker.TotalRadiation) return; 
+
+            EBodyPart bodyPart = RealHealthController.BodyPartsArr[UnityEngine.Random.Range(0, RealHealthController.BodyPartsArr.Length)];
+            RealHealthController.AddBaseEFTEffectIfNoneExisting(_Player, "LightBleeding", bodyPart, null, null, null, null);
+        }
+
         private float GetDrainRate()
         {
+            float treatmentFactor = 1f - (Mathf.Pow(Mathf.Abs(HazardTracker.RadTreatmentRate), 0.3f));
+            float drainRate = 0f;
+
             switch (HazardTracker.TotalRadiation)
             {
-                case < 80f:
-                    return 0f;
+                case < 30f:
+                    drainRate = 0f;
+                    break;
+                case <= 40f:
+                    drainRate = -0.1f;
+                    break;
+                case <= 50f:
+                    drainRate = -0.3f;
+                    break;
+                case <= 60f:
+                    drainRate = -0.7f;
+                    break;
+                case < 70f:
+                    drainRate = -1f;
+                    break;
+                case <= 80f:
+                    drainRate = -1.5f;
+                    break;
                 case <= 90f:
-                    return -0.05f;
+                    drainRate = -2.5f;
+                    break;
                 case < 100f:
-                    return -0.1f;
+                    drainRate = -3f;
+                    break;
                 case >= 100f:
-                    return -0.25f;
+                    drainRate = -4f;
+                    break;
                 default:
-                    return 0f;
+                    drainRate = 0f;
+                    break;
             }
+    
+            return drainRate * treatmentFactor;
         }
 
         public void Tick()
@@ -556,14 +634,22 @@ namespace RealismMod
             if (Delay <= 0)
             {
                 TimeExisted++;
-                if (TimeExisted % 3 == 0 && HazardTracker.TotalRadiation >= 80f)
+                _bleedTimer++;
+                if (TimeExisted % 3 == 0)
                 {
+                    float drainRate = GetDrainRate();
+                    if (drainRate >= 0) return;
                     for (int i = 0; i < RealHealthController.BodyPartsArr.Length; i++)
                     {
                         EBodyPart bodyPart = RealHealthController.BodyPartsArr[i];
-                        float baseDrainRate = GetDrainRate();
-                        baseDrainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
-                        _Player.ActiveHealthController.AddEffect<HealthChange>(bodyPart, 0f, 3f, 2f, baseDrainRate, null);
+                        drainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
+                        _Player.ActiveHealthController.AddEffect<RadiationDamage>(bodyPart, 0f, 3f, 2f, drainRate, null);
+                    }
+                    float timeThreshold = Mathf.Max(600f * (1f - HazardTracker.TotalRadiation / 100f), 30f);
+                    if (_bleedTimer > timeThreshold) 
+                    {
+                        DoBleed();
+                        _bleedTimer = 0;    
                     }
                 }
             }
@@ -579,7 +665,7 @@ namespace RealismMod
         public Player _Player { get; }
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
-        private float _deradRate = 0f;
+        public float DeradRate { get; private set; } = 0f;
         private bool _addedRate = false;
 
         public RadationTreatmentEffect(Player player, int? dur, int delay, RealismHealthController realismHealthController, float rate)
@@ -589,7 +675,7 @@ namespace RealismMod
             _Player = player;
             Delay = delay;
             RealHealthController = realismHealthController;
-            _deradRate = rate;
+            DeradRate = rate;
             EffectType = EHealthEffectType.RadiationTreatment;
             BodyPart = EBodyPart.Chest;
         }
@@ -600,14 +686,14 @@ namespace RealismMod
             {
                 if (!_addedRate)
                 {
-                    HazardTracker.RadiationRateMeds += _deradRate;
+                    HazardTracker.RadTreatmentRate += DeradRate;
                     _addedRate = true;
                 }
 
                 Duration--;
                 if (Duration <= 0)
                 {
-                    HazardTracker.RadiationRateMeds -= _deradRate;
+                    HazardTracker.RadTreatmentRate -= DeradRate;
                     Duration = 0;
                 }
             }
@@ -623,7 +709,7 @@ namespace RealismMod
         public Player _Player { get; }
         public int Delay { get; set; }
         public EHealthEffectType EffectType { get; }
-        private float _detoxRate = 0f;
+        public float DetoxRate { get; private set; } = 0f;
         private bool _addedRate = false;    
 
         public DetoxificationEffect(Player player, int? dur, int delay, RealismHealthController realismHealthController, float rate)
@@ -633,7 +719,7 @@ namespace RealismMod
             _Player = player;
             Delay = delay;
             RealHealthController = realismHealthController;
-            _detoxRate = rate;
+            DetoxRate = rate;
             EffectType = EHealthEffectType.Detoxification;
             BodyPart = EBodyPart.Chest;
         }
@@ -644,14 +730,14 @@ namespace RealismMod
             {
                 if (!_addedRate) 
                 {
-                    HazardTracker.ToxicityRateMeds += _detoxRate;
+                    HazardTracker.DetoxicationRate += DetoxRate;
                     _addedRate = true;
                 }
          
                 Duration--;
                 if (Duration <= 0) 
                 {
-                    HazardTracker.ToxicityRateMeds -= _detoxRate;
+                    HazardTracker.DetoxicationRate -= DetoxRate;
                     Duration = 0;
                 }
             }
@@ -704,12 +790,11 @@ namespace RealismMod
         private float _hpPerTick;
         private float _time;
         private EBodyPart _bodyPart;
-        private EBodyPart[] _bodyParts = { EBodyPart.Chest, EBodyPart.Stomach };
-
+ 
         public override void Started()
         {
             this._hpPerTick = base.Strength;
-            this.SetHealthRatesPerSecond(this._hpPerTick / _bodyParts.Count(), 0f, 0f, 0f);
+            this.SetHealthRatesPerSecond(this._hpPerTick, 0f, 0f, 0f);
             this._bodyPart = base.BodyPart;
         }
 
@@ -721,12 +806,9 @@ namespace RealismMod
                 return;
             }
             this._time -= 3f;
-            foreach (EBodyPart part in _bodyParts)
+            if (this.HealthController.GetBodyPartHealth(_bodyPart).Current > 0f)
             {
-                if (this.HealthController.GetBodyPartHealth(part).Current > 0f) 
-                {
-                    this.HealthController.ApplyDamage(part, this._hpPerTick / _bodyParts.Count(), ExistanceClass.PoisonDamage);
-                }
+                this.HealthController.ApplyDamage(_bodyPart, this._hpPerTick, ExistanceClass.Existence);
             }
         }
     }
@@ -753,7 +835,78 @@ namespace RealismMod
                 return;
             }
             this._time -= 3f;
-            base.HealthController.ChangeHealth(_bodyPart, this._hpPerTick, ExistanceClass.Existence);
+            if (this._hpPerTick < 0)
+            {
+                base.HealthController.ApplyDamage(_bodyPart, -this._hpPerTick, ExistanceClass.Existence);
+                Plugin.RealHealthController.CancelPassiveRegen = true;
+                Plugin.RealHealthController.CurrentPassiveRegenBlockDuration = Plugin.RealHealthController.BlockPassiveRegenBaseDuration;
+            }
+            else base.HealthController.ChangeHealth(_bodyPart, this._hpPerTick, ExistanceClass.Existence);
+
+        }
+    }
+
+    public class RadiationDamage : EffectClass, IEffect, InterfaceOne, InterfaceTwo
+    {
+        private float _hpPerTick;
+        private float _time;
+        private EBodyPart _bodyPart;
+
+        public override void Started()
+        {
+            this._hpPerTick = base.Strength;
+            this.SetHealthRatesPerSecond(this._hpPerTick, 0f, 0f, 0f);
+            this._bodyPart = base.BodyPart;
+        }
+
+        public override void RegularUpdate(float deltaTime)
+        {
+            this._time += deltaTime;
+            if (this._time < 3f)
+            {
+                return;
+            }
+            this._time -= 3f;
+            if (this._hpPerTick < 0)
+            {
+                base.HealthController.ApplyDamage(_bodyPart, -this._hpPerTick, ExistanceClass.RadiationDamage);
+                Plugin.RealHealthController.CancelPassiveRegen = true;
+                Plugin.RealHealthController.CurrentPassiveRegenBlockDuration = Plugin.RealHealthController.BlockPassiveRegenBaseDuration;
+            }
+            else base.HealthController.ChangeHealth(_bodyPart, this._hpPerTick, ExistanceClass.RadiationDamage);
+
+        }
+    }
+
+    public class ToxicityDamage : EffectClass, IEffect, InterfaceOne, InterfaceTwo
+    {
+        private float _hpPerTick;
+        private float _time;
+        private EBodyPart _bodyPart;
+
+        public override void Started()
+        {
+            this._hpPerTick = base.Strength;
+            this.SetHealthRatesPerSecond(this._hpPerTick, 0f, 0f, 0f);
+            this._bodyPart = base.BodyPart;
+        }
+
+        public override void RegularUpdate(float deltaTime)
+        {
+            this._time += deltaTime;
+            if (this._time < 3f)
+            {
+                return;
+            }
+            this._time -= 3f;
+            if (this._hpPerTick < 0)
+            {
+                base.HealthController.ApplyDamage(_bodyPart, -this._hpPerTick, ExistanceClass.LethalPoisonDamage);
+                Plugin.RealHealthController.CancelPassiveRegen = true;
+                Plugin.RealHealthController.CurrentPassiveRegenBlockDuration = Plugin.RealHealthController.BlockPassiveRegenBaseDuration;
+            }
+            else base.HealthController.ChangeHealth(_bodyPart, this._hpPerTick, ExistanceClass.LethalPoisonDamage);
+
         }
     }
 

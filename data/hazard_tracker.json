@@ -1,0 +1,50 @@
+{
+  "668b14e20004428c8246c320": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0,
+    "IsPreExplosion": false,
+    "HasExploded": false
+  },
+  "668b14e20001099a35f2efa8": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0,
+    "IsPreExplosion": false,
+    "HasExploded": false
+  },
+  "66d42b150002ceb198743016": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0,
+    "IsPreExplosion": false,
+    "HasExploded": false
+  },
+  "66d42c12000203b6effa5262": {
+    "RecordedTotalToxicity": 10.0,
+    "RecordedTotalRadiation": 1.83365083,
+    "IsPreExplosion": false,
+    "HasExploded": false
+  },
+  "66db60540001deaecad86cd0": {
+    "RecordedTotalToxicity": 10.0,
+    "RecordedTotalRadiation": 5.593444,
+    "IsPreExplosion": false,
+    "HasExploded": false
+  },
+  "66ddb3610000c3f678a8d9b0": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 19.3489723,
+    "IsPreExplosion": false,
+    "HasExploded": false
+  },
+  "66a03429000087e88cd383f6": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0,
+    "IsPreExplosion": false,
+    "HasExploded": false
+  },
+  "66ddd0230002dda7aabe3fb6": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 59.6709557,
+    "IsPreExplosion": false,
+    "HasExploded": false
+  }
+}

@@ -1,0 +1,4972 @@
+{
+    "FactoryAssetZones": [],
+    "CustomsAssetZones": [
+        {
+            "spawnChance": 1,
+            "zones": [
+                {
+                    "name": "CustomsFactoryCheckpoint",
+                    "strength": 15.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 359,
+                        "y": 2,
+                        "z": -12.5
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 10.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 12.0,
+                        "y": 4.0,
+                        "z": 11.0
+                    }
+                }
+            ],
+            "assets": [
+                {
+                    "assetName": "BlueContainer",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 340.0667,
+                        "y": 1.082048,
+                        "z": -7.198411
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 85.3362,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 358.5,
+                        "y": 1.1,
+                        "z": -15.5
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 355.1,
+                        "y": 1.7,
+                        "z": -13.9
+                    },
+                    "rotation": {
+                        "x": -90.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 360.5,
+                        "y": 1.2,
+                        "z": -14.5
+                    },
+                    "rotation": {
+                        "x": -90.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 359.9,
+                        "y": 1.2,
+                        "z": -14.6
+                    },
+                    "rotation": {
+                        "x": -90.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 360.3,
+                        "y": 1.2,
+                        "z": -13.9
+                    },
+                    "rotation": {
+                        "x": -90.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 360.5,
+                        "y": 1.2,
+                        "z": -9.2
+                    },
+                    "rotation": {
+                        "x": -90.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 359.2,
+                        "y": 1.6,
+                        "z": -9.6
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 50.0,
+                        "z": 0.0
+                    }
+                }
+            ],
+            "loot": [
+                {
+                    "type": "highTier",
+                    "odds": 35,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 358.4,
+                        "y": 2.5,
+                        "z": -10.2
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "type": "lowTier",
+                    "odds": 80,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 362.1,
+                        "y": 2.65,
+                        "z": -9.7
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "type": "midTier",
+                    "odds": 50,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 360.3,
+                        "y": 2.7,
+                        "z": -13.9
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0,
+                        "z": 0.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1,
+            "zones": [
+                {
+                    "name": "CustomsOldGasDynamic1",
+                    "strength": 20.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 298.3,
+                        "y": 3.2,
+                        "z": -183.4
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 75.4,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 39.89367,
+                        "y": 3.7,
+                        "z": 17.9592
+                    }
+                },
+                {
+                    "name": "CustomsOldGasDynamic2",
+                    "strength": 20.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 290.3,
+                        "y": 2.9,
+                        "z": -192.0
+                    },
+                    "rotation": {
+                        "x": 2.2,
+                        "y": 181.3,
+                        "z": 1.5
+                    },
+                    "size": {
+                        "x": 11.96531,
+                        "y": 5.860253,
+                        "z": 30.67047
+                    }
+                },
+                {
+                    "name": "CustomsOldGasDynamic3",
+                    "strength": 30.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 284.4,
+                        "y": 4.7,
+                        "z": -174.4
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 6.4,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 11.82547,
+                        "y": 4,
+                        "z": 17.36216
+                    }
+                },
+                {
+                    "name": "CustomsOldGasDynamic4",
+                    "strength": 30.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 294.4,
+                        "y": 1.9,
+                        "z": -161.8
+                    },
+                    "rotation": {
+                        "x": 354.7,
+                        "y": 202.6,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 14.87541,
+                        "y": 2.866605,
+                        "z": 15.1724
+                    }
+                },
+                {
+                    "name": "CustomsOldGasDynamic5",
+                    "strength": 20.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 319.4,
+                        "y": 2.1,
+                        "z": -107.2
+                    },
+                    "rotation": {
+                        "x": 4.0,
+                        "y": 227.1,
+                        "z": 356.1
+                    },
+                    "size": {
+                        "x": 5.386393,
+                        "y": 5.237128,
+                        "z": 13.29766
+                    }
+                },
+                {
+                    "name": "CustomsOldGasDynamic6",
+                    "strength": 20.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 318.6,
+                        "y": 2.1,
+                        "z": -104.9
+                    },
+                    "rotation": {
+                        "x": 6.1,
+                        "y": 342.6,
+                        "z": 1.5
+                    },
+                    "size": {
+                        "x": 13.39113,
+                        "y": 5.155784,
+                        "z": 5.41722
+                    }
+                },
+                {
+                    "name": "CustomsOldGasDynamic7",
+                    "strength": 20.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 323.6,
+                        "y": 1.9,
+                        "z": -111.4
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 318.2,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 11.82266,
+                        "y": 5.783505,
+                        "z": 12.12667
+                    }
+                },
+                {
+                    "name": "CustomsOldGasDynamic8",
+                    "strength": 20.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 317.2,
+                        "y": 1.2,
+                        "z": -99.5
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 275.6,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 9.485559,
+                        "y": 4.106579,
+                        "z": 10.64087
+                    }
+                },
+                {
+                    "name": "CustomsOldGasDynamic9",
+                    "strength": 20.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 327.3,
+                        "y": 1.3,
+                        "z": -102.7
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 273.5,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 14.27435,
+                        "y": 3.930167,
+                        "z": 10.24373
+                    }
+                }
+            ],
+            "assets": [
+                {
+                    "assetName": "ElectroForkLift",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 282.7,
+                        "y": 3.7,
+                        "z": -174.3
+                    },
+                    "rotation": {
+                        "x": 352.6,
+                        "y": 267.8,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "assetName": "ElectroForkLift",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 306.1,
+                        "y": 2.3,
+                        "z": -198.0
+                    },
+                    "rotation": {
+                        "x": 0.6,
+                        "y": 353.9,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 282.0,
+                        "y": 4.7,
+                        "z": -174.4
+                    },
+                    "rotation": {
+                        "x": 6.9,
+                        "y": 88.8,
+                        "z": 0.7
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 286.3,
+                        "y": 3.6,
+                        "z": -177.3
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 265.4,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 288.6,
+                        "y": 3.5,
+                        "z": -177.5
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 294.1,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 292.9,
+                        "y": 4.1,
+                        "z": -177.3
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 200.0,
+                        "z": 6.8
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 294.7,
+                        "y": 4.1,
+                        "z": -178.4
+                    },
+                    "rotation": {
+                        "x": 5.2,
+                        "y": 26.0,
+                        "z": 257.2
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 306.1,
+                        "y": 3.2,
+                        "z": -197.9
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 175.1,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 306.1,
+                        "y": 3.2,
+                        "z": -196.9
+                    },
+                    "rotation": {
+                        "x": 358.2,
+                        "y": 175.2,
+                        "z": 357.6
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 299.3,
+                        "y": 1.1,
+                        "z": -165.0
+                    },
+                    "rotation": {
+                        "x": 272.9,
+                        "y": 137.4,
+                        "z": 25.9
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 298,
+                        "y": 1.2,
+                        "z": -165.5
+                    },
+                    "rotation": {
+                        "x": 273.3,
+                        "y": 104.9,
+                        "z": 236.5
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 298.5,
+                        "y": 1.1,
+                        "z": -195.3
+                    },
+                    "rotation": {
+                        "x": 276.2,
+                        "y": 326.5,
+                        "z": 180.0
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 296.8,
+                        "y": 1.1,
+                        "z": -196.6
+                    },
+                    "rotation": {
+                        "x": 1.7,
+                        "y": 53.3,
+                        "z": 360.0
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 299.6,
+                        "y": 1.1,
+                        "z": -167.2
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 183.3,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 315.7,
+                        "y": 1.4,
+                        "z": -112.1
+                    },
+                    "rotation": {
+                        "x": 359.0,
+                        "y": 51.4,
+                        "z": 3.9
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 314.4,
+                        "y": 1.3,
+                        "z": -109.2
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 225.1,
+                        "z": 358.7
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 319.5,
+                        "y": 2.1,
+                        "z": -107.0
+                    },
+                    "rotation": {
+                        "x": 270.7,
+                        "y": 249.3,
+                        "z": 315.3
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 312.8,
+                        "y": 1.2,
+                        "z": -106.9
+                    },
+                    "rotation": {
+                        "x": 0.4,
+                        "y": 338.7,
+                        "z": 359.7
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 293.8,
+                        "y": 1.1,
+                        "z": -196.6
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 128.4,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 295.8,
+                        "y": 1.3,
+                        "z": -197.8
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 67.8,
+                        "z": 5.2
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 283.4,
+                        "y": 3.5,
+                        "z": -179.4
+                    },
+                    "rotation": {
+                        "x": 278.7,
+                        "y": 177.4,
+                        "z": 186.8
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 296.9,
+                        "y": 3.3,
+                        "z": -181.9
+                    },
+                    "rotation": {
+                        "x": 274.4,
+                        "y": 119.7,
+                        "z": 195.5
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 288.2,
+                        "y": 2.4,
+                        "z": -166.1
+                    },
+                    "rotation": {
+                        "x": 4.2,
+                        "y": 115.3,
+                        "z": 6.6
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 286.0719,
+                        "y": 2.513226,
+                        "z": -165.6534
+                    },
+                    "rotation": {
+                        "x": 359.1138,
+                        "y": 312.0887,
+                        "z": 352.6339
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 295.0959,
+                        "y": 1.299977,
+                        "z": -199.1074
+                    },
+                    "rotation": {
+                        "x": 4.329666,
+                        "y": 17.63465,
+                        "z": 1.151963
+                    }
+                }
+            ],
+            "loot": [
+                {
+                    "type": "lowTier",
+                    "odds": 80,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 288.7,
+                        "y": 5.1,
+                        "z": -177.6
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "type": "lowTier",
+                    "odds": 80,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 313.5,
+                        "y": 1.7,
+                        "z": -108.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "type": "midTier",
+                    "odds": 50,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 296.8,
+                        "y": 4.9,
+                        "z": -181.9
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "type": "midTier",
+                    "odds": 50,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 298.5,
+                        "y": 2.7,
+                        "z": -195.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "type": "midTier",
+                    "odds": 50,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 299.2,
+                        "y": 1.6,
+                        "z": -166.3
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "type": "highTier",
+                    "odds": 30,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 305.9,
+                        "y": 4,
+                        "z": -199.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "type": "highTier",
+                    "odds": 30,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 294.3,
+                        "y": 2.7,
+                        "z": -196.9
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0,
+                        "z": 0.0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1,
+            "zones": [
+                {
+                    "name": "CutomsElbow1",
+                    "strength": 20.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 62.49531,
+                        "y": 1.177468,
+                        "z": -87.67104
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 168.9317,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 69.56109,
+                        "y": 7.013664,
+                        "z": 35.77753
+                    }
+                },
+                {
+                    "name": "CutomsElbow2",
+                    "strength": 25.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 49.04053,
+                        "y": 1.173477,
+                        "z": -112.3892
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 258.5552,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 7.575434,
+                        "y": 5.536778,
+                        "z": 31.68114
+                    }
+                },
+                {
+                    "name": "CutomsElbowBarrelPile",
+                    "strength": 10.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 33.11269,
+                        "y": 2.184865,
+                        "z": -103.5508
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 347.835,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 4.802884,
+                        "y": 4.386779,
+                        "z": 5.76604
+                    }
+                }
+            ],
+            "assets": [
+                {
+                    "assetName": "MetalFence",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 31.86403,
+                        "y": 1.000369,
+                        "z": -105.2997
+                    },
+                    "rotation": {
+                        "x": 271.3177,
+                        "y": 357.329,
+                        "z": 79.28451
+                    }
+                },
+                {
+                    "assetName": "MetalFence",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 31.53915,
+                        "y": 1.073945,
+                        "z": -102.8507
+                    },
+                    "rotation": {
+                        "x": 273.7999,
+                        "y": 218.8135,
+                        "z": 215.2263
+                    }
+                },
+                {
+                    "assetName": "MetalFence",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 31.53476,
+                        "y": 1.143129,
+                        "z": -101.2845
+                    },
+                    "rotation": {
+                        "x": 284.4037,
+                        "y": 274.4924,
+                        "z": 157.9864
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 31.91569,
+                        "y": 1.091873,
+                        "z": -102.6963
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 82.67204,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 32.84489,
+                        "y": 1.059574,
+                        "z": -104.6487
+                    },
+                    "rotation": {
+                        "x": 1.431473,
+                        "y": 252.1127,
+                        "z": 357.4253
+                    }
+                },
+                {
+                    "assetName": "Ural",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 39.0044,
+                        "y": 1.048739,
+                        "z": -97.56009
+                    },
+                    "rotation": {
+                        "x": 271.0879,
+                        "y": 229.4872,
+                        "z": 21.95919
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 39.3041,
+                        "y": 2.348624,
+                        "z": -98.41344
+                    },
+                    "rotation": {
+                        "x": 271.5358,
+                        "y": 245.4631,
+                        "z": 188.1995
+                    }
+                },
+                {
+                    "assetName": "RedForkLift",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 41.59052,
+                        "y": 1.095988,
+                        "z": -105.5886
+                    },
+                    "rotation": {
+                        "x": 272.4063,
+                        "y": 284.5216,
+                        "z": 180
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 41.95574,
+                        "y": 1.184622,
+                        "z": -104.0256
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 193.4044,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 42.43838,
+                        "y": 1.127869,
+                        "z": -90.95525
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 81.3026,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 43.98741,
+                        "y": 1.095988,
+                        "z": -90.70486
+                    },
+                    "rotation": {
+                        "x": 359.9308,
+                        "y": 81.03992,
+                        "z": 0.01411872
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 45.12062,
+                        "y": 1.114156,
+                        "z": -90.60984
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 356.1176,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 43.48061,
+                        "y": 2.18001,
+                        "z": -90.77
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 262.5284,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 45.19109,
+                        "y": 1.085268,
+                        "z": -91.67172
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 358.0725,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "Ural",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 79.49007,
+                        "y": 1.066365,
+                        "z": -91.33662
+                    },
+                    "rotation": {
+                        "x": 270.6265,
+                        "y": 284.4312,
+                        "z": 110.4085
+                    }
+                },
+                {
+                    "assetName": "MetalFence",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 96.97253,
+                        "y": 1.11131,
+                        "z": -99.44602
+                    },
+                    "rotation": {
+                        "x": 280.4665,
+                        "y": 143.1897,
+                        "z": 5.962745
+                    }
+                },
+                {
+                    "assetName": "MetalFence",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 69.95663,
+                        "y": 1.169623,
+                        "z": -104.233
+                    },
+                    "rotation": {
+                        "x": 272.4529,
+                        "y": 33.20496,
+                        "z": 145.6944
+                    }
+                },
+                {
+                    "assetName": "MetalFence",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 67.63974,
+                        "y": 0.9400616,
+                        "z": -104.0838
+                    },
+                    "rotation": {
+                        "x": 279.2012,
+                        "y": 165.8151,
+                        "z": 5.969007
+                    }
+                },
+                {
+                    "assetName": "MetalFence",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 96.86241,
+                        "y": 1.074259,
+                        "z": -90.80537
+                    },
+                    "rotation": {
+                        "x": 294.1678,
+                        "y": 77.72576,
+                        "z": 1.442538
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 78.6284,
+                        "y": 2.369825,
+                        "z": -91.29139
+                    },
+                    "rotation": {
+                        "x": 270.9113,
+                        "y": 125.5673,
+                        "z": 188.2293
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 78.94207,
+                        "y": 2.377685,
+                        "z": -90.70786
+                    },
+                    "rotation": {
+                        "x": 271.7101,
+                        "y": 144.7165,
+                        "z": 0.001315971
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 78.6174,
+                        "y": 2.366121,
+                        "z": -90.19054
+                    },
+                    "rotation": {
+                        "x": 271.3521,
+                        "y": 316.2192,
+                        "z": 247.0011
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 77.92377,
+                        "y": 2.353475,
+                        "z": -90.55791
+                    },
+                    "rotation": {
+                        "x": 272.4369,
+                        "y": 159.9959,
+                        "z": 82.82465
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 78.03168,
+                        "y": 2.369006,
+                        "z": -89.74919
+                    },
+                    "rotation": {
+                        "x": 272.9672,
+                        "y": 321.794,
+                        "z": 39.19118
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 76.98886,
+                        "y": 2.341818,
+                        "z": -89.91312
+                    },
+                    "rotation": {
+                        "x": 270.2798,
+                        "y": 153.6762,
+                        "z": -0.001216695
+                    }
+                },
+                {
+                    "assetName": "RedForkLift",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 75.43984,
+                        "y": 1.060233,
+                        "z": -85.46084
+                    },
+                    "rotation": {
+                        "x": 271.0929,
+                        "y": 340.7654,
+                        "z": 270.6975
+                    }
+                },
+                {
+                    "assetName": "BluePallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 75.98896,
+                        "y": 1.188523,
+                        "z": -87.02365
+                    },
+                    "rotation": {
+                        "x": 270.2647,
+                        "y": 90.12532,
+                        "z": 72.94782
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 75.8914,
+                        "y": 1.742379,
+                        "z": -87.58417
+                    },
+                    "rotation": {
+                        "x": 22.24434,
+                        "y": 185.4471,
+                        "z": 359.5865
+                    }
+                },
+                {
+                    "assetName": "BluePallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 68.21713,
+                        "y": 1.047837,
+                        "z": -72.70248
+                    },
+                    "rotation": {
+                        "x": 272.4391,
+                        "y": 342.7629,
+                        "z": 4.532279
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 67.82982,
+                        "y": 1.268581,
+                        "z": -72.56516
+                    },
+                    "rotation": {
+                        "x": 270.7831,
+                        "y": 71.42426,
+                        "z": -0.001248562
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 68.43069,
+                        "y": 1.259823,
+                        "z": -72.29111
+                    },
+                    "rotation": {
+                        "x": 270.214,
+                        "y": 331.354,
+                        "z": -0.0009113809
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 68.33818,
+                        "y": 1.294769,
+                        "z": -72.93325
+                    },
+                    "rotation": {
+                        "x": 270.0593,
+                        "y": 40.15133,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 69.93202,
+                        "y": 1.063715,
+                        "z": -72.28814
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 78.6478,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 70.07344,
+                        "y": 1.061592,
+                        "z": -73.36909
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 79.34799,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 69.60546,
+                        "y": 2.138602,
+                        "z": -72.36948
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 346.2751,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 97.21343,
+                        "y": 1.251298,
+                        "z": -92.69126
+                    },
+                    "rotation": {
+                        "x": 274.1233,
+                        "y": 269.8029,
+                        "z": 80.31719
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 97.46582,
+                        "y": 1.255697,
+                        "z": -93.97633
+                    },
+                    "rotation": {
+                        "x": 273.8123,
+                        "y": 271.9191,
+                        "z": 343.3867
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 61.03768,
+                        "y": 1.086297,
+                        "z": -107.531
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 298.2158,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 61.56111,
+                        "y": 1.092695,
+                        "z": -108.1391
+                    },
+                    "rotation": {
+                        "x": 359.7788,
+                        "y": 112.163,
+                        "z": 0.3323295
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 88.20134,
+                        "y": 1.176332,
+                        "z": -96.92855
+                    },
+                    "rotation": {
+                        "x": 358.589,
+                        "y": 179.6399,
+                        "z": 0.3979126
+                    }
+                },
+                {
+                    "assetName": "BlueContainer",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 76.54197,
+                        "y": 1.06019,
+                        "z": -66.0982
+                    },
+                    "rotation": {
+                        "x": 359.9126,
+                        "y": 349.3902,
+                        "z": 0.2837794
+                    }
+                },
+                {
+                    "assetName": "RedContainer",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 84.76019,
+                        "y": 1.059479,
+                        "z": -67.96397
+                    },
+                    "rotation": {
+                        "x": 359.7967,
+                        "y": 210.338,
+                        "z": 0.4243197
+                    }
+                },
+                {
+                    "assetName": "BlueContainer",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 37.90677,
+                        "y": 1.095663,
+                        "z": -118.927
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 350.9607,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BluePallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 79.39296,
+                        "y": 1.169806,
+                        "z": -88.16862
+                    },
+                    "rotation": {
+                        "x": 274.8665,
+                        "y": 332.5638,
+                        "z": 70.17799
+                    }
+                },
+                {
+                    "assetName": "BluePallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 79.3473,
+                        "y": 1.41451,
+                        "z": -88.28398
+                    },
+                    "rotation": {
+                        "x": 274.5399,
+                        "y": 342.0824,
+                        "z": 225.6661
+                    }
+                },
+                {
+                    "assetName": "WhitePlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 71.99068,
+                        "y": 1.069903,
+                        "z": -72.79234
+                    },
+                    "rotation": {
+                        "x": 271.6209,
+                        "y": 215.3157,
+                        "z": 324.6351
+                    }
+                },
+                {
+                    "assetName": "MetalFence",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 90.26806,
+                        "y": 1.037599,
+                        "z": -69.39227
+                    },
+                    "rotation": {
+                        "x": 274.7661,
+                        "y": 208.1738,
+                        "z": 180
+                    }
+                },
+                {
+                    "assetName": "MetalFence",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 88.85365,
+                        "y": 1.298374,
+                        "z": -70.1962
+                    },
+                    "rotation": {
+                        "x": 295.946,
+                        "y": 27.81816,
+                        "z": 166.0561
+                    }
+                },
+                {
+                    "assetName": "RedContainer",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 44.02516,
+                        "y": 1.077773,
+                        "z": -116.5624
+                    },
+                    "rotation": {
+                        "x": 359.2792,
+                        "y": 126.8787,
+                        "z": 0.3703962
+                    }
+                },
+                {
+                    "assetName": "WhitePlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 57.77905,
+                        "y": 1.088172,
+                        "z": -79.85868
+                    },
+                    "rotation": {
+                        "x": 272.028,
+                        "y": 347.3247,
+                        "z": 90.34731
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 58.13374,
+                        "y": 1.065265,
+                        "z": -81.29873
+                    },
+                    "rotation": {
+                        "x": 271.4543,
+                        "y": 341.6677,
+                        "z": 6.241628
+                    }
+                },
+                {
+                    "assetName": "YellowPlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 59.64994,
+                        "y": 1.099386,
+                        "z": -80.85499
+                    },
+                    "rotation": {
+                        "x": 270.427,
+                        "y": 33.08593,
+                        "z": 229.6822
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 61.54208,
+                        "y": 1.053381,
+                        "z": -78.19431
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 347.0611,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 61.10558,
+                        "y": 1.064523,
+                        "z": -76.26208
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 167.8349,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 60.724,
+                        "y": 1.058933,
+                        "z": -74.75056
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 260.6729,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 61.51635,
+                        "y": 2.128152,
+                        "z": -78.11818
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 347.9788,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 61.22592,
+                        "y": 2.139294,
+                        "z": -76.66557
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 344.6696,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 60.71083,
+                        "y": 2.143262,
+                        "z": -74.8891
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 255.5595,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 39.65539,
+                        "y": 1.076552,
+                        "z": -77.4723
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 303.8933,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 39.9344,
+                        "y": 1.088313,
+                        "z": -79.26499
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 125.9089,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 67.39112,
+                        "y": 1.586507,
+                        "z": -92.35889
+                    },
+                    "rotation": {
+                        "x": 277.8334,
+                        "y": 256.7279,
+                        "z": -0.0001252849
+                    }
+                }
+            ],
+            "loot": [
+                {
+                    "type": "midTier",
+                    "odds": 50,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 97.33766,
+                        "y": 2.86,
+                        "z": -92.60356
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 79.31166,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "highTier",
+                    "odds": 30,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 79.35494,
+                        "y": 2.1,
+                        "z": -88.38883
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 40.63223,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "midTier",
+                    "odds": 50,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 57.57507,
+                        "y": 2.5,
+                        "z": -79.71857
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 321.5255,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "highTier",
+                    "odds": 40,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 40.96183,
+                        "y": 2.6,
+                        "z": -78.39896
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 301.2204,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "lowTier",
+                    "odds": 80,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 39.34284,
+                        "y": 3.2,
+                        "z": -100.9833
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 50.30758,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "lowTier",
+                    "odds": 80,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 45.21597,
+                        "y": 2.6,
+                        "z": -90.56762
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 331.4161,
+                        "z": 0
+                    }
+                }
+            ]
+        }
+    ],
+    "GZAssetZones": [],
+    "ShorelineAssetZones": [
+        {
+            "spawnChance": 1,
+            "zones": [
+                {
+                    "name": "ShorelineGasBridgeGap",
+                    "strength": 15.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -204.4405,
+                        "y": -48.12873,
+                        "z": 317.6337
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 174.6435,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 4.377336,
+                        "y": 4.202283,
+                        "z": 6.863401
+                    }
+                },
+                {
+                    "name": "ShorelineGasBridgeBridge",
+                    "strength": 20.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -282.0382,
+                        "y": -58.25328,
+                        "z": 446.0342
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 95.40501,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 16.46078,
+                        "y": 3.115191,
+                        "z": 34.43365
+                    }
+                }
+            ],
+            "assets": [
+                {
+                    "assetName": "MetalFence",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -206.2851,
+                        "y": -48.05256,
+                        "z": 320.2161
+                    },
+                    "rotation": {
+                        "x": 298.6877,
+                        "y": 86.67989,
+                        "z": 176.5835
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -205.0559,
+                        "y": -48.06625,
+                        "z": 318.3849
+                    },
+                    "rotation": {
+                        "x": 359.0834,
+                        "y": 353.1455,
+                        "z": 354.4315
+                    }
+                },
+                {
+                    "assetName": "MetalFence",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -205.7719,
+                        "y": -47.93098,
+                        "z": 316.7061
+                    },
+                    "rotation": {
+                        "x": 281.5256,
+                        "y": 50.77664,
+                        "z": 27.60005
+                    }
+                },
+                {
+                    "assetName": "MetalFence",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -206.0308,
+                        "y": -48.16121,
+                        "z": 320.6452
+                    },
+                    "rotation": {
+                        "x": 282.7809,
+                        "y": 1.745223,
+                        "z": 346.9636
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -205.7711,
+                        "y": -49.71235,
+                        "z": 317.4751
+                    },
+                    "rotation": {
+                        "x": 349.5968,
+                        "y": 359.8827,
+                        "z": 3.3908
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -205.8685,
+                        "y": -49.55094,
+                        "z": 319.6049
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 177.5887,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -204.8558,
+                        "y": -49.83547,
+                        "z": 315.5515
+                    },
+                    "rotation": {
+                        "x": 335.8558,
+                        "y": 267.6676,
+                        "z": 0.7109344
+                    }
+                },
+                {
+                    "assetName": "Ural",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -289.1849,
+                        "y": -59.66593,
+                        "z": 447.2372
+                    },
+                    "rotation": {
+                        "x": 270.5121,
+                        "y": 107.8009,
+                        "z": 250.5463
+                    }
+                },
+                {
+                    "assetName": "YellowPlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -290.1102,
+                        "y": -58.35383,
+                        "z": 447.0251
+                    },
+                    "rotation": {
+                        "x": 271.8302,
+                        "y": 108.6543,
+                        "z": 343.2334
+                    }
+                },
+                {
+                    "assetName": "WhitePlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -291.7343,
+                        "y": -58.35052,
+                        "z": 447.1332
+                    },
+                    "rotation": {
+                        "x": 272.3998,
+                        "y": 108.7571,
+                        "z": 162.8304
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -286.3158,
+                        "y": -59.63921,
+                        "z": 440.1338
+                    },
+                    "rotation": {
+                        "x": 270.7574,
+                        "y": 225.4281,
+                        "z": 230.1879
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -287.751,
+                        "y": -59.68512,
+                        "z": 440.3157
+                    },
+                    "rotation": {
+                        "x": 270.4401,
+                        "y": 109.9224,
+                        "z": 68.77804
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -277.4177,
+                        "y": -59.65176,
+                        "z": 453.1254
+                    },
+                    "rotation": {
+                        "x": 359.3017,
+                        "y": 180.9133,
+                        "z": 1.627169
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -297.3357,
+                        "y": -59.75954,
+                        "z": 450.761
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 182.6198,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -267.0157,
+                        "y": -59.67307,
+                        "z": 447.0289
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 96.39639,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -266.7439,
+                        "y": -59.69082,
+                        "z": 445.5082
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 14.30995,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -266.6114,
+                        "y": -58.59304,
+                        "z": 446.6688
+                    },
+                    "rotation": {
+                        "x": 0.444336,
+                        "y": 184.4134,
+                        "z": 0.9965622
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -269.7644,
+                        "y": -59.71153,
+                        "z": 439.3213
+                    },
+                    "rotation": {
+                        "x": 272.0857,
+                        "y": 99.5447,
+                        "z": 68.45963
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -275.7561,
+                        "y": -59.67194,
+                        "z": 448.5898
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 42.72578,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -293.5479,
+                        "y": -59.63272,
+                        "z": 440.5611
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 41.64482,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -297.6112,
+                        "y": -59.79202,
+                        "z": 454.1813
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 359.8097,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "MetalFence",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -298.4396,
+                        "y": -59.53177,
+                        "z": 452.6133
+                    },
+                    "rotation": {
+                        "x": 291.0026,
+                        "y": 60.26463,
+                        "z": 29.09114
+                    }
+                }
+            ],
+            "loot": [
+                {
+                    "type": "highTier",
+                    "odds": 35,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -289.5538,
+                        "y": -57.54161,
+                        "z": 447.9708
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 354.5336,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "lowTier",
+                    "odds": 80,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -297.3688,
+                        "y": -58.71725,
+                        "z": 454.2952
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 205.8968,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "lowTier",
+                    "odds": 80,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -284.3745,
+                        "y": -58.5367,
+                        "z": 440.3614
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 199.6948,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "lowTier",
+                    "odds": 80,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -267.4701,
+                        "y": -58.5983,
+                        "z": 447.3532
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 236.5602,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "lowTier",
+                    "odds": 80,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -204.6351,
+                        "y": -47.02713,
+                        "z": 318.1196
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 82.38359,
+                        "z": 0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1,
+            "zones": [
+                {
+                    "name": "ShorelinePowerBridge",
+                    "strength": 20.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -206.0792,
+                        "y": -39.29873,
+                        "z": 144.7998
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 180.0601,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 37.41914,
+                        "y": 4.338449,
+                        "z": 16.22684
+                    }
+                }
+            ],
+            "assets": [
+                {
+                    "assetName": "Ural",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -189.5221,
+                        "y": -40.04592,
+                        "z": 144.9082
+                    },
+                    "rotation": {
+                        "x": 275.1779,
+                        "y": 3.372554,
+                        "z": 348.4315
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -190.0366,
+                        "y": -38.76112,
+                        "z": 145.0611
+                    },
+                    "rotation": {
+                        "x": 3.422551,
+                        "y": 81.24843,
+                        "z": 4.752653
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -191.161,
+                        "y": -38.73259,
+                        "z": 144.8654
+                    },
+                    "rotation": {
+                        "x": 2.060492,
+                        "y": 84.73981,
+                        "z": 5.885602
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -192.1729,
+                        "y": -38.69994,
+                        "z": 144.695
+                    },
+                    "rotation": {
+                        "x": -1.28066,
+                        "y": 81.20964,
+                        "z": 3.880865
+                    }
+                },
+                {
+                    "assetName": "RedForkLift",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -207.2223,
+                        "y": -39.95453,
+                        "z": 145.0992
+                    },
+                    "rotation": {
+                        "x": 270.6212,
+                        "y": 112.8621,
+                        "z": 68.86507
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -205.5767,
+                        "y": -39.87628,
+                        "z": 145.0459
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 93.53953,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -194.4354,
+                        "y": -39.58841,
+                        "z": 139.5431
+                    },
+                    "rotation": {
+                        "x": 0.8454196,
+                        "y": 16.41119,
+                        "z": 7.501798
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -195.4088,
+                        "y": -39.61251,
+                        "z": 139.07
+                    },
+                    "rotation": {
+                        "x": 359.4879,
+                        "y": 198.0931,
+                        "z": 353.9954
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -199.5018,
+                        "y": -40.01304,
+                        "z": 142.9225
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 87.93789,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -197.9184,
+                        "y": -40.01304,
+                        "z": 142.9181
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 189.6042,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "YellowPlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -213.8997,
+                        "y": -40.01432,
+                        "z": 146.4027
+                    },
+                    "rotation": {
+                        "x": 270.4631,
+                        "y": 174.1272,
+                        "z": 186.3483
+                    }
+                },
+                {
+                    "assetName": "Ural",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -220.8893,
+                        "y": -40.72934,
+                        "z": 149.9392
+                    },
+                    "rotation": {
+                        "x": 277.0876,
+                        "y": 344.1131,
+                        "z": 256.4236
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -221.1412,
+                        "y": -39.36018,
+                        "z": 149.689
+                    },
+                    "rotation": {
+                        "x": 275.7582,
+                        "y": 343.746,
+                        "z": 7.65853
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -220.328,
+                        "y": -39.01806,
+                        "z": 149.2839
+                    },
+                    "rotation": {
+                        "x": 4.767474,
+                        "y": 348.5312,
+                        "z": 1.37078
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -216.1337,
+                        "y": -40.21218,
+                        "z": 140.2428
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 82.61568,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -216.8302,
+                        "y": -40.27378,
+                        "z": 140.749
+                    },
+                    "rotation": {
+                        "x": 345.854,
+                        "y": 185.8355,
+                        "z": 1.100591
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -209.0526,
+                        "y": -38.21778,
+                        "z": 186.6068
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 67.6868,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -209.4389,
+                        "y": -37.09792,
+                        "z": 186.356
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 64.68244,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "MetalFence",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -208.6336,
+                        "y": -35.92869,
+                        "z": 185.7237
+                    },
+                    "rotation": {
+                        "x": 10.69687,
+                        "y": 343.8151,
+                        "z": 128.4591
+                    }
+                }
+            ],
+            "loot": [
+                {
+                    "type": "highTier",
+                    "odds": 20,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -220.0849,
+                        "y": -38.90791,
+                        "z": 150.1829
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 244.1677,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "lowTier",
+                    "odds": 35,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -199.6139,
+                        "y": -38.93827,
+                        "z": 142.8802
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 325.9987,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "midTier",
+                    "odds": 35,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -205.4892,
+                        "y": -38.79195,
+                        "z": 144.9165
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 347.4889,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "highTier",
+                    "odds": 20,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -190.5601,
+                        "y": -38.20052,
+                        "z": 144.1487
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 260.9464,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "highTier",
+                    "odds": 35,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -209.5422,
+                        "y": -36.01359,
+                        "z": 186.3957
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 163.4956,
+                        "z": 0
+                    }
+                }
+            ]
+        }
+    ],
+    "StreetsAssetZones": [],
+    "LabsAssetZones": [],
+    "InterchangeAssetZone": [
+        {
+            "spawnChance": 1,
+            "zones": [
+                {
+                    "name": "InterchangeMedAreaDynamic1",
+                    "strength": 20.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -35.42522,
+                        "y": 28.22778,
+                        "z": -111.8505
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 180.1965,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 38.42594,
+                        "y": 2.990577,
+                        "z": 31.34294
+                    }
+                },
+                {
+                    "name": "InterchangeMedAreaDynamic2",
+                    "strength": 20.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -44.75466,
+                        "y": 27.96955,
+                        "z": -90.16453
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 2.739681,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 17.63931,
+                        "y": 3.381099,
+                        "z": 12.80002
+                    }
+                },
+                {
+                    "name": "InterchangeMedAreaDynamic3",
+                    "strength": 20.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -3.952134,
+                        "y": 28.1813,
+                        "z": -93.24567
+                    },
+                    "rotation": {
+                        "x": 359.9001,
+                        "y": 89.0283,
+                        "z": 0.1100363
+                    },
+                    "size": {
+                        "x": 24.16178,
+                        "y": 2.948827,
+                        "z": 14.80486
+                    }
+                },
+                {
+                    "name": "InterchangeMedAreaDynamic4",
+                    "strength": 20.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -16.84539,
+                        "y": 28.38519,
+                        "z": -87.89323
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 87.94362,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 11.54218,
+                        "y": 3.082865,
+                        "z": 11.58979
+                    }
+                },
+                {
+                    "name": "InterchangeMedAreaDynamic5",
+                    "strength": 20.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": 84.01287,
+                        "y": 27.08648,
+                        "z": -77.4013
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 179.1242,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": -15.49116,
+                        "y": 4.979191,
+                        "z": 16.77523
+                    }
+                }
+            ],
+            "assets": [
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -52.13832,
+                        "y": 27.98263,
+                        "z": -117.1454
+                    },
+                    "rotation": {
+                        "x": 86.09365,
+                        "y": 305.5236,
+                        "z": 300.674
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -51.92218,
+                        "y": 27.08649,
+                        "z": -105.4114
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 13.27454,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -53.43811,
+                        "y": 27.11453,
+                        "z": -102.8843
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 189.6333,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -52.03632,
+                        "y": 27.08649,
+                        "z": -103.8904
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 353.9504,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -52.27267,
+                        "y": 27.08649,
+                        "z": -102.4575
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 352.9555,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -52.22496,
+                        "y": 28.17082,
+                        "z": -103.7949
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 356.5211,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -52.27545,
+                        "y": 28.16126,
+                        "z": -102.3182
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 174.2092,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -52.4417,
+                        "y": 28.02671,
+                        "z": -100.5049
+                    },
+                    "rotation": {
+                        "x": 272.1241,
+                        "y": 107.9573,
+                        "z": 193.2747
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -51.93397,
+                        "y": 28.16126,
+                        "z": -105.5862
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 286.2036,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -38.75814,
+                        "y": 27.08649,
+                        "z": -103.4297
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0.105914,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -38.81163,
+                        "y": 28.15994,
+                        "z": -103.5113
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 93.74543,
+                        "z": 0.878475
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -39.82092,
+                        "y": 28.01718,
+                        "z": -104.8623
+                    },
+                    "rotation": {
+                        "x": 89.7693,
+                        "y": 90.47168,
+                        "z": -0.002533623
+                    }
+                },
+                {
+                    "assetName": "WhitePlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -39.44201,
+                        "y": 27.12947,
+                        "z": -90.59028
+                    },
+                    "rotation": {
+                        "x": 270.9895,
+                        "y": 0,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "YellowPlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -39.4043,
+                        "y": 27.07232,
+                        "z": -89.02863
+                    },
+                    "rotation": {
+                        "x": 272.0851,
+                        "y": 111.7134,
+                        "z": 335.9663
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -51.67474,
+                        "y": 27.10814,
+                        "z": -85.92002
+                    },
+                    "rotation": {
+                        "x": 271.4022,
+                        "y": 110.3628,
+                        "z": 344.5861
+                    }
+                },
+                {
+                    "assetName": "BluePallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -51.93067,
+                        "y": 27.07875,
+                        "z": -91.57487
+                    },
+                    "rotation": {
+                        "x": 271.7281,
+                        "y": 219.0776,
+                        "z": 51.00916
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -52.17326,
+                        "y": 27.32171,
+                        "z": -92.00024
+                    },
+                    "rotation": {
+                        "x": 270.5692,
+                        "y": 294.962,
+                        "z": -0.003261606
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -52.21336,
+                        "y": 27.31619,
+                        "z": -91.25785
+                    },
+                    "rotation": {
+                        "x": 271.1402,
+                        "y": 292.1278,
+                        "z": 119.3916
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -51.68995,
+                        "y": 27.33197,
+                        "z": -91.55755
+                    },
+                    "rotation": {
+                        "x": 271.72,
+                        "y": 97.7588,
+                        "z": 272.9003
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -45.39918,
+                        "y": 27.09026,
+                        "z": -91.87857
+                    },
+                    "rotation": {
+                        "x": 359.8438,
+                        "y": 358.9456,
+                        "z": 359.7435
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -45.46811,
+                        "y": 27.08649,
+                        "z": -93.31437
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 1.025365,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -45.27645,
+                        "y": 27.08649,
+                        "z": -108.8428
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 87.84155,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -45.181,
+                        "y": 27.07912,
+                        "z": -109.9743
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -43.28482,
+                        "y": 27.0947,
+                        "z": -120.4834
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 271.5782,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "YellowPlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -39.78335,
+                        "y": 27.07988,
+                        "z": -126.2399
+                    },
+                    "rotation": {
+                        "x": 271.4227,
+                        "y": 217.5054,
+                        "z": 229.0015
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -41.06992,
+                        "y": 27.08649,
+                        "z": -126.1554
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 264.7991,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "WhitePlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -35.2581,
+                        "y": 27.08444,
+                        "z": -120.5418
+                    },
+                    "rotation": {
+                        "x": 270.7697,
+                        "y": 0.000762336,
+                        "z": 97.89159
+                    }
+                },
+                {
+                    "assetName": "WhitePlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -23.23551,
+                        "y": 27.13646,
+                        "z": -102.0162
+                    },
+                    "rotation": {
+                        "x": 270.8446,
+                        "y": 256.1357,
+                        "z": 285.9456
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -23.30417,
+                        "y": 27.08648,
+                        "z": -103.338
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 358.9182,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -24.92717,
+                        "y": 27.10294,
+                        "z": -102.9274
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 86.39386,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -22.91834,
+                        "y": 27.10433,
+                        "z": -108.374
+                    },
+                    "rotation": {
+                        "x": 271.7071,
+                        "y": 230.4084,
+                        "z": 134.8426
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -24.68222,
+                        "y": 27.10711,
+                        "z": -108.1806
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 95.21085,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -24.27192,
+                        "y": 28.18188,
+                        "z": -108.1822
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 184.9879,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "YellowPlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -19.32659,
+                        "y": 27.12156,
+                        "z": -101.5891
+                    },
+                    "rotation": {
+                        "x": 270.0343,
+                        "y": 235.2316,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -19.08113,
+                        "y": 27.08648,
+                        "z": -115.4162
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 85.18375,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -19.1114,
+                        "y": 28.16384,
+                        "z": -115.3676
+                    },
+                    "rotation": {
+                        "x": 359.78,
+                        "y": 357.5833,
+                        "z": 359.9784
+                    }
+                },
+                {
+                    "assetName": "RedForkLift",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -30.4611,
+                        "y": 27.08649,
+                        "z": -117.1027
+                    },
+                    "rotation": {
+                        "x": 270.8589,
+                        "y": 293.9333,
+                        "z": 65.04385
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -32.08423,
+                        "y": 27.16405,
+                        "z": -117.1834
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 269.0197,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "YellowPlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -45.31527,
+                        "y": 27.13737,
+                        "z": -115.4298
+                    },
+                    "rotation": {
+                        "x": 270.4494,
+                        "y": 84.24767,
+                        "z": 0.001956326
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -8.592487,
+                        "y": 27.08648,
+                        "z": -82.80412
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 357.5879,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -7.955914,
+                        "y": 27.08648,
+                        "z": -87.2468
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 275.019,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -7.492118,
+                        "y": 27.08648,
+                        "z": -82.70657
+                    },
+                    "rotation": {
+                        "x": 0.1801538,
+                        "y": 270.8867,
+                        "z": 1.365245
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -3.381518,
+                        "y": 27.08648,
+                        "z": -85.17751
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0.2620498,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "WhitePlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -13.51876,
+                        "y": 27.12664,
+                        "z": -88.73691
+                    },
+                    "rotation": {
+                        "x": 270.2264,
+                        "y": 277.3255,
+                        "z": 80.49599
+                    }
+                },
+                {
+                    "assetName": "YellowPlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -13.62417,
+                        "y": 27.11014,
+                        "z": -87.15549
+                    },
+                    "rotation": {
+                        "x": 270.4694,
+                        "y": 0,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -8.650105,
+                        "y": 27.08648,
+                        "z": -104.1532
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 265.464,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -8.716403,
+                        "y": 27.07013,
+                        "z": -102.5208
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 358.2673,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -8.154731,
+                        "y": 27.07569,
+                        "z": -95.92213
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 277.7939,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "YellowPlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 1.716378,
+                        "y": 27.09371,
+                        "z": -93.20042
+                    },
+                    "rotation": {
+                        "x": 270.9048,
+                        "y": 214.302,
+                        "z": 55.46994
+                    }
+                },
+                {
+                    "assetName": "WhitePlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 2.386692,
+                        "y": 27.11692,
+                        "z": -102.9227
+                    },
+                    "rotation": {
+                        "x": 270.8754,
+                        "y": 248.5105,
+                        "z": 203.9763
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -3.404758,
+                        "y": 27.08648,
+                        "z": -99.88105
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 91.53507,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -3.591205,
+                        "y": 28.16125,
+                        "z": -99.88482
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 182.2595,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -2.489232,
+                        "y": 27.08648,
+                        "z": -93.35761
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 2.661031,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "RedForkLift",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -9.362451,
+                        "y": 27.08648,
+                        "z": -108.0885
+                    },
+                    "rotation": {
+                        "x": 270.6489,
+                        "y": 71.66208,
+                        "z": 160.5279
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 87.19253,
+                        "y": 27.08648,
+                        "z": -72.60733
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 172.7001,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 79.24905,
+                        "y": 27.08648,
+                        "z": -81.99675
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 357.2233,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 79.23844,
+                        "y": 27.08648,
+                        "z": -80.45913
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 269.9026,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 79.22552,
+                        "y": 27.08648,
+                        "z": -79.37567
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0.08306205,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "WhitePlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 79.23312,
+                        "y": 27.08648,
+                        "z": -77.90333
+                    },
+                    "rotation": {
+                        "x": 270.7412,
+                        "y": 301.0114,
+                        "z": 63.05073
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 79.43363,
+                        "y": 27.08648,
+                        "z": -76.59083
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 266.9379,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 82.52686,
+                        "y": 27.08648,
+                        "z": -70.24337
+                    },
+                    "rotation": {
+                        "x": 359.4418,
+                        "y": 84.45843,
+                        "z": 3.201803E-07
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 82.60205,
+                        "y": 28.16381,
+                        "z": -70.21361
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 354.2032,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 79.20152,
+                        "y": 28.14362,
+                        "z": -81.59426
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 359.2545,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "RedForkLift",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 79.74149,
+                        "y": 27.05276,
+                        "z": -72.88985
+                    },
+                    "rotation": {
+                        "x": 271.0794,
+                        "y": 284.9542,
+                        "z": 87.4415
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 78.16836,
+                        "y": 27.12276,
+                        "z": -72.58192
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 281.5522,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 87.87034,
+                        "y": 27.08648,
+                        "z": -82.86763
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 220.3892,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "YellowPlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 83.97733,
+                        "y": 27.08648,
+                        "z": -84.71723
+                    },
+                    "rotation": {
+                        "x": 270.9423,
+                        "y": 184.6672,
+                        "z": -9.081516E-05
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 89.15189,
+                        "y": 27.08648,
+                        "z": -80.24465
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 87.83531,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 89.23248,
+                        "y": 27.08648,
+                        "z": -78.93995
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 99.36191,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 88.63541,
+                        "y": 27.09029,
+                        "z": -75.07167
+                    },
+                    "rotation": {
+                        "x": 270.1426,
+                        "y": 229.0798,
+                        "z": 180.0007
+                    }
+                },
+                {
+                    "assetName": "BluePallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 84.84412,
+                        "y": 27.08606,
+                        "z": -79.08084
+                    },
+                    "rotation": {
+                        "x": 271.5357,
+                        "y": 229.5693,
+                        "z": 47.39326
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 84.51794,
+                        "y": 27.30029,
+                        "z": -79.48201
+                    },
+                    "rotation": {
+                        "x": 270.7005,
+                        "y": 104.8816,
+                        "z": 180.0001
+                    }
+                },
+                {
+                    "assetName": "GooBarrel",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 84.96097,
+                        "y": 27.34055,
+                        "z": -78.91911
+                    },
+                    "rotation": {
+                        "x": 271.4452,
+                        "y": 256.8076,
+                        "z": 131.2513
+                    }
+                }
+            ],
+            "loot": [
+                {
+                    "type": "highTier",
+                    "odds": 35,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -12.54323,
+                        "y": 27.6437,
+                        "z": -92.89494
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 338.9219,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "lowTier",
+                    "odds": 80,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -2.433161,
+                        "y": 28.17081,
+                        "z": -93.49286
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 357.9015,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "lowTier",
+                    "odds": 80,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -8.084369,
+                        "y": 28.15046,
+                        "z": -96.04034
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 296.5179,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "highTier",
+                    "odds": 35,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -33.03053,
+                        "y": 28.20406,
+                        "z": -101.695
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 143.1173,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "midTier",
+                    "odds": 50,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -41.0127,
+                        "y": 28.17082,
+                        "z": -126.4856
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 344.7881,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "midTier",
+                    "odds": 50,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -51.68115,
+                        "y": 28.2056,
+                        "z": -90.97207
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 184.7706,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "lowTier",
+                    "odds": 80,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -45.35839,
+                        "y": 28.1666,
+                        "z": -91.22266
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 82.94521,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "midTier",
+                    "odds": 50,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -45.35839,
+                        "y": 28.1666,
+                        "z": -91.22266
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 82.94521,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "midTier",
+                    "odds": 50,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 83.6447,
+                        "y": 27.61152,
+                        "z": -81.83071
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 241.2923,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "midTier",
+                    "odds": 50,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": 84.57944,
+                        "y": 27.4211,
+                        "z": -78.38388
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 321.7216,
+                        "z": 0
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1,
+            "zones": [
+                {
+                    "name": "InterchangeIkeaRoad",
+                    "strength": 25.0,
+                    "blockNav": true,
+                    "position": {
+                        "x": -205.9026,
+                        "y": 21.32544,
+                        "z": -185.0934
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 359.4666,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 24.50441,
+                        "y": 9.970397,
+                        "z": 29.85392
+                    }
+                }
+            ],
+            "assets": [
+                {
+                    "assetName": "BlueContainer",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -214.258,
+                        "y": 21.32544,
+                        "z": -194.6447
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 87.76208,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "RedContainer",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -196.6785,
+                        "y": 21.32544,
+                        "z": -199.557
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 195.9019,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -214.4224,
+                        "y": 21.32544,
+                        "z": -190.0876
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 270.9588,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -202.4502,
+                        "y": 21.32544,
+                        "z": -196.3626
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 264.395,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -209.245,
+                        "y": 21.30839,
+                        "z": -196.8609
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 272.7448,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -207.5832,
+                        "y": 21.33446,
+                        "z": -196.9907
+                    },
+                    "rotation": {
+                        "x": 270.9861,
+                        "y": 224.0288,
+                        "z": 317.3982
+                    }
+                },
+                {
+                    "assetName": "Ural",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -206.2718,
+                        "y": 21.32544,
+                        "z": -174.8653
+                    },
+                    "rotation": {
+                        "x": 270.5822,
+                        "y": 205.6331,
+                        "z": 64.47975
+                    }
+                },
+                {
+                    "assetName": "YellowPlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -206.2969,
+                        "y": 22.63469,
+                        "z": -175.7203
+                    },
+                    "rotation": {
+                        "x": 270.4406,
+                        "y": 162.0256,
+                        "z": 201.4741
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -206.2862,
+                        "y": 22.62572,
+                        "z": -177.4374
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 6.376256,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -201.9116,
+                        "y": 21.32544,
+                        "z": -194.8656
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 88.13146,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "WhitePlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -202.0917,
+                        "y": 21.32191,
+                        "z": -193.4564
+                    },
+                    "rotation": {
+                        "x": 271.1175,
+                        "y": 93.75018,
+                        "z": 175.7741
+                    }
+                },
+                {
+                    "assetName": "YellowPlasticPallet",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -202.173,
+                        "y": 21.35459,
+                        "z": -191.9835
+                    },
+                    "rotation": {
+                        "x": 271.085,
+                        "y": 106.4443,
+                        "z": 344.5472
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -209.6478,
+                        "y": 21.32544,
+                        "z": -189.9683
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0.2353181,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -209.5917,
+                        "y": 21.32544,
+                        "z": -188.3951
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 271.5341,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -201.7461,
+                        "y": 21.30969,
+                        "z": -190.6858
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 181.7782,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "RedContainer",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -211.9982,
+                        "y": 21.32544,
+                        "z": -176.246
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 177.8007,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -201.854,
+                        "y": 21.32543,
+                        "z": -189.1897
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 178.3375,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -201.799,
+                        "y": 22.39176,
+                        "z": -190.3506
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 87.95453,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -199.2786,
+                        "y": 21.32544,
+                        "z": -173.7464
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 109.552,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -199.3368,
+                        "y": 22.40021,
+                        "z": -173.7154
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 108.0223,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "MetalFence",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -197.8221,
+                        "y": 21.47789,
+                        "z": -171.3663
+                    },
+                    "rotation": {
+                        "x": 4.145487,
+                        "y": 283.181,
+                        "z": 325.9812
+                    }
+                },
+                {
+                    "assetName": "BlueContainer",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -199.5804,
+                        "y": 23.90477,
+                        "z": -196.6237
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 252.4227,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueBox",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -209.631,
+                        "y": 22.4035,
+                        "z": -189.0364
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 270.4574,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -211.4852,
+                        "y": 21.37966,
+                        "z": -178.2333
+                    },
+                    "rotation": {
+                        "x": 271.0472,
+                        "y": 154.8783,
+                        "z": 205.1254
+                    }
+                },
+                {
+                    "assetName": "BlueFuelPalletCloth",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -210.1221,
+                        "y": 21.36407,
+                        "z": -178.1726
+                    },
+                    "rotation": {
+                        "x": 271.6723,
+                        "y": 173.763,
+                        "z": 7.298169
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -215.3466,
+                        "y": 21.32544,
+                        "z": -183.2829
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 93.1899,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrate",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -200.1187,
+                        "y": 21.35065,
+                        "z": -184.8766
+                    },
+                    "rotation": {
+                        "x": 359.7621,
+                        "y": 276.199,
+                        "z": 0.09558031
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -200.3814,
+                        "y": 22.42646,
+                        "z": -184.8005
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 277.9006,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "LabsCrateSmall",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -197.9954,
+                        "y": 21.32544,
+                        "z": -194.674
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 262.6014,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "BarrelPile",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -211.4594,
+                        "y": 21.32715,
+                        "z": -185.3736
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 197.1944,
+                        "z": 0
+                    }
+                },
+                {
+                    "assetName": "RedForkLift",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -211.3634,
+                        "y": 21.32544,
+                        "z": -181.3871
+                    },
+                    "rotation": {
+                        "x": 270.6049,
+                        "y": 281.7715,
+                        "z": 252.6986
+                    }
+                }
+            ],
+            "loot": [
+                {
+                    "type": "highTier",
+                    "odds": 35,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -214.4334,
+                        "y": 22.40977,
+                        "z": -190.2774
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "highTier",
+                    "odds": 40,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -198.0147,
+                        "y": 22.40977,
+                        "z": -194.8362
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "lowTier",
+                    "odds": 80,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -209.6123,
+                        "y": 22.40021,
+                        "z": -190.5786
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "lowTier",
+                    "odds": 80,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -201.6711,
+                        "y": 22.4002,
+                        "z": -189.5008
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "midTier",
+                    "odds": 50,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -202.4623,
+                        "y": 22.70518,
+                        "z": -183.1663
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "midTier",
+                    "odds": 50,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -207.1172,
+                        "y": 23.01086,
+                        "z": -178.0599
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    }
+                }
+            ]
+        }
+    ],
+    "LighthouseAssetZones": [],
+    "WoodsAssetZones": [],
+    "ReserveAssetZones": []
+}

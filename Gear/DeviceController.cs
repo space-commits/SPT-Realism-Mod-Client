@@ -33,12 +33,13 @@ namespace RealismMod
         {
             if (Plugin.RealHealthController.PlayerHazardBridge == null) return 1f;
             if (Plugin.RealHealthController.PlayerHazardBridge.TotalRadRate >= 0.15f) return 0f;
-            return RadDelay * (1f - Mathf.Pow(Plugin.RealHealthController.PlayerHazardBridge.TotalRadRate, 0.35f));
+            float radRate = Mathf.Max(Plugin.RealHealthController.PlayerHazardBridge.TotalRadRate, HazardTracker.TotalRadiationRate);
+            return RadDelay * (1f - Mathf.Pow(radRate, 0.35f));
         }
 
         public static void DoGasAnalyserAudio()
         {
-            if (HasGasAnalyser && GameWorldController.GameStarted && Utils.IsReady) 
+            if (HasGasAnalyser && GameWorldController.GameStarted && Utils.PlayerIsReady) 
             {
                 _gasDeviceTimer += Time.deltaTime;
 
@@ -46,7 +47,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     PlayerHazardBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;
-                    if (player != null && bridge != null && (bridge.GasZoneCount > 0 || Plugin.RealHealthController.ToxicItemCount > 0))
+                    if (player != null && bridge != null && ((bridge.GasZoneCount > 0 && !bridge.IsProtectedFromSafeZone) || Plugin.RealHealthController.ToxicItemCount > 0))
                     {
                         PlayGasAnalyserClips(player, bridge);
                         _gasDeviceTimer = 0f;
@@ -65,7 +66,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     PlayerHazardBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;
-                    if (player != null && bridge != null && bridge.RadZoneCount > 0)
+                    if (player != null && bridge != null && (bridge.RadZoneCount > 0 || HazardTracker.TotalRadiationRate > 0f) && !bridge.IsProtectedFromSafeZone)
                     {
                         PlayGeigerClips(player, bridge);
                         _geigerDeviceTimer = 0f;
@@ -103,23 +104,23 @@ namespace RealismMod
 
         public static string[] GetGeigerClip(float radLevel)
         {
-            switch (radLevel)
+            float radRate = Mathf.Max(Plugin.RealHealthController.PlayerHazardBridge.TotalRadRate, HazardTracker.TotalRadiationRate);
+
+            switch (radRate)
             {
-                case <= 0f:
-                    return null;
                 case <= 0.025f:
                     return new string[] { "geiger1.wav", "geiger1_1.wav", "geiger1_2.wav", "geiger1_3.wav"};
                 case <= 0.05f:
                     return new string[] { "geiger2.wav", "geiger2_1.wav", "geiger2_2.wav", "geiger2_3.wav"};
-                case <= 0.075f:
-                    return new string[] { "geiger3.wav", "geiger3_1.wav", "geiger3_2.wav", "geiger3_3.wav" };
                 case <= 0.1f:
-                    return new string[] { "geiger4.wav", "geiger4_1.wav", "geiger4_2.wav", "geiger4_3.wav" };
+                    return new string[] { "geiger3.wav", "geiger3_1.wav", "geiger3_2.wav", "geiger3_3.wav" };
                 case <= 0.15f:
+                    return new string[] { "geiger4.wav", "geiger4_1.wav", "geiger4_2.wav", "geiger4_3.wav" };
+                case <= 0.25f:
                     return new string[] { "geiger5.wav", "geiger5_1.wav", "geiger5_2.wav", "geiger5_3.wav" };
-                case <= 0.2f:
+                case <= 0.35f:
                     return new string[] { "geiger6.wav", "geiger6_1.wav", "geiger6_2.wav", "geiger6_3.wav" };
-                case > 0.2f:
+                case > 0.35f:
                     return new string[] { "geiger7.wav", "geiger7_1.wav", "geiger7_2.wav", "geiger7_3.wav" };
                 default:
                     return null;

@@ -50,7 +50,7 @@ namespace RealismMod
                 RecoilController.PrevShotCount = RecoilController.ShotCount;
             }
 
-            if (RecoilController.ShotCount == RecoilController.PrevShotCount)
+            if (RecoilController.ShotCount == RecoilController.PrevShotCount) //&& !IsFiringEFT
             {
                 RecoilController.DeafenShotTimer += Time.deltaTime;
                 RecoilController.WiggleShotTimer += Time.deltaTime;

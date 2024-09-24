@@ -1,60 +1,33 @@
-﻿using SPT.Reflection.Patching;
-using SPT.Reflection.Utils;
-using Comfort.Common;
+﻿using Comfort.Common;
 using EFT;
 using EFT.HealthSystem;
 using EFT.InventoryLogic;
 using EFT.UI.Health;
 using HarmonyLib;
+using SPT.Reflection.Patching;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 using static EFT.HealthSystem.ActiveHealthController;
 using static RealismMod.Attributes;
+using Color = UnityEngine.Color;
 using ExistanceClass = GClass2470;
 using HealthStateClass = GClass2430<EFT.HealthSystem.ActiveHealthController.GClass2429>;
-using MedkitTemplate = IMedkitResource;
 using MedUseStringClass = GClass1244;
-using QuestUIClass = GClass2046;
 using SetInHandsMedsInterface = GInterface142;
-using EFT.UI;
-using EFT.Communications;
 
 namespace RealismMod
 {
-
-    public class QuestCompletePatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(QuestView).GetMethod("FinishQuest", BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(QuestView __instance)
-        {
-            if (__instance.QuestId == "667c643869df8111b81cb6dc" || __instance.QuestId == "667dbbc9c62a7c2ee8fe25b2")
-            {
-                HazardTracker.TotalRadiation = 0;
-                HazardTracker.TotalToxicity = 0;
-                HazardTracker.UpdateHazardValues(Plugin.PMCProfileId);
-                HazardTracker.UpdateHazardValues(Plugin.ScavProfileId);
-                HazardTracker.SaveHazardValues();
-                if(PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayNotification(new QuestUIClass("Blood Tests Came Back Clear, Your Radiation Poisoning Has Been Cured.".Localized(null), ENotificationDurationType.Long, ENotificationIconType.Quest, null));
-            }
-        }
-    }
-
     public class HealthPanelPatch : ModulePatch
     {
-        private static float _updateTime = 0f;
+        public const float MAIN_FONT_SIZE = 14f;
+        public const float SECONDARY_FONT_SIZE = 30f;
+        public const float FONT_CHANGE_SPEED = 1f;
 
+        private static float _updateTime = 0f;
         protected override MethodBase GetTargetMethod()
         {
             return typeof(HealthParametersPanel).GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
@@ -165,7 +138,7 @@ namespace RealismMod
                             CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>(); //can animate it by changing the font size with ping pong, and modulate the color
                             buffUI.text = (toxicityRate > 0f ? "+" : "") + toxicityRate.ToString("0.00");
                             buffUI.color = GetGasRateColor(toxicityRate);
-                            buffUI.fontSize = 14f;
+                            buffUI.fontSize = MAIN_FONT_SIZE;
                         }
                         if (current != null)
                         {
@@ -173,7 +146,7 @@ namespace RealismMod
                             CustomTextMeshProUGUI currentUI = current.GetComponent<CustomTextMeshProUGUI>();
                             currentUI.text = toxicityLevel.ToString();
                             currentUI.color = GetCurrentGasColor(toxicityLevel);
-                            currentUI.fontSize = 30f;
+                            currentUI.fontSize = SECONDARY_FONT_SIZE;
                         }
                     }
 
@@ -188,7 +161,7 @@ namespace RealismMod
                             CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
                             buffUI.text = (radRate > 0f ? "+" : "") + radRate.ToString("0.00");
                             buffUI.color = GetRadRateColor(radRate);
-                            buffUI.fontSize = 14f;
+                            buffUI.fontSize = MAIN_FONT_SIZE;
                         }
                         if (current != null)
                         {
@@ -196,7 +169,7 @@ namespace RealismMod
                             CustomTextMeshProUGUI currentUI = current.GetComponent<CustomTextMeshProUGUI>();
                             currentUI.text = radiationLevel.ToString();
                             currentUI.color = GetCurrentRadColor(radiationLevel);
-                            currentUI.fontSize = 30f;
+                            currentUI.fontSize = SECONDARY_FONT_SIZE;
                         }
                     }
                 }
@@ -236,7 +209,11 @@ namespace RealismMod
                 {
                     stringBuilder.Append(" / ");
                 }
-                stringBuilder.Append((__instance.Cost + 1) + " HP");
+                stringBuilder.Append((__instance.Cost + 1) + " HP"); //add 1 to the cost to ensure it accurately reflects how resource is deducted from medkits
+            }
+            if (__instance.HealthPenaltyMax == 69) //only way of verifying it's a rad or toxicity value
+            {
+                stringBuilder.Append($"(<color=#54C1FFFF>{-__instance.FadeOut}</color>)");
             }
             __result = stringBuilder.ToString();
             return false;
@@ -285,32 +262,7 @@ namespace RealismMod
             return typeof(HealthEffectsComponent).GetConstructor(new Type[] { typeof(Item), typeof(IHealthEffect) });
         }
 
-        [PatchPostfix]
-        private static void PatchPostfix(HealthEffectsComponent __instance, Item item)
-        {
-            string medType = MedProperties.MedType(item);
-            if (item.Template._parent == "5448f3a64bdc2d60728b456a")
-            {
-                List<ItemAttributeClass> stimAtt = item.Attributes;
-                ItemAttributeClass stimAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.StimType);
-                stimAttClass.Name = ENewItemAttributeId.StimType.GetName();
-                stimAttClass.StringValue = () => Plugin.RealHealthController.GetStimType(item.TemplateId).ToString();
-                stimAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                stimAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
-                stimAttClass.LessIsGood = false;
-                stimAtt.Add(stimAttClass);
-            }
-        }
-    }
-
-    public class MedkitConstructorPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(MedKitComponent).GetConstructor(new Type[] { typeof(Item), typeof(MedkitTemplate) });
-        }
-
-        private static string getHBTypeString(string type)
+        private static string GetHBTypeString(string type)
         {
             switch (type)
             {
@@ -327,7 +279,7 @@ namespace RealismMod
             }
         }
 
-        private static string getPKStrengthString(float str)
+        private static string GetPKStrengthString(float str)
         {
             switch (str)
             {
@@ -347,11 +299,10 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(MedKitComponent __instance, Item item)
+        private static void PatchPostfix(HealthEffectsComponent __instance, Item item)
         {
             string medType = MedProperties.MedType(item);
-
-            if (item.Template._parent == "5448f3a64bdc2d60728b456a") 
+            if (item.Template._parent == "5448f3a64bdc2d60728b456a")
             {
                 List<ItemAttributeClass> stimAtt = item.Attributes;
                 ItemAttributeClass stimAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.StimType);
@@ -363,12 +314,25 @@ namespace RealismMod
                 stimAtt.Add(stimAttClass);
             }
 
+            if (medType.Contains("pain") || medType.Contains("alcohol"))
+            {
+                float strength = MedProperties.Strength(item);
+                List<ItemAttributeClass> strengthAtt = item.Attributes;
+                ItemAttributeClass strengthAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.PainKillerStrength);
+                strengthAttClass.Name = ENewItemAttributeId.PainKillerStrength.GetName();
+                strengthAttClass.StringValue = () => GetPKStrengthString(strength);
+                strengthAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
+                strengthAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
+                strengthAttClass.LessIsGood = false;
+                strengthAtt.Add(strengthAttClass);
+            }
+
             if (medType == "trnqt" || medType == "medkit" || medType == "surg")
             {
                 string hBleedType = MedProperties.HBleedHealType(item);
                 float hpPerTick = medType != "surg" ? -MedProperties.HpPerTick(item) : MedProperties.HpPerTick(item);
 
-                if (medType == "medkit") 
+                if (medType == "medkit")
                 {
                     float hp = MedProperties.HPRestoreAmount(item);
                     List<ItemAttributeClass> hbAtt = item.Attributes;
@@ -387,7 +351,7 @@ namespace RealismMod
                     List<ItemAttributeClass> hbAtt = item.Attributes;
                     ItemAttributeClass hbAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.HBleedType);
                     hbAttClass.Name = ENewItemAttributeId.HBleedType.GetName();
-                    hbAttClass.StringValue = () => getHBTypeString(hBleedType);
+                    hbAttClass.StringValue = () => GetHBTypeString(hBleedType);
                     hbAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                     hbAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
                     hbAttClass.LessIsGood = false;
@@ -424,18 +388,6 @@ namespace RealismMod
                         hpTickAtt.Add(hpAttClass);
                     }
                 }
-            }
-            if (medType.Contains("pain"))
-            {
-                float strength = MedProperties.Strength(item);
-                List<ItemAttributeClass> strengthAtt = item.Attributes;
-                ItemAttributeClass strengthAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.PainKillerStrength);
-                strengthAttClass.Name = ENewItemAttributeId.PainKillerStrength.GetName();
-                strengthAttClass.StringValue = () => getPKStrengthString(strength);
-                strengthAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                strengthAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
-                strengthAttClass.LessIsGood = false;
-                strengthAtt.Add(strengthAttClass);
             }
         }
     }
@@ -782,11 +734,33 @@ namespace RealismMod
             return typeof(ActiveHealthController).GetMethod("ApplyDamage", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static EDamageType[] acceptedDamageTypes = { 
+        private static EDamageType[] _acceptedDamageTypes = { 
             EDamageType.HeavyBleeding, EDamageType.LightBleeding, 
             EDamageType.Fall, EDamageType.Barbed, EDamageType.Dehydration, 
             EDamageType.Exhaustion, EDamageType.Poison,  EDamageType.Melee,
             EDamageType.Explosion, EDamageType.Bullet, EDamageType.Blunt,};
+
+        private static void CancelRegen() 
+        {
+            Plugin.RealHealthController.CancelPassiveRegen = true;
+            Plugin.RealHealthController.CurrentPassiveRegenBlockDuration = Plugin.RealHealthController.BlockPassiveRegenBaseDuration;
+        }
+
+        private static void HandlePassiveRegenTimer(float damage, EDamageType damageType)
+        {
+            if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion ||
+                damageType == EDamageType.Sniper || damageType == EDamageType.Btr ||
+                damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding ||
+                damageType == EDamageType.Poison || damageType == EDamageType.Exhaustion ||
+                damageType == EDamageType.Dehydration || damageType == EDamageType.RadExposure ||
+                damageType == EDamageType.Impact || damageType == EDamageType.Melee ||
+                damageType == EDamageType.Flame || damageType == EDamageType.Medicine ||
+                damageType == EDamageType.LethalToxin || damageType == EDamageType.Stimulator ||
+                damage > 5f)
+            {
+                CancelRegen();
+            }
+        }
 
         [PatchPrefix]
         private static void Prefix(ActiveHealthController __instance, EBodyPart bodyPart, ref float damage, DamageInfo damageInfo)
@@ -804,9 +778,11 @@ namespace RealismMod
 
                 EDamageType damageType = damageInfo.DamageType;
 
-                float currentHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Current;
-                float maxHp = __instance.Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum;
+                float currentHp = __instance.GetBodyPartHealth(bodyPart).Current;
+                float maxHp = __instance.GetBodyPartHealth(bodyPart).Maximum;
                 float remainingHp = currentHp / maxHp;
+
+                HandlePassiveRegenTimer(damage, damageType);
 
                 if (damageType == EDamageType.Dehydration || damageType == EDamageType.Exhaustion || damageType == EDamageType.Poison)
                 {
@@ -824,6 +800,8 @@ namespace RealismMod
                 float stressResist = __instance.Player.Skills.StressPain.Value;
                 int delay = (int)Math.Round(15f * (1f - vitalitySkill), 2);
                 float tickRate = (float)Math.Round(0.22f * (1f + vitalitySkill), 2);
+                float fallDamageLimit = 17 * vitalitySkill;
+                float bluntDamageLimit = 7.5f * vitalitySkill;
 
                 if (damageType == EDamageType.Dehydration)
                 {
@@ -835,7 +813,7 @@ namespace RealismMod
                     Plugin.RealHealthController.DmgeTracker.TotalExhaustionDamage += damage;
                     return;
                 }
-                if ((damageType == EDamageType.Fall && damage <= 20f))
+                if ((damageType == EDamageType.Fall && damage <= fallDamageLimit))
                 {
                     Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage, damageType);
                     return;
@@ -845,7 +823,7 @@ namespace RealismMod
                     Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
                     return;
                 }
-                if (damageType == EDamageType.Blunt && damage <= 7.5f)
+                if (damageType == EDamageType.Blunt && damage <= bluntDamageLimit)
                 {
                     Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
                     return;
@@ -855,7 +833,7 @@ namespace RealismMod
                     Plugin.RealHealthController.DmgeTracker.UpdateDamage(damageType, bodyPart, damage);
                     return;
                 }
-                if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= 17f) || (damageType == EDamageType.Blunt && damage >= 10f))
+                if (damageType == EDamageType.Bullet || damageType == EDamageType.Explosion || damageType == EDamageType.Landmine || (damageType == EDamageType.Fall && damage >= fallDamageLimit + 2f) || (damageType == EDamageType.Blunt && damage >= bluntDamageLimit + 2f))
                 {
                     Plugin.RealHealthController.RemoveEffectsOfType(EHealthEffectType.HealthRegen);
                 }

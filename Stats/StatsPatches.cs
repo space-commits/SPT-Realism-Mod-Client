@@ -23,7 +23,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ref Weapon __instance, ref int __result)
         {
-            if (!Utils.IsReady) return true;
+            if (!Utils.PlayerIsReady) return true;
             if (__instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
@@ -47,7 +47,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref int __result)
         {
-            if (!Utils.IsReady) return true;
+            if (!Utils.PlayerIsReady) return true;
             if (__instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 AmmoTemplate currentAmmoTemplate = __instance.CurrentAmmoTemplate;
@@ -103,7 +103,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            if (!Utils.IsReady) return true;
+            if (!Utils.PlayerIsReady) return true;
             if (__instance != null && __instance?.Owner != null && __instance?.Owner?.ID != null && __instance?.Owner?.ID == Singleton<GameWorld>.Instance?.MainPlayer?.ProfileId)
             {
                 if (PlayerState.IsInReloadOpertation)
@@ -278,7 +278,7 @@ namespace RealismMod
             WeaponStats._WeapClass = __instance.WeapClass;
             bool isManual = WeaponStats.IsManuallyOperated(__instance);
             WeaponStats._IsManuallyOperated = isManual;
-            bool isChonker = __instance.IsBeltMachineGun || __instance.Weight >= 10f;
+            bool isChonker = __instance.IsBeltMachineGun || __instance.GetSingleItemTotalWeight() >= 10f;
 
             WeaponStats.ShouldGetSemiIncrease = false;
             if (__instance.WeapClass != "pistol" || __instance.WeapClass != "shotgun" || __instance.WeapClass != "sniperRifle" || __instance.WeapClass != "smg")
@@ -446,6 +446,7 @@ namespace RealismMod
             }
 
             WeaponStats.IsPistol = __instance.WeapClass == "pistol";
+            WeaponStats.IsMachinePistol = weapType == "smg_pistol" && !hasShoulderContact;
             WeaponStats.IsStocklessPistol = !hasShoulderContact && WeaponStats.IsPistol ? true : false;
             WeaponStats.IsStockedPistol = hasShoulderContact && WeaponStats.IsPistol ? true : false;
 
@@ -461,7 +462,7 @@ namespace RealismMod
             float pureRecoilDelta = ((baseVRecoil + baseHRecoil) - pureRecoil) / ((baseVRecoil + baseHRecoil) * -1f);
             WeaponStats.TotalModDuraBurn = modBurnRatio;
             WeaponStats.TotalMalfChance = currentMalfChance;
-            WeaponStats.MalfChanceDelta = (currentMalfChance - baseMalfChance) / baseMalfChance;
+            WeaponStats.MalfChanceDelta = (baseMalfChance - currentMalfChance) / baseMalfChance;
             DeafeningController.WeaponDeafFactor = totalLoudness;
             WeaponStats.CanCycleSubs = canCycleSubs;
             WeaponStats.HasShoulderContact = hasShoulderContact;
@@ -479,6 +480,9 @@ namespace RealismMod
             WeaponStats.AutoFireRate = Mathf.Max(400, (int)currentAutoROF);
             WeaponStats.SemiFireRate = Mathf.Max(300, (int)currentSemiROF);
             WeaponStats.FireRateDelta = ((float)WeaponStats.AutoFireRate / (float)__instance.Template.bFirerate) * ((float)WeaponStats.SemiFireRate / (float)__instance.Template.SingleFireRate);
+            WeaponStats.AutoFireRateDelta = (float)WeaponStats.AutoFireRate / (float)__instance.Template.bFirerate;
+            WeaponStats.SemiFireRateDelta = (float)WeaponStats.SemiFireRate / (float)__instance.Template.SingleFireRate;
+
             WeaponStats.InitTotalCOI = currentCOI;
             WeaponStats.InitPureErgo = pureErgo;
             WeaponStats.PureRecoilDelta = pureRecoilDelta;
@@ -505,7 +509,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            if (!Utils.IsReady) return true;
+            if (!Utils.PlayerIsReady) return true;
             if (__instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 __result = WeaponStats.COIDelta;
@@ -526,13 +530,13 @@ namespace RealismMod
         private static bool Prefix(Weapon __instance, ref float __result, bool includeAmmo)
         {
 
-            if (Utils.IsReady && __instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
+            if (Utils.PlayerIsReady && __instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 bool isBracingTop = StanceController.BracingDirection == EBracingDirection.Top;
                 float mountingFactor = StanceController.IsMounting && isBracingTop ? 0.8f : StanceController.IsMounting && !isBracingTop ? 0.9f : StanceController.IsBracing && isBracingTop ? 0.95f : StanceController.IsBracing && !isBracingTop ? 0.975f : 1f;
                 float stockFactor = !WeaponStats.HasShoulderContact ? 2f : 1f;
                 float baseCOI = __instance.CenterOfImpactBase * (1f + __instance.CenterOfImpactDelta);
-                float totalCOI = baseCOI * (1f - WeaponStats.ScopeAccuracyFactor) * mountingFactor * stockFactor * (PluginConfig.IncreaseCOI.Value ? 2f : 1f);
+                float totalCOI = baseCOI * (1f - WeaponStats.ScopeAccuracyFactor) * mountingFactor * stockFactor * (PluginConfig.IncreaseCOI.Value ? 1.5f : 1f);
 
                 if (!includeAmmo)
                 {
@@ -560,7 +564,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            if (!Utils.IsReady) return true;
+            if (!Utils.PlayerIsReady) return true;
             if (__instance?.Owner != null && __instance?.Owner?.ID != null && __instance.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId)
             {
                 float shotDispLessAmmo = __instance.ShotgunDispersionBase * (1f + WeaponStats.ShotDispDelta);

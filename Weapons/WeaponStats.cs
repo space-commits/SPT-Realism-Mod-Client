@@ -185,6 +185,7 @@ namespace RealismMod
         public static bool IsPistol = false;
         public static bool IsStocklessPistol = false;
         public static bool IsStockedPistol = false;
+        public static bool IsMachinePistol = false;
         public static bool IsBullpup = false;
 
         public static bool ShouldGetSemiIncrease = false;
@@ -193,6 +194,8 @@ namespace RealismMod
 
         public static int AutoFireRate = 0;
         public static float FireRateDelta = 0;
+        public static float AutoFireRateDelta = 0;
+        public static float SemiFireRateDelta = 0;
         public static int SemiFireRate = 0;
 
         public static float Balance = 0f;

@@ -127,9 +127,9 @@ namespace RealismMod
             if (smokes != null && smokes.Length > 0)
             {
                 MuzzleSmoke smoke = smokes[0];
-                smoke.SmokeLength = WeaponStats.IsPistol ? 0f : 20f * smoketrailFactor; //how long it is, 20
-                smoke.MuzzleSpeedMultiplier = 0.4f; //how much it twists and changes direction, lower = more straight, 1.2 
-                smoke.SmokeVelocity = WeaponStats.IsPistol ? 100f : 0.05f * smoketrailFactorInverse; //how fast the smoke moves, lower to make it linger, 0.4
+                smoke.SmokeLength = WeaponStats.IsPistol ? 0f : 18f * smoketrailFactor; //how long it is, 20
+                smoke.MuzzleSpeedMultiplier = 0.39f; //how much it twists and changes direction, lower = more straight, 1.2 
+                smoke.SmokeVelocity = WeaponStats.IsPistol ? 100f : 0.06f * smoketrailFactorInverse; //how fast the smoke moves, lower to make it linger, 0.4
                 smoke.SmokeIncreasingByShot = WeaponStats.IsPistol ? 0f : 0.25f * smoketrailFactor; //how many shots/how quickly smoke effect starts happening and increasing in intensity, 0.4
             }
 

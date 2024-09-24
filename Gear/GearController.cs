@@ -24,7 +24,7 @@ namespace RealismMod
         {
             get
             {
-                return _currentGasProtection * GasMaskDurabilityFactor;
+                return _currentGasProtection * _gasMaskDurabilityFactor;
             }
         }
 
@@ -32,7 +32,7 @@ namespace RealismMod
         {
             get
             {
-                return _currentRadProtection * GasMaskDurabilityFactor;
+                return _currentRadProtection * _gasMaskDurabilityFactor;
             }
         } 
 
@@ -40,7 +40,7 @@ namespace RealismMod
         {
             get 
             {
-                return _gasMaskDurabilityFactor >= 0.95f ? 1f : _gasMaskDurabilityFactor;
+                return _gasMaskDurabilityFactor;
             }
         }
 
@@ -81,11 +81,13 @@ namespace RealismMod
         {
             foreach (var item in items)
             {
-                if (item != null && item?.TemplateId != null && item.TemplateId == "590a3efd86f77437d351a25b")
+                if (item == null || item?.TemplateId == null) continue;
+
+                if (item.TemplateId == "590a3efd86f77437d351a25b")
                 {
                     DeviceController.HasGasAnalyser = true;
                 }
-                if (item != null && item?.TemplateId != null && item.TemplateId == "5672cb724bdc2dc2088b456b")
+                if (item.TemplateId == "5672cb724bdc2dc2088b456b")
                 {
                     DeviceController.HasGeiger = true;
                 }
@@ -159,7 +161,7 @@ namespace RealismMod
             if (gasmask == null) return;
             ResourceComponent filter = gasmask?.GetItemComponentsInChildren<ResourceComponent>(false).FirstOrDefault();
             if (filter == null) return;
-            float reductionFactor = (phb.TotalGasRate + phb.TotalGasRate) / 10f;
+            float reductionFactor = (phb.TotalGasRate + phb.TotalRadRate) / 3.5f;
             filter.Value -= reductionFactor;
             if (filter.Value > 0) HasGasFilter = true;
         }
@@ -173,9 +175,13 @@ namespace RealismMod
            
             if (filter != null) 
             {
-                filterFactor = filter.Value > 90f ? 1f : Mathf.Pow(filter.Value / filter.MaxResource, 0.45f);
+                if (filter.Value > 0) HasGasFilter = true;
+                filterFactor = filter.Value > 90f ? 1f : Mathf.Pow(filter.Value / filter.MaxResource, 0.15f);
+                filterFactor = filterFactor > 0.85f ? 1f : filterFactor;
             }
           
+            //masks like the respirator are not given an armor rating, so we can safely assume this is a gas mask/respirator that does not take filters,
+            //therfore should not be subject to filter or durability factors
             ArmorComponent armorComp = gasmask.GetItemComponent<ArmorComponent>();
             if (armorComp == null)
             {

@@ -18,7 +18,7 @@ namespace RealismMod
 
         public static void HazardZonesAudioController()
         {
-            if (Utils.IsInHideout || !Utils.IsReady) return;
+            if (Utils.IsInHideout || !Utils.PlayerIsReady) return;
 
             _breathTimer += Time.deltaTime;
             _coughTimer += Time.deltaTime;  
@@ -56,15 +56,7 @@ namespace RealismMod
 
         private static void CoughController(Player player) 
         {
-            bool hasHazardification = HazardTracker.TotalToxicity >= 30f || (HazardTracker.TotalRadiation >= 20f && !Plugin.RealHealthController.HasBaseEFTEffect(player, "PainKiller"));
-            bool isGettingHazarded = HazardTracker.TotalToxicityRate >= 0.1f;
-            if (player.HealthController.IsAlive && (!GearController.HasGasMask || !GearController.HasGasFilter) && (hasHazardification || isGettingHazarded)) 
-            {
-                player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
-                if (isGettingHazarded) Plugin.RealHealthController.IsCoughingInGas = true;
-                else Plugin.RealHealthController.IsCoughingInGas = false;
-            }
-            else Plugin.RealHealthController.IsCoughingInGas = false;
+            if (Plugin.RealHealthController.DoCoughingAudio) player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
         }
 
         private static float GetBreathVolume() 

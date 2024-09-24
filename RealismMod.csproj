@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL"></Reference>
     <Reference Include="spt-reflection" />
 	<Reference Include="spt-common" />
 	<Reference Include="ItemComponent.Types" />
@@ -38,6 +39,7 @@
     <Reference Include="UnityEngine.TerrainPhysicsModule" />
 	<Reference Include="UnityEngine.AssetBundleModule" />
     <Reference Include="UnityEngine.ParticleSystemModule" />
+	<Reference Include="UnityEngine.AIModule" />
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />

@@ -85,26 +85,26 @@ namespace RealismMod
                 case EBodyPartColliderType.RightCalf:
                 case EBodyPartColliderType.LeftCalf:
                     di.Damage *= 0.8f * PluginConfig.GlobalDamageModifier.Value;
-                    di.HeavyBleedingDelta *= 0.75f;
-                    di.LightBleedingDelta *= 0.75f;
+                    di.HeavyBleedingDelta *= 0.6f;
+                    di.LightBleedingDelta *= 0.7f;
                     break;
                 case EBodyPartColliderType.RightThigh:
                 case EBodyPartColliderType.LeftThigh:
-                    di.Damage *= 1f * PluginConfig.GlobalDamageModifier.Value;
+                    di.Damage *= 1.1f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 1.3f;
                     di.LightBleedingDelta *= 1.3f;
                     break;
                 case EBodyPartColliderType.RightForearm:
                 case EBodyPartColliderType.LeftForearm:
                     di.Damage *= 0.75f * PluginConfig.GlobalDamageModifier.Value;
-                    di.HeavyBleedingDelta *= 0.55f;
-                    di.LightBleedingDelta *= 0.55f;
+                    di.HeavyBleedingDelta *= 0.4f;
+                    di.LightBleedingDelta *= 0.5f;
                     break;
                 case EBodyPartColliderType.LeftUpperArm:
                 case EBodyPartColliderType.RightUpperArm:
-                    di.Damage *= 0.9f * PluginConfig.GlobalDamageModifier.Value;
-                    di.HeavyBleedingDelta *= 0.75f;
-                    di.LightBleedingDelta *= 0.75f;
+                    di.Damage *= 0.95f * PluginConfig.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 0.65f;
+                    di.LightBleedingDelta *= 0.65f;
                     break;
                 case EBodyPartColliderType.PelvisBack:
                 case EBodyPartColliderType.Pelvis:
@@ -467,10 +467,10 @@ namespace RealismMod
                 {
                     string colliderName = collider.name.ToLower();
                     if (colliderName == "left" || colliderName == "right" || colliderName == "top") boxCollider.size *= 0f;
-                    ModifyPlateHelper(collider, boxCollider, colliderName, "_chest", 0.975f, 0.475f, 0.87f); //height, depth, width
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "_chest", 0.975f, 0.475f, 0.86f); //chest plate, height, depth, width
                     ModifyPlateHelper(collider, boxCollider, colliderName, "_back", 0.78f, 0.58f, 0.83f); //height, depth, width
                     ModifyPlateHelper(collider, boxCollider, colliderName, "_side_", 0.8f, 1f, 0.7f); //height, width, depth
-                    ModifyPlateHelper(collider, boxCollider, colliderName, "chesttop", 1.55f, 0.9f, 1f);//height, width, depth
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "chesttop", 1.55f, 0.9f, 1f);//armpits, height, width, depth
                 }
             }
         }

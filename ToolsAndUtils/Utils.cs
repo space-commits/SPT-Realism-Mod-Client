@@ -1,18 +1,46 @@
-﻿using BepInEx.Logging;
+﻿using BepInEx.Configuration;
+using BepInEx.Logging;
 using Comfort.Common;
 using EFT;
+using EFT.Ballistics;
+using EFT.Interactive;
 using EFT.InventoryLogic;
+using EFT.UI;
+using HarmonyLib;
+using SPT.Reflection.Patching;
 using System;
-using System.IO;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
+using UnityEngine;
 
 namespace RealismMod
 {
+    //Task extention method: allows easier handling of async tasks in non-async methods, treating them as coroutines instead
+    public static class TaskExtensions
+    {
+        public static IEnumerator AsCoroutine(this Task task)
+        {
+            while (!task.IsCompleted)
+            {
+                yield return null;
+            }
+
+            if (task.IsFaulted)
+            {
+                throw task.Exception;
+            }
+        }
+    }
+
     public static class Utils
     {
         public static ManualLogSource Logger;
+        public static System.Random SystemRandom = new System.Random();
 
-        public static bool IsReady = false;
+        public static bool PlayerIsReady = false;
         public static bool IsInHideout = false;
         public static bool WeaponIsReady = false;
         public static bool HasRunErgoWeightCalc = false;
@@ -41,10 +69,60 @@ namespace RealismMod
         public static string TacticalCombo = "55818b164bdc2ddc698b456c";
         public static string UBGL = "55818b014bdc2ddc698b456b";
 
+        public static bool GetIPlayer(IPlayer x)
+        {
+            return x.ProfileId == Utils.GetYourPlayer().ProfileId;
+        }
+
+        public static async Task LoadLoot(Vector3 position, Quaternion rotation, string templateId)
+        {
+            Item item = Singleton<ItemFactory>.Instance.CreateItem(Utils.GenId(), templateId, null);
+            item.StackObjectsCount = 1;
+            item.SpawnedInSession = true;
+            ResourceKey[] resources = item.Template.AllResources.ToArray();
+            await LoadBundle(resources);
+            IPlayer player = Singleton<GameWorld>.Instance.RegisteredPlayers.FirstOrDefault(new Func<IPlayer, bool>(GetIPlayer));
+            Singleton<GameWorld>.Instance.ThrowItem(item, player, position, rotation, Vector3.zero, Vector3.zero);
+        }
+
+        public static async Task LoadBundle(ResourceKey[] resources)
+        {
+            await Singleton<PoolManager>.Instance.LoadBundlesAndCreatePools(PoolManager.PoolsCategory.Raid, PoolManager.AssemblyType.Local, resources, JobPriority.Immediate, null, PoolManager.DefaultCancellationToken);
+        }
+
         public static bool AreFloatsEqual(float a, float b, float epsilon = 0.001f)
         {
             float difference = Math.Abs(a - b);
             return difference < epsilon;
+        }
+
+        public static string GetRandomWeightedKey(Dictionary<string, int> items)
+        {
+            string result = "";
+            int totalWeight = 0;
+
+            foreach (var item in items) 
+            {
+                totalWeight += item.Value;
+            }
+
+            int randNumber = Utils.SystemRandom.Next(totalWeight);
+
+            foreach (var item in items)
+            {
+                int weight = item.Value;
+
+                if (randNumber >= weight)
+                {
+                    randNumber -= weight;
+                }
+                else
+                {
+                    result = item.Key;
+                    break;
+                }
+            }
+            return result;
         }
 
         public static bool IsConfItemNull(string[] confItemArray, int expectedLength = 0)
@@ -74,6 +152,7 @@ namespace RealismMod
         public static Player GetYourPlayer() 
         {
             GameWorld gameWorld = Singleton<GameWorld>.Instance;
+            if (gameWorld == null) return null;
             return gameWorld.MainPlayer;
         }
 
@@ -102,12 +181,12 @@ namespace RealismMod
 
             if (gameWorld == null || gameWorld.AllAlivePlayersList == null || gameWorld.MainPlayer == null || sessionResultPanel != null)
             {
-                Utils.IsReady = false;
+                Utils.PlayerIsReady = false;
                 Utils.WeaponIsReady = false;
                 Utils.IsInHideout = false;
                 return false;
             }
-            Utils.IsReady = true;
+            Utils.PlayerIsReady = true;
             return true;
         }
 
@@ -229,4 +308,6 @@ namespace RealismMod
             return mod.GetType() == TemplateIdToObjectMappingsClass.TypeTable[UBGL];
         }
     }
+
+  
 }

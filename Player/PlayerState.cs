@@ -23,6 +23,8 @@ namespace RealismMod
 
         public static float StressResistanceFactor = 0f;
 
+        public static float VitalityFactorStrong = 0f;
+
         public static float AimMoveSpeedBase = 0.5f;
 
         public static float AimMoveSpeedInjuryMulti = 1f;
