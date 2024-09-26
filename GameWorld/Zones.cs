@@ -3,6 +3,8 @@ using EFT.Interactive;
 using EFT.InventoryLogic;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
+using TMPro;
 using UnityEngine;
 
 namespace RealismMod
@@ -19,9 +21,8 @@ namespace RealismMod
     {
         public List<AudioClip> AudioClips = new List<AudioClip>();
         public Transform ParentTransform;
-
-        private float _minTimeBetweenClips = 1f;
-        private float _maxTimeBetweenClips = 2f;
+        public float MinTimeBetweenClips = 15f;
+        public float MaxTimeBetweenClips = 90f;
         private AudioSource _audioSource;
 
         private void Start()
@@ -29,18 +30,17 @@ namespace RealismMod
             _audioSource = GetComponent<AudioSource>();
 
             _audioSource = this.gameObject.AddComponent<AudioSource>();
-            _audioSource.volume = PluginConfig.test10.Value;
+            _audioSource.volume = 1f;
             _audioSource.loop = false;
             _audioSource.playOnAwake = false;
-            _audioSource.spatialBlend = 1.0f;
-            _audioSource.maxDistance = 300f;
-            _audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+            _audioSource.spatialBlend = 1.25f;
+            _audioSource.maxDistance = 25f;
+            _audioSource.maxDistance = 130f;
+            _audioSource.rolloffMode = AudioRolloffMode.Linear;
 
             StartCoroutine(PlayRandomAudio());
         }
-
-
-
+    
         private IEnumerator PlayRandomAudio()
         {
             while (true)
@@ -54,19 +54,29 @@ namespace RealismMod
 
                     AudioClip selectedClip = AudioClips[Random.Range(0, AudioClips.Count)];
 
-                    Vector3 randomPosition = ParentTransform.position + Random.onUnitSphere * PluginConfig.test9.Value;
-                    randomPosition.y = ParentTransform.position.y;
+                    float randomDistance = UnityEngine.Random.Range(45f, 95f);
+                    Vector3 randomPosition = ParentTransform.position + Random.onUnitSphere * randomDistance;
+                    randomPosition.y = Mathf.Clamp(randomPosition.y, ParentTransform.position.y - 25f, ParentTransform.position.y + 25f);
                     transform.position = randomPosition;
-                    _audioSource.dopplerLevel = UnityEngine.Random.Range(1f, 2f);  
+
+                    if (PluginConfig.ZoneDebug.Value) 
+                    {
+                        GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                        visualRepresentation.name = "AmbientAudioPlayerVisual";
+                        visualRepresentation.transform.parent = transform;
+                        visualRepresentation.transform.localScale = Vector3.one;
+                        visualRepresentation.transform.position = randomPosition;
+                        visualRepresentation.transform.rotation = ParentTransform.transform.rotation;
+                        visualRepresentation.GetComponent<Renderer>().material.color = new UnityEngine.Color(1, 0, 0, 1);
+                    }
+
                     _audioSource.clip = selectedClip;
                     _audioSource.Play();
 
                     yield return new WaitForSeconds(selectedClip.length);
-                    float waitTime = Random.Range(_minTimeBetweenClips, _maxTimeBetweenClips);
+                    float waitTime = Random.Range(MinTimeBetweenClips, MaxTimeBetweenClips);
                     yield return new WaitForSeconds(waitTime);
                 }
-                
-           
             }
         }
     }

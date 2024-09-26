@@ -1,5 +1,4 @@
-﻿using Audio.AmbientSubsystem;
-using Comfort.Common;
+﻿using Comfort.Common;
 using EFT;
 using EFT.Animals;
 using EFT.Ballistics;
@@ -7,7 +6,6 @@ using EFT.Communications;
 using EFT.UI;
 using SPT.Reflection.Patching;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -71,6 +69,11 @@ namespace RealismMod
         private static void PatchPrefix(BirdsSpawner __instance)
         {
             if (Plugin.FikaPresent) return;
+            if (GameWorldController.DoMapGasEvent || HazardTracker.IsPreExplosion || HazardTracker.HasExploded)
+            {
+                UnityEngine.Object.Destroy(__instance.gameObject);
+                return;
+            }
 
             Bird[] birds = __instance.gameObject.GetComponentsInChildren<Bird>();
 

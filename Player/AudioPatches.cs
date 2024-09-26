@@ -15,8 +15,12 @@ using HeadsetTemplate = GClass2556; //SetCompressor
 
 namespace RealismMod
 {
-/*    class AmbientSoundPlayerGroupPatch : ModulePatch
+    class AmbientSoundPlayerGroupPatch : ModulePatch
     {
+        private static string[] _clipsToDisable =
+        { 
+            "lark", "crow", "nightingale", "greenmocking", "woodpecker", "robin", "raven", "rook", "bullfinch", "starling", "sparrow"
+        };
         private static FieldInfo _playerGroupField;
 
         protected override MethodBase GetTargetMethod()
@@ -26,52 +30,17 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static void PatchPrefix(AmbientSoundPlayerGroup __instance)
+        private static bool PatchPrefix(AmbientSoundPlayerGroup __instance)
         {
             var soundPlayers = (List<AbstractAmbientSoundPlayer>)_playerGroupField.GetValue(__instance);
             foreach (var soundPlayer in soundPlayers)
             {
-                Logger.LogError("AbstractAmbientSoundPlayer go name " + soundPlayer.gameObject.name);
-                Logger.LogError("AbstractAmbientSoundPlayer name " + soundPlayer.name);
+                if (_clipsToDisable.Contains(soundPlayer.name.ToLower())) continue;
+                return false;
             }
-
-            AmbientSoundPlayerGroup[] ambientplayers = UnityEngine.Object.FindObjectsOfType<AmbientSoundPlayerGroup>();
-            Logger.LogError("ambientplayer count " + ambientplayers.Length);
-
-            foreach (var ambientplayer in ambientplayers)
-            {
-                Logger.LogError("ambientplayer " + ambientplayer.gameObject.name);
-            }
-
-            SeasonAmbientSoundPlayer[] seasonplayer = UnityEngine.Object.FindObjectsOfType<SeasonAmbientSoundPlayer>();
-            Logger.LogError("seasonplayer count " + seasonplayer.Length);
-            foreach (var seasonPlayer in seasonplayer)
-            {
-                Logger.LogError("SeasonAmbientSoundPlayer " + seasonPlayer.gameObject.name);
-            }
-
-            AmbientSoundPlayer[] abient = UnityEngine.Object.FindObjectsOfType<AmbientSoundPlayer>();
-            Logger.LogError("abient count " + abient.Length);
-            foreach (var abients in abient)
-            {
-                Logger.LogError("ambientsoundplayer " + abients.gameObject.name);
-            }
-
-            LoopAmbientSoundPlayer[] loopAmbientSoundPlayer = UnityEngine.Object.FindObjectsOfType<LoopAmbientSoundPlayer>();
-            Logger.LogError("loopAmbientSoundPlayer count " + loopAmbientSoundPlayer.Length);
-            foreach (var loops in loopAmbientSoundPlayer)
-            {
-                Logger.LogError("loopAmbientSoundPlayer " + loops.gameObject.name);
-            }
-
-            AbstractAmbientSoundPlayer[] abstractAmbientSoundPlayers = UnityEngine.Object.FindObjectsOfType<LoopAmbientSoundPlayer>();
-            Logger.LogError("abstractAmbientSoundPlayers count " + abstractAmbientSoundPlayers.Length);
-            foreach (var ab in abstractAmbientSoundPlayers)
-            {
-                Logger.LogError("ab " + ab.gameObject.name);
-            }
+            return false;
         }
-    }*/
+    }
 
 
     public class FireratePitchPatch : ModulePatch

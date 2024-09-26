@@ -1033,7 +1033,7 @@ namespace RealismMod
                 _effectsTime = 0f;
             }
 
-            if (player.HealthController.IsAlive && player.HealthController.DamageCoeff > 0f && Plugin.ServerConfig.enable_hazard_zones) AudioControllers.HazardZonesAudioController();
+            if (player.HealthController.IsAlive && player.HealthController.DamageCoeff > 0f && Plugin.ServerConfig.enable_hazard_zones) AudioController.HazardZonesAudioController();
             DoResourceDrain(player.ActiveHealthController, Time.deltaTime);
 
             if (!_addedPassiveRegenEffect && PluginConfig.PassiveRegen.Value)
@@ -2118,12 +2118,12 @@ namespace RealismMod
             float sprintFactor = PlayerState.IsSprinting ? 2f : 1f;
             float toxicItemFactor = ToxicItemCount * ToxicQuestItemFactor;
             float mapGasEventFactor = GameWorldController.DoMapGasEvent ? GameWorldController.GasEventStrength : 0f;
-            float factors = (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak) * sprintFactor;
+            float protectiveFactors = (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak);
 
             float passiveRegenRate = mapGasEventFactor <= 0f && ToxicItemCount <= 0 && !isInGasZone && HazardTracker.TotalToxicity > 0f ? _baseToxicityRecoveryRate * (2f - _percentReources) : 0f;
             float reductionRate = !isBeingHazarded ? HazardTracker.DetoxicationRate + passiveRegenRate : 0f;
             reductionRate = isInGasZone ? reductionRate * 0.5f : reductionRate;
-            float gasRate = (PlayerHazardBridge.TotalGasRate + toxicItemFactor + mapGasEventFactor) * factors;
+            float gasRate = ((PlayerHazardBridge.TotalGasRate * sprintFactor) + toxicItemFactor + mapGasEventFactor) * protectiveFactors; //only actual zone rate should be affected by spritning
             float totalRate = gasRate + reductionRate;
 
             float speed = totalRate > 0f ? 11f : 1.5f;

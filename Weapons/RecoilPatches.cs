@@ -641,13 +641,13 @@ namespace RealismMod
                 case 4:
                     return 0.4f;
                 case 5:
-                    return 0.5f;
+                    return 0.45f;
                 case 6:
-                    return 0.6f;
+                    return 0.5f;
                 case 7:
-                    return 0.7f;
+                    return 0.6f;
                 case >= 8:
-                    return 0.8f;
+                    return 0.7f;
                 default:
                     return 1;
             }

@@ -99,19 +99,19 @@ namespace RealismMod
                 case 1:
                     return 2.5f;
                 case 2:
-                    return 2.25f;
+                    return 2.3f;
                 case 3:
-                    return 2f;
+                    return 2.1f;
                 case 4:
-                    return 1.8f;
+                    return 1.9f;
                 case 5:
-                    return 1.7f;
+                    return 1.0f;
                 case 6:
-                    return 1.6f;
+                    return 1.7f;
                 case 7:
-                    return 1.5f;
+                    return 1.6f;
                 case >= 8:
-                    return 1.4f;
+                    return 1.5f;
                 default:
                     return 1;
             }

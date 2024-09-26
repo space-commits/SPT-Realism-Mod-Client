@@ -7,7 +7,7 @@ using EFT;
 
 namespace RealismMod
 {
-    public static class AudioControllers
+    public static class AudioController
     {
         private const float _baseBreathVolume = 0.2f;
         private static float _currentBreathClipLength = 0f;

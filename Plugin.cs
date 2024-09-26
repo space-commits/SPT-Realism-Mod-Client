@@ -380,8 +380,6 @@ namespace RealismMod
             MoveDaCube.InitTempBindings(Config); //TEMPORARY
             new GetAvailableActionsPatch().Enable(); //TEMPORARY
 
-
-
             LoadGeneralPatches();
             //hazards
             if (ServerConfig.enable_hazard_zones) 
@@ -556,7 +554,7 @@ namespace RealismMod
 
                 if (ServerConfig.headset_changes)
                 {
-                    AudioControllers.HeadsetVolumeAdjust();
+                    AudioController.HeadsetVolumeAdjust();
                     if (DeafeningController.PrismEffects != null)
                     {
                         DeafeningController.DoDeafening();
@@ -575,6 +573,7 @@ namespace RealismMod
 
         private void LoadGeneralPatches()
         {
+            new AmbientSoundPlayerGroupPatch().Enable();
             new DayTimeSpawnPatch().Enable();
             new BirdPatch().Enable();
 
