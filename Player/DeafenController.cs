@@ -113,6 +113,7 @@ namespace RealismMod
 
             float ambientGainMulti = 2f * (1f - Mathf.InverseLerp(0f, 30f, PluginConfig.RealTimeGain.Value));
             float headsetAmbientVol = (DeafeningController.AmbientVolume * ambientGainMulti) + PluginConfig.HeadsetAmbientMulti.Value;
+            float toxicMapEventAmbientFactor = GameWorldController.MuteAmbientAudio ? -100f : 0f;
 
             if (totalVolume != 0.0f || totalVignette != 0.0f)
             {
@@ -124,8 +125,8 @@ namespace RealismMod
                     Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", totalVolume + DeafeningController.GunsVolume);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("OcclusionVolume", totalVolume + DeafeningController.DryVolume);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", totalVolume + DeafeningController.DryVolume);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", totalVolume + DeafeningController.AmbientOccluded);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", totalVolume + DeafeningController.AmbientVolume);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", totalVolume + DeafeningController.AmbientOccluded + toxicMapEventAmbientFactor);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", totalVolume + DeafeningController.AmbientVolume + toxicMapEventAmbientFactor);
                 }
 
                 valuesAreReset = false;
@@ -139,20 +140,25 @@ namespace RealismMod
                     Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", DeafeningController.GunsVolume);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("OcclusionVolume", DeafeningController.DryVolume);
                     Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", DeafeningController.DryVolume);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", DeafeningController.AmbientOccluded);
-                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", DeafeningController.AmbientVolume);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", DeafeningController.AmbientOccluded + toxicMapEventAmbientFactor);
+                    Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", DeafeningController.AmbientVolume + toxicMapEventAmbientFactor);
                 }
             }
 
             if (DeafeningController.HasHeadSet && (RecoilController.IsFiringDeafen || GrenadeVolume > 0f || BotVolume > 0f))
             {
                 Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", PluginConfig.RealTimeGain.Value * PluginConfig.GainCutoff.Value);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol * (1f + (1f - PluginConfig.GainCutoff.Value)));
+                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", (headsetAmbientVol * (1f + (1f - PluginConfig.GainCutoff.Value))) + toxicMapEventAmbientFactor);
             }
             else if (DeafeningController.HasHeadSet)
             {
                 Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", PluginConfig.RealTimeGain.Value);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol + toxicMapEventAmbientFactor);
+            }
+            else if (GameWorldController.MuteAmbientAudio)
+            {
+                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", toxicMapEventAmbientFactor);
+                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", toxicMapEventAmbientFactor);
             }
 
         }

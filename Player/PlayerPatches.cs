@@ -81,7 +81,7 @@ namespace RealismMod
                 {
                     GearController.CheckForDevices(__instance.Inventory);
                     PlayerState.IsScav = Singleton<GameWorld>.Instance.MainPlayer.Profile.Info.Side == EPlayerSide.Savage;
-                    PlayerHazardBridge hazardBridge = __instance.gameObject.AddComponent<PlayerHazardBridge>();
+                    PlayerZoneBridge hazardBridge = __instance.gameObject.AddComponent<PlayerZoneBridge>();
                     hazardBridge._Player = __instance;
                 }
 

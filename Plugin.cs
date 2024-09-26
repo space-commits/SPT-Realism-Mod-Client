@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿using Audio.AmbientSubsystem;
+using BepInEx;
 using BepInEx.Bootstrap;
 using Comfort.Common;
 using EFT;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 using static RealismMod.Attributes;
-using static RealismMod.HazardZoneSpawner;
+using static RealismMod.ZoneSpawner;
 
 namespace RealismMod
 {
@@ -41,6 +42,8 @@ namespace RealismMod
         public static Dictionary<string, AudioClip> GasMaskAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> HazardZoneClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> DeviceAudioClips = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, AudioClip> GasEventAudioClips = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, AudioClip> GasEventUrbanClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, Sprite> LoadedSprites = new Dictionary<string, Sprite>();
         public static Dictionary<string, Texture> LoadedTextures = new Dictionary<string, Texture>();
 
@@ -229,6 +232,8 @@ namespace RealismMod
             string[] gasMaskDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\gasmask");
             string[] hazardDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones");
             string[] deviceDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\devices");
+            string[] gasEventAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\mapgas\\default");
+            string[] gasEventUrbanAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\mapgas\\urban");
 
             HitAudioClips.Clear();
             GasMaskAudioClips.Clear();
@@ -250,6 +255,14 @@ namespace RealismMod
             foreach (string fileDir in deviceDir)
             {
                 DeviceAudioClips[Path.GetFileName(fileDir)] = await RequestAudioClip(fileDir);
+            }
+            foreach (string fileDir in gasEventAmbient)
+            {
+                GasEventAudioClips[Path.GetFileName(fileDir)] = await RequestAudioClip(fileDir);
+            }
+            foreach (string fileDir in gasEventUrbanAmbient)
+            {
+                GasEventUrbanClips[Path.GetFileName(fileDir)] = await RequestAudioClip(fileDir);
             }
 
             Plugin.HasReloadedAudio = true;
@@ -344,21 +357,23 @@ namespace RealismMod
         
             try
             {
-                HazardZoneData.DeserializeZoneData();
-                LoadBundles();
                 LoadConfig();
+                LoadBundles();   
                 LoadSprites();
                 LoadTextures();
                 LoadAudioClips();
                 CacheIcons();
+                ZoneData.DeserializeZoneData();
             }
             catch (Exception exception)
             {
                 Logger.LogError(exception);
             }
 
+            GameWorldController.CheckForEvents();
+
             LoadMountingUI();
-            //LoadWeatherController();
+            LoadWeatherController();
             LoadHealthController();
             PluginConfig.InitConfigBindings(Config);
 
@@ -560,6 +575,7 @@ namespace RealismMod
 
         private void LoadGeneralPatches()
         {
+            new DayTimeSpawnPatch().Enable();
             new BirdPatch().Enable();
 
             //misc

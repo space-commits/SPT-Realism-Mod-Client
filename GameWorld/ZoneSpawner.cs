@@ -8,7 +8,7 @@ using UnityEngine.AI;
 
 namespace RealismMod
 {
-    public static class HazardZoneSpawner
+    public static class ZoneSpawner
     {
         public const float MinBotSpawnDistanceFromPlayer = 150f;
 
@@ -45,10 +45,20 @@ namespace RealismMod
             return ProfileData.PMCLevel >= 20 || QuestHasUnlockedZone("66dad1a18cbba6e558486336");
         }
 
+        public static void CreateAmbientAudioPlayers() 
+        {
+            GameObject audioGO = new GameObject("AmbientAudioPlayer");
+            var audioPlayer = audioGO.AddComponent<AmbientAudioPlayer>();
+            foreach (var clip in Plugin.GasEventAudioClips) 
+            {
+                audioPlayer.AudioClips.Add(clip.Value);
+            }
+        }
+
         //for player, get closest spawn. For bot, sort by min distance, or furthest from player failing that.
         public static Vector3 GetSafeSpawnPoint(Player entitiy, bool isBot, bool blocksNav, bool isInRads)
         {
-            IEnumerable<Vector3> spawns = HazardZoneData.GetSafeSpawn();
+            IEnumerable<Vector3> spawns = ZoneData.GetSafeSpawn();
             if (spawns == null || (isBot && !blocksNav) || (!isBot && GameWorldController.CurrentMap == "laboratory" && !isInRads)) return entitiy.Transform.position; //can't account for bot vs player, because of maps like Labs where player should spawn in gas
             IEnumerable<Vector3> validSpawns = spawns;
             Player player = Utils.GetYourPlayer();
@@ -70,7 +80,7 @@ namespace RealismMod
 
         public static void CreateZones(ZoneCollection collection)
         {
-            var zones = HazardZoneData.GetZones(collection.ZoneType, GameWorldController.CurrentMap);
+            var zones = ZoneData.GetZones(collection.ZoneType, GameWorldController.CurrentMap);
             if (zones == null) return;
             foreach (var zone in zones)
             {

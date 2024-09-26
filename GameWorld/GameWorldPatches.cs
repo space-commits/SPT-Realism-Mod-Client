@@ -1,4 +1,5 @@
-﻿using Comfort.Common;
+﻿using Audio.AmbientSubsystem;
+using Comfort.Common;
 using EFT;
 using EFT.Animals;
 using EFT.Ballistics;
@@ -6,6 +7,7 @@ using EFT.Communications;
 using EFT.UI;
 using SPT.Reflection.Patching;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -14,6 +16,25 @@ using QuestUIClass = GClass2046;
 
 namespace RealismMod
 {
+    //cult
+    class DayTimeSpawnPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(ZoneLeaveControllerClass).GetMethod("IsDayByHour");
+        }
+        [PatchPrefix]
+        private static bool PatchPrefix(ref bool __result)
+        {
+            int rnd = UnityEngine.Random.Range(0, 101);
+            if (rnd <= 5 || GameWorldController.IsHalloween) 
+            {
+                __result = false;
+                return false;
+            }
+            return true;
+        }
+    }
 
     public class QuestCompletePatch : ModulePatch
     {
@@ -91,10 +112,12 @@ namespace RealismMod
             if (Plugin.ServerConfig.enable_hazard_zones)
             {
                 GameWorldController.CurrentMap = Singleton<GameWorld>.Instance.MainPlayer.Location.ToLower();
-                HazardZoneSpawner.CreateZones(HazardZoneData.GasZoneLocations);
-                HazardZoneSpawner.CreateZones(HazardZoneData.RadZoneLocations);
-                if (HazardZoneSpawner.ShouldSpawnDynamicZones()) HazardZoneSpawner.CreateZones(HazardZoneData.RadAssetZoneLocations);
-                HazardZoneSpawner.CreateZones(HazardZoneData.SafeZoneLocations);
+                GameWorldController.MapWithDynamicWeather = GameWorldController.CurrentMap.Contains("factory") || GameWorldController.CurrentMap == "laboratory" ? false : true;
+                ZoneSpawner.CreateZones(ZoneData.GasZoneLocations);
+                ZoneSpawner.CreateZones(ZoneData.RadZoneLocations);
+                if (ZoneSpawner.ShouldSpawnDynamicZones()) ZoneSpawner.CreateZones(ZoneData.RadAssetZoneLocations);
+                ZoneSpawner.CreateZones(ZoneData.SafeZoneLocations);
+                if (GameWorldController.DoMapGasEvent) ZoneSpawner.CreateAmbientAudioPlayers(); // make it take an argument for specific ambient audio zones? dynamically create a dictionary of ambient audio zones?
                 HazardTracker.GetHazardValues(ProfileData.CurrentProfileId);
                 HazardTracker.ResetTracker();
             }

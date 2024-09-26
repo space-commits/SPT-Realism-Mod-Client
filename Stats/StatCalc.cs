@@ -492,17 +492,17 @@ namespace RealismMod
             {
                 if (Utils.IsSilencer(mod))
                 {
-                    modAutoROF *= 2.5f;
-                    modSemiROF *= 2.5f;
-                    modMalfChance *= 4f;
-                    modDuraBurn = ((modDuraBurn - 1f) * 1.15f) + 1f;
+                    modAutoROF *= 2f;
+                    modSemiROF *= 2f;
+                    modMalfChance *= 1.2f;
+                    modDuraBurn = ((modDuraBurn - 1f) * 1.2f) + 1f;
                 }
                 else
                 {
-                    modAutoROF *= 3f;
-                    modSemiROF *= 3f;
-                    modMalfChance *= 10f;
-                    modDuraBurn = ((modDuraBurn - 1f) * 2.8f) + 1f;
+                    modAutoROF *= 2.5f;
+                    modSemiROF *= 2.5f;
+                    modMalfChance *= 2f;
+                    modDuraBurn = ((modDuraBurn - 1f) * 1.75f) + 1f;
                 }
                 return;
             }

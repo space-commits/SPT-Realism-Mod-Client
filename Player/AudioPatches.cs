@@ -1,10 +1,11 @@
-﻿using SPT.Reflection.Patching;
-using SPT.Reflection.Utils;
+﻿using Audio.AmbientSubsystem;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
+using SPT.Reflection.Patching;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -14,6 +15,65 @@ using HeadsetTemplate = GClass2556; //SetCompressor
 
 namespace RealismMod
 {
+/*    class AmbientSoundPlayerGroupPatch : ModulePatch
+    {
+        private static FieldInfo _playerGroupField;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            _playerGroupField = AccessTools.Field(typeof(AmbientSoundPlayerGroup), "_soundPlayers");
+            return typeof(AmbientSoundPlayerGroup).GetMethod("Play");
+        }
+
+        [PatchPrefix]
+        private static void PatchPrefix(AmbientSoundPlayerGroup __instance)
+        {
+            var soundPlayers = (List<AbstractAmbientSoundPlayer>)_playerGroupField.GetValue(__instance);
+            foreach (var soundPlayer in soundPlayers)
+            {
+                Logger.LogError("AbstractAmbientSoundPlayer go name " + soundPlayer.gameObject.name);
+                Logger.LogError("AbstractAmbientSoundPlayer name " + soundPlayer.name);
+            }
+
+            AmbientSoundPlayerGroup[] ambientplayers = UnityEngine.Object.FindObjectsOfType<AmbientSoundPlayerGroup>();
+            Logger.LogError("ambientplayer count " + ambientplayers.Length);
+
+            foreach (var ambientplayer in ambientplayers)
+            {
+                Logger.LogError("ambientplayer " + ambientplayer.gameObject.name);
+            }
+
+            SeasonAmbientSoundPlayer[] seasonplayer = UnityEngine.Object.FindObjectsOfType<SeasonAmbientSoundPlayer>();
+            Logger.LogError("seasonplayer count " + seasonplayer.Length);
+            foreach (var seasonPlayer in seasonplayer)
+            {
+                Logger.LogError("SeasonAmbientSoundPlayer " + seasonPlayer.gameObject.name);
+            }
+
+            AmbientSoundPlayer[] abient = UnityEngine.Object.FindObjectsOfType<AmbientSoundPlayer>();
+            Logger.LogError("abient count " + abient.Length);
+            foreach (var abients in abient)
+            {
+                Logger.LogError("ambientsoundplayer " + abients.gameObject.name);
+            }
+
+            LoopAmbientSoundPlayer[] loopAmbientSoundPlayer = UnityEngine.Object.FindObjectsOfType<LoopAmbientSoundPlayer>();
+            Logger.LogError("loopAmbientSoundPlayer count " + loopAmbientSoundPlayer.Length);
+            foreach (var loops in loopAmbientSoundPlayer)
+            {
+                Logger.LogError("loopAmbientSoundPlayer " + loops.gameObject.name);
+            }
+
+            AbstractAmbientSoundPlayer[] abstractAmbientSoundPlayers = UnityEngine.Object.FindObjectsOfType<LoopAmbientSoundPlayer>();
+            Logger.LogError("abstractAmbientSoundPlayers count " + abstractAmbientSoundPlayers.Length);
+            foreach (var ab in abstractAmbientSoundPlayers)
+            {
+                Logger.LogError("ab " + ab.gameObject.name);
+            }
+        }
+    }*/
+
+
     public class FireratePitchPatch : ModulePatch
     {
         private static FieldInfo _playerField;

@@ -17,7 +17,6 @@ namespace RealismMod
 
         private WeatherController wc;
         public bool DoExplosionEffect { get; set; }
-        public bool Enable { get; set; }
         public float TargetCloudDensity { get; set; }
         public float TargetWindMagnitude { get; set; }
         public float TargetFog { get; set; }
@@ -25,6 +24,13 @@ namespace RealismMod
         public float TargetRain { get; set; }
         public Vector2 TargetTopWindDirection { get; set; }
         public WeatherDebug.Direction TargetWindDirection { get; set; }
+        private bool ModifyWeather
+        { 
+            get 
+            {
+                return HazardTracker.IsPreExplosion || HazardTracker.HasExploded || GameWorldController.DoMapGasEvent;
+            } 
+        }
 
         private float _elapsedTime = 0f;
 
@@ -32,34 +38,42 @@ namespace RealismMod
         {
         }
 
+        //do not run on labs or factory
         void Update() 
         {
+            if (!GameWorldController.MapWithDynamicWeather || !GameWorldController.GameStarted || !ModifyWeather) return;
             if (wc == null) wc = WeatherController.Instance; //keep trying to get instance
-            if (GameWorldController.GameStarted && wc != null)
+            if (wc != null)
             {
-                HazardTracker.IsPreExplosion = true;
+                //HazardTracker.IsPreExplosion = true;
                 if (HazardTracker.IsPreExplosion && !HazardTracker.HasExploded) DoPreExplosionWeather();
-                if (HazardTracker.HasExploded) DoExplosionWeather();
-                wc.WeatherDebug.Enabled = Enable;
-                if (Enable) 
-                {
-                    wc.WeatherDebug.CloudDensity = TargetCloudDensity;
-                    wc.WeatherDebug.WindMagnitude = TargetWindMagnitude;
-                    wc.WeatherDebug.TopWindDirection = TargetTopWindDirection;
-                    wc.WeatherDebug.WindDirection = TargetWindDirection;
-                    FogField.SetValue(wc.WeatherDebug, TargetFog);
-                    LighteningThunderField.SetValue(wc.WeatherDebug, TargetLighteningThunder);
-                    RainField.SetValue(wc.WeatherDebug, TargetRain);
-                }
+                else if (HazardTracker.HasExploded) DoExplosionWeather();
+                else if (GameWorldController.DoMapGasEvent) DoMapGasEventWeather();
+
+                wc.WeatherDebug.Enabled = true;
+                wc.WeatherDebug.CloudDensity = TargetCloudDensity;
+                wc.WeatherDebug.WindMagnitude = TargetWindMagnitude;
+                wc.WeatherDebug.TopWindDirection = TargetTopWindDirection;
+                wc.WeatherDebug.WindDirection = TargetWindDirection;
+                FogField.SetValue(wc.WeatherDebug, TargetFog);
+                LighteningThunderField.SetValue(wc.WeatherDebug, TargetLighteningThunder);
+                RainField.SetValue(wc.WeatherDebug, TargetRain);
             }       
         }
 
-        //change all this to a lerp
+        private void DoMapGasEventWeather() 
+        {
+            TargetRain = Mathf.Lerp(TargetRain, 0f, 0.025f * Time.deltaTime);
+            TargetFog = Mathf.Lerp(TargetFog, PluginConfig.test1.Value, 0.025f * Time.deltaTime);
+            TargetCloudDensity = Mathf.Lerp(TargetCloudDensity, 0f, 0.025f * Time.deltaTime);
+            TargetLighteningThunder = Mathf.Lerp(TargetLighteningThunder, 0f, 0.1f * Time.deltaTime);
+            TargetWindMagnitude = Mathf.Lerp(TargetWindMagnitude, 0f, 0.05f * Time.deltaTime);
+        }
+
         private void DoExplosionWeather()
         {
             float delay = 200f;
             _elapsedTime += Time.deltaTime;
-            wc.WeatherDebug.Enabled = Enable;
 
             TargetWindDirection = WeatherDebug.Direction.South;
             TargetTopWindDirection = Vector2.up;
@@ -83,7 +97,6 @@ namespace RealismMod
 
         private void DoPreExplosionWeather()
         {
-            Enable = true;
             TargetCloudDensity = 1;
             TargetFog = 0.05f;
             TargetRain = 0.1f;

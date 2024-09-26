@@ -10,6 +10,17 @@ using Comfort.Common;
 
 namespace RealismMod
 {
+    public enum EZoneType
+    {
+        Radiation,
+        Gas,
+        RadAssets,
+        GasAssets,
+        SafeZone,
+        Quest,
+        SFX
+    }
+
     public static class Assets
     {
         //hazard assets
@@ -287,6 +298,7 @@ namespace RealismMod
         public List<Zone> Zones { get; set; }
         public List<Asset> Assets { get; set; }
         public List<Loot> Loot { get; set; }
+        public List<string> AudioFiles { get; set; }
     }
 
     public interface ZoneCollection 
@@ -514,7 +526,7 @@ namespace RealismMod
         public List<HazardLocation> Reserve { get; set; }
     }
 
-    public static class HazardZoneData
+    public static class ZoneData
     {
         public static SafeZones SafeZoneLocations;
         public static GasZones GasZoneLocations;

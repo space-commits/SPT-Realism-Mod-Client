@@ -121,6 +121,8 @@ namespace RealismMod
 
     public class RealismHealthController
     {
+        public const float ToxicQuestItemFactor = 0.05f;
+
         HashSet<string> ToxicItems = new HashSet<string>(new string[] {
             "593a87af86f774122f54a951",
             "5b4c81bd86f77418a75ae159",
@@ -169,7 +171,7 @@ namespace RealismMod
 
         public DamageTracker DmgeTracker { get; }
 
-        public PlayerHazardBridge PlayerHazardBridge { get; private set; }
+        public PlayerZoneBridge PlayerHazardBridge { get; private set; }
 
         public bool HasAdrenalineEffect { get; set; } = false;
 
@@ -2071,7 +2073,7 @@ namespace RealismMod
 
             if (PlayerHazardBridge == null)
             {
-                PlayerHazardBridge = player.gameObject.GetComponent<PlayerHazardBridge>();
+                PlayerHazardBridge = player.gameObject.GetComponent<PlayerZoneBridge>();
             }
 
             if (!player.HealthController.IsAlive || player.HealthController.DamageCoeff <= 0f) return;
@@ -2114,13 +2116,14 @@ namespace RealismMod
             bool zonePreventsHeal = isInGasZone && GearController.CurrentGasProtection <= 0f;
             bool isBeingHazarded = zonePreventsHeal || IsCoughingInGas;
             float sprintFactor = PlayerState.IsSprinting ? 2f : 1f;
-            float toxicItemFactor = ToxicItemCount * 0.05f;
+            float toxicItemFactor = ToxicItemCount * ToxicQuestItemFactor;
+            float mapGasEventFactor = GameWorldController.DoMapGasEvent ? GameWorldController.GasEventStrength : 0f;
             float factors = (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak) * sprintFactor;
 
-            float passiveRegenRate = ToxicItemCount <= 0 && !isInGasZone && HazardTracker.TotalToxicity > 0f ? _baseToxicityRecoveryRate * (2f - _percentReources) : 0f;
+            float passiveRegenRate = mapGasEventFactor <= 0f && ToxicItemCount <= 0 && !isInGasZone && HazardTracker.TotalToxicity > 0f ? _baseToxicityRecoveryRate * (2f - _percentReources) : 0f;
             float reductionRate = !isBeingHazarded ? HazardTracker.DetoxicationRate + passiveRegenRate : 0f;
             reductionRate = isInGasZone ? reductionRate * 0.5f : reductionRate;
-            float gasRate = (PlayerHazardBridge.TotalGasRate + toxicItemFactor) * factors;
+            float gasRate = (PlayerHazardBridge.TotalGasRate + toxicItemFactor + mapGasEventFactor) * factors;
             float totalRate = gasRate + reductionRate;
 
             float speed = totalRate > 0f ? 11f : 1.5f;

@@ -227,20 +227,20 @@ namespace RealismMod
                 float subFactor = 0f;
                 if (!WeaponStats.CanCycleSubs && ammoToFire.ammoHear == 1)
                 {
-                    float suppFactor = __instance.IsSilenced || WeaponStats.HasBooster ? 0.2f : 1f;
+                    float suppFactor = __instance.IsSilenced || WeaponStats.HasBooster ? 0.25f : 1f;
                     if (ammoToFire.Caliber == "762x39")
                     {
-                        subFactor = 0.04f * (1f - malfDelta) * suppFactor;
+                        subFactor = 0.04f * suppFactor; // * (1f - malfDelta)
                     }
                     else
                     {
-                        subFactor = 0.055f * (1f - malfDelta) * suppFactor;
+                        subFactor = 0.055f * suppFactor; // * (1f - malfDelta)
                     }
                 }
 
                 float totalFactors = (float)durabilityMalfChance * overheatMalfChance * ammoMalfChance * magMalfChance * shotFactor * fireRateFactor * (float)__instance.Item.Buff.MalfunctionProtections;
                 float totalMalfChance = (baseWeaponMalfChance + subFactor) * totalFactors;
-                __result = totalMalfChance * (PluginConfig.EnableBallisticsLogging.Value ? PluginConfig.MalfMulti.Value : 1f);
+                __result = totalMalfChance * PluginConfig.MalfMulti.Value;
 
                 if (PluginConfig.EnableBallisticsLogging.Value)
                 {

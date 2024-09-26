@@ -154,7 +154,7 @@ namespace RealismMod
 
         }
 
-        public static void UpdateFilterResource(Player player, PlayerHazardBridge phb)
+        public static void UpdateFilterResource(Player player, PlayerZoneBridge phb)
         {
             HasGasFilter = false;
             Item gasmask = GetSlotItem(player, EquipmentSlot.FaceCover);

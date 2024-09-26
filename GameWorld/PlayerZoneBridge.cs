@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace RealismMod
 {
-    public class PlayerHazardBridge : MonoBehaviour
+    public class PlayerZoneBridge : MonoBehaviour
     {
         private const float BOT_INTERVAL = 10f;
         private const float SPAWNTIME = 30f;
@@ -118,7 +118,7 @@ namespace RealismMod
 
         private void MoveEntityToSafeLocation()
         {
-            _Player.Transform.position = HazardZoneSpawner.GetSafeSpawnPoint(_Player, IsBot, ZoneBlocksNav, RadZoneCount > 0);
+            _Player.Transform.position = ZoneSpawner.GetSafeSpawnPoint(_Player, IsBot, ZoneBlocksNav, RadZoneCount > 0);
             Utils.Logger.LogWarning("Realism Mod: Spawned in Hazard, moved to " + _Player.Transform.position + ", Was Bot? " + IsBot);
         }
 

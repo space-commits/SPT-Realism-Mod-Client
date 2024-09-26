@@ -46,8 +46,8 @@ namespace RealismMod
                 if (_gasDeviceTimer > _currentGasClipLength && _gasDeviceTimer >= GetGasDelayTime())
                 {
                     Player player = Utils.GetYourPlayer();
-                    PlayerHazardBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;
-                    if (player != null && bridge != null && ((bridge.GasZoneCount > 0 && !bridge.IsProtectedFromSafeZone) || Plugin.RealHealthController.ToxicItemCount > 0))
+                    PlayerZoneBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;
+                    if (player != null && bridge != null && (((bridge.GasZoneCount > 0 || GameWorldController.DoMapGasEvent) && !bridge.IsProtectedFromSafeZone) || Plugin.RealHealthController.ToxicItemCount > 0))
                     {
                         PlayGasAnalyserClips(player, bridge);
                         _gasDeviceTimer = 0f;
@@ -65,7 +65,7 @@ namespace RealismMod
                 if (_geigerDeviceTimer > _currentGeigerClipLength && _geigerDeviceTimer >= GeRadDelayTime())
                 {
                     Player player = Utils.GetYourPlayer();
-                    PlayerHazardBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;
+                    PlayerZoneBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;
                     if (player != null && bridge != null && (bridge.RadZoneCount > 0 || HazardTracker.TotalRadiationRate > 0f) && !bridge.IsProtectedFromSafeZone)
                     {
                         PlayGeigerClips(player, bridge);
@@ -77,7 +77,8 @@ namespace RealismMod
 
         public static string GetGasAnalsyerClip(float gasLevel) 
         {
-            if (Plugin.RealHealthController.ToxicItemCount > 0 && gasLevel <= 0f) return "gasBeep1.wav";
+            gasLevel += GameWorldController.GasEventStrength;
+            gasLevel += Plugin.RealHealthController.ToxicItemCount * RealismHealthController.ToxicQuestItemFactor;
 
             switch (gasLevel) 
             {
@@ -127,7 +128,7 @@ namespace RealismMod
             }
         }
 
-        public static void PlayGasAnalyserClips(Player player, PlayerHazardBridge bridge)
+        public static void PlayGasAnalyserClips(Player player, PlayerZoneBridge bridge)
         {
             string clip = GetGasAnalsyerClip(bridge.TotalGasRate);
             if (clip == null) return;
@@ -136,7 +137,7 @@ namespace RealismMod
             Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), audioClip, 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, GasDeviceVolume * PluginConfig.DeviceVolume.Value, EOcclusionTest.None, null, false);
         }
 
-        public static void PlayGeigerClips(Player player, PlayerHazardBridge bridge)
+        public static void PlayGeigerClips(Player player, PlayerZoneBridge bridge)
         {
             string[] clips = GetGeigerClip(bridge.TotalRadRate);
             if (clips == null) return;

@@ -631,27 +631,29 @@ namespace RealismMod
             switch (shot)
             {
                 case 0:
+                    return 0.9f;
                 case 1:
-                case 2:
-                    return 0.05f;
-                case 3:
-                    return 0.1f;
-                case 4:
                     return 0.15f;
-                case 5:
+                case 2:
                     return 0.2f;
-                case 6:
-                    return 0.25f;
-                case 7:
-                    return 0.35f;
-                case >= 8:
+                case 3:
+                    return 0.3f;
+                case 4:
+                    return 0.4f;
+                case 5:
                     return 0.5f;
+                case 6:
+                    return 0.6f;
+                case 7:
+                    return 0.7f;
+                case >= 8:
+                    return 0.8f;
                 default:
                     return 1;
             }
         }
 
-        public static float ShotModifier(int shotCount)
+        public static float RifleShotModifier(int shotCount)
         {
             return 0.95f + (shotCount * 0.05f);
         }
@@ -684,7 +686,7 @@ namespace RealismMod
                 /*float opticLimit = StanceController.IsAiming && WeaponStats.HasOptic ? 15f * fovFactor : Plugin.HRecLimitMulti.Value * fovFactor;*/
 
                 float pistolShotFactor = firearmController.Weapon.WeapClass == "pistol" && firearmController.Weapon.SelectedFireMode == Weapon.EFireMode.fullauto ? PistolShotFactor(RecoilController.ShotCount) : 1f;
-                float rifleShotFactor = firearmController.Weapon.WeapClass != "pistol" ? Mathf.Clamp(ShotModifier(RecoilController.ShotCount), 0.95f, 1.15f): 1f;
+                float rifleShotFactor = firearmController.Weapon.WeapClass != "pistol" ? Mathf.Clamp(RifleShotModifier(RecoilController.ShotCount), 0.95f, 1.15f): 1f;
 
                 //BSG stuff related to recoil modifier based on shot index/count. Unused by Realism mod.
                 int shotIndex = (int)shotIndexField.GetValue(__instance) + 1;
