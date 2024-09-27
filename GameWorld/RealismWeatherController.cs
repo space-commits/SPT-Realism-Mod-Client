@@ -24,6 +24,7 @@ namespace RealismMod
         public float TargetRain { get; set; }
         public Vector2 TargetTopWindDirection { get; set; }
         public WeatherDebug.Direction TargetWindDirection { get; set; }
+
         private bool ModifyWeather
         { 
             get 
@@ -33,6 +34,9 @@ namespace RealismMod
         }
 
         private float _elapsedTime = 0f;
+        private float _gasFogTimer = 0f;
+        private float _targetGasStrength = 0.15f;
+        private float _targetGasCloudStrength = 0f;
 
         void Awake()
         {
@@ -63,9 +67,18 @@ namespace RealismMod
 
         private void DoMapGasEventWeather() 
         {
+            _gasFogTimer += Time.deltaTime;
+
+            if (_gasFogTimer >= 300f)
+            {
+                _targetGasStrength = UnityEngine.Random.Range(0.05f, 0.12f);
+                _targetGasCloudStrength = UnityEngine.Random.Range(-0.4f, 1f);
+                _gasFogTimer = 0f;
+            }
+
             TargetRain = Mathf.Lerp(TargetRain, 0f, 0.025f * Time.deltaTime);
-            TargetFog = Mathf.Lerp(TargetFog, PluginConfig.test1.Value, 0.025f * Time.deltaTime);
-            TargetCloudDensity = Mathf.Lerp(TargetCloudDensity, 0f, 0.025f * Time.deltaTime);
+            TargetFog = Mathf.Lerp(TargetFog, _targetGasStrength, 0.025f * Time.deltaTime);
+            TargetCloudDensity = Mathf.Lerp(TargetCloudDensity, _targetGasCloudStrength, 0.025f * Time.deltaTime);
             TargetLighteningThunder = Mathf.Lerp(TargetLighteningThunder, 0f, 0.1f * Time.deltaTime);
             TargetWindMagnitude = Mathf.Lerp(TargetWindMagnitude, 0f, 0.05f * Time.deltaTime);
         }

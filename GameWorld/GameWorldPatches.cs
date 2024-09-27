@@ -4,6 +4,7 @@ using EFT.Animals;
 using EFT.Ballistics;
 using EFT.Communications;
 using EFT.UI;
+using Sirenix.Serialization;
 using SPT.Reflection.Patching;
 using System;
 using System.Linq;
@@ -114,13 +115,24 @@ namespace RealismMod
             ProfileData.CurrentProfileId = Utils.GetYourPlayer().ProfileId;
             if (Plugin.ServerConfig.enable_hazard_zones)
             {
+                //update info such as events and average server player level
+                Plugin.RequestRealismDataFromServer(false, true);
+
+                //update tracked map info
                 GameWorldController.CurrentMap = Singleton<GameWorld>.Instance.MainPlayer.Location.ToLower();
                 GameWorldController.MapWithDynamicWeather = GameWorldController.CurrentMap.Contains("factory") || GameWorldController.CurrentMap == "laboratory" ? false : true;
+
+                //audio components
+                AudioController.CreateAudioComponent();
+                if (GameWorldController.DoMapGasEvent) ZoneSpawner.CreateAmbientAudioPlayers();
+
+                //spawn zones
                 ZoneSpawner.CreateZones(ZoneData.GasZoneLocations);
                 ZoneSpawner.CreateZones(ZoneData.RadZoneLocations);
                 if (ZoneSpawner.ShouldSpawnDynamicZones()) ZoneSpawner.CreateZones(ZoneData.RadAssetZoneLocations);
                 ZoneSpawner.CreateZones(ZoneData.SafeZoneLocations);
-                if (GameWorldController.DoMapGasEvent) ZoneSpawner.CreateAmbientAudioPlayers(); // make it take an argument for specific ambient audio zones? dynamically create a dictionary of ambient audio zones?
+               
+                //hazardtracker 
                 HazardTracker.GetHazardValues(ProfileData.CurrentProfileId);
                 HazardTracker.ResetTracker();
             }

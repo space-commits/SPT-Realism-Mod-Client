@@ -16,7 +16,9 @@ using static RealismMod.ZoneSpawner;
 
 namespace RealismMod
 {
-    public class RealismConfig
+    public interface IRealismInfo { }
+
+    public class RealismConfig : IRealismInfo
     {
         public bool recoil_attachment_overhaul { get; set; }
         public bool malf_changes { get; set; }
@@ -32,6 +34,14 @@ namespace RealismMod
         public bool enable_hazard_zones { get; set; }   
     }
 
+    public class RealismInfo : IRealismInfo
+    {
+        public bool IsHalloween { get; set; }
+        public bool DoGasEvent { get; set; }
+        public bool IsChristmas { get; set; }
+        public int AveragePlayerLevel { get; set; }
+    }
+
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.PLUGINVERSION)]
     public class Plugin : BaseUnityPlugin
     {
@@ -43,11 +53,8 @@ namespace RealismMod
         public static Dictionary<string, AudioClip> HazardZoneClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> DeviceAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> GasEventAudioClips = new Dictionary<string, AudioClip>();
-        public static Dictionary<string, AudioClip> GasEventUrbanClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, Sprite> LoadedSprites = new Dictionary<string, Sprite>();
         public static Dictionary<string, Texture> LoadedTextures = new Dictionary<string, Texture>();
-
-        public static RealismConfig ServerConfig;
 
         private string _baseBundleFilepath;
 
@@ -65,8 +72,8 @@ namespace RealismMod
         public static AssetBundle ExplosionBundle { get; private set; }
 
         //weather controller
-        public static GameObject RealismWeatherGameObject { get; private set; }
-        public RealismWeatherController RealismWeatherComponent;
+        private GameObject RealismWeatherGameObject { get; set; }
+        public static RealismWeatherController RealismWeatherComponent;
 
         public static bool HasReloadedAudio = false;
         public static bool FikaPresent = false;
@@ -80,7 +87,10 @@ namespace RealismMod
 
         private bool _gotProfileId = false;
 
-        private void LoadConfig()
+        public static RealismConfig ServerConfig;
+        public static RealismInfo ModInfo;
+
+        private static T UpdateInfoFromServer<T>(string route) where T : class, IRealismInfo
         {
             var settings = new JsonSerializerSettings
             {
@@ -89,13 +99,20 @@ namespace RealismMod
 
             try
             {
-                var jsonString = RequestHandler.GetJson("/RealismMod/GetInfo");
-                ServerConfig = JsonConvert.DeserializeObject<RealismConfig>(jsonString);
+                var json = RequestHandler.GetJson(route);
+                return JsonConvert.DeserializeObject<T>(json);
             }
             catch (Exception ex)
             {
-                Logger.LogError($"REALISM MOD ERROR: FAILED TO FETCH CONFIG DATA FROM SERVER: {ex.Message}");
+                Utils.Logger.LogError($"REALISM MOD ERROR: FAILED TO FETCH DATA FROM SERVER USING ROUTE {route}: {ex.Message}");
+                return null;    
             }
+        }
+
+        public static void RequestRealismDataFromServer(bool updateAll = true, bool updateModInfo = false)
+        {
+            if (updateAll) ServerConfig = UpdateInfoFromServer<RealismConfig>("/RealismMod/GetConfig");
+            if (updateAll || updateModInfo) ModInfo = UpdateInfoFromServer<RealismInfo>("/RealismMod/GetInfo");
         }
 
         private async void CacheIcons()
@@ -233,12 +250,13 @@ namespace RealismMod
             string[] hazardDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones");
             string[] deviceDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\devices");
             string[] gasEventAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\mapgas\\default");
-            string[] gasEventUrbanAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\mapgas\\urban");
 
             HitAudioClips.Clear();
             GasMaskAudioClips.Clear();
             HazardZoneClips.Clear();
             DeviceAudioClips.Clear();
+            GasEventAudioClips.Clear();
+
 
             foreach (string fileDir in hitSoundsDir)
             {
@@ -260,11 +278,7 @@ namespace RealismMod
             {
                 GasEventAudioClips[Path.GetFileName(fileDir)] = await RequestAudioClip(fileDir);
             }
-            foreach (string fileDir in gasEventUrbanAmbient)
-            {
-                GasEventUrbanClips[Path.GetFileName(fileDir)] = await RequestAudioClip(fileDir);
-            }
-
+   
             Plugin.HasReloadedAudio = true;
         }
 
@@ -357,7 +371,7 @@ namespace RealismMod
         
             try
             {
-                LoadConfig();
+                RequestRealismDataFromServer();
                 LoadBundles();   
                 LoadSprites();
                 LoadTextures();
@@ -369,8 +383,6 @@ namespace RealismMod
             {
                 Logger.LogError(exception);
             }
-
-            GameWorldController.CheckForEvents();
 
             LoadMountingUI();
             LoadWeatherController();
@@ -496,11 +508,31 @@ namespace RealismMod
                 }
             }
         }
+
+        private void ZoneDebugUpdate() 
+        {
+            if (Input.GetKeyDown(KeyCode.Keypad1))
+            {
+                var player = Utils.GetYourPlayer().Transform;
+                Utils.LoadLoot(player.position, player.rotation, PluginConfig.TargetZone.Value);
+                Utils.Logger.LogWarning("\"position\": {" + "\"x\":" + player.position.x + "," + "\"y\":" + player.position.y + "," + "\"z\":" + player.position.z + "},");
+                Utils.Logger.LogWarning("new Vector3(" + player.position.x + "f, " + player.position.y + "f, " + player.position.z + "f)");
+                Utils.Logger.LogWarning("\"rotation\": {" + "\"x\":" + player.rotation.eulerAngles.x + "," + "\"y\":" + player.eulerAngles.y + "," + "\"z\":" + player.eulerAngles.z + "}");
+            }
+            if (PluginConfig.ZoneDebug.Value && Input.GetKeyDown(KeyCode.Keypad0))
+            {
+                HazardTracker.WipeTracker();
+            }
+            if (PluginConfig.ZoneDebug.Value && Input.GetKeyDown(PluginConfig.AddZone.Value.MainKey))
+            {
+                DebugZones();
+            }
+        }
    
         void Update()
         {
             //TEMPORARY
-            MoveDaCube.Update();
+            if(GameWorldController.GameStarted && PluginConfig.ZoneDebug.Value) MoveDaCube.Update();
 
             //games procedural animations are highly affected by FPS. I balanced everything at 144 FPS, so need to factor it.    
             _realDeltaTime += (Time.unscaledDeltaTime - _realDeltaTime) * 0.1f;
@@ -510,6 +542,7 @@ namespace RealismMod
             CheckForMods();
 
             if (ServerConfig.enable_hazard_zones) HazardTracker.OutOfRaidUpdate();
+            if (PluginConfig.ZoneDebug.Value) ZoneDebugUpdate();
 
             Utils.CheckIsReady();
             if (Utils.PlayerIsReady)
@@ -521,26 +554,8 @@ namespace RealismMod
                     Instantiate(containerPrefab, new Vector3(1000f, 0f, 317f), new Quaternion(0, 0, 0, 0));
                 }*/
 
-                if (GameWorldController.GameStarted && PluginConfig.ZoneDebug.Value)
-                {
 
-                    if (Input.GetKeyDown(KeyCode.Keypad1))
-                    {
-                        var player = Utils.GetYourPlayer().Transform;
-                        Utils.LoadLoot(player.position, player.rotation, PluginConfig.TargetZone.Value);
-                        Utils.Logger.LogWarning("\"position\": {" + "\"x\":" + player.position.x + "," + "\"y\":" + player.position.y + "," + "\"z\":" + player.position.z + "},");
-                        Utils.Logger.LogWarning("new Vector3(" + player.position.x + "f, " + player.position.y + "f, " + player.position.z + "f)");
-                        Utils.Logger.LogWarning("\"rotation\": {" + "\"x\":" + player.rotation.eulerAngles.x + "," + "\"y\":" + player.eulerAngles.y + "," + "\"z\":" + player.eulerAngles.z + "}");
-                    }
-                }
-                if (PluginConfig.ZoneDebug.Value && Input.GetKeyDown(KeyCode.Keypad0))
-                {
-                    HazardTracker.WipeTracker();
-                }
-                if (PluginConfig.ZoneDebug.Value && Input.GetKeyDown(PluginConfig.AddZone.Value.MainKey))
-                {
-                    DebugZones();
-                }
+                GameWorldController.GameWorldUpdate();
 
                 if (ServerConfig.med_changes) RealHealthController.ControllerUpdate();
 
@@ -554,7 +569,7 @@ namespace RealismMod
 
                 if (ServerConfig.headset_changes)
                 {
-                    AudioController.HeadsetVolumeAdjust();
+                    HeadsetGainController.AdjustHeadsetVolume();
                     if (DeafeningController.PrismEffects != null)
                     {
                         DeafeningController.DoDeafening();
@@ -565,7 +580,7 @@ namespace RealismMod
                     StanceController.StanceState();
                 }
             }
-            else
+            else 
             {
                 HasReloadedAudio = false;
             }

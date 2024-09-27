@@ -1,16 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using UnityEngine;
 
 namespace RealismMod
 {
     public static class GameWorldController
     {
-        public static bool DoMapGasEvent { get; private set; } = false;
-        public static bool IsHalloween { get; private set; } = false;
         public static bool GameStarted { get; set; } = false;
         public static string CurrentMap { get; set; } = "";
         public static bool MapWithDynamicWeather { get; set; } = false;
+        public static float CurrentGasEventStrength { get; private set; } = 0;
+
+        public static bool IsHalloween
+        {
+            get 
+            {
+                return Plugin.ModInfo.IsHalloween;
+            }
+
+        }
+
+
+        public static bool DoMapGasEvent
+        {
+            get
+            {
+                return Plugin.ModInfo.DoGasEvent;
+            }
+
+        }
 
         public static bool MuteAmbientAudio
         {
@@ -20,29 +39,17 @@ namespace RealismMod
             }
         }
 
-        public static float GasEventStrength
+        public static void CalculateGasEventStrength() 
         {
-            get 
-            {
-                return DoMapGasEvent ? 0.05f : 0f;
-            }
+            float fogStrength = Plugin.RealismWeatherComponent.TargetFog;
+            float targetStrength = fogStrength * 0.5f * (PlayerState.EnviroType == EnvironmentType.Indoor ? 0.5f : 1f);
+            CurrentGasEventStrength = Mathf.Lerp(CurrentGasEventStrength, targetStrength, 0.05f);
         }
 
-        public static void CheckForEvents() 
+        public static void GameWorldUpdate() 
         {
-            CheckIsHalloween();
+            if (DoMapGasEvent) CalculateGasEventStrength();
         }
-
-        private static void CheckIsHalloween()
-        {
-            DoMapGasEvent = true; //do a % chance if halloween or X quest at raid start, and not factory or labs, ideally server needs to dictate this value so that bots can be given gasmasks
-            IsHalloween = true;
-            return;
-            DateTime currentDate = DateTime.Now;
-            DateTime startDate = new DateTime(currentDate.Year, 10, 25);
-            DateTime endDate = new DateTime(currentDate.Month, 11, 2);
-            if (currentDate >= startDate && currentDate <= endDate) IsHalloween = true;
-        }
-
+    
     }
 }

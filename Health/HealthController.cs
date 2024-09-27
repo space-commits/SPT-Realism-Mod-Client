@@ -1033,7 +1033,6 @@ namespace RealismMod
                 _effectsTime = 0f;
             }
 
-            if (player.HealthController.IsAlive && player.HealthController.DamageCoeff > 0f && Plugin.ServerConfig.enable_hazard_zones) AudioController.HazardZonesAudioController();
             DoResourceDrain(player.ActiveHealthController, Time.deltaTime);
 
             if (!_addedPassiveRegenEffect && PluginConfig.PassiveRegen.Value)
@@ -1116,8 +1115,8 @@ namespace RealismMod
 
         public bool MouthIsBlocked(Item head, Item face, EquipmentClass equipment)
         {
-            bool faceBlocksMouth = false;
-            bool headBlocksMouth = false;
+            bool faceGearBlocksMouth = false;
+            bool headGearBlocksMouth = false;
 
             LootItemClass headwear = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;
             IEnumerable<Item> nestedItems = headwear != null ? headwear.GetAllItemsFromCollection().OfType<Item>() : null;
@@ -1136,14 +1135,14 @@ namespace RealismMod
 
             if (head != null)
             {
-                faceBlocksMouth = GearStats.BlocksMouth(head);
+                faceGearBlocksMouth = GearStats.BlocksMouth(head);
             }
             if (face != null)
             {
-                headBlocksMouth = GearStats.BlocksMouth(face);
+                headGearBlocksMouth = GearStats.BlocksMouth(face);
             }
 
-            return faceBlocksMouth || headBlocksMouth;
+            return faceGearBlocksMouth || headGearBlocksMouth || IsCoughingInGas;
         }
 
         public bool BodyPartHasBleed(Player player, EBodyPart part)
@@ -2117,7 +2116,7 @@ namespace RealismMod
             bool isBeingHazarded = zonePreventsHeal || IsCoughingInGas;
             float sprintFactor = PlayerState.IsSprinting ? 2f : 1f;
             float toxicItemFactor = ToxicItemCount * ToxicQuestItemFactor;
-            float mapGasEventFactor = GameWorldController.DoMapGasEvent ? GameWorldController.GasEventStrength : 0f;
+            float mapGasEventFactor = GameWorldController.DoMapGasEvent ? GameWorldController.CurrentGasEventStrength : 0f;
             float protectiveFactors = (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak);
 
             float passiveRegenRate = mapGasEventFactor <= 0f && ToxicItemCount <= 0 && !isInGasZone && HazardTracker.TotalToxicity > 0f ? _baseToxicityRecoveryRate * (2f - _percentReources) : 0f;
@@ -2193,7 +2192,7 @@ namespace RealismMod
             bool isBeingIrradiated = (HazardTracker.TotalRadiation >= RadiationThreshold && !Plugin.RealHealthController.HasBaseEFTEffect(player, "PainKiller"));
             bool isBeingGassed = HazardTracker.TotalToxicity >= 30f;
             bool hasHazardification = isBeingGassed || isBeingIrradiated;
-            bool isGettingHazarded = HazardTracker.TotalToxicityRate >= 0.067f * (1f + PlayerState.ImmuneSkillStrong);
+            bool isGettingHazarded = HazardTracker.TotalToxicityRate >= 0.1f * (1f + PlayerState.ImmuneSkillStrong);
             if (player.HealthController.IsAlive && (!GearController.HasGasMask || !GearController.HasGasFilter) && (hasHazardification || isGettingHazarded))
             {
                 if (isBeingIrradiated && !isBeingGassed) 

@@ -15,7 +15,6 @@ namespace RealismMod
         public static bool FSIsActive { get; set; } = false;
         public static bool NVGIsActive { get; set; } = false;
 
-
         private static float _currentGasProtection;
         private static float _currentRadProtection;
         private static float _gasMaskDurabilityFactor;

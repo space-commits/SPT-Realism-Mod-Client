@@ -9,6 +9,8 @@ namespace RealismMod
 {
     public static class DeviceController
     {
+        public static AudioSource GasAnalyserAudioSource;
+        public static AudioSource GeigerAudioSource;
         public static bool HasGasAnalyser { get; set; } = false;
         public static bool HasGeiger { get; set; } = false;
         private const float GasDelay = 5f;
@@ -47,7 +49,8 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     PlayerZoneBridge bridge = Plugin.RealHealthController.PlayerHazardBridge;
-                    if (player != null && bridge != null && (((bridge.GasZoneCount > 0 || GameWorldController.DoMapGasEvent) && !bridge.IsProtectedFromSafeZone) || Plugin.RealHealthController.ToxicItemCount > 0))
+                    bool isInGas = (bridge.GasZoneCount > 0 || GameWorldController.DoMapGasEvent) && !bridge.IsProtectedFromSafeZone;
+                    if (player != null && bridge != null && (isInGas || Plugin.RealHealthController.ToxicItemCount > 0))
                     {
                         PlayGasAnalyserClips(player, bridge);
                         _gasDeviceTimer = 0f;
@@ -77,7 +80,7 @@ namespace RealismMod
 
         public static string GetGasAnalsyerClip(float gasLevel) 
         {
-            gasLevel += GameWorldController.GasEventStrength;
+            gasLevel += GameWorldController.CurrentGasEventStrength;
             gasLevel += Plugin.RealHealthController.ToxicItemCount * RealismHealthController.ToxicQuestItemFactor;
 
             switch (gasLevel) 
@@ -109,19 +112,19 @@ namespace RealismMod
 
             switch (radRate)
             {
-                case <= 0.025f:
+                case <= 0.015f:
                     return new string[] { "geiger1.wav", "geiger1_1.wav", "geiger1_2.wav", "geiger1_3.wav"};
-                case <= 0.05f:
+                case <= 0.025f:
                     return new string[] { "geiger2.wav", "geiger2_1.wav", "geiger2_2.wav", "geiger2_3.wav"};
-                case <= 0.1f:
+                case <= 0.05f:
                     return new string[] { "geiger3.wav", "geiger3_1.wav", "geiger3_2.wav", "geiger3_3.wav" };
-                case <= 0.15f:
+                case <= 0.075f:
                     return new string[] { "geiger4.wav", "geiger4_1.wav", "geiger4_2.wav", "geiger4_3.wav" };
-                case <= 0.25f:
+                case <= 0.1f:
                     return new string[] { "geiger5.wav", "geiger5_1.wav", "geiger5_2.wav", "geiger5_3.wav" };
-                case <= 0.35f:
+                case <= 0.15f:
                     return new string[] { "geiger6.wav", "geiger6_1.wav", "geiger6_2.wav", "geiger6_3.wav" };
-                case > 0.35f:
+                case > 0.2f:
                     return new string[] { "geiger7.wav", "geiger7_1.wav", "geiger7_2.wav", "geiger7_3.wav" };
                 default:
                     return null;
@@ -134,7 +137,8 @@ namespace RealismMod
             if (clip == null) return;
             AudioClip audioClip = Plugin.DeviceAudioClips[clip];
             _currentGasClipLength = audioClip.length;
-            Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), audioClip, 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, GasDeviceVolume * PluginConfig.DeviceVolume.Value, EOcclusionTest.None, null, false);
+            float volume = GasDeviceVolume * PluginConfig.DeviceVolume.Value;
+            Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), audioClip, 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, volume, EOcclusionTest.None, null, false);
         }
 
         public static void PlayGeigerClips(Player player, PlayerZoneBridge bridge)
@@ -145,7 +149,8 @@ namespace RealismMod
             string clip = clips[rndNumber];
             AudioClip audioClip = Plugin.DeviceAudioClips[clip];
             _currentGeigerClipLength = audioClip.length;
-            Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), audioClip, 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, GeigerDeviceVolume * PluginConfig.DeviceVolume.Value, EOcclusionTest.None, null, false);
+            float volume = GeigerDeviceVolume * PluginConfig.DeviceVolume.Value;
+            Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), audioClip, 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, volume, EOcclusionTest.None, null, false);
         }
     }
 }
