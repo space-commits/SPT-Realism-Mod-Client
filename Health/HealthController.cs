@@ -2077,7 +2077,7 @@ namespace RealismMod
 
             if (!player.HealthController.IsAlive || player.HealthController.DamageCoeff <= 0f) return;
 
-            if ((PlayerHazardBridge.GasZoneCount > 0 || PlayerHazardBridge.RadZoneCount > 0) && GearController.HasGasMask && !PlayerHazardBridge.IsProtectedFromSafeZone)
+            if (GearController.HasGasMask && !PlayerHazardBridge.IsProtectedFromSafeZone && (PlayerHazardBridge.GasZoneCount > 0 || PlayerHazardBridge.RadZoneCount > 0 || ToxicItemCount > 0 ||GameWorldController.DoMapGasEvent))
             {
                 GearController.UpdateFilterResource(player, PlayerHazardBridge);
                 GearController.CalcGasMaskDuraFactor(player);

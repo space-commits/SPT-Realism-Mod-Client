@@ -75,8 +75,9 @@ namespace RealismMod
 
         private void HandleGas(bool hasGasmask)
         {
-            if (GasZoneCount > 0 && !IsProtectedFromSafeZone)
+            if ((GasZoneCount > 0 || GameWorldController.DoMapGasEvent) && !IsProtectedFromSafeZone)
             {
+                float gasRate = TotalGasRate + (GameWorldController.CurrentGasEventStrengthBot * (_Player.Environment == EnvironmentType.Indoor ? 0.5f : 1f));
                 if (!hasGasmask && TotalGasRate > 0.05f)
                 {
                     _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, TotalGasRate * BOT_INTERVAL * 0.75f, ExistanceClass.PoisonDamage);

@@ -160,7 +160,7 @@ namespace RealismMod
             if (gasmask == null) return;
             ResourceComponent filter = gasmask?.GetItemComponentsInChildren<ResourceComponent>(false).FirstOrDefault();
             if (filter == null) return;
-            float reductionFactor = (phb.TotalGasRate + phb.TotalRadRate) / 3.5f;
+            float reductionFactor = (phb.TotalGasRate + phb.TotalRadRate + GameWorldController.CurrentGasEventStrength) / 3.5f;
             filter.Value -= reductionFactor;
             if (filter.Value > 0) HasGasFilter = true;
         }

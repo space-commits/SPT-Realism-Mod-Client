@@ -11,6 +11,8 @@ namespace RealismMod
         public static string CurrentMap { get; set; } = "";
         public static bool MapWithDynamicWeather { get; set; } = false;
         public static float CurrentGasEventStrength { get; private set; } = 0;
+        public static float CurrentGasEventStrengthBot { get; private set; } = 0;
+
 
         public static bool IsHalloween
         {
@@ -20,7 +22,6 @@ namespace RealismMod
             }
 
         }
-
 
         public static bool DoMapGasEvent
         {
@@ -42,8 +43,9 @@ namespace RealismMod
         public static void CalculateGasEventStrength() 
         {
             float fogStrength = Plugin.RealismWeatherComponent.TargetFog;
-            float targetStrength = fogStrength * 0.5f * (PlayerState.EnviroType == EnvironmentType.Indoor ? 0.5f : 1f);
-            CurrentGasEventStrength = Mathf.Lerp(CurrentGasEventStrength, targetStrength, 0.05f);
+            float targetStrength = fogStrength * 0.5f;
+            CurrentGasEventStrengthBot = targetStrength;
+            CurrentGasEventStrength = Mathf.Lerp(CurrentGasEventStrength, targetStrength * (PlayerState.EnviroType == EnvironmentType.Indoor ? 0.5f : 1f), 0.05f);
         }
 
         public static void GameWorldUpdate() 

@@ -63,18 +63,14 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(BirdsSpawner).GetMethod("Awake", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(BirdsSpawner).GetMethod("Spawn", new Type[] {});
         }
 
-        [PatchPostfix]
-        private static void PatchPrefix(BirdsSpawner __instance)
+        [PatchPrefix]
+        private static bool PatchPrefix(BirdsSpawner __instance)
         {
-            if (Plugin.FikaPresent) return;
-            if (GameWorldController.DoMapGasEvent || HazardTracker.IsPreExplosion || HazardTracker.HasExploded)
-            {
-                UnityEngine.Object.Destroy(__instance.gameObject);
-                return;
-            }
+            if (Plugin.FikaPresent) return true;
+            if (GameWorldController.DoMapGasEvent || HazardTracker.IsPreExplosion || HazardTracker.HasExploded) return false;
 
             Bird[] birds = __instance.gameObject.GetComponentsInChildren<Bird>();
 
@@ -91,7 +87,7 @@ namespace RealismMod
                 bc.OnHitAction += birb.OnHit;
 
                 // Create a visual representation of the SphereCollider
-            /*    GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                /*GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 sphere.transform.SetParent(bird.transform); 
                 sphere.transform.localPosition = col.center; 
                 sphere.transform.localScale = Vector3.one * col.radius * 2; 
@@ -99,6 +95,8 @@ namespace RealismMod
                 sphereRenderer.material.color = new Color(1, 0, 0, 1f); 
                 sphere.GetComponent<Collider>().enabled = false;*/
             }
+
+            return true;
         }
     }
 

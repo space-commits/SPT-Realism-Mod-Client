@@ -72,7 +72,7 @@ namespace RealismMod
             if (_gasFogTimer >= 300f)
             {
                 _targetGasStrength = UnityEngine.Random.Range(0.05f, 0.12f);
-                _targetGasCloudStrength = UnityEngine.Random.Range(-0.4f, 1f);
+                _targetGasCloudStrength = UnityEngine.Random.Range(0f, 1f);
                 _gasFogTimer = 0f;
             }
 

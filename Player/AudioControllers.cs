@@ -123,7 +123,6 @@ namespace RealismMod
 
         void Start()
         {
-            Utils.Logger.LogWarning("start 1");
             _gasMaskAudioSource = this.gameObject.AddComponent<AudioSource>();
             _gasAnalyserSource = this.gameObject.AddComponent<AudioSource>();
             _geigerSource = this.gameObject.AddComponent<AudioSource>();
@@ -144,7 +143,6 @@ namespace RealismMod
             //I know this is scuffed, temporary solution
             DeviceController.GeigerAudioSource = _geigerSource;
             DeviceController.GasAnalyserAudioSource = _gasAnalyserSource;
-            Utils.Logger.LogWarning("start 2");
         }
 
         void Update()
@@ -155,7 +153,6 @@ namespace RealismMod
             {
                 _player = Utils.GetYourPlayer();
                 this.gameObject.transform.parent = _player.gameObject.transform;
-                Utils.Logger.LogWarning("got player " + _player.ProfileId);
             }
 
             _breathTimer += Time.deltaTime;

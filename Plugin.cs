@@ -372,6 +372,7 @@ namespace RealismMod
             try
             {
                 RequestRealismDataFromServer();
+                Logger.LogWarning("============================================== is hallowen " + ModInfo.IsHalloween);
                 LoadBundles();   
                 LoadSprites();
                 LoadTextures();
@@ -514,7 +515,9 @@ namespace RealismMod
             if (Input.GetKeyDown(KeyCode.Keypad1))
             {
                 var player = Utils.GetYourPlayer().Transform;
+#pragma warning disable CS4014
                 Utils.LoadLoot(player.position, player.rotation, PluginConfig.TargetZone.Value);
+#pragma warning disable CS4014
                 Utils.Logger.LogWarning("\"position\": {" + "\"x\":" + player.position.x + "," + "\"y\":" + player.position.y + "," + "\"z\":" + player.position.z + "},");
                 Utils.Logger.LogWarning("new Vector3(" + player.position.x + "f, " + player.position.y + "f, " + player.position.z + "f)");
                 Utils.Logger.LogWarning("\"rotation\": {" + "\"x\":" + player.rotation.eulerAngles.x + "," + "\"y\":" + player.eulerAngles.y + "," + "\"z\":" + player.eulerAngles.z + "}");
