@@ -38,14 +38,11 @@ namespace RealismMod
         {
             if (player != null)
             {
-                PlayerZoneBridge hazardBridge;
-                player.TryGetComponent<PlayerZoneBridge>(out hazardBridge);
-                if (hazardBridge == null)
-                {
-                    hazardBridge = player.gameObject.AddComponent<PlayerZoneBridge>();
-                    hazardBridge._Player = player;
-                }
-                _containedPlayers.Add(player, hazardBridge);
+                PlayerZoneBridge playerBridge;
+                player.TryGetComponent<PlayerZoneBridge>(out playerBridge);
+                if (playerBridge == null) playerBridge = player.gameObject.AddComponent<PlayerZoneBridge>();
+                if (playerBridge._Player == null) playerBridge._Player = player;
+                _containedPlayers.Add(player, playerBridge);
             }
         }
 
@@ -53,7 +50,7 @@ namespace RealismMod
         {
             if (player != null)
             {
-                PlayerZoneBridge hazardBridge = _containedPlayers[player];
+                PlayerZoneBridge playerBridge = _containedPlayers[player];
                 _containedPlayers.Remove(player);
             }
         }
@@ -68,8 +65,8 @@ namespace RealismMod
                 foreach (var p in _containedPlayers)
                 {
                     Player player = p.Key;
-                    PlayerZoneBridge hazardBridge = p.Value;
-                    if (player == null || hazardBridge == null)
+                    PlayerZoneBridge playerBridge = p.Value;
+                    if (player == null || playerBridge == null)
                     {
                         playersToRemove.Add(player);
                         continue;
@@ -124,16 +121,14 @@ namespace RealismMod
         {
             if (player != null)
             {
-                PlayerZoneBridge hazardBridge;
-                player.TryGetComponent<PlayerZoneBridge>(out hazardBridge);
-                if (hazardBridge == null)
-                {
-                    hazardBridge = player.gameObject.AddComponent<PlayerZoneBridge>();
-                    hazardBridge._Player = player;
-                }
-                hazardBridge.GasZoneCount++;
-                hazardBridge.GasRates.Add(this.name, 0f);
-                _containedPlayers.Add(player, hazardBridge);
+                PlayerZoneBridge playerBridge;
+                player.TryGetComponent<PlayerZoneBridge>(out playerBridge);
+                if (playerBridge == null) playerBridge = player.gameObject.AddComponent<PlayerZoneBridge>();
+                if (playerBridge._Player == null) playerBridge._Player = player;
+                playerBridge.GasZoneCount++;
+                if (BlocksNav) playerBridge.ZonesThatBlockNavCount++;
+                playerBridge.GasRates.Add(this.name, 0f);
+                _containedPlayers.Add(player, playerBridge);
             }
         }
 
@@ -141,9 +136,10 @@ namespace RealismMod
         {
             if (player != null)
             {
-                PlayerZoneBridge hazardBridge = _containedPlayers[player];
-                hazardBridge.GasZoneCount--;
-                hazardBridge.GasRates.Remove(this.name);
+                PlayerZoneBridge playerBridge = _containedPlayers[player];
+                playerBridge.GasZoneCount--;
+                if (BlocksNav) playerBridge.ZonesThatBlockNavCount--;
+                playerBridge.GasRates.Remove(this.name);
                 _containedPlayers.Remove(player);
             }
         }
@@ -159,14 +155,14 @@ namespace RealismMod
                 foreach (var p in _containedPlayers)
                 {
                     Player player = p.Key;
-                    PlayerZoneBridge hazardBridge = p.Value;
-                    if (player == null || hazardBridge == null)
+                    PlayerZoneBridge playerBridge = p.Value;
+                    if (player == null || playerBridge == null)
                     {
                         playersToRemove.Add(player);
                         return;
                     }
                     float gasAmount = _isSphere ? CalculateGasStrengthSphere(player.gameObject.transform.position) : CalculateGasStrengthBox(player.gameObject.transform.position);
-                    hazardBridge.GasRates[this.name] = Mathf.Max(gasAmount, 0f);
+                    playerBridge.GasRates[this.name] = Mathf.Max(gasAmount, 0f);
                 }
 
                 foreach (var p in playersToRemove)
@@ -236,17 +232,14 @@ namespace RealismMod
         {
             if (player != null)
             {
-                PlayerZoneBridge hazardBridge;
-                player.TryGetComponent<PlayerZoneBridge>(out hazardBridge);
-                if (hazardBridge == null)
-                {
-                    hazardBridge = player.gameObject.AddComponent<PlayerZoneBridge>();
-                    hazardBridge._Player = player;
-                }
-                hazardBridge.RadZoneCount++;
-                hazardBridge.RadRates.Add(this.name, 0f);
-                hazardBridge.ZoneBlocksNav = BlocksNav;
-                _containedPlayers.Add(player, hazardBridge);
+                PlayerZoneBridge playerBridge;
+                player.TryGetComponent<PlayerZoneBridge>(out playerBridge);
+                if (playerBridge == null) playerBridge = player.gameObject.AddComponent<PlayerZoneBridge>();
+                if (playerBridge._Player == null) playerBridge._Player = player;
+                playerBridge.RadZoneCount++;
+                if (BlocksNav) playerBridge.ZonesThatBlockNavCount++;
+                playerBridge.RadRates.Add(this.name, 0f);
+                _containedPlayers.Add(player, playerBridge);
             }
         }
 
@@ -254,10 +247,10 @@ namespace RealismMod
         {
             if (player != null)
             {
-                PlayerZoneBridge hazardBridge = _containedPlayers[player];
-                hazardBridge.RadZoneCount--;
-                hazardBridge.RadRates.Remove(this.name);
-                hazardBridge.ZoneBlocksNav = false;
+                PlayerZoneBridge playerBridge = _containedPlayers[player];
+                playerBridge.RadZoneCount--;
+                if (BlocksNav) playerBridge.ZonesThatBlockNavCount--;
+                playerBridge.RadRates.Remove(this.name);
                 _containedPlayers.Remove(player);
             }
         }
@@ -272,14 +265,14 @@ namespace RealismMod
                 foreach (var p in _containedPlayers)
                 {
                     Player player = p.Key;
-                    PlayerZoneBridge hazardBridge = p.Value;
-                    if (player == null || hazardBridge == null)
+                    PlayerZoneBridge playerBridge = p.Value;
+                    if (player == null || playerBridge == null)
                     {
                         playersToRemove.Add(player);
                         continue; 
                     }  
                     float radAmount = _isSphere ? CalculateRadStrengthSphere(player.gameObject.transform.position) : CalculateRadStrengthBox(player.gameObject.transform.position);
-                    hazardBridge.RadRates[this.name] = Mathf.Max(radAmount, 0f);
+                    playerBridge.RadRates[this.name] = Mathf.Max(radAmount, 0f);
                 }
 
                 foreach (var p in playersToRemove) 
@@ -499,17 +492,14 @@ namespace RealismMod
         {
             if (player != null)
             {
-                PlayerZoneBridge hazardBridge;
-                player.TryGetComponent<PlayerZoneBridge>(out hazardBridge);
-                if (hazardBridge == null)
-                {
-                    hazardBridge = player.gameObject.AddComponent<PlayerZoneBridge>();
-                    hazardBridge._Player = player;
-                }
-                hazardBridge.SafeZoneCount++;
-                hazardBridge.ZoneBlocksNav = BlocksNav;
-                hazardBridge.SafeZones.Add(this.name, IsActive);
-                _containedPlayers.Add(player, hazardBridge);
+                PlayerZoneBridge playerBridge;
+                player.TryGetComponent<PlayerZoneBridge>(out playerBridge);
+                if (playerBridge == null) playerBridge = player.gameObject.AddComponent<PlayerZoneBridge>();
+                if (playerBridge._Player == null) playerBridge._Player = player;
+                playerBridge.SafeZoneCount++;
+                if (BlocksNav) playerBridge.ZonesThatBlockNavCount++;
+                playerBridge.SafeZones.Add(this.name, IsActive);
+                _containedPlayers.Add(player, playerBridge);
             }
         }
 
@@ -517,10 +507,10 @@ namespace RealismMod
         {
             if (player != null)
             {
-                PlayerZoneBridge hazardBridge = _containedPlayers[player];
-                hazardBridge.SafeZoneCount--;
-                hazardBridge.SafeZones.Remove(this.name);
-                hazardBridge.ZoneBlocksNav = false;
+                PlayerZoneBridge playerBridge = _containedPlayers[player];
+                playerBridge.SafeZoneCount--;
+                if (BlocksNav) playerBridge.ZonesThatBlockNavCount--;
+                playerBridge.SafeZones.Remove(this.name);   
                 _containedPlayers.Remove(player);
             }
         }
@@ -534,15 +524,15 @@ namespace RealismMod
                 foreach (var p in _containedPlayers)
                 {
                     Player player = p.Key;
-                    PlayerZoneBridge hazardBridge = p.Value;
-                    if (player == null || hazardBridge == null)
+                    PlayerZoneBridge playerBridge = p.Value;
+                    if (player == null || playerBridge == null)
                     {
                         playersToRemove.Add(player);
                         continue;
                     }
 
                     CalculateSafeZoneDepth(player.Position);
-                    hazardBridge.SafeZones[this.name] = IsActive && _distanceToCenter <= 0.69f;
+                    playerBridge.SafeZones[this.name] = IsActive && _distanceToCenter <= 0.69f;
                 }
 
                 foreach (var p in playersToRemove)

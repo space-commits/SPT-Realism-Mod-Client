@@ -161,7 +161,7 @@ namespace RealismMod
                 boxCollider.isTrigger = true;
                 boxCollider.size = size;
 
-                hazard.BlocksNav = subZone.BlockNav;
+                hazard.BlocksNav = GameWorldController.DoMapGasEvent ? false : subZone.BlockNav;
                 if (subZone.BlockNav)
                 {
                     var navMeshObstacle = hazardZone.AddComponent<NavMeshObstacle>();

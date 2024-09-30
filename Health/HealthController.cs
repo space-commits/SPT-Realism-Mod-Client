@@ -291,9 +291,6 @@ namespace RealismMod
 
         private float _percentReources = 1f;
 
-        private bool _addedResourceEffect = false;
-        private bool _addedPassiveRegenEffect = false;
-
         private float _healthControllerTime = 0f;
         private float _effectsTime = 0f;
         private float _reliefWaitTime = 0f;
@@ -1035,11 +1032,10 @@ namespace RealismMod
 
             DoResourceDrain(player.ActiveHealthController, Time.deltaTime);
 
-            if (!_addedPassiveRegenEffect && PluginConfig.PassiveRegen.Value)
+            if (PluginConfig.PassiveRegen.Value && HasCustomEffectOfType(typeof(PassiveHealthRegenEffect), EBodyPart.Common))
             {
                 PassiveHealthRegenEffect resEffect = new PassiveHealthRegenEffect(player, this);
                 AddCustomEffect(resEffect, false);
-                _addedPassiveRegenEffect = true;
             }
 
             //temporary timer solution :')
@@ -2046,11 +2042,10 @@ namespace RealismMod
 
             if (PluginConfig.ResourceRateChanges.Value)
             {
-                if (!_addedResourceEffect)
+                if (HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Chest))
                 {
                     ResourceRateEffect resEffect = new ResourceRateEffect(null, player, 0, this);
                     AddCustomEffect(resEffect, false);
-                    _addedResourceEffect = true;
                 }
 
                 float weight = PlayerState.TotalModifiedWeight * (1f - player.Skills.EnduranceBuffJumpCostRed.Value);

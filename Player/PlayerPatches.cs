@@ -72,21 +72,22 @@ namespace RealismMod
         {
             if (__instance.IsYourPlayer)
             {
+                PlayerState.IsScav = Singleton<GameWorld>.Instance.MainPlayer.Profile.Info.Side == EPlayerSide.Savage;
                 StatCalc.CalcPlayerWeightStats(__instance);
                 GearController.SetGearParamaters(__instance);
                 GearController.GetGearPenalty(__instance);
-                if (Plugin.ServerConfig.enable_hazard_zones) Plugin.RealHealthController.CheckInventoryForHazardousMaterials(__instance.Inventory);
-
-                if (Plugin.ServerConfig.med_changes) //also add check for hazard zones being enabled 
-                {
+                if (Plugin.ServerConfig.enable_hazard_zones) 
+                { 
+                    Plugin.RealHealthController.CheckInventoryForHazardousMaterials(__instance.Inventory);
                     GearController.CheckForDevices(__instance.Inventory);
-                    PlayerState.IsScav = Singleton<GameWorld>.Instance.MainPlayer.Profile.Info.Side == EPlayerSide.Savage;
-                    PlayerZoneBridge hazardBridge = __instance.gameObject.AddComponent<PlayerZoneBridge>();
-                    hazardBridge._Player = __instance;
                 }
-
             }
             if (PluginConfig.EnablePlateChanges.Value) BallisticsController.ModifyPlateColliders(__instance);
+            if (Plugin.ServerConfig.enable_hazard_zones) 
+            {
+                PlayerZoneBridge zoneBridge = __instance.gameObject.AddComponent<PlayerZoneBridge>();
+                zoneBridge._Player = __instance;
+            }
         }
     }
 

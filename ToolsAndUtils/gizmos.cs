@@ -7,6 +7,7 @@ using UnityEngine.AI;
 
 namespace RealismMod
 {
+    //thanks to Solarint for this stuff
     public class DebugGizmos
     {
         public static bool DrawGizmos = PluginConfig.EnableLogging.Value;

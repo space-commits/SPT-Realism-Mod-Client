@@ -43,7 +43,7 @@ namespace RealismMod
         public static void CalculateGasEventStrength() 
         {
             float fogStrength = Plugin.RealismWeatherComponent.TargetFog;
-            float targetStrength = fogStrength * 0.5f;
+            float targetStrength = fogStrength * 0.75f;
             CurrentGasEventStrengthBot = targetStrength;
             CurrentGasEventStrength = Mathf.Lerp(CurrentGasEventStrength, targetStrength * (PlayerState.EnviroType == EnvironmentType.Indoor ? 0.5f : 1f), 0.05f);
         }

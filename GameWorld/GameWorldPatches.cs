@@ -69,9 +69,9 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(BirdsSpawner __instance)
         {
-            if (Plugin.FikaPresent) return true;
             if (GameWorldController.DoMapGasEvent || HazardTracker.IsPreExplosion || HazardTracker.HasExploded) return false;
-
+            if (Plugin.FikaPresent) return true;
+    
             Bird[] birds = __instance.gameObject.GetComponentsInChildren<Bird>();
 
             foreach (var bird in birds) 
