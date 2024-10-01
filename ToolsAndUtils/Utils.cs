@@ -15,6 +15,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
+using static RealismMod.Attributes;
 
 namespace RealismMod
 {
@@ -190,11 +191,26 @@ namespace RealismMod
             return true;
         }
 
-        public static void SafelyAddAttributeToList(ItemAttributeClass itemAttribute, Mod __instance)
+
+        public static void AddAttribute(Item item, ENewItemAttributeId att, float baseValue, string displayValue, bool? lessIsGood = null, string name = null, bool colored = true)
+        {
+            string attName = name == null ? att.GetName() : name;
+            ItemAttributeClass attribute = new ItemAttributeClass(att);
+            attribute.Name = attName;
+            attribute.Base = () => baseValue;
+            attribute.StringValue = () => displayValue;
+            if (lessIsGood != null) attribute.LessIsGood = (bool)lessIsGood;
+            attribute.DisplayType = () => EItemAttributeDisplayType.Compact;
+            attribute.LabelVariations = colored ? EItemAttributeLabelVariations.Colored : EItemAttributeLabelVariations.None;
+            Utils.SafelyAddAttributeToList(attribute, item);
+        }
+
+
+        public static void SafelyAddAttributeToList(ItemAttributeClass itemAttribute, Item item)
         {
             if (itemAttribute.Base() != 0f)
             {
-                __instance.Attributes.Add(itemAttribute);
+                item.Attributes.Add(itemAttribute);
             }
         }
 

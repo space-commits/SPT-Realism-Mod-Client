@@ -13,25 +13,14 @@ namespace RealismMod
     {
         public List<AudioClip> AudioClips = new List<AudioClip>();
         public Transform ParentTransform;
+        public bool FollowPlayer = false;
         public float MinTimeBetweenClips = 15f;
         public float MaxTimeBetweenClips = 90f;
+        public float MinDistance = 45f;
+        public float MaxDistance = 95f;
+        public float Volume = 1f;
         private AudioSource _audioSource;
-
-        void Start()
-        {
-            _audioSource = GetComponent<AudioSource>();
-
-            _audioSource = this.gameObject.AddComponent<AudioSource>();
-            _audioSource.volume = 1f;
-            _audioSource.loop = false;
-            _audioSource.playOnAwake = false;
-            _audioSource.spatialBlend = 1.25f;
-            _audioSource.maxDistance = 25f;
-            _audioSource.maxDistance = 130f;
-            _audioSource.rolloffMode = AudioRolloffMode.Linear;
-
-            StartCoroutine(PlayRandomAudio());
-        }
+        private Vector3 _positionRelativeToPlayer;
 
         private IEnumerator PlayRandomAudio()
         {
@@ -39,17 +28,13 @@ namespace RealismMod
             {
                 if (Utils.PlayerIsReady)
                 {
-                    if (ParentTransform == null)
-                    {
-                        ParentTransform = Utils.GetYourPlayer().gameObject.transform;
-                    }
-
                     AudioClip selectedClip = AudioClips[UnityEngine.Random.Range(0, AudioClips.Count)];
 
-                    float randomDistance = UnityEngine.Random.Range(45f, 95f);
-                    Vector3 randomPosition = ParentTransform.position + UnityEngine.Random.onUnitSphere * randomDistance;
-                    randomPosition.y = Mathf.Clamp(randomPosition.y, ParentTransform.position.y - 25f, ParentTransform.position.y + 25f);
-                    transform.position = randomPosition;
+                    float randomDistance = UnityEngine.Random.Range(MinDistance, MaxDistance);
+                    var _reandomPosition = ParentTransform.position + UnityEngine.Random.onUnitSphere * randomDistance;
+                    _reandomPosition.y = Mathf.Clamp(_reandomPosition.y, ParentTransform.position.y - 25f, ParentTransform.position.y + 25f);
+                    transform.position = _reandomPosition; //if(!FollowPlayer) 
+                    _positionRelativeToPlayer = _reandomPosition - ParentTransform.position;
 
                     if (PluginConfig.ZoneDebug.Value)
                     {
@@ -57,7 +42,7 @@ namespace RealismMod
                         visualRepresentation.name = "AmbientAudioPlayerVisual";
                         visualRepresentation.transform.parent = transform;
                         visualRepresentation.transform.localScale = Vector3.one;
-                        visualRepresentation.transform.position = randomPosition;
+                        visualRepresentation.transform.position = transform.position;
                         visualRepresentation.transform.rotation = ParentTransform.transform.rotation;
                         visualRepresentation.GetComponent<Renderer>().material.color = new UnityEngine.Color(1, 0, 0, 1);
                     }
@@ -69,6 +54,33 @@ namespace RealismMod
                     float waitTime = UnityEngine.Random.Range(MinTimeBetweenClips, MaxTimeBetweenClips);
                     yield return new WaitForSeconds(waitTime);
                 }
+            }
+        }
+
+        void Start()
+        {
+            _audioSource = GetComponent<AudioSource>();
+
+            _audioSource = this.gameObject.AddComponent<AudioSource>();
+            _audioSource.volume = Volume;
+            _audioSource.loop = false;
+            _audioSource.playOnAwake = false;
+            _audioSource.spatialBlend = 1f;
+            _audioSource.maxDistance = 25f;
+            _audioSource.maxDistance = 130f;
+            _audioSource.rolloffMode = AudioRolloffMode.Linear;
+
+            //if (FollowPlayer) transform.SetParent(ParentTransform);
+
+            StartCoroutine(PlayRandomAudio());
+        }
+
+        void Update() 
+        {
+            if (FollowPlayer) 
+            {
+                transform.RotateAround(ParentTransform.position, Vector3.up, 0.35f * Time.deltaTime);
+                ///transform.position = ParentTransform.position + _positionRelativeToPlayer; 
             }
         }
     }

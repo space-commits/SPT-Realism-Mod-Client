@@ -156,6 +156,8 @@ namespace RealismMod
         public const float FoldedRecoilAngleFactor = 1.15f;
         public const float FoldedConvergenceFactor = 0.7f;
 
+        public static float BaseWeaponMotionIntensity = 1f;
+
         public static float TotalWeaponWeight = 0f;
         public static float TotalWeaponLength = 0f;
 
@@ -263,6 +265,9 @@ namespace RealismMod
         public static float PureRecoilDelta = 0f;
 
         public static float PureErgoDelta = 0f;
+
+        public static float TotalWeaponHandlingModi = 0f;
+        public static float TotalAimStabilityModi = 0f;
 
         public static string Placement = "";
 

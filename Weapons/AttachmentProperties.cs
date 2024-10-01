@@ -121,5 +121,15 @@ namespace RealismMod
         {
             return !Utils.IsConfItemNull(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[20], out float result) ? result : 0f;
         }
+
+        public static float ModAimStability(Mod mod)
+        {
+            return !Utils.IsConfItemNull(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[21], out float result) ? result : 0f;
+        }
+
+        public static float ModHandling(Mod mod)
+        {
+            return !Utils.IsConfItemNull(mod.ConflictingItems) && float.TryParse(mod.ConflictingItems[22], out float result) ? result : 0f;
+        }
     }
 }

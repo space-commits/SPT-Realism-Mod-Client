@@ -45,11 +45,18 @@ namespace RealismMod
             return ProfileData.PMCLevel >= 20 || QuestHasUnlockedZone("66dad1a18cbba6e558486336");
         }
 
-        public static void CreateAmbientAudioPlayers() 
+        public static void CreateAmbientAudioPlayers(Transform parentTransform, Dictionary<string, AudioClip> clips, bool followPlayer = false, float minTime = 15f, float maxTime = 90f, float volume = 1f, float minDistance = 45f, float maxDistance = 95f) 
         {
             GameObject audioGO = new GameObject("AmbientAudioPlayer");
             var audioPlayer = audioGO.AddComponent<AmbientAudioPlayer>();
-            foreach (var clip in Plugin.GasEventAudioClips) 
+            audioPlayer.ParentTransform = parentTransform;
+            audioPlayer.FollowPlayer = followPlayer;
+            audioPlayer.MinTimeBetweenClips = minTime;
+            audioPlayer.MaxTimeBetweenClips = maxTime;
+            audioPlayer.MinDistance = minDistance;
+            audioPlayer.MaxDistance = maxDistance;
+            audioPlayer.Volume = volume;
+            foreach (var clip in clips) 
             {
                 audioPlayer.AudioClips.Add(clip.Value);
             }

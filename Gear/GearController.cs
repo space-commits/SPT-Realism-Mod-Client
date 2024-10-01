@@ -12,6 +12,7 @@ namespace RealismMod
     {
         public static bool HasGasMask { get; private set; } = false;
         public static bool HasGasFilter { get; private set; } = false;
+        public static bool GasMaskNeedsFilterToFunction { get; private set; } = false;
         public static bool FSIsActive { get; set; } = false;
         public static bool NVGIsActive { get; set; } = false;
 
@@ -167,6 +168,7 @@ namespace RealismMod
 
         public static void CalcGasMaskDuraFactor(Player player)
         {
+            HasGasFilter = false;
             Item gasmask = GetSlotItem(player, EquipmentSlot.FaceCover);
             if (gasmask == null) return;
             ResourceComponent filter = gasmask?.GetItemComponentsInChildren<ResourceComponent>(false).FirstOrDefault();
@@ -190,6 +192,7 @@ namespace RealismMod
 
             float gasmaskDuraPerc = armorComp.Repairable.Durability / armorComp.Repairable.MaxDurability;
             _gasMaskDurabilityFactor = gasmaskDuraPerc <= 0.5f || filter == null ? 0 : gasmaskDuraPerc * filterFactor;
+            Utils.Logger.LogWarning(gasmaskDuraPerc);
         }
 
         public static EquipmentPenaltyComponent CheckFaceCoverGear(Player player, ref bool isGasMask, ref float gasProtection, ref float radProtection)

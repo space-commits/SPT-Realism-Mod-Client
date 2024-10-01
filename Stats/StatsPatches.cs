@@ -144,7 +144,7 @@ namespace RealismMod
                 float magWeightFactored = StatCalc.FactoredWeight(magWeight);
                 string position = StatCalc.GetModPosition(magazine, weapType, weapOpType, "");
                 magErgo = magazine.Ergonomics;
-                currentTorque = StatCalc.GetTorque(position, magWeightFactored, __instance.WeapClass);
+                currentTorque = StatCalc.GetTorque(position, magWeightFactored);
             }
             float weapWeightLessMag = totalWeight - magWeight;
 
@@ -325,12 +325,12 @@ namespace RealismMod
             float currentShotDisp = baseShotDisp;
 
             float currentTorque = 0f;
-
             float currentReloadSpeedMod = 0f;
-
             float currentAimSpeedMod = 0f;
-
             float currentChamberSpeedMod = 0f;
+
+            float currentAimStability = 0;
+            float currentHandling = 0f;
 
             float modBurnRatio = 1;
 
@@ -372,15 +372,17 @@ namespace RealismMod
             {
                 if (!Utils.IsMagazine(mod))
                 {
+                    string modType = AttachmentProperties.ModType(mod);
                     float modWeight = mod.Weight;
                     float modWeightFactored = StatCalc.FactoredWeight(modWeight);
                     float modErgo = mod.Ergonomics;
                     float modVRecoil = AttachmentProperties.VerticalRecoil(mod);
+                    float modConv = AttachmentProperties.ModConvergence(mod);
+                    modVRecoil += modConv > 0f ? modConv * StatCalc.convVRecoilConversion : 0f;
                     float modHRecoil = AttachmentProperties.HorizontalRecoil(mod);
                     float modAutoROF = AttachmentProperties.AutoROF(mod);
                     float modSemiROF = AttachmentProperties.SemiROF(mod);
                     float modCamRecoil = AttachmentProperties.CameraRecoil(mod);
-                    float modConv = AttachmentProperties.ModConvergence(mod);
                     float modDispersion = AttachmentProperties.Dispersion(mod);
                     float modAngle = AttachmentProperties.RecoilAngle(mod);
                     float modAccuracy = mod.Accuracy;
@@ -388,14 +390,14 @@ namespace RealismMod
                     float modChamber = AttachmentProperties.ChamberSpeed(mod);
                     float modAim = AttachmentProperties.AimSpeed(mod);
                     float modShotDisp = AttachmentProperties.ModShotDispersion(mod);
-                    string modType = AttachmentProperties.ModType(mod);
                     string position = StatCalc.GetModPosition(mod, weapType, weapOpType, modType);
                     float modLoudness = mod.Loudness;
                     float modMalfChance = AttachmentProperties.ModMalfunctionChance(mod);
                     float modDuraBurn = mod.DurabilityBurnModificator;
                     float modFix = AttachmentProperties.FixSpeed(mod);
                     float modFlashSuppression = AttachmentProperties.ModFlashSuppression(mod);
-                    modVRecoil += modConv > 0f ? modConv * StatCalc.convVRecoilConversion : 0f;
+                    float modHandling = AttachmentProperties.ModHandling(mod);
+                    float modStability = AttachmentProperties.ModAimStability(mod);
 
                     if (Utils.IsMuzzleDevice(mod))
                     {
@@ -408,31 +410,34 @@ namespace RealismMod
                         WeaponStats.HasMuzzleDevice = true;
                     }
                     if (Utils.IsBipod(mod)) WeaponStats.HasBipod = true;
+                    if (AttachmentProperties.CanCylceSubs(mod)) canCycleSubs = true;
 
                     StatCalc.ModConditionalStatCalc(
                         __instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, 
                         ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, 
                         ref modCamRecoil, ref modAngle, ref modDispersion, ref modErgo, 
-                        ref modAccuracy, ref modType, ref position, ref modChamber, 
-                        ref modLoudness, ref modMalfChance, ref modDuraBurn, ref modConv, ref modFlashSuppression);
+                        ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, 
+                        ref modMalfChance, ref modDuraBurn, ref modConv, ref modFlashSuppression, ref modStability, 
+                        ref modHandling, ref modAim);
 
                     StatCalc.ModStatCalc(
-                        mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, 
-                        ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, 
-                        ref currentCamRecoil, modDispersion, ref currentDispersion, modAngle,
-                        ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, 
-                        ref currentAimSpeedMod, modReload, ref currentReloadSpeedMod, modFix, 
-                        ref currentFixSpeedMod, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, 
-                        modHRecoil, ref currentHRecoil, ref currentChamberSpeedMod, modChamber, 
-                        false, __instance.WeapClass, ref pureErgo, modShotDisp, ref currentShotDisp, 
-                        modLoudness, ref currentLoudness, ref currentMalfChance, modMalfChance, 
-                        ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, isChonker,
-                        ref currentFlashSuppression, modFlashSuppression, ref currentGas);
+                        mod, false, isChonker, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, 
+                        ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, 
+                        modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, 
+                        ref currentCOI, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil,  modHRecoil, 
+                        ref currentHRecoil, ref pureErgo, modShotDisp, ref currentShotDisp, ref currentMalfChance, 
+                        modMalfChance, ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed);
 
-                    if (AttachmentProperties.CanCylceSubs(mod))
-                    {
-                        canCycleSubs = true;
-                    }
+       
+                    if (!Utils.IsMuzzleCombo(mod) && !Utils.IsFlashHider(mod) && !Utils.IsBarrel(mod)) currentGas += modFlashSuppression;
+                    else currentFlashSuppression += modFlashSuppression;
+                    if (!Utils.IsSight(mod)) currentAimSpeedMod += modAim;
+                    currentChamberSpeedMod += modChamber;
+                    currentAimStability += modStability;
+                    currentReloadSpeedMod += modReload;
+                    currentLoudness += modLoudness;
+                    currentHandling += modHandling;
+                    currentFixSpeedMod += modFix;
                     modBurnRatio *= modDuraBurn;
                 }
             }
@@ -482,7 +487,6 @@ namespace RealismMod
             WeaponStats.FireRateDelta = ((float)WeaponStats.AutoFireRate / (float)__instance.Template.bFirerate) * ((float)WeaponStats.SemiFireRate / (float)__instance.Template.SingleFireRate);
             WeaponStats.AutoFireRateDelta = (float)WeaponStats.AutoFireRate / (float)__instance.Template.bFirerate;
             WeaponStats.SemiFireRateDelta = (float)WeaponStats.SemiFireRate / (float)__instance.Template.SingleFireRate;
-
             WeaponStats.InitTotalCOI = currentCOI;
             WeaponStats.InitPureErgo = pureErgo;
             WeaponStats.PureRecoilDelta = pureRecoilDelta;
@@ -496,6 +500,8 @@ namespace RealismMod
             WeaponStats.TotalMuzzleFlash = currentFlashSuppression;
             WeaponStats.TotalGas = currentGas;
             WeaponStats.IsDirectImpingement = weapType == "DI" ? true : false;
+            WeaponStats.TotalAimStabilityModi = Mathf.Clamp(1f - (currentAimStability / 100f), 0.25f, 2f);
+            WeaponStats.TotalWeaponHandlingModi = Mathf.Clamp(1f - (currentHandling / 100f), 0.25f, 2f);
         }
     }
 

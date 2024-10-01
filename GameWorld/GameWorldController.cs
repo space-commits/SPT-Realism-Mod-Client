@@ -8,6 +8,7 @@ namespace RealismMod
     public static class GameWorldController
     {
         public static bool GameStarted { get; set; } = false;
+        public static bool RanEarlyGameCheck { get; set; } = false;
         public static string CurrentMap { get; set; } = "";
         public static bool MapWithDynamicWeather { get; set; } = false;
         public static float CurrentGasEventStrength { get; private set; } = 0;

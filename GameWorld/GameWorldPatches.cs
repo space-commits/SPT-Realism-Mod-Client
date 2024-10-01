@@ -25,8 +25,13 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(ref bool __result)
         {
-            int rnd = UnityEngine.Random.Range(0, 101);
-            if (rnd <= 5 || GameWorldController.IsHalloween) 
+            if (!GameWorldController.RanEarlyGameCheck)
+            {
+                Plugin.RequestRealismDataFromServer(false, true);
+                GameWorldController.RanEarlyGameCheck = true;
+            }
+
+            if (GameWorldController.DoMapGasEvent) 
             {
                 __result = false;
                 return false;
@@ -63,18 +68,17 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(BirdsSpawner).GetMethod("Spawn", new Type[] {});
+            return typeof(BirdsSpawner).GetMethod("Awake", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        [PatchPrefix]
-        private static bool PatchPrefix(BirdsSpawner __instance)
+        [PatchPostfix]
+        private static void PatchPostfix(BirdsSpawner __instance)
         {
-            if (GameWorldController.DoMapGasEvent || HazardTracker.IsPreExplosion || HazardTracker.HasExploded) return false;
-            if (Plugin.FikaPresent) return true;
-    
+            if (Plugin.FikaPresent) return;
+
             Bird[] birds = __instance.gameObject.GetComponentsInChildren<Bird>();
 
-            foreach (var bird in birds) 
+            foreach (var bird in birds)
             {
                 var col = bird.gameObject.AddComponent<SphereCollider>();
                 col.radius = 0.35f;
@@ -86,17 +90,17 @@ namespace RealismMod
                 var birb = bird.gameObject.AddComponent<Birb>();
                 bc.OnHitAction += birb.OnHit;
 
-                // Create a visual representation of the SphereCollider
-                /*GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                sphere.transform.SetParent(bird.transform); 
-                sphere.transform.localPosition = col.center; 
-                sphere.transform.localScale = Vector3.one * col.radius * 2; 
-                Renderer sphereRenderer = sphere.GetComponent<Renderer>();
-                sphereRenderer.material.color = new Color(1, 0, 0, 1f); 
-                sphere.GetComponent<Collider>().enabled = false;*/
+                if (PluginConfig.ZoneDebug.Value)
+                {
+                    GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    sphere.transform.SetParent(bird.transform);
+                    sphere.transform.localPosition = col.center;
+                    sphere.transform.localScale = Vector3.one * col.radius * 2;
+                    Renderer sphereRenderer = sphere.GetComponent<Renderer>();
+                    sphereRenderer.material.color = new Color(1, 0, 0, 1f);
+                    sphere.GetComponent<Collider>().enabled = false;
+                }
             }
-
-            return true;
         }
     }
 
@@ -113,16 +117,18 @@ namespace RealismMod
             ProfileData.CurrentProfileId = Utils.GetYourPlayer().ProfileId;
             if (Plugin.ServerConfig.enable_hazard_zones)
             {
-                //update info such as events and average server player level
-                Plugin.RequestRealismDataFromServer(false, true);
-
                 //update tracked map info
                 GameWorldController.CurrentMap = Singleton<GameWorld>.Instance.MainPlayer.Location.ToLower();
                 GameWorldController.MapWithDynamicWeather = GameWorldController.CurrentMap.Contains("factory") || GameWorldController.CurrentMap == "laboratory" ? false : true;
 
                 //audio components
                 AudioController.CreateAudioComponent();
-                if (GameWorldController.DoMapGasEvent) ZoneSpawner.CreateAmbientAudioPlayers();
+                if (GameWorldController.DoMapGasEvent) 
+                {
+                    Player player = Utils.GetYourPlayer();
+                    ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.15f);
+                    ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 14f, 60f, 0.15f, minDistance: 55, maxDistance: 105f);
+                }
 
                 //spawn zones
                 ZoneSpawner.CreateZones(ZoneData.GasZoneLocations);
@@ -160,6 +166,7 @@ namespace RealismMod
             }
 
             GameWorldController.GameStarted = false;
+            GameWorldController.RanEarlyGameCheck = false;
         }
     }
 }

@@ -53,6 +53,7 @@ namespace RealismMod
         public static Dictionary<string, AudioClip> HazardZoneClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> DeviceAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> GasEventAudioClips = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, AudioClip> GasEventLongAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, Sprite> LoadedSprites = new Dictionary<string, Sprite>();
         public static Dictionary<string, Texture> LoadedTextures = new Dictionary<string, Texture>();
 
@@ -159,6 +160,8 @@ namespace RealismMod
             IconCache.Add(ENewItemAttributeId.DurabilityBurn, Resources.Load<Sprite>("characteristics/icons/Velocity"));
             IconCache.Add(ENewItemAttributeId.Heat, Resources.Load<Sprite>("characteristics/icons/Velocity"));
             IconCache.Add(ENewItemAttributeId.MuzzleFlash, Resources.Load<Sprite>("characteristics/icons/Velocity"));
+            IconCache.Add(ENewItemAttributeId.Handling, Resources.Load<Sprite>("characteristics/icons/Ergonomics"));
+            IconCache.Add(ENewItemAttributeId.AimStability, Resources.Load<Sprite>("characteristics/icons/SightingRange"));
 
             Sprite balanceSprite = await RequestResource<Sprite>(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\icons\\balance.png");
             Sprite recoilAngleSprite = await RequestResource<Sprite>(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\icons\\recoilAngle.png");
@@ -243,13 +246,22 @@ namespace RealismMod
             }
         }
 
-        private async void LoadAudioClips()
+        private async void LoadAudioClipHelper(string[] fileDirectories, Dictionary<string, AudioClip> clips) 
+        {
+            foreach (var fileDir in fileDirectories)
+            {
+                clips[Path.GetFileName(fileDir)] = await RequestAudioClip(fileDir);
+            }
+        }
+
+        private void LoadAudioClips()
         {
             string[] hitSoundsDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\hitsounds");
             string[] gasMaskDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\gasmask");
             string[] hazardDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones");
             string[] deviceDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\devices");
             string[] gasEventAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\mapgas\\default");
+            string[] gasEventLongAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\mapgas\\long");
 
             HitAudioClips.Clear();
             GasMaskAudioClips.Clear();
@@ -257,28 +269,12 @@ namespace RealismMod
             DeviceAudioClips.Clear();
             GasEventAudioClips.Clear();
 
-
-            foreach (string fileDir in hitSoundsDir)
-            {
-                HitAudioClips[Path.GetFileName(fileDir)] = await RequestAudioClip(fileDir);
-            }
-            foreach (string fileDir in gasMaskDir)
-            {
-                GasMaskAudioClips[Path.GetFileName(fileDir)] = await RequestAudioClip(fileDir);
-            }
-            foreach (string fileDir in hazardDir)
-            {
-                HazardZoneClips[Path.GetFileName(fileDir)] = await RequestAudioClip(fileDir);
-            }
-            foreach (string fileDir in deviceDir)
-            {
-                DeviceAudioClips[Path.GetFileName(fileDir)] = await RequestAudioClip(fileDir);
-            }
-            foreach (string fileDir in gasEventAmbient)
-            {
-                GasEventAudioClips[Path.GetFileName(fileDir)] = await RequestAudioClip(fileDir);
-            }
-   
+            LoadAudioClipHelper(hitSoundsDir, HitAudioClips);
+            LoadAudioClipHelper(gasMaskDir, GasMaskAudioClips);
+            LoadAudioClipHelper(hazardDir, HazardZoneClips);
+            LoadAudioClipHelper(deviceDir, DeviceAudioClips);
+            LoadAudioClipHelper(gasEventAmbient, GasEventAudioClips);
+            LoadAudioClipHelper(gasEventLongAmbient, GasEventLongAudioClips);   
             Plugin.HasReloadedAudio = true;
         }
 

@@ -178,6 +178,7 @@ namespace RealismMod
         }
     }
 
+    //unused for now
     public class GetCameraRotationRecoilPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()

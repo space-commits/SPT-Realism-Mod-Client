@@ -307,6 +307,9 @@ namespace RealismMod
         {
             if (fc != null)
             {
+              
+                player.ProceduralWeaponAnimation.MotionReact.Intensity = WeaponStats.BaseWeaponMotionIntensity * Mathf.Pow((2f - PlayerState.StaminaPerc), 0.4f);
+ 
                 if (Plugin.StartRechamberTimer)
                 {
                     ChamberTimer(fc);

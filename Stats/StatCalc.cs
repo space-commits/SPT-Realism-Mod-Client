@@ -110,7 +110,6 @@ namespace RealismMod
             WeaponSkillsClass skillsClass = (WeaponSkillsClass)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_buffInfo").GetValue(pwa);
             Player.ValueBlender valueBlender = (Player.ValueBlender)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayBlender").GetValue(pwa);
 
-       
             float swayStrength = 0f;
             if (weapon.WeapClass != "pistol")
             {
@@ -121,8 +120,8 @@ namespace RealismMod
             }
             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayStrength").SetValue(pwa, swayStrength);
 
-            float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo * PlayerState.GearErgoPenalty) * 1.15f;
-            float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (1f + WeaponStats.ModAimSpeedModifier), 0.5f, 1.45f);
+            float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo * PlayerState.GearErgoPenalty) * 1.35f;
+            float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)), 0.35f, 1.5f);
             valueBlender.Speed = pwa.SwayFalloff * aimSpeed * 4.35f;
 
             pwa.UpdateSwayFactors();
@@ -301,14 +300,12 @@ namespace RealismMod
         }
 
 
-        public static void ModStatCalc(Mod mod, float modWeight, ref float currentTorque, string position, float modWeightFactored, float modAutoROF, ref float currentAutoROF, 
-            float modSemiROF, ref float currentSemiROF, float modCamRecoil, ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, 
-            ref float currentRecoilAngle, float modAccuracy, ref float currentCOI, float modAim, ref float currentAimSpeedMod, float modReload, 
-            ref float currentReloadSpeedMod, float modFix, ref float currentFixSpeedMod, float modErgo, ref float currentErgo, float modVRecoil,
-            ref float currentVRecoil, float modHRecoil, ref float currentHRecoil, ref float currentChamberSpeedMod, float modChamber, bool isDisplayDelta,
-            string weapClass, ref float pureErgo, float modShotDisp, ref float currentShotDisp, float modloudness, ref float currentLoudness, 
-            ref float currentMalfChance, float modMalfChance, ref float pureRecoil, ref float currentConv, float modConv, ref float currentCamReturnSpeed, bool isChonker,
-            ref float currentFlashSuppression, float modFlashSuppression, ref float currentGas)
+        public static void ModStatCalc(Mod mod, bool isDisplayDelta, bool isChonker, float modWeight, ref float currentTorque, string position, 
+            float modWeightFactored, float modAutoROF, ref float currentAutoROF,  float modSemiROF, ref float currentSemiROF, float modCamRecoil, 
+            ref float currentCamRecoil, float modDispersion, ref float currentDispersion, float modAngle, ref float currentRecoilAngle, 
+            float modAccuracy, ref float currentCOI, float modErgo, ref float currentErgo, float modVRecoil, ref float currentVRecoil, 
+            float modHRecoil, ref float currentHRecoil, ref float pureErgo, float modShotDisp, ref float currentShotDisp, ref float currentMalfChance, 
+            float modMalfChance, ref float pureRecoil, ref float currentConv, float modConv, ref float currentCamReturnSpeed)
         {
             float ergoWeightFactor = WeightStatCalc(StatCalc.ErgoWeightMult, isChonker ? modWeight * 0.5f : modWeight) / 100f;
             float vRecoilWeightFactor = WeightStatCalc(StatCalc.VRecoilWeightMult, modWeight) / 100f;
@@ -316,7 +313,7 @@ namespace RealismMod
             float dispersionWeightFactor = WeightStatCalc(StatCalc.DispersionWeightMult, modWeight) / 100f;
             float camRecoilWeightFactor = WeightStatCalc(StatCalc.CamWeightMult, modWeight) / 100f;
 
-            currentTorque += GetTorque(position, modWeightFactored, weapClass);
+            currentTorque += GetTorque(position, modWeightFactored);
             currentErgo = currentErgo + (currentErgo * ((modErgo / 100f) + ergoWeightFactor));
             currentVRecoil = currentVRecoil + (currentVRecoil * ((modVRecoil / 100f) + vRecoilWeightFactor));
             currentHRecoil = currentHRecoil + (currentHRecoil * ((modHRecoil / 100f) + hRecoilWeightFactor));
@@ -337,13 +334,6 @@ namespace RealismMod
 
             currentShotDisp = currentShotDisp + (currentShotDisp * ((-1f * modShotDisp) / 100f));
             currentMalfChance = currentMalfChance + (currentMalfChance * (modMalfChance / 100f));
-            currentReloadSpeedMod = currentReloadSpeedMod + modReload;
-            currentChamberSpeedMod = currentChamberSpeedMod + modChamber;
-            currentFixSpeedMod = currentFixSpeedMod + modFix;
-            currentLoudness = currentLoudness + modloudness;
-            if (!Utils.IsMuzzleCombo(mod) && !Utils.IsFlashHider(mod) && !Utils.IsBarrel(mod)) currentGas = currentGas + modFlashSuppression;
-            else currentFlashSuppression = currentFlashSuppression + modFlashSuppression;
-
 
             if (Utils.IsSilencer(mod))
             {
@@ -353,16 +343,16 @@ namespace RealismMod
             {
                 pureRecoil = pureRecoil + (pureRecoil * ((modVRecoil / 100f) + (modHRecoil / 100f) + (modCamRecoil / 100f) + (-modConv / 100f) + (modDispersion / 100f)));
             }
-
-            if (!Utils.IsSight(mod))
-            {
-                currentAimSpeedMod = currentAimSpeedMod + modAim;
-            }
-
         }
 
 
-        public static void ModConditionalStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, ref string position, ref float modChamber, ref float modLoudness, ref float modMalfChance, ref float modDuraBurn, ref float modConv, ref float modFlash)
+        public static void ModConditionalStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, 
+            ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, 
+            ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, 
+            ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, 
+            ref string position, ref float modChamber, ref float modLoudness, ref float modMalfChance, 
+            ref float modDuraBurn, ref float modConv, ref float modFlash, ref float modStability, ref float modHandling,
+            ref float modAimSpeed)
         {
             Mod parent = null;
             if (mod?.Parent?.Container?.ParentItem != null)
@@ -386,6 +376,9 @@ namespace RealismMod
                     modDispersion = 0;
                     modErgo = 0;
                     modAccuracy = 0;
+                    modStability = 0f;
+                    modAimSpeed = 0f;
+                    modHandling = 0f;
                     modType = "folded_stock";
                     position = "neutral";
                     hasShoulderContact = false;
@@ -460,6 +453,8 @@ namespace RealismMod
                         modDispersion = 0;
                         modCamRecoil = 0;
                         modErgo = 0;
+                        modStability = 0f;
+                        modHandling = 0f;
                         return;
                     }
 
@@ -571,6 +566,8 @@ namespace RealismMod
                 modHRecoil = 0f;
                 modDispersion = 0f;
                 modCamRecoil = 0f;
+                modStability = 0f;
+                modHandling = 0f;
                 return;
             }
 
@@ -767,25 +764,25 @@ namespace RealismMod
             return (distance - 0f) * weight;
         }
 
-        public static float GetTorque(string position, float weight, string weapClass)
+        public static float GetTorque(string position, float weight)
         {
             float torque = 0f;
             switch (position)
             {
                 case "front":
-                    torque = TorqueCalc(-10f, weight, weapClass);
+                    torque = TorqueCalc(-10f, weight, WeaponStats._WeapClass);
                     break;
                 case "rear":
-                    torque = TorqueCalc(10f, weight, weapClass);
+                    torque = TorqueCalc(10f, weight, WeaponStats._WeapClass);
                     break;
                 case "rearHalf":
-                    torque = TorqueCalc(2.5f, weight, weapClass);
+                    torque = TorqueCalc(2.5f, weight, WeaponStats._WeapClass);
                     break;
                 case "frontFar":
-                    torque = TorqueCalc(-15f, weight, weapClass);
+                    torque = TorqueCalc(-15f, weight, WeaponStats._WeapClass);
                     break;
                 case "frontHalf":
-                    torque = TorqueCalc(-5f, weight, weapClass);
+                    torque = TorqueCalc(-5f, weight, WeaponStats._WeapClass);
                     break;
                 default:
                     torque = 0f;
