@@ -1312,7 +1312,7 @@ namespace RealismMod
                 }
 
                 float transitionPositionFactor = highToLow * shortToLow * activeToLow;
-                float transitionRotationFactor = highToLow * shortToLow * activeToLow * (transitionPositionFactor != 1f ? 0.9f : 1f);
+                float transitionRotationFactor = highToLow * shortToLow * activeToLow * (transitionPositionFactor != 1f ? 1.025f : 1f);
 
                 if (StanceBlender.Value < 1f)
                 {

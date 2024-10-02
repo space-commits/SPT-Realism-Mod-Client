@@ -127,7 +127,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.15f);
-                    ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 14f, 60f, 0.15f, minDistance: 55, maxDistance: 105f);
+                    ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 14f, 60f, 0.15f, minDistance: 65, maxDistance: 105f);
                 }
 
                 //spawn zones

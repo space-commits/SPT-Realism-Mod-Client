@@ -10,15 +10,35 @@ namespace RealismMod
 {
     public static class GearController
     {
+        public const string SAFE_CONTAINER_ID = "66fd588d397ed74159826cf0";
+
+        public static bool HasSafeContainer { get; set; } = false;
         public static bool HasGasMask { get; private set; } = false;
         public static bool HasGasFilter { get; private set; } = false;
-        public static bool GasMaskNeedsFilterToFunction { get; private set; } = false;
+        public static bool HasRespirator { get; private set; } = false;
         public static bool FSIsActive { get; set; } = false;
         public static bool NVGIsActive { get; set; } = false;
+
+        public static EquipmentSlot[] MainInventorySlots =
+        {
+          EquipmentSlot.TacticalVest,
+          EquipmentSlot.ArmBand,
+          EquipmentSlot.Pockets,
+          EquipmentSlot.Backpack,
+          EquipmentSlot.SecuredContainer
+        };
 
         private static float _currentGasProtection;
         private static float _currentRadProtection;
         private static float _gasMaskDurabilityFactor;
+
+        public static bool HasGasMaskWithFilter
+        {
+            get
+            {
+                return HasGasMask && (HasGasFilter || HasRespirator);
+            }
+        }
 
         public static float CurrentGasProtection
         {
@@ -46,11 +66,10 @@ namespace RealismMod
 
         private static bool _hadGasMask = true;
 
-        private static void HandleGasMaskEffects(Player player, bool hasGasMask, float gasProtection, float radProtection) 
+        private static void HandleGasMaskEffects(Player player, float gasProtection, float radProtection) 
         {
-            if (hasGasMask)
+            if (HasGasMask)
             {
-                HasGasMask = true;
                 _currentGasProtection = gasProtection;
                 _currentRadProtection = radProtection;
                 _hadGasMask = true;
@@ -60,7 +79,6 @@ namespace RealismMod
             }
             else
             {
-                HasGasMask = false;
                 _currentGasProtection = 0f;
                 _currentRadProtection = 0f;
                 player.SpeechSource.ResetFilters();
@@ -70,7 +88,7 @@ namespace RealismMod
             player.UpdateOcclusion();
             player.SendVoiceMuffledState(player.Muffled);
 
-            if (!hasGasMask && _hadGasMask && player.HealthStatus == ETagStatus.Dying)
+            if (!HasGasMask && _hadGasMask && player.HealthStatus == ETagStatus.Dying)
             {
                 player.Say(EPhraseTrigger.OnBreath, true, 0f, (ETagStatus)0, 100, false); //force to reset audio
                 _hadGasMask = false;
@@ -168,6 +186,7 @@ namespace RealismMod
 
         public static void CalcGasMaskDuraFactor(Player player)
         {
+            HasRespirator = false;
             HasGasFilter = false;
             Item gasmask = GetSlotItem(player, EquipmentSlot.FaceCover);
             if (gasmask == null) return;
@@ -183,31 +202,32 @@ namespace RealismMod
           
             //masks like the respirator are not given an armor rating, so we can safely assume this is a gas mask/respirator that does not take filters,
             //therfore should not be subject to filter or durability factors
+            //this may fall apart if ever I need a gas mask without a filter that has an armor rating...
             ArmorComponent armorComp = gasmask.GetItemComponent<ArmorComponent>();
             if (armorComp == null)
             {
+                HasRespirator = true;
                 _gasMaskDurabilityFactor = 1;
                 return;
             }
 
             float gasmaskDuraPerc = armorComp.Repairable.Durability / armorComp.Repairable.MaxDurability;
             _gasMaskDurabilityFactor = gasmaskDuraPerc <= 0.5f || filter == null ? 0 : gasmaskDuraPerc * filterFactor;
-            Utils.Logger.LogWarning(gasmaskDuraPerc);
         }
 
-        public static EquipmentPenaltyComponent CheckFaceCoverGear(Player player, ref bool isGasMask, ref float gasProtection, ref float radProtection)
+        public static EquipmentPenaltyComponent CheckFaceCoverGear(Player player, ref float gasProtection, ref float radProtection)
         {
-            Item containedItem = GetSlotItem(player, EquipmentSlot.FaceCover);
-            if (containedItem == null) return null;
-            isGasMask = GearStats.IsGasMask(containedItem);
-            gasProtection = GearStats.GasProtection(containedItem);
-            radProtection = GearStats.RadProtection(containedItem);
-            if (isGasMask) 
+            Item faceCoverItem = GetSlotItem(player, EquipmentSlot.FaceCover);
+            if (faceCoverItem == null) return null;
+            HasGasMask = GearStats.IsGasMask(faceCoverItem);
+            gasProtection = GearStats.GasProtection(faceCoverItem);
+            radProtection = GearStats.RadProtection(faceCoverItem);
+            if (HasGasMask) 
             {
                 CalcGasMaskDuraFactor(player);
             }
 
-            return containedItem.GetItemComponent<EquipmentPenaltyComponent>();
+            return faceCoverItem.GetItemComponent<EquipmentPenaltyComponent>();
         }
 
         public static void GetGearPenalty(Player player)
@@ -215,10 +235,10 @@ namespace RealismMod
             FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
             NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
             ThermalVisionComponent thermComponent = player.ThermalVisionObserver.Component;
+            HasGasMask = false;
             bool fsIsON = fsComponent != null && (fsComponent.Togglable == null || fsComponent.Togglable.On);
             bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
             bool thermalIsOn = thermComponent != null && (thermComponent.Togglable == null || thermComponent.Togglable.On);
-            bool hasGasMask = false;
             float gasProtection = 0f;
             float radProtection = 0f;
 
@@ -253,7 +273,7 @@ namespace RealismMod
                 totalErgo += rig.Template.WeaponErgonomicPenalty;
                 totalSpeed += rig.Template.SpeedPenaltyPercent;
             }
-            EquipmentPenaltyComponent faceCover = CheckFaceCoverGear(player, ref hasGasMask, ref gasProtection, ref radProtection);
+            EquipmentPenaltyComponent faceCover = CheckFaceCoverGear(player, ref gasProtection, ref radProtection);
             if (faceCover != null)
             {
                 totalErgo += faceCover.Template.WeaponErgonomicPenalty;
@@ -271,7 +291,7 @@ namespace RealismMod
             PlayerState.GearErgoPenalty = 1f + totalErgo;
             PlayerState.GearSpeedPenalty = 1f + totalSpeed;
 
-            HandleGasMaskEffects(player, hasGasMask, gasProtection, radProtection);
+            HandleGasMaskEffects(player, gasProtection, radProtection);
 
             Player.FirearmController fc = player.HandsController as Player.FirearmController;
             if (fc != null && Plugin.ServerConfig.recoil_attachment_overhaul)

@@ -28,6 +28,8 @@ namespace RealismMod
         public static bool HasExploded { get; set; } = false;
         public static float TotalToxicityRate { get; set; } = 0f;
         public static float TotalRadiationRate { get; set; } = 0f;
+        public static float BaseTotalToxicityRate { get; set; } = 0f;
+        public static float BaseTotalRadiationRate { get; set; } = 0f;
         private static Dictionary<string, HazardRecord> _hazardRecords = new Dictionary<string, HazardRecord>();
 
         public static float RadTreatmentRate

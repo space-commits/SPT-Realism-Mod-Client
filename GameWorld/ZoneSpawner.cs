@@ -243,14 +243,14 @@ namespace RealismMod
             {
        
                 case "highTier":
-                    lootDict = ZoneLoot.HighTier;
+                    lootDict = RadZoneLoot.HighTier;
                     break;
                 case "midTier":
-                    lootDict = ZoneLoot.MidTier;
+                    lootDict = RadZoneLoot.MidTier;
                     break;
                 case "lowTier":
                 default:
-                    lootDict = ZoneLoot.LowTier;
+                    lootDict = RadZoneLoot.LowTier;
                     break;
 
             }

@@ -194,8 +194,8 @@ namespace RealismMod
                 _coughTimer = 0f;
             }
 
-            DeviceController.DoGasAnalyserAudio();
-            DeviceController.DoGeigerAudio();
+            DeviceController.DoGasAnalyserAudio(_player);
+            DeviceController.DoGeigerAudio(_player);
 
         }
 

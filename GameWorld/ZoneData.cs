@@ -183,7 +183,7 @@ namespace RealismMod
         };
     }
 
-    public static class ZoneLoot 
+    public static class RadZoneLoot 
     {
         public static Dictionary<string, int> LowTier = new Dictionary<string, int>
         {
