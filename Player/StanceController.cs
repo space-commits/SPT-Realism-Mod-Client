@@ -775,7 +775,7 @@ namespace RealismMod
             bool useThirdPersonStance = isThirdPerson;//  || Plugin.IsUsingFika
             float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 100f);
-            float ergoMulti = Mathf.Clamp(WeaponStats.ErgoStanceSpeed, 0.65f, 1.45f);
+            float ergoMulti = Mathf.Clamp(WeaponStats.ErgoStanceSpeed * Mathf.Pow(WeaponStats.TotalWeaponHandlingModi, 0.5f), 0.65f, 1.45f);
             float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.55f)), 0.5f, 1.45f);
 
             float balanceFactor = 1f + (WeaponStats.Balance / 100f);
@@ -958,7 +958,7 @@ namespace RealismMod
             float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 150f);
             float lowerBaseLimit = WeaponStats.TotalWeaponWeight >= weightLimit ? 0.45f : 0.55f;
-            float ergoMulti = Mathf.Clamp(WeaponStats.ErgoStanceSpeed * 1.15f, lowerBaseLimit, 1.2f);
+            float ergoMulti = Mathf.Clamp(1.15f * WeaponStats.ErgoStanceSpeed * Mathf.Pow(WeaponStats.TotalWeaponHandlingModi, 0.4f), lowerBaseLimit, 1.2f);
             float lowerSpeedLimit = WeaponStats.TotalWeaponWeight >= weightLimit ? 0.35f : 0.45f;
             float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.65f)), lowerSpeedLimit, 1.2f);
             float resetErgoMulti = (1f - stanceMulti) + 1f;

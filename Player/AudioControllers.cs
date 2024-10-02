@@ -113,10 +113,8 @@ namespace RealismMod
     {
         public static void CreateAudioComponent()
         {
-            Utils.Logger.LogWarning("create audio game object");
             GameObject audioGO = new GameObject("HazardAudioController");
             var audioPlayer = audioGO.AddComponent<AudioControllerComponent>();
-            Utils.Logger.LogWarning("created");
         }
     }
 

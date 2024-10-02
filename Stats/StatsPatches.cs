@@ -329,7 +329,7 @@ namespace RealismMod
             float currentAimSpeedMod = 0f;
             float currentChamberSpeedMod = 0f;
 
-            float currentAimStability = 0;
+            float currentAimStability = 0f;
             float currentHandling = 0f;
 
             float modBurnRatio = 1;
@@ -558,7 +558,6 @@ namespace RealismMod
             return true;
         }
     }
-
 
     public class TotalShotgunDispersionPatch : ModulePatch
     {

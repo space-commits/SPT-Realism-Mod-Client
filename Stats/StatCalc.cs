@@ -678,7 +678,7 @@ namespace RealismMod
                 {
                     return "front";
                 }
-                if (Utils.IsStock(mod) || Utils.IsMagazine(mod))
+                if (Utils.IsStock(mod) || (opType != "revolver" && Utils.IsMagazine(mod)))
                 {
                     return "rear";
                 }
@@ -726,7 +726,6 @@ namespace RealismMod
 
         private static void StockPositionChecker(Mod mod, ref float modVRecoil, ref float modHRecoil, ref float modDispersion, ref float modCamRecoil, ref float modErgo)
         {
-
             if (mod.Parent.Container != null)
             {
                 string parentType = AttachmentProperties.ModType(mod.Parent.Container.ParentItem);
