@@ -31,17 +31,18 @@ namespace RealismMod
         private Quaternion _rotation;
         private List<IHazardZone> _intersectingZones = new List<IHazardZone>();
 
-        private void SetUpAudio()
+        private AudioSource SetUpAudio(string clip, GameObject go)
         {
-            _audioSource = this.gameObject.AddComponent<AudioSource>();
-            _audioSource.clip = Plugin.DeviceAudioClips["switch_off.wav"];
-            _audioSource.volume = 1f;
-            _audioSource.loop = false;
-            _audioSource.playOnAwake = false;
-            _audioSource.spatialBlend = 1.0f;
-            _audioSource.minDistance = 0.75f;
-            _audioSource.maxDistance = 15f;
-            _audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+            AudioSource audioSource = go.AddComponent<AudioSource>();
+            audioSource.clip = Plugin.DeviceAudioClips[clip];
+            audioSource.volume = 1f;
+            audioSource.loop = false;
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 1.0f;
+            audioSource.minDistance = 0.75f;
+            audioSource.maxDistance = 15f;
+            audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+            return audioSource;
         }
 
         IEnumerator DoLogic()
@@ -73,38 +74,17 @@ namespace RealismMod
             }
 
             _audioSource.clip = Plugin.DeviceAudioClips["analyser_loop.wav"];
+            _audioSource.loop = true;
             _audioSource.Play();
 
             time = 0f;
             clipLength = _audioSource.clip.length;
-            while (time <= clipLength)
+            while (time <= clipLength * 1f) //5f
             {
                 time += Time.deltaTime;
                 yield return null;
             }
-
-            _audioSource.clip = Plugin.DeviceAudioClips["success_end.wav"];
-            _audioSource.Play();
-
-            time = 0f;
-            clipLength = _audioSource.clip.length;
-            while (time <= clipLength)
-            {
-                time += Time.deltaTime;
-                yield return null;
-            }
-  
-            _audioSource.clip = Plugin.DeviceAudioClips["switch_off.wav"];
-            _audioSource.Play();
-
-            time = 0f;
-            clipLength = _audioSource.clip.length;
-            while (time <= clipLength)
-            {
-                time += Time.deltaTime;
-                yield return null;
-            }
-
+            _audioSource.loop = false;
             ReplaceItem();
         }
 
@@ -114,6 +94,10 @@ namespace RealismMod
             Item replacementItem = Singleton<ItemFactory>.Instance.CreateItem(MongoID.Generate(), templateId, null);
             LootItem lootItem = Singleton<GameWorld>.Instance.SetupItem(replacementItem, _IPlayer, this.gameObject.transform.position, this.gameObject.transform.rotation);
             Destroy(this.gameObject);
+
+            AudioSource tempAudio = SetUpAudio("success_end.wav", lootItem.gameObject);
+            tempAudio.Play();
+
         }
 
         private bool ZoneTypeMatches() 
@@ -126,14 +110,16 @@ namespace RealismMod
 
         void Start() 
         {
-            SetUpAudio();
+            _audioSource = SetUpAudio("switch_off.wav", this.gameObject);
             _position = _Player.gameObject.transform.position;
             _position.y += 0.1f;
             _position = _position + _Player.gameObject.transform.forward * 1.1f;
+
             Vector3 eularRotation = _Player.gameObject.transform.rotation.eulerAngles;
             eularRotation.x = -90f;
             eularRotation.y = 0f;
             _rotation = Quaternion.Euler(new Vector3(eularRotation.x, eularRotation.y, eularRotation.z));
+
             StartCoroutine(DoLogic());
         }
 

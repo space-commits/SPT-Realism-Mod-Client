@@ -283,7 +283,7 @@ namespace RealismMod
             {
                 baseDrainRate = 0.1f;
             }
-            float formfactor = WeaponStats.IsBullpup ? 0.25f : 1f;
+            float formfactor = WeaponStats.IsBullpup ? 0.4f : 1f;
             return WeaponStats.ErgoFactor * formfactor * baseDrainRate * ((1f - PlayerState.HealthStamRegenFactor) + 1f) * (1f - (PlayerState.StrengthSkillAimBuff));
         }
 

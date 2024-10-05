@@ -220,6 +220,8 @@ namespace RealismMod
              {"63a3a93f8a56922e82001f5d", 10 }, //abandoned marked
              {"64ccc25f95763a1ae376e447", 10 }, //mysterious marked
              {"64d4b23dc1b37504b41ac2b6", 10 }, //rusted marked
+             {"66fd57171f981640e667fbe2", 10 }, //rad zample
+             {"66fd588956f73c4f38dd07ae", 20 } //tox zample
         };
 
         public static Dictionary<string, int> HighTier = new Dictionary<string, int>
@@ -235,7 +237,8 @@ namespace RealismMod
              {"5c1e2a1e86f77431ea0ea84c", 30 }, //labs manager
              {"5c1e2d1f86f77431e9280bee", 25 }, // labs weapon testing
              {"5c1f79a086f7746ed066fb8f", 40 }, //labs arsenl key
-             {"66fd57171f981640e667fbe2", 65 } //rad zample
+             {"66fd57171f981640e667fbe2", 65 }, //rad zample
+             {"66fd588956f73c4f38dd07ae", 10 } //tox zample
         };
     }
 
