@@ -32,7 +32,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(PlayerCameraController __instance, FaceShieldComponent faceShield)
         {
-            if (faceShield != null && faceShield?.Item != null)
+            if (faceShield != null && faceShield?.Item != null && Plugin.LoadedTextures.Count > 0)
             {
                 VisorEffect visor = (VisorEffect)AccessTools.Field(typeof(PlayerCameraController), "visorEffect_0").GetValue(__instance);
                 Material mat = visor.method_4();

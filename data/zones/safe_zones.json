@@ -12,10 +12,11 @@
                     "name": "LabsGreenSafeZone",
                     "strength": 0,
                     "blockNav": false,
+                    "usesDistanceFalloff": true,
                     "position": {
-                        "x": -130.2733,
-                        "y": 5.983998,
-                        "z": -349.8193
+                        "x": -137.5812,
+                        "y": 5.90245,
+                        "z": -350.1265
                     },
                     "rotation": {
                         "x": 0,
@@ -23,19 +24,20 @@
                         "z": 0
                     },
                     "size": {
-                        "x": 5.680395,
-                        "y": 3.723195,
-                        "z": 18.1121
+                        "x": 8,
+                        "y": 4,
+                        "z": 7
                     }
                 },
                 {
                     "name": "LabsBlackSafeZone",
                     "strength": 0,
                     "blockNav": false,
+                    "usesDistanceFalloff": true,
                     "position": {
-                        "x": -130.6313,
+                        "x": -130.8813,
                         "y": 0.6878951,
-                        "z": -349.3566
+                        "z": -349.3781
                     },
                     "rotation": {
                         "x": 0,
@@ -43,29 +45,148 @@
                         "z": 0
                     },
                     "size": {
-                        "x": 4.063541,
+                        "x": 4.147327,
                         "y": 3.300328,
-                        "z": 17.84963
+                        "z": 4.380257
                     }
                 },
                 {
-                    "name": "LabsBlackSafeZone",
+                    "name": "LabsBlueSafeZone",
                     "strength": 0,
                     "blockNav": false,
+                    "usesDistanceFalloff": true,
                     "position": {
-                        "x": -123.5548,
+                        "x": -123.7075,
                         "y": 1.359848,
-                        "z": -403.2564
+                        "z": -403.2578
                     },
                     "rotation": {
                         "x": 0,
-                        "y": 179.7471,
+                        "y": 179.3999,
                         "z": 0
                     },
                     "size": {
-                        "x": 4.476452,
+                        "x": 4.899071,
                         "y": 3.930063,
-                        "z": 6.10278
+                        "z": 6.509358
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "LabsSanitarClosetSafeZone",
+                    "strength": 0,
+                    "blockNav": false,
+                    "usesDistanceFalloff": true,
+                    "position": {
+                        "x": -131.8996,
+                        "y": 5.752647,
+                        "z": -337.0227
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 270.9894,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 6.865087,
+                        "y": 3.489277,
+                        "z": 7.384443
+                    }
+                }
+            ],
+            "loot": [
+                {
+                    "type": "",
+                    "lootOverride": {
+                        "66fd588956f73c4f38dd07ae": 100
+                    },
+                    "odds": 20,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -132.7197,
+                        "y": 5.200036,
+                        "z": -335.1458
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 247.577,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "",
+                    "lootOverride": {
+                        "66fd588956f73c4f38dd07ae": 100
+                    },
+                    "odds": 20,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -130.279,
+                        "y": 5.182593,
+                        "z": -335.1504
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 247.577,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "",
+                    "lootOverride": {
+                        "66fd588956f73c4f38dd07ae": 100
+                    },
+                    "odds": 20,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -134.1009,
+                        "y": 5.460201,
+                        "z": -335.4209
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 247.577,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "",
+                    "lootOverride": {
+                        "66fd588956f73c4f38dd07ae": 100
+                    },
+                    "odds": 20,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -134.4414,
+                        "y": 5.040395,
+                        "z": -338.2335
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 247.577,
+                        "z": 0
+                    }
+                },
+                {
+                    "type": "",
+                    "lootOverride": {
+                        "66fd588956f73c4f38dd07ae": 100
+                    },
+                    "odds": 20,
+                    "randomizeRotation": true,
+                    "position": {
+                        "x": -135.0577,
+                        "y": 5.265122,
+                        "z": -336.2295
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 247.577,
+                        "z": 0
                     }
                 }
             ]

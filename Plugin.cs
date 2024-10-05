@@ -274,7 +274,8 @@ namespace RealismMod
             LoadAudioClipHelper(hazardDir, HazardZoneClips);
             LoadAudioClipHelper(deviceDir, DeviceAudioClips);
             LoadAudioClipHelper(gasEventAmbient, GasEventAudioClips);
-            LoadAudioClipHelper(gasEventLongAmbient, GasEventLongAudioClips);   
+            LoadAudioClipHelper(gasEventLongAmbient, GasEventLongAudioClips);  
+            
             Plugin.HasReloadedAudio = true;
         }
 
@@ -368,7 +369,6 @@ namespace RealismMod
             try
             {
                 RequestRealismDataFromServer();
-                Logger.LogWarning("============================================== is hallowen " + ModInfo.IsHalloween);
                 LoadBundles();   
                 LoadSprites();
                 LoadTextures();
@@ -531,7 +531,7 @@ namespace RealismMod
         void Update()
         {
             //TEMPORARY
-            if(GameWorldController.GameStarted && PluginConfig.ZoneDebug.Value) MoveDaCube.Update();
+            if (GameWorldController.GameStarted && PluginConfig.ZoneDebug.Value) MoveDaCube.Update();
 
             //games procedural animations are highly affected by FPS. I balanced everything at 144 FPS, so need to factor it.    
             _realDeltaTime += (Time.unscaledDeltaTime - _realDeltaTime) * 0.1f;
@@ -561,7 +561,6 @@ namespace RealismMod
                 if (!Plugin.HasReloadedAudio)
                 {
                     LoadAudioClips();
-                    Plugin.HasReloadedAudio = true;
                 }
 
                 RecoilController.RecoilUpdate();
@@ -615,6 +614,7 @@ namespace RealismMod
         private void LoadHazardPatches()
         {
             new HealthPanelPatch().Enable();
+            new DropItemPatch().Enable();
         }
 
         private void LoadMalfPatches()

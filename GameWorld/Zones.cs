@@ -3,7 +3,10 @@ using EFT.Interactive;
 using EFT.InventoryLogic;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using UnityEngine;
+using Comfort.Common;
 
 namespace RealismMod
 {
@@ -13,6 +16,143 @@ namespace RealismMod
         float ZoneStrengthModifier { get; set; }
         bool BlocksNav { get; set; }
         bool UsesDistanceFalloff { get; set; }
+        bool IsAnalysable { get; set; } 
+    }
+
+    public class HazardAnalyser : MonoBehaviour
+    {
+        public LootItem _LootItem { get; set; }
+        public Player _Player { get; set; } = null;
+        public IPlayer _IPlayer { get; set; } = null;
+        public EZoneType TargetZoneType { get; set; }
+        public AudioClip AudioClips { get; set; }   
+        private AudioSource _audioSource;
+        private Vector3 _position;
+        private Quaternion _rotation;
+        private List<IHazardZone> _intersectingZones = new List<IHazardZone>();
+
+        private void SetUpAudio()
+        {
+            _audioSource = this.gameObject.AddComponent<AudioSource>();
+            _audioSource.clip = Plugin.DeviceAudioClips["switch_off.wav"];
+            _audioSource.volume = 1f;
+            _audioSource.loop = false;
+            _audioSource.playOnAwake = false;
+            _audioSource.spatialBlend = 1.0f;
+            _audioSource.minDistance = 0.75f;
+            _audioSource.maxDistance = 15f;
+            _audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+        }
+
+        IEnumerator DoLogic()
+        {
+            float time = 0f;
+            while (time <= 2.5f)
+            {
+                time += Time.deltaTime;
+                yield return null;
+            }
+
+            if (ZoneTypeMatches())
+            {
+                _audioSource.clip = Plugin.DeviceAudioClips["start_success.wav"];
+                _audioSource.Play();
+            }
+            else
+            {
+                _audioSource.clip = Plugin.DeviceAudioClips["failed_start.wav"];
+                _audioSource.Play();
+                yield break;
+            }
+
+            float clipLength = _audioSource.clip.length;
+            while (time <= clipLength)
+            {
+                time += Time.deltaTime;
+                yield return null;
+            }
+
+            _audioSource.clip = Plugin.DeviceAudioClips["analyser_loop.wav"];
+            _audioSource.Play();
+
+            time = 0f;
+            clipLength = _audioSource.clip.length;
+            while (time <= clipLength)
+            {
+                time += Time.deltaTime;
+                yield return null;
+            }
+
+            _audioSource.clip = Plugin.DeviceAudioClips["success_end.wav"];
+            _audioSource.Play();
+
+            time = 0f;
+            clipLength = _audioSource.clip.length;
+            while (time <= clipLength)
+            {
+                time += Time.deltaTime;
+                yield return null;
+            }
+  
+            _audioSource.clip = Plugin.DeviceAudioClips["switch_off.wav"];
+            _audioSource.Play();
+
+            time = 0f;
+            clipLength = _audioSource.clip.length;
+            while (time <= clipLength)
+            {
+                time += Time.deltaTime;
+                yield return null;
+            }
+
+            ReplaceItem();
+        }
+
+        private void ReplaceItem() 
+        {
+            string templateId = TargetZoneType == EZoneType.Gas ? Utils.GAMU_DATA_ID : Utils.RAMU_DATA_ID;
+            Item replacementItem = Singleton<ItemFactory>.Instance.CreateItem(MongoID.Generate(), templateId, null);
+            LootItem lootItem = Singleton<GameWorld>.Instance.SetupItem(replacementItem, _IPlayer, this.gameObject.transform.position, this.gameObject.transform.rotation);
+            Destroy(this.gameObject);
+        }
+
+        private bool ZoneTypeMatches() 
+        {
+            if (_intersectingZones.Any(z => z.ZoneType == EZoneType.SafeZone)) return false;
+            if (TargetZoneType == EZoneType.Gas && _intersectingZones.Any(z => (z.ZoneType == EZoneType.Gas || z.ZoneType == EZoneType.GasAssets) && z.IsAnalysable == true)) return true;
+            if (TargetZoneType == EZoneType.Radiation && _intersectingZones.Any(z => (z.ZoneType == EZoneType.Radiation || z.ZoneType == EZoneType.RadAssets) && z.IsAnalysable == true)) return true;
+            return false;
+        }
+
+        void Start() 
+        {
+            SetUpAudio();
+            _position = _Player.gameObject.transform.position;
+            _position.y += 0.1f;
+            _position = _position + _Player.gameObject.transform.forward * 1.1f;
+            Vector3 eularRotation = _Player.gameObject.transform.rotation.eulerAngles;
+            eularRotation.x = -90f;
+            eularRotation.y = 0f;
+            _rotation = Quaternion.Euler(new Vector3(eularRotation.x, eularRotation.y, eularRotation.z));
+            StartCoroutine(DoLogic());
+        }
+
+        void Update() 
+        {
+            if (this.gameObject == null) return;
+            this.gameObject.transform.position = _position; 
+            this.gameObject.transform.rotation = _rotation;
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            IHazardZone hazardZone;
+            if (other.gameObject.TryGetComponent<IHazardZone>(out hazardZone))
+            {
+                _intersectingZones.Add(hazardZone);
+            }
+        }
+
     }
 
     public class QuestZone : TriggerWithId, IHazardZone
@@ -21,6 +161,7 @@ namespace RealismMod
         public float ZoneStrengthModifier { get; set; } = 1f;
         public bool BlocksNav { get; set; }
         public bool UsesDistanceFalloff { get; set; }
+        public bool IsAnalysable { get; set; } = false;
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private BoxCollider _zoneCollider;
         private float _tick = 0f;
@@ -89,6 +230,7 @@ namespace RealismMod
         public float ZoneStrengthModifier { get; set; } = 1f;
         public bool BlocksNav { get; set; }
         public bool UsesDistanceFalloff { get; set; }
+        public bool IsAnalysable { get; set; } = false;
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private Collider _zoneCollider;
         private bool _isSphere = false;
@@ -201,6 +343,7 @@ namespace RealismMod
         public float ZoneStrengthModifier { get; set; } = 1f;
         public bool BlocksNav { get; set; }
         public bool UsesDistanceFalloff { get; set; }
+        public bool IsAnalysable { get; set; } = false;
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private Collider _zoneCollider;
         private bool _isSphere = false;
@@ -304,7 +447,7 @@ namespace RealismMod
         }
     }
 
-    public class SafeZone : TriggerWithId, IHazardZone
+    public class LabsSafeZone : TriggerWithId, IHazardZone
     {
         const float MAIN_VOLUME = 0.6f;
         const float SHUT_VOLUME = 0.55f;
@@ -315,6 +458,7 @@ namespace RealismMod
         public bool UsesDistanceFalloff { get; set; }
         public bool IsActive { get; set; } = true;
         public bool? DoorType { get; set; }
+        public bool IsAnalysable { get; set; } = false;
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private BoxCollider _zoneCollider;
         private float _tick = 0f;

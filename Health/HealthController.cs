@@ -633,13 +633,14 @@ namespace RealismMod
             }
         }
 
-        public bool HasCustomEffectOfType(Type effect, EBodyPart bodyPart)
+        public bool HasCustomEffectOfType(Type effect, EBodyPart bodyPart = EBodyPart.Common)
         {
             bool hasEffect = false;
             for (int i = _activeHealthEffects.Count - 1; i >= 0; i--)
             {
                 ICustomHealthEffect activeHealthEffect = _activeHealthEffects[i];
-                if (activeHealthEffect.GetType() == effect && activeHealthEffect.BodyPart == bodyPart)
+                bool partMathces = bodyPart == EBodyPart.Common ? true : activeHealthEffect.BodyPart == bodyPart;
+                if (activeHealthEffect.GetType() == effect && partMathces)
                 {
                     hasEffect = true;
                 }
@@ -1039,7 +1040,7 @@ namespace RealismMod
 
             DoResourceDrain(player.ActiveHealthController, Time.deltaTime);
 
-            if (PluginConfig.PassiveRegen.Value && HasCustomEffectOfType(typeof(PassiveHealthRegenEffect), EBodyPart.Common))
+            if (PluginConfig.PassiveRegen.Value && !HasCustomEffectOfType(typeof(PassiveHealthRegenEffect), EBodyPart.Common))
             {
                 PassiveHealthRegenEffect resEffect = new PassiveHealthRegenEffect(player, this);
                 AddCustomEffect(resEffect, false);
@@ -2049,7 +2050,7 @@ namespace RealismMod
 
             if (PluginConfig.ResourceRateChanges.Value)
             {
-                if (HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Chest))
+                if (!HasCustomEffectOfType(typeof(ResourceRateEffect), EBodyPart.Chest))
                 {
                     ResourceRateEffect resEffect = new ResourceRateEffect(null, player, 0, this);
                     AddCustomEffect(resEffect, false);
@@ -2106,12 +2107,11 @@ namespace RealismMod
             float radRate = ((PlayerHazardBridge.TotalRadRate * sprintFactor) + radItemFactor) * protectiveFctors;
             float totalRate = radRate + reductionRate;
 
-            float speedBase = baseRadRate > 0f ? 11f : 1.5f;
-            float speed = totalRate > 0f ? 10f : 2f;
+            float speedBase = baseRadRate > 0f ? 10f : PlayerHazardBridge.IsProtectedFromSafeZone ? 8f : 6f;
+            float speed = totalRate > 0f ? 10f : PlayerHazardBridge.IsProtectedFromSafeZone ? 6f : 2f;
             HazardTracker.BaseTotalRadiationRate = Mathf.MoveTowards(HazardTracker.BaseTotalRadiationRate, baseRadRate, speedBase * Time.deltaTime);
             HazardTracker.TotalRadiationRate = Mathf.MoveTowards(HazardTracker.TotalRadiationRate, totalRate, speed * Time.deltaTime);
-            Utils.Logger.LogWarning("BaseTotalRadiationRate " + HazardTracker.BaseTotalRadiationRate);
-
+     
             float lowerThreshold = isInRadZone && GearController.CurrentGasProtection < 1f ? HazardTracker.TotalRadiation : !isInRadZone && HazardTracker.TotalRadiation <= RAD_TREATMENT_THRESHOLD ? 0f : HazardTracker.GetNextLowestHazardLevel((int)HazardTracker.TotalRadiation);
             HazardTracker.TotalRadiation = Mathf.Clamp(HazardTracker.TotalRadiation + HazardTracker.TotalRadiationRate, lowerThreshold, 100f);
         }
@@ -2134,8 +2134,8 @@ namespace RealismMod
             float gasRate = ((PlayerHazardBridge.TotalGasRate * sprintFactor) + toxicItemFactor + mapGasEventFactor) * protectiveFactors; //only actual zone rate should be affected by spritning
             float totalRate = gasRate + reductionRate;
 
-            float speedBase = baseGasRate > 0f ? 11f : 1.5f;
-            float speed = totalRate > 0f ? 11f : 1.5f;
+            float speedBase = baseGasRate > 0f ? 11f : PlayerHazardBridge.IsProtectedFromSafeZone ? 7f : 5f;
+            float speed = totalRate > 0f ? 11f : PlayerHazardBridge.IsProtectedFromSafeZone ? 6f : 1.5f;
             HazardTracker.BaseTotalToxicityRate = Mathf.MoveTowards(HazardTracker.BaseTotalToxicityRate, baseGasRate, speedBase * Time.deltaTime);
             HazardTracker.TotalToxicityRate = Mathf.MoveTowards(HazardTracker.TotalToxicityRate, totalRate, speed * Time.deltaTime);
 
@@ -2200,16 +2200,6 @@ namespace RealismMod
             ToxicItemCount = 0;
             RadItemCount = 0;
             GearController.HasSafeContainer = false;
-
-            /*            IEnumerable<Item> inventoryItems = GearController.MainInventorySlots
-                            .SelectMany(slot => inventory.GetItemsInSlots(new[] { slot }) ?? Enumerable.Empty<Item>());*/
-
-
-            /*      IEnumerable<Item> vestItems = inventory.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.TacticalVest }) ?? Enumerable.Empty<Item>();
-                  IEnumerable<Item> armbandItems = inventory.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.ArmBand }) ?? Enumerable.Empty<Item>();
-                  IEnumerable<Item> pocketItems = inventory.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.Pockets }) ?? Enumerable.Empty<Item>();
-                  IEnumerable<Item> bagItems = inventory.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.Backpack }) ?? Enumerable.Empty<Item>();
-                  IEnumerable<Item> secureContainerItems = inventory.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.SecuredContainer }) ?? Enumerable.Empty<Item>();*/
 
             IEnumerable<Item> questItems = inventory.QuestRaidItems.GetAllItems();
             IEnumerable<Item> inventoryItems = Enumerable.Empty<Item>(); 

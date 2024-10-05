@@ -183,7 +183,7 @@ namespace RealismMod
         };
     }
 
-    public static class RadZoneLoot 
+    public static class DynamicRadZoneLoot 
     {
         public static Dictionary<string, int> LowTier = new Dictionary<string, int>
         {
@@ -229,12 +229,13 @@ namespace RealismMod
              {"5c1e495a86f7743109743dfb", 10 }, //labs violet
              {"5c1d0c5f86f7744bb2683cf0", 10 }, //labs blue
              {"6389c8c5dbfd5e4b95197e6b", 10 }, //blue folders
-             {"5c1d0f4986f7744bb01837fa", 1 }, //labs black
-             {"5c1d0dc586f7744baf2e7b79", 1 }, //labs green
-             {"5c1d0efb86f7744baf2e7b7b", 1 }, //labs red
+             {"5c1d0f4986f7744bb01837fa", 2 }, //labs black
+             {"5c1d0dc586f7744baf2e7b79", 2 }, //labs green
+             {"5c1d0efb86f7744baf2e7b7b", 2 }, //labs red
              {"5c1e2a1e86f77431ea0ea84c", 30 }, //labs manager
              {"5c1e2d1f86f77431e9280bee", 25 }, // labs weapon testing
              {"5c1f79a086f7746ed066fb8f", 40 }, //labs arsenl key
+             {"66fd57171f981640e667fbe2", 65 } //rad zample
         };
     }
 
@@ -275,6 +276,7 @@ namespace RealismMod
         public float Strength { get; set; }
         public bool UsesDistanceFalloff { get; set; }
         public bool BlockNav { get; set; }
+        public bool IsAnalysable { get; set; }
         public string AudioFile { get; set; }
         public Position Position { get; set; }
         public Rotation Rotation { get; set; }
@@ -284,6 +286,7 @@ namespace RealismMod
     public class Loot 
     {
         public string Type { get; set; }
+        public Dictionary<string, int> LootOverride { get; set; }
         public int Odds { get; set; }
         public bool RandomizeRotation { get; set; }
         public Position Position { get; set; }

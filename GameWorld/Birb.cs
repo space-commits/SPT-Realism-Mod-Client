@@ -40,6 +40,7 @@ namespace RealismMod
         {
             if (!_wasDestroyed && (GameWorldController.DoMapGasEvent || HazardTracker.IsPreExplosion || HazardTracker.HasExploded))
             {
+                if (this.gameObject == null) return;
                 Destroy(this.gameObject, 20f);
                 _wasDestroyed = true;
             }

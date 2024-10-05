@@ -176,8 +176,9 @@ namespace RealismMod
         public static bool CancelLeftShoulder = false;
         public static bool DoLeftShoulderTransition = false;
         public static bool IsDoingTacSprint = false;
-        private static float _tacSprintWeightLimit = 5.1f;
-        private static int _tacSprintLengthLimit = 6;
+        public const float TAC_SPRINT_WEIGHT_LIMIT = 5.1f;
+        public const float TAC_SPRINT_WEIGHT_BULLPUP = 5.75f;
+        public const int TAC_SPRINT_LENGTH_LIMIT = 6;
 
         public static bool IsInForcedLowReady = false;
         public static bool IsAiming = false;
@@ -924,7 +925,7 @@ namespace RealismMod
         {
             if (PluginConfig.EnableTacSprint.Value && PlayerState.IsSprinting && CurrentStance != EStance.ActiveAiming
             && (CurrentStance == EStance.HighReady || StoredStance == EStance.HighReady)
-            && !fc.Weapon.IsBeltMachineGun && WeaponStats.TotalWeaponWeight <= _tacSprintWeightLimit && WeaponStats.TotalWeaponLength <= _tacSprintLengthLimit
+            && !fc.Weapon.IsBeltMachineGun && WeaponStats.TotalWeaponWeight <= (WeaponStats.IsBullpup ? TAC_SPRINT_WEIGHT_BULLPUP : TAC_SPRINT_WEIGHT_LIMIT) && WeaponStats.TotalWeaponLength <= TAC_SPRINT_LENGTH_LIMIT
             && !PlayerState.IsScav && !Plugin.RealHealthController.HealthConditionPreventsTacSprint)
             {
                 IsDoingTacSprint = true;

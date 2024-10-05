@@ -1,0 +1,40 @@
+{
+    "FactoryQuestZones": [],
+    "CustomsQuestZones": [],
+    "GZQuestZones": [],
+    "ShorelineQuestZones": [],
+    "StreetsQuestZones": [],
+    "LabsQuestZones": [
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "LabsHVACRepair1",
+                    "strength": 0,
+                    "blockNav": false,
+                    "audioFile": "door_open.wav",
+                    "usesDistanceFalloff": true,
+                    "position": {
+                        "x": -132.4803,
+                        "y": -2.920149,
+                        "z": -365.7787
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 177.722,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 2.792222,
+                        "y": 2.644993,
+                        "z": 2.018026
+                    }
+                }
+            ]
+        }
+    ],
+    "InterchangeQuestZones": [],
+    "LighthouseQuestZones": [],
+    "WoodsQuestZones": [],
+    "ReserveQuestZones": []
+}

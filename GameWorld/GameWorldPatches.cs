@@ -7,15 +7,58 @@ using EFT.UI;
 using Sirenix.Serialization;
 using SPT.Reflection.Patching;
 using System;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using QuestUIClass = GClass2046;
-
+using Color = UnityEngine.Color;
+using EFT.InventoryLogic;
 
 namespace RealismMod
 {
-    //cult
+    class DropItemPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GameWorld).GetMethod("ThrowItem", new Type[] { typeof(Item), typeof(IPlayer), typeof(Vector3), typeof(Quaternion), typeof(Vector3), typeof(Vector3), typeof(bool), typeof(bool), typeof(float) });
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(ref EFT.Interactive.LootItem __result, IPlayer player)
+        {
+
+
+            bool isGamu = __result.Item.TemplateId == Utils.GAMU_ID;
+            bool isRamu = __result.Item.TemplateId == Utils.RAMU_ID;
+            if (isGamu || isRamu) 
+            {
+                HazardAnalyser analyser = __result.gameObject.AddComponent<HazardAnalyser>();
+                analyser._Player = Utils.GetPlayerByProfileId(player.ProfileId);
+                analyser._LootItem = __result;
+                analyser.TargetZoneType = isGamu ? EZoneType.Gas : EZoneType.Radiation;
+                BoxCollider collider = analyser.gameObject.AddComponent<BoxCollider>();
+                collider.isTrigger = true;
+                collider.size = new Vector3(0.1f, 0.1f, 0.1f);
+                
+
+                if (PluginConfig.ZoneDebug.Value)
+                {
+                    GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    visualRepresentation.name = "ItemVisual";
+                    visualRepresentation.transform.parent = collider.transform;
+                    visualRepresentation.transform.localScale = collider.size;
+                    visualRepresentation.transform.localPosition = collider.center;
+                    visualRepresentation.transform.rotation = collider.transform.rotation;
+                    visualRepresentation.GetComponent<Renderer>().material.color = Color.green;
+                    UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); 
+                }
+            }
+        }
+    }
+
+    //makes culstists spawn during day time
+
     class DayTimeSpawnPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -30,8 +73,7 @@ namespace RealismMod
                 Plugin.RequestRealismDataFromServer(false, true);
                 GameWorldController.RanEarlyGameCheck = true;
             }
-
-            if (GameWorldController.DoMapGasEvent) 
+            if (GameWorldController.DoMapGasEvent)
             {
                 __result = false;
                 return false;

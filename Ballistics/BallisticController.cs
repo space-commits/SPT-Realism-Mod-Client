@@ -54,8 +54,8 @@ namespace RealismMod
                 case EBodyHitZone.Unknown:
                     break;
                 case EBodyHitZone.AZone:
-                    di.Damage *= 1.7f * PluginConfig.GlobalDamageModifier.Value;
-                    di.HeavyBleedingDelta *= 2f;
+                    di.Damage *= 2f * PluginConfig.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 1.5f;
                     di.LightBleedingDelta *= 2f;
                     return;
                 case EBodyHitZone.CZone:
@@ -64,9 +64,9 @@ namespace RealismMod
                     di.LightBleedingDelta *= 1f;
                     return;
                 case EBodyHitZone.DZone:
-                    di.Damage *= 0.8f * PluginConfig.GlobalDamageModifier.Value;
-                    di.HeavyBleedingDelta *= 0.5f;
-                    di.LightBleedingDelta *= 0.8f;
+                    di.Damage *= 0.77f * PluginConfig.GlobalDamageModifier.Value;
+                    di.HeavyBleedingDelta *= 0.8f;
+                    di.LightBleedingDelta *= 0.5f;
                     return;
                 case EBodyHitZone.Heart:
                     di.Damage = 120f * PluginConfig.GlobalDamageModifier.Value;
@@ -75,7 +75,7 @@ namespace RealismMod
                     return;
                 case EBodyHitZone.Spine:
                     di.Damage = di.Damage + 80f * PluginConfig.GlobalDamageModifier.Value;
-                    di.HeavyBleedingDelta *= 1.5f;
+                    di.HeavyBleedingDelta *= 1.15f;
                     di.LightBleedingDelta *= 1.5f;
                     return;
             }

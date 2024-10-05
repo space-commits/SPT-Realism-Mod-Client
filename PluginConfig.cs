@@ -124,6 +124,9 @@ namespace RealismMod
         //hazard zones
         public static ConfigEntry<float> DeviceVolume { get; set; }
         public static ConfigEntry<float> GasMaskBreathVolume { get; set; }
+        public static ConfigEntry<bool> EnableTrueHazardRates { get; set; }
+        public static ConfigEntry<KeyboardShortcut> MuteGeigerKey { get; set; }
+        public static ConfigEntry<KeyboardShortcut> MuteGasAnalyserKey { get; set; }
 
         //medical
         public static ConfigEntry<bool> EnableMedNotes { get; set; }
@@ -396,6 +399,9 @@ namespace RealismMod
 
             DeviceVolume = Config.Bind<float>(zoneSettings, "Device Volume", 1.2f, new ConfigDescription("Volume Modifier For Geiger And Gas Analyser.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1, Browsable = Plugin.ServerConfig.enable_hazard_zones }));
             GasMaskBreathVolume = Config.Bind<float>(zoneSettings, "Gas Mask Breath Volume", 0.8f, new ConfigDescription("Volume Modifier For Gas Mask SFX.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 2, Browsable = Plugin.ServerConfig.enable_hazard_zones }));
+            EnableTrueHazardRates = Config.Bind<bool>(zoneSettings, "Display True Hazard Rates", false, new ConfigDescription("Enable To Show The 'True' Hazard Rate, I.E Not Factoring Meds Or Gas Mask.", null, new ConfigurationManagerAttributes { Order = 3, Browsable = Plugin.ServerConfig.enable_hazard_zones }));
+            MuteGasAnalyserKey = Config.Bind(zoneSettings, "Mute Gas Analysed Key", new KeyboardShortcut(KeyCode.M, new[] { KeyCode.LeftControl }), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 8, Browsable = Plugin.ServerConfig.headset_changes }));
+            MuteGeigerKey = Config.Bind(zoneSettings, "Mute Geiger Key", new KeyboardShortcut(KeyCode.M, new[] { KeyCode.LeftAlt }), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 8, Browsable = Plugin.ServerConfig.headset_changes }));
 
             EnableMedNotes = Config.Bind<bool>(healthSettings, "Medical Notifications", Plugin.ServerConfig.med_changes, new ConfigDescription("Enables Notifications For Medical Status Effects, Healing Etc..", null, new ConfigurationManagerAttributes { Order = 130, Browsable = Plugin.ServerConfig.med_changes }));
             ResourceRateChanges = Config.Bind<bool>(healthSettings, "Enable Hydration/Energy Loss Rate Changes", Plugin.ServerConfig.med_changes, new ConfigDescription("Enables Changes To How Hydration And Energy Loss Rates Are Calculated. They Are Increased By Injuries, Drug Use, Sprinting And Weight.", null, new ConfigurationManagerAttributes { Order = 120, Browsable = Plugin.ServerConfig.med_changes }));

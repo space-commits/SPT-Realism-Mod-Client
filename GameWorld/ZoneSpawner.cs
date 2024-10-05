@@ -93,7 +93,7 @@ namespace RealismMod
             {
                 if (collection.ZoneType == EZoneType.Gas || collection.ZoneType == EZoneType.GasAssets) CreateZone<GasZone>(zone, EZoneType.Gas);
                 if (collection.ZoneType == EZoneType.Radiation || collection.ZoneType == EZoneType.RadAssets) CreateZone<RadiationZone>(zone, EZoneType.Radiation);
-                if (collection.ZoneType == EZoneType.SafeZone) CreateZone<SafeZone>(zone, EZoneType.SafeZone);
+                if (collection.ZoneType == EZoneType.SafeZone) CreateZone<LabsSafeZone>(zone, EZoneType.SafeZone);
                 if (collection.ZoneType == EZoneType.Quest) CreateZone<QuestZone>(zone, EZoneType.Quest);
             }
         }
@@ -143,9 +143,11 @@ namespace RealismMod
                 float strengthModifier = 1f;
                 if ((hazard.ZoneType == EZoneType.Gas || hazard.ZoneType == EZoneType.GasAssets) && (!Plugin.FikaPresent && !PluginConfig.ZoneDebug.Value) && GameWorldController.CurrentMap != "laboratory")
                 {
-                    strengthModifier = UnityEngine.Random.Range(0.95f, 1.25f);
+                    strengthModifier = UnityEngine.Random.Range(0.9f, 1.15f);
                 }
                 hazard.ZoneStrengthModifier = subZone.Strength * strengthModifier;
+
+                hazard.IsAnalysable = subZone.IsAnalysable;  
 
                 hazardZone.transform.position = position;
                 hazardZone.transform.rotation = Quaternion.Euler(rotation);
@@ -220,6 +222,7 @@ namespace RealismMod
         public static void HandleZoneLoot(HazardLocation zone)
         {
             if (zone.Loot == null || Plugin.FikaPresent) return;
+
             foreach (var loot in zone.Loot)
             {
                 if (Utils.SystemRandom.Next(101) > loot.Odds) continue;
@@ -232,29 +235,36 @@ namespace RealismMod
                 Vector3 position = new Vector3(loot.Position.X, loot.Position.Y, loot.Position.Z);
                 Vector3 rotaiton = new Vector3(loot.Rotation.X, loot.Rotation.Y, loot.Rotation.Z);
 
-                LoadLooseLoot(position, rotaiton, GetLootTempalteId(loot.Type));
+                string lootTemplateId = loot?.LootOverride != null && loot.LootOverride.Count > 0 ? GetLootTempalteIdFromOverride(loot.LootOverride) : GetLootTempalteIdFromTier(loot.Type);  
+
+                LoadLooseLoot(position, rotaiton, lootTemplateId);
             }
         }
 
-        public static string GetLootTempalteId(string lootTier) 
+        public static string GetLootTempalteIdFromTier(string lootTier) 
         {
             Dictionary<string, int> lootDict;
             switch (lootTier) 
             {
        
                 case "highTier":
-                    lootDict = RadZoneLoot.HighTier;
+                    lootDict = DynamicRadZoneLoot.HighTier;
                     break;
                 case "midTier":
-                    lootDict = RadZoneLoot.MidTier;
+                    lootDict = DynamicRadZoneLoot.MidTier;
                     break;
                 case "lowTier":
                 default:
-                    lootDict = RadZoneLoot.LowTier;
+                    lootDict = DynamicRadZoneLoot.LowTier;
                     break;
 
             }
             return Utils.GetRandomWeightedKey(lootDict);
+        }
+
+        public static string GetLootTempalteIdFromOverride(Dictionary<string, int> lootOdds)
+        {
+            return Utils.GetRandomWeightedKey(lootOdds);
         }
 
         //previously I stored the loaded assets as static fields and used reflection to dynamically load them, however this strangely caused issues with certain bundles,
