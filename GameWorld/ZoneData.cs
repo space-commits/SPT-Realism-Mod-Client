@@ -194,8 +194,8 @@ namespace RealismMod
              {"60363c0c92ec1c31037959f5", 50 }, //gp-7 mask
              {"5d1b3a5d86f774252167ba22", 50 }, //piles of meds
              {"590c2e1186f77425357b6124", 40 }, //toolset
-             {"590c645c86f77412b01304d9", 30 }, //diary
-             {"590c651286f7741e566b6461", 30 }, //slim diary
+             {"590c645c86f77412b01304d9", 20 }, //diary
+             {"590c651286f7741e566b6461", 20 }, //slim diary
              {"5755356824597772cb798962", 50 }, //ai-2
         };
 
@@ -220,8 +220,8 @@ namespace RealismMod
              {"63a3a93f8a56922e82001f5d", 10 }, //abandoned marked
              {"64ccc25f95763a1ae376e447", 10 }, //mysterious marked
              {"64d4b23dc1b37504b41ac2b6", 10 }, //rusted marked
-             {"66fd57171f981640e667fbe2", 10 }, //rad zample
-             {"66fd588956f73c4f38dd07ae", 20 } //tox zample
+             {"66fd57171f981640e667fbe2", 50 }, //rad zample
+             {"66fd588956f73c4f38dd07ae", 40 } //tox zample
         };
 
         public static Dictionary<string, int> HighTier = new Dictionary<string, int>
@@ -237,8 +237,9 @@ namespace RealismMod
              {"5c1e2a1e86f77431ea0ea84c", 30 }, //labs manager
              {"5c1e2d1f86f77431e9280bee", 25 }, // labs weapon testing
              {"5c1f79a086f7746ed066fb8f", 40 }, //labs arsenl key
-             {"66fd57171f981640e667fbe2", 65 }, //rad zample
-             {"66fd588956f73c4f38dd07ae", 10 } //tox zample
+             {"66fd57171f981640e667fbe2", 100 }, //rad zample
+             {"66fd588956f73c4f38dd07ae", 40 }, //tox zample
+             {"6389c7f115805221fb410466", 10 } //far forward gps
         };
     }
 

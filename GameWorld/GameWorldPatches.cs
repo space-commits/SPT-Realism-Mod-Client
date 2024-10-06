@@ -14,9 +14,60 @@ using UnityEngine;
 using QuestUIClass = GClass2046;
 using Color = UnityEngine.Color;
 using EFT.InventoryLogic;
+using HarmonyLib;
+using EFT.Interactive;
+using static RootMotion.FinalIK.InteractionTrigger.Range;
 
 namespace RealismMod
 {
+
+    class GetAvailableActionsPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.FirstMethod(typeof(GetActionsClass), x => x.Name == nameof(GetActionsClass.GetAvailableActions) && x.GetParameters()[0].Name == "owner");
+        }
+
+        [PatchPrefix]
+        public static bool PatchPrefix(object[] __args, ref ActionsReturnClass __result)
+        {
+            // __args[1] is a GInterface called "interactive", it represents the component that enables interaction
+            if (__args[1] is InteractableComponent)
+            {
+                var customInteractable = __args[1] as InteractableComponent;
+
+                __result = new ActionsReturnClass()
+                {
+                    Actions = customInteractable.Actions
+                };
+                return false;
+
+            }
+            return true;
+        }
+
+        [PatchPostfix]
+        public static void PatchPostfix(object[] __args, ActionsReturnClass __result)
+        {
+            if (__result != null && __result.Actions != null && __args != null && __args.Count() > 0)
+            {
+                LootItem lootItem;
+                if ((lootItem = (__args[1] as LootItem)) != null)
+                {
+                    Logger.LogWarning(" TemplateId " + lootItem.TemplateId);
+                    if(lootItem.TemplateId == Utils.GAMU_ID || lootItem.TemplateId == Utils.RAMU_ID)
+                    {
+                        HazardAnalyser analyser = lootItem.gameObject.GetComponent<HazardAnalyser>();
+                        if (analyser != null && analyser.CanTurnOn) 
+                        {
+                            __result.Actions.AddRange(analyser.Actions);
+                        }
+                    } 
+                }
+            }
+        }
+    }
+
     class DropItemPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -27,20 +78,18 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(ref EFT.Interactive.LootItem __result, IPlayer player)
         {
-
-
             bool isGamu = __result.Item.TemplateId == Utils.GAMU_ID;
             bool isRamu = __result.Item.TemplateId == Utils.RAMU_ID;
             if (isGamu || isRamu) 
             {
                 HazardAnalyser analyser = __result.gameObject.AddComponent<HazardAnalyser>();
+                analyser._IPlayer = player; 
                 analyser._Player = Utils.GetPlayerByProfileId(player.ProfileId);
                 analyser._LootItem = __result;
                 analyser.TargetZoneType = isGamu ? EZoneType.Gas : EZoneType.Radiation;
                 BoxCollider collider = analyser.gameObject.AddComponent<BoxCollider>();
                 collider.isTrigger = true;
                 collider.size = new Vector3(0.1f, 0.1f, 0.1f);
-                
 
                 if (PluginConfig.ZoneDebug.Value)
                 {

@@ -4,6 +4,7 @@ using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static EFT.Player;
 using WeaponSkillsClass = EFT.SkillManager.GClass1783;
@@ -521,7 +522,7 @@ namespace RealismMod
                 }
             }
 
-            if (modType == "muzzle_supp_adapter" && mod.Slots[0].ContainedItem != null)
+            if (modType == "muzzle_supp_adapter" && mod.Slots != null && mod.Slots.Count() > 0 && mod.Slots[0].ContainedItem != null)
             {
                 Mod containedMod = mod.Slots[0].ContainedItem as Mod;
                 if (Utils.IsSilencer(containedMod))

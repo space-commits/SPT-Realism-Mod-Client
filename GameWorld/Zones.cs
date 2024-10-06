@@ -21,6 +21,8 @@ namespace RealismMod
 
     public class HazardAnalyser : MonoBehaviour
     {
+        public List<ActionsTypesClass> Actions = new List<ActionsTypesClass>();
+        public bool CanTurnOn { get; private set; } = true;
         public LootItem _LootItem { get; set; }
         public Player _Player { get; set; } = null;
         public IPlayer _IPlayer { get; set; } = null;
@@ -30,6 +32,88 @@ namespace RealismMod
         private Vector3 _position;
         private Quaternion _rotation;
         private List<IHazardZone> _intersectingZones = new List<IHazardZone>();
+        private bool _stalledPreviously = false;
+
+        private void PlaySoundForAI() 
+        {
+            if (Singleton<BotEventHandler>.Instantiated)
+            {
+                Singleton<BotEventHandler>.Instance.PlaySound(_IPlayer, this.transform.position, 40f, AISoundType.step);
+            }
+        }
+
+        IEnumerator DoLogic()
+        {
+            PlaySoundForAI();
+
+            Utils.Logger.LogWarning("DoLogic ");
+
+            float time = 0f;
+            if (ZoneTypeMatches())
+            {
+                _audioSource.clip = Plugin.DeviceAudioClips["start_success.wav"];
+                _audioSource.Play();
+                CanTurnOn = false;
+            }
+            else
+            {
+                _audioSource.clip = Plugin.DeviceAudioClips["failed_start.wav"];
+                _audioSource.Play();
+                CanTurnOn = true;
+                yield break;
+            }
+
+            float clipLength = _audioSource.clip.length;
+            while (time <= clipLength)
+            {
+                time += Time.deltaTime;
+                yield return null;
+            }
+
+            PlaySoundForAI();
+
+            _audioSource.clip = Plugin.DeviceAudioClips["analyser_loop.wav"];
+            _audioSource.loop = true;
+            _audioSource.Play();
+
+            time = 0f;
+            clipLength = _audioSource.clip.length;
+            int loops = UnityEngine.Random.Range(1, 7);
+            bool shouldStall = !_stalledPreviously && UnityEngine.Random.Range(1, 100) >= 75;
+            if (shouldStall) loops /= 2;
+
+            while (time <= clipLength * loops) 
+            {
+                time += Time.deltaTime;
+                yield return null;
+            }
+
+            PlaySoundForAI();
+        
+            if (shouldStall) 
+            {
+                _audioSource.clip = Plugin.DeviceAudioClips["stalling.wav"];
+                _audioSource.Play();
+                CanTurnOn = true;
+                _stalledPreviously = true;
+                yield break;
+            }
+
+            _audioSource.loop = false;
+            ReplaceItem();
+        }
+
+        private void ReplaceItem()
+        {
+            string templateId = TargetZoneType == EZoneType.Gas ? Utils.GAMU_DATA_ID : Utils.RAMU_DATA_ID;
+            Item replacementItem = Singleton<ItemFactory>.Instance.CreateItem(MongoID.Generate(), templateId, null);
+            LootItem lootItem = Singleton<GameWorld>.Instance.SetupItem(replacementItem, _IPlayer, this.gameObject.transform.position, this.gameObject.transform.rotation);
+            Destroy(this.gameObject);
+
+            AudioSource tempAudio = SetUpAudio("success_end.wav", lootItem.gameObject);
+            tempAudio.Play();
+
+        }
 
         private AudioSource SetUpAudio(string clip, GameObject go)
         {
@@ -45,59 +129,22 @@ namespace RealismMod
             return audioSource;
         }
 
-        IEnumerator DoLogic()
+        private void CoroutineWrapper()
         {
-            float time = 0f;
-            while (time <= 2.5f)
-            {
-                time += Time.deltaTime;
-                yield return null;
-            }
-
-            if (ZoneTypeMatches())
-            {
-                _audioSource.clip = Plugin.DeviceAudioClips["start_success.wav"];
-                _audioSource.Play();
-            }
-            else
-            {
-                _audioSource.clip = Plugin.DeviceAudioClips["failed_start.wav"];
-                _audioSource.Play();
-                yield break;
-            }
-
-            float clipLength = _audioSource.clip.length;
-            while (time <= clipLength)
-            {
-                time += Time.deltaTime;
-                yield return null;
-            }
-
-            _audioSource.clip = Plugin.DeviceAudioClips["analyser_loop.wav"];
-            _audioSource.loop = true;
-            _audioSource.Play();
-
-            time = 0f;
-            clipLength = _audioSource.clip.length;
-            while (time <= clipLength * 1f) //5f
-            {
-                time += Time.deltaTime;
-                yield return null;
-            }
-            _audioSource.loop = false;
-            ReplaceItem();
+            Utils.Logger.LogWarning("CoroutineWrapper " + CanTurnOn);
+            if (CanTurnOn) StartCoroutine(DoLogic());
         }
 
-        private void ReplaceItem() 
+        private void SetUpActions()
         {
-            string templateId = TargetZoneType == EZoneType.Gas ? Utils.GAMU_DATA_ID : Utils.RAMU_DATA_ID;
-            Item replacementItem = Singleton<ItemFactory>.Instance.CreateItem(MongoID.Generate(), templateId, null);
-            LootItem lootItem = Singleton<GameWorld>.Instance.SetupItem(replacementItem, _IPlayer, this.gameObject.transform.position, this.gameObject.transform.rotation);
-            Destroy(this.gameObject);
-
-            AudioSource tempAudio = SetUpAudio("success_end.wav", lootItem.gameObject);
-            tempAudio.Play();
-
+            Actions.AddRange(new List<ActionsTypesClass>()
+            {
+                    new ActionsTypesClass
+                    {
+                        Name = "Turn On",
+                        Action = CoroutineWrapper
+                    }
+            });
         }
 
         private bool ZoneTypeMatches() 
@@ -108,19 +155,23 @@ namespace RealismMod
             return false;
         }
 
-        void Start() 
+        void SetUpTransforms() 
         {
-            _audioSource = SetUpAudio("switch_off.wav", this.gameObject);
             _position = _Player.gameObject.transform.position;
-            _position.y += 0.1f;
+            _position.y += 0.05f;
             _position = _position + _Player.gameObject.transform.forward * 1.1f;
 
             Vector3 eularRotation = _Player.gameObject.transform.rotation.eulerAngles;
             eularRotation.x = -90f;
             eularRotation.y = 0f;
             _rotation = Quaternion.Euler(new Vector3(eularRotation.x, eularRotation.y, eularRotation.z));
+        }
 
-            StartCoroutine(DoLogic());
+        void Start()
+        {
+            SetUpTransforms();
+            SetUpActions();
+            _audioSource = SetUpAudio("switch_off.wav", this.gameObject);
         }
 
         void Update() 
