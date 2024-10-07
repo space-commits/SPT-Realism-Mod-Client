@@ -54,7 +54,6 @@ namespace RealismMod
                 LootItem lootItem;
                 if ((lootItem = (__args[1] as LootItem)) != null)
                 {
-                    Logger.LogWarning(" TemplateId " + lootItem.TemplateId);
                     if(lootItem.TemplateId == Utils.GAMU_ID || lootItem.TemplateId == Utils.RAMU_ID)
                     {
                         HazardAnalyser analyser = lootItem.gameObject.GetComponent<HazardAnalyser>();
@@ -62,7 +61,17 @@ namespace RealismMod
                         {
                             __result.Actions.AddRange(analyser.Actions);
                         }
-                    } 
+                    }
+
+                    if (lootItem.TemplateId == Utils.TRANSMITTER_ID)
+                    {
+                        Transmitter transmitter = lootItem.gameObject.GetComponent<Transmitter>();
+                        if (transmitter != null && transmitter.CanTurnOn)
+                        {
+                            __result.Actions.AddRange(transmitter.Actions);
+                        }
+                    }
+
                 }
             }
         }
@@ -80,6 +89,7 @@ namespace RealismMod
         {
             bool isGamu = __result.Item.TemplateId == Utils.GAMU_ID;
             bool isRamu = __result.Item.TemplateId == Utils.RAMU_ID;
+            bool isTransmitter = __result.Item.TemplateId == Utils.TRANSMITTER_ID;
             if (isGamu || isRamu) 
             {
                 HazardAnalyser analyser = __result.gameObject.AddComponent<HazardAnalyser>();
@@ -101,6 +111,29 @@ namespace RealismMod
                     visualRepresentation.transform.rotation = collider.transform.rotation;
                     visualRepresentation.GetComponent<Renderer>().material.color = Color.green;
                     UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); 
+                }
+            }
+            if (isTransmitter) 
+            {
+                Transmitter transmitter = __result.gameObject.AddComponent<Transmitter>();
+                transmitter._IPlayer = player;
+                transmitter._Player = Utils.GetPlayerByProfileId(player.ProfileId);
+                transmitter._LootItem = __result;
+                transmitter.TargetZones = new string[] { "SateliteCommsLink" };
+                BoxCollider collider = transmitter.gameObject.AddComponent<BoxCollider>();
+                collider.isTrigger = true;
+                collider.size = new Vector3(0.1f, 0.1f, 0.1f);
+
+                if (PluginConfig.ZoneDebug.Value)
+                {
+                    GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    visualRepresentation.name = "ItemVisual";
+                    visualRepresentation.transform.parent = collider.transform;
+                    visualRepresentation.transform.localScale = collider.size;
+                    visualRepresentation.transform.localPosition = collider.center;
+                    visualRepresentation.transform.rotation = collider.transform.rotation;
+                    visualRepresentation.GetComponent<Renderer>().material.color = Color.green;
+                    UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>());
                 }
             }
         }
@@ -218,7 +251,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.15f);
-                    ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 14f, 60f, 0.15f, minDistance: 65, maxDistance: 105f);
+                    ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 14f, 60f, 0.2f, 55f, 95f);
                 }
 
                 //spawn zones

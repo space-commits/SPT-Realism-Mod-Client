@@ -547,7 +547,7 @@ namespace RealismMod
                     for (int i = 0; i < RealHealthController.BodyPartsArr.Length; i++)
                     {
                         EBodyPart bodyPart = RealHealthController.BodyPartsArr[i];
-                        drainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
+                        drainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / (bodyPart == EBodyPart.Head ? 160f : 120f);
                         _Player.ActiveHealthController.AddEffect<ToxicityDamage>(bodyPart, 0f, 3f, 2f, drainRate, null);
                     }
 
@@ -601,25 +601,25 @@ namespace RealismMod
                     drainRate = -0.1f;
                     break;
                 case <= 50f:
-                    drainRate = -0.3f;
+                    drainRate = -0.2f;
                     break;
                 case <= 60f:
-                    drainRate = -0.7f;
+                    drainRate = -0.35f;
                     break;
                 case < 70f:
-                    drainRate = -1f;
+                    drainRate = -0.6f;
                     break;
                 case <= 80f:
-                    drainRate = -1.5f;
+                    drainRate = -1f;
                     break;
                 case <= 90f:
-                    drainRate = -2.5f;
+                    drainRate = -1.4f;
                     break;
                 case < 100f:
-                    drainRate = -3f;
+                    drainRate = -1.8f;
                     break;
                 case >= 100f:
-                    drainRate = -4f;
+                    drainRate = -2.2f;
                     break;
                 default:
                     drainRate = 0f;
@@ -642,7 +642,7 @@ namespace RealismMod
                     for (int i = 0; i < RealHealthController.BodyPartsArr.Length; i++)
                     {
                         EBodyPart bodyPart = RealHealthController.BodyPartsArr[i];
-                        drainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / 120f;
+                        drainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / (bodyPart == EBodyPart.Head ? 240f : 120f);
                         _Player.ActiveHealthController.AddEffect<RadiationDamage>(bodyPart, 0f, 3f, 2f, drainRate, null);
                     }
                     float timeThreshold = Mathf.Max(600f * (1f - HazardTracker.TotalRadiation / 100f), 30f);

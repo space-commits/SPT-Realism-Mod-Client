@@ -120,7 +120,7 @@ namespace RealismMod
             return finalSeed <= hazardLocation.SpawnChance * 100f;    
         }
 
-        public static void CreateZone<T>(HazardLocation hazardLocation, EZoneType zoneType) where T : MonoBehaviour, IHazardZone
+        public static void CreateZone<T>(HazardLocation hazardLocation, EZoneType zoneType) where T : MonoBehaviour, IZone
         {
             if (!ShouldSpawnZone(hazardLocation, zoneType)) return;
 

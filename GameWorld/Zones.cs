@@ -10,7 +10,7 @@ using Comfort.Common;
 
 namespace RealismMod
 {
-    public interface IHazardZone
+    public interface IZone
     {
         EZoneType ZoneType { get; } 
         float ZoneStrengthModifier { get; set; }
@@ -19,180 +19,7 @@ namespace RealismMod
         bool IsAnalysable { get; set; } 
     }
 
-    public class HazardAnalyser : MonoBehaviour
-    {
-        public List<ActionsTypesClass> Actions = new List<ActionsTypesClass>();
-        public bool CanTurnOn { get; private set; } = true;
-        public LootItem _LootItem { get; set; }
-        public Player _Player { get; set; } = null;
-        public IPlayer _IPlayer { get; set; } = null;
-        public EZoneType TargetZoneType { get; set; }
-        public AudioClip AudioClips { get; set; }   
-        private AudioSource _audioSource;
-        private Vector3 _position;
-        private Quaternion _rotation;
-        private List<IHazardZone> _intersectingZones = new List<IHazardZone>();
-        private bool _stalledPreviously = false;
-
-        private void PlaySoundForAI() 
-        {
-            if (Singleton<BotEventHandler>.Instantiated)
-            {
-                Singleton<BotEventHandler>.Instance.PlaySound(_IPlayer, this.transform.position, 40f, AISoundType.step);
-            }
-        }
-
-        IEnumerator DoLogic()
-        {
-            PlaySoundForAI();
-
-            Utils.Logger.LogWarning("DoLogic ");
-
-            float time = 0f;
-            if (ZoneTypeMatches())
-            {
-                _audioSource.clip = Plugin.DeviceAudioClips["start_success.wav"];
-                _audioSource.Play();
-                CanTurnOn = false;
-            }
-            else
-            {
-                _audioSource.clip = Plugin.DeviceAudioClips["failed_start.wav"];
-                _audioSource.Play();
-                CanTurnOn = true;
-                yield break;
-            }
-
-            float clipLength = _audioSource.clip.length;
-            while (time <= clipLength)
-            {
-                time += Time.deltaTime;
-                yield return null;
-            }
-
-            PlaySoundForAI();
-
-            _audioSource.clip = Plugin.DeviceAudioClips["analyser_loop.wav"];
-            _audioSource.loop = true;
-            _audioSource.Play();
-
-            time = 0f;
-            clipLength = _audioSource.clip.length;
-            int loops = UnityEngine.Random.Range(1, 7);
-            bool shouldStall = !_stalledPreviously && UnityEngine.Random.Range(1, 100) >= 75;
-            if (shouldStall) loops /= 2;
-
-            while (time <= clipLength * loops) 
-            {
-                time += Time.deltaTime;
-                yield return null;
-            }
-
-            PlaySoundForAI();
-        
-            if (shouldStall) 
-            {
-                _audioSource.clip = Plugin.DeviceAudioClips["stalling.wav"];
-                _audioSource.Play();
-                CanTurnOn = true;
-                _stalledPreviously = true;
-                yield break;
-            }
-
-            _audioSource.loop = false;
-            ReplaceItem();
-        }
-
-        private void ReplaceItem()
-        {
-            string templateId = TargetZoneType == EZoneType.Gas ? Utils.GAMU_DATA_ID : Utils.RAMU_DATA_ID;
-            Item replacementItem = Singleton<ItemFactory>.Instance.CreateItem(MongoID.Generate(), templateId, null);
-            LootItem lootItem = Singleton<GameWorld>.Instance.SetupItem(replacementItem, _IPlayer, this.gameObject.transform.position, this.gameObject.transform.rotation);
-            Destroy(this.gameObject);
-
-            AudioSource tempAudio = SetUpAudio("success_end.wav", lootItem.gameObject);
-            tempAudio.Play();
-
-        }
-
-        private AudioSource SetUpAudio(string clip, GameObject go)
-        {
-            AudioSource audioSource = go.AddComponent<AudioSource>();
-            audioSource.clip = Plugin.DeviceAudioClips[clip];
-            audioSource.volume = 1f;
-            audioSource.loop = false;
-            audioSource.playOnAwake = false;
-            audioSource.spatialBlend = 1.0f;
-            audioSource.minDistance = 0.75f;
-            audioSource.maxDistance = 15f;
-            audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
-            return audioSource;
-        }
-
-        private void CoroutineWrapper()
-        {
-            Utils.Logger.LogWarning("CoroutineWrapper " + CanTurnOn);
-            if (CanTurnOn) StartCoroutine(DoLogic());
-        }
-
-        private void SetUpActions()
-        {
-            Actions.AddRange(new List<ActionsTypesClass>()
-            {
-                    new ActionsTypesClass
-                    {
-                        Name = "Turn On",
-                        Action = CoroutineWrapper
-                    }
-            });
-        }
-
-        private bool ZoneTypeMatches() 
-        {
-            if (_intersectingZones.Any(z => z.ZoneType == EZoneType.SafeZone)) return false;
-            if (TargetZoneType == EZoneType.Gas && _intersectingZones.Any(z => (z.ZoneType == EZoneType.Gas || z.ZoneType == EZoneType.GasAssets) && z.IsAnalysable == true)) return true;
-            if (TargetZoneType == EZoneType.Radiation && _intersectingZones.Any(z => (z.ZoneType == EZoneType.Radiation || z.ZoneType == EZoneType.RadAssets) && z.IsAnalysable == true)) return true;
-            return false;
-        }
-
-        void SetUpTransforms() 
-        {
-            _position = _Player.gameObject.transform.position;
-            _position.y += 0.05f;
-            _position = _position + _Player.gameObject.transform.forward * 1.1f;
-
-            Vector3 eularRotation = _Player.gameObject.transform.rotation.eulerAngles;
-            eularRotation.x = -90f;
-            eularRotation.y = 0f;
-            _rotation = Quaternion.Euler(new Vector3(eularRotation.x, eularRotation.y, eularRotation.z));
-        }
-
-        void Start()
-        {
-            SetUpTransforms();
-            SetUpActions();
-            _audioSource = SetUpAudio("switch_off.wav", this.gameObject);
-        }
-
-        void Update() 
-        {
-            if (this.gameObject == null) return;
-            this.gameObject.transform.position = _position; 
-            this.gameObject.transform.rotation = _rotation;
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-            IHazardZone hazardZone;
-            if (other.gameObject.TryGetComponent<IHazardZone>(out hazardZone))
-            {
-                _intersectingZones.Add(hazardZone);
-            }
-        }
-
-    }
-
-    public class QuestZone : TriggerWithId, IHazardZone
+    public class QuestZone : TriggerWithId, IZone
     {
         public EZoneType ZoneType { get; } = EZoneType.Quest;
         public float ZoneStrengthModifier { get; set; } = 1f;
@@ -261,7 +88,7 @@ namespace RealismMod
         }
     }
 
-    public class GasZone : TriggerWithId, IHazardZone
+    public class GasZone : TriggerWithId, IZone
     {
         public EZoneType ZoneType { get; } = EZoneType.Gas;
         public float ZoneStrengthModifier { get; set; } = 1f;
@@ -374,7 +201,7 @@ namespace RealismMod
         }
     }
 
-    public class RadiationZone : TriggerWithId, IHazardZone
+    public class RadiationZone : TriggerWithId, IZone
     {
         public EZoneType ZoneType { get; } = EZoneType.Radiation;
         public float ZoneStrengthModifier { get; set; } = 1f;
@@ -484,7 +311,7 @@ namespace RealismMod
         }
     }
 
-    public class LabsSafeZone : TriggerWithId, IHazardZone
+    public class LabsSafeZone : TriggerWithId, IZone
     {
         const float MAIN_VOLUME = 0.6f;
         const float SHUT_VOLUME = 0.55f;

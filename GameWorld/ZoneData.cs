@@ -40,6 +40,7 @@ namespace RealismMod
         public static AssetBundle RedContainerBundle { get; set; }
         public static AssetBundle BlueContainerBundle { get; set; }
         public static AssetBundle LabsBarrelPileBundle { get; set; }
+        public static AssetBundle ExplosionBundle { get; set; }
     }
 
     //alt spawn locations if playe/bot spawns in a hazard zone

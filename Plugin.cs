@@ -70,7 +70,7 @@ namespace RealismMod
         public static RealismHealthController RealHealthController;
 
         //explosion
-        public static AssetBundle ExplosionBundle { get; private set; }
+        public static GameObject ExplosionGO { get; private set; }
 
         //weather controller
         private GameObject RealismWeatherGameObject { get; set; }
@@ -337,8 +337,9 @@ namespace RealismMod
             Assets.RedContainerBundle = LoadAndInitializePrefabs("hazard_assets\\redcontainer.bundle");
             Assets.BlueContainerBundle = LoadAndInitializePrefabs("hazard_assets\\bluecontainer.bundle");
             Assets.LabsBarrelPileBundle = LoadAndInitializePrefabs("hazard_assets\\labsbarrelpile.bundle");
-            ExplosionBundle = LoadAndInitializePrefabs("exp\\expl.bundle");
-
+            Assets.ExplosionBundle = LoadAndInitializePrefabs("exp\\expl.bundle");
+            ExplosionGO = Assets.ExplosionBundle.LoadAsset<GameObject>("Assets/Explosion/Prefab/NUCLEAR_EXPLOSION.prefab");
+            DontDestroyOnLoad(ExplosionGO);
         }
 
         private void LoadMountingUI()
@@ -546,14 +547,6 @@ namespace RealismMod
             Utils.CheckIsReady();
             if (Utils.PlayerIsReady)
             {
-           /*     if (HazardZoneSpawner.GameStarted && Input.GetKeyDown(KeyCode.N))
-                {
-                    var player = Utils.GetYourPlayer().Transform;
-                    GameObject containerPrefab = ExplosionBundle.LoadAsset<GameObject>("Assets/Explosion/Prefab/NUCLEAR_EXPLOSION.prefab");
-                    Instantiate(containerPrefab, new Vector3(1000f, 0f, 317f), new Quaternion(0, 0, 0, 0));
-                }*/
-
-
                 GameWorldController.GameWorldUpdate();
 
                 if (ServerConfig.med_changes) RealHealthController.ControllerUpdate();

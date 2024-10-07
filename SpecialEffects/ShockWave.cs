@@ -16,8 +16,8 @@ public class ShockWave : TriggerWithId
 
     void Start()
     {
-        RadiationZone gas = gameObject.AddComponent<RadiationZone>();
-        gas.ZoneStrengthModifier = 4000f;
+        RadiationZone rads = gameObject.AddComponent<RadiationZone>();
+        rads.ZoneStrengthModifier = 2000f;
         EFT.Interactive.TriggerWithId trigger = gameObject.AddComponent<EFT.Interactive.TriggerWithId>();
         trigger.SetId("nuke");
         gameObject.layer = LayerMask.NameToLayer("Triggers");
@@ -34,19 +34,17 @@ public class ShockWave : TriggerWithId
         return player.ActiveHealthController.IsAlive;
     }
 
-    private void HandlePlayerEffects(Player player) 
+    private void HandlePlayerEffects(Player player)
     {
         if (PlayerState.EnviroType == EnvironmentType.Indoor) return;
 
-        HazardTracker.TotalRadiation = 100f;
-
-        if (ApplyDamage(player, EBodyPart.Head, 15f)) return;
-        if (ApplyDamage(player, EBodyPart.Chest, 110f)) return;
-        if (ApplyDamage(player, EBodyPart.Stomach, 110f)) return; 
-        if (ApplyDamage(player, EBodyPart.LeftArm, 60f)) return; 
-        if (ApplyDamage(player, EBodyPart.RightArm, 60f)) return;
-        if (ApplyDamage(player, EBodyPart.LeftLeg, 60f)) return;
-        if (ApplyDamage(player, EBodyPart.RightLeg, 60f)) return;
+        ApplyDamage(player, EBodyPart.Head, 15f);
+        ApplyDamage(player, EBodyPart.Chest, 110f);
+        ApplyDamage(player, EBodyPart.Stomach, 110f); 
+        ApplyDamage(player, EBodyPart.LeftArm, 60f); 
+        ApplyDamage(player, EBodyPart.RightArm, 60f);
+        ApplyDamage(player, EBodyPart.LeftLeg, 60f);
+        ApplyDamage(player, EBodyPart.RightLeg, 60f);
 
         if (!player.IsInPronePose) player.ToggleProne();
     }
@@ -69,6 +67,7 @@ public class ShockWave : TriggerWithId
 
         if (_triggeredCount == 0) 
         {
+            Utils.Logger.LogWarning("is player");
             shockwaveSound.Play();
             HandlePlayerEffects(player);
         }

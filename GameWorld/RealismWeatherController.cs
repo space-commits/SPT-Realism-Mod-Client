@@ -16,7 +16,6 @@ namespace RealismMod
         private static FieldInfo TemperatureField = AccessTools.Field(typeof(WeatherDebug), "Temperature");
 
         private WeatherController wc;
-        public bool DoExplosionEffect { get; set; }
         public float TargetCloudDensity { get; set; }
         public float TargetWindMagnitude { get; set; }
         public float TargetFog { get; set; }
