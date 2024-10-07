@@ -606,9 +606,9 @@ namespace RealismMod
             var zone = this.transform;
             Utils.Logger.LogWarning("==== " + this.transform.parent.name);
             Utils.Logger.LogWarning("name " + this.transform.parent.name);
-            Utils.Logger.LogWarning("\"position\": " + "\"x\":" + zone.transform.position.x + "," + "\"y\":" + zone.transform.position.y + "," + "\"z:\"" + zone.transform.position.z);
-            Utils.Logger.LogWarning("\"rotation\": " + "\"x\":" + zone.transform.rotation.eulerAngles.x + "," + "\"y\":" + zone.transform.eulerAngles.y + "," + "\"z:\"" + zone.transform.eulerAngles.z);
-            Utils.Logger.LogWarning("\"size\": " + "\"x\":" + zone.transform.localScale.x + "," + "\"y\":" + zone.transform.localScale.y + "," + "\"z:\"" + zone.transform.localScale.z);
+            Utils.Logger.LogWarning("\"position\": " + "{\"x\":" + zone.transform.position.x + "," + "\"y\":" + zone.transform.position.y + "," + "\"z\":" + zone.transform.position.z + "}");
+            Utils.Logger.LogWarning("\"rotation\": " + "{\"x\":" + zone.transform.rotation.eulerAngles.x + "," + "\"y\":" + zone.transform.eulerAngles.y + "," + "\"z\":" + zone.transform.eulerAngles.z + "}");
+            Utils.Logger.LogWarning("\"size\": " + "{\"x\":" + zone.transform.localScale.x + "," + "\"y\":" + zone.transform.localScale.y + "," + "\"z\":" + zone.transform.localScale.z + "}");
             Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.GeneratorTurnOff);
         }
 

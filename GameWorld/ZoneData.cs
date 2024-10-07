@@ -17,8 +17,7 @@ namespace RealismMod
         RadAssets,
         GasAssets,
         SafeZone,
-        Quest,
-        SFX
+        Quest
     }
 
     public static class Assets
@@ -599,7 +598,7 @@ namespace RealismMod
             }
         }
 
-        public static IEnumerable<Vector3> GetSafeSpawn()
+        public static IEnumerable<Vector3> GetSafeSpawns()
         {
             string map = Singleton<GameWorld>.Instance.MainPlayer.Location;
 

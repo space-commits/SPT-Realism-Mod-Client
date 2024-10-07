@@ -42,7 +42,7 @@ public class Bomb : MonoBehaviour
         _currentShockwaveVector = new Vector3(0f, 0f, 0f);
         _elapsedTime = 0.0f;
         _currentShockwaveSize = 0.0f;
-        HazardTracker.HasExploded = true;
+        GameWorldController.DidExplosionClientSide = true;
     }
 
     void Update()

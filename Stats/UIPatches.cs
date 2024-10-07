@@ -840,7 +840,6 @@ namespace RealismMod
             float pureRecoil = 0;
 
             float currentTorque = 0f;
-            float currentAimSpeed = 0f;
             float currentShotDisp = 0f;
             float currentMalfChance = 0f;
 

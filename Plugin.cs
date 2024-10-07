@@ -40,6 +40,8 @@ namespace RealismMod
         public bool DoGasEvent { get; set; }
         public bool IsChristmas { get; set; }
         public int AveragePlayerLevel { get; set; }
+        public bool IsPreExplosion { get; set; }
+        public bool HasExploded { get; set; }
     }
 
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.PLUGINVERSION)]

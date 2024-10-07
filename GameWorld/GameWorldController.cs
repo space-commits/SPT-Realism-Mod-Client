@@ -7,6 +7,7 @@ namespace RealismMod
 {
     public static class GameWorldController
     {
+        public static bool DidExplosionClientSide { get; set; } = false;
         public static bool GameStarted { get; set; } = false;
         public static bool RanEarlyGameCheck { get; set; } = false;
         public static string CurrentMap { get; set; } = "";
@@ -37,7 +38,7 @@ namespace RealismMod
         {
             get
             {
-                return DoMapGasEvent || HazardTracker.IsPreExplosion || HazardTracker.HasExploded;
+                return DoMapGasEvent || Plugin.ModInfo.IsPreExplosion || DidExplosionClientSide;
             }
         }
 

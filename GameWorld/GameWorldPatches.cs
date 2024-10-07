@@ -119,7 +119,7 @@ namespace RealismMod
                 transmitter._IPlayer = player;
                 transmitter._Player = Utils.GetPlayerByProfileId(player.ProfileId);
                 transmitter._LootItem = __result;
-                transmitter.TargetZones = new string[] { "SateliteCommsLink" };
+                transmitter.TargetZones = new string[] { "SateliteCommLink" };
                 BoxCollider collider = transmitter.gameObject.AddComponent<BoxCollider>();
                 collider.isTrigger = true;
                 collider.size = new Vector3(0.1f, 0.1f, 0.1f);
@@ -259,6 +259,7 @@ namespace RealismMod
                 ZoneSpawner.CreateZones(ZoneData.RadZoneLocations);
                 if (ZoneSpawner.ShouldSpawnDynamicZones()) ZoneSpawner.CreateZones(ZoneData.RadAssetZoneLocations);
                 ZoneSpawner.CreateZones(ZoneData.SafeZoneLocations);
+                ZoneSpawner.CreateZones(ZoneData.QuestZoneLocations);
                
                 //hazardtracker 
                 HazardTracker.GetHazardValues(ProfileData.CurrentProfileId);

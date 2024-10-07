@@ -65,7 +65,7 @@ namespace RealismMod
         //for player, get closest spawn. For bot, sort by min distance, or furthest from player failing that.
         public static Vector3 GetSafeSpawnPoint(Player entitiy, bool isBot, bool blocksNav, bool isInRads)
         {
-            IEnumerable<Vector3> spawns = ZoneData.GetSafeSpawn();
+            IEnumerable<Vector3> spawns = ZoneData.GetSafeSpawns();
             if (spawns == null || (isBot && !blocksNav) || (!isBot && GameWorldController.CurrentMap == "laboratory" && !isInRads)) return entitiy.Transform.position; //can't account for bot vs player, because of maps like Labs where player should spawn in gas
             IEnumerable<Vector3> validSpawns = spawns;
             Player player = Utils.GetYourPlayer();

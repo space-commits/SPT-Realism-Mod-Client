@@ -18,14 +18,10 @@ namespace RealismMod
     {
         public float RecordedTotalToxicity { get; set; }
         public float RecordedTotalRadiation { get; set; }
-        public bool IsPreExplosion { get; set; }
-        public bool HasExploded { get; set; }
     }
 
     public static class HazardTracker
     {
-        public static bool IsPreExplosion { get; set; } = false;
-        public static bool HasExploded { get; set; } = false;
         public static float TotalToxicityRate { get; set; } = 0f;
         public static float TotalRadiationRate { get; set; } = 0f;
         public static float BaseTotalToxicityRate { get; set; } = 0f;

@@ -1,4 +1,5 @@
 ﻿using EFT.Animals;
+using EFT.InventoryLogic;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -38,7 +39,7 @@ namespace RealismMod
 
         void Update()
         {
-            if (!_wasDestroyed && (GameWorldController.DoMapGasEvent || HazardTracker.IsPreExplosion || HazardTracker.HasExploded))
+            if (!_wasDestroyed && (GameWorldController.DoMapGasEvent || Plugin.ModInfo.IsPreExplosion))
             {
                 if (this.gameObject == null) return;
                 Destroy(this.gameObject, 20f);

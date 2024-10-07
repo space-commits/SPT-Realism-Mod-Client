@@ -28,7 +28,7 @@ namespace RealismMod
         { 
             get 
             {
-                return HazardTracker.IsPreExplosion || HazardTracker.HasExploded || GameWorldController.DoMapGasEvent;
+                return Plugin.ModInfo.IsPreExplosion || GameWorldController.DidExplosionClientSide || GameWorldController.DoMapGasEvent;
             } 
         }
 
@@ -49,8 +49,8 @@ namespace RealismMod
             if (wc != null)
             {
                 //HazardTracker.IsPreExplosion = true;
-                if (HazardTracker.IsPreExplosion && !HazardTracker.HasExploded) DoPreExplosionWeather();
-                else if (HazardTracker.HasExploded) DoExplosionWeather();
+                if (Plugin.ModInfo.IsPreExplosion && !GameWorldController.DidExplosionClientSide) DoPreExplosionWeather();
+                else if (GameWorldController.DidExplosionClientSide) DoExplosionWeather();
                 else if (GameWorldController.DoMapGasEvent) DoMapGasEventWeather();
 
                 wc.WeatherDebug.Enabled = true;

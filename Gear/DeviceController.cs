@@ -2,6 +2,7 @@
 using EFT;
 using EFT.Interactive;
 using EFT.InventoryLogic;
+using EFT.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,7 +25,6 @@ namespace RealismMod
         private Vector3 _position;
         private Quaternion _rotation;
         private List<IZone> _intersectingZones = new List<IZone>();
-        private bool _stalledPreviously = false;
 
         private void PlaySoundForAI()
         {
@@ -37,7 +37,7 @@ namespace RealismMod
         IEnumerator DoLogic()
         {
             float time = 0f;
-            if (IsInRightLcoation())
+            if (IsInRightLocation())
             {
                 _audioSource.clip = Plugin.DeviceAudioClips["numbers.wav"];
                 _audioSource.Play();
@@ -45,8 +45,8 @@ namespace RealismMod
             }
             else
             {
-                _audioSource.clip = Plugin.DeviceAudioClips["beep.wav"];
-                _audioSource.Play();
+         /*       _audioSource.clip = Plugin.DeviceAudioClips["beep.wav"];
+                _audioSource.Play();*/
                 CanTurnOn = true;
                 yield break;
             }
@@ -77,10 +77,13 @@ namespace RealismMod
             return audioSource;
         }
 
-        private void CoroutineWrapper()
+        private void Activate()
         {
-            Utils.Logger.LogWarning("CoroutineWrapper " + CanTurnOn);
-            if (CanTurnOn) StartCoroutine(DoLogic());
+            Utils.Logger.LogWarning("Activate " + CanTurnOn);
+            if (CanTurnOn)
+            {
+                StartCoroutine(DoLogic());
+            }
         }
 
         private void SetUpActions()
@@ -89,15 +92,14 @@ namespace RealismMod
             {
                     new ActionsTypesClass
                     {
-                        Name = "Turn On",
-                        Action = CoroutineWrapper
+                        Name = "Activate",
+                        Action = Activate
                     }
             });
         }
 
-        private bool IsInRightLcoation()
+        private bool IsInRightLocation()
         {
-            return true;
             foreach (var zone in _intersectingZones) 
             {
                 QuestZone questZone;
@@ -253,10 +255,13 @@ namespace RealismMod
             return audioSource;
         }
 
-        private void CoroutineWrapper()
+        private void TurnOn()
         {
-            Utils.Logger.LogWarning("CoroutineWrapper " + CanTurnOn);
-            if (CanTurnOn) StartCoroutine(DoLogic());
+            Utils.Logger.LogWarning("Turn On " + CanTurnOn);
+            if (CanTurnOn)
+            {
+                StartCoroutine(DoLogic());
+            }
         }
 
         private void SetUpActions()
@@ -266,7 +271,7 @@ namespace RealismMod
                     new ActionsTypesClass
                     {
                         Name = "Turn On",
-                        Action = CoroutineWrapper
+                        Action = TurnOn
                     }
             });
         }
@@ -350,8 +355,9 @@ namespace RealismMod
             return delay;
         }
 
-        private static void PlayToggleSfx(string clip) 
+        private static void PlayToggleSfx(string clip)
         {
+
             Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), Plugin.DeviceAudioClips[clip], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 0.5f, EOcclusionTest.None, null, false);
         }
 
