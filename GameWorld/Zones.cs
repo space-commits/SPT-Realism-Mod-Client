@@ -16,7 +16,8 @@ namespace RealismMod
         float ZoneStrengthModifier { get; set; }
         bool BlocksNav { get; set; }
         bool UsesDistanceFalloff { get; set; }
-        bool IsAnalysable { get; set; } 
+        bool IsAnalysable { get; set; }
+        bool HasBeenAnalysed { get; set; }
     }
 
     public class QuestZone : TriggerWithId, IZone
@@ -26,6 +27,7 @@ namespace RealismMod
         public bool BlocksNav { get; set; }
         public bool UsesDistanceFalloff { get; set; }
         public bool IsAnalysable { get; set; } = false;
+        public bool HasBeenAnalysed { get; set; }
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private BoxCollider _zoneCollider;
         private float _tick = 0f;
@@ -95,6 +97,7 @@ namespace RealismMod
         public bool BlocksNav { get; set; }
         public bool UsesDistanceFalloff { get; set; }
         public bool IsAnalysable { get; set; } = false;
+        public bool HasBeenAnalysed { get; set; }
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private Collider _zoneCollider;
         private bool _isSphere = false;
@@ -208,6 +211,7 @@ namespace RealismMod
         public bool BlocksNav { get; set; }
         public bool UsesDistanceFalloff { get; set; }
         public bool IsAnalysable { get; set; } = false;
+        public bool HasBeenAnalysed { get; set; }
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private Collider _zoneCollider;
         private bool _isSphere = false;
@@ -323,6 +327,7 @@ namespace RealismMod
         public bool IsActive { get; set; } = true;
         public bool? DoorType { get; set; }
         public bool IsAnalysable { get; set; } = false;
+        public bool HasBeenAnalysed { get; set; }
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private BoxCollider _zoneCollider;
         private float _tick = 0f;

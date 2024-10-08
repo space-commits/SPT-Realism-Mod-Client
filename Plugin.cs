@@ -39,9 +39,9 @@ namespace RealismMod
         public bool IsHalloween { get; set; }
         public bool DoGasEvent { get; set; }
         public bool IsChristmas { get; set; }
-        public int AveragePlayerLevel { get; set; }
         public bool IsPreExplosion { get; set; }
         public bool HasExploded { get; set; }
+        public bool IsNightTime { get; set; }   
     }
 
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.PLUGINVERSION)]

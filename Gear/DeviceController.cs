@@ -9,44 +9,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using static RootMotion.FinalIK.IKSolver;
 
 namespace RealismMod
 {
-    public class Transmitter : MonoBehaviour
+
+
+    public class TransmitterHalloweenEvent : Transmitter 
     {
-        public List<ActionsTypesClass> Actions = new List<ActionsTypesClass>();
-        public bool CanTurnOn { get; private set; } = true;
-        public LootItem _LootItem { get; set; }
-        public Player _Player { get; set; } = null;
-        public IPlayer _IPlayer { get; set; } = null;
-        public string[] TargetZones { get; set; }
-        public AudioClip AudioClips { get; set; }
-        private AudioSource _audioSource;
-        private Vector3 _position;
-        private Quaternion _rotation;
-        private List<IZone> _intersectingZones = new List<IZone>();
+        public bool TriggeredExplosion {  get; private set; }   
 
-        private void PlaySoundForAI()
-        {
-            if (Singleton<BotEventHandler>.Instantiated)
-            {
-                Singleton<BotEventHandler>.Instance.PlaySound(_IPlayer, this.transform.position, 40f, AISoundType.step);
-            }
-        }
-
-        IEnumerator DoLogic()
+        protected override IEnumerator DoLogic() 
         {
             float time = 0f;
-            if (IsInRightLocation())
+            bool canTrigger = IsInRightLocation() && Plugin.ModInfo.IsHalloween && !Plugin.ModInfo.HasExploded && !GameWorldController.DidExplosionClientSide; // && Plugin.ModInfo.IsNightTime
+            if (canTrigger) 
             {
                 _audioSource.clip = Plugin.DeviceAudioClips["numbers.wav"];
                 _audioSource.Play();
+                SpawnQuestTrigger();
+                TriggeredExplosion = true;
                 CanTurnOn = false;
             }
             else
             {
-         /*       _audioSource.clip = Plugin.DeviceAudioClips["beep.wav"];
-                _audioSource.Play();*/
+                _audioSource.clip = Plugin.DeviceAudioClips["switch_off.wav"];
+                _audioSource.Play();
                 CanTurnOn = true;
                 yield break;
             }
@@ -62,8 +50,66 @@ namespace RealismMod
             Instantiate(Plugin.ExplosionGO, new Vector3(1000f, 0f, 317f), new Quaternion(0, 0, 0, 0));
 
         }
+    }
 
-        private AudioSource SetUpAudio(string clip, GameObject go)
+    public class Transmitter : MonoBehaviour
+    {
+        public List<ActionsTypesClass> Actions = new List<ActionsTypesClass>();
+        public bool CanTurnOn { get; protected set; } = true;
+        public LootItem _LootItem { get; set; }
+        public Player _Player { get; set; } = null;
+        public IPlayer _IPlayer { get; set; } = null;
+        public string[] TargetZones { get; set; }
+        public AudioClip AudioClips { get; set; }
+        public string QuestTrigger { get; set; }    
+        protected AudioSource _audioSource;
+        protected Vector3 _position;
+        protected Quaternion _rotation;
+        protected List<IZone> _intersectingZones = new List<IZone>();
+
+        protected void PlaySoundForAI()
+        {
+            if (Singleton<BotEventHandler>.Instantiated)
+            {
+                Singleton<BotEventHandler>.Instance.PlaySound(_IPlayer, this.transform.position, 40f, AISoundType.step);
+            }
+        }
+
+        protected void SpawnQuestTrigger() 
+        {
+            var questLocation = ZoneData.QuestZoneLocations.Shoreline.FirstOrDefault(hl => hl.Zones.Any(z => z.Name == QuestTrigger));
+            questLocation.IsTriggered = false;
+            ZoneSpawner.CreateZone<QuestZone>(questLocation, EZoneType.Quest);
+        }
+
+        protected virtual IEnumerator DoLogic()
+        {
+            float time = 0f;
+            if (IsInRightLocation())
+            {
+                _audioSource.clip = Plugin.DeviceAudioClips["numbers.wav"];
+                _audioSource.Play();
+                CanTurnOn = false;
+            }
+            else
+            {
+                _audioSource.clip = Plugin.DeviceAudioClips["switch_off.wav"];
+                _audioSource.Play();
+                CanTurnOn = true;
+                yield break;
+            }
+
+            float clipLength = _audioSource.clip.length;
+            while (time <= clipLength)
+            {
+                PlaySoundForAI();
+                time += Time.deltaTime;
+                yield return null;
+            }
+            SpawnQuestTrigger();
+        }
+
+        protected AudioSource SetUpAudio(string clip, GameObject go)
         {
             AudioSource audioSource = go.AddComponent<AudioSource>();
             audioSource.clip = Plugin.DeviceAudioClips[clip];
@@ -77,16 +123,15 @@ namespace RealismMod
             return audioSource;
         }
 
-        private void Activate()
+        protected void Activate()
         {
-            Utils.Logger.LogWarning("Activate " + CanTurnOn);
             if (CanTurnOn)
             {
                 StartCoroutine(DoLogic());
             }
         }
 
-        private void SetUpActions()
+        protected void SetUpActions()
         {
             Actions.AddRange(new List<ActionsTypesClass>()
             {
@@ -98,7 +143,7 @@ namespace RealismMod
             });
         }
 
-        private bool IsInRightLocation()
+        protected bool IsInRightLocation()
         {
             foreach (var zone in _intersectingZones) 
             {
@@ -108,7 +153,7 @@ namespace RealismMod
             return false;
         }
 
-        void SetUpTransforms()
+        protected void SetUpTransforms()
         {
             _position = _Player.gameObject.transform.position;
             _position.y += 0.05f;
@@ -120,21 +165,22 @@ namespace RealismMod
             _rotation = Quaternion.Euler(new Vector3(eularRotation.x, eularRotation.y, eularRotation.z));
         }
 
-        void Start()
+        protected void Start()
         {
+            Utils.Logger.LogWarning("START " + _intersectingZones.Count());
             SetUpTransforms();
             SetUpActions();
             _audioSource = SetUpAudio("switch_off.wav", this.gameObject);
         }
 
-        void Update()
+        protected void Update()
         {
             if (this.gameObject == null) return;
             this.gameObject.transform.position = _position;
             this.gameObject.transform.rotation = _rotation;
         }
 
-        private void OnTriggerEnter(Collider other)
+        protected void OnTriggerEnter(Collider other)
         {
             IZone zone;
             if (other.gameObject.TryGetComponent<IZone>(out zone))
@@ -158,6 +204,7 @@ namespace RealismMod
         private Vector3 _position;
         private Quaternion _rotation;
         private List<IZone> _intersectingZones = new List<IZone>();
+        private IZone _targetZone = null;
         private bool _stalledPreviously = false;
 
         private void PlaySoundForAI()
@@ -205,7 +252,7 @@ namespace RealismMod
             time = 0f;
             clipLength = _audioSource.clip.length;
             int loops = UnityEngine.Random.Range(1, 7);
-            bool shouldStall = !_stalledPreviously && UnityEngine.Random.Range(1, 100) >= 75;
+            bool shouldStall = !_stalledPreviously && UnityEngine.Random.Range(1, 100) >= 80;
             if (shouldStall) loops /= 2;
 
             while (time <= clipLength * loops)
@@ -226,6 +273,7 @@ namespace RealismMod
             }
 
             _audioSource.loop = false;
+            DeactivateZone();
             ReplaceItem();
         }
 
@@ -250,15 +298,15 @@ namespace RealismMod
             audioSource.playOnAwake = false;
             audioSource.spatialBlend = 1.0f;
             audioSource.minDistance = 0.75f;
-            audioSource.maxDistance = 15f;
+            audioSource.maxDistance = 25f;
             audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
             return audioSource;
         }
 
         private void TurnOn()
         {
-            Utils.Logger.LogWarning("Turn On " + CanTurnOn);
-            if (CanTurnOn)
+            Utils.Logger.LogWarning("CanTurnOn " + CanTurnOn);
+            if (CanTurnOn && (_targetZone == null || !_targetZone.HasBeenAnalysed))
             {
                 StartCoroutine(DoLogic());
             }
@@ -276,12 +324,33 @@ namespace RealismMod
             });
         }
 
+        private void DeactivateZone() 
+        {
+            foreach (var zone in _intersectingZones)
+            {
+                bool foundRadMatch = TargetZoneType == EZoneType.Radiation && (zone.ZoneType == EZoneType.RadAssets || zone.ZoneType == EZoneType.Radiation);
+                bool foundToxMatch = TargetZoneType == EZoneType.Gas && (zone.ZoneType == EZoneType.Gas || zone.ZoneType == EZoneType.GasAssets);
+
+                if (foundRadMatch || foundToxMatch) 
+                {
+                    zone.HasBeenAnalysed = true;
+                    zone.IsAnalysable = false;
+                    return;
+                }
+            }
+        }
+
+        private IZone GetTargetZone(EZoneType[] targetZones) 
+        {
+            return _intersectingZones.FirstOrDefault(z => targetZones.Contains(z.ZoneType) && z.IsAnalysable);
+        }
+
         private bool ZoneTypeMatches()
         {
             if (_intersectingZones.Any(z => z.ZoneType == EZoneType.SafeZone)) return false;
-            if (TargetZoneType == EZoneType.Gas && _intersectingZones.Any(z => (z.ZoneType == EZoneType.Gas || z.ZoneType == EZoneType.GasAssets) && z.IsAnalysable == true)) return true;
-            if (TargetZoneType == EZoneType.Radiation && _intersectingZones.Any(z => (z.ZoneType == EZoneType.Radiation || z.ZoneType == EZoneType.RadAssets) && z.IsAnalysable == true)) return true;
-            return false;
+            EZoneType[] targetZones = TargetZoneType == EZoneType.Gas ? new EZoneType[] { EZoneType.Gas, EZoneType.GasAssets } : new EZoneType[] { EZoneType.Radiation, EZoneType.RadAssets };
+            _targetZone = GetTargetZone(targetZones);
+            return _targetZone == null;
         }
 
         void SetUpTransforms()

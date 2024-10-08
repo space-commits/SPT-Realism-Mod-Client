@@ -39,7 +39,7 @@ namespace RealismMod
 
         void Update()
         {
-            if (!_wasDestroyed && (GameWorldController.DoMapGasEvent || Plugin.ModInfo.IsPreExplosion))
+            if (!_wasDestroyed && (GameWorldController.DoMapGasEvent || Plugin.ModInfo.IsPreExplosion || GameWorldController.DoMapRads))
             {
                 if (this.gameObject == null) return;
                 Destroy(this.gameObject, 20f);

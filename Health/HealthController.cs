@@ -2080,7 +2080,7 @@ namespace RealismMod
 
             if (!player.HealthController.IsAlive || player.HealthController.DamageCoeff <= 0f) return;
 
-            if (GearController.HasGasMask && !PlayerHazardBridge.IsProtectedFromSafeZone && (PlayerHazardBridge.GasZoneCount > 0 || PlayerHazardBridge.RadZoneCount > 0 || ToxicItemCount > 0 || RadItemCount > 0 ||GameWorldController.DoMapGasEvent))
+            if (GearController.HasGasMask && !PlayerHazardBridge.IsProtectedFromSafeZone && (PlayerHazardBridge.GasZoneCount > 0 || PlayerHazardBridge.RadZoneCount > 0 || ToxicItemCount > 0 || RadItemCount > 0 || GameWorldController.DoMapGasEvent || GameWorldController.DoMapRads))
             {
                 GearController.UpdateFilterResource(player, PlayerHazardBridge);
                 GearController.CalcGasMaskDuraFactor(player);
@@ -2095,16 +2095,17 @@ namespace RealismMod
         private void RadiationZoneTick(Player player)
         {
             bool isInRadZone = PlayerHazardBridge.RadZoneCount > 0 && !PlayerHazardBridge.IsProtectedFromSafeZone;
-            bool IsBeingHazarded = isInRadZone && GearController.CurrentRadProtection <= 0f; //CurrentRadProtection accounts for both respirators, and gas masks and whether they have filters or dura is too low
+            bool IsBeingHazarded = (isInRadZone || GameWorldController.DoMapRads) && GearController.CurrentRadProtection <= 0f; //CurrentRadProtection accounts for both respirators, and gas masks and whether they have filters or dura is too low
 
             float sprintFactor = PlayerState.IsSprinting ? 2f : 1f;
             float radItemFactor = RadItemCount * RAD_ITEM_FACTOR;
+            float mapRadFactor = GameWorldController.DoMapRads ? GameWorldController.CurrentMapRadStrength : 0f;
             float protectiveFctors = (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak);
 
             float reductionRate = !IsBeingHazarded ? HazardTracker.RadTreatmentRate : 0f; //not sure if I should allow treatment while in radiation zone or not
             reductionRate = isInRadZone ? reductionRate * 0.5f : reductionRate;
-            float baseRadRate = PlayerHazardBridge.TotalRadRate + radItemFactor;
-            float radRate = ((PlayerHazardBridge.TotalRadRate * sprintFactor) + radItemFactor) * protectiveFctors;
+            float baseRadRate = PlayerHazardBridge.TotalRadRate + radItemFactor + mapRadFactor;
+            float radRate = ((PlayerHazardBridge.TotalRadRate * sprintFactor) + radItemFactor + mapRadFactor) * protectiveFctors;
             float totalRate = radRate + reductionRate;
 
             float speedBase = baseRadRate > 0f ? 10f : PlayerHazardBridge.IsProtectedFromSafeZone ? 8f : 6f;

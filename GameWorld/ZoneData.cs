@@ -274,13 +274,20 @@ namespace RealismMod
         public Rotation Rotation { get; set; }
     }
 
+    public class Analysable 
+    {
+        public bool NoRequirement { get; set; }
+        public string[] EnabledBy { get; set; }
+        public string[] DisabledBy { get; set; }
+    }
+
     public class Zone
     {
         public string Name { get; set; }
         public float Strength { get; set; }
         public bool UsesDistanceFalloff { get; set; }
         public bool BlockNav { get; set; }
-        public bool IsAnalysable { get; set; }
+        public Analysable Analysable { get; set; }
         public string AudioFile { get; set; }
         public Position Position { get; set; }
         public Rotation Rotation { get; set; }
@@ -299,6 +306,7 @@ namespace RealismMod
 
     public class HazardLocation
     {
+        public bool IsTriggered { get; set; }
         public float SpawnChance { get; set; }
         public string QuestToEnable { get; set; }
         public string QuestToBlock { get; set; }

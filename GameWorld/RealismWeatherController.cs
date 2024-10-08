@@ -109,9 +109,9 @@ namespace RealismMod
 
         private void DoPreExplosionWeather()
         {
-            TargetCloudDensity = 1;
-            TargetFog = 0.05f;
-            TargetRain = 0.1f;
+            TargetCloudDensity = 0.5f;
+            TargetFog = 0.025f;
+            TargetRain = 0.2f;
             TargetWindMagnitude = 0;
             TargetLighteningThunder = 0;
             TargetWindDirection = WeatherDebug.Direction.East;

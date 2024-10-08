@@ -17,12 +17,15 @@ using EFT.InventoryLogic;
 using HarmonyLib;
 using EFT.Interactive;
 using static RootMotion.FinalIK.InteractionTrigger.Range;
+using System.Collections.Generic;
 
 namespace RealismMod
 {
 
     class GetAvailableActionsPatch : ModulePatch
     {
+        public static void DummyAction() { }
+
         protected override MethodBase GetTargetMethod()
         {
             return AccessTools.FirstMethod(typeof(GetActionsClass), x => x.Name == nameof(GetActionsClass.GetAvailableActions) && x.GetParameters()[0].Name == "owner");
@@ -65,10 +68,19 @@ namespace RealismMod
 
                     if (lootItem.TemplateId == Utils.TRANSMITTER_ID)
                     {
-                        Transmitter transmitter = lootItem.gameObject.GetComponent<Transmitter>();
-                        if (transmitter != null && transmitter.CanTurnOn)
+                        TransmitterHalloweenEvent transmitter = lootItem.gameObject.GetComponent<TransmitterHalloweenEvent>();
+                        if (transmitter != null)
                         {
-                            __result.Actions.AddRange(transmitter.Actions);
+                            if (transmitter.TriggeredExplosion) 
+                            {
+                                __result.Actions = new List<ActionsTypesClass>() { new ActionsTypesClass { Name = "", Action = DummyAction } };
+                            }
+                            else if (transmitter.CanTurnOn)
+                            {
+                                __result.Actions.AddRange(transmitter.Actions);
+                            }
+                  
+                    
                         }
                     }
 
@@ -115,11 +127,12 @@ namespace RealismMod
             }
             if (isTransmitter) 
             {
-                Transmitter transmitter = __result.gameObject.AddComponent<Transmitter>();
+                TransmitterHalloweenEvent transmitter = __result.gameObject.AddComponent<TransmitterHalloweenEvent>();
                 transmitter._IPlayer = player;
                 transmitter._Player = Utils.GetPlayerByProfileId(player.ProfileId);
                 transmitter._LootItem = __result;
                 transmitter.TargetZones = new string[] { "SateliteCommLink" };
+                transmitter.QuestTrigger = "SateliteCommLinkEstablished";
                 BoxCollider collider = transmitter.gameObject.AddComponent<BoxCollider>();
                 collider.isTrigger = true;
                 collider.size = new Vector3(0.1f, 0.1f, 0.1f);
@@ -166,7 +179,7 @@ namespace RealismMod
 
     public class QuestCompletePatch : ModulePatch
     {
-        private static string[] _hazardHealQuests = { "667c643869df8111b81cb6dc", "667dbbc9c62a7c2ee8fe25b2" };
+        private static string[] _hazardHealQuests = { "667c643869df8111b81cb6dc", "667dbbc9c62a7c2ee8fe25b2", "6705425a0351f9f55b7d8c61" };
 
         protected override MethodBase GetTargetMethod()
         {
