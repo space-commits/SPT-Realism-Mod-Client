@@ -206,8 +206,14 @@ namespace RealismMod
         private Quaternion _rotation;
         private List<IZone> _intersectingZones = new List<IZone>();
         private bool _stalledPreviously = false;
+        private bool _isActive = false;
         public string instanceId = "";
-        private bool _deactivated = false;  
+        private bool _deactivated = false;
+
+        void OnDisable()
+        {
+            DeleteSelfFromDevicesList();
+        }
 
         private void PlaySoundForAI()
         {
@@ -215,6 +221,47 @@ namespace RealismMod
             {
                 Singleton<BotEventHandler>.Instance.PlaySound(_IPlayer, this.transform.position, 40f, AISoundType.step);
             }
+        }
+
+        private  void AddSelfToDevicesList() 
+        {
+            if (TargetZone == null) return;
+            TargetZone.ActiveDevices.Add(this.gameObject);
+        }
+
+        private void DeleteSelfFromDevicesList()
+        {
+            if (TargetZone == null) return;
+            TargetZone.ActiveDevices.Remove(this.gameObject);
+        }
+
+        public bool ZoneAlreadyHasDevice()
+        {
+            if (TargetZone == null) return false;
+            TargetZone.ActiveDevices.RemoveAll(d => d == null || !d.activeSelf || !d.gameObject.activeSelf);
+            List<HazardAnalyser> anaylsers = new List<HazardAnalyser>();    
+            foreach (var device in TargetZone.ActiveDevices) 
+            {
+                if (device.gameObject.TryGetComponent<HazardAnalyser>(out HazardAnalyser analyser)) 
+                {
+                    anaylsers.Add(analyser);    
+                }
+            }
+
+            foreach (var a in anaylsers) 
+            {
+                if (a.instanceId != instanceId)
+                {
+                    Utils.Logger.LogWarning("Zone already has a device");
+                    Utils.Logger.LogWarning("============already has device end========");
+                    return true;
+                }
+            }
+    
+            Utils.Logger.LogWarning("============already has device end========");
+
+            //remove null or inactive devices 
+            return false;
         }
 
         IEnumerator DoLogic()
@@ -229,6 +276,7 @@ namespace RealismMod
                 _audioSource.clip = Plugin.DeviceAudioClips["start_success.wav"];
                 _audioSource.Play();
                 CanTurnOn = false;
+                AddSelfToDevicesList();
             }
             else
             {
@@ -275,14 +323,15 @@ namespace RealismMod
             }
 
             _audioSource.loop = false;
-            DeactivateZone();
             ReplaceItem();
+            DeactivateZone();
         }
 
         private void ReplaceItem()
         {
-            _deactivated = true;
             Utils.Logger.LogWarning("==========replace=========");
+            DeleteSelfFromDevicesList();
+            _deactivated = true;
             string templateId = TargetZoneType == EZoneType.Gas ? Utils.GAMU_DATA_ID : Utils.RAMU_DATA_ID;
             Item replacementItem = Singleton<ItemFactory>.Instance.CreateItem(MongoID.Generate(), templateId, null);
             Vector3 lastPosition = this._LootItem.gameObject.transform.position;
@@ -389,7 +438,7 @@ namespace RealismMod
         void SetUpTransforms()
         {
             _position = _Player.gameObject.transform.position;
-            _position.y += 0.05f;
+            _position.y += 0.025f;
             _position = _position + _Player.gameObject.transform.forward * 1.1f;
 
             Vector3 eularRotation = _Player.gameObject.transform.rotation.eulerAngles;

@@ -42,7 +42,7 @@ namespace RealismMod
         public const string RAMU_ID = "66fd521442055447e2304fda";
         public const string GAMU_DATA_ID = "670120df4f0c4c37e6be90ae";
         public const string RAMU_DATA_ID = "670120ce354987453daf3d0c";
-        public const string TRANSMITTER_ID = "6703082a766cb6d11310094e";
+        public const string HALLOWEEN_TRANSMITTER_ID = "6703082a766cb6d11310094e";
 
 
         public static ManualLogSource Logger;

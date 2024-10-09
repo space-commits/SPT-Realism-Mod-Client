@@ -59,22 +59,24 @@ namespace RealismMod
                 {
                     if(lootItem.TemplateId == Utils.GAMU_ID || lootItem.TemplateId == Utils.RAMU_ID)
                     {
+                        Utils.Logger.LogWarning("========interactable============");
                         HazardAnalyser analyser = lootItem.gameObject.GetComponent<HazardAnalyser>();
                         bool hasBeenAnalysed = analyser.TargetZone != null && analyser.TargetZone.HasBeenAnalysed;
-                        Utils.Logger.LogWarning("========interactable============");
+                        bool alreadyHasDevice = analyser.ZoneAlreadyHasDevice();
+                      
                         Logger.LogWarning("id " + analyser.instanceId);
                         Logger.LogWarning("zone null? " + (analyser.TargetZone == null));
                         Logger.LogWarning("HasBeenAnalysed " + (analyser.TargetZone != null && analyser.TargetZone.HasBeenAnalysed));
                         Logger.LogWarning("zone name " + (analyser.TargetZone != null ? analyser.TargetZone.Name : "null"));
 
                         Utils.Logger.LogWarning("========interactable end============");
-                        if (analyser != null && analyser.CanTurnOn && !hasBeenAnalysed) 
+                        if (analyser != null && analyser.CanTurnOn && !hasBeenAnalysed && !alreadyHasDevice) 
                         {
                             __result.Actions.AddRange(analyser.Actions);
                         }
                     }
 
-                    if (lootItem.TemplateId == Utils.TRANSMITTER_ID)
+                    if (lootItem.TemplateId == Utils.HALLOWEEN_TRANSMITTER_ID)
                     {
                         TransmitterHalloweenEvent transmitter = lootItem.gameObject.GetComponent<TransmitterHalloweenEvent>();
                         if (transmitter != null)
@@ -109,7 +111,7 @@ namespace RealismMod
         {
             bool isGamu = __result.Item.TemplateId == Utils.GAMU_ID;
             bool isRamu = __result.Item.TemplateId == Utils.RAMU_ID;
-            bool isHalloweenTransmitter = __result.Item.TemplateId == Utils.TRANSMITTER_ID;
+            bool isHalloweenTransmitter = __result.Item.TemplateId == Utils.HALLOWEEN_TRANSMITTER_ID;
             if (isGamu || isRamu) 
             {
                 //when the item is picked up, the old componment is not destroyed because BSG persists the LootItem gameobject at least for some time before GC...
@@ -127,7 +129,7 @@ namespace RealismMod
                 BoxCollider collider = analyser.gameObject.AddComponent<BoxCollider>();
                 collider.isTrigger = true;
                 collider.size = new Vector3(0.1f, 0.1f, 0.1f);
-                Logger.LogWarning("finsihed");
+                Logger.LogWarning("finished");
                 if (PluginConfig.ZoneDebug.Value)
                 {
                     GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
