@@ -547,7 +547,7 @@ namespace RealismMod
                     for (int i = 0; i < RealHealthController.BodyPartsArr.Length; i++)
                     {
                         EBodyPart bodyPart = RealHealthController.BodyPartsArr[i];
-                        drainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / (bodyPart == EBodyPart.Head ? 160f : 120f);
+                        drainRate *= _Player.ActiveHealthController.GetBodyPartHealth(bodyPart).Maximum / (bodyPart == EBodyPart.Head ? 240f : 120f);
                         _Player.ActiveHealthController.AddEffect<ToxicityDamage>(bodyPart, 0f, 3f, 2f, drainRate, null);
                     }
 

@@ -18,6 +18,7 @@ namespace RealismMod
         bool UsesDistanceFalloff { get; set; }
         bool IsAnalysable { get; set; }
         bool HasBeenAnalysed { get; set; }
+        string Name { get; set; }
     }
 
     public class QuestZone : TriggerWithId, IZone
@@ -27,7 +28,8 @@ namespace RealismMod
         public bool BlocksNav { get; set; }
         public bool UsesDistanceFalloff { get; set; }
         public bool IsAnalysable { get; set; } = false;
-        public bool HasBeenAnalysed { get; set; }
+        public bool HasBeenAnalysed { get; set; } = false;
+        public string Name { get; set; }
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private BoxCollider _zoneCollider;
         private float _tick = 0f;
@@ -39,6 +41,7 @@ namespace RealismMod
             {
                 Utils.Logger.LogError("Realism Mod: No BoxCollider found in parent for RadiationZone");
             }
+            Name = name; 
         }
 
         public override void TriggerEnter(Player player)
@@ -97,7 +100,8 @@ namespace RealismMod
         public bool BlocksNav { get; set; }
         public bool UsesDistanceFalloff { get; set; }
         public bool IsAnalysable { get; set; } = false;
-        public bool HasBeenAnalysed { get; set; }
+        public bool HasBeenAnalysed { get; set; } = false;
+        public string Name { get; set; }
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private Collider _zoneCollider;
         private bool _isSphere = false;
@@ -124,6 +128,7 @@ namespace RealismMod
                 Vector3 boxSize = box.size;
                 _maxDistance = boxSize.magnitude / 2f;
             }
+            Name = name;
         }
 
         public override void TriggerEnter(Player player)
@@ -211,7 +216,8 @@ namespace RealismMod
         public bool BlocksNav { get; set; }
         public bool UsesDistanceFalloff { get; set; }
         public bool IsAnalysable { get; set; } = false;
-        public bool HasBeenAnalysed { get; set; }
+        public bool HasBeenAnalysed { get; set; } = false;
+        public string Name { get; set; }
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private Collider _zoneCollider;
         private bool _isSphere = false;
@@ -237,6 +243,7 @@ namespace RealismMod
                 Vector3 boxSize = box.size;
                 _maxDistance = boxSize.magnitude / 2f;
             }
+            Name = name;
         }
 
         public override void TriggerEnter(Player player)
@@ -327,7 +334,8 @@ namespace RealismMod
         public bool IsActive { get; set; } = true;
         public bool? DoorType { get; set; }
         public bool IsAnalysable { get; set; } = false;
-        public bool HasBeenAnalysed { get; set; }
+        public bool HasBeenAnalysed { get; set; } = false;
+        public string Name { get; set; }
         private Dictionary<Player, PlayerZoneBridge> _containedPlayers = new Dictionary<Player, PlayerZoneBridge>();
         private BoxCollider _zoneCollider;
         private float _tick = 0f;
@@ -350,6 +358,7 @@ namespace RealismMod
             SetUpDoorShutAudio();
             SetUpDoorOpenAudio();
             CheckForDoors();
+            Name = name;
         }
 
 

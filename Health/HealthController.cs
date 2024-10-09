@@ -2100,12 +2100,12 @@ namespace RealismMod
             float sprintFactor = PlayerState.IsSprinting ? 2f : 1f;
             float radItemFactor = RadItemCount * RAD_ITEM_FACTOR;
             float mapRadFactor = GameWorldController.DoMapRads ? GameWorldController.CurrentMapRadStrength : 0f;
-            float protectiveFctors = (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak);
+            float protectiveFactors = (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak);
 
             float reductionRate = !IsBeingHazarded ? HazardTracker.RadTreatmentRate : 0f; //not sure if I should allow treatment while in radiation zone or not
             reductionRate = isInRadZone ? reductionRate * 0.5f : reductionRate;
             float baseRadRate = PlayerHazardBridge.TotalRadRate + radItemFactor + mapRadFactor;
-            float radRate = ((PlayerHazardBridge.TotalRadRate * sprintFactor) + radItemFactor + mapRadFactor) * protectiveFctors;
+            float radRate = ((PlayerHazardBridge.TotalRadRate * sprintFactor) + radItemFactor + mapRadFactor) * protectiveFactors;
             float totalRate = radRate + reductionRate;
 
             float speedBase = baseRadRate > 0f ? 10f : PlayerHazardBridge.IsProtectedFromSafeZone ? 8f : 6f;
@@ -2226,7 +2226,8 @@ namespace RealismMod
             bool isBeingGassed = HazardTracker.TotalToxicity >= 30f;
             bool hasHazardification = isBeingGassed || isBeingIrradiated;
             bool isGettingHazarded = HazardTracker.TotalToxicityRate >= MIN_COUGH_THRESHOLD * (1f + PlayerState.ImmuneSkillStrong);
-            if (player.HealthController.IsAlive && !GearController.HasGasMask && (hasHazardification || isGettingHazarded))
+
+            if (player.HealthController.IsAlive && !(GearController.HasGasMaskWithFilter && GearController.GasMaskDurabilityFactor > 0f) && (hasHazardification || isGettingHazarded))
             {
                 if (isBeingIrradiated && !isBeingGassed) 
                 {

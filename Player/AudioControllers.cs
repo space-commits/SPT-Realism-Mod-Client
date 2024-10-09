@@ -20,7 +20,7 @@ namespace RealismMod
         public float MaxDistance = 95f;
         public float Volume = 1f;
         private AudioSource _audioSource;
-        private Vector3 _positionRelativeToPlayer;
+        private float _randomDistanceFromPlayer;
 
         private IEnumerator PlayRandomAudio()
         {
@@ -30,11 +30,10 @@ namespace RealismMod
                 {
                     AudioClip selectedClip = AudioClips[UnityEngine.Random.Range(0, AudioClips.Count)];
 
-                    float randomDistance = UnityEngine.Random.Range(MinDistance, MaxDistance);
-                    var _reandomPosition = ParentTransform.position + UnityEngine.Random.onUnitSphere * randomDistance;
-                    _reandomPosition.y = Mathf.Clamp(_reandomPosition.y, ParentTransform.position.y - 25f, ParentTransform.position.y + 25f);
-                    transform.position = _reandomPosition; //if(!FollowPlayer) 
-                    _positionRelativeToPlayer = _reandomPosition - ParentTransform.position;
+                    _randomDistanceFromPlayer = UnityEngine.Random.Range(MinDistance, MaxDistance);
+                    var randomPosition = ParentTransform.position + UnityEngine.Random.onUnitSphere * _randomDistanceFromPlayer;
+                    randomPosition.y = Mathf.Clamp(randomPosition.y, ParentTransform.position.y - 25f, ParentTransform.position.y + 25f);
+                    if (!FollowPlayer) transform.position = randomPosition;  
 
                     if (PluginConfig.ZoneDebug.Value)
                     {
@@ -70,7 +69,7 @@ namespace RealismMod
             _audioSource.maxDistance = 130f;
             _audioSource.rolloffMode = AudioRolloffMode.Linear;
 
-            //if (FollowPlayer) transform.SetParent(ParentTransform);
+            if (FollowPlayer) transform.SetParent(ParentTransform);
 
             StartCoroutine(PlayRandomAudio());
         }
@@ -79,6 +78,7 @@ namespace RealismMod
         {
             if (FollowPlayer) 
             {
+                transform.position = ParentTransform.position + (transform.position - ParentTransform.position).normalized * _randomDistanceFromPlayer;
                 transform.RotateAround(ParentTransform.position, Vector3.up, 0.35f * Time.deltaTime);
                 ///transform.position = ParentTransform.position + _positionRelativeToPlayer; 
             }
@@ -211,7 +211,7 @@ namespace RealismMod
 
         private string GetAudioFromOtherStates()
         {
-            if (HazardTracker.TotalToxicity >= 70f || HazardTracker.TotalRadiation >= 85f)
+            if (HazardTracker.TotalToxicity >= 70f || HazardTracker.TotalRadiation >= 85f || Plugin.RealHealthController.IsCoughingInGas)
             {
                 return "Dying";
             }

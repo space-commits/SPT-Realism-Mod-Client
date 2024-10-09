@@ -95,6 +95,8 @@ namespace RealismMod
 
         private static T UpdateInfoFromServer<T>(string route) where T : class, IRealismInfo
         {
+            Utils.Logger.LogWarning("update from server: " + route);
+
             var settings = new JsonSerializerSettings
             {
                 MissingMemberHandling = MissingMemberHandling.Ignore

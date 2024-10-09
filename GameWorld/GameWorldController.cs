@@ -16,16 +16,6 @@ namespace RealismMod
         public static float CurrentGasEventStrength { get; private set; } = 0;
         public static float CurrentGasEventStrengthBot { get; private set; } = 0;
 
-
-        public static bool IsHalloween
-        {
-            get 
-            {
-                return Plugin.ModInfo.IsHalloween;
-            }
-
-        }
-
         public static bool DoMapGasEvent
         {
             get

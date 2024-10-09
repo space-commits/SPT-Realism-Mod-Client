@@ -121,7 +121,7 @@ namespace RealismMod
         private static bool AnalsyableQuestChecker(string[] quests, EQuestStatus[] statuses) 
         {
             bool match = false;
-            if (quests.Length > 0)
+            if (quests != null && quests.Length > 0)
             {
                 foreach (var q in quests)
                 {
@@ -144,9 +144,7 @@ namespace RealismMod
 
         public static void CreateZone<T>(HazardLocation hazardLocation, EZoneType zoneType) where T : MonoBehaviour, IZone
         {
-            Utils.Logger.LogWarning("============================creating zones");
             if (hazardLocation.IsTriggered || !ShouldSpawnZone(hazardLocation, zoneType)) return;
-            Utils.Logger.LogWarning("zone allowed to spawn");
             HandleZoneAssets(hazardLocation);
             HandleZoneLoot(hazardLocation);
 
@@ -170,8 +168,7 @@ namespace RealismMod
                     strengthModifier = UnityEngine.Random.Range(0.9f, 1.15f);
                 }
                 hazard.ZoneStrengthModifier = subZone.Strength * strengthModifier;
-
-                hazard.IsAnalysable = subZone.Analysable == null ? false : CheckIsAnalysable(subZone.Analysable);  
+                hazard.IsAnalysable = subZone?.Analysable == null ? false : CheckIsAnalysable(subZone.Analysable);  
 
                 hazardZone.transform.position = position;
                 hazardZone.transform.rotation = Quaternion.Euler(rotation);

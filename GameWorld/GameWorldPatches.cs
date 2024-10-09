@@ -60,7 +60,15 @@ namespace RealismMod
                     if(lootItem.TemplateId == Utils.GAMU_ID || lootItem.TemplateId == Utils.RAMU_ID)
                     {
                         HazardAnalyser analyser = lootItem.gameObject.GetComponent<HazardAnalyser>();
-                        if (analyser != null && analyser.CanTurnOn) 
+                        bool hasBeenAnalysed = analyser.TargetZone != null && analyser.TargetZone.HasBeenAnalysed;
+                        Utils.Logger.LogWarning("========interactable============");
+                        Logger.LogWarning("id " + analyser.instanceId);
+                        Logger.LogWarning("zone null? " + (analyser.TargetZone == null));
+                        Logger.LogWarning("HasBeenAnalysed " + (analyser.TargetZone != null && analyser.TargetZone.HasBeenAnalysed));
+                        Logger.LogWarning("zone name " + (analyser.TargetZone != null ? analyser.TargetZone.Name : "null"));
+
+                        Utils.Logger.LogWarning("========interactable end============");
+                        if (analyser != null && analyser.CanTurnOn && !hasBeenAnalysed) 
                         {
                             __result.Actions.AddRange(analyser.Actions);
                         }
@@ -101,9 +109,16 @@ namespace RealismMod
         {
             bool isGamu = __result.Item.TemplateId == Utils.GAMU_ID;
             bool isRamu = __result.Item.TemplateId == Utils.RAMU_ID;
-            bool isTransmitter = __result.Item.TemplateId == Utils.TRANSMITTER_ID;
+            bool isHalloweenTransmitter = __result.Item.TemplateId == Utils.TRANSMITTER_ID;
             if (isGamu || isRamu) 
             {
+                //when the item is picked up, the old componment is not destroyed because BSG persists the LootItem gameobject at least for some time before GC...
+                if (__result.gameObject.TryGetComponent<HazardAnalyser>(out HazardAnalyser oldAnalyser)) 
+                {
+                    UnityEngine.Object.Destroy(oldAnalyser);
+                    Logger.LogWarning("DESTROYING OLD COMPONENT!!");
+                }
+                Logger.LogWarning("initialized game object");
                 HazardAnalyser analyser = __result.gameObject.AddComponent<HazardAnalyser>();
                 analyser._IPlayer = player; 
                 analyser._Player = Utils.GetPlayerByProfileId(player.ProfileId);
@@ -112,7 +127,7 @@ namespace RealismMod
                 BoxCollider collider = analyser.gameObject.AddComponent<BoxCollider>();
                 collider.isTrigger = true;
                 collider.size = new Vector3(0.1f, 0.1f, 0.1f);
-
+                Logger.LogWarning("finsihed");
                 if (PluginConfig.ZoneDebug.Value)
                 {
                     GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -125,8 +140,12 @@ namespace RealismMod
                     UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); 
                 }
             }
-            if (isTransmitter) 
+            if (isHalloweenTransmitter) 
             {
+                if (__result.gameObject.TryGetComponent<TransmitterHalloweenEvent>(out TransmitterHalloweenEvent oldTransmitter))
+                {
+                    UnityEngine.Object.Destroy(oldTransmitter);
+                }
                 TransmitterHalloweenEvent transmitter = __result.gameObject.AddComponent<TransmitterHalloweenEvent>();
                 transmitter._IPlayer = player;
                 transmitter._Player = Utils.GetPlayerByProfileId(player.ProfileId);
@@ -264,7 +283,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.15f);
-                    ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 14f, 60f, 0.2f, 55f, 95f);
+                    ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 14f, 60f, 0.35f, 50f, 90f);
                 }
 
                 //spawn zones

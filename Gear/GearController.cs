@@ -44,7 +44,8 @@ namespace RealismMod
         {
             get
             {
-                return _currentGasProtection * _gasMaskDurabilityFactor;
+                float protection = _currentGasProtection * _gasMaskDurabilityFactor;
+                return float.IsNaN(protection) ? 0f : protection;
             }
         }
 
@@ -52,7 +53,8 @@ namespace RealismMod
         {
             get
             {
-                return _currentRadProtection * _gasMaskDurabilityFactor;
+                float protection = _currentRadProtection * _gasMaskDurabilityFactor;
+                return float.IsNaN(protection) ? 0f : protection;
             }
         } 
 
@@ -60,7 +62,8 @@ namespace RealismMod
         {
             get 
             {
-                return _gasMaskDurabilityFactor;
+
+                return float.IsNaN(_gasMaskDurabilityFactor) ? 0f : _gasMaskDurabilityFactor;
             }
         }
 
@@ -179,8 +182,9 @@ namespace RealismMod
             if (gasmask == null) return;
             ResourceComponent filter = gasmask?.GetItemComponentsInChildren<ResourceComponent>(false).FirstOrDefault();
             if (filter == null) return;
-            float reductionFactor = (phb.TotalGasRate + phb.TotalRadRate + GameWorldController.CurrentGasEventStrength + GameWorldController.CurrentMapRadStrength) / 3f;
-            filter.Value -= reductionFactor;
+            float inventoryFactor = (Plugin.RealHealthController.ToxicItemCount * RealismHealthController.TOXIC_ITEM_FACTOR) + (Plugin.RealHealthController.RadItemCount * RealismHealthController.RAD_ITEM_FACTOR);
+            float reductionFactor = (phb.TotalGasRate + phb.TotalRadRate + GameWorldController.CurrentGasEventStrength + GameWorldController.CurrentMapRadStrength + inventoryFactor) / 3f;
+            filter.Value = Mathf.Clamp(filter.Value - reductionFactor, 0f, 100f);
             if (filter.Value > 0) HasGasFilter = true;
         }
 
