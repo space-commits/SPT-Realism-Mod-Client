@@ -263,8 +263,23 @@ namespace RealismMod
             PlayerState.RemainingArmStamPercReload = Mathf.Clamp(1f - ((1f - remainArmStamPercent) / 4f), 0.85f, 1f); 
         }
 
+        private static void ModifyWalkRelatedValues(Player player) 
+        {
+            player.ProceduralWeaponAnimation.Walk.StepFrequency = Mathf.Min(player.ProceduralWeaponAnimation.Walk.StepFrequency, 1.1f); //1.1
+            player.ProceduralWeaponAnimation.Walk.IntensityMinMax[0] = new Vector2(0.5f, 1f); //1
+
+            player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.1f; //0.1
+            player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.InputIntensity = 0.7f; //0.7
+
+            player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.ReturnSpeed = 0.05f; //0.05
+            player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.35f; //0.35
+
+        }
+
         private static void SetStancePWAValues(Player player, FirearmController fc)
         {
+            ModifyWalkRelatedValues(player);
+
             if (StanceController.CanResetDamping)
             {
                 float stockedPistolFactor = WeaponStats.IsStockedPistol ? 0.75f : 1f;

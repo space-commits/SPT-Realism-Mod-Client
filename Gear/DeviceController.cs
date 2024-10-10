@@ -59,13 +59,40 @@ namespace RealismMod
         public LootItem _LootItem { get; set; }
         public Player _Player { get; set; } = null;
         public IPlayer _IPlayer { get; set; } = null;
-        public string[] TargetZones { get; set; }
+        public string[] TargetQuestZones { get; set; }
+        public IZone TargetZone { get; private set; } = null;
         public AudioClip AudioClips { get; set; }
         public string QuestTrigger { get; set; }    
         protected AudioSource _audioSource;
         protected Vector3 _position;
         protected Quaternion _rotation;
         protected List<IZone> _intersectingZones = new List<IZone>();
+
+        protected void SetUpTransforms()
+        {
+            _position = _Player.gameObject.transform.position;
+            _position.y += 0.05f;
+            _position = _position + _Player.gameObject.transform.forward * 1.1f;
+
+            Vector3 eularRotation = _Player.gameObject.transform.rotation.eulerAngles;
+            eularRotation.x = -90f;
+            eularRotation.y = 0f;
+            _rotation = Quaternion.Euler(new Vector3(eularRotation.x, eularRotation.y, eularRotation.z));
+        }
+
+        protected AudioSource SetUpAudio(string clip, GameObject go)
+        {
+            AudioSource audioSource = go.AddComponent<AudioSource>();
+            audioSource.clip = Plugin.DeviceAudioClips[clip];
+            audioSource.volume = 1f;
+            audioSource.loop = false;
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 1.0f;
+            audioSource.minDistance = 0.8f;
+            audioSource.maxDistance = 35f;
+            audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+            return audioSource;
+        }
 
         protected void PlaySoundForAI()
         {
@@ -75,11 +102,64 @@ namespace RealismMod
             }
         }
 
-        protected void SpawnQuestTrigger() 
+        protected void SetUpActions()
         {
-            var questLocation = ZoneData.QuestZoneLocations.Shoreline.FirstOrDefault(hl => hl.Zones.Any(z => z.Name == QuestTrigger));
-            questLocation.IsTriggered = false;
-            ZoneSpawner.CreateZone<QuestZone>(questLocation, EZoneType.Quest);
+            Actions.AddRange(new List<ActionsTypesClass>()
+            {
+                    new ActionsTypesClass
+                    {
+                        Name = "Activate",
+                        Action = Activate
+                    }
+            });
+        }
+
+        protected bool IsInRightLocation()
+        {
+            foreach (var zone in _intersectingZones)
+            {
+                QuestZone questZone;
+                if ((questZone = (zone as QuestZone)) != null)
+                {
+                    TargetQuestZones.Contains(questZone.name);
+
+                    return true;
+                }
+
+            }
+            return false;
+        }
+
+        protected void Start()
+        {
+            Utils.Logger.LogWarning("START " + _intersectingZones.Count());
+            SetUpTransforms();
+            SetUpActions();
+            _audioSource = SetUpAudio("switch_off.wav", this.gameObject);
+        }
+
+        protected void Update()
+        {
+            if (this.gameObject == null) return;
+            this.gameObject.transform.position = _position;
+            this.gameObject.transform.rotation = _rotation;
+        }
+
+        protected void OnTriggerEnter(Collider other)
+        {
+            IZone zone;
+            if (other.gameObject.TryGetComponent<IZone>(out zone))
+            {
+                _intersectingZones.Add(zone);
+            }
+        }
+
+        protected void Activate()
+        {
+            if (CanTurnOn)
+            {
+                StartCoroutine(DoLogic());
+            }
         }
 
         protected virtual IEnumerator DoLogic()
@@ -109,86 +189,12 @@ namespace RealismMod
             SpawnQuestTrigger();
         }
 
-        protected AudioSource SetUpAudio(string clip, GameObject go)
+        protected void SpawnQuestTrigger()
         {
-            AudioSource audioSource = go.AddComponent<AudioSource>();
-            audioSource.clip = Plugin.DeviceAudioClips[clip];
-            audioSource.volume = 1f;
-            audioSource.loop = false;
-            audioSource.playOnAwake = false;
-            audioSource.spatialBlend = 1.0f;
-            audioSource.minDistance = 0.8f;
-            audioSource.maxDistance = 35f;
-            audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
-            return audioSource;
+            var questLocation = ZoneData.QuestZoneLocations.Shoreline.FirstOrDefault(hl => hl.Zones.Any(z => z.Name == QuestTrigger));
+            questLocation.IsTriggered = false;
+            ZoneSpawner.CreateZone<QuestZone>(questLocation, EZoneType.Quest);
         }
-
-        protected void Activate()
-        {
-            if (CanTurnOn)
-            {
-                StartCoroutine(DoLogic());
-            }
-        }
-
-        protected void SetUpActions()
-        {
-            Actions.AddRange(new List<ActionsTypesClass>()
-            {
-                    new ActionsTypesClass
-                    {
-                        Name = "Activate",
-                        Action = Activate
-                    }
-            });
-        }
-
-        protected bool IsInRightLocation()
-        {
-            foreach (var zone in _intersectingZones) 
-            {
-                QuestZone questZone;
-                if ((questZone = (zone as QuestZone)) != null && TargetZones.Contains(questZone.name)) return true;
-            }
-            return false;
-        }
-
-        protected void SetUpTransforms()
-        {
-            _position = _Player.gameObject.transform.position;
-            _position.y += 0.05f;
-            _position = _position + _Player.gameObject.transform.forward * 1.1f;
-
-            Vector3 eularRotation = _Player.gameObject.transform.rotation.eulerAngles;
-            eularRotation.x = -90f;
-            eularRotation.y = 0f;
-            _rotation = Quaternion.Euler(new Vector3(eularRotation.x, eularRotation.y, eularRotation.z));
-        }
-
-        protected void Start()
-        {
-            Utils.Logger.LogWarning("START " + _intersectingZones.Count());
-            SetUpTransforms();
-            SetUpActions();
-            _audioSource = SetUpAudio("switch_off.wav", this.gameObject);
-        }
-
-        protected void Update()
-        {
-            if (this.gameObject == null) return;
-            this.gameObject.transform.position = _position;
-            this.gameObject.transform.rotation = _rotation;
-        }
-
-        protected void OnTriggerEnter(Collider other)
-        {
-            IZone zone;
-            if (other.gameObject.TryGetComponent<IZone>(out zone))
-            {
-                _intersectingZones.Add(zone);
-            }
-        }
-
     }
 
     public class HazardAnalyser : MonoBehaviour
@@ -207,23 +213,63 @@ namespace RealismMod
         private List<IZone> _intersectingZones = new List<IZone>();
         private bool _stalledPreviously = false;
         private bool _isActive = false;
-        public string instanceId = "";
+        public string _instanceId = "";
         private bool _deactivated = false;
 
-        void OnDisable()
+        void SetUpTransforms()
         {
-            DeleteSelfFromDevicesList();
+            _position = _Player.gameObject.transform.position;
+            _position.y += 0.025f;
+            _position = _position + _Player.gameObject.transform.forward * 1.1f;
+
+            Vector3 eularRotation = _Player.gameObject.transform.rotation.eulerAngles;
+            eularRotation.x = -90f;
+            eularRotation.y = 0f;
+            _rotation = Quaternion.Euler(new Vector3(eularRotation.x, eularRotation.y, eularRotation.z));
         }
 
-        private void PlaySoundForAI()
+        private void SetUpActions()
         {
-            if (Singleton<BotEventHandler>.Instantiated)
+            Actions.AddRange(new List<ActionsTypesClass>()
             {
-                Singleton<BotEventHandler>.Instance.PlaySound(_IPlayer, this.transform.position, 40f, AISoundType.step);
-            }
+                    new ActionsTypesClass
+                    {
+                        Name = "Turn On",
+                        Action = TurnOn
+                    }
+            });
         }
 
-        private  void AddSelfToDevicesList() 
+        private AudioSource SetUpAudio(string clip, GameObject go)
+        {
+            AudioSource audioSource = go.AddComponent<AudioSource>();
+            audioSource.clip = Plugin.DeviceAudioClips[clip];
+            audioSource.volume = 1f;
+            audioSource.loop = false;
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 1.0f;
+            audioSource.minDistance = 0.75f;
+            audioSource.maxDistance = 30f;
+            audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+            return audioSource;
+        }
+
+        private void GetTargetZone(IZone zone, EZoneType[] targetZones)
+        {
+            if (TargetZone != null || zone == null) return;
+            bool foundRadMatch = TargetZoneType == EZoneType.Radiation && (zone.ZoneType == EZoneType.RadAssets || zone.ZoneType == EZoneType.Radiation);
+            bool foundToxMatch = TargetZoneType == EZoneType.Gas && (zone.ZoneType == EZoneType.Gas || zone.ZoneType == EZoneType.GasAssets);
+            if (zone.IsAnalysable && (foundRadMatch || foundToxMatch)) TargetZone = zone;
+            return;
+        }
+
+        public bool CheckIfZoneTypeMatches()
+        {
+            if (_intersectingZones.Any(z => z.ZoneType == EZoneType.SafeZone)) return false;
+            return TargetZone != null;
+        }
+
+        private void AddSelfToDevicesList()
         {
             if (TargetZone == null) return;
             TargetZone.ActiveDevices.Add(this.gameObject);
@@ -239,37 +285,75 @@ namespace RealismMod
         {
             if (TargetZone == null) return false;
             TargetZone.ActiveDevices.RemoveAll(d => d == null || !d.activeSelf || !d.gameObject.activeSelf);
-            List<HazardAnalyser> anaylsers = new List<HazardAnalyser>();    
-            foreach (var device in TargetZone.ActiveDevices) 
+            List<HazardAnalyser> anaylsers = new List<HazardAnalyser>();
+            foreach (var device in TargetZone.ActiveDevices)
             {
-                if (device.gameObject.TryGetComponent<HazardAnalyser>(out HazardAnalyser analyser)) 
+                if (device.gameObject.TryGetComponent<HazardAnalyser>(out HazardAnalyser analyser))
                 {
-                    anaylsers.Add(analyser);    
+                    anaylsers.Add(analyser);
                 }
             }
-
-            foreach (var a in anaylsers) 
+            foreach (var a in anaylsers)
             {
-                if (a.instanceId != instanceId)
+                if (a._instanceId != _instanceId)
                 {
-                    Utils.Logger.LogWarning("Zone already has a device");
-                    Utils.Logger.LogWarning("============already has device end========");
                     return true;
                 }
             }
-    
-            Utils.Logger.LogWarning("============already has device end========");
-
-            //remove null or inactive devices 
             return false;
+        }
+
+        private void DeactivateZone()
+        {
+            if (TargetZone == null) return;
+            TargetZone.HasBeenAnalysed = true;
+        }
+
+        void Start()
+        {
+            SetUpTransforms();
+            SetUpActions();
+            _audioSource = SetUpAudio("switch_off.wav", this.gameObject);
+            _instanceId = MongoID.Generate();
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            IZone hazardZone;
+            EZoneType[] targetZones = TargetZoneType == EZoneType.Gas ? new EZoneType[] { EZoneType.Gas, EZoneType.GasAssets } : new EZoneType[] { EZoneType.Radiation, EZoneType.RadAssets };
+            if (other.gameObject.TryGetComponent<IZone>(out hazardZone))
+            {
+                _intersectingZones.Add(hazardZone);
+                GetTargetZone(hazardZone, targetZones);
+            }
+        }
+
+        void Update()
+        {
+            if (this.gameObject == null || _deactivated) return;
+            this.gameObject.transform.position = _position;
+            this.gameObject.transform.rotation = _rotation;
+        }
+
+        private void PlaySoundForAI()
+        {
+            if (Singleton<BotEventHandler>.Instantiated)
+            {
+                Singleton<BotEventHandler>.Instance.PlaySound(_IPlayer, this.transform.position, 40f, AISoundType.step);
+            }
+        }
+
+        private void TurnOn()
+        {
+            if (CanTurnOn)
+            {
+                StartCoroutine(DoLogic());
+            }
         }
 
         IEnumerator DoLogic()
         {
             PlaySoundForAI();
-
-            Utils.Logger.LogWarning("DoLogic ");
-
             float time = 0f;
             if (CheckIfZoneTypeMatches())
             {
@@ -329,7 +413,6 @@ namespace RealismMod
 
         private void ReplaceItem()
         {
-            Utils.Logger.LogWarning("==========replace=========");
             DeleteSelfFromDevicesList();
             _deactivated = true;
             string templateId = TargetZoneType == EZoneType.Gas ? Utils.GAMU_DATA_ID : Utils.RAMU_DATA_ID;
@@ -339,160 +422,12 @@ namespace RealismMod
             LootItem lootItem = Singleton<GameWorld>.Instance.SetupItem(replacementItem, _IPlayer, lastPosition, lastRotation);
             AudioSource tempAudio = SetUpAudio("success_end.wav", lootItem.gameObject);
             tempAudio.Play();
-
-            GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            visualRepresentation.name = "ItemVisual2";
-            visualRepresentation.transform.localScale = new Vector3(0.25f, 0.25f, 100f);
-            visualRepresentation.transform.position = lootItem.transform.position;
-            visualRepresentation.transform.rotation = lootItem.transform.rotation;
-            visualRepresentation.GetComponent<Renderer>().material.color = Color.red;
-            UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>());
-
-            Utils.Logger.LogWarning("loot item positon " + lootItem.transform.position);
-
             Destroy(this.gameObject, 0.5f);
-            Utils.Logger.LogWarning("======replace end======");
         }
 
-        private AudioSource SetUpAudio(string clip, GameObject go)
+        void OnDisable()
         {
-            AudioSource audioSource = go.AddComponent<AudioSource>();
-            audioSource.clip = Plugin.DeviceAudioClips[clip];
-            audioSource.volume = 1f;
-            audioSource.loop = false;
-            audioSource.playOnAwake = false;
-            audioSource.spatialBlend = 1.0f;
-            audioSource.minDistance = 0.75f;
-            audioSource.maxDistance = 30f;
-            audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
-            return audioSource;
-        }
-
-        private void TurnOn()
-        {
-            Utils.Logger.LogWarning("CanTurnOn " + CanTurnOn);
-            if (CanTurnOn)
-            {
-                StartCoroutine(DoLogic());
-            }
-        }
-
-        private void SetUpActions()
-        {
-            Actions.AddRange(new List<ActionsTypesClass>()
-            {
-                    new ActionsTypesClass
-                    {
-                        Name = "Turn On",
-                        Action = TurnOn
-                    }
-            });
-        }
-
-        private void DeactivateZone()
-        {
-            Utils.Logger.LogWarning("==========Deactivate==========");
-            Utils.Logger.LogWarning("TargetZone is null " + (TargetZone == null));
-            if (TargetZone == null) return;
-            TargetZone.HasBeenAnalysed = true;
-
-            Utils.Logger.LogWarning("zone name " + TargetZone.Name);
-            Utils.Logger.LogWarning("target type " + TargetZoneType);
-            Utils.Logger.LogWarning("zone type " + TargetZone.ZoneType);
-            Utils.Logger.LogWarning("is analysable " + TargetZone.IsAnalysable);
-            Utils.Logger.LogWarning("HasBeenAnalysed " + TargetZone.HasBeenAnalysed);
-            Utils.Logger.LogWarning("==========Deactivate End==========");
-        }
-
-        private void GetTargetZone(IZone zone, EZoneType[] targetZones)
-        {
-            Utils.Logger.LogWarning("==========GetTargetZone Start============ ");
-            Utils.Logger.LogWarning("TargetZone is null " + (TargetZone == null));
-            Utils.Logger.LogWarning("zone is null " + (zone == null));
-            Utils.Logger.LogWarning("zone name " + (TargetZone != null ? TargetZone.Name : "null"));
-            if (TargetZone != null || zone == null) return;
-
-            bool foundRadMatch = TargetZoneType == EZoneType.Radiation && (zone.ZoneType == EZoneType.RadAssets || zone.ZoneType == EZoneType.Radiation);
-            bool foundToxMatch = TargetZoneType == EZoneType.Gas && (zone.ZoneType == EZoneType.Gas || zone.ZoneType == EZoneType.GasAssets);
-
-            if (zone.IsAnalysable && (foundRadMatch || foundToxMatch)) TargetZone = zone;
-
-            Utils.Logger.LogWarning("is null " + (TargetZone == null));
-            Utils.Logger.LogWarning("zone name " + zone.Name);
-            Utils.Logger.LogWarning("foundRadMatch " + foundRadMatch);
-            Utils.Logger.LogWarning("foundToxMatch " + foundToxMatch);
-            Utils.Logger.LogWarning("target type " + TargetZoneType);
-            Utils.Logger.LogWarning("zone type " + zone.ZoneType);
-            Utils.Logger.LogWarning("is analysable " + zone.IsAnalysable);
-            Utils.Logger.LogWarning("HasBeenAnalysed " + zone.HasBeenAnalysed);
-            Utils.Logger.LogWarning("=========GetTargetZone End============= ");
-            return;
-        }
-
-        public bool CheckIfZoneTypeMatches()
-        {
-            if (_intersectingZones.Any(z => z.ZoneType == EZoneType.SafeZone)) return false;
-            return TargetZone != null;
-        }
-
-        void SetUpTransforms()
-        {
-            _position = _Player.gameObject.transform.position;
-            _position.y += 0.025f;
-            _position = _position + _Player.gameObject.transform.forward * 1.1f;
-
-            Vector3 eularRotation = _Player.gameObject.transform.rotation.eulerAngles;
-            eularRotation.x = -90f;
-            eularRotation.y = 0f;
-            _rotation = Quaternion.Euler(new Vector3(eularRotation.x, eularRotation.y, eularRotation.z));
-        }
-
-        void Start()
-        {
-            Utils.Logger.LogWarning("==========start==========");
-            SetUpTransforms();
-            SetUpActions();
-            _audioSource = SetUpAudio("switch_off.wav", this.gameObject);
-            instanceId = MongoID.Generate();
-
-            GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            visualRepresentation.name = "ItemVisual2";
-            visualRepresentation.transform.localScale = new Vector3(0.25f, 0.25f, 100f);
-            visualRepresentation.transform.position = _position;
-            visualRepresentation.transform.rotation = _rotation;
-            visualRepresentation.GetComponent<Renderer>().material.color = Color.green;
-            UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>());
-
-            Utils.Logger.LogWarning("instanceId " + instanceId);
-            Utils.Logger.LogWarning("has zone " + (TargetZone != null));
-            Utils.Logger.LogWarning("has lootitem " + (_LootItem != null));
-            Utils.Logger.LogWarning("has player " + (_Player != null));
-            Utils.Logger.LogWarning("loot item positon " + _LootItem.transform.position);
-            Utils.Logger.LogWarning("go positon " + this.transform.position);
-            Utils.Logger.LogWarning("==========start end==========");
-        }
-
-        void Update()
-        {
-            if (this.gameObject == null || _deactivated) return;
-            this.gameObject.transform.position = _position;
-            this.gameObject.transform.rotation = _rotation;
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-
-            IZone hazardZone;
-            EZoneType[] targetZones = TargetZoneType == EZoneType.Gas ? new EZoneType[] { EZoneType.Gas, EZoneType.GasAssets } : new EZoneType[] { EZoneType.Radiation, EZoneType.RadAssets };
-            if (other.gameObject.TryGetComponent<IZone>(out hazardZone))
-            {
-                Utils.Logger.LogWarning("==========trigger==========");
-                Utils.Logger.LogWarning("colliding object name " + other.name);
-                _intersectingZones.Add(hazardZone);
-                GetTargetZone(hazardZone, targetZones);
-                Utils.Logger.LogWarning("is null " + (TargetZone == null));
-                Utils.Logger.LogWarning("========trigger end============");
-            }
+            DeleteSelfFromDevicesList();
         }
     }
 

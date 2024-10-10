@@ -481,16 +481,17 @@ namespace RealismMod
                 float weightFactor = StatCalc.ProceduralIntensityFactorCalc(weapWeight, isPistol ? 1.3f : 2.4f); 
                 float displacementModifier = noShoulderContact ? PluginConfig.ProceduralIntensity.Value * 0.95f : PluginConfig.ProceduralIntensity.Value * 0.48f; // lower = less drag
                 float aimIntensity = noShoulderContact ? PluginConfig.ProceduralIntensity.Value * 0.86f : PluginConfig.ProceduralIntensity.Value * 0.51f;
-                float displacementFactor = isPistol ? 18f : 16.975f;
-                float displacementLowerLimit = isPistol ? 0.6f : 0.8f;
+                float displacementFactor = isPistol ? 18f : 16.8f;
+                float displacementLowerLimit = isPistol ? 0.72f : 0.8f;
                 float displacementUpperLimit = isPistol ? 2f : 6f;
-                float swayStrengthFactor = isPistol ? 43f : 173.6f; 
-                float swayStrengthLowerLimit = isPistol ? 0.25f : 0.45f;
+                float swayStrengthFactor = isPistol ? 43f : 172f; 
+                float swayStrengthLowerLimit = isPistol ? 0.32f : 0.45f;
                 float swayStrengthUpperLimit = isPistol ? 0.8f : 1.1f;
 
                 float motionWeaponFactor = WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol || !WeaponStats.HasShoulderContact ? 1.5f : WeaponStats.IsBullpup ? 0.75f : 1f;
                 float motionUpperLimit = isPistol ? 1.4f : 2.5f;
-                WeaponStats.BaseWeaponMotionIntensity = Mathf.Clamp(0.05f * stanceFactorMotion * ergoWeight * playerWeightFactor * motionWeaponFactor * WeaponStats.TotalWeaponHandlingModi, 1.25f, motionUpperLimit);
+                float motionLowerLimit = isPistol ? 1.25f : 1.35f;
+                WeaponStats.BaseWeaponMotionIntensity = Mathf.Clamp(0.06f * stanceFactorMotion * ergoWeight * playerWeightFactor * motionWeaponFactor * WeaponStats.TotalWeaponHandlingModi, motionLowerLimit, motionUpperLimit);
 
                 float combinedFactors = ergoWeight * weightFactor * playerWeightFactor * formfactor;
 

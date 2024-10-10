@@ -121,7 +121,7 @@ namespace RealismMod
             }
             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayStrength").SetValue(pwa, swayStrength);
 
-            float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo * PlayerState.GearErgoPenalty) * 1.35f;
+            float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo * PlayerState.GearErgoPenalty) * 1.3f;
             float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)), 0.35f, 1.5f);
             valueBlender.Speed = pwa.SwayFalloff * aimSpeed * 4.35f;
 
@@ -129,7 +129,7 @@ namespace RealismMod
 
             aimSpeed = weapon.WeapClass == "pistol" ? aimSpeed * 1.35f : aimSpeed;
             WeaponStats.SightlessAimSpeed = aimSpeed;
-            WeaponStats.ErgoStanceSpeed = baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (weapon.WeapClass == "pistol" ? 1.5f : 1f);
+            WeaponStats.ErgoStanceSpeed = baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)) * (weapon.WeapClass == "pistol" ? 1.4f : 1f);
 
             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(pwa, aimSpeed);
 

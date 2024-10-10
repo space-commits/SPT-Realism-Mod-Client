@@ -58,28 +58,21 @@ namespace RealismMod
                 if ((lootItem = (__args[1] as LootItem)) != null)
                 {
                     if(lootItem.TemplateId == Utils.GAMU_ID || lootItem.TemplateId == Utils.RAMU_ID)
-                    {
-                        Utils.Logger.LogWarning("========interactable============");
-                        HazardAnalyser analyser = lootItem.gameObject.GetComponent<HazardAnalyser>();
-                        bool hasBeenAnalysed = analyser.TargetZone != null && analyser.TargetZone.HasBeenAnalysed;
-                        bool alreadyHasDevice = analyser.ZoneAlreadyHasDevice();
-                      
-                        Logger.LogWarning("id " + analyser.instanceId);
-                        Logger.LogWarning("zone null? " + (analyser.TargetZone == null));
-                        Logger.LogWarning("HasBeenAnalysed " + (analyser.TargetZone != null && analyser.TargetZone.HasBeenAnalysed));
-                        Logger.LogWarning("zone name " + (analyser.TargetZone != null ? analyser.TargetZone.Name : "null"));
-
-                        Utils.Logger.LogWarning("========interactable end============");
-                        if (analyser != null && analyser.CanTurnOn && !hasBeenAnalysed && !alreadyHasDevice) 
+                    {                                       
+                        if (lootItem.gameObject.TryGetComponent<HazardAnalyser>(out HazardAnalyser analyser)) 
                         {
-                            __result.Actions.AddRange(analyser.Actions);
+                            bool hasBeenAnalysed = analyser.TargetZone != null && analyser.TargetZone.HasBeenAnalysed;
+                            bool alreadyHasDevice = analyser.ZoneAlreadyHasDevice();
+                            if (analyser.CanTurnOn && !hasBeenAnalysed && !alreadyHasDevice) 
+                            {
+                                __result.Actions.AddRange(analyser.Actions);
+                            }
                         }
                     }
 
                     if (lootItem.TemplateId == Utils.HALLOWEEN_TRANSMITTER_ID)
                     {
-                        TransmitterHalloweenEvent transmitter = lootItem.gameObject.GetComponent<TransmitterHalloweenEvent>();
-                        if (transmitter != null)
+                        if (lootItem.gameObject.TryGetComponent<TransmitterHalloweenEvent>(out TransmitterHalloweenEvent transmitter))
                         {
                             if (transmitter.TriggeredExplosion) 
                             {
@@ -89,8 +82,6 @@ namespace RealismMod
                             {
                                 __result.Actions.AddRange(transmitter.Actions);
                             }
-                  
-                    
                         }
                     }
 
@@ -118,9 +109,8 @@ namespace RealismMod
                 if (__result.gameObject.TryGetComponent<HazardAnalyser>(out HazardAnalyser oldAnalyser)) 
                 {
                     UnityEngine.Object.Destroy(oldAnalyser);
-                    Logger.LogWarning("DESTROYING OLD COMPONENT!!");
                 }
-                Logger.LogWarning("initialized game object");
+
                 HazardAnalyser analyser = __result.gameObject.AddComponent<HazardAnalyser>();
                 analyser._IPlayer = player; 
                 analyser._Player = Utils.GetPlayerByProfileId(player.ProfileId);
@@ -129,18 +119,6 @@ namespace RealismMod
                 BoxCollider collider = analyser.gameObject.AddComponent<BoxCollider>();
                 collider.isTrigger = true;
                 collider.size = new Vector3(0.1f, 0.1f, 0.1f);
-                Logger.LogWarning("finished");
-                if (PluginConfig.ZoneDebug.Value)
-                {
-                    GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    visualRepresentation.name = "ItemVisual";
-                    visualRepresentation.transform.parent = collider.transform;
-                    visualRepresentation.transform.localScale = collider.size;
-                    visualRepresentation.transform.localPosition = collider.center;
-                    visualRepresentation.transform.rotation = collider.transform.rotation;
-                    visualRepresentation.GetComponent<Renderer>().material.color = Color.green;
-                    UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); 
-                }
             }
             if (isHalloweenTransmitter) 
             {
@@ -152,23 +130,11 @@ namespace RealismMod
                 transmitter._IPlayer = player;
                 transmitter._Player = Utils.GetPlayerByProfileId(player.ProfileId);
                 transmitter._LootItem = __result;
-                transmitter.TargetZones = new string[] { "SateliteCommLink" };
+                transmitter.TargetQuestZones = new string[] { "SateliteCommLink" };
                 transmitter.QuestTrigger = "SateliteCommLinkEstablished";
                 BoxCollider collider = transmitter.gameObject.AddComponent<BoxCollider>();
                 collider.isTrigger = true;
                 collider.size = new Vector3(0.1f, 0.1f, 0.1f);
-
-                if (PluginConfig.ZoneDebug.Value)
-                {
-                    GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    visualRepresentation.name = "ItemVisual";
-                    visualRepresentation.transform.parent = collider.transform;
-                    visualRepresentation.transform.localScale = collider.size;
-                    visualRepresentation.transform.localPosition = collider.center;
-                    visualRepresentation.transform.rotation = collider.transform.rotation;
-                    visualRepresentation.GetComponent<Renderer>().material.color = Color.green;
-                    UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>());
-                }
             }
         }
     }
