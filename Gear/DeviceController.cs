@@ -212,7 +212,6 @@ namespace RealismMod
         private Quaternion _rotation;
         private List<IZone> _intersectingZones = new List<IZone>();
         private bool _stalledPreviously = false;
-        private bool _isActive = false;
         public string _instanceId = "";
         private bool _deactivated = false;
 
@@ -386,7 +385,7 @@ namespace RealismMod
             time = 0f;
             clipLength = _audioSource.clip.length;
             int loops = UnityEngine.Random.Range(1, 1);
-            bool shouldStall = !_stalledPreviously && UnityEngine.Random.Range(1, 100) >= 1000;
+            bool shouldStall = !_stalledPreviously && UnityEngine.Random.Range(1, 100) >= 80;
             if (shouldStall) loops /= 2;
 
             while (time <= clipLength * loops)

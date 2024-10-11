@@ -66,6 +66,18 @@ namespace RealismMod
             }
         }
 
+        public static bool CanDoTacSprint 
+        {
+            get 
+            {
+                return PluginConfig.EnableTacSprint.Value && PlayerState.IsSprinting && CurrentStance != EStance.ActiveAiming
+                && (CurrentStance == EStance.HighReady || StoredStance == EStance.HighReady) && 
+                WeaponStats.TotalWeaponWeight <= (WeaponStats.IsBullpup ? TAC_SPRINT_WEIGHT_BULLPUP : TAC_SPRINT_WEIGHT_LIMIT) 
+                && WeaponStats.TotalWeaponLength <= TAC_SPRINT_LENGTH_LIMIT && !PlayerState.IsScav 
+                && !Plugin.RealHealthController.HealthConditionPreventsTacSprint && WeaponStats.TotalErgo > TAC_SPRINT_ERGO_LIMIT;
+            }
+        }
+
         private static float _animationTimer = 0f;
         private static float _animSpeed = 1f;
         private static float _pistolPosSpeed = 1f;
@@ -179,6 +191,7 @@ namespace RealismMod
         public const float TAC_SPRINT_WEIGHT_LIMIT = 5.1f;
         public const float TAC_SPRINT_WEIGHT_BULLPUP = 5.75f;
         public const int TAC_SPRINT_LENGTH_LIMIT = 6;
+        public const float TAC_SPRINT_ERGO_LIMIT = 35f;
 
         public static bool IsInForcedLowReady = false;
         public static bool IsAiming = false;
@@ -923,10 +936,7 @@ namespace RealismMod
 
         private static void DoTacSprint(Player.FirearmController fc, Player player)
         {
-            if (PluginConfig.EnableTacSprint.Value && PlayerState.IsSprinting && CurrentStance != EStance.ActiveAiming
-            && (CurrentStance == EStance.HighReady || StoredStance == EStance.HighReady)
-            && !fc.Weapon.IsBeltMachineGun && WeaponStats.TotalWeaponWeight <= (WeaponStats.IsBullpup ? TAC_SPRINT_WEIGHT_BULLPUP : TAC_SPRINT_WEIGHT_LIMIT) && WeaponStats.TotalWeaponLength <= TAC_SPRINT_LENGTH_LIMIT
-            && !PlayerState.IsScav && !Plugin.RealHealthController.HealthConditionPreventsTacSprint)
+            if (CanDoTacSprint)
             {
                 IsDoingTacSprint = true;
                 player.BodyAnimatorCommon.SetFloat(PlayerAnimator.WEAPON_SIZE_MODIFIER_PARAM_HASH, 2f);
@@ -1350,7 +1360,7 @@ namespace RealismMod
 
                 if (!useThirdPersonStance && StanceBlender.Value <= 0.65f && !DidLowReadyResetStanceWiggle)
                 {
-                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-4f, 2.5f, 10f) * movementFactor, true);
+                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-10f, 4f, 10f) * movementFactor, true); //new Vector3(-4f, 2.5f, 10f)
                     DidLowReadyResetStanceWiggle = true;
                 }
             }

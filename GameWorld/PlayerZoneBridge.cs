@@ -120,8 +120,9 @@ namespace RealismMod
 
         private void MoveEntityToSafeLocation()
         {
+            Vector3 originalPos = _Player.Transform.position;
             _Player.Transform.position = ZoneSpawner.GetSafeSpawnPoint(_Player, IsBot, ZonesThatBlockNavCount > 0, RadZoneCount > 0);
-            Utils.Logger.LogWarning("Realism Mod: Spawned in Hazard, moved to " + _Player.Transform.position + ", Was Bot? " + IsBot + ", time remaining " + _timeActive);
+            Utils.Logger.LogWarning($"Realism Mod: Spawned in Hazard, moved to: {_Player.Transform.position}, Original Position: {originalPos},  Was Bot? {IsBot}, time remaining {_timeActive}");
         }
 
         private void CheckSafeZones()

@@ -38,6 +38,8 @@ namespace RealismMod
     {
         public bool IsHalloween { get; set; }
         public bool DoGasEvent { get; set; }
+        public bool DoExtraCultists { get; set; }
+        public bool DoExtraRaiders { get; set; }
         public bool IsChristmas { get; set; }
         public bool IsPreExplosion { get; set; }
         public bool HasExploded { get; set; }
@@ -392,9 +394,9 @@ namespace RealismMod
             PluginConfig.InitConfigBindings(Config);
 
             MoveDaCube.InitTempBindings(Config); //TEMPORARY
-            new GetAvailableActionsPatch().Enable(); //TEMPORARY
 
             LoadGeneralPatches();
+
             //hazards
             if (ServerConfig.enable_hazard_zones) 
             {
@@ -612,6 +614,8 @@ namespace RealismMod
         {
             new HealthPanelPatch().Enable();
             new DropItemPatch().Enable();
+            new GetAvailableActionsPatch().Enable();
+            new BossSpawnPatch().Enable();
         }
 
         private void LoadMalfPatches()

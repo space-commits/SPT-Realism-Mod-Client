@@ -18,11 +18,74 @@ using HarmonyLib;
 using EFT.Interactive;
 using static RootMotion.FinalIK.InteractionTrigger.Range;
 using System.Collections.Generic;
+using static UnityEngine.Rendering.PostProcessing.HistogramMonitor;
+using static UnityEngine.UI.Selectable;
+using System.Threading.Tasks;
+using static RootMotion.FinalIK.GenericPoser;
 
 namespace RealismMod
 {
+    //for events I need to dynamically change boss spawn chance, but the point at which the event is declared server-side is too late for changing boss spawns
+    public class BossSpawnPatch : ModulePatch 
+    {
+        //no good way to know what map we're currently on at this poin in the raid loading, it is what it is.
+        private static string[] _forbiddenZones = { "BotZoneFloor1", "BotZoneFloor2", "BotZoneBasement", "BotZone" };
 
-    class GetAvailableActionsPatch : ModulePatch
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(BossLocationSpawn).GetMethod("ParseMainTypesTypes");
+        }
+
+        [PatchPostfix]
+        public static void PatchPostfix(BossLocationSpawn __instance)
+        {
+            Logger.LogWarning("1");
+            if (!GameWorldController.RanEarliestGameCheck)
+            {
+                Logger.LogWarning("Rolling chance boss spawn patch");
+                Plugin.RequestRealismDataFromServer(false, true);
+                GameWorldController.RanEarliestGameCheck = true;
+            }
+
+            Logger.LogWarning("2");
+            var zones = __instance.BossZone.Split(new char[]{','});
+            if (_forbiddenZones.Intersect(zones).Any()) return;
+            Logger.LogWarning("3");
+            bool increaseSectantChance = __instance.BossType == WildSpawnType.sectantPriest && Plugin.ModInfo.DoGasEvent;
+            bool increaseRaiderChance = __instance.BossType == WildSpawnType.pmcBot && Plugin.ModInfo.DoExtraRaiders;
+            bool isPmc = __instance.BossType == WildSpawnType.pmcBEAR || __instance.BossType == WildSpawnType.pmcUSEC;
+            bool postExpl = !isPmc && Plugin.ModInfo.IsHalloween && (Plugin.ModInfo.HasExploded || GameWorldController.DidExplosionClientSide);
+            if (increaseSectantChance) 
+            {
+                bool doExtraCultists = Plugin.ModInfo.DoExtraCultists;
+                __instance.BossChance = __instance.BossChance == 0 && !doExtraCultists ? 50f : 100f;
+                __instance.ShallSpawn = true;
+            }
+            if (increaseRaiderChance) 
+            {
+                __instance.BossChance = 100f;
+                __instance.ShallSpawn = true;
+            }
+            if ((postExpl ||Plugin.ModInfo.DoGasEvent) && (__instance.BossType != WildSpawnType.sectantPriest && __instance.BossType != WildSpawnType.pmcBot && !isPmc && !Plugin.ModInfo.DoExtraRaiders))
+            {
+                __instance.BossChance *= 0.1f;
+                __instance.ShallSpawn = GClass761.IsTrue100(__instance.BossChance);
+            }
+
+            Logger.LogWarning($"=============");
+            Logger.LogWarning($"Do Gas Event ? {Plugin.ModInfo.DoGasEvent}");
+            Logger.LogWarning($"Do raider Event ? {Plugin.ModInfo.DoExtraRaiders}");
+            Logger.LogWarning($"Do extra cultists ? {Plugin.ModInfo.DoExtraCultists}");
+            Logger.LogWarning("Boss type " + __instance.BossType);
+            Logger.LogWarning("Boss type " + __instance.BossType);
+            Logger.LogWarning("Spawn Chance " + __instance.BossChance);
+            Logger.LogWarning("Shall Spawn" + __instance.ShallSpawn);
+            Logger.LogWarning("=============");
+        }
+    }
+
+
+    public class GetAvailableActionsPatch : ModulePatch
     {
         public static void DummyAction() { }
 
@@ -150,12 +213,8 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(ref bool __result)
         {
-            if (!GameWorldController.RanEarlyGameCheck)
-            {
-                Plugin.RequestRealismDataFromServer(false, true);
-                GameWorldController.RanEarlyGameCheck = true;
-            }
-            if (GameWorldController.DoMapGasEvent)
+            Logger.LogWarning(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>DAY TIME CHECK");
+            if (Plugin.ModInfo.DoGasEvent)
             {
                 __result = false;
                 return false;
@@ -198,6 +257,15 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(BirdsSpawner __instance)
         {
+            Logger.LogWarning("--------------------------BIRD CHECK");
+            //not remotely ideal but this method is called the earliest so far, but not this is not always called so will call elsewhere too.
+            if (!GameWorldController.RanEarliestGameCheck)
+            {
+                Plugin.RequestRealismDataFromServer(false, true);
+                GameWorldController.RanEarliestGameCheck = true;
+            }
+
+            Logger.LogWarning("--------------------------Done Bird Check");
             if (Plugin.FikaPresent) return;
 
             Bird[] birds = __instance.gameObject.GetComponentsInChildren<Bird>();
@@ -244,6 +312,8 @@ namespace RealismMod
                 //update tracked map info
                 GameWorldController.CurrentMap = Singleton<GameWorld>.Instance.MainPlayer.Location.ToLower();
                 GameWorldController.MapWithDynamicWeather = GameWorldController.CurrentMap.Contains("factory") || GameWorldController.CurrentMap == "laboratory" ? false : true;
+                GameWorldController.IsMapThatCanDoGasEvent = GameWorldController.CurrentMap != "laboratory" && !GameWorldController.CurrentMap.Contains("factory");
+                GameWorldController.IsMapThatCanDoRadEvent = GameWorldController.CurrentMap != "laboratory";
 
                 //audio components
                 AudioController.CreateAudioComponent();
@@ -291,7 +361,7 @@ namespace RealismMod
             }
 
             GameWorldController.GameStarted = false;
-            GameWorldController.RanEarlyGameCheck = false;
+            GameWorldController.RanEarliestGameCheck = false;
         }
     }
 }

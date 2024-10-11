@@ -9,7 +9,9 @@ namespace RealismMod
     {
         public static bool DidExplosionClientSide { get; set; } = false;
         public static bool GameStarted { get; set; } = false;
-        public static bool RanEarlyGameCheck { get; set; } = false;
+        public static bool RanEarliestGameCheck { get; set; } = false;
+        public static bool IsMapThatCanDoGasEvent { get; set; } = false;
+        public static bool IsMapThatCanDoRadEvent { get; set; } = false;
         public static string CurrentMap { get; set; } = "";
         public static bool MapWithDynamicWeather { get; set; } = false;
         public static float CurrentMapRadStrength { get; private set; } = 0;
@@ -20,7 +22,7 @@ namespace RealismMod
         {
             get
             {
-                return Plugin.ModInfo.DoGasEvent && !Plugin.ModInfo.HasExploded && !DidExplosionClientSide;
+                return IsMapThatCanDoGasEvent && Plugin.ModInfo.DoGasEvent && !Plugin.ModInfo.HasExploded && !DidExplosionClientSide;
             }
 
         }
@@ -29,7 +31,7 @@ namespace RealismMod
         {
             get
             {
-                return Plugin.ModInfo.HasExploded;
+                return IsMapThatCanDoRadEvent && Plugin.ModInfo.HasExploded;
             }
 
         }

@@ -191,8 +191,10 @@ namespace RealismMod
                 boxCollider.isTrigger = true;
                 boxCollider.size = size;
 
-                hazard.BlocksNav = GameWorldController.DoMapGasEvent || GameWorldController.DoMapRads ? false : subZone.BlockNav;
-                if (subZone.BlockNav)
+                //if gas event or rad event, all bots have gas mask, but asset zone assets do not block bot paths so they get stuck
+                bool ignoreNav = (GameWorldController.DoMapGasEvent || GameWorldController.DoMapRads) && hazard.ZoneType != EZoneType.GasAssets && hazard.ZoneType != EZoneType.RadAssets;
+                hazard.BlocksNav = ignoreNav ? false : subZone.BlockNav;
+                if (hazard.BlocksNav)
                 {
                     var navMeshObstacle = hazardZone.AddComponent<NavMeshObstacle>();
                     navMeshObstacle.carving = true;
