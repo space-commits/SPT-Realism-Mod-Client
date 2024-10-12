@@ -33,7 +33,7 @@ namespace RealismMod.Weapons
                 player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(
                     WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadInjuryMulti * PlayerState.ReloadSkillMulti * 
                     PlayerState.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff *
-                    Plugin.RealHealthController.AdrenalineReloadBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.8f)), 0.65f, 1.35f));
+                    Plugin.RealHealthController.AdrenalineReloadBonus * (Mathf.Max(PlayerState.RemainingArmStamFactor, 0.8f)), 0.65f, 1.35f));
             }
             else
             {
@@ -103,7 +103,7 @@ namespace RealismMod.Weapons
                     float highReadyBonus = fc.Item.WeapClass == "shotgun" && StanceController.CurrentStance == EStance.HighReady == true ? StanceController.HighReadyManipBuff : 1f;
                     float lowReadyBonus = fc.Item.WeapClass != "shotgun" && StanceController.CurrentStance == EStance.LowReady == true ? StanceController.LowReadyManipBuff : 1f;
 
-                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PluginConfig.InternalMagReloadMulti.Value * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * PlayerState.RemainingArmStamPercReload, MinimumReloadSpeed, MaxInternalReloadSpeed);
+                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PluginConfig.InternalMagReloadMulti.Value * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * PlayerState.RemainingArmStamReloadFactor, MinimumReloadSpeed, MaxInternalReloadSpeed);
                     player.HandsAnimator.SetAnimationSpeed(IntenralMagReloadSpeed);
 
                     if (PluginConfig.EnableLogging.Value == true)

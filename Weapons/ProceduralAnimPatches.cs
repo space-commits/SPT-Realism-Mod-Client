@@ -306,7 +306,7 @@ namespace RealismMod
                         : StanceController.IsLeftShoulder ? 0.9f : 1f;
                     float stockMulti = weapon.WeapClass != "pistol" && !WeaponStats.HasShoulderContact ? 0.75f : 1f;
 
-                    float totalSightlessAimSpeed = WeaponStats.SightlessAimSpeed * PlayerState.ADSInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.45f));
+                    float totalSightlessAimSpeed = WeaponStats.SightlessAimSpeed * PlayerState.ADSInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamFactor, 0.45f));
 
                     float sightSpeedModi = currentAimingMod != null ? AttachmentProperties.AimSpeed(currentAimingMod) : 1f;
                     sightSpeedModi = currentAimingMod != null && (currentAimingMod.TemplateId == "5c07dd120db834001c39092d" || currentAimingMod.TemplateId == "5c0a2cec0db834001b7ce47d") && __instance.CurrentScope.IsOptic ? 1f : sightSpeedModi;
@@ -383,7 +383,7 @@ namespace RealismMod
                     {
                         Logger.LogWarning("=====method_23========");
                         Logger.LogWarning("ADSInjuryMulti = " + PlayerState.ADSInjuryMulti);
-                        Logger.LogWarning("remaining stam percentage = " + PlayerState.RemainingArmStamPerc);
+                        Logger.LogWarning("remaining stam percentage = " + PlayerState.RemainingArmStamFactor);
                         Logger.LogWarning("strength = " + PlayerState.StrengthSkillAimBuff);
                         Logger.LogWarning("player weight = " + playerWeightADSFactor);
                         Logger.LogWarning("sightSpeedModi = " + sightSpeedModi);
@@ -489,9 +489,13 @@ namespace RealismMod
                 float swayStrengthUpperLimit = isPistol ? 0.8f : 1.1f;
 
                 float motionWeaponFactor = WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol || !WeaponStats.HasShoulderContact ? 1.5f : WeaponStats.IsBullpup ? 0.75f : 1f;
-                float motionUpperLimit = isPistol ? 1.4f : 2.5f;
+                float motionUpperLimit = isPistol ? 1.45f : 2.55f;
                 float motionLowerLimit = isPistol ? 1.25f : 1.35f;
-                WeaponStats.BaseWeaponMotionIntensity = Mathf.Clamp(0.06f * stanceFactorMotion * ergoWeight * playerWeightFactor * motionWeaponFactor * WeaponStats.TotalWeaponHandlingModi, motionLowerLimit, motionUpperLimit);
+                WeaponStats.BaseWeaponMotionIntensity = Mathf.Clamp(0.06f * stanceFactorMotion * ergoWeight * playerWeightFactor * motionWeaponFactor * WeaponStats.TotalWeaponHandlingModi, motionLowerLimit, motionUpperLimit) * 0.25f;
+
+                float weaponWalkMotionFactor = (WeaponStats.ErgoFactor / 100f) * WeaponStats.TotalWeaponHandlingModi * 2f;
+                weaponWalkMotionFactor = Mathf.Pow(weaponWalkMotionFactor, 0.85f);
+                WeaponStats.WalkMotionIntensity = weaponWalkMotionFactor * playerWeightFactor * (1f - PlayerState.StrengthSkillAimBuff) * (1f + (1f - PlayerState.GearErgoPenalty));
 
                 float combinedFactors = ergoWeight * weightFactor * playerWeightFactor * formfactor;
 

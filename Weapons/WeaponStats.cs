@@ -157,6 +157,7 @@ namespace RealismMod
         public const float FoldedConvergenceFactor = 0.7f;
 
         public static float BaseWeaponMotionIntensity = 1f;
+        public static float WalkMotionIntensity = 1f;
 
         public static float TotalWeaponWeight = 0f;
         public static float TotalWeaponLength = 0f;

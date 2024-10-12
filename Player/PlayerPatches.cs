@@ -257,23 +257,29 @@ namespace RealismMod
         private static void GetStaminaPerc(Player player)
         {
             float remainArmStamPercent = Mathf.Min((player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity) * (1f + PlayerState.StrengthSkillAimBuff), 1f);
-            PlayerState.StaminaPerc = player.Physical.Stamina.Current / player.Physical.Stamina.TotalCapacity;
+            PlayerState.BaseStaminaPerc = player.Physical.Stamina.Current / player.Physical.Stamina.TotalCapacity;
 
-            PlayerState.RemainingArmStamPerc = 1f - ((1f - remainArmStamPercent) / 3f);
-            PlayerState.RemainingArmStamPercReload = Mathf.Clamp(1f - ((1f - remainArmStamPercent) / 4f), 0.85f, 1f); 
+            PlayerState.RemainingArmStamFactor = 1f - ((1f - remainArmStamPercent) / 2.5f);
+            PlayerState.RemainingArmStamReloadFactor = Mathf.Clamp(1f - ((1f - remainArmStamPercent) / 4f), 0.8f, 1f);
+
+            PlayerState.CombinedStaminaPerc = Mathf.Pow(remainArmStamPercent * PlayerState.BaseStaminaPerc, 0.35f);
         }
 
         private static void ModifyWalkRelatedValues(Player player) 
         {
-            player.ProceduralWeaponAnimation.Walk.StepFrequency = Mathf.Min(player.ProceduralWeaponAnimation.Walk.StepFrequency, 1.1f); //1.1
-            player.ProceduralWeaponAnimation.Walk.IntensityMinMax[0] = new Vector2(0.5f, 1f); //1
+            float staminaFactor = Mathf.Max((2f - PlayerState.CombinedStaminaPerc), 0.5f);
+            float totalFactors = WeaponStats.WalkMotionIntensity * PlayerState.ErgoDeltaInjuryMulti * staminaFactor;
 
-            player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.1f; //0.1
-            player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.InputIntensity = 0.7f; //0.7
+            player.ProceduralWeaponAnimation.Walk.StepFrequency = Mathf.Min(player.ProceduralWeaponAnimation.Walk.StepFrequency, 1.1f);
+            player.ProceduralWeaponAnimation.Walk.IntensityMinMax[0] = new Vector2(0.5f, 1f); 
 
-            player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.ReturnSpeed = 0.05f; //0.05
-            player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = 0.35f; //0.35
+            player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.1f; 
+            player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.InputIntensity = Mathf.Clamp(totalFactors, 0.5f, 0.8f);
 
+            player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.ReturnSpeed = 0.05f; 
+            player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = Mathf.Clamp(totalFactors, 0.5f, 1f);
+
+            player.ProceduralWeaponAnimation.MotionReact.Intensity = WeaponStats.BaseWeaponMotionIntensity * staminaFactor;
         }
 
         private static void SetStancePWAValues(Player player, FirearmController fc)
@@ -323,7 +329,7 @@ namespace RealismMod
             if (fc != null)
             {
               
-                player.ProceduralWeaponAnimation.MotionReact.Intensity = WeaponStats.BaseWeaponMotionIntensity * Mathf.Pow((2f - PlayerState.StaminaPerc), 0.4f);
+
  
                 if (Plugin.StartRechamberTimer)
                 {

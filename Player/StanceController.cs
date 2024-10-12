@@ -790,7 +790,7 @@ namespace RealismMod
             float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 100f);
             float ergoMulti = Mathf.Clamp(WeaponStats.ErgoStanceSpeed * Mathf.Pow(WeaponStats.TotalWeaponHandlingModi, 0.5f), 0.65f, 1.45f);
-            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.55f)), 0.5f, 1.45f);
+            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamFactor, 0.55f)), 0.5f, 1.45f);
 
             float balanceFactor = 1f + (WeaponStats.Balance / 100f);
             float rotationBalanceFactor = WeaponStats.Balance <= -9f ? -balanceFactor : balanceFactor;
@@ -798,7 +798,7 @@ namespace RealismMod
             float resetErgoMulti = (1f - stanceMulti) + 1f;
 
             float wiggleErgoMulti = Mathf.Clamp((WeaponStats.ErgoStanceSpeed * 0.25f), 0.1f, 1f);
-            WiggleReturnSpeed = (1f - (PlayerState.AimSkillADSBuff * 0.5f)) * wiggleErgoMulti * PlayerState.StanceInjuryMulti * playerWeightFactor * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.65f));
+            WiggleReturnSpeed = (1f - (PlayerState.AimSkillADSBuff * 0.5f)) * wiggleErgoMulti * PlayerState.StanceInjuryMulti * playerWeightFactor * (Mathf.Max(PlayerState.RemainingArmStamFactor, 0.65f));
 
             float movementFactor = PlayerState.IsMoving ? 0.8f : 1f;
 
@@ -971,7 +971,7 @@ namespace RealismMod
             float lowerBaseLimit = WeaponStats.TotalWeaponWeight >= weightLimit ? 0.45f : 0.55f;
             float ergoMulti = Mathf.Clamp(1.15f * WeaponStats.ErgoStanceSpeed * Mathf.Pow(WeaponStats.TotalWeaponHandlingModi, 0.4f), lowerBaseLimit, 1.2f);
             float lowerSpeedLimit = WeaponStats.TotalWeaponWeight >= weightLimit ? 0.3f : 0.4f;
-            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.65f)), lowerSpeedLimit, 1.2f);
+            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamFactor, 0.65f)), lowerSpeedLimit, 1.2f);
             float resetErgoMulti = (1f - stanceMulti) + 1f;
             float highReadyStanceMulti = Mathf.Clamp(stanceMulti, 0.5f, 1f);
             float lowReadyStanceMulti = Mathf.Clamp(stanceMulti, 0.5f, 1f);
@@ -980,7 +980,7 @@ namespace RealismMod
 
             float wiggleErgoMulti = Mathf.Clamp((WeaponStats.ErgoStanceSpeed * 0.5f), 0.1f, 1f);
             float stocklessModifier = WeaponStats.HasShoulderContact ? 1f : 0.5f;
-            WiggleReturnSpeed = (1f - (PlayerState.AimSkillADSBuff * 0.5f)) * wiggleErgoMulti * PlayerState.StanceInjuryMulti * stocklessModifier * playerWeightFactor * (Mathf.Max(PlayerState.RemainingArmStamPerc, 0.55f));
+            WiggleReturnSpeed = (1f - (PlayerState.AimSkillADSBuff * 0.5f)) * wiggleErgoMulti * PlayerState.StanceInjuryMulti * stocklessModifier * playerWeightFactor * (Mathf.Max(PlayerState.RemainingArmStamFactor, 0.55f));
 
             bool isColliding = !pwa.OverlappingAllowsBlindfire;
             float collisionRotationFactor = isColliding ? 2f : 1f;
@@ -1113,7 +1113,7 @@ namespace RealismMod
                     }
                     if (!hasResetHighReady)
                     {
-                        highToShort = 0.8f;
+                        highToShort = 0.78f;
                     }
                     if (!hasResetLowReady)
                     {
@@ -1137,7 +1137,7 @@ namespace RealismMod
                 }
 
                 float transitionPositionFactor = activeToShort * highToShort * lowToShort;
-                float transitionRotationFactor = activeToShort * highToShort * lowToShort * (transitionPositionFactor != 1f ? 0.9f : 1f);
+                float transitionRotationFactor = activeToShort * highToShort * lowToShort;
 
                 if (StanceBlender.Value < 1f)
                 {
@@ -1195,7 +1195,7 @@ namespace RealismMod
                 {
                     if (!hasResetShortStock)
                     {
-                        shortToHighMulti = 0.85f;
+                        shortToHighMulti = 0.82f;
                     }
                     if (!hasResetActiveAim)
                     {
@@ -1305,7 +1305,7 @@ namespace RealismMod
                     }
                     if (!hasResetActiveAim)
                     {
-                        activeToLow = 0.85f;
+                        activeToLow = 0.87f;
                     }
                 }
                 else
@@ -1398,8 +1398,8 @@ namespace RealismMod
                     }
                     if (!hasResetHighReady)
                     {
-                        highToActive = 1.25f;
-                        highToActiveRotation = 1.2f;
+                        highToActive = 1.15f;
+                        highToActiveRotation = 1.15f;
                     }
                     if (!hasResetLowReady)
                     {
@@ -1456,7 +1456,6 @@ namespace RealismMod
                 rotationSpeed = stanceMulti * dt * PluginConfig.ActiveAimResetRotationSpeedMulti.Value * chonkerFactor * (useThirdPersonStance ? PluginConfig.ThirdPersonRotationSpeed.Value : 1f);
                 stanceRotation = activeAimRevertQuaternion;
                 StanceBlender.Speed = PluginConfig.ActiveAimResetSpeedMulti.Value * stanceMulti * chonkerFactor * (useThirdPersonStance ? PluginConfig.ThirdPersonPositionSpeed.Value : 1f);
-
             }
             else if (StanceBlender.Value == 0f && !hasResetActiveAim)
             {

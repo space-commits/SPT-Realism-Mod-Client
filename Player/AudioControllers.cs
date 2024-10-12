@@ -206,7 +206,7 @@ namespace RealismMod
 
         private float GetBreathVolume() 
         {
-            return _baseBreathVolume * (2f - PlayerState.StaminaPerc) * PluginConfig.GasMaskBreathVolume.Value;
+            return _baseBreathVolume * (2f - PlayerState.BaseStaminaPerc) * PluginConfig.GasMaskBreathVolume.Value;
         }
 
         private string GetAudioFromOtherStates()
@@ -215,11 +215,11 @@ namespace RealismMod
             {
                 return "Dying";
             }
-            if (HazardTracker.TotalToxicity >= 50f || PlayerState.StaminaPerc <= 0.55 || HazardTracker.TotalRadiation >= 70f || Plugin.RealHealthController.HasAdrenalineEffect)
+            if (HazardTracker.TotalToxicity >= 50f || PlayerState.BaseStaminaPerc <= 0.55 || HazardTracker.TotalRadiation >= 70f || Plugin.RealHealthController.HasAdrenalineEffect)
             {
                 return "BadlyInjured";
             }
-            if (HazardTracker.TotalToxicity >= 30f || PlayerState.StaminaPerc <= 0.8f || HazardTracker.TotalRadiation >= 50f)
+            if (HazardTracker.TotalToxicity >= 30f || PlayerState.BaseStaminaPerc <= 0.8f || HazardTracker.TotalRadiation >= 50f)
             {
                 return "Injured";
             }
