@@ -139,7 +139,7 @@ namespace RealismMod
             {
                 bool skipPenalty = SkipSprintPenalty;
                 float sprintDurationModi = 1f + (_sprintTimer / 7f);
-                float ergoWeight = WeaponStats.ErgoFactor * (1f + (1f - PlayerState.GearErgoPenalty));
+                float ergoWeight = WeaponStats.ErgoFactor * (1f + (1f - PlayerState.GearErgoPenalty)) * WeaponStats.TotalWeaponHandlingModi;
                 ergoWeight = 1f + (ergoWeight / 200f);
 
                 float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi * ergoWeight, skipPenalty ? 1f : 3f);
@@ -239,21 +239,6 @@ namespace RealismMod
             }
         }
 
-        private static void CalcBaseHipfireAccuracy(Player player)
-        {
-            float baseValue = 0.4f;
-            float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
-            float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
-            float recoilFactor = 1f + ((RecoilController.BaseTotalVRecoil + RecoilController.BaseTotalHRecoil) / 100f);
-            float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
-            float playerWeightFactor = 1f + (totalPlayerWeight / 100f);
-            float healthFactor = PlayerState.RecoilInjuryMulti * (Plugin.RealHealthController.HasOverdosed ? 1.5f : 1f);
-            float ergoWeight = WeaponStats.ErgoFactor * (1f + (1f - PlayerState.GearErgoPenalty));
-            float ergoFactor = 1f + (ergoWeight / 200f);
-
-            WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(baseValue * PlayerState.DeviceBonus * ergoFactor * healthFactor * convergenceFactor * dispersionFactor * recoilFactor * playerWeightFactor, 0.2f, 1f);
-        }
-
         private static void GetStaminaPerc(Player player)
         {
             float remainArmStamPercent = Mathf.Min((player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity) * (1f + PlayerState.StrengthSkillAimBuff), 1f);
@@ -265,6 +250,26 @@ namespace RealismMod
             PlayerState.CombinedStaminaPerc = Mathf.Pow(remainArmStamPercent * PlayerState.BaseStaminaPerc, 0.35f);
         }
 
+        private static void CalcBaseHipfireAccuracy(Player player)
+        {
+            float baseValue = 0.5f;
+            float stockFactor = WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol || !WeaponStats.HasShoulderContact ? 1.25f: 1f;
+            float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
+            float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
+            float recoilFactor = 1f + ((RecoilController.BaseTotalVRecoil + RecoilController.BaseTotalHRecoil) / 100f);
+            float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
+            float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
+            float healthFactor = PlayerState.ErgoDeltaInjuryMulti * (Plugin.RealHealthController.HasOverdosed ? 1.5f : 1f);
+            float staminaFactor = Mathf.Max((2f - PlayerState.CombinedStaminaPerc), 0.5f);
+            float ergoWeight = WeaponStats.ErgoFactor * (1f + (1f - PlayerState.GearErgoPenalty));
+            float ergoFactor = 1f + (ergoWeight / 200f);
+            float stanceFactor = StanceController.CurrentStance == EStance.ActiveAiming ? 0.7f : StanceController.CurrentStance == EStance.ShortStock ? 1.35f : 1f;
+            float totalRecoilFactors = convergenceFactor * dispersionFactor * recoilFactor;
+
+            WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(baseValue * ergoFactor * stockFactor *  PlayerState.DeviceBonus * staminaFactor * stanceFactor * Mathf.Pow(WeaponStats.TotalWeaponHandlingModi, 0.45f) * healthFactor * totalRecoilFactors * playerWeightFactor, 0.2f, 1f);
+            Utils.Logger.LogWarning($"hipfire acc {WeaponStats.BaseHipfireInaccuracy}");
+        }
+
         private static void ModifyWalkRelatedValues(Player player) 
         {
             float staminaFactor = Mathf.Max((2f - PlayerState.CombinedStaminaPerc), 0.5f);
@@ -274,10 +279,10 @@ namespace RealismMod
             player.ProceduralWeaponAnimation.Walk.IntensityMinMax[0] = new Vector2(0.5f, 1f); 
 
             player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.1f; 
-            player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.InputIntensity = Mathf.Clamp(totalFactors, 0.5f, 0.8f);
+            player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.InputIntensity = Mathf.Clamp(totalFactors, 0.5f, 0.85f); //up down
 
             player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.ReturnSpeed = 0.05f; 
-            player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = Mathf.Clamp(totalFactors, 0.5f, 1f);
+            player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = Mathf.Clamp(totalFactors, 0.4f, 1f); //side to side
 
             player.ProceduralWeaponAnimation.MotionReact.Intensity = WeaponStats.BaseWeaponMotionIntensity * staminaFactor;
         }
@@ -328,9 +333,6 @@ namespace RealismMod
         {
             if (fc != null)
             {
-              
-
- 
                 if (Plugin.StartRechamberTimer)
                 {
                     ChamberTimer(fc);
@@ -376,8 +378,7 @@ namespace RealismMod
             }
 
             CalcBaseHipfireAccuracy(player);
-            float stanceHipFactor = StanceController.CurrentStance == EStance.ActiveAiming ? 0.7f : StanceController.CurrentStance == EStance.ShortStock ? 1.35f : 1.05f;
-            player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.1f, 0.5f);
+            player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty, 0.1f, 0.5f);
         }
 
         protected override MethodBase GetTargetMethod()

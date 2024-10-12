@@ -113,7 +113,7 @@ namespace RealismMod
             }
 
             DateTime utcNow = DateTime.UtcNow;
-            int seed = utcNow.Year * 1000000 + utcNow.Month * 10000 + utcNow.Day * 100 + utcNow.Hour * 10;
+            int seed = utcNow.Year * 1000000 + utcNow.Month * 10000 + utcNow.Day * 100;
             int finalSeed = seed % 101;
             return finalSeed <= hazardLocation.SpawnChance * 100f;    
         }
