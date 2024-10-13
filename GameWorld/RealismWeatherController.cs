@@ -102,16 +102,16 @@ namespace RealismMod
             {
                 TargetFog = Mathf.Lerp(TargetFog, 0f, 0.05f * Time.deltaTime);
                 TargetCloudDensity = Mathf.Lerp(TargetCloudDensity, -0.75f, 0.25f * Time.deltaTime);
-                TargetWindMagnitude = Mathf.Lerp(TargetWindMagnitude, 1.2f, 0.25f * Time.deltaTime);
+                TargetWindMagnitude = Mathf.Lerp(TargetWindMagnitude, 1.35f, 0.25f * Time.deltaTime);
             }
        
         }
 
         private void DoPreExplosionWeather()
         {
-            TargetCloudDensity = 0.5f;
-            TargetFog = 0.025f;
-            TargetRain = 0.2f;
+            TargetCloudDensity = 0.3f;
+            TargetFog = 0.01f;
+            TargetRain = 0.25f;
             TargetWindMagnitude = 0;
             TargetLighteningThunder = 0;
             TargetWindDirection = WeatherDebug.Direction.East;

@@ -19,13 +19,13 @@ namespace RealismMod
             return sessionData.Profile.QuestsData.FirstOrDefault(q => q.Id == questId);
         }
 
-        public static bool CheckQuestStatus(string questId, EQuestStatus[] questStatuses)
+        public static bool CheckQuestStatus(string questId, EQuestStatus[] questStatuses) 
         {
             bool foundMatchingQuest = false;
             var dynamicZoneQuest = GetQuest(questId);
             if (dynamicZoneQuest != null)
             {
-                foreach (var status in questStatuses) 
+                foreach (var status in questStatuses)
                 {
                     if (dynamicZoneQuest.Status == status)
                     {
@@ -35,12 +35,20 @@ namespace RealismMod
                 }
             }
             return foundMatchingQuest;
+        }
 
+        public static bool CheckQuestStatuses(string[] questIds, EQuestStatus[] questStatuses)
+        {
+            foreach (var quest in questIds) 
+            {
+               if (CheckQuestStatus(quest, questStatuses)) return true;
+            }
+            return false;
         }
 
         public static bool ShouldSpawnDynamicZones()
         {
-            return ProfileData.PMCLevel >= 20 || CheckQuestStatus("66dad1a18cbba6e558486336",  new EQuestStatus[] { EQuestStatus.Started, EQuestStatus.Success });
+            return ProfileData.PMCLevel >= 20 || CheckQuestStatuses(new string[] { "66dad1a18cbba6e558486336", "670ae811bd43cbf026768126" },  new EQuestStatus[] { EQuestStatus.Started, EQuestStatus.Success });
         }
 
         public static void CreateAmbientAudioPlayers(Transform parentTransform, Dictionary<string, AudioClip> clips, bool followPlayer = false, float minTime = 15f, float maxTime = 90f, float volume = 1f, float minDistance = 45f, float maxDistance = 95f) 

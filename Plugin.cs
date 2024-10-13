@@ -3,11 +3,15 @@ using BepInEx;
 using BepInEx.Bootstrap;
 using Comfort.Common;
 using EFT;
+using EFT.Interactive;
 using Newtonsoft.Json;
 using SPT.Common.Http;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -525,16 +529,11 @@ namespace RealismMod
                 Utils.Logger.LogWarning("new Vector3(" + player.position.x + "f, " + player.position.y + "f, " + player.position.z + "f)");
                 Utils.Logger.LogWarning("\"rotation\": {" + "\"x\":" + player.rotation.eulerAngles.x + "," + "\"y\":" + player.eulerAngles.y + "," + "\"z\":" + player.eulerAngles.z + "}");
             }
-            if (PluginConfig.ZoneDebug.Value && Input.GetKeyDown(KeyCode.Keypad0))
-            {
-                HazardTracker.WipeTracker();
-            }
-            if (PluginConfig.ZoneDebug.Value && Input.GetKeyDown(PluginConfig.AddZone.Value.MainKey))
-            {
-                DebugZones();
-            }
+            if (Input.GetKeyDown(KeyCode.Keypad0)) HazardTracker.WipeTracker();
+         
+            if (Input.GetKeyDown(PluginConfig.AddZone.Value.MainKey)) DebugZones();
         }
-   
+
         void Update()
         {
             //TEMPORARY
@@ -585,10 +584,6 @@ namespace RealismMod
 
         private void LoadGeneralPatches()
         {
-            new AmbientSoundPlayerGroupPatch().Enable();
-            new DayTimeSpawnPatch().Enable();
-            new BirdPatch().Enable();
-
             //misc
             new ChamberCheckUIPatch().Enable();
 
@@ -616,6 +611,10 @@ namespace RealismMod
             new DropItemPatch().Enable();
             new GetAvailableActionsPatch().Enable();
             new BossSpawnPatch().Enable();
+            new LampPatch().Enable();
+            new AmbientSoundPlayerGroupPatch().Enable();
+            new DayTimeSpawnPatch().Enable();
+            new BirdPatch().Enable();
         }
 
         private void LoadMalfPatches()

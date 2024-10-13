@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EFT.Interactive;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -17,6 +18,7 @@ namespace RealismMod
         public static float CurrentMapRadStrength { get; private set; } = 0;
         public static float CurrentGasEventStrength { get; private set; } = 0;
         public static float CurrentGasEventStrengthBot { get; private set; } = 0;
+        public static List<LampController> Lights { get; set; } = new List<LampController>();
 
         public static bool DoMapGasEvent
         {
@@ -42,6 +44,11 @@ namespace RealismMod
             {
                 return DoMapGasEvent || Plugin.ModInfo.IsPreExplosion || DidExplosionClientSide || DoMapRads;
             }
+        }
+
+        public static void ClearGameObjectLists() 
+        {
+            Lights.Clear(); 
         }
 
         public static void CalculateGasEventStrength() 

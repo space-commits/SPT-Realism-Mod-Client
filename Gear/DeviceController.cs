@@ -6,6 +6,7 @@ using EFT.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -22,18 +23,20 @@ namespace RealismMod
         protected override IEnumerator DoLogic() 
         {
             float time = 0f;
-            bool canTrigger = IsInRightLocation() && Plugin.ModInfo.IsHalloween && !Plugin.ModInfo.HasExploded && !GameWorldController.DidExplosionClientSide; // && Plugin.ModInfo.IsNightTime
+            bool canTrigger = IsInRightLocation() && Plugin.ModInfo.IsHalloween && !Plugin.ModInfo.HasExploded && !GameWorldController.DidExplosionClientSide && Plugin.ModInfo.IsNightTime;
             if (canTrigger) 
             {
-                _audioSource.clip = Plugin.DeviceAudioClips["numbers.wav"];
+                _audioSource.clip = Plugin.DeviceAudioClips["transmitter_success.wav"];
                 _audioSource.Play();
                 SpawnQuestTrigger();
                 TriggeredExplosion = true;
+                AddSelfToDevicesList();
+                DeactivateZone();
                 CanTurnOn = false;
             }
             else
             {
-                _audioSource.clip = Plugin.DeviceAudioClips["switch_off.wav"];
+                _audioSource.clip = Plugin.DeviceAudioClips["transmitter_fail.wav"];
                 _audioSource.Play();
                 CanTurnOn = true;
                 yield break;
@@ -60,6 +63,7 @@ namespace RealismMod
         public Player _Player { get; set; } = null;
         public IPlayer _IPlayer { get; set; } = null;
         public string[] TargetQuestZones { get; set; }
+        public EZoneType TargetZoneType { get; private set; } = EZoneType.Quest;
         public IZone TargetZone { get; private set; } = null;
         public AudioClip AudioClips { get; set; }
         public string QuestTrigger { get; set; }    
@@ -67,6 +71,8 @@ namespace RealismMod
         protected Vector3 _position;
         protected Quaternion _rotation;
         protected List<IZone> _intersectingZones = new List<IZone>();
+        public string _instanceId = "";
+
 
         protected void SetUpTransforms()
         {
@@ -102,6 +108,59 @@ namespace RealismMod
             }
         }
 
+        protected void AddSelfToDevicesList()
+        {
+            if (TargetZone == null) return;
+            TargetZone.ActiveDevices.Add(this.gameObject);
+        }
+
+        protected void DeleteSelfFromDevicesList()
+        {
+            if (TargetZone == null) return;
+            TargetZone.ActiveDevices.Remove(this.gameObject);
+        }
+
+        public bool ZoneAlreadyHasDevice()
+        {
+            if (TargetZone == null) return false;
+            TargetZone.ActiveDevices.RemoveAll(d => d == null || !d.activeSelf || !d.gameObject.activeSelf);
+            List<Transmitter> transmitters = new List<Transmitter>();
+            foreach (var device in TargetZone.ActiveDevices)
+            {
+                if (device.gameObject.TryGetComponent<Transmitter>(out Transmitter analyser))
+                {
+                    transmitters.Add(analyser);
+                }
+            }
+            foreach (var a in transmitters)
+            {
+                if (a._instanceId != _instanceId)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        protected void DeactivateZone()
+        {
+            if (TargetZone == null) return;
+            TargetZone.HasBeenAnalysed = true;
+        }
+
+        protected void GetTargetZone(IZone zone, EZoneType[] targetZones)
+        {
+            if (TargetZone != null || zone == null) return;
+            bool foundMatch = TargetZoneType == EZoneType.Quest && zone.ZoneType == EZoneType.Quest;
+            if (zone.IsAnalysable && foundMatch) TargetZone = zone;
+            return;
+        }
+
+        void OnDisable()
+        {
+            DeleteSelfFromDevicesList();
+        }
+
         protected void SetUpActions()
         {
             Actions.AddRange(new List<ActionsTypesClass>()
@@ -132,9 +191,9 @@ namespace RealismMod
 
         protected void Start()
         {
-            Utils.Logger.LogWarning("START " + _intersectingZones.Count());
             SetUpTransforms();
             SetUpActions();
+            _instanceId = MongoID.Generate();
             _audioSource = SetUpAudio("switch_off.wav", this.gameObject);
         }
 
@@ -147,10 +206,12 @@ namespace RealismMod
 
         protected void OnTriggerEnter(Collider other)
         {
-            IZone zone;
-            if (other.gameObject.TryGetComponent<IZone>(out zone))
+            IZone hazardZone;
+            EZoneType[] targetZones = TargetZoneType == EZoneType.Quest ? new EZoneType[] { EZoneType.Quest } : new EZoneType[] { EZoneType.Quest }; //might change in future
+            if (other.gameObject.TryGetComponent<IZone>(out hazardZone))
             {
-                _intersectingZones.Add(zone);
+                _intersectingZones.Add(hazardZone);
+                GetTargetZone(hazardZone, targetZones);
             }
         }
 
@@ -169,6 +230,7 @@ namespace RealismMod
             {
                 _audioSource.clip = Plugin.DeviceAudioClips["numbers.wav"];
                 _audioSource.Play();
+                AddSelfToDevicesList();
                 CanTurnOn = false;
             }
             else
@@ -187,6 +249,8 @@ namespace RealismMod
                 yield return null;
             }
             SpawnQuestTrigger();
+            DeactivateZone();
+            DeleteSelfFromDevicesList();
         }
 
         protected void SpawnQuestTrigger()
@@ -214,6 +278,7 @@ namespace RealismMod
         private bool _stalledPreviously = false;
         public string _instanceId = "";
         private bool _deactivated = false;
+        private float _placementTimer = 0;
 
         void SetUpTransforms()
         {
@@ -225,6 +290,17 @@ namespace RealismMod
             eularRotation.x = -90f;
             eularRotation.y = 0f;
             _rotation = Quaternion.Euler(new Vector3(eularRotation.x, eularRotation.y, eularRotation.z));
+
+            if (PluginConfig.ZoneDebug.Value)
+            {
+                GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                visualRepresentation.name ="deviceStartPos";
+                visualRepresentation.transform.localScale = new Vector3(0.5f, 0.5f, 100f);
+                visualRepresentation.transform.position = _position;
+                visualRepresentation.transform.rotation = _rotation;
+                visualRepresentation.GetComponent<Renderer>().material.color = UnityEngine.Color.green;
+                UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
+            }
         }
 
         private void SetUpActions()
@@ -329,7 +405,8 @@ namespace RealismMod
 
         void Update()
         {
-            if (this.gameObject == null || _deactivated) return;
+            _placementTimer += Time.deltaTime;
+            if (_placementTimer >= 5f || this.gameObject == null || _deactivated) return;
             this.gameObject.transform.position = _position;
             this.gameObject.transform.rotation = _rotation;
         }
@@ -385,7 +462,7 @@ namespace RealismMod
             time = 0f;
             clipLength = _audioSource.clip.length;
             int loops = UnityEngine.Random.Range(1, 1);
-            bool shouldStall = !_stalledPreviously && UnityEngine.Random.Range(1, 100) >= 80;
+            bool shouldStall = !_stalledPreviously && UnityEngine.Random.Range(1, 100) >= 85;
             if (shouldStall) loops /= 2;
 
             while (time <= clipLength * loops)
@@ -416,12 +493,21 @@ namespace RealismMod
             _deactivated = true;
             string templateId = TargetZoneType == EZoneType.Gas ? Utils.GAMU_DATA_ID : Utils.RAMU_DATA_ID;
             Item replacementItem = Singleton<ItemFactory>.Instance.CreateItem(MongoID.Generate(), templateId, null);
-            Vector3 lastPosition = this._LootItem.gameObject.transform.position;
-            Quaternion lastRotation = this._LootItem.gameObject.transform.rotation;
-            LootItem lootItem = Singleton<GameWorld>.Instance.SetupItem(replacementItem, _IPlayer, lastPosition, lastRotation);
+            LootItem lootItem = Singleton<GameWorld>.Instance.SetupItem(replacementItem, _IPlayer, _position, _rotation);
             AudioSource tempAudio = SetUpAudio("success_end.wav", lootItem.gameObject);
             tempAudio.Play();
             Destroy(this.gameObject, 0.5f);
+
+            if (PluginConfig.ZoneDebug.Value)
+            {
+                GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                visualRepresentation.name = "deviceStartPos";
+                visualRepresentation.transform.localScale = new Vector3(0.5f, 0.5f, 100f);
+                visualRepresentation.transform.position = lootItem.transform.position;
+                visualRepresentation.transform.rotation = lootItem.transform.rotation;
+                visualRepresentation.GetComponent<Renderer>().material.color = UnityEngine.Color.red;
+                UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
+            }
         }
 
         void OnDisable()

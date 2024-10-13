@@ -25,6 +25,25 @@ using static RootMotion.FinalIK.GenericPoser;
 
 namespace RealismMod
 {
+    public class LampPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(LampController).GetMethod("ManualUpdate");
+        }
+
+        [PatchPostfix]
+        public static void PatchPostfix(LampController __instance)
+        {
+            if (!Plugin.ServerConfig.enable_hazard_zones || !Plugin.ModInfo.IsHalloween || !GameWorldController.IsMapThatCanDoGasEvent) return;
+            if (GameWorldController.DidExplosionClientSide || Plugin.ModInfo.HasExploded)
+            {
+                __instance.Switch(Turnable.EState.Off);
+                __instance.enabled = false;
+            }
+        }
+    }
+
     //for events I need to dynamically change boss spawn chance, but the point at which the event is declared server-side is too late for changing boss spawns
     public class BossSpawnPatch : ModulePatch 
     {
@@ -39,18 +58,15 @@ namespace RealismMod
         [PatchPostfix]
         public static void PatchPostfix(BossLocationSpawn __instance)
         {
-            Logger.LogWarning("1");
             if (!GameWorldController.RanEarliestGameCheck)
             {
-                Logger.LogWarning("Rolling chance boss spawn patch");
                 Plugin.RequestRealismDataFromServer(false, true);
                 GameWorldController.RanEarliestGameCheck = true;
             }
 
-            Logger.LogWarning("2");
             var zones = __instance.BossZone.Split(new char[]{','});
             if (_forbiddenZones.Intersect(zones).Any()) return;
-            Logger.LogWarning("3");
+
             bool increaseSectantChance = __instance.BossType == WildSpawnType.sectantPriest && Plugin.ModInfo.DoGasEvent;
             bool increaseRaiderChance = __instance.BossType == WildSpawnType.pmcBot && Plugin.ModInfo.DoExtraRaiders;
             bool isPmc = __instance.BossType == WildSpawnType.pmcBEAR || __instance.BossType == WildSpawnType.pmcUSEC;
@@ -66,21 +82,25 @@ namespace RealismMod
                 __instance.BossChance = 100f;
                 __instance.ShallSpawn = true;
             }
-            if ((postExpl ||Plugin.ModInfo.DoGasEvent) && (__instance.BossType != WildSpawnType.sectantPriest && __instance.BossType != WildSpawnType.pmcBot && !isPmc && !Plugin.ModInfo.DoExtraRaiders))
+            if ((postExpl ||Plugin.ModInfo.DoGasEvent || Plugin.ModInfo.IsPreExplosion) && (__instance.BossType != WildSpawnType.sectantPriest && __instance.BossType != WildSpawnType.pmcBot && !isPmc && !Plugin.ModInfo.DoExtraRaiders))
             {
                 __instance.BossChance *= 0.1f;
                 __instance.ShallSpawn = GClass761.IsTrue100(__instance.BossChance);
             }
 
-            Logger.LogWarning($"=============");
-            Logger.LogWarning($"Do Gas Event ? {Plugin.ModInfo.DoGasEvent}");
-            Logger.LogWarning($"Do raider Event ? {Plugin.ModInfo.DoExtraRaiders}");
-            Logger.LogWarning($"Do extra cultists ? {Plugin.ModInfo.DoExtraCultists}");
-            Logger.LogWarning("Boss type " + __instance.BossType);
-            Logger.LogWarning("Boss type " + __instance.BossType);
-            Logger.LogWarning("Spawn Chance " + __instance.BossChance);
-            Logger.LogWarning("Shall Spawn" + __instance.ShallSpawn);
-            Logger.LogWarning("=============");
+            if (PluginConfig.ZoneDebug.Value) 
+            {
+                Logger.LogWarning($"=============");
+                Logger.LogWarning($"Do Gas Event ? {Plugin.ModInfo.DoGasEvent}");
+                Logger.LogWarning($"Do raider Event ? {Plugin.ModInfo.DoExtraRaiders}");
+                Logger.LogWarning($"Do extra cultists ? {Plugin.ModInfo.DoExtraCultists}");
+                Logger.LogWarning("Boss type " + __instance.BossType);
+                Logger.LogWarning("Boss type " + __instance.BossType);
+                Logger.LogWarning("Spawn Chance " + __instance.BossChance);
+                Logger.LogWarning("Shall Spawn" + __instance.ShallSpawn);
+                Logger.LogWarning("=============");
+            }
+
         }
     }
 
@@ -137,11 +157,13 @@ namespace RealismMod
                     {
                         if (lootItem.gameObject.TryGetComponent<TransmitterHalloweenEvent>(out TransmitterHalloweenEvent transmitter))
                         {
-                            if (transmitter.TriggeredExplosion) 
+                            bool alreadyHasDevice = transmitter.ZoneAlreadyHasDevice();
+                            bool hasBeenAnalysed = transmitter.TargetZone != null && transmitter.TargetZone.HasBeenAnalysed;
+                            if (transmitter.TriggeredExplosion || hasBeenAnalysed) 
                             {
                                 __result.Actions = new List<ActionsTypesClass>() { new ActionsTypesClass { Name = "", Action = DummyAction } };
                             }
-                            else if (transmitter.CanTurnOn)
+                            else if (transmitter.CanTurnOn || !alreadyHasDevice)
                             {
                                 __result.Actions.AddRange(transmitter.Actions);
                             }
@@ -213,7 +235,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(ref bool __result)
         {
-            Logger.LogWarning(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>DAY TIME CHECK");
             if (Plugin.ModInfo.DoGasEvent)
             {
                 __result = false;
@@ -321,7 +342,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.15f);
-                    ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 14f, 60f, 0.35f, 50f, 90f);
+                    ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 14f, 60f, 0.35f, 55f, 80f);
                 }
 
                 //spawn zones
@@ -358,6 +379,7 @@ namespace RealismMod
                 HazardTracker.UpdateHazardValues(ProfileData.CurrentProfileId);
                 HazardTracker.SaveHazardValues();
                 HazardTracker.GetHazardValues(ProfileData.PMCProfileId); //update to use PMC id and not potentially scav id
+                GameWorldController.ClearGameObjectLists();   
             }
 
             GameWorldController.GameStarted = false;

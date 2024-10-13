@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using EFT;
+using EFT.UI.Ragfair;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,6 +22,7 @@ namespace RealismMod
         public float Volume = 1f;
         private AudioSource _audioSource;
         private float _randomDistanceFromPlayer;
+        private Vector3 _relativePositionFromPlayer;
 
         private IEnumerator PlayRandomAudio()
         {
@@ -33,7 +35,8 @@ namespace RealismMod
                     _randomDistanceFromPlayer = UnityEngine.Random.Range(MinDistance, MaxDistance);
                     var randomPosition = ParentTransform.position + UnityEngine.Random.onUnitSphere * _randomDistanceFromPlayer;
                     randomPosition.y = Mathf.Clamp(randomPosition.y, ParentTransform.position.y - 25f, ParentTransform.position.y + 25f);
-                    if (!FollowPlayer) transform.position = randomPosition;  
+                    if (!FollowPlayer) transform.position = randomPosition;
+                    _relativePositionFromPlayer = transform.position - ParentTransform.position;
 
                     if (PluginConfig.ZoneDebug.Value)
                     {
@@ -76,10 +79,13 @@ namespace RealismMod
 
         void Update() 
         {
-            if (FollowPlayer) 
+            if (FollowPlayer)
             {
-                transform.position = ParentTransform.position + (transform.position - ParentTransform.position).normalized * _randomDistanceFromPlayer;
-                transform.RotateAround(ParentTransform.position, Vector3.up, 0.35f * Time.deltaTime);
+                _relativePositionFromPlayer = Quaternion.AngleAxis(0.35f * Time.deltaTime, Vector3.up) * _relativePositionFromPlayer;
+                transform.position = ParentTransform.position + _relativePositionFromPlayer;
+
+            /*    transform.position = ParentTransform.position + (transform.position - ParentTransform.position).normalized * _randomDistanceFromPlayer;
+                transform.RotateAround(ParentTransform.position, Vector3.up, 0.35f * Time.deltaTime);*/
                 ///transform.position = ParentTransform.position + _positionRelativeToPlayer; 
             }
         }

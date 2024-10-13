@@ -267,7 +267,6 @@ namespace RealismMod
             float totalRecoilFactors = convergenceFactor * dispersionFactor * recoilFactor;
 
             WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(baseValue * ergoFactor * stockFactor *  PlayerState.DeviceBonus * staminaFactor * stanceFactor * Mathf.Pow(WeaponStats.TotalWeaponHandlingModi, 0.45f) * healthFactor * totalRecoilFactors * playerWeightFactor, 0.2f, 1f);
-            Utils.Logger.LogWarning($"hipfire acc {WeaponStats.BaseHipfireInaccuracy}");
         }
 
         private static void ModifyWalkRelatedValues(Player player) 
@@ -279,7 +278,7 @@ namespace RealismMod
             player.ProceduralWeaponAnimation.Walk.IntensityMinMax[0] = new Vector2(0.5f, 1f); 
 
             player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.1f; 
-            player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.InputIntensity = Mathf.Clamp(totalFactors, 0.5f, 0.85f); //up down
+            player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.InputIntensity = Mathf.Clamp(totalFactors * 1.05f, 0.5f, 0.86f); //up down
 
             player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.ReturnSpeed = 0.05f; 
             player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = Mathf.Clamp(totalFactors, 0.4f, 1f); //side to side

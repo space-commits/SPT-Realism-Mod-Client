@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using RealismMod;
+using EFT.Interactive;
+using System.Linq;
+using System.Reflection;
 
 public class Bomb : MonoBehaviour
 {
@@ -37,6 +40,8 @@ public class Bomb : MonoBehaviour
     private float _yPos;
     private float _zPos;
 
+    private bool _turnedOfthePower = false;
+
     void Start()
     {
         _currentShockwaveVector = new Vector3(0f, 0f, 0f);
@@ -44,6 +49,7 @@ public class Bomb : MonoBehaviour
         _currentShockwaveSize = 0.0f;
         GameWorldController.DidExplosionClientSide = true;
     }
+
 
     void Update()
     {
