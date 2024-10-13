@@ -158,7 +158,6 @@ namespace RealismMod
 
             foreach (var subZone in hazardLocation.Zones)
             {
-                Utils.Logger.LogWarning("Name" + subZone.Name);
                 string zoneName = subZone.Name;
                 Vector3 position = new Vector3(subZone.Position.X, subZone.Position.Y, subZone.Position.Z);
                 Vector3 rotation = new Vector3(subZone.Rotation.X, subZone.Rotation.Y, subZone.Rotation.Z);

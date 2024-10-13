@@ -33,8 +33,10 @@ namespace RealismMod
                 yield return null;
             }
 
- 
-            bool canTrigger = IsInRightLocation() && Plugin.ModInfo.IsHalloween && !Plugin.ModInfo.HasExploded && !GameWorldController.DidExplosionClientSide && Plugin.ModInfo.IsNightTime;
+
+            DateTime utcNow = DateTime.UtcNow;
+            bool isRightDate = utcNow.Month == 10 && utcNow.Day == 31;
+            bool canTrigger = isRightDate && IsInRightLocation() && Plugin.ModInfo.IsHalloween && !Plugin.ModInfo.HasExploded && !GameWorldController.DidExplosionClientSide && Plugin.ModInfo.IsNightTime;
             if (canTrigger) 
             {
                 _audioSource.clip = Plugin.DeviceAudioClips["transmitter_success.wav"];
@@ -198,7 +200,6 @@ namespace RealismMod
                 if ((questZone = (zone as QuestZone)) != null)
                 {
                     TargetQuestZones.Contains(questZone.name);
-
                     return true;
                 }
 

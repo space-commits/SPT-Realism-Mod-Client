@@ -30,7 +30,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(DayTimeAmbientBlender __instance)
         {
-            Logger.LogWarning("DayTimeAmbientPatch");
             if (!GameWorldController.RanEarliestGameCheck)
             {
                 Plugin.RequestRealismDataFromServer(EUpdateType.ModInfo);
@@ -59,7 +58,6 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(AmbientSoundPlayerGroup __instance)
         {
-            Logger.LogWarning("play audio");
             if (!GameWorldController.RanEarliestGameCheck)
             {
                 Plugin.RequestRealismDataFromServer(EUpdateType.ModInfo);
