@@ -50,6 +50,14 @@ namespace RealismMod
         public bool IsNightTime { get; set; }   
     }
 
+    public enum EUpdateType 
+    {
+        Full,
+        ModInfo,
+        ModConfig,
+        TimeOfDay
+    }
+
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.PLUGINVERSION)]
     public class Plugin : BaseUnityPlugin
     {
@@ -120,10 +128,24 @@ namespace RealismMod
             }
         }
 
-        public static void RequestRealismDataFromServer(bool updateAll = true, bool updateModInfo = false)
+        public static void RequestRealismDataFromServer(EUpdateType updateType)
         {
-            if (updateAll) ServerConfig = UpdateInfoFromServer<RealismConfig>("/RealismMod/GetConfig");
-            if (updateAll || updateModInfo) ModInfo = UpdateInfoFromServer<RealismInfo>("/RealismMod/GetInfo");
+            switch(updateType)
+            {
+                case EUpdateType.Full:
+                    ServerConfig = UpdateInfoFromServer<RealismConfig>("/RealismMod/GetConfig");
+                    ModInfo = UpdateInfoFromServer<RealismInfo>("/RealismMod/GetInfo");
+                    break;
+                case EUpdateType.ModInfo:
+                    ModInfo = UpdateInfoFromServer<RealismInfo>("/RealismMod/GetInfo");
+                    break;
+                case EUpdateType.ModConfig:
+                    ServerConfig = UpdateInfoFromServer<RealismConfig>("/RealismMod/GetConfig");
+                    break;
+                case EUpdateType.TimeOfDay:
+                    ModInfo = UpdateInfoFromServer<RealismInfo>("/RealismMod/GetTimeOfDay");
+                    break;
+            }
         }
 
         private async void CacheIcons()
@@ -379,7 +401,7 @@ namespace RealismMod
         
             try
             {
-                RequestRealismDataFromServer();
+                RequestRealismDataFromServer(EUpdateType.Full);
                 LoadBundles();   
                 LoadSprites();
                 LoadTextures();
@@ -613,6 +635,7 @@ namespace RealismMod
             new BossSpawnPatch().Enable();
             new LampPatch().Enable();
             new AmbientSoundPlayerGroupPatch().Enable();
+            new DayTimeAmbientPatch().Enable();
             new DayTimeSpawnPatch().Enable();
             new BirdPatch().Enable();
         }

@@ -93,12 +93,17 @@ namespace RealismMod
 
         private void HandleBotRads(bool hasGasmask)
         {
-            if (RadZoneCount > 0 && !IsProtectedFromSafeZone)
+            if ((RadZoneCount > 0) && !IsProtectedFromSafeZone)
             {
-                float realRadRate = hasGasmask ? TotalRadRate * 0.5f : TotalRadRate;
-                if (realRadRate > 0.5f)
+                float explFactor = GameWorldController.DidExplosionClientSide && _Player.Environment == EnvironmentType.Outdoor ? 2f : 1f;
+                float realRadRate = hasGasmask ? TotalRadRate * explFactor * 0.5f : TotalRadRate;
+                if (realRadRate > 0.5f || GameWorldController.DidExplosionClientSide)
                 {
                     _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, realRadRate * BOT_INTERVAL, ExistanceClass.RadiationDamage);
+                    if (GameWorldController.DidExplosionClientSide && _Player.Environment == EnvironmentType.Outdoor)
+                    {
+                        _Player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
+                    }
                 }
             }
         }

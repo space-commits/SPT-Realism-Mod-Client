@@ -20,9 +20,20 @@ namespace RealismMod
     {
         public bool TriggeredExplosion {  get; private set; }   
 
-        protected override IEnumerator DoLogic() 
+        protected override IEnumerator DoLogic()
         {
+            CanTurnOn = false;
             float time = 0f;
+            float clipLength = 0f;
+            Plugin.RequestRealismDataFromServer(EUpdateType.TimeOfDay);
+
+            while (time < 0.5f)
+            {
+                time += Time.deltaTime;
+                yield return null;
+            }
+
+ 
             bool canTrigger = IsInRightLocation() && Plugin.ModInfo.IsHalloween && !Plugin.ModInfo.HasExploded && !GameWorldController.DidExplosionClientSide && Plugin.ModInfo.IsNightTime;
             if (canTrigger) 
             {
@@ -32,20 +43,26 @@ namespace RealismMod
                 TriggeredExplosion = true;
                 AddSelfToDevicesList();
                 DeactivateZone();
-                CanTurnOn = false;
+                PlaySoundForAI();
             }
             else
             {
                 _audioSource.clip = Plugin.DeviceAudioClips["transmitter_fail.wav"];
+                clipLength = _audioSource.clip.length;
                 _audioSource.Play();
+                PlaySoundForAI();
+                while (time <= clipLength)
+                {
+                    time += Time.deltaTime;
+                    yield return null;
+                }
                 CanTurnOn = true;
                 yield break;
             }
 
-            float clipLength = _audioSource.clip.length;
+            clipLength = _audioSource.clip.length;
             while (time <= clipLength)
             {
-                PlaySoundForAI();
                 time += Time.deltaTime;
                 yield return null;
             }

@@ -9,12 +9,39 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.Audio;
 using CompressorTemplateClass = GClass2918; //SetCompressor
 using HeadsetClass = GClass2654; //Updatephonesreally()
 using HeadsetTemplate = GClass2556; //SetCompressor
 
 namespace RealismMod
 {
+    class DayTimeAmbientPatch : ModulePatch
+    {
+        private static FieldInfo _dayAudioSourceField;
+        private static FieldInfo _nightAudioSourceField;
+        protected override MethodBase GetTargetMethod()
+        {
+            _dayAudioSourceField = AccessTools.Field(typeof(AudioSource), "_outdoorAmbientDaySource");
+            _nightAudioSourceField = AccessTools.Field(typeof(AudioSource), "_outdoorAmbientNightSource");
+            return typeof(DayTimeAmbientBlender).GetMethod("method_0");
+        }
+
+        [PatchPrefix]
+        private static bool PatchPrefix(DayTimeAmbientBlender __instance)
+        {
+            Logger.LogWarning("DayTimeAmbientPatch");
+            if (!GameWorldController.RanEarliestGameCheck)
+            {
+                Plugin.RequestRealismDataFromServer(EUpdateType.ModInfo);
+                GameWorldController.RanEarliestGameCheck = true;
+            }
+
+            if (GameWorldController.MuteAmbientAudio) return false;
+            return true;
+        }
+    }
+
     class AmbientSoundPlayerGroupPatch : ModulePatch
     {
         private static string[] _clipsToDisable =
@@ -32,6 +59,13 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(AmbientSoundPlayerGroup __instance)
         {
+            Logger.LogWarning("play audio");
+            if (!GameWorldController.RanEarliestGameCheck)
+            {
+                Plugin.RequestRealismDataFromServer(EUpdateType.ModInfo);
+                GameWorldController.RanEarliestGameCheck = true;
+            }
+            if (!GameWorldController.MuteAmbientAudio) return true; 
             var soundPlayers = (List<AbstractAmbientSoundPlayer>)_playerGroupField.GetValue(__instance);
             foreach (var soundPlayer in soundPlayers)
             {

@@ -28,14 +28,16 @@ namespace RealismMod
         { 
             get 
             {
-                return Plugin.ModInfo.IsPreExplosion || GameWorldController.DidExplosionClientSide || GameWorldController.DoMapGasEvent;
+                return Plugin.ModInfo.IsPreExplosion || GameWorldController.DidExplosionClientSide || GameWorldController.DoMapGasEvent || GameWorldController.DoMapRads;
             } 
         }
 
         private float _elapsedTime = 0f;
         private float _gasFogTimer = 0f;
+        private float _radRainTimer = 0f;
         private float _targetGasStrength = 0.08f;
         private float _targetGasCloudStrength = 0.4f;
+        private float _radRainStrength = 0.1f;
 
         void Awake()
         {
@@ -52,6 +54,7 @@ namespace RealismMod
                 if (Plugin.ModInfo.IsPreExplosion && !GameWorldController.DidExplosionClientSide) DoPreExplosionWeather();
                 else if (GameWorldController.DidExplosionClientSide) DoExplosionWeather();
                 else if (GameWorldController.DoMapGasEvent) DoMapGasEventWeather();
+                else if (GameWorldController.DoMapRads) DoMapRadWeather();
 
                 wc.WeatherDebug.Enabled = true;
                 wc.WeatherDebug.CloudDensity = TargetCloudDensity;
@@ -79,6 +82,22 @@ namespace RealismMod
             TargetFog = Mathf.Lerp(TargetFog, _targetGasStrength, 0.025f * Time.deltaTime);
             TargetCloudDensity = Mathf.Lerp(TargetCloudDensity, _targetGasCloudStrength, 0.025f * Time.deltaTime);
             TargetLighteningThunder = Mathf.Lerp(TargetLighteningThunder, 0f, 0.1f * Time.deltaTime);
+            TargetWindMagnitude = Mathf.Lerp(TargetWindMagnitude, 0f, 0.05f * Time.deltaTime);
+        }
+
+        private void DoMapRadWeather()
+        {
+            _radRainTimer += Time.deltaTime;
+
+            if (_radRainTimer >= 300f)
+            {
+                _radRainStrength = Mathf.Max(0, UnityEngine.Random.Range(-0.5f, 1f));
+                _radRainTimer = 0f;
+            }
+
+            TargetRain = Mathf.Lerp(TargetRain, _radRainStrength, 0.025f * Time.deltaTime);
+            TargetFog = Mathf.Lerp(TargetFog, _radRainStrength * 0.05f, 0.025f * Time.deltaTime);
+            TargetCloudDensity = Mathf.Lerp(TargetCloudDensity, _radRainStrength * 0.75f, 0.025f * Time.deltaTime);
             TargetWindMagnitude = Mathf.Lerp(TargetWindMagnitude, 0f, 0.05f * Time.deltaTime);
         }
 

@@ -60,21 +60,21 @@ namespace RealismMod
         {
             if (!GameWorldController.RanEarliestGameCheck)
             {
-                Plugin.RequestRealismDataFromServer(false, true);
+                Plugin.RequestRealismDataFromServer(EUpdateType.ModInfo);
                 GameWorldController.RanEarliestGameCheck = true;
             }
 
             var zones = __instance.BossZone.Split(new char[]{','});
             if (_forbiddenZones.Intersect(zones).Any()) return;
 
-            bool increaseSectantChance = __instance.BossType == WildSpawnType.sectantPriest && Plugin.ModInfo.DoGasEvent;
+            bool increaseSectantChance = __instance.BossType == WildSpawnType.sectantPriest && Plugin.ModInfo.DoGasEvent && !Plugin.ModInfo.DoExtraRaiders;
             bool increaseRaiderChance = __instance.BossType == WildSpawnType.pmcBot && Plugin.ModInfo.DoExtraRaiders;
             bool isPmc = __instance.BossType == WildSpawnType.pmcBEAR || __instance.BossType == WildSpawnType.pmcUSEC;
             bool postExpl = !isPmc && Plugin.ModInfo.IsHalloween && (Plugin.ModInfo.HasExploded || GameWorldController.DidExplosionClientSide);
             if (increaseSectantChance) 
             {
                 bool doExtraCultists = Plugin.ModInfo.DoExtraCultists;
-                __instance.BossChance = __instance.BossChance == 0 && !doExtraCultists ? 50f : 100f;
+                __instance.BossChance = __instance.BossChance == 0 && !doExtraCultists ? 40f : 100f;
                 __instance.ShallSpawn = true;
             }
             if (increaseRaiderChance) 
@@ -82,9 +82,9 @@ namespace RealismMod
                 __instance.BossChance = 100f;
                 __instance.ShallSpawn = true;
             }
-            if ((postExpl ||Plugin.ModInfo.DoGasEvent || Plugin.ModInfo.IsPreExplosion) && (__instance.BossType != WildSpawnType.sectantPriest && __instance.BossType != WildSpawnType.pmcBot && !isPmc && !Plugin.ModInfo.DoExtraRaiders))
+            if ((postExpl ||Plugin.ModInfo.DoGasEvent || Plugin.ModInfo.IsPreExplosion || Plugin.ModInfo.DoExtraRaiders) && (__instance.BossType != WildSpawnType.sectantPriest && __instance.BossType != WildSpawnType.pmcBot && !isPmc))
             {
-                __instance.BossChance *= 0.1f;
+                __instance.BossChance *= 0.05f;
                 __instance.ShallSpawn = GClass761.IsTrue100(__instance.BossChance);
             }
 
@@ -163,7 +163,7 @@ namespace RealismMod
                             {
                                 __result.Actions = new List<ActionsTypesClass>() { new ActionsTypesClass { Name = "", Action = DummyAction } };
                             }
-                            else if (transmitter.CanTurnOn || !alreadyHasDevice)
+                            else if (transmitter.CanTurnOn && !alreadyHasDevice)
                             {
                                 __result.Actions.AddRange(transmitter.Actions);
                             }
@@ -278,15 +278,13 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(BirdsSpawner __instance)
         {
-            Logger.LogWarning("--------------------------BIRD CHECK");
             //not remotely ideal but this method is called the earliest so far, but not this is not always called so will call elsewhere too.
             if (!GameWorldController.RanEarliestGameCheck)
             {
-                Plugin.RequestRealismDataFromServer(false, true);
+                Plugin.RequestRealismDataFromServer(EUpdateType.ModInfo);
                 GameWorldController.RanEarliestGameCheck = true;
             }
 
-            Logger.LogWarning("--------------------------Done Bird Check");
             if (Plugin.FikaPresent) return;
 
             Bird[] birds = __instance.gameObject.GetComponentsInChildren<Bird>();
@@ -342,7 +340,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.15f);
-                    ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 14f, 60f, 0.35f, 55f, 80f);
+                    ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 15f, 60f, 0.35f, 5f, 10f);
                 }
 
                 //spawn zones

@@ -40,8 +40,6 @@ public class Bomb : MonoBehaviour
     private float _yPos;
     private float _zPos;
 
-    private bool _turnedOfthePower = false;
-
     void Start()
     {
         _currentShockwaveVector = new Vector3(0f, 0f, 0f);

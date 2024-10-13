@@ -42,7 +42,7 @@ namespace RealismMod
         {
             get
             {
-                return DoMapGasEvent || Plugin.ModInfo.IsPreExplosion || DidExplosionClientSide || DoMapRads;
+                return Plugin.ModInfo.DoGasEvent || Plugin.ModInfo.IsPreExplosion || DidExplosionClientSide || DoMapRads || Plugin.ModInfo.HasExploded;
             }
         }
 
@@ -61,7 +61,9 @@ namespace RealismMod
 
         public static void CalculateMapRadStrength()
         {
-            CurrentMapRadStrength = Mathf.Lerp(CurrentMapRadStrength, 0.1f * (PlayerState.EnviroType == EnvironmentType.Indoor ? 0.5f : 1f), 0.05f);
+            float rainStrength = PlayerState.EnviroType == EnvironmentType.Indoor ? 0f : Plugin.RealismWeatherComponent.TargetRain * 0.15f;
+            float targetStrength = 0.05f + rainStrength;
+            CurrentMapRadStrength = Mathf.Lerp(CurrentMapRadStrength, targetStrength * (PlayerState.EnviroType == EnvironmentType.Indoor ? 0.5f : 1f), 0.05f);
         }
 
         public static void GameWorldUpdate() 
