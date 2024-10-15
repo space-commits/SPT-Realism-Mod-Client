@@ -671,7 +671,7 @@ namespace RealismMod
                 float totalPlayerWeight = WeaponStats.IsStocklessPistol || (!WeaponStats.HasShoulderContact && !WeaponStats.IsPistol) ? 0f : PlayerState.TotalModifiedWeightMinusWeapon;
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 650f);
                 float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 200f);
-                float leftShoulderFactor = StanceController.IsLeftShoulder ? 1.2f : 1f;
+                float leftShoulderFactor = StanceController.IsLeftShoulder ? 1.14f : 1f;
 
                 float activeAimingBonus = StanceController.CurrentStance == EStance.ActiveAiming ? 0.9f : 1f;
                 float aimCamRecoilBonus = StanceController.CurrentStance == EStance.ActiveAiming || !StanceController.IsAiming ? 0.8f : 1f;

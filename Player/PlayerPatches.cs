@@ -259,7 +259,8 @@ namespace RealismMod
             float recoilFactor = 1f + ((RecoilController.BaseTotalVRecoil + RecoilController.BaseTotalHRecoil) / 100f);
             float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
-            float healthFactor = PlayerState.ErgoDeltaInjuryMulti * (Plugin.RealHealthController.HasOverdosed ? 1.5f : 1f);
+            float coughing = Plugin.RealHealthController.IsCoughingInGas ? 2f : 1f;
+            float healthFactor = coughing * PlayerState.ErgoDeltaInjuryMulti * (Plugin.RealHealthController.HasOverdosed ? 1.5f : 1f);
             float staminaFactor = Mathf.Max((2f - PlayerState.CombinedStaminaPerc), 0.5f);
             float ergoWeight = WeaponStats.ErgoFactor * (1f + (1f - PlayerState.GearErgoPenalty));
             float ergoFactor = 1f + (ergoWeight / 200f);
@@ -272,7 +273,8 @@ namespace RealismMod
         private static void ModifyWalkRelatedValues(Player player) 
         {
             float staminaFactor = Mathf.Max((2f - PlayerState.CombinedStaminaPerc), 0.5f);
-            float totalFactors = WeaponStats.WalkMotionIntensity * PlayerState.ErgoDeltaInjuryMulti * staminaFactor;
+            float coughing = Plugin.RealHealthController.IsCoughingInGas ? 2f : 1f;
+            float totalFactors = WeaponStats.WalkMotionIntensity * PlayerState.ErgoDeltaInjuryMulti * staminaFactor * coughing;
 
             player.ProceduralWeaponAnimation.Walk.StepFrequency = Mathf.Min(player.ProceduralWeaponAnimation.Walk.StepFrequency, 1.1f);
             player.ProceduralWeaponAnimation.Walk.IntensityMinMax[0] = new Vector2(0.5f, 1f); 

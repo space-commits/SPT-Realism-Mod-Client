@@ -4,6 +4,8 @@ namespace RealismMod
 {
     public static class PlayerState
     {
+        public const float AIM_MOVE_SPEED_BASE = 0.5f;
+
         public static bool IsScav = false;
 
         public static float FixSkillMulti = 1f;
@@ -24,8 +26,6 @@ namespace RealismMod
         public static float StressResistanceFactor = 0f;
 
         public static float VitalityFactorStrong = 0f;
-
-        public static float AimMoveSpeedBase = 0.5f;
 
         public static float AimMoveSpeedInjuryMulti = 1f;
 

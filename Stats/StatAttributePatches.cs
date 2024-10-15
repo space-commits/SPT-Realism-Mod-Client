@@ -182,7 +182,7 @@ namespace RealismMod
                 case ENewItemAttributeId.MuzzleFlash:
                     return "MUZZLE FLASH REDUCTION";
                 case ENewItemAttributeId.Gas:
-                    return "GAS";
+                    return "VISUAL GAS";
                 case ENewItemAttributeId.AimStability:
                     return "STABILITY";
                 case ENewItemAttributeId.Handling:

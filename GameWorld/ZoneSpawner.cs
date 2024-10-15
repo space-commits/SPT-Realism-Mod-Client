@@ -37,7 +37,7 @@ namespace RealismMod
             return foundMatchingQuest;
         }
 
-        public static bool CheckQuestStatuses(string[] questIds, EQuestStatus[] questStatuses)
+        public static bool HasMetQuestCriteria(string[] questIds, EQuestStatus[] questStatuses)
         {
             foreach (var quest in questIds) 
             {
@@ -48,7 +48,7 @@ namespace RealismMod
 
         public static bool ShouldSpawnDynamicZones()
         {
-            return ProfileData.PMCLevel >= 20 || CheckQuestStatuses(new string[] { "66dad1a18cbba6e558486336", "670ae811bd43cbf026768126" },  new EQuestStatus[] { EQuestStatus.Started, EQuestStatus.Success });
+            return ProfileData.PMCLevel >= 20 || HasMetQuestCriteria(new string[] { "66dad1a18cbba6e558486336", "670ae811bd43cbf026768126" },  new EQuestStatus[] { EQuestStatus.Started, EQuestStatus.Success });
         }
 
         public static void CreateAmbientAudioPlayers(Transform parentTransform, Dictionary<string, AudioClip> clips, bool followPlayer = false, float minTime = 15f, float maxTime = 90f, float volume = 1f, float minDistance = 45f, float maxDistance = 95f) 

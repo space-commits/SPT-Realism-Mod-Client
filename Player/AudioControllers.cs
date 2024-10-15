@@ -15,10 +15,10 @@ namespace RealismMod
         public List<AudioClip> AudioClips = new List<AudioClip>();
         public Transform ParentTransform;
         public bool FollowPlayer = false;
-        public float MinTimeBetweenClips = 15f;
-        public float MaxTimeBetweenClips = 90f;
+        public float MinTimeBetweenClips = 30f;
+        public float MaxTimeBetweenClips = 200f;
         public float MinDistance = 45f;
-        public float MaxDistance = 95f;
+        public float MaxDistance = 90f;
         public float Volume = 1f;
         private AudioSource _audioSource;
         private float _randomDistanceFromPlayer;
@@ -35,7 +35,7 @@ namespace RealismMod
                     _randomDistanceFromPlayer = UnityEngine.Random.Range(MinDistance, MaxDistance);
                     var randomPosition = ParentTransform.position + UnityEngine.Random.onUnitSphere * _randomDistanceFromPlayer;
                     randomPosition.y = Mathf.Clamp(randomPosition.y, ParentTransform.position.y - 25f, ParentTransform.position.y + 25f);
-                    if (!FollowPlayer) transform.position = randomPosition;
+                    transform.position = randomPosition;
                     _relativePositionFromPlayer = transform.position - ParentTransform.position;
 
                     if (PluginConfig.ZoneDebug.Value)

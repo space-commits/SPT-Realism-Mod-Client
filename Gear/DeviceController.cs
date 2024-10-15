@@ -14,8 +14,6 @@ using static RootMotion.FinalIK.IKSolver;
 
 namespace RealismMod
 {
-
-
     public class TransmitterHalloweenEvent : Transmitter 
     {
         public bool TriggeredExplosion {  get; private set; }   
@@ -508,12 +506,12 @@ namespace RealismMod
         private void ReplaceItem()
         {
             DeleteSelfFromDevicesList();
-            _deactivated = true;
             string templateId = TargetZoneType == EZoneType.Gas ? Utils.GAMU_DATA_ID : Utils.RAMU_DATA_ID;
             Item replacementItem = Singleton<ItemFactory>.Instance.CreateItem(MongoID.Generate(), templateId, null);
             LootItem lootItem = Singleton<GameWorld>.Instance.SetupItem(replacementItem, _IPlayer, _position, _rotation);
             AudioSource tempAudio = SetUpAudio("success_end.wav", lootItem.gameObject);
             tempAudio.Play();
+            _deactivated = true;
             Destroy(this.gameObject, 0.5f);
 
             if (PluginConfig.ZoneDebug.Value)

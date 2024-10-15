@@ -642,6 +642,7 @@ namespace RealismMod
 
         private void LoadMalfPatches()
         {
+            new RemoveSillyBossForcedMalf().Enable();
             new GetTotalMalfunctionChancePatch().Enable();
             new IsKnownMalfTypePatch().Enable();
             if (ServerConfig.manual_chambering)

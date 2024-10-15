@@ -122,7 +122,7 @@ namespace RealismMod
     {
         public const float TOXIC_ITEM_FACTOR = 0.05f;
         public const float RAD_ITEM_FACTOR = 0.15f;
-        public const float MIN_COUGH_THRESHOLD = 0.1f;
+        public const float MIN_COUGH_THRESHOLD = 0.09f;
         public const float MIN_COUGH_DAMAGE_THRESHOLD = 0.14f;
 
         HashSet<string> ToxicItems = new HashSet<string>(new string[] {
@@ -2021,8 +2021,8 @@ namespace RealismMod
             float skillFactorInverse = (1f - (player.Skills.HealthEnergy.Value / 4));
 
             //gas
-            float coofFactor = IsCoughingInGas ? 0.65f : 1f;
-            float toxicity = (HazardTracker.TotalToxicity * coofFactor * (1f - PlayerState.ImmuneSkillWeak)) / 225f;
+            float coofFactor = IsCoughingInGas ? 100f : 0f;
+            float toxicity = ((HazardTracker.TotalToxicity + coofFactor) * (1f - PlayerState.ImmuneSkillWeak)) / 225f;
             float toxicityFactor = 1f - toxicity;
             float toxicityInverse = 1f + toxicity;
 

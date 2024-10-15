@@ -86,7 +86,9 @@ namespace RealismMod
 
         public static void OutOfRaidUpdate() 
         {
+#pragma warning disable CS0618
             if (GClass1864.InRaid) return;
+#pragma warning disable CS0618
             _upateTimer += Time.deltaTime;
             _hideoutRegenTick += Time.deltaTime;
 

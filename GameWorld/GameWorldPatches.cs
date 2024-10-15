@@ -74,7 +74,7 @@ namespace RealismMod
             if (increaseSectantChance) 
             {
                 bool doExtraCultists = Plugin.ModInfo.DoExtraCultists;
-                __instance.BossChance = __instance.BossChance == 0 && !doExtraCultists ? 40f : 100f;
+                __instance.BossChance = __instance.BossChance == 0 && !doExtraCultists ? 15f : 100f;
                 __instance.ShallSpawn = true;
             }
             if (increaseRaiderChance) 
@@ -340,7 +340,7 @@ namespace RealismMod
                 {
                     Player player = Utils.GetYourPlayer();
                     ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.15f);
-                    ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 15f, 60f, 0.35f, 5f, 10f);
+                    ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 15f, 60f, 0.4f, 45f, 75f);
                 }
 
                 //spawn zones

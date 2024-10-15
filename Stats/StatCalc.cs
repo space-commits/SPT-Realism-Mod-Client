@@ -421,7 +421,7 @@ namespace RealismMod
 
                     }
 
-                    StatCalc.StockPositionChecker(mod, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
+                    StatCalc.StockPositionChecker(mod, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo, ref modHandling, ref modStability);
 
                     if (modType == "buffer_adapter" || modType == "stock_adapter")
                     {
@@ -725,7 +725,7 @@ namespace RealismMod
         }
 
 
-        private static void StockPositionChecker(Mod mod, ref float modVRecoil, ref float modHRecoil, ref float modDispersion, ref float modCamRecoil, ref float modErgo)
+        private static void StockPositionChecker(Mod mod, ref float modVRecoil, ref float modHRecoil, ref float modDispersion, ref float modCamRecoil, ref float modErgo, ref float modHandling, ref float modStability)
         {
             if (mod.Parent.Container != null)
             {
@@ -737,7 +737,7 @@ namespace RealismMod
                     {
                         if (parentMod.Slots[i].ContainedItem != null)
                         {
-                            StatCalc.BufferSlotModifier(i, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo);
+                            StatCalc.BufferSlotModifier(i, ref modVRecoil, ref modHRecoil, ref modDispersion, ref modCamRecoil, ref modErgo, ref modHandling, ref modStability);
                             return;
                         }
                     }
@@ -791,7 +791,7 @@ namespace RealismMod
             return torque;
         }
 
-        private static void BufferSlotModifier(int position, ref float modVRecoil, ref float modHRecoil, ref float modDispersion, ref float modCamRecoil, ref float modErgo)
+        private static void BufferSlotModifier(int position, ref float modVRecoil, ref float modHRecoil, ref float modDispersion, ref float modCamRecoil, ref float modErgo, ref float modHandling, ref float modStability)
         {
             switch (position)
             {
@@ -808,6 +808,8 @@ namespace RealismMod
                     modDispersion *= 0.75f;
                     modCamRecoil *= 0.75f;
                     modErgo *= 1.25f;
+                    modHandling += 0.1f;
+                    modStability += 0.05f;
                     break;
                 case 2:
                     modVRecoil *= 1f;
@@ -815,6 +817,8 @@ namespace RealismMod
                     modDispersion *= 1f;
                     modCamRecoil *= 1f;
                     modErgo *= 1f;
+                    modHandling += 0.075f;
+                    modStability += 0.075f;
                     break;
                 case 3:
                     modVRecoil *= 1.25f;
@@ -822,6 +826,8 @@ namespace RealismMod
                     modDispersion *= 1.25f;
                     modCamRecoil *= 1.25f;
                     modErgo *= 0.75f;
+                    modHandling += 0.05f;
+                    modStability += 0.1f;
                     break;
                 default:
                     modVRecoil *= 1f;
