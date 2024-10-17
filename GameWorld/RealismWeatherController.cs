@@ -35,7 +35,7 @@ namespace RealismMod
         private float _elapsedTime = 0f;
         private float _gasFogTimer = 0f;
         private float _radRainTimer = 0f;
-        private float _targetGasStrength = 0.08f;
+        private float _targetGasStrength = 0.035f;
         private float _targetGasCloudStrength = 0.4f;
         private float _radRainStrength = 0.1f;
 
@@ -73,7 +73,7 @@ namespace RealismMod
 
             if (_gasFogTimer >= 300f)
             {
-                _targetGasStrength = UnityEngine.Random.Range(0.015f, 0.08f);
+                _targetGasStrength = UnityEngine.Random.Range(0.015f, 0.07f);
                 _targetGasCloudStrength = UnityEngine.Random.Range(0f, 0.6f);
                 _gasFogTimer = 0f;
             }

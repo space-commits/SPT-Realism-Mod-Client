@@ -213,7 +213,7 @@ namespace RealismMod
                 bool isSubsonic = !WeaponStats.CanCycleSubs && ammoToFire.ammoHear == 1;
                 bool hasBooster = __instance.IsSilenced || WeaponStats.HasBooster;
 
-                bool canDoMalfChance = weaponDurability < PluginConfig.DuraMalfThreshold.Value || overheatMalfChance > 1.9f || RecoilController.ShotCount > 8f || magMalfChance > 2f || ammoMalfChance > 1.25f || WeaponStats.MalfChanceDelta < -0.5 || baseWeaponMalfChance > 0.004f || isSubsonic;
+                bool canDoMalfChance = weaponDurability < PluginConfig.DuraMalfThreshold.Value || overheatMalfChance > 1.7f || RecoilController.ShotCount > 7f || magMalfChance > 2f || ammoMalfChance > 1.5f || WeaponStats.MalfChanceDelta < -0.5 || baseWeaponMalfChance > 0.004f || isSubsonic;
 
                 if (weaponDurability >= PluginConfig.DuraMalfReductionThreshold.Value)
                 {

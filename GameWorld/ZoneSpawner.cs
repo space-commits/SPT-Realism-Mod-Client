@@ -48,14 +48,15 @@ namespace RealismMod
 
         public static bool ShouldSpawnDynamicZones()
         {
-            return ProfileData.PMCLevel >= 20 || HasMetQuestCriteria(new string[] { "66dad1a18cbba6e558486336", "670ae811bd43cbf026768126" },  new EQuestStatus[] { EQuestStatus.Started, EQuestStatus.Success });
+            return PluginConfig.ZoneDebug.Value || ProfileData.PMCLevel >= 20 || HasMetQuestCriteria(new string[] { "66dad1a18cbba6e558486336", "670ae811bd43cbf026768126" },  new EQuestStatus[] { EQuestStatus.Started, EQuestStatus.Success });
         }
 
-        public static void CreateAmbientAudioPlayers(Transform parentTransform, Dictionary<string, AudioClip> clips, bool followPlayer = false, float minTime = 15f, float maxTime = 90f, float volume = 1f, float minDistance = 45f, float maxDistance = 95f) 
+        public static void CreateAmbientAudioPlayers(Player player, Transform parentTransform, Dictionary<string, AudioClip> clips, bool followPlayer = false, float minTime = 15f, float maxTime = 90f, float volume = 1f, float minDistance = 45f, float maxDistance = 95f) 
         {
             GameObject audioGO = new GameObject("AmbientAudioPlayer");
             var audioPlayer = audioGO.AddComponent<AmbientAudioPlayer>();
             audioPlayer.ParentTransform = parentTransform;
+            audioPlayer._Player = player;
             audioPlayer.FollowPlayer = followPlayer;
             audioPlayer.MinTimeBetweenClips = minTime;
             audioPlayer.MaxTimeBetweenClips = maxTime;
@@ -110,7 +111,8 @@ namespace RealismMod
 
             if (!Plugin.FikaPresent) 
             {
-                if (hazardLocation.QuestToBlock != null && !CheckQuestStatus(hazardLocation.QuestToBlock, new EQuestStatus[] { EQuestStatus.Success })) return false;
+                if (hazardLocation.QuestToBlock != null && CheckQuestStatus(hazardLocation.QuestToBlock, new EQuestStatus[] { EQuestStatus.Success })) return false;
+                if (hazardLocation.QuestToEnable != null && !CheckQuestStatus(hazardLocation.QuestToEnable, new EQuestStatus[] { EQuestStatus.Success })) return false;
 
                 bool doTimmyFactor = ProfileData.PMCLevel <= 10f && zoneType != EZoneType.Radiation && zoneType != EZoneType.RadAssets && GameWorldController.CurrentMap != "laboratory";
                 float timmyFactor = doTimmyFactor && GameWorldController.CurrentMap == "sandbox" ? 0f : doTimmyFactor ? 0.25f : 1f;
@@ -318,6 +320,8 @@ namespace RealismMod
             if (assetName == "LabsBarrelPile") return Assets.LabsBarrelPileBundle.LoadAsset<GameObject>("Assets/Realism Hazard Prefabs/Prefab/Barrel_plastic_clear_set_01.prefab"); 
             if (assetName == "RedContainer") return Assets.RedContainerBundle.LoadAsset<GameObject>("Assets/Prefabs/container_6m_red_close.prefab");
             if (assetName == "BlueContainer") return Assets.BlueContainerBundle.LoadAsset<GameObject>("container_6m_blue_close (1)");
+            if (assetName == "RadSign1") return Assets.RadSign1.LoadAsset<GameObject>("Assets/prefabs/Rad Sign 1.prefab");
+            if (assetName == "TerraGroupFence") return Assets.TerraGroupFence.LoadAsset<GameObject>("Assets/prefabs/fence_ema_nocurt (10).prefab");
             return null;
         }
 

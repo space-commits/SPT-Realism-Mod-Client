@@ -12,12 +12,13 @@ namespace RealismMod
 {
     public class AmbientAudioPlayer : MonoBehaviour
     {
+        public Player _Player { get; set; }
         public List<AudioClip> AudioClips = new List<AudioClip>();
         public Transform ParentTransform;
         public bool FollowPlayer = false;
-        public float MinTimeBetweenClips = 30f;
+        public float MinTimeBetweenClips = 35f;
         public float MaxTimeBetweenClips = 200f;
-        public float MinDistance = 45f;
+        public float MinDistance = 50f;
         public float MaxDistance = 90f;
         public float Volume = 1f;
         private AudioSource _audioSource;
@@ -77,8 +78,10 @@ namespace RealismMod
             StartCoroutine(PlayRandomAudio());
         }
 
-        void Update() 
+        void Update()
         {
+            _audioSource.volume = _Player.Environment == EnvironmentType.Indoor ? Volume * 0.5f : Volume;
+
             if (FollowPlayer)
             {
                 _relativePositionFromPlayer = Quaternion.AngleAxis(0.35f * Time.deltaTime, Vector3.up) * _relativePositionFromPlayer;

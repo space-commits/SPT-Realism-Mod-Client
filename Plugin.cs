@@ -369,6 +369,8 @@ namespace RealismMod
             Assets.RedContainerBundle = LoadAndInitializePrefabs("hazard_assets\\redcontainer.bundle");
             Assets.BlueContainerBundle = LoadAndInitializePrefabs("hazard_assets\\bluecontainer.bundle");
             Assets.LabsBarrelPileBundle = LoadAndInitializePrefabs("hazard_assets\\labsbarrelpile.bundle");
+            Assets.RadSign1 = LoadAndInitializePrefabs("hazard_assets\\radsign1.bundle");
+            Assets.TerraGroupFence = LoadAndInitializePrefabs("hazard_assets\\terragroupchainfence.bundle");
             Assets.ExplosionBundle = LoadAndInitializePrefabs("exp\\expl.bundle");
             ExplosionGO = Assets.ExplosionBundle.LoadAsset<GameObject>("Assets/Explosion/Prefab/NUCLEAR_EXPLOSION.prefab");
             DontDestroyOnLoad(ExplosionGO);
@@ -554,6 +556,8 @@ namespace RealismMod
             if (Input.GetKeyDown(KeyCode.Keypad0)) HazardTracker.WipeTracker();
          
             if (Input.GetKeyDown(PluginConfig.AddZone.Value.MainKey)) DebugZones();
+
+            //if (Input.GetKeyDown(KeyCode.Keypad5)) Instantiate(Plugin.ExplosionGO, new Vector3(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value), new Quaternion(0, 0, 0, 0)); //new Vector3(1000f, 0f, 317f)
         }
 
         void Update()

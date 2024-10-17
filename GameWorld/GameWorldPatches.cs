@@ -74,8 +74,8 @@ namespace RealismMod
             if (increaseSectantChance) 
             {
                 bool doExtraCultists = Plugin.ModInfo.DoExtraCultists;
-                __instance.BossChance = __instance.BossChance == 0 && !doExtraCultists ? 15f : 100f;
-                __instance.ShallSpawn = true;
+                __instance.BossChance = __instance.BossChance == 0 && !doExtraCultists ? 25f : 100f;
+                __instance.ShallSpawn = GClass761.IsTrue100(__instance.BossChance);
             }
             if (increaseRaiderChance) 
             {
@@ -97,7 +97,7 @@ namespace RealismMod
                 Logger.LogWarning("Boss type " + __instance.BossType);
                 Logger.LogWarning("Boss type " + __instance.BossType);
                 Logger.LogWarning("Spawn Chance " + __instance.BossChance);
-                Logger.LogWarning("Shall Spawn" + __instance.ShallSpawn);
+                Logger.LogWarning("Shall Spawn " + __instance.ShallSpawn);
                 Logger.LogWarning("=============");
             }
 
@@ -235,6 +235,12 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(ref bool __result)
         {
+            if (!GameWorldController.RanEarliestGameCheck)
+            {
+                Plugin.RequestRealismDataFromServer(EUpdateType.ModInfo);
+                GameWorldController.RanEarliestGameCheck = true;
+            }
+
             if (Plugin.ModInfo.DoGasEvent)
             {
                 __result = false;
@@ -339,8 +345,8 @@ namespace RealismMod
                 if (GameWorldController.DoMapGasEvent) 
                 {
                     Player player = Utils.GetYourPlayer();
-                    ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.15f);
-                    ZoneSpawner.CreateAmbientAudioPlayers(player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 15f, 60f, 0.4f, 45f, 75f);
+                    ZoneSpawner.CreateAmbientAudioPlayers(player, player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.15f);
+                    ZoneSpawner.CreateAmbientAudioPlayers(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 15f, 60f, 0.38f, 55f, 75f);
                 }
 
                 //spawn zones

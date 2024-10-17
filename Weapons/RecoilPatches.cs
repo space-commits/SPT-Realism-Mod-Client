@@ -30,6 +30,7 @@ namespace RealismMod
             return typeof(EFT.Player.FirearmController).GetMethod("UpdateHipInaccuracy", BindingFlags.Instance | BindingFlags.Public);
         }
 
+        //thanks to Solarint for letting me use these checks
         private static bool CheckVisibleLaser(List<Transform> tacticalModes)
         {
             foreach (Transform tacticalMode in tacticalModes)
@@ -166,7 +167,6 @@ namespace RealismMod
                         PlayerState.WhiteLightActive && PlayerState.LaserActive ? 0.4f :
                         PlayerState.WhiteLightActive ? 0.6f : 1f;
                     }
-
                 }
                 else
                 {

@@ -33,7 +33,7 @@ namespace RealismMod
 
 
             DateTime utcNow = DateTime.UtcNow;
-            bool isRightDate = utcNow.Month == 10 && utcNow.Day == 31;
+            bool isRightDate = (utcNow.Month == 10 && utcNow.Day >= 31) || (utcNow.Month == 11 && utcNow.Day <= 4) ;
             bool canTrigger = isRightDate && IsInRightLocation() && Plugin.ModInfo.IsHalloween && !Plugin.ModInfo.HasExploded && !GameWorldController.DidExplosionClientSide && Plugin.ModInfo.IsNightTime;
             if (canTrigger) 
             {
@@ -67,8 +67,7 @@ namespace RealismMod
                 yield return null;
             }
 
-            Instantiate(Plugin.ExplosionGO, new Vector3(1000f, 0f, 317f), new Quaternion(0, 0, 0, 0));
-
+            Instantiate(Plugin.ExplosionGO, new Vector3(-700f, 3f, -1200f), new Quaternion(0, 0, 0, 0));
         }
     }
 
@@ -477,8 +476,8 @@ namespace RealismMod
 
             time = 0f;
             clipLength = _audioSource.clip.length;
-            int loops = UnityEngine.Random.Range(1, 1);
-            bool shouldStall = !_stalledPreviously && UnityEngine.Random.Range(1, 100) >= 85;
+            int loops = UnityEngine.Random.Range(1, 4);
+            bool shouldStall = !_stalledPreviously && UnityEngine.Random.Range(1, 100) >= 90;
             if (shouldStall) loops /= 2;
 
             while (time <= clipLength * loops)
