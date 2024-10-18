@@ -36,7 +36,7 @@ public class ShockWave : TriggerWithId
 
     private void HandlePlayerEffects(Player player)
     {
-        if (PlayerState.EnviroType == EnvironmentType.Indoor) return;
+        if (PlayerState.EnviroType == EnvironmentType.Indoor || PlayerState.BtrState == EPlayerBtrState.Inside) return;
 
         ApplyDamage(player, EBodyPart.Head, 15f);
         ApplyDamage(player, EBodyPart.Chest, 110f);

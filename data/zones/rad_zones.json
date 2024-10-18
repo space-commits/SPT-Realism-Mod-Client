@@ -452,6 +452,32 @@
             "spawnChance": 1.0,
             "zones": [
                 {
+                    "name": "ShorelineSwampChurch",
+                    "strength": 200.0,
+                    "blockNav": true,
+                    "usesDistanceFalloff": true,
+                    "position": {
+                        "x": 256.0383,
+                        "y": -54.19662,
+                        "z": -105.3586
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 269.2856,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 7.866795,
+                        "y": 2.73339,
+                        "z": 14.4522
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
                     "name": "ShorelineTruck1",
                     "strength": 50.0,
                     "blockNav": true,
@@ -616,6 +642,11 @@
                     "strength": 1200,
                     "blockNav": true,
                     "usesDistanceFalloff": false,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [],
+                        "noRequirement": true
+                    },
                     "position": {
                         "x": -173.0,
                         "y": 2.0,
@@ -639,7 +670,7 @@
                     "lootOverride": {
                         "66fd57171f981640e667fbe2": 100
                     },
-                    "odds": 33,
+                    "odds": 85,
                     "randomizeRotation": true,
                     "position": {
                         "x": -174.7746,
@@ -657,7 +688,7 @@
                     "lootOverride": {
                         "66fd57171f981640e667fbe2": 100
                     },
-                    "odds": 25,
+                    "odds": 85,
                     "randomizeRotation": true,
                     "position": {
                         "x": -172.7736,
@@ -675,7 +706,7 @@
                     "lootOverride": {
                         "66fd57171f981640e667fbe2": 100
                     },
-                    "odds": 30,
+                    "odds": 85,
                     "randomizeRotation": true,
                     "position": {
                         "x": -169.1709,
@@ -693,7 +724,7 @@
                     "lootOverride": {
                         "66fd57171f981640e667fbe2": 100
                     },
-                    "odds": 30,
+                    "odds": 85,
                     "randomizeRotation": true,
                     "position": {
                         "x": -171.956,
@@ -716,6 +747,11 @@
                     "strength": 70.0,
                     "blockNav": false,
                     "usesDistanceFalloff": true,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [],
+                        "noRequirement": true
+                    },
                     "position": {
                         "x": -174.0,
                         "y": 2.0,
@@ -739,7 +775,7 @@
                     "lootOverride": {
                         "66fd57171f981640e667fbe2": 100
                     },
-                    "odds": 15,
+                    "odds": 30,
                     "randomizeRotation": true,
                     "position": {
                         "x": -167.5132,
@@ -757,7 +793,7 @@
                     "lootOverride": {
                         "66fd57171f981640e667fbe2": 100
                     },
-                    "odds": 15,
+                    "odds": 30,
                     "randomizeRotation": true,
                     "position": {
                         "x": -155.3324,
@@ -780,6 +816,11 @@
                     "strength": 600.0,
                     "blockNav": false,
                     "usesDistanceFalloff": false,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [],
+                        "noRequirement": true
+                    },
                     "position": {
                         "x": -174.0,
                         "y": 2.0,
@@ -804,8 +845,15 @@
                 {
                     "name": "LabsGreen1",
                     "strength": 400.0,
-                    "blockNav": true,
+                    "blockNav": false,
                     "usesDistanceFalloff": false,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": -131.0,
                         "y": 6.0,
@@ -825,8 +873,15 @@
                 {
                     "name": "LabsGreen2",
                     "strength": 200.0,
-                    "blockNav": true,
+                    "blockNav": false,
                     "usesDistanceFalloff": false,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": -130.8733,
                         "y": 5.056221,
@@ -851,7 +906,7 @@
                         "66fd588956f73c4f38dd07ae": 100,
                         "66fd57171f981640e667fbe2": 33
                     },
-                    "odds": 25,
+                    "odds": 35,
                     "randomizeRotation": true,
                     "position": {
                         "x": -128.0072,
@@ -870,7 +925,7 @@
                         "66fd588956f73c4f38dd07ae": 100,
                         "66fd57171f981640e667fbe2": 33
                     },
-                    "odds": 25,
+                    "odds": 35,
                     "randomizeRotation": true,
                     "position": {
                         "x": -129.9393,
@@ -889,7 +944,7 @@
                         "66fd588956f73c4f38dd07ae": 100,
                         "66fd57171f981640e667fbe2": 33
                     },
-                    "odds": 25,
+                    "odds": 35,
                     "randomizeRotation": true,
                     "position": {
                         "x": -130.8244,
@@ -908,7 +963,7 @@
                         "66fd588956f73c4f38dd07ae": 100,
                         "66fd57171f981640e667fbe2": 33
                     },
-                    "odds": 20,
+                    "odds": 35,
                     "randomizeRotation": true,
                     "position": {
                         "x": -134.947,
@@ -927,7 +982,7 @@
                         "66fd588956f73c4f38dd07ae": 100,
                         "66fd57171f981640e667fbe2": 33
                     },
-                    "odds": 20,
+                    "odds": 35,
                     "randomizeRotation": true,
                     "position": {
                         "x": -129.1637,
@@ -948,8 +1003,15 @@
                 {
                     "name": "LabsBlack",
                     "strength": 500.0,
-                    "blockNav": true,
+                    "blockNav": false,
                     "usesDistanceFalloff": false,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": -131.0,
                         "y": 1.0,
@@ -974,7 +1036,7 @@
                         "66fd588956f73c4f38dd07ae": 100,
                         "66fd57171f981640e667fbe2": 50
                     },
-                    "odds": 33,
+                    "odds": 45,
                     "randomizeRotation": true,
                     "position": {
                         "x": -126.7659,
@@ -993,7 +1055,7 @@
                         "66fd588956f73c4f38dd07ae": 100,
                         "66fd57171f981640e667fbe2": 50
                     },
-                    "odds": 33,
+                    "odds": 45,
                     "randomizeRotation": true,
                     "position": {
                         "x": -139.3295,
@@ -1012,7 +1074,7 @@
                         "66fd588956f73c4f38dd07ae": 100,
                         "66fd57171f981640e667fbe2": 50
                     },
-                    "odds": 33,
+                    "odds": 45,
                     "randomizeRotation": true,
                     "position": {
                         "x": -131.7528,
@@ -1033,8 +1095,15 @@
                 {
                     "name": "LabsBlue1",
                     "strength": 400.0,
-                    "blockNav": true,
+                    "blockNav": false,
                     "usesDistanceFalloff": false,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": -133.0,
                         "y": 1.5,
@@ -1056,6 +1125,13 @@
                     "strength": 500.0,
                     "blockNav": true,
                     "usesDistanceFalloff": false,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": -124.5,
                         "y": 1.5,
@@ -1080,7 +1156,7 @@
                         "66fd588956f73c4f38dd07ae": 100,
                         "66fd57171f981640e667fbe2": 50
                     },
-                    "odds": 30,
+                    "odds": 40,
                     "randomizeRotation": true,
                     "position": {
                         "x": -122.0001,
@@ -1099,7 +1175,7 @@
                         "66fd588956f73c4f38dd07ae": 100,
                         "66fd57171f981640e667fbe2": 50
                     },
-                    "odds": 30,
+                    "odds": 40,
                     "randomizeRotation": true,
                     "position": {
                         "x": -133.3903,
@@ -1118,7 +1194,7 @@
                         "66fd588956f73c4f38dd07ae": 100,
                         "66fd57171f981640e667fbe2": 50
                     },
-                    "odds": 30,
+                    "odds": 40,
                     "randomizeRotation": true,
                     "position": {
                         "x": -134.2489,
@@ -1137,7 +1213,7 @@
                         "66fd588956f73c4f38dd07ae": 100,
                         "66fd57171f981640e667fbe2": 50
                     },
-                    "odds": 30,
+                    "odds": 40,
                     "randomizeRotation": true,
                     "position": {
                         "x": -126.8563,
@@ -1186,7 +1262,7 @@
             "spawnChance": 1.0,
             "zones": [
                 {
-                    "name": "LighthouseLighthouseBasement",
+                    "name": "LighthouseBasement",
                     "strength": 25.0,
                     "blockNav": false,
                     "usesDistanceFalloff": true,
@@ -1213,7 +1289,7 @@
                     "lootOverride": {
                         "66fd57171f981640e667fbe2": 100
                     },
-                    "odds": 10,
+                    "odds": 15,
                     "randomizeRotation": true,
                     "position": {
                         "x": 444.4841,
@@ -1231,7 +1307,7 @@
                     "lootOverride": {
                         "66fd588956f73c4f38dd07ae": 100
                     },
-                    "odds": 10,
+                    "odds": 15,
                     "randomizeRotation": true,
                     "position": {
                         "x": 435.0469,
@@ -1303,7 +1379,7 @@
                     "lootOverride": {
                         "66fd57171f981640e667fbe2": 100
                     },
-                    "odds": 10,
+                    "odds": 15,
                     "randomizeRotation": true,
                     "position": {
                         "x": 443.404,
@@ -1611,9 +1687,9 @@
                     "blockNav": false,
                     "usesDistanceFalloff": true,
                     "position": {
-                        "x": -123.0,
-                        "y": -14.0,
-                        "z": 28.5
+                        "x": -122.7578,
+                        "y": -14,
+                        "z": 28.43508
                     },
                     "rotation": {
                         "x": 0.0,
@@ -1621,9 +1697,9 @@
                         "z": 0.0
                     },
                     "size": {
-                        "x": 6.0,
-                        "y": 4.0,
-                        "z": 6.0
+                        "x": 4.583748,
+                        "y": 4.157487,
+                        "z": 6.268812
                     }
                 }
             ]

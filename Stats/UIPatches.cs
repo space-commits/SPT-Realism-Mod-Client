@@ -482,7 +482,7 @@ namespace RealismMod
             Utils.AddAttribute(__instance, ENewItemAttributeId.Dispersion, disperion, $"{disperion}%", true);
             Utils.AddAttribute(__instance, ENewItemAttributeId.CameraRecoil, cameraRecoil, $"{cameraRecoil}%", true);
             Utils.AddAttribute(__instance, ENewItemAttributeId.AutoROF, autoROF, $"{autoROF}%", true);
-            Utils.AddAttribute(__instance, ENewItemAttributeId.RecoilAngle, semiROF, $"{semiROF}%", false);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.SemiROF, semiROF, $"{semiROF}%", false);
             Utils.AddAttribute(__instance, ENewItemAttributeId.RecoilAngle, angle, $"{angle}%", false);
             Utils.AddAttribute(__instance, ENewItemAttributeId.ReloadSpeed, reloadSpeed, $"{reloadSpeed}%", false);
             Utils.AddAttribute(__instance, ENewItemAttributeId.ChamberSpeed, chamberSpeed, $"{chamberSpeed}%", false);

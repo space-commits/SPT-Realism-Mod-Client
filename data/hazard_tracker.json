@@ -1,38 +1,130 @@
 {
   "668b14e20004428c8246c320": {
     "RecordedTotalToxicity": 0.0,
-    "RecordedTotalRadiation": 0.0,
-    "IsPreExplosion": false,
-    "HasExploded": false
+    "RecordedTotalRadiation": 0.0
   },
   "66db60540001deaecad86cd0": {
     "RecordedTotalToxicity": 0.0,
-    "RecordedTotalRadiation": 2.35219765,
-    "IsPreExplosion": false,
-    "HasExploded": false
+    "RecordedTotalRadiation": 0.0
   },
   "66eb541100009d5fa91cbaa3": {
-    "RecordedTotalToxicity": 0.0,
-    "RecordedTotalRadiation": 0.0,
-    "IsPreExplosion": false,
-    "HasExploded": false
+    "RecordedTotalToxicity": 10.0,
+    "RecordedTotalRadiation": 0.0
   },
   "66e4b19b000364320b4e61b7": {
     "RecordedTotalToxicity": 0.0,
-    "RecordedTotalRadiation": 0.0,
-    "IsPreExplosion": false,
-    "HasExploded": false
+    "RecordedTotalRadiation": 0.0
   },
   "66edb5a8000177b64f66f5c8": {
     "RecordedTotalToxicity": 0.0,
-    "RecordedTotalRadiation": 0.0,
-    "IsPreExplosion": false,
-    "HasExploded": false
+    "RecordedTotalRadiation": 0.0
   },
   "66edf22c00047514ab356734": {
+    "RecordedTotalToxicity": 20.0,
+    "RecordedTotalRadiation": 100.0
+  },
+  "670459e400047d0f666dc388": {
     "RecordedTotalToxicity": 0.0,
-    "RecordedTotalRadiation": 18.4392853,
-    "IsPreExplosion": false,
-    "HasExploded": false
+    "RecordedTotalRadiation": 0.0
+  },
+  "6705240100050db6a536f2d1": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "670531170003ac1bd992d1c9": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 28.28019
+  },
+  "67054c2a00000e06079b239a": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "670551870000fcac2b54fb20": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "67055c3000030cedc394e2a0": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "67066fea00059ab16c4a22b0": {
+    "RecordedTotalToxicity": 10.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "6706edee000377ecb35e7496": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "670988b30005f7e7dc55752c": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "670a936b00056bb57025efba": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "670afe62000530f52f729714": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "670affb10000b4506e28c229": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "670b02d30002e77cebb5ac8d": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "670b045100051af7260178e6": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "670b0542000565dc728a9030": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "670b083400005b9d92ff1bb0": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "670bc2090005b2705be65d2e": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "670bc5ce000415f837a9a970": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.08755333
+  },
+  "670bd1200002b480dad023e0": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 52.8907547
+  },
+  "670bf81900034d1d7a84d02f": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "670c19830005300f1d4ea261": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 38.5601234
+  },
+  "670c2b0300020b848f5bc3b6": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 9.097046
+  },
+  "670c3741000473f24eac78f4": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "670c487700050d30881fc8b3": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "670c4f2f00055ebfc578631e": {
+    "RecordedTotalToxicity": 10.0,
+    "RecordedTotalRadiation": 0.0
+  },
+  "6711802c000167724e6872b8": {
+    "RecordedTotalToxicity": 0.0,
+    "RecordedTotalRadiation": 0.0
   }
 }

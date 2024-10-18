@@ -647,8 +647,6 @@ namespace RealismMod
                 zoneType == EZoneType.Quest ? QuestZoneLocations :
                 SafeZoneLocations;
 
-            Utils.Logger.LogWarning("2");
-
             switch (map)
             {
                 case "rezervbase":

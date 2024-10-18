@@ -1,8 +1,10 @@
-﻿using EFT.Interactive;
+﻿using EFT;
+using EFT.Interactive;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using static ObjectInHandsAnimator;
 
 namespace RealismMod
 {
@@ -19,6 +21,7 @@ namespace RealismMod
         public static float CurrentGasEventStrength { get; private set; } = 0;
         public static float CurrentGasEventStrengthBot { get; private set; } = 0;
         public static List<LampController> Lights { get; set; } = new List<LampController>();
+        public static bool IsRightDateForExp { get; private set; }
 
         public static bool DoMapGasEvent
         {
@@ -42,7 +45,7 @@ namespace RealismMod
         {
             get
             {
-                return Plugin.ModInfo.DoGasEvent || Plugin.ModInfo.IsPreExplosion || DidExplosionClientSide || DoMapRads || Plugin.ModInfo.HasExploded;
+                return Plugin.ModInfo.DoGasEvent || (Plugin.ModInfo.IsPreExplosion && GameWorldController.IsRightDateForExp) || DidExplosionClientSide || DoMapRads || Plugin.ModInfo.HasExploded;
             }
         }
 
@@ -55,15 +58,23 @@ namespace RealismMod
         {
             float fogStrength = Plugin.RealismWeatherComponent.TargetFog;
             float targetStrength = Mathf.Max(fogStrength * 2.2f, 0.06f);
+            targetStrength = PlayerState.BtrState == EPlayerBtrState.Inside ? 0f : targetStrength;
             CurrentGasEventStrengthBot = targetStrength;
             CurrentGasEventStrength = Mathf.Lerp(CurrentGasEventStrength, targetStrength * (PlayerState.EnviroType == EnvironmentType.Indoor ? 0.5f : 1f), 0.05f);
         }
 
         public static void CalculateMapRadStrength()
         {
-            float rainStrength = PlayerState.EnviroType == EnvironmentType.Indoor ? 0f : Plugin.RealismWeatherComponent.TargetRain * 0.15f;
+            float rainStrength = PlayerState.BtrState == EPlayerBtrState.Inside || PlayerState.EnviroType == EnvironmentType.Indoor ? 0f : Plugin.RealismWeatherComponent.TargetRain * 0.15f;
             float targetStrength = 0.05f + rainStrength;
+            targetStrength = PlayerState.BtrState == EPlayerBtrState.Inside ? targetStrength * 0.25f : targetStrength;
             CurrentMapRadStrength = Mathf.Lerp(CurrentMapRadStrength, targetStrength * (PlayerState.EnviroType == EnvironmentType.Indoor ? 0.5f : 1f), 0.05f);
+        }
+
+        public static void CheckDate() 
+        {
+            DateTime utcNow = DateTime.UtcNow;
+            IsRightDateForExp = (utcNow.Month == 10 && utcNow.Day >= 31) || (utcNow.Month == 11 && utcNow.Day <= 4);
         }
 
         public static void GameWorldUpdate() 

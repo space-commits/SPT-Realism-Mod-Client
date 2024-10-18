@@ -28,14 +28,14 @@ namespace RealismMod
         { 
             get 
             {
-                return Plugin.ModInfo.IsPreExplosion || GameWorldController.DidExplosionClientSide || GameWorldController.DoMapGasEvent || GameWorldController.DoMapRads;
+                return (Plugin.ModInfo.IsPreExplosion && GameWorldController.IsRightDateForExp) || GameWorldController.DidExplosionClientSide || GameWorldController.DoMapGasEvent || GameWorldController.DoMapRads;
             } 
         }
 
         private float _elapsedTime = 0f;
         private float _gasFogTimer = 0f;
         private float _radRainTimer = 0f;
-        private float _targetGasStrength = 0.035f;
+        private float _targetGasStrength = 0.05f;
         private float _targetGasCloudStrength = 0.4f;
         private float _radRainStrength = 0.1f;
 
@@ -50,8 +50,7 @@ namespace RealismMod
             if (wc == null) wc = WeatherController.Instance; //keep trying to get instance
             if (wc != null)
             {
-                //HazardTracker.IsPreExplosion = true;
-                if (Plugin.ModInfo.IsPreExplosion && !GameWorldController.DidExplosionClientSide) DoPreExplosionWeather();
+                if (Plugin.ModInfo.IsPreExplosion && !GameWorldController.DidExplosionClientSide && GameWorldController.IsRightDateForExp) DoPreExplosionWeather();
                 else if (GameWorldController.DidExplosionClientSide) DoExplosionWeather();
                 else if (GameWorldController.DoMapGasEvent) DoMapGasEventWeather();
                 else if (GameWorldController.DoMapRads) DoMapRadWeather();
@@ -73,7 +72,7 @@ namespace RealismMod
 
             if (_gasFogTimer >= 300f)
             {
-                _targetGasStrength = UnityEngine.Random.Range(0.015f, 0.07f);
+                _targetGasStrength = UnityEngine.Random.Range(0.02f, 0.08f);
                 _targetGasCloudStrength = UnityEngine.Random.Range(0f, 0.6f);
                 _gasFogTimer = 0f;
             }

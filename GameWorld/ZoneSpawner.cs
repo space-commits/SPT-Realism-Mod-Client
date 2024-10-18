@@ -51,7 +51,7 @@ namespace RealismMod
             return PluginConfig.ZoneDebug.Value || ProfileData.PMCLevel >= 20 || HasMetQuestCriteria(new string[] { "66dad1a18cbba6e558486336", "670ae811bd43cbf026768126" },  new EQuestStatus[] { EQuestStatus.Started, EQuestStatus.Success });
         }
 
-        public static void CreateAmbientAudioPlayers(Player player, Transform parentTransform, Dictionary<string, AudioClip> clips, bool followPlayer = false, float minTime = 15f, float maxTime = 90f, float volume = 1f, float minDistance = 45f, float maxDistance = 95f) 
+        public static void CreateAmbientAudioPlayers(Player player, Transform parentTransform, Dictionary<string, AudioClip> clips, bool followPlayer = false, float minTime = 15f, float maxTime = 90f, float volume = 1f, float minDistance = 45f, float maxDistance = 95f, float minDelayBeforePlayback = 60f) 
         {
             GameObject audioGO = new GameObject("AmbientAudioPlayer");
             var audioPlayer = audioGO.AddComponent<AmbientAudioPlayer>();
@@ -63,6 +63,7 @@ namespace RealismMod
             audioPlayer.MinDistance = minDistance;
             audioPlayer.MaxDistance = maxDistance;
             audioPlayer.Volume = volume;
+            audioPlayer.DelayBeforePlayback = minDelayBeforePlayback;
             foreach (var clip in clips) 
             {
                 audioPlayer.AudioClips.Add(clip.Value);
@@ -98,10 +99,10 @@ namespace RealismMod
             if (zones == null) return;
             foreach (var zone in zones)
             {
-                if (collection.ZoneType == EZoneType.Gas || collection.ZoneType == EZoneType.GasAssets) CreateZone<GasZone>(zone, EZoneType.Gas);
-                if (collection.ZoneType == EZoneType.Radiation || collection.ZoneType == EZoneType.RadAssets) CreateZone<RadiationZone>(zone, EZoneType.Radiation);
-                if (collection.ZoneType == EZoneType.SafeZone) CreateZone<LabsSafeZone>(zone, EZoneType.SafeZone);
-                if (collection.ZoneType == EZoneType.Quest) CreateZone<QuestZone>(zone, EZoneType.Quest);
+                if (collection.ZoneType == EZoneType.Gas || collection.ZoneType == EZoneType.GasAssets) CreateZone<GasZone>(zone, collection.ZoneType);
+                if (collection.ZoneType == EZoneType.Radiation || collection.ZoneType == EZoneType.RadAssets) CreateZone<RadiationZone>(zone, collection.ZoneType);
+                if (collection.ZoneType == EZoneType.SafeZone) CreateZone<LabsSafeZone>(zone, collection.ZoneType);
+                if (collection.ZoneType == EZoneType.Quest) CreateZone<QuestZone>(zone, collection.ZoneType);
             }
         }
 
@@ -149,7 +150,7 @@ namespace RealismMod
             if (analysable.NoRequirement) return true;
             bool isDisabled = AnalsyableQuestChecker(analysable.DisabledBy, new EQuestStatus[] { EQuestStatus.Started }); //essentially checking that the quest is not completed and not active
             bool isEnabled = AnalsyableQuestChecker(analysable.EnabledBy, new EQuestStatus[] { EQuestStatus.Started });
-            return !isDisabled && isEnabled;
+            return !isDisabled || isEnabled;
         }
 
         public static void CreateZone<T>(HazardLocation hazardLocation, EZoneType zoneType) where T : MonoBehaviour, IZone

@@ -31,10 +31,7 @@ namespace RealismMod
                 yield return null;
             }
 
-
-            DateTime utcNow = DateTime.UtcNow;
-            bool isRightDate = (utcNow.Month == 10 && utcNow.Day >= 31) || (utcNow.Month == 11 && utcNow.Day <= 4) ;
-            bool canTrigger = isRightDate && IsInRightLocation() && Plugin.ModInfo.IsHalloween && !Plugin.ModInfo.HasExploded && !GameWorldController.DidExplosionClientSide && Plugin.ModInfo.IsNightTime;
+            bool canTrigger = GameWorldController.IsRightDateForExp && IsInRightLocation() && Plugin.ModInfo.IsHalloween && !Plugin.ModInfo.HasExploded && !GameWorldController.DidExplosionClientSide && Plugin.ModInfo.IsNightTime;
             if (canTrigger) 
             {
                 _audioSource.clip = Plugin.DeviceAudioClips["transmitter_success.wav"];
@@ -88,14 +85,11 @@ namespace RealismMod
         protected Quaternion _rotation;
         protected List<IZone> _intersectingZones = new List<IZone>();
         public string _instanceId = "";
-
+        protected float _placementTimer = 0;
+        protected bool _placedItem = false;
 
         protected void SetUpTransforms()
         {
-            _position = _Player.gameObject.transform.position;
-            _position.y += 0.05f;
-            _position = _position + _Player.gameObject.transform.forward * 1.1f;
-
             Vector3 eularRotation = _Player.gameObject.transform.rotation.eulerAngles;
             eularRotation.x = -90f;
             eularRotation.y = 0f;
@@ -204,8 +198,28 @@ namespace RealismMod
             return false;
         }
 
+        protected void RemovePhysicsInteractions(GameObject go) 
+        {
+            var rb = go.GetComponent<Rigidbody>();
+            var col = go.GetComponent<Collider>();
+
+            if (rb != null)
+            {
+                Utils.Logger.LogWarning("removing rb");
+                rb.useGravity = false;
+                rb.isKinematic = true;  
+            }
+
+            if (col != null)
+            {
+                Utils.Logger.LogWarning("removing col");
+                col.enabled = false;
+            }
+        }
+
         protected void Start()
         {
+            RemovePhysicsInteractions(this.gameObject);
             SetUpTransforms();
             SetUpActions();
             _instanceId = MongoID.Generate();
@@ -214,9 +228,33 @@ namespace RealismMod
 
         protected void Update()
         {
+            _placementTimer += Time.deltaTime;
             if (this.gameObject == null) return;
-            this.gameObject.transform.position = _position;
-            this.gameObject.transform.rotation = _rotation;
+
+            RaycastHit raycastHit;
+            if (!_placedItem && EFTPhysicsClass.Raycast(new Ray(_Player.PlayerBones.LootRaycastOrigin.position + _Player.PlayerBones.LootRaycastOrigin.forward / 2f, _Player.PlayerBones.LootRaycastOrigin.forward), out raycastHit, 2.5f, LayerMaskClass.HighPolyWithTerrainMask))
+            {
+                Utils.Logger.LogWarning(Mathf.Abs(raycastHit.point.y - _Player.Transform.position.y));
+                if (Mathf.Abs(raycastHit.point.y - _Player.Transform.position.y) <= 0.08f)
+                {
+                    _position = raycastHit.point;
+                    _position.y += 0.05f;
+                    this.gameObject.transform.position = _position;
+                    this.gameObject.transform.rotation = _rotation;
+                    _placedItem = true;
+                    RemovePhysicsInteractions(this.gameObject);
+                }
+
+            }
+            if (!_placedItem && _placementTimer >= 0.1f)
+            {
+                _position = _Player.gameObject.transform.position;
+                _position.y += 0.05f;
+                this.gameObject.transform.position = _position;
+                this.gameObject.transform.rotation = _rotation;
+                _placedItem = true;
+                RemovePhysicsInteractions(this.gameObject);
+            }
         }
 
         protected void OnTriggerEnter(Collider other)
@@ -290,16 +328,18 @@ namespace RealismMod
         private Vector3 _position;
         private Quaternion _rotation;
         private List<IZone> _intersectingZones = new List<IZone>();
+        private float _stallChance = 90f;
         private bool _stalledPreviously = false;
         public string _instanceId = "";
         private bool _deactivated = false;
         private float _placementTimer = 0;
+        private bool _placedItem = false;
 
         void SetUpTransforms()
         {
-            _position = _Player.gameObject.transform.position;
-            _position.y += 0.025f;
-            _position = _position + _Player.gameObject.transform.forward * 1.1f;
+       /*     _position = _Player.gameObject.transform.position;
+            _position.y += 0.04f;
+            _position = _position + _Player.gameObject.transform.forward * 1.1f;*/
 
             Vector3 eularRotation = _Player.gameObject.transform.rotation.eulerAngles;
             eularRotation.x = -90f;
@@ -399,12 +439,32 @@ namespace RealismMod
             TargetZone.HasBeenAnalysed = true;
         }
 
+        protected void RemovePhysicsInteractions(GameObject go)
+        {
+            var rb = go.GetComponent<Rigidbody>();
+            var col = go.GetComponent<Collider>();
+
+            if (rb != null)
+            {
+                Utils.Logger.LogWarning("removing rb");
+                rb.useGravity = false;
+                rb.isKinematic = true;
+            }
+
+            if (col != null)
+            {
+                Utils.Logger.LogWarning("removing col");
+                col.enabled = false;
+            }
+        }
+
         void Start()
         {
             SetUpTransforms();
             SetUpActions();
             _audioSource = SetUpAudio("switch_off.wav", this.gameObject);
             _instanceId = MongoID.Generate();
+            _stallChance = TargetZoneType == EZoneType.Radiation ? 100f : 90f;
         }
 
         private void OnTriggerEnter(Collider other)
@@ -421,9 +481,32 @@ namespace RealismMod
         void Update()
         {
             _placementTimer += Time.deltaTime;
-            if (_placementTimer >= 5f || this.gameObject == null || _deactivated) return;
-            this.gameObject.transform.position = _position;
-            this.gameObject.transform.rotation = _rotation;
+            if (this.gameObject == null || _deactivated) return;
+
+            RaycastHit raycastHit;
+            if (!_placedItem && EFTPhysicsClass.Raycast(new Ray(_Player.PlayerBones.LootRaycastOrigin.position + _Player.PlayerBones.LootRaycastOrigin.forward / 2f, _Player.PlayerBones.LootRaycastOrigin.forward), out raycastHit, 2.5f, LayerMaskClass.HighPolyWithTerrainMask))
+            {
+                Utils.Logger.LogWarning(Mathf.Abs(raycastHit.point.y - _Player.Transform.position.y));
+                if (Mathf.Abs(raycastHit.point.y - _Player.Transform.position.y) <= 0.08f)
+                {
+                    _position = raycastHit.point;
+                    _position.y += 0.05f;
+                    this.gameObject.transform.position = _position;
+                    this.gameObject.transform.rotation = _rotation;
+                    _placedItem = true;
+                    RemovePhysicsInteractions(this.gameObject);
+                }
+
+            }
+            if (!_placedItem && _placementTimer >= 0.1f) 
+            {
+                _position = _Player.gameObject.transform.position;
+                _position.y += 0.05f;
+                this.gameObject.transform.position = _position;
+                this.gameObject.transform.rotation = _rotation;
+                _placedItem = true;
+                RemovePhysicsInteractions(this.gameObject);
+            }
         }
 
         private void PlaySoundForAI()
@@ -477,7 +560,7 @@ namespace RealismMod
             time = 0f;
             clipLength = _audioSource.clip.length;
             int loops = UnityEngine.Random.Range(1, 4);
-            bool shouldStall = !_stalledPreviously && UnityEngine.Random.Range(1, 100) >= 90;
+            bool shouldStall = !_stalledPreviously && UnityEngine.Random.Range(1, 100) >= _stallChance;
             if (shouldStall) loops /= 2;
 
             while (time <= clipLength * loops)
@@ -508,6 +591,7 @@ namespace RealismMod
             string templateId = TargetZoneType == EZoneType.Gas ? Utils.GAMU_DATA_ID : Utils.RAMU_DATA_ID;
             Item replacementItem = Singleton<ItemFactory>.Instance.CreateItem(MongoID.Generate(), templateId, null);
             LootItem lootItem = Singleton<GameWorld>.Instance.SetupItem(replacementItem, _IPlayer, _position, _rotation);
+            RemovePhysicsInteractions(lootItem.gameObject);
             AudioSource tempAudio = SetUpAudio("success_end.wav", lootItem.gameObject);
             tempAudio.Play();
             _deactivated = true;

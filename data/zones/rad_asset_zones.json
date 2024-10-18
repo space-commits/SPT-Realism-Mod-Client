@@ -2,13 +2,20 @@
     "FactoryAssetZones": [],
     "CustomsAssetZones": [
         {
-            "spawnChance": 0.25,
+            "spawnChance": 0.3,
             "zones": [
                 {
                     "name": "CustomsFactoryCheckpoint_dynamicquest",
-                    "strength": 15.0,
+                    "strength": 17,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": 359,
                         "y": 2,
@@ -27,6 +34,38 @@
                 }
             ],
             "assets": [
+                {
+                    "assetName": "RadSign1",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 355.6167,
+                        "y": 0.8835005,
+                        "z": -6.022623
+                    },
+                    "rotation": {
+                        "x": 288.4739,
+                        "y": 190.6225,
+                        "z": 268.6617
+                    }
+                },
+                {
+                    "assetName": "RadSign1",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 354.5581,
+                        "y": 1.647846,
+                        "z": -13.19194
+                    },
+                    "rotation": {
+                        "x": 304.7322,
+                        "y": 359.2561,
+                        "z": 0.8829685
+                    }
+                },
                 {
                     "assetName": "BlueContainer",
                     "type": "asset",
@@ -159,7 +198,7 @@
             "loot": [
                 {
                     "type": "highTier",
-                    "odds": 35,
+                    "odds": 40,
                     "randomizeRotation": true,
                     "position": {
                         "x": 358.4,
@@ -174,7 +213,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": 362.1,
@@ -189,7 +228,7 @@
                 },
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": 360.3,
@@ -205,7 +244,7 @@
             ]
         },
         {
-            "spawnChance": 0.25,
+            "spawnChance": 0.30,
             "zones": [
                 {
                     "name": "CustomsOldGas_dynamicquest_1",
@@ -233,6 +272,13 @@
                     "strength": 2000.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": 294.4627,
                         "y": 5.086679,
@@ -251,7 +297,7 @@
                 },
                 {
                     "name": "CustomsOldGasDynamic1",
-                    "strength": 20.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -272,7 +318,7 @@
                 },
                 {
                     "name": "CustomsOldGasDynamic2",
-                    "strength": 20.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -293,7 +339,7 @@
                 },
                 {
                     "name": "CustomsOldGasDynamic3",
-                    "strength": 30.0,
+                    "strength": 35,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -314,7 +360,7 @@
                 },
                 {
                     "name": "CustomsOldGasDynamic4",
-                    "strength": 30.0,
+                    "strength": 35,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -335,7 +381,7 @@
                 },
                 {
                     "name": "CustomsOldGasDynamic5",
-                    "strength": 20.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -356,7 +402,7 @@
                 },
                 {
                     "name": "CustomsOldGasDynamic6",
-                    "strength": 20.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -377,7 +423,7 @@
                 },
                 {
                     "name": "CustomsOldGasDynamic7",
-                    "strength": 20.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -398,7 +444,7 @@
                 },
                 {
                     "name": "CustomsOldGasDynamic8",
-                    "strength": 20.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -419,7 +465,7 @@
                 },
                 {
                     "name": "CustomsOldGasDynamic9",
-                    "strength": 20.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -440,6 +486,54 @@
                 }
             ],
             "assets": [
+                {
+                    "assetName": "RadSign1",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 284.8927,
+                        "y": 4.376438,
+                        "z": -169.2222
+                    },
+                    "rotation": {
+                        "x": 346.1732,
+                        "y": 312.9847,
+                        "z": 342.0553
+                    }
+                },
+                {
+                    "assetName": "RadSign1",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 294.7773,
+                        "y": 2.669094,
+                        "z": -168.749
+                    },
+                    "rotation": {
+                        "x": 2.600575,
+                        "y": 49.09077,
+                        "z": 11.99692
+                    }
+                },
+                {
+                    "assetName": "RadSign1",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 322.3424,
+                        "y": 2.411318,
+                        "z": -102.9292
+                    },
+                    "rotation": {
+                        "x": 298.9413,
+                        "y": 66.73,
+                        "z": 340.8181
+                    }
+                },
                 {
                     "assetName": "ElectroForkLift",
                     "type": "asset",
@@ -844,7 +938,7 @@
             "loot": [
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": 288.7,
@@ -859,7 +953,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": 313.5,
@@ -874,7 +968,7 @@
                 },
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": 296.8,
@@ -889,7 +983,7 @@
                 },
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": 298.5,
@@ -904,7 +998,7 @@
                 },
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": 299.2,
@@ -919,7 +1013,7 @@
                 },
                 {
                     "type": "highTier",
-                    "odds": 30,
+                    "odds": 40,
                     "randomizeRotation": true,
                     "position": {
                         "x": 305.9,
@@ -934,7 +1028,7 @@
                 },
                 {
                     "type": "highTier",
-                    "odds": 30,
+                    "odds": 40,
                     "randomizeRotation": true,
                     "position": {
                         "x": 294.3,
@@ -950,13 +1044,20 @@
             ]
         },
         {
-            "spawnChance": 0.25,
+            "spawnChance": 0.3,
             "zones": [
                 {
                     "name": "CutomsElbow_dynamicquest_1",
                     "strength": 2000.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": 61.0417,
                         "y": 2.997721,
@@ -975,7 +1076,7 @@
                 },
                 {
                     "name": "CutomsElbow1",
-                    "strength": 20.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -996,7 +1097,7 @@
                 },
                 {
                     "name": "CutomsElbow2",
-                    "strength": 25.0,
+                    "strength": 30,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -1017,7 +1118,7 @@
                 },
                 {
                     "name": "CutomsElbowBarrelPile",
-                    "strength": 10.0,
+                    "strength": 18,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -1038,6 +1139,38 @@
                 }
             ],
             "assets": [
+                {
+                    "assetName": "RadSign1",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 85.00858,
+                        "y": 1.739911,
+                        "z": -64.34959
+                    },
+                    "rotation": {
+                        "x": 340.0056,
+                        "y": 342.8431,
+                        "z": 343.974
+                    }
+                },
+                {
+                    "assetName": "RadSign1",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": 59.06654,
+                        "y": 2.445155,
+                        "z": -114.7551
+                    },
+                    "rotation": {
+                        "x": 0.8419574,
+                        "y": 149.822,
+                        "z": 357.4296
+                    }
+                },
                 {
                     "assetName": "MetalFence",
                     "type": "asset",
@@ -2018,7 +2151,7 @@
             "loot": [
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": 97.33766,
@@ -2033,7 +2166,7 @@
                 },
                 {
                     "type": "highTier",
-                    "odds": 30,
+                    "odds": 40,
                     "randomizeRotation": true,
                     "position": {
                         "x": 79.35494,
@@ -2048,7 +2181,7 @@
                 },
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": 57.57507,
@@ -2063,7 +2196,7 @@
                 },
                 {
                     "type": "highTier",
-                    "odds": 40,
+                    "odds": 45,
                     "randomizeRotation": true,
                     "position": {
                         "x": 40.96183,
@@ -2078,7 +2211,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": 39.34284,
@@ -2093,7 +2226,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": 45.21597,
@@ -2112,13 +2245,20 @@
     "GZAssetZones": [],
     "ShorelineAssetZones": [
         {
-            "spawnChance": 0.25,
+            "spawnChance": 0.3,
             "zones": [
                 {
                     "name": "ShorelineGasBridgeGap_dynamicquest",
                     "strength": 2000.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": -283.6577,
                         "y": -58.10266,
@@ -2137,7 +2277,7 @@
                 },
                 {
                     "name": "ShorelineGasBridgeGap",
-                    "strength": 15.0,
+                    "strength": 18,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -2158,7 +2298,7 @@
                 },
                 {
                     "name": "ShorelineGasBridgeBridge",
-                    "strength": 20.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -2179,6 +2319,38 @@
                 }
             ],
             "assets": [
+                {
+                    "assetName": "RadSign1",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -302.0793,
+                        "y": -58.56464,
+                        "z": 452.3254
+                    },
+                    "rotation": {
+                        "x": 346.2225,
+                        "y": 278.8487,
+                        "z": 8.950333
+                    }
+                },
+                {
+                    "assetName": "RadSign1",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -271.741,
+                        "y": -58.09395,
+                        "z": 452.1978
+                    },
+                    "rotation": {
+                        "x": 14.31409,
+                        "y": 86.98485,
+                        "z": 5.967651
+                    }
+                },
                 {
                     "assetName": "MetalFence",
                     "type": "asset",
@@ -2535,7 +2707,7 @@
             "loot": [
                 {
                     "type": "highTier",
-                    "odds": 35,
+                    "odds": 40,
                     "randomizeRotation": true,
                     "position": {
                         "x": -289.5538,
@@ -2550,7 +2722,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": -297.3688,
@@ -2565,7 +2737,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": -284.3745,
@@ -2580,7 +2752,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": -267.4701,
@@ -2595,7 +2767,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": -204.6351,
@@ -2611,13 +2783,20 @@
             ]
         },
         {
-            "spawnChance": 0.25,
+            "spawnChance": 0.3,
             "zones": [
                 {
                     "name": "ShorelinePowerBridge_dynamicquest",
                     "strength": 2000.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": -283.6577,
                         "y": -58.10266,
@@ -2636,7 +2815,7 @@
                 },
                 {
                     "name": "ShorelinePowerBridge",
-                    "strength": 20.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -2678,6 +2857,38 @@
                 }
             ],
             "assets": [
+                {
+                    "assetName": "RadSign1",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -213.5328,
+                        "y": -39.35279,
+                        "z": 140.9344
+                    },
+                    "rotation": {
+                        "x": 338.5658,
+                        "y": 246.7077,
+                        "z": 15.69804
+                    }
+                },
+                {
+                    "assetName": "RadSign1",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -199.3445,
+                        "y": -38.75401,
+                        "z": 141.5083
+                    },
+                    "rotation": {
+                        "x": 343.6125,
+                        "y": 86.01968,
+                        "z": 7.88682
+                    }
+                },
                 {
                     "assetName": "Ural",
                     "type": "asset",
@@ -3001,7 +3212,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 35,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": -199.6139,
@@ -3016,7 +3227,7 @@
                 },
                 {
                     "type": "midTier",
-                    "odds": 35,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": -205.4892,
@@ -3031,7 +3242,7 @@
                 },
                 {
                     "type": "highTier",
-                    "odds": 20,
+                    "odds": 40,
                     "randomizeRotation": true,
                     "position": {
                         "x": -190.5601,
@@ -3046,7 +3257,7 @@
                 },
                 {
                     "type": "highTier",
-                    "odds": 35,
+                    "odds": 45,
                     "randomizeRotation": true,
                     "position": {
                         "x": -209.5422,
@@ -3062,13 +3273,20 @@
             ]
         },
         {
-            "spawnChance": 0.25,
+            "spawnChance": 0.3,
             "zones": [
                 {
                     "name": "ShorelineWaterfallBridge_dynamicquest_1",
                     "strength": 2000.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": -159.029,
                         "y": -16.22705,
@@ -3090,6 +3308,13 @@
                     "strength": 2000.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": -170.1976,
                         "y": -13.92124,
@@ -3108,7 +3333,7 @@
                 },
                 {
                     "name": "ShorelineWaterfallBridge1",
-                    "strength": 20.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -3129,7 +3354,7 @@
                 },
                 {
                     "name": "ShorelineWaterfallBridge2",
-                    "strength": 10.0,
+                    "strength": 15,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -3192,6 +3417,38 @@
                 }
             ],
             "assets": [
+                {
+                    "assetName": "RadSign1",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -169.7404,
+                        "y": -14.89489,
+                        "z": -283.193
+                    },
+                    "rotation": {
+                        "x": 335.3193,
+                        "y": 230.9741,
+                        "z": 0.4037594
+                    }
+                },
+                {
+                    "assetName": "RadSign1",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -152.0493,
+                        "y": -15.00218,
+                        "z": -292.3381
+                    },
+                    "rotation": {
+                        "x": 9.174139,
+                        "y": 73.71736,
+                        "z": 346.071
+                    }
+                },
                 {
                     "assetName": "BlueFuelPalletCloth",
                     "type": "asset",
@@ -3660,7 +3917,7 @@
             "loot": [
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": -289.5538,
@@ -3675,7 +3932,7 @@
                 },
                 {
                     "type": "highTier",
-                    "odds": 35,
+                    "odds": 40,
                     "randomizeRotation": true,
                     "position": {
                         "x": -150.6453,
@@ -3690,7 +3947,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": -163.4246,
@@ -3705,7 +3962,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": -151.5547,
@@ -3720,7 +3977,7 @@
                 },
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": -161.4408,
@@ -3735,7 +3992,7 @@
                 },
                 {
                     "type": "highTier",
-                    "odds": 35,
+                    "odds": 45,
                     "randomizeRotation": true,
                     "position": {
                         "x": -176.7159,
@@ -3755,13 +4012,20 @@
     "LabsAssetZones": [],
     "InterchangeAssetZone": [
         {
-            "spawnChance": 0.25,
+            "spawnChance": 0.3,
             "zones": [
                 {
                     "name": "InterchangeMedAreaDynamic_dynamicquest_1",
                     "strength": 2000.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": 84.03898,
                         "y": 28.67997,
@@ -3783,6 +4047,13 @@
                     "strength": 2000.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": -3.32349,
                         "y": 28.68276,
@@ -3804,6 +4075,13 @@
                     "strength": 2000.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": -36.62862,
                         "y": 28.92086,
@@ -3822,7 +4100,7 @@
                 },
                 {
                     "name": "InterchangeMedAreaDynamic1",
-                    "strength": 20.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -3843,7 +4121,7 @@
                 },
                 {
                     "name": "InterchangeMedAreaDynamic2",
-                    "strength": 20.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -3864,7 +4142,7 @@
                 },
                 {
                     "name": "InterchangeMedAreaDynamic3",
-                    "strength": 20.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -3885,7 +4163,7 @@
                 },
                 {
                     "name": "InterchangeMedAreaDynamic4",
-                    "strength": 20.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -3906,7 +4184,7 @@
                 },
                 {
                     "name": "InterchangeMedAreaDynamic5",
-                    "strength": 20.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -5099,7 +5377,7 @@
             "loot": [
                 {
                     "type": "highTier",
-                    "odds": 35,
+                    "odds": 40,
                     "randomizeRotation": true,
                     "position": {
                         "x": -12.54323,
@@ -5114,7 +5392,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": -2.433161,
@@ -5129,7 +5407,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": -8.084369,
@@ -5144,7 +5422,7 @@
                 },
                 {
                     "type": "highTier",
-                    "odds": 35,
+                    "odds": 45,
                     "randomizeRotation": true,
                     "position": {
                         "x": -33.03053,
@@ -5159,7 +5437,7 @@
                 },
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": -41.0127,
@@ -5174,7 +5452,7 @@
                 },
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": -51.68115,
@@ -5189,7 +5467,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": -45.35839,
@@ -5204,7 +5482,7 @@
                 },
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": -45.35839,
@@ -5219,7 +5497,7 @@
                 },
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": 83.6447,
@@ -5234,7 +5512,7 @@
                 },
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": 84.57944,
@@ -5250,13 +5528,20 @@
             ]
         },
         {
-            "spawnChance": 0.25,
+            "spawnChance": 0.3,
             "zones": [
                 {
                     "name": "InterchangeIkeaRoad_dynamicquest",
                     "strength": 2000.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": -207.4681,
                         "y": 23.36877,
@@ -5275,7 +5560,7 @@
                 },
                 {
                     "name": "InterchangeIkeaRoad",
-                    "strength": 25.0,
+                    "strength": 25,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -5296,6 +5581,38 @@
                 }
             ],
             "assets": [
+                {
+                    "assetName": "RadSign1",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -197.3148,
+                        "y": 22.57574,
+                        "z": -202.7179
+                    },
+                    "rotation": {
+                        "x": 355.4807,
+                        "y": 215.1068,
+                        "z": 4.131961
+                    }
+                },
+                {
+                    "assetName": "RadSign1",
+                    "type": "asset",
+                    "odds": 100,
+                    "randomizeRotation": false,
+                    "position": {
+                        "x": -212.8561,
+                        "y": 22.7185,
+                        "z": -172.7027
+                    },
+                    "rotation": {
+                        "x": 352.2098,
+                        "y": 35.26811,
+                        "z": 350.9525
+                    }
+                },
                 {
                     "assetName": "BlueContainer",
                     "type": "asset",
@@ -5796,7 +6113,7 @@
             "loot": [
                 {
                     "type": "highTier",
-                    "odds": 35,
+                    "odds": 40,
                     "randomizeRotation": true,
                     "position": {
                         "x": -214.4334,
@@ -5811,7 +6128,7 @@
                 },
                 {
                     "type": "highTier",
-                    "odds": 40,
+                    "odds": 45,
                     "randomizeRotation": true,
                     "position": {
                         "x": -198.0147,
@@ -5826,7 +6143,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": -209.6123,
@@ -5841,7 +6158,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": -201.6711,
@@ -5856,7 +6173,7 @@
                 },
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": -202.4623,
@@ -5871,7 +6188,7 @@
                 },
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": -207.1172,
@@ -5887,7 +6204,7 @@
             ]
         },
         {
-            "spawnChance": 0.25,
+            "spawnChance": 0.3,
             "zones": [
                 {
                     "name": "InterhangeOliBackDynamic_navblock",
@@ -5915,6 +6232,13 @@
                     "strength": 2000.0,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [
+                            "6702b3e4aff397fa3e666fa5"
+                        ],
+                        "noRequirement": false
+                    },
                     "position": {
                         "x": -162.4207,
                         "y": 27.80122,
@@ -5933,7 +6257,7 @@
                 },
                 {
                     "name": "InterhangeOliBackDynamic1",
-                    "strength": 15.0,
+                    "strength": 18,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -5954,7 +6278,7 @@
                 },
                 {
                     "name": "InterhangeOliBackDynamic2",
-                    "strength": 15.0,
+                    "strength": 18,
                     "blockNav": true,
                     "usesDistanceFalloff": true,
                     "position": {
@@ -6443,7 +6767,7 @@
             "loot": [
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": -169.1255,
@@ -6458,7 +6782,7 @@
                 },
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": -150.0209,
@@ -6473,7 +6797,7 @@
                 },
                 {
                     "type": "midTier",
-                    "odds": 50,
+                    "odds": 75,
                     "randomizeRotation": true,
                     "position": {
                         "x": -158.808,
@@ -6488,7 +6812,7 @@
                 },
                 {
                     "type": "lowTier",
-                    "odds": 80,
+                    "odds": 100,
                     "randomizeRotation": true,
                     "position": {
                         "x": -194.1198,
@@ -6503,7 +6827,7 @@
                 },
                 {
                     "type": "highTier",
-                    "odds": 10,
+                    "odds": 30,
                     "randomizeRotation": true,
                     "position": {
                         "x": -142.8438,
@@ -6518,7 +6842,7 @@
                 },
                 {
                     "type": "highTier",
-                    "odds": 35,
+                    "odds": 45,
                     "randomizeRotation": true,
                     "position": {
                         "x": -145.7,

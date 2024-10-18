@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static EFT.Interactive.BetterPropagationGroups;
 using static Val;
 
 
@@ -16,11 +17,13 @@ namespace RealismMod
         public List<AudioClip> AudioClips = new List<AudioClip>();
         public Transform ParentTransform;
         public bool FollowPlayer = false;
-        public float MinTimeBetweenClips = 35f;
+        public float MinTimeBetweenClips = 30f;
         public float MaxTimeBetweenClips = 200f;
         public float MinDistance = 50f;
-        public float MaxDistance = 90f;
+        public float MaxDistance = 80f;
+        public float DelayBeforePlayback = 60f;
         public float Volume = 1f;
+        private float _elapsedTime = 0f;
         private AudioSource _audioSource;
         private float _randomDistanceFromPlayer;
         private Vector3 _relativePositionFromPlayer;
@@ -29,7 +32,7 @@ namespace RealismMod
         {
             while (true)
             {
-                if (Utils.PlayerIsReady)
+                if (Utils.PlayerIsReady && _elapsedTime >= DelayBeforePlayback)
                 {
                     AudioClip selectedClip = AudioClips[UnityEngine.Random.Range(0, AudioClips.Count)];
 
@@ -57,6 +60,7 @@ namespace RealismMod
                     float waitTime = UnityEngine.Random.Range(MinTimeBetweenClips, MaxTimeBetweenClips);
                     yield return new WaitForSeconds(waitTime);
                 }
+                yield return null;
             }
         }
 
@@ -80,7 +84,16 @@ namespace RealismMod
 
         void Update()
         {
-            _audioSource.volume = _Player.Environment == EnvironmentType.Indoor ? Volume * 0.5f : Volume;
+            _elapsedTime += Time.deltaTime;
+
+            if (PlayerState.EnviroType == EnvironmentType.Indoor || PlayerState.BtrState == EPlayerBtrState.Inside)
+            {
+                _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, 0.1f, 0.05f);
+            }
+            else 
+            {
+                _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, Volume, 0.1f);
+            }
 
             if (FollowPlayer)
             {

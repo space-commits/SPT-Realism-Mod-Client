@@ -1,40 +1,158 @@
 {
     "FactoryQuestZones": [],
-    "CustomsQuestZones": [],
-    "GZQuestZones": [],
-    "ShorelineQuestZones": [],
-    "StreetsQuestZones": [],
-    "LabsQuestZones": [
+    "CustomsQuestZones": [
         {
             "spawnChance": 1.0,
             "zones": [
                 {
-                    "name": "LabsHVACRepair1",
+                    "name": "DormsMarkedCameraPlant",
                     "strength": 0,
                     "blockNav": false,
-                    "audioFile": "door_open.wav",
+                    "audioFile": "",
                     "usesDistanceFalloff": true,
                     "position": {
-                        "x": -132.4803,
-                        "y": -2.920149,
-                        "z": -365.7787
+                        "x": 181.9313,
+                        "y": 5.831576,
+                        "z": 183.0432
                     },
                     "rotation": {
                         "x": 0,
-                        "y": 177.722,
+                        "y": 98.57133,
                         "z": 0
                     },
                     "size": {
-                        "x": 2.792222,
-                        "y": 2.644993,
-                        "z": 2.018026
+                        "x": 4.638733,
+                        "y": 1,
+                        "z": 7.689378
                     }
                 }
             ]
         }
     ],
+    "GZQuestZones": [],
+    "ShorelineQuestZones": [
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "SateliteCommLink",
+                    "strength": 0,
+                    "blockNav": false,
+                    "audioFile": "",
+                    "usesDistanceFalloff": true,
+                    "analysable": {
+                        "enabledBy": [
+                            "6702b4a27d4a4a89fce96fbc"
+                        ],
+                        "disabledBy": [],
+                        "noRequirement": false
+                    },
+                    "position": {
+                        "x": -229.5444,
+                        "y": 7.217641,
+                        "z": -87.44312
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 345.2192,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 4.591778,
+                        "y": 1,
+                        "z": 5.457778
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "isTriggered": true,
+            "zones": [
+                {
+                    "name": "SateliteCommLinkEstablished",
+                    "strength": 0,
+                    "blockNav": false,
+                    "audioFile": "",
+                    "usesDistanceFalloff": true,
+                    "position": {
+                        "x": -229.5444,
+                        "y": 7.217641,
+                        "z": -87.44312
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 345.2192,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 4.591778,
+                        "y": 1,
+                        "z": 5.457778
+                    }
+                }
+            ]
+        },
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "SwampChurchCameraPlant",
+                    "strength": 0,
+                    "blockNav": false,
+                    "audioFile": "",
+                    "usesDistanceFalloff": true,
+                    "position": {
+                        "x": 255.2545,
+                        "y": -53.786,
+                        "z": -105.2255
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 9.36517,
+                        "y": 1,
+                        "z": 6.087019
+                    }
+                }
+            ]
+        }
+    ],
+    "StreetsQuestZones": [],
+    "LabsQuestZones": [],
     "InterchangeQuestZones": [],
     "LighthouseQuestZones": [],
     "WoodsQuestZones": [],
-    "ReserveQuestZones": []
+    "ReserveQuestZones": [
+        {
+            "spawnChance": 1.0,
+            "zones": [
+                {
+                    "name": "BunkerMarkedRoomCameraPlant",
+                    "strength": 0,
+                    "blockNav": false,
+                    "audioFile": "",
+                    "usesDistanceFalloff": true,
+                    "position": {
+                        "x": -120.8649,
+                        "y": -14.53575,
+                        "z": 27.58693
+                    },
+                    "rotation": {
+                        "x": 0,
+                        "y": 284.7292,
+                        "z": 0
+                    },
+                    "size": {
+                        "x": 3.126844,
+                        "y": 1,
+                        "z": 4.517192
+                    }
+                }
+            ]
+        }
+    ]
 }

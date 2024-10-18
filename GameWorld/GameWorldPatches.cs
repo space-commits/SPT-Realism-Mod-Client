@@ -334,6 +334,8 @@ namespace RealismMod
             ProfileData.CurrentProfileId = Utils.GetYourPlayer().ProfileId;
             if (Plugin.ServerConfig.enable_hazard_zones)
             {
+                GameWorldController.CheckDate();
+
                 //update tracked map info
                 GameWorldController.CurrentMap = Singleton<GameWorld>.Instance.MainPlayer.Location.ToLower();
                 GameWorldController.MapWithDynamicWeather = GameWorldController.CurrentMap.Contains("factory") || GameWorldController.CurrentMap == "laboratory" ? false : true;
@@ -342,11 +344,11 @@ namespace RealismMod
 
                 //audio components
                 AudioController.CreateAudioComponent();
-                if (GameWorldController.DoMapGasEvent) 
+                if (GameWorldController.DoMapGasEvent)
                 {
                     Player player = Utils.GetYourPlayer();
-                    ZoneSpawner.CreateAmbientAudioPlayers(player, player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.15f);
-                    ZoneSpawner.CreateAmbientAudioPlayers(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 15f, 60f, 0.38f, 55f, 75f);
+                    ZoneSpawner.CreateAmbientAudioPlayers(player, player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.2f, minDelayBeforePlayback: 60f); //spooky short playback
+                    ZoneSpawner.CreateAmbientAudioPlayers(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 15f, 60f, 0.5f, 55f, 70f, minDelayBeforePlayback: 0f); //long ambient
                 }
 
                 //spawn zones
@@ -355,7 +357,7 @@ namespace RealismMod
                 if (ZoneSpawner.ShouldSpawnDynamicZones()) ZoneSpawner.CreateZones(ZoneData.RadAssetZoneLocations);
                 ZoneSpawner.CreateZones(ZoneData.SafeZoneLocations);
                 ZoneSpawner.CreateZones(ZoneData.QuestZoneLocations);
-               
+
                 //hazardtracker 
                 HazardTracker.GetHazardValues(ProfileData.CurrentProfileId);
                 HazardTracker.ResetTracker();

@@ -46,6 +46,7 @@ namespace RealismMod
         public static float BaseSprintSpeed = 1f;
 
         public static EnvironmentType EnviroType = EnvironmentType.Outdoor;
+        public static EPlayerBtrState BtrState = EPlayerBtrState.Outside;
 
         public static bool IsClearingMalf = false;
 
