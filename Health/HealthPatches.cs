@@ -119,7 +119,6 @@ namespace RealismMod
         {
 #pragma warning disable CS0618
             _updateTime += Time.deltaTime;
-
             if (_updateTime >= 1f) 
             {
                 _updateTime = 0f;

@@ -238,7 +238,7 @@ namespace RealismMod
                 if (Mathf.Abs(raycastHit.point.y - _Player.Transform.position.y) <= 0.08f)
                 {
                     _position = raycastHit.point;
-                    _position.y += 0.05f;
+                    _position.y += 0.055f;
                     this.gameObject.transform.position = _position;
                     this.gameObject.transform.rotation = _rotation;
                     _placedItem = true;
@@ -249,7 +249,7 @@ namespace RealismMod
             if (!_placedItem && _placementTimer >= 0.1f)
             {
                 _position = _Player.gameObject.transform.position;
-                _position.y += 0.05f;
+                _position.y += 0.055f;
                 this.gameObject.transform.position = _position;
                 this.gameObject.transform.rotation = _rotation;
                 _placedItem = true;
@@ -490,7 +490,7 @@ namespace RealismMod
                 if (Mathf.Abs(raycastHit.point.y - _Player.Transform.position.y) <= 0.08f)
                 {
                     _position = raycastHit.point;
-                    _position.y += 0.05f;
+                    _position.y += 0.055f;
                     this.gameObject.transform.position = _position;
                     this.gameObject.transform.rotation = _rotation;
                     _placedItem = true;
@@ -501,7 +501,7 @@ namespace RealismMod
             if (!_placedItem && _placementTimer >= 0.1f) 
             {
                 _position = _Player.gameObject.transform.position;
-                _position.y += 0.05f;
+                _position.y += 0.055f;
                 this.gameObject.transform.position = _position;
                 this.gameObject.transform.rotation = _rotation;
                 _placedItem = true;

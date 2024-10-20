@@ -1701,6 +1701,7 @@ namespace RealismMod
         public static Dictionary<string, Vector3> GetWeaponOffsets()
         {
             return new Dictionary<string, Vector3>{
+            { "5aafa857e5b5b00018480968", new Vector3(0f, 0f, -0.1f)}, //m1a
             { "5b0bbe4e5acfc40dc528a72d", new Vector3(0f, 0f, -0.035f)}, //sa58
             { "6183afd850224f204c1da514", new Vector3(0f, -0.0135f, 0.02f)}, //mk17
             { "6165ac306ef05c2ce828ef74", new Vector3(0f, -0.0135f, 0.02f)}, //mk17 fde

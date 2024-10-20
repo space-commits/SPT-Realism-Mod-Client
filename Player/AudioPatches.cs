@@ -16,65 +16,6 @@ using HeadsetTemplate = GClass2556; //SetCompressor
 
 namespace RealismMod
 {
-    class DayTimeAmbientPatch : ModulePatch
-    {
-        private static FieldInfo _dayAudioSourceField;
-        private static FieldInfo _nightAudioSourceField;
-        protected override MethodBase GetTargetMethod()
-        {
-            _dayAudioSourceField = AccessTools.Field(typeof(AudioSource), "_outdoorAmbientDaySource");
-            _nightAudioSourceField = AccessTools.Field(typeof(AudioSource), "_outdoorAmbientNightSource");
-            return typeof(DayTimeAmbientBlender).GetMethod("method_0");
-        }
-
-        [PatchPrefix]
-        private static bool PatchPrefix(DayTimeAmbientBlender __instance)
-        {
-            if (!GameWorldController.RanEarliestGameCheck)
-            {
-                Plugin.RequestRealismDataFromServer(EUpdateType.ModInfo);
-                GameWorldController.RanEarliestGameCheck = true;
-            }
-
-            if (GameWorldController.MuteAmbientAudio) return false;
-            return true;
-        }
-    }
-
-    class AmbientSoundPlayerGroupPatch : ModulePatch
-    {
-        private static string[] _clipsToDisable =
-        { 
-            "lark", "crow", "nightingale", "greenmocking", "woodpecker", "robin", "raven", "rook", "bullfinch", "starling", "sparrow"
-        };
-        private static FieldInfo _playerGroupField;
-
-        protected override MethodBase GetTargetMethod()
-        {
-            _playerGroupField = AccessTools.Field(typeof(AmbientSoundPlayerGroup), "_soundPlayers");
-            return typeof(AmbientSoundPlayerGroup).GetMethod("Play");
-        }
-
-        [PatchPrefix]
-        private static bool PatchPrefix(AmbientSoundPlayerGroup __instance)
-        {
-            if (!GameWorldController.RanEarliestGameCheck)
-            {
-                Plugin.RequestRealismDataFromServer(EUpdateType.ModInfo);
-                GameWorldController.RanEarliestGameCheck = true;
-            }
-            if (!GameWorldController.MuteAmbientAudio) return true; 
-            var soundPlayers = (List<AbstractAmbientSoundPlayer>)_playerGroupField.GetValue(__instance);
-            foreach (var soundPlayer in soundPlayers)
-            {
-                if (_clipsToDisable.Contains(soundPlayer.name.ToLower())) continue;
-                return false;
-            }
-            return false;
-        }
-    }
-
-
     public class FireratePitchPatch : ModulePatch
     {
         private static FieldInfo _playerField;

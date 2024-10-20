@@ -27,7 +27,7 @@ namespace RealismMod
         {
             get
             {
-                return IsMapThatCanDoGasEvent && Plugin.ModInfo.DoGasEvent && !Plugin.ModInfo.HasExploded && !DidExplosionClientSide;
+                return IsMapThatCanDoGasEvent && Plugin.ModInfo.DoGasEvent && !Plugin.ModInfo.HasExploded && !DidExplosionClientSide && !(Plugin.ModInfo.IsPreExplosion && IsRightDateForExp);
             }
 
         }
@@ -65,10 +65,10 @@ namespace RealismMod
 
         public static void CalculateMapRadStrength()
         {
-            float rainStrength = PlayerState.BtrState == EPlayerBtrState.Inside || PlayerState.EnviroType == EnvironmentType.Indoor ? 0f : Plugin.RealismWeatherComponent.TargetRain * 0.15f;
-            float targetStrength = 0.05f + rainStrength;
-            targetStrength = PlayerState.BtrState == EPlayerBtrState.Inside ? targetStrength * 0.25f : targetStrength;
-            CurrentMapRadStrength = Mathf.Lerp(CurrentMapRadStrength, targetStrength * (PlayerState.EnviroType == EnvironmentType.Indoor ? 0.5f : 1f), 0.05f);
+            float rainStrength = PlayerState.BtrState == EPlayerBtrState.Inside || PlayerState.EnviroType == EnvironmentType.Indoor ? 0f : Plugin.RealismWeatherComponent.TargetRain * 0.13f;
+            float targetStrength = 0.1f + rainStrength;
+            targetStrength = PlayerState.BtrState == EPlayerBtrState.Inside ? targetStrength * 0.25f : PlayerState.EnviroType == EnvironmentType.Indoor ? 0.5f : targetStrength;
+            CurrentMapRadStrength = Mathf.Lerp(CurrentMapRadStrength, targetStrength, 0.05f);
         }
 
         public static void CheckDate() 
@@ -81,6 +81,16 @@ namespace RealismMod
         {
             if (DoMapGasEvent) CalculateGasEventStrength();
             if (DoMapRads) CalculateMapRadStrength();
+        }
+
+        public static void RunEarlyGameCheck()
+        {
+            if (!GameWorldController.RanEarliestGameCheck)
+            {
+                GameWorldController.CheckDate();
+                Plugin.RequestRealismDataFromServer(EUpdateType.ModInfo);
+                GameWorldController.RanEarliestGameCheck = true;
+            }
         }
     
     }
