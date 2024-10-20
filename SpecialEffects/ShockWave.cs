@@ -1,4 +1,5 @@
-﻿using EFT;
+﻿using Comfort.Common;
+using EFT;
 using EFT.Interactive;
 using RealismMod;
 using System.Collections;
@@ -21,6 +22,8 @@ public class ShockWave : TriggerWithId
         EFT.Interactive.TriggerWithId trigger = gameObject.AddComponent<EFT.Interactive.TriggerWithId>();
         trigger.SetId("nuke");
         gameObject.layer = LayerMask.NameToLayer("Triggers");
+        float gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume * 0.01f;
+        shockwaveSound.volume *= gameVolume;
     }
 
     void Update()
@@ -67,7 +70,6 @@ public class ShockWave : TriggerWithId
 
         if (_triggeredCount == 0) 
         {
-            Utils.Logger.LogWarning("is player");
             shockwaveSound.Play();
             HandlePlayerEffects(player);
         }

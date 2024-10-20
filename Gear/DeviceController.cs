@@ -31,7 +31,18 @@ namespace RealismMod
                 yield return null;
             }
 
-            bool canTrigger = GameWorldController.IsRightDateForExp && IsInRightLocation() && Plugin.ModInfo.IsHalloween && !Plugin.ModInfo.HasExploded && !GameWorldController.DidExplosionClientSide && Plugin.ModInfo.IsNightTime;
+            if (PluginConfig.ZoneDebug.Value) 
+            {
+                Utils.Logger.LogWarning("GameWorldController.IsRightDateForExp " + GameWorldController.IsRightDateForExp);
+                Utils.Logger.LogWarning("IsInRightLocation() " + IsInRightLocation());
+                Utils.Logger.LogWarning("Plugin.ModInfo.IsHalloween " + Plugin.ModInfo.IsHalloween);
+                Utils.Logger.LogWarning("Plugin.ModInfo.HasExploded " + Plugin.ModInfo.HasExploded);
+                Utils.Logger.LogWarning("GameWorldController.DidExplosionClientSide " + GameWorldController.DidExplosionClientSide);
+                Utils.Logger.LogWarning(" Plugin.ModInfo.IsNightTime " + Plugin.ModInfo.IsNightTime);
+            }
+
+            bool isRightTime = PluginConfig.ZoneDebug.Value || (GameWorldController.IsRightDateForExp && Plugin.ModInfo.IsNightTime);
+            bool canTrigger = IsInRightLocation() && Plugin.ModInfo.IsHalloween && !Plugin.ModInfo.HasExploded && !GameWorldController.DidExplosionClientSide && isRightTime;
             if (canTrigger) 
             {
                 _audioSource.clip = Plugin.DeviceAudioClips["transmitter_success.wav"];
@@ -64,7 +75,7 @@ namespace RealismMod
                 yield return null;
             }
 
-            Instantiate(Plugin.ExplosionGO, new Vector3(-700f, 3f, -1200f), new Quaternion(0, 0, 0, 0));
+            Instantiate(Plugin.ExplosionGO, new Vector3(-700f, 3f, -1000f), new Quaternion(0, 0, 0, 0));
         }
     }
 
@@ -85,8 +96,9 @@ namespace RealismMod
         protected Quaternion _rotation;
         protected List<IZone> _intersectingZones = new List<IZone>();
         public string _instanceId = "";
-        protected float _placementTimer = 0;
+        protected float _placementTimer = 0f;
         protected bool _placedItem = false;
+        protected float _gameVolume = 1f;
 
         protected void SetUpTransforms()
         {
@@ -98,9 +110,10 @@ namespace RealismMod
 
         protected AudioSource SetUpAudio(string clip, GameObject go)
         {
+            _gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume * 0.01f;
             AudioSource audioSource = go.AddComponent<AudioSource>();
             audioSource.clip = Plugin.DeviceAudioClips[clip];
-            audioSource.volume = 1f;
+            audioSource.volume = 1f * _gameVolume;
             audioSource.loop = false;
             audioSource.playOnAwake = false;
             audioSource.spatialBlend = 1.0f;
@@ -205,14 +218,12 @@ namespace RealismMod
 
             if (rb != null)
             {
-                Utils.Logger.LogWarning("removing rb");
                 rb.useGravity = false;
                 rb.isKinematic = true;  
             }
 
             if (col != null)
             {
-                Utils.Logger.LogWarning("removing col");
                 col.enabled = false;
             }
         }
@@ -234,7 +245,6 @@ namespace RealismMod
             RaycastHit raycastHit;
             if (!_placedItem && EFTPhysicsClass.Raycast(new Ray(_Player.PlayerBones.LootRaycastOrigin.position + _Player.PlayerBones.LootRaycastOrigin.forward / 2f, _Player.PlayerBones.LootRaycastOrigin.forward), out raycastHit, 2.5f, LayerMaskClass.HighPolyWithTerrainMask))
             {
-                Utils.Logger.LogWarning(Mathf.Abs(raycastHit.point.y - _Player.Transform.position.y));
                 if (Mathf.Abs(raycastHit.point.y - _Player.Transform.position.y) <= 0.08f)
                 {
                     _position = raycastHit.point;
@@ -334,6 +344,7 @@ namespace RealismMod
         private bool _deactivated = false;
         private float _placementTimer = 0;
         private bool _placedItem = false;
+        private float _gameVolume = 1f;
 
         void SetUpTransforms()
         {
@@ -372,9 +383,10 @@ namespace RealismMod
 
         private AudioSource SetUpAudio(string clip, GameObject go)
         {
+            _gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume * 0.01f;
             AudioSource audioSource = go.AddComponent<AudioSource>();
             audioSource.clip = Plugin.DeviceAudioClips[clip];
-            audioSource.volume = 1f;
+            audioSource.volume = 1f * _gameVolume;
             audioSource.loop = false;
             audioSource.playOnAwake = false;
             audioSource.spatialBlend = 1.0f;
@@ -446,14 +458,12 @@ namespace RealismMod
 
             if (rb != null)
             {
-                Utils.Logger.LogWarning("removing rb");
                 rb.useGravity = false;
                 rb.isKinematic = true;
             }
 
             if (col != null)
             {
-                Utils.Logger.LogWarning("removing col");
                 col.enabled = false;
             }
         }
@@ -486,7 +496,6 @@ namespace RealismMod
             RaycastHit raycastHit;
             if (!_placedItem && EFTPhysicsClass.Raycast(new Ray(_Player.PlayerBones.LootRaycastOrigin.position + _Player.PlayerBones.LootRaycastOrigin.forward / 2f, _Player.PlayerBones.LootRaycastOrigin.forward), out raycastHit, 2.5f, LayerMaskClass.HighPolyWithTerrainMask))
             {
-                Utils.Logger.LogWarning(Mathf.Abs(raycastHit.point.y - _Player.Transform.position.y));
                 if (Mathf.Abs(raycastHit.point.y - _Player.Transform.position.y) <= 0.08f)
                 {
                     _position = raycastHit.point;

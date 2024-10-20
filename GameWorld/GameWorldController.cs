@@ -74,7 +74,7 @@ namespace RealismMod
         public static void CheckDate() 
         {
             DateTime utcNow = DateTime.UtcNow;
-            IsRightDateForExp = (utcNow.Month == 10 && utcNow.Day >= 31) || (utcNow.Month == 11 && utcNow.Day <= 4);
+            IsRightDateForExp = PluginConfig.ZoneDebug.Value || (utcNow.Month == 10 && utcNow.Day >= 31) || (utcNow.Month == 11 && utcNow.Day <= 5);
         }
 
         public static void GameWorldUpdate() 

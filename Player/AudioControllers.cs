@@ -18,15 +18,16 @@ namespace RealismMod
         public Transform ParentTransform;
         public bool FollowPlayer = false;
         public float MinTimeBetweenClips = 30f;
-        public float MaxTimeBetweenClips = 200f;
+        public float MaxTimeBetweenClips = 180f;
         public float MinDistance = 50f;
-        public float MaxDistance = 80f;
+        public float MaxDistance = 79f;
         public float DelayBeforePlayback = 60f;
         public float Volume = 1f;
         private float _elapsedTime = 0f;
         private AudioSource _audioSource;
         private float _randomDistanceFromPlayer;
         private Vector3 _relativePositionFromPlayer;
+        private float _gameVolume = 1f;
 
         private IEnumerator PlayRandomAudio()
         {
@@ -66,10 +67,10 @@ namespace RealismMod
 
         void Start()
         {
+            _gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume * 0.01f;
             _audioSource = GetComponent<AudioSource>();
-
             _audioSource = this.gameObject.AddComponent<AudioSource>();
-            _audioSource.volume = Volume;
+            _audioSource.volume = Volume * _gameVolume;
             _audioSource.loop = false;
             _audioSource.playOnAwake = false;
             _audioSource.spatialBlend = 1f;
@@ -88,11 +89,11 @@ namespace RealismMod
 
             if (PlayerState.EnviroType == EnvironmentType.Indoor || PlayerState.BtrState == EPlayerBtrState.Inside)
             {
-                _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, 0.1f, 0.05f);
+                _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, 0.5f, 0.35f * Time.deltaTime);
             }
             else 
             {
-                _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, Volume, 0.1f);
+                _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, Volume, 0.35f * Time.deltaTime);
             }
 
             if (FollowPlayer)
