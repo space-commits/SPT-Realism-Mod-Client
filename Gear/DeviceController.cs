@@ -243,7 +243,7 @@ namespace RealismMod
             if (this.gameObject == null) return;
 
             RaycastHit raycastHit;
-            if (!_placedItem && EFTPhysicsClass.Raycast(new Ray(_Player.PlayerBones.LootRaycastOrigin.position + _Player.PlayerBones.LootRaycastOrigin.forward / 2f, _Player.PlayerBones.LootRaycastOrigin.forward), out raycastHit, 2.5f, LayerMaskClass.HighPolyWithTerrainMask))
+            if (!_placedItem && EFTPhysicsClass.Raycast(new Ray(_Player.PlayerBones.LootRaycastOrigin.position + _Player.PlayerBones.LootRaycastOrigin.forward / 2f, _Player.PlayerBones.LootRaycastOrigin.forward), out raycastHit, 2f, LayerMaskClass.HighPolyWithTerrainMask))
             {
                 if (Mathf.Abs(raycastHit.point.y - _Player.Transform.position.y) <= 0.08f)
                 {
@@ -356,17 +356,6 @@ namespace RealismMod
             eularRotation.x = -90f;
             eularRotation.y = 0f;
             _rotation = Quaternion.Euler(new Vector3(eularRotation.x, eularRotation.y, eularRotation.z));
-
-            if (PluginConfig.ZoneDebug.Value)
-            {
-                GameObject visualRepresentation = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                visualRepresentation.name ="deviceStartPos";
-                visualRepresentation.transform.localScale = new Vector3(0.5f, 0.5f, 100f);
-                visualRepresentation.transform.position = _position;
-                visualRepresentation.transform.rotation = _rotation;
-                visualRepresentation.GetComponent<Renderer>().material.color = UnityEngine.Color.green;
-                UnityEngine.Object.Destroy(visualRepresentation.GetComponent<Collider>()); // Remove the collider from the visual representation
-            }
         }
 
         private void SetUpActions()
@@ -386,11 +375,11 @@ namespace RealismMod
             _gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume.Value * 0.1f;
             AudioSource audioSource = go.AddComponent<AudioSource>();
             audioSource.clip = Plugin.DeviceAudioClips[clip];
-            audioSource.volume = 1f * _gameVolume;
+            audioSource.volume = 1.0f * _gameVolume;
             audioSource.loop = false;
             audioSource.playOnAwake = false;
             audioSource.spatialBlend = 1.0f;
-            audioSource.minDistance = 0.75f;
+            audioSource.minDistance = 0.7f;
             audioSource.maxDistance = 30f;
             audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
             return audioSource;
@@ -494,7 +483,7 @@ namespace RealismMod
             if (this.gameObject == null || _deactivated) return;
 
             RaycastHit raycastHit;
-            if (!_placedItem && EFTPhysicsClass.Raycast(new Ray(_Player.PlayerBones.LootRaycastOrigin.position + _Player.PlayerBones.LootRaycastOrigin.forward / 2f, _Player.PlayerBones.LootRaycastOrigin.forward), out raycastHit, 2.5f, LayerMaskClass.HighPolyWithTerrainMask))
+            if (!_placedItem && EFTPhysicsClass.Raycast(new Ray(_Player.PlayerBones.LootRaycastOrigin.position + _Player.PlayerBones.LootRaycastOrigin.forward / 2f, _Player.PlayerBones.LootRaycastOrigin.forward), out raycastHit, 2f, LayerMaskClass.HighPolyWithTerrainMask))
             {
                 if (Mathf.Abs(raycastHit.point.y - _Player.Transform.position.y) <= 0.08f)
                 {
