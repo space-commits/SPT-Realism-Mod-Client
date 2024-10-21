@@ -2071,7 +2071,7 @@ namespace RealismMod
 
         private void HazardZoneHealthTick(Player player)
         {
-            if (!GameWorldController.GameStarted) return;
+            if (!GameWorldController.GameStarted || PluginConfig.DevMode.Value) return;
 
             if (PlayerHazardBridge == null)
             {

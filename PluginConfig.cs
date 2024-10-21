@@ -299,6 +299,7 @@ namespace RealismMod
         public static ConfigEntry<float> ShortStockReadyRotationZ { get; set; }
 
         //dev config options
+        public static ConfigEntry<bool> DevMode { get; set; }
         public static ConfigEntry<bool> ZoneDebug { get; set; }
         public static ConfigEntry<String> TargetZone { get; set; }
         public static ConfigEntry<bool> EnableLogging { get; set; }
@@ -357,6 +358,7 @@ namespace RealismMod
             AddEffectBodyPart = config.Bind<int>(testing, "Body Part Index", 1, new ConfigDescription("Head = 0, Chest = 1, Stomach = 2, Letft Arm, Right Arm, Left Leg, Right Leg, Common (whole body)", null, new ConfigurationManagerAttributes { Order = 50, IsAdvanced = true, Browsable = true }));
             AddEffectKeybind = config.Bind(testing, "Add Effect Keybind", new KeyboardShortcut(KeyCode.None), new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 40, IsAdvanced = true, Browsable = true }));
             ZoneDebug = config.Bind<bool>(testing, "Enable Zone Debug", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 30, IsAdvanced = true, Browsable = true }));
+            DevMode = config.Bind<bool>(testing, "Enable Dev Mode", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { Order = 29, IsAdvanced = true, Browsable = true }));
             EnableBallisticsLogging = config.Bind<bool>(testing, "Enable Ballistics Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 20, IsAdvanced = true, Browsable = true }));
             EnableLogging = config.Bind<bool>(testing, "Enable Logging", false, new ConfigDescription("Enables Logging For Debug And Dev", null, new ConfigurationManagerAttributes { Order = 10, IsAdvanced = true, Browsable = true }));
 

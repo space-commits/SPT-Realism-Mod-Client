@@ -22,7 +22,7 @@ public class ShockWave : TriggerWithId
         EFT.Interactive.TriggerWithId trigger = gameObject.AddComponent<EFT.Interactive.TriggerWithId>();
         trigger.SetId("nuke");
         gameObject.layer = LayerMask.NameToLayer("Triggers");
-        float gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume * 0.01f;
+        float gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume.Value * 0.1f;
         shockwaveSound.volume *= gameVolume;
     }
 

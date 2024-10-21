@@ -81,7 +81,7 @@ namespace RealismMod
             TargetFog = Mathf.Lerp(TargetFog, _targetGasStrength, 0.05f * Time.deltaTime);
             TargetCloudDensity = Mathf.Lerp(TargetCloudDensity, _targetGasCloudStrength, 0.05f * Time.deltaTime);
             TargetLighteningThunder = Mathf.Lerp(TargetLighteningThunder, 0f, 0.1f * Time.deltaTime);
-            TargetWindMagnitude = Mathf.Lerp(TargetWindMagnitude, 0f, 0.05f * Time.deltaTime);
+            TargetWindMagnitude = Mathf.Lerp(TargetWindMagnitude, -0.1f, 0.05f * Time.deltaTime);
         }
 
         private void DoMapRadWeather()
@@ -90,7 +90,7 @@ namespace RealismMod
 
             if (_radRainTimer >= 200f)
             {
-                _radRainStrength = Mathf.Max(0, UnityEngine.Random.Range(-0.8f, 0.65f));
+                _radRainStrength = Mathf.Max(0, UnityEngine.Random.Range(-0.2f, 0.65f));
                 _radRainTimer = 0f;
             }
 

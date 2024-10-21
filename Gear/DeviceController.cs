@@ -110,10 +110,10 @@ namespace RealismMod
 
         protected AudioSource SetUpAudio(string clip, GameObject go)
         {
-            _gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume * 0.01f;
+            _gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume.Value * 0.1f;
             AudioSource audioSource = go.AddComponent<AudioSource>();
             audioSource.clip = Plugin.DeviceAudioClips[clip];
-            audioSource.volume = 1f * _gameVolume;
+            audioSource.volume = 1.05f * _gameVolume;
             audioSource.loop = false;
             audioSource.playOnAwake = false;
             audioSource.spatialBlend = 1.0f;
@@ -383,7 +383,7 @@ namespace RealismMod
 
         private AudioSource SetUpAudio(string clip, GameObject go)
         {
-            _gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume * 0.01f;
+            _gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume.Value * 0.1f;
             AudioSource audioSource = go.AddComponent<AudioSource>();
             audioSource.clip = Plugin.DeviceAudioClips[clip];
             audioSource.volume = 1f * _gameVolume;
@@ -714,27 +714,36 @@ namespace RealismMod
             }
         }
 
-        public static string GetGasAnalsyerClip(float gasLevel) 
+        public static string GetGasAnalsyerClip(float gasLevel, out float volumeModi) 
         {
             switch (gasLevel) 
             {
                 case <= 0f:
+                    volumeModi = 1f;
                     return null;
                 case <= 0.02f:
+                    volumeModi = 1.1f;
                     return "gasBeep1.wav";
                 case <= 0.04f:
+                    volumeModi = 1.1f;
                     return "gasBeep2.wav";
                 case <= 0.08f:
+                    volumeModi = 1.1f;
                     return "gasBeep3.wav";
                 case <= 0.12f:
+                    volumeModi = 1f;
                     return "gasBeep4.wav";
                 case <= 0.16f:
+                    volumeModi = 1f;
                     return "gasBeep5.wav";
                 case <= 0.19f:
+                    volumeModi = 1f;
                     return "gasBeep6.wav";
                 case > 0.19f:
+                    volumeModi = 0.8f;
                     return "gasBeep7.wav";
-                default: 
+                default:
+                    volumeModi = 1f;
                     return null;
             }
         }
@@ -764,11 +773,12 @@ namespace RealismMod
 
         public static void PlayGasAnalyserClips(Player player)
         {
-            string clip = GetGasAnalsyerClip(HazardTracker.BaseTotalToxicityRate);
+            float volumeModi = 1f;
+            string clip = GetGasAnalsyerClip(HazardTracker.BaseTotalToxicityRate, out volumeModi);
             if (clip == null) return;
             AudioClip audioClip = Plugin.DeviceAudioClips[clip];
             _currentGasClipLength = audioClip.length;
-            float volume = _muteGasAnalyser ? 0f : GAS_DEVICE_VOLUME * PluginConfig.DeviceVolume.Value;
+            float volume = (_muteGasAnalyser ? 0f : GAS_DEVICE_VOLUME * PluginConfig.DeviceVolume.Value) * volumeModi;
             Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), audioClip, 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, volume, EOcclusionTest.None, null, false);
         }
 

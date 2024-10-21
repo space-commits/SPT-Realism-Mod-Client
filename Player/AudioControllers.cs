@@ -18,10 +18,10 @@ namespace RealismMod
         public Transform ParentTransform;
         public bool FollowPlayer = false;
         public float MinTimeBetweenClips = 30f;
-        public float MaxTimeBetweenClips = 180f;
-        public float MinDistance = 50f;
-        public float MaxDistance = 79f;
-        public float DelayBeforePlayback = 60f;
+        public float MaxTimeBetweenClips = 120;
+        public float MinDistance = 48f;
+        public float MaxDistance = 60f;
+        public float DelayBeforePlayback = 30f;
         public float Volume = 1f;
         private float _elapsedTime = 0f;
         private AudioSource _audioSource;
@@ -67,7 +67,7 @@ namespace RealismMod
 
         void Start()
         {
-            _gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume * 0.01f;
+            _gameVolume = Singleton<SharedGameSettingsClass>.Instance.Sound.Settings.OverallVolume.Value * 0.1f;
             _audioSource = GetComponent<AudioSource>();
             _audioSource = this.gameObject.AddComponent<AudioSource>();
             _audioSource.volume = Volume * _gameVolume;
