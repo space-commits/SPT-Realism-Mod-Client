@@ -119,7 +119,6 @@ namespace RealismMod
         {
 #pragma warning disable CS0618
             _updateTime += Time.deltaTime;
-
             if (_updateTime >= 1f) 
             {
                 _updateTime = 0f;
@@ -134,7 +133,7 @@ namespace RealismMod
                         GameObject current = poisoning.transform.Find("Current")?.gameObject;
                         if (buff != null)
                         {
-                            float toxicityRate = HazardTracker.TotalToxicityRate;
+                            float toxicityRate = PluginConfig.EnableTrueHazardRates.Value ? HazardTracker.BaseTotalToxicityRate : HazardTracker.TotalToxicityRate;
                             CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>(); //can animate it by changing the font size with ping pong, and modulate the color
                             buffUI.text = (toxicityRate > 0f ? "+" : "") + toxicityRate.ToString("0.00");
                             buffUI.color = GetGasRateColor(toxicityRate);
@@ -157,7 +156,7 @@ namespace RealismMod
                         GameObject current = radiation.transform.Find("Current")?.gameObject;
                         if (buff != null)
                         {
-                            float radRate = HazardTracker.TotalRadiationRate;
+                            float radRate = PluginConfig.EnableTrueHazardRates.Value ? HazardTracker.BaseTotalRadiationRate : HazardTracker.TotalRadiationRate;
                             CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
                             buffUI.text = (radRate > 0f ? "+" : "") + radRate.ToString("0.00");
                             buffUI.color = GetRadRateColor(radRate);

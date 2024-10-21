@@ -15,6 +15,8 @@ using ArmorPlateUIClass = GClass2648;
 using BarrelTemplateClass = GClass2593;
 using FormatArmorClass = GClass2534;
 using StatAttributeClass = GClass2768;
+using RootMotion.FinalIK;
+using System.Xml.Linq;
 
 namespace RealismMod
 {
@@ -435,7 +437,6 @@ namespace RealismMod
             return typeof(Mod).GetConstructor(new Type[] { typeof(string), typeof(ModTemplate) });
         }
 
-
         [PatchPostfix]
         private static void PatchPostfix(Mod __instance, string id, ModTemplate template)
         {
@@ -455,169 +456,43 @@ namespace RealismMod
             float meleeDmg = AttachmentProperties.ModMeleeDamage(__instance);
             float meleePen = AttachmentProperties.ModMeleePen(__instance);
             float muzzleFlash = AttachmentProperties.ModFlashSuppression(__instance);
+            float aimStability = AttachmentProperties.ModAimStability(__instance);
+            float handling = AttachmentProperties.ModHandling(__instance);
 
             if (Plugin.ServerConfig.malf_changes == true)
             {
-                ItemAttributeClass malfAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.MalfunctionChance);
-                malfAtt.Name = ENewItemAttributeId.MalfunctionChance.GetName();
-                malfAtt.Base = () => malfChance;
-                malfAtt.StringValue = () => $"{getMalfOdds(malfChance)}";
-                malfAtt.LessIsGood = true;
-                malfAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-                malfAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-                Utils.SafelyAddAttributeToList(malfAtt, __instance);
+                Utils.AddAttribute(__instance, ENewItemAttributeId.MalfunctionChance, malfChance, $"{getMalfOdds(malfChance)}", true);
             }
-
 
             if (AttachmentProperties.StockAllowADS(__instance))
             {
-                ItemAttributeClass canADSAttAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.CanADS);
-                canADSAttAttClass.Name = ENewItemAttributeId.CanADS.GetName();
-                canADSAttAttClass.Base = () => 1;
-                canADSAttAttClass.StringValue = () => "";
-                canADSAttAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
-                Utils.SafelyAddAttributeToList(canADSAttAttClass, __instance);
+                Utils.AddAttribute(__instance, ENewItemAttributeId.CanADS, 1, "", colored: false);
             }
 
             if (muzzleFlash != 0f && PluginConfig.EnableMuzzleEffects.Value)
             {
                 bool isGasReduction = !Utils.IsMuzzleCombo(__instance) && !Utils.IsFlashHider(__instance) && !Utils.IsBarrel(__instance);
                 float flashValue = muzzleFlash * (isGasReduction ? 1f : -1f);
-                ItemAttributeClass flashAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.MuzzleFlash);
-                flashAtt.Name = isGasReduction ? "Gas" : ENewItemAttributeId.MuzzleFlash.GetName();
-                flashAtt.Base = () => flashValue;
-                flashAtt.StringValue = () => $"{flashValue}%";
-                flashAtt.LessIsGood = isGasReduction ? true : false;
-                flashAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-                flashAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-                Utils.SafelyAddAttributeToList(flashAtt, __instance);
+                string name = isGasReduction ? ENewItemAttributeId.Gas.GetName() : ENewItemAttributeId.MuzzleFlash.GetName();
+                Utils.AddAttribute(__instance, ENewItemAttributeId.MuzzleFlash, flashValue, $"{flashValue}%", isGasReduction ? true : false, name);
             }
 
-            ItemAttributeClass hRecoilAtt = new ItemAttributeClass(Attributes.ENewItemAttributeId.HorizontalRecoil);
-            hRecoilAtt.Name = ENewItemAttributeId.HorizontalRecoil.GetName();
-            hRecoilAtt.Base = () => hRecoil;
-            hRecoilAtt.StringValue = () => $"{hRecoil}%";
-            hRecoilAtt.LessIsGood = true;
-            hRecoilAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            hRecoilAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Utils.SafelyAddAttributeToList(hRecoilAtt, __instance);
-
-            ItemAttributeClass vRecoilAtt = new ItemAttributeClass(ENewItemAttributeId.VerticalRecoil);
-            vRecoilAtt.Name = ENewItemAttributeId.VerticalRecoil.GetName();
-            vRecoilAtt.Base = () => vRecoil;
-            vRecoilAtt.StringValue = () => $"{vRecoil}%";
-            vRecoilAtt.LessIsGood = true;
-            vRecoilAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            vRecoilAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Utils.SafelyAddAttributeToList(vRecoilAtt, __instance);
-
-            ItemAttributeClass dispersionAtt = new ItemAttributeClass(ENewItemAttributeId.Dispersion);
-            dispersionAtt.Name = ENewItemAttributeId.Dispersion.GetName();
-            dispersionAtt.Base = () => disperion;
-            dispersionAtt.StringValue = () => $"{disperion}%";
-            dispersionAtt.LessIsGood = true;
-            dispersionAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            dispersionAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Utils.SafelyAddAttributeToList(dispersionAtt, __instance);
-
-            ItemAttributeClass cameraRecAtt = new ItemAttributeClass(ENewItemAttributeId.CameraRecoil);
-            cameraRecAtt.Name = ENewItemAttributeId.CameraRecoil.GetName();
-            cameraRecAtt.Base = () => cameraRecoil;
-            cameraRecAtt.StringValue = () => $"{cameraRecoil}%";
-            cameraRecAtt.LessIsGood = true;
-            cameraRecAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            cameraRecAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Utils.SafelyAddAttributeToList(cameraRecAtt, __instance);
-
-            ItemAttributeClass autoROFAtt = new ItemAttributeClass(ENewItemAttributeId.AutoROF);
-            autoROFAtt.Name = ENewItemAttributeId.AutoROF.GetName();
-            autoROFAtt.Base = () => autoROF;
-            autoROFAtt.StringValue = () => $"{autoROF}%";
-            autoROFAtt.LessIsGood = false;
-            autoROFAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            autoROFAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Utils.SafelyAddAttributeToList(autoROFAtt, __instance);
-
-            ItemAttributeClass semiROFAtt = new ItemAttributeClass(ENewItemAttributeId.SemiROF);
-            semiROFAtt.Name = ENewItemAttributeId.SemiROF.GetName();
-            semiROFAtt.Base = () => semiROF;
-            semiROFAtt.StringValue = () => $"{semiROF}%";
-            semiROFAtt.LessIsGood = false;
-            semiROFAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            semiROFAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Utils.SafelyAddAttributeToList(semiROFAtt, __instance);
-
-            ItemAttributeClass angleAtt = new ItemAttributeClass(ENewItemAttributeId.RecoilAngle);
-            angleAtt.Name = ENewItemAttributeId.RecoilAngle.GetName();
-            angleAtt.Base = () => angle;
-            angleAtt.StringValue = () => $"{angle}%";
-            angleAtt.LessIsGood = false;
-            angleAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            angleAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Utils.SafelyAddAttributeToList(angleAtt, __instance);
-
-            ItemAttributeClass reloadSpeedAtt = new ItemAttributeClass(ENewItemAttributeId.ReloadSpeed);
-            reloadSpeedAtt.Name = ENewItemAttributeId.ReloadSpeed.GetName();
-            reloadSpeedAtt.Base = () => reloadSpeed;
-            reloadSpeedAtt.StringValue = () => $"{reloadSpeed}%";
-            reloadSpeedAtt.LessIsGood = false;
-            reloadSpeedAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            reloadSpeedAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Utils.SafelyAddAttributeToList(reloadSpeedAtt, __instance);
-
-            ItemAttributeClass chamberSpeedAtt = new ItemAttributeClass(ENewItemAttributeId.ChamberSpeed);
-            chamberSpeedAtt.Name = ENewItemAttributeId.ChamberSpeed.GetName();
-            chamberSpeedAtt.Base = () => chamberSpeed;
-            chamberSpeedAtt.StringValue = () => $"{chamberSpeed}%";
-            chamberSpeedAtt.LessIsGood = false;
-            chamberSpeedAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            chamberSpeedAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Utils.SafelyAddAttributeToList(chamberSpeedAtt, __instance);
-
-            ItemAttributeClass aimSpeedAtt = new ItemAttributeClass(ENewItemAttributeId.AimSpeed);
-            aimSpeedAtt.Name = ENewItemAttributeId.AimSpeed.GetName();
-            aimSpeedAtt.Base = () => aimSpeed;
-            aimSpeedAtt.StringValue = () => $"{aimSpeed}%";
-            aimSpeedAtt.LessIsGood = false;
-            aimSpeedAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            aimSpeedAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Utils.SafelyAddAttributeToList(aimSpeedAtt, __instance);
-
-            ItemAttributeClass shotDispAtt = new ItemAttributeClass(ENewItemAttributeId.ShotDispersion);
-            shotDispAtt.Name = ENewItemAttributeId.ShotDispersion.GetName();
-            shotDispAtt.Base = () => shotDisp;
-            shotDispAtt.StringValue = () => $"{shotDisp}%";
-            shotDispAtt.LessIsGood = false;
-            shotDispAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            shotDispAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Utils.SafelyAddAttributeToList(shotDispAtt, __instance);
-
-            ItemAttributeClass convAtt = new ItemAttributeClass(ENewItemAttributeId.Convergence);
-            convAtt.Name = ENewItemAttributeId.Convergence.GetName();
-            convAtt.Base = () => conv;
-            convAtt.StringValue = () => $"{conv}%";
-            convAtt.LessIsGood = false;
-            convAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            convAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Utils.SafelyAddAttributeToList(convAtt, __instance);
-
-            ItemAttributeClass meleeDmgAtt = new ItemAttributeClass(ENewItemAttributeId.MeleeDamage);
-            meleeDmgAtt.Name = ENewItemAttributeId.MeleeDamage.GetName();
-            meleeDmgAtt.Base = () => meleeDmg;
-            meleeDmgAtt.StringValue = () => $"{meleeDmg}";
-            meleeDmgAtt.LessIsGood = false;
-            meleeDmgAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            meleeDmgAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Utils.SafelyAddAttributeToList(meleeDmgAtt, __instance);
-
-            ItemAttributeClass meleePenAtt = new ItemAttributeClass(ENewItemAttributeId.MeleePen);
-            meleePenAtt.Name = ENewItemAttributeId.MeleePen.GetName();
-            meleePenAtt.Base = () => meleePen;
-            meleePenAtt.StringValue = () => $"{meleePen}";
-            meleePenAtt.LessIsGood = false;
-            meleePenAtt.DisplayType = () => EItemAttributeDisplayType.Compact;
-            meleePenAtt.LabelVariations = EItemAttributeLabelVariations.Colored;
-            Utils.SafelyAddAttributeToList(meleePenAtt, __instance);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.HorizontalRecoil, hRecoil, $"{hRecoil}%", true);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.VerticalRecoil, vRecoil, $"{vRecoil}%", true);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.Dispersion, disperion, $"{disperion}%", true);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.CameraRecoil, cameraRecoil, $"{cameraRecoil}%", true);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.AutoROF, autoROF, $"{autoROF}%", true);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.SemiROF, semiROF, $"{semiROF}%", false);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.RecoilAngle, angle, $"{angle}%", false);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.ReloadSpeed, reloadSpeed, $"{reloadSpeed}%", false);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.ChamberSpeed, chamberSpeed, $"{chamberSpeed}%", false);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.AimSpeed, aimSpeed, $"{aimSpeed}%", false);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.AimStability, aimStability, $"{aimStability}%", false);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.Handling, handling, $"{handling}%", false);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.ShotDispersion, shotDisp, $"{shotDisp}%", false);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.Convergence, conv, $"{conv}%", false);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.MeleeDamage, meleeDmg, $"{meleeDmg}%", false);
+            Utils.AddAttribute(__instance, ENewItemAttributeId.MeleePen, meleePen, $"{meleePen}%", false);
         }
 
         public static string getMalfOdds(float malfChance)
@@ -965,24 +840,11 @@ namespace RealismMod
             float pureRecoil = 0;
 
             float currentTorque = 0f;
-
-            float currentReloadSpeed = 0f;
-
-            float currentAimSpeed = 0f;
-
-            float currentChamberSpeed = 0f;
-
             float currentShotDisp = 0f;
-
             float currentMalfChance = 0f;
-
-            float currentFixSpeed = 0f;
 
             string weapOpType = WeaponStats.OperationType(__instance);
             string weapType = WeaponStats.WeaponType(__instance);
-            float currentLoudness = 0;
-            float currentFlashSuppression = 0;
-            float currentGas = 0;
 
             bool stockAllowsFSADS = false;
 
@@ -1012,28 +874,30 @@ namespace RealismMod
                 float modDispersion = AttachmentProperties.Dispersion(mod);
                 float modAngle = AttachmentProperties.RecoilAngle(mod);
                 float modAccuracy = mod.Accuracy;
-                float modReload = 0f;
-                float modChamber = 0f;
-                float modAim = 0f;
-                float modLoudness = 0f;
-                float modMalfChance = 0f;
-                float modDuraBurn = 0f;
-                float modFix = 0f;
-                float modFlashSuppression = 0f;
+                float modMalfChance = 0;
+                float modDuraBurn = 0;
+                float modChamber = 0;
+                float modFlashSuppression = 0;
+                float modStability = 0;
+                float modHandling = 0;
+                float modLoudness = 0;
+                float modAim = 0;
+
                 string modType = AttachmentProperties.ModType(mod);
                 string position = StatCalc.GetModPosition(mod, weapType, weapOpType, modType);
                 StatCalc.ModConditionalStatCalc(__instance, mod, folded, weapType, weapOpType, ref hasShoulderContact, ref modAutoROF, 
                     ref modSemiROF, ref stockAllowsFSADS, ref modVRecoil, ref modHRecoil, ref modCamRecoil, ref modAngle, 
                     ref modDispersion, ref modErgo, ref modAccuracy, ref modType, ref position, ref modChamber, ref modLoudness, 
-                    ref modMalfChance, ref modDuraBurn, ref modConv, ref modFlashSuppression);
-                StatCalc.ModStatCalc(mod, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, ref currentAutoROF, 
-                    modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, modDispersion, ref currentDispersion, 
-                    modAngle, ref currentRecoilAngle, modAccuracy, ref currentCOI, modAim, ref currentAimSpeed, modReload, 
-                    ref currentReloadSpeed, modFix, ref currentFixSpeed, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil,
-                    modHRecoil, ref currentHRecoil, ref currentChamberSpeed, modChamber, true, __instance.WeapClass, 
-                    ref pureErgo, 0, ref currentShotDisp, modLoudness, ref currentLoudness, ref currentMalfChance, 
-                    modMalfChance, ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed, isChonker,
-                    ref currentFlashSuppression, 0f, ref currentGas);
+                    ref modMalfChance, ref modDuraBurn, ref modConv, ref modFlashSuppression, ref modStability, 
+                    ref modHandling, ref modAim);
+
+                StatCalc.ModStatCalc(
+                    mod, true, isChonker, modWeight, ref currentTorque, position, modWeightFactored, modAutoROF, 
+                    ref currentAutoROF, modSemiROF, ref currentSemiROF, modCamRecoil, ref currentCamRecoil, 
+                    modDispersion, ref currentDispersion, modAngle, ref currentRecoilAngle, modAccuracy, 
+                    ref currentCOI, modErgo, ref currentErgo, modVRecoil, ref currentVRecoil, modHRecoil, 
+                    ref currentHRecoil, ref pureErgo, 0, ref currentShotDisp, ref currentMalfChance, 
+                    0, ref pureRecoil, ref currentConv, modConv, ref currentCamReturnSpeed);
             }
 
 

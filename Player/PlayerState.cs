@@ -4,6 +4,8 @@ namespace RealismMod
 {
     public static class PlayerState
     {
+        public const float AIM_MOVE_SPEED_BASE = 0.5f;
+
         public static bool IsScav = false;
 
         public static float FixSkillMulti = 1f;
@@ -25,8 +27,6 @@ namespace RealismMod
 
         public static float VitalityFactorStrong = 0f;
 
-        public static float AimMoveSpeedBase = 0.5f;
-
         public static float AimMoveSpeedInjuryMulti = 1f;
 
         public static float ErgoDeltaInjuryMulti = 1f;
@@ -46,6 +46,7 @@ namespace RealismMod
         public static float BaseSprintSpeed = 1f;
 
         public static EnvironmentType EnviroType = EnvironmentType.Outdoor;
+        public static EPlayerBtrState BtrState = EPlayerBtrState.Outside;
 
         public static bool IsClearingMalf = false;
 
@@ -74,11 +75,12 @@ namespace RealismMod
 
         public static float WeaponSkillErgo = 0f;
 
-        public static float StaminaPerc = 1f;
+        public static float BaseStaminaPerc = 1f;
+        public static float CombinedStaminaPerc= 1f;
 
-        public static float RemainingArmStamPerc = 1f;
+        public static float RemainingArmStamFactor = 1f;
 
-        public static float RemainingArmStamPercReload = 1f;
+        public static float RemainingArmStamReloadFactor = 1f;
 
         public static float AimSkillADSBuff = 0f;
 

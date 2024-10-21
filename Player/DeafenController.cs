@@ -147,14 +147,13 @@ namespace RealismMod
             if (DeafeningController.HasHeadSet && (RecoilController.IsFiringDeafen || GrenadeVolume > 0f || BotVolume > 0f))
             {
                 Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", PluginConfig.RealTimeGain.Value * PluginConfig.GainCutoff.Value);
-                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol * (1f + (1f - PluginConfig.GainCutoff.Value)));
+                Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", (headsetAmbientVol * (1f + (1f - PluginConfig.GainCutoff.Value))));
             }
             else if (DeafeningController.HasHeadSet)
             {
                 Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", PluginConfig.RealTimeGain.Value);
                 Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol);
             }
-
         }
 
         private static void ChangeDeafValues(float deafFactor, ref float vigValue, float vigIncRate, float vigLimit, ref float volValue, float volDecRate, float volLimit, float enviroMulti)

@@ -4,6 +4,7 @@ using EFT.Animations.NewRecoil;
 using EFT.InventoryLogic;
 using EFT;
 using UnityEngine;
+using static EFT.Player;
 
 namespace RealismMod
 {
@@ -87,6 +88,35 @@ namespace RealismMod
             }
         }
 
+        private static float PistolShotFactor(Weapon weapon)
+        {
+            if (weapon.WeapClass != "pistol" || weapon.SelectedFireMode != Weapon.EFireMode.fullauto) return 1f;
+
+            switch (ShotCount)
+            {
+                case 0:
+                    return 1.1f;
+                case 1:
+                    return 2.5f;
+                case 2:
+                    return 2.3f;
+                case 3:
+                    return 2.1f;
+                case 4:
+                    return 1.9f;
+                case 5:
+                    return 1.0f;
+                case 6:
+                    return 1.7f;
+                case 7:
+                    return 1.6f;
+                case >= 8:
+                    return 1.5f;
+                default:
+                    return 1;
+            }
+        }
+
         public static void DoVisualRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation, ManualLogSource logger)
         {
             float cantedRecoilSpeed = Mathf.Clamp(BaseTotalConvergence * 0.95f, 9f, 16f);
@@ -136,11 +166,11 @@ namespace RealismMod
 
             if (PluginConfig.EnableHybridRecoil.Value && (PluginConfig.HybridForAll.Value || (!PluginConfig.HybridForAll.Value && !WeaponStats.HasShoulderContact)))
             {
-                pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Clamp((RecoilController.BaseTotalConvergence - Mathf.Clamp(25f + RecoilController.ShotCount, 0, 100f)) + Mathf.Clamp(15f + RecoilController.PlayerControl, 0f, 100f), 2f, RecoilController.BaseTotalConvergence * stanceFactor);
+                pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Clamp((RecoilController.BaseTotalConvergence - Mathf.Clamp(25f + RecoilController.ShotCount, 0, 100f)) + Mathf.Clamp(15f + RecoilController.PlayerControl, 0f, 100f), 2f, RecoilController.BaseTotalConvergence * stanceFactor * PistolShotFactor(weapon));
             }
             else
             {
-                pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = RecoilController.BaseTotalConvergence * stanceFactor;
+                pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = RecoilController.BaseTotalConvergence * stanceFactor * PistolShotFactor(weapon);
             }
         }
     }

@@ -432,7 +432,7 @@ namespace RealismMod
                 return false;
             }
 
-            Player player = Utils.GetPlayerByID(bodyPartCollider.playerBridge.iPlayer.ProfileId);
+            Player player = Utils.GetPlayerByProfileId(bodyPartCollider.playerBridge.iPlayer.ProfileId);
             if (player == null) return true;
 
             List<ArmorComponent> armors = (List<ArmorComponent>)armorCompsField.GetValue(player);

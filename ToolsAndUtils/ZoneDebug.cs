@@ -7,12 +7,14 @@ using HarmonyLib;
 using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using static RootMotion.FinalIK.IKSolver;
 
 namespace RealismMod
 {
+    //big thanks to Jehree for the bulk of this code
     public static class MoveDaCube
     {
         public static ConfigEntry<float> ChangeSpeed;
@@ -77,12 +79,22 @@ namespace RealismMod
             SelectedObjectName = config.Bind(
               "41.0: Object Control",
               "Selected Object Name",
-              ""
+              "",
+                new ConfigDescription(
+                    "",
+                    null,
+                    new ConfigurationManagerAttributes { IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
+                )
           );
             SelectedAssetName = config.Bind(
             "41.0: Object Control",
             "Selected Asset Name",
-            ""
+            "",
+                new ConfigDescription(
+                    "",
+                    null,
+                    new ConfigurationManagerAttributes { IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
+                )
         );
             ChangeSpeed = config.Bind(
                 "41.0: Object Control",
@@ -96,7 +108,7 @@ namespace RealismMod
                 new ConfigDescription(
                     "Creates a new zone object",
                     null,
-                    new ConfigurationManagerAttributes { CustomDrawer = DrawerSpawnObject }
+                    new ConfigurationManagerAttributes { CustomDrawer = DrawerSpawnObject, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
                 )
             );
             config.Bind(
@@ -106,7 +118,7 @@ namespace RealismMod
                new ConfigDescription(
                    "Creates a new zone object",
                    null,
-                   new ConfigurationManagerAttributes { CustomDrawer = DrawerSpawnAsset }
+                   new ConfigurationManagerAttributes { CustomDrawer = DrawerSpawnAsset, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
                )
            );
             config.Bind(
@@ -116,7 +128,7 @@ namespace RealismMod
                 new ConfigDescription(
                     "Moves object to player",
                     null,
-                    new ConfigurationManagerAttributes { CustomDrawer = DrawerResetTranslation }
+                    new ConfigurationManagerAttributes { CustomDrawer = DrawerResetTranslation, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
                 )
             );
             config.Bind(
@@ -126,7 +138,7 @@ namespace RealismMod
                 new ConfigDescription(
                     "Creates a new zone object",
                     null,
-                    new ConfigurationManagerAttributes { CustomDrawer = DrawerMatchPlayerYRotation }
+                    new ConfigurationManagerAttributes { CustomDrawer = DrawerMatchPlayerYRotation, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
                 )
             );
             config.Bind(
@@ -136,7 +148,7 @@ namespace RealismMod
                 new ConfigDescription(
                     "Unselects currently selected object",
                     null,
-                    new ConfigurationManagerAttributes { CustomDrawer = DrawerUnselectObject }
+                    new ConfigurationManagerAttributes { CustomDrawer = DrawerUnselectObject, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
                 )
             );
             config.Bind(
@@ -146,7 +158,7 @@ namespace RealismMod
                new ConfigDescription(
                   "Logs Objects",
                   null,
-                  new ConfigurationManagerAttributes { CustomDrawer = DrawerLogObjects }
+                  new ConfigurationManagerAttributes { CustomDrawer = DrawerLogObjects, IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
                )
             );
 
@@ -154,43 +166,83 @@ namespace RealismMod
             PositiveZKey = config.Bind(
                 "20.0: Object Movement Keybinds",
                 "1. Forward",
-                new KeyboardShortcut(KeyCode.U)
+                new KeyboardShortcut(KeyCode.U),
+                new ConfigDescription(
+                    "",
+                    null,
+                    new ConfigurationManagerAttributes { IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
+                )
             );
             NegativeZKey = config.Bind(
                 "20.0: Object Movement Keybinds",
                 "2. Backward",
-                new KeyboardShortcut(KeyCode.E)
+                new KeyboardShortcut(KeyCode.E),
+                new ConfigDescription(
+                    "",
+                    null,
+                    new ConfigurationManagerAttributes { IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
+                )
             );
             NegativeXKey = config.Bind(
                 "20.0: Object Movement Keybinds",
                 "3. Left",
-                new KeyboardShortcut(KeyCode.N)
+                new KeyboardShortcut(KeyCode.N),
+                new ConfigDescription(
+                    "",
+                    null,
+                    new ConfigurationManagerAttributes { IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
+                )
             );
             PositiveXKey = config.Bind(
                 "20.0: Object Movement Keybinds",
                 "4. Right",
-                new KeyboardShortcut(KeyCode.I)
+                new KeyboardShortcut(KeyCode.I),
+                new ConfigDescription(
+                    "",
+                    null,
+                    new ConfigurationManagerAttributes { IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
+                )
             );
             PositiveYKey = config.Bind(
                 "20.0: Object Movement Keybinds",
                 "5. Up",
-                new KeyboardShortcut(KeyCode.Y)
+                new KeyboardShortcut(KeyCode.Y),
+                new ConfigDescription(
+                    "",
+                    null,
+                    new ConfigurationManagerAttributes { IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
+                )
             );
             NegativeYKey = config.Bind(
                 "20.0: Object Movement Keybinds",
                 "6. Down",
-                new KeyboardShortcut(KeyCode.L)
+                new KeyboardShortcut(KeyCode.L),
+                new ConfigDescription(
+                    "",
+                    null,
+                    new ConfigurationManagerAttributes { IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
+                )
             );
 
             TranslateKey = config.Bind(
                 "30.0: Mode Keybinds",
                 "Translate",
-                new KeyboardShortcut(KeyCode.J)
+                new KeyboardShortcut(KeyCode.J),
+                new ConfigDescription(
+                    "",
+                    null,
+                    new ConfigurationManagerAttributes { IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
+                )
             );
             ScaleKey = config.Bind(
                 "30.0: Mode Keybinds",
                 "Scale",
-                new KeyboardShortcut(KeyCode.H)
+                new KeyboardShortcut(KeyCode.H),
+                new ConfigDescription(
+                    "",
+                    null,
+                    new ConfigurationManagerAttributes { IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
+                )
             );
             RotateKey = config.Bind(
                 "30.0: Mode Keybinds",
@@ -200,7 +252,12 @@ namespace RealismMod
             LockXAndZRotation = config.Bind(
                 "30.0: Mode Keybinds",
                 "Lock X And Z Rotation Axes",
-                true
+                true,
+                new ConfigDescription(
+                    "",
+                    null,
+                    new ConfigurationManagerAttributes { IsAdvanced = true, Browsable = Plugin.ServerConfig.enable_hazard_zones }
+                )
             );
         }
 
@@ -549,9 +606,9 @@ namespace RealismMod
             var zone = this.transform;
             Utils.Logger.LogWarning("==== " + this.transform.parent.name);
             Utils.Logger.LogWarning("name " + this.transform.parent.name);
-            Utils.Logger.LogWarning("\"position\": " + "\"x\":" + zone.transform.position.x + "," + "\"y\":" + zone.transform.position.y + "," + "\"z:\"" + zone.transform.position.z);
-            Utils.Logger.LogWarning("\"rotation\": " + "\"x\":" + zone.transform.rotation.eulerAngles.x + "," + "\"y\":" + zone.transform.eulerAngles.y + "," + "\"z:\"" + zone.transform.eulerAngles.z);
-            Utils.Logger.LogWarning("\"size\": " + "\"x\":" + zone.transform.localScale.x + "," + "\"y\":" + zone.transform.localScale.y + "," + "\"z:\"" + zone.transform.localScale.z);
+            Utils.Logger.LogWarning("\"position\": " + "{\"x\":" + zone.transform.position.x + "," + "\"y\":" + zone.transform.position.y + "," + "\"z\":" + zone.transform.position.z + "}");
+            Utils.Logger.LogWarning("\"rotation\": " + "{\"x\":" + zone.transform.rotation.eulerAngles.x + "," + "\"y\":" + zone.transform.eulerAngles.y + "," + "\"z\":" + zone.transform.eulerAngles.z + "}");
+            Utils.Logger.LogWarning("\"size\": " + "{\"x\":" + zone.transform.localScale.x + "," + "\"y\":" + zone.transform.localScale.y + "," + "\"z\":" + zone.transform.localScale.z + "}");
             Singleton<GUISounds>.Instance.PlayUISound(EUISoundType.GeneratorTurnOff);
         }
 
@@ -724,7 +781,7 @@ namespace RealismMod
             MoveDaCube.AllInteractableComponents.Add(interactableComponent);
 
             var player = Utils.GetYourPlayer().Transform;
-            var prefab = HazardZoneSpawner.GetAndLoadAsset(MoveDaCube.SelectedAssetName.Value);
+            var prefab = ZoneSpawner.GetAndLoadAsset(MoveDaCube.SelectedAssetName.Value);
             GameObject asset = (GameObject)Instantiate(prefab, cube.transform.position, cube.transform.rotation);
             asset.name = MoveDaCube.SelectedAssetName.Value + Utils.GenId();
             asset.transform.parent = parent.transform;
@@ -764,27 +821,4 @@ namespace RealismMod
             return new Color(color.r, color.g, color.b, transparency);
         }
     }
-
-    internal class GetAvailableActionsPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return AccessTools.FirstMethod(typeof(GetActionsClass), x => x.Name == nameof(GetActionsClass.GetAvailableActions) && x.GetParameters()[0].Name == "owner");
-        }
-
-        [PatchPrefix]
-        public static bool PatchPrefix(object[] __args, ref ActionsReturnClass __result)
-        {
-            // __args[1] is a GInterface called "interactive", it represents the component that enables interaction
-            if (!(__args[1] is InteractableComponent)) return true;
-            var customInteractable = __args[1] as InteractableComponent;
-
-            __result = new ActionsReturnClass()
-            {
-                Actions = customInteractable.Actions
-            };
-            return false;
-        }
-    }
-
 }

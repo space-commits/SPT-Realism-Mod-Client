@@ -28,7 +28,7 @@ namespace RealismMod
             Player player_0 = (Player)AccessTools.Field(typeof(PlayerPhysicalClass), "player_0").GetValue(__instance);
             float Single_0 = (float)AccessTools.Property(typeof(PlayerPhysicalClass), "Single_0").GetValue(__instance);
 
-            float gearFactor = GearController.HasGasMask ? 0.5f : GearController.FSIsActive ? 0.75f : 1f;
+            float gearFactor = GearController.HasRespirator ? 0.75f :  GearController.HasGasMask ? 0.5f : GearController.FSIsActive ? 0.75f : 1f;
             float stanceFactor =
                 StanceController.IsAiming ? 0.9f : StanceController.CurrentStance == EStance.ActiveAiming ? 0.95f :
                 StanceController.CurrentStance == EStance.HighReady ? 1.05f :
@@ -116,7 +116,7 @@ namespace RealismMod
             if (player.IsYourPlayer)
             {
                 ValueHandler rotationFrameSpan = (ValueHandler)rotationFrameSpanField.GetValue(__instance);
-                float gearPenalty = GearController.HasGasMask ? 0.3f * (1f + player.Skills.EnduranceBuffRestoration.Value) : GearController.FSIsActive ? 0.5f * (1f + player.Skills.HeavyVestMoveSpeedPenaltyReduction.Value) : GearController.NVGIsActive ? 0.6f : 1f;
+                float gearPenalty = GearController.HasRespirator ? 0.45f : GearController.HasGasMask ? 0.3f * (1f + player.Skills.EnduranceBuffRestoration.Value) : GearController.FSIsActive ? 0.5f * (1f + player.Skills.HeavyVestMoveSpeedPenaltyReduction.Value) : GearController.NVGIsActive ? 0.6f : 1f;
                 float weaponFactor = WeaponStats._WeapClass == "pistol" ? 1f : Mathf.Pow(1f - ((WeaponStats.ErgoFactor / 100f) * (1f - PlayerState.StrengthWeightBuff)), 0.15f);
                 float playerWeightFactor = PlayerState.TotalModifiedWeightMinusWeapon >= 50f ? 1f - ((PlayerState.TotalModifiedWeightMinusWeapon / 100f) * (1f - PlayerState.StrengthWeightBuff)) : 1f; //doubling up because BSG's calcs are shit
                 float slopeFactor = PluginConfig.EnableSlopeSpeed.Value ? MovementSpeedController.GetSlope(player) : 1f;

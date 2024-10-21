@@ -52,20 +52,20 @@ namespace RealismMod
             float flashCaliberFactor = StatCalc.CaliberMuzzleFlash(WeaponStats.Caliber) * 0.8f; //lazy
             float velocityFlashFactor = WeaponStats.VelocityDelta < 0 ? Mathf.Pow(1f - WeaponStats.VelocityDelta, 2.5f) * flashCaliberFactor : (1f - WeaponStats.VelocityDelta) * flashCaliberFactor;
             float muzzleFlashSuppression = 1f + (WeaponStats.TotalMuzzleFlash / 100f);
-            float enviroFactorFlash = PlayerState.EnviroType == EnvironmentType.Indoor ? 1.25f : 1f;
+            float enviroFactorFlash = PlayerState.EnviroType == EnvironmentType.Indoor ? 1.19f : 1f;
             float totalFlashFactor = velocityFlashFactor * muzzleFlashSuppression * enviroFactorFlash;
             Vector2 totalFlash = new Vector2(totalFlashFactor / 2f, totalFlashFactor);
 
             float velocityFlameFactor = Mathf.Pow(1f - WeaponStats.VelocityDelta, 3f) * StatCalc.CaliberFlame(WeaponStats.Caliber);
             float muzzleFlameSuppression = Mathf.Clamp(1f + (WeaponStats.TotalMuzzleFlash / 50f), 0.1f, 3f);
-            float enviroFactorFlame = PlayerState.EnviroType == EnvironmentType.Indoor ? 1.15f : 1f;
+            float enviroFactorFlame = PlayerState.EnviroType == EnvironmentType.Indoor ? 1.142f : 1f;
             float totalFlameFactor = velocityFlameFactor * muzzleFlameSuppression * heatFactor * duraFactor * enviroFactorFlame;
 
             float velocitySmokeFactor = Mathf.Pow(1f - WeaponStats.VelocityDelta, 3f) * StatCalc.CaliberSmoke(WeaponStats.Caliber) * 0.65f;
             float muzzleSmokeSuppression = WeaponStats.TotalMuzzleFlash > 0f ? 1f + WeaponStats.TotalMuzzleFlash / 75f : 1f + (WeaponStats.TotalMuzzleFlash / 200f);
             float modSmokeSuppression = 1f + (WeaponStats.TotalGas / 100f);
             float weaponSystemFactor = WeaponStats.IsDirectImpingement && WeaponStats.HasSuppressor ? 1.35f : 1f;
-            float enviroFactorSmoke = PlayerState.EnviroType == EnvironmentType.Indoor ? 1.3f : 0.85f;
+            float enviroFactorSmoke = PlayerState.EnviroType == EnvironmentType.Indoor ? 1.24f : 0.85f;
             float totalSmokeFactor = velocitySmokeFactor * muzzleSmokeSuppression * modSmokeSuppression * weaponSystemFactor * enviroFactorSmoke * duraFactor * heatFactor;
             float smoketrailFactor = 1f + totalSmokeFactor;
             float smoketrailFactorInverse =  Mathf.Max(1f - totalSmokeFactor, 0.1f);

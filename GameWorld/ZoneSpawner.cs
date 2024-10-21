@@ -1,5 +1,6 @@
 ﻿using Comfort.Common;
 using EFT;
+using EFT.Quests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ using UnityEngine.AI;
 
 namespace RealismMod
 {
-    public static class HazardZoneSpawner
+    public static class ZoneSpawner
     {
         public const float MinBotSpawnDistanceFromPlayer = 150f;
 
@@ -18,37 +19,61 @@ namespace RealismMod
             return sessionData.Profile.QuestsData.FirstOrDefault(q => q.Id == questId);
         }
 
-        public static bool QuestHasUnlockedZone(string questId)
+        public static bool CheckQuestStatus(string questId, EQuestStatus[] questStatuses) 
         {
-            bool didRequiredQuest = false;
+            bool foundMatchingQuest = false;
             var dynamicZoneQuest = GetQuest(questId);
             if (dynamicZoneQuest != null)
             {
-                didRequiredQuest = dynamicZoneQuest.Status == EFT.Quests.EQuestStatus.Started || dynamicZoneQuest.Status == EFT.Quests.EQuestStatus.Success;
+                foreach (var status in questStatuses)
+                {
+                    if (dynamicZoneQuest.Status == status)
+                    {
+                        foundMatchingQuest = true;
+                        break;
+                    }
+                }
             }
-            return didRequiredQuest;
+            return foundMatchingQuest;
         }
 
-        public static bool QuestBlocksZone(string questId)
+        public static bool HasMetQuestCriteria(string[] questIds, EQuestStatus[] questStatuses)
         {
-            bool didRequiredQuest = false;
-            var dynamicZoneQuest = GetQuest(questId);
-            if (dynamicZoneQuest != null)
+            foreach (var quest in questIds) 
             {
-                didRequiredQuest = dynamicZoneQuest.Status == EFT.Quests.EQuestStatus.Success;
+               if (CheckQuestStatus(quest, questStatuses)) return true;
             }
-            return didRequiredQuest;
+            return false;
         }
 
         public static bool ShouldSpawnDynamicZones()
         {
-            return ProfileData.PMCLevel >= 20 || QuestHasUnlockedZone("66dad1a18cbba6e558486336");
+            return PluginConfig.ZoneDebug.Value || ProfileData.PMCLevel >= 20 || HasMetQuestCriteria(new string[] { "66dad1a18cbba6e558486336", "670ae811bd43cbf026768126" },  new EQuestStatus[] { EQuestStatus.Started, EQuestStatus.Success });
+        }
+
+        public static void CreateAmbientAudioPlayers(Player player, Transform parentTransform, Dictionary<string, AudioClip> clips, bool followPlayer = false, float minTime = 15f, float maxTime = 90f, float volume = 1f, float minDistance = 45f, float maxDistance = 95f, float minDelayBeforePlayback = 60f) 
+        {
+            GameObject audioGO = new GameObject("AmbientAudioPlayer");
+            var audioPlayer = audioGO.AddComponent<AmbientAudioPlayer>();
+            audioPlayer.ParentTransform = parentTransform;
+            audioPlayer._Player = player;
+            audioPlayer.FollowPlayer = followPlayer;
+            audioPlayer.MinTimeBetweenClips = minTime;
+            audioPlayer.MaxTimeBetweenClips = maxTime;
+            audioPlayer.MinDistance = minDistance;
+            audioPlayer.MaxDistance = maxDistance;
+            audioPlayer.Volume = volume;
+            audioPlayer.DelayBeforePlayback = minDelayBeforePlayback;
+            foreach (var clip in clips) 
+            {
+                audioPlayer.AudioClips.Add(clip.Value);
+            }
         }
 
         //for player, get closest spawn. For bot, sort by min distance, or furthest from player failing that.
         public static Vector3 GetSafeSpawnPoint(Player entitiy, bool isBot, bool blocksNav, bool isInRads)
         {
-            IEnumerable<Vector3> spawns = HazardZoneData.GetSafeSpawn();
+            IEnumerable<Vector3> spawns = ZoneData.GetSafeSpawns();
             if (spawns == null || (isBot && !blocksNav) || (!isBot && GameWorldController.CurrentMap == "laboratory" && !isInRads)) return entitiy.Transform.position; //can't account for bot vs player, because of maps like Labs where player should spawn in gas
             IEnumerable<Vector3> validSpawns = spawns;
             Player player = Utils.GetYourPlayer();
@@ -70,14 +95,14 @@ namespace RealismMod
 
         public static void CreateZones(ZoneCollection collection)
         {
-            var zones = HazardZoneData.GetZones(collection.ZoneType, GameWorldController.CurrentMap);
+            var zones = ZoneData.GetZones(collection.ZoneType, GameWorldController.CurrentMap);
             if (zones == null) return;
             foreach (var zone in zones)
             {
-                if (collection.ZoneType == EZoneType.Gas || collection.ZoneType == EZoneType.GasAssets) CreateZone<GasZone>(zone, EZoneType.Gas);
-                if (collection.ZoneType == EZoneType.Radiation || collection.ZoneType == EZoneType.RadAssets) CreateZone<RadiationZone>(zone, EZoneType.Radiation);
-                if (collection.ZoneType == EZoneType.SafeZone) CreateZone<SafeZone>(zone, EZoneType.SafeZone);
-                if (collection.ZoneType == EZoneType.Quest) CreateZone<QuestZone>(zone, EZoneType.Quest);
+                if (collection.ZoneType == EZoneType.Gas || collection.ZoneType == EZoneType.GasAssets) CreateZone<GasZone>(zone, collection.ZoneType);
+                if (collection.ZoneType == EZoneType.Radiation || collection.ZoneType == EZoneType.RadAssets) CreateZone<RadiationZone>(zone, collection.ZoneType);
+                if (collection.ZoneType == EZoneType.SafeZone) CreateZone<LabsSafeZone>(zone, collection.ZoneType);
+                if (collection.ZoneType == EZoneType.Quest) CreateZone<QuestZone>(zone, collection.ZoneType);
             }
         }
 
@@ -87,7 +112,8 @@ namespace RealismMod
 
             if (!Plugin.FikaPresent) 
             {
-                if (hazardLocation.QuestToBlock != null && !QuestHasUnlockedZone(hazardLocation.QuestToBlock)) return false;
+                if (hazardLocation.QuestToBlock != null && CheckQuestStatus(hazardLocation.QuestToBlock, new EQuestStatus[] { EQuestStatus.Success })) return false;
+                if (hazardLocation.QuestToEnable != null && !CheckQuestStatus(hazardLocation.QuestToEnable, new EQuestStatus[] { EQuestStatus.Success })) return false;
 
                 bool doTimmyFactor = ProfileData.PMCLevel <= 10f && zoneType != EZoneType.Radiation && zoneType != EZoneType.RadAssets && GameWorldController.CurrentMap != "laboratory";
                 float timmyFactor = doTimmyFactor && GameWorldController.CurrentMap == "sandbox" ? 0f : doTimmyFactor ? 0.25f : 1f;
@@ -98,19 +124,42 @@ namespace RealismMod
             }
 
             DateTime utcNow = DateTime.UtcNow;
-            int seed = utcNow.Year * 1000000 + utcNow.Month * 10000 + utcNow.Day * 100 + utcNow.Hour * 10;
+            int seed = utcNow.Year * 1000000 + utcNow.Month * 10000 + utcNow.Day * 100;
             int finalSeed = seed % 101;
             return finalSeed <= hazardLocation.SpawnChance * 100f;    
         }
 
-        public static void CreateZone<T>(HazardLocation hazardLocation, EZoneType zoneType) where T : MonoBehaviour, IHazardZone
+        private static bool AnalsyableQuestChecker(string[] quests, EQuestStatus[] statuses) 
         {
-            if (!ShouldSpawnZone(hazardLocation, zoneType)) return;
+            bool match = false;
+            if (quests != null && quests.Length > 0)
+            {
+                foreach (var q in quests)
+                {
+                    if (CheckQuestStatus(q, statuses))
+                    {
+                        match = true;
+                    }
+                }
+            }
+            return match;
+        }
 
+        private static bool CheckIsAnalysable(Analysable analysable) 
+        {
+            if (analysable.NoRequirement) return true;
+            bool isDisabled = AnalsyableQuestChecker(analysable.DisabledBy, new EQuestStatus[] { EQuestStatus.Started }); //essentially checking that the quest is not completed and not active
+            bool isEnabled = AnalsyableQuestChecker(analysable.EnabledBy, new EQuestStatus[] { EQuestStatus.Started });
+            return !isDisabled || isEnabled;
+        }
+
+        public static void CreateZone<T>(HazardLocation hazardLocation, EZoneType zoneType) where T : MonoBehaviour, IZone
+        {
+            if (hazardLocation.IsTriggered || !ShouldSpawnZone(hazardLocation, zoneType)) return;
             HandleZoneAssets(hazardLocation);
             HandleZoneLoot(hazardLocation);
 
-            foreach (var subZone in hazardLocation.Zones) 
+            foreach (var subZone in hazardLocation.Zones)
             {
                 string zoneName = subZone.Name;
                 Vector3 position = new Vector3(subZone.Position.X, subZone.Position.Y, subZone.Position.Z);
@@ -126,9 +175,10 @@ namespace RealismMod
                 float strengthModifier = 1f;
                 if ((hazard.ZoneType == EZoneType.Gas || hazard.ZoneType == EZoneType.GasAssets) && (!Plugin.FikaPresent && !PluginConfig.ZoneDebug.Value) && GameWorldController.CurrentMap != "laboratory")
                 {
-                    strengthModifier = UnityEngine.Random.Range(0.95f, 1.25f);
+                    strengthModifier = UnityEngine.Random.Range(0.9f, 1.15f);
                 }
                 hazard.ZoneStrengthModifier = subZone.Strength * strengthModifier;
+                hazard.IsAnalysable = subZone?.Analysable == null ? false : CheckIsAnalysable(subZone.Analysable);  
 
                 hazardZone.transform.position = position;
                 hazardZone.transform.rotation = Quaternion.Euler(rotation);
@@ -151,8 +201,11 @@ namespace RealismMod
                 boxCollider.isTrigger = true;
                 boxCollider.size = size;
 
-                hazard.BlocksNav = subZone.BlockNav;
-                if (subZone.BlockNav)
+                //if gas event or rad event, all bots have gas mask, but asset zone assets do not block bot paths so they get stuck
+                bool ignoreNav = (GameWorldController.DoMapGasEvent || GameWorldController.DoMapRads) && hazard.ZoneType != EZoneType.GasAssets && hazard.ZoneType != EZoneType.RadAssets;
+
+                hazard.BlocksNav = ignoreNav ? false : subZone.BlockNav;
+                if (hazard.BlocksNav)
                 {
                     var navMeshObstacle = hazardZone.AddComponent<NavMeshObstacle>();
                     navMeshObstacle.carving = true;
@@ -203,6 +256,7 @@ namespace RealismMod
         public static void HandleZoneLoot(HazardLocation zone)
         {
             if (zone.Loot == null || Plugin.FikaPresent) return;
+
             foreach (var loot in zone.Loot)
             {
                 if (Utils.SystemRandom.Next(101) > loot.Odds) continue;
@@ -215,29 +269,36 @@ namespace RealismMod
                 Vector3 position = new Vector3(loot.Position.X, loot.Position.Y, loot.Position.Z);
                 Vector3 rotaiton = new Vector3(loot.Rotation.X, loot.Rotation.Y, loot.Rotation.Z);
 
-                LoadLooseLoot(position, rotaiton, GetLootTempalteId(loot.Type));
+                string lootTemplateId = loot?.LootOverride != null && loot.LootOverride.Count > 0 ? GetLootTempalteIdFromOverride(loot.LootOverride) : GetLootTempalteIdFromTier(loot.Type);  
+
+                LoadLooseLoot(position, rotaiton, lootTemplateId);
             }
         }
 
-        public static string GetLootTempalteId(string lootTier) 
+        public static string GetLootTempalteIdFromTier(string lootTier) 
         {
             Dictionary<string, int> lootDict;
             switch (lootTier) 
             {
        
                 case "highTier":
-                    lootDict = ZoneLoot.HighTier;
+                    lootDict = DynamicRadZoneLoot.HighTier;
                     break;
                 case "midTier":
-                    lootDict = ZoneLoot.MidTier;
+                    lootDict = DynamicRadZoneLoot.MidTier;
                     break;
                 case "lowTier":
                 default:
-                    lootDict = ZoneLoot.LowTier;
+                    lootDict = DynamicRadZoneLoot.LowTier;
                     break;
 
             }
             return Utils.GetRandomWeightedKey(lootDict);
+        }
+
+        public static string GetLootTempalteIdFromOverride(Dictionary<string, int> lootOdds)
+        {
+            return Utils.GetRandomWeightedKey(lootOdds);
         }
 
         //previously I stored the loaded assets as static fields and used reflection to dynamically load them, however this strangely caused issues with certain bundles,
@@ -260,6 +321,8 @@ namespace RealismMod
             if (assetName == "LabsBarrelPile") return Assets.LabsBarrelPileBundle.LoadAsset<GameObject>("Assets/Realism Hazard Prefabs/Prefab/Barrel_plastic_clear_set_01.prefab"); 
             if (assetName == "RedContainer") return Assets.RedContainerBundle.LoadAsset<GameObject>("Assets/Prefabs/container_6m_red_close.prefab");
             if (assetName == "BlueContainer") return Assets.BlueContainerBundle.LoadAsset<GameObject>("container_6m_blue_close (1)");
+            if (assetName == "RadSign1") return Assets.RadSign1.LoadAsset<GameObject>("Assets/prefabs/Rad Sign 1.prefab");
+            if (assetName == "TerraGroupFence") return Assets.TerraGroupFence.LoadAsset<GameObject>("Assets/prefabs/fence_ema_nocurt (10).prefab");
             return null;
         }
 

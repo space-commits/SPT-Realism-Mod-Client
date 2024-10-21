@@ -18,16 +18,14 @@ namespace RealismMod
     {
         public float RecordedTotalToxicity { get; set; }
         public float RecordedTotalRadiation { get; set; }
-        public bool IsPreExplosion { get; set; }
-        public bool HasExploded { get; set; }
     }
 
     public static class HazardTracker
     {
-        public static bool IsPreExplosion { get; set; } = false;
-        public static bool HasExploded { get; set; } = false;
         public static float TotalToxicityRate { get; set; } = 0f;
         public static float TotalRadiationRate { get; set; } = 0f;
+        public static float BaseTotalToxicityRate { get; set; } = 0f;
+        public static float BaseTotalRadiationRate { get; set; } = 0f;
         private static Dictionary<string, HazardRecord> _hazardRecords = new Dictionary<string, HazardRecord>();
 
         public static float RadTreatmentRate
@@ -88,7 +86,9 @@ namespace RealismMod
 
         public static void OutOfRaidUpdate() 
         {
+#pragma warning disable CS0618
             if (GClass1864.InRaid) return;
+#pragma warning disable CS0618
             _upateTimer += Time.deltaTime;
             _hideoutRegenTick += Time.deltaTime;
 

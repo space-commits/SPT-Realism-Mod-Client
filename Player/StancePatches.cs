@@ -125,17 +125,14 @@ namespace RealismMod
         private static int _timer = 0;
         private static MaterialType[] _allowedMats = { MaterialType.Helmet, MaterialType.BodyArmor, MaterialType.Body, MaterialType.Glass, MaterialType.GlassShattered, MaterialType.GlassVisor };
 
-        private static Vector3 _startLeftDir = new Vector3(0.137f, 0f, 0f);
-        private static Vector3 _startRightDir = new Vector3(-0.137f, 0f, 0f);
+        private static Vector3 _startLeftDir = new Vector3(0.143f, 0f, 0f);
+        private static Vector3 _startRightDir = new Vector3(-0.143f, 0f, 0f);
         private static Vector3 _startDownDir = new Vector3(0f, 0f, -0.19f);
 
         private static Vector3 _wiggleLeftDir = new Vector3(2.5f, 7.5f, -5) * 0.5f;
         private static Vector3 _wiggleRightDir = new Vector3(2.5f, -7.5f, -5f) * 0.5f;
         private static Vector3 _wiggleDownDir = new Vector3(7.5f, 2.5f, -5f) * 0.5f;
 
-        private static Vector3 _offsetLeftDir = new Vector3(0.004f, 0, 0f);
-        private static Vector3 _offsetRightDir = new Vector3(-0.004f, 0, 0);
-        private static Vector3 _offsetDownDir = new Vector3(0, -0.004f, 0);
 
         private static void SetMountingStatus(EBracingDirection coverDir)
         {
@@ -157,22 +154,6 @@ namespace RealismMod
                         return _wiggleLeftDir;
                     case EBracingDirection.Top:
                         return _wiggleDownDir;
-                    default: return Vector3.zero;
-                }
-            }
-        }
-
-        private static Vector3 GetCoverOffset(EBracingDirection coverDir)
-        {
-            {
-                switch (coverDir)
-                {
-                    case EBracingDirection.Right:
-                        return _offsetRightDir;
-                    case EBracingDirection.Left:
-                        return _offsetLeftDir;
-                    case EBracingDirection.Top:
-                        return _offsetDownDir;
                     default: return Vector3.zero;
                 }
             }
@@ -1048,7 +1029,7 @@ namespace RealismMod
                     (StanceController.CancelLowReady && StanceController.CurrentStance == EStance.LowReady) || 
                     (StanceController.CancelShortStock && StanceController.CurrentStance == EStance.ShortStock); // || (StanceController.CancelPistolStance && StanceController.PistolIsCompressed)
 
-                _currentRotation = Quaternion.Slerp(_currentRotation, __instance.IsAiming && allStancesAreReset ? aimingQuat : doStanceRotation ? _stanceRotation : Quaternion.identity, doStanceRotation ? _stanceRotationSpeed * PluginConfig.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 8f * aimSpeed * dt : 8f * dt);
+                _currentRotation = Quaternion.Slerp(_currentRotation, __instance.IsAiming && allStancesAreReset ? aimingQuat : doStanceRotation ? _stanceRotation : Quaternion.identity, doStanceRotation ? _stanceRotationSpeed * PluginConfig.StanceRotationSpeedMulti.Value : __instance.IsAiming ? 7f * aimSpeed * dt : 8f * dt); //__instance.IsAiming ? 8f * aimSpeed * dt
 
                 if (PluginConfig.EnableAdditionalRec.Value)
                 {

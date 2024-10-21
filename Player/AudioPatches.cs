@@ -1,13 +1,15 @@
-﻿using SPT.Reflection.Patching;
-using SPT.Reflection.Utils;
+﻿using Audio.AmbientSubsystem;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
+using SPT.Reflection.Patching;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.Audio;
 using CompressorTemplateClass = GClass2918; //SetCompressor
 using HeadsetClass = GClass2654; //Updatephonesreally()
 using HeadsetTemplate = GClass2556; //SetCompressor

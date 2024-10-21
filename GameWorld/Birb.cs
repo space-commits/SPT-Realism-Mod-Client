@@ -1,11 +1,7 @@
-﻿using Comfort.Common;
-using EFT;
+﻿using EFT.Animals;
 using EFT.InventoryLogic;
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using UnityEngine;
 
 
@@ -13,6 +9,8 @@ namespace RealismMod
 {
     public class Birb : MonoBehaviour
     {
+        private bool _wasDestroyed = false;
+
         private Dictionary<string, int> _birbLoot = new Dictionary<string, int>
         {
              {"5751487e245977207e26a315", 100 }, //rye croutons
@@ -39,9 +37,18 @@ namespace RealismMod
              {"5c1d0c5f86f7744bb2683cf0", 5 }, //labs blue
         };
 
+        void Update()
+        {
+            if (!_wasDestroyed && (Plugin.ModInfo.DoGasEvent || (Plugin.ModInfo.IsPreExplosion && GameWorldController.IsRightDateForExp) || GameWorldController.DoMapRads || Plugin.ModInfo.HasExploded || GameWorldController.DidExplosionClientSide))
+            {
+                if (this.gameObject == null) return;
+                Destroy(this.gameObject, 20f);
+                _wasDestroyed = true;
+            }
+        }
+
         private IEnumerator HandleHitAsync()
         {
-
             if (Utils.SystemRandom.Next(10) <= 5) yield return Utils.LoadLoot(this.transform.position, this.transform.rotation, Utils.GetRandomWeightedKey(_birbLoot)).AsCoroutine(); //make sure to wait for loot to drop before destroying birb
             if (Utils.SystemRandom.Next(10) <= 3) yield return Utils.LoadLoot(this.transform.position, this.transform.rotation, Utils.GetRandomWeightedKey(_birbLoot)).AsCoroutine();
             if (Utils.SystemRandom.Next(10) <= 2) yield return Utils.LoadLoot(this.transform.position, this.transform.rotation, Utils.GetRandomWeightedKey(_birbLoot)).AsCoroutine();

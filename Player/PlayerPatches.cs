@@ -72,21 +72,22 @@ namespace RealismMod
         {
             if (__instance.IsYourPlayer)
             {
+                PlayerState.IsScav = Singleton<GameWorld>.Instance.MainPlayer.Profile.Info.Side == EPlayerSide.Savage;
                 StatCalc.CalcPlayerWeightStats(__instance);
                 GearController.SetGearParamaters(__instance);
                 GearController.GetGearPenalty(__instance);
-                if (Plugin.ServerConfig.enable_hazard_zones) Plugin.RealHealthController.CheckInventoryForHazardousMaterials(__instance.Inventory);
-
-                if (Plugin.ServerConfig.med_changes) //also add check for hazard zones being enabled 
-                {
+                if (Plugin.ServerConfig.enable_hazard_zones) 
+                { 
+                    Plugin.RealHealthController.CheckInventoryForHazardousMaterials(__instance.Inventory);
                     GearController.CheckForDevices(__instance.Inventory);
-                    PlayerState.IsScav = Singleton<GameWorld>.Instance.MainPlayer.Profile.Info.Side == EPlayerSide.Savage;
-                    PlayerHazardBridge hazardBridge = __instance.gameObject.AddComponent<PlayerHazardBridge>();
-                    hazardBridge._Player = __instance;
                 }
-
             }
             if (PluginConfig.EnablePlateChanges.Value) BallisticsController.ModifyPlateColliders(__instance);
+            if (Plugin.ServerConfig.enable_hazard_zones) 
+            {
+                PlayerZoneBridge zoneBridge = __instance.gameObject.AddComponent<PlayerZoneBridge>();
+                zoneBridge._Player = __instance;
+            }
         }
     }
 
@@ -138,7 +139,7 @@ namespace RealismMod
             {
                 bool skipPenalty = SkipSprintPenalty;
                 float sprintDurationModi = 1f + (_sprintTimer / 7f);
-                float ergoWeight = WeaponStats.ErgoFactor * (1f + (1f - PlayerState.GearErgoPenalty));
+                float ergoWeight = WeaponStats.ErgoFactor * (1f + (1f - PlayerState.GearErgoPenalty)) * WeaponStats.TotalWeaponHandlingModi;
                 ergoWeight = 1f + (ergoWeight / 200f);
 
                 float breathIntensity = Mathf.Min(pwa.Breath.Intensity * sprintDurationModi * ergoWeight, skipPenalty ? 1f : 3f);
@@ -238,32 +239,59 @@ namespace RealismMod
             }
         }
 
+        private static void GetStaminaPerc(Player player)
+        {
+            float remainArmStamPercent = Mathf.Min((player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity) * (1f + PlayerState.StrengthSkillAimBuff), 1f);
+            PlayerState.BaseStaminaPerc = player.Physical.Stamina.Current / player.Physical.Stamina.TotalCapacity;
+
+            PlayerState.RemainingArmStamFactor = 1f - ((1f - remainArmStamPercent) / 2.5f);
+            PlayerState.RemainingArmStamReloadFactor = Mathf.Clamp(1f - ((1f - remainArmStamPercent) / 4f), 0.8f, 1f);
+
+            PlayerState.CombinedStaminaPerc = Mathf.Pow(remainArmStamPercent * PlayerState.BaseStaminaPerc, 0.35f);
+        }
+
         private static void CalcBaseHipfireAccuracy(Player player)
         {
-            float baseValue = 0.4f;
+            float baseValue = 0.5f;
+            float stockFactor = WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol || !WeaponStats.HasShoulderContact ? 1.25f: 1f;
             float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
             float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
             float recoilFactor = 1f + ((RecoilController.BaseTotalVRecoil + RecoilController.BaseTotalHRecoil) / 100f);
             float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
-            float playerWeightFactor = 1f + (totalPlayerWeight / 100f);
-            float healthFactor = PlayerState.RecoilInjuryMulti * (Plugin.RealHealthController.HasOverdosed ? 1.5f : 1f);
+            float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
+            float coughing = Plugin.RealHealthController.IsCoughingInGas ? 2f : 1f;
+            float healthFactor = coughing * PlayerState.ErgoDeltaInjuryMulti * (Plugin.RealHealthController.HasOverdosed ? 1.5f : 1f);
+            float staminaFactor = Mathf.Max((2f - PlayerState.CombinedStaminaPerc), 0.5f);
             float ergoWeight = WeaponStats.ErgoFactor * (1f + (1f - PlayerState.GearErgoPenalty));
             float ergoFactor = 1f + (ergoWeight / 200f);
+            float stanceFactor = StanceController.CurrentStance == EStance.ActiveAiming ? 0.7f : StanceController.CurrentStance == EStance.ShortStock ? 1.35f : 1f;
+            float totalRecoilFactors = convergenceFactor * dispersionFactor * recoilFactor;
 
-            WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(baseValue * PlayerState.DeviceBonus * ergoFactor * healthFactor * convergenceFactor * dispersionFactor * recoilFactor * playerWeightFactor, 0.2f, 1f);
+            WeaponStats.BaseHipfireInaccuracy = Mathf.Clamp(baseValue * ergoFactor * stockFactor * PlayerState.DeviceBonus * staminaFactor * stanceFactor * Mathf.Pow(WeaponStats.TotalWeaponHandlingModi, 0.45f) * healthFactor * totalRecoilFactors * playerWeightFactor, 0.2f, 1f);
         }
 
-        private static void GetStaminaPerc(Player player)
+        private static void ModifyWalkRelatedValues(Player player) 
         {
-            float remainArmStamPercent = Mathf.Min((player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity) * (1f + PlayerState.StrengthSkillAimBuff), 1f);
-            PlayerState.StaminaPerc = player.Physical.Stamina.Current / player.Physical.Stamina.TotalCapacity;
+            float staminaFactor = Mathf.Max((2f - PlayerState.CombinedStaminaPerc), 0.5f);
+            float coughing = Plugin.RealHealthController.IsCoughingInGas ? 2f : 1f;
+            float totalFactors = WeaponStats.WalkMotionIntensity * PlayerState.ErgoDeltaInjuryMulti * staminaFactor * coughing;
 
-            PlayerState.RemainingArmStamPerc = 1f - ((1f - remainArmStamPercent) / 3f);
-            PlayerState.RemainingArmStamPercReload = Mathf.Clamp(1f - ((1f - remainArmStamPercent) / 4f), 0.85f, 1f); 
+            player.ProceduralWeaponAnimation.Walk.StepFrequency = Mathf.Min(player.ProceduralWeaponAnimation.Walk.StepFrequency, 1.1f);
+            player.ProceduralWeaponAnimation.Walk.IntensityMinMax[0] = new Vector2(0.5f, 1f); 
+
+            player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.1f; 
+            player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.InputIntensity = Mathf.Clamp(totalFactors * 1.05f, 0.5f, 0.86f); //up down
+
+            player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.ReturnSpeed = 0.05f; 
+            player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = Mathf.Clamp(totalFactors * 0.9f, 0.4f, 1f); //side to side
+
+            player.ProceduralWeaponAnimation.MotionReact.Intensity = WeaponStats.BaseWeaponMotionIntensity * staminaFactor * PlayerState.DeviceBonus;
         }
 
         private static void SetStancePWAValues(Player player, FirearmController fc)
         {
+            ModifyWalkRelatedValues(player);
+
             if (StanceController.CanResetDamping)
             {
                 float stockedPistolFactor = WeaponStats.IsStockedPistol ? 0.75f : 1f;
@@ -351,8 +379,7 @@ namespace RealismMod
             }
 
             CalcBaseHipfireAccuracy(player);
-            float stanceHipFactor = StanceController.CurrentStance == EStance.ActiveAiming ? 0.7f : StanceController.CurrentStance == EStance.ShortStock ? 1.35f : 1.05f;
-            player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty * stanceHipFactor, 0.1f, 0.5f);
+            player.ProceduralWeaponAnimation.Breath.HipPenalty = Mathf.Clamp(WeaponStats.BaseHipfireInaccuracy * PlayerState.SprintHipfirePenalty, 0.1f, 0.5f);
         }
 
         protected override MethodBase GetTargetMethod()
@@ -378,6 +405,7 @@ namespace RealismMod
                 Player.FirearmController fc = __instance.HandsController as Player.FirearmController;
                 PlayerState.IsSprinting = __instance.IsSprintEnabled;
                 PlayerState.EnviroType = __instance.Environment;
+                PlayerState.BtrState = __instance.BtrState;
                 StanceController.IsInInventory = __instance.IsInventoryOpened;
                 //bit wise operation, Mask property has serveral combined enum values
                 PlayerState.IsMoving = __instance.IsSprintEnabled || (__instance.ProceduralWeaponAnimation.Mask & EProceduralAnimationMask.Walking) != (EProceduralAnimationMask)0;//Plugin.FikaPresent ? false : __instance.IsSprintEnabled ||  !Utils.AreFloatsEqual(__instance.MovementContext.AbsoluteMovementDirection.x, 0f, 0.001f) || !Utils.AreFloatsEqual(__instance.MovementContext.AbsoluteMovementDirection.z, 0f, 0.001f);

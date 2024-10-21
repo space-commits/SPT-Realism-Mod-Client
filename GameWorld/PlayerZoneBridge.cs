@@ -5,24 +5,25 @@ using System.Collections.Generic;
 using UnityEngine;
 using ExistanceClass = GClass2470;
 using System.Linq;
+using EFT.Animations;
 
 namespace RealismMod
 {
-    public class PlayerHazardBridge : MonoBehaviour
+    public class PlayerZoneBridge : MonoBehaviour
     {
         private const float BOT_INTERVAL = 10f;
         private const float SPAWNTIME = 30f;
         public Player _Player { get; set; }
         public bool IsBot { get; private set; } = false;
         public bool SpawnedInZone { get; private set; } = false;
-        public bool ZoneBlocksNav { get; set; } = false;
-        public int GasZoneCount { get; set; } = 0;
+        public int ZonesThatBlockNavCount { get; set; } = 0;
         public int RadZoneCount { get; set; } = 0;
+        public int GasZoneCount { get; set; } = 0;
         public int SafeZoneCount { get; set; } = 0;
         public Dictionary<string, bool> SafeZones = new Dictionary<string, bool>();
         public Dictionary<string, float> GasRates = new Dictionary<string, float>(); //to accomodate being in multiple zones
         public Dictionary<string, float> RadRates = new Dictionary<string, float>(); //to accomodate being in multiple zones
-        private bool _isProtectedFromSafeZone;
+        private bool _isProtectedFromSafeZone = false;
 
         public bool IsProtectedFromSafeZone
         {
@@ -73,10 +74,11 @@ namespace RealismMod
             return GearStats.IsGasMask(containedItem);
         }
 
-        private void HandleGas(bool hasGasmask)
+        private void HandleBotGas(bool hasGasmask)
         {
-            if (GasZoneCount > 0 && !IsProtectedFromSafeZone)
+            if ((GasZoneCount > 0 || GameWorldController.DoMapGasEvent) && !IsProtectedFromSafeZone)
             {
+                float gasRate = TotalGasRate + (GameWorldController.CurrentGasEventStrengthBot * (_Player.Environment == EnvironmentType.Indoor ? 0.5f : 1f));
                 if (!hasGasmask && TotalGasRate > 0.05f)
                 {
                     _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, TotalGasRate * BOT_INTERVAL * 0.75f, ExistanceClass.PoisonDamage);
@@ -89,14 +91,19 @@ namespace RealismMod
             }
         }
 
-        private void HandleRads(bool hasGasmask)
+        private void HandleBotRads(bool hasGasmask)
         {
-            if (RadZoneCount > 0 && !IsProtectedFromSafeZone)
+            if ((RadZoneCount > 0) && !IsProtectedFromSafeZone)
             {
-                float realRadRate = hasGasmask ? TotalRadRate * 0.5f : TotalRadRate;
-                if (realRadRate > 0.5f)
+                float explFactor = GameWorldController.DidExplosionClientSide && _Player.Environment == EnvironmentType.Outdoor ? 2f : 1f;
+                float realRadRate = hasGasmask ? TotalRadRate * explFactor * 0.5f : TotalRadRate;
+                if (realRadRate > 0.5f || GameWorldController.DidExplosionClientSide)
                 {
                     _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, realRadRate * BOT_INTERVAL, ExistanceClass.RadiationDamage);
+                    if (GameWorldController.DidExplosionClientSide && _Player.Environment == EnvironmentType.Outdoor)
+                    {
+                        _Player.Speaker.Play(EPhraseTrigger.OnBreath, ETagStatus.Dying | ETagStatus.Aware, true, null);
+                    }
                 }
             }
         }
@@ -111,15 +118,16 @@ namespace RealismMod
                     SpawnedInZone = true;
                     MoveEntityToSafeLocation();
                 }
-
-                if (_timeActive >= SPAWNTIME || SpawnedInZone || (!IsBot && PlayerState.IsMoving)) _checkedSpawn = true;
+                bool isMoving = _Player.IsSprintEnabled || (_Player.ProceduralWeaponAnimation.Mask & EProceduralAnimationMask.Walking) != (EProceduralAnimationMask)0;
+                if (_timeActive >= SPAWNTIME || SpawnedInZone || (_timeActive >= 5f && isMoving)) _checkedSpawn = true;
             }
         }
 
         private void MoveEntityToSafeLocation()
         {
-            _Player.Transform.position = HazardZoneSpawner.GetSafeSpawnPoint(_Player, IsBot, ZoneBlocksNav, RadZoneCount > 0);
-            Utils.Logger.LogWarning("Realism Mod: Spawned in Hazard, moved to " + _Player.Transform.position + ", Was Bot? " + IsBot);
+            Vector3 originalPos = _Player.Transform.position;
+            _Player.Transform.position = ZoneSpawner.GetSafeSpawnPoint(_Player, IsBot, ZonesThatBlockNavCount > 0, RadZoneCount > 0);
+            Utils.Logger.LogWarning($"Realism Mod: Spawned in Hazard, moved to: {_Player.Transform.position}, Original Position: {originalPos},  Was Bot? {IsBot}, time remaining {_timeActive}");
         }
 
         private void CheckSafeZones()
@@ -146,8 +154,8 @@ namespace RealismMod
                 bool isAliveBot = IsBot && _Player != null && _Player?.ActiveHealthController != null && !_Player.AIData.BotOwner.IsDead && _Player.HealthController.IsAlive;
                 if (!isAliveBot) return;
                 bool hasGasmask = BotHasGasmask();
-                HandleGas(hasGasmask);
-                HandleRads(hasGasmask);
+                HandleBotGas(hasGasmask);
+                HandleBotRads(hasGasmask);
                 _botTimer = 0f;
             }
         } 
@@ -155,9 +163,9 @@ namespace RealismMod
         //for bots
         void Update()
         {
+            BotCheck();
             CheckSpawnPoint();
             CheckSafeZones();
-            BotCheck();
         }
     }
 

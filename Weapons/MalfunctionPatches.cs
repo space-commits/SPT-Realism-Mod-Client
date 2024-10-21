@@ -12,9 +12,25 @@ using static EFT.InventoryLogic.Weapon;
 using DamageTypeClass = GClass2470;
 using MalfGlobals = BackendConfigSettingsClass.GClass1378;
 using OverheatGlobals = BackendConfigSettingsClass.GClass1379;
+using EFT.HealthSystem;
 
 namespace RealismMod
 {
+    public class RemoveSillyBossForcedMalf : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(ActiveHealthController).GetMethod("AddMisfireEffect", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(ActiveHealthController __instance)
+        {
+            return false;
+        }
+    }
+
+
     public class GetMalfunctionStatePatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -112,7 +128,6 @@ namespace RealismMod
         }
     }
 
-
     public class GetDurabilityLossOnShotPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -170,17 +185,6 @@ namespace RealismMod
                     return false;
                 }
 
-                /*                float ammoHotnessFactor = (1f - ((ammoToFire.ammoRec / 200f) + 1f)) + 1f;*/
-
-                //weapon durability --multi
-                //ammo malf chance -- multi
-                //mag malf chance -- multi
-                //heat -- multi of some sort
-                //total weapon malf chance -- base value
-                //weapon malf chance delta -- unsure if needed, think I used it to reduce subsonic malf chance
-                //subsonic ammo calcs based on caliber, facotring in use of suppressor and booster
-                //facotr by firerate delta too
-
                 BackendConfigSettingsClass globalSettings = Singleton<BackendConfigSettingsClass>.Instance;
                 MalfGlobals malfunctionSettings = globalSettings.Malfunction;
                 OverheatGlobals overheatSettings = globalSettings.Overheat;
@@ -189,7 +193,7 @@ namespace RealismMod
 
                 //ammo malf chance
                 float globalAmmoMalfMulti = malfunctionSettings.AmmoMalfChanceMult;
-                ammoMalfChance = ammoToFire != null ? 1f + ((ammoToFire.MalfMisfireChance + ammoToFire.MalfFeedChance) * globalAmmoMalfMulti) : 0f;
+                ammoMalfChance = ammoToFire != null ? 1f + ((ammoToFire.MalfMisfireChance + ammoToFire.MalfFeedChance) * globalAmmoMalfMulti) : 1f;
 
                 //mag malf chance
                 MagazineClass currentMagazine = __instance.Item.GetCurrentMagazine();
@@ -206,16 +210,21 @@ namespace RealismMod
                 float shotFactor = 1f + (RecoilController.ShotCount / 200f);
                 float fireRateFactor = RecoilController.ShotCount > 2 ? Mathf.Max(WeaponStats.AutoFireRateDelta, 1f) : 1f;
 
-                if (weaponDurability > PluginConfig.DuraMalfThreshold.Value)
+                bool isSubsonic = !WeaponStats.CanCycleSubs && ammoToFire.ammoHear == 1;
+                bool hasBooster = __instance.IsSilenced || WeaponStats.HasBooster;
+
+                bool canDoMalfChance = weaponDurability < PluginConfig.DuraMalfThreshold.Value || overheatMalfChance > 1.7f || RecoilController.ShotCount > 7f || magMalfChance > 2f || ammoMalfChance > 1.5f || WeaponStats.MalfChanceDelta < -0.5 || baseWeaponMalfChance > 0.004f || isSubsonic;
+
+                if (weaponDurability >= PluginConfig.DuraMalfReductionThreshold.Value)
                 {
-                    baseWeaponMalfChance *= 0.25f;
+                    baseWeaponMalfChance *= 0.2f;
                 }
 
-                if (weaponDurability > PluginConfig.DuraMalfThreshold.Value)
+                if (weaponDurability >= PluginConfig.DuraMalfReductionThreshold.Value)
                 {
                     durabilityMalfChance = Math.Pow(durabilityMalfChance, 1.5);
                 }
-                if (weaponDurability >= 60f)
+                else if (weaponDurability >= 60f)
                 {
                     durabilityMalfChance = Math.Pow(durabilityMalfChance, 3);
                 }
@@ -225,33 +234,35 @@ namespace RealismMod
                 }
 
                 float subFactor = 0f;
-                if (!WeaponStats.CanCycleSubs && ammoToFire.ammoHear == 1)
+                if (isSubsonic)
                 {
-                    float suppFactor = __instance.IsSilenced || WeaponStats.HasBooster ? 0.2f : 1f;
+                    float suppFactor = hasBooster ? 0.25f : 1f;
                     if (ammoToFire.Caliber == "762x39")
                     {
-                        subFactor = 0.04f * (1f - malfDelta) * suppFactor;
+                        subFactor = 0.04f * suppFactor; // * (1f - malfDelta)
                     }
                     else
                     {
-                        subFactor = 0.055f * (1f - malfDelta) * suppFactor;
+                        subFactor = 0.055f * suppFactor; // * (1f - malfDelta)
                     }
                 }
 
                 float totalFactors = (float)durabilityMalfChance * overheatMalfChance * ammoMalfChance * magMalfChance * shotFactor * fireRateFactor * (float)__instance.Item.Buff.MalfunctionProtections;
                 float totalMalfChance = (baseWeaponMalfChance + subFactor) * totalFactors;
-                __result = totalMalfChance * (PluginConfig.EnableBallisticsLogging.Value ? PluginConfig.MalfMulti.Value : 1f);
+                totalMalfChance = canDoMalfChance ? totalMalfChance : totalMalfChance * 0.01f;
+                __result = totalMalfChance * PluginConfig.MalfMulti.Value;
 
                 if (PluginConfig.EnableBallisticsLogging.Value)
                 {
                     Logger.LogWarning("=============");
+                    Logger.LogWarning("canDoMalfChance " + canDoMalfChance);
                     Logger.LogWarning("weapon base chance " + baseWeaponMalfChance);
                     Logger.LogWarning("weapon malf delta " + WeaponStats.MalfChanceDelta);
                     Logger.LogWarning("ammo malf chance " + ammoMalfChance);
                     Logger.LogWarning("heat malf chance " + overheatMalfChance);
                     Logger.LogWarning("durability " + weaponDurability);
                     Logger.LogWarning("durability malf chance " + durabilityMalfChance);
-                    Logger.LogWarning("mag malf chance " + magMalfChance + " : " + currentMagazine.MalfunctionChance);
+                    Logger.LogWarning($"mag malf chance {magMalfChance}");
                     Logger.LogWarning("WeaponStats.FireRateDelta " + WeaponStats.AutoFireRateDelta);
                     Logger.LogWarning("subFactor " + subFactor);
                     Logger.LogWarning("total malf chance " + __result);

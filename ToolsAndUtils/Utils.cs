@@ -15,6 +15,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
+using static RealismMod.Attributes;
 
 namespace RealismMod
 {
@@ -37,6 +38,13 @@ namespace RealismMod
 
     public static class Utils
     {
+        public const string GAMU_ID = "66fd571a05370c3ee1a1c613";
+        public const string RAMU_ID = "66fd521442055447e2304fda";
+        public const string GAMU_DATA_ID = "670120df4f0c4c37e6be90ae";
+        public const string RAMU_DATA_ID = "670120ce354987453daf3d0c";
+        public const string HALLOWEEN_TRANSMITTER_ID = "6703082a766cb6d11310094e";
+
+
         public static ManualLogSource Logger;
         public static System.Random SystemRandom = new System.Random();
 
@@ -69,6 +77,7 @@ namespace RealismMod
         public static string TacticalCombo = "55818b164bdc2ddc698b456c";
         public static string UBGL = "55818b014bdc2ddc698b456b";
 
+
         public static bool GetIPlayer(IPlayer x)
         {
             return x.ProfileId == Utils.GetYourPlayer().ProfileId;
@@ -83,6 +92,7 @@ namespace RealismMod
             await LoadBundle(resources);
             IPlayer player = Singleton<GameWorld>.Instance.RegisteredPlayers.FirstOrDefault(new Func<IPlayer, bool>(GetIPlayer));
             Singleton<GameWorld>.Instance.ThrowItem(item, player, position, rotation, Vector3.zero, Vector3.zero);
+
         }
 
         public static async Task LoadBundle(ResourceKey[] resources)
@@ -156,7 +166,7 @@ namespace RealismMod
             return gameWorld.MainPlayer;
         }
 
-        public static Player GetPlayerByID(string id)
+        public static Player GetPlayerByProfileId(string id)
         {
             GameWorld gameWorld = Singleton<GameWorld>.Instance;
             return gameWorld.GetAlivePlayerByProfileID(id);   
@@ -190,17 +200,32 @@ namespace RealismMod
             return true;
         }
 
-        public static void SafelyAddAttributeToList(ItemAttributeClass itemAttribute, Mod __instance)
+
+        public static void AddAttribute(Item item, ENewItemAttributeId att, float baseValue, string displayValue, bool? lessIsGood = null, string name = null, bool colored = true)
+        {
+            string attName = name == null ? att.GetName() : name;
+            ItemAttributeClass attribute = new ItemAttributeClass(att);
+            attribute.Name = attName;
+            attribute.Base = () => baseValue;
+            attribute.StringValue = () => displayValue;
+            if (lessIsGood != null) attribute.LessIsGood = (bool)lessIsGood;
+            attribute.DisplayType = () => EItemAttributeDisplayType.Compact;
+            attribute.LabelVariations = colored ? EItemAttributeLabelVariations.Colored : EItemAttributeLabelVariations.None;
+            Utils.SafelyAddAttributeToList(attribute, item);
+        }
+
+
+        public static void SafelyAddAttributeToList(ItemAttributeClass itemAttribute, Item item)
         {
             if (itemAttribute.Base() != 0f)
             {
-                __instance.Attributes.Add(itemAttribute);
+                item.Attributes.Add(itemAttribute);
             }
         }
 
         public static string GenId()
         {
-            return Guid.NewGuid().ToString();
+            return MongoID.Generate();
         }
 
         public static bool IsSight(Mod mod)

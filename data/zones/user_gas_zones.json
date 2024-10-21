@@ -1,0 +1,44 @@
+{
+    "FactoryUserZones": [],
+    "CustomsUserZones": [
+        {
+            "spawnChance": 1,
+            "zones": [
+                {
+                    "name": "TestUserGasZone",
+                    "strength": 100.0,
+                    "blockNav": true,
+                    "usesDistanceFalloff": true,
+                    "analysable": {
+                        "enabledBy": [],
+                        "disabledBy": [],
+                        "noRequirement": true
+                    },
+                    "position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "rotation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "size": {
+                        "x": 5.0,
+                        "y": 1000,
+                        "z": 5.0
+                    }
+                }
+            ]
+        }
+    ],
+    "GZUserZones": [],
+    "ShorelineUserZones": [],
+    "StreetsUserZones": [],
+    "LabsUserZones": [],
+    "InterchangeUserZone": [],
+    "LighthouseUserZones": [],
+    "WoodsUserZones": [],
+    "ReserveUserZones": []
+}
