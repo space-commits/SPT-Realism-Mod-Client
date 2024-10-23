@@ -93,11 +93,14 @@ namespace RealismMod
 
         private void HandleBotRads(bool hasGasmask)
         {
-            if ((RadZoneCount > 0) && !IsProtectedFromSafeZone)
+            if ((RadZoneCount > 0 || GameWorldController.DoMapRads) && !IsProtectedFromSafeZone)
             {
-                float explFactor = GameWorldController.DidExplosionClientSide && _Player.Environment == EnvironmentType.Outdoor ? 2f : 1f;
-                float realRadRate = hasGasmask ? TotalRadRate * explFactor * 0.5f : TotalRadRate;
-                if (realRadRate > 0.5f || GameWorldController.DidExplosionClientSide)
+                bool isOutside = _Player.Environment == EnvironmentType.Outdoor;
+                float explFactor = GameWorldController.DidExplosionClientSide && isOutside ? 2f : 1f;
+                float mapRadsFactor = GameWorldController.DoMapRads ? 0.05f + (isOutside ? Plugin.RealismWeatherComponent.TargetRain * GameWorldController.RAD_RAIN_MODI : 0f) : 0f;
+                float totalRads = (TotalRadRate + mapRadsFactor) * explFactor;
+                float realRadRate = hasGasmask ? totalRads * 0.5f : totalRads;
+                if (realRadRate > 0.4f || GameWorldController.DidExplosionClientSide || GameWorldController.DoMapRads && !hasGasmask)
                 {
                     _Player.ActiveHealthController.ApplyDamage(EBodyPart.Chest, realRadRate * BOT_INTERVAL, ExistanceClass.RadiationDamage);
                     if (GameWorldController.DidExplosionClientSide && _Player.Environment == EnvironmentType.Outdoor)

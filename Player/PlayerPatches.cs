@@ -276,14 +276,40 @@ namespace RealismMod
             float coughing = Plugin.RealHealthController.IsCoughingInGas ? 2f : 1f;
             float totalFactors = WeaponStats.WalkMotionIntensity * PlayerState.ErgoDeltaInjuryMulti * staminaFactor * coughing;
 
+           float stanceMultiSide = 
+                StanceController.IsMounting ? 0.25f :
+                StanceController.IsBracing ? 0.5f :
+                StanceController.IsLeftShoulder && !StanceController.IsAiming ? 1.15f :
+                StanceController.IsLeftShoulder ? 0.87f :
+                StanceController.IsAiming ? 0.75f :
+                StanceController.CurrentStance == EStance.PistolCompressed ? 1.15f :
+                StanceController.CurrentStance == EStance.ShortStock ? 0.85f :
+                StanceController.CurrentStance == EStance.HighReady ? 0.85f :
+                StanceController.CurrentStance == EStance.LowReady ? 0.8f :
+                StanceController.CurrentStance == EStance.ActiveAiming ? 0.9f :
+                1f;
+
+            float stanceMultiUp = StanceController.IsMounting ? 0.25f :
+                StanceController.IsBracing ? 0.5f :
+                StanceController.IsLeftShoulder && !StanceController.IsAiming ? 1.05f :
+                StanceController.IsLeftShoulder ? 0.95f :
+                StanceController.IsAiming ? 0.9f :
+                StanceController.CurrentStance == EStance.PistolCompressed ? 1.15f :
+                StanceController.CurrentStance == EStance.ShortStock ? 0.8f :
+                StanceController.CurrentStance == EStance.HighReady ? 0.8f :
+                StanceController.CurrentStance == EStance.LowReady ? 0.7f :
+                StanceController.CurrentStance == EStance.ActiveAiming ? 0.85f :
+                1f;
+
+
             player.ProceduralWeaponAnimation.Walk.StepFrequency = Mathf.Min(player.ProceduralWeaponAnimation.Walk.StepFrequency, 1.1f);
             player.ProceduralWeaponAnimation.Walk.IntensityMinMax[0] = new Vector2(0.5f, 1f); 
 
             player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.ReturnSpeed = 0.1f; 
-            player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.InputIntensity = Mathf.Clamp(totalFactors * 1.05f, 0.5f, 0.86f); //up down
+            player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.InputIntensity = Mathf.Clamp(0.99f * stanceMultiUp * totalFactors, 0.55f, 0.85f); //up down
 
             player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.ReturnSpeed = 0.05f; 
-            player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = Mathf.Clamp(totalFactors * 0.9f, 0.4f, 1f); //side to side
+            player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = Mathf.Clamp(0.95f * stanceMultiSide * totalFactors, 0.6f, 0.95f); //side to side
 
             player.ProceduralWeaponAnimation.MotionReact.Intensity = WeaponStats.BaseWeaponMotionIntensity * staminaFactor * PlayerState.DeviceBonus;
         }

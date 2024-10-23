@@ -971,10 +971,10 @@ namespace RealismMod
             float lowerBaseLimit = WeaponStats.TotalWeaponWeight >= weightLimit ? 0.45f : 0.55f;
             float ergoMulti = Mathf.Clamp(1.15f * WeaponStats.ErgoStanceSpeed * Mathf.Pow(WeaponStats.TotalWeaponHandlingModi, 0.4f), lowerBaseLimit, 1.2f);
             float lowerSpeedLimit = WeaponStats.TotalWeaponWeight >= weightLimit ? 0.3f : 0.4f;
-            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamFactor, 0.65f)), lowerSpeedLimit, 1.2f);
+            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamFactor, 0.65f)), lowerSpeedLimit, 1.18f);
             float resetErgoMulti = (1f - stanceMulti) + 1f;
-            float highReadyStanceMulti = Mathf.Clamp(stanceMulti, 0.5f, 1f);
-            float lowReadyStanceMulti = Mathf.Clamp(stanceMulti, 0.5f, 1f);
+            float highReadyStanceMulti = Mathf.Clamp(stanceMulti, 0.5f, 0.98f);
+            float lowReadyStanceMulti = Mathf.Clamp(stanceMulti, 0.5f, 0.98f);
             float highReadyXWiggleFactor = WeaponStats.TotalErgo <= 49f ? -1f : 1f;
             float highReadyZWiggleFactor = WeaponStats.TotalErgo <= 40f ? 1f : 2f;
 
@@ -1688,7 +1688,7 @@ namespace RealismMod
                 IsMounting = !IsMounting;
                 if (IsMounting) StanceController.CancelAllStances();
 
-                DoWiggleEffects(player, pwa, fc.Weapon, IsMounting ? CoverWiggleDirection : CoverWiggleDirection * -1f, true);
+                DoWiggleEffects(player, pwa, fc.Weapon, IsMounting ? CoverWiggleDirection : CoverWiggleDirection * -1f, true, wiggleFactor: 0.5f);
                 float accuracy = fc.Item.GetTotalCenterOfImpact(false); //forces accuracy to update
                 AccessTools.Field(typeof(Player.FirearmController), "float_3").SetValue(fc, accuracy);
             }

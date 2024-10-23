@@ -84,7 +84,7 @@ namespace RealismMod
                 Player player = Utils.GetYourPlayer();
                 if (player.Physical.HoldingBreath) return true;
                 FirearmController fc = player.HandsController as FirearmController;
-                StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.25f, 0.25f, 0.5f));
+                if(WeaponStats.TotalWeaponWeight <= 8f) StanceController.DoWiggleEffects(player, player.ProceduralWeaponAnimation, fc.Weapon, new Vector3(0.25f, 0.25f, 0.5f), wiggleFactor: 0.5f);
                 return true;
             }
             if (Plugin.ServerConfig.enable_stances && PluginConfig.BlockFiring.Value && command == ECommand.ToggleShooting

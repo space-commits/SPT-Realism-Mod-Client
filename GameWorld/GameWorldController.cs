@@ -10,6 +10,9 @@ namespace RealismMod
 {
     public static class GameWorldController
     {
+        public const float RAD_RAIN_MODI = 0.15f;
+        public const float BASE_MAP_RAD_STRENGTH = 0.05f;
+        public const float FOG_GAS_MODI = 2.2f;
         public static bool DidExplosionClientSide { get; set; } = false;
         public static bool GameStarted { get; set; } = false;
         public static bool RanEarliestGameCheck { get; set; } = false;
@@ -54,21 +57,37 @@ namespace RealismMod
             Lights.Clear(); 
         }
 
-        public static void CalculateGasEventStrength() 
+        public static void CalculateGasEventStrength()
         {
+            if (!DoMapGasEvent)
+            {
+                CurrentGasEventStrengthBot = 0f;
+                CurrentGasEventStrength = 0f;
+                return;
+            }
+            bool isIndoors = PlayerState.EnviroType == EnvironmentType.Indoor;
+            float enviroFactor = isIndoors ? 0.4f : 1f;
             float fogStrength = Plugin.RealismWeatherComponent.TargetFog;
-            float targetStrength = Mathf.Max(fogStrength * 2.2f, 0.06f);
-            targetStrength = PlayerState.BtrState == EPlayerBtrState.Inside ? 0f : targetStrength;
-            CurrentGasEventStrengthBot = targetStrength;
-            CurrentGasEventStrength = Mathf.Lerp(CurrentGasEventStrength, targetStrength * (PlayerState.EnviroType == EnvironmentType.Indoor ? 0.5f : 1f), 0.05f);
+            float baseStrength = fogStrength * FOG_GAS_MODI;
+            baseStrength = Mathf.Clamp(baseStrength, 0.06f, 0.2f);
+            float playerStrength = baseStrength * enviroFactor;
+            CurrentGasEventStrengthBot = baseStrength;
+            CurrentGasEventStrength = Mathf.Lerp(CurrentGasEventStrength, playerStrength, 0.025f);
         }
 
         public static void CalculateMapRadStrength()
         {
-            float rainStrength = PlayerState.BtrState == EPlayerBtrState.Inside || PlayerState.EnviroType == EnvironmentType.Indoor ? 0f : Plugin.RealismWeatherComponent.TargetRain * 0.13f;
-            float targetStrength = 0.1f + rainStrength;
-            targetStrength = PlayerState.BtrState == EPlayerBtrState.Inside ? targetStrength * 0.25f : PlayerState.EnviroType == EnvironmentType.Indoor ? 0.5f : targetStrength;
-            CurrentMapRadStrength = Mathf.Lerp(CurrentMapRadStrength, targetStrength, 0.05f);
+            if (!DoMapRads) 
+            {
+                CurrentMapRadStrength = 0f;
+                return;
+            }
+            bool isIndoors = PlayerState.EnviroType == EnvironmentType.Indoor;
+            float enviroFactor = isIndoors ? 0.4f : 1f;
+            float rainStrength = isIndoors ? 0f : Plugin.RealismWeatherComponent.TargetRain * 0.15f;
+            float baseStrength = BASE_MAP_RAD_STRENGTH * enviroFactor;
+            float targetStrength = Mathf.Clamp(baseStrength + rainStrength, 0.01f, 0.16f);
+            CurrentMapRadStrength = Mathf.Lerp(CurrentMapRadStrength, targetStrength, 0.025f);
         }
 
         public static void CheckDate() 
@@ -79,8 +98,8 @@ namespace RealismMod
 
         public static void GameWorldUpdate() 
         {
-            if (DoMapGasEvent) CalculateGasEventStrength();
-            if (DoMapRads) CalculateMapRadStrength();
+            CalculateGasEventStrength();
+            CalculateMapRadStrength();
         }
 
         public static void RunEarlyGameCheck()

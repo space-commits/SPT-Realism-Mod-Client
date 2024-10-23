@@ -200,7 +200,7 @@ namespace RealismMod
             if (filter != null) 
             {
                 if (filter.Value > 0) HasGasFilter = true;
-                filterFactor = filter.Value > 90f ? 1f : Mathf.Pow(filter.Value / filter.MaxResource, 0.15f);
+                filterFactor = Mathf.Pow(filter.Value / filter.MaxResource, 0.15f);
                 filterFactor = filterFactor > 0.85f ? 1f : filterFactor;
             }
           
@@ -292,8 +292,8 @@ namespace RealismMod
 
             totalErgo /= 100f;
             totalSpeed /= 100f;
-            PlayerState.GearErgoPenalty = 1f + totalErgo;
-            PlayerState.GearSpeedPenalty = 1f + totalSpeed;
+            PlayerState.GearErgoPenalty = Mathf.Clamp(1f + totalErgo, 0.1f, 2f);
+            PlayerState.GearSpeedPenalty = Mathf.Clamp(1f + totalSpeed, 0.1f, 2f);
 
             HandleGasMaskEffects(player, gasProtection, radProtection);
 
