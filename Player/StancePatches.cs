@@ -487,7 +487,6 @@ namespace RealismMod
         }
     }
 
-
     public class InitTransformsPatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -959,6 +958,8 @@ namespace RealismMod
         private static Vector3 _mountWeapPosition = Vector3.zero;
         private static Vector3 _currentRecoil = Vector3.zero;
         private static Vector3 _targetRecoil = Vector3.zero;
+        private static float _posePosOffest = 0f;
+        private static float _poseRotOffest = 0f;
 
         private static float _stanceRotationSpeed = 1f;
 
@@ -975,6 +976,27 @@ namespace RealismMod
             _playerField = AccessTools.Field(typeof(FirearmController), "_player");
 
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("ApplyComplexRotation", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        private static void DoExtraPosAndRot(ProceduralWeaponAnimation pwa, Player player) 
+        {
+            float posOffsetMulti = WeaponStats.HasShoulderContact ? -0.04f : 0.04f;
+            float posePosOffset = (1f - player.MovementContext.PoseLevel) * posOffsetMulti;
+            float targetPosOffset = pwa.IsAiming ? 0f : posePosOffset;
+            _posePosOffest = Mathf.Lerp(_posePosOffest, targetPosOffset, 5f * Time.deltaTime);
+            Vector3 newPos = pwa.HandsContainer.WeaponRoot.localPosition;
+            newPos.z += _posePosOffest;
+            pwa.HandsContainer.WeaponRoot.localPosition = newPos;
+
+            bool doMaskOffset = (GearController.HasGasMask || GearController.FSIsActive) && pwa.IsAiming && WeaponStats.HasShoulderContact && !WeaponStats.IsStocklessPistol && !WeaponStats.IsMachinePistol;
+            float ergoOffset = WeaponStats.ErgoFactor * -0.001f;
+            float poseRotOffset = (1f - player.MovementContext.PoseLevel) * -0.03f;
+            float maskFactor = doMaskOffset? -0.025f + ergoOffset : 0f;
+            float baseRotOffset = pwa.IsAiming ? 0f : poseRotOffset + ergoOffset;
+            _poseRotOffest = Mathf.Lerp(_poseRotOffest, baseRotOffset + maskFactor, 5f * Time.deltaTime);
+            Quaternion newRot = Quaternion.identity;
+            newRot.y = _poseRotOffest;
+            pwa.HandsContainer.WeaponRoot.localRotation *= newRot;
         }
 
         [PatchPostfix]
@@ -1082,6 +1104,8 @@ namespace RealismMod
                     _hasResetPistolPos = true;
                     StanceController.DoRifleStances(player, fc, false, __instance, ref _stanceRotation, dt, ref _isResettingShortStock, ref _hasResetShortStock, ref _hasResetLowReady, ref _hasResetActiveAim, ref _hasResetHighReady, ref _isResettingHighReady, ref _isResettingLowReady, ref _isResettingActiveAim, ref _stanceRotationSpeed, ref _hasResetMelee, ref _isResettingMelee, ref _didHalfMeleeAnim);
                 }
+
+                DoExtraPosAndRot(__instance, player);
 
                 StanceController.HasResetActiveAim = _hasResetActiveAim;
                 StanceController.HasResetHighReady = _hasResetHighReady;

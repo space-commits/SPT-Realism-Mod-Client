@@ -244,8 +244,8 @@ namespace RealismMod
             float remainArmStamPercent = Mathf.Min((player.Physical.HandsStamina.Current / player.Physical.HandsStamina.TotalCapacity) * (1f + PlayerState.StrengthSkillAimBuff), 1f);
             PlayerState.BaseStaminaPerc = player.Physical.Stamina.Current / player.Physical.Stamina.TotalCapacity;
 
-            PlayerState.RemainingArmStamFactor = 1f - ((1f - remainArmStamPercent) / 2.5f);
-            PlayerState.RemainingArmStamReloadFactor = Mathf.Clamp(1f - ((1f - remainArmStamPercent) / 4f), 0.8f, 1f);
+            PlayerState.RemainingArmStamFactor = Mathf.Pow(remainArmStamPercent, 0.5f);
+            PlayerState.RemainingArmStamReloadFactor = Mathf.Clamp(Mathf.Pow(remainArmStamPercent, 0.25f), 0.8f, 1f);
 
             PlayerState.CombinedStaminaPerc = Mathf.Pow(remainArmStamPercent * PlayerState.BaseStaminaPerc, 0.35f);
         }
