@@ -958,8 +958,8 @@ namespace RealismMod
         private static Vector3 _mountWeapPosition = Vector3.zero;
         private static Vector3 _currentRecoil = Vector3.zero;
         private static Vector3 _targetRecoil = Vector3.zero;
-        private static float _posePosOffest = 0f;
-        private static float _poseRotOffest = 0f;
+        private static Vector3 _posePosOffest = Vector3.zero;
+        private static Vector3 _poseRotOffest = Vector3.zero;
 
         private static float _stanceRotationSpeed = 1f;
 
@@ -980,22 +980,39 @@ namespace RealismMod
 
         private static void DoExtraPosAndRot(ProceduralWeaponAnimation pwa, Player player) 
         {
+            //position
+            float stockOffset = !WeaponStats.IsPistol && !WeaponStats.HasShoulderContact ? -0.04f : 0f;
+            float stockPosOffset = WeaponStats.StockPosition * 0.01f;
             float posOffsetMulti = WeaponStats.HasShoulderContact ? -0.04f : 0.04f;
             float posePosOffset = (1f - player.MovementContext.PoseLevel) * posOffsetMulti;
-            float targetPosOffset = pwa.IsAiming ? 0f : posePosOffset;
-            _posePosOffest = Mathf.Lerp(_posePosOffest, targetPosOffset, 5f * Time.deltaTime);
-            Vector3 newPos = pwa.HandsContainer.WeaponRoot.localPosition;
-            newPos.z += _posePosOffest;
-            pwa.HandsContainer.WeaponRoot.localPosition = newPos;
 
+            float targetPosXOffset = pwa.IsAiming ? 0f : 0f;
+            float targetPosYOffset = pwa.IsAiming ? 0f : 0f;
+            float targetPosZOffset = pwa.IsAiming ? 0f : Mathf.Clamp(posePosOffset + stockOffset + stockPosOffset, -0.05f, 0.05f);
+
+            _posePosOffest = Vector3.Lerp(_posePosOffest, new Vector3(targetPosXOffset, targetPosYOffset, targetPosZOffset), 5f * Time.deltaTime);
+            pwa.HandsContainer.WeaponRoot.localPosition += _posePosOffest;
+
+            //rotation
             bool doMaskOffset = (GearController.HasGasMask || GearController.FSIsActive) && pwa.IsAiming && WeaponStats.HasShoulderContact && !WeaponStats.IsStocklessPistol && !WeaponStats.IsMachinePistol;
+            bool doLongMagOffset = WeaponStats.HasLongMag && player.IsInPronePose;
+            float magOffset = doLongMagOffset && !pwa.IsAiming ? -0.35f : doLongMagOffset && pwa.IsAiming ? -0.12f : 0f;
             float ergoOffset = WeaponStats.ErgoFactor * -0.001f;
             float poseRotOffset = (1f - player.MovementContext.PoseLevel) * -0.03f;
+            poseRotOffset += player.IsInPronePose ? -0.03f : 0f;
             float maskFactor = doMaskOffset? -0.025f + ergoOffset : 0f;
             float baseRotOffset = pwa.IsAiming ? 0f : poseRotOffset + ergoOffset;
-            _poseRotOffest = Mathf.Lerp(_poseRotOffest, baseRotOffset + maskFactor, 5f * Time.deltaTime);
+
+            float rotX = 0f;
+            float rotY = Mathf.Clamp(baseRotOffset + maskFactor + magOffset, -0.5f, 0f);
+            float rotZ = 0f;
+                
+            _poseRotOffest = Vector3.Lerp(_poseRotOffest, new Vector3(rotX, rotY, rotZ), 5f * Time.deltaTime);
+
             Quaternion newRot = Quaternion.identity;
-            newRot.y = _poseRotOffest;
+            newRot.x = _poseRotOffest.x;
+            newRot.y = _poseRotOffest.y;
+            newRot.z = _poseRotOffest.z;
             pwa.HandsContainer.WeaponRoot.localRotation *= newRot;
         }
 
@@ -1105,7 +1122,7 @@ namespace RealismMod
                     StanceController.DoRifleStances(player, fc, false, __instance, ref _stanceRotation, dt, ref _isResettingShortStock, ref _hasResetShortStock, ref _hasResetLowReady, ref _hasResetActiveAim, ref _hasResetHighReady, ref _isResettingHighReady, ref _isResettingLowReady, ref _isResettingActiveAim, ref _stanceRotationSpeed, ref _hasResetMelee, ref _isResettingMelee, ref _didHalfMeleeAnim);
                 }
 
-                DoExtraPosAndRot(__instance, player);
+                if (PluginConfig.EnableExtraProcEffects.Value) DoExtraPosAndRot(__instance, player);
 
                 StanceController.HasResetActiveAim = _hasResetActiveAim;
                 StanceController.HasResetHighReady = _hasResetHighReady;

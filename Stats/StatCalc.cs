@@ -356,6 +356,7 @@ namespace RealismMod
             ref float modAimSpeed)
         {
             Mod parent = null;
+            WeaponStats.StockPosition = 0;
             if (mod?.Parent?.Container?.ParentItem != null)
             {
                 parent = mod.Parent.Container.ParentItem as Mod;
@@ -801,6 +802,7 @@ namespace RealismMod
                     modDispersion *= 0.5f;
                     modCamRecoil *= 0.5f;
                     modErgo *= 1.5f;
+                    WeaponStats.StockPosition = -1;
                     break;
                 case 1:
                     modVRecoil *= 0.75f;
@@ -810,6 +812,7 @@ namespace RealismMod
                     modErgo *= 1.25f;
                     modHandling += 0.1f;
                     modStability += 0.05f;
+                    WeaponStats.StockPosition = 0;
                     break;
                 case 2:
                     modVRecoil *= 1f;
@@ -819,6 +822,7 @@ namespace RealismMod
                     modErgo *= 1f;
                     modHandling += 0.075f;
                     modStability += 0.075f;
+                    WeaponStats.StockPosition = 1;
                     break;
                 case 3:
                     modVRecoil *= 1.25f;
@@ -828,6 +832,7 @@ namespace RealismMod
                     modErgo *= 0.75f;
                     modHandling += 0.05f;
                     modStability += 0.1f;
+                    WeaponStats.StockPosition = 2;
                     break;
                 default:
                     modVRecoil *= 1f;
@@ -835,6 +840,7 @@ namespace RealismMod
                     modDispersion *= 1f;
                     modCamRecoil *= 1f;
                     modErgo *= 1f;
+                    WeaponStats.StockPosition = 0;
                     break;
             }
         }

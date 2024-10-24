@@ -469,8 +469,13 @@ namespace RealismMod
 
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
+
+
                 Weapon weapon = firearmController.Weapon;
                 bool isPistol = WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol;
+
+                //works well except for the fact that BSG inconistently modified procedural intensity when changing pose, so therefore my changes become incosnsitent.
+               // float poseFactor = player.IsInPronePose ? PluginConfig.test1.Value : 1f + ((1f - player.MovementContext.PoseLevel) * PluginConfig.test2.Value);
 
                 float stanceFactor = GetStanceFactor(__instance, true);
                 float stanceFactorMotion = GetStanceFactor(__instance);
@@ -588,13 +593,14 @@ namespace RealismMod
             }
             else
             {
-                float holdBreathBonusSway = (__instance.Physical.HoldingBreath ? 0.495f : 1f) * Mathf.Pow(WeaponStats.TotalAimStabilityModi, 0.75f);
-                float holdBreathBonusUpDown = (__instance.Physical.HoldingBreath ? 0.275f : 1f) * Mathf.Pow(WeaponStats.TotalAimStabilityModi, 0.75f);
-                float swayFactor = (WeaponStats.IsOptic ? PluginConfig.SwayIntensity.Value : PluginConfig.SwayIntensity.Value * 1.1f) * Mathf.Pow(WeaponStats.TotalAimStabilityModi, 2f);
+                float modSwayFactor = Mathf.Pow(WeaponStats.TotalAimStabilityModi, 1.2f);
+                float holdBreathBonusSway = (__instance.Physical.HoldingBreath ? 0.495f : 1f) * modSwayFactor;
+                float holdBreathBonusUpDown = (__instance.Physical.HoldingBreath ? 0.275f : 1f) * modSwayFactor;
+                float swayFactor = (WeaponStats.IsOptic ? PluginConfig.SwayIntensity.Value : PluginConfig.SwayIntensity.Value * 1.1f);
                 float t = lackOfOxygenStrength.Evaluate(__instance.OxygenLevel);
                 float b = __instance.IsAiming ? 0.75f : 1f;
-                breathIntensityField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, b, t), 1f, 1.5f) * __instance.Intensity * holdBreathBonusUpDown);
-                breathFrequencyField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, 1f, t), 1f, 2.5f) * deltaTime * holdBreathBonusSway);
+                breathIntensityField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, b, t), 1f, 1.5f) * __instance.Intensity * holdBreathBonusUpDown * swayFactor);
+                breathFrequencyField.SetValue(__instance, Mathf.Clamp(Mathf.Lerp(4f, 1f, t), 1f, 2.5f) * deltaTime * holdBreathBonusSway * swayFactor);
                 shakeIntensityField.SetValue(__instance, holdBreathBonusSway * swayFactor);
                 cameraSensitivityField.SetValue(__instance, Mathf.Lerp(2f, 0f, t) * __instance.Intensity);
                 breathFrequency = (float)AccessTools.Field(typeof(BreathEffector), "_breathFrequency").GetValue(__instance);
