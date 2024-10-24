@@ -411,6 +411,12 @@ namespace RealismMod
 
             if (player.IsYourPlayer)
             {
+                if (StanceController.CurrentStance == EStance.PatrolStance) 
+                {
+                    weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.15f);
+                    return;
+                }
+
                 if (__instance.Item.WeapClass == "pistol")
                 {
                     if (StanceController.CurrentStance == EStance.PistolCompressed)
@@ -960,6 +966,13 @@ namespace RealismMod
         private static Vector3 _targetRecoil = Vector3.zero;
         private static Vector3 _posePosOffest = Vector3.zero;
         private static Vector3 _poseRotOffest = Vector3.zero;
+        private static Vector3 _patrolPos = Vector3.zero;
+        private static Vector3 _patrolRot = Vector3.zero;
+
+        private static Vector3 _riflePatrolPos = new Vector3(0.2f, 0.025f, 0.1f);
+        private static Vector3 _riflePatrolRot = new Vector3(0.05f, -0.05f, -0.5f);
+        private static Vector3 _pistolPatrolPos = new Vector3(0.05f, 0f, 0f);
+        private static Vector3 _pistolPatrolRot = new Vector3(0.1f, -0.1f, -0.1f);
 
         private static float _stanceRotationSpeed = 1f;
 
@@ -978,6 +991,28 @@ namespace RealismMod
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("ApplyComplexRotation", BindingFlags.Instance | BindingFlags.Public);
         }
 
+        private static void DoPatrolStance(ProceduralWeaponAnimation pwa, Player player) 
+        {
+            Vector3 patrolPos = StanceController.CurrentStance != EStance.PatrolStance ? Vector3.zero : WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol ? _pistolPatrolPos : _riflePatrolPos;
+            _patrolPos = Vector3.Lerp(_patrolPos, patrolPos, 6f * Time.deltaTime);
+            pwa.HandsContainer.WeaponRoot.localPosition += _patrolPos;
+
+            Vector3 patrolRot = StanceController.CurrentStance != EStance.PatrolStance ? Vector3.zero : WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol ? _pistolPatrolRot : _riflePatrolRot;
+            _patrolRot = Vector3.Lerp(_patrolRot, patrolRot, 6f * Time.deltaTime);
+
+            Quaternion newRot = Quaternion.identity;
+            newRot.x = _patrolRot.x;
+            newRot.y = _patrolRot.y;
+            newRot.z = _patrolRot.z;
+            pwa.HandsContainer.WeaponRoot.localRotation *= newRot;
+
+            if (Vector3.Distance(_patrolPos, Vector3.zero) <= 0.05f) StanceController.FinishedUnPatrolStancing = true;
+            else 
+            {
+                StanceController.FinishedUnPatrolStancing = false;
+            }
+        }
+
         private static void DoExtraPosAndRot(ProceduralWeaponAnimation pwa, Player player) 
         {
             //position
@@ -989,8 +1024,9 @@ namespace RealismMod
             float targetPosXOffset = pwa.IsAiming ? 0f : 0f;
             float targetPosYOffset = pwa.IsAiming ? 0f : 0f;
             float targetPosZOffset = pwa.IsAiming ? 0f : Mathf.Clamp(posePosOffset + stockOffset + stockPosOffset, -0.05f, 0.05f);
+            Vector3 targetPos = new Vector3(targetPosXOffset, targetPosYOffset, targetPosZOffset);
 
-            _posePosOffest = Vector3.Lerp(_posePosOffest, new Vector3(targetPosXOffset, targetPosYOffset, targetPosZOffset), 5f * Time.deltaTime);
+            _posePosOffest = Vector3.Lerp(_posePosOffest, targetPos, 5f * Time.deltaTime);
             pwa.HandsContainer.WeaponRoot.localPosition += _posePosOffest;
 
             //rotation
@@ -1006,8 +1042,9 @@ namespace RealismMod
             float rotX = 0f;
             float rotY = Mathf.Clamp(baseRotOffset + maskFactor + magOffset, -0.5f, 0f);
             float rotZ = 0f;
-                
-            _poseRotOffest = Vector3.Lerp(_poseRotOffest, new Vector3(rotX, rotY, rotZ), 5f * Time.deltaTime);
+            Vector3 targetRot = new Vector3(rotX, rotY, rotZ);
+
+            _poseRotOffest = Vector3.Lerp(_poseRotOffest, targetRot, 5f * Time.deltaTime);
 
             Quaternion newRot = Quaternion.identity;
             newRot.x = _poseRotOffest.x;
@@ -1123,6 +1160,7 @@ namespace RealismMod
                 }
 
                 if (PluginConfig.EnableExtraProcEffects.Value) DoExtraPosAndRot(__instance, player);
+                DoPatrolStance(__instance, player);
 
                 StanceController.HasResetActiveAim = _hasResetActiveAim;
                 StanceController.HasResetHighReady = _hasResetHighReady;

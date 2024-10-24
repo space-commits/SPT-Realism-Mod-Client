@@ -393,7 +393,7 @@ namespace RealismMod
                 {
                     SetStancePWAValues(player, fc);
                 }
-                player.MovementContext.SetPatrol(StanceController.CurrentStance == EStance.PatrolStance ? true : false);
+                if (StanceController.IsInThirdPerson) player.MovementContext.SetPatrol(StanceController.CurrentStance == EStance.PatrolStance ? true : false);
             }
             else if (Plugin.ServerConfig.enable_stances && PluginConfig.EnableStanceStamChanges.Value && !StanceController.HaveResetStamDrain)
             {

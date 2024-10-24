@@ -68,6 +68,7 @@ namespace RealismMod
         public static Dictionary<string, AudioClip> GasMaskAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> HazardZoneClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> DeviceAudioClips = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, AudioClip> RadEventAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> GasEventAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> GasEventLongAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, Sprite> LoadedSprites = new Dictionary<string, Sprite>();
@@ -293,6 +294,7 @@ namespace RealismMod
             string[] hazardDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones");
             string[] deviceDir = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\devices");
             string[] gasEventAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\mapgas\\default");
+            string[] radEventAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\maprads");
             string[] gasEventLongAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\mapgas\\long");
 
             HitAudioClips.Clear();
@@ -300,12 +302,14 @@ namespace RealismMod
             HazardZoneClips.Clear();
             DeviceAudioClips.Clear();
             GasEventAudioClips.Clear();
+            RadEventAudioClips.Clear();
 
             LoadAudioClipHelper(hitSoundsDir, HitAudioClips);
             LoadAudioClipHelper(gasMaskDir, GasMaskAudioClips);
             LoadAudioClipHelper(hazardDir, HazardZoneClips);
             LoadAudioClipHelper(deviceDir, DeviceAudioClips);
             LoadAudioClipHelper(gasEventAmbient, GasEventAudioClips);
+            LoadAudioClipHelper(radEventAmbient, RadEventAudioClips);
             LoadAudioClipHelper(gasEventLongAmbient, GasEventLongAudioClips);  
             
             Plugin.HasReloadedAudio = true;
