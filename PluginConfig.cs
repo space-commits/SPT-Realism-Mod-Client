@@ -166,6 +166,7 @@ namespace RealismMod
         public static ConfigEntry<bool> EnableTacSprint { get; set; }
         public static ConfigEntry<bool> BlockFiring { get; set; }
         public static ConfigEntry<bool> RememberStance { get; set; }
+        public static ConfigEntry<bool> EnableExtraProcEffects { get; set; }
         public static ConfigEntry<bool> EnableSprintPenalty { get; set; }
         public static ConfigEntry<bool> EnableMouseSensPenalty { get; set; }
         public static ConfigEntry<float> LeftShoulderOffset { get; set; }
@@ -475,7 +476,7 @@ namespace RealismMod
             VigReset = config.Bind<float>(deafSettings, "Tunnel Effect Reset Rate.", 0.035f, new ConfigDescription("How Quickly Player Recovers From Tunnel Vision. Higher = Faster", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 4, IsAdvanced = true, Browsable = Plugin.ServerConfig.headset_changes }));
 
             PistolGlobalAimSpeedModifier = config.Bind<float>(speed, "Pistol Aim Speed Multi.", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 17, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
-            GlobalAimSpeedModifier = config.Bind<float>(speed, "Aim Speed Multi.", 1.2f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
+            GlobalAimSpeedModifier = config.Bind<float>(speed, "Aim Speed Multi.", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 16, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             GlobalReloadSpeedMulti = config.Bind<float>(speed, "Magazine Reload Speed Multi", 1.125f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 15, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             GlobalFixSpeedMulti = config.Bind<float>(speed, "Malfunction Fix Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 14, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             GlobalUBGLReloadMulti = config.Bind<float>(speed, "UBGL Reload Speed Multi", 1f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 13, IsAdvanced = true, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
@@ -491,6 +492,7 @@ namespace RealismMod
             QuickReloadSpeedMulti = config.Bind<float>(speed, "Quick Reload Multi", 1.5f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 2, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             InternalMagReloadMulti = config.Bind<float>(speed, "Internal Magazine Reload", 1.15f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
 
+            EnableExtraProcEffects = config.Bind<bool>(weapAimAndPos, "Enable Extra Weapon Position/Rotation Effects", true, new ConfigDescription("Weapon Has A Slight Cant To It based On Ergo. ADS With Gasmask/Faceshield Is Canted. Weapon Cant Increases When Crouching, And Moves Closer To You. Other Sublte Effects.", null, new ConfigurationManagerAttributes { Order = 280, Browsable = Plugin.ServerConfig.enable_stances }));
             RememberStance = config.Bind<bool>(weapAimAndPos, "Remember Stance", true, new ConfigDescription("Remember Stance After Actions (Using Items).", null, new ConfigurationManagerAttributes { Order = 260, Browsable = Plugin.ServerConfig.enable_stances }));
             BlockFiring = config.Bind<bool>(weapAimAndPos, "Block Shooting While In Stance", false, new ConfigDescription("Blocks Firing While In A Stance, Will Cancel Stance If Attempting To Fire.", null, new ConfigurationManagerAttributes { Order = 250, Browsable = Plugin.ServerConfig.enable_stances }));
             EnableTacSprint = config.Bind<bool>(weapAimAndPos, "Enable High Ready Sprint Animation", Plugin.ServerConfig.enable_stances, new ConfigDescription("Enables Usage Of High Ready Sprint Animation When Sprinting From High Ready Position.", null, new ConfigurationManagerAttributes { Order = 230, Browsable = Plugin.ServerConfig.enable_stances }));

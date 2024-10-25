@@ -2097,7 +2097,7 @@ namespace RealismMod
             bool isInRadZone = PlayerHazardBridge.RadZoneCount > 0 && !PlayerHazardBridge.IsProtectedFromSafeZone;
             bool IsBeingHazarded = (isInRadZone || GameWorldController.DoMapRads) && GearController.CurrentRadProtection <= 0f; //CurrentRadProtection accounts for both respirators, and gas masks and whether they have filters or dura is too low
 
-            float sprintFactor = PlayerState.IsSprinting ? 2f : 1f;
+            float sprintFactor = PlayerState.IsSprinting ? 1.1f : 1f;
             float radItemFactor = RadItemCount * RAD_ITEM_FACTOR;
             float mapRadFactor = GameWorldController.DoMapRads ? GameWorldController.CurrentMapRadStrength : 0f;
             float protectiveFactors = (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak);
@@ -2123,7 +2123,7 @@ namespace RealismMod
             bool zonePreventsHeal = isInGasZone && GearController.CurrentGasProtection <= 0f;
             bool isBeingHazarded = zonePreventsHeal || IsCoughingInGas;
 
-            float sprintFactor = PlayerState.IsSprinting ? 2f : 1f;
+            float sprintFactor = PlayerState.IsSprinting ? 1.5f : 1f;
             float toxicItemFactor = ToxicItemCount * TOXIC_ITEM_FACTOR;
             float mapGasEventFactor = GameWorldController.DoMapGasEvent ? GameWorldController.CurrentGasEventStrength : 0f;
             float protectiveFactors = (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak);

@@ -115,7 +115,7 @@ namespace RealismMod
                 if (hazardLocation.QuestToBlock != null && CheckQuestStatus(hazardLocation.QuestToBlock, new EQuestStatus[] { EQuestStatus.Success })) return false;
                 if (hazardLocation.QuestToEnable != null && !CheckQuestStatus(hazardLocation.QuestToEnable, new EQuestStatus[] { EQuestStatus.Success })) return false;
 
-                bool doTimmyFactor = ProfileData.PMCLevel <= 10f && zoneType != EZoneType.Radiation && zoneType != EZoneType.RadAssets && GameWorldController.CurrentMap != "laboratory";
+                bool doTimmyFactor = ProfileData.PMCLevel <= 10f && hazardLocation.SpawnChance < 1f && zoneType != EZoneType.Radiation && zoneType != EZoneType.RadAssets && GameWorldController.CurrentMap != "laboratory";
                 float timmyFactor = doTimmyFactor && GameWorldController.CurrentMap == "sandbox" ? 0f : doTimmyFactor ? 0.25f : 1f;
                 float zoneProbability = Mathf.Max(hazardLocation.SpawnChance * timmyFactor, 0.01f);
                 zoneProbability = Mathf.Clamp01(zoneProbability);
@@ -203,8 +203,8 @@ namespace RealismMod
 
                 //if gas event or rad event, all bots have gas mask, but asset zone assets do not block bot paths so they get stuck
                 bool ignoreNav = (GameWorldController.DoMapGasEvent || GameWorldController.DoMapRads) && hazard.ZoneType != EZoneType.GasAssets && hazard.ZoneType != EZoneType.RadAssets;
-
                 hazard.BlocksNav = ignoreNav ? false : subZone.BlockNav;
+
                 if (hazard.BlocksNav)
                 {
                     var navMeshObstacle = hazardZone.AddComponent<NavMeshObstacle>();

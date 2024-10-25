@@ -156,6 +156,10 @@ namespace RealismMod
         public const float FoldedRecoilAngleFactor = 1.15f;
         public const float FoldedConvergenceFactor = 0.7f;
 
+        public static int StockPosition = 0;
+
+        public static bool HasLongMag = false;
+
         public static float BaseWeaponMotionIntensity = 1f;
         public static float WalkMotionIntensity = 1f;
 

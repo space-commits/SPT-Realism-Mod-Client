@@ -145,6 +145,7 @@ namespace RealismMod
                 string position = StatCalc.GetModPosition(magazine, weapType, weapOpType, "");
                 magErgo = magazine.Ergonomics;
                 currentTorque = StatCalc.GetTorque(position, magWeightFactored);
+                WeaponStats.HasLongMag = AttachmentProperties.ModType(magazine) == "long_mag";
             }
             float weapWeightLessMag = totalWeight - magWeight;
 

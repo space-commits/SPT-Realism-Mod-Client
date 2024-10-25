@@ -94,7 +94,7 @@ namespace RealismMod
                 _radRainTimer = 0f;
             }
 
-            float cloudStrength = Mathf.Max(_radRainStrength * 1.25f, 0.25f);
+            float cloudStrength = Mathf.Max(_radRainStrength * 1.5f, 0.35f);
 
             TargetRain = Mathf.Lerp(TargetRain, _radRainStrength, 0.05f * Time.deltaTime);
             TargetFog = Mathf.Lerp(TargetFog, _radRainStrength * 0.025f, 0.025f * Time.deltaTime);

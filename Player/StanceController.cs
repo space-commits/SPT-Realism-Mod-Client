@@ -8,6 +8,7 @@ using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static EFT.Interactive.BetterPropagationGroups;
 using static RootMotion.FinalIK.InteractionTrigger.Range;
 
 namespace RealismMod
@@ -169,11 +170,15 @@ namespace RealismMod
                 }
             }
         }
-        private static EStance _lastRecordedStance = EStance.None; //used for stamina drate rate updates
+        private static EStance _lastRecordedStanceStamina = EStance.None; //used for stamina drate rate updates
+        private static EStance _previousStance = EStance.None;
         private static EStance _currentStance = EStance.None;
         private static EStance _storedStance = EStance.None;
+        public static bool FinishedUnPatrolStancing = false;
+        private static bool _SkipPistolWiggle = false;
         public static bool WasActiveAim = false;
         public static bool _isLeftShoulder = false;
+
         public static bool IsLeftShoulder
         {
             get { return _isLeftShoulder; }
@@ -185,6 +190,7 @@ namespace RealismMod
                 }
             }
         }
+
         public static bool CancelLeftShoulder = false;
         public static bool DoLeftShoulderTransition = false;
         public static bool IsDoingTacSprint = false;
@@ -312,7 +318,7 @@ namespace RealismMod
             bool doDrain = ((shouldInterruptRegen || !isInRegenableStance || shouldDoIdleDrain) && !isInRegenableState && !doNeutral) || (IsDoingTacSprint && PluginConfig.EnableIdleStamDrain.Value);
             EStance stance = CurrentStance;
 
-            if (IsAiming != _wasAiming || _regenStam != doRegen || _drainStam != doDrain || _neutral != doNeutral || _lastRecordedStance != CurrentStance || IsMounting != _wasMounting || IsBracing != _wasBracing)
+            if (IsAiming != _wasAiming || _regenStam != doRegen || _drainStam != doDrain || _neutral != doNeutral || _lastRecordedStanceStamina != CurrentStance || IsMounting != _wasMounting || IsBracing != _wasBracing)
             {
                 if (doDrain)
                 {
@@ -352,7 +358,7 @@ namespace RealismMod
             _wasBracing = IsBracing;
             _wasMounting = IsMounting;
             _wasAiming = IsAiming;
-            _lastRecordedStance = CurrentStance;
+            _lastRecordedStanceStamina = CurrentStance;
         }
 
         public static void UnarmedStanceStamina(Player player)
@@ -366,7 +372,7 @@ namespace RealismMod
             _wasBracing = false;
             _wasMounting = false;
             _wasAiming = false;
-            _lastRecordedStance = EStance.None;
+            _lastRecordedStanceStamina = EStance.None;
         }
 
         public static bool IsIdle()
@@ -454,6 +460,7 @@ namespace RealismMod
 
         private static void ToggleStance(EStance targetStance, bool setPrevious = false, bool setPrevisousAsCurrent = false)
         {
+            _previousStance = _currentStance;
             if (IsLeftShoulder) IsLeftShoulder = false;
             if (setPrevious) StoredStance = CurrentStance;
             if (CurrentStance == targetStance) CurrentStance = EStance.None;
@@ -539,6 +546,7 @@ namespace RealismMod
                 //patrol
                 if (MeleeIsToggleable && Input.GetKeyDown(PluginConfig.PatrolKeybind.Value.MainKey) && PluginConfig.PatrolKeybind.Value.Modifiers.All(Input.GetKey))
                 {
+                    Utils.GetYourPlayer().method_50(0.5f);
                     ToggleStance(EStance.PatrolStance);
                     StoredStance = EStance.None;
                     StanceBlender.Target = 0f;
@@ -822,6 +830,7 @@ namespace RealismMod
 
             if (!pwa.IsAiming && !IsBlindFiring && !PistolIsColliding && !WeaponStats.HasShoulderContact && PluginConfig.EnableAltPistol.Value) //!CancelPistolStance && !pwa.LeftStance
             {
+                if (CurrentStance == EStance.PatrolStance || _previousStance == EStance.PatrolStance) _SkipPistolWiggle = true;
                 CurrentStance = EStance.PistolCompressed;
                 StoredStance = EStance.None;
                 isResettingPistol = false;
@@ -856,9 +865,10 @@ namespace RealismMod
                 }
                 if ((StanceBlender.Value >= 1f && StanceTargetPosition == pistolTargetPosition) && !DidStanceWiggle)
                 {
-                    DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-12.5f, 5f, 0f) * movementFactor);
+                    if (!_SkipPistolWiggle) DoWiggleEffects(player, pwa, fc.Weapon, new Vector3(-12.5f, 5f, PluginConfig.test10.Value) * movementFactor);
                     DidStanceWiggle = true;
                     CancelPistolStance = false;
+                    _SkipPistolWiggle = false;
                 }
 
             }
@@ -971,10 +981,10 @@ namespace RealismMod
             float lowerBaseLimit = WeaponStats.TotalWeaponWeight >= weightLimit ? 0.45f : 0.55f;
             float ergoMulti = Mathf.Clamp(1.15f * WeaponStats.ErgoStanceSpeed * Mathf.Pow(WeaponStats.TotalWeaponHandlingModi, 0.4f), lowerBaseLimit, 1.2f);
             float lowerSpeedLimit = WeaponStats.TotalWeaponWeight >= weightLimit ? 0.3f : 0.4f;
-            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamFactor, 0.65f)), lowerSpeedLimit, 1.2f);
+            float stanceMulti = Mathf.Clamp(ergoMulti * PlayerState.StanceInjuryMulti * Plugin.RealHealthController.AdrenalineStanceBonus * (Mathf.Max(PlayerState.RemainingArmStamFactor, 0.65f)), lowerSpeedLimit, 1.18f);
             float resetErgoMulti = (1f - stanceMulti) + 1f;
-            float highReadyStanceMulti = Mathf.Clamp(stanceMulti, 0.5f, 1f);
-            float lowReadyStanceMulti = Mathf.Clamp(stanceMulti, 0.5f, 1f);
+            float highReadyStanceMulti = Mathf.Clamp(stanceMulti, 0.5f, 0.98f);
+            float lowReadyStanceMulti = Mathf.Clamp(stanceMulti, 0.5f, 0.98f);
             float highReadyXWiggleFactor = WeaponStats.TotalErgo <= 49f ? -1f : 1f;
             float highReadyZWiggleFactor = WeaponStats.TotalErgo <= 40f ? 1f : 2f;
 
@@ -1553,7 +1563,7 @@ namespace RealismMod
 
         }
 
-        public static void DoWiggleEffects(Player player, ProceduralWeaponAnimation pwa, Weapon weapon, Vector3 wiggleDirection, bool playSound = false, float volume = 0.35f, float wiggleFactor = 1f, bool isADS = false)
+        public static void DoWiggleEffects(Player player, ProceduralWeaponAnimation pwa, Weapon weapon, Vector3 wiggleDirection, bool playSound = false, float volume = 0.5f, float wiggleFactor = 1f, bool isADS = false)
         {
             if (playSound)
             {
@@ -1688,7 +1698,7 @@ namespace RealismMod
                 IsMounting = !IsMounting;
                 if (IsMounting) StanceController.CancelAllStances();
 
-                DoWiggleEffects(player, pwa, fc.Weapon, IsMounting ? CoverWiggleDirection : CoverWiggleDirection * -1f, true);
+                DoWiggleEffects(player, pwa, fc.Weapon, IsMounting ? CoverWiggleDirection : CoverWiggleDirection * -1f, true, wiggleFactor: 0.5f);
                 float accuracy = fc.Item.GetTotalCenterOfImpact(false); //forces accuracy to update
                 AccessTools.Field(typeof(Player.FirearmController), "float_3").SetValue(fc, accuracy);
             }
