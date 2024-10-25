@@ -115,7 +115,7 @@ namespace RealismMod
                 if (hazardLocation.QuestToBlock != null && CheckQuestStatus(hazardLocation.QuestToBlock, new EQuestStatus[] { EQuestStatus.Success })) return false;
                 if (hazardLocation.QuestToEnable != null && !CheckQuestStatus(hazardLocation.QuestToEnable, new EQuestStatus[] { EQuestStatus.Success })) return false;
 
-                bool doTimmyFactor = ProfileData.PMCLevel <= 10f && zoneType != EZoneType.Radiation && zoneType != EZoneType.RadAssets && GameWorldController.CurrentMap != "laboratory";
+                bool doTimmyFactor = ProfileData.PMCLevel <= 10f && hazardLocation.SpawnChance < 1f && zoneType != EZoneType.Radiation && zoneType != EZoneType.RadAssets && GameWorldController.CurrentMap != "laboratory";
                 float timmyFactor = doTimmyFactor && GameWorldController.CurrentMap == "sandbox" ? 0f : doTimmyFactor ? 0.25f : 1f;
                 float zoneProbability = Mathf.Max(hazardLocation.SpawnChance * timmyFactor, 0.01f);
                 zoneProbability = Mathf.Clamp01(zoneProbability);

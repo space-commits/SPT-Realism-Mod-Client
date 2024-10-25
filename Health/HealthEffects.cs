@@ -598,28 +598,28 @@ namespace RealismMod
                     drainRate = 0f;
                     break;
                 case <= 40f:
-                    drainRate = -0.1f;
+                    drainRate = -0.15f;
                     break;
                 case <= 50f:
-                    drainRate = -0.2f;
+                    drainRate = -0.25f;
                     break;
                 case <= 60f:
-                    drainRate = -0.35f;
+                    drainRate = -0.4f;
                     break;
                 case < 70f:
-                    drainRate = -0.6f;
+                    drainRate = -0.7f;
                     break;
                 case <= 80f:
-                    drainRate = -1f;
+                    drainRate = -1.2f;
                     break;
                 case <= 90f:
-                    drainRate = -1.4f;
+                    drainRate = -1.6f;
                     break;
                 case < 100f:
-                    drainRate = -1.8f;
+                    drainRate = -2f;
                     break;
                 case >= 100f:
-                    drainRate = -2.2f;
+                    drainRate = -3f;
                     break;
                 default:
                     drainRate = 0f;
