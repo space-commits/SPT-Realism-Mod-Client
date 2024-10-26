@@ -383,18 +383,19 @@ namespace RealismMod
                 GameWorldController.IsMapThatCanDoRadEvent = GameWorldController.CurrentMap != "laboratory";
 
                 //audio components
-                AudioController.CreateAudioComponent();
+                Plugin.RealismAudioControllerComponent.RunReInitPlayer();
+
                 if (GameWorldController.DoMapGasEvent)
                 {
                     Player player = Utils.GetYourPlayer();
-                    ZoneSpawner.CreateAmbientAudioPlayers(player, player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.2f, minDelayBeforePlayback: 60f); //spooky short playback
-                    ZoneSpawner.CreateAmbientAudioPlayers(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 5f, 30f, 0.48f, 55f, 65f, minDelayBeforePlayback: 0f); //long ambient
+                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventAudioClips, volume: 1.2f, minDelayBeforePlayback: 60f); //spooky short playback
+                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.GasEventLongAudioClips, true, 5f, 30f, 0.48f, 55f, 65f, minDelayBeforePlayback: 0f); //long ambient
                 }
 
                 if (GameWorldController.DoMapRads)
                 {
                     Player player = Utils.GetYourPlayer();
-                    ZoneSpawner.CreateAmbientAudioPlayers(player, player.gameObject.transform, Plugin.RadEventAudioClips, volume: 1f, minDelayBeforePlayback: 60f); //thunder
+                    AudioController.CreateAmbientAudioPlayer(player, player.gameObject.transform, Plugin.RadEventAudioClips, volume: 1f, minDelayBeforePlayback: 60f); //thunder
                 }
 
                 //spawn zones

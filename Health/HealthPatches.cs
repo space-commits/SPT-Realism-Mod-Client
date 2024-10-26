@@ -2,12 +2,14 @@
 using EFT;
 using EFT.HealthSystem;
 using EFT.InventoryLogic;
+using EFT.UI;
 using EFT.UI.Health;
 using HarmonyLib;
 using SPT.Reflection.Patching;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
@@ -447,7 +449,6 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             return typeof(HealthControllerClass).GetMethod("ApplyItem", BindingFlags.Instance | BindingFlags.Public);
-
         }
 
         private static void RestoreHP(HealthControllerClass controller, EBodyPart initialTarget, float hpToRestore) 
@@ -469,6 +470,48 @@ namespace RealismMod
             }
         }
 
+        private static void DoFoodItem(HealthControllerClass hc, FoodClass foodClass) 
+        {
+            var toxinDebuffs = foodClass.HealthEffectsComponent.BuffSettings.Where(b => b.BuffType == EStimulatorBuffType.UnknownToxin);
+            if (toxinDebuffs.Count() > 0) 
+            {
+                var debuff = toxinDebuffs.First();
+                if (debuff.Chance > 0 && UnityEngine.Random.Range(0, 100) < debuff.Chance * 100)
+                {
+                    float energyDrain = UnityEngine.Random.Range(debuff.Chance * 250, debuff.Chance * 500);
+                    energyDrain = Mathf.Clamp(energyDrain, 2.5f, 90f);
+                    float hydrationDrain = UnityEngine.Random.Range(debuff.Chance * 250, debuff.Chance * 500);
+                    hydrationDrain = Mathf.Clamp(hydrationDrain, 2.5f, 90f);
+                    hc.ChangeEnergy(-energyDrain);
+                    hc.ChangeHydration(-hydrationDrain);
+
+                    Plugin.RealismAudioControllerComponent.PlayFoodPoisoningSFX(0.5f);
+                    return;
+                }
+            }
+
+            foreach (var buff in foodClass.HealthEffectsComponent.BuffSettings)
+            {
+                if (buff.BuffType == EStimulatorBuffType.EnergyRate)
+                {
+                    if (buff.Value > 0)
+                    {
+                        hc.ChangeEnergy(buff.Value * buff.Duration);
+                    }
+                }
+
+                if (buff.BuffType == EStimulatorBuffType.HydrationRate)
+                {
+                    if (buff.Value > 0)
+                    {
+                        hc.ChangeHydration(buff.Value * buff.Duration);
+                    }
+                }
+            }
+
+            Plugin.RealHealthController.CheckIfReducesHazardInStash(foodClass, false, hc);
+        }
+
         [PatchPostfix]
         private static void Postfix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
         {
@@ -482,29 +525,11 @@ namespace RealismMod
                 FoodClass foodClass = item as FoodClass;
                 if (foodClass != null)
                 {
-                    foreach (var buff in foodClass.HealthEffectsComponent.BuffSettings)
-                    {
-                        if (buff.BuffType == EStimulatorBuffType.EnergyRate)
-                        {
-                            if (buff.Value > 0)
-                            {
-                                __instance.ChangeEnergy(buff.Value * buff.Duration);
-                            }
-                        }
-                        if (buff.BuffType == EStimulatorBuffType.HydrationRate)
-                        {
-                            if (buff.Value > 0)
-                            {
-                                __instance.ChangeHydration(buff.Value * buff.Duration);
-                            }
-                        }
-                    }
-
-                    Plugin.RealHealthController.CheckIfReducesHazardInStash(foodClass, false, __instance);
-
+                    DoFoodItem(__instance, foodClass);
                     return;
                 }
             }
+
             if (Plugin.ServerConfig.med_changes)
             {
                 MedsClass medsClass = item as MedsClass;

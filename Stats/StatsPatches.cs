@@ -138,6 +138,7 @@ namespace RealismMod
             float magWeight = 0;
             float currentTorque = 0;
             bool hasMag = magazine != null;
+            WeaponStats.HasLongMag = false;
             if (hasMag == true)
             {
                 magWeight = magazine.GetSingleItemTotalWeight();

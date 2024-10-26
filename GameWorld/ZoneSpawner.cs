@@ -51,25 +51,6 @@ namespace RealismMod
             return PluginConfig.ZoneDebug.Value || ProfileData.PMCLevel >= 20 || HasMetQuestCriteria(new string[] { "66dad1a18cbba6e558486336", "670ae811bd43cbf026768126" },  new EQuestStatus[] { EQuestStatus.Started, EQuestStatus.Success });
         }
 
-        public static void CreateAmbientAudioPlayers(Player player, Transform parentTransform, Dictionary<string, AudioClip> clips, bool followPlayer = false, float minTime = 15f, float maxTime = 90f, float volume = 1f, float minDistance = 45f, float maxDistance = 95f, float minDelayBeforePlayback = 60f) 
-        {
-            GameObject audioGO = new GameObject("AmbientAudioPlayer");
-            var audioPlayer = audioGO.AddComponent<AmbientAudioPlayer>();
-            audioPlayer.ParentTransform = parentTransform;
-            audioPlayer._Player = player;
-            audioPlayer.FollowPlayer = followPlayer;
-            audioPlayer.MinTimeBetweenClips = minTime;
-            audioPlayer.MaxTimeBetweenClips = maxTime;
-            audioPlayer.MinDistance = minDistance;
-            audioPlayer.MaxDistance = maxDistance;
-            audioPlayer.Volume = volume;
-            audioPlayer.DelayBeforePlayback = minDelayBeforePlayback;
-            foreach (var clip in clips) 
-            {
-                audioPlayer.AudioClips.Add(clip.Value);
-            }
-        }
-
         //for player, get closest spawn. For bot, sort by min distance, or furthest from player failing that.
         public static Vector3 GetSafeSpawnPoint(Player entitiy, bool isBot, bool blocksNav, bool isInRads)
         {

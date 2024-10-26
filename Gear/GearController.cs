@@ -18,6 +18,8 @@ namespace RealismMod
         public static bool HasRespirator { get; private set; } = false;
         public static bool FSIsActive { get; set; } = false;
         public static bool NVGIsActive { get; set; } = false;
+        public static bool HasGasAnalyser { get; set; } = false;
+        public static bool HasGeiger { get; set; } = false;
 
         public static EquipmentSlot[] MainInventorySlots =
         {
@@ -106,11 +108,11 @@ namespace RealismMod
 
                 if (item.TemplateId == "590a3efd86f77437d351a25b")
                 {
-                    DeviceController.HasGasAnalyser = true;
+                    HasGasAnalyser = true;
                 }
                 if (item.TemplateId == "5672cb724bdc2dc2088b456b")
                 {
-                    DeviceController.HasGeiger = true;
+                    HasGeiger = true;
                 }
             }
         }
@@ -120,8 +122,8 @@ namespace RealismMod
             IEnumerable<Item> vestItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.TacticalVest}) ?? Enumerable.Empty<Item>();
             IEnumerable<Item> armbandItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.ArmBand }) ?? Enumerable.Empty<Item>();
             IEnumerable<Item> pocketItems = invClass.GetItemsInSlots(new EquipmentSlot[] { EquipmentSlot.Pockets }) ?? Enumerable.Empty<Item>();
-            DeviceController.HasGasAnalyser = false;
-            DeviceController.HasGeiger = false;
+            HasGasAnalyser = false;
+            HasGeiger = false;
             DeviceCheckerHelper(vestItems);
             DeviceCheckerHelper(armbandItems);
             DeviceCheckerHelper(pocketItems);

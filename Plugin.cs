@@ -4,6 +4,7 @@ using BepInEx.Bootstrap;
 using Comfort.Common;
 using EFT;
 using EFT.Interactive;
+using EFT.UI;
 using Newtonsoft.Json;
 using SPT.Common.Http;
 using System;
@@ -71,6 +72,7 @@ namespace RealismMod
         public static Dictionary<string, AudioClip> RadEventAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> GasEventAudioClips = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> GasEventLongAudioClips = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, AudioClip> FoodPoisoningSfx = new Dictionary<string, AudioClip>();
         public static Dictionary<string, Sprite> LoadedSprites = new Dictionary<string, Sprite>();
         public static Dictionary<string, Texture> LoadedTextures = new Dictionary<string, Texture>();
 
@@ -92,6 +94,10 @@ namespace RealismMod
         //weather controller
         private GameObject RealismWeatherGameObject { get; set; }
         public static RealismWeatherController RealismWeatherComponent;
+
+        //audio controller
+        private GameObject AudioControllerGameObject { get; set; }
+        public static RealismAudioControllerComponent RealismAudioControllerComponent;
 
         public static bool HasReloadedAudio = false;
         public static bool FikaPresent = false;
@@ -296,6 +302,7 @@ namespace RealismMod
             string[] gasEventAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\mapgas\\default");
             string[] radEventAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\maprads");
             string[] gasEventLongAmbient = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\zones\\mapgas\\long");
+            string[] foodPoisoning = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "\\BepInEx\\plugins\\Realism\\sounds\\health\\foodpoisoning");
 
             HitAudioClips.Clear();
             GasMaskAudioClips.Clear();
@@ -303,6 +310,7 @@ namespace RealismMod
             DeviceAudioClips.Clear();
             GasEventAudioClips.Clear();
             RadEventAudioClips.Clear();
+            FoodPoisoningSfx.Clear();
 
             LoadAudioClipHelper(hitSoundsDir, HitAudioClips);
             LoadAudioClipHelper(gasMaskDir, GasMaskAudioClips);
@@ -310,8 +318,9 @@ namespace RealismMod
             LoadAudioClipHelper(deviceDir, DeviceAudioClips);
             LoadAudioClipHelper(gasEventAmbient, GasEventAudioClips);
             LoadAudioClipHelper(radEventAmbient, RadEventAudioClips);
-            LoadAudioClipHelper(gasEventLongAmbient, GasEventLongAudioClips);  
-            
+            LoadAudioClipHelper(gasEventLongAmbient, GasEventLongAudioClips);
+            LoadAudioClipHelper(foodPoisoning, FoodPoisoningSfx);
+
             Plugin.HasReloadedAudio = true;
         }
 
@@ -394,6 +403,13 @@ namespace RealismMod
             DontDestroyOnLoad(RealismWeatherGameObject);
         }
 
+        private void LoadAudioController() 
+        {
+            AudioControllerGameObject = new GameObject();
+            RealismAudioControllerComponent = AudioControllerGameObject.AddComponent<RealismAudioControllerComponent>();
+            DontDestroyOnLoad(AudioControllerGameObject);
+        }
+
         private void LoadHealthController()
         {
             DamageTracker dmgTracker = new DamageTracker();
@@ -423,6 +439,8 @@ namespace RealismMod
             LoadMountingUI();
             LoadWeatherController();
             LoadHealthController();
+            LoadAudioController();
+
             PluginConfig.InitConfigBindings(Config);
 
             MoveDaCube.InitTempBindings(Config); //TEMPORARY

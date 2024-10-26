@@ -1,7 +1,6 @@
-﻿using EFT;
-using System;
-using System.Linq;
-using System.Reflection;
+﻿using Comfort.Common;
+using EFT;
+using EFT.UI;
 using UnityEngine;
 using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2429;
 using ExistanceClass = GClass2470;
@@ -414,8 +413,14 @@ namespace RealismMod
                     RealHealthController.AddBasesEFTEffect(_Player, "TunnelVision", EBodyPart.Head, 1f, 20f, 5f, 1f);
                     RealHealthController.AddToExistingBaseEFTEffect(_Player, "Contusion", EBodyPart.Head, 1f, 20f, 5f, 0.5f);
                     RealHealthController.AddBasesEFTEffect(_Player, "Tremor", EBodyPart.Head, 1f, 20f, 5f, 1f);
-
+                    Plugin.RealismAudioControllerComponent.PlayFoodPoisoningSFX(0.6f);
                     addedEffect = true;
+                }
+
+                TimeExisted++;
+                if (TimeExisted % 30 == 0) 
+                {
+                    Plugin.RealismAudioControllerComponent.PlayFoodPoisoningSFX(0.6f);
                 }
             }
         }
