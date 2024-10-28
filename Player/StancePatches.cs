@@ -25,7 +25,6 @@ namespace RealismMod
         private static float _collidingModifier = 1f;
         private static float _collisionTimer = 0f;
         private static float _collisionResetTimer = 0f;
-        private static float _slowDownTarget = 0.1f;
         private static float _previousOverlapValue = 0f;
         private static float _currentOverlapValue = 0f;
         private static float _smoothedOverlapValue = 0f;
@@ -53,28 +52,22 @@ namespace RealismMod
             Player player = (Player)_playerField.GetValue(firearmController);
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
-                //to stop it spazzing out on railings: speed starts off at very low value like 0.1-0.5, collision detected = slowly then quickly ramp up speeds, when no collision quickly reset speeds back to low value
-                //speed should also be modified by stamina, injury, ergo
-
-                //what I actually need is for the weapon to stay in compressed state for X seconds before resetting, that would mean keeping speed modifier at 0 for X time
-
-
                 _currentOverlapValue = firearmController.OverlapValue;
                 float _smoothingFactor = 0.1f; //0.1f
                 _smoothedOverlapValue = _smoothedOverlapValue + _smoothingFactor * (_currentOverlapValue - _smoothedOverlapValue);
+                //_smoothedOverlapValue = !__instance.OverlappingAllowsBlindfire ? Mathf.Max(_smoothedOverlapValue, _previousOverlapValue) : Mathf.Min(_smoothedOverlapValue, _previousOverlapValue); //this was for when I was trying my own rotaiton + position
 
                 bool isIncreasing = _smoothedOverlapValue > _previousOverlapValue;
                 bool isDecreasing = _smoothedOverlapValue < _previousOverlapValue;
                 bool isStable = Utils.AreFloatsEqual(_smoothedOverlapValue, _previousOverlapValue, 0.0001f);
                 float normalSpeed = 0.1f; //0.1f
                 float delaySpeed = 0.2f; //0.2f
-                float resetTime = 2f; //2
+                float resetTime = 1.85f; //2
                 float delayTime = 0.1f; //0.1
-                float slowDown = 0.1f; //0.05
+                float slowDown = 0.15f; //0.05
 
                 if (isStable)
                 {
-                    Logger.LogWarning("=======stable.");
                     _collisionTimer = 0;
                     _collisionResetTimer = 0f;
                     _collidingModifier = Mathf.MoveTowards(_collidingModifier, 1f, normalSpeed);
@@ -82,43 +75,68 @@ namespace RealismMod
                 }
                 else if (isIncreasing)
                 {
-                    Logger.LogWarning(">>>>>>increasing.");
-
                     _collisionTimer += Time.deltaTime;
                     if (_collisionTimer <= delayTime)
                     {
-                        Logger.LogWarning("==delay");
                         _collidingModifier = Mathf.MoveTowards(_collidingModifier, slowDown, delaySpeed);
                     }
                     else
                     {
-                       Logger.LogWarning("==continue");
                         _collidingModifier = Mathf.MoveTowards(_collidingModifier, 1f, normalSpeed);
                     }
-
                     //_collidingModifier = Mathf.MoveTowards(_collidingModifier, PluginConfig.test6.Value, PluginConfig.test7.Value); this was here by accident when it felt good, it used the same values as non-delay
                     _collisionResetTimer = 0f;
                 }
                 else if (isDecreasing)
                 {
-                    Logger.LogWarning("<<<<<decreasing.");
-
                     _collisionTimer = 0;
                     _collisionResetTimer += Time.deltaTime;
                     if (_collisionResetTimer <= resetTime)
                     {
-                        Logger.LogWarning("==pause");
                         _collidingModifier = Mathf.MoveTowards(_collidingModifier, slowDown, delaySpeed);
                     }
                     else
                     {
-                        Logger.LogWarning("==reset");
                         _collidingModifier = Mathf.MoveTowards(_collidingModifier, 1f, normalSpeed);
                     }
                 }
 
-                _previousOverlapValue = _smoothedOverlapValue;
 
+                _previousOverlapValue = _smoothedOverlapValue;
+       
+
+
+      /*          bool pause = false;
+                if (!__instance.OverlappingAllowsBlindfire)
+                { 
+                    _collisionTimer = 0;
+                    pause = false;
+                }
+                else 
+                {
+                    _collisionTimer += Time.deltaTime;
+                    if (_collisionTimer >= PluginConfig.test9.Value)
+                    {
+                        pause = false;
+                    }
+                    else pause = true;
+                }
+           
+
+                Vector3 patrolPos = new Vector3(PluginConfig.test1.Value * _smoothedOverlapValue, PluginConfig.test2.Value * _smoothedOverlapValue, PluginConfig.test3.Value * _smoothedOverlapValue);
+                if (!pause) _collisionPos = Vector3.Lerp(_collisionPos, patrolPos, PluginConfig.test4.Value * Time.deltaTime);
+
+                __instance.HandsContainer.WeaponRoot.localPosition += _collisionPos;
+
+                Vector3 patrolRot = new Vector3(PluginConfig.test5.Value * firearmController.OverlapValue, PluginConfig.test6.Value * _smoothedOverlapValue, PluginConfig.test7.Value * _smoothedOverlapValue);
+                if (!pause) _collisionRot = Vector3.Lerp(_collisionRot, patrolRot, PluginConfig.test8.Value * Time.deltaTime);
+                Quaternion newRot = Quaternion.identity;
+                newRot.x = _collisionRot.x;
+                newRot.y = _collisionRot.y;
+                newRot.z = _collisionRot.z;
+
+                __instance.HandsContainer.WeaponRoot.localRotation *= newRot;
+*/
 
                 AccessTools.Field(typeof(TurnAwayEffector), "_blendSpeed").SetValue(__instance.TurnAway, 4.5f * _collidingModifier); //4.5
                 AccessTools.Field(typeof(TurnAwayEffector), "_smoothTimeIn").SetValue(__instance.TurnAway, 7f * _collidingModifier); //7
@@ -492,7 +510,7 @@ namespace RealismMod
             {
                 if (StanceController.CurrentStance == EStance.PatrolStance) 
                 {
-                    weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.15f);
+                    weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.6f);
                     return;
                 }
 
@@ -517,27 +535,27 @@ namespace RealismMod
                     }
                     if (StanceController.CurrentStance == EStance.ShortStock)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.65f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.7f);
                         return;
                     }
                     if (StanceController.CurrentStance == EStance.HighReady)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.75f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.8f);
                         return;
                     }
                     if (StanceController.CurrentStance == EStance.LowReady)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.8f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.85f);
                         return;
                     }
                     if (StanceController.StoredStance == EStance.ShortStock && StanceController.IsAiming)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.75f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.8f);
                         return;
                     }
                     if (StanceController.IsAiming)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.85f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.9f);
                         return;
                     }
                 }
