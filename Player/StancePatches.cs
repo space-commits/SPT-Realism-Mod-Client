@@ -30,6 +30,9 @@ namespace RealismMod
         private static float _currentOverlapValue = 0f;
         private static float _smoothedOverlapValue = 0f;
 
+        private static Vector3 _collisionPos = Vector3.zero;
+        private static Vector3 _collisionRot = Vector3.zero;
+
         protected override MethodBase GetTargetMethod()
         {
             _playerField = AccessTools.Field(typeof(FirearmController), "_player");
@@ -57,75 +60,69 @@ namespace RealismMod
 
 
                 _currentOverlapValue = firearmController.OverlapValue;
-                float smoothingFactor = PluginConfig.test9.Value; 
-                _smoothedOverlapValue = _smoothedOverlapValue + smoothingFactor * (_currentOverlapValue - _smoothedOverlapValue);
+                float _smoothingFactor = 0.1f; //0.1f
+                _smoothedOverlapValue = _smoothedOverlapValue + _smoothingFactor * (_currentOverlapValue - _smoothedOverlapValue);
 
                 bool isIncreasing = _smoothedOverlapValue > _previousOverlapValue;
                 bool isDecreasing = _smoothedOverlapValue < _previousOverlapValue;
-                bool isStable = Utils.AreFloatsEqual(_smoothedOverlapValue, _previousOverlapValue, PluginConfig.test10.Value);
+                bool isStable = Utils.AreFloatsEqual(_smoothedOverlapValue, _previousOverlapValue, 0.0001f);
+                float normalSpeed = 0.1f; //0.1f
+                float delaySpeed = 0.2f; //0.2f
+                float resetTime = 2f; //2
+                float delayTime = 0.1f; //0.1
+                float slowDown = 0.1f; //0.05
 
                 if (isStable)
                 {
                     Logger.LogWarning("=======stable.");
-     
+                    _collisionTimer = 0;
                     _collisionResetTimer = 0f;
-                    _collidingModifier = Mathf.MoveTowards(_collidingModifier, PluginConfig.test6.Value, PluginConfig.test7.Value);
+                    _collidingModifier = Mathf.MoveTowards(_collidingModifier, 1f, normalSpeed);
 
                 }
                 else if (isIncreasing)
                 {
                     Logger.LogWarning(">>>>>>increasing.");
+
+                    _collisionTimer += Time.deltaTime;
+                    if (_collisionTimer <= delayTime)
+                    {
+                        Logger.LogWarning("==delay");
+                        _collidingModifier = Mathf.MoveTowards(_collidingModifier, slowDown, delaySpeed);
+                    }
+                    else
+                    {
+                       Logger.LogWarning("==continue");
+                        _collidingModifier = Mathf.MoveTowards(_collidingModifier, 1f, normalSpeed);
+                    }
+
+                    //_collidingModifier = Mathf.MoveTowards(_collidingModifier, PluginConfig.test6.Value, PluginConfig.test7.Value); this was here by accident when it felt good, it used the same values as non-delay
                     _collisionResetTimer = 0f;
-                    _collidingModifier = Mathf.MoveTowards(_collidingModifier, PluginConfig.test6.Value, PluginConfig.test7.Value);
                 }
                 else if (isDecreasing)
                 {
                     Logger.LogWarning("<<<<<decreasing.");
-     
 
-
+                    _collisionTimer = 0;
                     _collisionResetTimer += Time.deltaTime;
-                    if (_collisionResetTimer <= 1f)
+                    if (_collisionResetTimer <= resetTime)
                     {
                         Logger.LogWarning("==pause");
-                        _collidingModifier = Mathf.MoveTowards(_collidingModifier, PluginConfig.test4.Value, PluginConfig.test5.Value);
+                        _collidingModifier = Mathf.MoveTowards(_collidingModifier, slowDown, delaySpeed);
                     }
                     else
                     {
                         Logger.LogWarning("==reset");
-                        _collidingModifier = Mathf.MoveTowards(_collidingModifier, PluginConfig.test6.Value, PluginConfig.test7.Value);
+                        _collidingModifier = Mathf.MoveTowards(_collidingModifier, 1f, normalSpeed);
                     }
                 }
 
                 _previousOverlapValue = _smoothedOverlapValue;
 
-                /*      if (!__instance.OverlappingAllowsBlindfire) //colliding
-                      {
-                          _collisionResetTimer = 0f;
-                      }
-                      else
-                      {
-                          _collisionResetTimer += Time.deltaTime;
-                          if (_collisionResetTimer >= PluginConfig.test4.Value)
-                          {
-                              _collidingModifier = Mathf.MoveTowards(_collidingModifier, PluginConfig.test5.Value, PluginConfig.test6.Value);
-                          }
-                          else
-                          {
-                              _collidingModifier = 0f;
-                          }
-                      }*/
 
-
-
-
-                Utils.Logger.LogWarning("float 2 value " + firearmController.OverlapValue);
-                Utils.Logger.LogWarning("smoothed value " + _smoothedOverlapValue);
-
-
-                AccessTools.Field(typeof(TurnAwayEffector), "_blendSpeed").SetValue(__instance.TurnAway, PluginConfig.test1.Value * _collidingModifier); //4.5
-                AccessTools.Field(typeof(TurnAwayEffector), "_smoothTimeIn").SetValue(__instance.TurnAway, PluginConfig.test2.Value * _collidingModifier); //7
-                AccessTools.Field(typeof(TurnAwayEffector), "_smoothTimeOut").SetValue(__instance.TurnAway, PluginConfig.test3.Value * _collidingModifier); //4
+                AccessTools.Field(typeof(TurnAwayEffector), "_blendSpeed").SetValue(__instance.TurnAway, 4.5f * _collidingModifier); //4.5
+                AccessTools.Field(typeof(TurnAwayEffector), "_smoothTimeIn").SetValue(__instance.TurnAway, 7f * _collidingModifier); //7
+                AccessTools.Field(typeof(TurnAwayEffector), "_smoothTimeOut").SetValue(__instance.TurnAway, 4f * _collidingModifier); //4
 
                 if (StanceController.IsMounting)
                 {
@@ -1056,9 +1053,6 @@ namespace RealismMod
         private static Vector3 _pistolPatrolPos = new Vector3(0.05f, 0f, 0f);
         private static Vector3 _pistolPatrolRot = new Vector3(0.1f, -0.1f, -0.1f);
 
-        private static Vector3 _collisionPos = Vector3.zero;
-        private static Vector3 _collisionRot = Vector3.zero;
-
         private static float _stanceRotationSpeed = 1f;
 
         protected override MethodBase GetTargetMethod()
@@ -1075,25 +1069,6 @@ namespace RealismMod
 
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("ApplyComplexRotation", BindingFlags.Instance | BindingFlags.Public);
         }
-
-        private static void DoCollision(ProceduralWeaponAnimation pwa, Player player)
-        {
-
-            Vector3 patrolPos = new Vector3(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value);
-            _collisionPos = Vector3.Lerp(_collisionPos, patrolPos, PluginConfig.test4.Value * Time.deltaTime);
-
-            pwa.HandsContainer.WeaponRoot.localPosition += _collisionPos;
-
-            Vector3 patrolRot = new Vector3(PluginConfig.test5.Value, PluginConfig.test6.Value, PluginConfig.test7.Value);
-            _collisionRot = Vector3.Lerp(_collisionRot, patrolRot, PluginConfig.test8.Value * Time.deltaTime);
-            Quaternion newRot = Quaternion.identity;
-            newRot.x = _patrolRot.x;
-            newRot.y = _patrolRot.y;
-            newRot.z = _patrolRot.z;
-
-            pwa.HandsContainer.WeaponRoot.localRotation *= newRot;
-        }
-
 
         private static void DoPatrolStance(ProceduralWeaponAnimation pwa, Player player) 
         {
