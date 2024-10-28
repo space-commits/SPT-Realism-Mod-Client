@@ -166,10 +166,10 @@ namespace RealismMod
 
         private const float GAS_DELAY = 5f;
         private const float RAD_DELAY = 4f;
-        private const float GAS_DEVICE_VOLUME = 0.14f;
-        private const float GEIGER_VOLUME = 0.16f;
+        private const float GAS_DEVICE_VOLUME = 0.28f;
+        private const float GEIGER_VOLUME = 0.32f;
+        private const float BASE_BREATH_VOLUME = 0.3f;
 
-        private const float _baseBreathVolume = 0.2f;
         private static float _currentBreathClipLength = 0f;
         private static float _breathTimer = 0f;
         private static float _breathCountdown = 2.5f;
@@ -266,7 +266,7 @@ namespace RealismMod
 
         private float GetBreathVolume() 
         {
-            return _baseBreathVolume * (2f - PlayerState.BaseStaminaPerc) * PluginConfig.GasMaskBreathVolume.Value;
+            return BASE_BREATH_VOLUME * (2f - PlayerState.BaseStaminaPerc) * PluginConfig.GasMaskBreathVolume.Value;
         }
 
         private string GetAudioFromOtherStates()

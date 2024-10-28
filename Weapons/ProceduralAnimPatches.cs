@@ -488,7 +488,7 @@ namespace RealismMod
                 float weightFactor = StatCalc.ProceduralIntensityFactorCalc(weapWeight, isPistol ? 1.3f : 2.4f); 
                 float displacementModifier = noShoulderContact ? PluginConfig.ProceduralIntensity.Value * 0.95f : PluginConfig.ProceduralIntensity.Value * 0.48f; // lower = less drag
                 float aimIntensity = noShoulderContact ? PluginConfig.ProceduralIntensity.Value * 0.86f : PluginConfig.ProceduralIntensity.Value * 0.51f;
-                float displacementFactor = isPistol ? 17.5f : 16f;
+                float displacementFactor = isPistol ? 17.5f : 15.8f;
                 float displacementLowerLimit = isPistol ? 0.73f : 0.88f;
                 float displacementUpperLimit = isPistol ? 2.1f : 5.9f;
                 float swayStrengthFactor = isPistol ? 42f : 169f; 
@@ -497,7 +497,7 @@ namespace RealismMod
 
                 float combinedFactors = ergoWeight * weightFactor * playerWeightFactor * formfactor;
                 float displacementStrength = Mathf.Clamp(combinedFactors / displacementFactor, displacementLowerLimit, displacementUpperLimit); // inertia
-                displacementStrength *= stanceFactor * WeaponStats.TotalWeaponHandlingModi * (__instance.IsAiming ? 1.08f : 1f); // be careful, also affects initial ADS displacement
+                displacementStrength *= stanceFactor * WeaponStats.TotalWeaponHandlingModi * (__instance.IsAiming ? 1.09f : 1f); // be careful, also affects initial ADS displacement
                 float swayStrength = Mathf.Clamp(combinedFactors / swayStrengthFactor, swayStrengthLowerLimit, swayStrengthUpperLimit); // side to side
                 swayStrength *= stanceFactor * WeaponStats.TotalWeaponHandlingModi;
 
@@ -509,7 +509,7 @@ namespace RealismMod
                 float motionWeaponFactor = WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol || !WeaponStats.HasShoulderContact ? 1.55f : WeaponStats.IsBullpup ? 0.8f : 1f;
                 float motionUpperLimit = isPistol ? 1.45f : 2.55f;
                 float motionLowerLimit = isPistol ? 1.3f : 1.35f;
-                WeaponStats.BaseWeaponMotionIntensity = Mathf.Clamp(0.06f * stanceFactorMotion * ergoWeight * playerWeightFactor * motionWeaponFactor * WeaponStats.TotalWeaponHandlingModi, motionLowerLimit, motionUpperLimit) * 0.33f;
+                WeaponStats.BaseWeaponMotionIntensity = Mathf.Clamp(0.065f * stanceFactorMotion * ergoWeight * playerWeightFactor * motionWeaponFactor * WeaponStats.TotalWeaponHandlingModi, motionLowerLimit, motionUpperLimit) * 0.33f;
 
                 float walkMotionStockFactor = WeaponStats.IsBullpup ? 0.8f : WeaponStats.IsMachinePistol || WeaponStats.IsStocklessPistol ? 1.4f : !WeaponStats.HasShoulderContact ? 1.45f : 1f;
                 float weaponWalkMotionFactor = 2.1f * (WeaponStats.ErgoFactor / 100f) * WeaponStats.TotalWeaponHandlingModi;

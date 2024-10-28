@@ -993,8 +993,8 @@ namespace RealismMod
             WiggleReturnSpeed = (1f - (PlayerState.AimSkillADSBuff * 0.5f)) * wiggleErgoMulti * PlayerState.StanceInjuryMulti * stocklessModifier * playerWeightFactor * (Mathf.Max(PlayerState.RemainingArmStamFactor, 0.55f));
 
             bool isColliding = !pwa.OverlappingAllowsBlindfire;
-            float collisionRotationFactor = isColliding ? 2f : 1f;
-            float collisionPositionFactor = isColliding ? 2f : 1f;
+            float collisionRotationFactor = isColliding ? 1.15f : 1f;
+            float collisionPositionFactor = isColliding ? 1.15f : 1f;
 
             Vector3 activeTargetRoation = useThirdPersonStance ?
                 new Vector3(

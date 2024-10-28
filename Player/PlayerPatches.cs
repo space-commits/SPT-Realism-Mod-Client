@@ -280,12 +280,12 @@ namespace RealismMod
                 StanceController.IsMounting ? 0.25f :
                 StanceController.IsBracing ? 0.5f :
                 StanceController.IsLeftShoulder && !StanceController.IsAiming ? 1.15f :
-                StanceController.IsLeftShoulder ? 0.87f :
-                StanceController.IsAiming ? 0.75f :
-                StanceController.CurrentStance == EStance.PistolCompressed ? 1.15f :
-                StanceController.CurrentStance == EStance.ShortStock ? 0.85f :
-                StanceController.CurrentStance == EStance.HighReady ? 0.85f :
-                StanceController.CurrentStance == EStance.LowReady ? 0.8f :
+                StanceController.IsLeftShoulder ? 0.95f :
+                StanceController.IsAiming ? 0.85f :
+                StanceController.CurrentStance == EStance.PistolCompressed ? 1.2f :
+                StanceController.CurrentStance == EStance.ShortStock ? 0.9f :
+                StanceController.CurrentStance == EStance.HighReady ? 0.9f :
+                StanceController.CurrentStance == EStance.LowReady ? 0.85f :
                 StanceController.CurrentStance == EStance.ActiveAiming ? 0.9f :
                 1f;
 
@@ -309,7 +309,7 @@ namespace RealismMod
             player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.InputIntensity = Mathf.Clamp(0.99f * stanceMultiUp * totalFactors, 0.55f, 0.85f); //up down
 
             player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.ReturnSpeed = 0.05f; 
-            player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = Mathf.Clamp(0.95f * stanceMultiSide * totalFactors, 0.6f, 0.95f); //side to side
+            player.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = Mathf.Clamp(0.98f * stanceMultiSide * totalFactors, 0.6f, 0.95f); //side to side
 
             player.ProceduralWeaponAnimation.MotionReact.Intensity = WeaponStats.BaseWeaponMotionIntensity * staminaFactor * PlayerState.DeviceBonus;
         }
