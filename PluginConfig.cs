@@ -165,7 +165,8 @@ namespace RealismMod
         public static ConfigEntry<bool> EnableStanceStamChanges { get; set; }
         public static ConfigEntry<bool> EnableTacSprint { get; set; }
         public static ConfigEntry<bool> BlockFiring { get; set; }
-        public static ConfigEntry<bool> RememberStance { get; set; }
+        public static ConfigEntry<bool> RememberStanceFiring { get; set; }
+        public static ConfigEntry<bool> RememberStanceItem { get; set; }
         public static ConfigEntry<bool> EnableExtraProcEffects { get; set; }
         public static ConfigEntry<bool> EnableSprintPenalty { get; set; }
         public static ConfigEntry<bool> EnableMouseSensPenalty { get; set; }
@@ -493,7 +494,8 @@ namespace RealismMod
             InternalMagReloadMulti = config.Bind<float>(speed, "Internal Magazine Reload", 1.15f, new ConfigDescription("", new AcceptableValueRange<float>(0.1f, 10.0f), new ConfigurationManagerAttributes { ShowRangeAsPercent = false, Order = 1, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
 
             EnableExtraProcEffects = config.Bind<bool>(weapAimAndPos, "Enable Extra Weapon Position/Rotation Effects", true, new ConfigDescription("Weapon Has A Slight Cant To It based On Ergo. ADS With Gasmask/Faceshield Is Canted. Weapon Cant Increases When Crouching, And Moves Closer To You. Other Sublte Effects.", null, new ConfigurationManagerAttributes { Order = 280, Browsable = Plugin.ServerConfig.enable_stances }));
-            RememberStance = config.Bind<bool>(weapAimAndPos, "Remember Stance", true, new ConfigDescription("Remember Stance After Actions (Using Items).", null, new ConfigurationManagerAttributes { Order = 260, Browsable = Plugin.ServerConfig.enable_stances }));
+            RememberStanceItem = config.Bind<bool>(weapAimAndPos, "Remember Stance After Using Item", true, new ConfigDescription("Remember Stance After Actions (Using Items)", null, new ConfigurationManagerAttributes { Order = 260, Browsable = Plugin.ServerConfig.enable_stances }));
+            RememberStanceFiring = config.Bind<bool>(weapAimAndPos, "Remember Stance After Firing", true, new ConfigDescription("Remember Stance After Firing If The Player Was Aiming.", null, new ConfigurationManagerAttributes { Order = 260, Browsable = Plugin.ServerConfig.enable_stances }));
             BlockFiring = config.Bind<bool>(weapAimAndPos, "Block Shooting While In Stance", false, new ConfigDescription("Blocks Firing While In A Stance, Will Cancel Stance If Attempting To Fire.", null, new ConfigurationManagerAttributes { Order = 250, Browsable = Plugin.ServerConfig.enable_stances }));
             EnableTacSprint = config.Bind<bool>(weapAimAndPos, "Enable High Ready Sprint Animation", Plugin.ServerConfig.enable_stances, new ConfigDescription("Enables Usage Of High Ready Sprint Animation When Sprinting From High Ready Position.", null, new ConfigurationManagerAttributes { Order = 230, Browsable = Plugin.ServerConfig.enable_stances }));
             EnableAltPistol = config.Bind<bool>(weapAimAndPos, "Enable Alternative Pistol Position And ADS", Plugin.ServerConfig.enable_stances, new ConfigDescription("Pistol Will Be Held Centered And In A Compressed Stance. ADS Will Be Animated.", null, new ConfigurationManagerAttributes { Order = 229, Browsable = Plugin.ServerConfig.enable_stances }));

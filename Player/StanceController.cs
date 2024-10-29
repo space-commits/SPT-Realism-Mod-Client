@@ -746,7 +746,7 @@ namespace RealismMod
                 StanceManipCancelTimer();
             }
 
-            if (DidWeaponSwap || (!PluginConfig.RememberStance.Value && !Utils.WeaponIsReady) || !Utils.PlayerIsReady)
+            if (DidWeaponSwap || (!PluginConfig.RememberStanceItem.Value && !Utils.WeaponIsReady) || !Utils.PlayerIsReady)
             {
                 IsLeftShoulder = false;
                 IsMounting = false;
@@ -761,7 +761,6 @@ namespace RealismMod
 
         private static void DoAltPistolAndLeftShoulder(Player player, Player.FirearmController fc, ProceduralWeaponAnimation pwa, float stanceMulti, float dt)
         {
-
             float speedFactorTarget = IsAiming && !IsLeftShoulder && _animationTimer == 0f ? PluginConfig.PistolPosResetSpeedMulti.Value * stanceMulti : PluginConfig.PistolPosSpeedMulti.Value * stanceMulti;
             _pistolPosSpeed = Mathf.Lerp(_pistolPosSpeed, speedFactorTarget, dt * 10f);
             float xTarget = !IsBlindFiring && IsLeftShoulder && !CancelLeftShoulder ? -0.08f : !IsBlindFiring ? 0.04f : 0f; // 0.0

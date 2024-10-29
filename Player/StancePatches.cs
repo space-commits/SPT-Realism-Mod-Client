@@ -13,6 +13,7 @@ using UnityEngine;
 using static EFT.Player;
 using CollisionLayerClass = GClass3008;
 using System.Collections.Generic;
+using EFT.UI.Ragfair;
 /*using LightStruct = GStruct155;*/
 
 namespace RealismMod
@@ -28,9 +29,13 @@ namespace RealismMod
         private static float _previousOverlapValue = 0f;
         private static float _currentOverlapValue = 0f;
         private static float _smoothedOverlapValue = 0f;
+        private static float _distance = 0f;
+        private static Vector3 _riflePatrolPos = new Vector3(0.0f, -0.35f, 0.05f);
+        private static Vector3 _riflePatrolRot = new Vector3(-0.4f, 0.05f, 0.1f);
 
         private static Vector3 _collisionPos = Vector3.zero;
         private static Vector3 _collisionRot = Vector3.zero;
+
 
         protected override MethodBase GetTargetMethod()
         {
@@ -66,81 +71,103 @@ namespace RealismMod
                 float delayTime = 0.1f; //0.1
                 float slowDown = 0.15f; //0.05
 
-                if (isStable)
+                /*        if (isStable)
+                        {
+                            _collisionTimer = 0;
+                            _collisionResetTimer = 0f;
+                            _collidingModifier = Mathf.MoveTowards(_collidingModifier, 1f, normalSpeed);
+
+                        }
+                        else if (isIncreasing)
+                        {
+                            _collisionTimer += Time.deltaTime;
+                            if (_collisionTimer <= delayTime)
+                            {
+                                _collidingModifier = Mathf.MoveTowards(_collidingModifier, slowDown, delaySpeed);
+                            }
+                            else
+                            {
+                                _collidingModifier = Mathf.MoveTowards(_collidingModifier, 1f, normalSpeed);
+                            }
+                            //_collidingModifier = Mathf.MoveTowards(_collidingModifier, PluginConfig.test6.Value, PluginConfig.test7.Value); this was here by accident when it felt good, it used the same values as non-delay
+                            _collisionResetTimer = 0f;
+                        }
+                        else if (isDecreasing)
+                        {
+                            _collisionTimer = 0;
+                            _collisionResetTimer += Time.deltaTime;
+                            if (_collisionResetTimer <= resetTime)
+                            {
+                                _collidingModifier = Mathf.MoveTowards(_collidingModifier, slowDown, delaySpeed);
+                            }
+                            else
+                            {
+                                _collidingModifier = Mathf.MoveTowards(_collidingModifier, 1f, normalSpeed);
+                            }
+                        }
+                             _previousOverlapValue = _smoothedOverlapValue;
+        */
+
+                Vector3 rayStart = __instance.HandsContainer.WeaponRoot.position;
+                Vector3 forward = -__instance.HandsContainer.WeaponRoot.transform.up;
+                float length = WeaponStats.NewWeaponLength;
+                RaycastHit raycastHit;
+                bool isColliding = false;
+
+                if (EFTPhysicsClass.Raycast(new Ray(rayStart, forward), out raycastHit, length, LayerMaskClass.HighPolyWithTerrainMask))
                 {
-                    _collisionTimer = 0;
-                    _collisionResetTimer = 0f;
-                    _collidingModifier = Mathf.MoveTowards(_collidingModifier, 1f, normalSpeed);
+                    Logger.LogWarning("distance " + raycastHit.distance);
+                    Logger.LogWarning("length " + length);
+                    _distance = raycastHit.distance;
 
+                    isColliding = true;
                 }
-                else if (isIncreasing)
+
+                DebugGizmos.SingleObjects.Ray(rayStart, forward, Color.red, length, 0.01f, true, 0.1f);
+
+                bool pause = false;
+                if (isColliding)
                 {
-                    _collisionTimer += Time.deltaTime;
-                    if (_collisionTimer <= delayTime)
-                    {
-                        _collidingModifier = Mathf.MoveTowards(_collidingModifier, slowDown, delaySpeed);
-                    }
-                    else
-                    {
-                        _collidingModifier = Mathf.MoveTowards(_collidingModifier, 1f, normalSpeed);
-                    }
-                    //_collidingModifier = Mathf.MoveTowards(_collidingModifier, PluginConfig.test6.Value, PluginConfig.test7.Value); this was here by accident when it felt good, it used the same values as non-delay
-                    _collisionResetTimer = 0f;
-                }
-                else if (isDecreasing)
-                {
-                    _collisionTimer = 0;
-                    _collisionResetTimer += Time.deltaTime;
-                    if (_collisionResetTimer <= resetTime)
-                    {
-                        _collidingModifier = Mathf.MoveTowards(_collidingModifier, slowDown, delaySpeed);
-                    }
-                    else
-                    {
-                        _collidingModifier = Mathf.MoveTowards(_collidingModifier, 1f, normalSpeed);
-                    }
-                }
-
-
-                _previousOverlapValue = _smoothedOverlapValue;
-       
-
-
-      /*          bool pause = false;
-                if (!__instance.OverlappingAllowsBlindfire)
-                { 
                     _collisionTimer = 0;
                     pause = false;
                 }
-                else 
+                else
                 {
                     _collisionTimer += Time.deltaTime;
-                    if (_collisionTimer >= PluginConfig.test9.Value)
+                    if (_collisionTimer >= 0.25f)
                     {
                         pause = false;
                     }
                     else pause = true;
                 }
-           
 
-                Vector3 patrolPos = new Vector3(PluginConfig.test1.Value * _smoothedOverlapValue, PluginConfig.test2.Value * _smoothedOverlapValue, PluginConfig.test3.Value * _smoothedOverlapValue);
-                if (!pause) _collisionPos = Vector3.Lerp(_collisionPos, patrolPos, PluginConfig.test4.Value * Time.deltaTime);
+                //weapon length ranges around 0.5-1.4, need to modify collision reaction based on the length of the weapon, particularly the threshold.
+
+                float threshold = PluginConfig.test7.Value * Mathf.Pow(length, PluginConfig.test8.Value);
+                float inverseDistance = _distance > 0f ? 1f / Mathf.Pow(_distance, PluginConfig.test9.Value) : 0f;
+                float inverseDistanceFinal = _distance > 0f ? 1f / Mathf.Pow(_distance, PluginConfig.test10.Value) : 0f;
+                Vector3 initialPos = new Vector3(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value) * inverseDistance;
+                Vector3 lastPos = _riflePatrolPos * inverseDistanceFinal;
+                Vector3 targetPos = !isColliding && !pause ? Vector3.zero : _distance >= threshold ? initialPos : lastPos;
+                _collisionPos = Vector3.Lerp(_collisionPos, targetPos, 5f * Time.deltaTime);
 
                 __instance.HandsContainer.WeaponRoot.localPosition += _collisionPos;
 
-                Vector3 patrolRot = new Vector3(PluginConfig.test5.Value * firearmController.OverlapValue, PluginConfig.test6.Value * _smoothedOverlapValue, PluginConfig.test7.Value * _smoothedOverlapValue);
-                if (!pause) _collisionRot = Vector3.Lerp(_collisionRot, patrolRot, PluginConfig.test8.Value * Time.deltaTime);
+                Vector3 initialRot = new Vector3(PluginConfig.test4.Value, PluginConfig.test5.Value, PluginConfig.test6.Value) * inverseDistance;
+                Vector3 lastRot = _riflePatrolRot * inverseDistanceFinal;
+                Vector3 targetRot = !isColliding && !pause ? Vector3.zero : _distance >= threshold ? initialRot : lastRot;
+                _collisionRot = Vector3.Lerp(_collisionRot, targetRot, 5f * Time.deltaTime);
                 Quaternion newRot = Quaternion.identity;
                 newRot.x = _collisionRot.x;
                 newRot.y = _collisionRot.y;
                 newRot.z = _collisionRot.z;
 
                 __instance.HandsContainer.WeaponRoot.localRotation *= newRot;
-*/
 
-                AccessTools.Field(typeof(TurnAwayEffector), "_blendSpeed").SetValue(__instance.TurnAway, 4.5f * _collidingModifier); //4.5
-                AccessTools.Field(typeof(TurnAwayEffector), "_smoothTimeIn").SetValue(__instance.TurnAway, 7f * _collidingModifier); //7
-                AccessTools.Field(typeof(TurnAwayEffector), "_smoothTimeOut").SetValue(__instance.TurnAway, 4f * _collidingModifier); //4
+
+                AccessTools.Field(typeof(TurnAwayEffector), "_blendSpeed").SetValue(__instance.TurnAway, 0f * _collidingModifier); //4.5
+                AccessTools.Field(typeof(TurnAwayEffector), "_smoothTimeIn").SetValue(__instance.TurnAway, 0f * _collidingModifier); //7
+                AccessTools.Field(typeof(TurnAwayEffector), "_smoothTimeOut").SetValue(__instance.TurnAway, 0f * _collidingModifier); //4
 
                 if (StanceController.IsMounting)
                 {
@@ -863,7 +890,7 @@ namespace RealismMod
                         StanceController.CurrentStance == EStance.ActiveAiming ||
                         StanceController.TreatWeaponAsPistolStance || 
                         StanceController.CurrentStance == EStance.Melee;
-                    bool cancelBecauseShooting = StanceController.IsFiringFromStance && !isInShootableStance;
+                    bool cancelBecauseShooting = !(PluginConfig.RememberStanceFiring.Value && isAiming) && StanceController.IsFiringFromStance && !isInShootableStance;
                     bool doStanceRotation = (isInStance || !allStancesReset || StanceController.CurrentStance == EStance.PistolCompressed) && !cancelBecauseShooting;
                     bool allowActiveAimReload = PluginConfig.ActiveAimReload.Value && PlayerState.IsInReloadOpertation && !PlayerState.IsAttemptingToReloadInternalMag && !PlayerState.IsQuickReloading;
                     bool cancelStance = 
@@ -1193,7 +1220,7 @@ namespace RealismMod
                     StanceController.CurrentStance == EStance.ActiveAiming ||
                     StanceController.TreatWeaponAsPistolStance || 
                     StanceController.CurrentStance == EStance.Melee;
-                bool cancelBecauseShooting = StanceController.IsFiringFromStance && !isInShootableStance;
+                bool cancelBecauseShooting = !(PluginConfig.RememberStanceFiring.Value && isAiming) && StanceController.IsFiringFromStance && !isInShootableStance;
                 bool doStanceRotation = (isInStance || !allStancesAreReset || StanceController.CurrentStance == EStance.PistolCompressed) && !cancelBecauseShooting;
                 bool allowActiveAimReload = PluginConfig.ActiveAimReload.Value && PlayerState.IsInReloadOpertation && !PlayerState.IsAttemptingToReloadInternalMag && !PlayerState.IsQuickReloading;
                 bool cancelStance = 
