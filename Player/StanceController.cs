@@ -112,6 +112,9 @@ namespace RealismMod
         public static float MeleeTimer = 0.0f;
         public static bool DoDampingTimer = false;
         public static bool CanResetDamping = true;
+        public static bool WasAimingBeforeCollision = false;
+        public static bool StopCameraMovement = false;
+        public static bool IsColliding = false;
 
         public static float HighReadyBlackedArmTime = 0.0f;
         public static bool CanDoHighReadyInjuredAnim = false;
@@ -150,8 +153,6 @@ namespace RealismMod
         public static bool HasResetShortStock = true;
         public static bool HasResetPistolPos = true;
         public static bool HasResetMelee = true;
-
-
 
         public static EStance StoredStance
         {
@@ -205,7 +206,6 @@ namespace RealismMod
         public static bool DidWeaponSwap = false;
         public static bool IsBlindFiring = false;
         public static bool IsInThirdPerson = false;
-        public static bool IsInStance = false;
         public static bool ToggledLight = false;
         public static bool DidStanceWiggle = false;
         public static bool DidLowReadyResetStanceWiggle = false;
@@ -697,10 +697,11 @@ namespace RealismMod
                 if (IsFiringFromStance)
                 {
                     bool cancelCurrentStance =
-                        CurrentStance == EStance.HighReady ||
+                        !(PluginConfig.RememberStanceFiring.Value && IsAiming) &&
+                        (CurrentStance == EStance.HighReady ||
                         CurrentStance == EStance.LowReady ||
                         CurrentStance == EStance.PatrolStance ||
-                        (IsAiming && CurrentStance != EStance.ActiveAiming);
+                        (IsAiming && CurrentStance != EStance.ActiveAiming));
                     /*                   bool cancelStoredStance = 
                                             StoredStance == EStance.HighReady || 
                                             (StoredStance == EStance.LowReady && !Plugin.RealHealthController.HealthConditionForcedLowReady) ||
@@ -991,9 +992,8 @@ namespace RealismMod
             float stocklessModifier = WeaponStats.HasShoulderContact ? 1f : 0.5f;
             WiggleReturnSpeed = (1f - (PlayerState.AimSkillADSBuff * 0.5f)) * wiggleErgoMulti * PlayerState.StanceInjuryMulti * stocklessModifier * playerWeightFactor * (Mathf.Max(PlayerState.RemainingArmStamFactor, 0.55f));
 
-            bool isColliding = !pwa.OverlappingAllowsBlindfire;
-            float collisionRotationFactor = isColliding ? 1.15f : 1f;
-            float collisionPositionFactor = isColliding ? 1.15f : 1f;
+            float collisionRotationFactor = IsColliding ? 1.4f : 1f;
+            float collisionPositionFactor = IsColliding ? 1.1f : 1f;
 
             Vector3 activeTargetRoation = useThirdPersonStance ?
                 new Vector3(
@@ -1048,7 +1048,7 @@ namespace RealismMod
                     PluginConfig.LowReadyThirdPersonPositionZ.Value) :
                 new Vector3(
                     PluginConfig.LowReadyOffsetX.Value,
-                    PluginConfig.LowReadyOffsetY.Value,
+                    PluginConfig.LowReadyOffsetY.Value * collisionPositionFactor,
                     PluginConfig.LowReadyOffsetZ.Value);
 
             Vector3 highTargetRotation = useThirdPersonStance ?
@@ -1067,7 +1067,7 @@ namespace RealismMod
                     PluginConfig.HighReadyThirdPersonPositionZ.Value) :
                 new Vector3(
                     PluginConfig.HighReadyOffsetX.Value,
-                    PluginConfig.HighReadyOffsetY.Value * (ModifyHighReady ? 0.25f : 1f),
+                    PluginConfig.HighReadyOffsetY.Value * (ModifyHighReady ? 0.25f : 1f) * collisionPositionFactor,
                     PluginConfig.HighReadyOffsetZ.Value);
             Quaternion highReadyTargetQuaternion = Quaternion.Euler(highTargetRotation);
             Quaternion highReadyMiniTargetQuaternion = Quaternion.Euler(
@@ -1089,7 +1089,15 @@ namespace RealismMod
             Quaternion shortStockTargetQuaternion = Quaternion.Euler(shortTargetRotation);
             Quaternion shortStockMiniTargetQuaternion = Quaternion.Euler(new Vector3(PluginConfig.ShortStockAdditionalRotationX.Value * resetErgoMulti, PluginConfig.ShortStockAdditionalRotationY.Value * resetErgoMulti, PluginConfig.ShortStockAdditionalRotationZ.Value * resetErgoMulti));
             Quaternion shortStockRevertQuaternion = Quaternion.Euler(PluginConfig.ShortStockResetRotationX.Value * resetErgoMulti, PluginConfig.ShortStockResetRotationY.Value * resetErgoMulti, PluginConfig.ShortStockResetRotationZ.Value * resetErgoMulti);
-            Vector3 shortStockTargetPosition = useThirdPersonStance ? new Vector3(PluginConfig.ShortStockThirdPersonPositionX.Value, PluginConfig.ShortStockThirdPersonPositionY.Value, PluginConfig.ShortStockThirdPersonPositionZ.Value) : new Vector3(PluginConfig.ShortStockOffsetX.Value, PluginConfig.ShortStockOffsetY.Value, PluginConfig.ShortStockOffsetZ.Value);
+            Vector3 shortStockTargetPosition = useThirdPersonStance ? 
+                new Vector3(
+                    PluginConfig.ShortStockThirdPersonPositionX.Value, 
+                    PluginConfig.ShortStockThirdPersonPositionY.Value, 
+                    PluginConfig.ShortStockThirdPersonPositionZ.Value) : 
+                new Vector3(
+                    PluginConfig.ShortStockOffsetX.Value, 
+                    PluginConfig.ShortStockOffsetY.Value,
+                    PluginConfig.ShortStockOffsetZ.Value * collisionPositionFactor);
 
             Quaternion meleeTargetQuaternion = Quaternion.Euler(new Vector3(2.5f * resetErgoMulti, -15f * resetErgoMulti, -1f));
             Quaternion meleeTargetQuaternion2 = Quaternion.Euler(new Vector3(-1.5f * resetErgoMulti, -7.5f * resetErgoMulti, -0.5f));
@@ -1692,7 +1700,7 @@ namespace RealismMod
             {
                 IsMounting = false;
             }
-            if (Input.GetKeyDown(PluginConfig.MountKeybind.Value.MainKey) && IsBracing && player.ProceduralWeaponAnimation.OverlappingAllowsBlindfire)
+            if (Input.GetKeyDown(PluginConfig.MountKeybind.Value.MainKey) && IsBracing && !StanceController.IsColliding)
             {
                 IsMounting = !IsMounting;
                 if (IsMounting) StanceController.CancelAllStances();
