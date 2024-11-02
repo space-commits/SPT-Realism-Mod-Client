@@ -48,14 +48,11 @@ namespace RealismMod
         public static ConfigEntry<float> NewPOASensitivity { get; set; }
         public static ConfigEntry<float> ResetSensitivity { get; set; }
         public static ConfigEntry<float> AfterRecoilRandomness { get; set; }
+        public static ConfigEntry<bool> UseFpsRecoilFactor { get; set; }
         public static ConfigEntry<float> RecoilRandomness { get; set; }
         public static ConfigEntry<bool> ResetVertical { get; set; }
         public static ConfigEntry<bool> ResetHorizontal { get; set; }
         public static ConfigEntry<float> RecoilClimbLimit { get; set; }
-        public static ConfigEntry<float> PlayerControlMulti { get; set; }
-        public static ConfigEntry<bool> EnableHybridRecoil { get; set; }
-        public static ConfigEntry<bool> EnableHybridReset { get; set; }
-        public static ConfigEntry<bool> HybridForAll { get; set; }
         public static ConfigEntry<bool> EnableMuzzleEffects { get; set; }
 
         //stat display
@@ -104,6 +101,7 @@ namespace RealismMod
         public static ConfigEntry<KeyboardShortcut> DecGain { get; set; }
 
         //ballistics
+        public static ConfigEntry<float> ArmorDurabilityModifier { get; set; }
         public static ConfigEntry<float> DragModifier { get; set; }
         public static ConfigEntry<bool> EnablePlateChanges { get; set; }
         public static ConfigEntry<float> GlobalDamageModifier { get; set; }
@@ -373,16 +371,13 @@ namespace RealismMod
             RecoilAngleMulti = config.Bind<float>(recoilSettings, "Recoil Angle Multi", 1.0f, new ConfigDescription("Multiplier For Recoil Angle, Lower = Steeper Angle.", new AcceptableValueRange<float>(0.8f, 1.2f), new ConfigurationManagerAttributes { Order = 2, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             ConvergenceMulti = config.Bind<float>(recoilSettings, "Convergence Multi", 1.0f, new ConfigDescription("AKA Auto-Compensation. Higher = Snappier Recoil, Faster Reset And Tighter Recoil Pattern.", new AcceptableValueRange<float>(0f, 40f), new ConfigurationManagerAttributes { Order = 1, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
 
+            UseFpsRecoilFactor = config.Bind<bool>(advancedRecoilSettings, "Use FPS Recoil Factor", true, new ConfigDescription("Factors in current FPS to keep recoil climb consistent", null, new ConfigurationManagerAttributes { Order = 142, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             AfterRecoilRandomness = config.Bind<float>(advancedRecoilSettings, "Reset Recoil Randomness Multi", 1f, new ConfigDescription("Higher = More Deviation From Point Of Aim After Firing", new AcceptableValueRange<float>(0f, 10f), new ConfigurationManagerAttributes { Order = 140, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             RecoilRandomness = config.Bind<float>(advancedRecoilSettings, "Recoil Randomness", 2.8f, new ConfigDescription("Higher = Recoil Bounces Around More, More Erratic Recoil Pattern", new AcceptableValueRange<float>(0f, 10f), new ConfigurationManagerAttributes { Order = 135, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             CamReturn = config.Bind<float>(advancedRecoilSettings, "Camera Recoil Speed", 0.07f, new ConfigDescription("Higher = More Faster Camera Recoil", new AcceptableValueRange<float>(0f, 0.5f), new ConfigurationManagerAttributes { Order = 132, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             CamWiggle = config.Bind<float>(advancedRecoilSettings, "Camera Recoil Wiggle", 0.81f, new ConfigDescription("Higher = More Camera Wiggle", new AcceptableValueRange<float>(0f, 0.9f), new ConfigurationManagerAttributes { Order = 130, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             EnableAdditionalRec = config.Bind<bool>(advancedRecoilSettings, "Enable Additional Visual Recoil", Plugin.ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Enables Additonal Visual Recoil Elements. Makes The Weapon Visually Move More In New Directions While Firing, Doesn't Have A Significant Effect On Spread.", null, new ConfigurationManagerAttributes { Order = 120, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             VisRecoilMulti = config.Bind<float>(advancedRecoilSettings, "Visual Recoil Multi", 1f, new ConfigDescription("Multi For All Of The Mod's Visual Recoil Elements, Makes The Weapon Vibrate More While Firing. Visual Recoil Is Affected By Weapon Stats.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 110, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
-            EnableHybridRecoil = config.Bind<bool>(advancedRecoilSettings, "Enable Hybrid Recoil System", false, new ConfigDescription("Combines Steady Recoil Climb With Auto-Compensation. If You Do Not Attempt To Control Recoil, Auto-Compensation Will Decrease Resulting In More Muzzle Flip. If You Control The Recoil, Auto-Comp Increases And Muzzle Flip Decreases.", null, new ConfigurationManagerAttributes { Order = 100, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
-            HybridForAll = config.Bind<bool>(advancedRecoilSettings, "Enable Hybrid Recoil For All Weapons", false, new ConfigDescription("By Default This Hybrid System Is Only Enabled For Pistols And Stockless/Folded Stocked Weapons.", null, new ConfigurationManagerAttributes { Order = 90, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
-            EnableHybridReset = config.Bind<bool>(advancedRecoilSettings, "Enable Recoil Reset For Hybrid Recoil", false, new ConfigDescription("Enables Recoil Reset For Pistols And Stockless/Folded Stocked Weapons That Are Using Hybrid Recoil, If The Other Reset Options Are Enabled.", null, new ConfigurationManagerAttributes { Order = 90, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
-            PlayerControlMulti = config.Bind<float>(advancedRecoilSettings, "Player Control Strength.", 100f, new ConfigDescription("How Quickly The Weapon Responds To Mouse Input If Using The Hybrid Recoil System.", new AcceptableValueRange<float>(0f, 200f), new ConfigurationManagerAttributes { Order = 85, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             ResetVertical = config.Bind<bool>(advancedRecoilSettings, "Enable Vertical Reset", true, new ConfigDescription("Enables Weapon Reseting Back To Original Vertical Position.", null, new ConfigurationManagerAttributes { Order = 80, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             ResetHorizontal = config.Bind<bool>(advancedRecoilSettings, "Enable Horizontal Reset", false, new ConfigDescription("Enables Weapon Reseting Back To Original Horizontal Position.", null, new ConfigurationManagerAttributes { Order = 70, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
             ResetSpeed = config.Bind<float>(advancedRecoilSettings, "Reset Speed", 0.002f, new ConfigDescription("How Fast The Weapon's Vertical Position Resets After Firing. Weapon's Convergence Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 60, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
@@ -426,6 +421,7 @@ namespace RealismMod
             EnableZeroShift = config.Bind<bool>(miscSettings, "Enable Zero Shift", Plugin.ServerConfig.recoil_attachment_overhaul, new ConfigDescription("Sights Simulate Losing Zero While Firing. The Reticle Has A Chance To Move Off Target. The Chance Is Determined By The Scope And Its Mount's Accuracy Stat, And The Weapon's Recoil. High Quality Scopes And Mounts Won't Lose Zero. SCAR-H Has Worse Zero-Shift.", null, new ConfigurationManagerAttributes { Order = 30, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
 
             EnableAmmoStats = config.Bind<bool>(ballSettings, "Display Ammo Stats", Plugin.ServerConfig.realistic_ballistics, new ConfigDescription("Requiures Restart.", null, new ConfigurationManagerAttributes { Order = 160, Browsable = Plugin.ServerConfig.recoil_attachment_overhaul }));
+            ArmorDurabilityModifier = config.Bind<float>(ballSettings, "Armor Durability Loss Modifier", 1.25f, new ConfigDescription("Modified Armor Durabiltiy Loss Per Shot", new AcceptableValueRange<float>(0.5f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 151, Browsable = Plugin.ServerConfig.realistic_ballistics }));
             DragModifier = config.Bind<float>(ballSettings, "Ballistic Coefficient Modifier", 1.25f, new ConfigDescription("Determines The Amount Of Drag On Projectiles. Higher Value = Slower Flight Time And More Drop.", new AcceptableValueRange<float>(0.5f, 5f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 150, Browsable = Plugin.ServerConfig.realistic_ballistics }));
             GlobalDamageModifier = config.Bind<float>(ballSettings, "Global Damage Modifier", 1f, new ConfigDescription("Lower = Less Damage Received (Except Head) For Bots And Player.", new AcceptableValueRange<float>(0.1f, 2f), new ConfigurationManagerAttributes { IsAdvanced = true, Order = 140, Browsable = Plugin.ServerConfig.realistic_ballistics }));
             EnablePlateChanges = config.Bind<bool>(ballSettings, "Enable Armor Plate Hitbox Changes", Plugin.ServerConfig.realistic_ballistics, new ConfigDescription("Reduces The Size Of Armor Plate Hitboxes To Be Closer To Real Life, And Closer To How They Were When First Implemented.", null, new ConfigurationManagerAttributes { Order = 130, Browsable = Plugin.ServerConfig.realistic_ballistics }));

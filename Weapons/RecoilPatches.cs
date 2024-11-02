@@ -203,6 +203,10 @@ namespace RealismMod
         private static FieldInfo _movementContextField;
         private static FieldInfo _playerField;
 
+        private const float FpsFactor = 144f;
+        private const float FpsSmoothingFactor = 0.42f;
+        private const float ShotCountThreshold = 3f;
+
         private static Vector2 _initialRotation = Vector2.zero;
         private static Vector2 _recordedRotation = Vector2.zero;
         private static Vector2 _targetRotation = Vector2.zero;
@@ -234,8 +238,7 @@ namespace RealismMod
         {
             _timer += Time.deltaTime;
 
-            bool doHybridReset = (PluginConfig.EnableHybridRecoil.Value && !WeaponStats.HasShoulderContact) || (PluginConfig.EnableHybridRecoil.Value && PluginConfig.HybridForAll.Value);
-            if ((doHybridReset && _timer >= _resetTime && target == current) || (!doHybridReset && (_timer >= _resetTime || target == current)))
+            if (Utils.IsGreaterThanOrEqualTo(_timer, _resetTime) || Utils.AreVector2sEqual(target, current))
             {
                 _hasReset = true;
             }
@@ -268,6 +271,162 @@ namespace RealismMod
             _distanceHistory.Enqueue(distance);
         }
 
+        private static void DoRecoil(MovementContext movementContext, Vector2 deltaRotation) 
+        {
+            bool fireButtonIsBeingHeld = Input.GetMouseButton(0);
+            bool canResetVert = PluginConfig.ResetVertical.Value;
+            bool canResetHorz = PluginConfig.ResetHorizontal.Value;
+            bool isPistol = WeaponStats.IsPistol;
+
+            float fpsFactor = 1f;
+            if (PluginConfig.UseFpsRecoilFactor.Value)
+            {
+                fpsFactor = FpsFactor / Plugin.FPS;
+                fpsFactor = Mathf.Pow(fpsFactor, FpsSmoothingFactor);
+                fpsFactor = Mathf.Clamp(fpsFactor, 0.5f, 2f);
+            }
+
+            if (RecoilController.ShotCount > RecoilController.PrevShotCount && fireButtonIsBeingHeld)
+            {
+                _hasReset = false;
+                _timer = 0f;
+
+                float shotCountFactor = Mathf.Clamp(ShotModifier(RecoilController.ShotCount), 0.4f, 1.2f);
+                float baseAngle = RecoilController.BaseTotalRecoilAngle;
+                float totalRecAngle = StanceController.IsMounting ? Mathf.Min(baseAngle + 10, 90f) : StanceController.IsBracing ? Mathf.Min(baseAngle + 5f, 90f) : baseAngle;
+                totalRecAngle = !isPistol ? totalRecAngle : totalRecAngle - 5;
+                float hipfireModifier = !StanceController.IsAiming ? 1.1f : 1f;
+                float dispersionSpeedFactor = !isPistol ? 1f + (-WeaponStats.TotalDispersionDelta) : 1f;
+                float dispersionAngleFactor = !isPistol ? 1f + (-WeaponStats.TotalDispersionDelta * 0.035f) : 1f;
+                float angle = (Utils.AreFloatsEqual(PluginConfig.RecoilDispersionFactor.Value, 0f) ? 0f : ((90f - (totalRecAngle * dispersionAngleFactor)) / 50f));
+                float angleDispFactor = 90f / totalRecAngle;
+
+                float dispersion = Mathf.Max(RecoilController.FactoredTotalDispersion * PluginConfig.RecoilDispersionFactor.Value * shotCountFactor * angleDispFactor * hipfireModifier, 0f);
+                float dispersionSpeed = Math.Max(Time.time * PluginConfig.RecoilDispersionSpeed.Value * dispersionSpeedFactor, 0.1f);
+                float recoilClimbMulti = isPistol ? PluginConfig.PistolRecClimbFactor.Value : PluginConfig.RecoilClimbFactor.Value;
+
+                float xRotation = 0f;
+                float yRotation = 0f;
+
+                xRotation = (Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(dispersionSpeed, 1f)) + angle) * fpsFactor;
+                yRotation = (Mathf.Min(-RecoilController.FactoredTotalVRecoil * recoilClimbMulti * shotCountFactor, 0f)) * fpsFactor;
+
+                _targetRotation = movementContext.Rotation;
+                _targetRotation.x += xRotation;
+                _targetRotation.y += yRotation;
+
+                float posVertPoaShiftThreshold = (_recordedRotation.y + 2f) * PluginConfig.NewPOASensitivity.Value;
+                float negVertPoaShiftThreshold = -1f * PluginConfig.NewPOASensitivity.Value;
+                bool recordVert = canResetVert && (Utils.IsGreaterThan(movementContext.Rotation.y, posVertPoaShiftThreshold) || Utils.IsLessThanOrEqualTo(deltaRotation.y, negVertPoaShiftThreshold));
+
+                float horzPoaShiftThreshold = 1f * PluginConfig.NewPOASensitivity.Value;
+                bool recordHorz = canResetHorz && Utils.IsGreaterThanOrEqualTo(Mathf.Abs(deltaRotation.x), horzPoaShiftThreshold);
+
+                if (recordVert || recordHorz)
+                {
+                    _recordedRotation = movementContext.Rotation;
+                }
+            }
+            else if ((canResetHorz || canResetVert) && !_hasReset && (!RecoilController.IsFiring || !fireButtonIsBeingHeld))
+            {
+                float resetSpeedFactor = WeaponStats.IsStocklessPistol || (WeaponStats.HasShoulderContact && !WeaponStats.IsPistol) ? 0.5f : 1f;
+                float resetSpeed = RecoilController.BaseTotalConvergence * WeaponStats.ConvergenceDelta * PluginConfig.ResetSpeed.Value * resetSpeedFactor * fpsFactor;
+                float resetSens = PluginConfig.ResetSensitivity.Value * fpsFactor;
+
+                bool xIsBelowThreshold = Utils.IsLessThanOrEqualTo(Mathf.Abs(deltaRotation.x), Mathf.Clamp(resetSens / 2.5f, 0f, 0.1f));
+                bool yIsBelowThreshold = Utils.IsLessThanOrEqualTo(Mathf.Abs(deltaRotation.y), resetSens);
+
+                if (canResetVert && canResetHorz && xIsBelowThreshold && yIsBelowThreshold)
+                {
+                    _resetTarget.x = _recordedRotation.x;
+                    _resetTarget.y = _recordedRotation.y;
+                    movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, _resetTarget, resetSpeed);
+                }
+                else if (canResetHorz && xIsBelowThreshold && !canResetVert)
+                {
+                    _resetTarget.x = _recordedRotation.x;
+                    _resetTarget.y = movementContext.Rotation.y;
+                    movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, _resetTarget, resetSpeed);
+                }
+                else if (canResetVert && yIsBelowThreshold && !canResetHorz)
+                {
+                    _resetTarget.x = movementContext.Rotation.x;
+                    _resetTarget.y = _recordedRotation.y;
+                    movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, _resetTarget, resetSpeed);
+                }
+                else
+                {
+                    _resetTarget = movementContext.Rotation;
+                    _recordedRotation = movementContext.Rotation;
+                }
+
+                ResetTimer(_resetTarget, movementContext.Rotation);
+            }
+            else if (!RecoilController.IsFiring || !fireButtonIsBeingHeld)
+            {
+                _recordedRotation = movementContext.Rotation;
+            }
+
+            if (RecoilController.IsFiring)
+            {
+                //should be clamping instead of just setting it to not climb at all
+                if (Utils.IsLessThanOrEqualTo(_targetRotation.y, _recordedRotation.y - (PluginConfig.RecoilClimbLimit.Value * fpsFactor)))
+                {
+                    _targetRotation.y = Mathf.Max(_targetRotation.y, _recordedRotation.y - (PluginConfig.RecoilClimbLimit.Value * fpsFactor));
+                }
+
+                float differenceX = Mathf.Abs(movementContext.Rotation.x - _targetRotation.x);
+                _targetRotation.x = Utils.IsLessThanOrEqualTo(differenceX, 2f) ? _targetRotation.x : movementContext.Rotation.x;
+
+                /*
+                                    float differenceY = Mathf.Abs(movementContext.Rotation.y - targetRotation.y);
+                                    targetRotation.y = differenceY <= 2f ? targetRotation.y : movementContext.Rotation.y;*/
+
+                _currentRotation = movementContext.Rotation;
+                float proposedDistance = Vector2.Distance(_currentRotation, _targetRotation);
+                UpdateDistanceHistory(proposedDistance);
+                float averageDistance = CalculateAverageDistance();
+
+                if (Utils.IsGreaterThan(proposedDistance, averageDistance * _maxIncreasePercentage))
+                {
+                    AdjustTargetVector(averageDistance, proposedDistance);
+                }
+
+                movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, _targetRotation, PluginConfig.RecoilSmoothness.Value);
+            }
+            else
+            {
+                _distanceHistory.Clear();
+            }
+        }
+
+        private static void DoMounting(MovementContext movementContext, FirearmController fc, ref Vector2 deltaRotation) 
+        {
+            Vector2 currentRotation = movementContext.Rotation;
+
+            deltaRotation *= (fc.AimingSensitivity * 0.9f);
+
+            float lowerClampXLimit = StanceController.BracingDirection == EBracingDirection.Top ? -19f : StanceController.BracingDirection == EBracingDirection.Right ? -4f : -15f;
+            float upperClampXLimit = StanceController.BracingDirection == EBracingDirection.Top ? 19f : StanceController.BracingDirection == EBracingDirection.Right ? 15f : 1f;
+
+            float lowerClampYLimit = StanceController.BracingDirection == EBracingDirection.Top ? -10f : -8f;
+            float upperClampYLimit = StanceController.BracingDirection == EBracingDirection.Top ? 10f : 15f;
+
+            float relativeLowerXLimit = _initialRotation.x + lowerClampXLimit;
+            float relativeUpperXLimit = _initialRotation.x + upperClampXLimit;
+            float relativeLowerYLimit = _initialRotation.y + lowerClampYLimit;
+            float relativeUpperYLimit = _initialRotation.y + upperClampYLimit;
+
+            float clampedX = Mathf.Clamp(currentRotation.x + deltaRotation.x, relativeLowerXLimit, relativeUpperXLimit);
+            float clampedY = Mathf.Clamp(currentRotation.y + deltaRotation.y, relativeLowerYLimit, relativeUpperYLimit);
+
+            deltaRotation.x = clampedX - currentRotation.x;
+            deltaRotation.y = clampedY - currentRotation.y;
+
+            deltaRotation = movementContext.ClampRotation(deltaRotation);
+            movementContext.Rotation += deltaRotation;
+        }
+
         [PatchPrefix]
         private static bool Prefix(MovementState __instance, Vector2 deltaRotation, bool ignoreClamp)
         {
@@ -276,175 +435,20 @@ namespace RealismMod
 
             if (player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && !ignoreClamp)
             {
-                /*deltaRotation = movementContext.ClampRotation(deltaRotation);*/
+                deltaRotation = movementContext.ClampRotation(deltaRotation);
 
                 if (!StanceController.IsMounting)
                 {
                     _initialRotation = movementContext.Rotation;
                 }
 
-                bool fireButtonIsBeingHeld = Input.GetMouseButton(0);
-                bool hybridBlocksReset = PluginConfig.EnableHybridRecoil.Value && !WeaponStats.HasShoulderContact && !PluginConfig.EnableHybridReset.Value;
-                bool canResetVert = PluginConfig.ResetVertical.Value && !hybridBlocksReset;
-                bool canResetHorz = PluginConfig.ResetHorizontal.Value && !hybridBlocksReset;
-
-                float fpsFactor = 144 / Plugin.FPS;
-                fpsFactor = 1 + (fpsFactor - 1) * 0.31f;
-
-
-                if (RecoilController.ShotCount > RecoilController.PrevShotCount && fireButtonIsBeingHeld)
-                {
-                    float controlFactor = RecoilController.ShotCount <= 3f ? PluginConfig.PlayerControlMulti.Value * 3 : PluginConfig.PlayerControlMulti.Value;
-                    RecoilController.PlayerControl += Mathf.Abs(deltaRotation.y) * controlFactor;
-
-                    _hasReset = false;
-                    _timer = 0f;
-
-                    float shotCountFactor = (float)Math.Round(Mathf.Clamp(ShotModifier(RecoilController.ShotCount), 0.4f, 1.2f), 2);
-                    float baseAngle = RecoilController.BaseTotalRecoilAngle;
-                    float totalRecAngle = StanceController.IsMounting ? Mathf.Min(baseAngle + 10, 90f) : StanceController.IsBracing ? Mathf.Min(baseAngle + 5f, 90f) : baseAngle;
-                    totalRecAngle = WeaponStats._WeapClass != "pistol" ? totalRecAngle : totalRecAngle - 5;
-                    float hipfireModifier = !StanceController.IsAiming ? 1.1f : 1f;
-                    float dispersionSpeedFactor = WeaponStats._WeapClass != "pistol" ? 1f + (-WeaponStats.TotalDispersionDelta) : 1f;
-                    float dispersionAngleFactor = WeaponStats._WeapClass != "pistol" ? 1f + (-WeaponStats.TotalDispersionDelta * 0.035f) : 1f;
-                    float angle = (PluginConfig.RecoilDispersionFactor.Value == 0f ? 0f : ((90f - (totalRecAngle * dispersionAngleFactor)) / 50f));
-                    float angleDispFactor = 90f / totalRecAngle;
-
-                    float dispersion = Mathf.Max(RecoilController.FactoredTotalDispersion * PluginConfig.RecoilDispersionFactor.Value * shotCountFactor * angleDispFactor * hipfireModifier, 0f);
-                    float dispersionSpeed = Math.Max(Time.time * PluginConfig.RecoilDispersionSpeed.Value * dispersionSpeedFactor, 0.1f);
-                    float recoilClimbMulti = WeaponStats._WeapClass == "pistol" ? PluginConfig.PistolRecClimbFactor.Value : PluginConfig.RecoilClimbFactor.Value;
-
-                    float xRotation = 0f;
-                    float yRotation = 0f;
-
-                    xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(dispersionSpeed, 1f)) + angle, 3) * fpsFactor;
-                    yRotation = (float)Math.Round(Mathf.Min(-RecoilController.FactoredTotalVRecoil * recoilClimbMulti * shotCountFactor, 0f), 3) * fpsFactor;
-
-                    _targetRotation = movementContext.Rotation;
-                    _targetRotation.x += xRotation;
-                    _targetRotation.y += yRotation;
-
-                    if ((canResetVert && (movementContext.Rotation.y > (_recordedRotation.y + 2f) * PluginConfig.NewPOASensitivity.Value || deltaRotation.y <= -1f * PluginConfig.NewPOASensitivity.Value)) || (canResetHorz && Mathf.Abs(deltaRotation.x) >= 1f * PluginConfig.NewPOASensitivity.Value))
-                    {
-                        _recordedRotation = movementContext.Rotation;
-                    }
-                }
-                else if ((canResetHorz || canResetVert) && !_hasReset && (!RecoilController.IsFiring || !fireButtonIsBeingHeld))
-                {
-                    bool isHybrid = PluginConfig.EnableHybridRecoil.Value && (PluginConfig.HybridForAll.Value || (!PluginConfig.HybridForAll.Value && !WeaponStats.HasShoulderContact));
-                    float resetSpeedFactor = WeaponStats.IsStocklessPistol || (WeaponStats.HasShoulderContact && !WeaponStats.IsPistol) ? 0.5f : 1f;
-                    float resetSpeed = RecoilController.BaseTotalConvergence * WeaponStats.ConvergenceDelta * PluginConfig.ResetSpeed.Value * resetSpeedFactor * fpsFactor;
-                    float resetSens = isHybrid ? (float)Math.Round(PluginConfig.ResetSensitivity.Value * 0.4f, 3) : PluginConfig.ResetSensitivity.Value * fpsFactor;
-
-                    bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Mathf.Clamp((float)Math.Round(resetSens / 2.5f, 3), 0f, 0.1f);
-                    bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= resetSens;
-
-                    if (canResetVert && canResetHorz && xIsBelowThreshold && yIsBelowThreshold)
-                    {
-                        _resetTarget.x = _recordedRotation.x;
-                        _resetTarget.y = _recordedRotation.y;
-                        movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, _resetTarget, resetSpeed);
-                    }
-                    else if (canResetHorz && xIsBelowThreshold && !canResetVert)
-                    {
-                        _resetTarget.x = _recordedRotation.x;
-                        _resetTarget.y = movementContext.Rotation.y;
-                        movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, _resetTarget, resetSpeed);
-                    }
-                    else if (canResetVert && yIsBelowThreshold && !canResetHorz)
-                    {
-                        _resetTarget.x = movementContext.Rotation.x;
-                        _resetTarget.y = _recordedRotation.y;
-                        movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, _resetTarget, resetSpeed);
-                    }
-                    else
-                    {
-                        _resetTarget = movementContext.Rotation;
-                        _recordedRotation = movementContext.Rotation;
-                    }
-
-                    ResetTimer(_resetTarget, movementContext.Rotation);
-                }
-                else if (!RecoilController.IsFiring || !fireButtonIsBeingHeld)
-                {
-                    if (Mathf.Abs(deltaRotation.y) > 0.1f)
-                    {
-                        RecoilController.PlayerControl += Mathf.Abs(deltaRotation.y) * PluginConfig.PlayerControlMulti.Value;
-                    }
-                    else
-                    {
-                        RecoilController.PlayerControl = 0f;
-                    }
-
-                    _recordedRotation = movementContext.Rotation;
-                }
-
-                if (RecoilController.IsFiring)
-                {
-                    //should be clamping instead of just setting it to not climb at all
-                    if (_targetRotation.y <= _recordedRotation.y - (PluginConfig.RecoilClimbLimit.Value * fpsFactor))
-                    {
-                        _targetRotation.y = Mathf.Max(_targetRotation.y, _recordedRotation.y - (PluginConfig.RecoilClimbLimit.Value * fpsFactor));
-                    }
-
-                    float differenceX = Mathf.Abs(movementContext.Rotation.x - _targetRotation.x);
-                    _targetRotation.x = differenceX <= 2f ? _targetRotation.x : movementContext.Rotation.x;
-
-                    /*
-                                        float differenceY = Mathf.Abs(movementContext.Rotation.y - targetRotation.y);
-                                        targetRotation.y = differenceY <= 2f ? targetRotation.y : movementContext.Rotation.y;*/
-
-                    _currentRotation = movementContext.Rotation;
-                    float proposedDistance = Vector2.Distance(_currentRotation, _targetRotation);
-                    UpdateDistanceHistory(proposedDistance);
-                    float averageDistance = CalculateAverageDistance();
-
-                    if (proposedDistance > averageDistance * _maxIncreasePercentage)
-                    {
-                        AdjustTargetVector(averageDistance, proposedDistance);
-                    }
-
-                    movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, _targetRotation, PluginConfig.RecoilSmoothness.Value);
-                }
-                else 
-                {
-                    _distanceHistory.Clear();
-                }
-
-                if (RecoilController.ShotCount == RecoilController.PrevShotCount)
-                {
-                    RecoilController.PlayerControl = Mathf.Lerp(RecoilController.PlayerControl, 0f, 0.05f);
-                }
+                DoRecoil(movementContext, deltaRotation);
 
                 if (StanceController.IsMounting)
                 {
                     FirearmController fc = player.HandsController as FirearmController;
                     if (fc == null) return true;
-
-                    Vector2 currentRotation = movementContext.Rotation;
-
-                    deltaRotation *= (fc.AimingSensitivity * 0.9f);
-
-                    float lowerClampXLimit = StanceController.BracingDirection == EBracingDirection.Top ? -19f : StanceController.BracingDirection == EBracingDirection.Right ? -4f : -15f;
-                    float upperClampXLimit = StanceController.BracingDirection == EBracingDirection.Top ? 19f : StanceController.BracingDirection == EBracingDirection.Right ? 15f : 1f;
-
-                    float lowerClampYLimit = StanceController.BracingDirection == EBracingDirection.Top ? -10f : -8f;
-                    float upperClampYLimit = StanceController.BracingDirection == EBracingDirection.Top ? 10f : 15f;
-
-                    float relativeLowerXLimit = _initialRotation.x + lowerClampXLimit;
-                    float relativeUpperXLimit = _initialRotation.x + upperClampXLimit;
-                    float relativeLowerYLimit = _initialRotation.y + lowerClampYLimit;
-                    float relativeUpperYLimit = _initialRotation.y + upperClampYLimit;
-
-                    float clampedX = Mathf.Clamp(currentRotation.x + deltaRotation.x, relativeLowerXLimit, relativeUpperXLimit);
-                    float clampedY = Mathf.Clamp(currentRotation.y + deltaRotation.y, relativeLowerYLimit, relativeUpperYLimit);
-
-                    deltaRotation.x = clampedX - currentRotation.x;
-                    deltaRotation.y = clampedY - currentRotation.y;
-
-                    deltaRotation = movementContext.ClampRotation(deltaRotation);
-                    movementContext.Rotation += deltaRotation;
-
+                    DoMounting(movementContext, fc, ref deltaRotation);
                     return false;
                 }
             }

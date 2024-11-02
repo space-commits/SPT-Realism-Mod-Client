@@ -78,8 +78,9 @@ namespace RealismMod
 
         private string _baseBundleFilepath;
 
-        private float _realDeltaTime = 0f;
-        public static float FPS = 1f;
+        //private float _realDeltaTime = 0f;
+        private static float _averageFPS = 0f;
+        public static float FPS = 0f;
 
         //mounting UI
         public static GameObject MountingUIGameObject { get; private set; }
@@ -582,15 +583,23 @@ namespace RealismMod
             //if (Input.GetKeyDown(KeyCode.Keypad5)) Instantiate(Plugin.ExplosionGO, new Vector3(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value), new Quaternion(0, 0, 0, 0)); //new Vector3(1000f, 0f, 317f)
         }
 
+        //games procedural animations are highly affected by FPS. I balanced everything at 144 FPS, so need to factor it.    
+        private void SetFps()
+        {
+            /*            _realDeltaTime += (Time.unscaledDeltaTime - _realDeltaTime) * 0.1f;
+                        FPS = 1.0f / _realDeltaTime;
+            */
+            _averageFPS += ((Time.deltaTime / Time.timeScale) - _averageFPS) * 0.035f;
+            FPS = (1f / _averageFPS);
+            if (float.IsNaN(FPS)) FPS = 144f;
+        }
+
         void Update()
         {
             //TEMPORARY
             if (GameWorldController.GameStarted && PluginConfig.ZoneDebug.Value) MoveDaCube.Update();
 
-            //games procedural animations are highly affected by FPS. I balanced everything at 144 FPS, so need to factor it.    
-            _realDeltaTime += (Time.unscaledDeltaTime - _realDeltaTime) * 0.1f;
-            FPS = 1.0f / _realDeltaTime;
-
+            SetFps();
             CheckForProfileData();
             CheckForMods();
 

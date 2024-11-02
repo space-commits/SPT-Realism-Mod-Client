@@ -109,7 +109,32 @@ namespace RealismMod
             );
         }
 
-        public static bool AreFloatsEqual(float a, float b, float epsilon = 0.001f)
+        public static bool AreVector2sEqual(Vector2 a, Vector2 b, float epsilon = 0.001f)
+        {
+            return Vector2.Distance(a, b) < epsilon;
+        }
+
+        public static bool IsGreaterThanOrEqualTo(float a, float b, float epsilon = 0.0001f)
+        {
+            return IsGreaterThan(a, b, epsilon) || AreFloatsEqual(a, b, epsilon);
+        }
+
+        public static bool IsLessThanOrEqualTo(float a, float b, float epsilon = 0.0001f)
+        {
+            return IsLessThan(a, b, epsilon) || AreFloatsEqual(a, b, epsilon);
+        }
+
+        public static bool IsLessThan(float a, float b, float epsilon = 0.0001f)
+        {
+            return (b - a) > epsilon; 
+        }
+
+        public static bool IsGreaterThan(float a, float b, float epsilon = 0.0001f)
+        {
+            return (a - b) > epsilon;
+        }
+
+        public static bool AreFloatsEqual(float a, float b, float epsilon = 0.0001f)
         {
             float difference = Math.Abs(a - b);
             return difference < epsilon;

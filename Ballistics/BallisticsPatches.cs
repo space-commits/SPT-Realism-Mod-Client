@@ -392,6 +392,8 @@ namespace RealismMod
                     DisarmAndKnockdownCheck(__instance, damageInfo, bodyPartType, partHit, KE, hasArmArmor);
                 }
 
+                if (PluginConfig.DevMode.Value && __instance.IsYourPlayer) damageInfo.Damage = 0f;
+
                 if (PluginConfig.EnableBallisticsLogging.Value)
                 {
                     Logger.LogWarning("==========Apply Damage Info=============== ");
@@ -827,7 +829,7 @@ namespace RealismMod
             }
 
             damageInfo.StaminaBurnRate = (totaldamage / 100f) * 2f;
-            totalDuraLoss = Math.Max(totalDuraLoss, 0.05f);
+            totalDuraLoss = Math.Max(totalDuraLoss * PluginConfig.ArmorDurabilityModifier.Value, 0.1f);
             __instance.ApplyDurabilityDamage(totalDuraLoss, armorComponents);
             __result = totalDuraLoss;
             damageInfo.Damage = Mathf.Min(damageInfo.Damage, startingDamage);

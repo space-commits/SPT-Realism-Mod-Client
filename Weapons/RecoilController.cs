@@ -32,8 +32,6 @@ namespace RealismMod
         public static float BaseTotalConvergence;
         public static float BaseTotalRecoilAngle;
 
-        public static float PlayerControl;
-
         public static float FactoredTotalHRecoil;
         public static float FactoredTotalVRecoil;
         public static float FactoredTotalDispersion;
@@ -164,14 +162,8 @@ namespace RealismMod
             newRecoil.HandRotationRecoil.NextStablePointDistanceRange.x = 1; //1  (defaults are 0.1, 6)
             newRecoil.HandRotationRecoil.NextStablePointDistanceRange.y = 4; //4
 
-            if (PluginConfig.EnableHybridRecoil.Value && (PluginConfig.HybridForAll.Value || (!PluginConfig.HybridForAll.Value && !WeaponStats.HasShoulderContact)))
-            {
-                pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Clamp((RecoilController.BaseTotalConvergence - Mathf.Clamp(25f + RecoilController.ShotCount, 0, 100f)) + Mathf.Clamp(15f + RecoilController.PlayerControl, 0f, 100f), 2f, RecoilController.BaseTotalConvergence * stanceFactor * PistolShotFactor(weapon));
-            }
-            else
-            {
-                pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = RecoilController.BaseTotalConvergence * stanceFactor * PistolShotFactor(weapon);
-            }
+            pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = RecoilController.BaseTotalConvergence * stanceFactor * PistolShotFactor(weapon);
+
         }
     }
 }

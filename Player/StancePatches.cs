@@ -188,6 +188,7 @@ namespace RealismMod
             //weapon length ranges around 0.5-1.4, need to modify collision reaction based on the length of the weapon, particularly the threshold.
             //shorter guns need to react less, maybe have a different Pow value for inverseDistance derived from length
             //length = 1.4, threshold = 0.65
+            //try using relative distance instead ? distance / length of raycast
             float threshold = 0.6f * Mathf.Pow(length, 1f);
             bool doIntiialState = (_lastDistance >= threshold && !_keepFinalState) || WeaponStats.IsPistol || WeaponStats.IsMachinePistol || StanceController.CurrentStance != EStance.None || StanceController.StoredStance == EStance.ShortStock;
             float lengthFactor = Mathf.Pow(length, 1f);
@@ -196,13 +197,13 @@ namespace RealismMod
             Vector3 initialPos = new Vector3(0.01f, -0.075f, -0.12f) * inverseDistance; //0f, -0.04f, -0.1f
             Vector3 lastPos = _finalPos * inverseDistanceFinal;
             Vector3 targetPos =  !_isColliding && !pause ? Vector3.zero : doIntiialState ? initialPos : lastPos;
-            _collisionPos = Vector3.Lerp(_collisionPos, targetPos, 5f * Time.deltaTime);
+            _collisionPos = Vector3.Lerp(_collisionPos, targetPos, 6f * Time.deltaTime);
             pwa.HandsContainer.WeaponRoot.localPosition += _collisionPos;
 
             Vector3 initialRot = new Vector3(-0.025f, 0.005f, 0.005f) * inverseDistance;
             Vector3 lastRot = _finalRot * inverseDistanceFinal;
             Vector3 targetRot = !_isColliding && !pause ? Vector3.zero : doIntiialState ? initialRot : lastRot;
-            _collisionRot = Vector3.Lerp(_collisionRot, targetRot, 5f * Time.deltaTime);
+            _collisionRot = Vector3.Lerp(_collisionRot, targetRot, 6f * Time.deltaTime);
             Quaternion newRot = Quaternion.identity;
             newRot.x = _collisionRot.x;
             newRot.y = _collisionRot.y;
@@ -223,8 +224,6 @@ namespace RealismMod
                 }
                 else _keepFinalState = true;
             }
-
-            Logger.LogWarning(StanceController.CurrentStance);
         }
 
 

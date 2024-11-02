@@ -96,13 +96,13 @@ namespace RealismMod
                     break;
                 case EBodyPartColliderType.RightForearm:
                 case EBodyPartColliderType.LeftForearm:
-                    di.Damage *= 0.75f * PluginConfig.GlobalDamageModifier.Value;
+                    di.Damage *= 0.7f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 0.4f;
                     di.LightBleedingDelta *= 0.5f;
                     break;
                 case EBodyPartColliderType.LeftUpperArm:
                 case EBodyPartColliderType.RightUpperArm:
-                    di.Damage *= 0.95f * PluginConfig.GlobalDamageModifier.Value;
+                    di.Damage *= 0.9f * PluginConfig.GlobalDamageModifier.Value;
                     di.HeavyBleedingDelta *= 0.65f;
                     di.LightBleedingDelta *= 0.65f;
                     break;
@@ -467,9 +467,9 @@ namespace RealismMod
                 {
                     string colliderName = collider.name.ToLower();
                     if (colliderName == "left" || colliderName == "right" || colliderName == "top") boxCollider.size *= 0f;
-                    ModifyPlateHelper(collider, boxCollider, colliderName, "_chest", 0.975f, 0.475f, 0.86f); //chest plate, height, depth, width
-                    ModifyPlateHelper(collider, boxCollider, colliderName, "_back", 0.78f, 0.58f, 0.83f); //height, depth, width
-                    ModifyPlateHelper(collider, boxCollider, colliderName, "_side_", 0.8f, 1f, 0.7f); //height, width, depth
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "_chest", 0.975f, 0.475f, 0.87f); //chest plate, height, depth, width
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "_back", 0.78f, 0.58f, 0.84f); //height, depth, width
+                    ModifyPlateHelper(collider, boxCollider, colliderName, "_side_", 0.82f, 1f, 0.7f); //height, width, depth
                     ModifyPlateHelper(collider, boxCollider, colliderName, "chesttop", 1.55f, 0.9f, 1f);//armpits, height, width, depth
                 }
             }
