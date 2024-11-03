@@ -27,8 +27,10 @@ namespace RealismMod
         private static FieldInfo _smoothOutField;
         private static float _mountClamp = 0f;
         private static float _collidingModifier = 1f;
-        private static float _finalColStateTimer = 0f;
+        private static float _finalStateEndTimer = 0f;
+        private static float _finalStateStartTimer = 0f;
         private static bool _keepFinalState = false;
+        private static bool _allowFinalState = false;
         private static float _adsResetTimer = 0f;
         private static float _collisionOverrideTimer = 0f;
         private static float _collisionTimer = 0f;
@@ -38,8 +40,10 @@ namespace RealismMod
         private static float _smoothedOverlapValue = 0f;
         private static float _lastDistance = 0f;
         private static bool _isColliding = false;
-     /* private static Vector3 _finalPos = new Vector3(0.0f, -0.3f, 0.04f);
-        private static Vector3 _finalRot = new Vector3(-0.45f, 0.02f, 0.02f);*/
+        private static Vector3 _initialPos = new Vector3(0.01f, -0.075f, -0.13f);
+        private static Vector3 _initialRot = new Vector3(-0.025f, 0.005f, 0.005f);
+        private static Vector3 _finalPos = Vector3.zero;
+        private static Vector3 _finalRot = Vector3.zero;
 
         private static Vector3 _collisionPos = Vector3.zero;
         private static Vector3 _collisionRot = Vector3.zero;
@@ -126,7 +130,92 @@ namespace RealismMod
             _smoothOutField.SetValue(pwa.TurnAway, 4f * _collidingModifier);
         }
 
-        private static void CollisionOverride(ProceduralWeaponAnimation pwa) 
+        private static float GetStanceSpeedModi(bool isPistol, bool getInverse = false) 
+        {
+            if (isPistol)
+            {
+                return getInverse ? 1f : 1f;
+            }
+            else if (StanceController.CurrentStance == EStance.ShortStock || StanceController.StoredStance == EStance.ShortStock)
+            {
+                return getInverse ? 0.85f : 1.15f;
+            }
+            else if (StanceController.CurrentStance == EStance.HighReady || StanceController.StoredStance == EStance.HighReady)
+            {
+                return getInverse ? 0.89f : 1.1f;
+            }
+            else if (StanceController.CurrentStance == EStance.LowReady || StanceController.StoredStance == EStance.LowReady)
+            {
+                return getInverse ? 0.92f : 1.07f;
+            }
+            else if (StanceController.CurrentStance == EStance.ActiveAiming || StanceController.StoredStance == EStance.ActiveAiming)
+            {
+                return getInverse ? 0.95f : 1.03f;
+            }
+            else if (StanceController.CurrentStance == EStance.PatrolStance)
+            {
+                return getInverse ? 1f : 1f;
+            }
+            else
+            {
+                return 1f;
+            }
+        }
+
+        private static void AssignFinalTransforms(bool isPistol, float length) 
+        {
+
+            if (isPistol)
+            {
+                _finalPos = new Vector3(0.15f, -0.6f, 0.1f);
+                _finalRot = new Vector3(-0.9f, -0.01f, -0.01f);
+            }
+            else if (StanceController.CurrentStance == EStance.ShortStock || StanceController.StoredStance == EStance.ShortStock)
+            {
+                if (length >= 1.12f)
+                {
+                    _finalPos = new Vector3(0.1f, -0.2f, -0.15f);
+                    _finalRot = new Vector3(-0.1f, -0.1f, -0.1f);
+                    _finalPos = new Vector3(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value);
+                    _finalRot = new Vector3(PluginConfig.test4.Value, PluginConfig.test5.Value, PluginConfig.test6.Value);
+                }
+                else 
+                {
+                    _finalPos = new Vector3(0f, -0.05f, -0.15f);
+                    _finalRot = new Vector3(-0.01f, 0f, 0f);
+                }
+            }
+            else if (StanceController.CurrentStance == EStance.HighReady || StanceController.StoredStance == EStance.HighReady)
+            {
+                _finalPos = new Vector3(0.15f, -0.2f, 0.1f);
+                _finalRot = new Vector3(-0.6f, 0f, 0f);
+            }
+            else if (StanceController.CurrentStance == EStance.LowReady || StanceController.StoredStance == EStance.LowReady)
+            {
+                _finalPos = new Vector3(0f, 0f, -0.15f);
+                _finalRot = new Vector3(0.15f, -0.4f, 0f);
+            }
+            else if (StanceController.CurrentStance == EStance.ActiveAiming || StanceController.StoredStance == EStance.ActiveAiming)
+            {
+                _finalPos = new Vector3(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value);
+                _finalRot = new Vector3(PluginConfig.test4.Value, PluginConfig.test5.Value, PluginConfig.test6.Value);
+            }
+            else if (StanceController.CurrentStance == EStance.PatrolStance)
+            {
+                _finalPos = Vector3.zero;
+                _finalRot = Vector3.zero;
+            }
+            else 
+            {
+                _finalPos = new Vector3(0.15f, -0.5f, 0.25f);
+                _finalRot = new Vector3(-0.95f, -0.01f, -0.01f);
+                _finalPos = new Vector3(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value);
+                _finalRot = new Vector3(PluginConfig.test4.Value, PluginConfig.test5.Value, PluginConfig.test6.Value);
+            }
+           
+        }
+
+        private static void CollisionOverride(ProceduralWeaponAnimation pwa, FirearmController fc) 
         {
             _blendField.SetValue(pwa.TurnAway, 0f);
             _smoothInField.SetValue(pwa.TurnAway, 0f);
@@ -135,7 +224,7 @@ namespace RealismMod
             Vector3 rayStart = pwa.HandsContainer.WeaponRoot.position;
             Vector3 forward = -pwa.HandsContainer.WeaponRoot.transform.up;
             float length = WeaponStats.NewWeaponLength;
-            //DebugGizmos.SingleObjects.Ray(rayStart, forward, Color.red, length, 0.01f, true, 0.1f);
+
             _isColliding = false;
             RaycastHit raycastHit;
             if (EFTPhysicsClass.Raycast(new Ray(rayStart, forward), out raycastHit, length, LayerMaskClass.HighPolyWithTerrainMask))
@@ -143,6 +232,14 @@ namespace RealismMod
                 _lastDistance = raycastHit.distance;
                 _isColliding = true;
             }
+
+            bool treatAsPistol = WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol;
+            bool isStocklessRifle = !WeaponStats.IsPistol && !WeaponStats.HasShoulderContact;
+            float stanceBonus = (isStocklessRifle ? 1.15f : 1f) * GetStanceSpeedModi(treatAsPistol);
+            float stanceInverseBonus = (isStocklessRifle ? 0.85f : 1f) * GetStanceSpeedModi(treatAsPistol, true);
+            float collisionTimerSpeed = PluginConfig.test8.Value * WeaponStats.ErgoFactor * stanceInverseBonus;
+            float adsTimerSpeed = 0.03f * WeaponStats.ErgoFactor;
+            float finalStateTimerSpeed = PluginConfig.test9.Value * WeaponStats.ErgoFactor;
 
             bool pause = false;
             if (_isColliding)
@@ -154,7 +251,7 @@ namespace RealismMod
             else
             {
                 _collisionOverrideTimer += Time.deltaTime;
-                if (_collisionOverrideTimer >= 0.3f)
+                if (_collisionOverrideTimer >= collisionTimerSpeed)
                 {
                     StanceController.IsColliding = false;
                     pause = false;
@@ -175,54 +272,78 @@ namespace RealismMod
             else
             {
                 _adsResetTimer += Time.deltaTime;
-                if (_adsResetTimer >= 0.5f) //this delay needs to factor in the weapon's ADS speed. 0.25 feels good for SKS with supp, 0.5 at least for full length mosin
+                if (_adsResetTimer >= adsTimerSpeed) //this delay needs to factor in the weapon's ADS speed. 0.25 feels good for SKS with supp, 0.5 at least for full length mosin
                 {
                     StanceController.StopCameraMovement = false;
                 }
                 else StanceController.StopCameraMovement = true;
             }
 
-            Vector3 _finalPos = new Vector3(0.05f, -0.3f, 0.15f);
-            Vector3 _finalRot = new Vector3(-0.6f, 0.02f, 0.02f);
-
             //weapon length ranges around 0.5-1.4, need to modify collision reaction based on the length of the weapon, particularly the threshold.
             //shorter guns need to react less, maybe have a different Pow value for inverseDistance derived from length
             //length = 1.4, threshold = 0.65
             //try using relative distance instead ? distance / length of raycast
-            float threshold = 0.6f * Mathf.Pow(length, 1f);
-            bool doIntiialState = (_lastDistance >= threshold && !_keepFinalState) || WeaponStats.IsPistol || WeaponStats.IsMachinePistol || StanceController.CurrentStance != EStance.None || StanceController.StoredStance == EStance.ShortStock;
-            float lengthFactor = Mathf.Pow(length, 1f);
-            float inverseDistance = (_lastDistance > 0f ? 1f / Mathf.Pow(_lastDistance, 0.5f) : 0f) * lengthFactor;
-            float inverseDistanceFinal = (_lastDistance > 0f ? 1f / Mathf.Pow(_lastDistance, 0.08f) : 0f) * Mathf.Pow(lengthFactor, 0.2f);
-            Vector3 initialPos = new Vector3(0.01f, -0.075f, -0.12f) * inverseDistance; //0f, -0.04f, -0.1f
-            Vector3 lastPos = _finalPos * inverseDistanceFinal;
+
+            AssignFinalTransforms(treatAsPistol, length);
+            float speed = 0.15f * WeaponStats.TotalErgo * stanceBonus;
+            float baseThrehold = treatAsPistol ? 0.55f : 0.6f;
+            float threshold = baseThrehold * Mathf.Pow(length, 1.15f);
+            bool doFintalState = _lastDistance < threshold && _allowFinalState;
+            bool doIntiialState = _lastDistance >= threshold && !_keepFinalState;
+   
+            float distanceFactor = Mathf.InverseLerp(length, 0, _lastDistance);
+            float smoothedInverseDistance = Mathf.Pow(distanceFactor, 0.45f);
+            
+            float intitalPosZ = treatAsPistol ? -0.145f : treatAsPistol && pwa.IsAiming ? -0.16f : -0.13f;
+            Vector3 initialPos = _initialPos;
+            initialPos.z = intitalPosZ;
+            initialPos *= smoothedInverseDistance;
+            Vector3 lastPos = _finalPos * smoothedInverseDistance;
             Vector3 targetPos =  !_isColliding && !pause ? Vector3.zero : doIntiialState ? initialPos : lastPos;
-            _collisionPos = Vector3.Lerp(_collisionPos, targetPos, 6f * Time.deltaTime);
+            _collisionPos = Vector3.Lerp(_collisionPos, targetPos, speed * Time.deltaTime);
             pwa.HandsContainer.WeaponRoot.localPosition += _collisionPos;
 
-            Vector3 initialRot = new Vector3(-0.025f, 0.005f, 0.005f) * inverseDistance;
-            Vector3 lastRot = _finalRot * inverseDistanceFinal;
-            Vector3 targetRot = !_isColliding && !pause ? Vector3.zero : doIntiialState ? initialRot : lastRot;
-            _collisionRot = Vector3.Lerp(_collisionRot, targetRot, 6f * Time.deltaTime);
+            Vector3 initialRot = _initialRot * smoothedInverseDistance;
+            Vector3 lastRot = _finalRot * smoothedInverseDistance;
+            Vector3 targetRot = !_isColliding && !pause ? Vector3.zero : doIntiialState ? initialRot :lastRot;
+            _collisionRot = Vector3.Lerp(_collisionRot, targetRot, speed * Time.deltaTime);
             Quaternion newRot = Quaternion.identity;
             newRot.x = _collisionRot.x;
             newRot.y = _collisionRot.y;
             newRot.z = _collisionRot.z;
             pwa.HandsContainer.WeaponRoot.localRotation *= newRot;
 
+            Logger.LogWarning("_keepFinalState " + _keepFinalState);
+            Logger.LogWarning("_allowFinalState " + _allowFinalState);
+
             if ((_isColliding || pause) && _lastDistance < threshold)
             {
-                _finalColStateTimer = 0;
+                _finalStateEndTimer = 0f;
                 _keepFinalState = true;
             }
             else
             {
-                _finalColStateTimer += Time.deltaTime;
-                if (_finalColStateTimer >= 0.5f)
+                _finalStateEndTimer += Time.deltaTime;
+                if (_finalStateEndTimer >= finalStateTimerSpeed)
                 {
                     _keepFinalState = false;
                 }
                 else _keepFinalState = true;
+            }
+
+            if (_isColliding)
+            {
+                _finalStateStartTimer += Time.deltaTime;
+                if (_finalStateStartTimer >= PluginConfig.test10.Value)
+                {
+                    _allowFinalState = true;
+                }
+                else _allowFinalState = false;
+            }
+            else
+            {
+                _finalStateStartTimer = 0f;
+                _allowFinalState = false;
             }
         }
 
@@ -238,7 +359,7 @@ namespace RealismMod
 
                 //ModifyBSGCollisions(__instance, firearmController);
 
-                CollisionOverride(__instance);
+                CollisionOverride(__instance, firearmController);
 
                 DoMounting(player, __instance);
             }
@@ -550,7 +671,7 @@ namespace RealismMod
             if (player.IsYourPlayer)
             {
                 WeaponStats.BaseWeaponLength = length;
-                WeaponStats.NewWeaponLength = length >= 0.92f ? length * 1.05f : length; //1.12f
+                WeaponStats.NewWeaponLength = length < 0.92f ? length * 0.95f : length; //length >= 0.92f ? length * 1.12f : length
             }
         }
     }
@@ -570,7 +691,7 @@ namespace RealismMod
         {
             Player player = (Player)playerField.GetValue(__instance);
 
-            if (player.IsYourPlayer && StanceController.IsMounting)
+            if (player.IsYourPlayer && (StanceController.IsMounting || StanceController.IsColliding))
             {
                 return false;
             }
@@ -605,7 +726,7 @@ namespace RealismMod
 
                 if (__instance.Item.WeapClass == "pistol")
                 {
-                    weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.6f);
+                    weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.61f);
                 }
                 else
                 {
@@ -616,27 +737,17 @@ namespace RealismMod
                     }
                     if (StanceController.CurrentStance == EStance.ShortStock)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.7f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.85f);
                         return;
                     }
                     if (StanceController.CurrentStance == EStance.HighReady)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.8f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.9f);
                         return;
                     }
                     if (StanceController.CurrentStance == EStance.LowReady)
                     {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.85f);
-                        return;
-                    }
-                    if (StanceController.StoredStance == EStance.ShortStock && StanceController.IsAiming)
-                    {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.8f);
-                        return;
-                    }
-                    if (StanceController.IsAiming)
-                    {
-                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.9f);
+                        weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.95f);
                         return;
                     }
                 }
@@ -1201,7 +1312,7 @@ namespace RealismMod
 
             float targetPosXOffset = pwa.IsAiming ? 0f : 0f;
             float targetPosYOffset = pwa.IsAiming ? 0f : 0f;
-            float targetPosZOffset = pwa.IsAiming || StanceController.IsColliding ? 0f : Mathf.Clamp(posePosOffset + stockOffset + stockPosOffset, -0.05f, 0.05f);
+            float targetPosZOffset = pwa.IsAiming ? 0f : Mathf.Clamp(posePosOffset + stockOffset + stockPosOffset, -0.05f, 0.05f);
             Vector3 targetPos = new Vector3(targetPosXOffset, targetPosYOffset, targetPosZOffset);
 
             _posePosOffest = Vector3.Lerp(_posePosOffest, targetPos, 5f * Time.deltaTime);
@@ -1215,7 +1326,7 @@ namespace RealismMod
             float poseRotOffset = (1f - player.MovementContext.PoseLevel) * -0.03f;
             poseRotOffset += player.IsInPronePose ? -0.03f : 0f;
             float maskFactor = doMaskOffset? -0.025f + ergoOffset : 0f;
-            float baseRotOffset = pwa.IsAiming || StanceController.IsMounting || StanceController.IsColliding ? 0f : poseRotOffset + ergoOffset;
+            float baseRotOffset = pwa.IsAiming || StanceController.IsMounting ? 0f : poseRotOffset + ergoOffset;
 
             float rotX = 0f;
             float rotY = Mathf.Clamp(baseRotOffset + maskFactor + magOffset, -0.5f, 0f);

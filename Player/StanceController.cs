@@ -992,9 +992,6 @@ namespace RealismMod
             float stocklessModifier = WeaponStats.HasShoulderContact ? 1f : 0.5f;
             WiggleReturnSpeed = (1f - (PlayerState.AimSkillADSBuff * 0.5f)) * wiggleErgoMulti * PlayerState.StanceInjuryMulti * stocklessModifier * playerWeightFactor * (Mathf.Max(PlayerState.RemainingArmStamFactor, 0.55f));
 
-            float collisionRotationFactor = IsColliding ? 1.4f : 1f;
-            float collisionPositionFactor = IsColliding ? 1.1f : 1f;
-
             Vector3 activeTargetRoation = useThirdPersonStance ?
                 new Vector3(
                     PluginConfig.ActiveThirdPersonRotationX.Value,
@@ -1027,11 +1024,11 @@ namespace RealismMod
 
             Vector3 lowTargetRotation = useThirdPersonStance ?
                 new Vector3(
-                    PluginConfig.LowReadyThirdPersonRotationX.Value * collisionRotationFactor,
+                    PluginConfig.LowReadyThirdPersonRotationX.Value,
                     PluginConfig.LowReadyThirdPersonRotationY.Value,
                     PluginConfig.LowReadyThirdPersonRotationZ.Value) :
                 new Vector3(
-                    PluginConfig.LowReadyRotationX.Value * collisionRotationFactor * resetErgoMulti,
+                    PluginConfig.LowReadyRotationX.Value * resetErgoMulti,
                     PluginConfig.LowReadyRotationY.Value,
                     PluginConfig.LowReadyRotationZ.Value);
             Quaternion lowReadyTargetQuaternion = Quaternion.Euler(lowTargetRotation);
@@ -1048,16 +1045,16 @@ namespace RealismMod
                     PluginConfig.LowReadyThirdPersonPositionZ.Value) :
                 new Vector3(
                     PluginConfig.LowReadyOffsetX.Value,
-                    PluginConfig.LowReadyOffsetY.Value * collisionPositionFactor,
+                    PluginConfig.LowReadyOffsetY.Value,
                     PluginConfig.LowReadyOffsetZ.Value);
 
             Vector3 highTargetRotation = useThirdPersonStance ?
                 new Vector3(
-                    PluginConfig.HighReadyThirdPersonRotationX.Value * collisionRotationFactor,
+                    PluginConfig.HighReadyThirdPersonRotationX.Value,
                     PluginConfig.HighReadyThirdPersonRotationY.Value,
                     PluginConfig.HighReadyThirdPersonRotationZ.Value) :
                 new Vector3(
-                    PluginConfig.HighReadyRotationX.Value * stanceMulti * collisionRotationFactor,
+                    PluginConfig.HighReadyRotationX.Value * stanceMulti,
                     PluginConfig.HighReadyRotationY.Value * stanceMulti * (ModifyHighReady ? -1f : 1f),
                     PluginConfig.HighReadyRotationZ.Value * stanceMulti);
             Vector3 highReadyTargetPosition = useThirdPersonStance ?
@@ -1067,7 +1064,7 @@ namespace RealismMod
                     PluginConfig.HighReadyThirdPersonPositionZ.Value) :
                 new Vector3(
                     PluginConfig.HighReadyOffsetX.Value,
-                    PluginConfig.HighReadyOffsetY.Value * (ModifyHighReady ? 0.25f : 1f) * collisionPositionFactor,
+                    PluginConfig.HighReadyOffsetY.Value * (ModifyHighReady ? 0.25f : 1f),
                     PluginConfig.HighReadyOffsetZ.Value);
             Quaternion highReadyTargetQuaternion = Quaternion.Euler(highTargetRotation);
             Quaternion highReadyMiniTargetQuaternion = Quaternion.Euler(
@@ -1097,7 +1094,7 @@ namespace RealismMod
                 new Vector3(
                     PluginConfig.ShortStockOffsetX.Value, 
                     PluginConfig.ShortStockOffsetY.Value,
-                    PluginConfig.ShortStockOffsetZ.Value * collisionPositionFactor);
+                    PluginConfig.ShortStockOffsetZ.Value);
 
             Quaternion meleeTargetQuaternion = Quaternion.Euler(new Vector3(2.5f * resetErgoMulti, -15f * resetErgoMulti, -1f));
             Quaternion meleeTargetQuaternion2 = Quaternion.Euler(new Vector3(-1.5f * resetErgoMulti, -7.5f * resetErgoMulti, -0.5f));

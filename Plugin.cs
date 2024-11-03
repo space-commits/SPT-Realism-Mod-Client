@@ -586,9 +586,6 @@ namespace RealismMod
         //games procedural animations are highly affected by FPS. I balanced everything at 144 FPS, so need to factor it.    
         private void SetFps()
         {
-            /*            _realDeltaTime += (Time.unscaledDeltaTime - _realDeltaTime) * 0.1f;
-                        FPS = 1.0f / _realDeltaTime;
-            */
             _averageFPS += ((Time.deltaTime / Time.timeScale) - _averageFPS) * 0.035f;
             FPS = (1f / _averageFPS);
             if (float.IsNaN(FPS)) FPS = 144f;
