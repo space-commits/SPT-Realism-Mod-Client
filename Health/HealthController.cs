@@ -767,7 +767,7 @@ namespace RealismMod
             }
         }
 
-        private void EvaluateStimSingles(Player player, IEnumerable<IGrouping<EStimType, StimShellEffect>> stimGroups)
+        private void EvaluateStimSingles(Player player, IEnumerable<IGrouping<EStimType, StimEffectShell>> stimGroups)
         {
 
             _hasPKStims = false;
@@ -802,7 +802,7 @@ namespace RealismMod
             }
         }
 
-        private void EvaluateStimDuplicates(Player player, IEnumerable<IGrouping<EStimType, StimShellEffect>> stimGroups)
+        private void EvaluateStimDuplicates(Player player, IEnumerable<IGrouping<EStimType, StimEffectShell>> stimGroups)
         {
             foreach (var group in stimGroups) // use this to count duplicates per category
             {
@@ -878,7 +878,7 @@ namespace RealismMod
 
         public void EvaluateActiveStims(Player player)
         {
-            IEnumerable<StimShellEffect> activeStims = _activeHealthEffects.OfType<StimShellEffect>();
+            IEnumerable<StimEffectShell> activeStims = _activeHealthEffects.OfType<StimEffectShell>();
             var stimTypeGroups = activeStims.GroupBy(effect => effect.StimType);
             var duplicatesGrouping = stimTypeGroups.Where(group => group.Count() > 1);
             var singlesGrouping = stimTypeGroups.Where(group => group.Count() <= 1);
@@ -1494,7 +1494,7 @@ namespace RealismMod
                 int delay = Mathf.Max((int)meds.HealthEffectsComponent.BuffSettings[0].Delay, 5);
                 EStimType stimType = Plugin.RealHealthController.GetStimType(meds.Template._id);
 
-                StimShellEffect stimEffect = new StimShellEffect(player, duration, delay, stimType, this);
+                StimEffectShell stimEffect = new StimEffectShell(player, duration, delay, stimType, this);
                 Plugin.RealHealthController.AddCustomEffect(stimEffect, true);
 
                 shouldAllowHeal = true;

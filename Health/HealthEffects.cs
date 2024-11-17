@@ -749,7 +749,7 @@ namespace RealismMod
         }
     }
 
-    public class StimShellEffect : ICustomHealthEffect
+    public class StimEffectShell : ICustomHealthEffect
     {
         public RealismHealthController RealHealthController { get; set; }
         public EBodyPart BodyPart { get; set; }
@@ -761,7 +761,7 @@ namespace RealismMod
         public EStimType StimType { get; }
         private bool _hasRemovedTrnqt = false;
 
-        public StimShellEffect(Player player, int? dur, int delay, EStimType stimType, RealismHealthController realismHealthController)
+        public StimEffectShell(Player player, int? dur, int delay, EStimType stimType, RealismHealthController realismHealthController)
         {
             TimeExisted = 0;
             Duration = dur;

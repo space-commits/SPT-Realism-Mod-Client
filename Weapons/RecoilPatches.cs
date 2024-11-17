@@ -710,9 +710,10 @@ namespace RealismMod
                 //Modify Vert and Horz recoil based on various factors
                 float vertFactor = PlayerState.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * 
                     StanceController.BracingRecoilBonus * opticRecoilMulti * pistolShotFactor *
-                    leftShoulderFactor * PluginConfig.VertMulti.Value;
-                float horzFactor = PlayerState.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * pistolShotFactor * 
-                    PluginConfig.HorzMulti.Value;
+                    leftShoulderFactor;
+                vertFactor = Mathf.Clamp(vertFactor, 0.25f, 1.25f) * PluginConfig.VertMulti.Value;
+                float horzFactor = PlayerState.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * pistolShotFactor;
+                horzFactor = Mathf.Clamp(horzFactor, 0.25f, 1.25f) * PluginConfig.HorzMulti.Value;
                 RecoilController.FactoredTotalVRecoil = vertFactor * RecoilController.BaseTotalVRecoil;
                 RecoilController.FactoredTotalHRecoil = horzFactor * RecoilController.BaseTotalHRecoil;
 

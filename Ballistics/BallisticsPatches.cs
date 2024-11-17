@@ -346,6 +346,12 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(Player __instance, ref DamageInfo damageInfo, EBodyPart bodyPartType)
         {
+            if (PluginConfig.DevMode.Value && __instance.IsYourPlayer)
+            {
+                damageInfo.Damage = 0f;
+                return;
+            }
+
             if (damageInfo.DamageType == EDamageType.Bullet || damageInfo.DamageType == EDamageType.Melee)
             {
                 EBodyPartColliderType partHit = EBodyPartColliderType.None;
@@ -391,8 +397,6 @@ namespace RealismMod
                 {
                     DisarmAndKnockdownCheck(__instance, damageInfo, bodyPartType, partHit, KE, hasArmArmor);
                 }
-
-                if (PluginConfig.DevMode.Value && __instance.IsYourPlayer) damageInfo.Damage = 0f;
 
                 if (PluginConfig.EnableBallisticsLogging.Value)
                 {

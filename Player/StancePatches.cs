@@ -28,9 +28,8 @@ namespace RealismMod
         private static float _mountClamp = 0f;
         private static float _collidingModifier = 1f;
         private static float _finalStateEndTimer = 0f;
-        private static float _finalStateStartTimer = 0f;
-        private static bool _keepFinalState = false;
-        private static bool _allowFinalState = false;
+        private static float _finalStateDelayTimer = 0f;
+        private static bool _delayFinalState = false;
         private static float _adsResetTimer = 0f;
         private static float _collisionOverrideTimer = 0f;
         private static float _collisionTimer = 0f;
@@ -40,6 +39,7 @@ namespace RealismMod
         private static float _smoothedOverlapValue = 0f;
         private static float _lastDistance = 0f;
         private static bool _isColliding = false;
+        private static bool _wasInFinalState = false;
         private static Vector3 _initialPos = new Vector3(0.01f, -0.075f, -0.13f);
         private static Vector3 _initialRot = new Vector3(-0.025f, 0.005f, 0.005f);
         private static Vector3 _finalPos = Vector3.zero;
@@ -176,8 +176,8 @@ namespace RealismMod
                 {
                     _finalPos = new Vector3(0.1f, -0.2f, -0.15f);
                     _finalRot = new Vector3(-0.1f, -0.1f, -0.1f);
-                    _finalPos = new Vector3(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value);
-                    _finalRot = new Vector3(PluginConfig.test4.Value, PluginConfig.test5.Value, PluginConfig.test6.Value);
+                    //_finalPos = new Vector3(0.35f, 0.05f, 0.2f);
+                    //_finalRot = new Vector3(0f, 0f, -0.9f);
                 }
                 else 
                 {
@@ -197,8 +197,8 @@ namespace RealismMod
             }
             else if (StanceController.CurrentStance == EStance.ActiveAiming || StanceController.StoredStance == EStance.ActiveAiming)
             {
-                _finalPos = new Vector3(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value);
-                _finalRot = new Vector3(PluginConfig.test4.Value, PluginConfig.test5.Value, PluginConfig.test6.Value);
+                _finalPos = new Vector3(0.35f, 0.05f, 0.2f);
+                _finalRot = new Vector3(0f, 0f, -0.9f);
             }
             else if (StanceController.CurrentStance == EStance.PatrolStance)
             {
@@ -207,10 +207,10 @@ namespace RealismMod
             }
             else 
             {
-                _finalPos = new Vector3(0.15f, -0.5f, 0.25f);
-                _finalRot = new Vector3(-0.95f, -0.01f, -0.01f);
-                _finalPos = new Vector3(PluginConfig.test1.Value, PluginConfig.test2.Value, PluginConfig.test3.Value);
-                _finalRot = new Vector3(PluginConfig.test4.Value, PluginConfig.test5.Value, PluginConfig.test6.Value);
+              /*_finalPos = new Vector3(0.15f, -0.5f, 0.25f);
+                _finalRot = new Vector3(-0.95f, -0.01f, -0.01f);*/
+                _finalPos = new Vector3(0.3f, 0.05f, 0.2f);
+                _finalRot = new Vector3(0f, 0f, -0.9f);
             }
            
         }
@@ -237,15 +237,13 @@ namespace RealismMod
             bool isStocklessRifle = !WeaponStats.IsPistol && !WeaponStats.HasShoulderContact;
             float stanceBonus = (isStocklessRifle ? 1.15f : 1f) * GetStanceSpeedModi(treatAsPistol);
             float stanceInverseBonus = (isStocklessRifle ? 0.85f : 1f) * GetStanceSpeedModi(treatAsPistol, true);
-            float collisionTimerSpeed = PluginConfig.test8.Value * WeaponStats.ErgoFactor * stanceInverseBonus;
+            float collisionTimerSpeed = 0.015f * WeaponStats.ErgoFactor * stanceInverseBonus;
             float adsTimerSpeed = 0.03f * WeaponStats.ErgoFactor;
             float finalStateTimerSpeed = PluginConfig.test9.Value * WeaponStats.ErgoFactor;
 
-            bool pause = false;
             if (_isColliding)
             {
                 _collisionOverrideTimer = 0;
-                pause = false;
                 StanceController.IsColliding = true;
             }
             else
@@ -254,12 +252,10 @@ namespace RealismMod
                 if (_collisionOverrideTimer >= collisionTimerSpeed)
                 {
                     StanceController.IsColliding = false;
-                    pause = false;
                 }
                 else
                 {
                     StanceController.IsColliding = true;
-                    pause = true;
                 }
             }
 
@@ -288,8 +284,7 @@ namespace RealismMod
             float speed = 0.15f * WeaponStats.TotalErgo * stanceBonus;
             float baseThrehold = treatAsPistol ? 0.55f : 0.6f;
             float threshold = baseThrehold * Mathf.Pow(length, 1.15f);
-            bool doFintalState = _lastDistance < threshold && _allowFinalState;
-            bool doIntiialState = _lastDistance >= threshold && !_keepFinalState;
+            bool doIntiialState = _lastDistance >= threshold || _delayFinalState;
    
             float distanceFactor = Mathf.InverseLerp(length, 0, _lastDistance);
             float smoothedInverseDistance = Mathf.Pow(distanceFactor, 0.45f);
@@ -298,53 +293,68 @@ namespace RealismMod
             Vector3 initialPos = _initialPos;
             initialPos.z = intitalPosZ;
             initialPos *= smoothedInverseDistance;
-            Vector3 lastPos = _finalPos * smoothedInverseDistance;
-            Vector3 targetPos =  !_isColliding && !pause ? Vector3.zero : doIntiialState ? initialPos : lastPos;
+            Vector3 lastPos = _finalPos; // * smoothedInverseDistance
+
+            Vector3 initialRot = _initialRot * smoothedInverseDistance;
+            Vector3 lastRot = _finalRot; //* smoothedInverseDistance
+            Vector3 targetRot = !StanceController.IsColliding ? Vector3.zero : doIntiialState ? initialRot :lastRot;
+
+            bool isInFinalState;
+            Vector3 targetPos = Vector3.zero;
+
+            if (!StanceController.IsColliding) isInFinalState = false;
+            else if (doIntiialState) isInFinalState = false;
+            else
+            {
+                isInFinalState = true;
+                _wasInFinalState = true;
+            }
+
+            bool reset = !StanceController.IsColliding && !_wasInFinalState;
+            bool initial = doIntiialState && !_wasInFinalState;
+            targetPos = reset ? Vector3.zero : initial ? initialPos : lastPos;
+            targetRot = reset ? Vector3.zero : initial ? initialRot : lastRot;
+
             _collisionPos = Vector3.Lerp(_collisionPos, targetPos, speed * Time.deltaTime);
             pwa.HandsContainer.WeaponRoot.localPosition += _collisionPos;
 
-            Vector3 initialRot = _initialRot * smoothedInverseDistance;
-            Vector3 lastRot = _finalRot * smoothedInverseDistance;
-            Vector3 targetRot = !_isColliding && !pause ? Vector3.zero : doIntiialState ? initialRot :lastRot;
             _collisionRot = Vector3.Lerp(_collisionRot, targetRot, speed * Time.deltaTime);
             Quaternion newRot = Quaternion.identity;
             newRot.x = _collisionRot.x;
             newRot.y = _collisionRot.y;
             newRot.z = _collisionRot.z;
+
             pwa.HandsContainer.WeaponRoot.localRotation *= newRot;
-
-            Logger.LogWarning("_keepFinalState " + _keepFinalState);
-            Logger.LogWarning("_allowFinalState " + _allowFinalState);
-
-            if ((_isColliding || pause) && _lastDistance < threshold)
-            {
-                _finalStateEndTimer = 0f;
-                _keepFinalState = true;
-            }
-            else
-            {
-                _finalStateEndTimer += Time.deltaTime;
-                if (_finalStateEndTimer >= finalStateTimerSpeed)
-                {
-                    _keepFinalState = false;
-                }
-                else _keepFinalState = true;
-            }
 
             if (_isColliding)
             {
-                _finalStateStartTimer += Time.deltaTime;
-                if (_finalStateStartTimer >= PluginConfig.test10.Value)
+                _finalStateDelayTimer += Time.deltaTime;
+                if (_finalStateDelayTimer >= 0.05f)
                 {
-                    _allowFinalState = true;
+                    _delayFinalState = false;
                 }
-                else _allowFinalState = false;
+                else _delayFinalState = true;
+            }
+            else 
+            {
+                _finalStateDelayTimer = 0f;
+                _delayFinalState = true;
+            }
+
+            if (_wasInFinalState && !isInFinalState)
+            {
+                _finalStateEndTimer += Time.deltaTime;
+                if (_finalStateEndTimer >= PluginConfig.test10.Value)
+                {
+                    _wasInFinalState = false;
+                }
             }
             else
             {
-                _finalStateStartTimer = 0f;
-                _allowFinalState = false;
+                _finalStateEndTimer = 0f;
             }
+
+
         }
 
 
@@ -357,9 +367,9 @@ namespace RealismMod
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
 
-                //ModifyBSGCollisions(__instance, firearmController);
+                ModifyBSGCollisions(__instance, firearmController);
 
-                CollisionOverride(__instance, firearmController);
+                //CollisionOverride(__instance, firearmController);
 
                 DoMounting(player, __instance);
             }
