@@ -22,9 +22,61 @@ using static UnityEngine.Rendering.PostProcessing.HistogramMonitor;
 using static UnityEngine.UI.Selectable;
 using System.Threading.Tasks;
 using static RootMotion.FinalIK.GenericPoser;
+using Audio.AmbientSubsystem;
 
 namespace RealismMod
 {
+    class DayTimeAmbientPatch : ModulePatch
+    {
+        private static FieldInfo _dayAudioSourceField;
+        private static FieldInfo _nightAudioSourceField;
+        protected override MethodBase GetTargetMethod()
+        {
+            _dayAudioSourceField = AccessTools.Field(typeof(AudioSource), "_outdoorAmbientDaySource");
+            _nightAudioSourceField = AccessTools.Field(typeof(AudioSource), "_outdoorAmbientNightSource");
+            return typeof(DayTimeAmbientBlender).GetMethod("method_0");
+        }
+
+        [PatchPrefix]
+        private static bool PatchPrefix(DayTimeAmbientBlender __instance)
+        {
+            GameWorldController.RunEarlyGameCheck();
+
+            if (GameWorldController.MuteAmbientAudio) return false;
+            return true;
+        }
+    }
+
+    class AmbientSoundPlayerGroupPatch : ModulePatch
+    {
+        private static string[] _clipsToDisable =
+        {
+            "lark", "crow", "nightingale", "greenmocking", "woodpecker", "robin", "raven", "rook", "bullfinch", "starling", "sparrow"
+        };
+        private static FieldInfo _playerGroupField;
+
+        protected override MethodBase GetTargetMethod()
+        {
+            _playerGroupField = AccessTools.Field(typeof(AmbientSoundPlayerGroup), "_soundPlayers");
+            return typeof(AmbientSoundPlayerGroup).GetMethod("Play");
+        }
+
+        [PatchPrefix]
+        private static bool PatchPrefix(AmbientSoundPlayerGroup __instance)
+        {
+            GameWorldController.RunEarlyGameCheck();
+
+            if (!GameWorldController.MuteAmbientAudio) return true;
+            var soundPlayers = (List<AbstractAmbientSoundPlayer>)_playerGroupField.GetValue(__instance);
+            foreach (var soundPlayer in soundPlayers)
+            {
+                if (_clipsToDisable.Contains(soundPlayer.name.ToLower())) continue;
+                return false;
+            }
+            return false;
+        }
+    }
+
     public class LampPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -35,6 +87,8 @@ namespace RealismMod
         [PatchPostfix]
         public static void PatchPostfix(LampController __instance)
         {
+            GameWorldController.RunEarlyGameCheck();
+
             if (!Plugin.ServerConfig.enable_hazard_zones || !Plugin.ModInfo.IsHalloween || !GameWorldController.IsMapThatCanDoGasEvent) return;
             if (GameWorldController.DidExplosionClientSide || Plugin.ModInfo.HasExploded)
             {
@@ -58,11 +112,7 @@ namespace RealismMod
         [PatchPostfix]
         public static void PatchPostfix(BossLocationSpawn __instance)
         {
-            if (!GameWorldController.RanEarliestGameCheck)
-            {
-                Plugin.RequestRealismDataFromServer(EUpdateType.ModInfo);
-                GameWorldController.RanEarliestGameCheck = true;
-            }
+            GameWorldController.RunEarlyGameCheck();
 
             var zones = __instance.BossZone.Split(new char[]{','});
             if (_forbiddenZones.Intersect(zones).Any()) return;
@@ -235,11 +285,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool PatchPrefix(ref bool __result)
         {
-            if (!GameWorldController.RanEarliestGameCheck)
-            {
-                Plugin.RequestRealismDataFromServer(EUpdateType.ModInfo);
-                GameWorldController.RanEarliestGameCheck = true;
-            }
+            GameWorldController.RunEarlyGameCheck();
 
             if (Plugin.ModInfo.DoGasEvent)
             {
@@ -284,12 +330,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(BirdsSpawner __instance)
         {
-            //not remotely ideal but this method is called the earliest so far, but not this is not always called so will call elsewhere too.
-            if (!GameWorldController.RanEarliestGameCheck)
-            {
-                Plugin.RequestRealismDataFromServer(EUpdateType.ModInfo);
-                GameWorldController.RanEarliestGameCheck = true;
-            }
+            GameWorldController.RunEarlyGameCheck();
 
             if (Plugin.FikaPresent) return;
 
@@ -334,7 +375,6 @@ namespace RealismMod
             ProfileData.CurrentProfileId = Utils.GetYourPlayer().ProfileId;
             if (Plugin.ServerConfig.enable_hazard_zones)
             {
-                GameWorldController.CheckDate();
 
                 //update tracked map info
                 GameWorldController.CurrentMap = Singleton<GameWorld>.Instance.MainPlayer.Location.ToLower();
