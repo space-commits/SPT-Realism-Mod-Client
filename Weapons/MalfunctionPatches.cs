@@ -9,9 +9,9 @@ using System.Reflection;
 using Systems.Effects;
 using UnityEngine;
 using static EFT.InventoryLogic.Weapon;
-using DamageTypeClass = GClass2470;
-using MalfGlobals = BackendConfigSettingsClass.GClass1378;
-using OverheatGlobals = BackendConfigSettingsClass.GClass1379;
+using DamageTypeClass = GClass2788;
+using MalfGlobals = BackendConfigSettingsClass.GClass1521;
+using OverheatGlobals = BackendConfigSettingsClass.GClass1522;
 using EFT.HealthSystem;
 
 namespace RealismMod
@@ -59,7 +59,7 @@ namespace RealismMod
                 player.ActiveHealthController.ApplyDamage(EBodyPart.Head, UnityEngine.Random.Range(5, 21), DamageTypeClass.Existence);
                 player.ActiveHealthController.ApplyDamage(EBodyPart.RightArm, UnityEngine.Random.Range(20, 61), DamageTypeClass.Existence);
 
-                InventoryControllerClass inventoryController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
+                InventoryController inventoryController = (InventoryController)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
                 if (fc.Item != null && inventoryController.CanThrow(fc.Item))
                 {
                     inventoryController.TryThrowItem(fc.Item, null, false);
@@ -69,7 +69,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void Postfix(Player.FirearmController __instance, ref Weapon.EMalfunctionState __result, BulletClass ammoToFire)
+        private static void Postfix(Player.FirearmController __instance, ref Weapon.EMalfunctionState __result, AmmoItemClass ammoToFire)
         {
          
             Player player = (Player)playerField.GetValue(__instance);
@@ -161,7 +161,7 @@ namespace RealismMod
             return typeof(Player.FirearmController).GetMethod("GetTotalMalfunctionChance", BindingFlags.Instance | BindingFlags.Public);
         }
         [PatchPrefix]
-        private static bool Prefix(ref float __result, BulletClass ammoToFire, Player.FirearmController __instance, float overheat, out double durabilityMalfChance, out float magMalfChance, out float ammoMalfChance, out float overheatMalfChance, out float weaponDurability)
+        private static bool Prefix(ref float __result, AmmoItemClass ammoToFire, Player.FirearmController __instance, float overheat, out double durabilityMalfChance, out float magMalfChance, out float ammoMalfChance, out float overheatMalfChance, out float weaponDurability)
         {
             Player player = (Player)playerField.GetValue(__instance);
 
@@ -196,7 +196,7 @@ namespace RealismMod
                 ammoMalfChance = ammoToFire != null ? 1f + ((ammoToFire.MalfMisfireChance + ammoToFire.MalfFeedChance) * globalAmmoMalfMulti) : 1f;
 
                 //mag malf chance
-                MagazineClass currentMagazine = __instance.Item.GetCurrentMagazine();
+                MagazineItemClass currentMagazine = __instance.Item.GetCurrentMagazine();
                 magMalfChance = currentMagazine == null ? 1f : 1f + (currentMagazine.MalfunctionChance * malfunctionSettings.MagazineMalfChanceMult);
 
                 //durability factor

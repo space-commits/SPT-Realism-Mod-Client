@@ -11,8 +11,9 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.Audio;
 using CompressorTemplateClass = GClass2918; //SetCompressor
-using HeadsetClass = GClass2654; //Updatephonesreally()
-using HeadsetTemplate = GClass2556; //SetCompressor
+using HeadsetClass = HeadphonesItemClass; //Updatephonesreally()
+using HeadsetTemplate = HeadphonesTemplateClass; //SetCompressor
+using LootItemClass = GClass2981;
 
 namespace RealismMod
 {
@@ -207,15 +208,15 @@ namespace RealismMod
 
     public class UpdatePhonesPatch : ModulePatch
     {
-        private static float HelmDeafFactor(EquipmentClass equipment)
+        private static float HelmDeafFactor(InventoryEquipment equipment)
         {
             string deafStrength = "None";
             LootItemClass headwearItem = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;
 
             if (headwearItem != null)
             {
-                ArmorClass helmet = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as ArmorClass;
-                if (helmet?.Armor?.Deaf != null)
+                ArmorItemClass helmet = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as ArmorItemClass; // Not confident on this
+                if (helmet?.Armor?.Deaf != null) 
                 {
                     deafStrength = helmet.Armor.Deaf.ToString();
                 }
@@ -237,7 +238,7 @@ namespace RealismMod
             }
         }
 
-        private static float HeadsetDeafFactor(EquipmentClass equipment)
+        private static float HeadsetDeafFactor(InventoryEquipment equipment)
         {
             float protectionFactor;
 
@@ -296,20 +297,20 @@ namespace RealismMod
 
             GlobalEventHandlerClass.CreateEvent<CompressorTemplateClass>().Invoke(template);
             DeafeningController.DryVolume = hasHeadset ? template.DryVolume * PluginConfig.DryVolumeMulti.Value : 0f;
-            DeafeningController.CompressorVolume = hasHeadset ? template.CompressorVolume : -80f;
+            DeafeningController.CompressorVolume = hasHeadset ? template.CompressorGain : -80f; // Not sure about this, CompressorVolume is gone
             DeafeningController.AmbientVolume = hasHeadset ? template.AmbientVolume : 0f;
             DeafeningController.AmbientOccluded = hasHeadset ? (template.AmbientVolume - 15f) : -5f;
             DeafeningController.GunsVolume = hasHeadset ? (template.DryVolume * PluginConfig.DryVolumeMulti.Value) + PluginConfig.GunshotVolume.Value : PluginConfig.GunshotVolume.Value;
             DeafeningController.CompressorLowpass = hasHeadset ? template.LowpassFreq : 2200;
             DeafeningController.CompressorDistortion = hasHeadset ? template.Distortion : 0.277f;
-            DeafeningController.CompressorResonance = hasHeadset ? template.Resonance : 2.47f;
+            DeafeningController.CompressorResonance = hasHeadset ? template.HighpassResonance : 2.47f;
 
             __instance.Master.GetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, out gunT);
             __instance.Master.GetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, out mainT);
             __instance.Master.SetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, gunT);
             __instance.Master.SetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, mainT);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorMixerVolume, hasHeadset ? template.CompressorVolume : -80f);
-            __instance.Master.SetFloat(__instance.AudioMixerData.OcclusionMixerVolume, hasHeadset ? template.DryVolume : 0f);
+            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorMixerVolume, hasHeadset ? template.CompressorGain : -80f);
+            __instance.Master.SetFloat(__instance.AudioMixerData.OcclusionMixerVolume, hasHeadset ? template.DryVolume : 0f); // TODO Most of this no longer exists
             __instance.Master.SetFloat(__instance.AudioMixerData.EnvironmentMixerVolume, hasHeadset ? template.DryVolume : 0f);
             __instance.Master.SetFloat(__instance.AudioMixerData.AmbientMixerVolume, hasHeadset ? template.AmbientVolume : 0f);
             __instance.Master.SetFloat(__instance.AudioMixerData.AmbientMixerOcclusionSendLevel, hasHeadset ? (template.AmbientVolume - 15f) : -5f);
@@ -329,7 +330,7 @@ namespace RealismMod
             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorRelease, template.CompressorRelease);
             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorThreshold, template.CompressorTreshold + PluginConfig.HeadsetThreshold.Value);
             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorDistortion, template.Distortion);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorResonance, template.Resonance);
+            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorResonance, template.HighpassResonance);
             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorCutoff, (float)template.CutoffFreq);
             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorLowpass, (float)template.LowpassFreq);
             __instance.Master.SetFloat(__instance.AudioMixerData.CompressorHighFrequenciesGain, template.HighFrequenciesGain);
@@ -390,7 +391,7 @@ namespace RealismMod
                 if (player.IsYourPlayer == true)
                 {
                     float velocityFactor = CalcVelocityFactor(weap.SpeedFactor);
-                    float ammoFactor = CalcAmmoFactor((shot.Ammo as BulletClass).ammoRec);
+                    float ammoFactor = CalcAmmoFactor((shot.Ammo as AmmoItemClass).ammoRec);
                     float deafenFactor = velocityFactor * ammoFactor;
 
              /*       if (shot.InitialSpeed * weap.SpeedFactor <= 335f)
@@ -449,13 +450,13 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GrenadeClass).GetMethod("get_Contusion");
+            return typeof(GClass2848).GetMethod("get_Contusion"); // Formally grenade class
         }
 
         [PatchPrefix]
-        static bool PreFix(GrenadeClass __instance, ref Vector3 __result)
+        static bool PreFix(GClass2848 __instance, ref Vector3 __result)
         {
-            ThrowableWeaponClass grenade = __instance.Template as ThrowableWeaponClass;
+            ThrowWeapItemClass grenade = __instance.Template as ThrowWeapItemClass;
             Vector3 contusionVect = grenade.Contusion;
             float intensity = contusionVect.z * (1f - ((1f - DeafeningController.EarProtectionFactor) * 1.3f));
             float distance = contusionVect.y * 2f * DeafeningController.EarProtectionFactor;

@@ -856,7 +856,7 @@ namespace RealismMod
             new VelocityPatch().Enable();
             new CreateShotPatch().Enable();
             new ApplyArmorDamagePatch().Enable();
-            new ApplyDamageInfoPatch().Enable();
+            new ApplyDamageInfoStructPatch().Enable();
             new SetPenetrationStatusPatch().Enable();
             new IsPenetratedPatch().Enable();
             new AfterPenPlatePatch().Enable();
@@ -864,7 +864,7 @@ namespace RealismMod
             new ArmorLevelUIPatch().Enable();
             new ArmorLevelDisplayPatch().Enable();
             new ArmorClassStringPatch().Enable();
-            new DamageInfoPatch().Enable();
+            new DamageInfoStructPatch().Enable();
             if (PluginConfig.EnableRagdollFix.Value) new ApplyCorpseImpulsePatch().Enable();
             new GetCachedReadonlyQualitiesPatch().Enable();
         }

@@ -5,7 +5,7 @@ using RealismMod;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using DamageTypeClass = GClass2470;
+using DamageTypeClass = GClass2788;
 
 //Credit to AT for the assets
 public class ShockWave : TriggerWithId

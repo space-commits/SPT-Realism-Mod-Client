@@ -85,13 +85,13 @@ namespace RealismMod
 
         public static async Task LoadLoot(Vector3 position, Quaternion rotation, string templateId)
         {
-            Item item = Singleton<ItemFactory>.Instance.CreateItem(Utils.GenId(), templateId, null);
+            Item item = Singleton<ItemFactoryClass>.Instance.CreateItem(Utils.GenId(), templateId, null);
             item.StackObjectsCount = 1;
             item.SpawnedInSession = true;
             ResourceKey[] resources = item.Template.AllResources.ToArray();
             await LoadBundle(resources);
             IPlayer player = Singleton<GameWorld>.Instance.RegisteredPlayers.FirstOrDefault(new Func<IPlayer, bool>(GetIPlayer));
-            Singleton<GameWorld>.Instance.ThrowItem(item, player, position, rotation, Vector3.zero, Vector3.zero);
+            Singleton<GameWorld>.Instance.ThrowItem(item, player, position, rotation, Vector3.zero, Vector3.zero, true);
 
         }
 
@@ -280,7 +280,7 @@ namespace RealismMod
         }
         public static bool IsMagazine(Mod mod)
         {
-            return (mod is MagazineClass);
+            return (mod is MagazineItemClass);
         }
         public static bool IsFlashHider(Mod mod)
         {

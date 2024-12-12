@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static EFT.Player;
-using WeaponSkillsClass = EFT.SkillManager.GClass1783;
+using WeaponSkillsClass = EFT.SkillManager.GClass1981;
 
 namespace RealismMod
 {
@@ -61,7 +61,7 @@ namespace RealismMod
         {
             player.Inventory.UpdateTotalWeight();
             float playerWeight = player.Inventory.TotalWeight;
-            float weaponWeight = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item.GetSingleItemTotalWeight() : 1f;
+            float weaponWeight = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item.Weight : 1f;
             PlayerState.TotalModifiedWeightMinusWeapon = playerWeight - weaponWeight;
             PlayerState.TotalMousePenalty = (-playerWeight / 10f);
             PlayerState.TotalModifiedWeight = playerWeight;
@@ -115,7 +115,7 @@ namespace RealismMod
             if (weapon.WeapClass != "pistol")
             {
                 float aimSwayHeadGearFactor = GearController.FSIsActive || GearController.NVGIsActive || GearController.HasGasMask ? 1.45f : 1f;
-                float gunWeightFactor = ProceduralIntensityFactorCalc(weapon.GetSingleItemTotalWeight(), 4f);
+                float gunWeightFactor = ProceduralIntensityFactorCalc(weapon.Weight, 4f);
                 float ergoWeightFactor = WeaponStats.ErgoFactor * gunWeightFactor * (1f + (-WeaponStats.Balance / 100f)) * (1f - WeaponStats.PureErgoDelta) * aimSwayHeadGearFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + ((1f - PlayerState.GearErgoPenalty) * 1.5f)); //
                 swayStrength = Mathf.InverseLerp(1f, 180f, ergoWeightFactor);
             }
@@ -244,7 +244,7 @@ namespace RealismMod
             float dispersionWeapBaseWeightFactor = WeightStatCalc(dispersionWeightMult, weaponBaseWeight) / 100f;
             float camRecoilWeapBaseWeightFactor = WeightStatCalc(StatCalc.CamWeightMult, weaponBaseWeight) / 100f;
 
-            float totalWeapWeight = weap.GetSingleItemTotalWeight();
+            float totalWeapWeight = weap.Weight;
             float dampingTotalWeightFactor = WeightStatCalc(StatCalc.DampingWeightMult, totalWeapWeight) / 100f;
             float handDampingTotalWeightFactor = WeightStatCalc(StatCalc.HandDampingWeightMult, totalWeapWeight) / 100f;
 

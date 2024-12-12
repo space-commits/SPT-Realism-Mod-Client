@@ -19,7 +19,7 @@ namespace RealismMod.Weapons
 
         }  
 
-        public static void SetMagReloadSpeeds(Player.FirearmController __instance, MagazineClass magazine, bool isQuickReload = false)
+        public static void SetMagReloadSpeeds(Player.FirearmController __instance, MagazineItemClass magazine, bool isQuickReload = false)
         {
             PlayerState.IsMagReloading = true;
             StanceController.CancelLowReady = true;
@@ -41,9 +41,9 @@ namespace RealismMod.Weapons
             }
         }
 
-        public static void MagReloadSpeedModifier(Weapon weapon, MagazineClass magazine, bool isNewMag, bool reloadFromNoMag, bool isQuickReload = false)
+        public static void MagReloadSpeedModifier(Weapon weapon, MagazineItemClass magazine, bool isNewMag, bool reloadFromNoMag, bool isQuickReload = false)
         {
-            float magWeight = weapon.IsBeltMachineGun ? magazine.GetSingleItemTotalWeight() * StatCalc.MagWeightMult * 0.5f : magazine.GetSingleItemTotalWeight() * StatCalc.MagWeightMult;
+            float magWeight = weapon.IsBeltMachineGun ? magazine.Weight * StatCalc.MagWeightMult * 0.5f : magazine.Weight * StatCalc.MagWeightMult;
             float magWeightFactor = (magWeight / -100f) + 1f;
             float magSpeed = AttachmentProperties.ReloadSpeed(magazine);
             float reloadSpeedModiLessMag = WeaponStats.TotalReloadSpeedLessMag;

@@ -11,7 +11,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using static EFT.Player;
-using CollisionLayerClass = GClass3008;
+using CollisionLayerClass = GClass3367;
 using System.Collections.Generic;
 using EFT.UI.Ragfair;
 /*using LightStruct = GStruct155;*/
@@ -524,7 +524,7 @@ namespace RealismMod
                     {
                         hitBalls = baseballComp.Get(raycastHit.point);
                     }
-                    float weaponWeight = fc.Weapon.GetSingleItemTotalWeight();
+                    float weaponWeight = fc.Weapon.Weight;
                     float damage = 8f + WeaponStats.BaseMeleeDamage * (1f + player.Skills.StrengthBuffMeleePowerInc) * (1f + (weaponWeight / 10f));
                     damage = player.Physical.HandsStamina.Exhausted ? damage * Singleton<BackendConfigSettingsClass>.Instance.Stamina.ExhaustedMeleeDamageMultiplier : damage;
                     float pen = 15f + WeaponStats.BaseMeleePen * (1f + (weaponWeight / 10f));
@@ -551,7 +551,7 @@ namespace RealismMod
                         Vector3 shotPosition = position;
                         fc.AdjustShotVectors(ref shotPosition, ref vector);
                         Vector3 shotDirection = vector;
-                        DamageInfo damageInfo = new DamageInfo
+                        DamageInfoStruct DamageInfoStruct = new DamageInfoStruct
                         {
                             SourceId = fc.Weapon.Id,
                             DamageType = EDamageType.Melee,
@@ -568,7 +568,7 @@ namespace RealismMod
                             IsForwardHit = true,
                             StaminaBurnRate = 5f
                         };
-                        ShotInfoClass result = Singleton<GameWorld>.Instance.HackShot(damageInfo);
+                        ShotInfoClass result = Singleton<GameWorld>.Instance.HackShot(DamageInfoStruct);
                     }
                     float vol = WeaponStats.HasBayonet ? 10f : 12f;
                     Singleton<BetterAudio>.Instance.PlayDropItem(baseballComp.SurfaceSound, JsonType.EItemDropSoundType.Rifle, raycastHit.point, vol);

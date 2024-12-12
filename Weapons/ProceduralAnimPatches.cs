@@ -10,7 +10,7 @@ using UnityEngine;
 using static EFT.Player;
 using ProcessorClass = GClass2227;
 using StaminaLevelClass = GClass754<float>;
-using WeaponSkillsClass = EFT.SkillManager.GClass1783;
+using WeaponSkillsClass = EFT.SkillManager.GClass1981;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -318,7 +318,7 @@ namespace RealismMod
                     float leftShoulderFactor = StanceController.IsLeftShoulder ? 1.3f : 1f;
                     float formfactor = WeaponStats.IsBullpup ? 0.7f : 1f;
                     float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.75f)) * (1f + (1f - PlayerState.GearErgoPenalty));
-                    float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(weapon.GetSingleItemTotalWeight(), weapon.WeapClass == "pistol" ? 1f : 4f);
+                    float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(weapon.Weight, weapon.WeapClass == "pistol" ? 1f : 4f);
                     float playerWeightSwayFactor = 1f + (totalPlayerWeight / 200f);
                     float totalErgoFactor = 1f + ((ergoWeight * ergoWeightFactor * playerWeightSwayFactor * leftShoulderFactor) / 100f);
 
@@ -479,7 +479,7 @@ namespace RealismMod
 
                 float stanceFactor = GetStanceFactor(__instance, true);
                 float stanceFactorMotion = GetStanceFactor(__instance);
-                float weapWeight = weapon.GetSingleItemTotalWeight();
+                float weapWeight = weapon.Weight;
                 float formfactor = WeaponStats.IsBullpup ? 0.75f : 1f;
                 float totalPlayerWeight = PlayerState.TotalModifiedWeight - weapWeight;
                 float playerWeightFactor = 1f + (totalPlayerWeight / 200f);

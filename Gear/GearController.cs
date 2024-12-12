@@ -139,7 +139,7 @@ namespace RealismMod
                 IEnumerable<Item> items = slot.Items;
                 foreach (Item item in items)
                 {
-                    float itemTotalWeight = item.GetSingleItemTotalWeight();
+                    float itemTotalWeight = item.Weight;
                     trueWeight += itemTotalWeight;
                     if (equipmentSlot == EquipmentSlot.Backpack || equipmentSlot == EquipmentSlot.TacticalVest || equipmentSlot == EquipmentSlot.ArmorVest || equipmentSlot == EquipmentSlot.Headwear || equipmentSlot == EquipmentSlot.ArmBand)
                     {

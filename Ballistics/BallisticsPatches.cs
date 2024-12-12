@@ -11,8 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using EFTSlot = GClass2783;
-using ArmorSlot = GClass2525;
+using EFTSlot = EFT.InventoryLogic.Slot; // Cant find
+using ArmorSlot = EFT.InventoryLogic.Slot;
 using Diz.Skinning;
 using EFT.UI;
 using static EFT.Player;
@@ -35,14 +35,14 @@ namespace RealismMod
             _accField = AccessTools.Field(typeof(FirearmController), "float_3");
             _buckFeld = AccessTools.Field(typeof(FirearmController), "float_4");
             _prefabField = AccessTools.Field(typeof(FirearmController), "weaponPrefab_0");
-            _skillField = AccessTools.Field(typeof(FirearmController), "gclass1783_0");
+            _skillField = AccessTools.Field(typeof(FirearmController), "GClass1981_0");
             _soundField = AccessTools.Field(typeof(FirearmController), "weaponSoundPlayer_0");
             _recoilField = AccessTools.Field(typeof(FirearmController), "float_5");
             return typeof(Player.FirearmController).GetMethod("method_53", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(Player.FirearmController __instance, Weapon weapon, BulletClass ammo, int chamberIndex, bool multiShot = false)
+        private static bool Prefix(Player.FirearmController __instance, Weapon weapon, AmmoItemClass ammo, int chamberIndex, bool multiShot = false)
         {
 
             Player player = (Player)_playerfield.GetValue(__instance);
@@ -51,7 +51,7 @@ namespace RealismMod
             float accuracy = (float)_accField.GetValue(__instance);
             float accuracyBuck = (float)_buckFeld.GetValue(__instance);
             WeaponPrefab weaponprefab = (WeaponPrefab)_prefabField.GetValue(__instance);
-            SkillManager.GClass1783 skillFactor = (SkillManager.GClass1783)_skillField.GetValue(__instance);
+            SkillManager.GClass1981 skillFactor = (SkillManager.GClass1981)_skillField.GetValue(__instance);
             WeaponSoundPlayer WeaponSoundPlayer = (WeaponSoundPlayer)_soundField.GetValue(__instance);
 
             Transform original = __instance.CurrentFireport.Original;
@@ -65,7 +65,7 @@ namespace RealismMod
             __instance.AdjustShotVectors(ref shotPosition, ref baseShotDirection);
             ammo.buckshotDispersion = accuracyBuck;
             __instance.CurrentChamberIndex = chamberIndex;
-            weapon.OnShot(ammo.DurabilityBurnModificator, ammo.HeatFactor, player.Skills.WeaponDurabilityLosOnShotReduce.Value, instance.Overheat, GClass1485.PastTime);
+            weapon.OnShot(ammo.DurabilityBurnModificator, ammo.HeatFactor, player.Skills.WeaponDurabilityLosOnShotReduce.Value, instance.Overheat, GClass1629.PastTime);
 
             if (weapon.MalfState.LastShotOverheat >= 1f) //force overheat inaccuracy to start much earlier
             {
@@ -91,7 +91,7 @@ namespace RealismMod
                 doubleShot = 0;
             }
             float doubleActionFactor = weapon.CylinderHammerClosed ? (weapon.DoubleActionAccuracyPenalty * (1f - skillFactor.DoubleActionRecoilReduce) * weapon.StockDoubleActionAccuracyPenaltyMult) : 0f;
-            float barrelDeviation = __instance.method_50(weapon);
+            float barrelDeviation = __instance.method_54(weapon);
             double accuracyBuff = weapon.GetItemComponent<BuffComponent>().WeaponSpread;
        
             if (accuracyBuff.ApproxEquals(0.0))
@@ -106,10 +106,10 @@ namespace RealismMod
             float recoilFactor = (doubleShot != 0) ? 1.5f : 1f;
 
             _recoilField.SetValue(__instance, recoilFactor + (float)ammo.ammoRec / 100f);
-            __instance.method_54(WeaponSoundPlayer, ammo, shotPosition, shotDirection, multiShot);
+            __instance.method_58(WeaponSoundPlayer, ammo, shotPosition, shotDirection, multiShot);
             if (ammo.AmmoTemplate.IsLightAndSoundShot)
             {
-                __instance.method_58(position, baseShotDirection);
+                __instance.method_61(position, baseShotDirection);
                 __instance.LightAndSoundShot(position, baseShotDirection, ammo.AmmoTemplate);
             }
 
@@ -137,14 +137,14 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass3010).GetMethod("Initialize", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GClass3369).GetMethod("Initialize", BindingFlags.Instance | BindingFlags.Public); // cannot be certain but seems to be the only one with a float 3 and initialize
         }
 
         [PatchPostfix]
-        private static void Prefix(GClass3010 __instance)
+        private static void Prefix(GClass3369 __instance)
         {
-            float bcFactor = (float)AccessTools.Field(typeof(GClass3010), "float_3").GetValue(__instance);
-            AccessTools.Field(typeof(GClass3010), "float_3").SetValue(__instance, bcFactor *= PluginConfig.DragModifier.Value);
+            float bcFactor = (float)AccessTools.Field(typeof(GClass3369), "float_3").GetValue(__instance);
+            AccessTools.Field(typeof(GClass3369), "float_3").SetValue(__instance, bcFactor *= PluginConfig.DragModifier.Value);
         }
     }
 
@@ -189,15 +189,15 @@ namespace RealismMod
         }
     }
 
-    public class DamageInfoPatch : ModulePatch
+    public class DamageInfoStructPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(DamageInfo).GetConstructor(new Type[] { typeof(EDamageType), typeof(EftBulletClass) });
+            return typeof(DamageInfoStruct).GetConstructor(new Type[] { typeof(EDamageType), typeof(EftBulletClass) });
         }
 
         [PatchPrefix]
-        private static bool Prefix(ref DamageInfo __instance, EDamageType damageType, EftBulletClass shot)
+        private static bool Prefix(ref DamageInfoStruct __instance, EDamageType damageType, EftBulletClass shot)
         {
             __instance.DamageType = damageType;
             __instance.Damage = shot.Damage;
@@ -228,8 +228,8 @@ namespace RealismMod
             __instance.IsForwardHit = shot.IsForwardHit;
             __instance.SourceId = shot.Ammo.TemplateId;
 
-            BulletClass bulletClass;
-            if ((bulletClass = (shot.Ammo as BulletClass)) != null)
+            AmmoItemClass bulletClass;
+            if ((bulletClass = (shot.Ammo as AmmoItemClass)) != null)
             {
                 __instance.StaminaBurnRate = bulletClass.StaminaBurnRate;
                 __instance.HeavyBleedingDelta = bulletClass.HeavyBleedingDelta;
@@ -240,8 +240,8 @@ namespace RealismMod
                 __instance.LightBleedingDelta = 0f;
                 __instance.HeavyBleedingDelta = 0f;
                 __instance.StaminaBurnRate = 0f;
-                KnifeClass knifeClass;
-                if ((knifeClass = (__instance.Weapon as KnifeClass)) != null)
+                KnifeItemClass knifeClass;
+                if ((knifeClass = (__instance.Weapon as KnifeItemClass)) != null)
                 {
                     __instance.StaminaBurnRate = knifeClass.KnifeComponent.Template.StaminaBurnRate;
                 }
@@ -255,7 +255,7 @@ namespace RealismMod
         }
     }
 
-    public class ApplyDamageInfoPatch : ModulePatch
+    public class ApplyDamageInfoStructPatch : ModulePatch
     {
         private static FieldInfo inventoryControllerField;
 
@@ -278,7 +278,7 @@ namespace RealismMod
 
                 if (rndNumber <= totalChance)
                 {
-                    InventoryControllerClass inventoryController = (InventoryControllerClass)inventoryControllerField.GetValue(player);
+                    PlayerOwnerInventoryController inventoryController = (PlayerOwnerInventoryController)inventoryControllerField.GetValue(player);
                     if (player.HandsController as Player.FirearmController != null)
                     {
                         Player.FirearmController fc = player.HandsController as Player.FirearmController;
@@ -308,21 +308,21 @@ namespace RealismMod
             }
         }
 
-        private static void DisarmAndKnockdownCheck(Player player, DamageInfo damageInfo, EBodyPart bodyPartType, EBodyPartColliderType partHit, float KE, bool hasArmArmor)
+        private static void DisarmAndKnockdownCheck(Player player, DamageInfoStruct DamageInfoStruct, EBodyPart bodyPartType, EBodyPartColliderType partHit, float KE, bool hasArmArmor)
         {
-            float totalHPPerc = (player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Common).Current - damageInfo.Damage) / player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Common).Maximum;
+            float totalHPPerc = (player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Common).Current - DamageInfoStruct.Damage) / player.ActiveHealthController.GetBodyPartHealth(EBodyPart.Common).Maximum;
             float hitPartHP = player.ActiveHealthController.GetBodyPartHealth(bodyPartType).Current;
-            float toBeHP = hitPartHP - damageInfo.Damage;
+            float toBeHP = hitPartHP - DamageInfoStruct.Damage;
             bool canDoKnockdown = !player.IsInPronePose && ((!player.IsYourPlayer && PluginConfig.CanFellBot.Value) || (player.IsYourPlayer && PluginConfig.CanFellPlayer.Value));
             bool canDoDisarm = ((!player.IsYourPlayer && PluginConfig.CanDisarmBot.Value) || (player.IsYourPlayer && PluginConfig.CanDisarmPlayer.Value));
             bool hitForearm = partHit == EBodyPartColliderType.LeftForearm || partHit == EBodyPartColliderType.RightForearm;
             bool hitCalf = partHit == EBodyPartColliderType.LeftCalf || partHit == EBodyPartColliderType.RightCalf;
             bool hitThigh = partHit == EBodyPartColliderType.LeftThigh || partHit == EBodyPartColliderType.RightThigh;
-            bool isOverdosed = player.IsYourPlayer && Plugin.RealHealthController.HasOverdosed && damageInfo.Damage > 10f;
-            bool fell = damageInfo.DamageType == EDamageType.Fall && damageInfo.Damage >= 15f;
+            bool isOverdosed = player.IsYourPlayer && Plugin.RealHealthController.HasOverdosed && DamageInfoStruct.Damage > 10f;
+            bool fell = DamageInfoStruct.DamageType == EDamageType.Fall && DamageInfoStruct.Damage >= 15f;
             bool doShotLegKnockdown = (hitCalf || hitThigh) && toBeHP <= 5f;
             bool doShotDisarm = hitForearm && toBeHP <= 5f;
-            bool doHeadshotKnockdown = bodyPartType == EBodyPart.Head && toBeHP > 0f && toBeHP <= 12f && damageInfo.Damage >= 5;
+            bool doHeadshotKnockdown = bodyPartType == EBodyPart.Head && toBeHP > 0f && toBeHP <= 12f && DamageInfoStruct.Damage >= 5;
             bool hasBonusChance = hitCalf || bodyPartType == EBodyPart.Head;
             float chanceModifier = fell ? 50000 : 1f;
 
@@ -340,44 +340,44 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             inventoryControllerField = AccessTools.Field(typeof(Player), "_inventoryController");
-            return typeof(Player).GetMethod("ApplyDamageInfo", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player).GetMethod("ApplyDamageInfoStruct", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static void Prefix(Player __instance, ref DamageInfo damageInfo, EBodyPart bodyPartType)
+        private static void Prefix(Player __instance, ref DamageInfoStruct DamageInfoStruct, EBodyPart bodyPartType)
         {
             if (PluginConfig.DevMode.Value && __instance.IsYourPlayer)
             {
-                damageInfo.Damage = 0f;
+                DamageInfoStruct.Damage = 0f;
                 return;
             }
 
-            if (damageInfo.DamageType == EDamageType.Bullet || damageInfo.DamageType == EDamageType.Melee)
+            if (DamageInfoStruct.DamageType == EDamageType.Bullet || DamageInfoStruct.DamageType == EDamageType.Melee)
             {
                 EBodyPartColliderType partHit = EBodyPartColliderType.None;
-                if (damageInfo.BodyPartColliderType == EBodyPartColliderType.None) //for fika value is populated, otherwise it's unused
+                if (DamageInfoStruct.BodyPartColliderType == EBodyPartColliderType.None) //for fika value is populated, otherwise it's unused
                 {
-                    BodyPartCollider bodyPartCollider = (BodyPartCollider)damageInfo.HittedBallisticCollider;
+                    BodyPartCollider bodyPartCollider = (BodyPartCollider)DamageInfoStruct.HittedBallisticCollider;
                     partHit = bodyPartCollider.BodyPartColliderType;
                 }
                 else
                 {
-                    partHit = damageInfo.BodyPartColliderType;
+                    partHit = DamageInfoStruct.BodyPartColliderType;
                 }
  
                 //if fika, based on collidor type, get refernce to player assetpoolobject, get collidors, get component
-                if (PluginConfig.EnableBodyHitZones.Value) BallisticsController.ModifyDamageByZone(__instance, ref damageInfo, partHit);
+                if (PluginConfig.EnableBodyHitZones.Value) BallisticsController.ModifyDamageByZone(__instance, ref DamageInfoStruct, partHit);
   
                 float KE = 1f;
                 AmmoTemplate ammoTemp = null;
-                BallisticsController.GetKineticEnergy(damageInfo, ref ammoTemp, ref KE);
+                BallisticsController.GetKineticEnergy(DamageInfoStruct, ref ammoTemp, ref KE);
 
-                if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && __instance.IsAI && damageInfo.HittedBallisticCollider != null && !damageInfo.Blunt && PluginConfig.EnableHitSounds.Value)
+                if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && __instance.IsAI && DamageInfoStruct.HittedBallisticCollider != null && !DamageInfoStruct.Blunt && PluginConfig.EnableHitSounds.Value)
                 {
-                    BallisticsController.PlayBodyHitSound(bodyPartType, damageInfo.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
+                    BallisticsController.PlayBodyHitSound(bodyPartType, DamageInfoStruct.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
                 }
 
-                bool doSpalling = BallisticsController.ShouldDoSpalling(ammoTemp, damageInfo, bodyPartType);
+                bool doSpalling = BallisticsController.ShouldDoSpalling(ammoTemp, DamageInfoStruct, bodyPartType);
 
                 bool hasArmArmor = false;
                 bool hasLegProtection = false;
@@ -385,24 +385,24 @@ namespace RealismMod
                 ArmorComponent armor = null;
                 if (doSpalling || (ammoTemp != null && ammoTemp.ProjectileCount <= 2))
                 {
-                    BallisticsController.GetArmorComponents(__instance, damageInfo, bodyPartType, ref armor, ref faceProtectionCount, ref doSpalling, ref hasArmArmor, ref hasLegProtection);
+                    BallisticsController.GetArmorComponents(__instance, DamageInfoStruct, bodyPartType, ref armor, ref faceProtectionCount, ref doSpalling, ref hasArmArmor, ref hasLegProtection);
                 }
 
                 if (doSpalling && armor != null && GearStats.CanSpall(armor.Item) && __instance?.ActiveHealthController != null)
                 {
-                    BallisticsController.CalculatSpalling(__instance, ref damageInfo, KE, armor, ammoTemp, faceProtectionCount, hasArmArmor, hasLegProtection);
+                    BallisticsController.CalculatSpalling(__instance, ref DamageInfoStruct, KE, armor, ammoTemp, faceProtectionCount, hasArmArmor, hasLegProtection);
                 }
 
                 if (__instance?.ActiveHealthController != null)
                 {
-                    DisarmAndKnockdownCheck(__instance, damageInfo, bodyPartType, partHit, KE, hasArmArmor);
+                    DisarmAndKnockdownCheck(__instance, DamageInfoStruct, bodyPartType, partHit, KE, hasArmArmor);
                 }
 
                 if (PluginConfig.EnableBallisticsLogging.Value)
                 {
                     Logger.LogWarning("==========Apply Damage Info=============== ");
-                    Logger.LogWarning("Damage " + damageInfo.Damage);
-                    Logger.LogWarning("Pen " + damageInfo.PenetrationPower);
+                    Logger.LogWarning("Damage " + DamageInfoStruct.Damage);
+                    Logger.LogWarning("Pen " + DamageInfoStruct.PenetrationPower);
                     Logger.LogWarning("========================= ");
                 }
 
@@ -662,21 +662,21 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(ArmorComponent __instance, ref DamageInfo damageInfo, ref float __result, EBodyPartColliderType colliderType, EArmorPlateCollider armorPlateCollider, bool damageInfoIsLocal, List<ArmorComponent> armorComponents)
+        private static bool Prefix(ArmorComponent __instance, ref DamageInfoStruct DamageInfoStruct, ref float __result, EBodyPartColliderType colliderType, EArmorPlateCollider armorPlateCollider, bool DamageInfoStructIsLocal, List<ArmorComponent> armorComponents)
         {
             if (PluginConfig.EnableBallisticsLogging.Value)
             {
                 Logger.LogWarning("===========ARMOR DAMAGE BEFORE=============== ");
-                Logger.LogWarning("Pen " + damageInfo.PenetrationPower);
-                Logger.LogWarning("Damage " + damageInfo.Damage);
+                Logger.LogWarning("Pen " + DamageInfoStruct.PenetrationPower);
+                Logger.LogWarning("Damage " + DamageInfoStruct.Damage);
                 Logger.LogWarning("========================== ");
             }
 
-            EDamageType damageType = damageInfo.DamageType;
+            EDamageType damageType = DamageInfoStruct.DamageType;
             bool isHead = BallisticsController.ArmorHasSpecificColliders(__instance, BallisticsController.HeadCollidors);
             bool isSteelBodyArmor = __instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !isHead;
-            bool roundPenetrated = damageInfo.BlockedBy != __instance.Item.Id && damageInfo.DeflectedBy != __instance.Item.Id;
-            float startingDamage = damageInfo.Damage;
+            bool roundPenetrated = DamageInfoStruct.BlockedBy != __instance.Item.Id && DamageInfoStruct.DeflectedBy != __instance.Item.Id;
+            float startingDamage = DamageInfoStruct.Damage;
             float speedFactor = 1f;
             float armorDamageActual = 1f;
             float momentum = 1f;
@@ -687,10 +687,10 @@ namespace RealismMod
                 return false;
             }
 
-            Player player = (damageInfo.Player != null) ? Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(damageInfo.Player.iPlayer.ProfileId) : null;
+            Player player = (DamageInfoStruct.Player != null) ? Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(DamageInfoStruct.Player.iPlayer.ProfileId) : null;
             if (player != null)
             {
-                __instance.TryShatter(player, damageInfoIsLocal);
+                __instance.TryShatter(player, DamageInfoStructIsLocal);
             }
 
             if (__instance.Repairable.Durability <= 0f && !isSteelBodyArmor)
@@ -709,51 +709,51 @@ namespace RealismMod
             AmmoTemplate ammoTemp = null;
             if (damageType == EDamageType.Melee)
             {
-                Weapon weap = damageInfo.Weapon as Weapon;
-                bool isBayonet = !damageInfo.Player.IsAI && WeaponStats.HasBayonet && weap.WeapClass != "Knife" ? true : false;
-                armorDamageActual = damageInfo.ArmorDamage;
-                float meleeDamage = isBayonet ? damageInfo.Damage : damageInfo.Damage * 2f;
+                Weapon weap = DamageInfoStruct.Weapon as Weapon;
+                bool isBayonet = !DamageInfoStruct.Player.IsAI && WeaponStats.HasBayonet && weap.WeapClass != "Knife" ? true : false;
+                armorDamageActual = DamageInfoStruct.ArmorDamage;
+                float meleeDamage = isBayonet ? DamageInfoStruct.Damage : DamageInfoStruct.Damage * 2f;
                 momentum = meleeDamage * 100f;
             }
             else
             {
-                ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
+                ammoTemp = (AmmoTemplate)Singleton<ItemFactoryClass>.Instance.ItemTemplates[DamageInfoStruct.SourceId];
 
                 armorDamageActual = ammoTemp.ArmorDamage; // * speedFactor don't think facotring by speedFacotr is a good idea anymore, momentum being based on velocity is enough
-                if (damageInfo.ArmorDamage <= 1) //if damageinfo's armor damage is not equal to the velocity of the round, must be Fika
+                if (DamageInfoStruct.ArmorDamage <= 1) //if DamageInfoStruct's armor damage is not equal to the velocity of the round, must be Fika
                 {
                     momentum = ammoTemp.BulletMassGram * ammoTemp.InitialSpeed;
                 }
                 else 
                 {
-                    speedFactor = damageInfo.ArmorDamage / ammoTemp.InitialSpeed;
-                    momentum = ammoTemp.BulletMassGram * damageInfo.ArmorDamage;
+                    speedFactor = DamageInfoStruct.ArmorDamage / ammoTemp.InitialSpeed;
+                    momentum = ammoTemp.BulletMassGram * DamageInfoStruct.ArmorDamage;
                 }
             }
 
           
-            if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && PluginConfig.EnableHitSounds.Value && damageInfo.HittedBallisticCollider != null)
+            if (ammoTemp != null && ammoTemp.ProjectileCount <= 2 && PluginConfig.EnableHitSounds.Value && DamageInfoStruct.HittedBallisticCollider != null)
             {
                 bool isPlayer = __instance.Item.Owner.ID == Singleton<GameWorld>.Instance.MainPlayer.ProfileId;
                 if (!isPlayer) 
                 {
-                    if (damageInfo.DeflectedBy == __instance.Item.Id)
+                    if (DamageInfoStruct.DeflectedBy == __instance.Item.Id)
                     {
-                        playRicochetSound(damageInfo.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
+                        playRicochetSound(DamageInfoStruct.HittedBallisticCollider.transform.position, UnityEngine.Random.Range(0, 2));
                     }
                     else
                     {
-                        playArmorHitSound(__instance.Template.ArmorMaterial, damageInfo.HittedBallisticCollider.transform.position, isHead, UnityEngine.Random.Range(0, 2));
+                        playArmorHitSound(__instance.Template.ArmorMaterial, DamageInfoStruct.HittedBallisticCollider.transform.position, isHead, UnityEngine.Random.Range(0, 2));
                     }
                 }
             }
 
-            if (damageInfo.DeflectedBy == __instance.Item.Id)
+            if (DamageInfoStruct.DeflectedBy == __instance.Item.Id)
             {
                 momentum *= 0.25f;
                 armorDamageActual *= 0.25f;
-                damageInfo.ArmorDamage *= 0.25f;
-                damageInfo.PenetrationPower *= 0.25f;
+                DamageInfoStruct.ArmorDamage *= 0.25f;
+                DamageInfoStruct.PenetrationPower *= 0.25f;
             }
 
             float bluntThrput = __instance.Template.BluntThroughput;
@@ -766,7 +766,7 @@ namespace RealismMod
                 softArmorStatReduction = 0.7f;
             }
 
-            float penPower = damageInfo.PenetrationPower;
+            float penPower = DamageInfoStruct.PenetrationPower;
             float factoredPen = penPower / 1.8f;
             float momentumFactor = Mathf.Log10(momentum) / 5;
             float momentumDamageFactor = (Mathf.Exp(momentumFactor * 12)) / 100;
@@ -785,65 +785,65 @@ namespace RealismMod
             float totaldamage = 1f; 
             if (__instance.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel && !isHead)
             {
-                totaldamage = Mathf.Clamp(momentumDamageFactor * steelArmorFactorDamage * bluntThrput, 0.4f, damageInfo.Damage);
+                totaldamage = Mathf.Clamp(momentumDamageFactor * steelArmorFactorDamage * bluntThrput, 0.4f, DamageInfoStruct.Damage);
             }
             else
             {
-                totaldamage = Mathf.Clamp(momentumDamageFactor * armorFactorDamage * bluntThrput, 0.4f, damageInfo.Damage);
+                totaldamage = Mathf.Clamp(momentumDamageFactor * armorFactorDamage * bluntThrput, 0.4f, DamageInfoStruct.Damage);
             }
 
             float totalDuraLoss = momentumDamageFactor * armorDestructibility * armorDamageActual * armorFactorDura;
 
             if (damageType == EDamageType.Melee)
             {
-                if (damageInfo.PenetrationPower > __instance.ArmorClass * 100f * duraPercent)
+                if (DamageInfoStruct.PenetrationPower > __instance.ArmorClass * 100f * duraPercent)
                 {
                     if (PluginConfig.EnableBallisticsLogging.Value) Logger.LogWarning("Melee Penetrated");
-                    damageInfo.Damage *= 0.75f;
-                    damageInfo.PenetrationPower *= 0.75f * softArmorStatReduction;
+                    DamageInfoStruct.Damage *= 0.75f;
+                    DamageInfoStruct.PenetrationPower *= 0.75f * softArmorStatReduction;
                 }
                 else
                 {
                     if (PluginConfig.EnableBallisticsLogging.Value) Logger.LogWarning("Melee Blocked");
-                    if (!isHead) damageInfo.Damage = totaldamage + (damageInfo.Damage / 10f);
-                    else damageInfo.Damage = totaldamage;
-                    damageInfo.HeavyBleedingDelta = 0f;
-                    damageInfo.LightBleedingDelta = 0f;
+                    if (!isHead) DamageInfoStruct.Damage = totaldamage + (DamageInfoStruct.Damage / 10f);
+                    else DamageInfoStruct.Damage = totaldamage;
+                    DamageInfoStruct.HeavyBleedingDelta = 0f;
+                    DamageInfoStruct.LightBleedingDelta = 0f;
                 }
             }
             else if (roundPenetrated)
             {
                 if (armorPlateCollider != (EArmorPlateCollider)0)
                 {
-                    damageInfo.Damage = 0f;
+                    DamageInfoStruct.Damage = 0f;
                 }
 
                 float actualDurability = Mathf.Max(__instance.Repairable.Durability - totalDuraLoss, 1);
-                BallisticsController.CalcAfterPenStats(actualDurability, __instance.ArmorClass, __instance.Repairable.TemplateDurability, ref damageInfo.Damage, ref damageInfo.PenetrationPower, softArmorStatReduction);
+                BallisticsController.CalcAfterPenStats(actualDurability, __instance.ArmorClass, __instance.Repairable.TemplateDurability, ref DamageInfoStruct.Damage, ref DamageInfoStruct.PenetrationPower, softArmorStatReduction);
             }
             else
             {
-                damageInfo.Damage = totaldamage;
+                DamageInfoStruct.Damage = totaldamage;
             }
 
             if (!roundPenetrated)
             {
-                damageInfo.HeavyBleedingDelta = 0f;
-                damageInfo.LightBleedingDelta = 0f;
+                DamageInfoStruct.HeavyBleedingDelta = 0f;
+                DamageInfoStruct.LightBleedingDelta = 0f;
             }
 
-            damageInfo.StaminaBurnRate = (totaldamage / 100f) * 2f;
+            DamageInfoStruct.StaminaBurnRate = (totaldamage / 100f) * 2f;
             totalDuraLoss = Math.Max(totalDuraLoss * PluginConfig.ArmorDurabilityModifier.Value, 0.1f);
             __instance.ApplyDurabilityDamage(totalDuraLoss, armorComponents);
             __result = totalDuraLoss;
-            damageInfo.Damage = Mathf.Min(damageInfo.Damage, startingDamage);
+            DamageInfoStruct.Damage = Mathf.Min(DamageInfoStruct.Damage, startingDamage);
 
             if (PluginConfig.EnableBallisticsLogging.Value)
             {
                 Logger.LogWarning("===========ARMOR DAMAGE AFTER=============== ");
                 Logger.LogWarning("Momentum " + momentum);
                 Logger.LogWarning("Momentum Factor " + momentumDamageFactor);
-                Logger.LogWarning("Pen " + damageInfo.PenetrationPower);
+                Logger.LogWarning("Pen " + DamageInfoStruct.PenetrationPower);
                 Logger.LogWarning("Armor Damage " + armorDamageActual);
                 Logger.LogWarning("Speed Factor " + speedFactor);
                 Logger.LogWarning("Class " + __instance.ArmorClass);
@@ -854,7 +854,7 @@ namespace RealismMod
                 Logger.LogWarning("armor Factor Damage = " + armorFactorDamage);
                 Logger.LogWarning("armor Factor Dura = " + armorFactorDura);
                 Logger.LogWarning("Durability Loss " + totalDuraLoss);
-                Logger.LogWarning("Damage " + damageInfo.Damage);
+                Logger.LogWarning("Damage " + DamageInfoStruct.Damage);
                 Logger.LogWarning("========================== ");
             }
             ammoTemp = null;
@@ -871,7 +871,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, string player, Item weapon, ref EftBulletClass __result, float speedFactor, int fragmentIndex = 0)
+        private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, AmmoItemClass ammo, Vector3 origin, Vector3 direction, int fireIndex, string player, Item weapon, ref EftBulletClass __result, float speedFactor, int fragmentIndex = 0)
         {
             float speedFactorDamage = speedFactor > 1f ? Mathf.Pow(speedFactor, 4f) : speedFactor;
             float speedFactorPenetration = speedFactor > 1f ? Mathf.Pow(speedFactor, 3f) : speedFactor < 1f ? Mathf.Pow(speedFactor, 0.45f) : speedFactor;
@@ -906,7 +906,7 @@ namespace RealismMod
 
         protected override MethodBase GetTargetMethod()
         {
-            lastDamField = AccessTools.Field(typeof(Player), "LastDamageInfo");
+            lastDamField = AccessTools.Field(typeof(Player), "LastDamageInfoStruct");
             corpseField = AccessTools.Field(typeof(Player), "Corpse");
             corpseAppliedForceField = AccessTools.Field(typeof(Player), "_corpseAppliedForce");
 
@@ -916,14 +916,14 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Player __instance)
         {
-            DamageInfo lastDam = (DamageInfo)lastDamField.GetValue(__instance);
+            DamageInfoStruct lastDam = (DamageInfoStruct)lastDamField.GetValue(__instance);
             Corpse corpse = (Corpse)corpseField.GetValue(__instance);
 
             float force;
             if (lastDam.DamageType == EDamageType.Bullet)
             {
-                AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[lastDam.SourceId];
-                BulletClass ammo = new BulletClass(Utils.GenId(), ammoTemp);
+                AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactoryClass>.Instance.ItemTemplates[lastDam.SourceId];
+                AmmoItemClass ammo = new AmmoItemClass(Utils.GenId(), ammoTemp);
                 float KE = ((0.5f * ammo.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
                 force = (-Mathf.Max(1f, KE / 1000f)) * PluginConfig.RagdollForceModifier.Value;
                 ammo = null;

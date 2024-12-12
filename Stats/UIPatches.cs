@@ -24,7 +24,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(ArmorComponent.Class1963).GetMethod("method_3", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(ArmorComponent.Class2118).GetMethod("method_3", BindingFlags.Instance | BindingFlags.Public);
         }
 
         private static string GetItemClass(CompositeArmorComponent x)
@@ -33,7 +33,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool PatchPrefix(ArmorComponent.Class1963 __instance, ref string __result)
+        private static bool PatchPrefix(ArmorComponent.Class2118 __instance, ref string __result)
         {
             CompositeArmorComponent[] array = __instance.item.GetItemComponentsInChildren<CompositeArmorComponent>(true).ToArray<CompositeArmorComponent>();
 
@@ -85,26 +85,26 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass3115).GetConstructor(new Type[] { typeof(float) });
+            return typeof(GClass3485).GetConstructor(new Type[] { typeof(float) });
         }
 
         private static string GetStringValues(int armorClass, float penetrationPower)
         {
-            float penetrationChance = GClass566.RealResistance(100f, 100f, armorClass, penetrationPower).GetPenetrationChance(penetrationPower);
+            float penetrationChance = GClass623.RealResistance(100f, 100f, armorClass, penetrationPower).GetPenetrationChance(penetrationPower);
             string armorClassString = armorClass >= 10 ? "Lvl " + armorClass + " " : "Lvl " + armorClass + " "; //string.Format("<sprite name=\"armor_classes_{0}\"> ", armorClass)
-            return armorClassString + GClass3115.smethod_0(penetrationChance);
+            return armorClassString + GClass3485.smethod_0(penetrationChance);
         }
 
 
         [PatchPostfix]
-        private static void PatchPrefix(GClass3115 __instance, float penetrationPower)
+        private static void PatchPrefix(GClass3485 __instance, float penetrationPower)
         {
-            List<GClass3114> list = new List<GClass3114>();
+            List<GClass3114> list = new List<GClass3114>(); // not enough info to find this class currently
             for (int i = 1; i <= 10; i++)
             {
                 list.Add(new GClass3114(GetStringValues(i, penetrationPower), null));
             }
-            AccessTools.Field(typeof(GClass3115), "Lines").SetValue(__instance, list.ToArray());
+            AccessTools.Field(typeof(GClass3485), "Lines").SetValue(__instance, list.ToArray());
         }
     }
 
@@ -280,7 +280,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(MagazineClass).GetMethod("method_40", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(MagazineItemClass).GetMethod("method_40", BindingFlags.Instance | BindingFlags.Public);
         }
 
         private static string[] malfChancesKeys = new string[]
@@ -294,7 +294,7 @@ namespace RealismMod
         };
 
         [PatchPrefix]
-        private static bool Prefix(MagazineClass __instance, ref string __result)
+        private static bool Prefix(MagazineItemClass __instance, ref string __result)
         {
             float malfChance = __instance.MalfunctionChance;
             string text = "";
@@ -410,11 +410,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(BarrelModClass).GetConstructor(new Type[] { typeof(string), typeof(BarrelTemplateClass) });
+            return typeof(BarrelItemClass).GetConstructor(new Type[] { typeof(string), typeof(BarrelTemplateClass) });
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(BarrelModClass __instance, BarrelTemplateClass template)
+        private static void PatchPostfix(BarrelItemClass __instance, BarrelTemplateClass template)
         {
             float shotDisp = (template.ShotgunDispersion - 1f) * 100f;
 
@@ -525,12 +525,12 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(BarrelModClass).GetMethod("get_CenterOfImpactMOA", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(BarrelItemClass).GetMethod("get_CenterOfImpactMOA", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
         [PatchPrefix]
-        private static bool Prefix(BarrelModClass __instance, ref float __result)
+        private static bool Prefix(BarrelItemClass __instance, ref float __result)
         {
             BarrelComponent itemComponent = __instance.GetItemComponent<BarrelComponent>();
             if (itemComponent == null) __result = 0f;
@@ -803,7 +803,7 @@ namespace RealismMod
 
         public static void DisplayDelta(Weapon __instance)
         {
-            bool isChonker = __instance.IsBeltMachineGun || __instance.GetSingleItemTotalWeight() > 10f;
+            bool isChonker = __instance.IsBeltMachineGun || __instance.Weight > 10f;
 
             float baseCOI = __instance.CenterOfImpactBase;
             float currentCOI = baseCOI;
@@ -860,7 +860,7 @@ namespace RealismMod
                 float modWeight = mod.Weight;
                 if (Utils.IsMagazine(mod))
                 {
-                    modWeight = mod.GetSingleItemTotalWeight();
+                    modWeight = mod.Weight;
                 }
                 float modWeightFactored = StatCalc.FactoredWeight(modWeight);
                 float modErgo = mod.Ergonomics;

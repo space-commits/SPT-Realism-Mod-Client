@@ -55,7 +55,7 @@ namespace RealismMod
             Destroy(this.gameObject);
         }
 
-        public void OnHit(DamageInfo di)
+        public void OnHit(DamageInfoStruct di)
         {
             StartCoroutine(HandleHitAsync());
         }

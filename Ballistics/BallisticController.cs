@@ -47,7 +47,7 @@ namespace RealismMod
             penetration *= penReductionFactor;
         }
 
-        public static void ModifyDamageByHitZone(EBodyPartColliderType hitPart, EBodyHitZone hitZone, ref DamageInfo di)
+        public static void ModifyDamageByHitZone(EBodyPartColliderType hitPart, EBodyHitZone hitZone, ref DamageInfoStruct di)
         {
             switch (hitZone) 
             {
@@ -206,13 +206,13 @@ namespace RealismMod
             Singleton<BetterAudio>.Instance.PlayAtPoint(pos, Plugin.HitAudioClips[audioClip], dist, BetterAudio.AudioSourceGroupType.Impacts, 100, dist >= distThreshold ? volDist : volClose, EOcclusionTest.Regular);
         }
 
-        public static EBodyHitZone GetBodyHitZone(Player player, EBodyPartColliderType partHit, DamageInfo damageInfo)
+        public static EBodyHitZone GetBodyHitZone(Player player, EBodyPartColliderType partHit, DamageInfoStruct DamageInfoStruct)
         {
             EBodyHitZone hitZone = EBodyHitZone.Unknown;
             if (partHit == EBodyPartColliderType.RibcageUp || partHit == EBodyPartColliderType.RibcageLow || partHit == EBodyPartColliderType.SpineDown || partHit == EBodyPartColliderType.SpineTop)
             {
-                Collider col = damageInfo.HitCollider;
-                if (damageInfo.HitCollider == null) //fika can't send objects as part of peckets, need to find matching collider by checking collider type
+                Collider col = DamageInfoStruct.HitCollider;
+                if (DamageInfoStruct.HitCollider == null) //fika can't send objects as part of peckets, need to find matching collider by checking collider type
                 {
                     List<Collider> collidors = player.GetComponent<PlayerPoolObject>().Colliders;
                     if (collidors == null || collidors.Count <= 0) return hitZone;
@@ -232,8 +232,8 @@ namespace RealismMod
                     if (col == null) return hitZone;
                 }
 
-                Vector3 localPoint = col.transform.InverseTransformPoint(damageInfo.HitPoint);
-                Vector3 hitNormal = damageInfo.HitNormal;
+                Vector3 localPoint = col.transform.InverseTransformPoint(DamageInfoStruct.HitPoint);
+                Vector3 hitNormal = DamageInfoStruct.HitNormal;
                 EHitOrientation hitOrientation = HitZones.GetHitOrientation(hitNormal, col.transform);
                 hitZone = HitZones.GetHitBodyZone(localPoint, hitOrientation, partHit);
                 if (PluginConfig.EnableBallisticsLogging.Value)
@@ -242,7 +242,7 @@ namespace RealismMod
                     Utils.Logger.LogWarning("hit collider = " + partHit);
                     Utils.Logger.LogWarning("hit orientation = " + hitOrientation);
                     Utils.Logger.LogWarning("hit zone = " + hitZone);
-                    Utils.Logger.LogWarning("damage before = " + damageInfo.Damage);
+                    Utils.Logger.LogWarning("damage before = " + DamageInfoStruct.Damage);
                     Utils.Logger.LogWarning("x = " + localPoint.x);
                     Utils.Logger.LogWarning("y = " + localPoint.y);
                     Utils.Logger.LogWarning("z = " + localPoint.z);
@@ -252,19 +252,19 @@ namespace RealismMod
             return hitZone;
         }
 
-        public static void ModifyDamageByZone(Player player, ref DamageInfo damageInfo, EBodyPartColliderType partHit)
+        public static void ModifyDamageByZone(Player player, ref DamageInfoStruct DamageInfoStruct, EBodyPartColliderType partHit)
         {
-            if (!damageInfo.Blunt || string.IsNullOrEmpty(damageInfo.BlockedBy))
+            if (!DamageInfoStruct.Blunt || string.IsNullOrEmpty(DamageInfoStruct.BlockedBy))
             {
-                EBodyHitZone hitZone = GetBodyHitZone(player, partHit, damageInfo);
-                BallisticsController.ModifyDamageByHitZone(partHit, hitZone, ref damageInfo);
+                EBodyHitZone hitZone = GetBodyHitZone(player, partHit, DamageInfoStruct);
+                BallisticsController.ModifyDamageByHitZone(partHit, hitZone, ref DamageInfoStruct);
             }
         }
 
 
-        public static bool ShouldDoSpalling(AmmoTemplate ammoTemp, DamageInfo damageInfo, EBodyPart bodyPartType)
+        public static bool ShouldDoSpalling(AmmoTemplate ammoTemp, DamageInfoStruct DamageInfoStruct, EBodyPart bodyPartType)
         {
-            if (ammoTemp == null || damageInfo.DamageType == EDamageType.Melee || !damageInfo.Blunt || (bodyPartType != EBodyPart.Chest && bodyPartType != EBodyPart.Stomach)) return false;
+            if (ammoTemp == null || DamageInfoStruct.DamageType == EDamageType.Melee || !DamageInfoStruct.Blunt || (bodyPartType != EBodyPart.Chest && bodyPartType != EBodyPart.Stomach)) return false;
             if (ammoTemp.ProjectileCount > 2)
             {
                 int rndNum = UnityEngine.Random.Range(1, 10);
@@ -276,25 +276,25 @@ namespace RealismMod
             return true;
         }
 
-        public static void GetKineticEnergy(DamageInfo damageInfo, ref AmmoTemplate ammoTemp, ref float KE)
+        public static void GetKineticEnergy(DamageInfoStruct DamageInfoStruct, ref AmmoTemplate ammoTemp, ref float KE)
         {
-            if (damageInfo.DamageType == EDamageType.Melee)
+            if (DamageInfoStruct.DamageType == EDamageType.Melee)
             {
-                Weapon weap = damageInfo.Weapon as Weapon;
-                bool isBayonet = !damageInfo.Player.IsAI && WeaponStats.HasBayonet && weap.WeapClass != "Knife" ? true : false;
-                float meleeDamage = isBayonet ? damageInfo.Damage : damageInfo.Damage * 2f;
+                Weapon weap = DamageInfoStruct.Weapon as Weapon;
+                bool isBayonet = !DamageInfoStruct.Player.IsAI && WeaponStats.HasBayonet && weap.WeapClass != "Knife" ? true : false;
+                float meleeDamage = isBayonet ? DamageInfoStruct.Damage : DamageInfoStruct.Damage * 2f;
                 KE = meleeDamage * 50f;
             }
             else
             {
-                ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
-                if (damageInfo.ArmorDamage <= 1)
+                ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[DamageInfoStruct.SourceId];
+                if (DamageInfoStruct.ArmorDamage <= 1)
                 {
                     KE = (0.5f * ammoTemp.BulletMassGram * ammoTemp.InitialSpeed * ammoTemp.InitialSpeed) / 1000f;
                 }
                 else
                 {
-                    KE = (0.5f * ammoTemp.BulletMassGram * damageInfo.ArmorDamage * damageInfo.ArmorDamage) / 1000f;
+                    KE = (0.5f * ammoTemp.BulletMassGram * DamageInfoStruct.ArmorDamage * DamageInfoStruct.ArmorDamage) / 1000f;
                 }
             }
         }
@@ -332,14 +332,14 @@ namespace RealismMod
             return armorCount;
         }
 
-        public static void GetArmorComponents(Player player, DamageInfo damageInfo, EBodyPart bodyPartType, ref ArmorComponent armor, ref int faceProtectionCount, ref bool doSpalling, ref bool hasArmArmor, ref bool hasLegProtection)
+        public static void GetArmorComponents(Player player, DamageInfoStruct DamageInfoStruct, EBodyPart bodyPartType, ref ArmorComponent armor, ref int faceProtectionCount, ref bool doSpalling, ref bool hasArmArmor, ref bool hasLegProtection)
         {
             preAllocatedArmorComponents.Clear();
             player.Inventory.GetPutOnArmorsNonAlloc(preAllocatedArmorComponents);
 
             foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
             {
-                if ((armorComponent.Item.Id == damageInfo.BlockedBy || armorComponent.Item.Id == damageInfo.DeflectedBy))
+                if ((armorComponent.Item.Id == DamageInfoStruct.BlockedBy || armorComponent.Item.Id == DamageInfoStruct.DeflectedBy))
                 {
                     armor = armorComponent;
                     if (!doSpalling && bodyPartType != EBodyPart.LeftArm && bodyPartType != EBodyPart.RightArm) break;
@@ -359,19 +359,19 @@ namespace RealismMod
             preAllocatedArmorComponents.Clear();
         }
 
-        public static void CalculatSpalling(Player player, ref DamageInfo damageInfo, float KE, ArmorComponent armor, AmmoTemplate ammoTemp, int faceProtectionCount, bool hasArmArmor, bool hasLegProtection)
+        public static void CalculatSpalling(Player player, ref DamageInfoStruct DamageInfoStruct, float KE, ArmorComponent armor, AmmoTemplate ammoTemp, int faceProtectionCount, bool hasArmArmor, bool hasLegProtection)
         {
-            damageInfo.BleedBlock = false;
+            DamageInfoStruct.BleedBlock = false;
             bool isMetalArmor = armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel || armor.Template.ArmorMaterial == EArmorMaterial.Titan ? true : false;
-            float bluntDamage = damageInfo.Damage;
-            float speedFactor = damageInfo.ArmorDamage / ammoTemp.InitialSpeed;
+            float bluntDamage = DamageInfoStruct.Damage;
+            float speedFactor = DamageInfoStruct.ArmorDamage / ammoTemp.InitialSpeed;
             float fragChance = ammoTemp.FragmentationChance * speedFactor;
-            float lightBleedChance = damageInfo.LightBleedingDelta;
-            float heavyBleedChance = damageInfo.HeavyBleedingDelta;
+            float lightBleedChance = DamageInfoStruct.LightBleedingDelta;
+            float heavyBleedChance = DamageInfoStruct.HeavyBleedingDelta;
             float ricochetChance = ammoTemp.RicochetChance * speedFactor;
             float spallReduction = GearStats.SpallReduction(armor.Item);
             float armorDamageActual = ammoTemp.ArmorDamage * speedFactor;
-            float penPower = damageInfo.PenetrationPower;
+            float penPower = DamageInfoStruct.PenetrationPower;
 
             //need to redo this: for non-steel, higher pen should mean lower spall damage. I'm also sort of taking durability into account twice
             //ideally should use momentum instead too?
@@ -435,9 +435,9 @@ namespace RealismMod
                     Utils.Logger.LogWarning("Damage " + damage);
                     Utils.Logger.LogWarning("=== ");
                 }
-                damageInfo.HeavyBleedingDelta = heavyBleedChance * bleedFactor;
-                damageInfo.LightBleedingDelta = lightBleedChance * bleedFactor;
-                player.ActiveHealthController.ApplyDamage(part, damage, damageInfo);
+                DamageInfoStruct.HeavyBleedingDelta = heavyBleedChance * bleedFactor;
+                DamageInfoStruct.LightBleedingDelta = lightBleedChance * bleedFactor;
+                player.ActiveHealthController.ApplyDamage(part, damage, DamageInfoStruct);
             }
         }
 

@@ -8,21 +8,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using ContusionInterface = GInterface270;
-using DamageTypeClass = GClass2470; //this.ApplyDamage(EBodyPart.LeftLeg
-using DehydrationInterface = GInterface261;
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2429; //ManualEffectUpdate
-using EffectsDictionary = GClass2477.GClass2478;
-using ExhaustionInterface = GInterface262;
-using FractureInterface = GInterface260;
-using HeavyBleedingInterface = GInterface258;
-using IntoxicationInterface = GInterface264;
-using LethalToxinInterface = GInterface265;
-using LightBleedingInterface = GInterface257;
-using MedUiString = GClass1244;
-using PainKillerInterface = GInterface275;
-using TremorInterface = GInterface278;
-using TunnelVisionInterface = GInterface280;
+using ContusionInterface = GInterface314;
+using DamageTypeClass = GClass2788; //this.ApplyDamage(EBodyPart.LeftLeg
+using DehydrationInterface = GInterface305;
+using EffectClass = HealthControllerClass.GClass2752; //ManualEffectUpdate
+using EffectsDictionary = GClass2795; // Not super confident on this being right
+using ExhaustionInterface = GInterface306;
+using FractureInterface = GInterface304;
+using HeavyBleedingInterface = GInterface302;
+using IntoxicationInterface = GInterface297;
+using LethalToxinInterface = GInterface309;
+using LightBleedingInterface = GInterface301;
+using MedUiString = GClass1352;
+using PainKillerInterface = GInterface320;
+using TremorInterface = GInterface323;
+using TunnelVisionInterface = GInterface325;
+using LootItemClass = GClass2981;
 
 namespace RealismMod
 {
@@ -755,8 +756,8 @@ namespace RealismMod
 
         private void AddStimDebuffs(Player player, string debuffId)
         {
-            MedsClass placeHolderItem = (MedsClass)Singleton<ItemFactory>.Instance.CreateItem(Utils.GenId(), debuffId, null);
-            placeHolderItem.CurrentAddress = player.InventoryControllerClass.FindQuestGridToPickUp(placeHolderItem); //item needs an address to be valid, this is a hacky workaround
+            MedsItemClass placeHolderItem = (MedsItemClass)Singleton<ItemFactoryClass>.Instance.CreateItem(Utils.GenId(), debuffId, null);
+            placeHolderItem.CurrentAddress = player.InventoryController.FindQuestGridToPickUp(placeHolderItem); //item needs an address to be valid, this is a hacky workaround
             player.ActiveHealthController.DoMedEffect(placeHolderItem, EBodyPart.Head, null);
 
             if (PluginConfig.EnableLogging.Value)
@@ -1069,8 +1070,8 @@ namespace RealismMod
 
             if (player.MovementContext.StationaryWeapon == null && !player.HandsController.IsPlacingBeacon() && !player.HandsController.IsInInteractionStrictCheck() && player.CurrentStateName != EPlayerState.BreachDoor && !player.IsSprintEnabled)
             {
-                InventoryControllerClass inventoryController = (InventoryControllerClass)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
-                EquipmentClass equipment = player.Equipment;
+                InventoryController inventoryController = (InventoryController)AccessTools.Field(typeof(Player), "_inventoryController").GetValue(player);
+                InventoryEquipment equipment = player.Equipment;
 
                 List<Item> gear = new List<Item>();
                 List<EquipmentSlot> slots = new List<EquipmentSlot>();
@@ -1117,7 +1118,7 @@ namespace RealismMod
             }
         }
 
-        public bool MouthIsBlocked(Item head, Item face, EquipmentClass equipment)
+        public bool MouthIsBlocked(Item head, Item face, InventoryEquipment equipment)
         {
             bool faceGearBlocksMouth = false;
             bool headGearBlocksMouth = false;
@@ -1195,7 +1196,7 @@ namespace RealismMod
 
         public void CanConsume(Player player, Item item, ref bool canUse)
         {
-            EquipmentClass equipment = player.Equipment;
+            InventoryEquipment equipment = player.Equipment;
             Item face = equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
             Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
 
@@ -1265,7 +1266,7 @@ namespace RealismMod
             }
         }
 
-        private void HandleHeavyBleedHeal(string medType, MedsClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool isNotLimb, float vitalitySkill, float regenTickRate)
+        private void HandleHeavyBleedHeal(string medType, MedsItemClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool isNotLimb, float vitalitySkill, float regenTickRate)
         {
             int delay = (int)meds.HealthEffectsComponent.UseTime;
 
@@ -1292,7 +1293,7 @@ namespace RealismMod
             DmgeTracker.TotalHeavyBleedDamage = Mathf.Max(DmgeTracker.TotalHeavyBleedDamage - hpToRestore, 0f);
         }
 
-        private void HandleLightBleedHeal(string medType, MedsClass meds, EBodyPart bodyPart, Player player, bool isNotLimb, float vitalitySkill, float regenTickRate)
+        private void HandleLightBleedHeal(string medType, MedsItemClass meds, EBodyPart bodyPart, Player player, bool isNotLimb, float vitalitySkill, float regenTickRate)
         {
             int delay = (int)meds.HealthEffectsComponent.UseTime;
 
@@ -1319,7 +1320,7 @@ namespace RealismMod
             DmgeTracker.TotalLightBleedDamage = Mathf.Max(DmgeTracker.TotalLightBleedDamage - hpToRestore, 0f);
         }
 
-        private void HandleSurgery(string medType, MedsClass meds, EBodyPart bodyPart, Player player, float surgerySkill)
+        private void HandleSurgery(string medType, MedsItemClass meds, EBodyPart bodyPart, Player player, float surgerySkill)
         {
             int delay = (int)meds.HealthEffectsComponent.UseTime;
             float regenLimitFactor = 0.5f * (1f + surgerySkill);
@@ -1328,7 +1329,7 @@ namespace RealismMod
             AddCustomEffect(surg, false);
         }
 
-        private void HandleSplint(MedsClass meds, float regenTickRate, EBodyPart bodyPart, Player player)
+        private void HandleSplint(MedsItemClass meds, float regenTickRate, EBodyPart bodyPart, Player player)
         {
             if (player.HealthController.GetBodyPartHealth(bodyPart).Current <= 0f) return;
             if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Fracture On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
@@ -1337,7 +1338,7 @@ namespace RealismMod
             AddCustomEffect(regenEffect, false);
         }
 
-        public void HandleHealthEffects(string medType, MedsClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool canHealHBleed, bool canHealLBleed, bool canHealFract)
+        public void HandleHealthEffects(string medType, MedsItemClass meds, EBodyPart bodyPart, Player player, string hBleedHealType, bool canHealHBleed, bool canHealLBleed, bool canHealFract)
         {
             float vitalitySkill = player.Skills.VitalityBuffBleedChanceRed.Value;
             float surgerySkill = player.Skills.SurgeryReducePenalty.Value;
@@ -1392,14 +1393,14 @@ namespace RealismMod
             if (HazardTracker.TotalToxicity <= 0) return;
 
             MedUiString details = null;
-            if (isMed && item as MedsClass != null)
+            if (isMed && item as MedsItemClass != null)
             {
-                MedsClass med = item as MedsClass;
+                MedsItemClass med = item as MedsItemClass;
                 details = med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? med.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
             }
-            if (!isMed && item as FoodClass != null)
+            if (!isMed && item as FoodItemClass != null)
             {
-                FoodClass food = item as FoodClass;
+                FoodItemClass food = item as FoodItemClass;
                 details = food.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? food.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
             }
 
@@ -1414,7 +1415,7 @@ namespace RealismMod
                 //doesn't work :(
                 /*       if (isMed)
                        {
-                           var med = item as MedsClass;
+                           var med = item as MedsItemClass;
                            med.MedKitComponent.HpResource -= 1f;
                            med.MedKitComponent.Item.RaiseRefreshEvent(false, true);
                        }*/
@@ -1426,15 +1427,15 @@ namespace RealismMod
         {
             MedUiString detoxDetails = null;
             MedUiString deradDetails = null;
-            if (isMed && item as MedsClass != null)
+            if (isMed && item as MedsItemClass != null)
             {
-                MedsClass med = item as MedsClass;
+                MedsItemClass med = item as MedsItemClass;
                 detoxDetails = med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? med.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
                 deradDetails = med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.RadExposure) ? med.HealthEffectsComponent.DamageEffects[EDamageEffectType.RadExposure] : null;
             }
-            if (!isMed && item as FoodClass != null)
+            if (!isMed && item as FoodItemClass != null)
             {
-                FoodClass food = item as FoodClass;
+                FoodItemClass food = item as FoodItemClass;
                 detoxDetails = food.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? food.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
                 deradDetails = food.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.RadExposure) ? food.HealthEffectsComponent.DamageEffects[EDamageEffectType.RadExposure] : null;
             }
@@ -1484,7 +1485,7 @@ namespace RealismMod
             }
         }
 
-        public void CanUseMedItemCommon(MedsClass meds, Player player, ref EBodyPart bodyPart, ref bool shouldAllowHeal)
+        public void CanUseMedItemCommon(MedsItemClass meds, Player player, ref EBodyPart bodyPart, ref bool shouldAllowHeal)
         {
             CheckIfReducesHazardInRaid(meds, player, true); //the types of item that can reduce toxicity and radiation can't be blocked so should be fine
 
@@ -1531,7 +1532,7 @@ namespace RealismMod
             if (bodyPart == EBodyPart.Common)
             {
                 int gearBlockedHealCount = 0;
-                EquipmentClass equipment = (EquipmentClass)AccessTools.Property(typeof(Player), "Equipment").GetValue(player);
+                InventoryEquipment equipment = (InventoryEquipment)AccessTools.Property(typeof(Player), "Equipment").GetValue(player);
                 Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
                 Item ears = equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem;
                 Item glasses = equipment.GetSlot(EquipmentSlot.Eyewear).ContainedItem;
@@ -1739,8 +1740,8 @@ namespace RealismMod
                 return;
             }
 
-            MedsClass med = item as MedsClass;
-            EquipmentClass equipment = player.Equipment;
+            MedsItemClass med = item as MedsItemClass;
+            Inven equipment = player.Equipment;
 
             Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
             Item ears = equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem;

@@ -2,8 +2,8 @@
 using EFT;
 using EFT.UI;
 using UnityEngine;
-using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2429;
-using ExistanceClass = GClass2470;
+using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2746;
+using ExistanceClass = GClass2788;
 using InterfaceOne = GInterface252;
 using InterfaceTwo = GInterface267;
 
@@ -790,7 +790,7 @@ namespace RealismMod
         }
     }
 
-    public class HealthDrain : EffectClass, IEffect, InterfaceOne, InterfaceTwo
+    public class HealthDrain : EffectClass, IEffect
     {
         private float _hpPerTick;
         private float _time;
@@ -819,7 +819,7 @@ namespace RealismMod
     }
 
 
-    public class HealthChange : EffectClass, IEffect, InterfaceOne, InterfaceTwo
+    public class HealthChange : EffectClass, IEffect
     {
         private float _hpPerTick;
         private float _time;
@@ -851,7 +851,7 @@ namespace RealismMod
         }
     }
 
-    public class RadiationDamage : EffectClass, IEffect, InterfaceOne, InterfaceTwo
+    public class RadiationDamage : EffectClass, IEffect
     {
         private float _hpPerTick;
         private float _time;
@@ -883,7 +883,7 @@ namespace RealismMod
         }
     }
 
-    public class ToxicityDamage : EffectClass, IEffect, InterfaceOne, InterfaceTwo
+    public class ToxicityDamage : EffectClass, IEffect
     {
         private float _hpPerTick;
         private float _time;
@@ -915,7 +915,7 @@ namespace RealismMod
         }
     }
 
-    public class ResourceRateDrain : EffectClass, IEffect, InterfaceOne, InterfaceTwo
+    public class ResourceRateDrain : EffectClass, IEffect
     {
         private float _resourcePerTick;
         private float _time;
