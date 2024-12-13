@@ -1489,7 +1489,7 @@ namespace RealismMod
         {
             CheckIfReducesHazardInRaid(meds, player, true); //the types of item that can reduce toxicity and radiation can't be blocked so should be fine
 
-            if (meds.Template._parent == "5448f3a64bdc2d60728b456a")
+            if (meds.Template.ParentId == "5448f3a64bdc2d60728b456a")
             {
                 int duration = (int)meds.HealthEffectsComponent.BuffSettings[0].Duration * 2;
                 int delay = Mathf.Max((int)meds.HealthEffectsComponent.BuffSettings[0].Delay, 5);
@@ -1741,7 +1741,7 @@ namespace RealismMod
             }
 
             MedsItemClass med = item as MedsItemClass;
-            Inven equipment = player.Equipment;
+            InventoryEquipment equipment = player.Equipment;
 
             Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
             Item ears = equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem;

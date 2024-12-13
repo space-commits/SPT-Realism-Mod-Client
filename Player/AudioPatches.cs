@@ -309,12 +309,12 @@ namespace RealismMod
             __instance.Master.GetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, out mainT);
             __instance.Master.SetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, gunT);
             __instance.Master.SetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, mainT);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorMixerVolume, hasHeadset ? template.CompressorGain : -80f);
-            __instance.Master.SetFloat(__instance.AudioMixerData.OcclusionMixerVolume, hasHeadset ? template.DryVolume : 0f); // TODO Most of this no longer exists
-            __instance.Master.SetFloat(__instance.AudioMixerData.EnvironmentMixerVolume, hasHeadset ? template.DryVolume : 0f);
-            __instance.Master.SetFloat(__instance.AudioMixerData.AmbientMixerVolume, hasHeadset ? template.AmbientVolume : 0f);
-            __instance.Master.SetFloat(__instance.AudioMixerData.AmbientMixerOcclusionSendLevel, hasHeadset ? (template.AmbientVolume - 15f) : -5f);
-            __instance.Master.SetFloat(__instance.AudioMixerData.ReverbMixerVolume, hasHeadset ? template.ReverbVolume : -20f);
+            //__instance.Master.SetFloat(__instance.AudioMixerData.CompressorMixerVolume, hasHeadset ? template.CompressorGain : -80f);
+            //__instance.Master.SetFloat(__instance.AudioMixerData.OcclusionMixerVolume, hasHeadset ? template.DryVolume : 0f); // TODO Most of this no longer exists
+            //__instance.Master.SetFloat(__instance.AudioMixerData.EnvironmentMixerVolume, hasHeadset ? template.DryVolume : 0f);
+            //__instance.Master.SetFloat(__instance.AudioMixerData.AmbientMixerVolume, hasHeadset ? template.AmbientVolume : 0f);
+            //__instance.Master.SetFloat(__instance.AudioMixerData.AmbientMixerOcclusionSendLevel, hasHeadset ? (template.AmbientVolume - 15f) : -5f);
+            //__instance.Master.SetFloat(__instance.AudioMixerData.ReverbMixerVolume, hasHeadset ? template.ReverbVolume : -20f);
 
             volumeField.SetValue(__instance, (hasHeadset ? DeafeningController.DryVolume : 0f));
             float dryVolume = (float)volumeField.GetValue(__instance);
@@ -325,15 +325,15 @@ namespace RealismMod
                 return false;
             }
 
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorAttack, PluginConfig.HeadsetAttack.Value);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorGain, template.CompressorGain);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorRelease, template.CompressorRelease);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorThreshold, template.CompressorTreshold + PluginConfig.HeadsetThreshold.Value);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorDistortion, template.Distortion);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorResonance, template.HighpassResonance);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorCutoff, (float)template.CutoffFreq);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorLowpass, (float)template.LowpassFreq);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorHighFrequenciesGain, template.HighFrequenciesGain);
+            //__instance.Master.SetFloat(__instance.AudioMixerData.CompressorAttack, PluginConfig.HeadsetAttack.Value);
+            //__instance.Master.SetFloat(__instance.AudioMixerData.CompressorGain, template.CompressorGain);
+            //__instance.Master.SetFloat(__instance.AudioMixerData.CompressorRelease, template.CompressorRelease);
+            //__instance.Master.SetFloat(__instance.AudioMixerData.CompressorThreshold, template.CompressorTreshold + PluginConfig.HeadsetThreshold.Value);
+            //__instance.Master.SetFloat(__instance.AudioMixerData.CompressorDistortion, template.Distortion);
+            //__instance.Master.SetFloat(__instance.AudioMixerData.CompressorResonance, template.HighpassResonance);
+            //__instance.Master.SetFloat(__instance.AudioMixerData.CompressorCutoff, (float)template.CutoffFreq);
+            //__instance.Master.SetFloat(__instance.AudioMixerData.CompressorLowpass, (float)template.LowpassFreq);
+            //__instance.Master.SetFloat(__instance.AudioMixerData.CompressorHighFrequenciesGain, template.HighFrequenciesGain);
 
             return false;
         }

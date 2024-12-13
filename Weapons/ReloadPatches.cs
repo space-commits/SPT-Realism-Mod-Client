@@ -12,14 +12,13 @@ using System.Reflection;
 using System.Xml.Linq;
 using UnityEngine;
 using static EFT.Player;
-using ChamberWeaponClass = EFT.Player.FirearmController.GClass1637;
+using ChamberWeaponClass = EFT.Player.FirearmController.GClass1637; // no clue for these
 using ItemEventClass = GClass2783;
-using MagReloadClass = EFT.Player.FirearmController.GClass1621;
-using ReloadWeaponClass = EFT.Player.FirearmController.GClass1598;
+using MagReloadClass = EFT.Player.FirearmController.GClass1748;
+using ReloadWeaponClass = EFT.Player.FirearmController.GClass1746;
 using StatusStruct = GStruct414<GInterface339>;
-using WeaponEventClass = EFT.Player.FirearmController.GClass1588;
-using WeaponEventHandlerClass = EFT.Player.FirearmController.GClass1587;
-using WeaponStatSubclass = EFT.Player.FirearmController.GClass1632;
+using WeaponEventHandlerClass = EFT.Player.FirearmController.GClass1773;
+using WeaponStatSubclass = EFT.Player.FirearmController.GClass1748;
 
 namespace RealismMod
 {
@@ -137,7 +136,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static void Prefix(ReloadWeaponClass __instance, WeaponEventClass reloadExternalMagResult)
+        private static void Prefix(ReloadWeaponClass __instance)
         {
             var fc = (FirearmController)AccessTools.Field(typeof(ReloadWeaponClass), "firearmController_0").GetValue(__instance);
             var player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(fc);

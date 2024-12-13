@@ -303,7 +303,7 @@ namespace RealismMod
         private static void PatchPostfix(HealthEffectsComponent __instance, Item item)
         {
             string medType = MedProperties.MedType(item);
-            if (item.Template._parent == "5448f3a64bdc2d60728b456a")
+            if (item.Template.ParentId == "5448f3a64bdc2d60728b456a")
             {
                 List<ItemAttributeClass> stimAtt = item.Attributes;
                 ItemAttributeClass stimAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.StimType);
@@ -398,7 +398,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
-            Type genericType = typeof(Class1913<>); //declare generic type
+            Type genericType = typeof(Class2066<>); //declare generic type
             Type constructedType = genericType.MakeGenericType(new Type[] { nestedType }); //construct type at runtime using nested type
             return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }
@@ -416,7 +416,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
-            Type genericType = typeof(Class1914<>); //declare generic type
+            Type genericType = typeof(Class2067<>); //declare generic type
             Type constructedType = genericType.MakeGenericType(new Type[] { nestedType }); //construct type at runtime using nested type
             return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }

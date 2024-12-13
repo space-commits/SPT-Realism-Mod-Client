@@ -11,7 +11,7 @@ using UnityEngine;
 using InputClass1 = Class1576; // guessed for these two
 using InputClass2 = Class1581;
 using StatusStruct = GStruct414<GInterface339>; // no clue
-using ItemEventClass = GClass2783;
+using ItemEventClass = GClass2783; // no clue
 
 namespace RealismMod
 {

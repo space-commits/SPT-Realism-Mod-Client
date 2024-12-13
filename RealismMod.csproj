@@ -48,21 +48,6 @@
     <Reference Include="spt-reflection">
       <HintPath>E:\spt\BepInEx\plugins\spt\spt-reflection.dll</HintPath>
     </Reference>
-    <Reference Include="System">
-      <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\System.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Diagnostics.Debug">
-      <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\System.Diagnostics.Debug.dll</HintPath>
-    </Reference>
-    <Reference Include="System.IO.Compression">
-      <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\System.IO.Compression.dll</HintPath>
-    </Reference>
-    <Reference Include="System.IO.Compression.FileSystem">
-      <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\System.IO.Compression.FileSystem.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Threading">
-      <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\System.Threading.dll</HintPath>
-    </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\Unity.TextMeshPro.dll</HintPath>
     </Reference>
@@ -75,6 +60,9 @@
     <Reference Include="UnityEngine.AudioModule">
       <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.ClusterRendererModule">
+      <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\UnityEngine.ClusterRendererModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
@@ -84,11 +72,26 @@
     <Reference Include="UnityEngine.IMGUIModule">
       <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.InputModule">
+      <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\UnityEngine.InputModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.JSONSerializeModule">
       <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIElementsModule">
+      <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\UnityEngine.UIElementsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\UnityEngine.UIModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UnityAnalyticsModule">
       <HintPath>E:\spt\EscapeFromTarkov_Data\Managed\UnityEngine.UnityAnalyticsModule.dll</HintPath>

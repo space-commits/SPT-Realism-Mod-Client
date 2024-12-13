@@ -11,10 +11,9 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using static RealismMod.Attributes;
-using ArmorPlateUIClass = GClass2648;
-using BarrelTemplateClass = GClass2593;
+using ArmorPlateUIClass = GClass3485; // guess
 using FormatArmorClass = GClass2534;
-using StatAttributeClass = GClass2768;
+using StatAttributeClass = ItemAttributeClass;
 using RootMotion.FinalIK;
 using System.Xml.Linq;
 
@@ -70,7 +69,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPrefix(ItemViewStats __instance, ArmorPlateUIClass armorPlate)
+        private static void PatchPrefix(ItemViewStats __instance, ArmoredEquipmentItemClass armorPlate)
         {
             Image armorClassImage = (Image)AccessTools.Field(typeof(ItemViewStats), "_armorClassIcon").GetValue(__instance);
             if (armorPlate.Armor.Template.ArmorClass > 6)
@@ -557,10 +556,10 @@ namespace RealismMod
                 List<ItemAttributeClass> balanceAttList = __instance.Attributes;
                 StatAttributeClass balanceAtt = new StatAttributeClass((EItemAttributeId)ENewItemAttributeId.Balance);
                 balanceAtt.Name = ENewItemAttributeId.Balance.GetName();
-                balanceAtt.Range = new Vector2(100f, 200f);
+                //balanceAtt.Range = new Vector2(100f, 200f); // ItemAttributeClass is the only one with LessIsGood as a value, but its missing this
                 balanceAtt.LessIsGood = false;
                 balanceAtt.Base = () => 150;
-                balanceAtt.Delta = () => BalanceDelta();
+                //balanceAtt.Delta = () => BalanceDelta();
                 balanceAtt.StringValue = () => Math.Round(UIWeaponStats.Balance, 1).ToString();
                 balanceAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
                 balanceAttList.Add(balanceAtt);
@@ -572,10 +571,10 @@ namespace RealismMod
                 List<ItemAttributeClass> dispersionAttList = __instance.Attributes;
                 StatAttributeClass dispersionAtt = new StatAttributeClass((EItemAttributeId)ENewItemAttributeId.Dispersion);
                 dispersionAtt.Name = ENewItemAttributeId.Dispersion.GetName();
-                dispersionAtt.Range = new Vector2(0f, 50f);
+                //dispersionAtt.Range = new Vector2(0f, 50f);
                 dispersionAtt.LessIsGood = true;
                 dispersionAtt.Base = () => __instance.Template.RecolDispersion;
-                dispersionAtt.Delta = () => DispersionDelta(__instance);
+                //dispersionAtt.Delta = () => DispersionDelta(__instance);
                 dispersionAtt.StringValue = () => Math.Round(UIWeaponStats.Dispersion, 1).ToString();
                 dispersionAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
                 dispersionAttList.Add(dispersionAtt);
@@ -586,10 +585,10 @@ namespace RealismMod
                 List<ItemAttributeClass> camRecoilAttList = __instance.Attributes;
                 StatAttributeClass camRecoilAtt = new StatAttributeClass((EItemAttributeId)ENewItemAttributeId.CameraRecoil);
                 camRecoilAtt.Name = ENewItemAttributeId.CameraRecoil.GetName();
-                camRecoilAtt.Range = new Vector2(0f, 50f);
+                //camRecoilAtt.Range = new Vector2(0f, 50f);
                 camRecoilAtt.LessIsGood = true;
                 camRecoilAtt.Base = () => __instance.Template.RecoilCamera * 100f;
-                camRecoilAtt.Delta = () => CamRecoilDelta(__instance);
+                //camRecoilAtt.Delta = () => CamRecoilDelta(__instance);
                 camRecoilAtt.StringValue = () => Math.Round(UIWeaponStats.CamRecoil * 100f, 2).ToString();
                 camRecoilAtt.DisplayType = () => EItemAttributeDisplayType.FullBar;
                 camRecoilAttList.Add(camRecoilAtt);

@@ -8,13 +8,8 @@ using HarmonyLib;
 using System.Reflection;
 using UnityEngine;
 using static EFT.Player;
-using ProcessorClass = GClass2227;
-using StaminaLevelClass = GClass754<float>;
-using WeaponSkillsClass = EFT.SkillManager.GClass1981;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using RootMotion.FinalIK;
+using ProcessorClass = GClass2534;
+using StaminaLevelClass = GClass816<float>;
 
 namespace RealismMod
 {
