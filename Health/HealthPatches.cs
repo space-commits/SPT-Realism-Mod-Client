@@ -628,7 +628,7 @@ namespace RealismMod
                     MedsItemClass medItem = boundItem as MedsItemClass;
                     if (boundItem != null && medItem != null)
                     {
-                        __instance.SetInHands(medItem, EBodyPart.Common, 1, new Callback<GInterface165>(HealthControllerClass.Class1952.class1952_0.method_0)); // no clue what these classes are for
+                        __instance.SetInHands(medItem, EBodyPart.Common, 1, new Callback<GInterface165>(GControl4.Class2105.class2105_0.method_0)); // no clue what these classes are for
                         callback(null);
                         return false;
                     }
@@ -690,7 +690,7 @@ namespace RealismMod
                 healthPenalty += (1f - healthPenalty) * skills.SurgeryReducePenalty;
                 bodyPartState.Health = new HealthValue(1f, Mathf.Max(1f, Mathf.Ceil(bodyPartState.Health.Maximum * healthPenalty)), 0f);
                 __instance.method_43(bodyPart, EDamageType.Medicine);
-                __instance.method_32(bodyPart); // too many methods that take just a body part
+                __instance.method_35(bodyPart); // too many methods that take just a body part, so educated guess
                 Action<EBodyPart, ValueStruct> bodyPartRestoredEvent = bodyPartRestoredField;
                 if (bodyPartRestoredEvent != null)
                 {

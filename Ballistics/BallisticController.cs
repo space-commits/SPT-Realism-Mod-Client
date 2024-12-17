@@ -287,7 +287,7 @@ namespace RealismMod
             }
             else
             {
-                ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[DamageInfoStruct.SourceId];
+                ammoTemp = (AmmoTemplate)Singleton<ItemFactoryClass>.Instance.ItemTemplates[DamageInfoStruct.SourceId];
                 if (DamageInfoStruct.ArmorDamage <= 1)
                 {
                     KE = (0.5f * ammoTemp.BulletMassGram * ammoTemp.InitialSpeed * ammoTemp.InitialSpeed) / 1000f;

@@ -12,11 +12,10 @@ using System.Reflection;
 using System.Xml.Linq;
 using UnityEngine;
 using static EFT.Player;
-using ChamberWeaponClass = EFT.Player.FirearmController.GClass1637; // no clue for these
-using ItemEventClass = GClass2783;
+using ChamberWeaponClass = EFT.Player.FirearmController.GClass1789; // no clue for these
 using MagReloadClass = EFT.Player.FirearmController.GClass1748;
 using ReloadWeaponClass = EFT.Player.FirearmController.GClass1746;
-using StatusStruct = GStruct414<GInterface339>;
+using StatusStruct = GStruct446<GInterface385>;
 using WeaponEventHandlerClass = EFT.Player.FirearmController.GClass1773;
 using WeaponStatSubclass = EFT.Player.FirearmController.GClass1748;
 
@@ -59,7 +58,7 @@ namespace RealismMod
                 {
                     var magazine = (MagazineItemClass)AccessTools.Field(typeof(ChamberWeaponClass), "MagazineItemClass").GetValue(__instance);
                     var ammoIsCompatible = (bool)AccessTools.Field(typeof(ChamberWeaponClass), "bool_1").GetValue(__instance);
-                    var bulletClass = (EftBulletClass)AccessTools.Field(typeof(ChamberWeaponClass), "bulletClass").GetValue(__instance);
+                    var bulletClass = (AmmoItemClass)AccessTools.Field(typeof(ChamberWeaponClass), "bulletClass").GetValue(__instance);
                     var weaponManagerClass = (WeaponManagerClass)AccessTools.Field(typeof(ChamberWeaponClass), "weaponManagerClass").GetValue(__instance);
 
                     AccessTools.Field(typeof(ChamberWeaponClass), "action_0").SetValue(__instance, onWeaponAppear);
@@ -106,7 +105,7 @@ namespace RealismMod
                         {
                             fc.Weapon.MalfState.ChangeStateSilent(Weapon.EMalfunctionState.None);
                         }
-                        StatusStruct gstruct = magazine.Cartridges.PopTo(player.InventoryController, new ItemEventClass(fc.Item.Chambers[0]));
+                        StatusStruct gstruct = magazine.Cartridges.PopTo(player.InventoryController, fc.Item.Chambers[0].CreateItemAddress());
                         fc.Item.MalfState.ChangeStateSilent(malfState);
                         if (gstruct.Value == null)
                         {
@@ -114,7 +113,7 @@ namespace RealismMod
                         }
                         weaponManagerClass.RemoveAllShells();
                         player.UpdatePhones();
-                        bulletClass = (EftBulletClass)gstruct.Value.ResultItem;
+                        bulletClass = (AmmoItemClass)gstruct.Value.ResultItem;
                         AccessTools.Field(typeof(ChamberWeaponClass), "bulletClass").SetValue(__instance, bulletClass);
                     }
                     return false;

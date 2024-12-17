@@ -4,8 +4,6 @@ using EFT.UI;
 using UnityEngine;
 using EffectClass = EFT.HealthSystem.ActiveHealthController.GClass2746;
 using ExistanceClass = GClass2788;
-using InterfaceOne = GInterface252;
-using InterfaceTwo = GInterface267;
 
 namespace RealismMod
 {

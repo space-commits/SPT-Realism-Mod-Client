@@ -11,7 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using EFTSlot = EFT.InventoryLogic.Slot; // Cant find
+using EFTSlot = GClass3113; 
 using ArmorSlot = EFT.InventoryLogic.Slot;
 using Diz.Skinning;
 using EFT.UI;

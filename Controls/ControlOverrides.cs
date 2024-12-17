@@ -10,8 +10,8 @@ using static EFT.Player;
 using UnityEngine;
 using InputClass1 = Class1576; // guessed for these two
 using InputClass2 = Class1581;
-using StatusStruct = GStruct414<GInterface339>; // no clue
-using ItemEventClass = GClass2783; // no clue
+using StatusStruct = GStruct446<GInterface385>;
+using EFT.InventoryLogic;
 
 namespace RealismMod
 {
@@ -30,7 +30,7 @@ namespace RealismMod
             fc.FirearmsAnimator.SetAmmoInChamber(0);
             fc.FirearmsAnimator.SetAmmoOnMag(currentMagazineCount);
             fc.FirearmsAnimator.SetAmmoCompatible(true);
-            StatusStruct gstruct = mag.Cartridges.PopTo(player.InventoryController, new ItemEventClass(fc.Item.Chambers[0]));
+            StatusStruct gstruct = mag.Cartridges.PopTo(player.InventoryController, fc.Item.Chambers[0].CreateItemAddress());
             WeaponManagerClass weaponStateClass = (WeaponManagerClass)AccessTools.Field(typeof(FirearmController), "weaponManagerClass").GetValue(fc);
             weaponStateClass.RemoveAllShells();
             AmmoItemClass bullet = (AmmoItemClass)gstruct.Value.ResultItem;

@@ -587,7 +587,7 @@ namespace RealismMod
         {
             DeleteSelfFromDevicesList();
             string templateId = TargetZoneType == EZoneType.Gas ? Utils.GAMU_DATA_ID : Utils.RAMU_DATA_ID;
-            Item replacementItem = Singleton<ItemFactory>.Instance.CreateItem(MongoID.Generate(), templateId, null);
+            Item replacementItem = Singleton<ItemFactoryClass>.Instance.CreateItem(MongoID.Generate(), templateId, null);
             LootItem lootItem = Singleton<GameWorld>.Instance.SetupItem(replacementItem, _IPlayer, _position, _rotation);
             RemovePhysicsInteractions(lootItem.gameObject);
             AudioSource tempAudio = SetUpAudio("success_end.wav", lootItem.gameObject);

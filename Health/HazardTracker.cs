@@ -87,7 +87,7 @@ namespace RealismMod
         public static void OutOfRaidUpdate() 
         {
 #pragma warning disable CS0618
-            if (GClass1864.InRaid) return;
+            if (GClass2064.InRaid) return;
 #pragma warning disable CS0618
             _upateTimer += Time.deltaTime;
             _hideoutRegenTick += Time.deltaTime;
@@ -98,8 +98,8 @@ namespace RealismMod
                 var genController = Singleton<HideoutClass>.Instance?.EnergyController;
                 if (profileData != null && _loadedData && genController != null && genController.IsEnergyGenerationOn)
                 {
-                    float ventsFactor = -(profileData.Hideout.Areas[0].level * 0.01f);
-                    float medFactor = -(profileData.Hideout.Areas[7].level * 0.025f);
+                    float ventsFactor = -(profileData.Hideout.Areas[0].Level * 0.01f);
+                    float medFactor = -(profileData.Hideout.Areas[7].Level * 0.025f);
 
                     float totalFactor = ventsFactor + medFactor;
                     TotalToxicityRate = totalFactor;

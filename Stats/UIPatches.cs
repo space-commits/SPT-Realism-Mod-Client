@@ -11,7 +11,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using static RealismMod.Attributes;
-using ArmorPlateUIClass = GClass3485; // guess
+using ArmorPlateUIClass = GClass3484; // guess
 using FormatArmorClass = GClass2534;
 using StatAttributeClass = ItemAttributeClass;
 using RootMotion.FinalIK;
@@ -98,10 +98,10 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPrefix(GClass3485 __instance, float penetrationPower)
         {
-            List<GClass3114> list = new List<GClass3114>(); // not enough info to find this class currently
+            List<GClass3484> list = new List<GClass3484>();
             for (int i = 1; i <= 10; i++)
             {
-                list.Add(new GClass3114(GetStringValues(i, penetrationPower), null));
+                list.Add(new GClass3484(GetStringValues(i, penetrationPower), null));
             }
             AccessTools.Field(typeof(GClass3485), "Lines").SetValue(__instance, list.ToArray());
         }

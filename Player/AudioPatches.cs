@@ -10,7 +10,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Audio;
-using CompressorTemplateClass = GClass2918; //SetCompressor
+//using CompressorTemplateClass = GClass2918; //SetCompressor
 using HeadsetClass = HeadphonesItemClass; //Updatephonesreally()
 using HeadsetTemplate = HeadphonesTemplateClass; //SetCompressor
 using LootItemClass = GClass2981;
@@ -295,7 +295,7 @@ namespace RealismMod
             float gunT;
             float mainT;
 
-            GlobalEventHandlerClass.CreateEvent<CompressorTemplateClass>().Invoke(template);
+            //GlobalEventHandlerClass.CreateEvent<CompressorTemplateClass>().Invoke(template);
             DeafeningController.DryVolume = hasHeadset ? template.DryVolume * PluginConfig.DryVolumeMulti.Value : 0f;
             DeafeningController.CompressorVolume = hasHeadset ? template.CompressorGain : -80f; // Not sure about this, CompressorVolume is gone
             DeafeningController.AmbientVolume = hasHeadset ? template.AmbientVolume : 0f;

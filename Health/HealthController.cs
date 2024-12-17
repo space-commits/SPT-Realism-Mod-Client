@@ -541,7 +541,7 @@ namespace RealismMod
 
                     if (effectType == targetType)
                     {
-                        existingEffect.AddWorkTime(duration, false);
+                        existingEffect.AddWorkTime(duration, false); // class 2746 is the only one with this method, but cannot find a way to get a list of it
                     }
                 }
             }
@@ -1852,7 +1852,7 @@ namespace RealismMod
 
             if (hasCommonHeavyBleed && hasCommonLightBleed)
             {
-                IReadOnlyList<EffectClass> effectsList = player.ActiveHealthController.IReadOnlyList_0;
+                IReadOnlyList<EffectClass> effectsList = player.ActiveHealthController.ActiveBuffsNames();
 
                 for (int i = effectsList.Count - 1; i >= 0; i--)
                 {
