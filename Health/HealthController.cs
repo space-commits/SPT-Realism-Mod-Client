@@ -24,6 +24,8 @@ using PainKillerInterface = GInterface320;
 using TremorInterface = GInterface323;
 using TunnelVisionInterface = GInterface325;
 using LootItemClass = GClass2981;
+using EffectListClass = GClass2747<EFT.Player>;
+
 
 namespace RealismMod
 {
@@ -1852,12 +1854,11 @@ namespace RealismMod
 
             if (hasCommonHeavyBleed && hasCommonLightBleed)
             {
-                IReadOnlyList<EffectClass> effectsList = player.ActiveHealthController.ActiveBuffsNames();
+                //IReadOnlyList<GClass2747> effectsList = new GClass2747<EffectClass>.GetAllEffects();
+                IEnumerable<IEffect> effectsList = player.ActiveHealthController.GetAllEffects();
 
-                for (int i = effectsList.Count - 1; i >= 0; i--)
+                foreach (IEffect effect in effectsList)
                 {
-
-                    EffectClass effect = effectsList[i];
                     Type effectType = effect.Type;
                     EBodyPart effectPart = effect.BodyPart;
 
@@ -1869,6 +1870,7 @@ namespace RealismMod
                     {
                         effect.ForceResidue();
                     }
+
                 }
             }
         }
