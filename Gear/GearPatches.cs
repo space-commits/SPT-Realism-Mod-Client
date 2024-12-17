@@ -13,10 +13,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using static RealismMod.Attributes;
 using static RootMotion.FinalIK.GenericPoser;
-using HeadsetClass = GClass2654; //updatephonesreally()
-using HeadsetTemplate = GClass2556; //updatephonesreally()
-using RigConstructor = GClass2700;
-using RigTemplate = GClass2602; //the one without the blindness stat
+using HeadsetClass = HeadphonesItemClass; //updatephonesreally()
+using HeadsetTemplate = HeadphonesTemplateClass; //updatephonesreally()
+using RigConstructor = VestItemClass;
+using RigTemplate = VestTemplateClass; //the one without the blindness stat
 
 
 namespace RealismMod
@@ -50,7 +50,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EquipmentPenaltyComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface297), typeof(bool) });
+            return typeof(EquipmentPenaltyComponent).GetConstructor(new Type[] { typeof(Item), typeof(GInterface346), typeof(bool) });
         }
 
         private static float GetAverage(Func<CompositeArmorComponent, float> predicate, Item item)
@@ -76,7 +76,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(EquipmentPenaltyComponent __instance, Item item, bool anyArmorPlateSlots)
         {
-            if (Plugin.ServerConfig.gear_weight && (anyArmorPlateSlots || item.Template._parent == "5448e53e4bdc2d60728b4567"))
+            if (Plugin.ServerConfig.gear_weight && (anyArmorPlateSlots || item.Template.ParentId == "5448e53e4bdc2d60728b4567"))
             {
                 float comfortModifier = GearStats.ComfortModifier(item);
                 if (comfortModifier > 0f && comfortModifier != 1f)

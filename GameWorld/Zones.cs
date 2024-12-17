@@ -441,11 +441,11 @@ namespace RealismMod
             }
         }
 
-        private bool KeysMatch(Player player, string doorKey)
+        private bool KeysMatch(Player player, string doorKey) // not sure if this function is still used
         {
             if (player.MovementContext.InteractionInfo.Result != null)
             {
-                KeyComponent key = ((KeyInteractionResultClass)player.MovementContext.InteractionInfo.Result).Key;
+                KeyComponent key = ((InteractionResult)player.MovementContext.InteractionInfo.Result).Key;
                 return doorKey == key.Template.KeyId;
             }
             return false;

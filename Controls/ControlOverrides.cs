@@ -8,10 +8,10 @@ using System.Reflection;
 using System.Text;
 using static EFT.Player;
 using UnityEngine;
-using InputClass1 = Class1477;
-using InputClass2 = Class1475;
-using StatusStruct = GStruct414<GInterface339>;
-using ItemEventClass = GClass2783;
+using InputClass1 = Class1576; // guessed for these two
+using InputClass2 = Class1581;
+using StatusStruct = GStruct446<GInterface385>;
+using EFT.InventoryLogic;
 
 namespace RealismMod
 {
@@ -26,14 +26,14 @@ namespace RealismMod
         {
             Plugin.CanLoadChamber = true;
             int currentMagazineCount = fc.Weapon.GetCurrentMagazineCount();
-            MagazineClass mag = fc.Weapon.GetCurrentMagazine();
+            MagazineItemClass mag = fc.Weapon.GetCurrentMagazine();
             fc.FirearmsAnimator.SetAmmoInChamber(0);
             fc.FirearmsAnimator.SetAmmoOnMag(currentMagazineCount);
             fc.FirearmsAnimator.SetAmmoCompatible(true);
-            StatusStruct gstruct = mag.Cartridges.PopTo(player.InventoryControllerClass, new ItemEventClass(fc.Item.Chambers[0]));
+            StatusStruct gstruct = mag.Cartridges.PopTo(player.InventoryController, fc.Item.Chambers[0].CreateItemAddress());
             WeaponManagerClass weaponStateClass = (WeaponManagerClass)AccessTools.Field(typeof(FirearmController), "weaponManagerClass").GetValue(fc);
             weaponStateClass.RemoveAllShells();
-            BulletClass bullet = (BulletClass)gstruct.Value.ResultItem;
+            AmmoItemClass bullet = (AmmoItemClass)gstruct.Value.ResultItem;
             fc.FirearmsAnimator.SetAmmoInChamber(1);
             fc.FirearmsAnimator.SetAmmoOnMag(fc.Weapon.GetCurrentMagazineCount());
             weaponStateClass.SetRoundIntoWeapon(bullet, 0);

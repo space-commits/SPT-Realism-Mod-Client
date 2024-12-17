@@ -12,14 +12,12 @@ using System.Reflection;
 using System.Xml.Linq;
 using UnityEngine;
 using static EFT.Player;
-using ChamberWeaponClass = EFT.Player.FirearmController.GClass1637;
-using ItemEventClass = GClass2783;
-using MagReloadClass = EFT.Player.FirearmController.GClass1621;
-using ReloadWeaponClass = EFT.Player.FirearmController.GClass1598;
-using StatusStruct = GStruct414<GInterface339>;
-using WeaponEventClass = EFT.Player.FirearmController.GClass1588;
-using WeaponEventHandlerClass = EFT.Player.FirearmController.GClass1587;
-using WeaponStatSubclass = EFT.Player.FirearmController.GClass1632;
+using ChamberWeaponClass = EFT.Player.FirearmController.GClass1789; // no clue for these
+using MagReloadClass = EFT.Player.FirearmController.GClass1748;
+using ReloadWeaponClass = EFT.Player.FirearmController.GClass1746;
+using StatusStruct = GStruct446<GInterface385>;
+using WeaponEventHandlerClass = EFT.Player.FirearmController.GClass1773;
+using WeaponStatSubclass = EFT.Player.FirearmController.GClass1748;
 
 namespace RealismMod
 {
@@ -58,9 +56,9 @@ namespace RealismMod
             {
                 if (fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1) 
                 {
-                    var magazine = (MagazineClass)AccessTools.Field(typeof(ChamberWeaponClass), "magazineClass").GetValue(__instance);
+                    var magazine = (MagazineItemClass)AccessTools.Field(typeof(ChamberWeaponClass), "MagazineItemClass").GetValue(__instance);
                     var ammoIsCompatible = (bool)AccessTools.Field(typeof(ChamberWeaponClass), "bool_1").GetValue(__instance);
-                    var bulletClass = (BulletClass)AccessTools.Field(typeof(ChamberWeaponClass), "bulletClass").GetValue(__instance);
+                    var bulletClass = (AmmoItemClass)AccessTools.Field(typeof(ChamberWeaponClass), "bulletClass").GetValue(__instance);
                     var weaponManagerClass = (WeaponManagerClass)AccessTools.Field(typeof(ChamberWeaponClass), "weaponManagerClass").GetValue(__instance);
 
                     AccessTools.Field(typeof(ChamberWeaponClass), "action_0").SetValue(__instance, onWeaponAppear);
@@ -73,7 +71,7 @@ namespace RealismMod
                     int currentMagazineCount = fc.Weapon.GetCurrentMagazineCount();
 
                     magazine = fc.Weapon.GetCurrentMagazine();
-                    AccessTools.Field(typeof(ChamberWeaponClass), "magazineClass").SetValue(__instance, magazine);
+                    AccessTools.Field(typeof(ChamberWeaponClass), "MagazineItemClass").SetValue(__instance, magazine);
                    
                     fc.AmmoInChamberOnSpawn = chamberAmmoCount;
 
@@ -107,7 +105,7 @@ namespace RealismMod
                         {
                             fc.Weapon.MalfState.ChangeStateSilent(Weapon.EMalfunctionState.None);
                         }
-                        StatusStruct gstruct = magazine.Cartridges.PopTo(player.InventoryControllerClass, new ItemEventClass(fc.Item.Chambers[0]));
+                        StatusStruct gstruct = magazine.Cartridges.PopTo(player.InventoryController, fc.Item.Chambers[0].CreateItemAddress());
                         fc.Item.MalfState.ChangeStateSilent(malfState);
                         if (gstruct.Value == null)
                         {
@@ -115,7 +113,7 @@ namespace RealismMod
                         }
                         weaponManagerClass.RemoveAllShells();
                         player.UpdatePhones();
-                        bulletClass = (BulletClass)gstruct.Value.ResultItem;
+                        bulletClass = (AmmoItemClass)gstruct.Value.ResultItem;
                         AccessTools.Field(typeof(ChamberWeaponClass), "bulletClass").SetValue(__instance, bulletClass);
                     }
                     return false;
@@ -137,7 +135,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static void Prefix(ReloadWeaponClass __instance, WeaponEventClass reloadExternalMagResult)
+        private static void Prefix(ReloadWeaponClass __instance)
         {
             var fc = (FirearmController)AccessTools.Field(typeof(ReloadWeaponClass), "firearmController_0").GetValue(__instance);
             var player = (Player)AccessTools.Field(typeof(FirearmController), "_player").GetValue(fc);
@@ -218,7 +216,7 @@ namespace RealismMod
             if (player.IsYourPlayer) 
             {
                 Slot slot = __instance.Weapon.Chambers.FirstOrDefault<Slot>();
-                BulletClass bulletClass = (slot == null) ? null : (slot.ContainedItem as BulletClass);
+                AmmoItemClass bulletClass = (slot == null) ? null : (slot.ContainedItem as AmmoItemClass);
 
                 if (bulletClass != null)
                 {
@@ -593,7 +591,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance, MagazineClass magazine)
+        private static void PatchPostfix(Player.FirearmController __instance, MagazineItemClass magazine)
         {
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer && Plugin.ServerConfig.reload_changes)
@@ -604,7 +602,7 @@ namespace RealismMod
                 {
                     Logger.LogWarning("ReloadMag Patch");
                     Logger.LogWarning("magazine = " + magazine.LocalizedName());
-                    Logger.LogWarning("magazine weight = " + magazine.GetSingleItemTotalWeight());
+                    Logger.LogWarning("magazine weight = " + magazine.Weight);
                 }
             }
         }
@@ -622,7 +620,7 @@ namespace RealismMod
         }
 
         [PatchPostfix]
-        private static void PatchPostfix(Player.FirearmController __instance, MagazineClass magazine)
+        private static void PatchPostfix(Player.FirearmController __instance, MagazineItemClass magazine)
         {
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer )

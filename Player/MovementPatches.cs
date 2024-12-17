@@ -7,8 +7,8 @@ using System;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using SkillMovementStruct = EFT.SkillManager.GStruct229;
-using ValueHandler = GClass734;
+using SkillMovementStruct = EFT.SkillManager.GStruct235;
+using ValueHandler = GClass796;
 
 namespace RealismMod
 {

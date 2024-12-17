@@ -11,14 +11,14 @@ using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using QuestUIClass = GClass2046;
+using QuestUIClass = GClass2269;
 using Color = UnityEngine.Color;
 using EFT.InventoryLogic;
 using HarmonyLib;
 using EFT.Interactive;
 using static RootMotion.FinalIK.InteractionTrigger.Range;
 using System.Collections.Generic;
-using static UnityEngine.Rendering.PostProcessing.HistogramMonitor;
+//using static UnityEngine.Rendering.PostProcessing.HistogramMonitor;
 using static UnityEngine.UI.Selectable;
 using System.Threading.Tasks;
 using static RootMotion.FinalIK.GenericPoser;
@@ -67,7 +67,7 @@ namespace RealismMod
             GameWorldController.RunEarlyGameCheck();
 
             if (!GameWorldController.MuteAmbientAudio) return true;
-            var soundPlayers = (List<AbstractAmbientSoundPlayer>)_playerGroupField.GetValue(__instance);
+            var soundPlayers = (List<BaseAmbientSoundPlayer>)_playerGroupField.GetValue(__instance);
             foreach (var soundPlayer in soundPlayers)
             {
                 if (_clipsToDisable.Contains(soundPlayer.name.ToLower())) continue;
@@ -125,7 +125,7 @@ namespace RealismMod
             {
                 bool doExtraCultists = Plugin.ModInfo.DoExtraCultists;
                 __instance.BossChance = __instance.BossChance == 0 && !doExtraCultists ? 25f : 100f;
-                __instance.ShallSpawn = GClass761.IsTrue100(__instance.BossChance);
+                __instance.ShallSpawn = GClass824.IsTrue100(__instance.BossChance);
             }
             if (increaseRaiderChance) 
             {
@@ -135,7 +135,7 @@ namespace RealismMod
             if ((postExpl ||Plugin.ModInfo.DoGasEvent || (Plugin.ModInfo.IsPreExplosion && GameWorldController.IsRightDateForExp) || Plugin.ModInfo.DoExtraRaiders) && (__instance.BossType != WildSpawnType.sectantPriest && __instance.BossType != WildSpawnType.pmcBot && !isPmc))
             {
                 __instance.BossChance *= 0.05f;
-                __instance.ShallSpawn = GClass761.IsTrue100(__instance.BossChance);
+                __instance.ShallSpawn = GClass824.IsTrue100(__instance.BossChance);
             }
 
             if (PluginConfig.ZoneDebug.Value) 

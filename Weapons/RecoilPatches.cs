@@ -563,7 +563,7 @@ namespace RealismMod
 
                 RecoilController.BaseTotalRecoilDamping = (float)Math.Round(WeaponStats.TotalRecoilDamping * PluginConfig.RecoilDampingMulti.Value, 3);
                 RecoilController.BaseTotalHandDamping = (float)Math.Round(WeaponStats.TotalRecoilHandDamping * PluginConfig.HandsDampingMulti.Value, 3);
-                WeaponStats.TotalWeaponWeight = firearmController.Weapon.GetSingleItemTotalWeight();
+                WeaponStats.TotalWeaponWeight = firearmController.Weapon.Weight;
                 WeaponStats.TotalWeaponLength = firearmController.Item.CalculateCellSize().X;
                 if (WeaponStats.WeapID != template._id)
                 {
