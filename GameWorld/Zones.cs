@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using UnityEngine;
 using Comfort.Common;
+using KeyInteractionResultClass = GClass3344;
 
 namespace RealismMod
 {

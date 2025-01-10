@@ -1,6 +1,5 @@
 ﻿using EFT;
 using EFT.InventoryLogic;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -133,7 +132,7 @@ namespace RealismMod
         {
             float modifiedWeight = 0f;
             float trueWeight = 0f;
-            foreach (EquipmentSlot equipmentSlot in EquipmentClass.AllSlotNames)
+            foreach (EquipmentSlot equipmentSlot in InventoryEquipment.AllSlotNames)
             {
                 Slot slot = invClass.Equipment.GetSlot(equipmentSlot);
                 IEnumerable<Item> items = slot.Items;
@@ -255,7 +254,7 @@ namespace RealismMod
             for (int i = 0; i < preAllocatedArmorComponents.Count; i++)
             {
                 ArmorComponent armorComponent = preAllocatedArmorComponents[i];
-                if (armorComponent.Item.Template._parent == "5448e5284bdc2dcb718b4567" || armorComponent.Item.Template._parent == "5a341c4686f77469e155819e") continue;
+                if (armorComponent.Item.Template.ParentId == "5448e5284bdc2dcb718b4567" || armorComponent.Item.Template.ParentId == "5a341c4686f77469e155819e") continue;
                 if (player.FaceShieldObserver.Component != null && player.FaceShieldObserver.Component.Item.TemplateId == armorComponent.Item.TemplateId)
                 {
                     if (!fsIsON || !GearStats.BlocksMouth(armorComponent.Item)) continue;
@@ -365,7 +364,7 @@ namespace RealismMod
 
             foreach (ArmorComponent armorComponent in preAllocatedArmorComponents)
             {
-                if (armorComponent.Item.Template._parent == "5448e5284bdc2dcb718b4567" || armorComponent.Item.Template._parent == "5a341c4686f77469e155819e")
+                if (armorComponent.Item.Template.ParentId == "5448e5284bdc2dcb718b4567" || armorComponent.Item.Template.ParentId == "5a341c4686f77469e155819e")
                 {
                     break;
                 }

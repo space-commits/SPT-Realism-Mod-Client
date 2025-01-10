@@ -2,15 +2,10 @@
 using EFT;
 using EFT.Interactive;
 using EFT.InventoryLogic;
-using EFT.UI;
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Text;
 using UnityEngine;
-using static RootMotion.FinalIK.IKSolver;
 
 namespace RealismMod
 {
@@ -587,7 +582,7 @@ namespace RealismMod
         {
             DeleteSelfFromDevicesList();
             string templateId = TargetZoneType == EZoneType.Gas ? Utils.GAMU_DATA_ID : Utils.RAMU_DATA_ID;
-            Item replacementItem = Singleton<ItemFactory>.Instance.CreateItem(MongoID.Generate(), templateId, null);
+            Item replacementItem = Singleton<ItemFactoryClass>.Instance.CreateItem(MongoID.Generate(), templateId, null);
             LootItem lootItem = Singleton<GameWorld>.Instance.SetupItem(replacementItem, _IPlayer, _position, _rotation);
             RemovePhysicsInteractions(lootItem.gameObject);
             AudioSource tempAudio = SetUpAudio("success_end.wav", lootItem.gameObject);

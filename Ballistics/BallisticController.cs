@@ -5,6 +5,7 @@ using EFT.InventoryLogic;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using DamageInfo = DamageInfoStruct;
 
 namespace RealismMod
 {
@@ -287,7 +288,7 @@ namespace RealismMod
             }
             else
             {
-                ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
+                ammoTemp = (AmmoTemplate)Singleton<ItemFactoryClass>.Instance.ItemTemplates[damageInfo.SourceId];
                 if (damageInfo.ArmorDamage <= 1)
                 {
                     KE = (0.5f * ammoTemp.BulletMassGram * ammoTemp.InitialSpeed * ammoTemp.InitialSpeed) / 1000f;

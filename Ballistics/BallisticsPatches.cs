@@ -11,14 +11,18 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using EFTSlot = GClass2783;
-using ArmorSlot = GClass2525;
+using EFTSlot = GClass3113;
+using ArmorSlot = EFT.InventoryLogic.Slot;
 using Diz.Skinning;
 using EFT.UI;
 using static EFT.Player;
+using DamageInfo = DamageInfoStruct;
+using SkillManagerClass = EFT.SkillManager.GClass1981;
+using PastTimeClass = GClass1629;
 
 namespace RealismMod
 {
+    //Fix weapon accuracy stat not being used properly by BSG
     public class InitiateShotPatch : ModulePatch
     {
         private static FieldInfo _playerfield;
@@ -35,14 +39,14 @@ namespace RealismMod
             _accField = AccessTools.Field(typeof(FirearmController), "float_3");
             _buckFeld = AccessTools.Field(typeof(FirearmController), "float_4");
             _prefabField = AccessTools.Field(typeof(FirearmController), "weaponPrefab_0");
-            _skillField = AccessTools.Field(typeof(FirearmController), "gclass1783_0");
+            _skillField = AccessTools.Field(typeof(FirearmController), "gclass1981_0");
             _soundField = AccessTools.Field(typeof(FirearmController), "weaponSoundPlayer_0");
             _recoilField = AccessTools.Field(typeof(FirearmController), "float_5");
             return typeof(Player.FirearmController).GetMethod("method_53", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool Prefix(Player.FirearmController __instance, Weapon weapon, BulletClass ammo, int chamberIndex, bool multiShot = false)
+        private static bool Prefix(Player.FirearmController __instance, Weapon weapon, AmmoItemClass ammo, int chamberIndex, bool multiShot = false)
         {
 
             Player player = (Player)_playerfield.GetValue(__instance);
@@ -51,7 +55,7 @@ namespace RealismMod
             float accuracy = (float)_accField.GetValue(__instance);
             float accuracyBuck = (float)_buckFeld.GetValue(__instance);
             WeaponPrefab weaponprefab = (WeaponPrefab)_prefabField.GetValue(__instance);
-            SkillManager.GClass1783 skillFactor = (SkillManager.GClass1783)_skillField.GetValue(__instance);
+            SkillManagerClass skillFactor = (SkillManagerClass)_skillField.GetValue(__instance);
             WeaponSoundPlayer WeaponSoundPlayer = (WeaponSoundPlayer)_soundField.GetValue(__instance);
 
             Transform original = __instance.CurrentFireport.Original;
@@ -65,7 +69,7 @@ namespace RealismMod
             __instance.AdjustShotVectors(ref shotPosition, ref baseShotDirection);
             ammo.buckshotDispersion = accuracyBuck;
             __instance.CurrentChamberIndex = chamberIndex;
-            weapon.OnShot(ammo.DurabilityBurnModificator, ammo.HeatFactor, player.Skills.WeaponDurabilityLosOnShotReduce.Value, instance.Overheat, GClass1485.PastTime);
+            weapon.OnShot(ammo.DurabilityBurnModificator, ammo.HeatFactor, player.Skills.WeaponDurabilityLosOnShotReduce.Value, instance.Overheat, PastTimeClass.PastTime);
 
             if (weapon.MalfState.LastShotOverheat >= 1f) //force overheat inaccuracy to start much earlier
             {
@@ -91,7 +95,7 @@ namespace RealismMod
                 doubleShot = 0;
             }
             float doubleActionFactor = weapon.CylinderHammerClosed ? (weapon.DoubleActionAccuracyPenalty * (1f - skillFactor.DoubleActionRecoilReduce) * weapon.StockDoubleActionAccuracyPenaltyMult) : 0f;
-            float barrelDeviation = __instance.method_50(weapon);
+            float barrelDeviation = __instance.method_54(weapon);
             double accuracyBuff = weapon.GetItemComponent<BuffComponent>().WeaponSpread;
        
             if (accuracyBuff.ApproxEquals(0.0))
@@ -106,10 +110,10 @@ namespace RealismMod
             float recoilFactor = (doubleShot != 0) ? 1.5f : 1f;
 
             _recoilField.SetValue(__instance, recoilFactor + (float)ammo.ammoRec / 100f);
-            __instance.method_54(WeaponSoundPlayer, ammo, shotPosition, shotDirection, multiShot);
+            __instance.method_58(WeaponSoundPlayer, ammo, shotPosition, shotDirection, multiShot);
             if (ammo.AmmoTemplate.IsLightAndSoundShot)
             {
-                __instance.method_58(position, baseShotDirection);
+                __instance.method_61(position, baseShotDirection);
                 __instance.LightAndSoundShot(position, baseShotDirection, ammo.AmmoTemplate);
             }
 
@@ -131,24 +135,25 @@ namespace RealismMod
          {
              __instance.BodySkins[part.Key].Unskin();
          }
-     }
+    }
 
+    //modify bullet energy loss over distance
     public class VelocityPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GClass3010).GetMethod("Initialize", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GClass3369).GetMethod("Initialize", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
-        private static void Prefix(GClass3010 __instance)
+        private static void Prefix(GClass3369 __instance)
         {
-            float bcFactor = (float)AccessTools.Field(typeof(GClass3010), "float_3").GetValue(__instance);
-            AccessTools.Field(typeof(GClass3010), "float_3").SetValue(__instance, bcFactor *= PluginConfig.DragModifier.Value);
+            float bcFactor = (float)AccessTools.Field(typeof(GClass3369), "float_3").GetValue(__instance);
+            AccessTools.Field(typeof(GClass3369), "float_3").SetValue(__instance, bcFactor *= PluginConfig.DragModifier.Value);
         }
     }
 
-
+    //adjust how arm penetration is handled
     public class IsPenetratedPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -228,8 +233,8 @@ namespace RealismMod
             __instance.IsForwardHit = shot.IsForwardHit;
             __instance.SourceId = shot.Ammo.TemplateId;
 
-            BulletClass bulletClass;
-            if ((bulletClass = (shot.Ammo as BulletClass)) != null)
+            AmmoItemClass bulletClass;
+            if ((bulletClass = (shot.Ammo as AmmoItemClass)) != null)
             {
                 __instance.StaminaBurnRate = bulletClass.StaminaBurnRate;
                 __instance.HeavyBleedingDelta = bulletClass.HeavyBleedingDelta;
@@ -240,8 +245,8 @@ namespace RealismMod
                 __instance.LightBleedingDelta = 0f;
                 __instance.HeavyBleedingDelta = 0f;
                 __instance.StaminaBurnRate = 0f;
-                KnifeClass knifeClass;
-                if ((knifeClass = (__instance.Weapon as KnifeClass)) != null)
+                KnifeItemClass knifeClass;
+                if ((knifeClass = (__instance.Weapon as KnifeItemClass)) != null)
                 {
                     __instance.StaminaBurnRate = knifeClass.KnifeComponent.Template.StaminaBurnRate;
                 }
@@ -278,7 +283,7 @@ namespace RealismMod
 
                 if (rndNumber <= totalChance)
                 {
-                    InventoryControllerClass inventoryController = (InventoryControllerClass)inventoryControllerField.GetValue(player);
+                    var inventoryController = (PlayerOwnerInventoryController)inventoryControllerField.GetValue(player);
                     if (player.HandsController as Player.FirearmController != null)
                     {
                         Player.FirearmController fc = player.HandsController as Player.FirearmController;
@@ -717,7 +722,7 @@ namespace RealismMod
             }
             else
             {
-                ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[damageInfo.SourceId];
+                ammoTemp = (AmmoTemplate)Singleton<ItemFactoryClass>.Instance.ItemTemplates[damageInfo.SourceId];
 
                 armorDamageActual = ammoTemp.ArmorDamage; // * speedFactor don't think facotring by speedFacotr is a good idea anymore, momentum being based on velocity is enough
                 if (damageInfo.ArmorDamage <= 1) //if damageinfo's armor damage is not equal to the velocity of the round, must be Fika
@@ -871,7 +876,7 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, BulletClass ammo, Vector3 origin, Vector3 direction, int fireIndex, string player, Item weapon, ref EftBulletClass __result, float speedFactor, int fragmentIndex = 0)
+        private static bool Prefix(EFT.Ballistics.BallisticsCalculator __instance, AmmoItemClass ammo, Vector3 origin, Vector3 direction, int fireIndex, string player, Item weapon, ref EftBulletClass __result, float speedFactor, int fragmentIndex = 0)
         {
             float speedFactorDamage = speedFactor > 1f ? Mathf.Pow(speedFactor, 4f) : speedFactor;
             float speedFactorPenetration = speedFactor > 1f ? Mathf.Pow(speedFactor, 3f) : speedFactor < 1f ? Mathf.Pow(speedFactor, 0.45f) : speedFactor;
@@ -922,8 +927,8 @@ namespace RealismMod
             float force;
             if (lastDam.DamageType == EDamageType.Bullet)
             {
-                AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactory>.Instance.ItemTemplates[lastDam.SourceId];
-                BulletClass ammo = new BulletClass(Utils.GenId(), ammoTemp);
+                AmmoTemplate ammoTemp = (AmmoTemplate)Singleton<ItemFactoryClass>.Instance.ItemTemplates[lastDam.SourceId];
+                AmmoItemClass ammo = new AmmoItemClass(Utils.GenId(), ammoTemp);
                 float KE = ((0.5f * ammo.BulletMassGram * lastDam.ArmorDamage * lastDam.ArmorDamage) / 1000);
                 force = (-Mathf.Max(1f, KE / 1000f)) * PluginConfig.RagdollForceModifier.Value;
                 ammo = null;

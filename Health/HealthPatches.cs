@@ -16,10 +16,11 @@ using UnityEngine;
 using static EFT.HealthSystem.ActiveHealthController;
 using static RealismMod.Attributes;
 using Color = UnityEngine.Color;
-using ExistanceClass = GClass2470;
-using HealthStateClass = GClass2430<EFT.HealthSystem.ActiveHealthController.GClass2429>;
-using MedUseStringClass = GClass1244;
-using SetInHandsMedsInterface = GInterface142;
+using ExistanceClass = GClass2788;
+using HealthStateClass = GClass2747<EFT.HealthSystem.ActiveHealthController.GClass2746>;
+using MedUseStringClass = GClass1352;
+using SetInHandsMedsInterface = GInterface165;
+
 
 namespace RealismMod
 {
@@ -303,7 +304,7 @@ namespace RealismMod
         private static void PatchPostfix(HealthEffectsComponent __instance, Item item)
         {
             string medType = MedProperties.MedType(item);
-            if (item.Template._parent == "5448f3a64bdc2d60728b456a")
+            if (item.Template.ParentId == "5448f3a64bdc2d60728b456a")
             {
                 List<ItemAttributeClass> stimAtt = item.Attributes;
                 ItemAttributeClass stimAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.StimType);
@@ -393,36 +394,37 @@ namespace RealismMod
         }
     }
 
-    public class StimStackPatch2 : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
-            Type genericType = typeof(Class1913<>); //declare generic type
-            Type constructedType = genericType.MakeGenericType(new Type[] { nestedType }); //construct type at runtime using nested type
-            return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPrefix]
-        private static bool Prefix(ref bool __result) //can use dynamic type for instance
-        {
-            __result = false;
-            return false;
-        }
-    }
 
     public class StimStackPatch1 : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
             Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
-            Type genericType = typeof(Class1914<>); //declare generic type
+            Type genericType = typeof(Class2067<>); //declare generic type
             Type constructedType = genericType.MakeGenericType(new Type[] { nestedType }); //construct type at runtime using nested type
             return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
         private static bool Prefix(ref bool __result)
+        {
+            __result = false;
+            return false;
+        }
+    }
+
+    public class StimStackPatch2 : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            Type nestedType = typeof(EFT.HealthSystem.ActiveHealthController).GetNestedType("Stimulator", BindingFlags.NonPublic | BindingFlags.Instance); //get the nested type used by the generic type, Class1885
+            Type genericType = typeof(Class2066<>); //declare generic type
+            Type constructedType = genericType.MakeGenericType(new Type[] { nestedType }); //construct type at runtime using nested type
+            return constructedType.GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool Prefix(ref bool __result) //can use dynamic type for instance
         {
             __result = false;
             return false;
@@ -470,7 +472,7 @@ namespace RealismMod
             }
         }
 
-        private static void DoFoodItem(HealthControllerClass hc, FoodClass foodClass) 
+        private static void DoFoodItem(HealthControllerClass hc, FoodItemClass foodClass) 
         {
             var toxinDebuffs = foodClass.HealthEffectsComponent.BuffSettings.Where(b => b.BuffType == EStimulatorBuffType.UnknownToxin);
             if (toxinDebuffs.Count() > 0) 
@@ -522,7 +524,7 @@ namespace RealismMod
 
             if (Plugin.ServerConfig.food_changes)
             {
-                FoodClass foodClass = item as FoodClass;
+                FoodItemClass foodClass = item as FoodItemClass;
                 if (foodClass != null)
                 {
                     DoFoodItem(__instance, foodClass);
@@ -532,19 +534,19 @@ namespace RealismMod
 
             if (Plugin.ServerConfig.med_changes)
             {
-                MedsClass medsClass = item as MedsClass;
-                if (medsClass != null)
+                MedsItemClass MedsItemClass = item as MedsItemClass;
+                if (MedsItemClass != null)
                 {
-                    string medType = MedProperties.MedType(medsClass);
+                    string medType = MedProperties.MedType(MedsItemClass);
                     //need to get surgery kit working later, doesnt want to remove hp resource.
                     if (medType == "medkit") // || medType == "surg"
                     {
-                        RestoreHP(__instance, bodyPart, MedProperties.HPRestoreAmount(medsClass));
-                        /*             medsClass.MedKitComponent.HpResource -= 1f;
-                                     medsClass.MedKitComponent.Item.RaiseRefreshEvent(false, true);*/
+                        RestoreHP(__instance, bodyPart, MedProperties.HPRestoreAmount(MedsItemClass));
+                        /*             MedsItemClass.MedKitComponent.HpResource -= 1f;
+                                     MedsItemClass.MedKitComponent.Item.RaiseRefreshEvent(false, true);*/
                         return;
                     }
-/*                    Plugin.RealHealthController.CheckIfReducesHazardInStash(medsClass, true, __instance); //can't get it to use resource without causing issues
+/*                    Plugin.RealHealthController.CheckIfReducesHazardInStash(MedsItemClass, true, __instance); //can't get it to use resource without causing issues
 */
                 }
             }
@@ -556,28 +558,29 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(PlayerHealthController).GetMethod("ApplyItem", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(GControl4).GetMethod("ApplyItem", BindingFlags.Instance | BindingFlags.Public);
 
         }
         [PatchPrefix]
-        private static bool Prefix(PlayerHealthController __instance, Item item, EBodyPart bodyPart, ref bool __result)
+        private static bool Prefix(GControl4 __instance, Item item, EBodyPart bodyPart, ref bool __result)
         {
-            if (__instance.Player.IsYourPlayer)
+            var player = (Player)AccessTools.Field(typeof(GControl4), "_player").GetValue(__instance);
+            if (player.IsYourPlayer)
             {
                 if (!__instance.CanApplyItem(item, bodyPart)) return true;
 
-                MedsClass medsClass;
-                FoodClass foodClass;
+                MedsItemClass MedsItemClass;
+                FoodItemClass foodClass;
                 bool canUse = true;
-                if (((medsClass = (item as MedsClass)) != null))
+                if (((MedsItemClass = (item as MedsItemClass)) != null))
                 {
                     if (PluginConfig.EnableLogging.Value)
                     {
                         Logger.LogWarning("ApplyItem Med");
                     }
-                    Plugin.RealHealthController.CanUseMedItem(__instance.Player, bodyPart, item, ref canUse);
+                    Plugin.RealHealthController.CanUseMedItem(player, bodyPart, item, ref canUse);
                 }
-                if ((foodClass = (item as FoodClass)) != null)
+                if ((foodClass = (item as FoodItemClass)) != null)
                 {
                     if (PluginConfig.EnableLogging.Value)
                     {
@@ -586,7 +589,7 @@ namespace RealismMod
 
                     if (PluginConfig.GearBlocksEat.Value)
                     {
-                        Plugin.RealHealthController.CanConsume(__instance.Player, item, ref canUse);
+                        Plugin.RealHealthController.CanConsume(player, item, ref canUse);
                     }
                 }
 
@@ -610,8 +613,8 @@ namespace RealismMod
         {
             if (__instance.IsYourPlayer)
             {
-                Item boundItem = __instance.InventoryControllerClass.Inventory.FastAccess.GetBoundItem(quickSlot);
-                FoodClass foodItem = boundItem as FoodClass;
+                Item boundItem = __instance.InventoryController.Inventory.FastAccess.GetBoundItem(quickSlot);
+                FoodItemClass foodItem = boundItem as FoodItemClass;
                 if (boundItem != null && foodItem != null)
                 {
                     bool canUse = true;
@@ -625,10 +628,10 @@ namespace RealismMod
                 }
                 if (Plugin.FikaPresent)
                 {
-                    MedsClass medItem = boundItem as MedsClass;
+                    MedsItemClass medItem = boundItem as MedsItemClass;
                     if (boundItem != null && medItem != null)
                     {
-                        __instance.SetInHands(medItem, EBodyPart.Common, 1, new Callback<GInterface142>(PlayerHealthController.Class1952.class1952_0.method_0));
+                        __instance.SetInHands(medItem, EBodyPart.Common, 1, new Callback<SetInHandsMedsInterface>(GControl4.Class2105.class2105_0.method_1));
                         callback(null);
                         return false;
                     }
@@ -670,7 +673,8 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ActiveHealthController __instance, EBodyPart bodyPart, float healthPenalty, ref bool __result)
         {
-            if (__instance.Player.IsYourPlayer) 
+            var player = (Player)AccessTools.Field(typeof(ActiveHealthController), "_player").GetValue(__instance);
+            if (player.IsYourPlayer) 
             {
                 //I had to do this previously due to the type being protected, no longer is the case. Keeping for reference.
                 /* BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);*/
@@ -689,8 +693,8 @@ namespace RealismMod
                 bodyPartState.IsDestroyed = false;
                 healthPenalty += (1f - healthPenalty) * skills.SurgeryReducePenalty;
                 bodyPartState.Health = new HealthValue(1f, Mathf.Max(1f, Mathf.Ceil(bodyPartState.Health.Maximum * healthPenalty)), 0f);
-                __instance.method_40(bodyPart, EDamageType.Medicine);
-                __instance.method_32(bodyPart);
+                __instance.method_43(bodyPart, EDamageType.Medicine);
+                __instance.method_35(bodyPart);
                 Action<EBodyPart, ValueStruct> bodyPartRestoredEvent = bodyPartRestoredField;
                 if (bodyPartRestoredEvent != null)
                 {
@@ -787,9 +791,10 @@ namespace RealismMod
         }
 
         [PatchPrefix]
-        private static void Prefix(ActiveHealthController __instance, EBodyPart bodyPart, ref float damage, DamageInfo damageInfo)
+        private static void Prefix(ActiveHealthController __instance, EBodyPart bodyPart, ref float damage, DamageInfoStruct damageInfo)
         {
-            if (__instance.Player.IsYourPlayer)
+            var player = (Player)AccessTools.Field(typeof(ActiveHealthController), "_player").GetValue(__instance);
+            if (player.IsYourPlayer)
             {
                 if (PluginConfig.EnableLogging.Value)
                 {
@@ -820,8 +825,8 @@ namespace RealismMod
                     return;
                 }
 
-                float vitalitySkill = __instance.Player.Skills.VitalityBuffSurviobilityInc.Value;
-                float stressResist = __instance.Player.Skills.StressPain.Value;
+                float vitalitySkill = player.Skills.VitalityBuffSurviobilityInc.Value;
+                float stressResist = player.Skills.StressPain.Value;
                 int delay = (int)Math.Round(15f * (1f - vitalitySkill), 2);
                 float tickRate = (float)Math.Round(0.22f * (1f + vitalitySkill), 2);
                 float fallDamageLimit = 17 * vitalitySkill;
@@ -839,17 +844,17 @@ namespace RealismMod
                 }
                 if ((damageType == EDamageType.Fall && damage <= fallDamageLimit))
                 {
-                    Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage, damageType);
+                    Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, player, delay, damage, damageType);
                     return;
                 }
                 if (damageType == EDamageType.Barbed)
                 {
-                    Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
+                    Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, player, delay, damage * 0.75f, damageType);
                     return;
                 }
                 if (damageType == EDamageType.Blunt && damage <= bluntDamageLimit)
                 {
-                    Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, __instance.Player, delay, damage * 0.75f, damageType);
+                    Plugin.RealHealthController.DoPassiveRegen(tickRate, bodyPart, player, delay, damage * 0.75f, damageType);
                     return;
                 }
                 if (damageType == EDamageType.HeavyBleeding || damageType == EDamageType.LightBleeding)
@@ -866,7 +871,7 @@ namespace RealismMod
                     float painkillerDuration = (float)Math.Round(20f * (1f + (stressResist / 2)), 2);
                     float negativeEffectDuration = (float)Math.Round(25f * (1f - (stressResist / 2)), 2);
                     float negativeEffectStrength = (float)Math.Round(0.95f * (1f - (stressResist / 2)), 2);
-                    Plugin.RealHealthController.TryAddAdrenaline(__instance.Player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
+                    Plugin.RealHealthController.TryAddAdrenaline(player, painkillerDuration, negativeEffectDuration, negativeEffectStrength);
 
                 }
             }
@@ -878,11 +883,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player).GetMethod("SetInHands", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(int), typeof(Callback<SetInHandsMedsInterface>)}, null);
+            return typeof(EFT.Player).GetMethod("SetInHands", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsItemClass), typeof(EBodyPart), typeof(int), typeof(Callback<SetInHandsMedsInterface>)}, null);
         }
 
         [PatchPrefix]
-        private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
+        private static bool Prefix(Player __instance, MedsItemClass meds, ref EBodyPart bodyPart)
         {
             if (__instance.IsYourPlayer && Plugin.FikaPresent)
             {
@@ -899,11 +904,11 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsClass), typeof(EBodyPart), typeof(Callback<SetInHandsMedsInterface>), typeof(int), typeof(bool) }, null);
+            return typeof(EFT.Player).GetMethod("Proceed", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(MedsItemClass), typeof(EBodyPart), typeof(Callback<SetInHandsMedsInterface>), typeof(int), typeof(bool) }, null);
         }
 
         [PatchPrefix]
-        private static bool Prefix(Player __instance, MedsClass meds, ref EBodyPart bodyPart)
+        private static bool Prefix(Player __instance, MedsItemClass meds, ref EBodyPart bodyPart)
         {
             if (__instance.IsYourPlayer && !Plugin.FikaPresent)  //Fika overrides Proceed methods
             {
