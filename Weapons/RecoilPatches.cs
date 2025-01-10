@@ -281,7 +281,7 @@ namespace RealismMod
             float fpsFactor = 1f;
             if (PluginConfig.UseFpsRecoilFactor.Value)
             {
-                fpsFactor = FpsFactor / Plugin.FPS;
+                fpsFactor = Plugin.FPS >= 1f ? FpsFactor / Plugin.FPS : 1f;
                 fpsFactor = Mathf.Pow(fpsFactor, FpsSmoothingFactor);
                 fpsFactor = Mathf.Clamp(fpsFactor, 0.5f, 2f);
             }

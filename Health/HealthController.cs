@@ -216,6 +216,38 @@ namespace RealismMod
             }
         }
 
+        public float FracturePainFactor
+        {
+            get
+            {
+                return 15f * (1f - PlayerState.StressResistanceFactor);
+            }
+        }
+
+        public float ZeroedPainFactor
+        {
+            get
+            {
+                return 20f * (1f - PlayerState.StressResistanceFactor);
+            }
+        }
+
+        public float HpLossPainThreshold
+        {
+            get
+            {
+                return 0.8f * (1f - PlayerState.StressResistanceFactor);
+            }
+        }
+
+        public float HpLossPainFactor
+        {
+            get
+            {
+                return 6f * (1f - PlayerState.StressResistanceFactor);
+            }
+        }
+
         public float AdrenalineMovementBonus
         {
             get
@@ -1939,11 +1971,9 @@ namespace RealismMod
             {
                 IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(part);
                 bool hasFracture = fractureType != null && effects.Any(e => e.Type == fractureType);
+                float stressResist = 1f - PlayerState.StressResistanceFactor;
 
-                if (hasFracture)
-                {
-                    PainStrength += 15f * (1f - PlayerState.StressResistanceFactor);
-                }
+                if (hasFracture) PainStrength += FracturePainFactor;
 
                 bool isLeftArm = part == EBodyPart.LeftArm;
                 bool isRightArm = part == EBodyPart.RightArm;
@@ -1966,8 +1996,8 @@ namespace RealismMod
                 float percentHpReload = 1f - ((1f - percentHp) / (isLeftArm ? 2f : isRightArm ? 3f : 4f));
                 float percentHpRecoil = 1f - ((1f - percentHp) / (isLeftArm ? 10f : 20f));
 
-                if (currentHp <= 0f) PainStrength += 20f * (1f - PlayerState.StressResistanceFactor);
-                else if (percentHp <= 0.5f) PainStrength += 5f * (1f - PlayerState.StressResistanceFactor);
+                if (currentHp <= 0f) PainStrength += ZeroedPainFactor;
+                else if (percentHp <= HpLossPainThreshold) PainStrength += HpLossPainFactor ;
 
                 if (isLeg || isBody)
                 {

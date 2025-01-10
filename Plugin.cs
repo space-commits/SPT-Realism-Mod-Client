@@ -62,7 +62,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.PLUGINVERSION)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string PLUGINVERSION = "1.4.7";
+        private const string PLUGINVERSION = "1.4.9";
 
         public static Dictionary<Enum, Sprite> IconCache = new Dictionary<Enum, Sprite>();
         public static Dictionary<string, AudioClip> HitAudioClips = new Dictionary<string, AudioClip>();
@@ -588,7 +588,8 @@ namespace RealismMod
         {
             _averageFPS += ((Time.deltaTime / Time.timeScale) - _averageFPS) * 0.035f;
             FPS = (1f / _averageFPS);
-            if (float.IsNaN(FPS)) FPS = 144f;
+            if (float.IsNaN(FPS) || FPS <= 1f) FPS = 144f;
+            FPS = Mathf.Clamp(FPS, 30f, 200f);
         }
 
         void Update()
@@ -677,6 +678,7 @@ namespace RealismMod
             new RemoveSillyBossForcedMalf().Enable();
             new GetTotalMalfunctionChancePatch().Enable();
             new IsKnownMalfTypePatch().Enable();
+            new RemoveForcedMalf().Enable();
             if (ServerConfig.manual_chambering)
             {
                 new SetAmmoCompatiblePatch().Enable();

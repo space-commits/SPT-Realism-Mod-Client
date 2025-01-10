@@ -295,4 +295,18 @@ namespace RealismMod
             __result = true;
         }
     }
+
+    public class RemoveForcedMalf : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return AccessTools.Method(typeof(ActiveHealthController), nameof(ActiveHealthController.AddMisfireEffect));
+        }
+
+        [PatchPrefix]
+        static bool Prefix(ActiveHealthController __instance)
+        {
+            return false;
+        }
+    }
 }
