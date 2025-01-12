@@ -4,7 +4,7 @@ using UnityEngine;
 namespace RealismMod
 {
 
-    public static class DeafeningController
+/*    public static class DeafeningController
     {
         private static bool valuesAreReset = false;
 
@@ -168,5 +168,5 @@ namespace RealismMod
             vigValue = Mathf.Clamp(vigValue - vigResetRate, 0.0f, vigLimit);
             volValue = Mathf.Clamp(volValue + volResetRate, volLimit, 0.0f);
         }
-    }
+    }*/
 }

@@ -138,7 +138,7 @@ namespace RealismMod
                 IEnumerable<Item> items = slot.Items;
                 foreach (Item item in items)
                 {
-                    float itemTotalWeight = item.GetSingleItemTotalWeight();
+                    float itemTotalWeight = Utils.GetSingleItemTotalWeight(item);
                     trueWeight += itemTotalWeight;
                     if (equipmentSlot == EquipmentSlot.Backpack || equipmentSlot == EquipmentSlot.TacticalVest || equipmentSlot == EquipmentSlot.ArmorVest || equipmentSlot == EquipmentSlot.Headwear || equipmentSlot == EquipmentSlot.ArmBand)
                     {
@@ -293,8 +293,8 @@ namespace RealismMod
 
             totalErgo /= 100f;
             totalSpeed /= 100f;
-            PlayerState.GearErgoPenalty = Mathf.Clamp(1f + totalErgo, 0.1f, 2f);
-            PlayerState.GearSpeedPenalty = Mathf.Clamp(1f + totalSpeed, 0.1f, 2f);
+            PlayerValues.GearErgoPenalty = Mathf.Clamp(1f + totalErgo, 0.1f, 2f);
+            PlayerValues.GearSpeedPenalty = Mathf.Clamp(1f + totalSpeed, 0.1f, 2f);
 
             HandleGasMaskEffects(player, gasProtection, radProtection);
 
@@ -306,8 +306,8 @@ namespace RealismMod
 
             if (PluginConfig.EnableLogging.Value)
             {
-                Utils.Logger.LogWarning("gear speed " + PlayerState.GearSpeedPenalty);
-                Utils.Logger.LogWarning("gear ergo " + PlayerState.GearErgoPenalty);
+                Utils.Logger.LogWarning("gear speed " + PlayerValues.GearSpeedPenalty);
+                Utils.Logger.LogWarning("gear ergo " + PlayerValues.GearErgoPenalty);
             }
         }
 
@@ -378,8 +378,8 @@ namespace RealismMod
                 }
             }
 
-            PlayerState.GearReloadMulti = reloadMulti;
-            PlayerState.GearAllowsADS = allowADS;
+            PlayerValues.GearReloadMulti = reloadMulti;
+            PlayerValues.GearAllowsADS = allowADS;
         }
 
 

@@ -51,7 +51,7 @@ namespace RealismMod
         {
             _elapsedTime += Time.deltaTime;
 
-            if (PlayerState.EnviroType == EnvironmentType.Indoor || PlayerState.BtrState == EPlayerBtrState.Inside)
+            if (PlayerValues.EnviroType == EnvironmentType.Indoor || PlayerValues.BtrState == EPlayerBtrState.Inside)
             {
                 _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, 0.5f, 0.35f * Time.deltaTime);
             }
@@ -109,7 +109,7 @@ namespace RealismMod
 
     }
 
-    public static class HeadsetGainController
+/*    public static class HeadsetGainController
     {
         public static void AdjustHeadsetVolume()
         {
@@ -131,7 +131,7 @@ namespace RealismMod
                 }
             }
         }
-    }
+    }*/
 
     public static class AudioController 
     {
@@ -266,7 +266,7 @@ namespace RealismMod
 
         private float GetBreathVolume() 
         {
-            return BASE_BREATH_VOLUME * (2f - PlayerState.BaseStaminaPerc) * PluginConfig.GasMaskBreathVolume.Value;
+            return BASE_BREATH_VOLUME * (2f - PlayerValues.BaseStaminaPerc) * PluginConfig.GasMaskBreathVolume.Value;
         }
 
         private string GetAudioFromOtherStates()
@@ -275,11 +275,11 @@ namespace RealismMod
             {
                 return "Dying";
             }
-            if (HazardTracker.TotalToxicity >= 50f || PlayerState.BaseStaminaPerc <= 0.55 || HazardTracker.TotalRadiation >= 70f || Plugin.RealHealthController.HasAdrenalineEffect)
+            if (HazardTracker.TotalToxicity >= 50f || PlayerValues.BaseStaminaPerc <= 0.55 || HazardTracker.TotalRadiation >= 70f || Plugin.RealHealthController.HasAdrenalineEffect)
             {
                 return "BadlyInjured";
             }
-            if (HazardTracker.TotalToxicity >= 30f || PlayerState.BaseStaminaPerc <= 0.8f || HazardTracker.TotalRadiation >= 50f)
+            if (HazardTracker.TotalToxicity >= 30f || PlayerValues.BaseStaminaPerc <= 0.8f || HazardTracker.TotalRadiation >= 50f)
             {
                 return "Injured";
             }

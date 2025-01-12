@@ -1,117 +1,111 @@
-﻿using SPT.Reflection.Patching;
-using SPT.Reflection.Utils;
-using Comfort.Common;
+﻿using Comfort.Common;
 using EFT;
 using EFT.Animations;
 using EFT.InventoryLogic;
 using HarmonyLib;
+using SPT.Reflection.Patching;
 using System.Reflection;
 using UnityEngine;
 using static EFT.Player;
-using ProcessorClass = GClass2227;
-using StaminaLevelClass = GClass754<float>;
-using WeaponSkillsClass = EFT.SkillManager.GClass1783;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using RootMotion.FinalIK;
+using ProcessorClass = GClass2534;
+using StaminaLevelClass = GClass816<float>;
 
 namespace RealismMod
 {
     //with BSG's recoil rework, player camera is much more closely attached to the weapon. This is a problem for the stances, making them behave strangely
     //this patch attempts to rectify that
-/*    public class CalculateCameraPatch : ModulePatch
-    {
-        private static FieldInfo playerField;
-        private static FieldInfo fcField;
-
-        protected override MethodBase GetTargetMethod()
+    /*    public class CalculateCameraPatch : ModulePatch
         {
-            playerField = AccessTools.Field(typeof(FirearmController), "_player");
-            fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
-            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("UpdateWeaponVariables", BindingFlags.Instance | BindingFlags.Public);
-        }
+            private static FieldInfo playerField;
+            private static FieldInfo fcField;
 
-        [PatchPostfix]
-        private static void PatchPostfix(
-            EFT.Animations.ProceduralWeaponAnimation __instance, ref Vector3 ____vCameraTarget,
-            ref Player.ValueBlenderDelay ____tacticalReload, ref float ____aimLeftStanceAdditionalOffset,
-            ref GInterface139 ____firearmAnimationData, ref float ____blindfireStrength, ref Quaternion ____rotation90deg,
-            ref bool ____crankRecoil, ref Vector3 ____localAimShift, ref float ____leftStanceCurrentCurveValue,
-            ref float ____compensatoryScale, ref Vector3 ____cameraByFOVOffset, ref float ____animatorPoseBlend,
-            ref Vector3 ___vector)
-        {
-            FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
-            if (firearmController == null) return;
-            Player player = (Player)playerField.GetValue(firearmController);
-            if (player != null && player.IsYourPlayer)
+            protected override MethodBase GetTargetMethod()
             {
-                if (!__instance.HandsContainer.WeaponRootAnim)
+                playerField = AccessTools.Field(typeof(FirearmController), "_player");
+                fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
+                return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("UpdateWeaponVariables", BindingFlags.Instance | BindingFlags.Public);
+            }
+
+            [PatchPostfix]
+            private static void PatchPostfix(
+                EFT.Animations.ProceduralWeaponAnimation __instance, ref Vector3 ____vCameraTarget,
+                ref Player.ValueBlenderDelay ____tacticalReload, ref float ____aimLeftStanceAdditionalOffset,
+                ref GInterface139 ____firearmAnimationData, ref float ____blindfireStrength, ref Quaternion ____rotation90deg,
+                ref bool ____crankRecoil, ref Vector3 ____localAimShift, ref float ____leftStanceCurrentCurveValue,
+                ref float ____compensatoryScale, ref Vector3 ____cameraByFOVOffset, ref float ____animatorPoseBlend,
+                ref Vector3 ___vector)
+            {
+                FirearmController firearmController = (FirearmController)fcField.GetValue(__instance);
+                if (firearmController == null) return;
+                Player player = (Player)playerField.GetValue(firearmController);
+                if (player != null && player.IsYourPlayer)
                 {
-                    return;
-                }
-                Vector3 a = (__instance.BlindfireBlender.Value > 0f) ? (__instance.BlindFireCamera * Mathf.Abs(__instance.BlindfireBlender.Value / 2f)) : (__instance.SideFireCamera * Mathf.Abs(__instance.BlindfireBlender.Value / 2f));
-                __instance.HandsContainer.CameraRotation.Zero = new Vector3(0f, 0f, __instance.SmoothedTilt * __instance.PossibleTilt) + a * ____blindfireStrength;
-                Vector3 vector = Vector3.zero;
-                foreach (ValueTuple<AnimatorPose, float, bool> valueTuple in __instance.ActiveBlends)
-                {
-                    float d = valueTuple.Item1.Blend.Evaluate(valueTuple.Item2);
-                    vector += valueTuple.Item1.CameraPosition * d;
-                    __instance.HandsContainer.CameraRotation.Zero += valueTuple.Item1.CameraRotation * d;
-                }
-                if (__instance.IsAiming && Mathf.Approximately(__instance.BlindfireBlender.Value, 0f) && __instance.ScopeAimTransforms.Count > 0)
-                {
-                    if (____tacticalReload.Value > Mathf.Epsilon)
+                    if (!__instance.HandsContainer.WeaponRootAnim)
                     {
-                        ____vCameraTarget = ____rotation90deg * GClass746.GetPositionRelativeToParent(__instance.HandsContainer.Weapon, __instance.CurrentScope.Bone) + __instance.HandsContainer.WeaponRoot.localPosition + ____rotation90deg * __instance.HandsContainer.WeaponRootAnim.localPosition;
+                        return;
                     }
-                    else
+                    Vector3 a = (__instance.BlindfireBlender.Value > 0f) ? (__instance.BlindFireCamera * Mathf.Abs(__instance.BlindfireBlender.Value / 2f)) : (__instance.SideFireCamera * Mathf.Abs(__instance.BlindfireBlender.Value / 2f));
+                    __instance.HandsContainer.CameraRotation.Zero = new Vector3(0f, 0f, __instance.SmoothedTilt * __instance.PossibleTilt) + a * ____blindfireStrength;
+                    Vector3 vector = Vector3.zero;
+                    foreach (ValueTuple<AnimatorPose, float, bool> valueTuple in __instance.ActiveBlends)
                     {
-                        ____vCameraTarget = __instance.HandsContainer.WeaponRoot.parent.InverseTransformPoint(__instance.CurrentScope.Bone.position);
+                        float d = valueTuple.Item1.Blend.Evaluate(valueTuple.Item2);
+                        vector += valueTuple.Item1.CameraPosition * d;
+                        __instance.HandsContainer.CameraRotation.Zero += valueTuple.Item1.CameraRotation * d;
                     }
-                    if (__instance._currentAimingPlane != null)
+                    if (__instance.IsAiming && Mathf.Approximately(__instance.BlindfireBlender.Value, 0f) && __instance.ScopeAimTransforms.Count > 0)
                     {
-                        Transform aimPointParent = __instance.AimPointParent;
-                        Matrix4x4 matrix4x = Matrix4x4.TRS(aimPointParent.position, aimPointParent.rotation, __instance.Vector3_0);
-                        float num = Mathf.Min(__instance._currentAimingPlane.Depth, __instance._farPlane.Depth - __instance.HandsContainer.Weapon.localPosition.y);
-                        ____localAimShift.y = (____crankRecoil ? (-num + __instance.PositionZeroSum.y * 2f) : (-num));
-                        Vector3 point = matrix4x.MultiplyPoint3x4(____localAimShift);
-                        Transform parent = __instance.HandsContainer.WeaponRoot.parent;
-                        if (____firearmAnimationData != null && ____leftStanceCurrentCurveValue > 0f)
+                        if (____tacticalReload.Value > Mathf.Epsilon)
                         {
-                            parent = __instance.HandsContainer.CameraTransform.parent;
-                        }
-                        matrix4x = Matrix4x4.TRS(parent.position, parent.rotation, __instance.Vector3_0).inverse;
-                        if (__instance.method_18())
-                        {
-                            Vector3 direction = __instance.CurrentScope.Bone.forward * -1f;
-                            if (__instance.CurrentScope.Bone.name == "aim_camera")
-                            {
-                                direction = __instance.CurrentScope.Bone.up * -1f;
-                            }
-                            Vector3 vector2 = __instance.HandsContainer.WeaponRoot.parent.InverseTransformDirection(direction);
-                            float d2 = matrix4x.MultiplyPoint3x4(point).z + __instance._fovCompensatoryDistance - __instance.TurnAway.Position.y + __instance._cameraShiftToLineOfSight.x - ____vCameraTarget.z;
-                            Vector3 vCameraTarget = ____vCameraTarget + vector2.normalized * d2;
-                            ____vCameraTarget = vCameraTarget;
+                            ____vCameraTarget = ____rotation90deg * GClass746.GetPositionRelativeToParent(__instance.HandsContainer.Weapon, __instance.CurrentScope.Bone) + __instance.HandsContainer.WeaponRoot.localPosition + ____rotation90deg * __instance.HandsContainer.WeaponRootAnim.localPosition;
                         }
                         else
                         {
-                            ____vCameraTarget.z = matrix4x.MultiplyPoint3x4(point).z + __instance._fovCompensatoryDistance - __instance.TurnAway.Position.y + __instance._cameraShiftToLineOfSight.x;
+                            ____vCameraTarget = __instance.HandsContainer.WeaponRoot.parent.InverseTransformPoint(__instance.CurrentScope.Bone.position);
                         }
+                        if (__instance._currentAimingPlane != null)
+                        {
+                            Transform aimPointParent = __instance.AimPointParent;
+                            Matrix4x4 matrix4x = Matrix4x4.TRS(aimPointParent.position, aimPointParent.rotation, __instance.Vector3_0);
+                            float num = Mathf.Min(__instance._currentAimingPlane.Depth, __instance._farPlane.Depth - __instance.HandsContainer.Weapon.localPosition.y);
+                            ____localAimShift.y = (____crankRecoil ? (-num + __instance.PositionZeroSum.y * 2f) : (-num));
+                            Vector3 point = matrix4x.MultiplyPoint3x4(____localAimShift);
+                            Transform parent = __instance.HandsContainer.WeaponRoot.parent;
+                            if (____firearmAnimationData != null && ____leftStanceCurrentCurveValue > 0f)
+                            {
+                                parent = __instance.HandsContainer.CameraTransform.parent;
+                            }
+                            matrix4x = Matrix4x4.TRS(parent.position, parent.rotation, __instance.Vector3_0).inverse;
+                            if (__instance.method_18())
+                            {
+                                Vector3 direction = __instance.CurrentScope.Bone.forward * -1f;
+                                if (__instance.CurrentScope.Bone.name == "aim_camera")
+                                {
+                                    direction = __instance.CurrentScope.Bone.up * -1f;
+                                }
+                                Vector3 vector2 = __instance.HandsContainer.WeaponRoot.parent.InverseTransformDirection(direction);
+                                float d2 = matrix4x.MultiplyPoint3x4(point).z + __instance._fovCompensatoryDistance - __instance.TurnAway.Position.y + __instance._cameraShiftToLineOfSight.x - ____vCameraTarget.z;
+                                Vector3 vCameraTarget = ____vCameraTarget + vector2.normalized * d2;
+                                ____vCameraTarget = vCameraTarget;
+                            }
+                            else
+                            {
+                                ____vCameraTarget.z = matrix4x.MultiplyPoint3x4(point).z + __instance._fovCompensatoryDistance - __instance.TurnAway.Position.y + __instance._cameraShiftToLineOfSight.x;
+                            }
+                        }
+                        ____vCameraTarget.y = ____vCameraTarget.y + __instance._cameraShiftToLineOfSight.y;
+                        if (__instance.Boolean_0)
+                        {
+                            ____vCameraTarget.z = ____vCameraTarget.z + ____aimLeftStanceAdditionalOffset * (1f - ____compensatoryScale);
+                        }
+                        ____vCameraTarget += ___vector;
+                        return;
                     }
-                    ____vCameraTarget.y = ____vCameraTarget.y + __instance._cameraShiftToLineOfSight.y;
-                    if (__instance.Boolean_0)
-                    {
-                        ____vCameraTarget.z = ____vCameraTarget.z + ____aimLeftStanceAdditionalOffset * (1f - ____compensatoryScale);
-                    }
-                    ____vCameraTarget += ___vector;
-                    return;
+                    ____vCameraTarget = __instance.HandsContainer.CameraOffset + ____cameraByFOVOffset + __instance.TurnAway.CameraShift;
+                    ____vCameraTarget = ((____animatorPoseBlend > 0f) ? (____vCameraTarget + vector) : ____vCameraTarget);
                 }
-                ____vCameraTarget = __instance.HandsContainer.CameraOffset + ____cameraByFOVOffset + __instance.TurnAway.CameraShift;
-                ____vCameraTarget = ((____animatorPoseBlend > 0f) ? (____vCameraTarget + vector) : ____vCameraTarget);
             }
-        }
-    }*/
+        }*/
 
     //stop player camera following weapon muzzle
     public class CamRecoilPatch : ModulePatch
@@ -210,6 +204,7 @@ namespace RealismMod
         }
     }
 
+    //used to trigger update for aim and sway
     public class UpdateWeaponVariablesPatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -235,6 +230,7 @@ namespace RealismMod
         }
     }
 
+    //used to frequently update contextual sway and  ADS speed
     public class PwaWeaponParamsPatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -296,7 +292,7 @@ namespace RealismMod
                     float accuracy = weapon.GetTotalCenterOfImpact(false);
                     float3Field.SetValue(firearmController, accuracy); //update accuracy value
 
-                    float totalPlayerWeight = PlayerState.TotalModifiedWeightMinusWeapon;
+                    float totalPlayerWeight = PlayerValues.TotalModifiedWeightMinusWeapon;
                     float playerWeightADSFactor = 1f - (totalPlayerWeight / 200f);
                     float stanceMulti = 
                         StanceController.IsIdle() && !StanceController.IsLeftShoulder ? 1.75f 
@@ -306,19 +302,19 @@ namespace RealismMod
                         : StanceController.IsLeftShoulder ? 0.85f : 1f;
                     float stockMulti = weapon.WeapClass != "pistol" && !WeaponStats.HasShoulderContact ? 0.75f : 1f;
 
-                    float totalSightlessAimSpeed = WeaponStats.SightlessAimSpeed * PlayerState.ADSInjuryMulti * (Mathf.Max(PlayerState.RemainingArmStamFactor, 0.35f));
+                    float totalSightlessAimSpeed = WeaponStats.SightlessAimSpeed * PlayerValues.ADSInjuryMulti * (Mathf.Max(PlayerValues.RemainingArmStamFactor, 0.35f));
 
                     float sightSpeedModi = currentAimingMod != null ? AttachmentProperties.AimSpeed(currentAimingMod) : 1f;
                     sightSpeedModi = currentAimingMod != null && (currentAimingMod.TemplateId == "5c07dd120db834001c39092d" || currentAimingMod.TemplateId == "5c0a2cec0db834001b7ce47d") && __instance.CurrentScope.IsOptic ? 1f : sightSpeedModi;
                     float totalSightedAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)) * stanceMulti * stockMulti * playerWeightADSFactor, 0.4f, 1.5f);
                    
-                    float newAimSpeed = Mathf.Max(totalSightedAimSpeed * PlayerState.ADSSprintMulti * Plugin.RealHealthController.AdrenalineADSBonus * (1f + WeaponStats.ModAimSpeedModifier), 0.28f) * (weapon.WeapClass == "pistol" ? PluginConfig.PistolGlobalAimSpeedModifier.Value : PluginConfig.GlobalAimSpeedModifier.Value);
+                    float newAimSpeed = Mathf.Max(totalSightedAimSpeed * PlayerValues.ADSSprintMulti * Plugin.RealHealthController.AdrenalineADSBonus * (1f + WeaponStats.ModAimSpeedModifier), 0.28f) * (weapon.WeapClass == "pistol" ? PluginConfig.PistolGlobalAimSpeedModifier.Value : PluginConfig.GlobalAimSpeedModifier.Value);
                     AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimingSpeed").SetValue(__instance, newAimSpeed); //aimspeed
 
                     float leftShoulderFactor = StanceController.IsLeftShoulder ? 1.3f : 1f;
                     float formfactor = WeaponStats.IsBullpup ? 0.7f : 1f;
-                    float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff * 1.75f)) * (1f + (1f - PlayerState.GearErgoPenalty));
-                    float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(weapon.GetSingleItemTotalWeight(), weapon.WeapClass == "pistol" ? 1f : 4f);
+                    float ergoWeight = WeaponStats.ErgoFactor * PlayerValues.ErgoDeltaInjuryMulti * (1f - (PlayerValues.StrengthSkillAimBuff * 1.75f)) * (1f + (1f - PlayerValues.GearErgoPenalty));
+                    float ergoWeightFactor = StatCalc.ProceduralIntensityFactorCalc(weapon.TotalWeight, weapon.WeapClass == "pistol" ? 1f : 4f);
                     float playerWeightSwayFactor = 1f + (totalPlayerWeight / 200f);
                     float totalErgoFactor = 1f + ((ergoWeight * ergoWeightFactor * playerWeightSwayFactor * leftShoulderFactor) / 100f);
 
@@ -344,19 +340,19 @@ namespace RealismMod
                     float chonkerFactor = weapon.Weight >= 9f ? 1.45f : 1f;
                     float totalBreathIntensity = breathIntensity * __instance.IntensityByPoseLevel * PluginConfig.ProceduralIntensity.Value * chonkerFactor;
                     float totalInputIntensitry = handsIntensity * handsIntensity * PluginConfig.ProceduralIntensity.Value * chonkerFactor;
-                    PlayerState.TotalBreathIntensity = totalBreathIntensity;
-                    PlayerState.TotalHandsIntensity = totalInputIntensitry;
+                    PlayerValues.TotalBreathIntensity = totalBreathIntensity;
+                    PlayerValues.TotalHandsIntensity = totalInputIntensitry;
 
                     //this is stupid, refactor
-                    if (PlayerState.HasFullyResetSprintADSPenalties)
+                    if (PlayerValues.HasFullyResetSprintADSPenalties)
                     {
-                        __instance.Breath.Intensity = PlayerState.TotalBreathIntensity * StanceController.BracingSwayBonus;
-                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerState.TotalHandsIntensity * StanceController.BracingSwayBonus;
+                        __instance.Breath.Intensity = PlayerValues.TotalBreathIntensity * StanceController.BracingSwayBonus;
+                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerValues.TotalHandsIntensity * StanceController.BracingSwayBonus;
                     }
                     else
                     {
-                        __instance.Breath.Intensity = PlayerState.SprintTotalBreathIntensity;
-                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerState.SprintTotalHandsIntensity;
+                        __instance.Breath.Intensity = PlayerValues.SprintTotalBreathIntensity;
+                        __instance.HandsContainer.HandsRotation.InputIntensity = PlayerValues.SprintTotalHandsIntensity;
                     }
 
                     if (__instance.CurrentAimingMod != null)
@@ -382,9 +378,9 @@ namespace RealismMod
                     if (PluginConfig.EnableLogging.Value == true)
                     {
                         Logger.LogWarning("=====method_23========");
-                        Logger.LogWarning("ADSInjuryMulti = " + PlayerState.ADSInjuryMulti);
-                        Logger.LogWarning("remaining stam percentage = " + PlayerState.RemainingArmStamFactor);
-                        Logger.LogWarning("strength = " + PlayerState.StrengthSkillAimBuff);
+                        Logger.LogWarning("ADSInjuryMulti = " + PlayerValues.ADSInjuryMulti);
+                        Logger.LogWarning("remaining stam percentage = " + PlayerValues.RemainingArmStamFactor);
+                        Logger.LogWarning("strength = " + PlayerValues.StrengthSkillAimBuff);
                         Logger.LogWarning("player weight = " + playerWeightADSFactor);
                         Logger.LogWarning("sightSpeedModi = " + sightSpeedModi);
                         Logger.LogWarning("totalSightlessAimSpeed = " + totalSightlessAimSpeed);
@@ -414,6 +410,7 @@ namespace RealismMod
         }
     }
 
+    //used to update weapon inertia
     public class UpdateSwayFactorsPatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -479,12 +476,12 @@ namespace RealismMod
 
                 float stanceFactor = GetStanceFactor(__instance, true);
                 float stanceFactorMotion = GetStanceFactor(__instance);
-                float weapWeight = weapon.GetSingleItemTotalWeight();
+                float weapWeight = weapon.TotalWeight;
                 float formfactor = WeaponStats.IsBullpup ? 0.75f : 1f;
-                float totalPlayerWeight = PlayerState.TotalModifiedWeight - weapWeight;
+                float totalPlayerWeight = PlayerValues.TotalModifiedWeight - weapWeight;
                 float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
                 bool noShoulderContact = !WeaponStats.HasShoulderContact; //maybe don't include pistol
-                float ergoWeight = WeaponStats.ErgoFactor * PlayerState.ErgoDeltaInjuryMulti * (1f - (PlayerState.StrengthSkillAimBuff)) * (1f + (1f - PlayerState.GearErgoPenalty));
+                float ergoWeight = WeaponStats.ErgoFactor * PlayerValues.ErgoDeltaInjuryMulti * (1f - (PlayerValues.StrengthSkillAimBuff)) * (1f + (1f - PlayerValues.GearErgoPenalty));
                 float weightFactor = StatCalc.ProceduralIntensityFactorCalc(weapWeight, isPistol ? 1.3f : 2.4f); 
                 float displacementModifier = noShoulderContact ? PluginConfig.ProceduralIntensity.Value * 0.95f : PluginConfig.ProceduralIntensity.Value * 0.48f; // lower = less drag
                 float aimIntensity = noShoulderContact ? PluginConfig.ProceduralIntensity.Value * 0.86f : PluginConfig.ProceduralIntensity.Value * 0.51f;
@@ -514,7 +511,7 @@ namespace RealismMod
                 float walkMotionStockFactor = WeaponStats.IsBullpup ? 0.8f : WeaponStats.IsMachinePistol || WeaponStats.IsStocklessPistol ? 1.4f : !WeaponStats.HasShoulderContact ? 1.45f : 1f;
                 float weaponWalkMotionFactor = 2.1f * (WeaponStats.ErgoFactor / 100f) * WeaponStats.TotalWeaponHandlingModi;
                 weaponWalkMotionFactor = Mathf.Pow(weaponWalkMotionFactor, 0.87f);
-                WeaponStats.WalkMotionIntensity = weaponWalkMotionFactor * walkMotionStockFactor * playerWeightFactor * (1f + (1f - PlayerState.GearErgoPenalty));
+                WeaponStats.WalkMotionIntensity = weaponWalkMotionFactor * walkMotionStockFactor * playerWeightFactor * (1f + (1f - PlayerValues.GearErgoPenalty));
 
                 if (PluginConfig.EnableLogging.Value == true)
                 {
@@ -528,7 +525,7 @@ namespace RealismMod
                     Logger.LogWarning("Sway Factors = " + __instance.MotionReact.SwayFactors);
                     Logger.LogWarning("Motion Intensity = " + WeaponStats.BaseWeaponMotionIntensity);
                     Logger.LogWarning("Walk Motion Intensity = " + WeaponStats.WalkMotionIntensity);
-                    Logger.LogWarning("PlayerState.GearErgoPenalty = " + PlayerState.GearErgoPenalty);
+                    Logger.LogWarning("PlayerState.GearErgoPenalty = " + PlayerValues.GearErgoPenalty);
                     Logger.LogWarning("ergoWeightFactor = " + weightFactor);
                     Logger.LogWarning("stanceFactor = " + stanceFactor);
                 }
@@ -538,6 +535,7 @@ namespace RealismMod
         }
     }
 
+    //modifies BSG's weapon sway calcs, additional factors, etc.
     public class BreathProcessPatch : ModulePatch
     {
         private static FieldInfo breathIntensityField;
@@ -650,6 +648,7 @@ namespace RealismMod
         }
     }
 
+    //override BSG's playerweight calc, I do my own
     public class SetOverweightPatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -686,7 +685,7 @@ namespace RealismMod
         }
     }
 
-
+    //override BSG's playerweight calc, I do my own
     public class GetOverweightPatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -717,6 +716,7 @@ namespace RealismMod
         }
     }
 
+    //used for zero loss mechanic for reddots
     public class CalibrationLookAt : ModulePatch
     {
         private static float recordedDistance = 0f;
@@ -766,6 +766,7 @@ namespace RealismMod
         }
     }
 
+    //used for zero loss mechanic for optics
     public class CalibrationLookAtScope : ModulePatch
     {
         private static float recordedDistance = 0f;

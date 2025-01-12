@@ -5,7 +5,6 @@ using UnityEngine;
 namespace RealismMod
 {
 
-
     public static class UIWeaponStats
     {
         public static float ErgoDelta = 0;

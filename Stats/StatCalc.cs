@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static EFT.Player;
-using WeaponSkillsClass = EFT.SkillManager.GClass1783;
+using WeaponSkillsClass = EFT.SkillManager.GClass1981;
 
 namespace RealismMod
 {
@@ -61,16 +61,17 @@ namespace RealismMod
         {
             player.Inventory.UpdateTotalWeight();
             float playerWeight = player.Inventory.TotalWeight;
-            float weaponWeight = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item.GetSingleItemTotalWeight() : 1f;
-            PlayerState.TotalModifiedWeightMinusWeapon = playerWeight - weaponWeight;
-            PlayerState.TotalMousePenalty = (-playerWeight / 10f);
-            PlayerState.TotalModifiedWeight = playerWeight;
+            var weapon = player?.HandsController != null && player?.HandsController?.Item != null ? player.HandsController.Item as Weapon : null;
+            float weaponWeight = weapon != null ? weapon.TotalWeight : 0f;
+            PlayerValues.TotalModifiedWeightMinusWeapon = playerWeight - weaponWeight;
+            PlayerValues.TotalMousePenalty = (-playerWeight / 10f);
+            PlayerValues.TotalModifiedWeight = playerWeight;
             if (PluginConfig.EnableMouseSensPenalty.Value)
             {
                 player.RemoveMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor);
-                if (PlayerState.TotalMousePenalty < 0f)
+                if (PlayerValues.TotalMousePenalty < 0f)
                 {
-                    player.AddMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor, PlayerState.TotalMousePenalty / 100f);
+                    player.AddMouseSensitivityModifier(Player.EMouseSensitivityModifier.Armor, PlayerValues.TotalMousePenalty / 100f);
                 }
             }
         }
@@ -105,6 +106,7 @@ namespace RealismMod
             WeaponStats.ScopeAccuracyFactor = currentSightFactor;
         }
 
+        //calculate weapon sway and aim speed
         public static void UpdateAimParameters(FirearmController firearmController, ProceduralWeaponAnimation pwa) 
         {
             Weapon weapon = firearmController.Weapon;
@@ -115,13 +117,13 @@ namespace RealismMod
             if (weapon.WeapClass != "pistol")
             {
                 float aimSwayHeadGearFactor = GearController.FSIsActive || GearController.NVGIsActive || GearController.HasGasMask ? 1.45f : 1f;
-                float gunWeightFactor = ProceduralIntensityFactorCalc(weapon.GetSingleItemTotalWeight(), 4f);
-                float ergoWeightFactor = WeaponStats.ErgoFactor * gunWeightFactor * (1f + (-WeaponStats.Balance / 100f)) * (1f - WeaponStats.PureErgoDelta) * aimSwayHeadGearFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + ((1f - PlayerState.GearErgoPenalty) * 1.5f)); //
+                float gunWeightFactor = ProceduralIntensityFactorCalc(weapon.TotalWeight, 4f);
+                float ergoWeightFactor = WeaponStats.ErgoFactor * gunWeightFactor * (1f + (-WeaponStats.Balance / 100f)) * (1f - WeaponStats.PureErgoDelta) * aimSwayHeadGearFactor * (1f - (PlayerValues.StrengthSkillAimBuff * 1.5f)) * (1f + ((1f - PlayerValues.GearErgoPenalty) * 1.5f)); //
                 swayStrength = Mathf.InverseLerp(1f, 180f, ergoWeightFactor);
             }
             AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_aimSwayStrength").SetValue(pwa, swayStrength);
 
-            float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo * PlayerState.GearErgoPenalty) * 1.3f;
+            float baseAimspeed = Mathf.InverseLerp(1f, 80f, WeaponStats.TotalErgo * PlayerValues.GearErgoPenalty) * 1.3f;
             float aimSpeed = Mathf.Clamp(baseAimspeed * (1f + (skillsClass.AimSpeed * 0.5f)), 0.35f, 1.5f);
             valueBlender.Speed = pwa.SwayFalloff * aimSpeed * 4.35f;
 
@@ -139,8 +141,8 @@ namespace RealismMod
                 Utils.Logger.LogWarning("total ergo = " + WeaponStats.TotalErgo);
                 Utils.Logger.LogWarning("aimSpeed = " + aimSpeed);
                 Utils.Logger.LogWarning("base aimSpeed = " + baseAimspeed);
-                Utils.Logger.LogWarning("total ergofactor = " + WeaponStats.ErgoFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)));
-                Utils.Logger.LogWarning("gear ergo factor = " + PlayerState.GearErgoPenalty);
+                Utils.Logger.LogWarning("total ergofactor = " + WeaponStats.ErgoFactor * (1f - (PlayerValues.StrengthSkillAimBuff * 1.5f)));
+                Utils.Logger.LogWarning("gear ergo factor = " + PlayerValues.GearErgoPenalty);
 
             }
         }
@@ -244,7 +246,7 @@ namespace RealismMod
             float dispersionWeapBaseWeightFactor = WeightStatCalc(dispersionWeightMult, weaponBaseWeight) / 100f;
             float camRecoilWeapBaseWeightFactor = WeightStatCalc(StatCalc.CamWeightMult, weaponBaseWeight) / 100f;
 
-            float totalWeapWeight = weap.GetSingleItemTotalWeight();
+            float totalWeapWeight = weap.TotalWeight;
             float dampingTotalWeightFactor = WeightStatCalc(StatCalc.DampingWeightMult, totalWeapWeight) / 100f;
             float handDampingTotalWeightFactor = WeightStatCalc(StatCalc.HandDampingWeightMult, totalWeapWeight) / 100f;
 

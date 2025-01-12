@@ -1,19 +1,16 @@
-﻿using SPT.Reflection.Patching;
-using SPT.Reflection.Utils;
-using Comfort.Common;
+﻿using Comfort.Common;
 using EFT;
 using EFT.Animations;
 using EFT.Ballistics;
 using EFT.InventoryLogic;
 using HarmonyLib;
+using SPT.Reflection.Patching;
 using System;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using static EFT.Player;
-using CollisionLayerClass = GClass3008;
-using System.Collections.Generic;
-using EFT.UI.Ragfair;
+using CollisionLayerClass = GClass3367;
 /*using LightStruct = GStruct155;*/
 
 namespace RealismMod
@@ -404,7 +401,7 @@ namespace RealismMod
         private static bool Prefix(FirearmsAnimator __instance, Weapon.EFireMode fireMode, bool skipAnimation = false)
         {
             __instance.ResetLeftHand();
-            skipAnimation = StanceController.CurrentStance == EStance.HighReady && PlayerState.IsSprinting ? true : skipAnimation;
+            skipAnimation = StanceController.CurrentStance == EStance.HighReady && PlayerValues.IsSprinting ? true : skipAnimation;
             WeaponAnimationSpeedControllerClass.SetFireMode(__instance.Animator, (float)fireMode);
             if (!skipAnimation)
             {
@@ -499,7 +496,7 @@ namespace RealismMod
 
         private static void DoMelee(Player.FirearmController fc, float ln, Player player)
         {
-            if (!PlayerState.IsSprinting && StanceController.CurrentStance == EStance.Melee && StanceController.CanDoMeleeDetection && !StanceController.MeleeHitSomething)
+            if (!PlayerValues.IsSprinting && StanceController.CurrentStance == EStance.Melee && StanceController.CanDoMeleeDetection && !StanceController.MeleeHitSomething)
             {
                 Transform weapTransform = player.ProceduralWeaponAnimation.HandsContainer.WeaponRootAnim;
                 RaycastHit[] raycastArr = AccessTools.StaticFieldRefAccess<EFT.Player.FirearmController, RaycastHit[]>("raycastHit_0");
@@ -524,7 +521,7 @@ namespace RealismMod
                     {
                         hitBalls = baseballComp.Get(raycastHit.point);
                     }
-                    float weaponWeight = fc.Weapon.GetSingleItemTotalWeight();
+                    float weaponWeight = fc.Weapon.TotalWeight;
                     float damage = 8f + WeaponStats.BaseMeleeDamage * (1f + player.Skills.StrengthBuffMeleePowerInc) * (1f + (weaponWeight / 10f));
                     damage = player.Physical.HandsStamina.Exhausted ? damage * Singleton<BackendConfigSettingsClass>.Instance.Stamina.ExhaustedMeleeDamageMultiplier : damage;
                     float pen = 15f + WeaponStats.BaseMeleePen * (1f + (weaponWeight / 10f));
@@ -551,7 +548,7 @@ namespace RealismMod
                         Vector3 shotPosition = position;
                         fc.AdjustShotVectors(ref shotPosition, ref vector);
                         Vector3 shotDirection = vector;
-                        DamageInfo damageInfo = new DamageInfo
+                        DamageInfoStruct damageInfo = new DamageInfoStruct
                         {
                             SourceId = fc.Weapon.Id,
                             DamageType = EDamageType.Melee,
@@ -1067,7 +1064,7 @@ namespace RealismMod
                         StanceController.CurrentStance == EStance.Melee;
                     bool cancelBecauseShooting = !(PluginConfig.RememberStanceFiring.Value && isAiming) && StanceController.IsFiringFromStance && !isInShootableStance;
                     bool doStanceRotation = (isInStance || !allStancesReset || StanceController.CurrentStance == EStance.PistolCompressed) && !cancelBecauseShooting;
-                    bool allowActiveAimReload = PluginConfig.ActiveAimReload.Value && PlayerState.IsInReloadOpertation && !PlayerState.IsAttemptingToReloadInternalMag && !PlayerState.IsQuickReloading;
+                    bool allowActiveAimReload = PluginConfig.ActiveAimReload.Value && PlayerValues.IsInReloadOpertation && !PlayerValues.IsAttemptingToReloadInternalMag && !PlayerValues.IsQuickReloading;
                     bool cancelStance = 
                         (StanceController.CancelActiveAim && StanceController.CurrentStance == EStance.ActiveAiming && !allowActiveAimReload) || 
                         (StanceController.CancelHighReady && StanceController.CurrentStance == EStance.HighReady) ||
@@ -1397,7 +1394,7 @@ namespace RealismMod
                     StanceController.CurrentStance == EStance.Melee;
                 bool cancelBecauseShooting = PluginConfig.RememberStanceFiring.Value && !isAiming && StanceController.IsFiringFromStance && !isInShootableStance;
                 bool doStanceRotation = (isInStance || !allStancesAreReset || StanceController.CurrentStance == EStance.PistolCompressed) && !cancelBecauseShooting;
-                bool allowActiveAimReload = PluginConfig.ActiveAimReload.Value && PlayerState.IsInReloadOpertation && !PlayerState.IsAttemptingToReloadInternalMag && !PlayerState.IsQuickReloading;
+                bool allowActiveAimReload = PluginConfig.ActiveAimReload.Value && PlayerValues.IsInReloadOpertation && !PlayerValues.IsAttemptingToReloadInternalMag && !PlayerValues.IsQuickReloading;
                 bool cancelStance = 
                     (StanceController.CancelActiveAim && StanceController.CurrentStance == EStance.ActiveAiming && !allowActiveAimReload) ||
                     (StanceController.CancelHighReady && StanceController.CurrentStance == EStance.HighReady) || 

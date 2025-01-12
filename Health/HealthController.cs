@@ -202,7 +202,7 @@ namespace RealismMod
         {
             get
             {
-                return 600f * (1f - PlayerState.VitalityFactorStrong);
+                return 600f * (1f - PlayerValues.VitalityFactorStrong);
             }
         }
 
@@ -210,7 +210,7 @@ namespace RealismMod
         {
             get
             {
-                return PlayerState.IsSprinting || HasOverdosed || IsPoisoned ||
+                return PlayerValues.IsSprinting || HasOverdosed || IsPoisoned ||
                     HazardTracker.TotalToxicity > 15f || HazardTracker.TotalRadiation > 15f ||
                     IsCoughingInGas;
             }
@@ -220,7 +220,7 @@ namespace RealismMod
         {
             get
             {
-                return 15f * (1f - PlayerState.StressResistanceFactor);
+                return 15f * (1f - PlayerValues.StressResistanceFactor);
             }
         }
 
@@ -228,7 +228,7 @@ namespace RealismMod
         {
             get
             {
-                return 20f * (1f - PlayerState.StressResistanceFactor);
+                return 20f * (1f - PlayerValues.StressResistanceFactor);
             }
         }
 
@@ -236,7 +236,7 @@ namespace RealismMod
         {
             get
             {
-                return 0.8f * (1f - PlayerState.StressResistanceFactor);
+                return 0.8f * (1f - PlayerValues.StressResistanceFactor);
             }
         }
 
@@ -244,7 +244,7 @@ namespace RealismMod
         {
             get
             {
-                return 6f * (1f - PlayerState.StressResistanceFactor);
+                return 6f * (1f - PlayerValues.StressResistanceFactor);
             }
         }
 
@@ -252,7 +252,7 @@ namespace RealismMod
         {
             get
             {
-                return HasAdrenalineEffect ? 0.9f + Mathf.Pow(PlayerState.StressResistanceFactor, 1.5f) : 1f;
+                return HasAdrenalineEffect ? 0.9f + Mathf.Pow(PlayerValues.StressResistanceFactor, 1.5f) : 1f;
             }
         }
 
@@ -260,7 +260,7 @@ namespace RealismMod
         {
             get
             {
-                return HasAdrenalineEffect ? 0.9f + Mathf.Pow(PlayerState.StressResistanceFactor, 1.25f) : 1f;
+                return HasAdrenalineEffect ? 0.9f + Mathf.Pow(PlayerValues.StressResistanceFactor, 1.25f) : 1f;
             }
         }
 
@@ -268,7 +268,7 @@ namespace RealismMod
         {
             get
             {
-                return HasAdrenalineEffect ? 0.9f + Mathf.Pow(PlayerState.StressResistanceFactor, 1.25f) : 1f;
+                return HasAdrenalineEffect ? 0.9f + Mathf.Pow(PlayerValues.StressResistanceFactor, 1.25f) : 1f;
             }
         }
 
@@ -276,7 +276,7 @@ namespace RealismMod
         {
             get
             {
-                return HasAdrenalineEffect ? 0.9f + (PlayerState.StressResistanceFactor * 1.5f) : 1f;
+                return HasAdrenalineEffect ? 0.9f + (PlayerValues.StressResistanceFactor * 1.5f) : 1f;
             }
         }
 
@@ -316,7 +316,7 @@ namespace RealismMod
         {
             get
             {
-                return BASE_OK_OVERDOSETHRESHOLD * (1f + PlayerState.ImmuneSkillStrong);
+                return BASE_OK_OVERDOSETHRESHOLD * (1f + PlayerValues.ImmuneSkillStrong);
             }
         }
 
@@ -343,7 +343,7 @@ namespace RealismMod
         private bool _clickTriggered = false;
 
         public const float ADRENALINE_BASE_VALUE = 70f;
-        private float _adrenalineCooldownTime = ADRENALINE_BASE_VALUE * (1f - PlayerState.StressResistanceFactor);
+        private float _adrenalineCooldownTime = ADRENALINE_BASE_VALUE * (1f - PlayerValues.StressResistanceFactor);
         public bool AdrenalineCooldownActive = false;
 
         //temporary solution
@@ -458,7 +458,7 @@ namespace RealismMod
 
                 if (_adrenalineCooldownTime <= 0.0f)
                 {
-                    _adrenalineCooldownTime = ADRENALINE_BASE_VALUE * (1f - PlayerState.StressResistanceFactor);
+                    _adrenalineCooldownTime = ADRENALINE_BASE_VALUE * (1f - PlayerValues.StressResistanceFactor);
                     AdrenalineCooldownActive = false;
                 }
             }
@@ -1031,10 +1031,10 @@ namespace RealismMod
         public void HealthEffecTick()
         {
             Player player = Singleton<GameWorld>.Instance.MainPlayer;
-            PlayerState.ImmuneSkillWeak = player.Skills.ImmunityPainKiller.Value;
-            PlayerState.ImmuneSkillStrong = player.Skills.ImmunityMiscEffects.Value;
-            PlayerState.StressResistanceFactor = player.Skills.StressPain.Value;
-            PlayerState.VitalityFactorStrong = player.Skills.VitalityBuffBleedChanceRed.Value;
+            PlayerValues.ImmuneSkillWeak = player.Skills.ImmunityPainKiller.Value;
+            PlayerValues.ImmuneSkillStrong = player.Skills.ImmunityMiscEffects.Value;
+            PlayerValues.StressResistanceFactor = player.Skills.StressPain.Value;
+            PlayerValues.VitalityFactorStrong = player.Skills.VitalityBuffBleedChanceRed.Value;
 
             if (_healthControllerTime >= 0.5f && !_reset1)
             {
@@ -1248,7 +1248,7 @@ namespace RealismMod
 
             ConsumeAlcohol(player, item);
             CheckIfReducesHazardInRaid(item, player, false);
-            PlayerState.BlockFSWhileConsooming = true;
+            PlayerValues.BlockFSWhileConsooming = true;
         }
 
         private void ConsumeAlcohol(Player player, Item item)
@@ -1410,9 +1410,9 @@ namespace RealismMod
 
         private void AddPainkillerEffect(Player player, Item item)
         {
-            int duration = (int)(MedProperties.PainKillerDuration(item) * (1f + PlayerState.ImmuneSkillWeak));
+            int duration = (int)(MedProperties.PainKillerDuration(item) * (1f + PlayerValues.ImmuneSkillWeak));
             int delay = (int)Mathf.Round(MedProperties.Delay(item) * (1f - player.Skills.HealthEnergy.Value));
-            float tunnelVisionStr = MedProperties.TunnelVisionStrength(item) * (1f - PlayerState.ImmuneSkillWeak);
+            float tunnelVisionStr = MedProperties.TunnelVisionStrength(item) * (1f - PlayerValues.ImmuneSkillWeak);
             float painKillStr = MedProperties.Strength(item);
 
             PainKillerEffect painKillerEffect = new PainKillerEffect(duration, player, delay, tunnelVisionStr, painKillStr, this);
@@ -1906,16 +1906,16 @@ namespace RealismMod
 
         private void ResetHealhPenalties()
         {
-            PlayerState.AimMoveSpeedInjuryMulti = 1;
-            PlayerState.ADSInjuryMulti = 1;
-            PlayerState.StanceInjuryMulti = 1;
-            PlayerState.ReloadInjuryMulti = 1;
-            PlayerState.HealthSprintSpeedFactor = 1;
-            PlayerState.HealthSprintAccelFactor = 1;
-            PlayerState.HealthWalkSpeedFactor = 1;
-            PlayerState.HealthStamRegenFactor = 1;
-            PlayerState.ErgoDeltaInjuryMulti = 1;
-            PlayerState.RecoilInjuryMulti = 1;
+            PlayerValues.AimMoveSpeedInjuryMulti = 1;
+            PlayerValues.ADSInjuryMulti = 1;
+            PlayerValues.StanceInjuryMulti = 1;
+            PlayerValues.ReloadInjuryMulti = 1;
+            PlayerValues.HealthSprintSpeedFactor = 1;
+            PlayerValues.HealthSprintAccelFactor = 1;
+            PlayerValues.HealthWalkSpeedFactor = 1;
+            PlayerValues.HealthStamRegenFactor = 1;
+            PlayerValues.ErgoDeltaInjuryMulti = 1;
+            PlayerValues.RecoilInjuryMulti = 1;
         }
 
         private void DoResourceDrain(ActiveHealthController hc, float dt)
@@ -1971,7 +1971,7 @@ namespace RealismMod
             {
                 IEnumerable<IEffect> effects = player.ActiveHealthController.GetAllActiveEffects(part);
                 bool hasFracture = fractureType != null && effects.Any(e => e.Type == fractureType);
-                float stressResist = 1f - PlayerState.StressResistanceFactor;
+                float stressResist = 1f - PlayerValues.StressResistanceFactor;
 
                 if (hasFracture) PainStrength += FracturePainFactor;
 
@@ -2052,11 +2052,11 @@ namespace RealismMod
 
             //gas
             float coofFactor = IsCoughingInGas ? 100f : 0f;
-            float toxicity = ((HazardTracker.TotalToxicity + coofFactor) * (1f - PlayerState.ImmuneSkillWeak)) / 225f;
+            float toxicity = ((HazardTracker.TotalToxicity + coofFactor) * (1f - PlayerValues.ImmuneSkillWeak)) / 225f;
             float toxicityFactor = 1f - toxicity;
             float toxicityInverse = 1f + toxicity;
 
-            float radiation = (HazardTracker.TotalRadiation * (1f - PlayerState.ImmuneSkillWeak)) / 300f;
+            float radiation = (HazardTracker.TotalRadiation * (1f - PlayerValues.ImmuneSkillWeak)) / 300f;
             float radiationFactor = 1f - radiation;
             float radiationInverse = 1f + radiation;
 
@@ -2067,16 +2067,16 @@ namespace RealismMod
             float hazardFactor = toxicityFactor * radiationFactor * poisonDebuffFactor;
             float hazardFactorInverse = toxicityInverse * radiationInverse * poisonDebuffFactorInverse;
 
-            PlayerState.AimMoveSpeedInjuryMulti = Mathf.Clamp(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor * skillFactor * hazardFactor, 0.6f * percentHydroLowerLimit, 1f);
-            PlayerState.ADSInjuryMulti = Mathf.Clamp(adsInjuryMulti * percentEnergyADS * painKillerFactor * skillFactor * hazardFactor, 0.3f * percentHydroLowerLimit, 1f);
-            PlayerState.StanceInjuryMulti = Mathf.Clamp(stanceInjuryMulti * percentEnergyStance * painKillerFactor * skillFactor * hazardFactor, 0.65f * percentHydroLowerLimit, 1f);
-            PlayerState.ReloadInjuryMulti = Mathf.Clamp(reloadInjuryMulti * percentEnergyReload * painKillerFactor * skillFactor * hazardFactor, 0.75f * percentHydroLowerLimit, 1f);
-            PlayerState.HealthSprintSpeedFactor = Mathf.Clamp(sprintSpeedInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor * hazardFactor, 0.4f * percentHydroLowerLimit, 1f);
-            PlayerState.HealthSprintAccelFactor = Mathf.Clamp(sprintAccelInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor * hazardFactor, 0.4f * percentHydroLowerLimit, 1f);
-            PlayerState.HealthWalkSpeedFactor = Mathf.Clamp(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor * skillFactor * hazardFactor, 0.6f * percentHydroLowerLimit, 1f);
-            PlayerState.HealthStamRegenFactor = Mathf.Clamp(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor * skillFactor * hazardFactor, 0.5f * percentHydroLowerLimit, 1f);
-            PlayerState.ErgoDeltaInjuryMulti = Mathf.Clamp(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactorInverse * skillFactorInverse * hazardFactorInverse, 1f, 1.3f * percentHydroLimitErgo);
-            PlayerState.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactorInverse * skillFactorInverse * hazardFactorInverse, 1f, 1.12f * percentHydroLimitRecoil);
+            PlayerValues.AimMoveSpeedInjuryMulti = Mathf.Clamp(aimMoveSpeedMulti * percentEnergyAimMove * painKillerFactor * skillFactor * hazardFactor, 0.6f * percentHydroLowerLimit, 1f);
+            PlayerValues.ADSInjuryMulti = Mathf.Clamp(adsInjuryMulti * percentEnergyADS * painKillerFactor * skillFactor * hazardFactor, 0.3f * percentHydroLowerLimit, 1f);
+            PlayerValues.StanceInjuryMulti = Mathf.Clamp(stanceInjuryMulti * percentEnergyStance * painKillerFactor * skillFactor * hazardFactor, 0.65f * percentHydroLowerLimit, 1f);
+            PlayerValues.ReloadInjuryMulti = Mathf.Clamp(reloadInjuryMulti * percentEnergyReload * painKillerFactor * skillFactor * hazardFactor, 0.75f * percentHydroLowerLimit, 1f);
+            PlayerValues.HealthSprintSpeedFactor = Mathf.Clamp(sprintSpeedInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor * hazardFactor, 0.4f * percentHydroLowerLimit, 1f);
+            PlayerValues.HealthSprintAccelFactor = Mathf.Clamp(sprintAccelInjuryMulti * percentEnergySprint * painKillerFactor * skillFactor * hazardFactor, 0.4f * percentHydroLowerLimit, 1f);
+            PlayerValues.HealthWalkSpeedFactor = Mathf.Clamp(walkSpeedInjuryMulti * percentEnergyWalk * painKillerFactor * skillFactor * hazardFactor, 0.6f * percentHydroLowerLimit, 1f);
+            PlayerValues.HealthStamRegenFactor = Mathf.Clamp(stamRegenInjuryMulti * percentEnergyStamRegen * painKillerFactor * skillFactor * hazardFactor, 0.5f * percentHydroLowerLimit, 1f);
+            PlayerValues.ErgoDeltaInjuryMulti = Mathf.Clamp(ergoDeltaInjuryMulti * (1f + (1f - percentEnergyErgo)) * painKillerFactorInverse * skillFactorInverse * hazardFactorInverse, 1f, 1.3f * percentHydroLimitErgo);
+            PlayerValues.RecoilInjuryMulti = Mathf.Clamp(recoilInjuryMulti * (1f + (1f - percentEnergyRecoil)) * painKillerFactorInverse * skillFactorInverse * hazardFactorInverse, 1f, 1.12f * percentHydroLimitRecoil);
 
             if (PluginConfig.ResourceRateChanges.Value)
             {
@@ -2086,14 +2086,14 @@ namespace RealismMod
                     AddCustomEffect(resEffect, false);
                 }
 
-                float weight = PlayerState.TotalModifiedWeight * (1f - player.Skills.EnduranceBuffJumpCostRed.Value);
-                float weightInverse = PlayerState.TotalModifiedWeight * (1f + player.Skills.EnduranceBuffJumpCostRed.Value);
+                float weight = PlayerValues.TotalModifiedWeight * (1f - player.Skills.EnduranceBuffJumpCostRed.Value);
+                float weightInverse = PlayerValues.TotalModifiedWeight * (1f + player.Skills.EnduranceBuffJumpCostRed.Value);
                 float playerWeightFactor = weightInverse >= 10f ? weight / 500f : 0f;
-                float sprintMulti = PlayerState.IsSprinting ? 1.46f : 1f;
-                float sprintFactor = PlayerState.IsSprinting ? 0.11f : 0f;
-                float poisonSprintFactor = IsPoisoned ? Mathf.Max(1.5f * (1f - PlayerState.ImmuneSkillWeak), 1.1f) : 1f;
-                float toxicityResourceFactor = 1f + (HazardTracker.TotalToxicity * (1f - PlayerState.ImmuneSkillWeak)) / 150f;
-                float radiationResourceFactor = 1f + (HazardTracker.TotalRadiation * (1f - PlayerState.ImmuneSkillWeak)) / 190f;
+                float sprintMulti = PlayerValues.IsSprinting ? 1.46f : 1f;
+                float sprintFactor = PlayerValues.IsSprinting ? 0.11f : 0f;
+                float poisonSprintFactor = IsPoisoned ? Mathf.Max(1.5f * (1f - PlayerValues.ImmuneSkillWeak), 1.1f) : 1f;
+                float toxicityResourceFactor = 1f + (HazardTracker.TotalToxicity * (1f - PlayerValues.ImmuneSkillWeak)) / 150f;
+                float radiationResourceFactor = 1f + (HazardTracker.TotalRadiation * (1f - PlayerValues.ImmuneSkillWeak)) / 190f;
                 float totalResourceRate = (resourceRateInjuryMulti + resourcePainReliefFactor + sprintFactor + playerWeightFactor) * sprintMulti * toxicityResourceFactor * radiationResourceFactor * poisonSprintFactor * (1f - player.Skills.HealthEnergy.Value);
                 ResourcePerTick = totalResourceRate;
             }
@@ -2127,10 +2127,10 @@ namespace RealismMod
             bool isInRadZone = PlayerHazardBridge.RadZoneCount > 0 && !PlayerHazardBridge.IsProtectedFromSafeZone;
             bool IsBeingHazarded = (isInRadZone || GameWorldController.DoMapRads) && GearController.CurrentRadProtection <= 0f; //CurrentRadProtection accounts for both respirators, and gas masks and whether they have filters or dura is too low
 
-            float sprintFactor = PlayerState.IsSprinting ? 1.1f : 1f;
+            float sprintFactor = PlayerValues.IsSprinting ? 1.1f : 1f;
             float radItemFactor = RadItemCount * RAD_ITEM_FACTOR;
             float mapRadFactor = GameWorldController.DoMapRads ? GameWorldController.CurrentMapRadStrength : 0f;
-            float protectiveFactors = (1f - GearController.CurrentRadProtection) * (1f - PlayerState.ImmuneSkillWeak);
+            float protectiveFactors = (1f - GearController.CurrentRadProtection) * (1f - PlayerValues.ImmuneSkillWeak);
 
             float reductionRate = !IsBeingHazarded ? HazardTracker.RadTreatmentRate : 0f; //not sure if I should allow treatment while in radiation zone or not
             reductionRate = isInRadZone ? reductionRate * 0.5f : reductionRate;
@@ -2153,10 +2153,10 @@ namespace RealismMod
             bool zonePreventsHeal = isInGasZone && GearController.CurrentGasProtection <= 0f;
             bool isBeingHazarded = zonePreventsHeal || IsCoughingInGas;
 
-            float sprintFactor = PlayerState.IsSprinting ? 1.5f : 1f;
+            float sprintFactor = PlayerValues.IsSprinting ? 1.5f : 1f;
             float toxicItemFactor = ToxicItemCount * TOXIC_ITEM_FACTOR;
             float mapGasEventFactor = GameWorldController.DoMapGasEvent ? GameWorldController.CurrentGasEventStrength : 0f;
-            float protectiveFactors = (1f - GearController.CurrentGasProtection) * (1f - PlayerState.ImmuneSkillWeak);
+            float protectiveFactors = (1f - GearController.CurrentGasProtection) * (1f - PlayerValues.ImmuneSkillWeak);
 
             float passiveRegenRate = mapGasEventFactor <= 0f && ToxicItemCount <= 0 && !isInGasZone && HazardTracker.TotalToxicity > 0f ? BASE_TOX_RECOVERY_RATE * (2f - _percentReources) : 0f;
             float reductionRate = !isBeingHazarded ? HazardTracker.DetoxicationRate + passiveRegenRate : 0f;
@@ -2255,13 +2255,13 @@ namespace RealismMod
             bool isBeingIrradiated = (HazardTracker.TotalRadiation >= RADIATION_THRESHOLD && !Plugin.RealHealthController.HasBaseEFTEffect(player, "PainKiller"));
             bool isBeingGassed = HazardTracker.TotalToxicity >= 30f;
             bool hasHazardification = isBeingGassed || isBeingIrradiated;
-            bool isGettingHazarded = HazardTracker.TotalToxicityRate >= MIN_COUGH_THRESHOLD * (1f + PlayerState.ImmuneSkillStrong);
+            bool isGettingHazarded = HazardTracker.TotalToxicityRate >= MIN_COUGH_THRESHOLD * (1f + PlayerValues.ImmuneSkillStrong);
 
             if (player.HealthController.IsAlive && !(GearController.HasGasMaskWithFilter && GearController.GasMaskDurabilityFactor > 0f) && (hasHazardification || isGettingHazarded))
             {
                 if (isBeingIrradiated && !isBeingGassed) 
                 {
-                    float timerFactor = (1f + PlayerState.ImmuneSkillStrong) * (1f - (HazardTracker.TotalRadiation / 200f));
+                    float timerFactor = (1f + PlayerValues.ImmuneSkillStrong) * (1f - (HazardTracker.TotalRadiation / 200f));
                     int timer =  Mathf.RoundToInt(300f * timerFactor);
                     if (Time.time % timer < 1f) DoCoughingAudio = true;
                

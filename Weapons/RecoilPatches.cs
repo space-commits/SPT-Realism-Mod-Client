@@ -1,12 +1,11 @@
-﻿using SPT.Reflection.Patching;
-using SPT.Reflection.Utils;
-using Comfort.Common;
+﻿using Comfort.Common;
 using EFT;
 using EFT.Animations;
 using EFT.Animations.NewRecoil;
 using EFT.InventoryLogic;
 using EFT.Visual;
 using HarmonyLib;
+using SPT.Reflection.Patching;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -121,19 +120,19 @@ namespace RealismMod
                 return;
             }
 
-            PlayerState.WhiteLightActive = false;
-            PlayerState.LaserActive = false;
-            PlayerState.IRLightActive = false;
-            PlayerState.IRLaserActive = false;
+            PlayerValues.WhiteLightActive = false;
+            PlayerValues.LaserActive = false;
+            PlayerValues.IRLightActive = false;
+            PlayerValues.IRLaserActive = false;
 
             // Loop through all of the tacticalComboVisualControllers, then its modes, then that modes children, and look for a light
             foreach (TacticalComboVisualController tacticalComboVisualController in tacticalComboVisualControllers)
             {
                 List<Transform> tacticalModes = tacticalModesField.GetValue(tacticalComboVisualController) as List<Transform>;
-                if (CheckWhiteLight(tacticalModes)) PlayerState.WhiteLightActive = true;
-                if (CheckVisibleLaser(tacticalModes)) PlayerState.LaserActive = true;
-                if (CheckIRLight(tacticalModes)) PlayerState.IRLightActive = true;
-                if (CheckIRLaser(tacticalModes)) PlayerState.IRLaserActive = true;
+                if (CheckWhiteLight(tacticalModes)) PlayerValues.WhiteLightActive = true;
+                if (CheckVisibleLaser(tacticalModes)) PlayerValues.LaserActive = true;
+                if (CheckIRLight(tacticalModes)) PlayerValues.IRLightActive = true;
+                if (CheckIRLaser(tacticalModes)) PlayerValues.IRLaserActive = true;
             }
         }
 
@@ -146,7 +145,7 @@ namespace RealismMod
                 if (__instance.AimingDevices.Length > 0 && __instance.AimingDevices.Any(x => x.Light.IsActive))
                 {
                     CheckDevice(__instance, _tacticalModesField);
-                    PlayerState.HasActiveDevice = true;
+                    PlayerValues.HasActiveDevice = true;
 
                     NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
                     bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
@@ -154,24 +153,24 @@ namespace RealismMod
                     if (nvgIsOn)
                     {
                         float bonus = 
-                            PlayerState.IRLaserActive || PlayerState.LaserActive ? 0.5f : 
-                            PlayerState.IRLightActive && (PlayerState.IRLaserActive || PlayerState.LaserActive) ? 0.4f :
-                            PlayerState.IRLightActive ? 0.6f : 1f;
+                            PlayerValues.IRLaserActive || PlayerValues.LaserActive ? 0.5f : 
+                            PlayerValues.IRLightActive && (PlayerValues.IRLaserActive || PlayerValues.LaserActive) ? 0.4f :
+                            PlayerValues.IRLightActive ? 0.6f : 1f;
 
-                        PlayerState.DeviceBonus = PlayerState.WhiteLightActive ? 1f : bonus;
+                        PlayerValues.DeviceBonus = PlayerValues.WhiteLightActive ? 1f : bonus;
                     }
                     else
                     {
-                        PlayerState.DeviceBonus = 
-                        PlayerState.LaserActive ? 0.5f : 
-                        PlayerState.WhiteLightActive && PlayerState.LaserActive ? 0.4f :
-                        PlayerState.WhiteLightActive ? 0.6f : 1f;
+                        PlayerValues.DeviceBonus = 
+                        PlayerValues.LaserActive ? 0.5f : 
+                        PlayerValues.WhiteLightActive && PlayerValues.LaserActive ? 0.4f :
+                        PlayerValues.WhiteLightActive ? 0.6f : 1f;
                     }
                 }
                 else
                 {
-                    PlayerState.HasActiveDevice = false;
-                    PlayerState.DeviceBonus = 1f;
+                    PlayerValues.HasActiveDevice = false;
+                    PlayerValues.DeviceBonus = 1f;
                     return;
                 }
             }
@@ -563,7 +562,7 @@ namespace RealismMod
 
                 RecoilController.BaseTotalRecoilDamping = (float)Math.Round(WeaponStats.TotalRecoilDamping * PluginConfig.RecoilDampingMulti.Value, 3);
                 RecoilController.BaseTotalHandDamping = (float)Math.Round(WeaponStats.TotalRecoilHandDamping * PluginConfig.HandsDampingMulti.Value, 3);
-                WeaponStats.TotalWeaponWeight = firearmController.Weapon.GetSingleItemTotalWeight();
+                WeaponStats.TotalWeaponWeight = firearmController.Weapon.TotalWeight;
                 WeaponStats.TotalWeaponLength = firearmController.Item.CalculateCellSize().X;
                 if (WeaponStats.WeapID != template._id)
                 {
@@ -672,7 +671,7 @@ namespace RealismMod
             if (player != null && player.IsYourPlayer)
             {
                 //Conditional recoil modifiers 
-                float totalPlayerWeight = WeaponStats.IsStocklessPistol || (!WeaponStats.HasShoulderContact && !WeaponStats.IsPistol) ? 0f : PlayerState.TotalModifiedWeightMinusWeapon;
+                float totalPlayerWeight = WeaponStats.IsStocklessPistol || (!WeaponStats.HasShoulderContact && !WeaponStats.IsPistol) ? 0f : PlayerValues.TotalModifiedWeightMinusWeapon;
                 float playerWeightFactorBuff = 1f - (totalPlayerWeight / 650f);
                 float playerWeightFactorDebuff = 1f + (totalPlayerWeight / 200f);
                 float leftShoulderFactor = StanceController.IsLeftShoulder ? 1.14f : 1f;
@@ -708,11 +707,11 @@ namespace RealismMod
                 __instance.method_2(incomingForce, out rotationRecoilPower, out positionRecoilPower);
 
                 //Modify Vert and Horz recoil based on various factors
-                float vertFactor = PlayerState.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * 
+                float vertFactor = PlayerValues.RecoilInjuryMulti * activeAimingBonus * shortStockingDebuff * playerWeightFactorBuff * 
                     StanceController.BracingRecoilBonus * opticRecoilMulti * pistolShotFactor *
                     leftShoulderFactor;
                 vertFactor = Mathf.Clamp(vertFactor, 0.25f, 1.25f) * PluginConfig.VertMulti.Value;
-                float horzFactor = PlayerState.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * pistolShotFactor;
+                float horzFactor = PlayerValues.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorBuff * pistolShotFactor;
                 horzFactor = Mathf.Clamp(horzFactor, 0.25f, 1.25f) * PluginConfig.HorzMulti.Value;
                 RecoilController.FactoredTotalVRecoil = vertFactor * RecoilController.BaseTotalVRecoil;
                 RecoilController.FactoredTotalHRecoil = horzFactor * RecoilController.BaseTotalHRecoil;
@@ -722,7 +721,7 @@ namespace RealismMod
                 positionRecoilPower *= horzFactor;
 
                 //Recalculate and modify dispersion
-                float dispFactor = incomingForce * PlayerState.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff * 
+                float dispFactor = incomingForce * PlayerValues.RecoilInjuryMulti * shortStockingDebuff * playerWeightFactorDebuff * 
                     mountingDispMulti * opticRecoilMulti * leftShoulderFactor * rifleShotFactor * PluginConfig.DispMulti.Value;
                 RecoilController.FactoredTotalDispersion = RecoilController.BaseTotalDispersion * dispFactor;
 
@@ -736,7 +735,7 @@ namespace RealismMod
 
                 //Reset camera recoil values and modify by various factors
                 float camShotFactor = RecoilController.ShotCount > 1 ? Mathf.Min((RecoilController.ShotCount * 0.1f) + 1f, 1.55f) : 1f;
-                float totalCamRecoil = RecoilController.BaseTotalCamRecoil * incomingForce * PlayerState.RecoilInjuryMulti * shortStockingCamBonus 
+                float totalCamRecoil = RecoilController.BaseTotalCamRecoil * incomingForce * PlayerValues.RecoilInjuryMulti * shortStockingCamBonus 
                     * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti * camShotFactor * PluginConfig.CamMulti.Value;
                 RecoilController.FactoredTotalCamRecoil = totalCamRecoil;
                 __instance.ShotRecoilProcessValues[3].IntensityMultiplicator = totalCamRecoil;
@@ -753,7 +752,7 @@ namespace RealismMod
                 if (PluginConfig.EnableLogging.Value) 
                 {
                     Logger.LogWarning("==========shoot==========");
-                    Logger.LogWarning("camFactor " + (incomingForce * PlayerState.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti));
+                    Logger.LogWarning("camFactor " + (incomingForce * PlayerValues.RecoilInjuryMulti * shortStockingCamBonus * aimCamRecoilBonus * playerWeightFactorBuff * opticRecoilMulti));
                     Logger.LogWarning("vertFactor " + vertFactor);
                     Logger.LogWarning("horzFactor " + horzFactor);
                     Logger.LogWarning("dispFactor " + dispFactor);

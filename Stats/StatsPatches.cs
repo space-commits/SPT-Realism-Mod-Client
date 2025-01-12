@@ -8,7 +8,7 @@ using RealismMod.Weapons;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using WeaponSkills = EFT.SkillManager.GClass1783;
+using WeaponSkills = EFT.SkillManager.GClass1981;
 
 namespace RealismMod
 {
@@ -81,7 +81,7 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer == true)
             {
-                WeaponSkills skillsClass = (WeaponSkills)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1783_0").GetValue(__instance);
+                WeaponSkills skillsClass = (WeaponSkills)AccessTools.Field(typeof(EFT.Player.FirearmController), "gclass1981_0").GetValue(__instance);
                 __result = Mathf.Max(0f, __instance.Item.ErgonomicsTotal * (1f + skillsClass.DeltaErgonomics + player.ErgonomicsPenalty));
                 return false;
             }
@@ -106,7 +106,7 @@ namespace RealismMod
             if (!Utils.PlayerIsReady) return true;
             if (__instance != null && __instance?.Owner != null && __instance?.Owner?.ID != null && __instance?.Owner?.ID == Singleton<GameWorld>.Instance?.MainPlayer?.ProfileId)
             {
-                if (PlayerState.IsInReloadOpertation)
+                if (PlayerValues.IsInReloadOpertation)
                 {
                     __result = FinalStatCalc(__instance);
                 }
@@ -129,7 +129,7 @@ namespace RealismMod
             bool isManual = WeaponStats.IsManuallyOperated(__instance);
             WeaponStats._IsManuallyOperated = isManual;
 
-            float totalWeight = __instance.GetSingleItemTotalWeight();
+            float totalWeapWeight = __instance.TotalWeight;
             string weapType = WeaponStats.WeaponType(__instance);
             string weapOpType = WeaponStats.OperationType(__instance);
 
@@ -141,14 +141,14 @@ namespace RealismMod
             WeaponStats.HasLongMag = false;
             if (hasMag == true)
             {
-                magWeight = magazine.GetSingleItemTotalWeight();
+                magWeight = magazine.TotalWeight;
                 float magWeightFactored = StatCalc.FactoredWeight(magWeight);
                 string position = StatCalc.GetModPosition(magazine, weapType, weapOpType, "");
                 magErgo = magazine.Ergonomics;
                 currentTorque = StatCalc.GetTorque(position, magWeightFactored);
                 WeaponStats.HasLongMag = AttachmentProperties.ModType(magazine) == "long_mag";
             }
-            float weapWeightLessMag = totalWeight - magWeight;
+            float weapWeightLessMag = totalWeapWeight - magWeight;
 
             float totalReloadSpeedMod = WeaponStats.SDReloadSpeedModifier;
 
@@ -204,7 +204,7 @@ namespace RealismMod
                 ref recoilHandDamping, WeaponStats.InitTotalCOI, WeaponStats.HasShoulderContact, ref totalCOI, ref totalCOIDelta, __instance.CenterOfImpactBase, 
                 currentPureErgo, ref totalPureErgoDelta, ref totalErgoLessMag, WeaponStats.InitTotalErgo, false);
 
-            float ergonomicWeight = StatCalc.ErgoWeightCalc(totalWeight, totalPureErgoDelta, totalTorque, __instance.WeapClass);
+            float ergonomicWeight = StatCalc.ErgoWeightCalc(totalWeapWeight, totalPureErgoDelta, totalTorque, __instance.WeapClass);
             float ergonomicWeightLessMag = StatCalc.ErgoWeightCalc(weapWeightLessMag, totalPureErgoDelta, totalTorque, __instance.WeapClass);
 
             float ergoFactor = Mathf.Max(1, 80f - totalErgo); //as an experiment, use total ergo as ergonomicWeight
@@ -232,7 +232,7 @@ namespace RealismMod
 
             if (hasMag == true)
             {
-                ReloadController.MagReloadSpeedModifier(__instance, (MagazineClass)magazine, false, false);
+                ReloadController.MagReloadSpeedModifier(__instance, (MagazineItemClass)magazine, false, false);
             }
 
             if (PluginConfig.EnableLogging.Value == true)
@@ -280,7 +280,7 @@ namespace RealismMod
             WeaponStats._WeapClass = __instance.WeapClass;
             bool isManual = WeaponStats.IsManuallyOperated(__instance);
             WeaponStats._IsManuallyOperated = isManual;
-            bool isChonker = __instance.IsBeltMachineGun || __instance.GetSingleItemTotalWeight() >= 10f;
+            bool isChonker = __instance.IsBeltMachineGun || __instance.TotalWeight >= 10f;
 
             WeaponStats.ShouldGetSemiIncrease = false;
             if (__instance.WeapClass != "pistol" || __instance.WeapClass != "shotgun" || __instance.WeapClass != "sniperRifle" || __instance.WeapClass != "smg")
@@ -470,7 +470,7 @@ namespace RealismMod
             WeaponStats.TotalModDuraBurn = modBurnRatio;
             WeaponStats.TotalMalfChance = Mathf.Max(currentMalfChance, baseMalfChance * 0.35f);
             WeaponStats.MalfChanceDelta = (baseMalfChance - WeaponStats.TotalMalfChance) / baseMalfChance;
-            DeafeningController.WeaponDeafFactor = totalLoudness;
+            /*DeafeningController.WeaponDeafFactor = totalLoudness;*/
             WeaponStats.CanCycleSubs = canCycleSubs;
             WeaponStats.HasShoulderContact = hasShoulderContact;
             WeaponStats.InitTotalErgo = currentErgo;
@@ -604,7 +604,7 @@ namespace RealismMod
             Player player = (Player)playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
-                __result = WeaponStats.ErgoFactor * (1f - (PlayerState.StrengthSkillAimBuff * 1.5f)) * (1f + (1f - PlayerState.GearErgoPenalty));
+                __result = WeaponStats.ErgoFactor * (1f - (PlayerValues.StrengthSkillAimBuff * 1.5f)) * (1f + (1f - PlayerValues.GearErgoPenalty));
 
                 if (PluginConfig.EnableLogging.Value == true)
                 {

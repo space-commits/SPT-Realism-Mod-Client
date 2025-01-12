@@ -618,14 +618,14 @@ namespace RealismMod
 
                 RecoilController.RecoilUpdate();
 
-                if (ServerConfig.headset_changes)
+        /*        if (ServerConfig.headset_changes)
                 {
                     HeadsetGainController.AdjustHeadsetVolume();
                     if (DeafeningController.PrismEffects != null)
                     {
                         DeafeningController.DoDeafening();
                     }
-                }
+                }*/
                 if (ServerConfig.enable_stances) 
                 {
                     StanceController.StanceState();
@@ -836,13 +836,13 @@ namespace RealismMod
 
         private void LoadDeafenPatches()
         {
-            new PrismEffectsEnablePatch().Enable();
-            new PrismEffectsDisablePatch().Enable();
-            new UpdatePhonesPatch().Enable();
+/*            new PrismEffectsEnablePatch().Enable();
+            new PrismEffectsDisablePatch().Enable();*/
+/*            new UpdatePhonesPatch().Enable();
             new SetCompressorPatch().Enable();
             new RegisterShotPatch().Enable();
-            new ExplosionPatch().Enable();
-            new GrenadeClassContusionPatch().Enable();
+            new ExplosionPatch().Enable();*/
+/*            new GrenadeClassContusionPatch().Enable();*/
             new CovertMovementVolumePatch().Enable();
             new CovertMovementVolumeBySpeedPatch().Enable();
             new CovertEquipmentVolumePatch().Enable();

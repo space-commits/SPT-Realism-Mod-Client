@@ -14,26 +14,26 @@ namespace RealismMod.Weapons
         {
             get 
             {
-                return PlayerState.IsQuickReloading ? 1.65f : 1.4f;
+                return PlayerValues.IsQuickReloading ? 1.65f : 1.4f;
             }
 
         }  
 
-        public static void SetMagReloadSpeeds(Player.FirearmController __instance, MagazineClass magazine, bool isQuickReload = false)
+        public static void SetMagReloadSpeeds(Player.FirearmController __instance, MagazineItemClass magazine, bool isQuickReload = false)
         {
-            PlayerState.IsMagReloading = true;
+            PlayerValues.IsMagReloading = true;
             StanceController.CancelLowReady = true;
             StanceController.CancelLeftShoulder = true;
             Weapon weapon = __instance.Item;
 
-            if (PlayerState.NoCurrentMagazineReload)
+            if (PlayerValues.NoCurrentMagazineReload)
             {
                 Player player = (Player)AccessTools.Field(typeof(Player.FirearmController), "_player").GetValue(__instance);
                 MagReloadSpeedModifier(weapon, magazine, false, true);
                 player.HandsAnimator.SetAnimationSpeed(Mathf.Clamp(
-                    WeaponStats.CurrentMagReloadSpeed * PlayerState.ReloadInjuryMulti * PlayerState.ReloadSkillMulti * 
-                    PlayerState.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff *
-                    Plugin.RealHealthController.AdrenalineReloadBonus * (Mathf.Max(PlayerState.RemainingArmStamFactor, 0.8f)), 0.65f, 1.35f));
+                    WeaponStats.CurrentMagReloadSpeed * PlayerValues.ReloadInjuryMulti * PlayerValues.ReloadSkillMulti * 
+                    PlayerValues.GearReloadMulti * StanceController.HighReadyManipBuff * StanceController.ActiveAimManipBuff *
+                    Plugin.RealHealthController.AdrenalineReloadBonus * (Mathf.Max(PlayerValues.RemainingArmStamFactor, 0.8f)), 0.65f, 1.35f));
             }
             else
             {
@@ -41,9 +41,9 @@ namespace RealismMod.Weapons
             }
         }
 
-        public static void MagReloadSpeedModifier(Weapon weapon, MagazineClass magazine, bool isNewMag, bool reloadFromNoMag, bool isQuickReload = false)
+        public static void MagReloadSpeedModifier(Weapon weapon, MagazineItemClass magazine, bool isNewMag, bool reloadFromNoMag, bool isQuickReload = false)
         {
-            float magWeight = weapon.IsBeltMachineGun ? magazine.GetSingleItemTotalWeight() * StatCalc.MagWeightMult * 0.5f : magazine.GetSingleItemTotalWeight() * StatCalc.MagWeightMult;
+            float magWeight = weapon.IsBeltMachineGun ? magazine.TotalWeight * StatCalc.MagWeightMult * 0.5f : magazine.TotalWeight * StatCalc.MagWeightMult;
             float magWeightFactor = (magWeight / -100f) + 1f;
             float magSpeed = AttachmentProperties.ReloadSpeed(magazine);
             float reloadSpeedModiLessMag = WeaponStats.TotalReloadSpeedLessMag;
@@ -81,9 +81,9 @@ namespace RealismMod.Weapons
 
         public static void ReloadStateCheck(Player player, EFT.Player.FirearmController fc, ManualLogSource logger)
         {
-            PlayerState.IsInReloadOpertation = fc.IsInReloadOperation();
+            PlayerValues.IsInReloadOpertation = fc.IsInReloadOperation();
 
-            if (PlayerState.IsInReloadOpertation)
+            if (PlayerValues.IsInReloadOpertation)
             {
                 if (StanceController.CurrentStance == EStance.PatrolStance)
                 {
@@ -95,7 +95,7 @@ namespace RealismMod.Weapons
                 StanceController.CancelActiveAim = true;
                 StanceController.CancelLeftShoulder = true;
 
-                if (PlayerState.IsAttemptingToReloadInternalMag && Plugin.ServerConfig.reload_changes)
+                if (PlayerValues.IsAttemptingToReloadInternalMag && Plugin.ServerConfig.reload_changes)
                 {
                     StanceController.CancelHighReady = fc.Item.WeapClass != "shotgun" ? true : false;
                     StanceController.CancelLowReady = fc.Item.WeapClass == "shotgun" || fc.Item.WeapClass == "pistol" ? true : false;
@@ -103,7 +103,7 @@ namespace RealismMod.Weapons
                     float highReadyBonus = fc.Item.WeapClass == "shotgun" && StanceController.CurrentStance == EStance.HighReady == true ? StanceController.HighReadyManipBuff : 1f;
                     float lowReadyBonus = fc.Item.WeapClass != "shotgun" && StanceController.CurrentStance == EStance.LowReady == true ? StanceController.LowReadyManipBuff : 1f;
 
-                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PluginConfig.InternalMagReloadMulti.Value * PlayerState.ReloadSkillMulti * PlayerState.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * PlayerState.RemainingArmStamReloadFactor, MinimumReloadSpeed, MaxInternalReloadSpeed);
+                    float IntenralMagReloadSpeed = Mathf.Clamp(WeaponStats.CurrentMagReloadSpeed * PluginConfig.InternalMagReloadMulti.Value * PlayerValues.ReloadSkillMulti * PlayerValues.ReloadInjuryMulti * highReadyBonus * lowReadyBonus * PlayerValues.RemainingArmStamReloadFactor, MinimumReloadSpeed, MaxInternalReloadSpeed);
                     player.HandsAnimator.SetAnimationSpeed(IntenralMagReloadSpeed);
 
                     if (PluginConfig.EnableLogging.Value == true)
@@ -114,8 +114,8 @@ namespace RealismMod.Weapons
             }
             else
             {
-                PlayerState.IsAttemptingToReloadInternalMag = false;
-                PlayerState.IsAttemptingRevolverReload = false;
+                PlayerValues.IsAttemptingToReloadInternalMag = false;
+                PlayerValues.IsAttemptingRevolverReload = false;
             }
         }
     }

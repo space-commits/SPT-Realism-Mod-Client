@@ -65,7 +65,7 @@ namespace RealismMod
                 CurrentGasEventStrength = 0f;
                 return;
             }
-            bool isIndoors = PlayerState.EnviroType == EnvironmentType.Indoor;
+            bool isIndoors = PlayerValues.EnviroType == EnvironmentType.Indoor;
             float enviroFactor = isIndoors ? 0.4f : 1f;
             float fogStrength = Plugin.RealismWeatherComponent.TargetFog;
             float baseStrength = fogStrength * FOG_GAS_MODI;
@@ -82,7 +82,7 @@ namespace RealismMod
                 CurrentMapRadStrength = 0f;
                 return;
             }
-            bool isIndoors = PlayerState.EnviroType == EnvironmentType.Indoor;
+            bool isIndoors = PlayerValues.EnviroType == EnvironmentType.Indoor;
             float enviroFactor = isIndoors ? 0.4f : 1f;
             float rainStrength = isIndoors ? 0f : Plugin.RealismWeatherComponent.TargetRain * 0.15f;
             float baseStrength = BASE_MAP_RAD_STRENGTH * enviroFactor;
