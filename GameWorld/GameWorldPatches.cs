@@ -29,12 +29,12 @@ namespace RealismMod
 {
     class DayTimeAmbientPatch : ModulePatch
     {
-        private static FieldInfo _dayAudioSourceField;
-        private static FieldInfo _nightAudioSourceField;
+/*        private static FieldInfo _dayAudioSourceField;
+        private static FieldInfo _nightAudioSourceField;*/
         protected override MethodBase GetTargetMethod()
         {
-            _dayAudioSourceField = AccessTools.Field(typeof(AudioSource), "_outdoorAmbientDaySource");
-            _nightAudioSourceField = AccessTools.Field(typeof(AudioSource), "_outdoorAmbientNightSource");
+/*            _dayAudioSourceField = AccessTools.Field(typeof(AudioSource), "_outdoorAmbientDaySource");
+            _nightAudioSourceField = AccessTools.Field(typeof(AudioSource), "_outdoorAmbientNightSource");*/
             return typeof(DayTimeAmbientBlender).GetMethod("method_0");
         }
 

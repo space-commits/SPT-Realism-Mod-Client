@@ -51,8 +51,8 @@ namespace RealismMod
             _playerField = AccessTools.Field(typeof(FirearmController), "_player");
             _fcField = AccessTools.Field(typeof(ProceduralWeaponAnimation), "_firearmController");
             _blendField = AccessTools.Field(typeof(TurnAwayEffector), "_blendSpeed");
-            _smoothInField = AccessTools.Field(typeof(TurnAwayEffector), "_smoothTimeIn");
-            _smoothOutField = AccessTools.Field(typeof(TurnAwayEffector), "_smoothTimeOut");
+            _smoothInField = AccessTools.Field(typeof(TurnAwayEffector), "_inSmoothTime");
+            _smoothOutField = AccessTools.Field(typeof(TurnAwayEffector), "_outSmoothTime");
             return typeof(ProceduralWeaponAnimation).GetMethod("AvoidObstacles", BindingFlags.Instance | BindingFlags.Public);
         }
 
@@ -447,6 +447,13 @@ namespace RealismMod
         private static Vector3 _wiggleRightDir = new Vector3(2.5f, -7.5f, -5f) * 0.5f;
         private static Vector3 _wiggleDownDir = new Vector3(7.5f, 2.5f, -5f) * 0.5f;
 
+        protected override MethodBase GetTargetMethod()
+        {
+            _playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
+            _hitIgnoreField = AccessTools.Field(typeof(EFT.Player.FirearmController), "func_2");
+
+            return typeof(Player.FirearmController).GetMethod("method_11", BindingFlags.Instance | BindingFlags.Public);
+        }
 
         private static void SetMountingStatus(EBracingDirection coverDir)
         {
@@ -579,13 +586,6 @@ namespace RealismMod
             }
         }
 
-        protected override MethodBase GetTargetMethod()
-        {
-            _playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
-            _hitIgnoreField = AccessTools.Field(typeof(EFT.Player.FirearmController), "func_2");
-
-            return typeof(Player.FirearmController).GetMethod("method_8", BindingFlags.Instance | BindingFlags.Public);
-        }
 
         [PatchPrefix]
         private static void PatchPrefix(Player.FirearmController __instance, Vector3 origin, float ln, Vector3? weaponUp = null)

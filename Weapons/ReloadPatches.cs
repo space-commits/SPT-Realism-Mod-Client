@@ -26,7 +26,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(FirearmController).GetMethod("method_15", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(FirearmController).GetMethod("method_18", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -57,9 +57,9 @@ namespace RealismMod
             {
                 if (fc.Weapon.HasChambers && fc.Weapon.Chambers.Length == 1) 
                 {
-                    var magazine = (MagazineItemClass)AccessTools.Field(typeof(ChamberWeaponClass), "magazineClass").GetValue(__instance);
+                    var magazine = (MagazineItemClass)AccessTools.Field(typeof(ChamberWeaponClass), "magazineItemClass").GetValue(__instance);
                     var ammoIsCompatible = (bool)AccessTools.Field(typeof(ChamberWeaponClass), "bool_1").GetValue(__instance);
-                    var bulletClass = (AmmoItemClass)AccessTools.Field(typeof(ChamberWeaponClass), "bulletClass").GetValue(__instance);
+                    var bulletClass = (AmmoItemClass)AccessTools.Field(typeof(ChamberWeaponClass), "ammoItemClass").GetValue(__instance);
                     var weaponManagerClass = (WeaponManagerClass)AccessTools.Field(typeof(ChamberWeaponClass), "weaponManagerClass").GetValue(__instance);
 
                     AccessTools.Field(typeof(ChamberWeaponClass), "action_0").SetValue(__instance, onWeaponAppear);
@@ -72,7 +72,7 @@ namespace RealismMod
                     int currentMagazineCount = fc.Weapon.GetCurrentMagazineCount();
 
                     magazine = fc.Weapon.GetCurrentMagazine();
-                    AccessTools.Field(typeof(ChamberWeaponClass), "magazineClass").SetValue(__instance, magazine);
+                    AccessTools.Field(typeof(ChamberWeaponClass), "magazineItemClass").SetValue(__instance, magazine);
                    
                     fc.AmmoInChamberOnSpawn = chamberAmmoCount;
 

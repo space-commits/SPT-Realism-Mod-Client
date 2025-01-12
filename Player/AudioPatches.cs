@@ -25,7 +25,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             _playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
-            return typeof(Player.FirearmController).GetMethod("method_57", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player.FirearmController).GetMethod("method_60", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
@@ -79,23 +79,25 @@ namespace RealismMod
         }
     }
 
-    //adjust the volum of ADS
+    //adjust the volum of ADS, don't play if ADS from stance to prevent doubling up of ADS audio
     public class ADSAudioPatch : ModulePatch
     {
+        private static FieldInfo _weaponSoundPlayerField;
+
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player).GetMethod("method_50", BindingFlags.Instance | BindingFlags.Public);
+            _weaponSoundPlayerField = AccessTools.Field(typeof(Player.FirearmController), "weaponSoundPlayer_0");
+            return typeof(Player.FirearmController).GetMethod("method_59", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]
-        private static bool PatchPrefix(Player __instance, ref float volume)
+        private static bool PatchPrefix(Player.FirearmController __instance)
         {
-            if (!StanceController.IsIdle() && StanceController.IsAiming)
-            {
-                return false;
-            }
-            volume *= PluginConfig.ADSVolume.Value;
-            return true;
+            if (!StanceController.IsIdle() && StanceController.IsAiming) return false;
+            float volume = __instance.CalculateAimingSoundVolume() * PluginConfig.ADSVolume.Value;
+            var soundPlayer = (WeaponSoundPlayer)_weaponSoundPlayerField.GetValue(__instance);
+            soundPlayer.PlayAimingSound(volume);
+            return false;
         }
     }
 

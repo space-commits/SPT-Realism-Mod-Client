@@ -69,7 +69,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
-            return typeof(Player.FirearmController).GetMethod("method_9", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player.FirearmController).GetMethod("method_12", BindingFlags.Instance | BindingFlags.Public);
 
         }
         [PatchPrefix]

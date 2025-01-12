@@ -1,4 +1,5 @@
-﻿using EFT.InventoryLogic;
+﻿using EFT;
+using EFT.InventoryLogic;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -172,7 +173,8 @@ namespace RealismMod
         public static float BaseWeaponLength = 0f;
         public static float NewWeaponLength = 0f;
 
-        public static string WeapID = "";
+        //need a fake placeholder id for it to be valid
+        public static MongoID WeapID = "6783caffb5f1c2b4cfe64734";
 
         public static float TotalChamberCheckSpeed = 1;
 

@@ -42,7 +42,7 @@ namespace RealismMod
             _skillField = AccessTools.Field(typeof(FirearmController), "gclass1981_0");
             _soundField = AccessTools.Field(typeof(FirearmController), "weaponSoundPlayer_0");
             _recoilField = AccessTools.Field(typeof(FirearmController), "float_5");
-            return typeof(Player.FirearmController).GetMethod("method_53", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player.FirearmController).GetMethod("method_57", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]

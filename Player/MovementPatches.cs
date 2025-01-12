@@ -82,7 +82,7 @@ namespace RealismMod
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player).GetMethod("method_57", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player).GetMethod("method_64", BindingFlags.Instance | BindingFlags.Public);
         }
 
 
