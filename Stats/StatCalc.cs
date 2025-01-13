@@ -76,22 +76,24 @@ namespace RealismMod
             }
         }
 
-        public static void CalcSightAccuracy(Mod currentAimingMod)
+        public static void CalcSightAccuracy(Mod currentAimingMod, WeaponMod aimingModStats)
         {
             float currentSightFactor = 0f;
             int iterations = 0;
   
             if (currentAimingMod != null)
             {
-                if (AttachmentProperties.ModType(currentAimingMod) == "sight")
+                if (aimingModStats.ModType == "sight")
                 {
                     currentSightFactor += currentAimingMod.Accuracy / 100f;
                 }
                 IEnumerable<Item> parents = currentAimingMod.GetAllParentItems();
                 foreach (Item item in parents)
                 {
-                    if (item is Mod && AttachmentProperties.ModType(item) == "mount")
+                    if (item is Mod)
                     {
+                        var modStats = StatsData.GetDataObj<WeaponMod>(StatsData.WeaponModStats, item.TemplateId);
+                        if (modStats.ModType != "mount") continue;
                         Mod mod = item as Mod;
                         currentSightFactor += (mod.Accuracy / 100f);
                     }
@@ -173,42 +175,37 @@ namespace RealismMod
             return ((weapWeight - idealWeapWeight) / idealWeapWeight) + 1f; 
         }
 
-        public static void SpeedStatCalc(Weapon weap, float ergoWeight, float ergonomicWeightLessMag, float chamberSpeedMod, float reloadSpeedMod, ref float totalReloadSpeedLessMag, ref float totalChamberSpeed, ref float totalAimMoveSpeedFactor, ref float totalFiringChamberSpeed, ref float totalChamberCheckSpeed, ref float totalFixSpeed)
-        {
-            chamberSpeedMod = 1f + (chamberSpeedMod / 100f);
-            reloadSpeedMod = 1f + (reloadSpeedMod / 100f);
-            float baseFixSpeed = WeaponStats.BaseFixSpeed(weap);
-            float baseChamberCheckSpeed = WeaponStats.BaseChamberCheckSpeed(weap);
-            float baseChamberSpeed = WeaponStats.BaseChamberSpeed(weap);
-            float baseReloadSpeed = WeaponStats.BaseReloadSpeed(weap);
+        public static void SpeedStatCalc(Weapon weap, Gun weaponStats, float ergoWeight, float ergonomicWeightLessMag, float chamberSpeedMod, float reloadSpeedMod, ref float totalReloadSpeedLessMag, ref float totalChamberSpeed, ref float totalAimMoveSpeedFactor, ref float totalFiringChamberSpeed, ref float totalChamberCheckSpeed, ref float totalFixSpeed)
+        {       
+            float baseFixSpeed = weaponStats.BaseFixSpeed;
+            float baseChamberCheckSpeed = weaponStats.BaseChamberCheckSpeed;
+            float baseChamberSpeed = weaponStats.BaseChamberSpeedMulti;
+            float baseReloadSpeed = weaponStats.BaseReloadSpeedMulti;
             float recoilMulti = 1f + (-1f * WeaponStats.PureRecoilDelta);
             float ergoWeightMulti = 1f - (ergoWeight / 100f);
             float ergoWeightLessMagMulti = 1f - (ergonomicWeightLessMag / 100f);
 
-            totalFixSpeed = Mathf.Clamp(baseFixSpeed * ergoWeightMulti * chamberSpeedMod, WeaponStats.MinChamberSpeed(weap), WeaponStats.MaxChamberSpeed(weap));
-            totalFiringChamberSpeed = Mathf.Clamp(baseChamberSpeed * ergoWeightMulti * chamberSpeedMod * recoilMulti, WeaponStats.MinChamberSpeed(weap), WeaponStats.MaxChamberSpeed(weap));
-            totalChamberSpeed = Mathf.Clamp(baseChamberSpeed * ergoWeightMulti * chamberSpeedMod, WeaponStats.MinChamberSpeed(weap), WeaponStats.MaxChamberSpeed(weap));
-            totalChamberCheckSpeed = Mathf.Clamp(baseChamberCheckSpeed * ergoWeightMulti * chamberSpeedMod, WeaponStats.MinChamberSpeed(weap), WeaponStats.MaxChamberSpeed(weap));
-            totalReloadSpeedLessMag = Mathf.Clamp(baseReloadSpeed * ergoWeightLessMagMulti * reloadSpeedMod, WeaponStats.MinReloadSpeed(weap), WeaponStats.MaxReloadSpeed(weap));
+            chamberSpeedMod = 1f + (chamberSpeedMod / 100f);
+            reloadSpeedMod = 1f + (reloadSpeedMod / 100f);
+            totalFixSpeed = Mathf.Clamp(baseFixSpeed * ergoWeightMulti * chamberSpeedMod, weaponStats.MinChamberSpeed, weaponStats.MaxChamberSpeed);
+            totalFiringChamberSpeed = Mathf.Clamp(baseChamberSpeed * ergoWeightMulti * chamberSpeedMod * recoilMulti, weaponStats.MinChamberSpeed, weaponStats.MaxChamberSpeed);
+            totalChamberSpeed = Mathf.Clamp(baseChamberSpeed * ergoWeightMulti * chamberSpeedMod, weaponStats.MinChamberSpeed, weaponStats.MaxChamberSpeed);
+            totalChamberCheckSpeed = Mathf.Clamp(baseChamberCheckSpeed * ergoWeightMulti * chamberSpeedMod, weaponStats.MinChamberSpeed, weaponStats.MaxChamberSpeed);
+            totalReloadSpeedLessMag = Mathf.Clamp(baseReloadSpeed * ergoWeightLessMagMulti * reloadSpeedMod, weaponStats.MinReloadSpeed, weaponStats.MaxReloadSpeed);
             totalAimMoveSpeedFactor = Mathf.Max(1f - (ergoWeight / 150f), 0.5f);
         }
 
-        public static void WeaponStatCalc(Weapon weap, float currentTorque, ref float totalTorque, float currentErgo, float currentVRecoil, float currentHRecoil, float currentDispersion, float currentCamRecoil, float currentRecoilAngle, float baseErgo, float baseVRecoil, float baseHRecoil, ref float totalErgo, ref float totalVRecoil, ref float totalHRecoil, ref float totalDispersion, ref float totalCamRecoil, ref float totalRecoilAngle, ref float totalRecoilDamping, ref float totalRecoilHandDamping, ref float totalErgoDelta, ref float totalVRecoilDelta, ref float totalHRecoilDelta, ref float recoilDamping, ref float recoilHandDamping, float currentCOI, bool hasShoulderContact, ref float totalCOI, ref float totalCOIDelta, float baseCOI, float totalPureErgo, ref float totalPureErgoDelta, ref float totalErgoLessMag, float currentErgoLessMag, bool isDisplayDelta)
+        public static void WeaponStatCalc(Weapon weap, Gun weaponStats, float currentTorque, ref float totalTorque, float currentErgo, float currentVRecoil, float currentHRecoil, float currentDispersion, float currentCamRecoil, float currentRecoilAngle, float baseErgo, float baseVRecoil, float baseHRecoil, ref float totalErgo, ref float totalVRecoil, ref float totalHRecoil, ref float totalDispersion, ref float totalCamRecoil, ref float totalRecoilAngle, ref float totalRecoilDamping, ref float totalRecoilHandDamping, ref float totalErgoDelta, ref float totalVRecoilDelta, ref float totalHRecoilDelta, ref float recoilDamping, ref float recoilHandDamping, float currentCOI, bool hasShoulderContact, ref float totalCOI, ref float totalCOIDelta, float baseCOI, float totalPureErgo, ref float totalPureErgoDelta, ref float totalErgoLessMag, float currentErgoLessMag, bool isDisplayDelta)
         {
             float angleTorqueMulti;
-
             float ergoTorqueMult;
             float ergoWeightMult;
-
             float vRecoilTorqueMult;
             float vRecoilWeightMult;
-
             float hRecoilTorqueMult;
             float hRecoilWeightMult;
-
             float dispersionWeightMult;
             float dispersionTorqueMult;
-
             float currentPistolErgoTorque = currentTorque > 3 ? currentTorque * -1f : currentTorque;
 
             if (weap.WeapClass == "pistol")
@@ -238,7 +235,7 @@ namespace RealismMod
 
             float weaponBaseWeight = weap.Weight;
             float weaponBaseWeightFactored = FactoredWeight(weaponBaseWeight);
-            float weaponBaseTorque = TorqueCalc(WeaponStats.BaseTorqueDistance(weap), weaponBaseWeightFactored, weap.WeapClass);
+            float weaponBaseTorque = TorqueCalc(weaponStats.BaseTorque, weaponBaseWeightFactored, weap.WeapClass);
 
             float ergoWeapBaseWeightFactor = WeightStatCalc(ergoWeightMult, weap.IsBeltMachineGun || weaponBaseWeight >= 10f ? weaponBaseWeight * 0.5f : weaponBaseWeight) / 100f;
             float vRecoilWeapBaseWeightFactor = WeightStatCalc(vRecoilWeightMult, weaponBaseWeight) / 100f;
@@ -265,7 +262,7 @@ namespace RealismMod
             totalDispersion = currentDispersion + (currentDispersion * (dispersionWeapBaseWeightFactor + (totalTorqueFactor * dispersionTorqueMult)));
 
             totalRecoilAngle = currentRecoilAngle + (currentRecoilAngle * (totalTorqueFactor * angleTorqueMulti));
-            totalCOI = currentCOI + (currentCOI * (-WeaponStats.WeaponAccuracy(weap) / 100));
+            totalCOI = currentCOI + (currentCOI * (-weaponStats.WeapAccuracy / 100));
 
             if (!hasShoulderContact && weap.WeapClass != "pistol")
             {
@@ -349,7 +346,7 @@ namespace RealismMod
         }
 
 
-        public static void ModConditionalStatCalc(Weapon weap, Mod mod, bool folded, string weapType, string weapOpType, 
+        public static void ModConditionalStatCalc(Weapon weap, Gun weaponStats, Mod mod, WeaponMod weaponModStats, bool folded, string weapType, string weapOpType, 
             ref bool hasShoulderContact, ref float modAutoROF, ref float modSemiROF, ref bool stockAllowsFSADS, 
             ref float modVRecoil, ref float modHRecoil, ref float modCamRecoil, ref float modAngle, 
             ref float modDispersion, ref float modErgo, ref float modAccuracy, ref string modType, 
@@ -394,7 +391,7 @@ namespace RealismMod
                     if (modType.StartsWith("Stock") || modType == "buffer_stock")
                     {
                         hasShoulderContact = mod.Template.HasShoulderContact;
-                        stockAllowsFSADS = AttachmentProperties.StockAllowADS(mod);
+                        stockAllowsFSADS = weaponModStats.StockAllowADS;
                     }
 
                     if (weapOpType != "buffer")
@@ -439,7 +436,7 @@ namespace RealismMod
                         if (mod.Slots[0].ContainedItem != null)
                         {
                             Mod containedMod = mod.Slots[0].ContainedItem as Mod;
-                            if (AttachmentProperties.ModType(containedMod) != "buffer")
+                            if (weaponModStats.ModType != "buffer")
                             {
                                 return;
                             }
@@ -464,7 +461,7 @@ namespace RealismMod
 
                     if (modType == "hydraulic_buffer")
                     {
-                        if (WeaponStats.IsManuallyOperated(weap))
+                        if (weaponStats.IsManuallyOperated)
                         {
                             modMalfChance = 0;
                         }
@@ -487,7 +484,7 @@ namespace RealismMod
                 modAccuracy = 0;
             }
 
-            if ((modType == "booster" || Utils.IsSilencer(mod)) && (weapType == "short_AK" || (parent != null && AttachmentProperties.ModType(parent) == "short_barrel")))
+            if ((modType == "booster" || Utils.IsSilencer(mod)) && (weapType == "short_AK" || (parent != null && weaponModStats.ModType == "short_barrel")))
             {
                 if (Utils.IsSilencer(mod))
                 {
@@ -514,12 +511,12 @@ namespace RealismMod
 
             if (Utils.IsSilencer(mod) || Utils.IsFlashHider(mod) || Utils.IsMuzzleCombo(mod))
             {
-                if (WeaponStats.IsManuallyOperated(weap))
+                if (weaponStats.IsManuallyOperated)
                 {
                     modMalfChance = 0f;
                     modDuraBurn = ((modDuraBurn - 1f) * 0.25f) + 1f;
                 }
-                if (WeaponStats.WeaponType(weap) == "DI")
+                if (weaponStats.WeapType == "DI")
                 {
                     modDuraBurn *= 1.25f;
                 }
@@ -545,7 +542,7 @@ namespace RealismMod
             if (modType == "shot_pump_grip_adapt" && mod.Slots[0].ContainedItem != null)
             {
                 Mod containedMod = mod.Slots[0].ContainedItem as Mod;
-                if (Utils.IsForegrip(containedMod) || (AttachmentProperties.ModType(containedMod) == "foregrip_adapter" && containedMod.Slots[0].ContainedItem != null))
+                if (Utils.IsForegrip(containedMod) || (weaponModStats.ModType == "foregrip_adapter" && containedMod.Slots[0].ContainedItem != null))
                 {
                     modChamber += WeaponStats.PumpGripReloadBonus;
                 }
@@ -557,7 +554,7 @@ namespace RealismMod
                 if (mod.Slots[0].ContainedItem != null)
                 {
                     Mod containedMod = mod.Slots[0].ContainedItem as Mod;
-                    if (AttachmentProperties.ModType(containedMod).StartsWith("Stock"))
+                    if (weaponModStats.ModType.StartsWith("Stock"))
                     {
                         return;
                     }
@@ -732,8 +729,9 @@ namespace RealismMod
         {
             if (mod.Parent.Container != null)
             {
-                string parentType = AttachmentProperties.ModType(mod.Parent.Container.ParentItem);
-                if (parentType == "buffer" || parentType == "buffer_adapter")
+                var parentStats = StatsData.GetDataObj<WeaponMod>(StatsData.WeaponModStats, mod.Parent.Container.ParentItem.TemplateId);
+                string parentModType = parentStats.ModType;
+                if (parentModType == "buffer" || parentModType == "buffer_adapter")
                 {
                     Mod parentMod = mod.Parent.Container.ParentItem as Mod;
                     for (int i = 0; i < parentMod.Slots.Length; i++)

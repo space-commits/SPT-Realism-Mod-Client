@@ -264,17 +264,17 @@ namespace RealismMod
             return typeof(HealthEffectsComponent).GetConstructor(new Type[] { typeof(Item), typeof(IHealthEffect) });
         }
 
-        private static string GetHBTypeString(string type)
+        private static string GetHBTypeString(EHeavyBleedHealType type)
         {
             switch (type)
             {
-                case "trnqt":
+                case EHeavyBleedHealType.Tourniquet:
                     return "TOURNIQUET";
-                case "surg":
+                case EHeavyBleedHealType.Surgical:
                     return "SURGICAL";
-                case "combo":
+                case EHeavyBleedHealType.Combo:
                     return "TOURNIQUET + CHEST SEAL";
-                case "clot":
+                case EHeavyBleedHealType.Clot:
                     return "CLOTTING AGENT";
                 default:
                     return "NONE";
@@ -303,7 +303,8 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(HealthEffectsComponent __instance, Item item)
         {
-            string medType = MedProperties.MedType(item);
+            var medStats = StatsData.GetDataObj<Consumable>(StatsData.ConsumableStats, item.TemplateId);
+            bool isPainMed = medStats.ConsumableType == EConsumableType.PainPills || medStats.ConsumableType == EConsumableType.PainDrug;
             if (item.Template.ParentId == "5448f3a64bdc2d60728b456a")
             {
                 List<ItemAttributeClass> stimAtt = item.Attributes;
@@ -316,9 +317,9 @@ namespace RealismMod
                 stimAtt.Add(stimAttClass);
             }
 
-            if (medType.Contains("pain") || medType.Contains("alcohol"))
+            if (isPainMed || medStats.ConsumableType == EConsumableType.Alcohol)
             {
-                float strength = MedProperties.Strength(item);
+                float strength = medStats.Strength;
                 List<ItemAttributeClass> strengthAtt = item.Attributes;
                 ItemAttributeClass strengthAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.PainKillerStrength);
                 strengthAttClass.Name = ENewItemAttributeId.PainKillerStrength.GetName();
@@ -329,14 +330,13 @@ namespace RealismMod
                 strengthAtt.Add(strengthAttClass);
             }
 
-            if (medType == "trnqt" || medType == "medkit" || medType == "surg")
+            if (medStats.ConsumableType == EConsumableType.Tourniquet || medStats.ConsumableType == EConsumableType.Medkit || medStats.ConsumableType == EConsumableType.Surgical)
             {
-                string hBleedType = MedProperties.HBleedHealType(item);
-                float hpPerTick = medType != "surg" ? -MedProperties.HpPerTick(item) : MedProperties.HpPerTick(item);
+                float hpPerTick = medStats.ConsumableType != EConsumableType.Surgical ? -medStats.TrnqtDamage : medStats.HPRestoreTick;
 
-                if (medType == "medkit")
+                if (medStats.ConsumableType == EConsumableType.Medkit)
                 {
-                    float hp = MedProperties.HPRestoreAmount(item);
+                    float hp = medStats.HPRestoreAmount;
                     List<ItemAttributeClass> hbAtt = item.Attributes;
                     ItemAttributeClass hpAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.OutOfRaidHP);
                     hpAttClass.Name = ENewItemAttributeId.OutOfRaidHP.GetName();
@@ -348,18 +348,18 @@ namespace RealismMod
                     hbAtt.Add(hpAttClass);
                 }
 
-                if (hBleedType != "none")
+                if (medStats.HeavyBleedHealType != EHeavyBleedHealType.None)
                 {
                     List<ItemAttributeClass> hbAtt = item.Attributes;
                     ItemAttributeClass hbAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.HBleedType);
                     hbAttClass.Name = ENewItemAttributeId.HBleedType.GetName();
-                    hbAttClass.StringValue = () => GetHBTypeString(hBleedType);
+                    hbAttClass.StringValue = () => GetHBTypeString(medStats.HeavyBleedHealType);
                     hbAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                     hbAttClass.LabelVariations = EItemAttributeLabelVariations.Colored;
                     hbAttClass.LessIsGood = false;
                     hbAtt.Add(hbAttClass);
 
-                    if (medType == "surg")
+                    if (medStats.ConsumableType == EConsumableType.Surgical)
                     {
                         List<ItemAttributeClass> hpTickAtt = item.Attributes;
                         ItemAttributeClass hpAttClass = new ItemAttributeClass(Attributes.ENewItemAttributeId.HpPerTick);
@@ -517,6 +517,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
         {
+            var medStats = StatsData.GetDataObj<Consumable>(StatsData.ConsumableStats, item.TemplateId);
             if (PluginConfig.EnableLogging.Value)
             {
                 Logger.LogWarning("applying " + item.LocalizedName());
@@ -537,11 +538,10 @@ namespace RealismMod
                 MedsItemClass MedsItemClass = item as MedsItemClass;
                 if (MedsItemClass != null)
                 {
-                    string medType = MedProperties.MedType(MedsItemClass);
                     //need to get surgery kit working later, doesnt want to remove hp resource.
-                    if (medType == "medkit") // || medType == "surg"
+                    if (medStats.ConsumableType == EConsumableType.Medkit) // || medType == "surg"
                     {
-                        RestoreHP(__instance, bodyPart, MedProperties.HPRestoreAmount(MedsItemClass));
+                        RestoreHP(__instance, bodyPart, medStats.HPRestoreAmount);
                         /*             MedsItemClass.MedKitComponent.HpResource -= 1f;
                                      MedsItemClass.MedKitComponent.Item.RaiseRefreshEvent(false, true);*/
                         return;

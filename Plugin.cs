@@ -39,7 +39,7 @@ namespace RealismMod
         public bool enable_hazard_zones { get; set; }   
     }
 
-    public class RealismInfo : IRealismInfo
+    public class RealismEventInfo : IRealismInfo
     {
         public bool IsHalloween { get; set; }
         public bool DoGasEvent { get; set; }
@@ -51,12 +51,18 @@ namespace RealismMod
         public bool IsNightTime { get; set; }   
     }
 
+    public class RealismDir : IRealismInfo 
+    {
+        public string ServerBaseDirectory { get; set; }
+    }
+
     public enum EUpdateType 
     {
         Full,
         ModInfo,
         ModConfig,
-        TimeOfDay
+        TimeOfDay,
+        Path
     }
 
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.PLUGINVERSION)]
@@ -113,7 +119,9 @@ namespace RealismMod
         private bool _gotProfileId = false;
 
         public static RealismConfig ServerConfig;
-        public static RealismInfo ModInfo;
+        public static RealismEventInfo ModInfo;
+        public static RealismDir ModDir;
+
 
         private static T UpdateInfoFromServer<T>(string route) where T : class, IRealismInfo
         {
@@ -142,16 +150,18 @@ namespace RealismMod
             {
                 case EUpdateType.Full:
                     ServerConfig = UpdateInfoFromServer<RealismConfig>("/RealismMod/GetConfig");
-                    ModInfo = UpdateInfoFromServer<RealismInfo>("/RealismMod/GetInfo");
+                    ModInfo = UpdateInfoFromServer<RealismEventInfo>("/RealismMod/GetInfo");
+                    ModDir = UpdateInfoFromServer<RealismDir>("/RealismMod/GetDirectory");
+                    Utils.Logger.LogWarning("directory " + ModDir.ServerBaseDirectory);
                     break;
                 case EUpdateType.ModInfo:
-                    ModInfo = UpdateInfoFromServer<RealismInfo>("/RealismMod/GetInfo");
+                    ModInfo = UpdateInfoFromServer<RealismEventInfo>("/RealismMod/GetInfo");
                     break;
                 case EUpdateType.ModConfig:
                     ServerConfig = UpdateInfoFromServer<RealismConfig>("/RealismMod/GetConfig");
                     break;
                 case EUpdateType.TimeOfDay:
-                    ModInfo = UpdateInfoFromServer<RealismInfo>("/RealismMod/GetTimeOfDay");
+                    ModInfo = UpdateInfoFromServer<RealismEventInfo>("/RealismMod/GetTimeOfDay");
                     break;
             }
         }
@@ -431,6 +441,8 @@ namespace RealismMod
                 LoadAudioClips();
                 CacheIcons();
                 ZoneData.DeserializeZoneData();
+                StatsData.GetStats();
+
             }
             catch (Exception exception)
             {

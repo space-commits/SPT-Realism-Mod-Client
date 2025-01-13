@@ -287,8 +287,9 @@ namespace RealismMod
                     __instance.CrankRecoil = PluginConfig.EnableCrank.Value;  // || (!WeaponStats.HasShoulderContact && WeaponStats._WeapClass != "pistol")
 
                     Mod currentAimingMod = (__instance.CurrentAimingMod != null) ? __instance.CurrentAimingMod.Item as Mod : null;
+                    var aimingModStats = currentAimingMod == null ? null : StatsData.GetDataObj<WeaponMod>(StatsData.WeaponModStats, currentAimingMod.TemplateId);
                     WeaponStats.IsOptic = __instance.CurrentScope.IsOptic;
-                    StatCalc.CalcSightAccuracy(currentAimingMod);
+                    StatCalc.CalcSightAccuracy(currentAimingMod, aimingModStats);
                     float accuracy = weapon.GetTotalCenterOfImpact(false);
                     float3Field.SetValue(firearmController, accuracy); //update accuracy value
 
@@ -304,7 +305,7 @@ namespace RealismMod
 
                     float totalSightlessAimSpeed = WeaponStats.SightlessAimSpeed * PlayerValues.ADSInjuryMulti * (Mathf.Max(PlayerValues.RemainingArmStamFactor, 0.35f));
 
-                    float sightSpeedModi = currentAimingMod != null ? AttachmentProperties.AimSpeed(currentAimingMod) : 1f;
+                    float sightSpeedModi = currentAimingMod != null ? aimingModStats.AimSpeed : 1f;
                     sightSpeedModi = currentAimingMod != null && (currentAimingMod.TemplateId == "5c07dd120db834001c39092d" || currentAimingMod.TemplateId == "5c0a2cec0db834001b7ce47d") && __instance.CurrentScope.IsOptic ? 1f : sightSpeedModi;
                     float totalSightedAimSpeed = Mathf.Clamp(totalSightlessAimSpeed * (1 + (sightSpeedModi / 100f)) * stanceMulti * stockMulti * playerWeightADSFactor, 0.4f, 1.5f);
                    

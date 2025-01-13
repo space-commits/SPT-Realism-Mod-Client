@@ -33,7 +33,8 @@ namespace RealismMod
                 VisorEffect visor = (VisorEffect)AccessTools.Field(typeof(PlayerCameraController), "visorEffect_0").GetValue(__instance);
                 Material mat = visor.method_4();
 
-                string maskToUse = GearStats.MaskToUse(faceShield.Item);
+                var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, faceShield.Item.TemplateId);
+                string maskToUse = gearStats.MaskToUse;
                 if (maskToUse == null || maskToUse == string.Empty || maskToUse == "") return;
                 Texture mask = Plugin.LoadedTextures[maskToUse + ".png"];
                 mat.SetTexture("_Mask", mask);
@@ -72,9 +73,10 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(EquipmentPenaltyComponent __instance, Item item, bool anyArmorPlateSlots)
         {
+            var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, item.TemplateId);
             if (Plugin.ServerConfig.gear_weight && (anyArmorPlateSlots || item.Template.ParentId == "5448e53e4bdc2d60728b4567"))
             {
-                float comfortModifier = GearStats.ComfortModifier(item);
+                        float comfortModifier = gearStats.Comfort;
                 if (comfortModifier > 0f && comfortModifier != 1f)
                 {
                     float comfortPercent = -1f * (float)Math.Round((comfortModifier - 1f) * 100f);
@@ -90,7 +92,7 @@ namespace RealismMod
                 }
             }
 
-            float gasProtection = GearStats.GasProtection(item);
+            float gasProtection = gearStats.GasProtection;
             if (gasProtection > 0f) 
             {
                 gasProtection = gasProtection * 100f;
@@ -103,7 +105,7 @@ namespace RealismMod
                 gasAtt.Add(gasAttClass);
             }
 
-            float radProtection = GearStats.RadProtection(item);
+            float radProtection = gearStats.RadProtection;
             if (radProtection > 0f)
             {
                 radProtection = radProtection * 100f;
@@ -116,7 +118,7 @@ namespace RealismMod
                 radAtt.Add(radAttClass);
             }
 
-            bool allowADS = GearStats.AllowsADS(item);
+            bool allowADS = gearStats.AllowADS;
             if (!allowADS)
             {
                 List<ItemAttributeClass> canADSAtt = __instance.Item.Attributes;
@@ -141,7 +143,7 @@ namespace RealismMod
 
                 if (Plugin.ServerConfig.realistic_ballistics)
                 {
-                    bool canSpall = GearStats.CanSpall(__instance.Item);
+                    bool canSpall = gearStats.CanSpall;
                     if (canSpall)
                     {
                         List<ItemAttributeClass> canSpallAtt = item.Attributes;
@@ -154,7 +156,7 @@ namespace RealismMod
                         List<ItemAttributeClass> spallReductAtt = item.Attributes;
                         ItemAttributeClass spallReductAttClass = new ItemAttributeClass(ENewItemAttributeId.SpallReduction);
                         spallReductAttClass.Name = ENewItemAttributeId.SpallReduction.GetName();
-                        spallReductAttClass.StringValue = () => ((1 - GearStats.SpallReduction(item)) * 100f).ToString() + " %";
+                        spallReductAttClass.StringValue = () => ((1 - gearStats.SpallReduction) * 100f).ToString() + " %";
                         spallReductAttClass.DisplayType = () => EItemAttributeDisplayType.Compact;
                         spallReductAtt.Add(spallReductAttClass);
                     }
@@ -175,10 +177,10 @@ namespace RealismMod
         private static void PatchPostfix(RigConstructor __instance, RigTemplate template)
         {
             Item item = __instance as Item;
-
+            var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, item.TemplateId);
             if (Plugin.ServerConfig.reload_changes)
             {
-                float gearReloadSpeed = GearStats.ReloadSpeedMulti(item);
+                float gearReloadSpeed = gearStats.ReloadSpeedMulti;
                 if (gearReloadSpeed > 0f && gearReloadSpeed != 1f)
                 {
                     float reloadSpeedPercent = (float)Math.Round((gearReloadSpeed - 1f) * 100f);
@@ -198,7 +200,7 @@ namespace RealismMod
             {
                 if (template.ArmorType == EArmorType.None)
                 {
-                    float comfortModifier = GearStats.ComfortModifier(item);
+                    float comfortModifier = gearStats.Comfort;
                     if (comfortModifier > 0f && comfortModifier != 1f)
                     {
                         float comfortPercent = -1f * (float)Math.Round((comfortModifier - 1f) * 100f);
@@ -229,8 +231,8 @@ namespace RealismMod
         private static void PatchPostfix(HeadsetClass __instance)
         {
             Item item = __instance as Item;
-
-            float dB = GearStats.DbLevel(item);
+            var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, item.TemplateId);
+            float dB = gearStats.dB;
 
             if (dB > 0)
             {

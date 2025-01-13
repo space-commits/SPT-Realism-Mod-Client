@@ -6,6 +6,7 @@ using UnityEngine;
 using ExistanceClass = GClass2788;
 using System.Linq;
 using EFT.Animations;
+using Diz.LanguageExtensions;
 
 namespace RealismMod
 {
@@ -71,7 +72,8 @@ namespace RealismMod
             if (_Player?.Inventory == null || _Player?.Equipment == null) return true;
             Item containedItem = _Player.Inventory?.Equipment?.GetSlot(EquipmentSlot.FaceCover)?.ContainedItem;
             if (containedItem == null) return false;
-            return GearStats.IsGasMask(containedItem);
+            var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, containedItem.TemplateId);
+            return gearStats.IsGasMask;
         }
 
         private void HandleBotGas(bool hasGasmask)

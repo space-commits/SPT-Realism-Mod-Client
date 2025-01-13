@@ -393,11 +393,12 @@ namespace RealismMod
                     BallisticsController.GetArmorComponents(__instance, damageInfo, bodyPartType, ref armor, ref faceProtectionCount, ref doSpalling, ref hasArmArmor, ref hasLegProtection);
                 }
 
-                if (doSpalling && armor != null && GearStats.CanSpall(armor.Item) && __instance?.ActiveHealthController != null)
+                if (doSpalling && armor != null && __instance?.ActiveHealthController != null)
                 {
-                    BallisticsController.CalculatSpalling(__instance, ref damageInfo, KE, armor, ammoTemp, faceProtectionCount, hasArmArmor, hasLegProtection);
+                    var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, armor.Item.TemplateId);
+                    if (gearStats.CanSpall) BallisticsController.CalculatSpalling(__instance, ref damageInfo, KE, armor, ammoTemp, faceProtectionCount, hasArmArmor, hasLegProtection);
                 }
-
+                 
                 if (__instance?.ActiveHealthController != null)
                 {
                     DisarmAndKnockdownCheck(__instance, damageInfo, bodyPartType, partHit, KE, hasArmArmor);

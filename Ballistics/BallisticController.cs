@@ -362,7 +362,8 @@ namespace RealismMod
 
         public static void CalculatSpalling(Player player, ref DamageInfo damageInfo, float KE, ArmorComponent armor, AmmoTemplate ammoTemp, int faceProtectionCount, bool hasArmArmor, bool hasLegProtection)
         {
-            damageInfo.BleedBlock = false;
+            var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, armor.Item.TemplateId);
+
             bool isMetalArmor = armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel || armor.Template.ArmorMaterial == EArmorMaterial.Titan ? true : false;
             float bluntDamage = damageInfo.Damage;
             float speedFactor = damageInfo.ArmorDamage / ammoTemp.InitialSpeed;
@@ -370,7 +371,7 @@ namespace RealismMod
             float lightBleedChance = damageInfo.LightBleedingDelta;
             float heavyBleedChance = damageInfo.HeavyBleedingDelta;
             float ricochetChance = ammoTemp.RicochetChance * speedFactor;
-            float spallReduction = GearStats.SpallReduction(armor.Item);
+            float spallReduction = gearStats.SpallReduction;
             float armorDamageActual = ammoTemp.ArmorDamage * speedFactor;
             float penPower = damageInfo.PenetrationPower;
 
@@ -386,6 +387,8 @@ namespace RealismMod
             float factoredSpallingDamage = maxPotentialSpallDamage * (fragChance + 1) * (ricochetChance + 1) * spallReduction * (isMetalArmor ? (1f - duraPercent) + 1f : 1f);
             float maxSpallingDamage = Mathf.Clamp(factoredSpallingDamage - bluntDamage, 7f, 35f * spallDuraFactor);
             float splitSpallingDmg = maxSpallingDamage / spallingBodyParts.Count;
+
+            damageInfo.BleedBlock = false;
 
             if (PluginConfig.EnableBallisticsLogging.Value)
             {
