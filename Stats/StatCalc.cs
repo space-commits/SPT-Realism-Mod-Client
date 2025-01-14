@@ -92,7 +92,7 @@ namespace RealismMod
                 {
                     if (item is Mod)
                     {
-                        var modStats = StatsData.GetDataObj<WeaponMod>(StatsData.WeaponModStats, item.TemplateId);
+                        var modStats = Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, item.TemplateId);
                         if (modStats.ModType != "mount") continue;
                         Mod mod = item as Mod;
                         currentSightFactor += (mod.Accuracy / 100f);
@@ -729,7 +729,7 @@ namespace RealismMod
         {
             if (mod.Parent.Container != null)
             {
-                var parentStats = StatsData.GetDataObj<WeaponMod>(StatsData.WeaponModStats, mod.Parent.Container.ParentItem.TemplateId);
+                var parentStats = Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, mod.Parent.Container.ParentItem.TemplateId);
                 string parentModType = parentStats.ModType;
                 if (parentModType == "buffer" || parentModType == "buffer_adapter")
                 {

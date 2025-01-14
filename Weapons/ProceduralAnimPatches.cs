@@ -287,7 +287,7 @@ namespace RealismMod
                     __instance.CrankRecoil = PluginConfig.EnableCrank.Value;  // || (!WeaponStats.HasShoulderContact && WeaponStats._WeapClass != "pistol")
 
                     Mod currentAimingMod = (__instance.CurrentAimingMod != null) ? __instance.CurrentAimingMod.Item as Mod : null;
-                    var aimingModStats = currentAimingMod == null ? null : StatsData.GetDataObj<WeaponMod>(StatsData.WeaponModStats, currentAimingMod.TemplateId);
+                    var aimingModStats = currentAimingMod == null ? null : Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, currentAimingMod.TemplateId);
                     WeaponStats.IsOptic = __instance.CurrentScope.IsOptic;
                     StatCalc.CalcSightAccuracy(currentAimingMod, aimingModStats);
                     float accuracy = weapon.GetTotalCenterOfImpact(false);

@@ -30,7 +30,6 @@ namespace RealismMod
         public const float SECONDARY_FONT_SIZE = 30f;
         public const float FONT_CHANGE_SPEED = 1f;
 
-        private static float _updateTime = 0f;
         protected override MethodBase GetTargetMethod()
         {
             return typeof(HealthParametersPanel).GetMethod("method_0", BindingFlags.Instance | BindingFlags.Public);
@@ -121,64 +120,56 @@ namespace RealismMod
         private static void Postfix(HealthParametersPanel __instance)
         {
 #pragma warning disable CS0618
-            _updateTime += Time.deltaTime;
-            if (_updateTime >= 1f) 
+            GameObject panel = __instance.gameObject;
+            if (panel.transform.childCount > 0)
             {
-                _updateTime = 0f;
-                HealthParameterPanel _radiation = (HealthParameterPanel)AccessTools.Field(typeof(HealthParametersPanel), "_radiation").GetValue(__instance);
-                GameObject panel = __instance.gameObject;
-                if (panel.transform.childCount > 0)
+                GameObject poisoning = panel.transform.Find("Poisoning")?.gameObject;
+                if (poisoning != null)
                 {
-                    GameObject poisoning = panel.transform.Find("Poisoning")?.gameObject;
-                    if (poisoning != null)
+                    GameObject buff = poisoning.transform.Find("Buff")?.gameObject;
+                    GameObject current = poisoning.transform.Find("Current")?.gameObject;
+                    if (buff != null)
                     {
-                        GameObject buff = poisoning.transform.Find("Buff")?.gameObject;
-                        GameObject current = poisoning.transform.Find("Current")?.gameObject;
-                        if (buff != null)
-                        {
-                            float toxicityRate = PluginConfig.EnableTrueHazardRates.Value ? HazardTracker.BaseTotalToxicityRate : HazardTracker.TotalToxicityRate;
-                            CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>(); //can animate it by changing the font size with ping pong, and modulate the color
-                            buffUI.text = (toxicityRate > 0f ? "+" : "") + toxicityRate.ToString("0.00");
-                            buffUI.color = GetGasRateColor(toxicityRate);
-                            buffUI.fontSize = MAIN_FONT_SIZE;
-                        }
-                        if (current != null)
-                        {
-                            float toxicityLevel = Mathf.Round(HazardTracker.TotalToxicity);
-                            CustomTextMeshProUGUI currentUI = current.GetComponent<CustomTextMeshProUGUI>();
-                            currentUI.text = toxicityLevel.ToString();
-                            currentUI.color = GetCurrentGasColor(toxicityLevel);
-                            currentUI.fontSize = SECONDARY_FONT_SIZE;
-                        }
+                        float toxicityRate = PluginConfig.EnableTrueHazardRates.Value ? HazardTracker.BaseTotalToxicityRate : HazardTracker.TotalToxicityRate;
+                        CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>(); //can animate it by changing the font size with ping pong, and modulate the color
+                        buffUI.text = (toxicityRate > 0f ? "+" : "") + toxicityRate.ToString("0.00");
+                        buffUI.color = GetGasRateColor(toxicityRate);
+                        buffUI.fontSize = MAIN_FONT_SIZE;
                     }
-
-                    GameObject radiation = panel.transform.Find("Radiation")?.gameObject;
-                    if (radiation != null)
+                    if (current != null)
                     {
-                        GameObject buff = radiation.transform.Find("Buff")?.gameObject;
-                        GameObject current = radiation.transform.Find("Current")?.gameObject;
-                        if (buff != null)
-                        {
-                            float radRate = PluginConfig.EnableTrueHazardRates.Value ? HazardTracker.BaseTotalRadiationRate : HazardTracker.TotalRadiationRate;
-                            CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
-                            buffUI.text = (radRate > 0f ? "+" : "") + radRate.ToString("0.00");
-                            buffUI.color = GetRadRateColor(radRate);
-                            buffUI.fontSize = MAIN_FONT_SIZE;
-                        }
-                        if (current != null)
-                        {
-                            float radiationLevel = Mathf.Round(HazardTracker.TotalRadiation);
-                            CustomTextMeshProUGUI currentUI = current.GetComponent<CustomTextMeshProUGUI>();
-                            currentUI.text = radiationLevel.ToString();
-                            currentUI.color = GetCurrentRadColor(radiationLevel);
-                            currentUI.fontSize = SECONDARY_FONT_SIZE;
-                        }
+                        float toxicityLevel = Mathf.Round(HazardTracker.TotalToxicity);
+                        CustomTextMeshProUGUI currentUI = current.GetComponent<CustomTextMeshProUGUI>();
+                        currentUI.text = toxicityLevel.ToString();
+                        currentUI.color = GetCurrentGasColor(toxicityLevel);
+                        currentUI.fontSize = SECONDARY_FONT_SIZE;
                     }
                 }
-#pragma warning restore CS0618
+
+                GameObject radiation = panel.transform.Find("Radiation")?.gameObject;
+                if (radiation != null)
+                {
+                    GameObject buff = radiation.transform.Find("Buff")?.gameObject;
+                    GameObject current = radiation.transform.Find("Current")?.gameObject;
+                    if (buff != null)
+                    {
+                        float radRate = PluginConfig.EnableTrueHazardRates.Value ? HazardTracker.BaseTotalRadiationRate : HazardTracker.TotalRadiationRate;
+                        CustomTextMeshProUGUI buffUI = buff.GetComponent<CustomTextMeshProUGUI>();
+                        buffUI.text = (radRate > 0f ? "+" : "") + radRate.ToString("0.00");
+                        buffUI.color = GetRadRateColor(radRate);
+                        buffUI.fontSize = MAIN_FONT_SIZE;
+                    }
+                    if (current != null)
+                    {
+                        float radiationLevel = Mathf.Round(HazardTracker.TotalRadiation);
+                        CustomTextMeshProUGUI currentUI = current.GetComponent<CustomTextMeshProUGUI>();
+                        currentUI.text = radiationLevel.ToString();
+                        currentUI.color = GetCurrentRadColor(radiationLevel);
+                        currentUI.fontSize = SECONDARY_FONT_SIZE;
+                    }
+                }
             }
-
-
+#pragma warning restore CS0618
         }
     }
 
@@ -303,7 +294,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(HealthEffectsComponent __instance, Item item)
         {
-            var medStats = StatsData.GetDataObj<Consumable>(StatsData.ConsumableStats, item.TemplateId);
+            var medStats = Stats.GetDataObj<Consumable>(Stats.ConsumableStats, item.TemplateId);
             bool isPainMed = medStats.ConsumableType == EConsumableType.PainPills || medStats.ConsumableType == EConsumableType.PainDrug;
             if (item.Template.ParentId == "5448f3a64bdc2d60728b456a")
             {
@@ -517,7 +508,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
         {
-            var medStats = StatsData.GetDataObj<Consumable>(StatsData.ConsumableStats, item.TemplateId);
+            var medStats = Stats.GetDataObj<Consumable>(Stats.ConsumableStats, item.TemplateId);
             if (PluginConfig.EnableLogging.Value)
             {
                 Logger.LogWarning("applying " + item.LocalizedName());
@@ -564,7 +555,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(GControl4 __instance, Item item, EBodyPart bodyPart, ref bool __result)
         {
-            var player = (Player)AccessTools.Field(typeof(GControl4), "_player").GetValue(__instance);
+            var player = (Player)AccessTools.Field(typeof(GControl4), "Player").GetValue(__instance);
             if (player.IsYourPlayer)
             {
                 if (!__instance.CanApplyItem(item, bodyPart)) return true;
@@ -644,10 +635,16 @@ namespace RealismMod
 
     public class RestoreBodyPartPatch : ModulePatch
     {
+        private static FieldInfo _playerField;
+        private static FieldInfo _skillsField;
+        private static FieldInfo _bodyPartRestoredField;
+
         protected override MethodBase GetTargetMethod()
         {
+            _playerField = AccessTools.Field(typeof(ActiveHealthController), "Player");
+            _skillsField = AccessTools.Field(typeof(ActiveHealthController), "skillManager_0");
+            _bodyPartRestoredField = AccessTools.Field(typeof(ActiveHealthController), "BodyPartRestoredEvent");
             return typeof(ActiveHealthController).GetMethod("RestoreBodyPart", BindingFlags.Instance | BindingFlags.Public);
-
         }
 
         private static BodyPartStateWrapper GetBodyPartStateWrapper(ActiveHealthController instance, EBodyPart bodyPart)
@@ -673,15 +670,15 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(ActiveHealthController __instance, EBodyPart bodyPart, float healthPenalty, ref bool __result)
         {
-            var player = (Player)AccessTools.Field(typeof(ActiveHealthController), "_player").GetValue(__instance);
+            var player = (Player)_playerField.GetValue(__instance);
             if (player.IsYourPlayer) 
             {
                 //I had to do this previously due to the type being protected, no longer is the case. Keeping for reference.
                 /* BodyPartStateWrapper bodyPartStateWrapper = GetBodyPartStateWrapper(__instance, bodyPart);*/
 
                 HealthStateClass.BodyPartState bodyPartState = __instance.Dictionary_0[bodyPart];
-                SkillManager skills = (SkillManager)AccessTools.Field(typeof(ActiveHealthController), "skillManager_0").GetValue(__instance);
-                Action<EBodyPart, ValueStruct> bodyPartRestoredField = (Action<EBodyPart, ValueStruct>)AccessTools.Field(typeof(ActiveHealthController), "BodyPartRestoredEvent").GetValue(__instance);
+                SkillManager skills = (SkillManager)_skillsField.GetValue(__instance);
+                Action<EBodyPart, ValueStruct> bodyPartRestoredField = (Action<EBodyPart, ValueStruct>)_bodyPartRestoredField.GetValue(__instance);
 
                 if (!bodyPartState.IsDestroyed)
                 {
@@ -757,8 +754,10 @@ namespace RealismMod
 
     public class HCApplyDamagePatch : ModulePatch
     {
+        private static FieldInfo _playerField;
         protected override MethodBase GetTargetMethod()
         {
+            _playerField = AccessTools.Field(typeof(ActiveHealthController), "Player");
             return typeof(ActiveHealthController).GetMethod("ApplyDamage", BindingFlags.Instance | BindingFlags.Public);
         }
 
@@ -793,7 +792,7 @@ namespace RealismMod
         [PatchPrefix]
         private static void Prefix(ActiveHealthController __instance, EBodyPart bodyPart, ref float damage, DamageInfoStruct damageInfo)
         {
-            var player = (Player)AccessTools.Field(typeof(ActiveHealthController), "_player").GetValue(__instance);
+            var player = (Player)_playerField.GetValue(__instance);
             if (player.IsYourPlayer)
             {
                 if (PluginConfig.EnableLogging.Value)

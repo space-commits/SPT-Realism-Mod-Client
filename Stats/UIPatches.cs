@@ -30,7 +30,7 @@ namespace RealismMod
 
         private static string GetItemClass(CompositeArmorComponent x)
         {
-            var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, x.Item.TemplateId);
+            var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, x.Item.TemplateId);
             return x.Item.ShortName.Localized(null) + ": " + gearStats.ArmorClass;
         }
 
@@ -38,7 +38,7 @@ namespace RealismMod
         private static bool PatchPrefix(ArmorSubCLass __instance, ref string __result)
         {
             CompositeArmorComponent[] array = __instance.item.GetItemComponentsInChildren<CompositeArmorComponent>(true).ToArray<CompositeArmorComponent>();
-            var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, __instance.armorComponent_0.Item.TemplateId);
+            var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, __instance.armorComponent_0.Item.TemplateId);
 
             if (array.Length > 1)
             {
@@ -387,7 +387,7 @@ namespace RealismMod
             int count = mods.Count();
             foreach (var mod in mods)
             {
-                var weaponModStats = StatsData.GetDataObj<WeaponMod>(StatsData.WeaponModStats, mod.TemplateId);
+                var weaponModStats = Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, mod.TemplateId);
                 string modType = weaponModStats.ModType;
                 bool isBarrel = Utils.IsBarrel(mod);
                 if (isBarrel && _multiCals.Contains(modType))
@@ -444,7 +444,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostfix(Mod __instance, string id, ModTemplate template)
         {
-            var weaponModStats = StatsData.GetDataObj<WeaponMod>(StatsData.WeaponModStats, __instance.TemplateId);
+            var weaponModStats = Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, __instance.TemplateId);
             float vRecoil = weaponModStats.VerticalRecoil;
             float hRecoil = weaponModStats.HorizontalRecoil;
             float disperion = weaponModStats.Dispersion;
@@ -654,7 +654,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            var weapStats = StatsData.GetDataObj<Gun>(StatsData.GunStats, __instance.TemplateId);
+            var weapStats = Stats.GetDataObj<Gun>(Stats.GunStats, __instance.TemplateId);
             StatDeltaDisplay.DisplayDelta(__instance, weapStats);
             __result = UIWeaponStats.HRecoilDelta;
             return false;
@@ -688,7 +688,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            var weapStats = StatsData.GetDataObj<Gun>(StatsData.GunStats, __instance.TemplateId);
+            var weapStats = Stats.GetDataObj<Gun>(Stats.GunStats, __instance.TemplateId);
             StatDeltaDisplay.DisplayDelta(__instance, weapStats);
             __result = UIWeaponStats.VRecoilDelta;
             return false;
@@ -781,7 +781,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref float __result)
         {
-            var weapStats = StatsData.GetDataObj<Gun>(StatsData.GunStats, __instance.TemplateId);
+            var weapStats = Stats.GetDataObj<Gun>(Stats.GunStats, __instance.TemplateId);
             StatDeltaDisplay.DisplayDelta(__instance, weapStats);
             __result = UIWeaponStats.ErgoDelta;
             return false;
@@ -799,7 +799,7 @@ namespace RealismMod
         [PatchPrefix]
         private static bool Prefix(Weapon __instance, ref string __result)
         {
-            var weapStats = StatsData.GetDataObj<Gun>(StatsData.GunStats, __instance.TemplateId);
+            var weapStats = Stats.GetDataObj<Gun>(Stats.GunStats, __instance.TemplateId);
             StatDeltaDisplay.DisplayDelta(__instance, weapStats);
             float ergoTotal = __instance.Template.Ergonomics * (1f + UIWeaponStats.ErgoDelta);
             __result = Mathf.Clamp(ergoTotal, 0f, 100f).ToString("0.##"); 
@@ -866,7 +866,7 @@ namespace RealismMod
 
             foreach (Mod mod in __instance.Mods)
             {
-                var weaponModStats = StatsData.GetDataObj<WeaponMod>(StatsData.WeaponModStats, mod.TemplateId);
+                var weaponModStats = Stats.GetDataObj<WeaponMod>(Stats.WeaponModStats, mod.TemplateId);
                 float modWeight = mod.Weight;
                 if (Utils.IsMagazine(mod))
                 {

@@ -1103,7 +1103,7 @@ namespace RealismMod
         {
             if (item != null)
             {
-                var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, item.TemplateId);
+                var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, item.TemplateId);
                 blocksMouth = gearStats.BlocksMouth;
             }
         }
@@ -1120,7 +1120,7 @@ namespace RealismMod
             {
                 foreach (Item item in nestedItems)
                 {
-                    var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, item.TemplateId);
+                    var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, item.TemplateId);
                     FaceShieldComponent fs = item.GetItemComponent<FaceShieldComponent>();
                     if (gearStats.BlocksMouth && fs == null)
                     {
@@ -1181,14 +1181,14 @@ namespace RealismMod
 
         public void CanConsume(Player player, Item item, ref bool canUse)
         {
-            var consumableStats = StatsData.GetDataObj<Consumable>(StatsData.ConsumableStats, item.TemplateId);
+            var consumableStats = Stats.GetDataObj<Consumable>(Stats.ConsumableStats, item.TemplateId);
             InventoryEquipment equipment = player.Equipment;
             Item face = equipment.GetSlot(EquipmentSlot.FaceCover).ContainedItem;
             Item head = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem;
 
             FaceShieldComponent fsComponent = player.FaceShieldObserver.Component;
             NightVisionComponent nvgComponent = player.NightVisionObserver.Component;
-            var gearStats = fsComponent == null ? null : StatsData.GetDataObj<Gear>(StatsData.GearStats, fsComponent.Item.TemplateId);
+            var gearStats = fsComponent == null ? null : Stats.GetDataObj<Gear>(Stats.GearStats, fsComponent.Item.TemplateId);
             bool fsIsON = gearStats != null && (fsComponent.Togglable == null || fsComponent.Togglable.On) && gearStats.BlocksMouth;
             bool nvgIsOn = nvgComponent != null && (nvgComponent.Togglable == null || nvgComponent.Togglable.On);
 
@@ -1259,7 +1259,7 @@ namespace RealismMod
 
             if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Heavy Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
 
-            float trnqtTickRate = (float)Math.Round(medStats.HPRestoreTick * (1f - vitalitySkill), 2);
+            float trnqtTickRate = (float)Math.Round(medStats.TrnqtDamage * (1f - vitalitySkill), 2);
             float maxHpToRestore = Mathf.Round(_baseMaxHPRestore * (1f + vitalitySkill));
             float hpToRestore = Mathf.Min(DmgeTracker.TotalHeavyBleedDamage, maxHpToRestore);
 
@@ -1286,7 +1286,7 @@ namespace RealismMod
 
             if (PluginConfig.EnableMedNotes.Value) NotificationManagerClass.DisplayMessageNotification("Light Bleed On " + bodyPart + " Healed, Restoring HP.", EFT.Communications.ENotificationDurationType.Long);
 
-            float trnqtTickRate = (float)Math.Round(medStats.HPRestoreTick * (1f - vitalitySkill), 2);
+            float trnqtTickRate = (float)Math.Round(medStats.TrnqtDamage * (1f - vitalitySkill), 2);
             float maxHpToRestore = Mathf.Round(_baseMaxHPRestore * (1f + vitalitySkill));
             float hpToRestore = Mathf.Min(DmgeTracker.TotalLightBleedDamage, maxHpToRestore);
 
@@ -1489,7 +1489,7 @@ namespace RealismMod
                 return;
             }
 
-            var medStats = StatsData.GetDataObj<Consumable>(StatsData.ConsumableStats, meds.TemplateId);
+            var medStats = Stats.GetDataObj<Consumable>(Stats.ConsumableStats, meds.TemplateId);
 
             if (medStats.CanBeUsedInRaid == false)
             {
@@ -1716,7 +1716,7 @@ namespace RealismMod
 
         public void CanUseMedItem(Player player, EBodyPart bodyPart, Item item, ref bool canUse)
         {
-            var medStats = StatsData.GetDataObj<Consumable>(StatsData.ConsumableStats, item.TemplateId);
+            var medStats = Stats.GetDataObj<Consumable>(Stats.ConsumableStats, item.TemplateId);
             if (item.Template.Parent._id == "5448f3a64bdc2d60728b456a" || medStats.ConsumableType == EConsumableType.Drug)
             {
                 return;

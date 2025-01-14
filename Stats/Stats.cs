@@ -122,7 +122,7 @@ namespace RealismMod
         public float HPRestoreTick { get; set; } = 0f;
     }
 
-    public static class StatsData
+    public static class Stats
     {
         public static Dictionary<string, Gun> GunStats = new Dictionary<string, Gun>();
         public static Dictionary<string, Gear> GearStats = new Dictionary<string, Gear>();
@@ -174,7 +174,6 @@ namespace RealismMod
             foreach (var templateKvp in templatesBase)
             {
                 var template = templateKvp.Value;
-                Utils.Logger.LogWarning($"filepath: {filepath}, id: {template.ItemID}, type: {template.GetType().FullName}");
 
                 if (template is Gun gun)
                 {

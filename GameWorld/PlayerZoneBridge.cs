@@ -72,7 +72,7 @@ namespace RealismMod
             if (_Player?.Inventory == null || _Player?.Equipment == null) return true;
             Item containedItem = _Player.Inventory?.Equipment?.GetSlot(EquipmentSlot.FaceCover)?.ContainedItem;
             if (containedItem == null) return false;
-            var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, containedItem.TemplateId);
+            var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, containedItem.TemplateId);
             return gearStats.IsGasMask;
         }
 

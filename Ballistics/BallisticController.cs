@@ -362,7 +362,7 @@ namespace RealismMod
 
         public static void CalculatSpalling(Player player, ref DamageInfo damageInfo, float KE, ArmorComponent armor, AmmoTemplate ammoTemp, int faceProtectionCount, bool hasArmArmor, bool hasLegProtection)
         {
-            var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, armor.Item.TemplateId);
+            var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, armor.Item.TemplateId);
 
             bool isMetalArmor = armor.Template.ArmorMaterial == EArmorMaterial.ArmoredSteel || armor.Template.ArmorMaterial == EArmorMaterial.Titan ? true : false;
             float bluntDamage = damageInfo.Damage;

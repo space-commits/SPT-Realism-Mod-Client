@@ -364,7 +364,7 @@ namespace RealismMod
             if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
             {
 
-                ModifyBSGCollisions(__instance, firearmController);
+                //ModifyBSGCollisions(__instance, firearmController);
 
                 //CollisionOverride(__instance, firearmController);
 
@@ -667,7 +667,7 @@ namespace RealismMod
         {
             playerField = AccessTools.Field(typeof(EFT.Player.FirearmController), "_player");
             weapLn = AccessTools.Field(typeof(EFT.Player.FirearmController), "WeaponLn");
-            return typeof(Player.FirearmController).GetMethod("method_7", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player.FirearmController).GetMethod("method_10", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
@@ -725,6 +725,10 @@ namespace RealismMod
 
             if (player.IsYourPlayer)
             {
+
+                weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * PluginConfig.test1.Value);
+                return;
+
                 if (StanceController.CurrentStance == EStance.PatrolStance) 
                 {
                     weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength * 0.6f);
@@ -759,7 +763,6 @@ namespace RealismMod
                     }
                 }
                 weaponLnField.SetValue(__instance, WeaponStats.NewWeaponLength);
-                return;
             }
         }
     }

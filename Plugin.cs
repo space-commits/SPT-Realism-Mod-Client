@@ -441,7 +441,7 @@ namespace RealismMod
                 LoadAudioClips();
                 CacheIcons();
                 ZoneData.DeserializeZoneData();
-                StatsData.GetStats();
+                Stats.GetStats();
 
             }
             catch (Exception exception)
@@ -798,16 +798,16 @@ namespace RealismMod
 
         private void LoadStancePatches()
         {
+            new WeaponOverlapViewPatch().Enable();
+            new CollisionPatch().Enable();
+            new WeaponOverlappingPatch().Enable();
+            new WeaponLengthPatch().Enable();
             new ApplySimpleRotationPatch().Enable();
             new InitTransformsPatch().Enable();
             new ZeroAdjustmentsPatch().Enable();
-            new WeaponOverlappingPatch().Enable();
-            new WeaponLengthPatch().Enable();
             new OnWeaponDrawPatch().Enable();
             new UpdateHipInaccuracyPatch().Enable();
             new SetFireModePatch().Enable();
-            new WeaponOverlapViewPatch().Enable();
-            new CollisionPatch().Enable();
             new OperateStationaryWeaponPatch().Enable();
             new SetTiltPatch().Enable();
             new BattleUIScreenPatch().Enable();
@@ -848,13 +848,13 @@ namespace RealismMod
 
         private void LoadDeafenPatches()
         {
-/*            new PrismEffectsEnablePatch().Enable();
+/*          new PrismEffectsEnablePatch().Enable();
             new PrismEffectsDisablePatch().Enable();*/
-/*            new UpdatePhonesPatch().Enable();
+/*          new UpdatePhonesPatch().Enable();
             new SetCompressorPatch().Enable();
             new RegisterShotPatch().Enable();
             new ExplosionPatch().Enable();*/
-/*            new GrenadeClassContusionPatch().Enable();*/
+/*          new GrenadeClassContusionPatch().Enable();*/
             new CovertMovementVolumePatch().Enable();
             new CovertMovementVolumeBySpeedPatch().Enable();
             new CovertEquipmentVolumePatch().Enable();

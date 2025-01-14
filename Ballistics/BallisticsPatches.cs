@@ -395,7 +395,7 @@ namespace RealismMod
 
                 if (doSpalling && armor != null && __instance?.ActiveHealthController != null)
                 {
-                    var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, armor.Item.TemplateId);
+                    var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, armor.Item.TemplateId);
                     if (gearStats.CanSpall) BallisticsController.CalculatSpalling(__instance, ref damageInfo, KE, armor, ammoTemp, faceProtectionCount, hasArmArmor, hasLegProtection);
                 }
                  

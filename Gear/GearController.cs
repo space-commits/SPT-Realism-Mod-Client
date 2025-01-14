@@ -143,7 +143,7 @@ namespace RealismMod
                     trueWeight += itemTotalWeight;
                     if (equipmentSlot == EquipmentSlot.Backpack || equipmentSlot == EquipmentSlot.TacticalVest || equipmentSlot == EquipmentSlot.ArmorVest || equipmentSlot == EquipmentSlot.Headwear || equipmentSlot == EquipmentSlot.ArmBand)
                     {
-                        var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, item.TemplateId);
+                        var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, item.TemplateId);
                         modifiedWeight += itemTotalWeight * gearStats.Comfort;
                     }
                     else
@@ -226,7 +226,7 @@ namespace RealismMod
         {
             Item faceCoverItem = GetSlotItem(player, EquipmentSlot.FaceCover);
             if (faceCoverItem == null) return null;
-            var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, faceCoverItem.TemplateId);
+            var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, faceCoverItem.TemplateId);
             HasGasMask = gearStats.IsGasMask;
             gasProtection = gearStats.GasProtection;
             radProtection = gearStats.RadProtection;
@@ -260,7 +260,7 @@ namespace RealismMod
                 if (armorComponent.Item.Template.ParentId == "5448e5284bdc2dcb718b4567" || armorComponent.Item.Template.ParentId == "5a341c4686f77469e155819e") continue;
                 if (player.FaceShieldObserver.Component != null && player.FaceShieldObserver.Component.Item.TemplateId == armorComponent.Item.TemplateId)
                 {
-                    var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, armorComponent.Item.TemplateId);
+                    var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, armorComponent.Item.TemplateId);
                     if (!fsIsON || !gearStats.BlocksMouth) continue;
                     totalErgo += armorComponent.WeaponErgonomicPenalty;
                     totalSpeed += armorComponent.SpeedPenalty + -15f;
@@ -323,7 +323,7 @@ namespace RealismMod
                 Item gear = player.Equipment.GetSlot(slot).ContainedItem;
                 if (gear != null)
                 {
-                    var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, gear.TemplateId);
+                    var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, gear.TemplateId);
                     reloadSpeed *= gearStats.ReloadSpeedMulti;
                 }
                 else
@@ -340,7 +340,7 @@ namespace RealismMod
 
             if (faceCover != null)
             {
-                var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, faceCover.TemplateId);
+                var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, faceCover.TemplateId);
                 return gearStats.AllowADS;
             }
             else
@@ -366,7 +366,7 @@ namespace RealismMod
                     break;
                 }
 
-                var gearStats = StatsData.GetDataObj<Gear>(StatsData.GearStats, armorComponent.Item.TemplateId);
+                var gearStats = Stats.GetDataObj<Gear>(Stats.GearStats, armorComponent.Item.TemplateId);
                 reloadMulti *= gearStats.ReloadSpeedMulti;
                 ArmorTemplate armorTemplate = armorComponent.Template as ArmorTemplate;
 
