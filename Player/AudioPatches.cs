@@ -10,13 +10,28 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Audio;
-using GrenadeClass = GClass2848;
 /*using CompressorTemplateClass = GClass2918; //SetCompressor
 using HeadsetClass = GClass2654; //Updatephonesreally()
 using HeadsetTemplate = GClass2556; //SetCompressor*/
 
 namespace RealismMod
 {
+    //gunshot volume patch
+    public class GunshotVolumePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(GClass859).GetMethod("Enqueue");
+        }
+
+        [PatchPrefix]
+        static void PatchPrefix(GClass859 __instance, ref float volume)
+        {
+            volume *= PluginConfig.GunshotVolume.Value;
+            Logger.LogWarning("volume " + volume);
+        }
+    }
+
     //change firerate sfx pitch based on different factors
     public class FireratePitchPatch : ModulePatch
     {
@@ -176,7 +191,7 @@ namespace RealismMod
     }
 
     //grab reference for EFT's player camera visual effects class for things like tunnel vision
-/*    public class PrismEffectsEnablePatch : ModulePatch
+    public class PrismEffectsEnablePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -186,7 +201,7 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostFix(PrismEffects __instance)
         {
-            if (__instance.gameObject.name == "FPS Camera") 
+            if (__instance.gameObject.name == "FPS Camera")
             {
                 if (DeafeningController.PrismEffects == __instance)
                 {
@@ -195,10 +210,10 @@ namespace RealismMod
                 DeafeningController.PrismEffects = __instance;
             }
         }
-    }*/
+    }
 
     //properly depose of PrismEffects reference
-/*    public class PrismEffectsDisablePatch : ModulePatch
+    public class PrismEffectsDisablePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
@@ -213,10 +228,10 @@ namespace RealismMod
                 DeafeningController.PrismEffects = null;
             }
         }
-    }*/
+    }
 
 
-/*    public class UpdatePhonesPatch : ModulePatch
+   /* public class UpdatePhonesPatch : ModulePatch
     {
         private static float HelmDeafFactor(EquipmentClass equipment)
         {
@@ -298,8 +313,8 @@ namespace RealismMod
 
         }
         [PatchPrefix]
-        private static bool Prefix(HeadsetTemplate template, BetterAudio __instance)
-        { 
+        private static bool Prefix(HeadphonesTemplateClass template, BetterAudio __instance)
+        {
 
             bool hasHeadset = template != null && template?._id != null;
             float gunT;
@@ -347,7 +362,7 @@ namespace RealismMod
 
             return false;
         }
-    }
+    }*/
 
     //this can't be good for performance...
     //but anyway, adjust, calculate "loudness" of a bot's shot when near the player for deafening
@@ -361,24 +376,24 @@ namespace RealismMod
             return typeof(Player.FirearmController).GetMethod("RegisterShot", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        *//*        private static float GetMuzzleLoudness(IEnumerable<Mod> mods)
+        private static float GetMuzzleLoudness(IEnumerable<Mod> mods)
+        {
+            float loudness = 0f;
+
+            foreach (Mod mod in mods.OfType<Mod>())
+            {
+                if (mod.Slots.Length > 0 && mod.Slots[0].ContainedItem != null && Utils.IsSilencer((Mod)mod.Slots[0].ContainedItem))
                 {
-                    float loudness = 0f;
+                    continue;
+                }
+                else
+                {
+                    loudness += mod.Template.Loudness;
+                }
+            }
+            return (loudness / 100) + 1f;
 
-                    foreach (Mod mod in mods.OfType<Mod>())
-                    {
-                        if (mod.Slots.Length > 0 && mod.Slots[0].ContainedItem != null && Utils.IsSilencer((Mod)mod.Slots[0].ContainedItem))
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            loudness += mod.Template.Loudness;
-                        }
-                    }
-                    return (loudness / 100) + 1f;
-
-                }*//*
+        }
 
         private static float CalcAmmoFactor(float ammoRec)
         {
@@ -405,10 +420,10 @@ namespace RealismMod
                     float ammoFactor = CalcAmmoFactor((shot.Ammo as AmmoItemClass).ammoRec);
                     float deafenFactor = velocityFactor * ammoFactor;
 
-             *//*       if (shot.InitialSpeed * weap.SpeedFactor <= 335f)
+                    if (shot.InitialSpeed * weap.SpeedFactor <= 335f)
                     {
                         deafenFactor *= 0.6f;
-                    }*//*
+                    }
 
                     DeafeningController.AmmoDeafFactor = deafenFactor == 0f ? 1f : deafenFactor;
                 }
@@ -419,7 +434,7 @@ namespace RealismMod
                     float distanceFromPlayer = Vector3.Distance(shooterPos, playerPos);
                     if (distanceFromPlayer <= 15f)
                     {
-                        DeafeningController.IsBotFiring = true;;
+                        DeafeningController.IsBotFiring = true; ;
                         float velocityFactor = CalcVelocityFactor(weap.SpeedFactor);
                         float muzzleFactor = __instance.IsSilenced ? 0.4f : 1f;
                         float calFactor = StatCalc.CaliberLoudnessFactor(weap.AmmoCaliber);
@@ -457,20 +472,19 @@ namespace RealismMod
             }
         }
     }
-*/
+
     //adjust the concussive effect of grenades
-/*    public class GrenadeClassContusionPatch : ModulePatch
+    public class GrenadeClassContusionPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(GrenadeClass).GetMethod("get_Contusion");
+            return typeof(ThrowWeapItemClass).GetMethod("get_Contusion");
         }
 
         [PatchPrefix]
-        static bool PreFix(GrenadeClass __instance, ref Vector3 __result)
+        static bool PreFix(ThrowWeapItemClass __instance, ref Vector3 __result)
         {
-            var grenade = __instance.Template as ThrowWeapItemClass;
-            Vector3 contusionVect = grenade.Contusion;
+            Vector3 contusionVect = __instance.GetTemplate<ThrowWeapTemplateClass>().Contusion;
             float intensity = contusionVect.z * (1f - ((1f - DeafeningController.EarProtectionFactor) * 1.3f));
             float distance = contusionVect.y * 2f * DeafeningController.EarProtectionFactor;
             intensity = PlayerValues.EnviroType == EnvironmentType.Indoor ? intensity * 1.7f : intensity;
@@ -478,8 +492,5 @@ namespace RealismMod
             __result = new Vector3(contusionVect.x, distance, intensity);
             return false;
         }
-    }*/
-
-
-
+    }
 }

@@ -124,6 +124,7 @@ namespace RealismMod
 
     public static class Stats
     {
+        public const string TemplateFilePath = "\\db\\templates";
         public static Dictionary<string, Gun> GunStats = new Dictionary<string, Gun>();
         public static Dictionary<string, Gear> GearStats = new Dictionary<string, Gear>();
         public static Dictionary<string, WeaponMod> WeaponModStats = new Dictionary<string, WeaponMod>();
@@ -147,7 +148,7 @@ namespace RealismMod
 
         public static string GetTemplatesFilePath() 
         {
-            return Plugin.ModDir.ServerBaseDirectory + "\\db\\templates";
+            return Plugin.ModDir.ServerBaseDirectory + TemplateFilePath;
         }
 
         public static void GetStats() 
@@ -164,6 +165,7 @@ namespace RealismMod
         {
             var templateJson = File.ReadAllText(filepath);
 
+            //enables typenamehandling to automatically choose what model class represents the json
             var settings = new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.Auto
@@ -211,7 +213,7 @@ namespace RealismMod
                 // Recursively add files from subdirectories
                 foreach (var dir in Directory.GetDirectories(directory))
                 {
-                    files.AddRange(GeAllFilesRecursive(dir));
+                    GeAllFilesRecursive(dir, files);
                 }
             }
             catch (Exception ex)
@@ -225,8 +227,7 @@ namespace RealismMod
         public static List<string> GeAllFilesRecursive(string directory)
         {
             var files = new List<string>();
-            GeAllFilesRecursive(directory, files);
-            return files;
+            return GeAllFilesRecursive(directory, files);
         }
 
     }

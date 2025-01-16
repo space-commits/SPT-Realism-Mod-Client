@@ -360,6 +360,8 @@ namespace RealismMod
         {
             if (fc != null)
             {
+                WeaponStats.HasBipod = fc.HasBipod && fc.BipodState;
+
                 if (Plugin.StartRechamberTimer)
                 {
                     ChamberTimer(fc);

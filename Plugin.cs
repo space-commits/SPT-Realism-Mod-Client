@@ -68,7 +68,7 @@ namespace RealismMod
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, Plugin.PLUGINVERSION)]
     public class Plugin : BaseUnityPlugin
     {
-        private const string PLUGINVERSION = "1.4.9";
+        private const string PLUGINVERSION = "1.5.0";
 
         public static Dictionary<Enum, Sprite> IconCache = new Dictionary<Enum, Sprite>();
         public static Dictionary<string, AudioClip> HitAudioClips = new Dictionary<string, AudioClip>();
@@ -630,14 +630,14 @@ namespace RealismMod
 
                 RecoilController.RecoilUpdate();
 
-        /*        if (ServerConfig.headset_changes)
+                if (ServerConfig.headset_changes)
                 {
-                    HeadsetGainController.AdjustHeadsetVolume();
+                    //HeadsetGainController.AdjustHeadsetVolume();
                     if (DeafeningController.PrismEffects != null)
                     {
                         DeafeningController.DoDeafening();
                     }
-                }*/
+                }
                 if (ServerConfig.enable_stances) 
                 {
                     StanceController.StanceState();
@@ -848,17 +848,18 @@ namespace RealismMod
 
         private void LoadDeafenPatches()
         {
-/*          new PrismEffectsEnablePatch().Enable();
-            new PrismEffectsDisablePatch().Enable();*/
-/*          new UpdatePhonesPatch().Enable();
-            new SetCompressorPatch().Enable();
+            new PrismEffectsEnablePatch().Enable();
+            new PrismEffectsDisablePatch().Enable();
+/*            new UpdatePhonesPatch().Enable();
+            new SetCompressorPatch().Enable();*/
             new RegisterShotPatch().Enable();
-            new ExplosionPatch().Enable();*/
-/*          new GrenadeClassContusionPatch().Enable();*/
+            new ExplosionPatch().Enable();
+            new GrenadeClassContusionPatch().Enable();
             new CovertMovementVolumePatch().Enable();
             new CovertMovementVolumeBySpeedPatch().Enable();
             new CovertEquipmentVolumePatch().Enable();
             new HeadsetConstructorPatch().Enable();
+            new GunshotVolumePatch().Enable();
         }
 
         private void LoadBallisticsPatches()

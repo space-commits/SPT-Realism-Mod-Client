@@ -368,7 +368,6 @@ namespace RealismMod
 
             WeaponStats.HasBayonet = false;
             WeaponStats.HasBooster = false;
-            WeaponStats.HasBipod = false;
             WeaponStats.HasMuzzleDevice = false;
             WeaponStats.HasSuppressor = false;
        
@@ -414,7 +413,7 @@ namespace RealismMod
                         WeaponStats.BaseMeleePen = weaponModStats.MeleePen;
                         WeaponStats.HasMuzzleDevice = true;
                     }
-                    if (Utils.IsBipod(mod)) WeaponStats.HasBipod = true;
+
                     if (weaponModStats.CanCycleSubs) canCycleSubs = true;
 
                     StatCalc.ModConditionalStatCalc(

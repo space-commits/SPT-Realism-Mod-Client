@@ -529,6 +529,7 @@ namespace RealismMod
                     Logger.LogWarning("PlayerState.GearErgoPenalty = " + PlayerValues.GearErgoPenalty);
                     Logger.LogWarning("ergoWeightFactor = " + weightFactor);
                     Logger.LogWarning("stanceFactor = " + stanceFactor);
+                    Logger.LogWarning("has bipod " + (firearmController.HasBipod && firearmController.BipodState));
                 }
                 return false;
             }

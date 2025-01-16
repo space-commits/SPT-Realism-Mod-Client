@@ -35,7 +35,7 @@ namespace RealismMod
         {
 /*            _dayAudioSourceField = AccessTools.Field(typeof(AudioSource), "_outdoorAmbientDaySource");
             _nightAudioSourceField = AccessTools.Field(typeof(AudioSource), "_outdoorAmbientNightSource");*/
-            return typeof(DayTimeAmbientBlender).GetMethod("method_0");
+            return typeof(DayTimeAmbientBlender).GetMethod("SetSeasonStatus");
         }
 
         [PatchPrefix]

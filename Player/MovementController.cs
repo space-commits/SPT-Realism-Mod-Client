@@ -12,23 +12,24 @@ namespace RealismMod
         {
             {BaseBallistic.ESurfaceSound.Metal, 0.95f },
             {BaseBallistic.ESurfaceSound.MetalThin, 0.95f },
-            {BaseBallistic.ESurfaceSound.GarbageMetal, 0.8f },
+            {BaseBallistic.ESurfaceSound.GarbageMetal, 0.82f },
             {BaseBallistic.ESurfaceSound.Garbage, 0.8f },
             {BaseBallistic.ESurfaceSound.Concrete, 1f },
             {BaseBallistic.ESurfaceSound.Asphalt, 1f },
-            {BaseBallistic.ESurfaceSound.Gravel, 0.85f },
+            {BaseBallistic.ESurfaceSound.Gravel, 0.84f },
             {BaseBallistic.ESurfaceSound.Slate, 0.85f },
-            {BaseBallistic.ESurfaceSound.Tile, 0.8f },
+            {BaseBallistic.ESurfaceSound.Tile, 0.81f },
             {BaseBallistic.ESurfaceSound.Plastic, 0.95f },
-            {BaseBallistic.ESurfaceSound.Glass, 0.85f },
-            {BaseBallistic.ESurfaceSound.WholeGlass, 0.9f },
-            {BaseBallistic.ESurfaceSound.Wood, 0.95f},
+            {BaseBallistic.ESurfaceSound.Glass, 0.86f },
+            {BaseBallistic.ESurfaceSound.WholeGlass, 0.91f },
+            {BaseBallistic.ESurfaceSound.Wood, 0.96f},
             {BaseBallistic.ESurfaceSound.WoodThick, 0.95f },
-            {BaseBallistic.ESurfaceSound.WoodThin, 0.95f },
+            {BaseBallistic.ESurfaceSound.WoodThin, 0.94f },
             {BaseBallistic.ESurfaceSound.Soil, 0.95f},
-            {BaseBallistic.ESurfaceSound.Grass, 0.95f },
+            {BaseBallistic.ESurfaceSound.Grass, 0.94f },
             {BaseBallistic.ESurfaceSound.Swamp, 1.0f },
-            {BaseBallistic.ESurfaceSound.Puddle, 0.8f }
+            {BaseBallistic.ESurfaceSound.Puddle, 0.8f },
+            {BaseBallistic.ESurfaceSound.Snow, 0.88f },
         };
 
         public static BaseBallistic.ESurfaceSound CurrentSurface;

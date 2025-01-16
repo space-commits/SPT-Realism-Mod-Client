@@ -130,12 +130,12 @@ namespace RealismMod
     }
 
     //to prevent players toggling on device while drinking/eating to bypass restriction
-    //look for ecommand.togglegoggles
+    //CompoundItem compoundItem = this.InventoryController.Inventory.Equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as CompoundItem;
     public class ToggleHeadDevicePatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(Player).GetMethod("method_17", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player).GetMethod("method_15", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPrefix]

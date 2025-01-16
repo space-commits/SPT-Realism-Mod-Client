@@ -837,7 +837,7 @@ namespace RealismMod
         protected override MethodBase GetTargetMethod()
         {
             playerField = AccessTools.Field(typeof(FirearmController), "_player");
-            return typeof(Player.FirearmController).GetMethod("method_47", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Player.FirearmController).GetMethod("method_50", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
@@ -853,7 +853,7 @@ namespace RealismMod
       
                 if (PluginConfig.EnableLogging.Value == true)
                 {
-                    Logger.LogWarning("===OnMagInsertedPatch/method_47===");
+                    Logger.LogWarning("===OnMagInsertedPatch/method_50===");
                     Logger.LogWarning("=============");
                 }
             }
