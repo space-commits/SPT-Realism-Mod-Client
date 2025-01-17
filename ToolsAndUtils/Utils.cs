@@ -16,6 +16,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 using static RealismMod.Attributes;
+using ItemWeightClass = GClass2981;
 
 namespace RealismMod
 {
@@ -168,30 +169,6 @@ namespace RealismMod
             return result;
         }
 
-        public static bool IsConfItemNull(string[] confItemArray, int expectedLength = 0)
-        {
-            if (confItemArray != null && confItemArray.Length > expectedLength)
-            {
-                if (confItemArray[0] == "SPTRM")
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public static bool ConfItemsIsNullOrInvalid(string[] confItemArray, int length)
-        {
-            if (confItemArray != null && confItemArray.Length >= length)
-            {
-                if (confItemArray[0] == "SPTRM") 
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
         public static Player GetYourPlayer() 
         {
             GameWorld gameWorld = Singleton<GameWorld>.Instance;
@@ -258,11 +235,18 @@ namespace RealismMod
 
         public static float GetSingleItemTotalWeight(Item item)
         {
-            GClass2981 itemWeightClass;
-            if ((itemWeightClass = (item as GClass2981)) == null) return item.TotalWeight;
+            ItemWeightClass itemWeightClass;
+            if ((itemWeightClass = (item as ItemWeightClass)) == null) return item.TotalWeight;
             return itemWeightClass.TotalWeight;
         }
 
+        public static float CalcultateModifierFromRange(float value, float minValue, float maxValue, float minModifier, float maxModifier)
+        {
+            float slope = (maxModifier - minModifier) / (minValue - maxValue);
+            float intercept = minModifier - slope * maxValue;
+            float modifier = slope * value + intercept;
+            return Mathf.Clamp(modifier, minModifier, maxModifier);
+        }
 
         public static string GenId()
         {

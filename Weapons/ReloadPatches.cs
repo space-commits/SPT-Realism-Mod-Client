@@ -724,7 +724,7 @@ namespace RealismMod
         }
     }
 
-
+    //edge cases
     public class SetMagTypeNewPatch : ModulePatch
     {
         private static FieldInfo playerField;
@@ -762,6 +762,7 @@ namespace RealismMod
         }
     }
 
+    //reload speed of current mag
     public class SetMagTypeCurrentPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -794,6 +795,7 @@ namespace RealismMod
         }
     }
 
+    //speed of putting mag in weapon
     public class SetMagInWeaponPatch : ModulePatch
     {
         protected override MethodBase GetTargetMethod()
@@ -830,6 +832,7 @@ namespace RealismMod
     }
 
 
+    //reset mag reload speed
     public class OnMagInsertedPatch : ModulePatch
     {
         private static FieldInfo playerField;

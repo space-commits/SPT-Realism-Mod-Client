@@ -444,33 +444,35 @@ namespace RealismMod
             return typeof(HealthControllerClass).GetMethod("ApplyItem", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static void RestoreHP(HealthControllerClass controller, EBodyPart initialTarget, float hpToRestore) 
+        private static void RestoreHP(HealthControllerClass hc, EBodyPart initialTarget, float hpToRestore) 
         {
             if (initialTarget != EBodyPart.Common)
             {
-                controller.ChangeHealth(initialTarget, hpToRestore, ExistanceClass.MedKitUse);
+                hc.ChangeHealth(initialTarget, hpToRestore, ExistanceClass.MedKitUse);
                 return;
             }
 
             foreach (EBodyPart bodyPart in Plugin.RealHealthController.PossibleBodyParts)
             {
                 if (hpToRestore <= 0) break;
-                float hpMissing = controller.GetBodyPartHealth(bodyPart).Maximum - controller.GetBodyPartHealth(bodyPart).Current;
+                float hpMissing = hc.GetBodyPartHealth(bodyPart).Maximum - hc.GetBodyPartHealth(bodyPart).Current;
                 if (hpMissing <= 0) continue;
                 float hpToUse = Math.Min(hpMissing, hpToRestore);
-                controller.ChangeHealth(bodyPart, hpToUse, ExistanceClass.MedKitUse);
+                hc.ChangeHealth(bodyPart, hpToUse, ExistanceClass.MedKitUse);
                 hpToRestore -= hpToUse;
             }
         }
 
-        private static void DoFoodItem(HealthControllerClass hc, FoodItemClass foodClass) 
+        private static void DoFoodItem(HealthControllerClass hc, FoodDrinkItemClass foodClass) 
         {
             var toxinDebuffs = foodClass.HealthEffectsComponent.BuffSettings.Where(b => b.BuffType == EStimulatorBuffType.UnknownToxin);
             if (toxinDebuffs.Count() > 0) 
             {
                 var debuff = toxinDebuffs.First();
+                if (PluginConfig.EnableLogging.Value) Logger.LogWarning("has toxin debuff " + debuff.Chance);
                 if (debuff.Chance > 0 && UnityEngine.Random.Range(0, 100) < debuff.Chance * 100)
                 {
+                    if (PluginConfig.EnableLogging.Value) Logger.LogWarning("applying toxin debuff");
                     float energyDrain = UnityEngine.Random.Range(debuff.Chance * 250, debuff.Chance * 500);
                     energyDrain = Mathf.Clamp(energyDrain, 2.5f, 90f);
                     float hydrationDrain = UnityEngine.Random.Range(debuff.Chance * 250, debuff.Chance * 500);
@@ -485,8 +487,10 @@ namespace RealismMod
 
             foreach (var buff in foodClass.HealthEffectsComponent.BuffSettings)
             {
+                if (PluginConfig.EnableLogging.Value) Logger.LogWarning("buff " + buff.BuffName + buff.BuffType);
                 if (buff.BuffType == EStimulatorBuffType.EnergyRate)
                 {
+                    if (PluginConfig.EnableLogging.Value) Logger.LogWarning("has energy buff " + buff.Value);
                     if (buff.Value > 0)
                     {
                         hc.ChangeEnergy(buff.Value * buff.Duration);
@@ -495,6 +499,7 @@ namespace RealismMod
 
                 if (buff.BuffType == EStimulatorBuffType.HydrationRate)
                 {
+                    if (PluginConfig.EnableLogging.Value) Logger.LogWarning("has hydration buff " + buff.Value);
                     if (buff.Value > 0)
                     {
                         hc.ChangeHydration(buff.Value * buff.Duration);
@@ -508,17 +513,16 @@ namespace RealismMod
         [PatchPostfix]
         private static void Postfix(HealthControllerClass __instance, Item item, EBodyPart bodyPart, float? amount)
         {
-            var medStats = Stats.GetDataObj<Consumable>(Stats.ConsumableStats, item.TemplateId);
-            if (PluginConfig.EnableLogging.Value)
-            {
-                Logger.LogWarning("applying " + item.LocalizedName());
-            }
+            var itemStats = Stats.GetDataObj<Consumable>(Stats.ConsumableStats, item.TemplateId);
+            if (PluginConfig.EnableLogging.Value) Logger.LogWarning("Applying out of raid: " + item.LocalizedName());
 
             if (Plugin.ServerConfig.food_changes)
             {
-                FoodItemClass foodClass = item as FoodItemClass;
+                if (PluginConfig.EnableLogging.Value) Logger.LogWarning("food changes ");
+                FoodDrinkItemClass foodClass = item as FoodDrinkItemClass;
                 if (foodClass != null)
                 {
+                    if (PluginConfig.EnableLogging.Value) Logger.LogWarning("is food");
                     DoFoodItem(__instance, foodClass);
                     return;
                 }
@@ -530,9 +534,9 @@ namespace RealismMod
                 if (MedsItemClass != null)
                 {
                     //need to get surgery kit working later, doesnt want to remove hp resource.
-                    if (medStats.ConsumableType == EConsumableType.Medkit) // || medType == "surg"
+                    if (itemStats.ConsumableType == EConsumableType.Medkit) // || medType == "surg"
                     {
-                        RestoreHP(__instance, bodyPart, medStats.HPRestoreAmount);
+                        RestoreHP(__instance, bodyPart, itemStats.HPRestoreAmount);
                         /*             MedsItemClass.MedKitComponent.HpResource -= 1f;
                                      MedsItemClass.MedKitComponent.Item.RaiseRefreshEvent(false, true);*/
                         return;
@@ -561,7 +565,7 @@ namespace RealismMod
                 if (!__instance.CanApplyItem(item, bodyPart)) return true;
 
                 MedsItemClass MedsItemClass;
-                FoodItemClass foodClass;
+                FoodDrinkItemClass foodClass;
                 bool canUse = true;
                 if (((MedsItemClass = (item as MedsItemClass)) != null))
                 {
@@ -571,7 +575,7 @@ namespace RealismMod
                     }
                     Plugin.RealHealthController.CanUseMedItem(player, bodyPart, item, ref canUse);
                 }
-                if ((foodClass = (item as FoodItemClass)) != null)
+                if ((foodClass = (item as FoodDrinkItemClass)) != null)
                 {
                     if (PluginConfig.EnableLogging.Value)
                     {
@@ -605,15 +609,12 @@ namespace RealismMod
             if (__instance.IsYourPlayer)
             {
                 Item boundItem = __instance.InventoryController.Inventory.FastAccess.GetBoundItem(quickSlot);
-                FoodItemClass foodItem = boundItem as FoodItemClass;
+                FoodDrinkItemClass foodItem = boundItem as FoodDrinkItemClass;
                 if (boundItem != null && foodItem != null)
                 {
                     bool canUse = true;
                     Plugin.RealHealthController.CanConsume(__instance, boundItem, ref canUse);
-                    if (PluginConfig.EnableLogging.Value)
-                    {
-                        Logger.LogWarning("quick slot, can use = " + canUse);
-                    }
+                    if (PluginConfig.EnableLogging.Value) Logger.LogWarning("quick slot, can use = " + canUse);
                     if (!canUse) callback(null);
                     return canUse;
                 }

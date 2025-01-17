@@ -203,11 +203,11 @@ namespace RealismMod
         {
             if (__instance.gameObject.name == "FPS Camera")
             {
-                if (DeafeningController.PrismEffects == __instance)
+                if (DeafenController.PrismEffects == __instance)
                 {
                     return;
                 }
-                DeafeningController.PrismEffects = __instance;
+                DeafenController.PrismEffects = __instance;
             }
         }
     }
@@ -223,67 +223,64 @@ namespace RealismMod
         [PatchPostfix]
         private static void PatchPostFix(PrismEffects __instance)
         {
-            if (__instance.gameObject.name == "FPS Camera" && DeafeningController.PrismEffects == __instance)
+            if (__instance.gameObject.name == "FPS Camera" && DeafenController.PrismEffects == __instance)
             {
-                DeafeningController.PrismEffects = null;
+                DeafenController.PrismEffects = null;
             }
         }
     }
 
 
-   /* public class UpdatePhonesPatch : ModulePatch
+    public class UpdatePhonesPatch : ModulePatch
     {
-        private static float HelmDeafFactor(EquipmentClass equipment)
+        private static float GetHelmetProtection(InventoryEquipment equipment)
         {
-            string deafStrength = "None";
-            LootItemClass headwearItem = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;
+            EDeafStrength deafStrength = EDeafStrength.None;
+            CompoundItem headwearItem = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as CompoundItem;
 
             if (headwearItem != null)
             {
-                ArmorClass helmet = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as ArmorClass;
+                ArmorItemClass helmet = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as ArmorItemClass;
                 if (helmet?.Armor?.Deaf != null)
                 {
-                    deafStrength = helmet.Armor.Deaf.ToString();
+                    deafStrength = helmet.Armor.Deaf;
                 }
 
             }
-            return HelmDeafFactorHelper(deafStrength);
+            return HelmeProtectionFactor(deafStrength);
         }
 
-        private static float HelmDeafFactorHelper(string deafStr)
+        private static float HelmeProtectionFactor(EDeafStrength deafStr)
         {
             switch (deafStr)
             {
-                case "Low":
-                    return 0.95f;
-                case "High":
-                    return 0.75f;
+                case EDeafStrength.Low:
+                    return DeafenController.LightHelmetDeafReduction;
+                case EDeafStrength.High:
+                    return DeafenController.HeavyHelmetDeafreduction;
                 default:
                     return 1f;
             }
         }
 
-        private static float HeadsetDeafFactor(EquipmentClass equipment)
+        private static float GetHeadsetProtection(InventoryEquipment equipment)
         {
-            float protectionFactor;
-
-            LootItemClass headwear = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as LootItemClass;
-            HeadsetClass headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as HeadsetClass) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<HeadsetClass>().FirstOrDefault<HeadsetClass>() : null);
-
+            CompoundItem headwear = equipment.GetSlot(EquipmentSlot.Headwear).ContainedItem as CompoundItem;
+            HeadphonesItemClass headset = (equipment.GetSlot(EquipmentSlot.Earpiece).ContainedItem as HeadphonesItemClass) ?? ((headwear != null) ? headwear.GetAllItemsFromCollection().OfType<HeadphonesItemClass>().FirstOrDefault<HeadphonesItemClass>() : null);
             if (headset != null)
             {
-                DeafeningController.HasHeadSet = true;
-                HeadsetTemplate headphone = headset.Template;
-                protectionFactor = Mathf.Clamp(((headphone.DryVolume / 100f) + 1f) * 1.5f, 0.4f, 1f);
+                DeafenController.HasHeadSet = true;
+                HeadphonesTemplateClass headphone = headset.Template;
+                float rating = Stats.GearStats[headset.TemplateId].dB;
+                return Utils.CalcultateModifierFromRange(rating, 19f, 26f, DeafenController.MaxHeadsetProtection, DeafenController.MinHeadsetProtection);
             }
             else
             {
-                DeafeningController.HasHeadSet = false;
-                protectionFactor = 1f;
+                DeafenController.HasHeadSet = false;
+                return 1f;
             }
-
-            return protectionFactor;
         }
+
 
 
         protected override MethodBase GetTargetMethod()
@@ -296,78 +293,19 @@ namespace RealismMod
         {
             if (__instance.IsYourPlayer)
             {
-                DeafeningController.EarProtectionFactor = HeadsetDeafFactor(__instance.Equipment) * HelmDeafFactor(__instance.Equipment);
+                DeafenController.EarProtectionFactor = GetHeadsetProtection(__instance.Equipment) * GetHelmetProtection(__instance.Equipment);
             }
 
         }
     }
 
-    public class SetCompressorPatch : ModulePatch
-    {
-        private static FieldInfo volumeField;
-
-        protected override MethodBase GetTargetMethod()
-        {
-            volumeField = AccessTools.Field(typeof(BetterAudio), "float_0");
-            return typeof(BetterAudio).GetMethod("SetCompressor", BindingFlags.Instance | BindingFlags.Public);
-
-        }
-        [PatchPrefix]
-        private static bool Prefix(HeadphonesTemplateClass template, BetterAudio __instance)
-        {
-
-            bool hasHeadset = template != null && template?._id != null;
-            float gunT;
-            float mainT;
-
-            GlobalEventHandlerClass.CreateEvent<CompressorTemplateClass>().Invoke(template);
-            DeafeningController.DryVolume = hasHeadset ? template.DryVolume * PluginConfig.DryVolumeMulti.Value : 0f;
-            DeafeningController.CompressorVolume = hasHeadset ? template.CompressorVolume : -80f;
-            DeafeningController.AmbientVolume = hasHeadset ? template.AmbientVolume : 0f;
-            DeafeningController.AmbientOccluded = hasHeadset ? (template.AmbientVolume - 15f) : -5f;
-            DeafeningController.GunsVolume = hasHeadset ? (template.DryVolume * PluginConfig.DryVolumeMulti.Value) + PluginConfig.GunshotVolume.Value : PluginConfig.GunshotVolume.Value;
-            DeafeningController.CompressorLowpass = hasHeadset ? template.LowpassFreq : 2200;
-            DeafeningController.CompressorDistortion = hasHeadset ? template.Distortion : 0.277f;
-            DeafeningController.CompressorResonance = hasHeadset ? template.Resonance : 2.47f;
-
-            __instance.Master.GetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, out gunT);
-            __instance.Master.GetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, out mainT);
-            __instance.Master.SetFloat(__instance.AudioMixerData.GunsMixerTinnitusSendLevel, gunT);
-            __instance.Master.SetFloat(__instance.AudioMixerData.MainMixerTinnitusSendLevel, mainT);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorMixerVolume, hasHeadset ? template.CompressorVolume : -80f);
-            __instance.Master.SetFloat(__instance.AudioMixerData.OcclusionMixerVolume, hasHeadset ? template.DryVolume : 0f);
-            __instance.Master.SetFloat(__instance.AudioMixerData.EnvironmentMixerVolume, hasHeadset ? template.DryVolume : 0f);
-            __instance.Master.SetFloat(__instance.AudioMixerData.AmbientMixerVolume, hasHeadset ? template.AmbientVolume : 0f);
-            __instance.Master.SetFloat(__instance.AudioMixerData.AmbientMixerOcclusionSendLevel, hasHeadset ? (template.AmbientVolume - 15f) : -5f);
-            __instance.Master.SetFloat(__instance.AudioMixerData.ReverbMixerVolume, hasHeadset ? template.ReverbVolume : -20f);
-
-            volumeField.SetValue(__instance, (hasHeadset ? DeafeningController.DryVolume : 0f));
-            float dryVolume = (float)volumeField.GetValue(__instance);
-            __instance.Master.SetFloat(__instance.AudioMixerData.GunsMixerVolume, dryVolume);
-
-            if (!hasHeadset)
-            {
-                return false;
-            }
-
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorAttack, PluginConfig.HeadsetAttack.Value);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorGain, template.CompressorGain);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorRelease, template.CompressorRelease);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorThreshold, template.CompressorTreshold + PluginConfig.HeadsetThreshold.Value);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorDistortion, template.Distortion);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorResonance, template.Resonance);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorCutoff, (float)template.CutoffFreq);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorLowpass, (float)template.LowpassFreq);
-            __instance.Master.SetFloat(__instance.AudioMixerData.CompressorHighFrequenciesGain, template.HighFrequenciesGain);
-
-            return false;
-        }
-    }*/
-
     //this can't be good for performance...
     //but anyway, adjust, calculate "loudness" of a bot's shot when near the player for deafening
     public class RegisterShotPatch : ModulePatch
     {
+        private const float SuppressorFactor = 0.5f;
+        private const float SubsonicFactor = 0.6f;
+
         private static FieldInfo playerField;
 
         protected override MethodBase GetTargetMethod()
@@ -376,7 +314,7 @@ namespace RealismMod
             return typeof(Player.FirearmController).GetMethod("RegisterShot", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        private static float GetMuzzleLoudness(IEnumerable<Mod> mods)
+/*        private static float GetMuzzleLoudness(IEnumerable<Mod> mods)
         {
             float loudness = 0f;
 
@@ -393,11 +331,11 @@ namespace RealismMod
             }
             return (loudness / 100) + 1f;
 
-        }
+        }*/
 
         private static float CalcAmmoFactor(float ammoRec)
         {
-            return Math.Min((ammoRec / 100f) + 1f, 2f);
+            return Mathf.Clamp((ammoRec / 100f) + 1f, 0.8f, 2f);
         }
 
         private static float CalcVelocityFactor(float speedFactor)
@@ -422,10 +360,10 @@ namespace RealismMod
 
                     if (shot.InitialSpeed * weap.SpeedFactor <= 335f)
                     {
-                        deafenFactor *= 0.6f;
+                        deafenFactor *= SubsonicFactor;
                     }
 
-                    DeafeningController.AmmoDeafFactor = deafenFactor == 0f ? 1f : deafenFactor;
+                    DeafenController.AmmoDeafFactor = Mathf.Clamp(deafenFactor, 0.5f, 2f);
                 }
                 else
                 {
@@ -434,17 +372,20 @@ namespace RealismMod
                     float distanceFromPlayer = Vector3.Distance(shooterPos, playerPos);
                     if (distanceFromPlayer <= 15f)
                     {
-                        DeafeningController.IsBotFiring = true; ;
+                  
                         float velocityFactor = CalcVelocityFactor(weap.SpeedFactor);
-                        float muzzleFactor = __instance.IsSilenced ? 0.4f : 1f;
+                        float muzzleFactor = __instance.IsSilenced ? SuppressorFactor : 1f;
                         float calFactor = StatCalc.CaliberLoudnessFactor(weap.AmmoCaliber);
                         if (shot.InitialSpeed * weap.SpeedFactor <= 335f)
                         {
-                            velocityFactor *= 0.6f;
+                            velocityFactor *= SubsonicFactor;
                         }
-                        float totalBotDeafFactor = 1f * calFactor * velocityFactor;
-                        DeafeningController.BotDeafFactor = totalBotDeafFactor * ((-distanceFromPlayer / 100f) + 1f) * 1.25f;
-
+                        float baseBotDeafFactor = 1f * calFactor * velocityFactor;
+                        float totalBotDeafFactor = baseBotDeafFactor * ((-distanceFromPlayer / 100f) + 1f) * 1.25f;
+                        DeafenController.BotFiringDeafFactor = Mathf.Clamp(totalBotDeafFactor, 1f, 5f);
+                        DeafenController.IsBotFiring = true;
+                        DeafenController.BotTimer = 0f;
+                        DeafenController.IncreaseDeafeningShotAt();
                     }
                 }
             }
@@ -462,13 +403,16 @@ namespace RealismMod
         [PatchPrefix]
         static void PreFix(IExplosiveItem grenadeItem, Vector3 grenadePosition)
         {
-            Player player = Singleton<GameWorld>.Instance.AllAlivePlayersList[0];
+            Player player = Singleton<GameWorld>.Instance.MainPlayer;
             float distanceFromPlayer = Vector3.Distance(grenadePosition, player.Transform.position);
 
             if (distanceFromPlayer <= 15f)
             {
-                DeafeningController.GrenadeExploded = true;
-                DeafeningController.GrenadeDeafFactor = grenadeItem.Contusion.z * ((-distanceFromPlayer / 100f) + 1f);
+                DeafenController.GrenadeExploded = true;
+                DeafenController.GrenadeTimer = 0f;
+                DeafenController.ExplosionDeafFactor = grenadeItem.Contusion.z * ((-distanceFromPlayer / 100f) + 1f);
+                Logger.LogWarning($"grenadeItem.Contusion.z {grenadeItem.Contusion.z}, distance from player {distanceFromPlayer}");
+                DeafenController.IncreaseDeafeningExplosion();
             }
         }
     }
@@ -485,8 +429,8 @@ namespace RealismMod
         static bool PreFix(ThrowWeapItemClass __instance, ref Vector3 __result)
         {
             Vector3 contusionVect = __instance.GetTemplate<ThrowWeapTemplateClass>().Contusion;
-            float intensity = contusionVect.z * (1f - ((1f - DeafeningController.EarProtectionFactor) * 1.3f));
-            float distance = contusionVect.y * 2f * DeafeningController.EarProtectionFactor;
+            float intensity = contusionVect.z * (1f - ((1f - DeafenController.EarProtectionFactor) * 1.3f));
+            float distance = contusionVect.y * 2f * DeafenController.EarProtectionFactor;
             intensity = PlayerValues.EnviroType == EnvironmentType.Indoor ? intensity * 1.7f : intensity;
             distance = PlayerValues.EnviroType == EnvironmentType.Indoor ? distance * 1.7f : distance;
             __result = new Vector3(contusionVect.x, distance, intensity);

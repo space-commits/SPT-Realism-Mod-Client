@@ -1405,7 +1405,7 @@ namespace RealismMod
 
                 if (PluginConfig.EnableAdditionalRec.Value)
                 {
-                    RecoilController.DoVisualRecoil(ref _targetRecoil, ref _currentRecoil, ref weapTempRotation, Logger);
+                    ShootController.DoVisualRecoil(ref _targetRecoil, ref _currentRecoil, ref weapTempRotation, Logger);
                 }
 
                 __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weapTempPosition, weapTempRotation * _currentRotation);

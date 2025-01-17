@@ -1385,9 +1385,9 @@ namespace RealismMod
                 MedsItemClass med = item as MedsItemClass;
                 details = med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? med.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
             }
-            if (!isMed && item as FoodItemClass != null)
+            if (!isMed && item as FoodDrinkItemClass != null)
             {
-                FoodItemClass food = item as FoodItemClass;
+                FoodDrinkItemClass food = item as FoodDrinkItemClass;
                 details = food.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? food.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
             }
 
@@ -1420,9 +1420,9 @@ namespace RealismMod
                 detoxDetails = med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? med.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
                 deradDetails = med.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.RadExposure) ? med.HealthEffectsComponent.DamageEffects[EDamageEffectType.RadExposure] : null;
             }
-            if (!isMed && item as FoodItemClass != null)
+            if (!isMed && item as FoodDrinkItemClass != null)
             {
-                FoodItemClass food = item as FoodItemClass;
+                FoodDrinkItemClass food = item as FoodDrinkItemClass;
                 detoxDetails = food.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.Intoxication) ? food.HealthEffectsComponent.DamageEffects[EDamageEffectType.Intoxication] : null;
                 deradDetails = food.HealthEffectsComponent.DamageEffects.ContainsKey(EDamageEffectType.RadExposure) ? food.HealthEffectsComponent.DamageEffects[EDamageEffectType.RadExposure] : null;
             }

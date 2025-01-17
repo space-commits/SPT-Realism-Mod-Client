@@ -630,7 +630,7 @@ namespace RealismMod
                 }
                 breathVector = new Vector3(tremorXRandom, tremorYRandom, tremorZRnadom) * __instance.Intensity;
             }
-            else if (!__instance.IsAiming && RecoilController.IsFiring)
+            else if (!__instance.IsAiming && ShootController.IsFiring)
             {
                 breathVector = new Vector3(__instance.HipXRandom.GetValue(deltaTime), 0f, __instance.HipZRandom.GetValue(deltaTime)) * (__instance.Intensity * __instance.HipPenalty);
             }

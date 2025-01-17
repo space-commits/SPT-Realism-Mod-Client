@@ -472,7 +472,7 @@ namespace RealismMod
             WeaponStats.TotalModDuraBurn = modBurnRatio;
             WeaponStats.TotalMalfChance = Mathf.Max(currentMalfChance, baseMalfChance * 0.35f);
             WeaponStats.MalfChanceDelta = (baseMalfChance - WeaponStats.TotalMalfChance) / baseMalfChance;
-            /*DeafeningController.WeaponDeafFactor = totalLoudness;*/
+            DeafenController.GunDeafFactor = totalLoudness;
             WeaponStats.CanCycleSubs = canCycleSubs;
             WeaponStats.HasShoulderContact = hasShoulderContact;
             WeaponStats.InitTotalErgo = currentErgo;

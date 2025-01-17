@@ -210,13 +210,13 @@ namespace RealismMod
                 overheatMalfChance = 1f + Mathf.Clamp01(overheat / 100f);
                 overheatMalfChance = Mathf.Pow(overheatMalfChance, 3f);
 
-                float shotFactor = 1f + (RecoilController.ShotCount / 200f);
-                float fireRateFactor = RecoilController.ShotCount > 2 ? Mathf.Max(WeaponStats.AutoFireRateDelta, 1f) : 1f;
+                float shotFactor = 1f + (ShootController.ShotCount / 200f);
+                float fireRateFactor = ShootController.ShotCount > 2 ? Mathf.Max(WeaponStats.AutoFireRateDelta, 1f) : 1f;
 
                 bool isSubsonic = !WeaponStats.CanCycleSubs && ammoToFire.ammoHear == 1;
                 bool hasBooster = __instance.IsSilenced || WeaponStats.HasBooster;
 
-                bool canDoMalfChance = weaponDurability < PluginConfig.DuraMalfThreshold.Value || overheatMalfChance > 1.7f || RecoilController.ShotCount > 7f || magMalfChance > 2f || ammoMalfChance > 1.5f || WeaponStats.MalfChanceDelta < -0.5 || baseWeaponMalfChance > 0.004f || isSubsonic;
+                bool canDoMalfChance = weaponDurability < PluginConfig.DuraMalfThreshold.Value || overheatMalfChance > 1.7f || ShootController.ShotCount > 7f || magMalfChance > 2f || ammoMalfChance > 1.5f || WeaponStats.MalfChanceDelta < -0.5 || baseWeaponMalfChance > 0.004f || isSubsonic;
 
                 if (weaponDurability >= PluginConfig.DuraMalfReductionThreshold.Value)
                 {

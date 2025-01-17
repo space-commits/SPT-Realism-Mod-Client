@@ -109,30 +109,6 @@ namespace RealismMod
 
     }
 
-/*    public static class HeadsetGainController
-    {
-        public static void AdjustHeadsetVolume()
-        {
-            if (Input.GetKeyDown(PluginConfig.IncGain.Value.MainKey) && DeafeningController.HasHeadSet)
-            {
-                if (PluginConfig.RealTimeGain.Value < 30)
-                {
-                    PluginConfig.RealTimeGain.Value += 1f;
-                    Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), Plugin.DeviceAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 1.0f, EOcclusionTest.None, null, false);
-                }
-            }
-            if (Input.GetKeyDown(PluginConfig.DecGain.Value.MainKey) && DeafeningController.HasHeadSet)
-            {
-
-                if (PluginConfig.RealTimeGain.Value > 0)
-                {
-                    PluginConfig.RealTimeGain.Value -= 1f;
-                    Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), Plugin.DeviceAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 1.0f, EOcclusionTest.None, null, false);
-                }
-            }
-        }
-    }*/
-
     public static class AudioController 
     {
         public static void CreateAmbientAudioPlayer(Player player, Transform parentTransform, Dictionary<string, AudioClip> clips, bool followPlayer = false, float minTime = 15f, float maxTime = 90f, float volume = 1f, float minDistance = 45f, float maxDistance = 95f, float minDelayBeforePlayback = 60f)

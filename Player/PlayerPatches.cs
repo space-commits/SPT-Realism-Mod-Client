@@ -127,7 +127,7 @@ namespace RealismMod
         { 
             get 
             {
-                return RecoilController.IsFiring && !StanceController.IsAiming;
+                return ShootController.IsFiring && !StanceController.IsAiming;
             }  
         }
 
@@ -227,7 +227,7 @@ namespace RealismMod
                 PlayerValues.HasFullyResetSprintADSPenalties = false;
             }
 
-            if (RecoilController.IsFiring)
+            if (ShootController.IsFiring)
             {
                 _doSwayReset = false;
                 _resetSwayAfterFiring = false;
@@ -254,9 +254,9 @@ namespace RealismMod
         {
             float baseValue = 0.5f;
             float stockFactor = WeaponStats.IsStocklessPistol || WeaponStats.IsMachinePistol || !WeaponStats.HasShoulderContact ? 1.25f: 1f;
-            float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
-            float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
-            float recoilFactor = 1f + ((RecoilController.BaseTotalVRecoil + RecoilController.BaseTotalHRecoil) / 100f);
+            float convergenceFactor = 1f - (ShootController.BaseTotalConvergence / 100f);
+            float dispersionFactor = 1f + (ShootController.BaseTotalDispersion / 100f);
+            float recoilFactor = 1f + ((ShootController.BaseTotalVRecoil + ShootController.BaseTotalHRecoil) / 100f);
             float totalPlayerWeight = PlayerValues.TotalModifiedWeightMinusWeapon;
             float playerWeightFactor = 1f + (totalPlayerWeight / 200f);
             float coughing = Plugin.RealHealthController.IsCoughingInGas ? 2f : 1f;
@@ -326,7 +326,7 @@ namespace RealismMod
                 newRecoil.HandRotationRecoil.ReturnTrajectoryDumping = Mathf.Lerp(newRecoil.HandRotationRecoil.ReturnTrajectoryDumping, fc.Weapon.Template.RecoilReturnPathDampingHandRotation * PluginConfig.HandsDampingMulti.Value, 0.01f);
                 player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.Damping, fc.Weapon.Template.RecoilDampingHandRotation * PluginConfig.RecoilDampingMulti.Value, 0.01f);
                 player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Mathf.Lerp(player.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping, 0.41f, 0.01f);
-                player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, RecoilController.BaseTotalConvergence, 0.01f);
+                player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = Mathf.Lerp(player.ProceduralWeaponAnimation.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed, ShootController.BaseTotalConvergence, 0.01f);
             }
             else
             {
@@ -372,9 +372,9 @@ namespace RealismMod
                     StanceController.DoMounting(player, player.ProceduralWeaponAnimation, fc);
                 }
 
-                if (RecoilController.IsFiring)
+                if (ShootController.IsFiring)
                 {
-                    RecoilController.SetRecoilParams(player.ProceduralWeaponAnimation, fc.Item, player);
+                    ShootController.SetRecoilParams(player.ProceduralWeaponAnimation, fc.Item, player);
                     if (StanceController.CurrentStance == EStance.PatrolStance)
                     {
                         StanceController.CurrentStance = EStance.None;
@@ -391,7 +391,7 @@ namespace RealismMod
 
                 GetStaminaPerc(player);
 
-                if (!RecoilController.IsFiringMovement && Plugin.ServerConfig.enable_stances)
+                if (!ShootController.IsFiringMovement && Plugin.ServerConfig.enable_stances)
                 {
                     SetStancePWAValues(player, fc);
                 }

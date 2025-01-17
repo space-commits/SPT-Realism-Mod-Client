@@ -8,7 +8,7 @@ using static EFT.Player;
 
 namespace RealismMod
 {
-    public class RecoilController
+    public class ShootController
     {
         public static bool IsFiring = false;
         public static bool IsFiringDeafen = false;
@@ -37,52 +37,53 @@ namespace RealismMod
         public static float FactoredTotalDispersion;
         public static float FactoredTotalCamRecoil;
 
-        public static void RecoilUpdate() 
+        public static void ShootUpdate() 
         {
-            if (RecoilController.ShotCount > RecoilController.PrevShotCount)
+            if (ShotCount > PrevShotCount)
             {
-                RecoilController.IsFiring = true;
-                RecoilController.IsFiringDeafen = true;
-                RecoilController.IsFiringWiggle = true;
+                IsFiring = true;
+                IsFiringDeafen = true;
+                IsFiringWiggle = true;
+                IsFiringMovement = true;
                 StanceController.IsFiringFromStance = true;
-                RecoilController.IsFiringMovement = true;
-                RecoilController.PrevShotCount = RecoilController.ShotCount;
+                DeafenController.IncreaseDeafeningShooting();
+                PrevShotCount = ShotCount;
             }
 
-            if (RecoilController.ShotCount == RecoilController.PrevShotCount) //&& !IsFiringEFT
+            if (ShotCount == PrevShotCount) //&& !IsFiringEFT
             {
-                RecoilController.DeafenShotTimer += Time.deltaTime;
-                RecoilController.WiggleShotTimer += Time.deltaTime;
-                RecoilController.ShotTimer += Time.deltaTime;
-                RecoilController.MovementSpeedShotTimer += Time.deltaTime;
+                DeafenShotTimer += Time.deltaTime;
+                WiggleShotTimer += Time.deltaTime;
+                ShotTimer += Time.deltaTime;
+                MovementSpeedShotTimer += Time.deltaTime;
 
-                if (RecoilController.ShotTimer >= PluginConfig.ResetTime.Value)
+                if (ShootController.ShotTimer >= PluginConfig.ShotResetDelay.Value)
                 {
-                    RecoilController.IsFiring = false;
-                    RecoilController.ShotCount = 0;
-                    RecoilController.PrevShotCount = 0;
-                    RecoilController.ShotTimer = 0f;
+                    IsFiring = false;
+                    ShotCount = 0;
+                    PrevShotCount = 0;
+                    ShotTimer = 0f;
                 }
 
-                if (RecoilController.DeafenShotTimer >= PluginConfig.DeafenResetDelay.Value)
+                if (DeafenShotTimer >= PluginConfig.DeafenResetDelay.Value)
                 {
-                    RecoilController.IsFiringDeafen = false;
-                    RecoilController.DeafenShotTimer = 0f;
+                    IsFiringDeafen = false;
+                    DeafenShotTimer = 0f;
                 }
 
-                if (RecoilController.WiggleShotTimer >= 0.12f)
+                if (WiggleShotTimer >= 0.12f)
                 {
-                    RecoilController.IsFiringWiggle = false;
-                    RecoilController.WiggleShotTimer = 0f;
+                    IsFiringWiggle = false;
+                    WiggleShotTimer = 0f;
                 }
 
-                if (RecoilController.MovementSpeedShotTimer >= 0.5f)
+                if (MovementSpeedShotTimer >= 0.5f)
                 {
-                    RecoilController.IsFiringMovement = false;
-                    RecoilController.MovementSpeedShotTimer = 0f;
+                    IsFiringMovement = false;
+                    MovementSpeedShotTimer = 0f;
                 }
 
-                StanceController.StanceShotTimer();
+               StanceController.StanceShotTimer();
             }
         }
 
@@ -119,7 +120,7 @@ namespace RealismMod
         {
             float cantedRecoilSpeed = Mathf.Clamp(BaseTotalConvergence * 0.95f, 9f, 16f);
 
-            if (RecoilController.IsFiringWiggle)
+            if (IsFiringWiggle)
             {
                 float cantedRecoilAmount = FactoredTotalHRecoil / 32f;
                 float totalCantedRecoil = Mathf.Lerp(-cantedRecoilAmount, cantedRecoilAmount, Mathf.PingPong(Time.time * cantedRecoilSpeed * 1.05f, 1.0f));
@@ -162,7 +163,7 @@ namespace RealismMod
             newRecoil.HandRotationRecoil.NextStablePointDistanceRange.x = 1; //1  (defaults are 0.1, 6)
             newRecoil.HandRotationRecoil.NextStablePointDistanceRange.y = 4; //4
 
-            pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = RecoilController.BaseTotalConvergence * stanceFactor * PistolShotFactor(weapon);
+            pwa.Shootingg.CurrentRecoilEffect.HandRotationRecoilEffect.ReturnSpeed = BaseTotalConvergence * stanceFactor * PistolShotFactor(weapon);
 
         }
     }

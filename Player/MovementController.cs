@@ -68,7 +68,7 @@ namespace RealismMod
 
         public static float GetFiringMovementSpeedFactor(Player player)
         {
-            if (!RecoilController.IsFiringMovement)
+            if (!ShootController.IsFiringMovement)
             {
                 return 1f;
             }
@@ -79,14 +79,14 @@ namespace RealismMod
                 return 1f;
             }
 
-            float convergenceFactor = 1f - (RecoilController.BaseTotalConvergence / 100f);
-            float dispersionFactor = 1f + (RecoilController.BaseTotalDispersion / 100f);
-            float recoilFactor = RecoilController.FactoredTotalVRecoil + RecoilController.FactoredTotalHRecoil;
+            float convergenceFactor = 1f - (ShootController.BaseTotalConvergence / 100f);
+            float dispersionFactor = 1f + (ShootController.BaseTotalDispersion / 100f);
+            float recoilFactor = ShootController.FactoredTotalVRecoil + ShootController.FactoredTotalHRecoil;
             float ergoFactor = Mathf.Clamp(1f - ((80f - WeaponStats.ErgoFactor) / 100f), 0.1f, 1f);
             recoilFactor = recoilFactor * dispersionFactor * convergenceFactor * ergoFactor;
             recoilFactor = fc.Item.WeapClass == "pistol" ? recoilFactor * 0.1f : recoilFactor;
             float recoilLimit = 1f - (recoilFactor / 100f);
-            float totalRecoilFactor = 1f - ((recoilFactor / 400f) * RecoilController.ShotCount);
+            float totalRecoilFactor = 1f - ((recoilFactor / 400f) * ShootController.ShotCount);
             totalRecoilFactor = Mathf.Clamp(totalRecoilFactor, 0.6f * recoilLimit, 1f);
             return totalRecoilFactor;
         }

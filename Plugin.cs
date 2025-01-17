@@ -628,14 +628,14 @@ namespace RealismMod
                     LoadAudioClips();
                 }
 
-                RecoilController.RecoilUpdate();
+                ShootController.ShootUpdate();
 
                 if (ServerConfig.headset_changes)
                 {
-                    //HeadsetGainController.AdjustHeadsetVolume();
-                    if (DeafeningController.PrismEffects != null)
+                    HeadsetGainController.AdjustHeadsetVolume();
+                    if (DeafenController.PrismEffects != null)
                     {
-                        DeafeningController.DoDeafening();
+                        DeafenController.DoDeafening();
                     }
                 }
                 if (ServerConfig.enable_stances) 
@@ -850,8 +850,7 @@ namespace RealismMod
         {
             new PrismEffectsEnablePatch().Enable();
             new PrismEffectsDisablePatch().Enable();
-/*            new UpdatePhonesPatch().Enable();
-            new SetCompressorPatch().Enable();*/
+            new UpdatePhonesPatch().Enable();
             new RegisterShotPatch().Enable();
             new ExplosionPatch().Enable();
             new GrenadeClassContusionPatch().Enable();

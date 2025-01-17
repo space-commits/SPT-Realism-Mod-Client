@@ -4,69 +4,207 @@ using UnityEngine;
 namespace RealismMod
 {
 
-    public static class DeafeningController
-    {
 
+    public static class HeadsetGainController
+    {
+        public static void IncreaseGain() 
+        {
+            if (Input.GetKeyDown(PluginConfig.IncGain.Value.MainKey) && DeafenController.HasHeadSet)
+            {
+                if (PluginConfig.HeadsetGain.Value < DeafenController.MaxGain)
+                {
+                    PluginConfig.HeadsetGain.Value += 1;
+                    Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), Plugin.DeviceAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 1.0f, EOcclusionTest.None, null, false);
+                }
+            }
+        }
+
+        public static void DecreaseGain() 
+        {
+            if (Input.GetKeyDown(PluginConfig.DecGain.Value.MainKey) && DeafenController.HasHeadSet)
+            {
+                if (PluginConfig.HeadsetGain.Value > DeafenController.MinGain)
+                {
+                    PluginConfig.HeadsetGain.Value -= 1;
+                    Singleton<BetterAudio>.Instance.PlayAtPoint(new Vector3(0, 0, 0), Plugin.DeviceAudioClips["beep.wav"], 0, BetterAudio.AudioSourceGroupType.Nonspatial, 100, 1.0f, EOcclusionTest.None, null, false);
+                }
+            }
+        }
+
+        public static void AdjustHeadsetVolume()
+        {
+            IncreaseGain();
+            DecreaseGain();
+        }
+    }
+
+    public static class DeafenController
+    {
         public const float AmbientOutVolume = 0f; //-0.91515f
         public const float AmbientInVolume = 0f; //-80f
-        public const float WeaponMuffle = -80f;
-        public const float GameVolume = 0f;
+        public const float WeaponMuffleBase = -80f;
+        public const float BaseMainVolume = 0f;
+        public const float LightHelmetDeafReduction = 0.95f;
+        public const float HeavyHelmetDeafreduction = 0.8f;
+        public const float MinHeadsetProtection = 0.7f;
+        public const float MaxHeadsetProtection = 0.1f;
+        public const int MaxGain = 15;
+        public const int MinGain = -10;
+        public const float MaxMuffle = 15f;
+        public const float MaxDeafen = -20;
+        public const float MaxVignette = 2.4f;
 
-        private static bool valuesAreReset = false;
+        public static PrismEffects PrismEffects { get; set; }
+        public static float EarProtectionFactor { get; set; } = 1f;
+        public static float AmmoDeafFactor { get; set; } = 1f;
+        public static float GunDeafFactor { get; set; } = 1f;
+        public static float BotFiringDeafFactor { get; set; } = 1f;
+        public static float ExplosionDeafFactor { get; set; } = 1f;
+        public static bool HasHeadSet { get; set; } = false;
+        public static float HeadSetGain { get; set; } = PluginConfig.HeadsetGain.Value;
+        public static bool IsBotFiring { get; set; } = false;
+        public static bool GrenadeExploded { get; set; } = false;
+        public static float BotTimer { get; set; } = 0f;
+        public static float GrenadeTimer { get; set; } = 0f;
 
-        public static bool HasHeadSet = false;
-        public static PrismEffects PrismEffects;
+        private static float _mainVolumeReduction = 0f;
+        private static float _mainVolumeReductionTarget = 0f;
+        private static float _maxShootVolumeReduction = 0f;
+        private static float _maxBotVolumeReduction = 0f;
+        private static float _muffleTarget = WeaponMuffleBase;
+        private static float _gunShotMuffle = WeaponMuffleBase;
+        private static float _vignetteAmount = 0f;
+        private static float _vignetteTarget = 0f;
+        private static float _maxShootVignette = 0f; //relative to the specific gun
+        private static float _maxBotShootVignette = 0f;
+        private static float _maxExplosionVignette = 0f;
 
-        public static bool IsBotFiring = false;
-        public static bool GrenadeExploded = false;
-        public static float BotTimer = 0.0f;
-        public static float GrenadeTimer = 0.0f;
-
-        public static float DryVolume = 0f;
-        public static float GunsVolume = 0f;
-        public static float AmbientVolume = 0f;
-        public static float AmbientOccluded = 0f;
-        public static float CompressorDistortion = 0f;
-        public static float CompressorResonance = 0f;
-        public static float CompressorLowpass = 0f;
-        public static float CompressorVolume = 0f;
-        public static float CompressorGain = 0f;
-
-        public static float EarProtectionFactor = 1f;
-        public static float AmmoDeafFactor = 1f;
-        public static float WeaponDeafFactor = 1f;
-        public static float BotDeafFactor = 1f;
-        public static float GrenadeDeafFactor = 1f;
-
-        //player
-        public static float Volume = 0f;
-        public static float VignetteDarkness = 0f;
-        public static float VolumeLimit = -30f;
-        public static float VignetteDarknessLimit = 0.34f;
-
-        //bot
-        public static float BotVolume = 0f;
-        public static float BotVignetteDarkness = 0f;
-
-        //grenade
-        public static float GrenadeVolume = 0f;
-        public static float GrenadeVignetteDarkness = 0f;
-        public static float GrenadeVolumeLimit = -40f;
-        public static float GrenadeVignetteDarknessLimit = 0.3f;
-        public static float GrenadeVolumeDecreaseRate = 0.02f;
-        public static float GrenadeVignetteDarknessIncreaseRate = 0.6f;
-        public static float GrenadeVolumeResetRate = 0.02f;
-        public static float GrenadeVignetteDarknessResetRate = 0.02f;
-
-        public static void GetVolumeLevels() 
+        public static float EnvironmentFactor
         {
+            get
+            {
+                return PlayerValues.EnviroType == EnvironmentType.Indoor ? 2f : 1f;
+            }
+        }
+
+        public static void IncreaseDeafeningShooting()
+        {
+            float factor = AmmoDeafFactor * GunDeafFactor * EarProtectionFactor * EnvironmentFactor;
+            _mainVolumeReductionTarget += factor;
+            _maxShootVolumeReduction += factor * PluginConfig.test1.Value;
+            _muffleTarget += factor * 2f;
+            _vignetteTarget += factor * 0.18f;
+            _maxShootVignette = factor * 0.3f;
+
+        }
+
+        public static void IncreaseDeafeningShotAt()
+        {
+            float factor = BotFiringDeafFactor * EnvironmentFactor;
+            _mainVolumeReductionTarget += factor;
+            _muffleTarget += factor * 2f;
+            _vignetteTarget += factor * 0.18f;
+            _maxBotShootVignette = Mathf.Max(factor * 0.3f, _maxBotShootVignette);
+        }
+
+        public static void IncreaseDeafeningExplosion()
+        {
+            float factor = ExplosionDeafFactor * EnvironmentFactor;
+            _mainVolumeReductionTarget += factor * 0.2f; //0.2
+            _muffleTarget += factor * 0.9f; //0.9
+            _vignetteTarget += factor * 0.025f; // 0.025
+            _maxExplosionVignette = _vignetteTarget; //0.035
+        }
+
+        public static void SetAudio(float mainVolume)
+        {
+            Singleton<BetterAudio>.Instance.Master.SetFloat("InGame", mainVolume + _mainVolumeReduction); //main volume
+            //Singleton<BetterAudio>.Instance.Master.SetFloat("Tinnitus1", _gunShotMuffle); //higher = more muffled (reverby with headset) gunshots and all weapon sounds
+
+            //ambient
+            float ambientBase = HasHeadSet ? 10f : 5f;
+            Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOutVolume", AmbientOutVolume + ambientBase + PluginConfig.AmbientMulti.Value); //outdoors
+            Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientInVolume", AmbientInVolume + ambientBase + PluginConfig.AmbientMulti.Value);
+        }
+
+        public static void DoVignette()
+        {
+            PrismEffects.SetVignetteStrength(_vignetteAmount);
+            if (PrismEffects.useVignette && _vignetteAmount.ApproxEquals(0f))
+            {
+                PrismEffects.useVignette = false;
+            }
+        }
+
+        public static void DoTimers()
+        {
+            if (IsBotFiring)
+            {
+                BotTimer += Time.deltaTime;
+                if (BotTimer >= 0.5f)
+                {
+                    IsBotFiring = false;
+                    BotTimer = 0f;
+                }
+            }
+
+            if (GrenadeExploded)
+            {
+                GrenadeTimer += Time.deltaTime;
+                if (GrenadeTimer >= 25f)
+                {
+                    GrenadeExploded = false;
+                    GrenadeTimer = 0f;
+                }
+            }
 
         }
 
         public static void DoDeafening()
         {
+            float baseMainVolume = 0f;
+            if (IsBotFiring || GrenadeExploded || ShootController.IsFiringDeafen)
+            {
+                if (HasHeadSet)
+                {
+                    baseMainVolume = Mathf.Min(PluginConfig.HeadsetNoiseReduction.Value, PluginConfig.HeadsetGain.Value - 5f);
+                }
+
+                float maxVolumeReduction = Mathf.Min(MaxDeafen, _maxShootVolumeReduction + _maxBotVolumeReduction);
+                _mainVolumeReduction = Mathf.Lerp(_mainVolumeReduction, Mathf.Max(-_mainVolumeReductionTarget, maxVolumeReduction), 0.01f); //0.01f
+                _gunShotMuffle = Mathf.Lerp(_gunShotMuffle, Mathf.Min(_muffleTarget, MaxMuffle), 0.035f);
+
+                float maxVignette = Mathf.Min(MaxVignette, _maxShootVignette + _maxBotShootVignette + _maxExplosionVignette);
+                _vignetteAmount = Mathf.Lerp(_vignetteAmount, Mathf.Min(_vignetteTarget, maxVignette), 0.1f);
+
+                PrismEffects.useVignette = true;
+                PrismEffects.vignetteStart = 1.5f;
+                PrismEffects.vignetteEnd = 0.1f;
+            }
+            else
+            {
+                if (HasHeadSet)
+                {
+                    baseMainVolume = PluginConfig.HeadsetGain.Value;
+                }
+                _mainVolumeReductionTarget = 0f;
+                _muffleTarget = WeaponMuffleBase;
+                _vignetteTarget = 0f;
+                _maxShootVignette = 0f;
+                _maxBotShootVignette = 0f;
+                _maxExplosionVignette = 0f;
+
+                _mainVolumeReduction = Mathf.Lerp(_mainVolumeReduction, BaseMainVolume, 0.001f); //0.001f
+                _gunShotMuffle = Mathf.Lerp(_gunShotMuffle, WeaponMuffleBase, 0.0015f);
+                _vignetteAmount = Mathf.Lerp(_vignetteAmount, 0f, 0.01f);
+            }
+
+            SetAudio(baseMainVolume);
+            DoVignette();
+            DoTimers();
+
             //do not use
-            /*      if (PluginConfig.test3.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("ReverbVolume", PluginConfig.test3.Value); //unused
+            /*      if (PluginConfig    3.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("ReverbVolume", PluginConfig.test3.Value); //unused
                   if (PluginConfig.test6.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("WorldVolume", PluginConfig.test6.Value); //overall volume while wearing headset, doesn't seem to do anything without a headset..tried again and it did seem to affect all volume with or without headset...
                   if (PluginConfig.test7.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", PluginConfig.test7.Value); //also affects ambient in some way
                   if (PluginConfig.test1.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("MainVolume", PluginConfig.test1.Value); //outdoor ambient, main volume, not gunshots or green flare. Doesn't affect headset
@@ -86,137 +224,6 @@ namespace RealismMod
              */
             //maybe use
             //if (PluginConfig.test8.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("OutEnvironmentVolume", PluginConfig.test8.Value); //not sure
-
-
-
-
-            //ambient
-            if (PluginConfig.test1.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOutVolume", PluginConfig.test1.Value); //outdoor ambient, affects headset
-            if (PluginConfig.test2.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientInVolume", PluginConfig.test2.Value);//presumably indoor ambient
-
-            //main
-            if (PluginConfig.test3.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("InGame", PluginConfig.test3.Value); //seemingly all volume with and without headset
-
-            //distortion
-            if (PluginConfig.test4.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("Tinnitus1", PluginConfig.test4.Value); //higher = more muffled (reverby with headset) gunshots and all weapon sounds
-
-
-
-
-
-            /*     float enviroMulti = PlayerValues.EnviroType == EnvironmentType.Indoor ? 1.3f : 1f;
-                 float deafFactor = AmmoDeafFactor * WeaponDeafFactor * EarProtectionFactor;
-                 float botDeafFactor = BotDeafFactor * EarProtectionFactor;
-                 float grenadeDeafFactor = GrenadeDeafFactor * EarProtectionFactor;
-                 float totalVigLimit = Mathf.Min(0.3f * deafFactor * enviroMulti, 1.5f);
-                 float grenadeVigLimit = Mathf.Min(GrenadeVignetteDarknessLimit * deafFactor * enviroMulti, 1.5f);
-
-                 if (IsBotFiring)
-                 {
-                     BotTimer += Time.deltaTime;
-                     if (BotTimer >= 0.5f)
-                     {
-                         IsBotFiring = false;
-                         BotTimer = 0f;
-                     }
-                 }
-
-                 if (GrenadeExploded)
-                 {
-                     GrenadeTimer += Time.deltaTime;
-                     if (GrenadeTimer >= 0.7f)
-                     {
-                         GrenadeExploded = false;
-                         GrenadeTimer = 0f;
-                     }
-                 }
-
-                 if (RecoilController.IsFiringDeafen)
-                 {
-                     ChangeDeafValues(deafFactor, ref VignetteDarkness, PluginConfig.VigRate.Value, totalVigLimit, ref Volume, PluginConfig.DeafRate.Value, VolumeLimit, enviroMulti);
-                 }
-                 else if (!valuesAreReset)
-                 {
-                     ResetDeafValues(ref VignetteDarkness, PluginConfig.VigReset.Value, totalVigLimit, ref Volume, PluginConfig.DeafReset.Value, VolumeLimit);
-                 }
-
-                 if (IsBotFiring)
-                 {
-                     ChangeDeafValues(botDeafFactor, ref BotVignetteDarkness, PluginConfig.VigRate.Value, totalVigLimit, ref BotVolume, PluginConfig.DeafRate.Value, VolumeLimit, enviroMulti);
-                 }
-                 else if (!valuesAreReset)
-                 {
-                     ResetDeafValues(ref BotVignetteDarkness, PluginConfig.VigReset.Value, totalVigLimit, ref BotVolume, PluginConfig.DeafReset.Value, VolumeLimit);
-                 }
-
-                 if (GrenadeExploded)
-                 {
-                     ChangeDeafValues(grenadeDeafFactor, ref GrenadeVignetteDarkness, GrenadeVignetteDarknessIncreaseRate, grenadeVigLimit, ref GrenadeVolume, GrenadeVolumeDecreaseRate, GrenadeVolumeLimit, enviroMulti);
-                 }
-                 else if (!valuesAreReset)
-                 {
-                     ResetDeafValues(ref GrenadeVignetteDarkness, GrenadeVignetteDarknessResetRate, grenadeVigLimit, ref GrenadeVolume, GrenadeVolumeResetRate, GrenadeVolumeLimit);
-                 }
-
-                 float totalVolume = Mathf.Clamp(Volume + BotVolume + GrenadeVolume, -40.0f, 0.0f);
-                 float totalVignette = Mathf.Clamp(VignetteDarkness + BotVignetteDarkness + GrenadeVignetteDarkness, 0.0f, 65.0f);
-
-                 float ambientGainMulti = 2f * (1f - Mathf.InverseLerp(0f, 30f, PluginConfig.RealTimeGain.Value));
-                 float headsetAmbientVol = (DeafeningController.AmbientVolume * ambientGainMulti) + PluginConfig.HeadsetAmbientMulti.Value;
-
-                 if (totalVolume != 0.0f || totalVignette != 0.0f)
-                 {
-                     DeafeningController.PrismEffects.SetVignetteStrength(totalVignette);
-                     DeafeningController.PrismEffects.vignetteStart = 1.5f;
-                     DeafeningController.PrismEffects.vignetteEnd = 0.1f;
-                     if (!DeafeningController.HasHeadSet)
-                     {
-                         Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", totalVolume + DeafeningController.GunsVolume);
-                         Singleton<BetterAudio>.Instance.Master.SetFloat("OcclusionVolume", totalVolume + DeafeningController.DryVolume);
-                         Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", totalVolume + DeafeningController.DryVolume);
-                         Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", totalVolume + DeafeningController.AmbientOccluded);
-                         Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", totalVolume + DeafeningController.AmbientVolume);
-                     }
-
-                     valuesAreReset = false;
-                 }
-                 else if (!valuesAreReset)
-                 {
-                     DeafeningController.PrismEffects.useVignette = false;
-                     valuesAreReset = true;
-                     if (!DeafeningController.HasHeadSet)
-                     {
-                         Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", DeafeningController.GunsVolume);
-                         Singleton<BetterAudio>.Instance.Master.SetFloat("OcclusionVolume", DeafeningController.DryVolume);
-                         Singleton<BetterAudio>.Instance.Master.SetFloat("EnvironmentVolume", DeafeningController.DryVolume);
-                         Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", DeafeningController.AmbientOccluded);
-                         Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", DeafeningController.AmbientVolume);
-                     }
-                 }
-
-                 if (DeafeningController.HasHeadSet && (RecoilController.IsFiringDeafen || GrenadeVolume > 0f || BotVolume > 0f))
-                 {
-                     Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", PluginConfig.RealTimeGain.Value * PluginConfig.GainCutoff.Value);
-                     Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", (headsetAmbientVol * (1f + (1f - PluginConfig.GainCutoff.Value))));
-                 }
-                 else if (DeafeningController.HasHeadSet)
-                 {
-                     Singleton<BetterAudio>.Instance.Master.SetFloat("CompressorMakeup", PluginConfig.RealTimeGain.Value);
-                     Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientVolume", headsetAmbientVol);
-                 }*/
-        }
-
-        private static void ChangeDeafValues(float deafFactor, ref float vigValue, float vigIncRate, float vigLimit, ref float volValue, float volDecRate, float volLimit, float enviroMulti)
-        {
-            DeafeningController.PrismEffects.useVignette = true;
-            vigValue = Mathf.Clamp(vigValue + (vigIncRate * deafFactor * enviroMulti), 0.0f, vigLimit);
-            volValue = Mathf.Clamp(volValue - (volDecRate * deafFactor * enviroMulti), volLimit, 0.0f);
-        }
-
-        private static void ResetDeafValues(ref float vigValue, float vigResetRate, float vigLimit, ref float volValue, float volResetRate, float volLimit)
-        {
-            vigValue = Mathf.Clamp(vigValue - vigResetRate, 0.0f, vigLimit);
-            volValue = Mathf.Clamp(volValue + volResetRate, volLimit, 0.0f);
         }
     }
 }
