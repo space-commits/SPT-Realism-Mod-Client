@@ -45,13 +45,13 @@ namespace RealismMod
         public const float WeaponMuffleBase = -80f;
         public const float BaseMainVolume = 0f;
         public const float LightHelmetDeafReduction = 0.95f;
-        public const float HeavyHelmetDeafreduction = 0.8f;
-        public const float MinHeadsetProtection = 0.7f;
-        public const float MaxHeadsetProtection = 0.1f;
+        public const float HeavyHelmetDeafreduction = 0.85f;
+        public const float MinHeadsetProtection = 0.8f;
+        public const float MaxHeadsetProtection = 0.25f;
         public const int MaxGain = 15;
         public const int MinGain = -10;
         public const float MaxMuffle = 15f;
-        public const float MaxDeafen = -20;
+        public const float MaxDeafen = 30;
         public const float MaxVignette = 2.4f;
 
         public static PrismEffects PrismEffects { get; set; }
@@ -71,6 +71,8 @@ namespace RealismMod
         private static float _mainVolumeReductionTarget = 0f;
         private static float _maxShootVolumeReduction = 0f;
         private static float _maxBotVolumeReduction = 0f;
+        private static float _maxShootMuffle = 0f;
+        private static float _maxBotShootMuffle = 0f;
         private static float _muffleTarget = WeaponMuffleBase;
         private static float _gunShotMuffle = WeaponMuffleBase;
         private static float _vignetteAmount = 0f;
@@ -83,26 +85,47 @@ namespace RealismMod
         {
             get
             {
-                return PlayerValues.EnviroType == EnvironmentType.Indoor ? 2f : 1f;
+                return PlayerValues.EnviroType == EnvironmentType.Indoor ? 1.5f : 1f;
             }
         }
+
+        public static void DoLogging()
+        {
+            //Utils.Logger.LogWarning($"_mainVolumeReduction {_mainVolumeReduction}, _gunShotMuffle {_gunShotMuffle}, _vignetteAmount {_vignetteAmount}");
+            //Utils.Logger.LogWarning($"_maxShootVolumeReduction {_maxShootVolumeReduction}, _mainVolumeReductionTarget {_mainVolumeReductionTarget}, _mainVolumeReduction {_mainVolumeReduction}");
+            //Utils.Logger.LogWarning($"_maxShootMuffle {_maxShootMuffle}, _muffleTarget {_muffleTarget}, _gunShotMuffle {_gunShotMuffle}");
+           // Utils.Logger.LogWarning($"_maxShootVignette {_maxShootVignette}, _vignetteTarget {_vignetteTarget}, _vignetteTarget {_vignetteTarget}");
+        }
+
 
         public static void IncreaseDeafeningShooting()
         {
             float factor = AmmoDeafFactor * GunDeafFactor * EarProtectionFactor * EnvironmentFactor;
-            _mainVolumeReductionTarget += factor;
-            _maxShootVolumeReduction += factor * PluginConfig.test1.Value;
-            _muffleTarget += factor * 2f;
-            _vignetteTarget += factor * 0.18f;
-            _maxShootVignette = factor * 0.3f;
+            float newMaxDeafen = factor * 2.5f;
+            float newMaxMuffle = factor;
+            float newMaxVignette = factor * 0.3f;
 
+            //volume
+            _mainVolumeReductionTarget = _mainVolumeReductionTarget < newMaxDeafen ? _mainVolumeReductionTarget + factor : _mainVolumeReductionTarget;
+            _maxShootVolumeReduction = Mathf.Max(newMaxDeafen, _maxShootVolumeReduction);
+            //muffle
+            _muffleTarget = _muffleTarget < newMaxMuffle ? _muffleTarget + (factor * 2f) : _muffleTarget;
+            _maxShootMuffle = Mathf.Max(newMaxMuffle, _maxShootMuffle);
+            //vignete
+            _vignetteTarget = _vignetteTarget < newMaxVignette ? _vignetteTarget + (factor * 0.18f) : _vignetteTarget;
+            _maxShootVignette = Mathf.Max(newMaxVignette, _maxShootVignette);
         }
 
         public static void IncreaseDeafeningShotAt()
         {
             float factor = BotFiringDeafFactor * EnvironmentFactor;
+            //volume
             _mainVolumeReductionTarget += factor;
+            _maxBotVolumeReduction = Mathf.Max(factor * 2f, _maxBotVolumeReduction);
+            //muffle
             _muffleTarget += factor * 2f;
+            _maxBotShootMuffle = Mathf.Max(factor, _maxBotShootMuffle);
+            //vignete
             _vignetteTarget += factor * 0.18f;
             _maxBotShootVignette = Mathf.Max(factor * 0.3f, _maxBotShootVignette);
         }
@@ -110,16 +133,19 @@ namespace RealismMod
         public static void IncreaseDeafeningExplosion()
         {
             float factor = ExplosionDeafFactor * EnvironmentFactor;
+            //volume
             _mainVolumeReductionTarget += factor * 0.2f; //0.2
+            //muffle
             _muffleTarget += factor * 0.9f; //0.9
+            //vignete
             _vignetteTarget += factor * 0.025f; // 0.025
-            _maxExplosionVignette = _vignetteTarget; //0.035
+            _maxExplosionVignette = Mathf.Max(factor * 0.035f, _maxExplosionVignette); //0.035
         }
 
         public static void SetAudio(float mainVolume)
         {
             Singleton<BetterAudio>.Instance.Master.SetFloat("InGame", mainVolume + _mainVolumeReduction); //main volume
-            //Singleton<BetterAudio>.Instance.Master.SetFloat("Tinnitus1", _gunShotMuffle); //higher = more muffled (reverby with headset) gunshots and all weapon sounds
+            Singleton<BetterAudio>.Instance.Master.SetFloat("Tinnitus1", _gunShotMuffle); //higher = more muffled (reverby with headset) gunshots and all weapon sounds
 
             //ambient
             float ambientBase = HasHeadSet ? 10f : 5f;
@@ -130,10 +156,6 @@ namespace RealismMod
         public static void DoVignette()
         {
             PrismEffects.SetVignetteStrength(_vignetteAmount);
-            if (PrismEffects.useVignette && _vignetteAmount.ApproxEquals(0f))
-            {
-                PrismEffects.useVignette = false;
-            }
         }
 
         public static void DoTimers()
@@ -157,7 +179,56 @@ namespace RealismMod
                     GrenadeTimer = 0f;
                 }
             }
+        }
 
+        public static void ResetMaxValues()
+        {
+            if (Utils.AreFloatsEqual(_mainVolumeReduction, 0f, 2f))
+            {
+                _maxShootVolumeReduction = 0f;
+                _maxBotVolumeReduction = 0f;
+            }
+
+            if (Utils.AreFloatsEqual(_gunShotMuffle, WeaponMuffleBase, 5f))
+            {
+                _maxShootMuffle = 0f;
+                _maxBotShootMuffle = 0f;
+            }
+
+            if (Utils.AreFloatsEqual(_vignetteAmount, 0f, 0.1f)) 
+            {
+                if(PrismEffects.useVignette) PrismEffects.useVignette = false;
+                _maxShootVignette = 0f;
+                _maxBotShootVignette = 0f;
+                _maxExplosionVignette = 0f;
+            }
+        }
+
+        public static void ResetValues() 
+        {
+            _mainVolumeReductionTarget = 0f;
+            _muffleTarget = WeaponMuffleBase;
+            _vignetteTarget = 0f;
+
+            _mainVolumeReduction = Mathf.Lerp(_mainVolumeReduction, BaseMainVolume, 0.0009f); //0.0009f
+            _gunShotMuffle = Mathf.Lerp(_gunShotMuffle, WeaponMuffleBase, 0.0014f);//0.0014f
+            _vignetteAmount = Mathf.Lerp(_vignetteAmount, 0f, 0.01f);//0.01f
+        }
+
+        public static void SetValues()
+        {
+
+            float maxVolumeReduction = Mathf.Min(MaxDeafen, _maxShootVolumeReduction + _maxBotVolumeReduction);
+            _mainVolumeReduction = Mathf.Lerp(_mainVolumeReduction, Mathf.Max(-_mainVolumeReductionTarget, -maxVolumeReduction), 0.01f); //0.01f
+            float maxMuffle = Mathf.Min(MaxMuffle, _maxShootMuffle + _maxBotShootMuffle);
+            _gunShotMuffle = Mathf.Lerp(_gunShotMuffle, Mathf.Min(_muffleTarget, maxMuffle), 0.035f);
+
+            float maxVignette = Mathf.Min(MaxVignette, _maxShootVignette + _maxBotShootVignette + _maxExplosionVignette);
+            _vignetteAmount = Mathf.Lerp(_vignetteAmount, Mathf.Min(_vignetteTarget, maxVignette), 0.1f);
+
+            PrismEffects.useVignette = true;
+            PrismEffects.vignetteStart = 1.5f;
+            PrismEffects.vignetteEnd = 0.1f;
         }
 
         public static void DoDeafening()
@@ -170,16 +241,7 @@ namespace RealismMod
                     baseMainVolume = Mathf.Min(PluginConfig.HeadsetNoiseReduction.Value, PluginConfig.HeadsetGain.Value - 5f);
                 }
 
-                float maxVolumeReduction = Mathf.Min(MaxDeafen, _maxShootVolumeReduction + _maxBotVolumeReduction);
-                _mainVolumeReduction = Mathf.Lerp(_mainVolumeReduction, Mathf.Max(-_mainVolumeReductionTarget, maxVolumeReduction), 0.01f); //0.01f
-                _gunShotMuffle = Mathf.Lerp(_gunShotMuffle, Mathf.Min(_muffleTarget, MaxMuffle), 0.035f);
-
-                float maxVignette = Mathf.Min(MaxVignette, _maxShootVignette + _maxBotShootVignette + _maxExplosionVignette);
-                _vignetteAmount = Mathf.Lerp(_vignetteAmount, Mathf.Min(_vignetteTarget, maxVignette), 0.1f);
-
-                PrismEffects.useVignette = true;
-                PrismEffects.vignetteStart = 1.5f;
-                PrismEffects.vignetteEnd = 0.1f;
+                SetValues();
             }
             else
             {
@@ -187,43 +249,39 @@ namespace RealismMod
                 {
                     baseMainVolume = PluginConfig.HeadsetGain.Value;
                 }
-                _mainVolumeReductionTarget = 0f;
-                _muffleTarget = WeaponMuffleBase;
-                _vignetteTarget = 0f;
-                _maxShootVignette = 0f;
-                _maxBotShootVignette = 0f;
-                _maxExplosionVignette = 0f;
 
-                _mainVolumeReduction = Mathf.Lerp(_mainVolumeReduction, BaseMainVolume, 0.001f); //0.001f
-                _gunShotMuffle = Mathf.Lerp(_gunShotMuffle, WeaponMuffleBase, 0.0015f);
-                _vignetteAmount = Mathf.Lerp(_vignetteAmount, 0f, 0.01f);
+                ResetValues();
+                ResetMaxValues();
             }
 
             SetAudio(baseMainVolume);
             DoVignette();
             DoTimers();
 
+            if (PluginConfig.EnableLogging.Value) DoLogging();
+
+
             //do not use
-            /*      if (PluginConfig    3.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("ReverbVolume", PluginConfig.test3.Value); //unused
-                  if (PluginConfig.test6.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("WorldVolume", PluginConfig.test6.Value); //overall volume while wearing headset, doesn't seem to do anything without a headset..tried again and it did seem to affect all volume with or without headset...
-                  if (PluginConfig.test7.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", PluginConfig.test7.Value); //also affects ambient in some way
-                  if (PluginConfig.test1.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("MainVolume", PluginConfig.test1.Value); //outdoor ambient, main volume, not gunshots or green flare. Doesn't affect headset
-                  if (PluginConfig.test1.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("Tinnitus2", PluginConfig.test1.Value); //not sure, does affect ambient volume
-                  if (PluginConfig.test2.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("WorldReverbLevel", PluginConfig.test2.Value); //no noticable effect
-                  if (PluginConfig.test4.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("GunCompressorAttack", PluginConfig.test4.Value); //no noticable ffect
-                  if (PluginConfig.test5.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("GunCompressorRelease", PluginConfig.test5.Value);//no noticable ffect
-                  if (PluginConfig.test6.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("GunCompressorThreshold", PluginConfig.test6.Value);//no noticable ffect
-                  if (PluginConfig.test7.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("GunCompressorDistortion", PluginConfig.test7.Value); //all gun noise distortion with headset, don't mess with it
-                  if (PluginConfig.test9.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("GunsLowPassFilter", PluginConfig.test9.Value); //nothing
-                  if (PluginConfig.test1.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("EffectsReturnsGroupVolume", PluginConfig.test1.Value); //not sure, does affect ambient volume
-                  if (PluginConfig.test2.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("HeadphonesMixerVolume", PluginConfig.test2.Value); //no noticable effect
-               Singleton<BetterAudio>.Instance.Master.GetFloat("GunsCompressorSendLevel", out float sendlevel); //affected all gun volume with headset
-                    //might have to use too, not sure
-            if (PluginConfig.test2.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", PluginConfig.test2.Value); //just gun volume...also affects all gun itneraction volume because BSG is fucking retarded. Doesn't affect it properly when wearing headest
-            if (PluginConfig.test3.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("GunCompressorGain", PluginConfig.test3.Value);  //all gun volume using headset
-             */
-            //maybe use
-            //if (PluginConfig.test8.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("OutEnvironmentVolume", PluginConfig.test8.Value); //not sure
+                /*      if (PluginConfig    3.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("ReverbVolume", PluginConfig.test3.Value); //unused
+                      if (PluginConfig.test6.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("WorldVolume", PluginConfig.test6.Value); //overall volume while wearing headset, doesn't seem to do anything without a headset..tried again and it did seem to affect all volume with or without headset...
+                      if (PluginConfig.test7.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("AmbientOccluded", PluginConfig.test7.Value); //also affects ambient in some way
+                      if (PluginConfig.test1.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("MainVolume", PluginConfig.test1.Value); //outdoor ambient, main volume, not gunshots or green flare. Doesn't affect headset
+                      if (PluginConfig.test1.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("Tinnitus2", PluginConfig.test1.Value); //not sure, does affect ambient volume
+                      if (PluginConfig.test2.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("WorldReverbLevel", PluginConfig.test2.Value); //no noticable effect
+                      if (PluginConfig.test4.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("GunCompressorAttack", PluginConfig.test4.Value); //no noticable ffect
+                      if (PluginConfig.test5.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("GunCompressorRelease", PluginConfig.test5.Value);//no noticable ffect
+                      if (PluginConfig.test6.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("GunCompressorThreshold", PluginConfig.test6.Value);//no noticable ffect
+                      if (PluginConfig.test7.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("GunCompressorDistortion", PluginConfig.test7.Value); //all gun noise distortion with headset, don't mess with it
+                      if (PluginConfig.test9.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("GunsLowPassFilter", PluginConfig.test9.Value); //nothing
+                      if (PluginConfig.test1.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("EffectsReturnsGroupVolume", PluginConfig.test1.Value); //not sure, does affect ambient volume
+                      if (PluginConfig.test2.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("HeadphonesMixerVolume", PluginConfig.test2.Value); //no noticable effect
+                   Singleton<BetterAudio>.Instance.Master.GetFloat("GunsCompressorSendLevel", out float sendlevel); //affected all gun volume with headset
+                        //might have to use too, not sure
+                if (PluginConfig.test2.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("GunsVolume", PluginConfig.test2.Value); //just gun volume...also affects all gun itneraction volume because BSG is fucking retarded. Doesn't affect it properly when wearing headest
+                if (PluginConfig.test3.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("GunCompressorGain", PluginConfig.test3.Value);  //all gun volume using headset
+                 */
+                //maybe use
+                //if (PluginConfig.test8.Value != 1f) Singleton<BetterAudio>.Instance.Master.SetFloat("OutEnvironmentVolume", PluginConfig.test8.Value); //not sure
         }
     }
 }

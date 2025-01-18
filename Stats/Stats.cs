@@ -36,6 +36,7 @@ namespace RealismMod
     public class RealismItem
     {
         public MongoID ItemID { get; set; }
+        public string TemplateID { get; set; }
     }
 
     public class Ammo : RealismItem
@@ -136,13 +137,27 @@ namespace RealismMod
         {
             if (stats.TryGetValue(itemId, out T item)) 
             {
-               return item;
+                //if the item is a reskin, it uses a different item as a template, get that item
+                if (item.TemplateID != null)
+                {
+                    if (stats.TryGetValue(item.TemplateID, out T baseItem))
+                    {
+                        return baseItem;
+                    }
+                }
+                //otherwise return the intended item
+                return item;
             }
-            T newItem = new T();
-            if (!IncompatileItems.ContainsKey(itemId)) 
+
+            //no item found, try and see if it's an incompatible item that's already been given a class instance
+            if (IncompatileItems.TryGetValue(itemId, out RealismItem incompatibleItem))
             {
-                IncompatileItems.Add(itemId, newItem);
+                return incompatibleItem as T;
             }
+
+            //if there's still no item found, add it to the incomaptible item dictionary
+            T newItem = new T();
+            IncompatileItems.Add(itemId, newItem);
             return newItem;
         }
 
@@ -176,7 +191,6 @@ namespace RealismMod
             foreach (var templateKvp in templatesBase)
             {
                 var template = templateKvp.Value;
-
                 if (template is Gun gun)
                 {
                     GunStats.Add(gun.ItemID, gun);
@@ -187,6 +201,7 @@ namespace RealismMod
                 }
                 else if (template is WeaponMod weaponmod)
                 {
+                    Utils.Logger.LogWarning($"id: {template.ItemID}");
                     WeaponModStats.Add(weaponmod.ItemID, weaponmod);
                 }
                 else if (template is Consumable consumable)

@@ -28,7 +28,6 @@ namespace RealismMod
         static void PatchPrefix(GClass859 __instance, ref float volume)
         {
             volume *= PluginConfig.GunshotVolume.Value;
-            Logger.LogWarning("volume " + volume);
         }
     }
 
@@ -303,8 +302,9 @@ namespace RealismMod
     //but anyway, adjust, calculate "loudness" of a bot's shot when near the player for deafening
     public class RegisterShotPatch : ModulePatch
     {
-        private const float SuppressorFactor = 0.5f;
-        private const float SubsonicFactor = 0.6f;
+        private const float SuppressorWithSubsFactor = 0.25f;
+        private const float SubsonicFactor = 0.85f;
+        private const float SpeedOfSound = 335f;
 
         private static FieldInfo playerField;
 
@@ -358,9 +358,9 @@ namespace RealismMod
                     float ammoFactor = CalcAmmoFactor((shot.Ammo as AmmoItemClass).ammoRec);
                     float deafenFactor = velocityFactor * ammoFactor;
 
-                    if (shot.InitialSpeed * weap.SpeedFactor <= 335f)
+                    if (shot.InitialSpeed * weap.SpeedFactor <= SpeedOfSound)
                     {
-                        deafenFactor *= SubsonicFactor;
+                        deafenFactor *= __instance.IsSilenced ? SuppressorWithSubsFactor : SubsonicFactor;
                     }
 
                     DeafenController.AmmoDeafFactor = Mathf.Clamp(deafenFactor, 0.5f, 2f);
@@ -374,13 +374,12 @@ namespace RealismMod
                     {
                   
                         float velocityFactor = CalcVelocityFactor(weap.SpeedFactor);
-                        float muzzleFactor = __instance.IsSilenced ? SuppressorFactor : 1f;
                         float calFactor = StatCalc.CaliberLoudnessFactor(weap.AmmoCaliber);
-                        if (shot.InitialSpeed * weap.SpeedFactor <= 335f)
+                        if (shot.InitialSpeed * weap.SpeedFactor <= SpeedOfSound)
                         {
-                            velocityFactor *= SubsonicFactor;
+                            velocityFactor *= __instance.IsSilenced ? SuppressorWithSubsFactor : SubsonicFactor;
                         }
-                        float baseBotDeafFactor = 1f * calFactor * velocityFactor;
+                        float baseBotDeafFactor = calFactor * velocityFactor;
                         float totalBotDeafFactor = baseBotDeafFactor * ((-distanceFromPlayer / 100f) + 1f) * 1.25f;
                         DeafenController.BotFiringDeafFactor = Mathf.Clamp(totalBotDeafFactor, 1f, 5f);
                         DeafenController.IsBotFiring = true;
