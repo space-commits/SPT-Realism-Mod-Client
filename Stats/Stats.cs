@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using static WheelDrive;
 
 namespace RealismMod
 {
@@ -176,6 +177,18 @@ namespace RealismMod
             }
         }
 
+        public static void AddItemToDict<T>(Dictionary<string, T> dict, RealismItem item) where T : RealismItem
+        {
+            if (!dict.ContainsKey(item.ItemID))
+            {
+                dict.Add(item.ItemID, item as T);
+            }
+            else 
+            {
+                Utils.Logger.LogWarning($"Realism Mod: item with duplicate Id already added to dictionary {item.ItemID}");
+            }
+        }
+
         public static void DeserializeTemplates(string filepath) 
         {
             var templateJson = File.ReadAllText(filepath);
@@ -193,24 +206,23 @@ namespace RealismMod
                 var template = templateKvp.Value;
                 if (template is Gun gun)
                 {
-                    GunStats.Add(gun.ItemID, gun);
+                    AddItemToDict<Gun>(GunStats, gun);
                 }
                 else if (template is Gear gear)
                 {
-                    GearStats.Add(gear.ItemID, gear);
+                    AddItemToDict<Gear>(GearStats, gear);
                 }
                 else if (template is WeaponMod weaponmod)
                 {
-                    Utils.Logger.LogWarning($"id: {template.ItemID}");
-                    WeaponModStats.Add(weaponmod.ItemID, weaponmod);
+                    AddItemToDict<WeaponMod>(WeaponModStats, weaponmod);
                 }
                 else if (template is Consumable consumable)
                 {
-                    ConsumableStats.Add(consumable.ItemID, consumable);
+                    AddItemToDict<Consumable>(ConsumableStats, consumable);
                 }
                 else if (template is Ammo ammo)
                 {
-                    AmmoStats.Add(ammo.ItemID, ammo);
+                    AddItemToDict<Ammo>(AmmoStats, ammo);
                 }
                 else
                 {
